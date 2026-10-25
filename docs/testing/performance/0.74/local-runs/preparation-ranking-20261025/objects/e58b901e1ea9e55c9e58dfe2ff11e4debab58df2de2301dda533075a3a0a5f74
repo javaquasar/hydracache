@@ -1,0 +1,32 @@
+{
+  "argv": [
+    "/usr/bin/timeout",
+    "--signal=TERM",
+    "--kill-after=5s",
+    "1200s",
+    "/usr/bin/nice",
+    "-n",
+    "10",
+    "/tmp/hc074-server-gate-root-20261025.0k0xbdah/authority-parent-runtime-build-first/libtest",
+    "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::observed_reservation_tests::collector_reserved_tests::progress_tests::start_consent_tests::validation_frame_tests::starting_tests::privileged_root::cgroup::held_live::privileged_consuming_held_live_matrix",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "env": {
+    "PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+    "TMPDIR": "/tmp/hc074-server-gate-root-20261025.0k0xbdah/parent-residual-profile-first/scratch",
+    "HC074_OWNED_ROOT_FIXTURE": "local-only-v1",
+    "HC074_START_MATERIAL_BUNDLE": "/tmp/hc074-server-gate-root-20261025.0k0xbdah/holder-bundle",
+    "HC074_CONSUMING_HELD_LIVE_CASE": "healthy",
+    "HC074_CONSUMING_HELD_COST": "1"
+  },
+  "affinity": [
+    0,
+    5,
+    6,
+    7
+  ],
+  "concurrent_load": false
+}

@@ -1,0 +1,40 @@
+from pathlib import Path
+import hashlib,json,runpy,subprocess
+root=Path(__file__).resolve().parent.parent
+api=runpy.run_path(str(root/'tools/preparation-ranking-074/review.py'))
+files,sources,protocol=api['load']();graph=api['strict_json']((root/'tools/preparation-ranking-074/local-context-graph.json').read_bytes())
+facts=api['review'](files,sources,protocol,graph)
+members,objects={},{}
+def add(name,raw):
+ assert name not in members
+ digest=hashlib.sha256(raw).hexdigest();members[name]={'bytes':len(raw),'sha256':digest};objects[digest]=raw
+for name,raw in files.items():add('input/'+name,raw)
+for name,raw in sources.items():add('source/'+name,raw)
+for name in ['protocol.json','local-context-graph.json','next-directory-protocol.json','review.py','test_review.py','README.md']:
+ add('tool/'+name,(root/'tools/preparation-ranking-074'/name).read_bytes())
+add('dependency/profile-review.py',(root/'tools/native-server-control-074/profile_review.py').read_bytes())
+add('analysis/review.json',(json.dumps(facts,sort_keys=True,indent=2)+'\n').encode())
+for label in ['preparation-ranking-first-review-20261025','preparation-ranking-controls-first-20261025',
+ 'preparation-ranking-final-review-20261025','preparation-ranking-controls-final-20261025']:
+ folder=root/'target/source-continuation-20261024'/label
+ result=json.loads((folder/'result.json').read_bytes())
+ assert result['exit']==0 and result['outer_refusal'] is None and result['source_unchanged'] and result['head_unchanged']
+ if 'review-' in label:assert json.loads((folder/'stdout.log').read_bytes())==facts
+ for p in sorted(folder.iterdir()):add('checks/'+label+'/'+p.name,p.read_bytes())
+add('coordinator/retain-preparation-ranking-20261025.py',Path(__file__).read_bytes())
+upstream=root/'docs/testing/performance/0.74/local-runs/authority-parent-cost-20261025/index.json'
+assert hashlib.sha256(upstream.read_bytes()).hexdigest()==protocol['upstream_index_sha256']
+add('input/upstream-index.json',upstream.read_bytes())
+protected={name:hashlib.sha256((root/name).read_bytes()).hexdigest() for name in
+ ['Cargo.toml','Cargo.lock','docs/testing/performance/0.74/qualification-manifest.toml','tools/authority-storage-source-074/contract.rs']}
+base=root/'docs/testing/performance/0.74/local-runs/preparation-ranking-20261025'
+base.mkdir(exist_ok=False);(base/'objects').mkdir()
+for digest,raw in objects.items():(base/'objects'/digest).write_bytes(raw)
+index=dict(schema='hc074-preparation-ranking-evidence-v1',members=members,protected_inputs=protected,
+ upstream_index_sha256=protocol['upstream_index_sha256'],analysis_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root).decode().strip(),
+ first_failed_phase='enrollment',profile_first_refusal_age_ns=10005376028,source_files=8,
+ offline_controls_passed=12,measurements_repeated=False,server_actions=False,production_body_unchanged=True,
+ next_candidate_implemented=False,optimization_implemented=False,performance_improvement_proven=False,product=False,admission=False)
+raw=(json.dumps(index,sort_keys=True,indent=2)+'\n').encode();(base/'index.json').write_bytes(raw)
+(base/'.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),objects=len(objects),bytes=sum(map(len,objects.values())))))

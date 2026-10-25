@@ -1,0 +1,11 @@
+{
+  "exit": 101,
+  "first_refusal": null,
+  "postflight_refusal": null,
+  "attribution_only": true,
+  "functional_gate": false,
+  "admission": false,
+  "product": false,
+  "original_send": false,
+  "all_writers_proven_stopped": false
+}

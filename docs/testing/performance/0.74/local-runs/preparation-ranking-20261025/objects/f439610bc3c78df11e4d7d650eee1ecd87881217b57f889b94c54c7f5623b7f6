@@ -1,0 +1,1307 @@
+{
+  "admission": false,
+  "all_observed_round_trees_balanced": true,
+  "first_failed_phase": "enrollment",
+  "first_original_refusal": {
+    "age_ns": 10005376028,
+    "diagnostic_reason": "expired",
+    "issued_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "issued_ns": 1656431760652525,
+    "now_boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "now_ns": 1656441766028553,
+    "site": "window"
+  },
+  "local_context_inventory": {
+    "candidate_implemented": false,
+    "candidate_scope": "only the fresh directory metadata projection in PinnedDirectory::same; no constructor/document/namespace changes",
+    "cpu_saving_predicted": false,
+    "directly_measured_request_counts": false,
+    "observed_span_calls": 4232,
+    "per_successful_observe": {
+      "directory_same": 24,
+      "dup": 12,
+      "fstatfs": 44,
+      "gettid": 8,
+      "ioctl": 16,
+      "metadata": 88,
+      "open": 48,
+      "read_at": 4
+    },
+    "source_derived_output_requests": {
+      "directory_same": 101568,
+      "dup": 50784,
+      "fstatfs": 186208,
+      "gettid": 33856,
+      "ioctl": 67712,
+      "metadata": 372416,
+      "open": 203136,
+      "read_at": 16928
+    }
+  },
+  "measurements_repeated": false,
+  "no_sum_across_views": true,
+  "not_observed_phases": [
+    "placement",
+    "fixed-slice",
+    "consuming"
+  ],
+  "observer_cost_not_subtracted": true,
+  "optimization_implemented": false,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "performance_improvement_proven": false,
+  "phases": [
+    {
+      "kernel_context_outer_minus_inner_wall_ns": 38703,
+      "kernel_context_wraps_packet_context": true,
+      "phase": "prepare-consent",
+      "phase_wall_outside_rounds_ns": 544193346,
+      "process_cpu_ns": 544168035,
+      "ranked_views": {
+        "kernel": [
+          {
+            "calls": 12724,
+            "inclusive_ns": 127764022,
+            "kind": "Boot",
+            "outside_children_ns": 117101088
+          },
+          {
+            "calls": 25448,
+            "inclusive_ns": 93734874,
+            "kind": "Namespace",
+            "outside_children_ns": 93734874
+          },
+          {
+            "calls": 6362,
+            "inclusive_ns": 286026880,
+            "kind": "Origin",
+            "outside_children_ns": 64527984
+          },
+          {
+            "calls": 19308,
+            "inclusive_ns": 34930225,
+            "kind": "Document",
+            "outside_children_ns": 34930225
+          },
+          {
+            "calls": 3292,
+            "inclusive_ns": 20752900,
+            "kind": "Alive",
+            "outside_children_ns": 16373660
+          },
+          {
+            "calls": 1646,
+            "inclusive_ns": 208547692,
+            "kind": "Sender",
+            "outside_children_ns": 16182051
+          },
+          {
+            "calls": 3292,
+            "inclusive_ns": 2996934,
+            "kind": "Projection",
+            "outside_children_ns": 2996934
+          },
+          {
+            "calls": 712,
+            "inclusive_ns": 65514170,
+            "kind": "WorkerOrigin",
+            "outside_children_ns": 1823084
+          },
+          {
+            "calls": 712,
+            "inclusive_ns": 309888334,
+            "kind": "PacketContext",
+            "outside_children_ns": 176634
+          },
+          {
+            "calls": 823,
+            "inclusive_ns": 73777560,
+            "kind": "Sample",
+            "outside_children_ns": 169522
+          }
+        ],
+        "live": [
+          {
+            "calls": 712,
+            "inclusive_ns": 309927037,
+            "kind": "KernelContext",
+            "outside_children_ns": 309927037
+          },
+          {
+            "calls": 1435,
+            "inclusive_ns": 79474287,
+            "kind": "ActiveAuthority",
+            "outside_children_ns": 79474287
+          },
+          {
+            "calls": 356,
+            "inclusive_ns": 75195604,
+            "kind": "LocalContext",
+            "outside_children_ns": 75195604
+          },
+          {
+            "calls": 1424,
+            "inclusive_ns": 27172594,
+            "kind": "WorkerSource",
+            "outside_children_ns": 27172594
+          },
+          {
+            "calls": 712,
+            "inclusive_ns": 108275465,
+            "kind": "WorkerPolicy",
+            "outside_children_ns": 2232675
+          },
+          {
+            "calls": 356,
+            "inclusive_ns": 493488959,
+            "kind": "KernelWorker",
+            "outside_children_ns": 90853
+          }
+        ]
+      },
+      "returned": true,
+      "round_slots": [
+        {
+          "calls": 0,
+          "completed": 0,
+          "kernel_outside_root_wall_ns": 0,
+          "kernel_root_wall_ns": 0,
+          "step": "StorageBefore",
+          "wall_ns": 0
+        },
+        {
+          "calls": 0,
+          "completed": 0,
+          "kernel_outside_root_wall_ns": 0,
+          "kernel_root_wall_ns": 0,
+          "step": "ReservedLive",
+          "wall_ns": 0
+        },
+        {
+          "calls": 0,
+          "completed": 0,
+          "kernel_outside_root_wall_ns": 0,
+          "kernel_root_wall_ns": 0,
+          "step": "Progress",
+          "wall_ns": 0
+        },
+        {
+          "calls": 0,
+          "completed": 0,
+          "kernel_outside_root_wall_ns": 0,
+          "kernel_root_wall_ns": 0,
+          "step": "Causal",
+          "wall_ns": 0
+        },
+        {
+          "calls": 0,
+          "completed": 0,
+          "kernel_outside_root_wall_ns": 0,
+          "kernel_root_wall_ns": 0,
+          "step": "Prepared",
+          "wall_ns": 0
+        },
+        {
+          "calls": 0,
+          "completed": 0,
+          "kernel_outside_root_wall_ns": 0,
+          "kernel_root_wall_ns": 0,
+          "step": "Consent",
+          "wall_ns": 0
+        },
+        {
+          "calls": 0,
+          "completed": 0,
+          "kernel_outside_root_wall_ns": 0,
+          "kernel_root_wall_ns": 0,
+          "step": "StorageAfter",
+          "wall_ns": 0
+        },
+        {
+          "calls": 0,
+          "completed": 0,
+          "kernel_outside_root_wall_ns": 0,
+          "kernel_root_wall_ns": 0,
+          "step": "FinalClocks",
+          "wall_ns": 0
+        }
+      ],
+      "round_wall_ns": 0,
+      "wall_ns": 544193346
+    },
+    {
+      "kernel_context_outer_minus_inner_wall_ns": 19578,
+      "kernel_context_wraps_packet_context": true,
+      "phase": "accept-consent",
+      "phase_wall_outside_rounds_ns": 398436,
+      "process_cpu_ns": 284018346,
+      "ranked_views": {
+        "kernel": [
+          {
+            "calls": 6668,
+            "inclusive_ns": 66609364,
+            "kind": "Boot",
+            "outside_children_ns": 60985412
+          },
+          {
+            "calls": 13336,
+            "inclusive_ns": 49137420,
+            "kind": "Namespace",
+            "outside_children_ns": 49137420
+          },
+          {
+            "calls": 3334,
+            "inclusive_ns": 149726012,
+            "kind": "Origin",
+            "outside_children_ns": 33979228
+          },
+          {
+            "calls": 10130,
+            "inclusive_ns": 18474847,
+            "kind": "Document",
+            "outside_children_ns": 18474847
+          },
+          {
+            "calls": 1731,
+            "inclusive_ns": 10969389,
+            "kind": "Alive",
+            "outside_children_ns": 8615584
+          },
+          {
+            "calls": 865,
+            "inclusive_ns": 109399474,
+            "kind": "Sender",
+            "outside_children_ns": 8560551
+          },
+          {
+            "calls": 1731,
+            "inclusive_ns": 1590953,
+            "kind": "Projection",
+            "outside_children_ns": 1590953
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 33932998,
+            "kind": "WorkerOrigin",
+            "outside_children_ns": 938519
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 160116135,
+            "kind": "PacketContext",
+            "outside_children_ns": 91249
+          },
+          {
+            "calls": 434,
+            "inclusive_ns": 38992434,
+            "kind": "Sample",
+            "outside_children_ns": 90052
+          }
+        ],
+        "live": [
+          {
+            "calls": 368,
+            "inclusive_ns": 160135713,
+            "kind": "KernelContext",
+            "outside_children_ns": 160135713
+          },
+          {
+            "calls": 742,
+            "inclusive_ns": 41156180,
+            "kind": "ActiveAuthority",
+            "outside_children_ns": 41156180
+          },
+          {
+            "calls": 184,
+            "inclusive_ns": 38946242,
+            "kind": "LocalContext",
+            "outside_children_ns": 38946242
+          },
+          {
+            "calls": 736,
+            "inclusive_ns": 14087304,
+            "kind": "WorkerSource",
+            "outside_children_ns": 14087304
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 56085007,
+            "kind": "WorkerPolicy",
+            "outside_children_ns": 1170907
+          },
+          {
+            "calls": 184,
+            "inclusive_ns": 255213734,
+            "kind": "KernelWorker",
+            "outside_children_ns": 46772
+          }
+        ]
+      },
+      "returned": true,
+      "round_slots": [
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 214186,
+          "kernel_root_wall_ns": 0,
+          "step": "StorageBefore",
+          "wall_ns": 214186
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 88349472,
+          "kernel_root_wall_ns": 154377015,
+          "step": "ReservedLive",
+          "wall_ns": 242726487
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 2142881,
+          "kernel_root_wall_ns": 5527014,
+          "step": "Progress",
+          "wall_ns": 7669895
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 2091653,
+          "kernel_root_wall_ns": 4163337,
+          "step": "Causal",
+          "wall_ns": 6254990
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 4236578,
+          "kernel_root_wall_ns": 7636204,
+          "step": "Prepared",
+          "wall_ns": 11872782
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 2208181,
+          "kernel_root_wall_ns": 6225151,
+          "step": "Consent",
+          "wall_ns": 8433332
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 216736,
+          "kernel_root_wall_ns": 0,
+          "step": "StorageAfter",
+          "wall_ns": 216736
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 2075143,
+          "kernel_root_wall_ns": 4172818,
+          "step": "FinalClocks",
+          "wall_ns": 6247961
+        }
+      ],
+      "round_wall_ns": 283636369,
+      "wall_ns": 284034805
+    },
+    {
+      "kernel_context_outer_minus_inner_wall_ns": 447237,
+      "kernel_context_wraps_packet_context": true,
+      "phase": "outputs",
+      "phase_wall_outside_rounds_ns": 88742320,
+      "process_cpu_ns": 6596969116,
+      "ranked_views": {
+        "kernel": [
+          {
+            "calls": 153088,
+            "inclusive_ns": 1550095904,
+            "kind": "Boot",
+            "outside_children_ns": 1420836870
+          },
+          {
+            "calls": 306176,
+            "inclusive_ns": 1137560210,
+            "kind": "Namespace",
+            "outside_children_ns": 1137560210
+          },
+          {
+            "calls": 76544,
+            "inclusive_ns": 3476815885,
+            "kind": "Origin",
+            "outside_children_ns": 789159771
+          },
+          {
+            "calls": 232576,
+            "inclusive_ns": 423464031,
+            "kind": "Document",
+            "outside_children_ns": 423464031
+          },
+          {
+            "calls": 39744,
+            "inclusive_ns": 253139944,
+            "kind": "Alive",
+            "outside_children_ns": 199588659
+          },
+          {
+            "calls": 19872,
+            "inclusive_ns": 2534747337,
+            "kind": "Sender",
+            "outside_children_ns": 198523930
+          },
+          {
+            "calls": 39744,
+            "inclusive_ns": 36399388,
+            "kind": "Projection",
+            "outside_children_ns": 36399388
+          },
+          {
+            "calls": 8464,
+            "inclusive_ns": 791139359,
+            "kind": "WorkerOrigin",
+            "outside_children_ns": 21691047
+          },
+          {
+            "calls": 8464,
+            "inclusive_ns": 3721424899,
+            "kind": "PacketContext",
+            "outside_children_ns": 2179996
+          },
+          {
+            "calls": 9936,
+            "inclusive_ns": 903369533,
+            "kind": "Sample",
+            "outside_children_ns": 2032323
+          }
+        ],
+        "live": [
+          {
+            "calls": 8464,
+            "inclusive_ns": 3721872136,
+            "kind": "KernelContext",
+            "outside_children_ns": 3721872136
+          },
+          {
+            "calls": 17066,
+            "inclusive_ns": 959482117,
+            "kind": "ActiveAuthority",
+            "outside_children_ns": 959482117
+          },
+          {
+            "calls": 4232,
+            "inclusive_ns": 900602496,
+            "kind": "LocalContext",
+            "outside_children_ns": 900602496
+          },
+          {
+            "calls": 16928,
+            "inclusive_ns": 328767373,
+            "kind": "WorkerSource",
+            "outside_children_ns": 328767373
+          },
+          {
+            "calls": 8464,
+            "inclusive_ns": 1307855005,
+            "kind": "WorkerPolicy",
+            "outside_children_ns": 27303028
+          },
+          {
+            "calls": 4232,
+            "inclusive_ns": 5931417706,
+            "kind": "KernelWorker",
+            "outside_children_ns": 1088069
+          }
+        ]
+      },
+      "returned": true,
+      "round_slots": [
+        {
+          "calls": 46,
+          "completed": 46,
+          "kernel_outside_root_wall_ns": 5993616,
+          "kernel_root_wall_ns": 0,
+          "step": "StorageBefore",
+          "wall_ns": 5993616
+        },
+        {
+          "calls": 46,
+          "completed": 46,
+          "kernel_outside_root_wall_ns": 2052663682,
+          "kernel_root_wall_ns": 3587891914,
+          "step": "ReservedLive",
+          "wall_ns": 5640555596
+        },
+        {
+          "calls": 46,
+          "completed": 46,
+          "kernel_outside_root_wall_ns": 49754280,
+          "kernel_root_wall_ns": 128491934,
+          "step": "Progress",
+          "wall_ns": 178246214
+        },
+        {
+          "calls": 46,
+          "completed": 46,
+          "kernel_outside_root_wall_ns": 48713289,
+          "kernel_root_wall_ns": 96671630,
+          "step": "Causal",
+          "wall_ns": 145384919
+        },
+        {
+          "calls": 46,
+          "completed": 46,
+          "kernel_outside_root_wall_ns": 98399072,
+          "kernel_root_wall_ns": 177278558,
+          "step": "Prepared",
+          "wall_ns": 275677630
+        },
+        {
+          "calls": 46,
+          "completed": 46,
+          "kernel_outside_root_wall_ns": 50724518,
+          "kernel_root_wall_ns": 144279994,
+          "step": "Consent",
+          "wall_ns": 195004512
+        },
+        {
+          "calls": 46,
+          "completed": 46,
+          "kernel_outside_root_wall_ns": 5825690,
+          "kernel_root_wall_ns": 0,
+          "step": "StorageAfter",
+          "wall_ns": 5825690
+        },
+        {
+          "calls": 46,
+          "completed": 46,
+          "kernel_outside_root_wall_ns": 48112156,
+          "kernel_root_wall_ns": 96822195,
+          "step": "FinalClocks",
+          "wall_ns": 144934351
+        }
+      ],
+      "round_wall_ns": 6591622528,
+      "wall_ns": 6680364848
+    },
+    {
+      "kernel_context_outer_minus_inner_wall_ns": 20682,
+      "kernel_context_wraps_packet_context": true,
+      "phase": "enrollment-frame",
+      "phase_wall_outside_rounds_ns": 57400755,
+      "process_cpu_ns": 342224302,
+      "ranked_views": {
+        "kernel": [
+          {
+            "calls": 6680,
+            "inclusive_ns": 67466572,
+            "kind": "Boot",
+            "outside_children_ns": 61842848
+          },
+          {
+            "calls": 13360,
+            "inclusive_ns": 49176144,
+            "kind": "Namespace",
+            "outside_children_ns": 49176144
+          },
+          {
+            "calls": 3340,
+            "inclusive_ns": 150792082,
+            "kind": "Origin",
+            "outside_children_ns": 34149366
+          },
+          {
+            "calls": 10152,
+            "inclusive_ns": 18529758,
+            "kind": "Document",
+            "outside_children_ns": 18529758
+          },
+          {
+            "calls": 1736,
+            "inclusive_ns": 11073493,
+            "kind": "Alive",
+            "outside_children_ns": 8677793
+          },
+          {
+            "calls": 868,
+            "inclusive_ns": 110296258,
+            "kind": "Sender",
+            "outside_children_ns": 8601672
+          },
+          {
+            "calls": 1736,
+            "inclusive_ns": 1597996,
+            "kind": "Projection",
+            "outside_children_ns": 1597996
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 34123461,
+            "kind": "WorkerOrigin",
+            "outside_children_ns": 948322
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 160890170,
+            "kind": "PacketContext",
+            "outside_children_ns": 93648
+          },
+          {
+            "calls": 434,
+            "inclusive_ns": 39192587,
+            "kind": "Sample",
+            "outside_children_ns": 88407
+          }
+        ],
+        "live": [
+          {
+            "calls": 368,
+            "inclusive_ns": 160910852,
+            "kind": "KernelContext",
+            "outside_children_ns": 160910852
+          },
+          {
+            "calls": 742,
+            "inclusive_ns": 41171976,
+            "kind": "ActiveAuthority",
+            "outside_children_ns": 41171976
+          },
+          {
+            "calls": 184,
+            "inclusive_ns": 39164732,
+            "kind": "LocalContext",
+            "outside_children_ns": 39164732
+          },
+          {
+            "calls": 736,
+            "inclusive_ns": 14085105,
+            "kind": "WorkerSource",
+            "outside_children_ns": 14085105
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 56115966,
+            "kind": "WorkerPolicy",
+            "outside_children_ns": 1188400
+          },
+          {
+            "calls": 184,
+            "inclusive_ns": 256239758,
+            "kind": "KernelWorker",
+            "outside_children_ns": 48208
+          }
+        ]
+      },
+      "returned": true,
+      "round_slots": [
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 267715,
+          "kernel_root_wall_ns": 0,
+          "step": "StorageBefore",
+          "wall_ns": 267715
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 88628948,
+          "kernel_root_wall_ns": 155116592,
+          "step": "ReservedLive",
+          "wall_ns": 243745540
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 2145809,
+          "kernel_root_wall_ns": 5561296,
+          "step": "Progress",
+          "wall_ns": 7707105
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 2104545,
+          "kernel_root_wall_ns": 4183675,
+          "step": "Causal",
+          "wall_ns": 6288220
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 4244114,
+          "kernel_root_wall_ns": 7676177,
+          "step": "Prepared",
+          "wall_ns": 11920291
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 2200202,
+          "kernel_root_wall_ns": 6241860,
+          "step": "Consent",
+          "wall_ns": 8442062
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 257645,
+          "kernel_root_wall_ns": 0,
+          "step": "StorageAfter",
+          "wall_ns": 257645
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 2075973,
+          "kernel_root_wall_ns": 4192917,
+          "step": "FinalClocks",
+          "wall_ns": 6268890
+        }
+      ],
+      "round_wall_ns": 284897468,
+      "wall_ns": 342298223
+    },
+    {
+      "kernel_context_outer_minus_inner_wall_ns": 19693,
+      "kernel_context_wraps_packet_context": true,
+      "phase": "fixed-manager-message",
+      "phase_wall_outside_rounds_ns": 36898474,
+      "process_cpu_ns": 317185990,
+      "ranked_views": {
+        "kernel": [
+          {
+            "calls": 6700,
+            "inclusive_ns": 68037622,
+            "kind": "Boot",
+            "outside_children_ns": 62378484
+          },
+          {
+            "calls": 13400,
+            "inclusive_ns": 49349029,
+            "kind": "Namespace",
+            "outside_children_ns": 49349029
+          },
+          {
+            "calls": 3350,
+            "inclusive_ns": 151975459,
+            "kind": "Origin",
+            "outside_children_ns": 34588808
+          },
+          {
+            "calls": 10180,
+            "inclusive_ns": 18631801,
+            "kind": "Document",
+            "outside_children_ns": 18631801
+          },
+          {
+            "calls": 1740,
+            "inclusive_ns": 11118991,
+            "kind": "Alive",
+            "outside_children_ns": 8717394
+          },
+          {
+            "calls": 870,
+            "inclusive_ns": 111107537,
+            "kind": "Sender",
+            "outside_children_ns": 8619919
+          },
+          {
+            "calls": 1740,
+            "inclusive_ns": 1609446,
+            "kind": "Projection",
+            "outside_children_ns": 1609446
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 34221301,
+            "kind": "WorkerOrigin",
+            "outside_children_ns": 941935
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 161588686,
+            "kind": "PacketContext",
+            "outside_children_ns": 91854
+          },
+          {
+            "calls": 435,
+            "inclusive_ns": 39407941,
+            "kind": "Sample",
+            "outside_children_ns": 87130
+          }
+        ],
+        "live": [
+          {
+            "calls": 368,
+            "inclusive_ns": 161608379,
+            "kind": "KernelContext",
+            "outside_children_ns": 161608379
+          },
+          {
+            "calls": 742,
+            "inclusive_ns": 41196524,
+            "kind": "ActiveAuthority",
+            "outside_children_ns": 41196524
+          },
+          {
+            "calls": 184,
+            "inclusive_ns": 39267419,
+            "kind": "LocalContext",
+            "outside_children_ns": 39267419
+          },
+          {
+            "calls": 736,
+            "inclusive_ns": 14091057,
+            "kind": "WorkerSource",
+            "outside_children_ns": 14091057
+          },
+          {
+            "calls": 368,
+            "inclusive_ns": 56147916,
+            "kind": "WorkerPolicy",
+            "outside_children_ns": 1191589
+          },
+          {
+            "calls": 184,
+            "inclusive_ns": 257070943,
+            "kind": "KernelWorker",
+            "outside_children_ns": 47229
+          }
+        ]
+      },
+      "returned": true,
+      "round_slots": [
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 261685,
+          "kernel_root_wall_ns": 0,
+          "step": "StorageBefore",
+          "wall_ns": 261685
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 88783775,
+          "kernel_root_wall_ns": 155793080,
+          "step": "ReservedLive",
+          "wall_ns": 244576855
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 2155313,
+          "kernel_root_wall_ns": 5592451,
+          "step": "Progress",
+          "wall_ns": 7747764
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 2106993,
+          "kernel_root_wall_ns": 4199787,
+          "step": "Causal",
+          "wall_ns": 6306780
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 4248392,
+          "kernel_root_wall_ns": 7705309,
+          "step": "Prepared",
+          "wall_ns": 11953701
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 2204683,
+          "kernel_root_wall_ns": 6265779,
+          "step": "Consent",
+          "wall_ns": 8470462
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 255095,
+          "kernel_root_wall_ns": 0,
+          "step": "StorageAfter",
+          "wall_ns": 255095
+        },
+        {
+          "calls": 2,
+          "completed": 2,
+          "kernel_outside_root_wall_ns": 2081065,
+          "kernel_root_wall_ns": 4206885,
+          "step": "FinalClocks",
+          "wall_ns": 6287950
+        }
+      ],
+      "round_wall_ns": 285860292,
+      "wall_ns": 322758766
+    },
+    {
+      "kernel_context_outer_minus_inner_wall_ns": 59272,
+      "kernel_context_wraps_packet_context": true,
+      "phase": "owned-root-preparation",
+      "phase_wall_outside_rounds_ns": 91465799,
+      "process_cpu_ns": 958186180,
+      "ranked_views": {
+        "kernel": [
+          {
+            "calls": 20064,
+            "inclusive_ns": 203992491,
+            "kind": "Boot",
+            "outside_children_ns": 187088234
+          },
+          {
+            "calls": 40128,
+            "inclusive_ns": 150123670,
+            "kind": "Namespace",
+            "outside_children_ns": 150123670
+          },
+          {
+            "calls": 10032,
+            "inclusive_ns": 460107896,
+            "kind": "Origin",
+            "outside_children_ns": 105991735
+          },
+          {
+            "calls": 30480,
+            "inclusive_ns": 55510851,
+            "kind": "Document",
+            "outside_children_ns": 55510851
+          },
+          {
+            "calls": 5208,
+            "inclusive_ns": 33471445,
+            "kind": "Alive",
+            "outside_children_ns": 26441878
+          },
+          {
+            "calls": 2604,
+            "inclusive_ns": 334692670,
+            "kind": "Sender",
+            "outside_children_ns": 26274346
+          },
+          {
+            "calls": 5208,
+            "inclusive_ns": 4822021,
+            "kind": "Projection",
+            "outside_children_ns": 4822021
+          },
+          {
+            "calls": 1104,
+            "inclusive_ns": 104267446,
+            "kind": "WorkerOrigin",
+            "outside_children_ns": 2818793
+          },
+          {
+            "calls": 1104,
+            "inclusive_ns": 489810378,
+            "kind": "PacketContext",
+            "outside_children_ns": 269925
+          },
+          {
+            "calls": 1302,
+            "inclusive_ns": 119816123,
+            "kind": "Sample",
+            "outside_children_ns": 257411
+          }
+        ],
+        "live": [
+          {
+            "calls": 1104,
+            "inclusive_ns": 489869650,
+            "kind": "KernelContext",
+            "outside_children_ns": 489869650
+          },
+          {
+            "calls": 2226,
+            "inclusive_ns": 126241193,
+            "kind": "ActiveAuthority",
+            "outside_children_ns": 126241193
+          },
+          {
+            "calls": 552,
+            "inclusive_ns": 118221023,
+            "kind": "LocalContext",
+            "outside_children_ns": 118221023
+          },
+          {
+            "calls": 2208,
+            "inclusive_ns": 43354768,
+            "kind": "WorkerSource",
+            "outside_children_ns": 43354768
+          },
+          {
+            "calls": 1104,
+            "inclusive_ns": 172160781,
+            "kind": "WorkerPolicy",
+            "outside_children_ns": 3577481
+          },
+          {
+            "calls": 552,
+            "inclusive_ns": 780393589,
+            "kind": "KernelWorker",
+            "outside_children_ns": 142135
+          }
+        ]
+      },
+      "returned": true,
+      "round_slots": [
+        {
+          "calls": 6,
+          "completed": 6,
+          "kernel_outside_root_wall_ns": 771174,
+          "kernel_root_wall_ns": 0,
+          "step": "StorageBefore",
+          "wall_ns": 771174
+        },
+        {
+          "calls": 6,
+          "completed": 6,
+          "kernel_outside_root_wall_ns": 269790670,
+          "kernel_root_wall_ns": 472118874,
+          "step": "ReservedLive",
+          "wall_ns": 741909544
+        },
+        {
+          "calls": 6,
+          "completed": 6,
+          "kernel_outside_root_wall_ns": 6543051,
+          "kernel_root_wall_ns": 16907068,
+          "step": "Progress",
+          "wall_ns": 23450119
+        },
+        {
+          "calls": 6,
+          "completed": 6,
+          "kernel_outside_root_wall_ns": 6414479,
+          "kernel_root_wall_ns": 12725186,
+          "step": "Causal",
+          "wall_ns": 19139665
+        },
+        {
+          "calls": 6,
+          "completed": 6,
+          "kernel_outside_root_wall_ns": 12949910,
+          "kernel_root_wall_ns": 23369692,
+          "step": "Prepared",
+          "wall_ns": 36319602
+        },
+        {
+          "calls": 6,
+          "completed": 6,
+          "kernel_outside_root_wall_ns": 6688564,
+          "kernel_root_wall_ns": 19019107,
+          "step": "Consent",
+          "wall_ns": 25707671
+        },
+        {
+          "calls": 6,
+          "completed": 6,
+          "kernel_outside_root_wall_ns": 773686,
+          "kernel_root_wall_ns": 0,
+          "step": "StorageAfter",
+          "wall_ns": 773686
+        },
+        {
+          "calls": 6,
+          "completed": 6,
+          "kernel_outside_root_wall_ns": 6331272,
+          "kernel_root_wall_ns": 12757214,
+          "step": "FinalClocks",
+          "wall_ns": 19088486
+        }
+      ],
+      "round_wall_ns": 867159947,
+      "wall_ns": 958625746
+    },
+    {
+      "kernel_context_outer_minus_inner_wall_ns": 9113,
+      "kernel_context_wraps_packet_context": true,
+      "phase": "enrollment",
+      "phase_wall_outside_rounds_ns": 1297187,
+      "process_cpu_ns": 129900644,
+      "ranked_views": {
+        "kernel": [
+          {
+            "calls": 3004,
+            "inclusive_ns": 30032067,
+            "kind": "Boot",
+            "outside_children_ns": 27501273
+          },
+          {
+            "calls": 6008,
+            "inclusive_ns": 22088394,
+            "kind": "Namespace",
+            "outside_children_ns": 22088394
+          },
+          {
+            "calls": 1502,
+            "inclusive_ns": 67579940,
+            "kind": "Origin",
+            "outside_children_ns": 15459479
+          },
+          {
+            "calls": 4556,
+            "inclusive_ns": 8301614,
+            "kind": "Document",
+            "outside_children_ns": 8301614
+          },
+          {
+            "calls": 776,
+            "inclusive_ns": 4941405,
+            "kind": "Alive",
+            "outside_children_ns": 3875572
+          },
+          {
+            "calls": 388,
+            "inclusive_ns": 49175887,
+            "kind": "Sender",
+            "outside_children_ns": 3842329
+          },
+          {
+            "calls": 776,
+            "inclusive_ns": 710925,
+            "kind": "Projection",
+            "outside_children_ns": 710925
+          },
+          {
+            "calls": 168,
+            "inclusive_ns": 15524426,
+            "kind": "WorkerOrigin",
+            "outside_children_ns": 430088
+          },
+          {
+            "calls": 168,
+            "inclusive_ns": 73257544,
+            "kind": "PacketContext",
+            "outside_children_ns": 41634
+          },
+          {
+            "calls": 194,
+            "inclusive_ns": 17455720,
+            "kind": "Sample",
+            "outside_children_ns": 38449
+          }
+        ],
+        "live": [
+          {
+            "calls": 168,
+            "inclusive_ns": 73266657,
+            "kind": "KernelContext",
+            "outside_children_ns": 73266657
+          },
+          {
+            "calls": 338,
+            "inclusive_ns": 18783384,
+            "kind": "ActiveAuthority",
+            "outside_children_ns": 18783384
+          },
+          {
+            "calls": 84,
+            "inclusive_ns": 17825937,
+            "kind": "LocalContext",
+            "outside_children_ns": 17825937
+          },
+          {
+            "calls": 336,
+            "inclusive_ns": 6432606,
+            "kind": "WorkerSource",
+            "outside_children_ns": 6432606
+          },
+          {
+            "calls": 168,
+            "inclusive_ns": 25648330,
+            "kind": "WorkerPolicy",
+            "outside_children_ns": 542648
+          },
+          {
+            "calls": 84,
+            "inclusive_ns": 116762441,
+            "kind": "KernelWorker",
+            "outside_children_ns": 21517
+          }
+        ]
+      },
+      "returned": false,
+      "round_slots": [
+        {
+          "calls": 1,
+          "completed": 1,
+          "kernel_outside_root_wall_ns": 131868,
+          "kernel_root_wall_ns": 0,
+          "step": "StorageBefore",
+          "wall_ns": 131868
+        },
+        {
+          "calls": 1,
+          "completed": 1,
+          "kernel_outside_root_wall_ns": 44228830,
+          "kernel_root_wall_ns": 77335860,
+          "step": "ReservedLive",
+          "wall_ns": 121564690
+        },
+        {
+          "calls": 1,
+          "completed": 1,
+          "kernel_outside_root_wall_ns": 1068370,
+          "kernel_root_wall_ns": 2772793,
+          "step": "Progress",
+          "wall_ns": 3841163
+        },
+        {
+          "calls": 1,
+          "completed": 0,
+          "kernel_outside_root_wall_ns": 1047961,
+          "kernel_root_wall_ns": 2089014,
+          "step": "Causal",
+          "wall_ns": 3136975
+        },
+        {
+          "calls": 0,
+          "completed": 0,
+          "kernel_outside_root_wall_ns": 0,
+          "kernel_root_wall_ns": 0,
+          "step": "Prepared",
+          "wall_ns": 0
+        },
+        {
+          "calls": 0,
+          "completed": 0,
+          "kernel_outside_root_wall_ns": 0,
+          "kernel_root_wall_ns": 0,
+          "step": "Consent",
+          "wall_ns": 0
+        },
+        {
+          "calls": 0,
+          "completed": 0,
+          "kernel_outside_root_wall_ns": 0,
+          "kernel_root_wall_ns": 0,
+          "step": "StorageAfter",
+          "wall_ns": 0
+        },
+        {
+          "calls": 0,
+          "completed": 0,
+          "kernel_outside_root_wall_ns": 0,
+          "kernel_root_wall_ns": 0,
+          "step": "FinalClocks",
+          "wall_ns": 0
+        }
+      ],
+      "round_wall_ns": 128674696,
+      "wall_ns": 129971883
+    }
+  ],
+  "product": false,
+  "server": false,
+  "wall_is_not_cpu_or_io": true
+}
