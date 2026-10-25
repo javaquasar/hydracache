@@ -26,14 +26,16 @@ def sha(raw):
     return hashlib.sha256(raw).hexdigest()
 
 
-def review(raw):
+def review(raw, *, namespace=False):
     lines = raw.decode().splitlines()
     def rows(marker):
         return [json.loads(line[len(marker):]) for line in lines if line.startswith(marker)]
     prep, samples, done = (rows(marker) for marker in
         ('HC074_HISTORY_PREP ', 'HC074_HISTORY ', 'HC074_HISTORY_DONE '))
-    require(len(prep) == 3 and len(samples) == 72, 'fixed complete scope')
-    expected = dict(samples=72, blocks=6, iterations=16, prefix_warmup=False,
+    count = 18 if namespace else 72
+    operations = ('namespace-chain',) if namespace else OPERATIONS
+    require(len(prep) == 3 and len(samples) == count, 'fixed complete scope')
+    expected = dict(samples=count, blocks=6, iterations=16, prefix_warmup=False,
         disjoint_intervals=False, full_fixed_slice_chain=False, product=False, package_replay=False)
     require(done == [expected] and all(type(done[0][k]) is type(v) for k, v in expected.items()), 'completion')
     def integer(row, key, minimum=0):
@@ -51,7 +53,7 @@ def review(raw):
     index = 0
     for block in range(6):
         for path in PATHS:
-            for operation in OPERATIONS if block % 2 == 0 else OPERATIONS[::-1]:
+            for operation in operations if block % 2 == 0 else operations[::-1]:
                 row = samples[index]
                 index += 1
                 integer(row, 'block')
@@ -71,20 +73,26 @@ def review(raw):
         min_per_call=min(row[metric] / 16 for row in group),
         max_per_call=max(row[metric] / 16 for row in group))
         for metric in ('wall_ns', 'parent_cpu_ns')} for key, group in groups.items()}
-    return dict(preparation=prep, samples=samples, summary=summary,
+    result = dict(preparation=prep, samples=samples, summary=summary,
         nested_prefixes_not_disjoint=True, observer_subtracted=False,
         semantic_equivalence_of_different_prefixes_claimed=False,
         independent_host_replications=False, full_fixed_slice_chain=False,
         product=False, package_replay=False, production_admission=False)
+    if namespace:
+        result['namespace_chain'] = True
+    return result
 
 
-def capture(build, out):
+def capture(build, out, *, namespace=False):
     out.mkdir(parents=True, exist_ok=False)
     def write(name, value):
         with (out / name).open('x', encoding='utf-8', newline='\n') as stream:
             json.dump(value, stream, indent=2, sort_keys=True)
             stream.write('\n')
-    write('intent.json', dict(paths=PATHS, operations=OPERATIONS, blocks=6, samples=72,
+    count = 18 if namespace else 72
+    operations = ('namespace-chain',) if namespace else OPERATIONS
+    write('intent.json', dict(paths=PATHS, operations=operations, blocks=6, samples=count,
+        namespace_chain=namespace,
         iterations=16, timeout_seconds=180, disk_floor_bytes=4 * 1024**3,
         prefix_warmup=False, retry=False, server=False, services=False, clocks=False))
     process = None
@@ -107,10 +115,11 @@ def capture(build, out):
             current = (ROOT / name).read_bytes()
             require(committed.replace(b'\r\n', b'\n') == current.replace(b'\r\n', b'\n'), 'baseline input drift')
             paths.append(dict(path=name, sha256=sha(current), committed_sha256=sha(committed)))
-        write('pins.json', dict(paths=paths, production_authority=False))
+        write('pins.json', dict(paths=paths, production_authority=False, namespace_chain=namespace))
         write('preflight.json', dict(head=head, binary_sha256=sha(binary.read_bytes()), compiled_source=source))
         with (out / 'stdout.log').open('xb') as stdout, (out / 'stderr.log').open('xb') as stderr:
-            process = subprocess.Popen([str(binary), '--exact', 'history_prefix_cost_child', '--nocapture', '--test-threads=1'],
+            child = 'history_namespace_cost_child' if namespace else 'history_prefix_cost_child'
+            process = subprocess.Popen([str(binary), '--exact', child, '--nocapture', '--test-threads=1'],
                 cwd=ROOT, stdout=stdout, stderr=stderr,
                 env=dict(os.environ, HC074_HISTORY_CHAIN_INPUT=str((out / 'pins.json').resolve())))
             started = time.monotonic()
@@ -124,8 +133,8 @@ def capture(build, out):
         require(process.returncode == 0, 'first child refused')
         require(all(sha((ROOT / name).read_bytes()) == digest for name, digest in source.items()), 'source changed')
         require(subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT).decode().strip() == head, 'head changed')
-        write('result.json', review((out / 'stdout.log').read_bytes()))
-        print(json.dumps(dict(samples=72, iterations=16, measured_child_repeated=False)))
+        write('result.json', review((out / 'stdout.log').read_bytes(), namespace=namespace))
+        print(json.dumps(dict(samples=count, iterations=16, namespace_chain=namespace, measured_child_repeated=False)))
     except Exception as error:
         write('refusal.json', dict(type=type(error).__name__, reason=str(error),
             exit=None if process is None else process.poll()))
@@ -138,4 +147,5 @@ def capture(build, out):
 
 
 if __name__ == '__main__':
-    capture(Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve())
+    require(len(sys.argv) in (3, 4) and (len(sys.argv) == 3 or sys.argv[3] == '--namespace'), 'fixed arguments')
+    capture(Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve(), namespace=len(sys.argv) == 4)

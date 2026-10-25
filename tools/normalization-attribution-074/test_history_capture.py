@@ -25,6 +25,19 @@ def encode(parts):
 
 
 class Controls(unittest.TestCase):
+    def test_namespace_scope_cannot_be_confused_with_prefix_cohort(self):
+        prep, rows, done = fixture()
+        rows = [dict(row, operation='namespace-chain') for row in rows if row['operation'] == capture.OPERATIONS[0]]
+        done['samples'] = 18
+        raw = encode((prep, rows, done))
+        result = capture.review(raw, namespace=True)
+        self.assertTrue(result['namespace_chain'])
+        self.assertEqual(len(result['summary']), 3)
+        with self.assertRaises(ValueError):
+            capture.review(raw)
+        with self.assertRaises(ValueError):
+            capture.review(encode(fixture()), namespace=True)
+
     def test_exact_scope_and_no_subtraction(self):
         result = capture.review(encode(fixture()))
         self.assertEqual(len(result['samples']), 72)

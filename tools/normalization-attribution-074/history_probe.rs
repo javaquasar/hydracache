@@ -11,6 +11,9 @@ pub const OPERATIONS: [&str; 4] = [
     "document-scratch-prefix",
 ];
 pub const ITERATIONS: usize = 16;
+pub fn namespace_order(_: usize) -> Vec<&'static str> {
+    vec!["namespace-chain"]
+}
 pub fn order(block: usize) -> Vec<&'static str> {
     let mut operations = OPERATIONS.to_vec();
     if !block.is_multiple_of(2) {
@@ -24,11 +27,20 @@ pub fn normalize(operation: &str, path: &str, raw: &str) -> String {
         "authority-hex-prefix" => crate::hc074_authority_hex_view!(path, raw),
         "remaining-preparation-prefix" => crate::hc074_remaining_preparation_view!(path, raw),
         "document-scratch-prefix" => crate::guard::normalize(path, raw),
+        "namespace-chain" => crate::history_namespace::normalize(path, raw),
         _ => panic!("unknown fixed prefix"),
     }
 }
 #[cfg(windows)]
 pub fn run(input: &std::path::Path) {
+    run_scoped(input, false);
+}
+#[cfg(windows)]
+pub fn run_namespace(input: &std::path::Path) {
+    run_scoped(input, true);
+}
+#[cfg(windows)]
+fn run_scoped(input: &std::path::Path, namespace: bool) {
     use serde_json::{json, Value};
     use sha2::{Digest, Sha256};
     use std::hint::black_box;
@@ -64,6 +76,7 @@ pub fn run(input: &std::path::Path) {
     }
     let request: Value = serde_json::from_slice(&std::fs::read(input).unwrap()).unwrap();
     assert_eq!(request["production_authority"], false);
+    assert_eq!(request["namespace_chain"], namespace);
     assert_eq!(request["paths"].as_array().unwrap().len(), PATHS.len());
     let mut cases = vec![];
     for (index, path) in PATHS.iter().enumerate() {
@@ -87,7 +100,11 @@ pub fn run(input: &std::path::Path) {
     let mut outputs = std::collections::BTreeMap::new();
     for block in 0..6 {
         for (path, raw) in &cases {
-            for operation in order(block) {
+            for operation in if namespace {
+                namespace_order(block)
+            } else {
+                order(block)
+            } {
                 let before = cpu();
                 let start = Instant::now();
                 let mut output = String::new();
@@ -114,12 +131,16 @@ pub fn run(input: &std::path::Path) {
     }
     println!(
         "HC074_HISTORY_DONE {}",
-        json!({"samples":72,"blocks":6,
+        json!({"samples":if namespace {18} else {72},"blocks":6,
         "iterations":ITERATIONS,"prefix_warmup":false,"disjoint_intervals":false,
         "full_fixed_slice_chain":false,"product":false,"package_replay":false})
     );
 }
 #[cfg(not(windows))]
 pub fn run(_: &std::path::Path) {
+    panic!("fixed diagnostic requires Windows");
+}
+#[cfg(not(windows))]
+pub fn run_namespace(_: &std::path::Path) {
     panic!("fixed diagnostic requires Windows");
 }

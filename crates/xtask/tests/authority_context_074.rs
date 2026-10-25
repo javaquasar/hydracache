@@ -1,5 +1,8 @@
-#[path = "support/document_scratch_guard.rs"]
-mod guard;
+#[path = "support/fixed_slice_namespace_guard.rs"]
+mod history_namespace;
+// The same existing document module, through its original parent chain. Do not
+// import it twice: that would duplicate the exported historical macros.
+use history_namespace::held_build::launcher::roles::binding::trust::consuming::live::prefix::fresh_status::pid_path::custody_cost::document_scratch as guard;
 #[path = "../../../tools/normalization-attribution-074/history_probe.rs"]
 mod history_profile;
 #[path = "../../../tools/normalization-attribution-074/probe.rs"]
@@ -34,6 +37,58 @@ fn history_prefix_cost_child() {
         return;
     };
     history_profile::run(std::path::Path::new(&input));
+}
+
+#[test]
+fn history_namespace_protocol_and_unrelated_input_are_exact() {
+    for block in 0..6 {
+        assert_eq!(history_profile::namespace_order(block), ["namespace-chain"]);
+    }
+    for raw in ["", "unchanged", "\u{0}λ\r\n// unmatched hook"] {
+        assert_eq!(
+            history_profile::normalize("namespace-chain", "unrelated", raw),
+            raw
+        );
+    }
+}
+
+#[test]
+fn history_namespace_matches_independent_frozen_sources_and_keeps_body_drift() {
+    for path in history_profile::PATHS {
+        let raw = runtime_io::read_to_string(runtime::root().join(path))
+            .unwrap()
+            .replace('\r', "");
+        let expected = runtime::frozen("a33bd9a4d0e910ec71b78f640f19b8404517ce2f", path);
+        assert_eq!(history_namespace::normalize(path, &raw), expected);
+        let changed = format!("{raw}\nfn hc074_unreviewed_body() {{ panic!(\"drift\"); }}\n");
+        assert_ne!(history_namespace::normalize(path, &changed), expected);
+    }
+}
+
+#[test]
+fn history_namespace_still_refuses_missing_and_duplicate_namespace_hook() {
+    let path = "tools/long-run-supervisor-074/src/diagnostic_fixed_slice_tests.rs";
+    let raw = runtime_io::read_to_string(runtime::root().join(path))
+        .unwrap()
+        .replace('\r', "");
+    let hook = "\n#[path = \"../tests/support/fixed_slice_namespace.rs\"]\nmod namespace;\n";
+    assert_eq!(raw.matches(hook).count(), 1);
+    let delegated = history_namespace::held_build::normalize(path, &raw);
+    assert_eq!(
+        history_namespace::normalize(path, &raw),
+        delegated.replacen(hook, "", 1)
+    );
+    for bad in [raw.replacen(hook, "", 1), format!("{raw}{hook}")] {
+        assert!(std::panic::catch_unwind(|| history_namespace::normalize(path, &bad)).is_err());
+    }
+}
+
+#[test]
+fn history_namespace_cost_child() {
+    let Some(input) = std::env::var_os("HC074_HISTORY_CHAIN_INPUT") else {
+        return;
+    };
+    history_profile::run_namespace(std::path::Path::new(&input));
 }
 
 #[test]
