@@ -1,0 +1,24 @@
+{
+  "clocks": false,
+  "command_timeout_seconds": 30,
+  "diagnostic_object_addresses_not_production_trust": true,
+  "disk_floor_bytes": 4294967296,
+  "no_lazy_fetch": true,
+  "product": false,
+  "retry": false,
+  "revisions": [
+    "6c6e47ee5dd3504d0be064b28af5a3e3ac087c9e",
+    "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8",
+    "2a86c1fdeb37a767ea2998d96f9a1343afe952e6",
+    "773e6bf03a205bfe527f122095bbd7383671910f",
+    "697a911aae11cab00b67046c80b42713d3d9e3e7",
+    "792900c87d295e2895fca2da9f8d502275624cf4",
+    "6e709b5da057e3e94bb12646e4d47071f8fb7750"
+  ],
+  "server": false,
+  "services": false,
+  "source_commit": "3e9bcc06ebce3439495200162cb0c1900b8eda53",
+  "source_sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+  "stderr_budget_bytes": 65536,
+  "stdout_budget_bytes": 1048576
+}

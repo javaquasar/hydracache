@@ -1,0 +1,98 @@
+"""Offline object-address locality screen; never an authority/cache admission."""
+from collections import Counter
+import json
+from pathlib import Path
+import re
+import sys
+
+import review
+import sweep_review as sweep
+
+SCOPE = 'tools/long-run-supervisor-074/src'
+# Independently recorded full object names for the seven reviewed source refs.
+# These diagnostic pins are not production trust or a replacement for live refs.
+REVISIONS = (
+    '6c6e47ee5dd3504d0be064b28af5a3e3ac087c9e',
+    '23c57b77523ad1cc16b1a79fc90b02a125f8d9b8',
+    '2a86c1fdeb37a767ea2998d96f9a1343afe952e6',
+    '773e6bf03a205bfe527f122095bbd7383671910f',
+    '697a911aae11cab00b67046c80b42713d3d9e3e7',
+    '792900c87d295e2895fca2da9f8d502275624cf4',
+    '6e709b5da057e3e94bb12646e4d47071f8fb7750',
+)
+
+
+def command(index):
+    return ['git', '--no-replace-objects', '-c', 'core.fsmonitor=false', 'ls-tree',
+            '-r', '--full-tree', '-z', REVISIONS[index], '--', SCOPE, *sweep.SWEEPS[index][3]]
+
+
+def parse_tree(raw, runtime_count, tail):
+    review.require(raw and len(raw) <= 1024**2 and raw.endswith(b'\0'), 'bounded complete NUL tree')
+    result = {}
+    for entry in raw[:-1].split(b'\0'):
+        header, separator, path_raw = entry.partition(b'\t')
+        fields = header.split(b' ')
+        review.require(separator and len(fields) == 3, 'tree record')
+        mode, kind, oid = fields
+        review.require(mode in (b'100644', b'100755') and kind == b'blob', 'nonregular tree item')
+        review.require(re.fullmatch(b'[0-9a-f]{40}', oid) is not None, 'SHA1 object address')
+        path = path_raw.decode('utf-8')
+        review.require(path and not path.startswith('/') and '\\' not in path and
+                       all(part not in ('', '.', '..') for part in path.split('/')), 'tree path alias')
+        review.require(path not in result, 'duplicate tree path')
+        review.require(path.startswith(SCOPE + '/') or path in tail, 'foreign tree path')
+        result[path] = oid.decode()
+    review.require(sum(path.startswith(SCOPE + '/') for path in result) == runtime_count, 'runtime tree count')
+    review.require(set(path for path in result if not path.startswith(SCOPE + '/')) == set(tail), 'tail tree inventory')
+    return result
+
+
+def analyze_trees(trees):
+    review.require(len(trees) == len(REVISIONS), 'seven complete tree captures required')
+    requests, counts, rows = set(), Counter(), []
+    for index, (raw, revision, (_, _, runtime_count, tail, _)) in enumerate(zip(trees, REVISIONS, sweep.SWEEPS)):
+        entries = parse_tree(raw, runtime_count, tail)
+        for path, oid in entries.items():
+            review.require((revision, path) not in requests, 'duplicate logical lookup')
+            requests.add((revision, path))
+            counts[oid] += 1
+        rows.append(dict(case=sweep.SWEEPS[index][0], revision=revision, tree_sha256=review.sha(raw),
+            requests=len(entries), unique_blob_oids=len(set(entries.values()))))
+    return dict(schema='hc074-pinned-tree-locality-v1', source_commit=sweep.COMMIT,
+        source_sha256=sweep.SOURCE_SHA256, trees=rows, logical_revision_path_requests=len(requests),
+        repeated_exact_revision_path_keys=0, unique_blob_oids=len(counts),
+        references_beyond_first_per_blob=sum(counts.values()) - len(counts),
+        blob_reference_multiplicity={str(n): sum(value == n for value in counts.values()) for n in sorted(set(counts.values()))},
+        exact_key_cache_hits_within_selected_sweeps=0,
+        interpretation='recorded local no-replace object trees, not original-run process/object telemetry',
+        blob_contents_or_sizes_read=False, bytes_saved_measured=False, speedup_measured=False,
+        original_replacement_refs_or_config_attested=False, cache_candidate_admitted=False,
+        package_rerun=False, server_or_release_admission=False)
+
+
+def load_capture(folder):
+    intent = review.decode_json((folder / 'intent.json').read_bytes())
+    result = review.decode_json((folder / 'result.json').read_bytes())
+    review.require(intent['source_commit'] == sweep.COMMIT and intent['source_sha256'] == sweep.SOURCE_SHA256,
+                   'capture/source identity')
+    review.require(intent['revisions'] == list(REVISIONS) and intent['retry'] is False, 'capture pins or retry differ')
+    review.require(result['complete'] is True and result['release_admission'] is False, 'incomplete or admitted capture')
+    review.require(len(result['records']) == 7, 'capture record count')
+    trees = []
+    for index, row in enumerate(result['records']):
+        review.require(type(row['index']) is int and row['index'] == index and type(row['exit']) is int and row['exit'] == 0 and row['argv'] == command(index),
+                       'capture command/exit/order')
+        raw, error = ((folder / f'{index}-{suffix}').read_bytes() for suffix in ('stdout.bin', 'stderr.bin'))
+        review.require(row['stdout_sha256'] == review.sha(raw) and row['stderr_sha256'] == review.sha(error) and not error,
+                       'tree capture bytes/stderr differ')
+        trees.append(raw)
+    return analyze_trees(trees)
+
+
+if __name__ == '__main__':
+    try:
+        print(json.dumps(load_capture(Path(sys.argv[1])), indent=2, sort_keys=True))
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        print(f'Offline tree-locality review refused: {error}', file=sys.stderr)
+        raise SystemExit(2) from error

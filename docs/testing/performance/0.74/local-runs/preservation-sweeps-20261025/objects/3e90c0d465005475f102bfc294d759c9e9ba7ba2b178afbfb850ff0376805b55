@@ -1,0 +1,77 @@
+{
+  "blob_contents_or_sizes_read": false,
+  "blob_reference_multiplicity": {
+    "1": 16,
+    "2": 4,
+    "3": 3,
+    "5": 4,
+    "6": 3,
+    "7": 435
+  },
+  "bytes_saved_measured": false,
+  "cache_candidate_admitted": false,
+  "exact_key_cache_hits_within_selected_sweeps": 0,
+  "interpretation": "recorded local no-replace object trees, not original-run process/object telemetry",
+  "logical_revision_path_requests": 3116,
+  "original_replacement_refs_or_config_attested": false,
+  "package_rerun": false,
+  "references_beyond_first_per_blob": 2651,
+  "repeated_exact_revision_path_keys": 0,
+  "schema": "hc074-pinned-tree-locality-v1",
+  "server_or_release_admission": false,
+  "source_commit": "3e9bcc06ebce3439495200162cb0c1900b8eda53",
+  "source_sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+  "speedup_measured": false,
+  "trees": [
+    {
+      "case": "actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats",
+      "requests": 450,
+      "revision": "6c6e47ee5dd3504d0be064b28af5a3e3ac087c9e",
+      "tree_sha256": "ead2df7dd0fdd9524a48a671c72ea3b403b7af7eb09223f9d021c76c049bd6ff",
+      "unique_blob_oids": 450
+    },
+    {
+      "case": "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs",
+      "requests": 442,
+      "revision": "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8",
+      "tree_sha256": "325a567a44a7a4f3f9338fea4bf0dcf05581c1fb48074b90a8bc10b181da31ae",
+      "unique_blob_oids": 442
+    },
+    {
+      "case": "launcher_preserves_all_438_preceding_sources_and_exact_old_formats",
+      "requests": 442,
+      "revision": "2a86c1fdeb37a767ea2998d96f9a1343afe952e6",
+      "tree_sha256": "cfde57c46565d414e997569d4c6355e05e0c36d90a417fd9d60d77fc50324822",
+      "unique_blob_oids": 442
+    },
+    {
+      "case": "role_files_preserve_all_440_previous_runtime_sources_and_inputs",
+      "requests": 444,
+      "revision": "773e6bf03a205bfe527f122095bbd7383671910f",
+      "tree_sha256": "ff56e7533dbf393af9488169a26b9f4786fc5a7e7357b7dc271eecc0f2703a74",
+      "unique_blob_oids": 444
+    },
+    {
+      "case": "role_binding_preserves_all_441_preceding_runtime_sources_and_inputs",
+      "requests": 445,
+      "revision": "697a911aae11cab00b67046c80b42713d3d9e3e7",
+      "tree_sha256": "bbf3cc3a05f794acf048cc04b868cd9348e556428a12c3e8e81b591f7273d89b",
+      "unique_blob_oids": 445
+    },
+    {
+      "case": "held_trust_preserves_all_442_preceding_sources_and_production_inputs",
+      "requests": 446,
+      "revision": "792900c87d295e2895fca2da9f8d502275624cf4",
+      "tree_sha256": "f0bb3eb77a1bdd5c19c4c7b24b063f4527a39397c4fefe5072c0c73c6ad7cc48",
+      "unique_blob_oids": 446
+    },
+    {
+      "case": "consuming_held_join_preserves_all_443_old_sources_and_formats",
+      "requests": 447,
+      "revision": "6e709b5da057e3e94bb12646e4d47071f8fb7750",
+      "tree_sha256": "c60ebcb591f9ccc7518ab5b3debdc6b2f4758bef7fcd1da0747506cdfa9ba48d",
+      "unique_blob_oids": 447
+    }
+  ],
+  "unique_blob_oids": 465
+}

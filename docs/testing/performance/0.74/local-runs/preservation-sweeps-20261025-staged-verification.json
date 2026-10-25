@@ -1,0 +1,16 @@
+{
+  "schema": "hc074-preservation-sweeps-staged-verification-v1",
+  "index_sha256": "7a0ebc907ef3a84dde1e3eb6bef1f154d56878faa16225f64cd8d55bd2cd4e1f",
+  "members": 128,
+  "objects": 83,
+  "proven_show_read_lower_bound": 3116,
+  "unique_revision_path_keys": 3116,
+  "unique_blob_oids": 465,
+  "original_verdicts_and_locality_arithmetic_verified": true,
+  "protected_unchanged": true,
+  "first_refusals_retained": true,
+  "no_package_or_measurement_replay": true,
+  "server_or_qualification_admission": false,
+  "verifier": "coordinators/verify-preservation-sweeps-staged-20261025.py",
+  "tool_output_chunk": "b03e26"
+}

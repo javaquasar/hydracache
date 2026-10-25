@@ -1,0 +1,17 @@
+.........................F...
+======================================================================
+FAIL: test_command_uses_only_pinned_local_object_reads (test_tree_locality.LocalityControls.test_command_uses_only_pinned_local_object_reads)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\test_tree_locality.py", line 55, in test_command_uses_only_pinned_local_object_reads
+    self.assertEqual(command[9], locality.REVISIONS[index])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '--' != '6c6e47ee5dd3504d0be064b28af5a3e3ac087c9e'
+- --
++ 6c6e47ee5dd3504d0be064b28af5a3e3ac087c9e
+
+
+----------------------------------------------------------------------
+Ran 29 tests in 0.526s
+
+FAILED (failures=1)

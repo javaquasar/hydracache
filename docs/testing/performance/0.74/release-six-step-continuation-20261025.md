@@ -43,6 +43,12 @@ not a package verdict or an accepted performance candidate. Its thirteen final
 cases per Windows compiler are a separate focused inventory, not an updated
 count for the preceding package replay.
 
+The [preservation sweep analysis](preservation-sweep-attribution-20261025.md)
+proves at least 3116 direct show/read calls in seven passing loops of one earlier
+completed target. Pinned-tree locality shows distinct revision/path keys but
+465 blob OIDs; it does not prove time ownership or authorize a cache. The next
+twenty-case/four-thread helper-attribution protocol is prepared, not executed.
+
 Next: use saved target/call attribution to isolate the cost owner without
 removing tests, refreshing source pins from responses or changing conditional
 reads. A separate candidate needs its own baseline and unchanged-bound proof;

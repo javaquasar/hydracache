@@ -19586,3 +19586,30 @@ microbenchmark. Adding intervals or multiplying a selected file's timing by a
 guessed call count would create unsupported attribution. The useful next target
 is frequency-weighted complete-test ownership. Fresh validation, its original
 schedule and the retained first refusals stay fixed while that owner is found.
+
+### Count mandatory work before choosing a cache key
+
+The [preservation sweep review](../testing/performance/0.74/preservation-sweep-attribution-20261025.md)
+uses the original captured source and passing verdicts rather than rerunning the
+package. Seven loops in its twenty-case artifact target assert list lengths and
+visit every historical source plus explicit non-runtime inputs. Each iteration
+does one current read and one direct `git show`. The completed loops therefore
+require at least 3116 of each, excluding other tests and nested helper work.
+The target took 108.31 seconds, but those counts do not allocate its elapsed time
+among children, decoding, validation and concurrent cases.
+
+A separate read-only screen of seven pinned trees finds 3116 distinct
+revision/path pairs and only 465 blob OIDs. This changes the candidate question:
+an initially empty exact-key cache fed only these loop requests has no hits,
+even though many different keys address the same Git objects. Other cases or
+helper warming could change a real package's hit rate. Object-level reuse or fewer
+Git startups might help, but neither follows safely from content overlap alone.
+Fresh source observations, config/ref/ABA refusals, independent pins and fallback
+behavior remain requirements, not overhead to erase.
+
+The tree screen is new local no-replace data, not a reconstruction of the old
+children's replacement-ref/configuration state. It supplies neither bytes saved
+nor a numerical speedup. A separate helper-timing protocol now fixes the original
+twenty cases, four threads, unchanged bound, source-erasure controls and observer
+overhead comparison before dispatch. The full package's first timeout survives;
+no passing offline analysis or old target verdict replaces its unfinished suffix.

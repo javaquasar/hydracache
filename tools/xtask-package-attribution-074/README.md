@@ -56,3 +56,25 @@ mutation, cache-key and whole-body refusal controls. A focused pass must remain
 separate from the interrupted package, and the incomplete suffix must not be
 declared green by combining older runs. No diagnostic rerun, profiler, cache
 candidate, increased timeout or server action is dispatched by this utility.
+
+## Fixed-source preservation sweeps
+
+`sweep_review.py` joins the exact retained `3e9bcc06` source, syntax inventory
+and successful target verdicts. Its manual seven-loop ledger proves a lower
+bound of 3116 direct show/read calls in `diagnostic_artifact_fixture_074`; it is
+not a general Rust analyzer, process trace or attribution of the target's
+108.31-second duration. No current source or historical outcome is repaired.
+
+`tree_locality.py <captured-tree-directory>` reads an explicitly collected,
+bounded seven-tree snapshot without executing Git. The recorded trees contain
+3116 distinct revision/path keys and 465 blob OIDs. The zero-hit field models an
+initially empty cache fed only those loop requests, excluding other cases and
+helper warming; it is not a measured package hit rate. Object overlap does not
+admit a cache. New
+no-replace tree data cannot attest the old helper's replacement/config state.
+
+`helper-attribution-protocol.toml` prepares the next separate twenty-case,
+four-thread diagnostic under the original bound. It remains unexecuted, requires
+exact-source observer erasure and preserves every original read/assertion.
+No cache, persistent child, package pass or product admission follows. See the
+[scope, checks and first-refusal evidence](../../docs/testing/performance/0.74/preservation-sweep-attribution-20261025.md).

@@ -1,0 +1,159 @@
+{
+  "cache_or_gate_change": false,
+  "completed_targets": 111,
+  "elapsed_time_attributed": false,
+  "excludes_other_cases_helpers_and_inventory_work": true,
+  "expected_targets": 135,
+  "incomplete_target": "tests/performance_contract_074.rs",
+  "input_sha256": {
+    "checks/transport-audit-20261025-package-first/intent.json": "d49abe2f2e240cf54703033832006d39958da5e76be6e314a95bf0c649b6227f",
+    "checks/transport-audit-20261025-package-first/result.json": "320846eae309322d3c55f63be85468568be3b4587b617fb7c7c08672106e2fc9",
+    "checks/transport-audit-20261025-package-first/stderr.log": "f4bdf1f6806f03511f62b7905b06b1fa901c0a32c89231db4a6a9bfbba1c25a7",
+    "checks/transport-audit-20261025-package-first/stdout.log": "788b0018a7b6f5e3e62fb1eab2344169aa113380214a5cb468846af98a0273cb",
+    "reviewed-source/crates/xtask/Cargo.toml": "0b00525d41119bdb1215b1fb658ac66fa1bcd0d99428e9903cf1bb8ee8f4e0b5",
+    "reviewed-source/crates/xtask/tests/diagnostic_artifact_fixture_074.rs": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+    "syntax/final-closure/result.json": "d76069657b2034da0909101994d86ae8c7305c5990adcbdeb07079146e31ad38"
+  },
+  "multiplied_by_other_cohort_timing": false,
+  "package_complete": false,
+  "package_pass": false,
+  "package_timeout_explained": false,
+  "packet_sha256": "e9b8a923723360bce644c9de558113bf084630d1c4a72916dd0bfd3d418fc553",
+  "per_case_timing": false,
+  "proof_kind": "source/verdict lower bound, not dynamic process telemetry or general control-flow analysis",
+  "proven_direct_reads_lower_bound": 3116,
+  "proven_direct_show_launches_lower_bound": 3116,
+  "schema": "hc074-retained-preservation-sweeps-v1",
+  "server_or_release_admission": false,
+  "source": "crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+  "source_commit": "3e9bcc06ebce3439495200162cb0c1900b8eda53",
+  "source_sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+  "subprocesses_executed": false,
+  "sweeps": [
+    {
+      "body_sha256": "a0f633263785e03ea0085c07109e76dd79d47398e9361aca4741a8ee8ff7bd6d",
+      "case": "actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats",
+      "direct_read_calls_per_iteration": 1,
+      "direct_show_calls_per_iteration": 1,
+      "loop_iterations": 450,
+      "normalizer": "held_live::normalize",
+      "proof": "manually reviewed exact pinned body plus syntax inventory; success exhausts loop",
+      "runtime_paths": 446,
+      "source_line": 8,
+      "tail_paths": [
+        "Cargo.lock",
+        "docs/COMPAT.md",
+        "docs/testing/gated-test-registry.toml",
+        "docs/testing/performance/0.74/qualification-manifest.toml"
+      ]
+    },
+    {
+      "body_sha256": "32c7776df431f5b9268b4e333f8dcb281b459d56117f573e305b430a0a8ebac3",
+      "case": "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs",
+      "direct_read_calls_per_iteration": 1,
+      "direct_show_calls_per_iteration": 1,
+      "loop_iterations": 442,
+      "normalizer": "namespace::normalize",
+      "proof": "manually reviewed exact pinned body plus syntax inventory; success exhausts loop",
+      "runtime_paths": 437,
+      "source_line": 173,
+      "tail_paths": [
+        "Cargo.lock",
+        "docs/COMPAT.md",
+        "docs/testing/gated-test-registry.toml",
+        "docs/testing/performance/0.74/qualification-manifest.toml",
+        "tools/long-run-supervisor-074/tests/owned_root_creator_sigkill.py"
+      ]
+    },
+    {
+      "body_sha256": "0901579562f7174997714a9c679176155d0c18a6b00050fa4cdc0bfbce989e6c",
+      "case": "launcher_preserves_all_438_preceding_sources_and_exact_old_formats",
+      "direct_read_calls_per_iteration": 1,
+      "direct_show_calls_per_iteration": 1,
+      "loop_iterations": 442,
+      "normalizer": "namespace::held_build::launcher::normalize",
+      "proof": "manually reviewed exact pinned body plus syntax inventory; success exhausts loop",
+      "runtime_paths": 438,
+      "source_line": 341,
+      "tail_paths": [
+        "Cargo.lock",
+        "docs/COMPAT.md",
+        "docs/testing/gated-test-registry.toml",
+        "docs/testing/performance/0.74/qualification-manifest.toml"
+      ]
+    },
+    {
+      "body_sha256": "582a4a2013672c05331b7b00216a2b198f333ba504561ff781a782ba50456369",
+      "case": "role_files_preserve_all_440_previous_runtime_sources_and_inputs",
+      "direct_read_calls_per_iteration": 1,
+      "direct_show_calls_per_iteration": 1,
+      "loop_iterations": 444,
+      "normalizer": "roles::normalize",
+      "proof": "manually reviewed exact pinned body plus syntax inventory; success exhausts loop",
+      "runtime_paths": 440,
+      "source_line": 410,
+      "tail_paths": [
+        "Cargo.lock",
+        "docs/COMPAT.md",
+        "docs/testing/gated-test-registry.toml",
+        "docs/testing/performance/0.74/qualification-manifest.toml"
+      ]
+    },
+    {
+      "body_sha256": "fa5baa8c01cc61f7e5241763b885f8f1699f5f5f8c45071d433362a489659f53",
+      "case": "role_binding_preserves_all_441_preceding_runtime_sources_and_inputs",
+      "direct_read_calls_per_iteration": 1,
+      "direct_show_calls_per_iteration": 1,
+      "loop_iterations": 445,
+      "normalizer": "binding::normalize",
+      "proof": "manually reviewed exact pinned body plus syntax inventory; success exhausts loop",
+      "runtime_paths": 441,
+      "source_line": 473,
+      "tail_paths": [
+        "Cargo.lock",
+        "docs/COMPAT.md",
+        "docs/testing/gated-test-registry.toml",
+        "docs/testing/performance/0.74/qualification-manifest.toml"
+      ]
+    },
+    {
+      "body_sha256": "8835a945d172b40749a786fce07ebd0e03b35ac4c48832f4c5c22416d79806e2",
+      "case": "held_trust_preserves_all_442_preceding_sources_and_production_inputs",
+      "direct_read_calls_per_iteration": 1,
+      "direct_show_calls_per_iteration": 1,
+      "loop_iterations": 446,
+      "normalizer": "trust::normalize",
+      "proof": "manually reviewed exact pinned body plus syntax inventory; success exhausts loop",
+      "runtime_paths": 442,
+      "source_line": 536,
+      "tail_paths": [
+        "Cargo.lock",
+        "docs/COMPAT.md",
+        "docs/testing/gated-test-registry.toml",
+        "docs/testing/performance/0.74/qualification-manifest.toml"
+      ]
+    },
+    {
+      "body_sha256": "cde2379543c527ac2a7dc5d3a2399e8d48e30fa63fea2b46a75f6a144b4906dc",
+      "case": "consuming_held_join_preserves_all_443_old_sources_and_formats",
+      "direct_read_calls_per_iteration": 1,
+      "direct_show_calls_per_iteration": 1,
+      "loop_iterations": 447,
+      "normalizer": "consuming::normalize",
+      "proof": "manually reviewed exact pinned body plus syntax inventory; success exhausts loop",
+      "runtime_paths": 443,
+      "source_line": 594,
+      "tail_paths": [
+        "Cargo.lock",
+        "docs/COMPAT.md",
+        "docs/testing/gated-test-registry.toml",
+        "docs/testing/performance/0.74/qualification-manifest.toml"
+      ]
+    }
+  ],
+  "target": "tests/diagnostic_artifact_fixture_074.rs",
+  "target_cases": 20,
+  "target_reported_ns": 108310000000,
+  "unstarted_targets": 23,
+  "workload_rerun": false
+}

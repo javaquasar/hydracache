@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\target\capture-sweep-trees-20261025.py", line 32, in <module>
+    assert not any(key.startswith('GIT_') for key in os.environ), 'inherited Git override'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: inherited Git override

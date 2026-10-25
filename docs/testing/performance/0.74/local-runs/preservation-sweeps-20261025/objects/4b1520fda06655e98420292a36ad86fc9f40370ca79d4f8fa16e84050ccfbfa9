@@ -1,0 +1,68 @@
+"""One bounded read-only collection of seven literal pinned local Git trees."""
+from pathlib import Path
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / 'tools/xtask-package-attribution-074'))
+import tree_locality as locality
+import sweep_review as sweep
+
+label = sys.argv[1] if len(sys.argv) == 2 else 'first'
+assert label.replace('-', '').isalnum(), 'fixed attempt label'
+out = ROOT / 'target/sweep-trees-20261025' / label
+out.mkdir(parents=True, exist_ok=False)
+def write(name, data):
+    with (out / name).open('x', encoding='utf-8') as stream:
+        json.dump(data, stream, indent=2, sort_keys=True)
+        stream.write('\n')
+
+
+write('intent.json', dict(source_commit=sweep.COMMIT, source_sha256=sweep.SOURCE_SHA256,
+    revisions=locality.REVISIONS, retry=False, command_timeout_seconds=30,
+    stdout_budget_bytes=1024**2, stderr_budget_bytes=65536, disk_floor_bytes=4 * 1024**3,
+    no_lazy_fetch=True, product=False, services=False, clocks=False, server=False,
+    diagnostic_object_addresses_not_production_trust=True))
+records, process = [], None
+try:
+    sweep.source_proof(sweep.load_snapshot(ROOT)['reviewed-source/' + sweep.SOURCE],
+        sweep.review.decode_json(sweep.load_snapshot(ROOT)['syntax/final-closure/result.json']))
+    assert not any(key.startswith('GIT_') for key in os.environ), 'inherited Git override'
+    environment = dict(os.environ, GIT_NO_LAZY_FETCH='1', GIT_CONFIG_NOSYSTEM='1',
+        GIT_CONFIG_GLOBAL=os.devnull, GIT_TERMINAL_PROMPT='0', GIT_OPTIONAL_LOCKS='0')
+    for index in range(7):
+        assert shutil.disk_usage(ROOT).free >= 4 * 1024**3, 'disk floor'
+        stdout_path, stderr_path = (out / f'{index}-{name}.bin' for name in ('stdout', 'stderr'))
+        argv = locality.command(index)
+        with stdout_path.open('xb') as stdout, stderr_path.open('xb') as stderr:
+            process = subprocess.Popen(argv, cwd=ROOT, stdout=stdout, stderr=stderr, env=environment)
+            started = time.monotonic()
+            while process.poll() is None:
+                assert time.monotonic() - started < 30, 'tree read timeout'
+                assert stdout_path.stat().st_size <= 1024**2 and stderr_path.stat().st_size <= 65536, 'output budget'
+                try:
+                    process.wait(timeout=0.1)
+                except subprocess.TimeoutExpired:
+                    pass
+        raw, error = stdout_path.read_bytes(), stderr_path.read_bytes()
+        assert process.returncode == 0 and not error, 'tree read refused'
+        locality.parse_tree(raw, sweep.SWEEPS[index][2], sweep.SWEEPS[index][3])
+        records.append(dict(index=index, argv=argv, exit=process.returncode,
+            stdout_sha256=sweep.review.sha(raw), stderr_sha256=sweep.review.sha(error)))
+    write('result.json', dict(complete=True, records=records, release_admission=False))
+    result = locality.load_capture(out)
+    write('locality.json', result)
+    print(json.dumps({key: result[key] for key in ('logical_revision_path_requests', 'unique_blob_oids',
+        'references_beyond_first_per_blob', 'exact_key_cache_hits_within_selected_sweeps')}))
+except Exception as error:
+    write('refusal.json', dict(type=type(error).__name__, reason=str(error), completed_reads=len(records)))
+    if process is not None and process.poll() is None:
+        with (out / 'owned-cleanup.log').open('xb') as log:
+            subprocess.run(['taskkill', '/PID', str(process.pid), '/T', '/F'],
+                stdout=log, stderr=subprocess.STDOUT, timeout=30, check=False)
+        process.wait(timeout=30)
+    raise

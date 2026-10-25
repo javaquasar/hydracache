@@ -1,0 +1,93 @@
+"""Independent staged bytes, old verdict block, arithmetic and tree locality."""
+from collections import Counter
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/preservation-sweeps-20261025'
+def staged(name):
+    return subprocess.check_output(['git', 'show', ':' + BASE + '/' + name], cwd=ROOT)
+
+
+raw = staged('index.json')
+index = json.loads(raw)
+assert index['schema'] == 'hc074-preservation-sweeps-v1'
+objects = {}
+for row in index['members'].values():
+    digest = row['sha256']
+    assert len(digest) == 64 and all(c in '0123456789abcdef' for c in digest)
+    if digest not in objects:
+        objects[digest] = staged('objects/' + digest)
+    assert hashlib.sha256(objects[digest]).hexdigest() == digest and len(objects[digest]) == row['bytes']
+
+
+def member(name):
+    return objects[index['members'][name]['sha256']]
+
+
+original_raw = member('original/index.json')
+assert hashlib.sha256(original_raw).hexdigest() == index['facts']['original_packet_sha256']
+original = json.loads(original_raw)
+for name, entry in index['members'].items():
+    if name.startswith('original/') and name != 'original/index.json':
+        assert entry == original['members'][name[len('original/'):]]
+prefix = 'original/checks/transport-audit-20261025-package-first/'
+intent, result = (json.loads(member(prefix + name)) for name in ('intent.json', 'result.json'))
+assert intent['head'] == index['facts']['original_source_commit'] and intent['bound_seconds'] == 780 and not intent['retry']
+assert intent['source'] == result['source_after'] and result['source_unchanged'] and result['head_unchanged']
+stdout, stderr = (member(prefix + name).decode() for name in ('stdout.log', 'stderr.log'))
+schedule = [m[0].replace('\\', '/') for m in re.findall(r'^\s*Running (.+?) \((.*?)\)$', stderr, re.M)]
+position = schedule.index('tests/diagnostic_artifact_fixture_074.rs')
+starts = [m.start() for m in re.finditer(r'^running \d+ tests?$', stdout, re.M)]
+body = stdout[starts[position]:starts[position + 1]]
+assert body.startswith('running 20 tests\n')
+assert 'test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 108.31s' in body
+report = json.loads(member('derived/sweeps.json'))
+counts = [450, 442, 442, 444, 445, 446, 447]
+assert [row['loop_iterations'] for row in report['sweeps']] == counts
+for row in report['sweeps']:
+    assert f"test {row['case']} ... ok\n" in body
+    assert row['loop_iterations'] == row['runtime_paths'] + len(row['tail_paths'])
+assert sum(counts) == report['proven_direct_show_launches_lower_bound'] == report['proven_direct_reads_lower_bound'] == 3116
+assert not report['package_pass'] and not report['package_complete'] and not report['elapsed_time_attributed']
+assert hashlib.sha256(member('original/reviewed-source/' + report['source'])).hexdigest() == report['source_sha256']
+
+capture = json.loads(member('tree-clean-pager/result.json'))
+locality = json.loads(member('tree-clean-pager/locality.json'))
+pairs, oids = set(), Counter()
+assert capture['complete'] and not capture['release_admission'] and len(capture['records']) == 7
+for index_in_run, record in enumerate(capture['records']):
+    tree = member(f'tree-clean-pager/{index_in_run}-stdout.bin')
+    assert not member(f'tree-clean-pager/{index_in_run}-stderr.bin')
+    assert hashlib.sha256(tree).hexdigest() == record['stdout_sha256'] and record['exit'] == 0
+    revision = locality['trees'][index_in_run]['revision']
+    assert record['argv'][8] == revision and '--no-replace-objects' in record['argv'] and '-z' in record['argv']
+    assert tree.endswith(b'\0')
+    entries = tree[:-1].split(b'\0')
+    assert len(entries) == counts[index_in_run]
+    for entry in entries:
+        header, path = entry.split(b'\t', 1)
+        mode, kind, oid = header.split(b' ')
+        assert mode in (b'100644', b'100755') and kind == b'blob' and re.fullmatch(b'[0-9a-f]{40}', oid)
+        assert (revision, path) not in pairs
+        pairs.add((revision, path))
+        oids[oid] += 1
+assert len(pairs) == locality['logical_revision_path_requests'] == 3116
+assert len(oids) == locality['unique_blob_oids'] == 465 and sum(oids.values()) - len(oids) == 2651
+assert Counter(oids.values())[7] == 435 and locality['exact_key_cache_hits_within_selected_sweeps'] == 0
+assert json.loads(member('tree-first-preflight/refusal.json'))['completed_reads'] == 0
+for name, digest in index['facts']['protected_sha256'].items():
+    assert hashlib.sha256(member('protected/' + name)).hexdigest() == digest
+    assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest
+for phase in index['facts']['phases']:
+    check = json.loads(member('checks/' + phase['phase'] + '/result.json'))
+    assert check['exit'] == phase['exit'] and check['outer_refusal'] is None and check['source_unchanged'] and check['head_unchanged']
+print(json.dumps(dict(schema='hc074-preservation-sweeps-staged-verification-v1',
+    index_sha256=hashlib.sha256(raw).hexdigest(), members=len(index['members']), objects=len(objects),
+    proven_show_read_lower_bound=3116, unique_revision_path_keys=3116, unique_blob_oids=465,
+    original_verdicts_and_locality_arithmetic_verified=True, protected_unchanged=True,
+    first_refusals_retained=True, no_package_or_measurement_replay=True,
+    server_or_qualification_admission=False)))

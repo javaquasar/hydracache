@@ -1,0 +1,60 @@
+import hashlib
+import unittest
+
+import tree_locality as locality
+import sweep_review as sweep
+
+
+def encode(entries):
+    return b''.join(f'100644 blob {oid}\t{path}'.encode() + b'\0' for path, oid in entries)
+
+
+def fixture():
+    trees = []
+    for _, _, count, tail, _ in sweep.SWEEPS:
+        names = [locality.SCOPE + f'/{index}.rs' for index in range(count)] + list(tail)
+        trees.append(encode((name, hashlib.sha1(name.encode()).hexdigest()) for name in names))
+    return trees
+
+
+class LocalityControls(unittest.TestCase):
+    def test_distinct_keys_can_share_objects_but_have_no_exact_key_hits(self):
+        result = locality.analyze_trees(fixture())
+        self.assertEqual(result['logical_revision_path_requests'], 3116)
+        self.assertEqual(result['unique_blob_oids'], 451)
+        self.assertEqual(result['references_beyond_first_per_blob'], 2665)
+        self.assertEqual(result['exact_key_cache_hits_within_selected_sweeps'], 0)
+        self.assertFalse(result['speedup_measured'])
+        self.assertFalse(result['original_replacement_refs_or_config_attested'])
+
+    def test_missing_duplicate_aliased_foreign_mode_oid_and_tail_refuse(self):
+        good = fixture()[0]
+        first, rest = good.split(b'\0', 1)
+        for raw in (b'', good[:-1], good + first + b'\0', rest,
+                    good.replace(b'100644', b'120000', 1), good.replace(b'blob', b'tree', 1),
+                    good.replace(b'/0.rs', b'/../0.rs', 1), good.replace(b'/0.rs', b'\\0.rs', 1),
+                    good.replace(locality.SCOPE.encode(), b'foreign', 1),
+                    good.replace(b'Cargo.lock', b'Cargo.other', 1),
+                    good.replace(first.split(b' ')[2][:1], b'G', 1)):
+            with self.subTest(raw=raw[:30]), self.assertRaises(ValueError):
+                locality.parse_tree(raw, 446, sweep.TAIL)
+
+    def test_protocol_cannot_drop_a_sweep_or_expand_source_scope(self):
+        trees = fixture()
+        with self.assertRaises(ValueError):
+            locality.analyze_trees(trees[:-1])
+        trees[0] += encode([('foreign', 'a' * 40)])
+        with self.assertRaises(ValueError):
+            locality.analyze_trees(trees)
+
+    def test_command_uses_only_pinned_local_object_reads(self):
+        for index in range(7):
+            command = locality.command(index)
+            self.assertIn('--no-replace-objects', command)
+            self.assertIn('-z', command)
+            self.assertEqual(command[9], locality.REVISIONS[index])
+            self.assertEqual(command[10:12], ['--', locality.SCOPE])
+
+
+if __name__ == '__main__':
+    unittest.main()

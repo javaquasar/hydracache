@@ -1,0 +1,122 @@
+"""Seal retained-source reasoning and one successful metadata-only collection."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'docs/testing/performance/0.74/local-runs/preservation-sweeps-20261025'
+CODE = 'cc9d2546ddc8740706cdbdef6e5c8e55bfb363c6'
+sys.path.insert(0, str(ROOT / 'tools/xtask-package-attribution-074'))
+import sweep_review as sweep
+import tree_locality as locality
+PROTECTED = {
+    'Cargo.toml': '18a8a27cf140a1d6eb31c8316ee39bb7d5832866a990346eee16cd0c30de344b',
+    'Cargo.lock': 'd2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c',
+    'docs/testing/performance/0.74/qualification-manifest.toml': '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+    sweep.SOURCE: sweep.SOURCE_SHA256,
+}
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+members, objects, phases = {}, {}, []
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+def tree(folder, prefix):
+    for path in sorted(folder.rglob('*')):
+        if path.is_file():
+            add(prefix + '/' + path.relative_to(folder).as_posix(), path.read_bytes())
+
+
+assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT).decode().strip() == CODE
+checks = ROOT / 'target/source-continuation-20261024'
+failed = {'sweep-trees-20261025-controls', 'sweep-trees-20261025-first'}
+for folder in sorted(checks.iterdir()):
+    if not folder.is_dir() or not folder.name.startswith(('sweep-review-20261025-', 'sweep-trees-20261025-', 'sweep-protocol-20261025-', 'sweep-finish-20261025-')):
+        continue
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    expected = 1 if folder.name in failed else 0
+    assert result['exit'] == expected and result['outer_refusal'] is None, folder
+    assert result['source_unchanged'] and result['head_unchanged'] and intent['source'] == result['source_after']
+    tree(folder, 'checks/' + folder.name)
+    phases.append(dict(phase=folder.name, exit=expected))
+
+values = sweep.load_snapshot(ROOT)
+report = sweep.analyze_snapshot(values)
+first = checks / 'sweep-review-20261025-first/stdout.log'
+assert report == json.loads(first.read_bytes())
+for name, raw in values.items():
+    add('original/' + name, raw)
+add('original/index.json', (ROOT / sweep.PACKET / 'index.json').read_bytes())
+add('derived/sweeps.json', first.read_bytes())
+tree(ROOT / 'target/sweep-trees-20261025/first', 'tree-first-preflight')
+assert json.loads((ROOT / 'target/sweep-trees-20261025/first/refusal.json').read_bytes())['completed_reads'] == 0
+folder = ROOT / 'target/sweep-trees-20261025/clean-pager-v2'
+tree(folder, 'tree-clean-pager')
+local = locality.load_capture(folder)
+assert local == json.loads((folder / 'locality.json').read_bytes())
+assert (local['logical_revision_path_requests'], local['unique_blob_oids'], local['references_beyond_first_per_blob']) == (3116, 465, 2651)
+for revision in ('1ed3dead07420bf2e6094355cbd512543aa3d245', 'e45f2a706c19ba1b89f929f6a8f76c151b356221'):
+    names = ('sweep_review.py', 'test_sweep_review.py') if revision.startswith('1ed3') else ('tree_locality.py', 'test_tree_locality.py')
+    for name in names:
+        path = 'tools/xtask-package-attribution-074/' + name
+        add('intermediate-source/' + revision[:8] + '/' + name,
+            subprocess.check_output(['git', 'show', revision + ':' + path], cwd=ROOT))
+failed_intent = json.loads((checks / 'sweep-trees-20261025-controls/intent.json').read_bytes())['source']
+name = 'tools/xtask-package-attribution-074/test_tree_locality.py'
+raw = (checks / 'sweep-trees-20261025-controls/test_tree_locality.py.raw').read_bytes()
+assert sha(raw) == failed_intent[name]
+add('first-refusal-source/test_tree_locality.py', raw)
+name = 'tools/xtask-package-attribution-074/tree_locality.py'
+raw = subprocess.check_output(['git', 'show', 'e45f2a70:' + name], cwd=ROOT)
+assert raw.count(b"type(row['index']) is int and ") == 1
+raw = raw.replace(b"type(row['index']) is int and ", b'', 1)
+assert sha(raw) == failed_intent[name]
+add('reconstructed-first-source/tree_locality.py', raw)
+for path in sorted((ROOT / 'tools/xtask-package-attribution-074').iterdir()):
+    if path.is_file():
+        add('final-source/tools/xtask-package-attribution-074/' + path.name, path.read_bytes())
+for name, digest in PROTECTED.items():
+    raw = (ROOT / name).read_bytes()
+    assert sha(raw) == digest
+    add('protected/' + name, raw)
+for name in ('deny.toml', 'tools/authority-runtime-074/gate.rs', 'tools/authority-runtime-074/io.rs',
+             'tools/authority-storage-source-074/contract.rs', 'crates/xtask/tests/support/census_provider_input.rs',
+             'tools/historical-blob-batch-074/transport.rs', 'crates/xtask/tests/support/performance_contract_074_fixed_slice.rs'):
+    raw = (ROOT / name).read_bytes()
+    old = subprocess.check_output(['git', 'show', 'a5c57944:' + name], cwd=ROOT)
+    assert raw.replace(b'\r\n', b'\n') == old.replace(b'\r\n', b'\n')
+    add('unchanged-source/' + name, raw)
+for name in ('run-source-step-20261024.py', 'run-fresh-reader-20261024.py', 'capture-sweep-trees-20261025.py',
+             'seal-preservation-sweeps-20261025.py', 'verify-preservation-sweeps-staged-20261025.py'):
+    add('coordinators/' + name, (ROOT / 'target' / name).read_bytes())
+index = dict(schema='hc074-preservation-sweeps-v1', code_commit=CODE, members=members,
+    facts=dict(phases=phases, protected_sha256=PROTECTED, original_packet_sha256=sweep.PACKET_SHA256,
+        original_source_commit=sweep.COMMIT, source_verdict_proven_show_read_lower_bound=3116,
+        selected_sweeps=7, original_target_cases=20, original_target_reported_ns=108310000000,
+        unique_revision_path_keys=3116, unique_blob_oids=465, repeated_object_references=2651,
+        exact_key_cache_hits_in_selected_sweeps=0, metadata_tree_reads=7,
+        first_preflight_tree_reads=0, first_command_index_oracle_refusal=True,
+        first_locality_source_reconstructed_and_hash_matched=True, final_python_controls=31,
+        helper_protocol_prepared_not_executed=True, per_call_or_case_timing_measured=False,
+        original_replacement_refs_or_config_attested=False, original_package_completed=False,
+        normalizers_or_product_changed=False, live_checks_order_frequency_or_windows_changed=False,
+        package_replayed=False, cache_or_persistent_child_installed=False,
+        server=False, services=False, clocks=False, dependencies_changed=False, qualification=False))
+out = ROOT / BASE
+out.mkdir(parents=True, exist_ok=False)
+(out / 'objects').mkdir()
+(out / '.gitattributes').write_bytes(b'index.json text eol=lf\nobjects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\n')
+for digest, raw in objects.items():
+    (out / 'objects' / digest).write_bytes(raw)
+raw = (json.dumps(index, indent=2, sort_keys=True) + '\n').encode()
+(out / 'index.json').write_bytes(raw)
+print(json.dumps(dict(index_sha256=sha(raw), members=len(members), objects=len(objects), phases=len(phases))))

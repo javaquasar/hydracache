@@ -84,3 +84,9 @@ executing either measured child. Cargo manifests/lock, source admission, the
 qualification manifest and all live checks, frequency/order and 300/60/10
 origins/windows remain unchanged. No dependency, clock, service, server,
 installation, product workload or qualification operation occurs.
+
+The [next source/verdict analysis](preservation-sweep-attribution-20261025.md)
+establishes a lower bound of 3116 direct show/read calls in seven already-passing
+preservation sweeps. Their revision/path keys are distinct; newly read pinned
+trees expose object overlap, not a measured time saving or accepted cache.
+The complete-test helper-timing protocol is prepared separately and unexecuted.

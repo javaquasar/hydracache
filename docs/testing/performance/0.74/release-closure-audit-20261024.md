@@ -390,3 +390,11 @@ namespace calls take 0.291–0.862 ms in debug, without a measured frequency-wei
 package contribution. No normalizer candidate is installed; the full package,
 product composition and all original execution/security/qualification barriers
 remain open.
+
+The [preservation call-count continuation](preservation-sweep-attribution-20261025.md)
+joins exact original source/syntax with passing verdicts to prove a 3116-call
+show/read lower bound for seven loops. A separate read-only tree collection has
+3116 distinct logical keys and 465 blob OIDs. No elapsed-time share, safe cache,
+original-run ref/config state or completed package follows from that locality.
+Thirty-one Python controls and a prepared, unexecuted helper protocol retain the
+earlier first failures and the unchanged release barriers.
