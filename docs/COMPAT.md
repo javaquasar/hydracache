@@ -1,5 +1,11 @@
 # HydraCache Compatibility Register
 
+The local model metadata `hc074-spawn-frames-model-v1` describes three unwired
+coordinator spans for preparation, create-to-retention and membership/release.
+It has no CLI/caller or installed reader and is not a dispatch, product wire or
+authority protocol. A matching model reader is required; no old native packet
+or schema is rewritten. Native compatibility and overhead remain unqualified.
+
 The local offline intent `hc074-offline-leaf-attribution-v1` identifies only
 fixed-packet arithmetic replay of the sealed native leaf control. It introduces
 no runtime or dispatch field, new measurement, clock read or server admission.
