@@ -96,9 +96,11 @@ def measure(api, observer, image, block, slot, mode, folder, deadline):
     return result
 
 
-def run(build_label, label):
+def run(build_label, label, *, coordinator_frames=False):
+    require(type(coordinator_frames) is bool, 'explicit boolean coordinator frames gate')
     require(all(re.fullmatch('[a-z0-9][a-z0-9-]{0,63}', value) for value in (build_label, label)), 'bounded labels')
-    folder = ROOT/'target/git-cpu-overhead-20261026'/label
+    folder = ROOT/('target/git-cpu-coordinator-frames-20261026' if coordinator_frames else
+                   'target/git-cpu-overhead-20261026')/label
     folder.mkdir(parents=True, exist_ok=False)
     def write(name, value):
         with (folder/name).open('x', encoding='utf-8', newline='\n') as stream:
@@ -106,12 +108,20 @@ def run(build_label, label):
             stream.write('\n')
     result = dict(passed=False, first_refusal=None, attempts=[], package_pass=False,
                   overhead_accepted=False, speedup_established=False, server=False)
-    write('intent.json', dict(build_label=build_label, schedule=schedule(), calls_per_worker=CALLS,
+    intent = dict(build_label=build_label, schedule=schedule(), calls_per_worker=CALLS,
         bound_seconds=BOUND, cleanup_seconds=CLEANUP, free_bytes=FREE_BYTES, log_bytes=LOG_BYTES,
         job_overhead_measured=False, pure_counter_api_cost_isolated=False, overhead_accepted=False,
         git_suspended=False, stdin_hold=False, native_bypass=False, environment_changes=False,
-        retry=False, package_pass=False, server=False))
+        retry=False, package_pass=False, server=False)
+    if coordinator_frames:
+        intent['coordinator_frames'] = dict(enabled=True, schema='hc074-coordinator-frames-v1')
+    write('intent.json', intent)
     try:
+        if coordinator_frames:
+            import coordinator_frames as frames
+            result['coordinator_frames_contract'] = frames.contract()
+            require(result['coordinator_frames_contract']['schema'] == intent['coordinator_frames']['schema'],
+                    'coordinator frames schema drift')
         result['pins_before'] = pins()
         sys.path.insert(0, str(ROOT/'tools/historical-blob-batch-074'))
         import package_effects_review_v6 as gate
@@ -123,7 +133,10 @@ def run(build_label, label):
         deadline = time.monotonic()+BOUND
         api, observer = AccountingApi(), WindowsApi()
         for block, slot, mode in schedule():
-            attempt = measure(api, observer, image, block, slot, mode, folder, deadline)
+            if coordinator_frames:
+                attempt = frames.measure(api, observer, image, block, slot, mode, folder, deadline, frames.Tape())
+            else:
+                attempt = measure(api, observer, image, block, slot, mode, folder, deadline)
             result['attempts'].append(attempt)
             write(f'{block}-{slot}-result.json', attempt)
             require(attempt['passed'], 'worker refused: '+str(attempt['first_refusal'])+
@@ -146,7 +159,8 @@ def run(build_label, label):
 
 
 if __name__ == '__main__':
-    require(len(sys.argv) == 3, 'usage: git_cpu_overhead.py BUILD_LABEL NEW_LABEL')
-    result = run(*sys.argv[1:])
+    require(len(sys.argv) == 3 or (len(sys.argv) == 4 and sys.argv[3] == '--coordinator-frames'),
+            'usage: git_cpu_overhead.py BUILD_LABEL NEW_LABEL [--coordinator-frames]')
+    result = run(*sys.argv[1:3], coordinator_frames=len(sys.argv) == 4)
     print(json.dumps(dict(passed=result['passed'], first_refusal=result['first_refusal'], package_pass=False)))
     raise SystemExit(0 if result['passed'] else 1)
