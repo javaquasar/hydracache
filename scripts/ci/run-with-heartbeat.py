@@ -153,6 +153,8 @@ def main() -> int:
                     time.sleep(0.01)
                 if process is not None:
                     process.wait(timeout=max(0, cleanup_deadline - time.monotonic()))
+                if time.monotonic() >= cleanup_deadline:
+                    raise RuntimeError("owned CI Job cleanup exceeded five seconds")
             except Exception as error:  # Cleanup refusal must override a green/timeout receipt.
                 failures.append(str(error))
             finally:
@@ -171,6 +173,8 @@ def main() -> int:
                         process.close()
                     except Exception as error:
                         failures.append(str(error))
+            if time.monotonic() >= cleanup_deadline:
+                failures.append("owned CI Job cleanup exceeded five seconds")
             if failures:
                 detail = f"{classification}: {detail}; owned cleanup failed: {'; '.join(failures)}"
                 classification, exit_code = "runner-loss", 125

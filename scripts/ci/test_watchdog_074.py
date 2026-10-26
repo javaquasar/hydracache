@@ -72,16 +72,21 @@ class StateMachine(unittest.TestCase):
     def run_case(self, code=0, fail=None):
         child = Child(code, fail)
         job = Job(child, fail)
-        if fail == 'empty':
+        if fail in ['empty', 'late-empty', 'late-close']:
             job.active = False
         args = SimpleNamespace(command=['fixture'], timeout_seconds=0.35, heartbeat_seconds=0.05,
             status_json=Path('unused-receipt'), log_file=None, attempt_id='unit', cwd=None)
         receipts = []
-        clock = itertools.count(0.0, 0.05)
+        ticks = itertools.count(0.0, 6 if fail == 'late-empty' else 0.05)
+
+        def clock():
+            if fail == 'late-close' and job.events and job.events[-1] == ('close',):
+                return 20
+            return next(ticks)
         with patch.object(watch, 'parse_args', return_value=args), \
              patch.object(watch, 'WindowsJob', return_value=job, create=True), \
              patch.object(watch.subprocess, 'Popen', return_value=child), \
-             patch.object(watch.time, 'monotonic', side_effect=lambda: next(clock)), \
+             patch.object(watch.time, 'monotonic', side_effect=clock), \
              patch.object(watch.time, 'sleep'), \
              patch.object(watch, 'write_receipt', side_effect=lambda _, r: receipts.append(r)), \
              patch('builtins.print'):
@@ -143,6 +148,16 @@ class StateMachine(unittest.TestCase):
 
     def test_busy_job_exhausts_fixed_cleanup_budget_and_refuses(self):
         result, receipt, _, _ = self.run_case(fail='busy')
+        self.assertEqual(result, 125)
+        self.assertIn('exceeded five seconds', receipt['detail'])
+
+    def test_empty_witness_after_cleanup_budget_is_not_success(self):
+        result, receipt, _, _ = self.run_case(fail='late-empty')
+        self.assertEqual(result, 125)
+        self.assertIn('exceeded five seconds', receipt['detail'])
+
+    def test_close_after_cleanup_budget_is_not_success(self):
+        result, receipt, _, _ = self.run_case(fail='late-close')
         self.assertEqual(result, 125)
         self.assertIn('exceeded five seconds', receipt['detail'])
 
