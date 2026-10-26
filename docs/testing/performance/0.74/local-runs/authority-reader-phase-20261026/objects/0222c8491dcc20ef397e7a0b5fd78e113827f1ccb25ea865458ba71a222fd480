@@ -1,0 +1,97 @@
+"""Retain exact reader edits, first refusals and fixed terminal-main producer data."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = '628bc3c113ce12e9ecb10ee4daee6961a6b2ad15'
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+members, objects = {}, {}
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+labels = {'authority-continuation-first-targets': 101, 'authority-reader-phase-candidate-first': 101,
+          'authority-reader-phase-candidate-second': 0, 'authority-reader-phase-msrv-first': 0,
+          'authority-reader-phase-current-guards': 0, 'authority-reader-phase-producer-first': 0,
+          'authority-reader-phase-check-first': 0, 'authority-reader-phase-clippy-first': 0,
+          'authority-reader-phase-fmt-first': 0, 'authority-reader-phase-doc-check-first': 0,
+          'authority-reader-phase-contract-check-first': 0}
+intents = {}
+for label, expected in labels.items():
+    folder = ROOT / 'target/source-continuation-20261024' / label
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    assert result['exit'] == expected and result['outer_refusal'] is None
+    assert result['head_unchanged'] and result['source_unchanged'] and result['source_after'] == intent['source']
+    intents[label] = intent
+    for path in sorted(folder.iterdir()):
+        assert path.is_file()
+        add('checks/' + label + '/' + path.name, path.read_bytes())
+
+files = ['crates/xtask/tests/' + name + '.rs' for name in (
+    'authority_hex_reader_074', 'owned_case_074', 'historical_input_view_074',
+    'authority_runtime_074', 'current_tree_reader_074')]
+for path in files:
+    old = subprocess.check_output(['git', '--no-replace-objects', 'show', BASE + ':' + path], cwd=ROOT)
+    add('baseline/' + path, old)
+    diff = subprocess.check_output(['git', '--no-replace-objects', 'diff', '--no-ext-diff', '--no-textconv',
+        BASE, '--', path], cwd=ROOT)
+    add('declared-delta/' + path + '.raw', diff)
+names = files + ['crates/xtask/tests/authority_reader_phase_074.rs']
+names += ['tools/authority-reader-phase-074/' + name for name in (
+    'contract.rs', 'main.rs', 'generate_main.py', 'main-rules.json', 'README.md')]
+for name in names:
+    raw = (ROOT / name).read_bytes()
+    assert sha(raw) == intents['authority-reader-phase-current-guards']['source'][name]
+    add('source-final/' + name, raw)
+rules = (ROOT / 'tools/authority-reader-phase-074/main-rules.json').read_bytes()
+assert sha(rules) == '9373e36370e3893316a983fb159debba29afbbf4095c86f8f71d4384c80cc4f5'
+row = json.loads(rules)['rows'][0]
+for key, digest_key in [('revision', 'current_sha256'), ('previous_revision', 'previous_sha256')]:
+    rev = row[key]
+    raw = subprocess.check_output(['git', '--no-replace-objects', 'show', rev + ':' + row['path']], cwd=ROOT)
+    assert sha(raw.decode().replace('\r\n', '\n').encode()) == row[digest_key]
+    add('producer/' + rev + '/' + row['path'], raw)
+diff = subprocess.check_output(['git', '--no-replace-objects', 'diff', '--no-ext-diff', '--no-textconv',
+    row['previous_revision'], row['revision'], '--', row['path']], cwd=ROOT)
+add('terminal-main-delta.raw', diff)
+
+old_packet = ROOT / 'docs/testing/performance/0.74/local-runs/package-closure-v4-first-20261025'
+old_index = (old_packet / 'index.json').read_bytes()
+assert sha(old_index) == '0b0b568cc495e0a24f21f6684dbc6d471e3e3d1c1240fce002958975ebd31a9a'
+stdout_sha = 'c6bcd489b137ab88eb8bf01f9a3289c7e5324a5cf3c8b3e83169e5c770a62fd6'
+old_log = (old_packet / 'objects' / stdout_sha).read_bytes()
+assert sha(old_log) == stdout_sha
+match = re.search(rb'---- authority_context_restores_preceding_sources_without_changing_key_encoder stdout ----.*?(?=\r?\n----|\r?\nfailures:)', old_log, re.S)
+assert match and b'unreviewed input cannot enter historical assertions: docs/testing/gated-test-registry.toml' in match[0]
+add('derived-original-context-section.raw', match[0])
+add('derived-original-context-binding.json', (json.dumps(dict(
+    original_index_sha256=sha(old_index), stdout_sha256=stdout_sha,
+    offset=match.start(), bytes=len(match[0]), excerpt_sha256=sha(match[0]),
+    derived_excerpt_not_new_run=True), indent=2) + '\n').encode())
+for name in ['run-fresh-reader-20261024.py', 'run-source-step-20261024.py',
+             'run-authority-reader-final-checks.py', 'retain-authority-reader-phase-20261026.py']:
+    add('coordinator/' + name, (ROOT / 'target' / name).read_bytes())
+
+out = ROOT / 'docs/testing/performance/0.74/local-runs/authority-reader-phase-20261026'
+out.mkdir(exist_ok=True)
+(out / 'objects').mkdir()
+for digest, raw in objects.items():
+    with (out / 'objects' / digest).open('xb') as output:
+        output.write(raw)
+index = dict(schema='hc074-authority-reader-phase-evidence-v1', expected_exit=labels,
+             members=members, baseline_revision=BASE, original_cases=22, new_cases=6,
+             unchanged_successor_controls=5, full_package_rerun=False, server=False,
+             runtime_or_deadline_changes=False, qualification=False)
+with (out / 'index.json').open('x', encoding='utf-8', newline='\n') as output:
+    json.dump(index, output, indent=2, sort_keys=True)
+    output.write('\n')
+print(dict(members=len(members), objects=len(objects), index_sha256=sha((out / 'index.json').read_bytes())))

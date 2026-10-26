@@ -1,0 +1,52 @@
+diff --git a/crates/xtask/tests/authority_runtime_074.rs b/crates/xtask/tests/authority_runtime_074.rs
+index ec5fd2918..5452850c1 100644
+--- a/crates/xtask/tests/authority_runtime_074.rs
++++ b/crates/xtask/tests/authority_runtime_074.rs
+@@ -2,18 +2,34 @@
+ mod gate;
+ #[path = "../../../tools/authority-runtime-074/history_reader.rs"]
+ mod history_reader;
++#[path = "../../../tools/authority-reader-phase-074/main.rs"]
++mod main_phase;
+ #[path = "../../../tools/authority-storage-source-074/contract.rs"]
+ mod storage_contract;
+-fn read(path: &str) -> String {
+-    let raw = std::fs::read_to_string(gate::root().join(path))
++fn observed(path: &str) -> String {
++    std::fs::read_to_string(gate::root().join(path))
+         .unwrap()
+-        .replace("\r\n", "\n");
+-    if path == gate::HISTORY_TEST {
++        .replace("\r\n", "\n")
++}
++fn read(path: &str) -> String {
++    let raw = observed(path);
++    if path == gate::FIXTURE {
++        gate::successor::project(path, raw)
++    } else if path == main_phase::SOURCE {
++        main_phase::project(raw)
++    } else if path == gate::HISTORY_TEST {
+         history_reader::previous(&raw)
+     } else {
+         raw
+     }
+ }
++fn view_input(path: &str) -> String {
++    if path == gate::FIXTURE {
++        observed(path)
++    } else {
++        read(path)
++    }
++}
+ fn paths() -> Vec<String> {
+     let mut paths: Vec<_> = [
+         gate::FIXTURE,
+@@ -96,7 +112,7 @@ fn approved_predecessor_views_do_not_replace_current_runtime_validation() {
+             gate::BASE
+         };
+         assert_eq!(
+-            gate::view(&path, read(&path)),
++            gate::view(&path, view_input(&path)),
+             gate::frozen(revision, &path)
+         );
+     }

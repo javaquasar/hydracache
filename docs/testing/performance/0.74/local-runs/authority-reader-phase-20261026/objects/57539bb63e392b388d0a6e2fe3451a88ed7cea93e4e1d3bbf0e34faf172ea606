@@ -1,0 +1,84 @@
+
+running 2 tests
+test authority_context_candidate_matches_contract_and_frozen_prefix_order ... ok
+test authority_context_restores_preceding_sources_without_changing_key_encoder ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.89s
+
+
+running 2 tests
+test hex_reader_changes_only_registry_input_and_preserves_every_old_assertion ... ok
+test hex_registry_view_requires_exact_current_bytes_before_the_old_view ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+
+
+running 2 tests
+test authority_hex_current_candidate_is_exact_and_reference_is_frozen ... ok
+test authority_hex_restores_preceding_bodies_and_rejects_unknown_encoder ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.83s
+
+
+running 5 tests
+test current_fixture_entry_keeps_fresh_current_bytes_separate_from_old_body_checks ... ok
+test five_readers_are_exact_declared_edits_of_independent_fixed_sources ... ok
+test partial_duplicate_wrong_branch_and_assertion_drift_cannot_enter_old_reader_views ... ok
+test every_original_case_and_assertion_survives_the_two_explicit_input_substitutions ... ok
+test all_eighteen_entry_inputs_and_current_mutants_retain_original_phase_checks ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.66s
+
+
+running 5 tests
+test installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set ... FAILED
+test approved_predecessor_views_do_not_replace_current_runtime_validation ... FAILED
+test legacy_adapters_preserve_complete_prior_test_bodies_and_assertions ... ok
+test full_contract_adapters_change_only_one_preservation_reader_per_module ... ok
+test baseline_partial_install_and_unrelated_effects_refuse_before_restoration ... ok
+
+failures:
+
+---- installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set stdout ----
+
+thread 'installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set' (29652) panicked at crates\xtask\tests\authority_runtime_074.rs:57:9:
+exact installed file crates/xtask/tests/performance_contract_074.rs
+
+---- approved_predecessor_views_do_not_replace_current_runtime_validation stdout ----
+
+thread 'approved_predecessor_views_do_not_replace_current_runtime_validation' (53200) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:188:5:
+current runtime file refused before historical view: crates/xtask/tests/performance_contract_074.rs
+
+
+failures:
+    approved_predecessor_views_do_not_replace_current_runtime_validation
+    installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set
+
+test result: FAILED. 3 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.21s
+
+
+running 4 tests
+test runtime_contract_reader_changes_only_the_current_history_input ... ok
+test current_tree_reader_retains_entire_prior_gate_and_unknown_source_assertions ... ok
+test all_nine_current_inputs_are_exact_declared_patches_not_assertion_waivers ... ok
+test all_eighty_one_declared_sources_require_exact_bytes_index_and_regular_files ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 24.00s
+
+
+running 3 tests
+test historical_input_list_covers_all_changed_old_files_except_the_existing_exact_authority_gate ... ok
+test historical_inputs_require_the_complete_reviewed_current_file_before_predecessor ... ok
+test historical_input_reader_is_one_exact_additive_verified_branch ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.18s
+
+
+running 4 tests
+test owned_case_whole_helper_pins_reject_mutation_before_any_compatibility_view ... ok
+test owned_case_bootstrap_reader_changes_one_read_and_keeps_every_assertion ... ok
+test authority_context_reader_adapts_only_the_exact_reviewed_registry_input ... ok
+test owned_case_exact_current_additions_preserve_every_old_body_and_reader ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.98s
+

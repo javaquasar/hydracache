@@ -82,6 +82,13 @@ whole-body reconstruction and refusal controls. Old ledgers/assertions and the
 first red package remain unchanged. Complete the other authority/current-tree and
 bootstrap boundaries and a new source review before another package.
 
+The [subsequent authority reader phase](authority-reader-phase-result-20261026.md)
+closes five further failures in its seven-target subset, preserving all 22 old
+cases and adding six routing/predicate controls. Five unchanged successor controls
+also pass on both compilers. The complete current-tree audit and remaining
+bootstrap inputs still need their own exact accounting; this does not replace
+the failed/interrupted full package.
+
 Complete a newly reviewed whole-package replay within the unchanged
 780-second/four-thread guard, including the previously unstarted suffix. The
 separate 321-case performance-contract pass and repaired focused cohorts do not

@@ -1,0 +1,26 @@
+---- authority_context_restores_preceding_sources_without_changing_key_encoder stdout ----
+
+thread 'authority_context_restores_preceding_sources_without_changing_key_encoder' (40624) panicked at crates\xtask\tests\authority_context_074.rs:59:45:
+assertion `left == right` failed: exact authority context hook
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'authority_context_restores_preceding_sources_without_changing_key_encoder' (40624) panicked at crates\xtask\tests\authority_context_074.rs:59:45:
+assertion `left == right` failed: exact authority context hook
+  left: 2
+ right: 1
+
+thread 'authority_context_restores_preceding_sources_without_changing_key_encoder' (40624) panicked at crates\xtask\tests\authority_context_074.rs:59:45:
+assertion `left == right` failed: exact authority context hook
+  left: 0
+ right: 1
+
+thread 'authority_context_restores_preceding_sources_without_changing_key_encoder' (40624) panicked at crates\xtask\tests\authority_context_074.rs:59:45:
+assertion `left == right` failed
+  left: 2
+ right: 1
+
+thread 'authority_context_restores_preceding_sources_without_changing_key_encoder' (40624) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\historical-input-view-074\contract.rs:41:5:
+unreviewed input cannot enter historical assertions: docs/testing/gated-test-registry.toml
+

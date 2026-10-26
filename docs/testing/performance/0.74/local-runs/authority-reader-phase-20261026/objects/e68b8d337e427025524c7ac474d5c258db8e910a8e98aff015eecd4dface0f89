@@ -1,0 +1,10 @@
+
+running 5 tests
+test stale_partial_duplicate_and_unrelated_edits_refuse_before_projection ... ok
+test whole_body_projection_matches_independent_fixed_producers ... ok
+test exact_successor_inputs_reach_unchanged_historical_chain ... ok
+test wrong_path_cannot_borrow_another_files_approval_and_unknowns_stay_unchanged ... ok
+test old_gates_and_assertions_survive_exact_entry_edits ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.67s
+

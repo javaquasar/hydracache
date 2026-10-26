@@ -1,0 +1,54 @@
+diff --git a/crates/xtask/tests/performance_contract_074.rs b/crates/xtask/tests/performance_contract_074.rs
+index e71252a9d..b44608260 100644
+--- a/crates/xtask/tests/performance_contract_074.rs
++++ b/crates/xtask/tests/performance_contract_074.rs
+@@ -9606,23 +9606,15 @@ fn w9b_serial_scratch_proposal_preserves_independent_semantic_and_numerical_gate
+     );
+ }
+ 
+-// Only the reviewed experiment's exact two source hunks may be removed to
+-// reconstruct the same full canonical runtime fingerprint. Unknown edits fail.
++// Negative D3 removed the runtime selector. Only the exact historical test-only
++// module projection may be removed; the canonical runtime digest is unchanged.
+ fn without_get_owner_overlay(source: &str) -> String {
+-    let module = "#[cfg(any(test, feature = \"experimental-resp-get-owner-074\"))]\nmod get_response_owner_074;\n\n";
+-    let selector = concat!(
+-        "        #[cfg(feature = \"experimental-resp-get-owner-074\")]\n",
+-        "        let reduced = get_response_owner_074::reduce(&plan, responses);\n",
+-        "        #[cfg(not(feature = \"experimental-resp-get-owner-074\"))]\n",
+-        "        let reduced = plan.reduce(&responses);\n",
+-        "        match reduced {\n",
+-    );
++    let module = "#[cfg(test)]\nmod get_response_owner_074;\n\n";
++    assert!(!source.contains("get_response_owner_074::reduce"));
++    assert!(!source.contains("experimental-resp-get-owner-074"));
+     if source.contains("mod get_response_owner_074;") {
+         assert_eq!(source.matches(module).count(), 1);
+-        assert_eq!(source.matches(selector).count(), 1);
+-        source
+-            .replace(module, "")
+-            .replace(selector, "        match plan.reduce(&responses) {\n")
++        source.replace(module, "")
+     } else {
+         source.to_owned()
+     }
+@@ -9739,7 +9731,7 @@ fn get_response_owner_runtime_is_off_by_default_and_feature_semantics_are_enroll
+     let canonical = without_get_owner_overlay(&runtime);
+     assert_ne!(
+         canonical, runtime,
+-        "the exact two enrolled hunks must exist"
++        "only the retained historical test-only module may exist"
+     );
+     assert!(root()
+         .join("crates/hydracache-redis-compat/src/get_response_owner_074.rs")
+@@ -9944,8 +9936,8 @@ fn w9b_rejected_serial_scratch_is_removed_and_negative_receipts_retained() {
+         .join("crates/hydracache-redis-compat/src/serial_get_scratch_074.rs")
+         .exists());
+     // Exact LF-normalized canonical runtime from 4d733e31 after removing only
+-    // the new preregistered experiment's two exact cfg hunks. No old Git object
+-    // is required in shallow CI. Scratch stays removed; unknown edits fail.
++    // the retired hypothesis's test-only module declaration. No old Git object
++    // is required in shallow CI. Both runtime candidates stay disabled.
+     let canonical = without_get_owner_overlay(&source);
+     assert_eq!(
+         Sha256::digest(canonical.as_bytes())

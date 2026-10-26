@@ -20408,3 +20408,28 @@ specific source-preservation boundary, not runtime semantic equivalence, the
 interrupted package or release admission. It is important to distinguish those
 results: compatibility machinery must explain an approved delta, not manufacture
 a green release by showing every old test a convenient snapshot.
+
+### Keep current entry inputs separate from predecessor assertions
+
+The [following reader repair](../testing/performance/0.74/authority-reader-phase-result-20261026.md)
+first revisits the complete retained failure log. Caught mutation panics looked
+like a context-hook defect in a short excerpt, but the actual final refusal was
+the registry input. The changed-source baseline confirms three related targets
+are already green; five failures remain elsewhere. Removing a hook check would
+have weakened a useful guard without fixing the real boundary.
+
+The repair distinguishes two purposes for source data. Old candidate/body
+assertions consume an exactly verified predecessor. A current entry point must
+consume the original latest input, not that predecessor. Both versions remain
+bound to independent fixed producers, while stale/partial/unrelated input still
+refuses. Exact reader constructions and AST controls retain every old case and
+assertion, apart from two explicitly named input-expression substitutions.
+
+The first candidate also exposes the terminal GET-owner rollback in the main
+test source. A separate one-file inverse text description accounts for that
+approved change; its output is never compiled, executed or written back. The
+runtime remains retired. The final subset passes 22 old cases, six new controls
+and five unchanged successor cases on current/MSRV. That closes five specific
+failures, not the complete package or a performance hypothesis. Preserving
+evidence and preserving runtime behavior are distinct obligations, and both
+remain necessary before a release can claim readiness.

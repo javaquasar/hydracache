@@ -1,0 +1,21 @@
+"""Fixed source-only step checks; no service, clock, workload or server operations."""
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+RUNNER = ROOT / 'target/run-fresh-reader-20261024.py'
+CASES = [
+    ('authority-reader-phase-current-guards', ['cargo', '+1.94.0', 'test', '--offline', '--locked', '-p', 'xtask',
+     '--test', 'source_successor_view_074', '--', '--test-threads=4']),
+    ('authority-reader-phase-producer-first', [sys.executable, 'tools/authority-reader-phase-074/generate_main.py']),
+    ('authority-reader-phase-check-first', ['cargo', '+1.94.0', 'check', '--offline', '--locked', '-p', 'xtask', '--all-targets']),
+    ('authority-reader-phase-clippy-first', ['cargo', '+1.94.0', 'clippy', '--offline', '--locked', '-p', 'xtask', '--all-targets', '--all-features', '--', '-D', 'warnings']),
+    ('authority-reader-phase-fmt-first', ['cargo', '+1.94.0', 'fmt', '-p', 'xtask', '--', '--check']),
+    ('authority-reader-phase-doc-check-first', ['cargo', 'xtask', 'doc-check']),
+    ('authority-reader-phase-contract-check-first', ['cargo', 'xtask', 'performance-contract-check', '--release', '0.74']),
+]
+for label, argv in CASES:
+    result = subprocess.run([sys.executable, str(RUNNER), label, *argv], cwd=ROOT, check=False)
+    if result.returncode:
+        raise SystemExit(result.returncode)

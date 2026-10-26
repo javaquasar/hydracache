@@ -20,6 +20,12 @@ closes those thirteen failures with five fixed-input projections: the unchanged
 twenty-case artifact target now passes. This remains a focused boundary repair;
 v4 correctly refuses changed source before dispatch and no full package is repeated.
 
+The [authority reader phase repair](authority-reader-phase-result-20261026.md)
+then closes five remaining failures in seven selected targets. All 22 old cases,
+six new input/predicate-preservation cases and five unchanged successor controls
+pass on current/MSRV. Bootstrap and complete current-tree/package admission stay
+separate; neither a historical body view nor a green subset supplies that permit.
+
 The [original start material prerequisite](local-runs/original-collector-start-material-20261017/README.md)
 now retains the original reviewed bundle with Starting/pipes/sinks/fence.
 The framed successor passes six healthy chains and twenty-six exact refusals
