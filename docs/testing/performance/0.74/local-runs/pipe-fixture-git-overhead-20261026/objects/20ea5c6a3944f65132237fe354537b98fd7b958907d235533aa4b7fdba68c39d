@@ -1,0 +1,210 @@
+{
+  "block": 3,
+  "cleanup_errors": [],
+  "first_refusal": null,
+  "job": {
+    "active": 0,
+    "kernel_ns": 218750000,
+    "terminated": 0,
+    "total": 9,
+    "user_ns": 93750000
+  },
+  "job_terminal_samples": [
+    {
+      "active": 0,
+      "kernel_ns": 218750000,
+      "terminated": 0,
+      "total": 9,
+      "user_ns": 93750000
+    },
+    {
+      "active": 0,
+      "kernel_ns": 218750000,
+      "terminated": 0,
+      "total": 9,
+      "user_ns": 93750000
+    }
+  ],
+  "metrics": {
+    "coordinator_cpu_ns": 31250000,
+    "wall_ns": 457554900,
+    "whole_job_cpu_ns": 312500000,
+    "whole_worker_cpu_ns": 78125000
+  },
+  "mode": "accounted_cpu_child",
+  "native_inclusive": {
+    "cpu_includes_native": true,
+    "exact_native_image_attested": false,
+    "initial_sample_subtracted": false,
+    "non_launcher_descendant_cpu": {
+      "kernel_ns": 93750000,
+      "user_ns": 46875000
+    },
+    "overhead_accepted": false,
+    "package_pass": false,
+    "per_call_native_cpu": false,
+    "speedup_established": false
+  },
+  "passed": true,
+  "records": [
+    {
+      "accounted": true,
+      "call": 0,
+      "code": 0,
+      "phases": {
+        "child_end": {
+          "created_100ns": 134374824210376548,
+          "exited_100ns": 134374824211099582,
+          "kernel_ns": 15625000,
+          "pid": 50456,
+          "user_ns": 15625000
+        },
+        "child_start": {
+          "created_100ns": 134374824210376548,
+          "exited_100ns": 0,
+          "kernel_ns": 0,
+          "pid": 50456,
+          "user_ns": 0
+        },
+        "handle_observation_ns": 25700,
+        "spawn_ns": 17472300,
+        "terminal_observation_ns": 2500,
+        "wait_and_collect_ns": 64031700
+      },
+      "spec": "3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "stderr_bytes": 0,
+      "stdout_bytes": 23589
+    },
+    {
+      "accounted": true,
+      "call": 1,
+      "code": 0,
+      "phases": {
+        "child_end": {
+          "created_100ns": 134374824211177717,
+          "exited_100ns": 134374824211918479,
+          "kernel_ns": 15625000,
+          "pid": 23456,
+          "user_ns": 0
+        },
+        "child_start": {
+          "created_100ns": 134374824211177717,
+          "exited_100ns": 0,
+          "kernel_ns": 0,
+          "pid": 23456,
+          "user_ns": 0
+        },
+        "handle_observation_ns": 11900,
+        "spawn_ns": 10112800,
+        "terminal_observation_ns": 2300,
+        "wait_and_collect_ns": 71339400
+      },
+      "spec": "3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "stderr_bytes": 0,
+      "stdout_bytes": 23589
+    },
+    {
+      "accounted": true,
+      "call": 2,
+      "code": 0,
+      "phases": {
+        "child_end": {
+          "created_100ns": 134374824211996561,
+          "exited_100ns": 134374824212742290,
+          "kernel_ns": 0,
+          "pid": 23536,
+          "user_ns": 31250000
+        },
+        "child_start": {
+          "created_100ns": 134374824211996561,
+          "exited_100ns": 0,
+          "kernel_ns": 0,
+          "pid": 23536,
+          "user_ns": 0
+        },
+        "handle_observation_ns": 12000,
+        "spawn_ns": 11978300,
+        "terminal_observation_ns": 2700,
+        "wait_and_collect_ns": 69059500
+      },
+      "spec": "3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "stderr_bytes": 0,
+      "stdout_bytes": 23589
+    },
+    {
+      "accounted": true,
+      "call": 3,
+      "code": 0,
+      "phases": {
+        "child_end": {
+          "created_100ns": 134374824212814897,
+          "exited_100ns": 134374824213956490,
+          "kernel_ns": 15625000,
+          "pid": 25108,
+          "user_ns": 0
+        },
+        "child_start": {
+          "created_100ns": 134374824212814897,
+          "exited_100ns": 0,
+          "kernel_ns": 0,
+          "pid": 25108,
+          "user_ns": 0
+        },
+        "handle_observation_ns": 15300,
+        "spawn_ns": 14902900,
+        "terminal_observation_ns": 2800,
+        "wait_and_collect_ns": 107010200
+      },
+      "spec": "3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "stderr_bytes": 0,
+      "stdout_bytes": 23589
+    }
+  ],
+  "slot": 3,
+  "worker": {
+    "creation_100ns": 134374824209992742,
+    "exit_100ns": 134374824214016131,
+    "io": {
+      "other_bytes": 10788,
+      "other_ops": 473,
+      "read_bytes": 94356,
+      "read_ops": 56,
+      "write_bytes": 2639,
+      "write_ops": 19
+    },
+    "kernel_100ns": 781250,
+    "memory": {
+      "peak_private_commit_bytes": 991232,
+      "peak_working_set_bytes": 6602752,
+      "private_usage": 77824,
+      "working_set_bytes": 32768
+    },
+    "terminal": true,
+    "terminal_memory_error": null,
+    "user_100ns": 0
+  },
+  "worker_image": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\git_descendant_cpu_074-803e31ba3b260206.exe",
+  "worker_initial": {
+    "creation_100ns": 134374824209992742,
+    "exit_100ns": null,
+    "io": {
+      "other_bytes": 0,
+      "other_ops": 0,
+      "read_bytes": 0,
+      "read_ops": 0,
+      "write_bytes": 0,
+      "write_ops": 0
+    },
+    "kernel_100ns": 0,
+    "memory": {
+      "peak_private_commit_bytes": 385024,
+      "peak_working_set_bytes": 2043904,
+      "private_usage": 385024,
+      "working_set_bytes": 2043904
+    },
+    "terminal": false,
+    "terminal_memory_error": null,
+    "user_100ns": 0
+  },
+  "worker_pid": 30372
+}

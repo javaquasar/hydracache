@@ -1,0 +1,88 @@
+{
+  "members": {
+    "collector.py": {
+      "bytes": 1633,
+      "sha256": "f29f55261798f472113b8d626a9a2341af51d072dcdc7763ed56bf9e07f1a23d"
+    },
+    "contract/intent.json": {
+      "bytes": 347072,
+      "sha256": "0510b8c2243e533cbdd5cdb00714fab9d5a5dd376e39e8c397d1ee979dd73ab7"
+    },
+    "contract/result.json": {
+      "bytes": 346710,
+      "sha256": "02a03471892bb436dc440831838cfbdbb2fed3fd121d3cd7b98b2d8188226be2"
+    },
+    "contract/stderr.log": {
+      "bytes": 209,
+      "sha256": "b093ce9f652c45762cf7245328494412ffb01dced17d5046086483bda1b1248c"
+    },
+    "contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "doc/intent.json": {
+      "bytes": 347024,
+      "sha256": "1152a209a1977cb73b413e42f6d24bfbdf025e71d1e78a9f7673695b41ecc841"
+    },
+    "doc/result.json": {
+      "bytes": 346710,
+      "sha256": "02a03471892bb436dc440831838cfbdbb2fed3fd121d3cd7b98b2d8188226be2"
+    },
+    "doc/stderr.log": {
+      "bytes": 204,
+      "sha256": "4f409a3beec97b3c6460706d95554f542edbb8f4e7d3e0ee44654466779390c8"
+    },
+    "doc/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "integrity/intent.json": {
+      "bytes": 347035,
+      "sha256": "c93acfdeeca20bee77d4ad017c29f65dddbe17b668301613fa7f92a70f9b1096"
+    },
+    "integrity/result.json": {
+      "bytes": 346710,
+      "sha256": "02a03471892bb436dc440831838cfbdbb2fed3fd121d3cd7b98b2d8188226be2"
+    },
+    "integrity/stderr.log": {
+      "bytes": 523,
+      "sha256": "f8fdb3aaf405d529496763247050f68e14d54502c06d3a5f186c9b83f0636563"
+    },
+    "integrity/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "syntax/intent.json": {
+      "bytes": 347268,
+      "sha256": "9370022bd254ff0c1caf9fc04fb20111f8cad8a6e9516525e0acdf974aa86032"
+    },
+    "syntax/result.json": {
+      "bytes": 346710,
+      "sha256": "02a03471892bb436dc440831838cfbdbb2fed3fd121d3cd7b98b2d8188226be2"
+    },
+    "syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "syntax/stdout.log": {
+      "bytes": 51,
+      "sha256": "739b8ce84843936e8bbed48c311fcffef2eaf73942894760facc41b255e7d34e"
+    },
+    "test_verify.py": {
+      "bytes": 2080,
+      "sha256": "c29bf3452970aa98cba25df80ef4d32661916ed90d7461435bc7ef6e898d0c8b"
+    },
+    "verify.py": {
+      "bytes": 11364,
+      "sha256": "80fa34f3bf967e9c47b75b2b6c2b23122f35ae4b7793b67f38ca4e2e6aa9f0fb"
+    }
+  },
+  "native_index_sha256": "1ba276dcf62f97801f69806ea5efba138c7d47425f30d2563874aa393681fcff",
+  "package_pass": false,
+  "qualification": false,
+  "server": false
+}

@@ -1,0 +1,18 @@
+test_actual_frame_preserves_protocol_checks_and_healthy_close (test_git_cpu_overhead.Model.test_actual_frame_preserves_protocol_checks_and_healthy_close) ... ok
+test_bad_labels_cannot_dispatch (test_git_cpu_overhead.Model.test_bad_labels_cannot_dispatch) ... ok
+test_balanced_fixed_schedule (test_git_cpu_overhead.Model.test_balanced_fixed_schedule) ... ok
+test_cohort_does_not_renew_origin_or_promote_admission (test_git_cpu_overhead.Model.test_cohort_does_not_renew_origin_or_promote_admission) ... ok
+test_cohort_first_failure_stops_without_retry_or_summary (test_git_cpu_overhead.Model.test_cohort_first_failure_stops_without_retry_or_summary) ... ok
+test_counter_pid_and_byte_faults_preserve_first_refusal_and_cleanup (test_git_cpu_overhead.Model.test_counter_pid_and_byte_faults_preserve_first_refusal_and_cleanup) ... ok
+test_exact_block_sums_and_signed_differences_not_admission (test_git_cpu_overhead.Model.test_exact_block_sums_and_signed_differences_not_admission) ... ok
+test_expired_origin_cannot_create_job (test_git_cpu_overhead.Model.test_expired_origin_cannot_create_job) ... ok
+test_invalid_metrics_refuse_without_coercion (test_git_cpu_overhead.Model.test_invalid_metrics_refuse_without_coercion) ... ok
+test_late_frame_after_close_keeps_first_refusal (test_git_cpu_overhead.Model.test_late_frame_after_close_keeps_first_refusal) ... ok
+test_missing_reordered_failed_or_dirty_cohort_refuses (test_git_cpu_overhead.Model.test_missing_reordered_failed_or_dirty_cohort_refuses) ... ok
+test_protocol_constants_and_closed_acceptance (test_git_cpu_overhead.Model.test_protocol_constants_and_closed_acceptance) ... ok
+test_zero_cpu_is_not_dropped_or_an_infinite_ratio (test_git_cpu_overhead.Model.test_zero_cpu_is_not_dropped_or_an_infinite_ratio) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.330s
+
+OK

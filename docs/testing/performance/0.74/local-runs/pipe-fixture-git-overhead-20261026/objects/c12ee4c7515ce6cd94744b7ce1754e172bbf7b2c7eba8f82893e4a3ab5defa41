@@ -1,0 +1,402 @@
+{
+  "changed_source_git_calls": 8,
+  "first_attempt_git_calls": 4,
+  "first_source_commit": "e3f560e69a8d1deda20999a0b1c9b7e31a75f11d",
+  "members": {
+    "checks/git-job-cpu-build-receipt/intent.json": {
+      "bytes": 346538,
+      "sha256": "22186dbd92eb40f213d687abf340b0099137dff5020c107394886a7bff05595d"
+    },
+    "checks/git-job-cpu-build-receipt/result.json": {
+      "bytes": 346159,
+      "sha256": "69305b373f558f71e2a2393345e28390b1b41cc96f9538fed321c3a5b1a21984"
+    },
+    "checks/git-job-cpu-build-receipt/stderr.log": {
+      "bytes": 157,
+      "sha256": "76fc1c388bf0c4b649a757c8ef85e06e54006d44fbabf2b22feaaf0d6bc54b6c"
+    },
+    "checks/git-job-cpu-build-receipt/stdout.log": {
+      "bytes": 319665,
+      "sha256": "56bee758c13ac7743501792b76855d8be1d21f0a2b693c7661e321aa2dbc0ffb"
+    },
+    "checks/git-job-cpu-clippy/intent.json": {
+      "bytes": 346531,
+      "sha256": "010d44e4f28853b6b568fff43445c6318a66a63f31272b92f46be6c4de16cd72"
+    },
+    "checks/git-job-cpu-clippy/result.json": {
+      "bytes": 346159,
+      "sha256": "ed9163120c066a1e16c95d9d682f6e869f9575ac5882749e07061346cf0d410c"
+    },
+    "checks/git-job-cpu-clippy/stderr.log": {
+      "bytes": 210,
+      "sha256": "3a6f1bd67dd4ab324ee55bfa95559c449f183c0fb8e0c228a56c945ad99e02ab"
+    },
+    "checks/git-job-cpu-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-job-cpu-fixed-build-receipt/intent.json": {
+      "bytes": 346538,
+      "sha256": "f7bded5d93c0e98820c278ce5d8a94b861b8c10603aa34e6de8464f2c7039963"
+    },
+    "checks/git-job-cpu-fixed-build-receipt/result.json": {
+      "bytes": 346159,
+      "sha256": "c03cc32fdcddd8ef2e54af0832a85352f663e8b8e4526d4e99f35b9e011eed19"
+    },
+    "checks/git-job-cpu-fixed-build-receipt/stderr.log": {
+      "bytes": 73,
+      "sha256": "4419c0527c03a5efcde7f0419d262753c32c6c8e8911d87ba356391f62a29ddf"
+    },
+    "checks/git-job-cpu-fixed-build-receipt/stdout.log": {
+      "bytes": 319664,
+      "sha256": "31fc1033790c2ee2fc48c1cf33f0ddee59e1f2d24a143ae98a3f6b9340e78dba"
+    },
+    "checks/git-job-cpu-fixed-syntax/intent.json": {
+      "bytes": 346670,
+      "sha256": "280380beb420e482ae26ff1dee78130bc1482d2408f78f944c62b903e4c95571"
+    },
+    "checks/git-job-cpu-fixed-syntax/result.json": {
+      "bytes": 346159,
+      "sha256": "c03cc32fdcddd8ef2e54af0832a85352f663e8b8e4526d4e99f35b9e011eed19"
+    },
+    "checks/git-job-cpu-fixed-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-job-cpu-fixed-syntax/stdout.log": {
+      "bytes": 34,
+      "sha256": "6cd7ed6ce8898dcf4c327aeb65e2c0e242167d55feac5d24fdedbfe7e13c84ce"
+    },
+    "checks/git-job-cpu-fmt/intent.json": {
+      "bytes": 346458,
+      "sha256": "49344b885723823e67bd9d813149320f0b0e768cd05a4d5f9eb309fab65b4bd5"
+    },
+    "checks/git-job-cpu-fmt/result.json": {
+      "bytes": 346159,
+      "sha256": "ed9163120c066a1e16c95d9d682f6e869f9575ac5882749e07061346cf0d410c"
+    },
+    "checks/git-job-cpu-fmt/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-job-cpu-fmt/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-job-cpu-live-identity-models/intent.json": {
+      "bytes": 346524,
+      "sha256": "c5c74c56aa58954feb4e322bd34a35903858e71e8b48dd02838587a79fbb6524"
+    },
+    "checks/git-job-cpu-live-identity-models/result.json": {
+      "bytes": 346159,
+      "sha256": "c03cc32fdcddd8ef2e54af0832a85352f663e8b8e4526d4e99f35b9e011eed19"
+    },
+    "checks/git-job-cpu-live-identity-models/stderr.log": {
+      "bytes": 3106,
+      "sha256": "958528b16b25378d7168d4222aff93a2bdb2517acac91268398bbb8faf5d3e9d"
+    },
+    "checks/git-job-cpu-live-identity-models/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-job-cpu-model-expanded/intent.json": {
+      "bytes": 346524,
+      "sha256": "1219e47109662d3b7dcc54627231d10fa96e6d99f1880cf45ec5bd7f493cfa3c"
+    },
+    "checks/git-job-cpu-model-expanded/result.json": {
+      "bytes": 346159,
+      "sha256": "ed9163120c066a1e16c95d9d682f6e869f9575ac5882749e07061346cf0d410c"
+    },
+    "checks/git-job-cpu-model-expanded/stderr.log": {
+      "bytes": 2474,
+      "sha256": "eb6aa8880379e3e44f5b9014a7d13ee3852de78e6396b5dc7a80efdfaad5e581"
+    },
+    "checks/git-job-cpu-model-expanded/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-job-cpu-model-first/intent.json": {
+      "bytes": 346390,
+      "sha256": "8a571737ed1473e026e259b4cb27d771b4a5808a9ead11e4d06859600ff5b4fb"
+    },
+    "checks/git-job-cpu-model-first/result.json": {
+      "bytes": 346025,
+      "sha256": "f9a9316bcaab1f661a97288c77ffc9a1907a9c71e1d5e7cbfc7733fa899028c7"
+    },
+    "checks/git-job-cpu-model-first/stderr.log": {
+      "bytes": 1610,
+      "sha256": "d3666678f66dbb119ca103ee35c7ae8a4306677ac17bff369bcaf8214ce088b5"
+    },
+    "checks/git-job-cpu-model-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-job-cpu-model-precommit/intent.json": {
+      "bytes": 346524,
+      "sha256": "326f0dff6f983cb7dcc0a810d6ca0235341bd45053ffd1c1d30757bab25a2b4b"
+    },
+    "checks/git-job-cpu-model-precommit/result.json": {
+      "bytes": 346159,
+      "sha256": "69305b373f558f71e2a2393345e28390b1b41cc96f9538fed321c3a5b1a21984"
+    },
+    "checks/git-job-cpu-model-precommit/stderr.log": {
+      "bytes": 2474,
+      "sha256": "eb6aa8880379e3e44f5b9014a7d13ee3852de78e6396b5dc7a80efdfaad5e581"
+    },
+    "checks/git-job-cpu-model-precommit/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-job-cpu-msrv/intent.json": {
+      "bytes": 346573,
+      "sha256": "44639ec9d7ee0b552a5167ab153332386ad4281b22a13a5d1328dbec905cdedf"
+    },
+    "checks/git-job-cpu-msrv/result.json": {
+      "bytes": 346161,
+      "sha256": "32a4372d4675a4e15dc0fb6ddc61410caabb3772f5b9113b8ca22099ee8bc0ca"
+    },
+    "checks/git-job-cpu-msrv/stderr.log": {
+      "bytes": 341,
+      "sha256": "a977784b3020508472dcfb04c71242e88d6453e649a8b2eb6d3b1c91b29d846f"
+    },
+    "checks/git-job-cpu-msrv/stdout.log": {
+      "bytes": 10487861,
+      "sha256": "3e48dcfe701ec716b6de26f46c36710aa914bfed43752b1872dcfa4959c5e8c7"
+    },
+    "checks/git-job-cpu-native-first/intent.json": {
+      "bytes": 346481,
+      "sha256": "646fa1e722cdcae3e6ff500fb736a47dc823d7e149637a54acbe8ecf40e8c94c"
+    },
+    "checks/git-job-cpu-native-first/result.json": {
+      "bytes": 346159,
+      "sha256": "e3ddec7d321440050ff4d009084d481e74e9eb97f7e3f0c0f5a5647bf6efc615"
+    },
+    "checks/git-job-cpu-native-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-job-cpu-native-first/stdout.log": {
+      "bytes": 114,
+      "sha256": "82eddebf68b4ade3fc88e639668810e2dd748605a2f79161d3c78f2339b4516a"
+    },
+    "checks/git-job-cpu-native-live-identity/intent.json": {
+      "bytes": 346495,
+      "sha256": "9b0b04e633788b71bd4e8ca2f745de293a00c98681a056907200c7c543ca3529"
+    },
+    "checks/git-job-cpu-native-live-identity/result.json": {
+      "bytes": 346159,
+      "sha256": "c03cc32fdcddd8ef2e54af0832a85352f663e8b8e4526d4e99f35b9e011eed19"
+    },
+    "checks/git-job-cpu-native-live-identity/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-job-cpu-native-live-identity/stdout.log": {
+      "bytes": 64,
+      "sha256": "b3a7af9b96212df166d9747b4994b8ad8de0e57c3d1854ca58460dbd9645d9cd"
+    },
+    "checks/git-job-cpu-new-current/intent.json": {
+      "bytes": 346527,
+      "sha256": "5ac13dd14e1015dcd0ff103a864aa38790b8cb93eeaf53324d215399f1547aaa"
+    },
+    "checks/git-job-cpu-new-current/result.json": {
+      "bytes": 346159,
+      "sha256": "ed9163120c066a1e16c95d9d682f6e869f9575ac5882749e07061346cf0d410c"
+    },
+    "checks/git-job-cpu-new-current/stderr.log": {
+      "bytes": 266,
+      "sha256": "469f2df62ac98b3911890510823def84b90edae6b27dca53994ced99ba5feb34"
+    },
+    "checks/git-job-cpu-new-current/stdout.log": {
+      "bytes": 297,
+      "sha256": "7d34e92ebaa49fe838843b09d86585513b30932b428143cbde269dd2ae7d0289"
+    },
+    "checks/git-job-cpu-new-msrv/intent.json": {
+      "bytes": 346527,
+      "sha256": "a026d5583254f1996ad758b5a79540405a4e7ec5f55cf5fc907444d042e147e1"
+    },
+    "checks/git-job-cpu-new-msrv/result.json": {
+      "bytes": 346159,
+      "sha256": "ed9163120c066a1e16c95d9d682f6e869f9575ac5882749e07061346cf0d410c"
+    },
+    "checks/git-job-cpu-new-msrv/stderr.log": {
+      "bytes": 266,
+      "sha256": "11af95a8f9bb1b30292f59602641507c7af5a1443e2e1cee50adc1ea91d4abb2"
+    },
+    "checks/git-job-cpu-new-msrv/stdout.log": {
+      "bytes": 297,
+      "sha256": "7d34e92ebaa49fe838843b09d86585513b30932b428143cbde269dd2ae7d0289"
+    },
+    "checks/git-job-cpu-python-controls/intent.json": {
+      "bytes": 346522,
+      "sha256": "d9b964b13b0749e20efcdc3e210af7dcbfdfc16beabbd39f6401b3df6f732a0e"
+    },
+    "checks/git-job-cpu-python-controls/result.json": {
+      "bytes": 346159,
+      "sha256": "ed9163120c066a1e16c95d9d682f6e869f9575ac5882749e07061346cf0d410c"
+    },
+    "checks/git-job-cpu-python-controls/stderr.log": {
+      "bytes": 8668,
+      "sha256": "071b2f84131c426997c89a9ea0777a9d6041ee3be5ee2a5caf7ee6aaca7ccdb8"
+    },
+    "checks/git-job-cpu-python-controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-job-cpu-python-syntax/intent.json": {
+      "bytes": 346670,
+      "sha256": "94d61abe2e60b525fb9fa0a604b52a89a8ff85cf8011c4cadd58a3858179d668"
+    },
+    "checks/git-job-cpu-python-syntax/result.json": {
+      "bytes": 346159,
+      "sha256": "ed9163120c066a1e16c95d9d682f6e869f9575ac5882749e07061346cf0d410c"
+    },
+    "checks/git-job-cpu-python-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-job-cpu-python-syntax/stdout.log": {
+      "bytes": 34,
+      "sha256": "6cd7ed6ce8898dcf4c327aeb65e2c0e242167d55feac5d24fdedbfe7e13c84ce"
+    },
+    "checks/git-job-cpu-rust-current/intent.json": {
+      "bytes": 346573,
+      "sha256": "37fe0157655582618232593f3eb49782b741d76dbcaa0fcc99b893a5f5394e08"
+    },
+    "checks/git-job-cpu-rust-current/result.json": {
+      "bytes": 346161,
+      "sha256": "32a4372d4675a4e15dc0fb6ddc61410caabb3772f5b9113b8ca22099ee8bc0ca"
+    },
+    "checks/git-job-cpu-rust-current/stderr.log": {
+      "bytes": 341,
+      "sha256": "c82a1294cd1f822eded5cb12b50701ea6e1ccf8452cc2813a9b8e262c8823cce"
+    },
+    "checks/git-job-cpu-rust-current/stdout.log": {
+      "bytes": 10487869,
+      "sha256": "b43218617a1fcc3bcecd6a475bda86ced62191a640292f2483287d4427ba5e9c"
+    },
+    "native/first/build.json": {
+      "bytes": 343626,
+      "sha256": "a32cbf3f4e01224bb8eeb75a40aac210f42f729470df1f890641035eaefd6339"
+    },
+    "native/first/intent.json": {
+      "bytes": 466,
+      "sha256": "e6a0a23bb6704aaa1fbd358ef9453de26a88a78d36dd67dca16af37e67b0ba2d"
+    },
+    "native/first/reference_cpu_child.log": {
+      "bytes": 1264,
+      "sha256": "61b0432855fbe6fd923bc3408f579a4c895d434f4bd57f009a0e50021de337e6"
+    },
+    "native/first/result.json": {
+      "bytes": 892,
+      "sha256": "d6096e0d8eb0c24bffb90b11697063f05485d9143c84ece6bed84e36c0f0d7b6"
+    },
+    "native/live-identity/accounted_cpu_child.log": {
+      "bytes": 2663,
+      "sha256": "beccd58a0113df826c1703b108b0aeeba18739120de203895dabe338e6ac2ae2"
+    },
+    "native/live-identity/build.json": {
+      "bytes": 343626,
+      "sha256": "f4ebae0e2375bb92d01cf9d4f930d04b278fbf06799c01ec059a77c37f8c768a"
+    },
+    "native/live-identity/intent.json": {
+      "bytes": 472,
+      "sha256": "d22540d6d745ee917234b8993cca749d00eecff80445c1b6aeaa1ab4c7ea4a3b"
+    },
+    "native/live-identity/reference_cpu_child.log": {
+      "bytes": 1264,
+      "sha256": "1694d709125e054312dc7960f7ae18d505e049500526a8482e7db1d82f48f895"
+    },
+    "native/live-identity/result.json": {
+      "bytes": 10383,
+      "sha256": "a9022155bfc64a7ba900fd2e4e2d7239399667f9a77789c272803149955ee064"
+    },
+    "offline/first-pipe-fixture-difference.json": {
+      "bytes": 873,
+      "sha256": "79263f73b4b68362013da277f8551d2ee720a8c3b399f913ba2c30cdb1699c62"
+    },
+    "raw-before-live-identity/git-job-cpu-design.md": {
+      "bytes": 4628,
+      "sha256": "283749e123bbdc2f10d2d82eccfe0ddf2d5121a7782d59c3b0d431ea2742ec8f"
+    },
+    "raw-before-live-identity/git-job-cpu-protocol.toml": {
+      "bytes": 997,
+      "sha256": "57e04ac5fdf46fedf43809ffee8d00e0f002b38eedbbc8d55463dca0f1489dec"
+    },
+    "raw-before-live-identity/git_job_cpu.py": {
+      "bytes": 12349,
+      "sha256": "000c409e7400f62a92c70ef8212b9e5415e2808fcc9d0c871705056235e6ef0d"
+    },
+    "raw-before-live-identity/test_git_job_cpu.py": {
+      "bytes": 9581,
+      "sha256": "780bf55b51f0a387d7bb60f98eeba929c55618c3aa76832b5dbdbfebd4f61494"
+    },
+    "raw-first-model/git_job_cpu.py": {
+      "bytes": 11357,
+      "sha256": "89d3fe29607a8f091871d69c611f1e3bced813072bafd4e1752483a9400a99b4"
+    },
+    "raw-first-model/test_git_job_cpu.py": {
+      "bytes": 6516,
+      "sha256": "e63873ae0bc817dd8306256447d64fccf1b7aa636b9878b81952c72c6de5d1bc"
+    },
+    "runners/run-ci-watchdog-step-20261026.py": {
+      "bytes": 538,
+      "sha256": "8164762bc0c02aee22e49b50dba0bc877b8fcdeffca9d495f8425354bce3245c"
+    },
+    "runners/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "source/crates/xtask/tests/git_descendant_cpu_074.rs": {
+      "bytes": 3415,
+      "sha256": "b9e775a0a63662b364f544c01de58ca9b1f90b521e7d2100440976e276da2624"
+    },
+    "source/scripts/ci/watchdog_windows_job.py": {
+      "bytes": 12151,
+      "sha256": "8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1"
+    },
+    "source/tools/historical-blob-batch-074/package_effects_review_v6.py": {
+      "bytes": 8400,
+      "sha256": "0b397d78e76d1b108c5a5cce331cfe0e0f33ea741caed5cc5fc0fc39d6925057"
+    },
+    "source/tools/xtask-package-attribution-074/git-job-cpu-design.md": {
+      "bytes": 5915,
+      "sha256": "1ac7f90e1992852e2cbd75beeb8a9b03095a03adabbe42d1d5c88f418e22298f"
+    },
+    "source/tools/xtask-package-attribution-074/git-job-cpu-protocol.toml": {
+      "bytes": 1054,
+      "sha256": "c8dfc802c16a8f0a795d4b20e5845f411daa7cb6cc87a8086c66ef74eb83f3e0"
+    },
+    "source/tools/xtask-package-attribution-074/git_job_cpu.py": {
+      "bytes": 13488,
+      "sha256": "750784a88b445b4b295032c29dd62e10f78a4eecb52ac9d2dd2445ce1a432f6e"
+    },
+    "source/tools/xtask-package-attribution-074/git_process_boundary.py": {
+      "bytes": 10158,
+      "sha256": "9c474377e1be2083047b165f386a113c287a4a0fb6dcb4d01f4ec3b730547a3d"
+    },
+    "source/tools/xtask-package-attribution-074/owned_process_observer.py": {
+      "bytes": 11193,
+      "sha256": "bc9d46bdf731c7d5a376e878d86b0382c73fcfec7e2d01ffe762756ad880b206"
+    },
+    "source/tools/xtask-package-attribution-074/pipe_capture.rs": {
+      "bytes": 4041,
+      "sha256": "7b81ec42ec234dc6bb3d98fc551ea4e7dbc40d986a18d14cfb8d639c1a7587d3"
+    },
+    "source/tools/xtask-package-attribution-074/process_lineage.py": {
+      "bytes": 8858,
+      "sha256": "af700ff622f291a16dd0b3930f696ea20b1c184d192e2ce925a2422ba0255d9c"
+    },
+    "source/tools/xtask-package-attribution-074/test_git_job_cpu.py": {
+      "bytes": 12161,
+      "sha256": "8bab3c5b0579008fe3e9861e356eaa6b23329ad2ac5c825404f7a205f0f1be92"
+    }
+  },
+  "native_attempts": 2,
+  "overhead_accepted": false,
+  "package_pass": false,
+  "schema": "hc074-git-job-cpu-evidence-v1",
+  "server": false,
+  "source_commit": "bd1b3cf2e6fc4a252037caf69603b0df6571aab4",
+  "speedup_established": false
+}

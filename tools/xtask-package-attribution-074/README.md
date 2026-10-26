@@ -291,3 +291,18 @@ retain a terminal image-query refusal and a single changed-source successful
 control, all raw checks and both first old elapsed-output fixture failures.
 Residual CPU includes native descendants, not attested native image CPU per call.
 No overhead, speedup, package pass or production authority is accepted.
+
+## Per call observer attribution inside the same Job
+
+`git_cpu_overhead.py BUILD_LABEL NEW_LABEL` fixes four alternating ABBA/BAAB
+blocks using the unchanged worker. Both reference/profile arms keep the same
+unlimited Job and all original byte, identity, terminal and deadline checks.
+The [design](git-cpu-overhead-design.md) separates whole Job, worker and external
+coordinator CPU and retains every raw sample. It cannot measure Job-membership
+overhead or turn a noisy negative delta into negative observer cost.
+
+The [first result](../../docs/testing/performance/0.74/pipe-fixture-git-overhead-result-20261026.md)
+retains the sole sixty-four-call attempt and the separate pipe-fixture footer
+repair. Current/MSRV pipe cases now pass six each without normalizing output;
+the previous first failures remain fixed evidence. Mixed CPU/wall differences
+leave overhead acceptance false. V6 and the old 96-call cohort are not rerun.

@@ -1,0 +1,121 @@
+{
+  "block": 2,
+  "cleanup_errors": [],
+  "first_refusal": null,
+  "job": {
+    "active": 0,
+    "kernel_ns": 1125000000,
+    "terminated": 0,
+    "total": 9,
+    "user_ns": 234375000
+  },
+  "job_terminal_samples": [
+    {
+      "active": 0,
+      "kernel_ns": 1125000000,
+      "terminated": 0,
+      "total": 9,
+      "user_ns": 234375000
+    },
+    {
+      "active": 0,
+      "kernel_ns": 1125000000,
+      "terminated": 0,
+      "total": 9,
+      "user_ns": 234375000
+    }
+  ],
+  "metrics": {
+    "coordinator_cpu_ns": 46875000,
+    "wall_ns": 1690846600,
+    "whole_job_cpu_ns": 1359375000,
+    "whole_worker_cpu_ns": 46875000
+  },
+  "mode": "reference_cpu_child",
+  "passed": true,
+  "records": [
+    {
+      "accounted": false,
+      "call": 0,
+      "code": 0,
+      "phases": null,
+      "spec": "3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "stderr_bytes": 0,
+      "stdout_bytes": 23589
+    },
+    {
+      "accounted": false,
+      "call": 1,
+      "code": 0,
+      "phases": null,
+      "spec": "3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "stderr_bytes": 0,
+      "stdout_bytes": 23589
+    },
+    {
+      "accounted": false,
+      "call": 2,
+      "code": 0,
+      "phases": null,
+      "spec": "3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "stderr_bytes": 0,
+      "stdout_bytes": 23589
+    },
+    {
+      "accounted": false,
+      "call": 3,
+      "code": 0,
+      "phases": null,
+      "spec": "3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "stderr_bytes": 0,
+      "stdout_bytes": 23589
+    }
+  ],
+  "slot": 3,
+  "worker": {
+    "creation_100ns": 134374824166895810,
+    "exit_100ns": 134374824183427351,
+    "io": {
+      "other_bytes": 10788,
+      "other_ops": 473,
+      "read_bytes": 94356,
+      "read_ops": 56,
+      "write_bytes": 1264,
+      "write_ops": 19
+    },
+    "kernel_100ns": 156250,
+    "memory": {
+      "peak_private_commit_bytes": 987136,
+      "peak_working_set_bytes": 6586368,
+      "private_usage": 77824,
+      "working_set_bytes": 32768
+    },
+    "terminal": true,
+    "terminal_memory_error": null,
+    "user_100ns": 312500
+  },
+  "worker_image": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\git_descendant_cpu_074-803e31ba3b260206.exe",
+  "worker_initial": {
+    "creation_100ns": 134374824166895810,
+    "exit_100ns": null,
+    "io": {
+      "other_bytes": 0,
+      "other_ops": 0,
+      "read_bytes": 0,
+      "read_ops": 0,
+      "write_bytes": 0,
+      "write_ops": 0
+    },
+    "kernel_100ns": 0,
+    "memory": {
+      "peak_private_commit_bytes": 385024,
+      "peak_working_set_bytes": 2043904,
+      "private_usage": 385024,
+      "working_set_bytes": 2043904
+    },
+    "terminal": false,
+    "terminal_memory_error": null,
+    "user_100ns": 0
+  },
+  "worker_pid": 38472
+}

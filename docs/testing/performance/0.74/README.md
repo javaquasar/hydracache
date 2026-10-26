@@ -5,6 +5,13 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [pipe-fixture repair and fixed-Job attribution](pipe-fixture-git-overhead-result-20261026.md)
+close the changed-source pipe compatibility gate with six passing cases per
+compiler while preserving both old first failures. Thirty-six models and the
+sole 64-call attribution complete. Mixed block CPU/wall differences leave small
+observer overhead unresolved; no trimming, retry, V6 replay or performance
+acceptance follows.
+
 The [short-call descendant CPU control](git-job-cpu-result-20261026.md) now
 covers ordinary Git calls from birth via an unlimited private accounting Job.
 The changed-source eight-call control succeeds after retaining the first

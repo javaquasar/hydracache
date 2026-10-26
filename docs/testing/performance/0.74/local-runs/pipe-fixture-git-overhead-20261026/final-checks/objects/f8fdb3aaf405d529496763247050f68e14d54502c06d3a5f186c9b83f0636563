@@ -1,0 +1,9 @@
+test_first_failures_metrics_raw_logs_and_sources_cannot_change (__main__.Integrity.test_first_failures_metrics_raw_logs_and_sources_cannot_change) ... ok
+test_index_mutation_refuses (__main__.Integrity.test_index_mutation_refuses) ... ok
+test_missing_object_refuses (__main__.Integrity.test_missing_object_refuses) ... ok
+test_raw_replay_without_workload (__main__.Integrity.test_raw_replay_without_workload) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 1.857s
+
+OK

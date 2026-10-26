@@ -30,6 +30,14 @@ failures expose an elapsed-time stdout comparison and remain unchanged. The
 residual includes native CPU, but per-image attribution and observer-overhead
 acceptance remain open; no cache, product improvement or package pass follows.
 
+The [subsequent pipe-fixture repair and observer attribution](pipe-fixture-git-overhead-result-20261026.md)
+pass all six pipe cases on each compiler, preserving the original exact stream
+assertions and both first elapsed-output failures. The sole fixed-Job 64-call
+attribution completes, but block Job CPU ratios of 0.856–1.042 and wall ratios of
+0.680–1.872 do not establish small overhead. Job-membership cost itself is not
+measured. Attribute the saved variance before another cost candidate; no
+package retry or admission follows this focused success.
+
 The [approved plan](../../../plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md)
 keeps its original thresholds. Its closing rule is to publish the measurements
 and defer changes if none pass, not to tag a documentation-only substitute as

@@ -1,0 +1,64 @@
+"""Copy source and first outcomes, never rerun a measurement or old failure."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT/'docs/testing/performance/0.74/local-runs/pipe-fixture-git-overhead-20261026'
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+def add(name, raw):
+    digest = hashlib.sha256(raw).hexdigest()
+    path = OUT/'objects'/digest
+    if not path.exists():
+        with path.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+def take(name, path):
+    add(name, path.read_bytes())
+
+labels = sorted(p.name for p in (ROOT/'target/source-continuation-20261024').iterdir()
+                if p.is_dir() and p.name.startswith(('pipe-fixture-footer-', 'git-cpu-overhead-')))
+assert len(labels) == 11, labels
+for label in labels:
+    for name in ('intent.json', 'result.json', 'stdout.log', 'stderr.log'):
+        take('checks/'+label+'/'+name, ROOT/'target/source-continuation-20261024'/label/name)
+for path in (ROOT/'target/git-cpu-overhead-20261026/first').iterdir():
+    assert path.is_file()
+    take('native/'+path.name, path)
+sources = ['crates/xtask/tests/direct_output_cost_074.rs', 'crates/xtask/tests/git_descendant_cpu_074.rs',
+    'scripts/ci/watchdog_windows_job.py', 'tools/historical-blob-batch-074/package_effects_review_v6.py'] + [
+    'tools/xtask-package-attribution-074/'+name for name in ('git_cpu_overhead.py', 'test_git_cpu_overhead.py',
+    'git-cpu-overhead-design.md', 'git-cpu-overhead-protocol.toml', 'git_job_cpu.py', 'test_git_job_cpu.py',
+    'pipe_capture.rs', 'git_process_boundary.py', 'owned_process_observer.py', 'process_lineage.py')]
+for name in sources:
+    take('source/'+name, ROOT/name)
+for name in ('git_cpu_overhead.py', 'test_git_cpu_overhead.py'):
+    take('raw-first-model/'+name, ROOT/'target/git-cpu-overhead-model-first-source'/name)
+for name in ('run-ci-watchdog-step-20261026.py', 'run-source-step-20261024.py'):
+    take('runners/'+name, ROOT/'target'/name)
+take('collector.py', Path(__file__))
+baseline = ROOT/'docs/testing/performance/0.74/local-runs/git-job-cpu-20261026'
+raw = (baseline/'index.json').read_bytes()
+assert hashlib.sha256(raw).hexdigest() == 'c12ee4c7515ce6cd94744b7ce1754e172bbf7b2c7eba8f82893e4a3ab5defa41'
+add('baseline/index.json', raw)
+previous = json.loads(raw)
+for label in ('git-job-cpu-rust-current', 'git-job-cpu-msrv'):
+    for name in ('intent.json', 'result.json', 'stdout.log', 'stderr.log'):
+        key = 'checks/'+label+'/'+name
+        entry = previous['members'][key]
+        body = (baseline/'objects'/entry['sha256']).read_bytes()
+        assert len(body) == entry['bytes'] and hashlib.sha256(body).hexdigest() == entry['sha256']
+        add('baseline/'+key, body)
+source_sha = '0c8740ec73b56b3f791fc0b25ca879327dc23bcfb45a781fd5a0d1356a913b8d'
+take('baseline/direct_output_cost_074.rs', ROOT/'docs/testing/performance/0.74/local-runs/direct-pipe-attribution-20261025/objects'/source_sha)
+assert members['baseline/direct_output_cost_074.rs']['sha256'] == source_sha
+index = dict(schema='hc074-pipe-fixture-fixed-job-cost-v1', source_commit='20247dd65f821aff33946b9643032c7773f0b146',
+    fixture_commit='11557ac94c412226b5e13af2ce9713298800e079', cohorts=1, git_calls=64,
+    first_baseline_failures=2, job_overhead_measured=False, overhead_accepted=False,
+    speedup_established=False, package_pass=False, server=False, members=members)
+raw = (json.dumps(index, sort_keys=True, indent=2)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(members), objects=len(list((OUT/'objects').iterdir()))))

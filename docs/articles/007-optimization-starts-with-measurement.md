@@ -20766,3 +20766,40 @@ retried or reported green. The
 retain this distinction, the first path-query refusal and recomputable lifetime
 counters. Next isolate observer overhead and repair the old fixture boundary
 separately; no V6 replay, live-check/deadline change or product hypothesis follows.
+
+### Repair the fixture boundary before comparing observer cost
+
+The next step separates a test defect from measurement uncertainty. The old
+pipe fixture compared complete nested libtest stdout, including elapsed time.
+Its two first red outcomes are kept, while the synthetic success child now
+flushes its useful streams and exits before libtest adds that footer. The
+original exact stream/status assertions remain; an independent oracle also
+checks the fixed harness prefix, empty/binary/one-MiB payloads, stderr and exit
+code. Corrupted bytes or either elapsed footer must refuse, not be normalized.
+All six cases pass on current/MSRV without changing the actual pipe helper.
+
+A separately committed method then compares the installed per-call profile
+against ordinary output inside the same unlimited Job. Sixteen unchanged
+workers execute sixty-four fresh Git calls in four alternating ABBA/BAAB blocks.
+All original identity, complete terminal census, byte/status, source and time
+checks remain; the first failure would stop the whole cohort. This isolates the
+profile path relative to a common Job, not the Job's own overhead or a pure
+counter API cost. Whole Job CPU includes useful native work, and original
+worker/external coordinator CPU are recorded separately.
+
+Every worker and Git call succeeds, but the cost verdict is not small accepted
+overhead. Across the four blocks, profile/reference Job CPU ratios span
+0.856–1.042 and wall ratios 0.680–1.872. Worker CPU ratios range roughly
+0.778–5.500; coordinator differences include both minus and plus 500 ms.
+These separately owned and coarsely quantized counters do not support calling
+negative deltas negative overhead or assigning all observed cost to two API
+calls. No sample is removed, no attempt is repeated and no acceptance floor is
+selected after seeing the data.
+
+The [fixture repair, protocol and complete raw attribution](../testing/performance/0.74/pipe-fixture-git-overhead-result-20261026.md)
+close the functional comparison boundary and preserve the inconclusive cost
+result. Thirty-six models pass, with current/MSRV, check, strict Clippy and
+formatting. The next useful work is offline variance attribution, not another
+package attempt or a product optimization inferred from one noisy aggregate.
+V6, the old timing cohort, live observation frequency and all original windows
+remain untouched.
