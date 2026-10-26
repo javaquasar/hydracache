@@ -20870,3 +20870,29 @@ Tape-only injected-clock examples. Every check passes, but these are not native
 process or timing controls. A separately recorded bounded enabled-mode native
 control remains before numerical use, without replaying V6, changing a live
 predicate or launching a product candidate.
+
+### Check native compatibility before interpreting phase CPU
+
+The first enabled-mode native control completes sixteen workers and sixty-four
+ordinary Git calls on a newly recorded exact-source no-run build. All original
+byte/status, owner, terminal census, source and deadline checks pass. The raw
+packet retains twelve probes per worker, or 576 clock reads, without retrying an
+attempt. This confirms that the recorder works with the real diagnostic process
+and streams; it does not establish low overhead.
+
+Across the saved frames, coordinator CPU deltas total 250 ms: 234.375 ms appears
+inside spawn brackets and 15.625 ms inside wait brackets. The other phase CPU
+deltas are zero. Decode still has 519.6645–519.8839 ms summed wall brackets and a
+79.7211-ms largest bracket. Zero measured CPU is not zero work, and positive wall
+does not identify its cause. A wait bracket approaching 970 ms is likewise not
+970 ms of coordinator CPU. Keep clock quantization, scheduling and bookends
+separate from the operation one hopes to attribute.
+
+Both worker arms use coordinator tracing. They compare the existing worker
+observation path, not recorder-enabled against recorder-disabled. The older
+untraced attempt is not a paired baseline for this one. Neither mixed block
+deltas nor phase zeros can certify overhead or justify weakening a predicate.
+The [native result and independent replay](../testing/performance/0.74/coordinator-native-result-20261026.md)
+retain all samples, exact arithmetic and six corruption controls. The next use
+of these endpoints is offline attribution, with the full-package timeout and
+production admission still unresolved.

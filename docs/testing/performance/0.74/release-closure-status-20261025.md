@@ -52,9 +52,17 @@ adds six opt-in raw clock brackets without changing the default frame. All 56
 model/regression cases pass, including all 36 ordinary clock-fault positions,
 partial ownership, preserved operational refusals and the same deadline reads.
 AST comparison joins the traced operational body to the original sealed body.
-Four injected-clock examples are not native measurements. A separately recorded
-first native control and overhead evidence are still required; no V6, product
-candidate or server run follows this model-only implementation.
+Four injected-clock examples are not native measurements. At that model-only
+boundary, a first native control and overhead evidence remained required; it
+included no V6, product candidate or server run.
+
+The [first enabled native control](coordinator-native-result-20261026.md) now
+passes all sixteen workers and sixty-four Git calls with complete native phase
+brackets, unchanged source/HEAD and no cleanup errors. Six independent integrity
+controls pass. Both arms trace the coordinator, so this closes only this build's
+functional compatibility, not recorder-overhead acceptance. Saved phase data
+supports the next offline attribution; package coverage and production admission
+remain red, and V6 is not repeated.
 
 The [approved plan](../../../plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md)
 keeps its original thresholds. Its closing rule is to publish the measurements

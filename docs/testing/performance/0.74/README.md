@@ -5,12 +5,19 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [first native coordinator-frame control](coordinator-native-result-20261026.md)
+passes all sixteen workers and sixty-four Git calls on exact source/build,
+retaining all 192 probes. Independent arithmetic and six integrity controls
+pass. Native enabled-mode compatibility is established for this diagnostic;
+coordinator tracing overhead is not compared on/off. Saved phase endpoints
+narrow attribution without a V6 repeat or production admission.
+
 The [opt-in coordinator phase recorder](coordinator-frames-result-20261026.md)
 now preserves raw wall/CPU brackets around six stages. Twenty new models plus
 36 unchanged caller/accounting cases pass; independent AST comparison preserves
 the original operational body and deadline reads. Four injected-clock examples
-are synthetic only. No native control or workload runs; enabled-mode native
-compatibility, overhead and package admission remain open.
+are synthetic only. That implementation stage ran no native control or workload;
+the subsequent native result above closes only its diagnostic compatibility.
 
 The [offline observer-variance analysis](git-cpu-variance-result-20261026.md)
 closes CPU-owner arithmetic on the saved sixteen-worker result without new

@@ -334,7 +334,14 @@ failure. A failed diagnostic stops the cohort, never selects a successful subset
 
 The [model-only result](../../docs/testing/performance/0.74/coordinator-frames-result-20261026.md)
 retains 56 passing model/regression cases, the operational AST differential and
-four injected-clock examples. No enabled-mode native control or workload is
-run. Wall bounds concern bracketed CPU-read instants, not effect-only latency;
-CPU is process-wide and includes bookends. Native compatibility, overhead and
-release admission remain unqualified, with all original deadlines unchanged.
+four injected-clock examples. That model-only stage ran no enabled-mode native
+control or workload. Wall bounds concern bracketed CPU-read instants, not
+effect-only latency; CPU is process-wide and includes bookends. All original
+deadlines remain unchanged.
+
+The subsequent [first native control](../../docs/testing/performance/0.74/coordinator-native-result-20261026.md)
+completes the unchanged sixteen-worker schedule on exact source/build with all
+192 probes valid. Six independent retained-data controls pass. This establishes
+enabled-mode compatibility for that diagnostic only: both arms have coordinator
+tracing, not an on/off overhead comparison. Phase wall brackets and process CPU
+observations remain distinct from pure API cost and production authority.
