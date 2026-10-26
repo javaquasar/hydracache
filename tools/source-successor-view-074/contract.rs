@@ -1,6 +1,10 @@
 //! Exact source-test predecessor edits; never a live validation or admission API.
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
+#[path = "diagnostic.rs"]
+pub mod diagnostic;
+#[path = "../security-input-view-074/contract.rs"]
+pub mod security;
 
 pub const PATHS: [&str; 5] = [
     "docs/COMPAT.md",
@@ -72,6 +76,8 @@ fn rules() -> &'static Rules {
 }
 
 pub fn project(path: &str, raw: String) -> String {
+    let raw = diagnostic::project(path, raw);
+    let raw = security::project(path, raw);
     if !PATHS.contains(&path) {
         return raw;
     }

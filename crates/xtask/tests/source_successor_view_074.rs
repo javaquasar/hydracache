@@ -59,7 +59,7 @@ fn whole_body_projection_matches_independent_fixed_producers() {
     for (index, (path, previous)) in CASES.into_iter().enumerate() {
         let current = raw(path);
         let producer = if index == 0 {
-            "a67a5299ab335424e9b11330dc06bd749ea9b859"
+            "d3256fc08b8da2df424d6da5bce99c0e168939b0"
         } else {
             "958b3135a15c00b9f6aad41522cef9d1f6608d3a"
         };
@@ -81,6 +81,11 @@ fn stale_partial_duplicate_and_unrelated_edits_refuse_before_projection() {
     .unwrap();
     for (path, previous) in CASES {
         let current = raw(path);
+        let offset_shift = if path == runtime::successor::diagnostic::PATH {
+            current.len() - runtime::successor::diagnostic::project(path, current.clone()).len()
+        } else {
+            0
+        };
         let row = rules["rows"]
             .as_array()
             .unwrap()
@@ -93,7 +98,7 @@ fn stale_partial_duplicate_and_unrelated_edits_refuse_before_projection() {
             format!("{current}\n// unreviewed side effect\n"),
         ];
         for patch in row["patches"].as_array().unwrap() {
-            let at = patch["offset"].as_u64().unwrap() as usize;
+            let at = patch["offset"].as_u64().unwrap() as usize + offset_shift;
             let exact = patch["current"].as_str().unwrap();
             let old = patch["previous"].as_str().unwrap();
             let mut missing = current.clone();
@@ -131,7 +136,7 @@ fn wrong_path_cannot_borrow_another_files_approval_and_unknowns_stay_unchanged()
             }
         }
     }
-    for path in ["Cargo.lock", "../docs/COMPAT.md", "unrelated.rs"] {
+    for path in ["Cargo.unrelated", "../docs/COMPAT.md", "unrelated.rs"] {
         let bytes = "arbitrary\r\nuntouched input".to_owned();
         assert_eq!(runtime::successor::project(path, bytes.clone()), bytes);
     }
