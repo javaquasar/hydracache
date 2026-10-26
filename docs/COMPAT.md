@@ -1,5 +1,13 @@
 # HydraCache Compatibility Register
 
+The opt-in local diagnostic metadata `hc074-capture-leaves-v1` adds owner/decode
+clock-bracket groups only under exact `--coordinator-frames --capture-leaves`.
+Old default and outer-only output shapes remain unchanged. The new caller
+requires the exact leaf schema before APIs/workers; stale or future schemas
+refuse after exclusive intent without fallback. Only matching diagnostic tools
+understand this separate output root; no old packet is migrated or rewritten.
+This is not a product wire/store, installed execution or authority protocol.
+
 The local offline intent `hc074-offline-capture-attribution-v1` identifies only
 the fixed native coordinator evidence index and its source, never an execution
 request. It creates exclusive intent/result files in a separate diagnostic

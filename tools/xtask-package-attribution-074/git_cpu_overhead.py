@@ -96,10 +96,12 @@ def measure(api, observer, image, block, slot, mode, folder, deadline):
     return result
 
 
-def run(build_label, label, *, coordinator_frames=False):
+def run(build_label, label, *, coordinator_frames=False, capture_leaves=False):
     require(type(coordinator_frames) is bool, 'explicit boolean coordinator frames gate')
+    require(type(capture_leaves) is bool and (not capture_leaves or coordinator_frames), 'explicit leaf gate requires coordinator frames')
     require(all(re.fullmatch('[a-z0-9][a-z0-9-]{0,63}', value) for value in (build_label, label)), 'bounded labels')
-    folder = ROOT/('target/git-cpu-coordinator-frames-20261026' if coordinator_frames else
+    folder = ROOT/('target/git-cpu-capture-leaves-20261026' if capture_leaves else
+                  'target/git-cpu-coordinator-frames-20261026' if coordinator_frames else
                    'target/git-cpu-overhead-20261026')/label
     folder.mkdir(parents=True, exist_ok=False)
     def write(name, value):
@@ -115,6 +117,8 @@ def run(build_label, label, *, coordinator_frames=False):
         retry=False, package_pass=False, server=False)
     if coordinator_frames:
         intent['coordinator_frames'] = dict(enabled=True, schema='hc074-coordinator-frames-v1')
+    if capture_leaves:
+        intent['capture_leaves'] = dict(enabled=True, schema='hc074-capture-leaves-v1')
     write('intent.json', intent)
     try:
         if coordinator_frames:
@@ -122,6 +126,10 @@ def run(build_label, label, *, coordinator_frames=False):
             result['coordinator_frames_contract'] = frames.contract()
             require(result['coordinator_frames_contract']['schema'] == intent['coordinator_frames']['schema'],
                     'coordinator frames schema drift')
+        if capture_leaves:
+            import capture_leaves as leaf_frames
+            result['capture_leaves_contract'] = leaf_frames.contract()
+            require(result['capture_leaves_contract']['schema'] == intent['capture_leaves']['schema'], 'capture leaves schema drift')
         result['pins_before'] = pins()
         sys.path.insert(0, str(ROOT/'tools/historical-blob-batch-074'))
         import package_effects_review_v6 as gate
@@ -133,7 +141,10 @@ def run(build_label, label, *, coordinator_frames=False):
         deadline = time.monotonic()+BOUND
         api, observer = AccountingApi(), WindowsApi()
         for block, slot, mode in schedule():
-            if coordinator_frames:
+            if capture_leaves:
+                attempt = leaf_frames.measure(api, observer, image, block, slot, mode, folder, deadline,
+                                              frames.Tape(), leaf_frames.Leaves())
+            elif coordinator_frames:
                 attempt = frames.measure(api, observer, image, block, slot, mode, folder, deadline, frames.Tape())
             else:
                 attempt = measure(api, observer, image, block, slot, mode, folder, deadline)
@@ -159,8 +170,9 @@ def run(build_label, label, *, coordinator_frames=False):
 
 
 if __name__ == '__main__':
-    require(len(sys.argv) == 3 or (len(sys.argv) == 4 and sys.argv[3] == '--coordinator-frames'),
-            'usage: git_cpu_overhead.py BUILD_LABEL NEW_LABEL [--coordinator-frames]')
-    result = run(*sys.argv[1:3], coordinator_frames=len(sys.argv) == 4)
+    require(len(sys.argv) == 3 or (len(sys.argv) == 4 and sys.argv[3:] == ['--coordinator-frames']) or
+            (len(sys.argv) == 5 and sys.argv[3:] == ['--coordinator-frames', '--capture-leaves']),
+            'usage: git_cpu_overhead.py BUILD_LABEL NEW_LABEL [--coordinator-frames [--capture-leaves]]')
+    result = run(*sys.argv[1:3], coordinator_frames=len(sys.argv) >= 4, capture_leaves=len(sys.argv) == 5)
     print(json.dumps(dict(passed=result['passed'], first_refusal=result['first_refusal'], package_pass=False)))
     raise SystemExit(0 if result['passed'] else 1)
