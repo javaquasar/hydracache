@@ -1,0 +1,8 @@
+test_actual_packet_is_not_release_admission (test_verify.Integrity.test_actual_packet_is_not_release_admission) ... ok
+test_changed_index_is_refused (test_verify.Integrity.test_changed_index_is_refused) ... ok
+test_changed_public_vector_is_refused (test_verify.Integrity.test_changed_public_vector_is_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 1.429s
+
+OK

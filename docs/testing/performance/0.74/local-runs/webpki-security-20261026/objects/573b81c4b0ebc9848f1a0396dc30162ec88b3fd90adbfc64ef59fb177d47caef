@@ -1,0 +1,27 @@
+"""Read pinned upstream public SPKI test material; no private keys."""
+import hashlib
+import json
+from pathlib import Path
+import urllib.request
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT/'target/webpki-fixtures-20261026'
+OUT.mkdir(exist_ok=False)
+revision = '8ecdcc76f56b68fda67a6adf7976f5eed5006a4c'
+names = [name+'.spki.der' for name in ('EMDVTLSCAG3B', 'EMDVTLSCAG3C', 'EMEVTLSCAG3B',
+    'EMEVTLSCAG3C', 'EMOVCSCAG3B', 'EMOVCSCAG3C', 'EMOVTLSCAG3B', 'EMOVTLSCAG3C')]
+intent = dict(upstream='https://github.com/rustls/webpki', revision=revision, names=names,
+              public_data_only=True, services=False, server=False, product=False)
+with (OUT/'intent.json').open('x') as stream:
+    json.dump(intent, stream, indent=2)
+rows = []
+for name in names:
+    url = f'https://raw.githubusercontent.com/rustls/webpki/{revision}/src/data/distrusted/{name}'
+    with urllib.request.urlopen(url, timeout=15) as response:
+        raw = response.read(4097)
+    if len(raw) != 118:
+        raise ValueError('unexpected public SPKI size')
+    rows.append(dict(name=name, url=url, bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest(), hex=raw.hex()))
+with (OUT/'vectors.json').open('x') as stream:
+    json.dump(dict(revision=revision, vectors=rows), stream, indent=2)
+print(dict(vectors=len(rows), private_keys=False))

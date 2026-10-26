@@ -1,0 +1,399 @@
+{
+  "advisory_database_commit": "84d943a6deeb8cc6c6f632531aaf4f1c62275239",
+  "base_commit": "b45c1a852940c5b0d43ffdc174d4ca1eaa4b36f0",
+  "baseline_accepted_keys": 8,
+  "counts": {
+    "webpki-candidate": {
+      "targets": 2,
+      "totals": [
+        5,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "webpki-linux": {
+      "targets": 2,
+      "totals": [
+        5,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "webpki-msrv": {
+      "targets": 2,
+      "totals": [
+        5,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "webpki-regression": {
+      "targets": 4,
+      "totals": [
+        20,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "webpki-resp-all": {
+      "targets": 16,
+      "totals": [
+        183,
+        0,
+        23,
+        0,
+        0
+      ]
+    }
+  },
+  "fixed_rejected_keys": 8,
+  "full_package_pass": false,
+  "members": {
+    "baseline/Cargo.lock": {
+      "bytes": 175330,
+      "sha256": "552f8c1fbb9fb06aadefca3fffb4f90cc1b78f4aed3e2c001cdf399b9b6bf0b1"
+    },
+    "baseline/Cargo.toml": {
+      "bytes": 6971,
+      "sha256": "9d58846151c4a81901b23e6c1cde106cde310b6dd4d0fc0aaeac44e259abc738"
+    },
+    "baseline/deny.toml": {
+      "bytes": 2354,
+      "sha256": "07f195fbffecbb1aaad5ec2ec6e0c11d4020e42a837256ba6a57f675d033bd3b"
+    },
+    "checks/webpki-baseline/intent.json": {
+      "bytes": 350047,
+      "sha256": "e3bcd556f9e0a92bcab1ce228c2bdc2dda083bca2d738d06a4243b5ff829ea87"
+    },
+    "checks/webpki-baseline/process.json": {
+      "bytes": 14,
+      "sha256": "732a011ecfcb3dd81b27a851ed9a93b017a8f19b545aecf2fd58eeeb0b97461f"
+    },
+    "checks/webpki-baseline/result.json": {
+      "bytes": 349839,
+      "sha256": "86cbbce793b070fcf184bdfa4ea5f637efafa51d3fe8f176424c0a4c94feb1e1"
+    },
+    "checks/webpki-baseline/stderr.log": {
+      "bytes": 391,
+      "sha256": "339f3a2c044777e219fa992dbd9ce382fce7cc9818346c3138ad0702a2e10091"
+    },
+    "checks/webpki-baseline/stdout.log": {
+      "bytes": 830,
+      "sha256": "5df7f92cb27c4f1bbeae499811a2c2962bcd682745ba560a84a84e9190c35c63"
+    },
+    "checks/webpki-candidate/intent.json": {
+      "bytes": 350077,
+      "sha256": "c752999a74c77dbcd8fcc039789758ad1de92ba202b0acd7ceaeff0125f3907b"
+    },
+    "checks/webpki-candidate/process.json": {
+      "bytes": 14,
+      "sha256": "bbe6f97f759fa9fc1c476002f9241481b2e1248cc0baa49204b19893fe9b33dd"
+    },
+    "checks/webpki-candidate/result.json": {
+      "bytes": 349837,
+      "sha256": "c1a32f7b6648b0582ceb10bbcd69682e093ed99e41272877bb42b4fe0d1d93b8"
+    },
+    "checks/webpki-candidate/stderr.log": {
+      "bytes": 600,
+      "sha256": "020ae7d94b79b1d3c90a51659b3ab9e936bfffce5c89479fc796f7afd0b637a0"
+    },
+    "checks/webpki-candidate/stdout.log": {
+      "bytes": 612,
+      "sha256": "153a3a606f5bad694e631fba940418d697fb946c58b668b1d5c797f4f7d2776e"
+    },
+    "checks/webpki-check/intent.json": {
+      "bytes": 350026,
+      "sha256": "1bd7fbcd02a553f52b63f6dc67ed980adf8e6c292cd2972ac779d63564011e5f"
+    },
+    "checks/webpki-check/process.json": {
+      "bytes": 14,
+      "sha256": "4d22e41258e901282487a0a0aa96e74be83ccd7ff5a36a3f6b56bb46fa1346e8"
+    },
+    "checks/webpki-check/result.json": {
+      "bytes": 349837,
+      "sha256": "7089271b212a575e26cbe2cf0d42c0e6a5401dbf6bbd0e52ad3bb6ad40e1f0cd"
+    },
+    "checks/webpki-check/stderr.log": {
+      "bytes": 933,
+      "sha256": "38e4f1cc35943d940c5eaf8525bfd2fa181716f44fe22af8389c70f93841e11a"
+    },
+    "checks/webpki-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/webpki-clippy/intent.json": {
+      "bytes": 350089,
+      "sha256": "14fbeb3a97106c4b925ba97aea0d5055e752c18e308ae56b67b152b36c5f1ea3"
+    },
+    "checks/webpki-clippy/process.json": {
+      "bytes": 14,
+      "sha256": "d72e521434388b7fbc4453c0a9175483635d8975a01cdbbe10ee6f25bd3a2bcf"
+    },
+    "checks/webpki-clippy/result.json": {
+      "bytes": 349837,
+      "sha256": "1dfe03fcf5bd36f0dd5c58974c8c994e0fdeae64658f064d856e450506b9d008"
+    },
+    "checks/webpki-clippy/stderr.log": {
+      "bytes": 607,
+      "sha256": "d35a2440d7e9f05289a6204eb1794a78400acb5391cde08df687d6e13a2543d6"
+    },
+    "checks/webpki-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/webpki-contract/intent.json": {
+      "bytes": 349955,
+      "sha256": "af47ee1e67255540581f61b8e626ec0af59e0fcd6d996d05631a236769093b90"
+    },
+    "checks/webpki-contract/process.json": {
+      "bytes": 14,
+      "sha256": "bbed125b0559b23f87538786fa0b5eb5f9b3ae5b4ef3cef8c67c431b30322727"
+    },
+    "checks/webpki-contract/result.json": {
+      "bytes": 349837,
+      "sha256": "d560ce34a7082572e18f0f677a02041dd8bafec7a8b05b83012301f78ff1f693"
+    },
+    "checks/webpki-contract/stderr.log": {
+      "bytes": 210,
+      "sha256": "115b6e0cec2a339b221355a8c5e93f3c953cae454fea5d264181695c4f345b99"
+    },
+    "checks/webpki-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/webpki-doc/intent.json": {
+      "bytes": 349907,
+      "sha256": "4af5d79c0f4ffc6db89807dea9746f81beddb3f1e82e4487393e2067bbc1c87c"
+    },
+    "checks/webpki-doc/process.json": {
+      "bytes": 13,
+      "sha256": "d166fb9ad481a79ee4e41f30d5c1032b17381167193e3822266808d42e9b5294"
+    },
+    "checks/webpki-doc/result.json": {
+      "bytes": 349837,
+      "sha256": "889eabdece0a70ca7be1688632baa6e806e72f888c5cc4c6e69d7d74bd171f9a"
+    },
+    "checks/webpki-doc/stderr.log": {
+      "bytes": 776,
+      "sha256": "a8965f44440ad218efe798b96ccc1dcc0c020808d7440c223770f50a0dbf9da3"
+    },
+    "checks/webpki-doc/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/webpki-format/intent.json": {
+      "bytes": 349957,
+      "sha256": "aed3400f09b1ffd339504551688bbae6dfdc514f5867e572d7bdd53db5818427"
+    },
+    "checks/webpki-format/process.json": {
+      "bytes": 14,
+      "sha256": "e7d8ae9e9c9d7d4289d0d9e1fb0050419f5bb6caac5281058a7a0847a7944603"
+    },
+    "checks/webpki-format/result.json": {
+      "bytes": 349837,
+      "sha256": "ee4ca6654852d87d8ee6305b7ab5a0e2ff5d3b6fae0080c314db0eda8f7c510b"
+    },
+    "checks/webpki-format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/webpki-format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/webpki-linux/intent.json": {
+      "bytes": 350517,
+      "sha256": "730507c089f1148de4562cadbe3ca1cc8507252c51ee781cea438ac1117b2bf2"
+    },
+    "checks/webpki-linux/process.json": {
+      "bytes": 14,
+      "sha256": "712d5c806bd4ece308df837746090246b345f42fb8f43dc028bf832b0ea5220c"
+    },
+    "checks/webpki-linux/result.json": {
+      "bytes": 349837,
+      "sha256": "b41c492b8f4606c84a91060915a9c53bdecca2632d6992e84c0ad6c9fa04dd91"
+    },
+    "checks/webpki-linux/stderr.log": {
+      "bytes": 680,
+      "sha256": "2a2ebc7cd1b72191fa657e9d5256c098fd04efb3b60d0c45f2395395564ecb2b"
+    },
+    "checks/webpki-linux/stdout.log": {
+      "bytes": 612,
+      "sha256": "f45d3ba5e527c401457adce3ddcd813383523bcdc1d2cf50cf61dfb42e3d30d3"
+    },
+    "checks/webpki-msrv/intent.json": {
+      "bytes": 350154,
+      "sha256": "3ef0bbb22c3a11d5f97a83ce178525d127e06f64d415c6e2474bc2dd048bd3be"
+    },
+    "checks/webpki-msrv/process.json": {
+      "bytes": 13,
+      "sha256": "e06d18051211c35b6124625bd629130d6d272f675689f6ae14f72298c658a5c0"
+    },
+    "checks/webpki-msrv/result.json": {
+      "bytes": 349837,
+      "sha256": "7481f5e6f683b09d492140171528f617f07ea73f07b03669bf189ae3028692b7"
+    },
+    "checks/webpki-msrv/stderr.log": {
+      "bytes": 585,
+      "sha256": "23ad49065b4a8fa08b77742cd93de0ea106b7916c497a3da4625db459512bef7"
+    },
+    "checks/webpki-msrv/stdout.log": {
+      "bytes": 612,
+      "sha256": "bad8004f8ef6c9ed05be5c2e877d105137635eb9de9ffbed399cb2930d55d350"
+    },
+    "checks/webpki-policy/intent.json": {
+      "bytes": 349927,
+      "sha256": "1684ab774df578a49f915f61d5c1c8ae27d8e59b0e1010093a5b2ec446cdb730"
+    },
+    "checks/webpki-policy/process.json": {
+      "bytes": 14,
+      "sha256": "cee1131aab8590d20b07f5538eb32deb7afe4b7192c02bdc35f033b7a92941f5"
+    },
+    "checks/webpki-policy/result.json": {
+      "bytes": 349837,
+      "sha256": "22032882c551b249dacb697a0c14c7a2161d622e68e3c86c3814e5c16ae16ae7"
+    },
+    "checks/webpki-policy/stderr.log": {
+      "bytes": 537731,
+      "sha256": "85715173a43c331cb14a9a27a5eff95da2879870285abc2b44dc89af3322134d"
+    },
+    "checks/webpki-policy/stdout.log": {
+      "bytes": 52,
+      "sha256": "da37e522d5b3103a1c4aba99887f6c3cc89aee5534b41819544124a22f55dfd3"
+    },
+    "checks/webpki-regression/intent.json": {
+      "bytes": 350212,
+      "sha256": "8d16eef120229ffeb6435983d94e37d96efe300ea8cca72814ebd7ea0fd82cea"
+    },
+    "checks/webpki-regression/process.json": {
+      "bytes": 13,
+      "sha256": "aee1af21e7f83cabc531bb4af2e8aea34eff2e71d9e00a9e48d6b3a95bb724c3"
+    },
+    "checks/webpki-regression/result.json": {
+      "bytes": 349837,
+      "sha256": "9c4bd9bce73c6d6bb5ca681837005d67a69eea31c3497860897e4a7ea967a382"
+    },
+    "checks/webpki-regression/stderr.log": {
+      "bytes": 2862,
+      "sha256": "0a6778316bf9fa655f237d6f61e2cf4786b7ff93b45a93a2071480475742d981"
+    },
+    "checks/webpki-regression/stdout.log": {
+      "bytes": 1906,
+      "sha256": "557a1ca7ac8ffb043dda03aefb788a3ccdcf9e96ec9f721cc355b53a053f75ab"
+    },
+    "checks/webpki-resp-all/intent.json": {
+      "bytes": 349966,
+      "sha256": "d510062c792972e6264c17393da4c264e7924e2bc6a52f4e440277dea1b83aef"
+    },
+    "checks/webpki-resp-all/process.json": {
+      "bytes": 14,
+      "sha256": "62fa664c3c1ab2eb1118f626047bb8aa792935397276630b786b5f8b9ba9f0cd"
+    },
+    "checks/webpki-resp-all/result.json": {
+      "bytes": 349837,
+      "sha256": "381fe2219f4f92c47e3f4bf5a1698f44c4b2a31ff889e368d7ce37f9356bbdd1"
+    },
+    "checks/webpki-resp-all/stderr.log": {
+      "bytes": 1914,
+      "sha256": "e6a29b30105e6962cd984edc55b44a6e32f52a915be478b0bf4e95e3107e5d08"
+    },
+    "checks/webpki-resp-all/stdout.log": {
+      "bytes": 19822,
+      "sha256": "e4cb30d7ed5b167978502d037c111cadabd07e60b1de8afda13f1b604327683a"
+    },
+    "checks/webpki-update/intent.json": {
+      "bytes": 349951,
+      "sha256": "f78cb2abf389b1dcd2abe3cd1b812d0a583b7cb9a10b88c4ebfaf8d380fa7e6f"
+    },
+    "checks/webpki-update/process.json": {
+      "bytes": 14,
+      "sha256": "da30a6b5476c52699cc1ae1403a24bb6227642a65fcee81c9e4384c50455ed9a"
+    },
+    "checks/webpki-update/result.json": {
+      "bytes": 349859,
+      "sha256": "1e14aa19085c67411ff53f646989f861548699c6c5b39961bf1ae3d85f881dad"
+    },
+    "checks/webpki-update/stderr.log": {
+      "bytes": 150,
+      "sha256": "d9fdcaa1ab7f9240a6dff4f16f0566fd925c8a030b2983edf5d9644f1b2ba151"
+    },
+    "checks/webpki-update/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "coordinator/fetch-webpki-fixture-20261026.py": {
+      "bytes": 1332,
+      "sha256": "573b81c4b0ebc9848f1a0396dc30162ec88b3fd90adbfc64ef59fb177d47caef"
+    },
+    "coordinator/run-webpki-step-20261026.py": {
+      "bytes": 3303,
+      "sha256": "0b02494d4177eb5ffe730646c4ce404371b0cfb40a143caccce05c24bbe07427"
+    },
+    "coordinator/seal-webpki-20261026.py": {
+      "bytes": 5717,
+      "sha256": "01b2c91a6c875ea69f5a1dccf851c69d1442c2c77eafe7dd4a75968e698d66cd"
+    },
+    "source/Cargo.lock": {
+      "bytes": 175330,
+      "sha256": "de72f44d4a0e14b712c0a823b9f5887e33ebba551d4eb586d68aca5a4ac4ddd8"
+    },
+    "source/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "8602b3d437090cc3989017a46550be2052893fcffb156d024817bccbb3d4c4e3"
+    },
+    "source/crates/hydracache-redis-compat/tests/tls_spki_security_074.LICENSE": {
+      "bytes": 1015,
+      "sha256": "eb62b756e030766707db73b7c344fa4ecafba4f1ae1fb8d2ccb53ebbd3ee9b86"
+    },
+    "source/crates/hydracache-redis-compat/tests/tls_spki_security_074.rs": {
+      "bytes": 6724,
+      "sha256": "1992a6cf2fd7ec42b69bb7fb2561eba562c73051e4c6a15914c33de9752ab466"
+    },
+    "source/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "source/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "upstream/intent.json": {
+      "bytes": 462,
+      "sha256": "8c47a590f0e7e2c94b57a4e05a240bc83620f3140e0ff91d727294d2f6fc3161"
+    },
+    "upstream/vectors.json": {
+      "bytes": 4575,
+      "sha256": "272cf7f2260053b491d90696f8ab7b08a5b2b369dcf720fdb961ed5ee2a8bdf2"
+    }
+  },
+  "msrv": "1.88",
+  "new_version": "0.103.16",
+  "old_version": "0.103.15",
+  "policy_pass": false,
+  "production_original_delivery": false,
+  "release_admitted": false,
+  "remaining_advisories": [
+    "RUSTSEC-2024-0449",
+    "RUSTSEC-2026-0367",
+    "RUSTSEC-2026-0368",
+    "RUSTSEC-2026-0369",
+    "RUSTSEC-2026-0370",
+    "RUSTSEC-2026-0371",
+    "RUSTSEC-2026-0372",
+    "RUSTSEC-2026-0381",
+    "RUSTSEC-2026-0383",
+    "RUSTSEC-2026-0386"
+  ],
+  "same_oracle_bytes": true,
+  "schema": "hc074-webpki-spki-security-v1",
+  "server": false,
+  "unrelated_lock_delta": false
+}

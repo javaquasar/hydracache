@@ -1,0 +1,4 @@
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.53s
+     Running tests\tls_spki_security_074.rs (target\debug\deps\tls_spki_security_074-291a0cc7e1eb88fc.exe)
+error: test failed, to rerun pass `-p hydracache-redis-compat --test tls_spki_security_074`

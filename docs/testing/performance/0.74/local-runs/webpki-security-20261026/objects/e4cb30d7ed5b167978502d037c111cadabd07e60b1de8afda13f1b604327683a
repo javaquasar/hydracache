@@ -1,0 +1,286 @@
+
+running 104 tests
+test core_invariants::del_concurrent_write_atomicity_is_documented_debt_not_a_frozen_guarantee ... ok
+test get_response_owner_074::tests::invalid_initial_and_followup_plans_do_not_transfer_payload ... ok
+test get_response_owner_074::tests::every_non_get_reducer_delegates_to_the_existing_borrowed_path ... ok
+test get_response_owner_074::tests::response_metadata_does_not_introduce_a_new_protocol_gate ... ok
+test core_invariants::resp_lock_and_extension_bytes_never_appear_in_debug_errors_metrics_stats_or_diagnostics ... ok
+test get_response_owner_074::tests::spare_capacity_empty_and_missing_values_use_canonical_fallback ... ok
+test core_invariants::oversized_lock_token_or_value_is_rejected_loud_not_truncated ... ok
+test get_response_owner_074::tests::wrong_counts_kinds_and_every_client_error_preserve_canonical_details ... ok
+test non_interference::enabling_redis_listener_does_not_change_core_cache_or_client_surface_behavior ... ok
+test core_invariants::resp_lock_ops_match_ordinary_admission_and_rejection_audit_policy ... ok
+test non_interference::resp_lock_state_is_independent_of_native_fenced_lock_engine ... ok
+test resp3_contract::resp3_hello_map_matches_normalized_semantics_without_order_assumption ... ok
+test resp3_contract::all_canonical_wire_cases_decode_equivalently_under_resp2_and_resp3 ... ok
+test resp3_contract::resp3_null_encoder_uses_underscore_and_resp2_encoder_uses_dash_one ... ok
+test resp3_contract::resp3_scalar_array_binary_bulk_and_error_frames_match_golden_bytes ... ok
+test resp3_contract::resp3_null_uses_underscore_encoding_and_resp2_uses_dash_one ... ok
+test core_invariants::translate_redis_command_is_total_and_never_panics_on_arbitrary_commands ... ok
+test resp3_contract::resp3_decoder_never_panics_on_arbitrary_bytes ... ok
+test resp3_contract::resp3_partial_pipeline_consumed_and_limit_boundaries_match_resp2 ... ok
+test tests::admin_commands_are_disabled_by_default_without_config_or_flush_mutation ... ok
+test tests::cluster_and_moved_ask_are_never_emitted ... ok
+test tests::cluster_commands_decode_as_unsupported_standalone_contract ... ok
+test resp3_contract::resp3_script_load_exists_eval_evalsha_release_extend_and_reacquire_roundtrip ... ok
+test tests::auth_hello_auth_and_noauth_errors_match_contract ... ok
+test tests::command_parser_recognizes_auth_and_hello_auth ... ok
+test tests::command_parser_recognizes_mset_and_ttl_family ... ok
+test get_response_owner_074::tests::successful_get_transfers_pointer_and_preserves_resp2_resp3_bytes ... ok
+test tests::cluster_mode_commands_fail_loud_over_resp_without_topology_or_redirects ... ok
+test tests::command_parser_keeps_set_options_parser_neutral ... ok
+test tests::command_parser_reports_mset_wrong_arity ... ok
+test tests::del_and_exists_return_redis_integer_counts ... ok
+test tests::command_reply_advertises_only_supported_subset ... ok
+test tests::eval_extend_script_maps_keys1_token_and_ttl_without_mutating_on_bad_args ... ok
+test tests::eval_known_unlock_script_deletes_only_matching_token ... ok
+test resp3_contract::resp3_top_level_nested_and_attributed_aggregates_fail_before_dispatch ... ok
+test tests::eval_redis_py_release_and_reacquire_scripts_are_exact_allowlisted ... ok
+test tests::eval_redlock_single_resource_scripts_acquire_extend_and_release ... ok
+test tests::eval_redis_py_extend_adds_to_remaining_ttl_and_rejects_persistent_keys ... ok
+test tests::facade_advertises_resp2_and_resp3_for_this_release ... ok
+test tests::expire_pexpire_and_persist_on_missing_key_return_zero ... ok
+test tests::expire_zero_or_negative_deletes_key_and_returns_one ... ok
+test tests::hc_commands_decode_to_explicit_extension_shapes ... ok
+test tests::expired_by_nonpositive_expire_is_absent_for_get_mget_exists_ttl ... ok
+test tests::expire_options_are_unsupported_without_mutating_existing_ttl ... ok
+test tests::hc_invalidate_key_goes_through_client_surface_limits_and_audit ... ok
+test tests::get_set_del_mget_mset_roundtrip_through_client_surface ... ok
+test tests::hc_invalidate_tag_prunes_expired_keys_without_counting_them ... ok
+test tests::hc_stats_and_diagnostics_are_tenant_scoped_extension_requests ... ok
+test tests::hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface ... ok
+test tests::hc_tag_missing_key_does_not_create_metadata_or_mutate ... ok
+test tests::info_returns_minimal_honest_facade_state ... ok
+test tests::hc_namespace_is_listener_scoped_not_redis_multidb ... ok
+test tests::hello2_and_hello3_are_supported_and_switch_dialect ... ok
+test tests::malformed_resp_frames_fail_loudly_like_redis_protocol_suite ... ok
+test tests::hc_stats_and_diagnostics_over_resp_are_bounded_and_redacted ... ok
+test tests::lock_script_sha_fingerprints_are_frozen_for_reviewed_client_versions ... ok
+test tests::info_section_argument_does_not_fabricate_redis_keyspace_state ... ok
+test tests::info_role_dbsize_type_scan_and_config_follow_contract_classification ... ok
+test tests::partial_frame_waits_for_more_bytes ... ok
+test tests::mset_oversized_value_rejects_without_partial_mutation ... ok
+test tests::plain_set_removes_existing_ttl_like_redis ... ok
+test tests::redis_auth_redacts_credentials_from_errors_logs_and_metrics ... ok
+test tests::mget_preserves_order_and_represents_misses_as_nil_bulk ... ok
+test tests::redis_auth_uses_hardened_credential_comparison_contract ... ok
+test tests::redis_pattern_matching_covers_binary_glob_shapes ... ok
+test tests::redis_binary_keys_map_to_structured_keys_without_utf8_assumptions ... ok
+test tests::rejected_set_and_expire_shapes_use_redis_error_class_or_documented_normalization ... ok
+test tests::resp_decode_limits_reject_oversized_arrays_and_bulk_strings ... ok
+test tests::redis_auth_success_binds_connection_local_client_identity ... ok
+test tests::redis_auth_required_listener_rejects_data_commands_before_auth ... ok
+test tests::resp3_command_frames_decode_to_same_parser_neutral_model ... ok
+test tests::resp3_unsupported_aggregate_inputs_fail_before_mutation ... ok
+test tests::resp3_commands_roundtrip_supported_cache_subset ... ok
+test tests::resp_listener_admin_commands_are_disabled_before_mutation ... ok
+test tests::resp_listener_info_probe_does_not_fabricate_keyspace_or_cluster_state ... ok
+test tests::resp_frame_roundtrip_matches_redis_protocol ... ok
+test tests::select_nonzero_and_invalid_db_fail_loud ... ok
+test tests::resp_listener_select_zero_ok_and_nonzero_keeps_default_database ... ok
+test tests::script_load_exists_and_evalsha_are_allowlist_scoped ... ok
+test tests::resp_listener_serves_pipelined_get_set_over_io ... ok
+test tests::resp_listener_surfaces_errors_without_moved_or_ask ... ok
+test tests::select_zero_is_supported_as_noop_for_single_database_contract ... ok
+test tests::resp_listener_type_reports_string_and_none ... ok
+test tests::set_nx_px_acquires_missing_key_and_contention_returns_null ... ok
+test tests::set_write_conditional_options_follow_conformance_contract ... ok
+test tests::sha1_hex_matches_known_answer_vectors ... ok
+test tests::set_nx_ex_ttl_uses_seconds_and_expires ... ok
+test tests::subscription_ack_uses_resp2_array_and_resp3_push_frames ... ok
+test tests::subscription_commands_decode_to_connection_state_commands ... ok
+test tests::setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics ... ok
+test tests::type_reports_string_or_none_through_client_surface ... ok
+test tests::unsupported_command_is_loudly_classified_without_semantic_mapping ... ok
+test tests::unsupported_commands_fail_loud_with_stable_error ... ok
+test translation_contract::del_translation_freezes_lookup_followups_deduplication_and_reducer ... ok
+test translation_contract::canary_routing_table_drops_a_supported_case ... ok
+test tests::unknown_eval_script_fails_loud_before_mutation ... ok
+test translation_contract::supported_surface_routes_freeze_connection_listener_and_translator_owners ... ok
+test translation_contract::every_translator_owned_case_maps_to_frozen_complete_execution_plan ... ok
+test translation_contract::translation_catalog_has_no_missing_or_extra_case_ids ... ok
+test core_invariants::mget_len_equals_keys_len_and_exists_count_is_bounded_for_arbitrary_inputs ... ok
+test translation_contract::routing_table_covers_every_supported_caveated_and_extension_manifest_row ... ok
+test translation_contract::wire_aliases_decode_to_the_canonical_translation_case ... ok
+test translation_contract::lock_eval_and_evalsha_cases_freeze_all_allowlisted_script_shapes ... ok
+test get_response_owner_074::tests::seeded_property_matches_independent_borrowed_oracle_and_ownership ... ok
+
+test result: ok. 104 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+
+running 4 tests
+test canary_connection_reset_leaks_an_inflight_ticket ... ok
+test connection_limit_exhaustion_is_bounded_and_recovers_not_ooms ... ok
+test half_open_and_reset_connections_free_resources_without_leaking_inflight_work ... ok
+test connection_churn_returns_counters_to_baseline_no_leak ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test del_does_not_count_expired_entries ... ok
+test del_deduplicates_keys_counts_only_live_removals_and_accepts_binary_keys ... ok
+test rejected_oversized_del_is_atomic ... ok
+test del_emits_one_invalidation_per_removed_key_in_input_order ... ok
+test del_releases_tenant_quota_for_the_whole_batch ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 23 tests
+test client_matrix_runs_auth_required_connection_scenario ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves AUTH-required startup
+test client_matrix_runs_hydracache_tag_extension_scenario ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves HydraCache HC tag extensions through redis-rs
+test client_matrix_runs_mset_and_ttl_commands ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves MSET and TTL client commands
+test client_matrix_runs_rediss_required_connection_scenario ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves rediss:// startup
+test client_matrix_runs_resp3_negotiation_scenario ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves redis-rs RESP3 negotiation
+test client_matrix_set_nx_px_lock_idiom_acquires_contends_and_releases ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves SET NX PX lock acquire/contention/release
+test mainstream_redis_client_can_talk_to_the_facade ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; uses mainstream redis-rs client path
+test nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and optional Python/Node/Go/JVM client runtimes
+test redis_oracle_del_exists_counts_match_real_redis ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images
+test redis_oracle_hc_extensions_are_hydracache_only ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images
+test redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images
+test redis_oracle_lock_unlock_script_matches_real_redis ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images
+test redis_oracle_mget_nil_and_order_match_real_redis ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images
+test redis_oracle_mset_atomicity_matches_real_redis ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images
+test redis_oracle_set_nx_px_lock_acquire_matches_real_redis ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images
+test redis_oracle_set_options_are_documented_divergence ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images
+test redis_oracle_supported_subset_matches_real_redis ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images
+test redis_oracle_ttl_edge_cases_match_real_redis ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images
+test redis_oracle_ttl_matches_real_redis_with_bounded_tolerance ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images
+test redis_oracle_unsupported_divergence_is_documented ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images
+test redis_oracle_uses_pinned_redis_versions ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images
+test redis_client_gate_manifest_and_docs_are_wired ... ok
+test redis_client_heavy_gate_is_executable_and_env_gated ... ok
+
+test result: ok. 2 passed; 0 failed; 21 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 16 tests
+test event_listener_is_disabled_by_default_and_auth_precedes_subscription ... ok
+test native_bridge_resp3_uses_push_frames ... ok
+test pattern_unsubscribe_acknowledges_and_leaves_resp2_subscribed_mode ... ok
+test native_bridge_unsubscribe_drops_receiver_and_resubscribe_does_not_replay ... ok
+test native_bridge_lag_disconnects_without_blocking_writers_and_can_recover ... ok
+test authenticated_redis_client_receives_native_event_only_after_auth ... ok
+test redis_rs_pattern_listener_receives_keyspace_and_keyevent_messages ... ok
+test subscription_byte_limit_rejects_admission_atomically ... ok
+test resp3_push_mode_keeps_ordinary_commands_available ... ok
+test resp2_subscribed_mode_rejects_ordinary_commands ... ok
+test redis_listener_observes_hc2_style_mutation_on_shared_verified_surface ... ok
+test subscription_limit_is_atomic_and_counts_unique_channels ... ok
+test unsubscribe_acknowledges_and_leaves_resp2_subscribed_mode ... ok
+test redis_rs_listener_covers_supported_mutation_event_names ... ok
+test native_and_verified_surface_events_are_delivered_once_without_global_order_claim ... ok
+test native_bridge_exact_subscription_is_namespace_fenced_and_metadata_only ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+
+running 1 test
+test redis_mined_edge_corpus_matches_oracle_for_supported_subset ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test deep_pipeline_retains_per_reply_writes_after_rejected_adaptive_candidate ... ok
+test incomplete_second_frame_does_not_delay_the_first_reply ... ok
+test sequential_pipeline_one_keeps_one_write_and_flush_per_reply ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 11 tests
+test canary_resp3_encoder_does_not_regress_null_to_resp2 ... ok
+test oversized_bulk_and_array_frames_are_rejected_before_allocation_spike ... ok
+test partial_resp_frames_decode_like_complete_frames ... ok
+test multiple_resp_frames_in_one_read_are_all_processed ... ok
+test golden_resp_fixtures_decode_to_expected ... ok
+test resp3_null_uses_underscore_encoding_and_resp2_uses_dash_one ... ok
+test resp3_integer_array_binary_bulk_and_error_frames_match_golden_bytes ... ok
+test resp3_top_level_nested_and_attributed_aggregates_fail_loud ... ok
+test resp3_partial_pipeline_consumed_and_limit_boundaries_match_resp2 ... ok
+test resp_decoder_never_panics_on_arbitrary_bytes ... ok
+test resp3_decoder_never_panics_on_arbitrary_bytes ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 5 tests
+test public_borrowed_get_preserves_original_owner_values_and_error_details ... ok
+test multi_key_duplicate_order_and_counts_match_canonical_borrowed_oracle ... ok
+test retained_get_response_survives_replacement_expiry_and_removal ... ok
+test native_get_response_capacity_matches_payload_len_for_admitted_sizes ... ok
+test execution_matches_borrowed_oracle_for_binary_empty_missing_and_large_get ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 2 tests
+test pipeline_counters_are_off_by_default_and_reset_only_when_requested ... ok
+test pipeline_counters_reconcile_current_per_command_compaction_and_flush ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 7 tests
+test resp_resource_smoke_bounds_pipelined_connection_and_redacts_extension_output ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE=1; resource/hostile-input smoke
+test slowloris_and_oversized_frames_fail_loud_without_mutation ... ignored, requires HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE=1; slowloris/oversized frame smoke
+test resource_smoke_gate_manifest_and_docs_are_wired ... ok
+test resource_smoke_heavy_gate_is_executable_and_env_gated ... ok
+test connection_close_mid_command_does_not_corrupt_next_response ... ok
+test connection_close_mid_pipeline_preserves_committed_response_boundaries ... ok
+test reconnect_and_retry_does_not_leak_connection_local_namespace ... ok
+
+test result: ok. 5 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 1 test
+test fixed_two_reply_batch_cannot_preserve_both_commit_frontier_and_response_order ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 19 tests
+test cancelled_reused_large_get_writer_does_not_execute_queued_mutation ... ok
+test closed_write_gate_backpressures_one_connection_without_starving_another ... ok
+test disconnect_during_partial_reply_does_not_poison_committed_state_or_reconnect ... ok
+test failed_flush_after_complete_reply_does_not_execute_the_next_set ... ok
+test every_partial_reply_and_pending_flush_preserve_the_mutation_frontier ... ok
+test consecutive_large_get_write_or_flush_failure_never_executes_following_set ... ok
+test fragmented_frames_short_writes_and_pending_flush_preserve_pipeline ... ok
+test large_get_scratch_auth_barrier_matches_fragmented_canonical_control ... ok
+test large_get_scratch_subscription_transition_matches_canonical_and_releases_subscriber ... ok
+test consecutive_large_get_fragmentation_mixed_sizes_and_dialects_keep_exact_bytes ... ok
+test large_get_scratch_malformed_and_quit_barriers_do_not_run_later_set ... ok
+test queued_get_observes_intervening_native_put_without_blocking_native ... ok
+test queued_set_does_not_reserve_quota_ahead_of_intervening_native_put ... ok
+test queued_set_nx_revalidates_after_intervening_native_invalidate ... ok
+test reused_large_get_reply_does_not_reserve_quota_for_following_set ... ok
+test reused_large_get_reply_does_not_hide_expiry_before_next_get ... ok
+test queued_set_nx_uses_expiry_and_ttl_at_its_execution_boundary ... ok
+test large_reply_survives_repeated_pending_and_one_byte_writes ... ok
+test consecutive_large_get_pending_reply_preserves_native_progress_and_mutation_frontier ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+
+running 3 tests
+test debug_oracle_rejects_payloads_and_accepts_only_absent_or_redacted_secrets ... ok
+test tls12_session_debug_redacts_secrets_without_breaking_resumption ... ok
+test tls13_session_debug_redacts_secrets_without_breaking_resumption ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 2 tests
+test ordinary_chain_still_checks_name_time_and_issuer ... ok
+test all_eight_distrusted_public_keys_are_rejected_even_under_a_trusted_test_ca ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,35 @@
+"""Verify actual staged Git bytes for all new packets, including final checks."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = ROOT/'docs/testing/performance/0.74/local-runs'
+expected = {}
+for folder in ('closure-preflight-20261026', 'rustls-authorized-20261026', 'selected-manager-20261026', 'webpki-security-20261026'):
+    for path in (BASE/folder).rglob('index.json'):
+        raw = path.read_bytes()
+        expected[path.relative_to(ROOT).as_posix()] = hashlib.sha256(raw).hexdigest()
+        index = json.loads(raw)
+        for item in index['members'].values():
+            expected[(path.parent/'objects'/item['sha256']).relative_to(ROOT).as_posix()] = item['sha256']
+names = sorted(expected)
+query = ''.join(':'+name+'\n' for name in names).encode()
+result = subprocess.run(['git', 'cat-file', '--batch'], cwd=ROOT, input=query,
+    capture_output=True, timeout=30, check=True)
+cursor = 0
+for name in names:
+    end = result.stdout.index(b'\n', cursor)
+    header = result.stdout[cursor:end].split()
+    if len(header) != 3 or header[1] != b'blob':
+        raise ValueError('missing staged blob: '+name)
+    size = int(header[2])
+    raw = result.stdout[end+1:end+1+size]
+    cursor = end+size+2
+    if (len(raw) != size or result.stdout[cursor-1:cursor] != b'\n'
+            or hashlib.sha256(raw).hexdigest() != expected[name]):
+        raise ValueError('staged raw bytes differ: '+name)
+if cursor != len(result.stdout):
+    raise ValueError('trailing Git batch bytes')
+print(dict(staged_raw_blobs=len(names), mismatches=0, package_pass=False, release_admitted=False))

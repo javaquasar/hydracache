@@ -1283,7 +1283,9 @@ records scope, not an exception to any final release criterion above.
 The [Linux CI descendant repair](../testing/performance/0.74/linux-ci-retirement-result-20261026.md)
 and [authorized rustls update](../testing/performance/0.74/rustls-authorized-result-20261026.md)
 have focused evidence. Compatible security patches retain Rust 1.88 and add no
-deny exceptions. Original execution is to finish in existing local systemd 257;
+deny exceptions. The later [WebPKI repair](../testing/performance/0.74/webpki-security-result-20261026.md)
+also retains its vulnerable-version public-key baseline and focused gates.
+Original execution is to finish in existing local systemd 257;
 the [selected environment and transfer boundary](../testing/performance/0.74/original-execution-transfer-plan-20261026.md)
 do not authorize server OS/service changes or prove FD delivery. Full package,
 remaining security, lifecycle/crash/reconnect, trust and qualification gates stay

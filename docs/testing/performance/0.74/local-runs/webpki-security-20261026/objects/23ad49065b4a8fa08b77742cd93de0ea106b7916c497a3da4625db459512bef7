@@ -1,0 +1,8 @@
+   Compiling rustls-webpki v0.103.16
+   Compiling rustls v0.23.46
+   Compiling tokio-rustls v0.26.4
+   Compiling redis v1.3.0
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 41.66s
+     Running tests\tls_session_security_074.rs (target/security-patch-msrv188\debug\deps\tls_session_security_074-f4f487addcefe518.exe)
+     Running tests\tls_spki_security_074.rs (target/security-patch-msrv188\debug\deps\tls_spki_security_074-6bef465f5b5e0d2b.exe)

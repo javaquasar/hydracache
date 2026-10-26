@@ -21073,3 +21073,12 @@ and server mTLS/daemon tests also pass. The fixed historical advisory database
 still reports eleven findings after the four rustls findings disappear. These
 are security/compatibility results, not a measured throughput win, a fresh
 all-advisory assessment or permission to install the release.
+
+The separate [WebPKI follow-up](../testing/performance/0.74/webpki-security-result-20261026.md)
+provides a stronger paired certificate oracle: all eight distrusted public keys
+are accepted as CA-signed synthetic leaf certificates on the old verifier and
+rejected on 0.103.16, with the same source bytes. No compromised private keys
+are needed. Ordinary name/time/issuer rejection remains checked. Windows, GNU,
+MSRV and mTLS/daemon checks pass; ten pinned-database findings still prevent a
+green security gate. This proves this locked build's certificate rejection,
+not a full handshake with those keys or a downstream consumer's dependency floor.

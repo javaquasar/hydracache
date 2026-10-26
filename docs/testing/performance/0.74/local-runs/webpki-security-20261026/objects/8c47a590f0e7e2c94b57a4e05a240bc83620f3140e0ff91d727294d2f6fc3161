@@ -1,0 +1,18 @@
+{
+  "upstream": "https://github.com/rustls/webpki",
+  "revision": "8ecdcc76f56b68fda67a6adf7976f5eed5006a4c",
+  "names": [
+    "EMDVTLSCAG3B.spki.der",
+    "EMDVTLSCAG3C.spki.der",
+    "EMEVTLSCAG3B.spki.der",
+    "EMEVTLSCAG3C.spki.der",
+    "EMOVCSCAG3B.spki.der",
+    "EMOVCSCAG3C.spki.der",
+    "EMOVTLSCAG3B.spki.der",
+    "EMOVTLSCAG3C.spki.der"
+  ],
+  "public_data_only": true,
+  "services": false,
+  "server": false,
+  "product": false
+}

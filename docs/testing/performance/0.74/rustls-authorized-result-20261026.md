@@ -1,5 +1,9 @@
 # Authorized rustls security update, Rust 1.88 retained
 
+Later on the same date the [separate WebPKI repair](webpki-security-result-20261026.md)
+is applied. This report preserves the rustls-only boundary and its eleven
+remaining findings; the WebPKI follow-up has its own paired baseline and gates.
+
 The operator explicitly authorized compatible security updates on 2026-10-26,
 superseding the earlier audit-only restriction. Commit `c626ea951` reapplies the
 reviewed rustls minimum 0.23.46 and resolves only rustls 0.23.45 to 0.23.46 plus

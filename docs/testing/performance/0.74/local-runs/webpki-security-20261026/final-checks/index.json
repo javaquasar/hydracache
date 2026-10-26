@@ -1,0 +1,93 @@
+{
+  "full_package_pass": false,
+  "full_policy_pass": false,
+  "implementation_commit": "8d9dbdd3d",
+  "members": {
+    "checks/webpki-final-doc/intent.json": {
+      "bytes": 350050,
+      "sha256": "0c9f89671beee1244e7e59e7d79a2b22e651363a8f43339c7c6816fdb2b64c31"
+    },
+    "checks/webpki-final-doc/result.json": {
+      "bytes": 349980,
+      "sha256": "d1475d73290aa43727a9253cf9976e8ebd49605732f650c5f4d80590178cc107"
+    },
+    "checks/webpki-final-doc/stderr.log": {
+      "bytes": 120,
+      "sha256": "d38986f9eb1f97da3edbf51357b4cae45e6b7dba05463a94af2235b3426c1b21"
+    },
+    "checks/webpki-final-doc/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/webpki-git-main/intent.json": {
+      "bytes": 350077,
+      "sha256": "bf9e96b93f420e81e63c150795a7667776bd35eca37a100a27af0688ff3d3d56"
+    },
+    "checks/webpki-git-main/result.json": {
+      "bytes": 349980,
+      "sha256": "662a86760cc1f7b76502f5d2ed4fc312883cd26db6c9497bf38d00e0edfc633b"
+    },
+    "checks/webpki-git-main/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/webpki-git-main/stdout.log": {
+      "bytes": 94,
+      "sha256": "b9d35dc2223e0464914be27203ab8e968b3ef3ea83a28e805b7fdca0be82c478"
+    },
+    "checks/webpki-integrity/intent.json": {
+      "bytes": 350195,
+      "sha256": "b3eb1328f7e927d57eeb0466023662dec81181e6d9965bc850bf5c6e3cbf09ad"
+    },
+    "checks/webpki-integrity/result.json": {
+      "bytes": 349980,
+      "sha256": "09078519ed23df2b21e2e1eba688c70d1f526b9a7622dfd5dc66553429b6cdbc"
+    },
+    "checks/webpki-integrity/stderr.log": {
+      "bytes": 423,
+      "sha256": "3a298cf84685e01fc6ca72ad5fb248bf4be0173165d1c6fbfbd010470262b399"
+    },
+    "checks/webpki-integrity/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/webpki-seal/intent.json": {
+      "bytes": 349916,
+      "sha256": "ed8d96ce88ded3d5a1862aece7badcd6dade959b40f1c72514fc172202330690"
+    },
+    "checks/webpki-seal/result.json": {
+      "bytes": 349837,
+      "sha256": "54837b12c26c6b63e8c726aed8c1e4f070b9b5e523461749946aab8a6eba1af1"
+    },
+    "checks/webpki-seal/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/webpki-seal/stdout.log": {
+      "bytes": 424,
+      "sha256": "26ccacb29d5ab9b8fd855a9af1feb1a39d3ffb8dd776ca2e7be8fd4f222e05ae"
+    },
+    "collector.py": {
+      "bytes": 1500,
+      "sha256": "5ade0a458ffb9f62669898ccb9b1fff44a483192dac82254853b63bb3653afbd"
+    },
+    "git-verifier.py": {
+      "bytes": 1660,
+      "sha256": "5c80c1feb3160e4ab74048e61796f12e051b0435d3c1125975a39a49b3dfa974"
+    },
+    "main/index.json": {
+      "bytes": 13627,
+      "sha256": "edcd229bcf2afac2a6fc1e099e94777e9af2946140d8df2e3cda55b588164c80"
+    },
+    "main/test_verify.py": {
+      "bytes": 1117,
+      "sha256": "0d8571f85a12005ff9599facdcf3944f7c06be5b43d98ae09808bc1bfe6c20e7"
+    },
+    "main/verify.py": {
+      "bytes": 3716,
+      "sha256": "8f37a5fa59393b3c4863886a502f9216681843a73bcabe7168177e34907c64fe"
+    }
+  },
+  "release_admitted": false,
+  "schema": "hc074-webpki-final-checks-v1"
+}

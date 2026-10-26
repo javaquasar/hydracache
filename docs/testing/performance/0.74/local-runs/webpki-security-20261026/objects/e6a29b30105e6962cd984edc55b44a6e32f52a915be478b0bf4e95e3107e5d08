@@ -1,0 +1,19 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4m 32s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_redis_compat-19b6f366a5ea97c0.exe)
+     Running tests\connection_chaos.rs (target\debug\deps\connection_chaos-8169cd2ea5671592.exe)
+     Running tests\redis_batch_execution_074.rs (target\debug\deps\redis_batch_execution_074-65c4840034e009e5.exe)
+     Running tests\redis_clients.rs (target\debug\deps\redis_clients-ee1f66233b38bc44.exe)
+     Running tests\redis_event_listeners.rs (target\debug\deps\redis_event_listeners-74a5dd3f62606aae.exe)
+     Running tests\redis_mined_edge_corpus.rs (target\debug\deps\redis_mined_edge_corpus-4fe20cc56ee73282.exe)
+     Running tests\resp_adaptive_coalescing_074.rs (target\debug\deps\resp_adaptive_coalescing_074-262cf749dcb8ab52.exe)
+     Running tests\resp_boundaries.rs (target\debug\deps\resp_boundaries-2d9d2f66c8e6f67b.exe)
+     Running tests\resp_get_owner_074.rs (target\debug\deps\resp_get_owner_074-165e49a867e0dd5e.exe)
+     Running tests\resp_pipeline_attribution_074.rs (target\debug\deps\resp_pipeline_attribution_074-e51af956ae605d48.exe)
+     Running tests\resp_resource_smoke.rs (target\debug\deps\resp_resource_smoke-714c080090ce9a57.exe)
+     Running tests\resp_staged_order_model_074.rs (target\debug\deps\resp_staged_order_model_074-550a827dbb8f796a.exe)
+     Running tests\resp_transport_adversarial_074.rs (target\debug\deps\resp_transport_adversarial_074-d6f9e48f79837bd7.exe)
+     Running tests\tls_session_security_074.rs (target\debug\deps\tls_session_security_074-1b2bad9687312fa4.exe)
+     Running tests\tls_spki_security_074.rs (target\debug\deps\tls_spki_security_074-8009b36761c3b33c.exe)
+   Doc-tests hydracache_redis_compat

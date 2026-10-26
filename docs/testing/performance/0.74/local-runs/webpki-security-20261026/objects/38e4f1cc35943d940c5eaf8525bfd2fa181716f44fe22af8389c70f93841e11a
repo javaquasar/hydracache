@@ -1,0 +1,16 @@
+    Blocking waiting for file lock on build directory
+    Checking rustls-webpki v0.103.16
+    Checking rustls v0.23.46
+    Checking tokio-rustls v0.26.4
+    Checking rustls-platform-verifier v0.7.0
+    Checking redis v1.3.0
+    Checking tonic v0.14.6
+    Checking hyper-rustls v0.27.9
+    Checking reqwest v0.13.4
+    Checking tonic-prost v0.14.6
+    Checking hydracache-client-hc2 v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-hc2)
+    Checking hydracache-cluster-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-transport-axum)
+    Checking axum-server v0.8.0
+    Checking hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server)
+    Checking hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5m 49s

@@ -1,9 +1,14 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [separate WebPKI repair](webpki-security-result-20261026.md) retains a baseline
+that accepted all eight distrusted public keys and the same-source rejection on
+0.103.16. Windows/MSRV/GNU and compatibility gates pass; ten pinned-DB findings
+remain. This supersedes the current graph, not earlier experiment evidence.
+
 The [newly authorized rustls security patch](rustls-authorized-result-20261026.md)
 is applied with passing Windows 1.94/MSRV 1.88 and GNU session tests, complete
-RESP regression and mTLS/daemon controls. The pinned-database policy still has
-eleven findings; this is not a green complete security or package gate.
+RESP regression and mTLS/daemon controls. That rustls-only boundary has eleven
+pinned-database findings; it is not a green complete security or package gate.
 
 Current entry point: [release closure and server launch status](release-closure-status-20261025.md).
 The [five-package execution plan](release-closure-execution-plan-20261026.md)

@@ -1,0 +1,48 @@
+   Compiling windows-sys v0.61.2
+   Compiling rustls-webpki v0.103.16
+   Compiling rustls v0.23.46
+   Compiling mio v1.2.1
+   Compiling socket2 v0.6.4
+   Compiling tokio v1.52.3
+   Compiling tempfile v3.27.0
+   Compiling rustls-platform-verifier v0.7.0
+   Compiling schannel v0.1.29
+   Compiling rusty-fork v0.3.1
+   Compiling rustls-native-certs v0.8.4
+   Compiling proptest v1.11.0
+   Compiling tokio-util v0.7.18
+   Compiling h2 v0.4.19
+   Compiling tower v0.5.3
+   Compiling hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+   Compiling hyper v1.10.1
+   Compiling hyper-util v0.1.20
+   Compiling tokio-rustls v0.26.4
+   Compiling axum v0.8.9
+   Compiling tokio-stream v0.1.18
+   Compiling hydracache-observability v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-observability)
+   Compiling hydracache-client-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-transport-axum)
+   Compiling hyper-timeout v0.5.2
+   Compiling tonic v0.14.6
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+   Compiling chitchat v0.11.1
+   Compiling hydracache-cluster-raft v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-raft)
+   Compiling hyper-rustls v0.27.9
+   Compiling tower-http v0.6.11
+   Compiling reqwest v0.13.4
+   Compiling tonic-prost v0.14.6
+   Compiling combine v4.6.7
+   Compiling fs-err v3.3.1
+   Compiling axum-server v0.8.0
+   Compiling redis v1.3.0
+   Compiling hydracache-cluster-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-transport-axum)
+   Compiling hydracache-client-hc2 v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-hc2)
+   Compiling hydracache-cluster-chitchat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-chitchat)
+   Compiling hydracache-actuator-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-actuator-axum)
+   Compiling hydracache-cluster-testkit v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-testkit)
+   Compiling hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server)
+   Compiling hydracache-sim v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sim)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5m 13s
+     Running tests\tls_session_security_074.rs (target\debug\deps\tls_session_security_074-f18cd71ff0ac0fd9.exe)
+     Running tests\tls_spki_security_074.rs (target\debug\deps\tls_spki_security_074-05962a0796a2c7bf.exe)
+     Running tests\hc2_daemon_process.rs (target\debug\deps\hc2_daemon_process-0de732839b23cea5.exe)
+     Running tests\redis_mtls_074.rs (target\debug\deps\redis_mtls_074-c9d60fe308aaff9e.exe)

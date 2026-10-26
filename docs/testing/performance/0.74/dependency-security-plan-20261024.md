@@ -16,6 +16,10 @@ The first newly authorized [rustls application](rustls-authorized-result-2026102
 is now committed separately. Only rustls and its checksum change in Cargo.lock;
 focused Windows/GNU/MSRV and compatibility gates pass. The pinned database still
 reports eleven findings. The remaining repairs and full milestone stay open.
+The subsequent [WebPKI 0.103.16 repair](webpki-security-result-20261026.md) changes
+one further locked package and passes paired public-SPKI rejection and focused
+compatibility/MSRV gates. The pinned database then reports ten findings. Neither
+step constitutes a full security or workspace milestone.
 
 ## First result, not a waiver
 
