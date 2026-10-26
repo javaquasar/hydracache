@@ -1,0 +1,10 @@
+test_independent_arithmetic (__main__.Integrity.test_independent_arithmetic) ... ok
+test_index_mutation (__main__.Integrity.test_index_mutation) ... ok
+test_missing_object (__main__.Integrity.test_missing_object) ... ok
+test_output_mutations_refuse_even_before_byte_integrity (__main__.Integrity.test_output_mutations_refuse_even_before_byte_integrity) ... ok
+test_raw_source_input_output_and_receipts_cannot_change (__main__.Integrity.test_raw_source_input_output_and_receipts_cannot_change) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.353s
+
+OK

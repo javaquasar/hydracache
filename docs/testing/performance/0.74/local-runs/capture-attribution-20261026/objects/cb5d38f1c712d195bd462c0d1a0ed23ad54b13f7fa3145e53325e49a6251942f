@@ -1,0 +1,11 @@
+{
+  "clock_reads_by_analyzer": 0,
+  "input_git_calls": 64,
+  "input_index_sha256": "55b802621e147681f9478a164053a04c055ec28d8d35227d68d49ad0b4de380f",
+  "input_source": "1030acb263e96d1e023f852dceb021de458ce6f4",
+  "package_pass": false,
+  "processes_launched_by_analyzer": 0,
+  "retry": false,
+  "schema": "hc074-offline-capture-attribution-v1",
+  "workload_replayed": false
+}

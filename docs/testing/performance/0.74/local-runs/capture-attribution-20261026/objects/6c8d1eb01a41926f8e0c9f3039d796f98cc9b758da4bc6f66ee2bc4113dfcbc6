@@ -1,0 +1,56 @@
+"""Seal the first offline analysis with selected fixed input bytes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT/'docs/testing/performance/0.74/local-runs/capture-attribution-20261026'
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+
+
+def add(name, raw):
+    digest = hashlib.sha256(raw).hexdigest()
+    path = OUT/'objects'/digest
+    if not path.exists():
+        with path.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw), sha256=digest)
+
+
+def take(name, path):
+    add(name, path.read_bytes())
+
+
+for label in ('capture-attribution-model-first', 'capture-attribution-regressions-first',
+              'capture-attribution-syntax-first', 'capture-attribution-check-first',
+              'capture-attribution-clippy-first', 'capture-attribution-offline-first'):
+    for part in ('intent.json', 'result.json', 'stdout.log', 'stderr.log'):
+        take('checks/'+label+'/'+part, ROOT/'target/source-continuation-20261024'/label/part)
+for name in ('capture_attribution.py', 'test_capture_attribution.py', 'capture-attribution-design.md',
+             'git_cpu_variance.py', 'test_git_cpu_variance.py'):
+    take('source/tools/xtask-package-attribution-074/'+name, ROOT/'tools/xtask-package-attribution-074'/name)
+for part in ('intent.json', 'result.json'):
+    take('analysis/'+part, ROOT/'target/capture-attribution-20261026/first'/part)
+for name in ('run-ci-watchdog-step-20261026.py', 'run-source-step-20261024.py'):
+    take('runners/'+name, ROOT/'target'/name)
+take('collector.py', Path(__file__))
+old = ROOT/'docs/testing/performance/0.74/local-runs/coordinator-native-20261026'
+raw = (old/'index.json').read_bytes()
+assert hashlib.sha256(raw).hexdigest() == '55b802621e147681f9478a164053a04c055ec28d8d35227d68d49ad0b4de380f'
+add('input/index.json', raw)
+for name, entry in json.loads(raw)['members'].items():
+    if name.startswith('native/') or name in ('source/tools/xtask-package-attribution-074/pipe_capture.rs',
+            'source/tools/xtask-package-attribution-074/coordinator_frames.py',
+            'source/crates/xtask/tests/git_descendant_cpu_074.rs'):
+        body = (old/'objects'/entry['sha256']).read_bytes()
+        assert len(body) == entry['bytes'] and hashlib.sha256(body).hexdigest() == entry['sha256']
+        add('input/'+name, body)
+index = dict(schema='hc074-offline-capture-evidence-v1', source_commit='fa9b22330289ad0dacd05faf97310fa0b3b96336',
+    input_index_sha256='55b802621e147681f9478a164053a04c055ec28d8d35227d68d49ad0b4de380f', input_git_calls=64,
+    new_workload_calls=0, workload_replayed=False, overhead_accepted=False, package_pass=False, server=False, members=members)
+raw = (json.dumps(index, indent=2, sort_keys=True)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(members), objects=len(list((OUT/'objects').iterdir()))))

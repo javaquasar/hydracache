@@ -1,0 +1,19 @@
+test_all_samples_owners_and_nested_scopes_remain_distinct (__main__.Offline.test_all_samples_owners_and_nested_scopes_remain_distinct) ... ok
+test_exclusive_first_refusal_is_not_overwritten (__main__.Offline.test_exclusive_first_refusal_is_not_overwritten) ... ok
+test_existing_owner_and_worker_phase_faults_still_refuse (__main__.Offline.test_existing_owner_and_worker_phase_faults_still_refuse) ... ok
+test_import_boundary_has_no_process_clock_or_retained_code (__main__.Offline.test_import_boundary_has_no_process_clock_or_retained_code) ... ok
+test_incomplete_reordered_refused_and_promoted_cohort_refuse (__main__.Offline.test_incomplete_reordered_refused_and_promoted_cohort_refuse) ... ok
+test_index_mutation_refuses_before_object_reads (__main__.Offline.test_index_mutation_refuses_before_object_reads) ... ok
+test_metric_complement_is_arithmetic_not_extra_phase (__main__.Offline.test_metric_complement_is_arithmetic_not_extra_phase) ... ok
+test_operation_contract_and_native_domain_drift_refuse (__main__.Offline.test_operation_contract_and_native_domain_drift_refuse) ... ok
+test_phase_sums_cannot_exceed_original_frame_metrics (__main__.Offline.test_phase_sums_cannot_exceed_original_frame_metrics) ... ok
+test_probe_types_order_clock_regression_and_spans_refuse (__main__.Offline.test_probe_types_order_clock_regression_and_spans_refuse) ... ok
+test_signed_block_partition_closes_without_trimming (__main__.Offline.test_signed_block_partition_closes_without_trimming) ... ok
+test_size_missing_and_byte_mutation_refuse (__main__.Offline.test_size_missing_and_byte_mutation_refuse) ... ok
+test_successful_saved_analysis_and_bad_labels (__main__.Offline.test_successful_saved_analysis_and_bad_labels) ... ok
+test_zero_cpu_is_retained_not_promoted_to_zero_work (__main__.Offline.test_zero_cpu_is_retained_not_promoted_to_zero_work) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.331s
+
+OK

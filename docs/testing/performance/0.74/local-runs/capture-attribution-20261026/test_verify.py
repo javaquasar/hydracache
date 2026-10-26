@@ -1,0 +1,67 @@
+"""Evidence corruption controls without analysis/collector execution."""
+import json
+from pathlib import Path
+import unittest
+from unittest.mock import patch
+
+import verify
+
+FOLDER = Path(__file__).resolve().parent
+
+
+class Integrity(unittest.TestCase):
+    def test_independent_arithmetic(self):
+        self.assertTrue(verify.verify(FOLDER)['independent_phase_arithmetic'])
+
+    def test_index_mutation(self):
+        original = Path.read_bytes
+        with patch.object(Path, 'read_bytes', lambda p: b'{}' if p == FOLDER/'index.json' else original(p)), \
+             self.assertRaisesRegex(ValueError, 'index differs'):
+            verify.load(FOLDER)
+
+    def test_missing_object(self):
+        original = Path.read_bytes
+        def read(p):
+            if p.parent.name == 'objects':
+                raise FileNotFoundError('missing object')
+            return original(p)
+        with patch.object(Path, 'read_bytes', read), self.assertRaises(FileNotFoundError):
+            verify.load(FOLDER)
+
+    def test_raw_source_input_output_and_receipts_cannot_change(self):
+        index = json.loads((FOLDER/'index.json').read_bytes())
+        original = Path.read_bytes
+        for name in ('analysis/result.json', 'analysis/intent.json', 'input/native/result.json',
+                     'input/index.json', 'source/tools/xtask-package-attribution-074/capture_attribution.py',
+                     'checks/capture-attribution-model-first/stderr.log'):
+            target = FOLDER/'objects'/index['members'][name]['sha256']
+            with self.subTest(name=name), patch.object(Path, 'read_bytes',
+                    lambda p: original(p)+b'x' if p == target else original(p)), \
+                 self.assertRaisesRegex(ValueError, 'raw member differs'):
+                verify.load(FOLDER)
+
+    def test_output_mutations_refuse_even_before_byte_integrity(self):
+        mutations = (
+            lambda a: a.update(nested_timing_scopes_additive=True),
+            lambda a: a.update(telemetry_on_off_compared=True),
+            lambda a: a['frames'][0]['phases']['decode'].update(process_cpu_ns=1),
+            lambda a: a['arithmetic_complement'].update(wall_lower_ns=0),
+            lambda a: a['profile_calls'][0].update(phase_cpu_ns=0),
+            lambda a: a['blocks'][0]['coordinator_phases']['spawn'].update(signed_cpu_delta_ns=0),
+            lambda a: a['coordinator_phase_distributions']['decode'].update(zero_cpu_spans=0),
+            lambda a: a['owners']['workers'][0]['cpu'].update(descendant_cpu_ns=0),
+            lambda a: a['owners']['profile_call_phase_wall_ns']['counter_observation_wall_ns'].update(sum=0),
+            lambda a: a['owners'].update(cpu_by_phase_available=True),
+        )
+        base = verify.load(FOLDER)
+        for change in mutations:
+            members = dict(base)
+            result = json.loads(members['analysis/result.json'])
+            change(result['analysis'])
+            members['analysis/result.json'] = json.dumps(result).encode()
+            with self.assertRaises(ValueError):
+                verify.audit(members)
+
+
+if __name__ == '__main__':
+    unittest.main()

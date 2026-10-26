@@ -1,0 +1,255 @@
+"""Pure fault controls. No old collector import, workload or live observation."""
+import ast
+import copy
+import json
+from pathlib import Path
+import tempfile
+import unittest
+from unittest.mock import Mock, patch
+
+import git_cpu_variance as subject
+
+
+def fixture():
+    result = dict(passed=True, first_refusal=None, overhead_accepted=False, speedup_established=False,
+                  package_pass=False, server=False, attempts=[])
+    for block in range(4):
+        modes = (subject.REFERENCE, subject.PROFILE, subject.PROFILE, subject.REFERENCE) if block % 2 == 0 else (
+            subject.PROFILE, subject.REFERENCE, subject.REFERENCE, subject.PROFILE)
+        for slot, mode in enumerate(modes):
+            pid = 100+block*4+slot
+            birth = pid*10000
+            first = dict(terminal=False, creation_100ns=birth, exit_100ns=None, user_100ns=0, kernel_100ns=0)
+            last = dict(first, terminal=True, exit_100ns=birth+1000, user_100ns=3, kernel_100ns=2)
+            job = dict(total=9, active=0, terminated=0, user_ns=2000, kernel_ns=1000)
+            row = dict(block=block, slot=slot, mode=mode, passed=True, first_refusal=None, cleanup_errors=[],
+                worker_pid=pid, worker_initial=first, worker=last, job=job, job_terminal_samples=[job, copy.deepcopy(job)],
+                records=[], metrics=dict(wall_ns=1000, whole_job_cpu_ns=3000, whole_worker_cpu_ns=500,
+                                        coordinator_cpu_ns=20))
+            for call in range(4):
+                phase = None
+                if mode == subject.PROFILE:
+                    a = dict(pid=pid*10+call, created_100ns=birth+100+call*100, exited_100ns=0, user_ns=0, kernel_ns=0)
+                    b = dict(a, exited_100ns=a['created_100ns']+50, user_ns=100, kernel_ns=100)
+                    phase = dict(spawn_ns=10, handle_observation_ns=2, wait_and_collect_ns=20,
+                                 terminal_observation_ns=1, child_start=a, child_end=b)
+                row['records'].append(dict(call=call, accounted=mode == subject.PROFILE, spec=subject.SPEC,
+                    stdout_bytes=23589, stderr_bytes=0, code=0, phases=phase))
+            if mode == subject.PROFILE:
+                row['native_inclusive'] = dict(non_launcher_descendant_cpu=dict(user_ns=1300, kernel_ns=400))
+            result['attempts'].append(row)
+    return result
+
+
+class Model(unittest.TestCase):
+    def test_complete_partition_keeps_missing_reference_counters_null(self):
+        result = subject.analyze(fixture())
+        self.assertEqual((len(result['workers']), len(result['blocks']), result['input_git_calls'], result['profile_calls']),
+                         (16, 4, 64, 32))
+        for row in result['workers']:
+            self.assertEqual(row['cpu'], dict(job_cpu_ns=3000, worker_cpu_ns=500, descendant_cpu_ns=2500,
+                                              coordinator_cpu_ns=20, recorded_cpu_envelope_ns=3020))
+            if row['mode'] == subject.REFERENCE:
+                self.assertIsNone(row['direct_launcher_cpu_ns'])
+                self.assertIsNone(row['non_launcher_descendant_cpu_ns'])
+                self.assertIsNone(row['recorded_phase_wall_ns'])
+            else:
+                self.assertEqual(row['direct_launcher_cpu_ns'], 800)
+                self.assertEqual(row['non_launcher_descendant_cpu_ns'], 1700)
+        self.assertEqual(result['profile_call_phase_wall_ns']['counter_observation_wall_ns'],
+                         dict(count=32, sum=96, minimum=3, maximum=3))
+        self.assertEqual(result['primitive_cpu_counter_count'], 144)
+
+    def test_negative_deltas_are_preserved_and_cpu_partition_closes(self):
+        data = fixture()
+        for row in data['attempts']:
+            if row['mode'] == subject.REFERENCE:
+                row['job'].update(user_ns=2500)
+                row['job_terminal_samples'] = [row['job'], copy.deepcopy(row['job'])]
+                row['metrics']['whole_job_cpu_ns'] = 3500
+                row['metrics']['coordinator_cpu_ns'] = 520
+        result = subject.analyze(data)
+        for block in result['blocks']:
+            delta = {key: value['delta'] for key, value in block['cpu'].items()}
+            self.assertEqual(delta['job_cpu_ns'], -1000)
+            self.assertEqual(delta['descendant_cpu_ns'], -1000)
+            self.assertEqual(delta['worker_cpu_ns'], 0)
+            self.assertEqual(delta['coordinator_cpu_ns'], -1000)
+            self.assertEqual(delta['recorded_cpu_envelope_ns'], -2000)
+        self.assertTrue(result['all_samples_retained'])
+        for key in ('os_timer_resolution_proved', 'cpu_by_phase_available', 'exact_native_image_attested',
+                    'coordinator_leaf_cost_available', 'job_overhead_measured', 'overhead_accepted',
+                    'speedup_established', 'package_pass', 'workload_replayed'):
+            self.assertIs(result[key], False)
+
+    def test_zeros_stay_and_gcd_is_not_promoted_to_clock_resolution(self):
+        data = fixture()
+        for row in data['attempts']:
+            row['metrics']['coordinator_cpu_ns'] = 0
+        result = subject.analyze(data)
+        self.assertEqual(result['primitive_cpu_counter_count'], 144)
+        self.assertTrue(all(row['cpu']['coordinator_cpu_ns'] == 0 for row in result['workers']))
+        self.assertEqual(result['observed_cpu_counter_gcd_ns'], 100)
+        self.assertFalse(result['os_timer_resolution_proved'])
+
+    def test_missing_reordered_or_failed_input_never_yields_subset(self):
+        for fault in ('missing', 'extra', 'reorder', 'failed', 'first-refusal', 'cleanup', 'cohort', 'promoted'):
+            data = fixture()
+            if fault == 'missing': data['attempts'].pop()
+            elif fault == 'extra': data['attempts'].append(copy.deepcopy(data['attempts'][0]))
+            elif fault == 'reorder': data['attempts'][0], data['attempts'][1] = data['attempts'][1], data['attempts'][0]
+            elif fault == 'failed': data['attempts'][0]['passed'] = False
+            elif fault == 'first-refusal': data['attempts'][0]['first_refusal'] = 'first'
+            elif fault == 'cleanup': data['attempts'][0]['cleanup_errors'] = ['close']
+            elif fault == 'cohort': data['passed'] = False
+            else: data['overhead_accepted'] = True
+            with self.subTest(fault=fault), self.assertRaises(ValueError):
+                subject.analyze(data)
+
+    def test_job_census_unstable_counters_and_worker_drift_refuse(self):
+        for fault in ('active', 'count', 'unstable', 'birth', 'nonterminal', 'cpu-regression', 'duplicate'):
+            data = fixture()
+            row = data['attempts'][0]
+            if fault == 'active': row['job']['active'] = 1
+            elif fault == 'count': row['job']['total'] = 8
+            elif fault == 'unstable': row['job_terminal_samples'][1]['user_ns'] += 1
+            elif fault == 'birth': row['worker']['creation_100ns'] += 1
+            elif fault == 'nonterminal': row['worker']['terminal'] = False
+            elif fault == 'cpu-regression': row['worker_initial']['user_100ns'] = 4
+            else:
+                other = data['attempts'][1]
+                other.update(worker_pid=row['worker_pid'], worker=copy.deepcopy(row['worker']),
+                             worker_initial=copy.deepcopy(row['worker_initial']))
+            with self.subTest(fault=fault), self.assertRaises(ValueError):
+                subject.analyze(data)
+
+    def test_command_payload_spec_and_accounting_drift_refuse(self):
+        for key, value in (('call', 9), ('accounted', False), ('stdout_bytes', 23590), ('stderr_bytes', 1),
+                           ('code', 7), ('spec', 'other')):
+            data = fixture()
+            data['attempts'][1]['records'][0][key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                subject.analyze(data)
+        data = fixture()
+        data['attempts'][0]['records'][0]['phases'] = {}
+        with self.assertRaisesRegex(ValueError, 'reference acquired'):
+            subject.analyze(data)
+
+    def test_invalid_integer_counters_and_job_underflow_refuse(self):
+        for value in (-1, True, 1.5):
+            data = fixture()
+            data['attempts'][0]['metrics']['coordinator_cpu_ns'] = value
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                subject.analyze(data)
+        for key in ('whole_job_cpu_ns', 'whole_worker_cpu_ns'):
+            data = fixture()
+            data['attempts'][0]['metrics'][key] += 1
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                subject.analyze(data)
+        data = fixture()
+        data['attempts'][0]['job']['user_ns'] = 0
+        data['attempts'][0]['job']['kernel_ns'] = 0
+        data['attempts'][0]['job_terminal_samples'][1] = copy.deepcopy(data['attempts'][0]['job'])
+        data['attempts'][0]['metrics']['whole_job_cpu_ns'] = 0
+        with self.assertRaises(ValueError):
+            subject.analyze(data)
+
+    def test_launcher_identity_cpu_and_residual_faults_refuse(self):
+        for fault in ('pid', 'birth', 'exit', 'regression', 'duplicate', 'underflow', 'residual'):
+            data = fixture()
+            row = data['attempts'][1]
+            first, last = (row['records'][0]['phases'][key] for key in ('child_start', 'child_end'))
+            if fault == 'pid': last['pid'] += 1
+            elif fault == 'birth': last['created_100ns'] += 1
+            elif fault == 'exit': last['exited_100ns'] = 0
+            elif fault == 'regression': first['user_ns'] = 200
+            elif fault == 'duplicate': row['records'][1]['phases'] = copy.deepcopy(row['records'][0]['phases'])
+            elif fault == 'underflow': last['kernel_ns'] = 10000
+            else: row['native_inclusive']['non_launcher_descendant_cpu']['user_ns'] += 1
+            with self.subTest(fault=fault), self.assertRaises(ValueError):
+                subject.analyze(data)
+
+    def test_negative_or_boolean_phase_wall_refuses(self):
+        for value in (-1, True):
+            data = fixture()
+            data['attempts'][1]['records'][0]['phases']['spawn_ns'] = value
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                subject.analyze(data)
+
+    def test_fixed_index_mutation_refuses_before_loading_any_object(self):
+        with patch.object(Path, 'read_bytes', return_value=b'{}'), self.assertRaisesRegex(ValueError, 'fixed input index differs'):
+            subject.load_packet(Path('.'))
+
+    def target(self):
+        index = json.loads((subject.PACKET/'index.json').read_bytes())
+        row = next(iter(index['members'].values()))
+        return subject.PACKET/'objects'/row['sha256'], row['bytes']
+
+    def test_sealed_input_joins_and_all_cpu_partitions_close_offline(self):
+        result = subject.analyze(subject.load_packet(subject.PACKET))
+        self.assertEqual(result['observed_cpu_counter_gcd_ns'], 15625000)
+        delta = result['blocks'][2]['cpu']
+        self.assertEqual(delta['job_cpu_ns']['delta'], -250000000)
+        self.assertEqual(delta['worker_cpu_ns']['delta'], 421875000)
+        self.assertEqual(delta['descendant_cpu_ns']['delta'], -671875000)
+
+    def test_missing_raw_input_object_refuses(self):
+        target, _ = self.target()
+        original = Path.read_bytes
+        def read(p):
+            if p == target:
+                raise FileNotFoundError('missing raw object')
+            return original(p)
+        with patch.object(Path, 'read_bytes', read), self.assertRaises(FileNotFoundError):
+            subject.load_packet(subject.PACKET)
+
+    def test_mutated_raw_input_refuses_before_analysis(self):
+        target, _ = self.target()
+        original = Path.read_bytes
+        with patch.object(Path, 'read_bytes', lambda p: original(p)+b'x' if p == target else original(p)), \
+             self.assertRaisesRegex(ValueError, 'raw input differs'):
+            subject.load_packet(subject.PACKET)
+
+    def test_declared_object_size_is_checked_before_reading_body(self):
+        target, size = self.target()
+        original = Path.stat
+        with patch.object(Path, 'stat', lambda p, *a, **k: Mock(st_size=size+1) if p == target else original(p, *a, **k)), \
+             self.assertRaisesRegex(ValueError, 'raw input size differs'):
+            subject.load_packet(subject.PACKET)
+
+    def test_analyzer_has_no_process_clock_or_retained_module_import(self):
+        tree = ast.parse(Path(subject.__file__).read_text())
+        modules = {node.names[0].name.split('.')[0] for node in ast.walk(tree) if isinstance(node, ast.Import)}
+        modules.update(node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom))
+        self.assertEqual(modules, {'hashlib', 'json', 'math', 'pathlib', 're', 'sys'})
+        self.assertFalse(any(isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and
+                             node.func.id in ('eval', 'exec', 'compile', '__import__') for node in ast.walk(tree)))
+
+    def test_exclusive_output_first_refusal_and_no_replay(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(subject, 'ROOT', Path(directory)), \
+             patch.object(subject, 'load_packet', side_effect=ValueError('immutable input refused')) as load:
+            result = subject.run('first')
+            self.assertEqual(result['first_refusal'], 'ValueError: immutable input refused')
+            self.assertFalse(result['passed'])
+            folder = Path(directory)/'target/git-cpu-variance-20261026/first'
+            self.assertEqual(json.loads((folder/'result.json').read_bytes()), result)
+            before = (folder/'result.json').read_bytes()
+            with self.assertRaises(FileExistsError):
+                subject.run('first')
+            self.assertEqual((folder/'result.json').read_bytes(), before)
+            self.assertEqual(load.call_count, 1)
+
+    def test_successful_offline_output_and_bad_labels(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(subject, 'ROOT', Path(directory)), \
+             patch.object(subject, 'load_packet', return_value=fixture()) as load:
+            result = subject.run('first')
+            self.assertTrue(result['passed'])
+            self.assertFalse(result['workload_replayed'])
+            for label in ('', '../escape', 'UPPER', 'x'*65):
+                with self.assertRaises(ValueError):
+                    subject.run(label)
+            self.assertEqual(load.call_count, 1)
+
+
+if __name__ == '__main__':
+    unittest.main()
