@@ -2,14 +2,15 @@
 
 ## Current authority
 
-The operator's explicit asynchronous reply permits **audit and planning only**:
-do not update dependencies or add deny.toml exceptions. The experimental rustls
-change `e0244861`, made under the earlier general continuation permission, is
-reverted, including its newly added ordinary regression target. The exact
-original manifests/lock are restored; candidate tests and evidence remain in Git.
-The original fifteen-advisory baseline is still the active red gate. The
-[experiment report](rustls-security-result-20261024.md) is historical evidence,
-not permission to apply that patch or the remaining migrations.
+On 2026-10-26 the operator explicitly authorized compatible security updates,
+superseding the earlier audit/planning-only instruction. Keep Rust 1.88 and add
+no deny.toml exceptions. Incompatible major migrations still require a separate
+decision. The experimental rustls change `e0244861` was reverted under the prior
+restriction; its tests, first failures and evidence remain in Git. The original
+fifteen-advisory result remains historical and red, not a current database scan.
+Reapplying a reviewed patch requires new exact-source gates and a distinct result;
+the [earlier experiment report](rustls-security-result-20261024.md) is not reused
+as evidence for a newly built release candidate.
 
 ## First result, not a waiver
 

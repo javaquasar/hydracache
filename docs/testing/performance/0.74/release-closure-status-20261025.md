@@ -1,5 +1,13 @@
 # Release 0.74 closure and server launch status
 
+The operator-approved [five-package closure plan](release-closure-execution-plan-20261026.md)
+records an honest zero-performance-win scope without freezing C74. Compatible
+security updates are authorized with Rust 1.88 and no new deny exceptions.
+Original execution is to finish in existing local systemd 257; the server's
+observed 255 remains incompatible with required extra-FD delivery. The
+[bounded Linux CI retirement repair](linux-ci-retirement-result-20261026.md)
+passes focused controls but does not promote package or server admission.
+
 As of 2026-10-26, GET-owner is **terminally rejected for 0.74**, not waiting for
 another acceptance run. The release still has zero accepted performance
 proposals, no frozen C74, and no production server admission. Isolated diagnostic

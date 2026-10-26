@@ -1,6 +1,11 @@
 # HydraCache 0.74 RESP/native performance evidence
 
 Current entry point: [release closure and server launch status](release-closure-status-20261025.md).
+The [five-package execution plan](release-closure-execution-plan-20261026.md)
+records the approved no-performance-claim scope, compatible security updates
+under Rust 1.88, and local systemd 257 completion before transfer. The
+[Linux CI retirement repair](linux-ci-retirement-result-20261026.md) preserves
+first failures and closes a descendant-cleanup defect, not production admission.
 It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.

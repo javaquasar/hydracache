@@ -1,0 +1,13 @@
+test_candidates_require_child_ownership_and_retained_pidfd (test_watchdog_linux_group_models.Ownership.test_candidates_require_child_ownership_and_retained_pidfd) ... ok
+test_echild_before_original_reap_is_refused (test_watchdog_linux_group_models.Ownership.test_echild_before_original_reap_is_refused) ... ok
+test_live_custody_cannot_close_or_reap (test_watchdog_linux_group_models.Ownership.test_live_custody_cannot_close_or_reap) ... ok
+test_nonterminal_kernel_result_is_not_retirement (test_watchdog_linux_group_models.Ownership.test_nonterminal_kernel_result_is_not_retirement) ... ok
+test_only_kernel_echild_after_original_reap_retires (test_watchdog_linux_group_models.Ownership.test_only_kernel_echild_after_original_reap_retires) ... ok
+test_reaping_is_bounded_per_observation (test_watchdog_linux_group_models.Ownership.test_reaping_is_bounded_per_observation) ... ok
+test_retired_custody_restores_private_subreaper_once (test_watchdog_linux_group_models.Ownership.test_retired_custody_restores_private_subreaper_once) ... ok
+test_signal_failure_still_closes_descriptor (test_watchdog_linux_group_models.Ownership.test_signal_failure_still_closes_descriptor) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.006s
+
+OK

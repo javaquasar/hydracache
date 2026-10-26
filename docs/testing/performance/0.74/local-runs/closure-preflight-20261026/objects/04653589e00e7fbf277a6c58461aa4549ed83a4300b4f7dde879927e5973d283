@@ -1,0 +1,25 @@
+{
+  "exit": 1,
+  "stdout": "",
+  "stderr": "test_failed_leader_still_stops_original_writer (__main__.Native.test_failed_leader_still_stops_original_writer) ... FAIL\ntest_missing_program_remains_tool_unavailable (__main__.Native.test_missing_program_remains_tool_unavailable) ... ok\ntest_plain_success_and_failure_keep_classification (__main__.Native.test_plain_success_and_failure_keep_classification) ... ok\ntest_zero_exit_leader_with_live_writer_is_timeout (__main__.Native.test_zero_exit_leader_with_live_writer_is_timeout) ... FAIL\n\n======================================================================\nFAIL: test_failed_leader_still_stops_original_writer (__main__.Native.test_failed_leader_still_stops_original_writer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hc074-ci-group-control-0hij24n0/test_watchdog_linux_074.py\", line 80, in test_failed_leader_still_stops_original_writer\n    self.orphan(True)\n  File \"/tmp/hc074-ci-group-control-0hij24n0/test_watchdog_linux_074.py\", line 62, in orphan\n    self.assertEqual(select.select([writer], [], [], 1)[0], [writer], 'original writer remains live')\nAssertionError: Lists differ: [] != [4]\n\nSecond list contains 1 additional elements.\nFirst extra element 0:\n4\n\n- []\n+ [4]\n?  +\n : original writer remains live\n\n======================================================================\nFAIL: test_zero_exit_leader_with_live_writer_is_timeout (__main__.Native.test_zero_exit_leader_with_live_writer_is_timeout)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/hc074-ci-group-control-0hij24n0/test_watchdog_linux_074.py\", line 77, in test_zero_exit_leader_with_live_writer_is_timeout\n    self.orphan(False)\n  File \"/tmp/hc074-ci-group-control-0hij24n0/test_watchdog_linux_074.py\", line 60, in orphan\n    self.assertEqual(process.returncode, 23 if failed else 124, (stdout, stderr, receipt))\nAssertionError: 0 != 124 : (b'watchdog heartbeat attempt=local elapsed=0.0s remaining=2.0s pid=384121\\nwatchdog result classification=success elapsed=0.2s receipt=/tmp/hc074-ci-group-2ne77nqd/receipt.json\\n', b'', {'attempt_id': 'local', 'classification': 'success', 'command': ['/usr/bin/python3', '/tmp/hc074-ci-group-control-0hij24n0/test_watchdog_linux_074.py', 'fixture', 'root', '/tmp/hc074-ci-group-2ne77nqd'], 'detail': 'child exited with code 0', 'elapsed_seconds': 0.2, 'exit_code': 0, 'finished_at': '2026-10-26T15:13:12.202550Z', 'log_file': '/tmp/hc074-ci-group-2ne77nqd/child.log', 'schema_version': 1, 'started_at': '2026-10-26T15:13:12.002163Z'})\n\n----------------------------------------------------------------------\nRan 4 tests in 1.949s\n\nFAILED (failures=2)\n",
+  "uid": 0,
+  "isolated_directory": "/tmp/hc074-ci-group-control-0hij24n0",
+  "files": {
+    "run-with-heartbeat.py": "4fe6cd53a04e0d1e24cb60287fdad5317d1f20bc5472881b3bab28e37b2a965c",
+    "watchdog_windows_job.py": "8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1",
+    "watchdog_linux_group.py": "d75bd8208f0c2943e2d8bfa5687a64a74849f7c08ba3040d6a0ac9297c277c26",
+    "test_watchdog_linux_074.py": "2f703998b200327407f02ae5913e18122233233afc5f5a443d491444ee1f7e8a"
+  },
+  "before": {
+    "supervisor": "MainPID=377415\nNRestarts=0\nActiveState=active\nSubState=running\n",
+    "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f\n"
+  },
+  "after": {
+    "supervisor": "MainPID=377415\nNRestarts=0\nActiveState=active\nSubState=running\n",
+    "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f\n"
+  },
+  "services_changed": false,
+  "clocks_changed": false,
+  "installation": false,
+  "product_workload": false
+}

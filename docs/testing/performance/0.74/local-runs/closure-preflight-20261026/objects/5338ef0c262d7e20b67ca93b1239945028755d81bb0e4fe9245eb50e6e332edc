@@ -1,0 +1,43 @@
+test_candidates_require_child_ownership_and_retained_pidfd (test_watchdog_linux_group_models.Ownership.test_candidates_require_child_ownership_and_retained_pidfd) ... ERROR
+test_echild_before_original_reap_is_refused (test_watchdog_linux_group_models.Ownership.test_echild_before_original_reap_is_refused) ... ok
+test_live_custody_cannot_close_or_reap (test_watchdog_linux_group_models.Ownership.test_live_custody_cannot_close_or_reap) ... ok
+test_nonterminal_kernel_result_is_not_retirement (test_watchdog_linux_group_models.Ownership.test_nonterminal_kernel_result_is_not_retirement) ... ok
+test_only_kernel_echild_after_original_reap_retires (test_watchdog_linux_group_models.Ownership.test_only_kernel_echild_after_original_reap_retires) ... ok
+test_reaping_is_bounded_per_observation (test_watchdog_linux_group_models.Ownership.test_reaping_is_bounded_per_observation) ... ok
+test_retired_custody_restores_private_subreaper_once (test_watchdog_linux_group_models.Ownership.test_retired_custody_restores_private_subreaper_once) ... ok
+test_signal_failure_still_closes_descriptor (test_watchdog_linux_group_models.Ownership.test_signal_failure_still_closes_descriptor) ... ERROR
+
+======================================================================
+ERROR: test_candidates_require_child_ownership_and_retained_pidfd (test_watchdog_linux_group_models.Ownership.test_candidates_require_child_ownership_and_retained_pidfd)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\test_watchdog_linux_group_models.py", line 59, in test_candidates_require_child_ownership_and_retained_pidfd
+    self.owner.terminate()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\watchdog_linux_group.py", line 146, in terminate
+    self._stop_owned_children()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\watchdog_linux_group.py", line 134, in _stop_owned_children
+    signal.pidfd_send_signal(descriptor, signal.SIGKILL)
+                                         ^^^^^^^^^^^^^^
+AttributeError: module 'signal' has no attribute 'SIGKILL'. Did you mean: 'SIGILL'?
+
+======================================================================
+ERROR: test_signal_failure_still_closes_descriptor (test_watchdog_linux_group_models.Ownership.test_signal_failure_still_closes_descriptor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\test_watchdog_linux_group_models.py", line 70, in test_signal_failure_still_closes_descriptor
+    self.owner.terminate()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\watchdog_linux_group.py", line 146, in terminate
+    self._stop_owned_children()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\watchdog_linux_group.py", line 134, in _stop_owned_children
+    signal.pidfd_send_signal(descriptor, signal.SIGKILL)
+                                         ^^^^^^^^^^^^^^
+AttributeError: module 'signal' has no attribute 'SIGKILL'. Did you mean: 'SIGILL'?
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.043s
+
+FAILED (errors=2)

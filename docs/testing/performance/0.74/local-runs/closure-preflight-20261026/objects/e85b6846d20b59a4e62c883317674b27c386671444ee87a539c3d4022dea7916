@@ -1,0 +1,3 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 15s
+     Running tests\ci_reliability_071.rs (target\debug\deps\ci_reliability_071-d1de727d5aa8dc83.exe)

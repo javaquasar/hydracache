@@ -1,0 +1,27 @@
+{
+  "phase": "candidate",
+  "argv": [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ConnectTimeout=15",
+    "hydracache-ax42",
+    "sudo -n python3 -"
+  ],
+  "remote_sha256": "1f092723066caed38daef2803a2066f9cebad677b089491cd2a68a8ca0f4d0e5",
+  "files": {
+    "run-with-heartbeat.py": "cedf938f80b3697efa219e5e8566d5d4f869cc2769dc7de6a176efb6e3af7afb",
+    "watchdog_windows_job.py": "8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1",
+    "watchdog_linux_group.py": "71639f11d9f1d6228b3db05118f591c48ccae6b3cd0849284ba9c60607787d84",
+    "test_watchdog_linux_074.py": "2f703998b200327407f02ae5913e18122233233afc5f5a443d491444ee1f7e8a"
+  },
+  "server": true,
+  "isolated_fixture": true,
+  "product": false,
+  "installation": false,
+  "supervisor_stop": false,
+  "retry": false
+}

@@ -1,0 +1,45 @@
+schema_version = 1
+release = "0.74"
+decision = "defer-rejected-performance-candidates-and-close-release-gates"
+authorization = "operator requested all five closure steps on 2026-10-26"
+accepted_performance_candidates = 0
+performance_improvement_claim = false
+reopen_rejected_candidates = false
+skip_release_checks = false
+freeze_c74_allowed = false
+candidate_source_sha = "UNRESOLVED"
+qualification_allowed = false
+baseline_product_sha = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
+qualification_manifest_sha256 = "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+
+[invariants]
+package_seconds = 780
+package_case_threads = 4
+original_preparation_seconds = 300
+original_admission_seconds = 60
+original_effect_seconds = 10
+live_check_frequency_changed = false
+thresholds_changed = false
+frozen_073_changed = false
+
+[work]
+scope_decision = "recorded; not a freeze or release verdict"
+package_gate = "red: complete V6 coverage missing; no unchanged replay"
+dependency_remediation = "compatible security updates authorized; Rust 1.88, no new deny exceptions"
+linux_execution = "incomplete: finish in existing local systemd 257 and prepare transfer"
+server_rehearsal = "not dispatched: compatible manager and original execution gates required"
+
+[server_preflight]
+evidence = "local-runs/closure-preflight-20261026/index.json"
+read_only = true
+supervisor_active = true
+supervisor_pid = 377415
+supervisor_restarts = 0
+active_markers = false
+fixture_cgroups = false
+manager_version = "255.4-1ubuntu8.17"
+compatible_original_delivery_proved = false
+installation_performed = false
+services_changed = false
+clocks_changed = false
+product_workload_started = false

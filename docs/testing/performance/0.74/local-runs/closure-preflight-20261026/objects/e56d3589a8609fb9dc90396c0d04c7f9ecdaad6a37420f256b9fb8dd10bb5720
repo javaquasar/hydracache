@@ -1,0 +1,10 @@
+test_claim_candidate_and_qualification_promotions_refuse (test_scope.Closure.test_claim_candidate_and_qualification_promotions_refuse) ... ok
+test_composition_and_frozen_manifest_remain_independent (test_scope.Closure.test_composition_and_frozen_manifest_remain_independent) ... ok
+test_host_observation_cannot_become_delivery_or_installation_proof (test_scope.Closure.test_host_observation_cannot_become_delivery_or_installation_proof) ... ok
+test_original_checks_and_deadlines_are_not_relaxed (test_scope.Closure.test_original_checks_and_deadlines_are_not_relaxed) ... ok
+test_scope_is_not_freeze_or_admission (test_scope.Closure.test_scope_is_not_freeze_or_admission) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.094s
+
+OK

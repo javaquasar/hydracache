@@ -1,0 +1,25 @@
+{
+  "exit": 0,
+  "stdout": "",
+  "stderr": "test_failed_leader_still_stops_original_writer (__main__.Native.test_failed_leader_still_stops_original_writer) ... ok\ntest_missing_program_remains_tool_unavailable (__main__.Native.test_missing_program_remains_tool_unavailable) ... ok\ntest_new_session_writer_is_adopted_and_stopped (__main__.Native.test_new_session_writer_is_adopted_and_stopped) ... ok\ntest_plain_success_and_failure_keep_classification (__main__.Native.test_plain_success_and_failure_keep_classification) ... ok\ntest_zero_exit_leader_with_live_writer_is_timeout (__main__.Native.test_zero_exit_leader_with_live_writer_is_timeout) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 5.100s\n\nOK\n",
+  "uid": 0,
+  "isolated_directory": "/tmp/hc074-ci-group-control-gi8r2qct",
+  "files": {
+    "run-with-heartbeat.py": "cedf938f80b3697efa219e5e8566d5d4f869cc2769dc7de6a176efb6e3af7afb",
+    "watchdog_windows_job.py": "8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1",
+    "watchdog_linux_group.py": "e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691",
+    "test_watchdog_linux_074.py": "e82e4aa73f63a7923a26bdfaaa8da898239b00deb72e2315d6088f503d05256f"
+  },
+  "before": {
+    "supervisor": "MainPID=377415\nNRestarts=0\nActiveState=active\nSubState=running\n",
+    "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f\n"
+  },
+  "after": {
+    "supervisor": "MainPID=377415\nNRestarts=0\nActiveState=active\nSubState=running\n",
+    "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f\n"
+  },
+  "services_changed": false,
+  "clocks_changed": false,
+  "installation": false,
+  "product_workload": false
+}

@@ -1,0 +1,26 @@
+watchdog heartbeat attempt=local elapsed=0.0s remaining=5.0s pid=30692
+watchdog heartbeat attempt=local elapsed=0.2s remaining=4.8s pid=30692
+watchdog heartbeat attempt=local elapsed=0.4s remaining=4.6s pid=30692
+watchdog heartbeat attempt=local elapsed=0.6s remaining=4.4s pid=30692
+watchdog heartbeat attempt=local elapsed=0.8s remaining=4.2s pid=30692
+watchdog heartbeat attempt=local elapsed=1.0s remaining=4.0s pid=30692
+watchdog heartbeat attempt=local elapsed=1.2s remaining=3.8s pid=30692
+watchdog heartbeat attempt=local elapsed=1.4s remaining=3.6s pid=30692
+watchdog heartbeat attempt=local elapsed=1.6s remaining=3.4s pid=30692
+watchdog heartbeat attempt=local elapsed=1.8s remaining=3.2s pid=30692
+watchdog heartbeat attempt=local elapsed=2.0s remaining=3.0s pid=30692
+watchdog heartbeat attempt=local elapsed=2.2s remaining=2.8s pid=30692
+watchdog heartbeat attempt=local elapsed=2.4s remaining=2.6s pid=30692
+watchdog heartbeat attempt=local elapsed=2.6s remaining=2.4s pid=30692
+watchdog heartbeat attempt=local elapsed=2.9s remaining=2.1s pid=30692
+watchdog heartbeat attempt=local elapsed=3.1s remaining=1.9s pid=30692
+watchdog heartbeat attempt=local elapsed=3.3s remaining=1.7s pid=30692
+watchdog heartbeat attempt=local elapsed=3.6s remaining=1.4s pid=30692
+watchdog heartbeat attempt=local elapsed=3.8s remaining=1.2s pid=30692
+watchdog heartbeat attempt=local elapsed=4.0s remaining=1.0s pid=30692
+watchdog heartbeat attempt=local elapsed=4.2s remaining=0.8s pid=30692
+watchdog heartbeat attempt=local elapsed=4.4s remaining=0.6s pid=30692
+watchdog heartbeat attempt=local elapsed=4.6s remaining=0.4s pid=30692
+watchdog heartbeat attempt=local elapsed=4.8s remaining=0.2s pid=30692
+watchdog heartbeat attempt=local elapsed=5.0s remaining=0.0s pid=30692
+watchdog result classification=timeout elapsed=5.0s receipt=C:\Workspace\prj\jq\cashe\hydracache-074\target\linux-watchdog-windows-compat-20261026\test_successful_root_leaving_writer_is_timeout_not_success\receipt.json

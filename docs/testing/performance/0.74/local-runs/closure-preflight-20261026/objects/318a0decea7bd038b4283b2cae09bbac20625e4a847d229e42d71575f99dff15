@@ -1,0 +1,24 @@
+test_fractional_deadline_is_not_rounded (test_watchdog_074.Arguments.test_fractional_deadline_is_not_rounded) ... ok
+test_nonfinite_time_arguments_cannot_disable_deadline (test_watchdog_074.Arguments.test_nonfinite_time_arguments_cannot_disable_deadline) ... ok
+test_close_failure_is_not_silently_a_closed_owner (test_watchdog_074.Ownership.test_close_failure_is_not_silently_a_closed_owner) ... ok
+test_closed_owner_cannot_spawn_query_or_terminate (test_watchdog_074.Ownership.test_closed_owner_cannot_spawn_query_or_terminate) ... ok
+test_configuration_failure_releases_created_job (test_watchdog_074.Ownership.test_configuration_failure_releases_created_job) ... ok
+test_creation_failure_does_not_close_an_unowned_handle (test_watchdog_074.Ownership.test_creation_failure_does_not_close_an_unowned_handle) ... ok
+test_one_spawn_attempt_even_after_failure (test_watchdog_074.Ownership.test_one_spawn_attempt_even_after_failure) ... ok
+test_successful_owner_preserves_child_and_passes_queries (test_watchdog_074.Ownership.test_successful_owner_preserves_child_and_passes_queries) ... ok
+test_busy_job_exhausts_fixed_cleanup_budget_and_refuses (test_watchdog_074.StateMachine.test_busy_job_exhausts_fixed_cleanup_budget_and_refuses) ... ok
+test_close_after_cleanup_budget_is_not_success (test_watchdog_074.StateMachine.test_close_after_cleanup_budget_is_not_success) ... ok
+test_empty_job_and_successful_root_do_not_trigger_termination (test_watchdog_074.StateMachine.test_empty_job_and_successful_root_do_not_trigger_termination) ... ok
+test_empty_witness_after_cleanup_budget_is_not_success (test_watchdog_074.StateMachine.test_empty_witness_after_cleanup_budget_is_not_success) ... ok
+test_failed_root_still_terminates_descendants (test_watchdog_074.StateMachine.test_failed_root_still_terminates_descendants) ... ok
+test_job_close_failure_cannot_be_a_successful_receipt (test_watchdog_074.StateMachine.test_job_close_failure_cannot_be_a_successful_receipt) ... ok
+test_original_child_wait_failure_is_runner_loss (test_watchdog_074.StateMachine.test_original_child_wait_failure_is_runner_loss) ... ok
+test_query_failure_is_runner_loss_and_closes_job (test_watchdog_074.StateMachine.test_query_failure_is_runner_loss_and_closes_job) ... ok
+test_spawn_failure_closes_empty_owner (test_watchdog_074.StateMachine.test_spawn_failure_closes_empty_owner) ... ok
+test_successful_root_with_live_descendant_reaches_original_deadline (test_watchdog_074.StateMachine.test_successful_root_with_live_descendant_reaches_original_deadline) ... ok
+test_termination_failure_is_runner_loss_not_timeout (test_watchdog_074.StateMachine.test_termination_failure_is_runner_loss_not_timeout) ... ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 0.036s
+
+OK

@@ -1,0 +1,68 @@
+{
+  "implementation_commit": "bf3f048bd",
+  "members": {
+    "checks/closure-ci-contract/intent.json": {
+      "bytes": 351116,
+      "sha256": "3b6aa4a0bacdbd047fdbfcf62182bf67eb005a12f99dc970054ce72261ae84e6"
+    },
+    "checks/closure-ci-contract/result.json": {
+      "bytes": 350823,
+      "sha256": "9867ef36dc6a0155b7a3e466f0a4a9bc03483cc55a07be409ee8ca9715c9e065"
+    },
+    "checks/closure-ci-contract/stderr.log": {
+      "bytes": 152,
+      "sha256": "458f084d8320dd9d3bbda9e99f6ab2eabd2775edd4022f1fc8fe2259140d3793"
+    },
+    "checks/closure-ci-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/closure-ci-doc/intent.json": {
+      "bytes": 351068,
+      "sha256": "e35464fdd54718e81aebe39d7f120b2b7efb36e7a9de74674123a50d41e07fd3"
+    },
+    "checks/closure-ci-doc/result.json": {
+      "bytes": 350823,
+      "sha256": "9867ef36dc6a0155b7a3e466f0a4a9bc03483cc55a07be409ee8ca9715c9e065"
+    },
+    "checks/closure-ci-doc/stderr.log": {
+      "bytes": 204,
+      "sha256": "2003fe23711529ac6563bbabf5a51f04ff5f70fc60bfd58b7165682d6b76980e"
+    },
+    "checks/closure-ci-doc/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/closure-ci-integrity/intent.json": {
+      "bytes": 351124,
+      "sha256": "7bcb7c63a768c9188fd2cee3f76d658067cb8aad99ac99bbfaf5efbe4063386a"
+    },
+    "checks/closure-ci-integrity/result.json": {
+      "bytes": 350823,
+      "sha256": "9867ef36dc6a0155b7a3e466f0a4a9bc03483cc55a07be409ee8ca9715c9e065"
+    },
+    "checks/closure-ci-integrity/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/closure-ci-integrity/stdout.log": {
+      "bytes": 86,
+      "sha256": "1ae6770b1c34e54dc09d53ddd2323cfe754cbd780514900042dc116dddc492b6"
+    },
+    "collector.py": {
+      "bytes": 1367,
+      "sha256": "86aa4a1216e0b8a0f412b1f44d9bf2ac5f74510462f2c85a0e2c52084ebc4084"
+    },
+    "main/index.json": {
+      "bytes": 19372,
+      "sha256": "3fca8292fe4aa75a00bf327b264e75ca11293f595fade83d56f7418274c8da82"
+    },
+    "main/verify.py": {
+      "bytes": 2668,
+      "sha256": "672c74c2746261e7a8299e212d4a0943f0b7a6277f2fdcbe86874b77983f4141"
+    }
+  },
+  "package_pass": false,
+  "schema": "hc074-closure-ci-final-checks-v1",
+  "server_admitted": false
+}

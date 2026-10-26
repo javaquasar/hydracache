@@ -21040,3 +21040,28 @@ remaining parent complement rather than calling it a measured API. Both arms
 trace all layers, so this successful control is not an overhead estimate or
 comparison with earlier unpaired attempts. Real Windows fault paths remain the
 next gate; the Linux server cannot establish this Windows ABI contract.
+
+### A green leader is not a retired process tree
+
+Closure work also exposed a correctness defect outside the cache hot path. The
+Linux heartbeat wrapper returned success after its leader exited, even while a
+descendant kept writing. Two of four baseline controls failed. A first repair
+passed the same controls but still used a proc child-list snapshot as an empty
+tree proof; review rejected that reasoning despite the green tests.
+
+The retained repair uses an exclusive private subreaper, retained pidfds for
+signals and kernel ECHILD for retirement. A separate five-case Linux cohort
+passes, including a writer in a new session; Windows behavior is checked
+independently. The original timeout and cleanup budget stay unchanged. This is
+a CI containment fix, not a throughput improvement or production all-writer
+fence: killing the watchdog itself still requires a stronger external owner.
+The [baseline, rejected reasoning and revised controls](../testing/performance/0.74/linux-ci-retirement-result-20261026.md)
+remain documented separately from performance experiments.
+
+The approved closure scope has zero accepted performance candidates and no
+numerical improvement claim. Compatible security patches are now authorized
+under Rust 1.88 without new dependency-policy exceptions. Original execution
+will be completed in the existing local systemd 257 environment; the dedicated
+host's observed systemd 255 does not prove the required extra-FD delivery.
+Neither focused green tests nor this environment choice complete the red full
+package gate, production enrollment, crash/reconnect matrix or release admission.

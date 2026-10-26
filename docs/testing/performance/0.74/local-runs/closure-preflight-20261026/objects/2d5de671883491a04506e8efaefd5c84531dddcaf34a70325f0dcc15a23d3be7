@@ -1,0 +1,69 @@
+"""One finite isolated server CI fixture cohort, no installation or service action."""
+import base64
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+phase = sys.argv[1]
+if phase not in ('baseline', 'candidate', 'candidate-v2', 'extended-v2'):
+    raise SystemExit('known distinct control phase required')
+out = ROOT/'target'/('linux-ci-group-'+phase+'-20261026')
+out.mkdir(exist_ok=False)
+sources = {
+    'run-with-heartbeat.py': ROOT/('target/posix-watchdog-baseline-20261026.py' if phase == 'baseline' else 'scripts/ci/run-with-heartbeat.py'),
+    'watchdog_windows_job.py': ROOT/'scripts/ci/watchdog_windows_job.py',
+    'watchdog_linux_group.py': ROOT/'scripts/ci/watchdog_linux_group.py',
+    'test_watchdog_linux_074.py': ROOT/'scripts/ci/test_watchdog_linux_074.py',
+}
+payload = {name: base64.b64encode(path.read_bytes()).decode() for name, path in sources.items()}
+remote = '''
+import base64, hashlib, json, os, pathlib, subprocess, tempfile
+files = PAYLOAD
+markers = ['/var/lib/hydracache-performance/campaigns/active-campaign',
+ '/var/lib/hydracache-performance/campaigns/active-diagnostic.json',
+ '/var/lib/hydracache-performance/campaigns/.active-diagnostic.pending',
+ '/var/lib/hydracache-performance/campaigns/diagnostic-requests.json',
+ '/var/lib/hydracache-performance/campaigns/.diagnostic-requests.pending',
+ '/var/lib/hydracache-performance/campaign-lifecycle-smoke-v1.json',
+ '/var/lib/hydracache-performance/controller-loss-smoke-v1.json',
+ '/var/lib/hydracache-performance/diagnostic-intents-074',
+ '/var/lib/hydracache-performance/worker-authority-074']
+def observe():
+ p=subprocess.run(['systemctl','show','hydracache-performance-supervisor-074.service',
+  '-p','ActiveState','-p','SubState','-p','MainPID','-p','NRestarts'],capture_output=True,timeout=10)
+ if p.returncode or 'ActiveState=active' not in p.stdout.decode() or 'SubState=running' not in p.stdout.decode():
+  raise RuntimeError('stable supervisor is not active')
+ if any(os.path.lexists(p) for p in markers):raise RuntimeError('active campaign or lifecycle marker')
+ return dict(supervisor=p.stdout.decode(),boot=pathlib.Path('/proc/sys/kernel/random/boot_id').read_text())
+before=observe()
+with tempfile.TemporaryDirectory(prefix='hc074-ci-group-control-') as directory:
+ root=pathlib.Path(directory)
+ if root.parent != pathlib.Path('/tmp') or not root.name.startswith('hc074-ci-group-control-'):
+  raise RuntimeError('unexpected isolated target')
+ for name,body in files.items():
+  raw=base64.b64decode(body,validate=True)
+  with (root/name).open('xb') as stream:stream.write(raw)
+ command=['python3','test_watchdog_linux_074.py','-v']
+ p=subprocess.run(command,cwd=root,capture_output=True,timeout=40)
+ result=dict(exit=p.returncode,stdout=p.stdout.decode(errors='replace'),stderr=p.stderr.decode(errors='replace'),
+  uid=os.getuid(),isolated_directory=directory,
+  files={name:hashlib.sha256((root/name).read_bytes()).hexdigest() for name in files},
+  before=before,after=observe(),services_changed=False,clocks_changed=False,installation=False,product_workload=False)
+ if result['before'] != result['after']:raise RuntimeError('supervisor or boot changed')
+print(json.dumps(result,indent=2))
+'''.replace('PAYLOAD', repr(payload))
+argv = ['ssh','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=15',
+        'hydracache-ax42','sudo -n python3 -']
+intent = dict(phase=phase,argv=argv,remote_sha256=hashlib.sha256(remote.encode()).hexdigest(),
+    files={name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in sources.items()},
+    server=True,isolated_fixture=True,product=False,installation=False,supervisor_stop=False,retry=False)
+with (out/'intent.json').open('x') as stream:json.dump(intent,stream,indent=2)
+with (out/'remote.py').open('xb') as stream:stream.write(remote.encode())
+with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+    result=subprocess.run(argv,input=remote.encode(),stdout=stdout,stderr=stderr,timeout=60)
+with (out/'result.json').open('x') as stream:json.dump(dict(ssh_exit=result.returncode),stream)
+print(dict(ssh_exit=result.returncode,output=str(out)))
+raise SystemExit(result.returncode)
