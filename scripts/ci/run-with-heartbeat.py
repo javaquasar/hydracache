@@ -16,6 +16,7 @@ import time
 from pathlib import Path
 
 from watchdog_windows_job import WindowsJob
+from watchdog_linux_group import LinuxGroup
 
 
 def parse_args() -> argparse.Namespace:
@@ -90,14 +91,8 @@ def main() -> int:
             job = WindowsJob()
             process = job.spawn(args.command, args.cwd, log_handle, deadline)
         else:
-            process = subprocess.Popen(
-                args.command,
-                cwd=args.cwd,
-                stdout=log_handle,
-                stderr=subprocess.STDOUT if log_handle is not None else None,
-                start_new_session=True,
-                creationflags=0,
-            )
+            job = LinuxGroup()
+            process = job.spawn(args.command, args.cwd, log_handle, deadline)
         next_heartbeat = started
         while True:
             exit_code = process.poll()
