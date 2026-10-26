@@ -1,0 +1,38 @@
+diff --git a/crates/xtask/tests/bootstrap_entry_binding_074.rs b/crates/xtask/tests/bootstrap_entry_binding_074.rs
+index 27fc7b6d4..2462cc73b 100644
+--- a/crates/xtask/tests/bootstrap_entry_binding_074.rs
++++ b/crates/xtask/tests/bootstrap_entry_binding_074.rs
+@@ -11,7 +11,7 @@ fn bootstrap_entry_binding_exists_before_child_delivery() {
+ #[path = "support/bootstrap_entry_guard.rs"]
+ mod guard;
+ fn source(name: &str) -> String {
+-    std::fs::read_to_string(
++    bootstrap_docs::read_to_string(
+         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+             .join("../../tools/long-run-supervisor-074/src")
+             .join(name),
+@@ -64,7 +64,7 @@ fn bootstrap_entry_exact_additions_restore_whole_old_frames_and_kernel_bodies()
+ #[test]
+ fn bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen() {
+     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+-    let raw = std::fs::read_to_string(root.join("docs/COMPAT.md"))
++    let raw = bootstrap_docs::read_to_string(root.join("docs/COMPAT.md"))
+         .unwrap()
+         .replace('\r', "");
+     assert_eq!(guard::compat_view(&raw), baseline("docs/COMPAT.md"));
+@@ -80,7 +80,7 @@ fn bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen() {
+         "docs/testing/gated-test-registry.toml",
+         "docs/testing/performance/0.74/qualification-manifest.toml",
+     ] {
+-        let raw = std::fs::read_to_string(root.join(name))
++        let raw = bootstrap_docs::read_to_string(root.join(name))
+             .unwrap()
+             .replace('\r', "");
+         assert_eq!(
+@@ -122,3 +122,6 @@ fn bootstrap_entry_uses_original_sealed_config_and_no_transport_or_new_time() {
+         }
+     }
+ }
++
++#[path = "../../../tools/bootstrap-doc-reader-074/io.rs"]
++mod bootstrap_docs;

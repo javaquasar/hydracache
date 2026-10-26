@@ -1,0 +1,89 @@
+"""Retain first outcomes and exact fixed-producer test-only document adapters."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = '181c077abdfbae5a8c4dfe67cee6f1c95519d529'
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+members, objects, intents = {}, {}, {}
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+labels = {name: 0 for name in [
+    'bootstrap-doc-reader-candidate-first', 'bootstrap-doc-reader-msrv-first',
+    'bootstrap-doc-reader-producer-first', 'bootstrap-doc-reader-fmt-first',
+    'bootstrap-doc-reader-check-first', 'bootstrap-doc-reader-candidate-third',
+    'bootstrap-doc-reader-msrv-third', 'bootstrap-doc-reader-producer-final',
+    'bootstrap-doc-reader-fmt-final', 'bootstrap-doc-reader-check-final',
+    'bootstrap-doc-reader-clippy-second', 'bootstrap-doc-reader-doc-check-first',
+    'bootstrap-doc-reader-contract-check-first']}
+labels.update({'bootstrap-continuation-first-targets': 101,
+               'bootstrap-doc-reader-clippy-first': 101,
+               'bootstrap-doc-reader-candidate-second': 101})
+for label, expected in labels.items():
+    folder = ROOT / 'target/source-continuation-20261024' / label
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    assert result['exit'] == expected and result['outer_refusal'] is None
+    assert result['source_unchanged'] and result['head_unchanged']
+    assert result['source_after'] == intent['source'] and intent['head'] == BASE
+    intents[label] = intent
+    for path in sorted(folder.iterdir()):
+        assert path.is_file()
+        add('checks/' + label + '/' + path.name, path.read_bytes())
+
+rules_raw = (ROOT / 'tools/bootstrap-doc-reader-074/rules.json').read_bytes()
+assert sha(rules_raw) == 'f780c166ff6e708eb2b09013075e414426bad8ae443f537a5ad0a08dcebfb3ce'
+rules = json.loads(rules_raw)
+files = [row['path'] for row in rules['rows']]
+for path in files:
+    old = subprocess.check_output(['git', '--no-replace-objects', 'show', BASE + ':' + path], cwd=ROOT)
+    add('baseline/' + path, old)
+    diff = subprocess.check_output(['git', '--no-replace-objects', 'diff', '--no-ext-diff', '--no-textconv',
+                                   BASE, '--', path], cwd=ROOT)
+    add('declared-delta/' + path + '.raw', diff)
+files.append('crates/xtask/tests/bootstrap_doc_reader_074.rs')
+files += [path.relative_to(ROOT).as_posix() for path in sorted((ROOT / 'tools/bootstrap-doc-reader-074').iterdir())
+          if path.is_file()]
+files += ['tools/source-successor-view-074/contract.rs', 'tools/source-successor-view-074/rules.json']
+for path in files:
+    body = (ROOT / path).read_bytes()
+    for label in ['bootstrap-doc-reader-candidate-third', 'bootstrap-doc-reader-msrv-third',
+                  'bootstrap-doc-reader-clippy-second']:
+        assert sha(body) == intents[label]['source'][path]
+    add('source-final/' + path, body)
+projection = json.loads((ROOT / 'tools/source-successor-view-074/rules.json').read_bytes())
+for row in projection['rows'][:2]:
+    for key in ['revision', 'previous_revision']:
+        rev = row[key]
+        body = subprocess.check_output(['git', '--no-replace-objects', 'show', rev + ':' + row['path']], cwd=ROOT)
+        add('producer/' + rev + '/' + row['path'], body)
+for name in ['bootstrap-doc-rules-initial-20261026.json', 'bootstrap-doc-rules-candidate-one-20261026.json']:
+    add('retained-descriptions/' + name, (ROOT / 'target' / name).read_bytes())
+for name in ['run-fresh-reader-20261024.py', 'run-source-step-20261024.py',
+             'run-bootstrap-doc-final-checks.py', 'retain-bootstrap-doc-reader-20261026.py']:
+    add('coordinator/' + name, (ROOT / 'target' / name).read_bytes())
+
+out = ROOT / 'docs/testing/performance/0.74/local-runs/bootstrap-doc-reader-20261026'
+out.mkdir(exist_ok=True)
+(out / 'objects').mkdir()
+for digest, raw in objects.items():
+    with (out / 'objects' / digest).open('xb') as output:
+        output.write(raw)
+index = dict(schema='hc074-bootstrap-doc-reader-evidence-v1', baseline_revision=BASE,
+             members=members, expected_exit=labels, bootstrap_original_cases=53,
+             preceding_proof_cases=10, new_cases=6, unresolved_audit_inputs=26,
+             full_package_rerun=False, server=False, runtime_or_deadline_changes=False,
+             qualification=False)
+with (out / 'index.json').open('x', encoding='utf-8', newline='\n') as output:
+    json.dump(index, output, indent=2, sort_keys=True)
+    output.write('\n')
+print(dict(members=len(members), objects=len(objects), index_sha256=sha((out / 'index.json').read_bytes())))

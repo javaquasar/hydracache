@@ -1,0 +1,20 @@
+diff --git a/crates/xtask/tests/bootstrap_build_owner_074.rs b/crates/xtask/tests/bootstrap_build_owner_074.rs
+index 4c9da8fca..aaf63b080 100644
+--- a/crates/xtask/tests/bootstrap_build_owner_074.rs
++++ b/crates/xtask/tests/bootstrap_build_owner_074.rs
+@@ -4,7 +4,7 @@ mod entry_guard;
+ #[path = "support/bootstrap_build_guard.rs"]
+ mod guard;
+ fn read(name: &str) -> String {
+-    let raw = std::fs::read_to_string(
++    let raw = bootstrap_docs::read_to_string(
+         Path::new(env!("CARGO_MANIFEST_DIR"))
+             .join("../..")
+             .join(name),
+@@ -143,3 +143,6 @@ fn bootstrap_owner_adds_no_execution_or_clock_capability_and_keeps_exact_origina
+         assert_eq!(read(path), baseline(path));
+     }
+ }
++
++#[path = "../../../tools/bootstrap-doc-reader-074/io.rs"]
++mod bootstrap_docs;

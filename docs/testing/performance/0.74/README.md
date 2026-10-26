@@ -26,6 +26,13 @@ six new input/predicate-preservation cases and five unchanged successor controls
 pass on current/MSRV. Bootstrap and complete current-tree/package admission stay
 separate; neither a historical body view nor a green subset supplies that permit.
 
+The [bootstrap document-reader repair](bootstrap-doc-reader-result-20261026.md)
+closes fifteen bootstrap failures: 53 unchanged bootstrap cases, ten preceding
+proof cases and six new controls pass on current/MSRV. Only two independently
+pinned document views change; source bodies, assertions and live checks stay
+unchanged. First lint/compile refusals remain. The complete audit still refuses
+26 inputs and the full package is not repeated or declared green.
+
 The [original start material prerequisite](local-runs/original-collector-start-material-20261017/README.md)
 now retains the original reviewed bundle with Starting/pipes/sinks/fence.
 The framed successor passes six healthy chains and twenty-six exact refusals

@@ -20433,3 +20433,36 @@ and five unchanged successor cases on current/MSRV. That closes five specific
 failures, not the complete package or a performance hypothesis. Preserving
 evidence and preserving runtime behavior are distinct obligations, and both
 remain necessary before a release can claim readiness.
+
+### Limit historical projection to the documents that actually changed phase
+
+The [bootstrap continuation](../testing/performance/0.74/bootstrap-doc-reader-result-20261026.md)
+finds fifteen bootstrap failures and one complete-audit failure. They require
+different repairs. Bootstrap's original guards already understand the source
+hooks introduced during its development; what they cannot yet consume is the
+later COMPAT and gate-registry phase. Showing them an entire pre-bootstrap tree
+would remove precisely the hooks those guards are meant to protect.
+
+The repair therefore selects only those two documents, verifies their complete
+current bodies against independent producers and reconstructs their exact
+reviewed predecessor before the original guard chain. Other reads retain their
+bytes and order; I/O errors still propagate after one observation. Current source
+is never approved merely because its own hash was recorded. The expected
+description is fixed, while every observation remains fresh.
+
+Extending a reader also changes a source file that earlier preservation tests
+check in full. Two explicit proof-reader joins account for that fact rather than
+removing old assertions. Fixed whole-body construction and AST comparisons retain
+all 63 preceding cases and their assertion tokens. Six new controls exercise
+narrow selection, document/proof drift, stale and partial input, and read errors
+after a successful observation.
+
+The first candidate passes its selected tests but fails strict lint on duplicated
+module imports and an unused helper graph. Its first correction fails compilation
+because most old targets do not import that runtime helper. Both first results
+stay in the packet. Sharing the one-read core while choosing the appropriate
+already-imported or standalone projector fixes the composition without lint
+exceptions. The final 69 cases pass on both compilers. That closes this boundary,
+not the separate 26-input audit frontier, a performance hypothesis or server
+admission. A green historical view remains evidence about one approved change,
+never permission to skip the rest of the current tree.

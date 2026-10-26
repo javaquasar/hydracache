@@ -1,0 +1,24 @@
+diff --git a/crates/xtask/tests/authority_reader_phase_074.rs b/crates/xtask/tests/authority_reader_phase_074.rs
+index cd6971a6b..c9b9238b7 100644
+--- a/crates/xtask/tests/authority_reader_phase_074.rs
++++ b/crates/xtask/tests/authority_reader_phase_074.rs
+@@ -17,9 +17,10 @@ fn accepts(path: &str, original: &str, current: &str) -> bool {
+ }
+ 
+ fn raw(path: &str) -> String {
+-    std::fs::read_to_string(runtime::root().join(path))
++    let raw = std::fs::read_to_string(runtime::root().join(path))
+         .unwrap()
+-        .replace("\r\n", "\n")
++        .replace("\r\n", "\n");
++    bootstrap_phase_reader::read(path, raw)
+ }
+ 
+ #[test]
+@@ -248,3 +249,6 @@ fn terminal_main_text_matches_fixed_producers_without_compiling_the_old_runtime(
+         assert!(std::panic::catch_unwind(|| main_phase::project(changed)).is_err());
+     }
+ }
++
++#[path = "../../../tools/bootstrap-doc-reader-074/reader.rs"]
++mod bootstrap_phase_reader;

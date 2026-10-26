@@ -89,6 +89,13 @@ also pass on both compilers. The complete current-tree audit and remaining
 bootstrap inputs still need their own exact accounting; this does not replace
 the failed/interrupted full package.
 
+The [bootstrap document-reader repair](bootstrap-doc-reader-result-20261026.md)
+subsequently closes fifteen bootstrap failures with 69 cases per compiler:
+53 old bootstrap, ten preceding proof and six new preservation/refusal controls.
+It changes only the two exact document views, retaining every old assertion and
+the first lint/compile refusals. The independent complete audit remains red at
+26 inputs; their accounting and the new source/effect review are still pending.
+
 Complete a newly reviewed whole-package replay within the unchanged
 780-second/four-thread guard, including the previously unstarted suffix. The
 separate 321-case performance-contract pass and repaired focused cohorts do not

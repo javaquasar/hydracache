@@ -1,0 +1,32 @@
+"""Bounded source-only checks; no server, workload, clock or service actions."""
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+RUNNER = ROOT / 'target/run-fresh-reader-20261024.py'
+TARGETS = ['bootstrap_doc_reader_074', 'bootstrap_build_owner_074',
+           'bootstrap_child_boundary_074', 'bootstrap_child_census_074',
+           'bootstrap_child_reader_074', 'bootstrap_current_image_074',
+           'bootstrap_enrollment_074', 'bootstrap_entry_binding_074',
+           'bootstrap_image_census_074', 'bootstrap_installed_origin_074',
+           'owned_case_074', 'authority_reader_phase_074']
+tests = ['cargo', '+1.88.0', 'test', '--offline', '--locked', '--no-fail-fast', '-p', 'xtask']
+for name in TARGETS:
+    tests.extend(['--test', name])
+tests.extend(['--', '--test-threads=4'])
+current = [item if item != '+1.88.0' else '+1.94.0' for item in tests]
+CASES = [
+    ('bootstrap-doc-reader-candidate-third', current),
+    ('bootstrap-doc-reader-msrv-third', tests),
+    ('bootstrap-doc-reader-producer-final', [sys.executable, 'tools/bootstrap-doc-reader-074/generate.py']),
+    ('bootstrap-doc-reader-fmt-final', ['cargo', '+1.94.0', 'fmt', '-p', 'xtask', '--', '--check']),
+    ('bootstrap-doc-reader-check-final', ['cargo', '+1.94.0', 'check', '--offline', '--locked', '-p', 'xtask', '--all-targets']),
+    ('bootstrap-doc-reader-clippy-second', ['cargo', '+1.94.0', 'clippy', '--offline', '--locked', '-p', 'xtask', '--all-targets', '--all-features', '--', '-D', 'warnings']),
+    ('bootstrap-doc-reader-doc-check-first', ['cargo', 'xtask', 'doc-check']),
+    ('bootstrap-doc-reader-contract-check-first', ['cargo', 'xtask', 'performance-contract-check', '--release', '0.74']),
+]
+for label, argv in CASES:
+    result = subprocess.run([sys.executable, str(RUNNER), label, *argv], cwd=ROOT, check=False)
+    if result.returncode:
+        raise SystemExit(result.returncode)

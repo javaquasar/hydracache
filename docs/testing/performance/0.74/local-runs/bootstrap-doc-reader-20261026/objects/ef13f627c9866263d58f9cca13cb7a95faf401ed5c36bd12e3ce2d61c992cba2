@@ -1,0 +1,11 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error[E0433]: failed to resolve: could not find `runtime` in the crate root
+  --> crates\xtask\tests\..\..\..\tools\bootstrap-doc-reader-074\io.rs:38:34
+   |
+38 |         Some(relative) => crate::runtime::successor::project(relative, raw),
+   |                                  ^^^^^^^ could not find `runtime` in the crate root
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `xtask` (test "bootstrap_build_owner_074") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `xtask` (test "bootstrap_child_census_074") due to 1 previous error

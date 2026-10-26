@@ -1,0 +1,311 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: constant `BASE` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:13:11
+   |
+13 | pub const BASE: &str = storage::SOURCE;
+   |           ^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `ARTIFACT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:14:11
+   |
+14 | pub const ARTIFACT: &str = "f193fabae86c9bd7a2e778a9463a43984834deb5";
+   |           ^^^^^^^^
+
+warning: constant `HISTORY` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:15:11
+   |
+15 | pub const HISTORY: &str = "fe5ebda429d9ef1f3a9ccd059600d264936cc283";
+   |           ^^^^^^^
+
+warning: constant `FIXTURE` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:16:11
+   |
+16 | pub const FIXTURE: &str = storage::FIXTURE;
+   |           ^^^^^^^
+
+warning: constant `OBSERVER` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:17:11
+   |
+17 | pub const OBSERVER: &str = storage::OBSERVER;
+   |           ^^^^^^^^
+
+warning: constant `TESTS` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:18:11
+   |
+18 | pub const TESTS: &str = "tools/long-run-supervisor-074/src/diagnostic_authority_fixture_tests.rs";
+   |           ^^^^^
+
+warning: constant `SOURCE_TEST` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:19:11
+   |
+19 | pub const SOURCE_TEST: &str = "crates/xtask/tests/authority_storage_source_074.rs";
+   |           ^^^^^^^^^^^
+
+warning: constant `HISTORY_TEST` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:20:11
+   |
+20 | pub const HISTORY_TEST: &str = "crates/xtask/tests/authority_rust_history_074.rs";
+   |           ^^^^^^^^^^^^
+
+warning: constant `COMPAT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:21:11
+   |
+21 | pub const COMPAT: [&str; 5] = [
+   |           ^^^^^^
+
+warning: constant `IMPORT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:28:7
+   |
+28 | const IMPORT: &str = "#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n";
+   |       ^^^^^^
+
+warning: function `patch` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:54:4
+   |
+54 | fn patch(source: &str, old: &str, new: &str, count: usize) -> String {
+   |    ^^^^^
+
+warning: function `legacy_adapter` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:62:8
+   |
+62 | pub fn legacy_adapter(path: &str, original: &str) -> String {
+   |        ^^^^^^^^^^^^^^
+
+warning: function `expected` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:80:8
+   |
+80 | pub fn expected(path: &str) -> Option<String> {
+   |        ^^^^^^^^
+
+warning: function `accepts` is never used
+   --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:172:8
+    |
+172 | pub fn accepts(path: &str, raw: &str) -> bool {
+    |        ^^^^^^^
+
+warning: function `view` is never used
+   --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:183:8
+    |
+183 | pub fn view(path: &str, raw: String) -> String {
+    |        ^^^^
+
+warning: constant `MAIN` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\performance.rs:2:11
+  |
+2 | pub const MAIN: &str = "crates/xtask/tests/performance_contract_074.rs";
+  |           ^^^^
+
+warning: constant `IMPORTS` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\performance.rs:3:11
+  |
+3 | pub const IMPORTS: &str = "#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/author...
+  |           ^^^^^^^
+
+warning: constant `READERS` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\performance.rs:4:11
+  |
+4 | pub const READERS: [(&str, &str); 58] = [
+  |           ^^^^^^^
+
+warning: function `reader` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\performance.rs:64:8
+   |
+64 | pub fn reader(original: &str, old: &str) -> String {
+   |        ^^^^^^
+
+warning: constant `SOURCE` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:3:11
+  |
+3 | pub const SOURCE: &str = "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs";
+  |           ^^^^^^
+
+warning: constant `HELPER` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:4:11
+  |
+4 | pub const HELPER: &str = "tools/long-run-supervisor-074/src/diagnostic_projection_fields.rs";
+  |           ^^^^^^
+
+warning: constant `LEGACY_TEST` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:5:11
+  |
+5 | pub const LEGACY_TEST: &str = "tools/long-run-supervisor-074/tests/support/projection_cost.rs";
+  |           ^^^^^^^^^^^
+
+warning: constant `HELPER_SHA256` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:6:11
+  |
+6 | pub const HELPER_SHA256: &str = "0bd6b4246b7d14151f378fda0090523fdc3485be254cc05df33eaa97264cd6ae";
+  |           ^^^^^^^^^^^^^
+
+warning: function `helper_is_pinned` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:7:8
+  |
+7 | pub fn helper_is_pinned(raw: &str) -> bool {
+  |        ^^^^^^^^^^^^^^^^
+
+warning: function `edit` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:16:4
+   |
+16 | fn edit(raw: &str, before: &str, after: &str) -> String {
+   |    ^^^^
+
+warning: function `legacy_test` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:24:8
+   |
+24 | pub fn legacy_test(baseline: &str) -> String {
+   |        ^^^^^^^^^^^
+
+warning: function `candidate` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\status-field-gate-074\contract.rs:29:8
+   |
+29 | pub fn candidate(baseline: &str) -> String {
+   |        ^^^^^^^^^
+
+warning: constant `PATHS` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\contract.rs:5:11
+  |
+5 | pub const PATHS: [&str; 5] = [
+  |           ^^^^^
+
+warning: constant `RULES` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\contract.rs:12:7
+   |
+12 | const RULES: &[u8] = include_bytes!("rules.json");
+   |       ^^^^^
+
+warning: constant `SHA256` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\contract.rs:13:7
+   |
+13 | const SHA256: &str = "61d3e1941cdae497600592a49af0487e4cf545573ba3f091add173110b560cda";
+   |       ^^^^^^
+
+warning: struct `Rules` is never constructed
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\contract.rs:17:8
+   |
+17 | struct Rules {
+   |        ^^^^^
+
+warning: struct `Row` is never constructed
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\contract.rs:23:8
+   |
+23 | struct Row {
+   |        ^^^
+
+warning: struct `Patch` is never constructed
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\contract.rs:33:8
+   |
+33 | struct Patch {
+   |        ^^^^^
+
+warning: function `digest` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\contract.rs:38:4
+   |
+38 | fn digest(raw: &[u8]) -> String {
+   |    ^^^^^^
+
+warning: function `rules` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\contract.rs:44:4
+   |
+44 | fn rules() -> &'static Rules {
+   |    ^^^^^
+
+warning: function `project` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\contract.rs:74:8
+   |
+74 | pub fn project(path: &str, raw: String) -> String {
+   |        ^^^^^^^
+
+warning: constant `SOURCE` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:4:11
+  |
+4 | pub const SOURCE: &str = "33c54b0cda8c330b115009cdf092ad002077cedf";
+  |           ^^^^^^
+
+warning: constant `FIXTURE` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:5:11
+  |
+5 | pub const FIXTURE: &str = "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs";
+  |           ^^^^^^^
+
+warning: constant `OBSERVER` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:6:11
+  |
+6 | pub const OBSERVER: &str =
+  |           ^^^^^^^^
+
+warning: function `replace` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:9:4
+  |
+9 | fn replace(source: &str, old: &str, new: &str, count: usize) -> String {
+  |    ^^^^^^^
+
+warning: function `section` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:17:4
+   |
+17 | fn section<'a>(source: &'a str, begin: &str, end: &str) -> &'a str {
+   |    ^^^^^^^
+
+warning: constant `SELECT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:25:7
+   |
+25 | const SELECT: &str = "match slot.take() {
+   |       ^^^^^^
+
+warning: constant `RETAIN` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:32:7
+   |
+32 | const RETAIN: &str =
+   |       ^^^^^^
+
+warning: constant `WRAPPER` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:37:7
+   |
+37 | const WRAPPER: &str = "        let result = self.validate(dir, uid, gid, budget);
+   |       ^^^^^^^
+
+warning: constant `EVICT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:44:7
+   |
+44 | const EVICT: &str = "    fn evict_scratch(&mut self) {
+   |       ^^^^^
+
+warning: constant `JOURNAL_EVICT` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:48:7
+   |
+48 | const JOURNAL_EVICT: &str = "    pub(crate) fn latch_refusal(&mut self) {
+   |       ^^^^^^^^^^^^^
+
+warning: function `candidate` is never used
+  --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:60:8
+   |
+60 | pub fn candidate(baseline: &str) -> String {
+   |        ^^^^^^^^^
+
+warning: function `observer` is never used
+   --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:129:8
+    |
+129 | pub fn observer(baseline: &str) -> String {
+    |        ^^^^^^^^
+
+warning: function `accepts` is never used
+   --> crates\xtask\tests\..\..\..\tools\authority-storage-source-074\contract.rs:213:8
+    |
+213 | pub fn accepts(expected: &str, actual: &str) -> bool {
+    |        ^^^^^^^
+
+warning: `xtask` (test "bootstrap_doc_reader_074") generated 49 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.98s
+     Running tests\authority_reader_phase_074.rs (target\debug\deps\authority_reader_phase_074-26337be553043668.exe)
+     Running tests\bootstrap_build_owner_074.rs (target\debug\deps\bootstrap_build_owner_074-d7767d56854d3940.exe)
+     Running tests\bootstrap_child_boundary_074.rs (target\debug\deps\bootstrap_child_boundary_074-6adfd941ea926e0e.exe)
+     Running tests\bootstrap_child_census_074.rs (target\debug\deps\bootstrap_child_census_074-9c7b2bca07a66280.exe)
+     Running tests\bootstrap_child_reader_074.rs (target\debug\deps\bootstrap_child_reader_074-9d5829d2766fd0c3.exe)
+     Running tests\bootstrap_current_image_074.rs (target\debug\deps\bootstrap_current_image_074-563c666aed8902ce.exe)
+     Running tests\bootstrap_doc_reader_074.rs (target\debug\deps\bootstrap_doc_reader_074-c395d4820476b54c.exe)
+     Running tests\bootstrap_enrollment_074.rs (target\debug\deps\bootstrap_enrollment_074-4bd39d8e9da06c4c.exe)
+     Running tests\bootstrap_entry_binding_074.rs (target\debug\deps\bootstrap_entry_binding_074-d8473b32742535cf.exe)
+     Running tests\bootstrap_image_census_074.rs (target\debug\deps\bootstrap_image_census_074-5d9c0fa9f80c334d.exe)
+     Running tests\bootstrap_installed_origin_074.rs (target\debug\deps\bootstrap_installed_origin_074-5211a27306de9542.exe)
+     Running tests\owned_case_074.rs (target\debug\deps\owned_case_074-8f02f7e8d8c5d19f.exe)

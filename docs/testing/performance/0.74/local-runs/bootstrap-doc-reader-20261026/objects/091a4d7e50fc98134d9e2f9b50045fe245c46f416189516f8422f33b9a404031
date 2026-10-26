@@ -1,0 +1,38 @@
+diff --git a/crates/xtask/tests/bootstrap_child_census_074.rs b/crates/xtask/tests/bootstrap_child_census_074.rs
+index aa1e2b1fc..6fdd7940b 100644
+--- a/crates/xtask/tests/bootstrap_child_census_074.rs
++++ b/crates/xtask/tests/bootstrap_child_census_074.rs
+@@ -11,7 +11,7 @@ fn bootstrap_child_complete_census_exists_before_authentication() {
+ #[path = "support/bootstrap_roles_guard.rs"]
+ mod guard;
+ fn source(name: &str) -> String {
+-    std::fs::read_to_string(
++    bootstrap_docs::read_to_string(
+         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+             .join("../../tools/long-run-supervisor-074/src")
+             .join(name),
+@@ -62,7 +62,7 @@ fn bootstrap_roles_exact_hooks_keep_whole_old_entry_mode_and_original_frames() {
+ #[test]
+ fn bootstrap_roles_additive_compat_and_qualification_are_exact() {
+     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+-    let raw = std::fs::read_to_string(root.join("docs/COMPAT.md"))
++    let raw = bootstrap_docs::read_to_string(root.join("docs/COMPAT.md"))
+         .unwrap()
+         .replace('\r', "");
+     assert_eq!(guard::compat_view(&raw), baseline("docs/COMPAT.md"));
+@@ -79,7 +79,7 @@ fn bootstrap_roles_additive_compat_and_qualification_are_exact() {
+         "docs/testing/gated-test-registry.toml",
+         "docs/testing/performance/0.74/qualification-manifest.toml",
+     ] {
+-        let raw = std::fs::read_to_string(root.join(name))
++        let raw = bootstrap_docs::read_to_string(root.join(name))
+             .unwrap()
+             .replace('\r', "");
+         assert_eq!(
+@@ -131,3 +131,6 @@ fn bootstrap_roles_add_no_execution_repair_or_authority_and_close_extra_fds() {
+     assert!(source("diagnostic_bootstrap_census_entry.rs")
+         .contains("original bootstrap authentication is closed"));
+ }
++
++#[path = "../../../tools/bootstrap-doc-reader-074/io.rs"]
++mod bootstrap_docs;

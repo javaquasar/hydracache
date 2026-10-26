@@ -1,0 +1,19 @@
+diff --git a/crates/xtask/tests/owned_case_074.rs b/crates/xtask/tests/owned_case_074.rs
+index f1d296d92..c22c442ed 100644
+--- a/crates/xtask/tests/owned_case_074.rs
++++ b/crates/xtask/tests/owned_case_074.rs
+@@ -57,6 +57,7 @@ fn owned_case_bootstrap_reader_changes_one_read_and_keeps_every_assertion() {
+     assert_eq!(old.matches(before).count(), 1);
+     let after = "fn read(path: &str) -> String {\n    if runtime_io::owned_case_view::PATHS[6..].contains(&path) {\n        return runtime_io::read_to_string(root().join(path)).unwrap();\n    }";
+     let expected = format!("{imports}{}", old.replacen(before, after, 1));
++    let expected = bootstrap_phase::installed(&expected);
+     assert!(storage_contract::accepts(&expected, &current));
+     assert_ne!(old, current.replace("\r\n", "\n"));
+     for changed in [
+@@ -116,3 +117,6 @@ fn owned_case_whole_helper_pins_reject_mutation_before_any_compatibility_view()
+     }
+     assert!(!contract::helper_matches("unknown", ""));
+ }
++
++#[path = "../../../tools/bootstrap-doc-reader-074/proof.rs"]
++mod bootstrap_phase;

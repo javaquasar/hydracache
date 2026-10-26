@@ -1,0 +1,33 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.75s
+     Running tests\bootstrap_build_owner_074.rs (target\debug\deps\bootstrap_build_owner_074-d7767d56854d3940.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_build_owner_074`
+     Running tests\bootstrap_child_boundary_074.rs (target\debug\deps\bootstrap_child_boundary_074-6adfd941ea926e0e.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_child_boundary_074`
+     Running tests\bootstrap_child_census_074.rs (target\debug\deps\bootstrap_child_census_074-9c7b2bca07a66280.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_child_census_074`
+     Running tests\bootstrap_child_reader_074.rs (target\debug\deps\bootstrap_child_reader_074-9d5829d2766fd0c3.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_child_reader_074`
+     Running tests\bootstrap_current_image_074.rs (target\debug\deps\bootstrap_current_image_074-563c666aed8902ce.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_current_image_074`
+     Running tests\bootstrap_enrollment_074.rs (target\debug\deps\bootstrap_enrollment_074-4bd39d8e9da06c4c.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_enrollment_074`
+     Running tests\bootstrap_entry_binding_074.rs (target\debug\deps\bootstrap_entry_binding_074-d8473b32742535cf.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_entry_binding_074`
+     Running tests\bootstrap_image_census_074.rs (target\debug\deps\bootstrap_image_census_074-5d9c0fa9f80c334d.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_image_census_074`
+     Running tests\bootstrap_installed_origin_074.rs (target\debug\deps\bootstrap_installed_origin_074-5211a27306de9542.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_installed_origin_074`
+     Running tests\current_tree_input_audit_074.rs (target\debug\deps\current_tree_input_audit_074-c3765a3eaa3bd40a.exe)
+error: test failed, to rerun pass `-p xtask --test current_tree_input_audit_074`
+error: 10 targets failed:
+    `-p xtask --test bootstrap_build_owner_074`
+    `-p xtask --test bootstrap_child_boundary_074`
+    `-p xtask --test bootstrap_child_census_074`
+    `-p xtask --test bootstrap_child_reader_074`
+    `-p xtask --test bootstrap_current_image_074`
+    `-p xtask --test bootstrap_enrollment_074`
+    `-p xtask --test bootstrap_entry_binding_074`
+    `-p xtask --test bootstrap_image_census_074`
+    `-p xtask --test bootstrap_installed_origin_074`
+    `-p xtask --test current_tree_input_audit_074`

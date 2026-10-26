@@ -1,0 +1,129 @@
+
+running 6 tests
+test current_fixture_entry_keeps_fresh_current_bytes_separate_from_old_body_checks ... ok
+test five_readers_are_exact_declared_edits_of_independent_fixed_sources ... ok
+test partial_duplicate_wrong_branch_and_assertion_drift_cannot_enter_old_reader_views ... ok
+test every_original_case_and_assertion_survives_the_two_explicit_input_substitutions ... ok
+test terminal_main_text_matches_fixed_producers_without_compiling_the_old_runtime ... ok
+test all_eighteen_entry_inputs_and_current_mutants_retain_original_phase_checks ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.88s
+
+
+running 4 tests
+test bootstrap_build_has_separate_policy_and_receipt_domains_without_execution ... ok
+test bootstrap_original_wrapper_consumes_material_and_keeps_closing_frames ... ok
+test bootstrap_hooks_restore_entire_old_bodies_and_compatibility_bytes ... ok
+test bootstrap_owner_adds_no_execution_or_clock_capability_and_keeps_exact_original_context ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.24s
+
+
+running 4 tests
+test child_cannot_borrow_root_only_worker_or_held_trust_by_weakening_the_opener ... ok
+test executable_consistency_does_not_supply_a_systemd_address_for_a_sealed_copy ... ok
+test sandbox_hardening_is_not_a_host_mount_namespace_enrollment ... ok
+test boundary_audit_preserves_entire_runtime_and_frozen_qualification ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.46s
+
+
+running 4 tests
+test bootstrap_child_complete_census_exists_before_authentication ... ok
+test bootstrap_roles_add_no_execution_repair_or_authority_and_close_extra_fds ... ok
+test bootstrap_roles_additive_compat_and_qualification_are_exact ... ok
+test bootstrap_roles_exact_hooks_keep_whole_old_entry_mode_and_original_frames ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.81s
+
+
+running 4 tests
+test bootstrap_child_executable_exists_before_any_original_start ... ok
+test bootstrap_child_has_no_authority_transport_mutation_fallback_or_new_clock ... ok
+test bootstrap_child_compares_exact_additive_compatibility_and_refuses_mutation ... ok
+test bootstrap_child_keeps_entire_original_runtime_and_qualification_bytes ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.43s
+
+
+running 4 tests
+test bootstrap_current_executable_component_is_present_before_admission ... ok
+test current_image_queries_cannot_repair_roles_send_or_execute ... ok
+test current_image_compat_registry_and_qualification_remain_exact ... ok
+test current_image_only_adds_exact_hooks_and_keeps_old_modes_frames_and_deadlines ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.14s
+
+
+running 6 tests
+test lexical_selection_is_narrow_and_unknown_inputs_remain_byte_identical ... ok
+test exactly_one_ordered_observation_preserves_io_errors_without_caching_success ... ok
+test current_stale_partial_duplicate_and_unrelated_document_mutations_refuse ... ok
+test only_the_two_current_documents_reconstruct_the_exact_reviewed_phase ... ok
+test preceding_owned_case_proof_accepts_only_the_exact_extended_current_reader ... ok
+test all_eleven_callers_preserve_complete_original_cases_and_predicates ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.84s
+
+
+running 3 tests
+test bootstrap_selector_keeps_original_checks_without_key_fd_or_execution_exports ... ok
+test bootstrap_selection_compatibility_is_exactly_additive_and_mutations_refuse ... ok
+test independent_bootstrap_selection_has_only_one_additive_parent_hook ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+
+running 4 tests
+test bootstrap_entry_binding_exists_before_child_delivery ... ok
+test bootstrap_entry_uses_original_sealed_config_and_no_transport_or_new_time ... ok
+test bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen ... ok
+test bootstrap_entry_exact_additions_restore_whole_old_frames_and_kernel_bodies ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.01s
+
+
+running 4 tests
+test bootstrap_image_census_is_inside_the_same_existing_validation_observation ... ok
+test bootstrap_image_census_has_closed_twenty_six_descriptors_and_fourteen_roles ... ok
+test bootstrap_image_census_exact_hooks_preserve_whole_old_owner_and_all_old_queries ... ok
+test bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.35s
+
+
+running 22 tests
+test bootstrap_held_entry_component_precedes_activation ... ok
+test bootstrap_held_delivery_components_precede_execution_admission ... ok
+test bootstrap_installed_child_component_precedes_delivery ... ok
+test bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed ... ok
+test bootstrap_held_entry_additions_preserve_exact_old_modes_and_role_checks ... ok
+test bootstrap_installed_entry_component_precedes_runtime ... ok
+test bootstrap_installed_child_is_separate_consistency_not_authority_or_transport ... ok
+test bootstrap_installed_material_additive_compat_keeps_schema_and_qualification ... ok
+test bootstrap_installed_material_component_precedes_delivery ... ok
+test bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records ... ok
+test bootstrap_original_service_fixture_precedes_live_admission ... ok
+test bootstrap_installed_material_only_three_hooks_keep_whole_old_owner_and_kernel ... ok
+test bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame ... ok
+test bootstrap_sandbox_owner_component_precedes_admission ... ok
+test bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines ... ok
+test bootstrap_installed_entry_only_one_codec_hook_no_owner_or_child_activation ... ok
+test installed_origin_consumes_same_owner_and_cannot_recreate_retained_source_or_export_execution ... ok
+test installed_origin_exists_before_systemd_or_child_admission ... ok
+test bootstrap_sandbox_takes_no_caller_pid_or_manager_and_cannot_start_or_release ... ok
+test bootstrap_original_service_keeps_old_fixture_and_production_frames_exact ... ok
+test installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen ... ok
+test installed_origin_only_three_additive_hooks_preserve_old_live_frames_and_child_modes ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.84s
+
+
+running 4 tests
+test owned_case_whole_helper_pins_reject_mutation_before_any_compatibility_view ... ok
+test owned_case_bootstrap_reader_changes_one_read_and_keeps_every_assertion ... ok
+test authority_context_reader_adapts_only_the_exact_reviewed_registry_input ... ok
+test owned_case_exact_current_additions_preserve_every_old_body_and_reader ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.53s
+
