@@ -11,7 +11,7 @@ fn bootstrap_child_executable_exists_before_any_original_start() {
 #[path = "support/bootstrap_child_guard.rs"]
 mod guard;
 fn source(name: &str) -> String {
-    let raw = std::fs::read_to_string(
+    let raw = bootstrap_docs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../tools/long-run-supervisor-074/src")
             .join(name),
@@ -62,7 +62,7 @@ fn bootstrap_child_keeps_entire_original_runtime_and_qualification_bytes() {
         "docs/testing/gated-test-registry.toml",
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
-        let raw = std::fs::read_to_string(root.join(name))
+        let raw = bootstrap_docs::read_to_string(root.join(name))
             .unwrap()
             .replace('\r', "");
         assert_eq!(
@@ -77,7 +77,7 @@ fn bootstrap_child_keeps_entire_original_runtime_and_qualification_bytes() {
 }
 #[test]
 fn bootstrap_child_compares_exact_additive_compatibility_and_refuses_mutation() {
-    let raw = std::fs::read_to_string(
+    let raw = bootstrap_docs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/COMPAT.md"),
     )
     .unwrap()
@@ -136,3 +136,6 @@ fn bootstrap_child_has_no_authority_transport_mutation_fallback_or_new_clock() {
     assert!(main.contains("skip(1).take(2)"));
     assert!(main.contains("vars_os().take(4)"));
 }
+
+#[path = "../../../tools/bootstrap-doc-reader-074/io.rs"]
+mod bootstrap_docs;

@@ -282,7 +282,7 @@ fn read(path: &str) -> String {
     if runtime_io::owned_case_view::PATHS[6..].contains(&path) {
         return runtime_io::read_to_string(root().join(path)).unwrap();
     }
-    std::fs::read_to_string(root().join(path))
+    bootstrap_docs::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }
@@ -767,3 +767,6 @@ fn bootstrap_sandbox_takes_no_caller_pid_or_manager_and_cannot_start_or_release(
         child_baseline("docs/testing/performance/0.74/qualification-manifest.toml")
     );
 }
+
+#[path = "../../../tools/bootstrap-doc-reader-074/installed_io.rs"]
+mod bootstrap_docs;

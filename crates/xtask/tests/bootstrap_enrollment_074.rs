@@ -6,7 +6,7 @@ mod entry_guard;
 #[path = "support/bootstrap_enrollment_guard.rs"]
 mod guard;
 fn read(path: &str) -> String {
-    std::fs::read_to_string(
+    bootstrap_docs::read_to_string(
         Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .join(path),
@@ -89,3 +89,6 @@ fn independent_bootstrap_selection_has_only_one_additive_parent_hook() {
         String::from_utf8(result.stdout).unwrap().replace('\r', "")
     );
 }
+
+#[path = "../../../tools/bootstrap-doc-reader-074/io.rs"]
+mod bootstrap_docs;

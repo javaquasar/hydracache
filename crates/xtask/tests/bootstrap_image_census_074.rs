@@ -3,7 +3,7 @@ mod entry_guard;
 #[path = "support/bootstrap_image_guard.rs"]
 mod guard;
 fn source(name: &str) -> String {
-    std::fs::read_to_string(
+    bootstrap_docs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../tools/long-run-supervisor-074/src")
             .join(name),
@@ -133,7 +133,7 @@ fn bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock() {
         "docs/testing/performance/0.74/qualification-manifest.toml",
     ] {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-        let raw = std::fs::read_to_string(root.join(name))
+        let raw = bootstrap_docs::read_to_string(root.join(name))
             .unwrap()
             .replace('\r', "");
         let raw = if name == "docs/COMPAT.md" {
@@ -155,3 +155,6 @@ fn bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock() {
         );
     }
 }
+
+#[path = "../../../tools/bootstrap-doc-reader-074/io.rs"]
+mod bootstrap_docs;

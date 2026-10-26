@@ -14,7 +14,7 @@ fn root() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 fn current(path: &str) -> String {
-    std::fs::read_to_string(root().join(path))
+    bootstrap_docs::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "")
 }
@@ -146,3 +146,6 @@ fn current_image_queries_cannot_repair_roles_send_or_execute() {
     }
     assert!(code.contains("original bootstrap authentication is closed"));
 }
+
+#[path = "../../../tools/bootstrap-doc-reader-074/io.rs"]
+mod bootstrap_docs;
