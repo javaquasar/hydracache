@@ -1,0 +1,65 @@
+
+running 14 tests
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::dispatch_reply_flag_mask_error_request_and_sticky_guards_have_canaries ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_join::original_manager_join_full_frame_order_and_latches_have_canaries ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_message::original_addressed_delivery_adapter_is_test_only_and_cannot_construct_a_fixed_owner ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_join::original_manager_join_receiver_uses_retained_origin_and_all_four_typed_objects ... FAILED
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_message::original_grouped_message_round_body_alias_order_and_refusal_have_canaries ... FAILED
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::preparation_budget::preparation_budget_helper_is_the_exact_original_schedule_with_numeric_observation_only ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::dispatch_reply_flag_exception_is_exactly_one_original_predicate ... FAILED
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::manager_channel_has_no_execution_exports_fixture_promotion_or_caller_route ... FAILED
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::manager_channel_live_auth_namespace_deadline_and_sticky_guards_have_canaries ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::manager_channel_manual_root_and_nonroot_observations_are_not_product_admission ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::manager_channel_preserves_old_authority_versions_workloads_and_sender_boundaries ... FAILED
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_message::original_grouped_message_preserves_old_manager_frame_message_exchange_and_custody ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_join::original_manager_join_preserves_every_original_predicate_and_execution_boundary ... ok
+test fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::preparation_budget::preparation_budget_preserves_all_existing_rust_sources_and_registered_frame ... ok
+
+failures:
+
+---- fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_join::original_manager_join_receiver_uses_retained_origin_and_all_four_typed_objects stdout ----
+
+thread 'fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_join::original_manager_join_receiver_uses_retained_origin_and_all_four_typed_objects' (44472) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\contract.rs:83:5:
+assertion `left == right` failed: unreviewed source successor before historical assertions: docs/COMPAT.md
+  left: "da3ea98f49625b4bf85a45f5b6b60fc70e4b58480b3249e1e44e0a2e5ec10089"
+ right: "8743a9ad50122f733571e8106a49d43ccc5e44c79e864470842e6d9b4e0c9780"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_message::original_grouped_message_round_body_alias_order_and_refusal_have_canaries stdout ----
+
+thread 'fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_message::original_grouped_message_round_body_alias_order_and_refusal_have_canaries' (51120) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\contract.rs:83:5:
+assertion `left == right` failed: unreviewed source successor before historical assertions: docs/COMPAT.md
+  left: "da3ea98f49625b4bf85a45f5b6b60fc70e4b58480b3249e1e44e0a2e5ec10089"
+ right: "8743a9ad50122f733571e8106a49d43ccc5e44c79e864470842e6d9b4e0c9780"
+
+---- fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::dispatch_reply_flag_exception_is_exactly_one_original_predicate stdout ----
+
+thread 'fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::dispatch_reply_flag_exception_is_exactly_one_original_predicate' (43324) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\contract.rs:83:5:
+assertion `left == right` failed: unreviewed source successor before historical assertions: docs/COMPAT.md
+  left: "da3ea98f49625b4bf85a45f5b6b60fc70e4b58480b3249e1e44e0a2e5ec10089"
+ right: "8743a9ad50122f733571e8106a49d43ccc5e44c79e864470842e6d9b4e0c9780"
+
+---- fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::manager_channel_has_no_execution_exports_fixture_promotion_or_caller_route stdout ----
+
+thread 'fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::manager_channel_has_no_execution_exports_fixture_promotion_or_caller_route' (36020) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\contract.rs:83:5:
+assertion `left == right` failed: unreviewed source successor before historical assertions: docs/COMPAT.md
+  left: "da3ea98f49625b4bf85a45f5b6b60fc70e4b58480b3249e1e44e0a2e5ec10089"
+ right: "8743a9ad50122f733571e8106a49d43ccc5e44c79e864470842e6d9b4e0c9780"
+
+---- fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::manager_channel_preserves_old_authority_versions_workloads_and_sender_boundaries stdout ----
+
+thread 'fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::manager_channel_preserves_old_authority_versions_workloads_and_sender_boundaries' (20396) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\contract.rs:83:5:
+assertion `left == right` failed: unreviewed source successor before historical assertions: docs/COMPAT.md
+  left: "da3ea98f49625b4bf85a45f5b6b60fc70e4b58480b3249e1e44e0a2e5ec10089"
+ right: "8743a9ad50122f733571e8106a49d43ccc5e44c79e864470842e6d9b4e0c9780"
+
+
+failures:
+    fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::manager_channel_has_no_execution_exports_fixture_promotion_or_caller_route
+    fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::manager_channel_preserves_old_authority_versions_workloads_and_sender_boundaries
+    fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::dispatch_reply_flag_exception_is_exactly_one_original_predicate
+    fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_join::original_manager_join_receiver_uses_retained_origin_and_all_four_typed_objects
+    fixed_grouped::fence_custody::custody_join::original_descriptors::original_barrier::barred_custody::custody_loss::barred_collector::collector_notices::enrollment_frame::dispatch_exchange::manager_channel::reply_flags::original_manager_message::original_grouped_message_round_body_alias_order_and_refusal_have_canaries
+
+test result: FAILED. 9 passed; 5 failed; 0 ignored; 0 measured; 307 filtered out; finished in 54.39s
+

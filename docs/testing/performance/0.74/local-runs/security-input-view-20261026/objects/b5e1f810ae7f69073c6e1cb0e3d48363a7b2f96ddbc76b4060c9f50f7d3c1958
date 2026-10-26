@@ -1,0 +1,3 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.50s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-1ecfe587a41df042.exe)
+error: test failed, to rerun pass `-p xtask --test performance_contract_074`

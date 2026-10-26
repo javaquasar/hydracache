@@ -1,5 +1,16 @@
 # Release 0.74 closure and server launch status
 
+Latest compatibility integration: the [exact security input adapter](security-input-view-result-20261026.md)
+passes the old OIDC lock assertion and fourteen manager guards, with fifteen
+adapter/history controls and 22 independent graph controls on Windows 1.94.
+The fifteen adapter/history cases also pass on MSRV 1.88 and GNU/Linux 1.94;
+strict Windows compile/lint and local checks pass. The first Linux Git-context
+refusal remains distinct from its corrected explicit-environment result.
+Every current input is checked as a whole before a fixed historical predecessor
+is returned. First compilation, document and root mismatches remain retained.
+Current transitive effect review and full package coverage are still open;
+this does not replace the unchanged red V6 verdict or admit execution.
+
 Latest package prerequisite: the [security successor audit](security-successor-audit-result-20261026.md)
 verifies the three authorized dependency updates and retains the old lock guard's
 first failure plus V6's preflight source-drift refusal. Fresh syntax inventory

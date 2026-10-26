@@ -1,0 +1,41 @@
+"""Retain offline verifier controls without rewriting the primary packet."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+root = Path(__file__).resolve().parent.parent
+packet = root/'docs/testing/performance/0.74/local-runs/security-input-view-20261026'
+out = packet/'verification'
+out.mkdir(exist_ok=False)
+(out/'objects').mkdir()
+members = {}
+def take(name,raw):
+    digest = hashlib.sha256(raw).hexdigest()
+    dest = out/'objects'/digest
+    if not dest.exists():
+        with dest.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw),sha256=digest)
+for phase in ('packet-verify','packet-controls'):
+    folder = root/'target/security-input-view-20261026'/phase
+    result = json.loads((folder/'result.json').read_bytes())
+    if result['exit'] != 0 or result['outer_refusal'] is not None or not result['source_unchanged']:
+        raise ValueError('offline control outcome differs')
+    for path in sorted(folder.rglob('*')):
+        if path.is_file():
+            take('checks/'+phase+'/'+path.relative_to(folder).as_posix(),path.read_bytes())
+for name in ('verify.py','test_verify.py'):
+    take(name,(packet/name).read_bytes())
+take('final-tool-readme.md',(root/'tools/security-input-view-074/README.md').read_bytes())
+take('coordinator/'+Path(__file__).name,Path(__file__).read_bytes())
+primary_sha = hashlib.sha256((packet/'index.json').read_bytes()).hexdigest()
+if primary_sha != 'db231b09668cc784fca1b8464cbcf37119dd45f41b870b8ac14c1ddab2f21431':
+    raise ValueError('primary packet differs')
+value = dict(schema='hc074-security-input-view-verification-v1',primary_index_sha256=primary_sha,
+    implementation_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),
+    independent_controls=6,final_tool_readme_amended_after_primary=True,
+    test_only_repin_not_evidence_approval=True,package_pass=False,release_admitted=False,members=members)
+raw = (json.dumps(value,sort_keys=True,indent=2)+'\n').encode()
+with (out/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members)))

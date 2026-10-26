@@ -1,0 +1,26 @@
+   Compiling tokio v1.53.3
+   Compiling rustls v0.23.46
+   Compiling rustls-webpki v0.103.16
+   Compiling tokio-util v0.7.18
+   Compiling h2 v0.4.19
+   Compiling hyper v1.10.1
+   Compiling hyper-util v0.1.20
+   Compiling tower v0.5.3
+   Compiling axum v0.8.9
+   Compiling hyper-timeout v0.5.2
+   Compiling tokio-rustls v0.26.4
+   Compiling tokio-stream v0.1.18
+   Compiling hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+   Compiling tonic v0.14.6
+   Compiling tonic-prost v0.14.6
+   Compiling hydracache-client-hc2 v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-hc2)
+   Compiling hydracache-observability v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-observability)
+   Compiling hydracache-client-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-transport-axum)
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+   Compiling hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+   Compiling hydracache-client-plane-spike v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-plane-spike)
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5m 17s
+     Running tests\historical_input_view_074.rs (target\debug\deps\historical_input_view_074-49fbf75de23bf127.exe)
+     Running tests\security_input_view_074.rs (target\debug\deps\security_input_view_074-8fe0e8b284cc5767.exe)
+     Running tests\source_successor_view_074.rs (target\debug\deps\source_successor_view_074-b54427de70858f5e.exe)

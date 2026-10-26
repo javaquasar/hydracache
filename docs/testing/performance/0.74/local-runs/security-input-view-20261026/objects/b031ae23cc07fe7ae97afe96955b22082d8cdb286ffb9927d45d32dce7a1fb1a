@@ -1,0 +1,26 @@
+"""Reproduce the existing prefixed historical root expected by the old gate."""
+import difflib
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+root = Path(__file__).resolve().parent.parent
+path = 'crates/xtask/tests/performance_contract_074.rs'
+def frozen(revision):
+    return subprocess.check_output(['git','--no-replace-objects','show',revision+':'+path],cwd=root).decode().replace('\r\n','\n')
+oldbase = frozen('fa9e708868b22999d60c9ccd97b694662910a095')
+new = (root/path).read_bytes().decode().replace('\r\n','\n')
+before = 'let raw_lock = std::fs::read_to_string(root().join("Cargo.lock")).unwrap();'
+after = 'let raw_lock = runtime_io::read_to_string(root().join("Cargo.lock")).unwrap();'
+assert oldbase.count(before) == 1 and new == oldbase.replace(before,after,1)
+imports = '#[path = "../../../tools/authority-runtime-074/gate.rs"]\nmod runtime;\n#[path = "../../../tools/authority-runtime-074/io.rs"]\nmod runtime_io;\n#[path = "../../../tools/authority-storage-source-074/contract.rs"]\nmod storage_contract;'
+old = imports+'\n\n'+frozen('33c54b0cda8c330b115009cdf092ad002077cedf')
+new_lines,old_lines = new.splitlines(keepends=True),old.splitlines(keepends=True)
+patches = [dict(offset=len(''.join(new_lines[:i]).encode()),current=''.join(new_lines[i:j]),previous=''.join(old_lines[k:l]))
+    for tag,i,j,k,l in difflib.SequenceMatcher(None,new_lines,old_lines,autojunk=False).get_opcodes() if tag != 'equal']
+rules = json.loads((root/'tools/security-input-view-074/rules.json').read_bytes())
+row = rules['rows'][-1]
+assert row['path'] == path and row['current_sha256'] == hashlib.sha256(new.encode()).hexdigest()
+row.update(previous_revision='33c54b0cda8c330b115009cdf092ad002077cedf',
+    previous_sha256=hashlib.sha256(old.encode()).hexdigest(),patches=patches)
+print(json.dumps(rules,indent=2))

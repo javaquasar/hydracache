@@ -1,0 +1,31 @@
+
+running 3 tests
+test historical_input_list_covers_all_changed_old_files_except_the_existing_exact_authority_gate ... ok
+test historical_inputs_require_the_complete_reviewed_current_file_before_predecessor ... ok
+test historical_input_reader_is_one_exact_additive_verified_branch ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.50s
+
+
+running 7 tests
+test path_aliases_and_cross_file_approval_cannot_enter_known_paths ... ok
+test diagnostic_document_successor_is_separate_and_exact ... ok
+test successful_observation_is_never_cached_or_reused_for_stale_input ... ok
+test complete_current_inputs_match_independent_producers_and_predecessors ... ok
+test existing_five_path_rules_and_fresh_io_are_unchanged ... ok
+test stale_partial_duplicate_and_unrelated_edits_refuse ... ok
+test fresh_readers_join_old_gates_without_bypassing_current_body_validation ... FAILED
+
+failures:
+
+---- fresh_readers_join_old_gates_without_bypassing_current_body_validation stdout ----
+
+thread 'fresh_readers_join_old_gates_without_bypassing_current_body_validation' (35896) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:188:5:
+current runtime file refused before historical view: crates/xtask/tests/performance_contract_074.rs
+
+
+failures:
+    fresh_readers_join_old_gates_without_bypassing_current_body_validation
+
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.65s
+

@@ -1,0 +1,105 @@
+"""Seal exact test-source compatibility, never execution or package admission."""
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+RAW = ROOT/'target/security-input-view-20261026'
+OUT = ROOT/'docs/testing/performance/0.74/local-runs/security-input-view-20261026'
+PHASES = {
+    'focused':101,'oidc-lock':0,'manager-guards':101,
+    'focused-diagnostic-successor':101,'manager-diagnostic-successor':101,
+    'focused-terminal-root':0,'manager-terminal-root':0,
+    'windows-check':0,'windows-clippy':0,'msrv-focused':0,
+    'gnu-focused':101,'gnu-git-diagnosis':128,'gnu-explicit-git-context':0,
+    'gnu-focused-explicit-git':0,'graph-controls':0,
+    'terminal-regression':0,'root-terminal-regression':0,'format':0,'doc':0,'contract':0,
+}
+counts = {}
+for phase,code in PHASES.items():
+    result = json.loads((RAW/phase/'result.json').read_bytes())
+    if (result['exit'] != code or result['outer_refusal'] is not None or
+            result['source_unchanged'] is not True or result['commit_unchanged'] is not True):
+        raise ValueError('unexpected first phase outcome: '+phase)
+    log = (RAW/phase/'stdout.log').read_text(encoding='utf-8')
+    rows = re.findall(r'test result: (?:ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;',log)
+    if rows:
+        counts[phase] = dict(targets=len(rows),totals=[sum(int(row[i]) for row in rows) for i in range(5)])
+for phase in ('focused-terminal-root','msrv-focused','gnu-focused-explicit-git'):
+    if counts[phase] != dict(targets=3,totals=[15,0,0,0,0]):
+        raise ValueError('focused compatibility counts differ')
+for phase,wanted in (('manager-guards',[9,5,0,0,307]),
+        ('manager-diagnostic-successor',[13,1,0,0,307]),('manager-terminal-root',[14,0,0,0,307]),
+        ('oidc-lock',[1,0,0,0,320]),('gnu-focused',[0,3,0,0,0])):
+    if counts[phase]['totals'] != wanted:
+        raise ValueError('first guard counts differ')
+if 'Ran 22 tests' not in (RAW/'graph-controls/stderr.log').read_text():
+    raise ValueError('independent graph controls differ')
+head = subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+if head != 'e468b74fe6034cf7614c70e7002d54eea99166b0':
+    raise ValueError('unexpected source head')
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+def take(name,raw):
+    if name in members:
+        raise ValueError('duplicate member')
+    digest = hashlib.sha256(raw).hexdigest()
+    path = OUT/'objects'/digest
+    if not path.exists():
+        with path.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw),sha256=digest)
+for phase in PHASES:
+    for path in sorted((RAW/phase).rglob('*')):
+        if path.is_file():
+            take('checks/'+phase+'/'+path.relative_to(RAW/phase).as_posix(),path.read_bytes())
+paths = ['Cargo.toml','Cargo.lock','deny.toml','docs/COMPAT.md',
+    'docs/testing/performance/0.74/qualification-manifest.toml',
+    'crates/xtask/tests/performance_contract_074.rs','crates/xtask/tests/security_input_view_074.rs',
+    'crates/xtask/tests/source_successor_view_074.rs','crates/xtask/tests/historical_input_view_074.rs',
+    'tools/security-input-view-074/contract.rs','tools/security-input-view-074/rules.json',
+    'tools/security-input-view-074/README.md','tools/source-successor-view-074/contract.rs',
+    'tools/source-successor-view-074/diagnostic.rs','tools/source-successor-view-074/diagnostic-additions.txt',
+    'tools/source-successor-view-074/rules.json','tools/authority-runtime-074/gate.rs',
+    'tools/authority-runtime-074/io.rs','tools/historical-input-view-074/contract.rs',
+    'tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs',
+    'tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs']
+for name in paths:
+    take('current/'+name,(ROOT/name).read_bytes())
+def frozen(revision,name):
+    return subprocess.check_output(['git','--no-replace-objects','show',revision+':'+name],cwd=ROOT)
+base = 'fa9e708868b22999d60c9ccd97b694662910a095'
+producer = '2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d'
+for name in ('Cargo.toml','Cargo.lock','tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs'):
+    take('baseline/'+name,frozen(base,name))
+    take('producer/'+name,frozen(producer,name))
+for label,revision in (('root-baseline',base),('root-historical','33c54b0cda8c330b115009cdf092ad002077cedf')):
+    take(label+'/root.rs',frozen(revision,'crates/xtask/tests/performance_contract_074.rs'))
+for label,revision in (('doc-previous','a67a5299ab335424e9b11330dc06bd749ea9b859'),
+        ('doc-producer','d3256fc08b8da2df424d6da5bce99c0e168939b0')):
+    take(label+'/COMPAT.md',frozen(revision,'docs/COMPAT.md'))
+for name in ('run-security-input-view-20261026.py','prepare-security-input-view-20261026.py',
+        'prepare-diagnostic-doc-view-20261026.py','prepare-security-root-predecessor-20261026.py',
+        'security-input-view-first-tests-20261026.rs','security-input-view-first-entry-20261026.rs',
+        'security-input-view-first-rules-20261026.json','security-input-view-first-contract-20261026.rs',
+        'security-input-view-diagnostic-tests-20261026.rs','security-input-view-diagnostic-entry-20261026.rs',
+        'security-input-view-first-diagnostic-20261026.rs',Path(__file__).name):
+    take('coordinator/'+name,(ROOT/'target'/name).read_bytes())
+take('review/tracked-delta.patch',subprocess.check_output(['git','diff','HEAD','--',
+    'crates/xtask/tests/performance_contract_074.rs','crates/xtask/tests/source_successor_view_074.rs',
+    'tools/source-successor-view-074/contract.rs'],cwd=ROOT))
+index = dict(schema='hc074-security-input-view-evidence-v1',source_commit=head,phases=PHASES,
+    counts=counts,independent_graph_controls=22,security_input_paths=4,
+    separate_diagnostic_document=True,current_root_executing_edits=1,
+    historical_source_is_executed=False,original_checks_or_windows_changed=False,
+    frozen_qualification_changed=False,package_dispatched=False,package_pass=False,
+    linux_initial_git_context_refusal_preserved=True,msrv='1.88',
+    roots_candidate_accepted=False,server=False,services=False,clocks=False,
+    qualification=False,release_admitted=False,members=members)
+raw = (json.dumps(index,sort_keys=True,indent=2)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),counts=counts))

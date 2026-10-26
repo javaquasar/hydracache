@@ -1,0 +1,106 @@
+//! Exact source-test predecessor edits; never a live validation or admission API.
+use serde::Deserialize;
+use sha2::{Digest, Sha256};
+#[path = "../security-input-view-074/contract.rs"]
+pub mod security;
+
+pub const PATHS: [&str; 5] = [
+    "docs/COMPAT.md",
+    "docs/testing/gated-test-registry.toml",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+];
+const RULES: &[u8] = include_bytes!("rules.json");
+const SHA256: &str = "61d3e1941cdae497600592a49af0487e4cf545573ba3f091add173110b560cda";
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Rules {
+    schema: String,
+    rows: Vec<Row>,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Row {
+    path: String,
+    previous_revision: String,
+    revision: String,
+    current_sha256: String,
+    previous_sha256: String,
+    patches: Vec<Patch>,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Patch {
+    offset: usize,
+    current: String,
+    previous: String,
+}
+fn digest(raw: &[u8]) -> String {
+    Sha256::digest(raw)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+fn rules() -> &'static Rules {
+    static VALUE: std::sync::OnceLock<Rules> = std::sync::OnceLock::new();
+    VALUE.get_or_init(|| {
+        assert_eq!(digest(RULES), SHA256, "pinned source edit description");
+        let rules: Rules = serde_json::from_slice(RULES).unwrap();
+        assert_eq!(rules.schema, "hc074-source-successor-view-v1");
+        assert!(rules.rows.iter().map(|row| row.path.as_str()).eq(PATHS));
+        for (index, row) in rules.rows.iter().enumerate() {
+            assert_eq!(
+                row.previous_revision,
+                if index < 2 {
+                    "3c52c0aa34b8d00b2fac44375d5ba8fdf532bb9f"
+                } else {
+                    "c91068bfa8b297bb075b63457da235aaa9c6232e"
+                }
+            );
+            assert_eq!(
+                row.revision,
+                if index == 0 {
+                    "a67a5299ab335424e9b11330dc06bd749ea9b859"
+                } else {
+                    "958b3135a15c00b9f6aad41522cef9d1f6608d3a"
+                }
+            );
+            assert!(!row.patches.is_empty());
+        }
+        rules
+    })
+}
+
+pub fn project(path: &str, raw: String) -> String {
+    let raw = security::project(path, raw);
+    if !PATHS.contains(&path) {
+        return raw;
+    }
+    let row = rules().rows.iter().find(|row| row.path == path).unwrap();
+    let mut raw = raw.replace("\r\n", "\n");
+    assert_eq!(
+        digest(raw.as_bytes()),
+        row.current_sha256,
+        "unreviewed source successor before historical assertions: {path}"
+    );
+    let mut limit = raw.len();
+    for patch in row.patches.iter().rev() {
+        let end = patch.offset.checked_add(patch.current.len()).unwrap();
+        assert!(end <= limit, "ordered nonoverlapping source edits");
+        assert_eq!(
+            raw.get(patch.offset..end),
+            Some(patch.current.as_str()),
+            "exact inverse edit"
+        );
+        raw.replace_range(patch.offset..end, &patch.previous);
+        limit = patch.offset;
+    }
+    assert_eq!(
+        digest(raw.as_bytes()),
+        row.previous_sha256,
+        "complete source predecessor: {path}"
+    );
+    raw
+}

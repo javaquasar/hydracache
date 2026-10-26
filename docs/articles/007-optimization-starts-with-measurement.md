@@ -21153,3 +21153,28 @@ the corrected single parser capture. This audit adds no runtime optimization,
 renews no live deadline and repeats no unchanged package workload. Its useful
 result is a precise next implementation boundary: a narrow historical input
 bridge, followed by current effect review and the unchanged complete gate.
+
+The [subsequent integration](../testing/performance/0.74/security-input-view-result-20261026.md)
+keeps the old lock assertion and expected crypto edges intact. The one executing
+edit uses the existing fresh reader; complete current-body pins precede a fixed
+inverse view. Seven new adapter controls, eight prior source/history controls,
+fourteen manager guards, the old OIDC case and 22 independent graph controls
+pass on Windows 1.94. They are overlapping compatibility checks, not a package
+milestone or performance result.
+
+Two other mismatches show why merely replacing a version string is insufficient.
+The first manager cohort fails five times on an already expanded diagnostic
+compatibility document. After a separate exact document view, one failure remains:
+the old root-source gate predates GET-owner's terminal rejection. Its historical
+text must match that gate, while the executing rejection checks and disabled
+runtime selector remain current. Independent full-body tests enforce both sides;
+no historical source string is executed. All first failures survive. These
+specific joins now pass, but complete current effect review is still required
+before a changed-source full package attempt.
+
+The same fifteen adapter/history cases pass on MSRV 1.88 and GNU/Linux 1.94,
+alongside strict Windows compile/lint and local structural gates. The first GNU
+execution instead exposes the Windows worktree pointer as an invalid Linux Git
+path. Its refusal remains separate from the corrected explicit test environment;
+neither Git config nor the worktree pointer is rewritten. Offline inverse-view
+and six tamper controls validate the retained packet without executing its source.

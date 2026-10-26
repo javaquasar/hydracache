@@ -1,0 +1,19 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: constant `PREVIOUS` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\diagnostic.rs:5:11
+  |
+5 | pub const PREVIOUS: &str = "a67a5299ab335424e9b11330dc06bd749ea9b859";
+  |           ^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `PRODUCER` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\diagnostic.rs:6:11
+  |
+6 | pub const PRODUCER: &str = "d3256fc08b8da2df424d6da5bce99c0e168939b0";
+  |           ^^^^^^^^
+
+warning: `xtask` (test "performance_contract_074") generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 30.72s
+     Running tests\performance_contract_074.rs (target\debug\deps\performance_contract_074-1ecfe587a41df042.exe)
+error: test failed, to rerun pass `-p xtask --test performance_contract_074`

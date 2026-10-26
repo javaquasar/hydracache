@@ -1,0 +1,11 @@
+test_current_root_and_diagnostic_text_changes_refuse (test_verify.Packet.test_current_root_and_diagnostic_text_changes_refuse) ... ok
+test_exact_packet (test_verify.Packet.test_exact_packet) ... ok
+test_first_failure_and_count_changes_refuse (test_verify.Packet.test_first_failure_and_count_changes_refuse) ... ok
+test_index_and_object_tamper_refuse (test_verify.Packet.test_index_and_object_tamper_refuse) ... ok
+test_linux_context_cannot_disappear (test_verify.Packet.test_linux_context_cannot_disappear) ... ok
+test_promotion_and_executing_edit_scope_refuse (test_verify.Packet.test_promotion_and_executing_edit_scope_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.444s
+
+OK

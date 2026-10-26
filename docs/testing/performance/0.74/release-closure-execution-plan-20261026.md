@@ -40,6 +40,18 @@ the Linux heartbeat companion is outside the old auxiliary catalog. Complete
 the narrow historical input bridge and current effect review before dispatch;
 the audit itself installs neither a projection nor an execution permission.
 
+The subsequent [exact historical security-input integration](security-input-view-result-20261026.md)
+passes the unchanged old lock assertion, fourteen manager guards and fifteen
+adapter/history controls on Windows 1.94. Current whole-body pins precede every
+inverse edit; existing IO/gate functions and old five-path rules remain exact.
+Separate document/terminal-rejection predecessor mismatches and first failures
+are retained. Fresh current source/transitive effect review is the next boundary,
+not an automatic package dispatch or acceptance.
+The same fifteen cases subsequently pass on MSRV 1.88 and GNU/Linux 1.94;
+Windows all-targets check, strict all-feature Clippy and local gates pass.
+The first GNU worktree-pointer refusal and corrected explicit test environment
+remain distinct. No original-execution or package admission follows.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

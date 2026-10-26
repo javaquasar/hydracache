@@ -1,0 +1,27 @@
+test_complete_changed_added_and_auxiliary_lists_are_not_clearance (test_audit.Catalog.test_complete_changed_added_and_auxiliary_lists_are_not_clearance) ... ok
+test_duplicate_source_refuses_before_io (test_audit.Catalog.test_duplicate_source_refuses_before_io) ... ok
+test_heartbeat_import_and_companion_mutations_refuse (test_audit.Catalog.test_heartbeat_import_and_companion_mutations_refuse) ... ok
+test_missing_source_and_target_are_not_success (test_audit.Catalog.test_missing_source_and_target_are_not_success) ... ok
+test_new_heartbeat_edge_is_not_inherited_clearance (test_audit.Catalog.test_new_heartbeat_edge_is_not_inherited_clearance) ... ok
+test_no_dispatch_or_threshold_cli (test_audit.Catalog.test_no_dispatch_or_threshold_cli) ... ok
+test_parent_and_absolute_reads_refuse (test_audit.Catalog.test_parent_and_absolute_reads_refuse) ... ok
+test_sealed_v6_receipt_membership_is_not_refreshed (test_audit.Catalog.test_sealed_v6_receipt_membership_is_not_refreshed) ... ok
+test_stale_syntax_or_duplicate_target_refuses (test_audit.Catalog.test_stale_syntax_or_duplicate_target_refuses) ... ok
+test_wrong_envelope_and_duplicate_json_refuse (test_audit.Catalog.test_wrong_envelope_and_duplicate_json_refuse) ... ok
+test_actual_three_nodes_do_not_admit_package_or_projection (test_audit.SecurityInputs.test_actual_three_nodes_do_not_admit_package_or_projection) ... ok
+test_added_removed_and_duplicate_nodes_refuse (test_audit.SecurityInputs.test_added_removed_and_duplicate_nodes_refuse) ... ok
+test_current_body_not_only_version_is_pinned (test_audit.SecurityInputs.test_current_body_not_only_version_is_pinned) ... ok
+test_extra_dependency_edge_refuses_even_without_outer_hash_guard (test_audit.SecurityInputs.test_extra_dependency_edge_refuses_even_without_outer_hash_guard) ... ok
+test_git_inputs_are_fixed_before_any_command (test_audit.SecurityInputs.test_git_inputs_are_fixed_before_any_command) ... ok
+test_msrv_features_and_floor_changes_refuse (test_audit.SecurityInputs.test_msrv_features_and_floor_changes_refuse) ... ok
+test_no_successful_current_observation_is_cached (test_audit.SecurityInputs.test_no_successful_current_observation_is_cached) ... ok
+test_only_crlf_conversion_is_permitted (test_audit.SecurityInputs.test_only_crlf_conversion_is_permitted) ... ok
+test_pending_root_catalog_cannot_borrow_security_approval (test_audit.SecurityInputs.test_pending_root_catalog_cannot_borrow_security_approval) ... ok
+test_stale_versions_refuse (test_audit.SecurityInputs.test_stale_versions_refuse) ... ok
+test_wrong_checksum_refuses_even_without_outer_hash_guard (test_audit.SecurityInputs.test_wrong_checksum_refuses_even_without_outer_hash_guard) ... ok
+test_wrong_path_and_added_path_refuse (test_audit.SecurityInputs.test_wrong_path_and_added_path_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 1.403s
+
+OK

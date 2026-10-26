@@ -1,0 +1,14 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: constant `PREVIOUS` is never used
+ --> crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\diagnostic.rs:5:11
+  |
+5 | pub const PREVIOUS: &str = "a67a5299ab335424e9b11330dc06bd749ea9b859";
+  |           ^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `xtask` (test "source_successor_view_074") generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.15s
+     Running tests\historical_input_view_074.rs (target\debug\deps\historical_input_view_074-d52dc7099b3a66b6.exe)
+     Running tests\security_input_view_074.rs (target\debug\deps\security_input_view_074-5d51299aa0ac7da2.exe)
+error: test failed, to rerun pass `-p xtask --test security_input_view_074`

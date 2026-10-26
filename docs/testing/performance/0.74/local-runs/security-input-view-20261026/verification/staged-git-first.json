@@ -1,0 +1,9 @@
+{
+  "schema": "hc074-security-input-view-staged-git-v1",
+  "staged_packet_blobs": 157,
+  "raw_byte_mismatches": 0,
+  "method": "batched git hash-object --no-filters compared with git ls-files --stage",
+  "receipt_and_final_postflight_added_later": true,
+  "package_pass": false,
+  "release_admitted": false
+}

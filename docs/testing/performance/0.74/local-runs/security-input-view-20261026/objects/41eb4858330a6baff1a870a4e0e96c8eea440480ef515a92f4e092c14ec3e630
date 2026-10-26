@@ -1,0 +1,101 @@
+{
+  "schema": "hc074-security-input-view-v1",
+  "rows": [
+    {
+      "path": "Cargo.toml",
+      "previous_revision": "fa9e708868b22999d60c9ccd97b694662910a095",
+      "producer_revision": "2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d",
+      "current_sha256": "7877b4051e4952e7a809896cf46c03a80c6ae3bae3fd13ed95ed0b47d377f472",
+      "previous_sha256": "f1e96866c7a279f9682487d5294870d7be12e7fd95a1c89f2d99277c0e4e37b9",
+      "patches": [
+        {
+          "offset": 5983,
+          "current": "rustls = \"0.23.46\"\n",
+          "previous": "rustls = \"0.23.41\"\n"
+        },
+        {
+          "offset": 6464,
+          "current": "tokio = { version = \"1.53.3\", features = [\"io-util\", \"macros\", \"net\", \"rt-multi-thread\", \"sync\", \"time\"] }\n",
+          "previous": "tokio = { version = \"1.52.3\", features = [\"io-util\", \"macros\", \"net\", \"rt-multi-thread\", \"sync\", \"time\"] }\n"
+        }
+      ]
+    },
+    {
+      "path": "Cargo.lock",
+      "previous_revision": "fa9e708868b22999d60c9ccd97b694662910a095",
+      "producer_revision": "2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d",
+      "current_sha256": "91a009119e13184958de1a29f3b58d900e8756aaa47878c991a114b5ea2079d0",
+      "previous_sha256": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c",
+      "patches": [
+        {
+          "offset": 113806,
+          "current": "version = \"0.23.46\"\n",
+          "previous": "version = \"0.23.45\"\n"
+        },
+        {
+          "offset": 113891,
+          "current": "checksum = \"48e13bd8c0e9365c43cfa5c9e8f9ad49d3c8444926c9aac819e0e4dc503c8fdf\"\n",
+          "previous": "checksum = \"0d41d731c7d2f962d1ccc364cec258de3c0e93b38c2fb3ba97ac74513048d634\"\n"
+        },
+        {
+          "offset": 115375,
+          "current": "version = \"0.103.16\"\n",
+          "previous": "version = \"0.103.15\"\n"
+        },
+        {
+          "offset": 115461,
+          "current": "checksum = \"4443b1b6d39d7c663139942cc4558262562d2c84123bb6282ef177009ca8b281\"\n",
+          "previous": "checksum = \"f3c3cf1d8b1e7d4927e2d154c3fcb02979afb9939629c62cd9048d4f07b60ac2\"\n"
+        },
+        {
+          "offset": 140308,
+          "current": "version = \"1.53.3\"\n",
+          "previous": "version = \"1.52.3\"\n"
+        },
+        {
+          "offset": 140392,
+          "current": "checksum = \"ce3335fa71841cda333a58d7615b03901380ecf09d59b3296d21f8bbac0dde4e\"\n",
+          "previous": "checksum = \"8fc7f01b389ac15039e4dc9531aa973a135d7a4135281b12d7c1bc79fd57fffe\"\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs",
+      "previous_revision": "fa9e708868b22999d60c9ccd97b694662910a095",
+      "producer_revision": "2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d",
+      "current_sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d",
+      "previous_sha256": "9b87094f570bbe0bb9408cd9dc2c52ff20868503f7b7cc2e73fb7fab653cd5d6",
+      "patches": [
+        {
+          "offset": 7730,
+          "current": "// Private ownership boundary; the only production consumer is bound below.\nfn register_operation_alarm(\n    file: &std::fs::File,\n) -> Result<tokio::io::unix::AsyncFd<std::fs::File>> {\n    let owned = io(file.try_clone())?;\n    // SAFETY: the private duplicate is owned by File, which always returns the\n    // same live FD. The sole production consumer keeps AsyncFd immutable and\n    // local to bound: no get_mut, into_inner, raw close/rebind, leak or escape.\n    // Cancellation/return drops AsyncFd, deregistering before closing its File;\n    // aliases own distinct descriptor numbers and cannot close this duplicate.\n    unsafe { tokio::io::unix::AsyncFd::register(owned) }.map_err(|_| ChannelError::Io)\n}\n\n",
+          "previous": ""
+        },
+        {
+          "offset": 8644,
+          "current": "        let alarm = register_operation_alarm(&self.file)?;\n",
+          "previous": "        let alarm = io(tokio::io::unix::AsyncFd::new(io(self.file.try_clone())?))?;\n"
+        },
+        {
+          "offset": 9104,
+          "current": "#[cfg(test)]\n#[path = \"diagnostic_manager_alarm_tests.rs\"]\nmod alarm_tests;\n\n",
+          "previous": ""
+        }
+      ]
+    },
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "previous_revision": "fa9e708868b22999d60c9ccd97b694662910a095",
+      "producer_revision": null,
+      "current_sha256": "0565355c592d59d49a7c2a1b1631f10711ff5d6101e42cf50925261a6e4bed6c",
+      "previous_sha256": "30dc4166f86f71a2028b0adc3287e898920adf18c92a45cb7046ab67663f9207",
+      "patches": [
+        {
+          "offset": 47771,
+          "current": "    let raw_lock = runtime_io::read_to_string(root().join(\"Cargo.lock\")).unwrap();\n",
+          "previous": "    let raw_lock = std::fs::read_to_string(root().join(\"Cargo.lock\")).unwrap();\n"
+        }
+      ]
+    }
+  ]
+}

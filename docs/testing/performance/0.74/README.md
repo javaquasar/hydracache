@@ -1,5 +1,14 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [exact security-input integration](security-input-view-result-20261026.md)
+now connects whole pinned successor bodies to unchanged preservation assertions.
+The old OIDC lock case, fourteen manager guards, fifteen adapter/history cases
+and 22 independent graph controls pass on Windows 1.94. Separate exact document
+and terminal-rejection predecessors preserve the first five/one compatibility
+failures. The fifteen adapter/history cases also pass on MSRV 1.88 and GNU 1.94;
+the first Linux worktree-pointer refusal is retained. Strict Windows compile/lint
+and local checks pass. Full current effect review and package coverage remain open.
+
 The [security successor and package audit](security-successor-audit-result-20261026.md)
 verifies exactly three approved locked-node changes with 22 mutation controls.
 The fresh syntax census closes 369 Rust files and 25,910 sites, but identifies

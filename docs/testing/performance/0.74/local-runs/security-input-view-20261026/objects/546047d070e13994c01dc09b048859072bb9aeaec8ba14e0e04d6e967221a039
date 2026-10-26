@@ -1,0 +1,20 @@
+"""Extract only the already committed diagnostic metadata insertion."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+root = Path(__file__).resolve().parent.parent
+path = 'docs/COMPAT.md'
+old = subprocess.check_output(['git','--no-replace-objects','show',
+    'a67a5299ab335424e9b11330dc06bd749ea9b859:'+path],cwd=root).decode().replace('\r\n','\n')
+new = (root/path).read_bytes().decode().replace('\r\n','\n')
+producer = subprocess.check_output(['git','--no-replace-objects','show',
+    'd3256fc08:'+path],cwd=root).decode().replace('\r\n','\n')
+assert new == producer
+header = '# HydraCache Compatibility Register\n\n'
+assert old.startswith(header) and new.startswith(header)
+size = len(new)-len(old)
+added = new[len(header):len(header)+size]
+assert new == header+added+old[len(header):] and added
+print(json.dumps(dict(added=added,current_sha=hashlib.sha256(new.encode()).hexdigest(),
+    previous_sha=hashlib.sha256(old.encode()).hexdigest(),bytes=len(added.encode()))))

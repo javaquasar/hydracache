@@ -1,0 +1,45 @@
+"""Mechanical inverse edits; no command/test execution or mutable baseline."""
+import difflib
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'fa9e708868b22999d60c9ccd97b694662910a095'
+APPROVED = '2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d'
+paths = ['Cargo.toml','Cargo.lock',
+    'tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs',
+    'crates/xtask/tests/performance_contract_074.rs']
+rows = []
+for name in paths:
+    old = subprocess.check_output(['git','--no-replace-objects','show',BASE+':'+name],cwd=ROOT).decode().replace('\r\n','\n')
+    current = (ROOT/name).read_bytes().decode().replace('\r\n','\n')
+    producer = APPROVED
+    if name == paths[-1]:
+        before = 'let raw_lock = std::fs::read_to_string(root().join("Cargo.lock")).unwrap();'
+        after = 'let raw_lock = runtime_io::read_to_string(root().join("Cargo.lock")).unwrap();'
+        assert old == current and current.count(before) == 1
+        current = current.replace(before,after,1)
+        producer = None  # Exactly one fresh-reader edit, independently reproduced by tests.
+    else:
+        approved = subprocess.check_output(['git','--no-replace-objects','show',APPROVED+':'+name],cwd=ROOT).decode().replace('\r\n','\n')
+        assert current == approved
+    # Work in line tokens to keep edits reviewable and byte offsets exact.
+    new_lines,old_lines = current.splitlines(keepends=True),old.splitlines(keepends=True)
+    patches = []
+    for tag,i,j,k,l in difflib.SequenceMatcher(None,new_lines,old_lines,autojunk=False).get_opcodes():
+        if tag != 'equal':
+            patches.append(dict(offset=len(''.join(new_lines[:i]).encode()),
+                current=''.join(new_lines[i:j]),previous=''.join(old_lines[k:l])))
+    restored = current.encode()
+    for edit in reversed(patches):
+        at = edit['offset']
+        size = len(edit['current'].encode())
+        assert restored[at:at+size] == edit['current'].encode()
+        restored = restored[:at]+edit['previous'].encode()+restored[at+size:]
+    assert restored == old.encode()
+    rows.append(dict(path=name,previous_revision=BASE,producer_revision=producer,
+        current_sha256=hashlib.sha256(current.encode()).hexdigest(),
+        previous_sha256=hashlib.sha256(old.encode()).hexdigest(),patches=patches))
+print(json.dumps(dict(schema='hc074-security-input-view-v1',rows=rows),indent=2))

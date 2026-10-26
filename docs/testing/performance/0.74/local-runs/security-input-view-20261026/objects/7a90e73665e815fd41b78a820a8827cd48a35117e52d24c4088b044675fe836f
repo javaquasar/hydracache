@@ -1,0 +1,190 @@
+//! Exact security compatibility only; no system manager, worker or admission.
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
+
+use runtime::successor::security;
+const ROOT_TEST: &str = "crates/xtask/tests/performance_contract_074.rs";
+const PRODUCER: &str = "2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d";
+
+fn raw(path: &str) -> String {
+    std::fs::read_to_string(runtime::root().join(path))
+        .unwrap()
+        .replace("\r\n", "\n")
+}
+
+#[test]
+fn complete_current_inputs_match_independent_producers_and_predecessors() {
+    for path in security::PATHS {
+        let current = raw(path);
+        let old = runtime::frozen(security::BASE, path);
+        let expected = if path == ROOT_TEST {
+            let before =
+                "let raw_lock = std::fs::read_to_string(root().join(\"Cargo.lock\")).unwrap();";
+            let after =
+                "let raw_lock = runtime_io::read_to_string(root().join(\"Cargo.lock\")).unwrap();";
+            assert_eq!(old.matches(before).count(), 1);
+            old.replacen(before, after, 1)
+        } else {
+            runtime::frozen(PRODUCER, path)
+        };
+        assert_eq!(current, expected, "independent current body: {path}");
+        assert_eq!(security::project(path, current.clone()), old);
+        assert_eq!(security::project(path, current.replace('\n', "\r\n")), old);
+    }
+}
+
+#[test]
+fn stale_partial_duplicate_and_unrelated_edits_refuse() {
+    let rules: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tools/security-input-view-074/rules.json"
+    ))
+    .unwrap();
+    for path in security::PATHS {
+        let current = raw(path);
+        let row = rules["rows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|row| row["path"] == path)
+            .unwrap();
+        let mut bad = vec![
+            String::new(),
+            runtime::frozen(security::BASE, path),
+            format!("{current}\n# unreviewed\n"),
+            current.replace('\n', "\r"),
+        ];
+        for edit in row["patches"].as_array().unwrap() {
+            let at = edit["offset"].as_u64().unwrap() as usize;
+            let new = edit["current"].as_str().unwrap();
+            let old = edit["previous"].as_str().unwrap();
+            let mut missing = current.clone();
+            missing.replace_range(at..at + new.len(), old);
+            bad.push(missing);
+            let mut duplicate = current.clone();
+            duplicate.insert_str(at, if new.is_empty() { old } else { new });
+            bad.push(duplicate);
+        }
+        for bytes in bad {
+            assert_ne!(bytes, current);
+            assert!(
+                std::panic::catch_unwind(|| security::project(path, bytes)).is_err(),
+                "{path}"
+            );
+        }
+    }
+}
+
+#[test]
+fn path_aliases_and_cross_file_approval_cannot_enter_known_paths() {
+    for path in security::PATHS {
+        for other in security::PATHS {
+            if path != other {
+                assert!(std::panic::catch_unwind(|| security::project(path, raw(other))).is_err());
+            }
+        }
+    }
+    for path in [
+        "./Cargo.lock",
+        "../Cargo.lock",
+        "cargo.lock",
+        "unknown",
+        "Cargo.toml/",
+    ] {
+        let bytes = "unknown\r\nunchanged".to_owned();
+        assert_eq!(security::project(path, bytes.clone()), bytes);
+    }
+}
+
+#[test]
+fn successful_observation_is_never_cached_or_reused_for_stale_input() {
+    for path in security::PATHS {
+        let current = raw(path);
+        let expected = security::project(path, current.clone());
+        assert!(
+            std::panic::catch_unwind(|| security::project(path, format!("{current}x"))).is_err()
+        );
+        assert!(std::panic::catch_unwind(|| security::project(path, expected)).is_err());
+        assert_eq!(
+            security::project(path, current),
+            runtime::frozen(security::BASE, path)
+        );
+    }
+}
+
+#[test]
+fn existing_five_path_rules_and_fresh_io_are_unchanged() {
+    use sha2::{Digest, Sha256};
+    let rules =
+        std::fs::read(runtime::root().join("tools/source-successor-view-074/rules.json")).unwrap();
+    assert_eq!(
+        Sha256::digest(rules)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>(),
+        "61d3e1941cdae497600592a49af0487e4cf545573ba3f091add173110b560cda"
+    );
+    for path in [
+        "tools/authority-runtime-074/gate.rs",
+        "tools/authority-runtime-074/io.rs",
+        "tools/historical-input-view-074/contract.rs",
+    ] {
+        assert_eq!(raw(path), runtime::frozen(security::BASE, path));
+    }
+    let path = "tools/source-successor-view-074/contract.rs";
+    let current = raw(path);
+    let old = runtime::frozen(security::BASE, path);
+    let expected = old.replacen("use sha2::{Digest, Sha256};", 
+        "use sha2::{Digest, Sha256};\n#[path = \"diagnostic.rs\"]\npub mod diagnostic;\n#[path = \"../security-input-view-074/contract.rs\"]\npub mod security;",1)
+        .replacen("pub fn project(path: &str, raw: String) -> String {",
+        "pub fn project(path: &str, raw: String) -> String {\n    let raw = diagnostic::project(path, raw);\n    let raw = security::project(path, raw);",1);
+    assert_eq!(current, expected, "exact pure entry edit only");
+}
+
+#[test]
+fn fresh_readers_join_old_gates_without_bypassing_current_body_validation() {
+    for path in ["Cargo.toml", "Cargo.lock"] {
+        assert_eq!(
+            runtime_io::read_to_string(runtime::root().join(path)).unwrap(),
+            runtime::frozen(security::BASE, path)
+        );
+    }
+    let path = "tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs";
+    assert_eq!(
+        runtime_io::read_to_string(runtime::root().join(path)).unwrap(),
+        runtime::frozen(runtime_io::reviewed_inputs::PREDECESSOR, path)
+    );
+    assert_eq!(
+        runtime::view(ROOT_TEST, raw(ROOT_TEST)),
+        runtime::frozen(runtime::BASE, ROOT_TEST)
+    );
+}
+
+#[test]
+fn diagnostic_document_successor_is_separate_and_exact() {
+    use runtime::successor::diagnostic as doc;
+    let current = raw(doc::PATH);
+    let previous = runtime::frozen(doc::PREVIOUS, doc::PATH);
+    assert_eq!(current, runtime::frozen(doc::PRODUCER, doc::PATH));
+    assert_eq!(doc::project(doc::PATH, current.clone()), previous);
+    assert_eq!(
+        doc::project(doc::PATH, current.replace('\n', "\r\n")),
+        previous
+    );
+    // Security approval does not cover a diagnostic document: separate boundary.
+    assert_eq!(security::project(doc::PATH, current.clone()), current);
+    for changed in [
+        previous,
+        format!("{current}\nextra"),
+        current.replacen("refuse", "accept", 1),
+    ] {
+        assert!(std::panic::catch_unwind(|| doc::project(doc::PATH, changed)).is_err());
+    }
+    assert_eq!(
+        doc::project("unknown", "unchanged\r\n".to_owned()),
+        "unchanged\r\n"
+    );
+}

@@ -1,0 +1,32 @@
+
+running 3 tests
+test historical_input_list_covers_all_changed_old_files_except_the_existing_exact_authority_gate ... FAILED
+test historical_input_reader_is_one_exact_additive_verified_branch ... FAILED
+test historical_inputs_require_the_complete_reviewed_current_file_before_predecessor ... FAILED
+
+failures:
+
+---- historical_input_list_covers_all_changed_old_files_except_the_existing_exact_authority_gate stdout ----
+
+thread 'historical_input_list_covers_all_changed_old_files_except_the_existing_exact_authority_gate' (116205) panicked at crates/xtask/tests/historical_input_view_074.rs:95:9:
+assertion failed: output.status.success()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- historical_input_reader_is_one_exact_additive_verified_branch stdout ----
+
+thread 'historical_input_reader_is_one_exact_additive_verified_branch' (116206) panicked at crates/xtask/tests/../../../tools/authority-runtime-074/gate.rs:46:5:
+missing exact runtime gate predecessor tools/authority-runtime-074/io.rs
+
+---- historical_inputs_require_the_complete_reviewed_current_file_before_predecessor stdout ----
+
+thread 'historical_inputs_require_the_complete_reviewed_current_file_before_predecessor' (116207) panicked at crates/xtask/tests/../../../tools/authority-runtime-074/gate.rs:46:5:
+missing exact runtime gate predecessor docs/COMPAT.md
+
+
+failures:
+    historical_input_list_covers_all_changed_old_files_except_the_existing_exact_authority_gate
+    historical_input_reader_is_one_exact_additive_verified_branch
+    historical_inputs_require_the_complete_reviewed_current_file_before_predecessor
+
+test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
