@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 42s
+     Running tests\direct_output_cost_074.rs (target\debug\deps\direct_output_cost_074-ddf8936fa3e84b73.exe)
+error: test failed, to rerun pass `-p xtask --test direct_output_cost_074`

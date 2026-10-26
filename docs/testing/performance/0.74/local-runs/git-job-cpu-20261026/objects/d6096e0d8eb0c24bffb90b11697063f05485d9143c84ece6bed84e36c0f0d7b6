@@ -1,0 +1,23 @@
+{
+  "cleanup_errors": [],
+  "environment": {
+    "external_cargo_configuration_absent": true,
+    "fixture_overrides_absent": true,
+    "git_effect_config_active": false,
+    "git_effect_config_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "negative_fixture_executable_absent": true,
+    "target_and_protoc_scratch_not_reparse": true,
+    "unreviewed_build_overrides_absent": true
+  },
+  "first_refusal": "Refusal: QueryFullProcessImageNameW: Win32 error 31",
+  "modes": [],
+  "overhead_accepted": false,
+  "package_pass": false,
+  "passed": false,
+  "pins_before": {
+    "C:\\Program Files\\Git\\cmd\\git.exe": "34a408843194be320d8a87a3c12cd5c7d2e08d03b24567a41db32e21d12569d2",
+    "C:\\Program Files\\Git\\mingw64\\bin\\git.exe": "755d4896d35663d0ff08924f84507f35236b83d240635b512c519bf43cc71a87"
+  },
+  "server": false,
+  "speedup_established": false
+}

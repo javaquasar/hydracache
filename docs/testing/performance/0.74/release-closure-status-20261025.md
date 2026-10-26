@@ -21,6 +21,15 @@ the complete helper's CPU attribution or timeout. The old directly-created-child
 counters remain valid only for that narrower scope; no native bypass or source
 cache is installed and the V6 package verdict is unchanged.
 
+The next [short-call CPU control](git-job-cpu-result-20261026.md) covers
+non-launcher descendants from birth during ordinary `git show`, without stdin
+holds, Git suspension or native bypass. It retains the first terminal path-query
+refusal and succeeds on a separately committed identity-boundary fix. Eighty
+models and the new target on both compilers pass. Two first old pipe-fixture
+failures expose an elapsed-time stdout comparison and remain unchanged. The
+residual includes native CPU, but per-image attribution and observer-overhead
+acceptance remain open; no cache, product improvement or package pass follows.
+
 The [approved plan](../../../plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md)
 keeps its original thresholds. Its closing rule is to publish the measurements
 and defer changes if none pass, not to tag a documentation-only substitute as

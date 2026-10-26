@@ -1,0 +1,9 @@
+test_changed_index_refuses (__main__.Integrity.test_changed_index_refuses) ... ok
+test_first_failures_counters_sources_and_raw_protocol_cannot_change (__main__.Integrity.test_first_failures_counters_sources_and_raw_protocol_cannot_change) ... ok
+test_missing_raw_object_refuses (__main__.Integrity.test_missing_raw_object_refuses) ... ok
+test_offline_accounting_and_first_refusal_replay (__main__.Integrity.test_offline_accounting_and_first_refusal_replay) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 1.980s
+
+OK

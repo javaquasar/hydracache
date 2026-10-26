@@ -20720,3 +20720,49 @@ work, without changing their conditional graph. The
 [boundary result and first fault evidence](../testing/performance/0.74/git-process-boundary-result-20261026.md)
 retain the initial late-close refusal and its unchanged-window repair alongside
 sixty passing models and the sole successful native control.
+
+### Capture short lived descendant CPU from birth
+
+Holding Git on stdin proved that the Windows cmd launcher does not own the
+native child's CPU. It was not representative of an ordinary short `git show`:
+late process discovery can miss the work entirely. The next diagnostic therefore
+uses an unlimited private Windows Job to account for descendants from birth.
+Only an isolated Rust worker joins the Job before execution. Its Git program,
+argv, environment, cwd and null-stdin/separate-pipe semantics stay unchanged;
+Git is neither suspended nor replaced by direct native invocation. The existing
+CI creation primitive is reused without changing it or enabling kill-on-close.
+Membership is still an explicit observer delta, not invisible instrumentation.
+
+The first control finds another lifetime boundary: after four successful
+reference calls, querying the terminal worker's image path returns Win32 error
+31. No accounted calls run and no CPU result is accepted. The separate fix
+checks the original worker at the existing retained-child publication before
+resume, then carries that handle's PID/creation identity and counters through
+termination. It does not reopen a PID, weaken identity or add a Git delay. The
+first source/result remains alongside the changed-source follow-up.
+
+That follow-up completes four reference and four accounted short commands with
+the same independent 23,589-byte body, empty stderr and zero exit. Each Job has
+nine lifetime members, zero active processes and two equal terminal accounting
+snapshots. For the four accounted calls, total Job CPU is 1812.5 ms. Subtracting
+the whole original worker lifetime, 796.875 ms, and the four whole launcher
+lifetimes, also 796.875 ms, leaves 218.75 ms of non-launcher descendant CPU:
+109.375 ms user and 109.375 ms kernel. No late initial sample is subtracted and
+underflow must refuse rather than clamp.
+
+This residual includes native Git but does not attest the mapped image of every
+descendant or assign native CPU per operation. Matching before/after image-file
+pins cannot supply that attestation or rule out ABA. One finite accounting
+control also cannot establish observer overhead, a startup-cost decomposition
+or a speedup; its CPU values must not be projected onto the old cohort or V6.
+
+Eighty accounting/process models and the new target on current/MSRV pass, with
+strict Clippy and formatting. The old pipe fixture reveals a separate test
+boundary defect: its byte-for-byte comparison includes libtest's printed elapsed
+time. Both first failures differ only at the `0.00s`/`0.01s` digit after identical
+useful stdout. Those failures and the old test remain intact rather than being
+retried or reported green. The
+[short-call result and immutable evidence](../testing/performance/0.74/git-job-cpu-result-20261026.md)
+retain this distinction, the first path-query refusal and recomputable lifetime
+counters. Next isolate observer overhead and repair the old fixture boundary
+separately; no V6 replay, live-check/deadline change or product hypothesis follows.

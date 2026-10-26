@@ -1,0 +1,9 @@
+
+running 4 tests
+test accounted_cpu_child ... ok
+test independent_body_and_fixed_command_are_not_response_pins ... ok
+test only_exact_diagnostic_argv_can_run_git ... ok
+test reference_cpu_child ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

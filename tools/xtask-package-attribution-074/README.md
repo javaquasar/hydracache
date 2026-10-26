@@ -272,3 +272,22 @@ external log paths. `output_binding_control.py synthetic-controls NEW_OUTPUT_DIR
 has a fixed two-case Python-fixture schedule. Its [first results](../../docs/testing/performance/0.74/original-output-binding-result-20261025.md)
 retain both expected refusals and 279 final Python checks. The real Cargo caller
 still needs review/authorization; the fixed dispatch CLI remains disabled.
+
+## Short Git lifetime descendant CPU
+
+`git_job_cpu.py BUILD_LABEL NEW_LABEL` is a separate local Windows diagnostic,
+not a package dispatcher or a source-reader replacement. The fixed Rust worker
+uses ordinary short Git commands in an unlimited private accounting Job with no
+kill-on-close policy. Only exact diagnostic argv can activate its two child
+entries; ordinary tests are inert. The local owner checks the worker through
+its original handle before the unchanged CI primitive's existing resume, without
+suspending Git or keeping Git stdin open.
+
+The [design and fixed protocol](git-job-cpu-design.md) require two stable terminal
+Job snapshots, complete membership, original worker/launcher lifetimes and
+nonnegative subtraction. The
+[first results](../../docs/testing/performance/0.74/git-job-cpu-result-20261026.md)
+retain a terminal image-query refusal and a single changed-source successful
+control, all raw checks and both first old elapsed-output fixture failures.
+Residual CPU includes native descendants, not attested native image CPU per call.
+No overhead, speedup, package pass or production authority is accepted.

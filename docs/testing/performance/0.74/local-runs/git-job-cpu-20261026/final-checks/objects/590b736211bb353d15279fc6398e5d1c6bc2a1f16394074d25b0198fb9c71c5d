@@ -1,0 +1,33 @@
+"""Append final-check evidence without changing the native packet."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+PACKET = ROOT/'docs/testing/performance/0.74/local-runs/git-job-cpu-20261026'
+OUT = PACKET/'final-checks'
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+def take(name, path):
+    raw = path.read_bytes()
+    digest = hashlib.sha256(raw).hexdigest()
+    target = OUT/'objects'/digest
+    if not target.exists():
+        with target.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw), sha256=digest)
+for name, label in [('integrity', 'git-job-cpu-offline-integrity'), ('syntax', 'git-job-cpu-evidence-syntax'),
+                    ('doc', 'git-job-cpu-doc-check'), ('contract', 'git-job-cpu-performance-contract')]:
+    for part in ('intent.json', 'result.json', 'stdout.log', 'stderr.log'):
+        take(name+'/'+part, ROOT/'target/source-continuation-20261024'/label/part)
+for name in ('verify.py', 'test_verify.py'):
+    take(name, PACKET/name)
+take('collector.py', Path(__file__))
+take('qualification-manifest.toml', ROOT/'docs/testing/performance/0.74/qualification-manifest.toml')
+index = dict(native_index_sha256='c12ee4c7515ce6cd94744b7ce1754e172bbf7b2c7eba8f82893e4a3ab5defa41',
+    members=members, package_pass=False, qualification=False, server=False)
+raw = (json.dumps(index, sort_keys=True, indent=2)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(members)))

@@ -1,0 +1,21 @@
+{
+  "bound_seconds": 120,
+  "build_label": "git-job-cpu-fixed-build-receipt",
+  "calls_per_mode": 4,
+  "cleanup_seconds": 5,
+  "environment_changes": false,
+  "free_bytes": 4294967296,
+  "git_suspended": false,
+  "job_kill_on_close": false,
+  "job_limits": false,
+  "log_bytes": 16777216,
+  "modes": [
+    "reference_cpu_child",
+    "accounted_cpu_child"
+  ],
+  "native_bypass": false,
+  "package_pass": false,
+  "retry": false,
+  "server": false,
+  "stdin_hold": false
+}

@@ -5,6 +5,14 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [short-call descendant CPU control](git-job-cpu-result-20261026.md) now
+covers ordinary Git calls from birth via an unlimited private accounting Job.
+The changed-source eight-call control succeeds after retaining the first
+terminal-image-query refusal. Eighty models and the new current/MSRV target
+pass; both first old pipe-fixture elapsed-output failures remain red. Native
+inclusive residual is not per-image/per-call attestation or a performance win;
+V6 is not repeated and its verdict remains red.
+
 The [first real Git boundary control](git-process-boundary-result-20261026.md)
 holds distinct cmd-launcher/native objects through EOF and terminal collection.
 All sixty models and four integrity controls pass, retaining a first late-close
