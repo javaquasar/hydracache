@@ -1,0 +1,14 @@
+{
+  "attempt_id": "local",
+  "classification": "tool-unavailable",
+  "command": [
+    "hc074-fixed-missing-command"
+  ],
+  "detail": "[Errno 2] No such file or directory: 'hc074-fixed-missing-command'",
+  "elapsed_seconds": 1.511,
+  "exit_code": 127,
+  "finished_at": "2026-10-26T04:02:57.175847Z",
+  "log_file": null,
+  "schema_version": 1,
+  "started_at": "2026-10-26T04:02:55.664356Z"
+}

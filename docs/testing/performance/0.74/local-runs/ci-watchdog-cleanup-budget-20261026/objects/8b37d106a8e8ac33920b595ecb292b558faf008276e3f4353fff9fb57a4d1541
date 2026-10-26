@@ -1,0 +1,20 @@
+{
+  "attempt_id": "local",
+  "classification": "success",
+  "command": [
+    "C:\\Python313\\python.exe",
+    "-c",
+    "import json,os,sys; data={'args':sys.argv[1:], 'cwd':os.getcwd(),'stdin':sys.stdin.read()}; print('child-json '+json.dumps(data)); sys.stderr.write('child-stderr\\n')",
+    "space value",
+    "quote\"value",
+    "tail\\",
+    "\u03a9"
+  ],
+  "detail": "child exited with code 0",
+  "elapsed_seconds": 0.228,
+  "exit_code": 0,
+  "finished_at": "2026-10-26T04:25:20.409815Z",
+  "log_file": null,
+  "schema_version": 1,
+  "started_at": "2026-10-26T04:25:20.181776Z"
+}

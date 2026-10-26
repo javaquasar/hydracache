@@ -1,0 +1,42 @@
+"""One POSIX CLI/import compatibility cohort in already-running local Ubuntu."""
+from pathlib import Path
+import json
+import subprocess
+import sys
+import tempfile
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / 'target/ci-watchdog-posix-first-20261026'
+OUT.mkdir(exist_ok=False)
+script = ROOT / 'scripts/ci/run-with-heartbeat.py'
+results = []
+with tempfile.TemporaryDirectory(prefix='hc074-ci-watchdog-') as temporary:
+    marker = Path(temporary) / 'marker'
+    outer = ("import subprocess,sys,time; subprocess.Popen([sys.executable,'-c',"
+        "'import pathlib,sys,time;time.sleep(1.5);pathlib.Path(sys.argv[1]).write_text(\"alive\")',"
+        "sys.argv[1]]);time.sleep(5)")
+    cases = [('success', 0, 'success', ['-c', 'print("ok")']),
+             ('failure', 23, 'product-failure', ['-c', 'raise SystemExit(23)']),
+             ('timeout', 124, 'timeout', ['-c', outer, str(marker)]),
+             ('missing', 127, 'tool-unavailable', [])]
+    for name, code, classification, args in cases:
+        folder = OUT / name
+        folder.mkdir()
+        command = [sys.executable, *args] if name != 'missing' else ['hc074-fixed-missing-command']
+        argv = [sys.executable, str(script), '--timeout-seconds', '0.35' if name == 'timeout' else '5',
+                '--heartbeat-seconds', '0.05', '--status-json', str(folder / 'receipt.json'), '--', *command]
+        (folder / 'intent.json').write_text(json.dumps({'argv': argv, 'expected_exit': code,
+            'expected_classification': classification, 'server': False, 'product': False}) + '\n')
+        with (folder / 'stdout.log').open('xb') as stdout, (folder / 'stderr.log').open('xb') as stderr:
+            result = subprocess.run(argv, stdout=stdout, stderr=stderr, timeout=10)
+        receipt = json.loads((folder / 'receipt.json').read_bytes())
+        passed = result.returncode == code and receipt['classification'] == classification
+        results.append({'case': name, 'exit': result.returncode, 'pass': passed})
+    import time
+    time.sleep(2)
+    marker_absent = not marker.exists()
+result = {'cases': results, 'marker_absent': marker_absent, 'server': False,
+          'services_or_clocks_changed': False, 'original_owner': False, 'qualification': False}
+(OUT / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
+print(json.dumps(result))
+raise SystemExit(0 if marker_absent and all(row['pass'] for row in results) else 1)

@@ -1,0 +1,68 @@
+"""Keep the late-cleanup regression and the corrected-source cohort separately."""
+from pathlib import Path
+import hashlib
+import json
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'd9941796dc8766bcc67b2472b58abe94b6120855'
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/ci-watchdog-cleanup-budget-20261026'
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+members, objects, intents = {}, {}, {}
+LABELS = ['ci-watchdog-budget-units-first', 'ci-watchdog-budget-native-first',
+    'ci-watchdog-budget-current', 'ci-watchdog-budget-msrv', 'ci-watchdog-budget-bytecode',
+    'ci-watchdog-budget-check', 'ci-watchdog-budget-clippy', 'ci-watchdog-budget-fmt',
+    'ci-watchdog-budget-doc-check', 'ci-watchdog-budget-contract-check']
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+for label in ['ci-watchdog-budget-red-first', *LABELS]:
+    folder = ROOT / 'target/source-continuation-20261024' / label
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    assert result['exit'] == (1 if label.endswith('red-first') else 0)
+    assert result['outer_refusal'] is None and result['source_unchanged'] and result['head_unchanged']
+    assert intent['head'] == BASE and intent['source'] == result['source_after']
+    intents[label] = intent
+    for leaf in ['intent.json', 'result.json', 'stdout.log', 'stderr.log']:
+        add('checks/' + label + '/' + leaf, (folder / leaf).read_bytes())
+for leaf in ['run-with-heartbeat.py', 'watchdog_windows_job.py', 'test_watchdog_074.py', 'test_watchdog_windows_074.py']:
+    path = 'scripts/ci/' + leaf
+    raw = (ROOT / path).read_bytes()
+    for label in LABELS:
+        assert sha(raw) == intents[label]['source'][path]
+    add('source/' + path, raw)
+raw = (ROOT / 'target/ci-watchdog-before-budget-20261026/run-with-heartbeat.py').read_bytes()
+assert sha(raw) == intents['ci-watchdog-budget-red-first']['source']['scripts/ci/run-with-heartbeat.py']
+add('before/run-with-heartbeat.py', raw)
+raw = (ROOT / 'target/ci-watchdog-budget-red-source-20261026/test_watchdog_074.py').read_bytes()
+assert sha(raw) == intents['ci-watchdog-budget-red-first']['source']['scripts/ci/test_watchdog_074.py']
+assert raw == (ROOT / 'scripts/ci/test_watchdog_074.py').read_bytes()
+add('first-red-test.py', raw)
+root = ROOT / 'target/ci-watchdog-budget-native-first-20261026'
+for path in sorted(root.rglob('*')):
+    if path.is_file():
+        assert not path.is_symlink()
+        add('native/' + path.relative_to(root).as_posix(), path.read_bytes())
+for leaf in ['run-ci-watchdog-step-20261026.py', 'run-source-step-20261024.py',
+             'run-ci-watchdog-budget-final-20261026.py', 'retain-ci-watchdog-budget-20261026.py']:
+    add('coordinator/' + leaf, (ROOT / 'target' / leaf).read_bytes())
+index = dict(schema='hc074-ci-watchdog-cleanup-budget-v1', baseline_revision=BASE,
+    previous_index_sha256='455bbaebec68d634de633811fa7a94135366d7e2271408f9721f3f17b665d36c',
+    success_labels=LABELS, members=members, red_passed=17, red_failed=2,
+    final_units=19, native_cases=6, each_compiler_old_cases=12,
+    original_timeout=0.35, cleanup_bound=5, full_package=False, server=False, qualification=False)
+OUT.mkdir(exist_ok=True)
+(OUT / 'objects').mkdir()
+for digest, raw in objects.items():
+    with (OUT / 'objects' / digest).open('xb') as stream:
+        stream.write(raw)
+with (OUT / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, sort_keys=True, indent=2)
+    stream.write('\n')
+print(dict(members=len(members), objects=len(objects), index_sha256=sha((OUT / 'index.json').read_bytes())))

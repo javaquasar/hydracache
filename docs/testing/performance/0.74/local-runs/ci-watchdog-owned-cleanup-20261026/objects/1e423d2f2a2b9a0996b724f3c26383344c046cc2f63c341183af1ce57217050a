@@ -1,0 +1,1 @@
+{"cases": [{"case": "success", "exit": 0, "pass": true}, {"case": "failure", "exit": 23, "pass": true}, {"case": "timeout", "exit": 124, "pass": true}, {"case": "missing", "exit": 127, "pass": true}], "marker_absent": true, "server": false, "services_or_clocks_changed": false, "original_owner": false, "qualification": false}

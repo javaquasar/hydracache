@@ -1,0 +1,16 @@
+{
+  "attempt_id": "local",
+  "classification": "success",
+  "command": [
+    "/usr/bin/python3",
+    "-c",
+    "print(\"ok\")"
+  ],
+  "detail": "child exited with code 0",
+  "elapsed_seconds": 0.206,
+  "exit_code": 0,
+  "finished_at": "2026-10-26T04:02:51.980770Z",
+  "log_file": null,
+  "schema_version": 1,
+  "started_at": "2026-10-26T04:02:51.773864Z"
+}

@@ -1,0 +1,9 @@
+watchdog heartbeat attempt=local elapsed=0.0s remaining=5.0s pid=51932
+watchdog heartbeat attempt=local elapsed=0.2s remaining=4.8s pid=51932
+watchdog heartbeat attempt=local elapsed=0.4s remaining=4.6s pid=51932
+watchdog heartbeat attempt=local elapsed=0.6s remaining=4.4s pid=51932
+watchdog heartbeat attempt=local elapsed=0.8s remaining=4.2s pid=51932
+watchdog heartbeat attempt=local elapsed=1.0s remaining=4.0s pid=51932
+watchdog heartbeat attempt=local elapsed=1.2s remaining=3.8s pid=51932
+watchdog heartbeat attempt=local elapsed=1.4s remaining=3.6s pid=51932
+watchdog heartbeat attempt=local elapsed=1.6s remaining=3.4s pid=51932

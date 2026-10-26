@@ -1,0 +1,17 @@
+{
+  "attempt_id": "local",
+  "classification": "timeout",
+  "command": [
+    "/usr/bin/python3",
+    "-c",
+    "import subprocess,sys,time; subprocess.Popen([sys.executable,'-c','import pathlib,sys,time;time.sleep(1.5);pathlib.Path(sys.argv[1]).write_text(\"alive\")',sys.argv[1]]);time.sleep(5)",
+    "/tmp/hc074-ci-watchdog-_is04am5/marker"
+  ],
+  "detail": "hard deadline of 0.35s exceeded",
+  "elapsed_seconds": 0.359,
+  "exit_code": -15,
+  "finished_at": "2026-10-26T04:02:54.826986Z",
+  "log_file": null,
+  "schema_version": 1,
+  "started_at": "2026-10-26T04:02:54.468318Z"
+}

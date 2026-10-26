@@ -5,19 +5,25 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [Windows CI cleanup repair](ci-watchdog-owned-cleanup-result-20261026.md)
+passes all twelve unchanged old cases per compiler, nineteen deterministic
+controls and separate native owner-loss/setup/stream controls. The original
+0.35-second marker case passes on the changed helper. Full package coverage and
+the POSIX early-leader-exit gap remain open; production writers are not qualified.
+
 The [history/status repair and separate cleanup diagnostic](history-status-readers-result-20261026.md)
 close the two additional reader consumers in focused current/MSRV checks. The
-Windows marker failure remains open: successful taskkill and original terminal
-objects do not establish when the marker was written. No full package retry or
-deadline/assertion change follows; its old pins and first red result remain.
+earlier Windows diagnostic does not establish when the marker was written;
+the separate repair above subsequently changes the helper. No full package retry
+or deadline/assertion change follows; old pins and first red results remain.
 
 The [first repaired-source v5 package result](package-closure-v5-result-20261026.md)
 retains the same 780-second/four-thread command: 76/144 targets complete with
 457 passed/3 failed cases; the incomplete target has three more passes and one
 missing verdict; 67 targets do not start. A separate exact v5 effect review passes,
 but the package remains red. The follow-up above repairs its reader consumers;
-owned watchdog cleanup and existing source-validation cost remain before a new
-exact source/effect review and full dispatch.
+the Windows helper is repaired separately. Existing source-validation cost and
+a new exact source/effect review remain before full dispatch.
 
 The [contextual package module inventory](module-context-v5-result-20261026.md)
 closes 365 Rust sources after preserving the old scanner's first path-resolution

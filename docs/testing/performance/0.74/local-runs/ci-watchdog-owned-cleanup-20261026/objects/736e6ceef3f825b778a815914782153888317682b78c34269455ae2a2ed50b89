@@ -1,0 +1,20 @@
+"""Finite cleanup correctness gates; never a complete package or product run."""
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+CASES = [
+    ('ci-watchdog-units-complete', [sys.executable, 'scripts/ci/test_watchdog_074.py', '-v']),
+    ('ci-watchdog-bytecode', [sys.executable, '-m', 'py_compile', 'scripts/ci/run-with-heartbeat.py',
+        'scripts/ci/watchdog_windows_job.py', 'scripts/ci/test_watchdog_074.py', 'scripts/ci/test_watchdog_windows_074.py']),
+    ('ci-watchdog-current-final', ['cargo', '+1.94.0', 'test', '--offline', '--locked', '-p', 'xtask', '--test', 'ci_reliability_071', '--', '--test-threads=4']),
+    ('ci-watchdog-msrv-final', ['cargo', '+1.88.0', 'test', '--offline', '--locked', '-p', 'xtask', '--test', 'ci_reliability_071', '--', '--test-threads=4']),
+    ('ci-watchdog-check-final', ['cargo', '+1.94.0', 'check', '--offline', '--locked', '-p', 'xtask', '--all-targets']),
+    ('ci-watchdog-clippy-final', ['cargo', '+1.94.0', 'clippy', '--offline', '--locked', '-p', 'xtask', '--all-targets', '--all-features', '--', '-D', 'warnings']),
+    ('ci-watchdog-fmt-final', ['cargo', '+1.94.0', 'fmt', '-p', 'xtask', '--', '--check']),
+]
+for label, argv in CASES:
+    result = subprocess.run([sys.executable, str(ROOT / 'target/run-ci-watchdog-step-20261026.py'), label, *argv], cwd=ROOT)
+    if result.returncode:
+        raise SystemExit(result.returncode)

@@ -1,0 +1,17 @@
+
+running 12 tests
+test default_manual_dispatch_runs_core_ci_jobs ... ok
+test rust_canaries_install_locked_console_dependencies_first ... ok
+test diagnostic_builder_is_manual_protected_and_sha_bound ... ok
+test topology_rejects_missing_timeout_and_duplicate_branch_tag_execution ... ok
+test topology_rejects_install_step_without_a_bounded_timeout ... ok
+test topology_rejects_mixed_artifact_identity ... ok
+test topology_rejects_two_crate_publishers ... ok
+test live_builder_inventory_preserves_the_frozen_memory_input ... ok
+test checked_in_topology_is_closed_and_valid ... ok
+test watchdog_classifies_missing_provisioning_tool ... ok
+test watchdog_classifies_silent_success_and_product_failure ... ok
+test watchdog_times_out_and_kills_descendant_processes ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.90s
+

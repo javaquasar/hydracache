@@ -20622,3 +20622,47 @@ write/cut chronology, neither an escaped-writer claim nor a successful original
 cleanup claim follows. Keep the old assertion and deadline; establish that missing
 timeline before changing the termination path. This is tooling correctness work,
 not an accepted cache improvement or production admission.
+
+### Contain the CI process before it can create descendants
+
+The next isolated repair changes the Windows CI watchdog, not the Linux product
+launcher. Its taskkill path discarded errors, had no bounded subprocess wait and
+could return after leader exit while descendants remained. The existing Rust
+evidence runner already uses private Jobs, but its whole-second registered-gate
+CLI cannot preserve the Python helper's fractional deadlines and receipt.
+
+A narrow Python Win32 binding retains that CLI and creates the suspended process
+already assigned through `JOB_LIST`. The ordinary create-then-assign sequence has
+an owner-loss gap; atomic assignment avoids leaving an unowned suspended child.
+Only the original process/thread handles are used. The helper keeps Job ownership
+after leader exit, requires emptiness for success, and observes empty state before
+closing after termination. Failed cleanup is runner-loss, not a successful or
+ordinary timeout receipt. The original execution window is not reset by setup.
+
+The unchanged 0.35-second descendant test now passes, along with all twelve old
+cases on current/MSRV compilers. Seventeen deterministic controls and five native
+first-result fault controls cover different failure paths. Original held birth
+identities become terminal after creator loss, including before resume, and
+fixture files stop growing after the observed terminal cut. Another control checks
+quoted/Unicode argv, cwd and inherited streams. These results concern finite
+cooperative CI trees; they do not qualify hostile writer transfer or production
+Linux execution.
+
+One fault-oracle correction remains explicit: assigning LastError before setup
+did not guarantee which error reached the failing update. The first control proves
+refusal without fallback, not specifically error 50. A stronger separate control
+sets and asserts `ERROR_NOT_SUPPORTED` at the exact call and passes. The old pass
+is retained with its narrower meaning. The
+[repair analysis and raw evidence](../testing/performance/0.74/ci-watchdog-owned-cleanup-result-20261026.md)
+also retain the first deterministic failures. The full package remains incomplete;
+neither these focused passes nor four Linux CLI compatibility controls close its
+missing suffix or the separate POSIX early-leader-exit gap.
+
+Final review also exposes a late-witness hole: the cleanup loop checks its budget
+while the Job is nonempty, but an already empty observation or a delayed close can
+return after that budget and still succeed. Two new mock cases produce seventeen
+passes and two failures on the preserved implementation. Two additional deadline
+checks close those edges without changing either window. The identical nineteen
+tests then pass, followed by six native controls and the twelve old cases per
+compiler on the corrected source. The earlier pass remains a bounded stage result,
+not proof that these previously untested edges were safe.

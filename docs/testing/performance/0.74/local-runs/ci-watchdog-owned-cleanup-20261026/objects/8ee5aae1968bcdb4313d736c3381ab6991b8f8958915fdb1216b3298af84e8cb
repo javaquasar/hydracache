@@ -1,0 +1,97 @@
+test_fractional_deadline_is_not_rounded (__main__.Arguments.test_fractional_deadline_is_not_rounded) ... ok
+test_nonfinite_time_arguments_cannot_disable_deadline (__main__.Arguments.test_nonfinite_time_arguments_cannot_disable_deadline) ... 
+  test_nonfinite_time_arguments_cannot_disable_deadline (__main__.Arguments.test_nonfinite_time_arguments_cannot_disable_deadline) (name='--timeout-seconds', value='nan') ... FAIL
+  test_nonfinite_time_arguments_cannot_disable_deadline (__main__.Arguments.test_nonfinite_time_arguments_cannot_disable_deadline) (name='--timeout-seconds', value='inf') ... FAIL
+  test_nonfinite_time_arguments_cannot_disable_deadline (__main__.Arguments.test_nonfinite_time_arguments_cannot_disable_deadline) (name='--heartbeat-seconds', value='nan') ... FAIL
+  test_nonfinite_time_arguments_cannot_disable_deadline (__main__.Arguments.test_nonfinite_time_arguments_cannot_disable_deadline) (name='--heartbeat-seconds', value='inf') ... FAIL
+test_failed_root_still_terminates_descendants (__main__.StateMachine.test_failed_root_still_terminates_descendants) ... FAIL
+test_query_failure_is_runner_loss_and_closes_job (__main__.StateMachine.test_query_failure_is_runner_loss_and_closes_job) ... FAIL
+test_spawn_failure_closes_empty_owner (__main__.StateMachine.test_spawn_failure_closes_empty_owner) ... FAIL
+test_successful_root_with_live_descendant_reaches_original_deadline (__main__.StateMachine.test_successful_root_with_live_descendant_reaches_original_deadline) ... FAIL
+test_termination_failure_is_runner_loss_not_timeout (__main__.StateMachine.test_termination_failure_is_runner_loss_not_timeout) ... FAIL
+
+======================================================================
+FAIL: test_nonfinite_time_arguments_cannot_disable_deadline (__main__.Arguments.test_nonfinite_time_arguments_cannot_disable_deadline) (name='--timeout-seconds', value='nan')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\test_watchdog_074.py", line 126, in test_nonfinite_time_arguments_cannot_disable_deadline
+    patch.object(watch.sys, 'stderr'), self.assertRaises(SystemExit):
+                                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: SystemExit not raised
+
+======================================================================
+FAIL: test_nonfinite_time_arguments_cannot_disable_deadline (__main__.Arguments.test_nonfinite_time_arguments_cannot_disable_deadline) (name='--timeout-seconds', value='inf')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\test_watchdog_074.py", line 126, in test_nonfinite_time_arguments_cannot_disable_deadline
+    patch.object(watch.sys, 'stderr'), self.assertRaises(SystemExit):
+                                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: SystemExit not raised
+
+======================================================================
+FAIL: test_nonfinite_time_arguments_cannot_disable_deadline (__main__.Arguments.test_nonfinite_time_arguments_cannot_disable_deadline) (name='--heartbeat-seconds', value='nan')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\test_watchdog_074.py", line 126, in test_nonfinite_time_arguments_cannot_disable_deadline
+    patch.object(watch.sys, 'stderr'), self.assertRaises(SystemExit):
+                                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: SystemExit not raised
+
+======================================================================
+FAIL: test_nonfinite_time_arguments_cannot_disable_deadline (__main__.Arguments.test_nonfinite_time_arguments_cannot_disable_deadline) (name='--heartbeat-seconds', value='inf')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\test_watchdog_074.py", line 126, in test_nonfinite_time_arguments_cannot_disable_deadline
+    patch.object(watch.sys, 'stderr'), self.assertRaises(SystemExit):
+                                       ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: SystemExit not raised
+
+======================================================================
+FAIL: test_failed_root_still_terminates_descendants (__main__.StateMachine.test_failed_root_still_terminates_descendants)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\test_watchdog_074.py", line 95, in test_failed_root_still_terminates_descendants
+    self.assertIn(('terminate',), job.events)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('terminate',) not found in []
+
+======================================================================
+FAIL: test_query_failure_is_runner_loss_and_closes_job (__main__.StateMachine.test_query_failure_is_runner_loss_and_closes_job)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\test_watchdog_074.py", line 107, in test_query_failure_is_runner_loss_and_closes_job
+    self.assertEqual(result, 125)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: 0 != 125
+
+======================================================================
+FAIL: test_spawn_failure_closes_empty_owner (__main__.StateMachine.test_spawn_failure_closes_empty_owner)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\test_watchdog_074.py", line 114, in test_spawn_failure_closes_empty_owner
+    self.assertEqual(result, 125)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: 0 != 125
+
+======================================================================
+FAIL: test_successful_root_with_live_descendant_reaches_original_deadline (__main__.StateMachine.test_successful_root_with_live_descendant_reaches_original_deadline)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\test_watchdog_074.py", line 84, in test_successful_root_with_live_descendant_reaches_original_deadline
+    self.assertEqual(result, 124)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: 0 != 124
+
+======================================================================
+FAIL: test_termination_failure_is_runner_loss_not_timeout (__main__.StateMachine.test_termination_failure_is_runner_loss_not_timeout)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\scripts\ci\test_watchdog_074.py", line 100, in test_termination_failure_is_runner_loss_not_timeout
+    self.assertEqual(result, 125)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: 0 != 125
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.040s
+
+FAILED (failures=9)

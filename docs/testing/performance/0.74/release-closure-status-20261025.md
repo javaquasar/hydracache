@@ -67,6 +67,15 @@ identity. Do not reopen rejected hypotheses merely to populate a release.
 
 ### 2 Obtain a complete green package and security milestone
 
+The [subsequent Windows CI cleanup repair](ci-watchdog-owned-cleanup-result-20261026.md)
+passes the unchanged old descendant-marker case and all twelve old cases on each
+compiler. Nineteen deterministic cases and separate native first-result controls
+cover owned Jobs, creator loss before resume/while writing, setup/error refusal
+and stream/argv compatibility. This closes the Windows helper failure on changed
+source, not the interrupted package. POSIX early-leader-exit cleanup remains a
+separate gap. Existing validation-cost attribution and a new exact complete
+source/effect review are still required before another full command.
+
 The [next history/status compatibility repair](history-status-readers-result-20261026.md)
 closes those two additional reader failures locally, preserving all twelve old
 cases/assertions and adding exact construction/refusal controls. This does not
@@ -74,7 +83,8 @@ replace the full result below. A separate held-object taskkill diagnostic record
 terminal original root/leaf objects and an existing marker; without write/cut
 chronology it does not close the watchdog failure. Owned cleanup, existing
 validation cost and a new complete exact source/effect review remain before any
-changed-source full dispatch. Old source pins must continue refusing the new graph.
+changed-source full dispatch. That earlier observation does not substitute for
+the Windows repair above; old source pins must continue refusing the new graph.
 
 The [subsequent v5 exact review and full result](package-closure-v5-result-20261026.md)
 cover 365 source identities/42 auxiliary inputs and the 144-target catalog.

@@ -1,0 +1,6 @@
+test_unsupported_job_list_refuses_without_creating_child (__main__.Native.test_unsupported_job_list_refuses_without_creating_child) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.022s
+
+OK

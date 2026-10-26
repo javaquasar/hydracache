@@ -1,0 +1,12 @@
+test_fractional_deadline_is_not_rounded (__main__.Arguments.test_fractional_deadline_is_not_rounded) ... ok
+test_nonfinite_time_arguments_cannot_disable_deadline (__main__.Arguments.test_nonfinite_time_arguments_cannot_disable_deadline) ... ok
+test_failed_root_still_terminates_descendants (__main__.StateMachine.test_failed_root_still_terminates_descendants) ... ok
+test_query_failure_is_runner_loss_and_closes_job (__main__.StateMachine.test_query_failure_is_runner_loss_and_closes_job) ... ok
+test_spawn_failure_closes_empty_owner (__main__.StateMachine.test_spawn_failure_closes_empty_owner) ... ok
+test_successful_root_with_live_descendant_reaches_original_deadline (__main__.StateMachine.test_successful_root_with_live_descendant_reaches_original_deadline) ... ok
+test_termination_failure_is_runner_loss_not_timeout (__main__.StateMachine.test_termination_failure_is_runner_loss_not_timeout) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.013s
+
+OK

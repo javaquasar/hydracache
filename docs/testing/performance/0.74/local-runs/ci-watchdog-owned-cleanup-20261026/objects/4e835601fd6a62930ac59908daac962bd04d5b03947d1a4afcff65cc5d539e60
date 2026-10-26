@@ -1,0 +1,18 @@
+{
+  "attempt_id": "local",
+  "classification": "timeout",
+  "command": [
+    "C:\\Python313\\python.exe",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\scripts\\ci\\test_watchdog_windows_074.py",
+    "fixture",
+    "tree",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\ci-watchdog-native-first-20261026\\test_successful_root_leaving_writer_is_timeout_not_success"
+  ],
+  "detail": "hard deadline of 5s exceeded",
+  "elapsed_seconds": 5.001,
+  "exit_code": 0,
+  "finished_at": "2026-10-26T03:55:47.600976Z",
+  "log_file": null,
+  "schema_version": 1,
+  "started_at": "2026-10-26T03:55:42.599512Z"
+}

@@ -1,0 +1,3 @@
+watchdog heartbeat attempt=local elapsed=0.0s remaining=5.0s pid=111857
+ok
+watchdog result classification=success elapsed=0.2s receipt=/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/ci-watchdog-posix-first-20261026/success/receipt.json

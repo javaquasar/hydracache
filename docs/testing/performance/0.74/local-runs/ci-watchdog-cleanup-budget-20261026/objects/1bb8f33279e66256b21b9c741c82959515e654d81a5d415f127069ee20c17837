@@ -1,0 +1,3 @@
+watchdog heartbeat attempt=local elapsed=0.0s remaining=5.0s pid=22940
+child-json {"args": ["space value", "quote\"value", "tail\\", "\u03a9"], "cwd": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\ci-watchdog-budget-native-first-20261026\\test_cli_cwd_unicode_arguments_and_inherited_streams\\directory with spaces \u03a9", "stdin": "input-data\n"}
+watchdog result classification=success elapsed=0.2s receipt=C:\Workspace\prj\jq\cashe\hydracache-074\target\ci-watchdog-budget-native-first-20261026\test_cli_cwd_unicode_arguments_and_inherited_streams\receipt.json

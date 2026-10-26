@@ -1,0 +1,10 @@
+test_owner_loss_before_resume_terminates_original_suspended_child (__main__.Native.test_owner_loss_before_resume_terminates_original_suspended_child) ... ok
+test_owner_loss_terminates_running_root_and_writer (__main__.Native.test_owner_loss_terminates_running_root_and_writer) ... ok
+test_post_create_setup_refusal_never_executes_child (__main__.Native.test_post_create_setup_refusal_never_executes_child) ... ok
+test_successful_root_leaving_writer_is_timeout_not_success (__main__.Native.test_successful_root_leaving_writer_is_timeout_not_success) ... ok
+test_unsupported_job_list_refuses_without_creating_child (__main__.Native.test_unsupported_job_list_refuses_without_creating_child) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 9.149s
+
+OK

@@ -1,0 +1,6 @@
+test_cli_cwd_unicode_arguments_and_inherited_streams (__main__.Native.test_cli_cwd_unicode_arguments_and_inherited_streams) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.695s
+
+OK

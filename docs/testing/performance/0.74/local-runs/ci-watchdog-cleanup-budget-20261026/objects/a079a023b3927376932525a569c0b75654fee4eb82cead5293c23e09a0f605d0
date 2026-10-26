@@ -1,0 +1,4 @@
+    Blocking waiting for file lock on package cache
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 16.94s
+     Running `target\debug\xtask.exe performance-contract-check --release 0.74`

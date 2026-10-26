@@ -1,0 +1,102 @@
+"""Retain first CI cleanup outcomes, never reinterpret old package evidence."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'e2b96d64fd85419b5a2be837b9b7336f51b39ed5'
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/ci-watchdog-owned-cleanup-20261026'
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+members, objects, intents = {}, {}, {}
+labels = ['ci-watchdog-units-candidate-first', 'ci-watchdog-old-cases-first',
+    'ci-watchdog-native-first', 'ci-watchdog-units-final', 'ci-watchdog-streams-first',
+    'ci-watchdog-units-complete', 'ci-watchdog-bytecode', 'ci-watchdog-current-final',
+    'ci-watchdog-msrv-final', 'ci-watchdog-check-final', 'ci-watchdog-clippy-final',
+    'ci-watchdog-fmt-final', 'ci-watchdog-posix-first', 'ci-watchdog-unsupported-first',
+    'ci-watchdog-doc-check-first', 'ci-watchdog-contract-check-first']
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+for label in ['ci-watchdog-units-red-first', *labels]:
+    folder = ROOT / 'target/source-continuation-20261024' / label
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    assert result['exit'] == (1 if label.endswith('red-first') else 0)
+    assert result['outer_refusal'] is None and result['source_unchanged'] and result['head_unchanged']
+    assert intent['source'] == result['source_after'] and intent['head'] == BASE
+    intents[label] = intent
+    for leaf in ['intent.json', 'result.json', 'stdout.log', 'stderr.log']:
+        add('checks/' + label + '/' + leaf, (folder / leaf).read_bytes())
+
+paths = ['scripts/ci/run-with-heartbeat.py', 'scripts/ci/watchdog_windows_job.py',
+         'scripts/ci/test_watchdog_074.py', 'scripts/ci/test_watchdog_windows_074.py']
+for path in paths:
+    raw = (ROOT / path).read_bytes()
+    assert sha(raw) == intents['ci-watchdog-unsupported-first']['source'][path]
+    if path in paths[:2]:
+        for label in ['ci-watchdog-native-first', 'ci-watchdog-current-final', 'ci-watchdog-msrv-final',
+                      'ci-watchdog-check-final', 'ci-watchdog-clippy-final']:
+            assert sha(raw) == intents[label]['source'][path]
+    add('source-final/' + path, raw)
+for path in ['crates/xtask/tests/ci_reliability_071.rs', 'Cargo.toml', 'Cargo.lock',
+             'docs/testing/performance/0.74/qualification-manifest.toml']:
+    raw = (ROOT / path).read_bytes()
+    old = subprocess.check_output(['git', '--no-replace-objects', 'show', BASE + ':' + path], cwd=ROOT)
+    assert raw.replace(b'\r\n', b'\n') == old.replace(b'\r\n', b'\n')
+    add('protected/' + path, raw)
+for leaf in ['run-with-heartbeat.py', 'test_watchdog_074.py', 'ci-watchdog-owned-cleanup-contract-20261026.md']:
+    add('before/' + leaf, (ROOT / 'target/ci-watchdog-before-20261026' / leaf).read_bytes())
+for leaf in ['run-with-heartbeat.py', 'test_watchdog_074.py', 'watchdog_windows_job.py']:
+    raw = (ROOT / 'target/ci-watchdog-candidate-first-20261026' / leaf).read_bytes()
+    path = 'scripts/ci/' + leaf
+    assert sha(raw) == intents['ci-watchdog-units-candidate-first']['source'][path]
+    assert sha(raw) == intents['ci-watchdog-old-cases-first']['source'][path]
+    add('initial-candidate/' + path, raw)
+for leaf in [Path(path).name for path in paths]:
+    raw = (ROOT / 'target/ci-watchdog-native-source-20261026' / leaf).read_bytes()
+    assert sha(raw) == intents['ci-watchdog-native-first']['source']['scripts/ci/' + leaf]
+    add('native-first-source/scripts/ci/' + leaf, raw)
+raw = (ROOT / 'target/ci-watchdog-streams-source-20261026/test_watchdog_windows_074.py').read_bytes()
+assert sha(raw) == intents['ci-watchdog-streams-first']['source']['scripts/ci/test_watchdog_windows_074.py']
+add('streams-source/scripts/ci/test_watchdog_windows_074.py', raw)
+
+for folder, prefix in [('ci-watchdog-native-first-20261026', 'native'),
+                       ('ci-watchdog-streams-first-20261026', 'streams'),
+                       ('ci-watchdog-unsupported-first-20261026', 'unsupported'),
+                       ('ci-watchdog-posix-first-20261026', 'posix')]:
+    root = ROOT / 'target' / folder
+    for path in sorted(root.rglob('*')):
+        if path.is_file():
+            assert not path.is_symlink()
+            add(prefix + '/' + path.relative_to(root).as_posix(), path.read_bytes())
+for leaf in ['run-ci-watchdog-step-20261026.py', 'run-source-step-20261024.py',
+             'run-fresh-reader-20261024.py', 'run-ci-watchdog-final-20261026.py',
+             'ci-watchdog-posix-20261026.py', 'retain-ci-watchdog-20261026.py']:
+    add('coordinator/' + leaf, (ROOT / 'target' / leaf).read_bytes())
+for path in ['tools/xtask-package-attribution-074/owned_process_observer.py',
+             'tools/xtask-package-attribution-074/process_lineage.py',
+             'docs/testing/performance/0.74/ci-watchdog-owned-cleanup-contract-20261026.md']:
+    add('support/' + path, (ROOT / path).read_bytes())
+
+index = dict(schema='hc074-ci-watchdog-owned-cleanup-evidence-v1', baseline_revision=BASE,
+    members=members, success_labels=labels, first_red_scripts_inventoried=False,
+    first_red_failed_subtests=9, final_unit_cases=17, each_compiler_old_cases=12,
+    first_native_cases=5, separate_stream_case=1, corrected_unsupported_case=1, posix_cases=4,
+    full_package_rerun=False, server=False, product=False, qualification=False,
+    original_marker_timeout=0.35, original_marker_assertion_changed=False)
+OUT.mkdir(exist_ok=True)
+(OUT / 'objects').mkdir()
+for digest, raw in objects.items():
+    with (OUT / 'objects' / digest).open('xb') as stream:
+        stream.write(raw)
+with (OUT / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, sort_keys=True, indent=2)
+    stream.write('\n')
+print(dict(members=len(members), objects=len(objects), index_sha256=sha((OUT / 'index.json').read_bytes())))

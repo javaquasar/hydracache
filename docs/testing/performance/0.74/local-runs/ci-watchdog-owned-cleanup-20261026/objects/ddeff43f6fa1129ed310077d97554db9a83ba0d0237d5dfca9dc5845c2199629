@@ -1,0 +1,16 @@
+{
+  "attempt_id": "local",
+  "classification": "product-failure",
+  "command": [
+    "/usr/bin/python3",
+    "-c",
+    "raise SystemExit(23)"
+  ],
+  "detail": "child exited with code 23",
+  "elapsed_seconds": 0.204,
+  "exit_code": 23,
+  "finished_at": "2026-10-26T04:02:52.983706Z",
+  "log_file": null,
+  "schema_version": 1,
+  "started_at": "2026-10-26T04:02:52.779685Z"
+}
