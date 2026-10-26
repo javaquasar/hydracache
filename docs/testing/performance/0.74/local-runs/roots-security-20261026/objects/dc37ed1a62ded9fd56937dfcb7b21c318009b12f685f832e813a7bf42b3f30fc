@@ -1,0 +1,26 @@
+"""Offline comparison of the two captured root-catalog fixture refusals."""
+import collections
+import hashlib
+import json
+from pathlib import Path
+import re
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT/'target/roots-catalog-attribution-20261026.json'
+rows = {}
+pattern = r'TrustAnchor \{ subject: (0x[0-9a-f]+), subject_public_key_info: (0x[0-9a-f]+), name_constraints: (None|Some\(0x[0-9a-f]+\)) \}'
+for phase in ('roots-baseline', 'roots-baseline-order-corrected'):
+    raw = (ROOT/'target/roots-patch-20261026'/phase/'stdout.log').read_text()
+    left = re.search(r'^  left: (.*)$', raw, re.M).group(1)
+    right = re.search(r'^ right: (.*)$', raw, re.M).group(1)
+    a, b = collections.Counter(re.findall(pattern, left)), collections.Counter(re.findall(pattern, right))
+    def summarize(counter):
+        return [dict(subject_hex=s, spki_sha256=hashlib.sha256(bytes.fromhex(k[2:])).hexdigest(), constraints=c, count=n)
+                for (s, k, c), n in counter.items()]
+    rows[phase] = dict(left=sum(a.values()), right=sum(b.values()),
+        der_only=summarize(a-b), anchors_only=summarize(b-a),
+        identity_multisets_equal=collections.Counter((s,k) for s,k,c in a.elements()) ==
+            collections.Counter((s,k) for s,k,c in b.elements()))
+with OUT.open('x') as stream:
+    json.dump(rows, stream, indent=2)
+print(json.dumps(rows, indent=2))

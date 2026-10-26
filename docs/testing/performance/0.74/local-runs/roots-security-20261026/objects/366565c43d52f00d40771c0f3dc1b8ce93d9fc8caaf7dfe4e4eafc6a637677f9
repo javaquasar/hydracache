@@ -1,0 +1,4 @@
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.45s
+     Running tests\tls_roots_security_074.rs (target\debug\deps\tls_roots_security_074-d36c3cf337bda651.exe)
+error: test failed, to rerun pass `-p hydracache-redis-compat --test tls_roots_security_074`

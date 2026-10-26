@@ -1,0 +1,2 @@
+{"artifact": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\xtask.exe", "artifact_sha256": "0077689ea83d65aeaf6b8e99ca321addf15dbe97cb27ebed9ff3fedca5a91031", "first_cargo_doc_build_refusal_preserved": true, "bound_seconds": 180}
+doc-check: OK (releases.toml is consistent)

@@ -1,0 +1,73 @@
+"""Read-only inventory of changed public authorities, not trust admission."""
+import ast
+from collections import Counter
+import hashlib
+import json
+from pathlib import Path
+import re
+
+ROOT = Path(__file__).resolve().parent.parent
+REGISTRY = Path('C:/Users/ArturBuzov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f')
+literal = r'b"(?:[^"\\]|\\.)*"'
+pattern = (r'TrustAnchor\s*\{\s*subject:\s*Der::from_slice\(('+literal+r')\),\s*'
+    r'subject_public_key_info:\s*Der::from_slice\(('+literal+r')\),\s*'
+    r'name_constraints:\s*(None|Some\(Der::from_slice\(('+literal+r')\)\))')
+
+
+def read(version):
+    source = (REGISTRY/('webpki-roots-'+version)/'src/lib.rs').read_text()
+    rows = re.findall(pattern,source)
+    if not rows or len(rows) != source.count('subject_public_key_info: Der::from_slice('):
+        raise ValueError('incomplete anchor census')
+    anchors = Counter((ast.literal_eval(s),ast.literal_eval(k),
+        None if c == 'None' else ast.literal_eval(v)) for s,k,c,v in rows)
+    raw = (REGISTRY/('webpki-root-certs-'+version)/'src/lib.rs').read_text()
+    rows = re.findall(r'CertificateDer::from_slice\(('+literal+r')\)',raw)
+    if not rows or len(rows) != raw.count('CertificateDer::from_slice('):
+        raise ValueError('incomplete DER census')
+    return anchors,Counter(ast.literal_eval(v) for v in rows)
+
+
+def full_spki(contents):
+    size = len(contents)
+    if size < 128:
+        return b'\x30'+bytes([size])+contents
+    length = size.to_bytes((size.bit_length()+7)//8,'big')
+    return b'\x30'+bytes([128+len(length)])+length+contents
+
+
+old, old_der = read('1.0.8')
+new, new_der = read('1.0.10')
+removed = list((old-new).elements())
+added = list((new-old).elements())
+removed_der, added_der = list((old_der-new_der).elements()), list((new_der-old_der).elements())
+
+
+def rows(anchors, certificates):
+    result = []
+    for subject,key,constraints in anchors:
+        certs = [c for c in certificates if subject in c and key in c]
+        if len(certs) != 1:
+            raise ValueError('changed root does not match exactly one changed DER certificate')
+        result.append(dict(subject_hex=subject.hex(),spki_contents_hex=key.hex(),
+            name_constraints_hex=None if constraints is None else constraints.hex(),
+            spki_sha256=hashlib.sha256(full_spki(key)).hexdigest(),
+            certificate_sha256=hashlib.sha256(certs[0]).hexdigest()))
+    return result
+
+
+removed_rows, added_rows = rows(removed,removed_der),rows(added,added_der)
+if len(removed_der) != len(removed_rows) or len(added_der) != len(added_rows):
+    raise ValueError('unmatched DER changes')
+emsign = [r for r in removed_rows if b'emSign ECC Root CA - G3'.hex() in r['subject_hex']]
+if len(emsign) != 1 or emsign[0]['spki_sha256'] != '8d417db2dd8bf5e3084d1e3f196d583849d81bdd4c00c70b9d39369e96b8c782':
+    raise ValueError('primary upstream emSign fingerprint differs')
+result = dict(old_anchors=sum(old.values()),new_anchors=sum(new.values()),
+    old_certs=sum(old_der.values()),new_certs=sum(new_der.values()),
+    unchanged_complete_anchors=sum((old & new).values()),removed=removed_rows,added=added_rows,
+    new_authorities=len(added_rows), trust_scope_approved=False,release_admitted=False)
+with (ROOT/'target/roots-trust-inventory-20261026.json').open('x') as stream:
+    json.dump(result,stream,indent=2)
+print(json.dumps(dict(old=result['old_anchors'],new=result['new_anchors'],
+    unchanged=result['unchanged_complete_anchors'],removed=len(removed_rows),added=len(added_rows),
+    exact_der_matches=True,trust_scope_approved=False)))

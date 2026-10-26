@@ -1,0 +1,13 @@
+   Compiling tokio-rustls v0.26.4
+   Compiling hyper-rustls v0.27.9
+   Compiling tonic v0.14.6
+   Compiling rustls-platform-verifier v0.7.0
+   Compiling reqwest v0.13.4
+   Compiling tonic-prost v0.14.6
+   Compiling axum-server v0.8.0
+   Compiling hydracache-client-hc2 v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-hc2)
+   Compiling hydracache-cluster-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-transport-axum)
+   Compiling hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 33s
+     Running tests\hc2_daemon_process.rs (target\debug\deps\hc2_daemon_process-6e5f85b1d26c1ba3.exe)
+     Running tests\redis_mtls_074.rs (target\debug\deps\redis_mtls_074-7ca97989820283d0.exe)

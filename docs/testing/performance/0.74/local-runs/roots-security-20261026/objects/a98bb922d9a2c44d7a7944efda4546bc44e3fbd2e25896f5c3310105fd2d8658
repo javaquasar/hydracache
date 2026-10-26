@@ -1,0 +1,8 @@
+   Compiling webpki-roots v1.0.10
+   Compiling webpki-root-certs v1.0.10
+   Compiling webpki-roots v0.26.11
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.00s
+     Running tests\tls_roots_security_074.rs (target/security-patch-msrv188\debug\deps\tls_roots_security_074-084ef477bcdbd6af.exe)
+     Running tests\tls_session_security_074.rs (target/security-patch-msrv188\debug\deps\tls_session_security_074-8088ba00508c8bae.exe)
+     Running tests\tls_spki_security_074.rs (target/security-patch-msrv188\debug\deps\tls_spki_security_074-eca17c088d4aab81.exe)

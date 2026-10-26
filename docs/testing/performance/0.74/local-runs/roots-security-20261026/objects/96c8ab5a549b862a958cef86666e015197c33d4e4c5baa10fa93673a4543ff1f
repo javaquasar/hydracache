@@ -1,0 +1,3 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3m 25s
+     Running `target\debug\xtask.exe performance-contract-check --release 0.74`

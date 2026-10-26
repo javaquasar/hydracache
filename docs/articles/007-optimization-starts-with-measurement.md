@@ -21082,3 +21082,26 @@ are needed. Ordinary name/time/issuer rejection remains checked. Windows, GNU,
 MSRV and mTLS/daemon checks pass; ten pinned-database findings still prevent a
 green security gate. This proves this locked build's certificate rejection,
 not a full handshake with those keys or a downstream consumer's dependency floor.
+
+### A compatible dependency update can still change trust policy
+
+The [bundled-roots experiment](../testing/performance/0.74/roots-security-result-20261026.md)
+tested removing emSign G3 from both public anchor and DER catalogs. The first
+oracle assumed those representations were identical. It was wrong: sorting
+fixed ordering, but a TUBITAK `.tr` constraint exists only in the anchor catalog.
+Both first failures are preserved. The corrected oracle registers exactly that
+difference, rejects key/entry/constraint mutations, and runs unchanged on both
+versions. The old baseline fails its two emSign assertions; the candidate passes.
+
+Compatibility evidence is positive: Windows/MSRV/GNU cohorts pass, as do server
+mTLS/daemon and the complete ordinary RESP package. However, comparing the entire
+catalog finds two removals and four additions, not merely the last upstream PR's
+emSign removal. The narrow trust-change gate therefore fails even though the
+tests are green. All six changed public keys/certificates and constraints are
+inventoried; four additional authorities still need a project trust decision.
+
+The candidate is archived with exact source, lock and first results rather than
+silently accepted. Its eight pinned-database findings are not the restored active
+graph's ten. This experiment confirms regression coverage and exposes a policy
+boundary; it proves neither a performance gain nor production readiness. No live
+validation frequency, original deadline, server service or clock is changed.

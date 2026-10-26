@@ -1,0 +1,8 @@
+{
+  "Cargo.toml": "8602b3d437090cc3989017a46550be2052893fcffb156d024817bccbb3d4c4e3",
+  "Cargo.lock": "87397e82fe12ba8c50c69ce35cb27ab8ea15de718d7a6424aae72dc56b143224",
+  "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+  "crates/hydracache-redis-compat/Cargo.toml": "ddadf559be8badb99b4ec1162be9b2194d0e092f32537ef9a23b832deaf49b38",
+  "crates/hydracache-redis-compat/tests/tls_roots_security_074.rs": "655728cfa43e04ef1e26eabbfba8b382d5ddab8ce6232c1ef8d3603327c83f73",
+  "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+}

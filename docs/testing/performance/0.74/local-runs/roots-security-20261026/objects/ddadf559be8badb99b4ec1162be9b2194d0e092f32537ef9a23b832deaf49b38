@@ -1,0 +1,43 @@
+[package]
+name = "hydracache-redis-compat"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+keywords.workspace = true
+categories.workspace = true
+description = "Off-by-default Redis RESP edge facade for HydraCache cache-subset compatibility."
+
+[features]
+default = []
+# Retired after full-D3 mTLS allocation rejection. Compatibility tombstone only;
+# this feature cannot activate ownership transfer, including all-feature builds.
+experimental-resp-get-owner-074 = []
+
+[dependencies]
+bytes.workspace = true
+hydracache.workspace = true
+hydracache-client-protocol.workspace = true
+hydracache-client-transport-axum.workspace = true
+redis-protocol.workspace = true
+subtle.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+futures-util.workspace = true
+proptest.workspace = true
+rcgen.workspace = true
+redis = { workspace = true, features = ["tokio-rustls-comp", "tls-rustls-insecure"] }
+rustls.workspace = true
+serde_json.workspace = true
+tokio-rustls.workspace = true
+webpki-root-certs = "=1.0.8"
+webpki-roots = "=1.0.8"
+webpki-roots-legacy = { package = "webpki-roots", version = "=0.26.11" }
+
+[lints]
+workspace = true

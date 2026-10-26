@@ -1,0 +1,16 @@
+{
+  "before": 118,
+  "after": 120,
+  "removed": 2,
+  "added": 4,
+  "removed_subjects": [
+    "1\u000b0\t\u0006\u0003U\u0004\u0006\u0013\u0002IN1\u00130\u0011\u0006\u0003U\u0004\u000b\u0013\nemSign PKI1%0#\u0006\u0003U\u0004\n\u0013\u001ceMudhra Technologies Limited1 0\u001e\u0006\u0003U\u0004\u0003\u0013\u0017emSign ECC Root CA - G3",
+    "1\u001e0\u001c\u0006\u0003U\u0004\u0003\f\u0015Atos TrustedRoot 20111\r0\u000b\u0006\u0003U\u0004\n\f\u0004Atos1\u000b0\t\u0006\u0003U\u0004\u0006\u0013\u0002DE"
+  ],
+  "added_subjects": [
+    "1\u000b0\t\u0006\u0003U\u0004\u0006\u0013\u0002SE1\u00190\u0017\u0006\u0003U\u0004\n\f\u0010Telia Company AB1 0\u001e\u0006\u0003U\u0004\u0003\f\u0017Telia EC TLS Root CA v3",
+    "1\u000b0\t\u0006\u0003U\u0004\u0006\u0013\u0002JP1&0$\u0006\u0003U\u0004\n\u0013\u001dSECOM Trust Systems Co., Ltd.1#0!\u0006\u0003U\u0004\u0003\u0013\u001aSECOM TLS RSA Root CA 2024",
+    "1\u000b0\t\u0006\u0003U\u0004\u0006\u0013\u0002JP1&0$\u0006\u0003U\u0004\n\u0013\u001dSECOM Trust Systems Co., Ltd.1#0!\u0006\u0003U\u0004\u0003\u0013\u001aSECOM TLS ECC Root CA 2024",
+    "1\u000b0\t\u0006\u0003U\u0004\u0006\u0013\u0002SE1\u00190\u0017\u0006\u0003U\u0004\n\f\u0010Telia Company AB1!0\u001f\u0006\u0003U\u0004\u0003\f\u0018Telia RSA TLS Root CA v3"
+  ]
+}

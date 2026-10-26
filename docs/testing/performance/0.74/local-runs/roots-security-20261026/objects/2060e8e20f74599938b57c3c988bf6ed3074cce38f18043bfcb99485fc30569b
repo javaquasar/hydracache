@@ -1,0 +1,11 @@
+ Downloading crates ...
+  Downloaded webpki-root-certs v1.0.10
+  Downloaded webpki-roots v1.0.10
+   Compiling webpki-roots v1.0.10
+   Compiling webpki-root-certs v1.0.10
+   Compiling webpki-roots v0.26.11
+   Compiling hydracache-redis-compat v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-redis-compat)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.16s
+     Running tests/tls_roots_security_074.rs (/tmp/hydracache-074-tls-security-20261024-gnu194/debug/deps/tls_roots_security_074-52e4992425f3cfeb)
+     Running tests/tls_session_security_074.rs (/tmp/hydracache-074-tls-security-20261024-gnu194/debug/deps/tls_session_security_074-e68d9eade0caeac8)
+     Running tests/tls_spki_security_074.rs (/tmp/hydracache-074-tls-security-20261024-gnu194/debug/deps/tls_spki_security_074-e0cf0056bb2cf228)

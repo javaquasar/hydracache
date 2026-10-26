@@ -1,0 +1,3 @@
+    Blocking waiting for file lock on build directory
+    Checking hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 00s

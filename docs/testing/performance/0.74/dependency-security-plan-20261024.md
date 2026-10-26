@@ -2,6 +2,13 @@
 
 ## Current authority
 
+The [subsequent bundled-roots candidate](roots-security-result-20261026.md) is
+tested and archived, not accepted: its 1.0.8 to 1.0.10 catalog comparison removes
+two authorities and adds four. Pending the explicit public trust-scope decision,
+the accepted graph stays restored with ten pinned-DB findings; eight belongs
+only to that archived candidate. Its first test-oracle and admission-gate
+failures remain intact. This is distinct from production issuer/enrollment pins.
+
 On 2026-10-26 the operator explicitly authorized compatible security updates,
 superseding the earlier audit/planning-only instruction. Keep Rust 1.88 and add
 no deny.toml exceptions. Incompatible major migrations still require a separate

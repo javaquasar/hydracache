@@ -1,0 +1,32 @@
+
+running 5 tests
+test bundled_anchor_catalog_does_not_trust_emsign_g3 ... FAILED
+test bundled_der_catalog_does_not_contain_emsign_g3_public_key ... FAILED
+test catalog_oracle_refuses_unregistered_policy_and_key_mutations ... ok
+test compatibility_shim_reexports_the_same_parent_without_its_own_trust_store ... ok
+test complete_der_and_anchor_catalogs_load_into_the_normal_verifier_store ... ok
+
+failures:
+
+---- bundled_anchor_catalog_does_not_trust_emsign_g3 stdout ----
+
+thread 'bundled_anchor_catalog_does_not_trust_emsign_g3' (38368) panicked at crates\hydracache-redis-compat\tests\tls_roots_security_074.rs:15:5:
+assertion failed: !webpki_roots::TLS_SERVER_ROOTS.iter().any(bad_anchor)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- bundled_der_catalog_does_not_contain_emsign_g3_public_key stdout ----
+
+thread 'bundled_der_catalog_does_not_contain_emsign_g3_public_key' (47620) panicked at crates\hydracache-redis-compat\tests\tls_roots_security_074.rs:21:5:
+assertion failed: !webpki_root_certs::TLS_SERVER_ROOT_CERTS.iter().any(|cert|
+            {
+                cert.as_ref().windows(DISALLOWED_SPKI.len()).any(|key|
+                        key == DISALLOWED_SPKI)
+            })
+
+
+failures:
+    bundled_anchor_catalog_does_not_trust_emsign_g3
+    bundled_der_catalog_does_not_contain_emsign_g3_public_key
+
+test result: FAILED. 3 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

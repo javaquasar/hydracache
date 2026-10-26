@@ -42,6 +42,12 @@ or ignored MSRV. Every changed graph needs its own focused semantic checks,
 complete lock review and subsequent full milestone. Earlier advisories remain
 historical first results, not a fresh vulnerability assessment.
 
+Security progress: the [public trust-roots candidate](roots-security-result-20261026.md)
+has focused Windows/MSRV/GNU evidence but remains archived pending a decision
+on four additional public authorities. Its narrow trust-delta gate fails;
+the active graph remains at ten pinned-DB findings. This does not complete
+package 3 or affect the original-execution authorization below.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

@@ -1,0 +1,10 @@
+"""Retain the resolver's broader first selection before narrowing the candidate."""
+from pathlib import Path
+import hashlib
+import json
+ROOT = Path(__file__).resolve().parent.parent
+raw = (ROOT/'Cargo.lock').read_bytes()
+with (ROOT/'target/roots-first-resolution-20261026.lock').open('xb') as stream:
+    stream.write(raw)
+print(json.dumps(dict(sha256=hashlib.sha256(raw).hexdigest(), root_certs='1.0.11',
+                     measured=False, accepted=False)))

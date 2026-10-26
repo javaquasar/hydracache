@@ -1,5 +1,11 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [bundled-roots candidate](roots-security-result-20261026.md) passes focused
+Windows/MSRV/GNU and compatibility controls but is archived, not applied. Full
+catalog comparison finds two removals and four new public authorities; the narrow
+trust-delta gate refuses it pending a trust-scope decision. Exact candidate code
+and first results remain recoverable; accepted graph findings remain ten.
+
 The [separate WebPKI repair](webpki-security-result-20261026.md) retains a baseline
 that accepted all eight distrusted public keys and the same-source rejection on
 0.103.16. Windows/MSRV/GNU and compatibility gates pass; ten pinned-DB findings

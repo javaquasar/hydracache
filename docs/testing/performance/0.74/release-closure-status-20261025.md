@@ -15,6 +15,12 @@ pinned-database findings now remain. The [selected local manager snapshot and tr
 confirm systemd 257.13, not authenticated release or completion. All five closure
 packages are tracked; only recording the no-performance-claim scope is complete.
 
+The subsequent [trust-roots experiment](roots-security-result-20261026.md) is
+archived pending the explicit scope decision for four additional public CAs.
+Focused tests pass and its pinned-DB graph has eight findings, but the narrow
+trust-delta gate fails. The active graph is restored: ten findings still remain.
+This is not accepted security work, a new performance hypothesis or host admission.
+
 As of 2026-10-26, GET-owner is **terminally rejected for 0.74**, not waiting for
 another acceptance run. The release still has zero accepted performance
 proposals, no frozen C74, and no production server admission. Isolated diagnostic

@@ -1,0 +1,135 @@
+"""Retain catalog baselines, exact test-only edges and two-package repair."""
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+import tomllib
+
+ROOT = Path(__file__).resolve().parent.parent
+RAW = ROOT/'target/roots-patch-20261026'
+BASELINE = ROOT/'target/roots-baseline-inputs-20261026'
+OUT = ROOT/'docs/testing/performance/0.74/local-runs/roots-security-20261026'
+PHASES = ('roots-baseline-resolve', 'roots-baseline', 'roots-baseline-order-corrected',
+    'roots-baseline-policy-corrected', 'roots-update', 'roots-select-certs', 'roots-candidate',
+    'roots-msrv', 'roots-linux', 'roots-server', 'roots-resp-all', 'roots-policy',
+    'roots-check', 'roots-clippy', 'roots-format', 'roots-doc', 'roots-contract',
+    'roots-catalog-delta', 'roots-catalog-delta-observed', 'roots-trust-inventory')
+base = subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+test = 'crates/hydracache-redis-compat/tests/tls_roots_security_074.rs'
+manifest = 'crates/hydracache-redis-compat/Cargo.toml'
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def git(name):
+    return subprocess.check_output(['git','show',base+':'+name],cwd=ROOT)
+
+
+original = tomllib.loads(git('Cargo.lock').decode())
+baseline = tomllib.loads((BASELINE/'Cargo.lock').read_text())
+current = tomllib.loads((ROOT/'Cargo.lock').read_text())
+without_edges = json.loads(json.dumps(baseline))
+node = next(p for p in without_edges['package'] if p['name'] == 'hydracache-redis-compat')
+for edge in ('webpki-root-certs', 'webpki-roots 0.26.11', 'webpki-roots 1.0.8'):
+    node['dependencies'].remove(edge)
+if without_edges != original:
+    raise ValueError('baseline changed more than three test-only edges')
+for name in ('webpki-root-certs', 'webpki-roots'):
+    before = next(p for p in baseline['package'] if p['name'] == name and p['version'] == '1.0.8')
+    after = next(p for p in current['package'] if p['name'] == name and p['version'] == '1.0.10')
+    before.update(version=after['version'], checksum=after['checksum'])
+baseline = json.loads(json.dumps(baseline).replace('"webpki-roots 1.0.8"', '"webpki-roots 1.0.10"'))
+if baseline != current:
+    raise ValueError('unrelated candidate lock delta')
+old_manifest = tomllib.loads((BASELINE/manifest).read_text())
+new_manifest = tomllib.loads((ROOT/manifest).read_text())
+for name in ('webpki-root-certs','webpki-roots'):
+    if old_manifest['dev-dependencies'][name] != '=1.0.8' or new_manifest['dev-dependencies'][name] != '1.0.10':
+        raise ValueError('unexpected dev floor')
+    old_manifest['dev-dependencies'][name] = '1.0.10'
+if old_manifest != new_manifest:
+    raise ValueError('unrelated package manifest delta')
+for name in ('webpki-root-certs','webpki-roots','webpki-roots-legacy'):
+    new_manifest['dev-dependencies'].pop(name)
+if new_manifest != tomllib.loads(git(manifest).decode()):
+    raise ValueError('new runtime dependency or feature delta')
+for name in ('Cargo.toml','deny.toml'):
+    if (ROOT/name).read_bytes().replace(b'\r\n',b'\n') != git(name):
+        raise ValueError('workspace or deny policy changed')
+if (ROOT/test).read_bytes() != (BASELINE/test).read_bytes():
+    raise ValueError('paired oracle changed')
+counts = {}
+for phase in PHASES:
+    result = json.loads((RAW/phase/'result.json').read_bytes())
+    expected = 101 if phase in ('roots-baseline','roots-baseline-order-corrected','roots-baseline-policy-corrected') else 1 if phase in ('roots-policy','roots-catalog-delta','roots-catalog-delta-observed') else 0
+    if result['exit'] != expected or result['outer_refusal'] is not None or not result['source_contract'] or not result['commit_unchanged']:
+        raise ValueError('first result differs: '+phase)
+    text = (RAW/phase/'stdout.log').read_text(encoding='utf-8')
+    rows = re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;',text)
+    if rows:
+        counts[phase] = dict(targets=len(rows),totals=[sum(int(r[i]) for r in rows) for i in range(5)])
+if '3 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out' not in (RAW/'roots-baseline-policy-corrected/stdout.log').read_text():
+    raise ValueError('corrected baseline differs')
+ids = sorted(set(re.findall(r'ID: (RUSTSEC-\d{4}-\d{4})',(RAW/'roots-policy/stderr.log').read_text(encoding='utf-8'))))
+expected_ids = ['RUSTSEC-2024-0449']+['RUSTSEC-2026-'+v for v in ('0367','0368','0369','0370','0371','0372','0386')]
+if ids != expected_ids:
+    raise ValueError('policy findings differ')
+qual = 'docs/testing/performance/0.74/qualification-manifest.toml'
+if sha((ROOT/qual).read_bytes()) != '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc':
+    raise ValueError('qualification changed')
+db = Path('C:/Users/ArturBuzov/.cargo/advisory-dbs/advisory-db-3157b0e258782691')
+if subprocess.check_output(['git','rev-parse','HEAD'],cwd=db,text=True).strip() != '84d943a6deeb8cc6c6f632531aaf4f1c62275239' or subprocess.check_output(['git','status','--porcelain'],cwd=db):
+    raise ValueError('advisory DB changed')
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+
+
+def take(name, raw):
+    digest = sha(raw)
+    dest = OUT/'objects'/digest
+    if not dest.exists():
+        with dest.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw),sha256=digest)
+
+
+for phase in PHASES:
+    for path in sorted((RAW/phase).iterdir()):
+        if path.is_file():
+            take('checks/'+phase+'/'+path.name,path.read_bytes())
+for path in sorted(BASELINE.rglob('*')):
+    if path.is_file():
+        take('baseline/'+path.relative_to(BASELINE).as_posix(),path.read_bytes())
+for name in ('Cargo.toml','Cargo.lock','deny.toml',manifest,test,qual):
+    take('source/'+name,(ROOT/name).read_bytes())
+for name in ('Cargo.toml','Cargo.lock',manifest):
+    take('original/'+name,git(name))
+for name in ('run-roots-step-20261026.py', 'capture-roots-baseline-20261026.py',
+    'capture-roots-first-resolution-20261026.py', 'attribute-roots-first-refusal-20261026.py',
+    'roots-first-oracle-20261026.rs','roots-order-oracle-20261026.rs',
+    'roots-first-resolution-20261026.lock', 'roots-catalog-attribution-20261026.json',
+    'roots-first-delta-auditor-20261026.py', 'audit-roots-catalog-delta-20261026.py',
+    'inventory-roots-trust-delta-20261026.py', 'roots-delta-observation-20261026.json',
+    'roots-trust-inventory-20261026.json',Path(__file__).name):
+    take('coordinator/'+name,(ROOT/'target'/name).read_bytes())
+registry = Path('C:/Users/ArturBuzov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f')
+for package in ('webpki-roots-1.0.8','webpki-root-certs-1.0.8','webpki-roots-1.0.10','webpki-root-certs-1.0.10'):
+    for name in ('src/lib.rs','LICENSE','.cargo_vcs_info.json','Cargo.toml'):
+        take('upstream/'+package+'/'+name,(registry/package/name).read_bytes())
+index = dict(schema='hc074-roots-security-v1',base_commit=base, counts=counts,
+    candidate_accepted=False,trust_scope_approved=False,
+    acceptance='awaiting operator decision on four additional upstream trust authorities',
+    same_corrected_oracle=True, preserved_initial_oracle_refusals=True,
+    initial_root_certs_1011_selected_but_not_tested=True, test_only_edges=3,
+    runtime_source_changed=False, original_checks_or_deadlines_changed=False,
+    advisory_database_commit='84d943a6deeb8cc6c6f632531aaf4f1c62275239',
+    remaining_advisories=ids,policy_pass=False,full_package_pass=False,
+    original_execution_proved=False,server=False,release_admitted=False,members=members)
+raw = (json.dumps(index,sort_keys=True,indent=2)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=sha(raw),members=len(members),counts=counts))

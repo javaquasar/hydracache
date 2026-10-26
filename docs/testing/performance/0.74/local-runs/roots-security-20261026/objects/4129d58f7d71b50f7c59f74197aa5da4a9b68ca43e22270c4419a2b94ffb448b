@@ -1,0 +1,51 @@
+"""Compare complete published trust catalogs without executing their code."""
+import ast
+from collections import Counter
+import hashlib
+import json
+from pathlib import Path
+import re
+
+ROOT = Path(__file__).resolve().parent.parent
+REGISTRY = Path('C:/Users/ArturBuzov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f')
+literal = r'b"(?:[^"\\]|\\.)*"'
+pattern = (r'TrustAnchor\s*\{\s*subject:\s*Der::from_slice\(('+literal+r')\),\s*'
+    r'subject_public_key_info:\s*Der::from_slice\(('+literal+r')\),\s*'
+    r'name_constraints:\s*(None|Some\(Der::from_slice\(('+literal+r')\)\))')
+
+
+def anchors(version):
+    raw = (REGISTRY/('webpki-roots-'+version)/'src/lib.rs').read_text()
+    found = re.findall(pattern,raw)
+    if len(found) != raw.count('subject_public_key_info: Der::from_slice('):
+        raise ValueError('incomplete anchor parser')
+    return Counter((ast.literal_eval(subject),ast.literal_eval(key),
+                    None if constraints == 'None' else ast.literal_eval(value))
+                   for subject,key,constraints,value in found)
+
+
+def certs(version):
+    raw = (REGISTRY/('webpki-root-certs-'+version)/'src/lib.rs').read_text()
+    found = re.findall(r'CertificateDer::from_slice\(('+literal+r')\)',raw)
+    if len(found) != raw.count('CertificateDer::from_slice('):
+        raise ValueError('incomplete DER parser')
+    return Counter(ast.literal_eval(value) for value in found)
+
+
+before, after = anchors('1.0.8'), anchors('1.0.10')
+removed, added = list((before-after).elements()),list((after-before).elements())
+if len(removed) != 1 or added or b'emSign ECC Root CA - G3' not in removed[0][0] or removed[0][2] is not None:
+    raise ValueError('unreviewed anchor policy delta')
+old, new = certs('1.0.8'),certs('1.0.10')
+removed_certs = list((old-new).elements())
+if len(removed_certs) != 1 or new-old or removed[0][1] not in removed_certs[0]:
+    raise ValueError('unreviewed DER catalog delta')
+result = dict(old_anchors=sum(before.values()),new_anchors=sum(after.values()),
+    old_certs=sum(old.values()),new_certs=sum(new.values()),removed_roots=1,added_roots=0,
+    surviving_anchors_and_constraints_identical=True,
+    removed_spki_sha256=hashlib.sha256(removed[0][1]).hexdigest(),
+    removed_der_sha256=hashlib.sha256(removed_certs[0]).hexdigest(),
+    policy_pass=False,release_admitted=False)
+with (ROOT/'target/roots-catalog-delta-20261026.json').open('x') as stream:
+    json.dump(result,stream,indent=2)
+print(json.dumps(result))

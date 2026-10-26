@@ -1,0 +1,25 @@
+"""Preserve exact corrected baseline inputs before the isolated catalog update."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT/'target/roots-baseline-inputs-20261026'
+OUT.mkdir(exist_ok=False)
+paths = ('Cargo.toml', 'Cargo.lock', 'deny.toml', 'crates/hydracache-redis-compat/Cargo.toml',
+         'crates/hydracache-redis-compat/tests/tls_roots_security_074.rs',
+         'docs/testing/performance/0.74/qualification-manifest.toml')
+result = {}
+for name in paths:
+    raw = (ROOT/name).read_bytes()
+    path = OUT/name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open('xb') as stream:
+        stream.write(raw)
+    result[name] = hashlib.sha256(raw).hexdigest()
+intent = json.loads((ROOT/'target/roots-patch-20261026/roots-baseline-policy-corrected/intent.json').read_bytes())
+if any(result[name] != intent['source'][name] for name in paths if name in intent['source']):
+    raise ValueError('baseline inputs changed')
+with (OUT/'hashes.json').open('x') as stream:
+    json.dump(result, stream, indent=2)
+print(dict(captured=len(result), baseline_exact=True))

@@ -1,0 +1,36 @@
+"""Read exact staged blob bytes, not autocrlf-normalized worktree comparisons."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+PACKET = ROOT/'docs/testing/performance/0.74/local-runs/roots-security-20261026'
+names = set()
+for directory in (PACKET, PACKET/'final-checks'):
+    if not (directory/'index.json').exists():
+        continue
+    index = json.loads((directory/'index.json').read_bytes())
+    names.add((directory/'index.json').relative_to(ROOT).as_posix())
+    for row in index['members'].values():
+        names.add((directory/'objects'/row['sha256']).relative_to(ROOT).as_posix())
+for name in ('verify.py', 'test_verify.py'):
+    names.add((PACKET/name).relative_to(ROOT).as_posix())
+ordered = sorted(names)
+raw = subprocess.check_output(['git','cat-file','--batch'], cwd=ROOT,
+    input=''.join(':'+name+'\n' for name in ordered).encode())
+offset = 0
+for name in ordered:
+    end = raw.index(b'\n', offset)
+    header = raw[offset:end].split()
+    if len(header) != 3 or header[1] != b'blob':
+        raise ValueError('missing staged blob: '+name)
+    length = int(header[2])
+    blob = raw[end+1:end+1+length]
+    expected = (ROOT/name).read_bytes()
+    if blob != expected or len(blob) != length or raw[end+1+length:end+2+length] != b'\n':
+        raise ValueError('staged bytes differ: '+name)
+    offset = end+2+length
+if offset != len(raw):
+    raise ValueError('extra batch output')
+print(dict(staged_blobs=len(ordered), byte_mismatches=0, release_admitted=False))

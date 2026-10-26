@@ -1,0 +1,49 @@
+//! Public root-catalog regression, not a certificate-chain exploit reproduction.
+//! Public emSign G3 SPKI from the published webpki-roots 1.0.8 catalog.
+use rustls::{pki_types::TrustAnchor, RootCertStore};
+
+const DISALLOWED_SPKI: &[u8] = b"0\x10\x06\x07*\x86H\xce=\x02\x01\x06\x05+\x81\x04\x00\"\x03b\x00\x04#\xa5\x0c\xb8-\x12\xf5(\xf3\xb1\xb2\xdd\xe2\x02\x12\x80\x9e9_IM\x9f\xc9%4Yt\xec\xbb\x06\x1c\xe7\xc0r\xaf\xe8\xae/\xe1AT\x87\x14\xa8J\xb2\xe8|\x82\xe6[j\xb5\xdc\xb3u\xce\x8b\x06\xd0\x86#\xbfF\xd5\x8e\x0f?\x04\xf4\xd7\x1c\x92~\xf6\xa5c\xc2\xf5_\x8e.O\xa1\x18\x19\x02+2\n\x82d}\x16\x93\xd1";
+
+fn bad_anchor(root: &TrustAnchor<'_>) -> bool {
+    root.subject_public_key_info.as_ref() == DISALLOWED_SPKI
+}
+
+#[test]
+fn bundled_anchor_catalog_does_not_trust_emsign_g3() {
+    assert!(!webpki_roots::TLS_SERVER_ROOTS.is_empty());
+    assert_eq!(DISALLOWED_SPKI.len(), 118);
+    assert!(!webpki_roots::TLS_SERVER_ROOTS.iter().any(bad_anchor));
+}
+
+#[test]
+fn bundled_der_catalog_does_not_contain_emsign_g3_public_key() {
+    assert!(!webpki_root_certs::TLS_SERVER_ROOT_CERTS.is_empty());
+    assert!(
+        !webpki_root_certs::TLS_SERVER_ROOT_CERTS.iter().any(|cert| {
+            cert.as_ref()
+                .windows(DISALLOWED_SPKI.len())
+                .any(|key| key == DISALLOWED_SPKI)
+        })
+    );
+}
+
+#[test]
+fn compatibility_shim_reexports_the_same_parent_without_its_own_trust_store() {
+    assert_eq!(
+        webpki_roots_legacy::TLS_SERVER_ROOTS,
+        webpki_roots::TLS_SERVER_ROOTS
+    );
+}
+
+#[test]
+fn complete_der_and_anchor_catalogs_load_into_the_normal_verifier_store() {
+    let mut from_der = RootCertStore::empty();
+    for cert in webpki_root_certs::TLS_SERVER_ROOT_CERTS {
+        from_der.add(cert.clone()).unwrap();
+    }
+    let from_anchors = RootCertStore {
+        roots: webpki_roots::TLS_SERVER_ROOTS.to_vec(),
+    };
+    assert!(!from_der.is_empty());
+    assert_eq!(from_der.roots, from_anchors.roots);
+}

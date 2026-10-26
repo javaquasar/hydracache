@@ -1,0 +1,9 @@
+{
+  "exit": 1,
+  "outer_refusal": "outer-timeout",
+  "wall_seconds": 181.57473580003716,
+  "source_unchanged": true,
+  "commit_unchanged": true,
+  "free_bytes": 13729067008,
+  "release_admitted": false
+}

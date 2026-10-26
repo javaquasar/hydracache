@@ -1,0 +1,24 @@
+"""Check docs with the artifact just built by the separate contract command."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+receipt = ROOT/'target/roots-final-20261026/contract'
+result = json.loads((receipt/'result.json').read_bytes())
+intent = json.loads((receipt/'intent.json').read_bytes())
+if (result['exit'] != 0 or result['outer_refusal'] is not None
+        or not result['source_unchanged'] or not result['commit_unchanged']
+        or intent['argv'] != ['cargo', 'xtask', 'performance-contract-check', '--release', '0.74']):
+    raise SystemExit('no successful separate build/contract receipt')
+exe = ROOT/'target/debug/xtask.exe'
+if exe.stat().st_mtime_ns < (receipt/'intent.json').stat().st_mtime_ns:
+    raise SystemExit('artifact predates the successful separate build')
+before = hashlib.sha256(exe.read_bytes()).hexdigest()
+print(json.dumps(dict(artifact=str(exe), artifact_sha256=before,
+    first_cargo_doc_build_refusal_preserved=True, bound_seconds=180)), flush=True)
+code = subprocess.call([str(exe), 'doc-check'], cwd=ROOT)
+if hashlib.sha256(exe.read_bytes()).hexdigest() != before:
+    raise SystemExit('artifact changed during documentation check')
+raise SystemExit(code)
