@@ -1,0 +1,50 @@
+
+running 2 tests
+test custody_observer_adapter_refuses_missing_duplicate_and_preserves_unrelated_drift ... ok
+test custody_observation_hooks_reconstruct_all_preceding_469_bodies has been running for over 60 seconds
+test custody_observation_hooks_reconstruct_all_preceding_469_bodies ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 92.61s
+
+
+running 3 tests
+test document_scratch_reference_and_prototype_preserve_complete_sender_and_pidfd_checks ... ok
+test legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scratch_shapes ... FAILED
+test document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies has been running for over 60 seconds
+test document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies ... ok
+
+failures:
+
+---- legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scratch_shapes stdout ----
+
+thread 'legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scratch_shapes' (53672) panicked at crates\xtask\tests\support\document_scratch_inputs.rs:15:5:
+unreviewed document scratch reader: crates/xtask/tests/fresh_kernel_cost_074.rs
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scratch_shapes
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 96.28s
+
+
+running 16 tests
+test guard_path_comparison_refuses_missing_duplicate_and_already_changed_baselines ... ok
+test helper_model_preserves_nested_order_bytes_and_unwind_without_additive_claims ... ok
+test helper_instrumentation_erases_only_exact_observers_and_preserves_twenty_cases ... ok
+test helper_observer_fixture_child ... ok
+test helper_observer_is_default_off_and_does_not_read_fixture_inputs ... ok
+test history_namespace_cost_child ... ok
+test helper_model_refuses_unknown_operations_budgets_reverse_time_and_bad_retirement ... ok
+test history_namespace_protocol_and_unrelated_input_are_exact ... ok
+test history_namespace_still_refuses_missing_and_duplicate_namespace_hook ... ok
+test history_prefix_cost_child ... ok
+test history_prefix_protocol_and_unrelated_input_are_exact ... ok
+test normalization_cost_child ... ok
+test normalization_cost_protocol_keeps_separate_scopes ... ok
+test guard_path_comparison_is_isolated_and_original_installation_stays_exact ... ok
+test guard_path_comparison_leaves_other_reader_expectations_unchanged ... ok
+test history_namespace_matches_independent_frozen_sources_and_keeps_body_drift ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.02s
+

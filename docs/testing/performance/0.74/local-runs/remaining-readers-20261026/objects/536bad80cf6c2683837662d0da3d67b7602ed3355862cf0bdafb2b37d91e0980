@@ -1,0 +1,84 @@
+
+running 6 tests
+test current_fixture_entry_keeps_fresh_current_bytes_separate_from_old_body_checks ... ok
+test five_readers_are_exact_declared_edits_of_independent_fixed_sources ... ok
+test partial_duplicate_wrong_branch_and_assertion_drift_cannot_enter_old_reader_views ... ok
+test every_original_case_and_assertion_survives_the_two_explicit_input_substitutions ... ok
+test terminal_main_text_matches_fixed_producers_without_compiling_the_old_runtime ... ok
+test all_eighteen_entry_inputs_and_current_mutants_retain_original_phase_checks ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.47s
+
+
+running 6 tests
+test lexical_selection_is_narrow_and_unknown_inputs_remain_byte_identical ... ok
+test exactly_one_ordered_observation_preserves_io_errors_without_caching_success ... ok
+test current_stale_partial_duplicate_and_unrelated_document_mutations_refuse ... ok
+test only_the_two_current_documents_reconstruct_the_exact_reviewed_phase ... ok
+test preceding_owned_case_proof_accepts_only_the_exact_extended_current_reader ... ok
+test all_eleven_callers_preserve_complete_original_cases_and_predicates ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.63s
+
+
+running 7 tests
+test audit_changes_only_three_input_joins_and_preserves_every_original_predicate ... ok
+test successful_addition_validation_does_not_cache_body_or_index_observations ... ok
+test main_retains_old_full_body_gate_and_all_twelve_current_reads_reach_source ... ok
+test stale_partial_duplicate_and_unrelated_current_source_edits_refuse ... ok
+test twelve_current_sources_reconstruct_exact_independent_predecessors ... ok
+test all_fourteen_additions_require_independent_bodies_and_exact_index_entries ... ok
+test unknown_paths_are_not_approved_or_transformed_and_legacy_routes_stay_intact ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.52s
+
+
+running 1 test
+test current_tree_input_frontier_is_fully_accounted_without_path_exclusions has been running for over 60 seconds
+test current_tree_input_frontier_is_fully_accounted_without_path_exclusions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 60.29s
+
+
+running 4 tests
+test runtime_contract_reader_changes_only_the_current_history_input ... ok
+test current_tree_reader_retains_entire_prior_gate_and_unknown_source_assertions ... ok
+test all_nine_current_inputs_are_exact_declared_patches_not_assertion_waivers ... ok
+test all_eighty_one_declared_sources_require_exact_bytes_index_and_regular_files ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 25.55s
+
+
+running 2 tests
+test fresh_status_reconstructs_all_changed_old_bodies_and_hooks ... ok
+test fresh_status_adapter_refuses_missing_duplicate_and_other_validation_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.44s
+
+
+running 4 tests
+test activation_ingress_has_no_clock_descriptor_manager_or_unknown_environment_cleanup ... ok
+test activation_ingress_compatibility_registration_preserves_every_old_format_byte ... ok
+test activation_ingress_only_two_exact_hooks_change_the_binary_entry ... ok
+test activation_ingress_is_explicit_and_keeps_the_complete_old_kernel ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.19s
+
+
+running 4 tests
+test owned_case_whole_helper_pins_reject_mutation_before_any_compatibility_view ... ok
+test owned_case_bootstrap_reader_changes_one_read_and_keeps_every_assertion ... ok
+test authority_context_reader_adapts_only_the_exact_reviewed_registry_input ... ok
+test owned_case_exact_current_additions_preserve_every_old_body_and_reader ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.01s
+
+
+running 4 tests
+test selected_kernel_and_compat_join_use_independent_producers_without_extra_reads ... ok
+test stale_partial_duplicate_and_unrelated_caller_edits_refuse_after_success ... ok
+test six_exact_caller_constructions_preserve_all_eighteen_cases_and_assertions ... ok
+test immutable_nine_eighty_one_gate_still_refuses_new_caller_without_explicit_join ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.11s
+

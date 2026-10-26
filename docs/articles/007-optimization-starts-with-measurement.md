@@ -20498,3 +20498,43 @@ progress in package preparation, not a throughput result: other reader targets
 and the full source/effect graph still need review before the next complete
 package run. The audit's historical protected scope is unchanged, so new sources
 outside that scope cannot borrow its passing verdict as execution clearance.
+
+### Validate the caller version without weakening its original validator
+
+The [remaining reader baseline](../testing/performance/0.74/remaining-readers-result-20261026.md)
+passes 25 of 27 cases. Custody preparation, document scratch and package
+diagnostics already consume the earlier repaired source phase correctly. Only
+fresh-kernel's direct kernel-source input and activation-ingress's COMPAT suffix
+still fail. Fixing all five targets indiscriminately would add changes where
+their current evidence shows none are needed.
+
+The repair preserves the fresh-kernel loader's conditional reads, adding one
+exact kernel-source projection after the existing observation. Activation changes
+one document read before its unchanged guards. Both use independently pinned
+current/predecessor producers; no runtime is rewritten and no live kernel or
+activation manager is exercised by these source assertions.
+
+There is a second boundary: the modified reader is itself an input to old
+whole-source validators. An explicit successor facade verifies that entire new
+caller, reconstructs its declared prior version and still calls the original
+validator. The original API continues to reject the new caller directly; a
+control proves that refusal. Unknown or partially changed callers cannot borrow
+the successor's permission. The old nine patches, 81 additions and their
+implementation stay byte-identical.
+
+Two preceding proof-reader joins account for those exact consumer changes.
+Separate construction and AST controls inspect the actual current files and
+retain all eighteen old cases and assertion tokens in the modified test files.
+The first candidate passes 38 cases but exposes unused helper warnings. A small
+composition correction and full addition-API controls remove them without lint
+exceptions. The following control cohort then catches document-scratch's own
+exact-caller boundary: twenty cases pass and one refuses the modified reader.
+That first result stays. An explicit successor before its original predicate
+closes the boundary; both old scratch-reader API cases also join the coverage.
+The first formatter also requires a one-line wrap in the new proof reader.
+Its refusal stays; exact source reconstruction and whole token-stream equality
+verify that correction. Final current/MSRV coverage is then 61 cases each in
+one invocation per compiler on the formatted source.
+That closes two
+specific compatibility failures, not the interrupted package. The next step is
+a new complete source/effect review, followed by an actual full package result.

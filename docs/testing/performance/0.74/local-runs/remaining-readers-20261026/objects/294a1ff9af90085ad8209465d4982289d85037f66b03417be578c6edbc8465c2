@@ -1,0 +1,16 @@
+diff --git a/crates/xtask/tests/fresh_kernel_cost_074.rs b/crates/xtask/tests/fresh_kernel_cost_074.rs
+index c9f6630e6..8eee9bd25 100644
+--- a/crates/xtask/tests/fresh_kernel_cost_074.rs
++++ b/crates/xtask/tests/fresh_kernel_cost_074.rs
+@@ -20,6 +20,11 @@ fn read(path: &str) -> String {
+     )
+     .unwrap()
+     .replace('\r', "");
++    let raw = if path == "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs" {
++        runtime::successor::project(path, raw)
++    } else {
++        raw
++    };
+     guard::pid_path::custody_cost::document_scratch::normalize(path, &raw)
+ }
+ fn old(path: &str) -> String {

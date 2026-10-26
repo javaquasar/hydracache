@@ -102,6 +102,13 @@ unchanged protected selection. Twenty-one cases pass per compiler, including
 the complete audit and old 9/81 controls. Other current reader targets and a new
 complete source/effect review remain; this is not a full package pass.
 
+The [remaining reader repair](remaining-readers-result-20261026.md) subsequently
+closes fresh-kernel and activation-ingress's two current failures. The three
+other selected reader targets already pass and are rerun as controls. Sixty-one
+cases pass per compiler, including the complete audit and old proof chain.
+No validator/ledger is relaxed. The next boundary is a new exact whole-package
+source/effect review, followed by the complete unchanged-bound package command.
+
 Complete a newly reviewed whole-package replay within the unchanged
 780-second/four-thread guard, including the previously unstarted suffix. The
 separate 321-case performance-contract pass and repaired focused cohorts do not

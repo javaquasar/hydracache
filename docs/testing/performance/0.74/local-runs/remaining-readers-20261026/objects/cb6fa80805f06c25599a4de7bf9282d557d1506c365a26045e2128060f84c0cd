@@ -1,0 +1,20 @@
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\bootstrap-doc-reader-074\reader.rs:3:
+ pub mod contract;
+ pub fn read(path: &str, raw: String) -> String {
+     if path == "crates/xtask/tests/current_tree_reader_074.rs" {
+-        return remaining_phase::previous(path, &raw).expect("exact next current-tree reader phase");
++        return remaining_phase::previous(path, &raw)
++            .expect("exact next current-tree reader phase");
+     }
+     if path != "crates/xtask/tests/owned_case_074.rs" {
+         return raw;
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\bootstrap-doc-reader-074\reader.rs:3:
+ pub mod contract;
+ pub fn read(path: &str, raw: String) -> String {
+     if path == "crates/xtask/tests/current_tree_reader_074.rs" {
+-        return remaining_phase::previous(path, &raw).expect("exact next current-tree reader phase");
++        return remaining_phase::previous(path, &raw)
++            .expect("exact next current-tree reader phase");
+     }
+     if path != "crates/xtask/tests/owned_case_074.rs" {
+         return raw;

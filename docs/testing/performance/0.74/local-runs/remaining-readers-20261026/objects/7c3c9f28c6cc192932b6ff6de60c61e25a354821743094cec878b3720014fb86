@@ -1,0 +1,9 @@
+{
+  "derived_data_not_new_run": true,
+  "base": "interim-source/crates/xtask/tests/remaining_readers_074.rs",
+  "changes": [
+    "six_exact to seven_exact case name",
+    "append zero helper test count"
+  ],
+  "original_raw_source_receipts_matched": true
+}

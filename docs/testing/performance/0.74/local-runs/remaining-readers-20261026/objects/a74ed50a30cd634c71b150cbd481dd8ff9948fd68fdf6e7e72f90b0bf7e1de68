@@ -1,0 +1,28 @@
+diff --git a/crates/xtask/tests/current_frontier_074.rs b/crates/xtask/tests/current_frontier_074.rs
+index 23a165a47..aa1921fb0 100644
+--- a/crates/xtask/tests/current_frontier_074.rs
++++ b/crates/xtask/tests/current_frontier_074.rs
+@@ -1,5 +1,5 @@
+ //! Fixed source accounting cannot revive a rejected runtime or authorize execution.
+-#[path = "support/current_tree_input.rs"]
++#[path = "../../../tools/remaining-readers-074/inputs.rs"]
+ mod current_inputs;
+ #[path = "../../../tools/current-frontier-074/reader.rs"]
+ mod frontier;
+@@ -12,9 +12,14 @@ mod storage_contract;
+ use frontier::{additions, contract};
+ const BASE: &str = "bf352a1dfbe3040af9ce058a5d42efe55202db62";
+ fn raw(path: &str) -> String {
+-    std::fs::read_to_string(runtime::root().join(path))
++    let raw = std::fs::read_to_string(runtime::root().join(path))
+         .unwrap()
+-        .replace("\r\n", "\n")
++        .replace("\r\n", "\n");
++    if path == "crates/xtask/tests/current_tree_input_audit_074.rs" {
++        current_inputs::phase::previous(path, &raw).expect("exact next audit reader phase")
++    } else {
++        raw
++    }
+ }
+ #[test]
+ fn twelve_current_sources_reconstruct_exact_independent_predecessors() {

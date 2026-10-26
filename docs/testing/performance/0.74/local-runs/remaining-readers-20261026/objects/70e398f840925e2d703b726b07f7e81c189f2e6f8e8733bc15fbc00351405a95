@@ -1,0 +1,89 @@
+{
+  "schema": "hc074-remaining-readers-v1",
+  "baseline": "3e7e0aa343ed51f99651761f9bb7b0b10efd359a",
+  "rows": [
+    {
+      "path": "crates/xtask/tests/fresh_kernel_cost_074.rs",
+      "before_sha256": "c3a5690ec07c0dc6eb6b139472c27059bda3d9bec944578878a0fa28f8f254c8",
+      "after_sha256": "5d96ab2d3de23744fcc8970efcf8fd6add4a62bb7af8eec3deccb649a095667b",
+      "edits": [
+        {
+          "before": "    guard::pid_path::custody_cost::document_scratch::normalize(path, &raw)",
+          "after": "    let raw = if path == \"tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs\" {\n        runtime::successor::project(path, raw)\n    } else {\n        raw\n    };\n    guard::pid_path::custody_cost::document_scratch::normalize(path, &raw)",
+          "count": 1
+        }
+      ],
+      "append": ""
+    },
+    {
+      "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+      "before_sha256": "f3b9054fd5b54c6ba0242b60ab3eb5eb4db1eb6e35c08e18ce998c325c24bbe1",
+      "after_sha256": "e895b3f0fe09678d39201840124742a18ce2aea98045006c1dd3fe90c9a53541",
+      "edits": [
+        {
+          "before": "    let raw = std::fs::read_to_string(root.join(\"docs/COMPAT.md\"))",
+          "after": "    let raw = bootstrap_docs::read_to_string(root.join(\"docs/COMPAT.md\"))",
+          "count": 1
+        }
+      ],
+      "append": "\n#[path = \"../../../tools/bootstrap-doc-reader-074/io.rs\"]\nmod bootstrap_docs;\n"
+    },
+    {
+      "path": "crates/xtask/tests/current_tree_reader_074.rs",
+      "before_sha256": "5becf74911ec063ee3498f833373898bef03ce0f31d83cd2abe2e06940fb10a4",
+      "after_sha256": "8354282f75a1cff07b5bdad8c5ecf50e4fb50d24e26a6d5a53935d4f8669b89d",
+      "edits": [
+        {
+          "before": "#[path = \"support/current_tree_input.rs\"]",
+          "after": "#[path = \"../../../tools/remaining-readers-074/inputs.rs\"]",
+          "count": 1
+        }
+      ],
+      "append": ""
+    },
+    {
+      "path": "crates/xtask/tests/current_tree_input_audit_074.rs",
+      "before_sha256": "c5d85fb42cc9ee6754fc00398923757cb0939a965750a588fdb0cc0de2738530",
+      "after_sha256": "99f97a36d1bc3e974dda573da731875f1d7af511dceb30aa7c6e2bcc101418cb",
+      "edits": [
+        {
+          "before": "#[path = \"support/current_tree_input.rs\"]",
+          "after": "#[path = \"../../../tools/remaining-readers-074/inputs.rs\"]",
+          "count": 1
+        }
+      ],
+      "append": ""
+    },
+    {
+      "path": "crates/xtask/tests/current_frontier_074.rs",
+      "before_sha256": "4e091a52328a6eeda85d8a1cc13f0c633c5bdf7b5b14cd796914e8ee37a2027a",
+      "after_sha256": "62b2b19f1c71cd9d3328e63aac6c300cdf85f80204047bb4ffac5c02a8a3c784",
+      "edits": [
+        {
+          "before": "#[path = \"support/current_tree_input.rs\"]",
+          "after": "#[path = \"../../../tools/remaining-readers-074/inputs.rs\"]",
+          "count": 1
+        },
+        {
+          "before": "fn raw(path: &str) -> String {\n    std::fs::read_to_string(runtime::root().join(path))\n        .unwrap()\n        .replace(\"\\r\\n\", \"\\n\")\n}",
+          "after": "fn raw(path: &str) -> String {\n    let raw = std::fs::read_to_string(runtime::root().join(path))\n        .unwrap()\n        .replace(\"\\r\\n\", \"\\n\");\n    if path == \"crates/xtask/tests/current_tree_input_audit_074.rs\" {\n        current_inputs::phase::previous(path, &raw).expect(\"exact next audit reader phase\")\n    } else {\n        raw\n    }\n}",
+          "count": 1
+        }
+      ],
+      "append": ""
+    },
+    {
+      "path": "tools/bootstrap-doc-reader-074/reader.rs",
+      "before_sha256": "5b29a3f1f32f36c0ab04c7bbfcb9d63e4c2de7c87e577418a815600d42934039",
+      "after_sha256": "e7ea72cd4cf83607a6e89726f6c36d466d509dc98c78c1c09dae21bee308a195",
+      "edits": [
+        {
+          "before": "pub fn read(path: &str, raw: String) -> String {\n",
+          "after": "pub fn read(path: &str, raw: String) -> String {\n    if path == \"crates/xtask/tests/current_tree_reader_074.rs\" {\n        return remaining_phase::previous(path, &raw).expect(\"exact next current-tree reader phase\");\n    }\n",
+          "count": 1
+        }
+      ],
+      "append": "\n#[path = \"../remaining-readers-074/contract.rs\"]\nmod remaining_phase;\n"
+    }
+  ]
+}

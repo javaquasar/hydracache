@@ -1,0 +1,363 @@
+{
+  "schema": "hc074-current-frontier-v1",
+  "source": "33c54b0cda8c330b115009cdf092ad002077cedf",
+  "baseline": "bf352a1dfbe3040af9ce058a5d42efe55202db62",
+  "rows": [
+    {
+      "path": "crates/hydracache-redis-compat/Cargo.toml",
+      "revision": "a67a5299ab335424e9b11330dc06bd749ea9b859",
+      "previous_revision": "33c54b0cda8c330b115009cdf092ad002077cedf",
+      "current_sha256": "86548e7516a7a73b05099f4c7ff7342949d5656f748b914c298dc02997297b3b",
+      "previous_sha256": "a842f6194e5dacba70872596129116cea232cbcc55906572142662408baf63e2",
+      "patches": [
+        {
+          "offset": 399,
+          "current": "# Retired after full-D3 mTLS allocation rejection. Compatibility tombstone only;\n# this feature cannot activate ownership transfer, including all-feature builds.\n",
+          "previous": "# D2 hypothesis only; no numerical admission or default activation.\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/hydracache-redis-compat/README.md",
+      "revision": "a67a5299ab335424e9b11330dc06bd749ea9b859",
+      "previous_revision": "33c54b0cda8c330b115009cdf092ad002077cedf",
+      "current_sha256": "ea6b0d6bcf142be9acd6e5a5fcfdf658729db23b53e36f86671ca674433d7124",
+      "previous_sha256": "b7efc786f4ee5bfb1a75d01f89e602d5cea1130fef6f6562624fe7f188e642c2",
+      "patches": [
+        {
+          "offset": 9475,
+          "current": "## Retired 0.74 private GET ownership experiment\n",
+          "previous": "## Default-off 0.74 private GET ownership experiment\n"
+        },
+        {
+          "offset": 9525,
+          "current": "`experimental-resp-get-owner-074` is an empty compatibility tombstone after the\n[terminal real-network D3 rejection](../../docs/testing/performance/0.74/get-owner-full-d3-terminal-result-20261025.md).\nIt cannot enable the candidate, including in all-feature builds. The runtime\nalways uses the canonical borrowed reducer. Historical consuming-helper\ndifferential/property tests remain under `cfg(test)` only; they are not linked\ninto product runtime. AUTH, isolation, expiration, consistency, durability,\nencoder/write/flush boundaries and native APIs are unchanged.\n",
+          "previous": "`experimental-resp-get-owner-074` is a separate D2 hypothesis, not an accepted\nrelease optimization. Only one successful nonempty GET response with\n`capacity == len` transfers its existing Vec into the private executor result.\nEvery other shape uses the canonical borrowed reducer; the public borrowed API,\nencoder, command/write/flush frontier and native API are unchanged. No response\nbuffer is pooled or retained between commands. The feature is empty and off by\ndefault; no throughput, allocation percentage or native nonregression is claimed.\n"
+        },
+        {
+          "offset": 10375,
+          "current": "The same guards run without the tombstone feature. Existing feature-on CI steps\nnow also exercise the canonical runtime, never reactivate the rejected candidate.\nThe historical [D2 design](../../docs/testing/performance/0.74/get-response-owner-design.md)\nand every negative receipt remain available; unrun acceptance gates are not green.\n",
+          "previous": "The same tests run without the feature as the canonical build. Ordinary CI is\nenrolled for feature-on semantics; a hosted pass must be verified separately.\nSee [D2 design and remaining numerical gates](../../docs/testing/performance/0.74/get-response-owner-design.md).\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/hydracache-redis-compat/src/get_response_owner_074.rs",
+      "revision": "a67a5299ab335424e9b11330dc06bd749ea9b859",
+      "previous_revision": "33c54b0cda8c330b115009cdf092ad002077cedf",
+      "current_sha256": "8bcf3db7aba9af2c9ae330cd637ade0ed3f174a8522071a4f3d2c026ceac2524",
+      "previous_sha256": "76f105e44cae98bc742681409edcebbd7467e06aa15fe208104b3f68ed538d9f",
+      "patches": [
+        {
+          "offset": 0,
+          "current": "//! Retired D2 hypothesis, retained only under cfg(test) after negative full D3.\n//! These historical differential/property fixtures never enter product runtime.\n",
+          "previous": "//! Off-by-default D2 experiment. Only private, length-sized successful GET\n//! responses transfer ownership; all other cases use the public borrowed oracle.\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/hydracache-redis-compat/src/lib.rs",
+      "revision": "a67a5299ab335424e9b11330dc06bd749ea9b859",
+      "previous_revision": "33c54b0cda8c330b115009cdf092ad002077cedf",
+      "current_sha256": "2dfc0c2c338462e48feb0d46d53ab9970307a51ebcffaf5b1f62bb3b3ed6396d",
+      "previous_sha256": "8ce15adb039180000a9a558c234ec46ba40dab6a60ee326d3d9cb3dce8a00498",
+      "patches": [
+        {
+          "offset": 1567,
+          "current": "#[cfg(test)]\n",
+          "previous": "#[cfg(any(test, feature = \"experimental-resp-get-owner-074\"))]\n"
+        },
+        {
+          "offset": 51975,
+          "current": "        match plan.reduce(&responses) {\n",
+          "previous": "        #[cfg(feature = \"experimental-resp-get-owner-074\")]\n        let reduced = get_response_owner_074::reduce(&plan, responses);\n        #[cfg(not(feature = \"experimental-resp-get-owner-074\"))]\n        let reduced = plan.reduce(&responses);\n        match reduced {\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/xtask/tests/performance_contract_074.rs",
+      "revision": "a67a5299ab335424e9b11330dc06bd749ea9b859",
+      "previous_revision": "37db65f68e67ed7c0ee0f1cc84fed1c30bf9822a",
+      "current_sha256": "30dc4166f86f71a2028b0adc3287e898920adf18c92a45cb7046ab67663f9207",
+      "previous_sha256": "b99acaf03257db18bb5f52e53ed948bf9ca26250e9193c0cfeeabb4725fa5906",
+      "patches": [
+        {
+          "offset": 342962,
+          "current": "// Negative D3 removed the runtime selector. Only the exact historical test-only\n// module projection may be removed; the canonical runtime digest is unchanged.\n",
+          "previous": "// Only the reviewed experiment's exact two source hunks may be removed to\n// reconstruct the same full canonical runtime fingerprint. Unknown edits fail.\n"
+        },
+        {
+          "offset": 343178,
+          "current": "    let module = \"#[cfg(test)]\\nmod get_response_owner_074;\\n\\n\";\n    assert!(!source.contains(\"get_response_owner_074::reduce\"));\n    assert!(!source.contains(\"experimental-resp-get-owner-074\"));\n",
+          "previous": "    let module = \"#[cfg(any(test, feature = \\\"experimental-resp-get-owner-074\\\"))]\\nmod get_response_owner_074;\\n\\n\";\n    let selector = concat!(\n        \"        #[cfg(feature = \\\"experimental-resp-get-owner-074\\\")]\\n\",\n        \"        let reduced = get_response_owner_074::reduce(&plan, responses);\\n\",\n        \"        #[cfg(not(feature = \\\"experimental-resp-get-owner-074\\\"))]\\n\",\n        \"        let reduced = plan.reduce(&responses);\\n\",\n        \"        match reduced {\\n\",\n    );\n"
+        },
+        {
+          "offset": 343486,
+          "current": "        source.replace(module, \"\")\n",
+          "previous": "        assert_eq!(source.matches(selector).count(), 1);\n        source\n            .replace(module, \"\")\n            .replace(selector, \"        match plan.reduce(&responses) {\\n\")\n"
+        },
+        {
+          "offset": 347487,
+          "current": "        \"only the retained historical test-only module may exist\"\n",
+          "previous": "        \"the exact two enrolled hunks must exist\"\n"
+        },
+        {
+          "offset": 355414,
+          "current": "    // the retired hypothesis's test-only module declaration. No old Git object\n    // is required in shallow CI. Both runtime candidates stay disabled.\n",
+          "previous": "    // the new preregistered experiment's two exact cfg hunks. No old Git object\n    // is required in shallow CI. Scratch stays removed; unknown edits fail.\n"
+        }
+      ]
+    },
+    {
+      "path": "docs/testing/performance/0.74/proposal-registry.toml",
+      "revision": "a67a5299ab335424e9b11330dc06bd749ea9b859",
+      "previous_revision": "33c54b0cda8c330b115009cdf092ad002077cedf",
+      "current_sha256": "1d88f321bbcdb9c7607378c77c004947132eb6e256a26393f2e844ca7a46bcd2",
+      "previous_sha256": "64f568bcf9056c3a1c51ed5d314764fd1e402ed55e494f1a6a26daf3c48b0347",
+      "patches": [
+        {
+          "offset": 6243,
+          "current": "state = \"rejected-full-d3-mtls-allocation-floor-runtime-disabled\"\n",
+          "previous": "state = \"d3a-screen-passed-full-d3-controls-pending\"\n"
+        },
+        {
+          "offset": 9738,
+          "current": "runtime_present = false\nfull_d3_terminal_rejection = true\nfull_d3_allocation_attempts = 240\nfull_d3_allocation_source_sha = \"be0499a8cb0a2ad0b7328d6ac0cf6227114cebcc\"\nfull_d3_allocation_contract = \"get-owner-full-d3-allocation-v2-contract.toml\"\nfull_d3_result = \"get-owner-full-d3-terminal-result-20261025.md\"\nfull_d3_evidence = \"local-runs/get-owner-full-d3-network-allocation-20261025/index.json\"\nfull_d3_timing_or_retention_claims = false\nretired_feature_is_compatibility_tombstone = true\n",
+          "previous": "runtime_present = true\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/get-owner-scheduled-controls-074/Cargo.toml",
+      "revision": "8c5d4810837f91483625dff119edd5513c605e04",
+      "previous_revision": "33c54b0cda8c330b115009cdf092ad002077cedf",
+      "current_sha256": "5db66cd792c79f62027c73685da0e445a33dec6928edc06d14400f74c3822c79",
+      "previous_sha256": "e07b8b341519369e96860e2213452903af1d027d0ff0fb95c6743b640c5371ae",
+      "patches": [
+        {
+          "offset": 442,
+          "current": "\n[[bin]]\nname = \"full-d3-allocation-074\"\npath = \"src/bin/full_d3_allocation.rs\"\nrequired-features = [\"allocation-diagnostics\"]\n",
+          "previous": ""
+        }
+      ]
+    },
+    {
+      "path": "tools/get-owner-scheduled-controls-074/README.md",
+      "revision": "a67a5299ab335424e9b11330dc06bd749ea9b859",
+      "previous_revision": "33c54b0cda8c330b115009cdf092ad002077cedf",
+      "current_sha256": "25fda9905da24bf2942f6e09cb8a8d1349d5fdd52ae5c4d85d1f00da552cc81d",
+      "previous_sha256": "e56bf7b85db31f793a838280dd00564ebc610f7a8fd323fc812c41743a07cdb8",
+      "patches": [
+        {
+          "offset": 46,
+          "current": "\nGET-owner is now [terminally rejected for 0.74](../../docs/testing/performance/0.74/get-owner-full-d3-terminal-result-20261025.md).\nThe sealed 240-process real-network allocation stage fails the required mTLS\nfloor; the runtime selector is disabled. The empty Cargo feature is a compatibility\ntombstone, not proof of active ownership transfer. Current `full-d3-allocation-074`\nrefuses fresh `--run` before opening a config; `--validate` and offline replay\nremain available. Historical source/image receipts are never rebuilt or relabeled.\nThe `get_owner_feature` field in legacy reports denotes the compiled Cargo flag,\nnot current-source activation or permission to reopen the retired proposal.\n",
+          "previous": ""
+        },
+        {
+          "offset": 1373,
+          "current": "\nFresh-process diagnostic PKI now has explicit fixed-material modes:\n`--generate-material PATH`, `--validate-material PATH MATERIAL_SHA256` and\n`--run-with-material CONFIG BINARY_SHA256 SOURCE_SHA PATH MATERIAL_SHA256`.\nGenerate once in a private coordinator directory, retain only the public seal,\nand use the same pinned bytes for paired secure processes. Generation never\noverwrites; validation starts no fixture. Unix files must be private, regular,\nnonsymlink and single-link. No production trust or Windows ACL enrollment is\nimplied. Old `--run`, ephemeral generation and its envelope stay unchanged.\nThe coordinator still must prove matching dataset/material/source/placement and\nall numerical gates. See the\n[current prerequisite results](../../docs/testing/performance/0.74/get-owner-full-d3-readiness-result-20261025.md).\n",
+          "previous": ""
+        },
+        {
+          "offset": 3961,
+          "current": "time divided by depth. RESP3/mTLS semantic adapters are available; their later\nsealed allocation comparison is recorded in the terminal result above.\n",
+          "previous": "time divided by depth. RESP3/mTLS semantic adapters are now available; sealed\nnumerical execution remains absent.\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/get-owner-scheduled-controls-074/src/bin/timing_controls.rs",
+      "revision": "be0499a8cb0a2ad0b7328d6ac0cf6227114cebcc",
+      "previous_revision": "33c54b0cda8c330b115009cdf092ad002077cedf",
+      "current_sha256": "47c0098334ab5d74c48b787450e30da2c976d5d81a678897f5b1935f4e68eb8d",
+      "previous_sha256": "a4bd8727f805608557601de89e953798233f53105e6ac000b21a487186875778",
+      "patches": [
+        {
+          "offset": 78,
+          "current": "use get_owner_scheduled_controls_074::security::{MaterialSeal, MtlsFixture};\n",
+          "previous": ""
+        },
+        {
+          "offset": 363,
+          "current": "    GenerateMaterial(&'a str),\n    ValidateMaterial {\n        path: &'a str,\n        pin: &'a str,\n    },\n",
+          "previous": ""
+        },
+        {
+          "offset": 554,
+          "current": "        material: Option<(&'a str, &'a str)>,\n",
+          "previous": ""
+        },
+        {
+          "offset": 959,
+          "current": "        [mode, path] if mode == \"--generate-material\" => Ok(Arguments::GenerateMaterial(path)),\n        [mode, path, pin] if mode == \"--validate-material\" && digest_shape(pin, 64) =>\n            Ok(Arguments::ValidateMaterial { path, pin }),\n",
+          "previous": ""
+        },
+        {
+          "offset": 1318,
+          "current": "            Ok(Arguments::Run { config, binary, source, material: None }),\n        [mode, config, binary, source, path, pin] if mode == \"--run-with-material\" && digest_shape(binary, 64) && digest_shape(source, 40) && digest_shape(pin, 64) =>\n            Ok(Arguments::Run { config, binary, source, material: Some((path, pin)) }),\n        _ => Err(\"expected --validate CONFIG, --run CONFIG BINARY_SHA256 SOURCE_SHA, --generate-material PATH, --validate-material PATH MATERIAL_SHA256 or --run-with-material CONFIG BINARY_SHA256 SOURCE_SHA PATH MATERIAL_SHA256; no retry/defaults\".to_owned()),\n",
+          "previous": "            Ok(Arguments::Run { config, binary, source }),\n        _ => Err(\"expected --validate CONFIG or --run CONFIG EXPECTED_BINARY_SHA256 SOURCE_COMMIT; no retry/defaults\".to_owned()),\n"
+        },
+        {
+          "offset": 3276,
+          "current": "    #[serde(skip_serializing_if = \"Option::is_none\")]\n    fixed_material: Option<MaterialSeal>,\n",
+          "previous": ""
+        },
+        {
+          "offset": 3524,
+          "current": "    let (config, binary, source, material) = match args {\n        Arguments::GenerateMaterial(path) => {\n            let seal = MtlsFixture::new()?.save_new(Path::new(path))?;\n            println!(\n                \"{}\",\n                serde_json::json!({\"fixed_material\": seal, \"fixture_started\": false, \"admission_allowed\": false})\n            );\n            return Ok(true);\n        }\n        Arguments::ValidateMaterial { path, pin } => {\n            let (_, seal) = MtlsFixture::read_pinned(Path::new(path), pin)?;\n            println!(\n                \"{}\",\n                serde_json::json!({\"fixed_material\": seal, \"fixture_started\": false, \"admission_allowed\": false})\n            );\n            return Ok(true);\n        }\n",
+          "previous": "    let (config, binary, source) = match args {\n"
+        },
+        {
+          "offset": 4694,
+          "current": "            material,\n        } => (config, binary, source, material),\n",
+          "previous": "        } => (config, binary, source),\n"
+        },
+        {
+          "offset": 5079,
+          "current": "    if material.is_some() && !config.surface.uses_mtls() {\n        return Err(\"fixed material requires an mTLS surface before fixture\".to_owned());\n    }\n    let fixed = material\n        .map(|(path, pin)| MtlsFixture::read_pinned(Path::new(path), pin))\n        .transpose()?;\n",
+          "previous": ""
+        },
+        {
+          "offset": 5808,
+          "current": "        fixed_material: fixed.as_ref().map(|(_, seal)| seal.clone()),\n",
+          "previous": ""
+        },
+        {
+          "offset": 6265,
+          "current": "        tokio::time::timeout(std::time::Duration::from_secs(60), async {\n            match fixed {\n                Some((material, _)) => timing::run_with_material(config, &material).await,\n                None => timing::run(config).await,\n            }\n        })\n        .await\n",
+          "previous": "        tokio::time::timeout(std::time::Duration::from_secs(60), timing::run(config)).await\n"
+        },
+        {
+          "offset": 8461,
+          "current": "        assert!(arguments(&[\"--generate-material\".to_owned(), \"private.json\".to_owned()]).is_ok());\n        assert!(arguments(&[\n            \"--validate-material\".to_owned(),\n            \"private.json\".to_owned(),\n            \"a\".repeat(64)\n        ])\n        .is_ok());\n        assert!(arguments(&[\n            \"--run-with-material\".to_owned(),\n            \"config.json\".to_owned(),\n            \"a\".repeat(64),\n            \"b\".repeat(40),\n            \"private.json\".to_owned(),\n            \"c\".repeat(64)\n        ])\n        .is_ok());\n        assert!(arguments(&[\n            \"--validate-material\".to_owned(),\n            \"private.json\".to_owned(),\n            \"A\".repeat(64)\n        ])\n        .is_err());\n",
+          "previous": ""
+        }
+      ]
+    },
+    {
+      "path": "tools/get-owner-scheduled-controls-074/src/security.rs",
+      "revision": "5a3785a6a4de12cbfd8ee58470b333ac7677fda4",
+      "previous_revision": "33c54b0cda8c330b115009cdf092ad002077cedf",
+      "current_sha256": "1b3bb76ad8e55b4d4b355137fa205d515a34b31a4e78cd52526210bc95b94d35",
+      "previous_sha256": "ed8a0d1e5fc1333e8a49b8e6700b55295ef3ace5bfbc6948fb33a33c81e59ce9",
+      "patches": [
+        {
+          "offset": 82,
+          "current": "mod material;\npub use material::MaterialSeal;\n",
+          "previous": ""
+        }
+      ]
+    },
+    {
+      "path": "tools/get-owner-scheduled-controls-074/src/timing.rs",
+      "revision": "be0499a8cb0a2ad0b7328d6ac0cf6227114cebcc",
+      "previous_revision": "33c54b0cda8c330b115009cdf092ad002077cedf",
+      "current_sha256": "fc38612c44587405f87e0ae2a04b2f0f4cafd822adcdd689009ea8942e2c1de0",
+      "previous_sha256": "eb6f12095589b52a2df3faa92ef8aa0b9051f6f40beb4598ba9ddbc60011ae5f",
+      "patches": [
+        {
+          "offset": 88,
+          "current": "pub mod requested;\n",
+          "previous": ""
+        },
+        {
+          "offset": 908,
+          "current": "    pub fn uses_mtls(self) -> bool {\n        matches!(self, Self::Hc2Mtls | Self::Resp2Mtls | Self::Resp3Mtls)\n    }\n",
+          "previous": ""
+        },
+        {
+          "offset": 5453,
+          "current": "    async fn start(input: &Input, material: Option<&MtlsFixture>) -> Result<Self, String> {\n        Self::start_with_resp_connections(input, material, None).await\n    }\n    async fn start_with_resp_connections(\n        input: &Input,\n        material: Option<&MtlsFixture>,\n        resp_connections: Option<usize>,\n    ) -> Result<Self, String> {\n        if material.is_some() && !input.surface.uses_mtls() {\n            return Err(\"fixed material requires an mTLS surface before fixture\".to_owned());\n        }\n        if resp_connections.is_some_and(|count| {\n            input.surface.resp().is_none() || ![1, 8, 32, 128].contains(&count)\n        }) {\n            return Err(\"invalid independent RESP connection count before fixture\".to_owned());\n        }\n        let connections = resp_connections.unwrap_or(input.slots);\n        let ephemeral = if input.surface.uses_mtls() && material.is_none() {\n            Some(MtlsFixture::new()?)\n        } else {\n            None\n        };\n        let material = material.or(ephemeral.as_ref());\n",
+          "previous": "    async fn start(input: &Input) -> Result<Self, String> {\n"
+        },
+        {
+          "offset": 6784,
+          "current": "                    connections,\n",
+          "previous": "                    input.slots,\n"
+        },
+        {
+          "offset": 6890,
+          "current": "                    material.ok_or(\"missing mTLS material\")?,\n",
+          "previous": "                    &MtlsFixture::new()?,\n"
+        },
+        {
+          "offset": 7142,
+          "current": "                    connections,\n",
+          "previous": "                    input.slots,\n"
+        },
+        {
+          "offset": 8301,
+          "current": "                    material.ok_or(\"missing mTLS material\")?,\n",
+          "previous": "                    &MtlsFixture::new()?,\n"
+        },
+        {
+          "offset": 15856,
+          "current": "    run_inner(input, None).await\n}\n\n/// Exact pinned fixture supplied by the coordinator, shared across fresh\n/// processes. The coordinator must still prove paired material/dataset parity;\n/// this report cannot grant numerical admission or production enrollment.\npub async fn run_with_material(input: Input, material: &MtlsFixture) -> Report {\n    run_inner(input, Some(material)).await\n}\n\nasync fn run_inner(input: Input, material: Option<&MtlsFixture>) -> Report {\n",
+          "previous": ""
+        },
+        {
+          "offset": 16484,
+          "current": "    let owner = match Owner::start(&report.input, material).await {\n",
+          "previous": "    let owner = match Owner::start(&report.input).await {\n"
+        },
+        {
+          "offset": 16791,
+          "current": "    pub(super) fn input() -> Input {\n",
+          "previous": "    fn input() -> Input {\n"
+        },
+        {
+          "offset": 17999,
+          "current": "            let owner = Owner::start(&report.input, None).await.unwrap();\n",
+          "previous": "            let owner = Owner::start(&report.input).await.unwrap();\n"
+        },
+        {
+          "offset": 18752,
+          "current": "        let owner = Owner::start(&report.input, None).await.unwrap();\n",
+          "previous": "        let owner = Owner::start(&report.input).await.unwrap();\n"
+        }
+      ]
+    },
+    {
+      "path": "tools/get-owner-scheduled-controls-074/tests/timing_cli.rs",
+      "revision": "5a3785a6a4de12cbfd8ee58470b333ac7677fda4",
+      "previous_revision": "33c54b0cda8c330b115009cdf092ad002077cedf",
+      "current_sha256": "b9438999c7ee60dd8079227d8973e01493b25632dc0e9efd98ed0570b018aed8",
+      "previous_sha256": "3e9e0e25345bb6bb3320ff4fbc17025acfe2cb1aa07a8d6165b888b9539558b5",
+      "patches": [
+        {
+          "offset": 3452,
+          "current": "    assert!(value.get(\"fixed_material\").is_none()); // Legacy envelope stays unchanged.\n",
+          "previous": ""
+        },
+        {
+          "offset": 4045,
+          "current": "\n#[test]\nfn material_modes_are_metadata_only_private_and_exclusive() {\n    let dir = tempfile::tempdir().unwrap();\n    let path = dir.path().join(\"private.json\");\n    let exe = env!(\"CARGO_BIN_EXE_timing-controls-074\");\n    let generated = Command::new(exe)\n        .arg(\"--generate-material\")\n        .arg(&path)\n        .output()\n        .unwrap();\n    assert!(\n        generated.status.success(),\n        \"{}\",\n        String::from_utf8_lossy(&generated.stderr)\n    );\n    assert!(generated.stderr.is_empty());\n    let receipt: serde_json::Value = serde_json::from_slice(&generated.stdout).unwrap();\n    assert_eq!(receipt[\"fixture_started\"], false);\n    assert_eq!(receipt[\"admission_allowed\"], false);\n    assert_eq!(receipt[\"fixed_material\"][\"production_enrollment\"], false);\n    assert!(!String::from_utf8_lossy(&generated.stdout).contains(\"PRIVATE KEY\"));\n    let pin = receipt[\"fixed_material\"][\"material_sha256\"]\n        .as_str()\n        .unwrap();\n    let before = std::fs::read(&path).unwrap();\n    let duplicate = Command::new(exe)\n        .arg(\"--generate-material\")\n        .arg(&path)\n        .output()\n        .unwrap();\n    assert!(!duplicate.status.success());\n    assert!(duplicate.stdout.is_empty());\n    assert_eq!(std::fs::read(&path).unwrap(), before);\n    let validated = Command::new(exe)\n        .arg(\"--validate-material\")\n        .arg(&path)\n        .arg(pin)\n        .output()\n        .unwrap();\n    assert!(validated.status.success());\n    assert_eq!(\n        serde_json::from_slice::<serde_json::Value>(&validated.stdout).unwrap(),\n        receipt\n    );\n    let wrong = Command::new(exe)\n        .arg(\"--validate-material\")\n        .arg(&path)\n        .arg(\"0\".repeat(64))\n        .output()\n        .unwrap();\n    assert!(!wrong.status.success());\n    assert!(wrong.stdout.is_empty());\n    assert!(!String::from_utf8_lossy(&wrong.stderr).contains(\"PRIVATE KEY\"));\n}\n\n#[test]\nfn fresh_secure_processes_use_one_pin_and_plaintext_refuses_before_fixture() {\n    use get_owner_scheduled_controls_074::security::MtlsFixture;\n    let dir = tempfile::tempdir().unwrap();\n    let material = dir.path().join(\"private.json\");\n    let seal = MtlsFixture::new().unwrap().save_new(&material).unwrap();\n    let file = config_file();\n    let original: serde_json::Value =\n        serde_json::from_slice(&std::fs::read(file.path()).unwrap()).unwrap();\n    let exe = env!(\"CARGO_BIN_EXE_timing-controls-074\");\n    let binary = format!(\"{:x}\", Sha256::digest(std::fs::read(exe).unwrap()));\n    for surface in [\"direct\", \"resp2-mtls\", \"resp3-mtls\", \"hc2-mtls\"] {\n        let mut config = original.clone();\n        config[\"surface\"] = serde_json::json!(surface);\n        config[\"pipeline_depth\"] =\n            serde_json::json!(if surface.starts_with(\"resp\") { 1 } else { 0 });\n        std::fs::write(file.path(), serde_json::to_vec(&config).unwrap()).unwrap();\n        for _ in 0..2 {\n            let output = Command::new(exe)\n                .arg(\"--run-with-material\")\n                .arg(file.path())\n                .args([binary.as_str(), &\"b\".repeat(40)])\n                .arg(&material)\n                .arg(&seal.material_sha256)\n                .output()\n                .unwrap();\n            if surface == \"direct\" || cfg!(feature = \"allocation-diagnostics\") {\n                assert!(!output.status.success());\n                assert!(output.stdout.is_empty());\n                let error = String::from_utf8(output.stderr).unwrap();\n                assert!(error.contains(if cfg!(feature = \"allocation-diagnostics\") {\n                    \"refuses allocation-diagnostics\"\n                } else {\n                    \"fixed material requires an mTLS surface before fixture\"\n                }));\n                continue;\n            }\n            assert!(\n                output.status.success(),\n                \"{}\",\n                String::from_utf8_lossy(&output.stderr)\n            );\n            let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();\n            assert_eq!(\n                value[\"fixed_material\"],\n                serde_json::to_value(&seal).unwrap()\n            );\n            assert_eq!(\n                value[\"report\"][\"transport_security\"],\n                serde_json::to_value(&seal.transport).unwrap()\n            );\n            assert_eq!(value[\"report\"][\"final_dataset_verified\"], true);\n            assert_eq!(value[\"report\"][\"shutdown_verified\"], true);\n            assert_eq!(\n                value[\"report\"][\"secure_fresh_process_material_parity_proven\"],\n                false\n            );\n            assert_eq!(value[\"report\"][\"admission_allowed\"], false);\n            assert_eq!(value[\"report\"][\"cpu\"][\"usable_for_ratio\"], false);\n            assert_eq!(\n                value[\"report\"][\"get_owner_feature\"],\n                cfg!(feature = \"get-owner\")\n            );\n            assert!(!String::from_utf8_lossy(&output.stdout).contains(\"PRIVATE KEY\"));\n        }\n    }\n    // Correct binary and valid secure config cannot bypass a stale material pin.\n    let rejected = Command::new(exe)\n        .arg(\"--run-with-material\")\n        .arg(file.path())\n        .args([binary, \"b\".repeat(40)])\n        .arg(&material)\n        .arg(\"0\".repeat(64))\n        .output()\n        .unwrap();\n    assert!(!rejected.status.success());\n    assert!(rejected.stdout.is_empty());\n}\n",
+          "previous": ""
+        }
+      ]
+    }
+  ],
+  "audit": {
+    "path": "crates/xtask/tests/current_tree_input_audit_074.rs",
+    "before_sha256": "d65d950f210051b4d2a77636b22bfd51747863f8c256dfd2f3067d66d0061eab",
+    "after_sha256": "c5d85fb42cc9ee6754fc00398923757cb0939a965750a588fdb0cc0de2738530",
+    "edits": [
+      {
+        "before": "current_inputs::known_addition(path)",
+        "after": "frontier::known_addition(path)",
+        "count": 1
+      },
+      {
+        "before": "current_inputs::require_addition(path)",
+        "after": "frontier::require_addition(path)",
+        "count": 1
+      },
+      {
+        "before": "current_inputs::read(path)",
+        "after": "frontier::read(path)",
+        "count": 1
+      }
+    ],
+    "append": "\n#[path = \"../../../tools/current-frontier-074/reader.rs\"]\nmod frontier;\n"
+  }
+}

@@ -40,6 +40,13 @@ The immutable 9/81 rules, original main body gate and physical checks remain.
 This closes the audit, not the interrupted package: other historical reader
 frontiers and a new whole-package source/effect review remain before dispatch.
 
+The [remaining reader repair](remaining-readers-result-20261026.md) then closes
+the selected baseline's two actual failures: fresh-kernel and activation COMPAT.
+Custody/document/package-diagnostic controls also pass again. Final coverage is
+61 cases per compiler, with original assertions and 9/81 validators retained.
+The current-tree audit stays green. A newly reviewed complete package graph and
+full unchanged-bound run are still required; no package success is inferred.
+
 The [original start material prerequisite](local-runs/original-collector-start-material-20261017/README.md)
 now retains the original reviewed bundle with Starting/pipes/sinks/fence.
 The framed successor passes six healthy chains and twenty-six exact refusals

@@ -1,0 +1,11 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.45s
+     Running tests\authority_reader_phase_074.rs (target\debug\deps\authority_reader_phase_074-26337be553043668.exe)
+     Running tests\bootstrap_doc_reader_074.rs (target\debug\deps\bootstrap_doc_reader_074-c395d4820476b54c.exe)
+     Running tests\current_frontier_074.rs (target\debug\deps\current_frontier_074-86f93fccfd1affc3.exe)
+     Running tests\current_tree_input_audit_074.rs (target\debug\deps\current_tree_input_audit_074-c3765a3eaa3bd40a.exe)
+     Running tests\current_tree_reader_074.rs (target\debug\deps\current_tree_reader_074-5e0026a4ef1e7069.exe)
+     Running tests\fresh_kernel_cost_074.rs (target\debug\deps\fresh_kernel_cost_074-b7d065423f52a828.exe)
+     Running tests\held_activation_ingress_074.rs (target\debug\deps\held_activation_ingress_074-95fd4a15fe644fd6.exe)
+     Running tests\owned_case_074.rs (target\debug\deps\owned_case_074-8f02f7e8d8c5d19f.exe)
+     Running tests\remaining_readers_074.rs (target\debug\deps\remaining_readers_074-e752c391ebbe4b02.exe)

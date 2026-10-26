@@ -1,0 +1,35 @@
+"""Final exact formatted source, full finite correctness cohorts, no product load."""
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+RUNNER = ROOT / 'target/run-fresh-reader-20261024.py'
+TARGETS = ['remaining_readers_074', 'fresh_kernel_cost_074', 'held_activation_ingress_074',
+           'current_tree_reader_074', 'current_tree_input_audit_074', 'current_frontier_074',
+           'authority_reader_phase_074', 'bootstrap_doc_reader_074', 'owned_case_074',
+           'custody_preparation_cost_074', 'document_scratch_cost_074',
+           'document_scratch_reader_074', 'package_diagnostics_074']
+
+
+def test(compiler):
+    argv = ['cargo', compiler, 'test', '--offline', '--locked', '--no-fail-fast', '-p', 'xtask']
+    for target in TARGETS:
+        argv.extend(['--test', target])
+    return [*argv, '--', '--test-threads=4']
+
+
+CASES = [
+    ('remaining-readers-postformat-current', test('+1.94.0')),
+    ('remaining-readers-postformat-msrv', test('+1.88.0')),
+    ('remaining-readers-producer-final', [sys.executable, 'tools/remaining-readers-074/generate.py']),
+    ('remaining-readers-check-final', ['cargo', '+1.94.0', 'check', '--offline', '--locked', '-p', 'xtask', '--all-targets']),
+    ('remaining-readers-clippy-final', ['cargo', '+1.94.0', 'clippy', '--offline', '--locked', '-p', 'xtask', '--all-targets', '--all-features', '--', '-D', 'warnings']),
+    ('remaining-readers-fmt-final', ['cargo', '+1.94.0', 'fmt', '-p', 'xtask', '--', '--check']),
+    ('remaining-readers-doc-check-first', ['cargo', 'xtask', 'doc-check']),
+    ('remaining-readers-contract-check-first', ['cargo', 'xtask', 'performance-contract-check', '--release', '0.74']),
+]
+for label, argv in CASES:
+    result = subprocess.run([sys.executable, str(RUNNER), label, *argv], cwd=ROOT, check=False)
+    if result.returncode:
+        raise SystemExit(result.returncode)

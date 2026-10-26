@@ -1,0 +1,11 @@
+diff --git a/crates/xtask/tests/current_tree_reader_074.rs b/crates/xtask/tests/current_tree_reader_074.rs
+index 11a39a945..5302e4e2d 100644
+--- a/crates/xtask/tests/current_tree_reader_074.rs
++++ b/crates/xtask/tests/current_tree_reader_074.rs
+@@ -1,5 +1,5 @@
+ //! Source identity and historical input checks cannot authorize a process start.
+-#[path = "support/current_tree_input.rs"]
++#[path = "../../../tools/remaining-readers-074/inputs.rs"]
+ mod current_inputs;
+ #[path = "../../../tools/authority-runtime-074/gate.rs"]
+ mod runtime;

@@ -1,0 +1,12 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 18s
+     Running tests\custody_preparation_cost_074.rs (target\debug\deps\custody_preparation_cost_074-9cf5d34a7aea0a6d.exe)
+     Running tests\document_scratch_cost_074.rs (target\debug\deps\document_scratch_cost_074-bfd87b7eb8eef06c.exe)
+     Running tests\fresh_kernel_cost_074.rs (target\debug\deps\fresh_kernel_cost_074-b7d065423f52a828.exe)
+error: test failed, to rerun pass `-p xtask --test fresh_kernel_cost_074`
+     Running tests\held_activation_ingress_074.rs (target\debug\deps\held_activation_ingress_074-95fd4a15fe644fd6.exe)
+error: test failed, to rerun pass `-p xtask --test held_activation_ingress_074`
+     Running tests\package_diagnostics_074.rs (target\debug\deps\package_diagnostics_074-ff1851e2eb09d5b1.exe)
+error: 2 targets failed:
+    `-p xtask --test fresh_kernel_cost_074`
+    `-p xtask --test held_activation_ingress_074`

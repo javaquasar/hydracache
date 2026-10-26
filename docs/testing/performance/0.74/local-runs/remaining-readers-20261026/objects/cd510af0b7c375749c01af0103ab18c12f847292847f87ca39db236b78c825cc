@@ -1,0 +1,22 @@
+diff --git a/tools/bootstrap-doc-reader-074/reader.rs b/tools/bootstrap-doc-reader-074/reader.rs
+index 17e2636ce..6e613f7f4 100644
+--- a/tools/bootstrap-doc-reader-074/reader.rs
++++ b/tools/bootstrap-doc-reader-074/reader.rs
+@@ -2,6 +2,10 @@
+ #[path = "contract.rs"]
+ pub mod contract;
+ pub fn read(path: &str, raw: String) -> String {
++    if path == "crates/xtask/tests/current_tree_reader_074.rs" {
++        return remaining_phase::previous(path, &raw)
++            .expect("exact next current-tree reader phase");
++    }
+     if path != "crates/xtask/tests/owned_case_074.rs" {
+         return raw;
+     }
+@@ -13,3 +17,6 @@ pub fn read(path: &str, raw: String) -> String {
+     );
+     old
+ }
++
++#[path = "../remaining-readers-074/contract.rs"]
++mod remaining_phase;
