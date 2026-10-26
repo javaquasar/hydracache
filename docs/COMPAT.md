@@ -1,5 +1,10 @@
 # HydraCache Compatibility Register
 
+The local offline intent `hc074-offline-leaf-attribution-v1` identifies only
+fixed-packet arithmetic replay of the sealed native leaf control. It introduces
+no runtime or dispatch field, new measurement, clock read or server admission.
+Earlier offline and native schemas retain their original inputs and meanings.
+
 The opt-in local diagnostic metadata `hc074-capture-leaves-v1` adds owner/decode
 clock-bracket groups only under exact `--coordinator-frames --capture-leaves`.
 Old default and outer-only output shapes remain unchanged. The new caller
