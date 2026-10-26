@@ -1,0 +1,22 @@
+test_analyzer_has_no_process_clock_or_retained_module_import (test_git_cpu_variance.Model.test_analyzer_has_no_process_clock_or_retained_module_import) ... ok
+test_command_payload_spec_and_accounting_drift_refuse (test_git_cpu_variance.Model.test_command_payload_spec_and_accounting_drift_refuse) ... ok
+test_complete_partition_keeps_missing_reference_counters_null (test_git_cpu_variance.Model.test_complete_partition_keeps_missing_reference_counters_null) ... ok
+test_declared_object_size_is_checked_before_reading_body (test_git_cpu_variance.Model.test_declared_object_size_is_checked_before_reading_body) ... ok
+test_exclusive_output_first_refusal_and_no_replay (test_git_cpu_variance.Model.test_exclusive_output_first_refusal_and_no_replay) ... ok
+test_fixed_index_mutation_refuses_before_loading_any_object (test_git_cpu_variance.Model.test_fixed_index_mutation_refuses_before_loading_any_object) ... ok
+test_invalid_integer_counters_and_job_underflow_refuse (test_git_cpu_variance.Model.test_invalid_integer_counters_and_job_underflow_refuse) ... ok
+test_job_census_unstable_counters_and_worker_drift_refuse (test_git_cpu_variance.Model.test_job_census_unstable_counters_and_worker_drift_refuse) ... ok
+test_launcher_identity_cpu_and_residual_faults_refuse (test_git_cpu_variance.Model.test_launcher_identity_cpu_and_residual_faults_refuse) ... ok
+test_missing_raw_input_object_refuses (test_git_cpu_variance.Model.test_missing_raw_input_object_refuses) ... ok
+test_missing_reordered_or_failed_input_never_yields_subset (test_git_cpu_variance.Model.test_missing_reordered_or_failed_input_never_yields_subset) ... ok
+test_mutated_raw_input_refuses_before_analysis (test_git_cpu_variance.Model.test_mutated_raw_input_refuses_before_analysis) ... ok
+test_negative_deltas_are_preserved_and_cpu_partition_closes (test_git_cpu_variance.Model.test_negative_deltas_are_preserved_and_cpu_partition_closes) ... ok
+test_negative_or_boolean_phase_wall_refuses (test_git_cpu_variance.Model.test_negative_or_boolean_phase_wall_refuses) ... ok
+test_sealed_input_joins_and_all_cpu_partitions_close_offline (test_git_cpu_variance.Model.test_sealed_input_joins_and_all_cpu_partitions_close_offline) ... ok
+test_successful_offline_output_and_bad_labels (test_git_cpu_variance.Model.test_successful_offline_output_and_bad_labels) ... ok
+test_zeros_stay_and_gcd_is_not_promoted_to_clock_resolution (test_git_cpu_variance.Model.test_zeros_stay_and_gcd_is_not_promoted_to_clock_resolution) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.168s
+
+OK

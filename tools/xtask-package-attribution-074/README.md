@@ -306,3 +306,18 @@ retains the sole sixty-four-call attempt and the separate pipe-fixture footer
 repair. Current/MSRV pipe cases now pass six each without normalizing output;
 the previous first failures remain fixed evidence. Mixed CPU/wall differences
 leave overhead acceptance false. V6 and the old 96-call cohort are not rerun.
+
+## Offline CPU owner and phase variance
+
+`git_cpu_variance.py analyze NEW_LABEL` reads only the fixed sealed 108-member
+input, without importing a collector, launching processes or reading clocks.
+The [design](git-cpu-variance-design.md) retains all sixteen workers, separates
+worker/descendant/coordinator CPU and reports the thirty-two existing profile
+phase wall observations. Missing reference counters/phases stay null; signed
+deltas and zeros are never trimmed or converted into an acceptance claim.
+
+The [result and raw output](../../docs/testing/performance/0.74/git-cpu-variance-result-20261026.md)
+locate observed variance by CPU owner and recorded wall span, not a causal API
+or native image. Seventeen tests cover immutable input, custody/counter faults,
+closed scope and exclusive first results. No new workload or V6 occurs, and
+Job overhead, causal leaf timing and release admission remain unresolved.

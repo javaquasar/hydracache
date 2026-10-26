@@ -1,0 +1,8 @@
+{
+  "clock_reads_by_analyzer": 0,
+  "input_git_calls": 64,
+  "input_index_sha256": "1ba276dcf62f97801f69806ea5efba138c7d47425f30d2563874aa393681fcff",
+  "package_pass": false,
+  "processes_launched_by_analyzer": 0,
+  "workload_replayed": false
+}

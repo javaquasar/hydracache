@@ -20803,3 +20803,37 @@ formatting. The next useful work is offline variance attribution, not another
 package attempt or a product optimization inferred from one noisy aggregate.
 V6, the old timing cohort, live observation frequency and all original windows
 remain untouched.
+
+### Separate CPU owners before naming an observer bottleneck
+
+The subsequent analysis uses the saved data only: no new Git workload, timing
+cohort or package run. Job CPU splits exactly into the original worker and its
+descendants, while coordinator CPU remains outside that Job. This distinction
+changes the interpretation of the third block. Profile Job CPU is 250 ms lower,
+but worker CPU is 421.875 ms higher; descendant CPU is 671.875 ms lower. Calling
+the Job delta negative observer overhead would hide the changed owner mix.
+Two separate coordinator observations of 500 ms occur in opposite arms and
+produce opposite signed block differences, not a repeatable API-cost estimate.
+
+All thirty-two recorded profile calls have combined handle/terminal observation
+wall spans totalling 0.6435 ms, with 0.0142–0.0476 ms per call. These short spans
+include duplication/query work but not all instrumentation. Recorded spawn and
+wait maxima reach 516.8340 and 495.5811 ms. A profile worker with 453.125 ms CPU
+also has 561.0661 ms summed spawn wall and only 0.1093 ms observation wall.
+That places the long recorded wall span in spawn, not in the direct observation
+spans; it does not locate that CPU inside spawn or explain its cause.
+
+Per-phase CPU, reference per-call wall spans and coordinator leaf boundaries
+were not captured. Do not reconstruct them by subtracting CPU from wall, mixing
+FILETIME/monotonic origins or treating missing counters as zero. The saved CPU
+values' 15.625-ms common divisor describes this finite input, not proven timer
+resolution. No evidence here supports changing clocks, checks or thresholds.
+
+The [offline analyzer, seventeen controls and independent arithmetic replay](../testing/performance/0.74/git-cpu-variance-result-20261026.md)
+retain every original sample and first outcome. They narrow variance to CPU
+owners and available wall spans while keeping causal API cost and overhead
+acceptance unresolved. The next telemetry boundary is coordinator setup,
+spawn/pre-resume checks, terminal reads, decoding and handle close, with raw
+endpoints and clock domains retained. That is a separate measurement design,
+not a product optimization inferred from the old aggregate or permission to
+repeat V6.

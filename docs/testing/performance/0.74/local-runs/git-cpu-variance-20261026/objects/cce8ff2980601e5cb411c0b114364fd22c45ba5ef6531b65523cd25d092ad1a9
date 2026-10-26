@@ -1,0 +1,53 @@
+"""Retain offline first analysis and exact sealed inputs without process replay."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT/'docs/testing/performance/0.74/local-runs/git-cpu-variance-20261026'
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+def add(name, raw):
+    digest = hashlib.sha256(raw).hexdigest()
+    target = OUT/'objects'/digest
+    if not target.exists():
+        with target.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw), sha256=digest)
+def take(name, path):
+    add(name, path.read_bytes())
+for label in ('git-cpu-variance-model-first', 'git-cpu-variance-model-precommit',
+              'git-cpu-variance-syntax', 'git-cpu-variance-analysis-first'):
+    for part in ('intent.json', 'result.json', 'stdout.log', 'stderr.log'):
+        take('checks/'+label+'/'+part, ROOT/'target/source-continuation-20261024'/label/part)
+for name in ('git_cpu_variance.py', 'test_git_cpu_variance.py', 'git-cpu-variance-design.md'):
+    take('source/tools/xtask-package-attribution-074/'+name, ROOT/'tools/xtask-package-attribution-074'/name)
+for name in ('git_cpu_variance.py', 'test_git_cpu_variance.py'):
+    take('raw-first-model/'+name, ROOT/'target/git-cpu-variance-first-model-source'/name)
+for name in ('intent.json', 'result.json'):
+    take('analysis/'+name, ROOT/'target/git-cpu-variance-20261026/first'/name)
+for name in ('run-ci-watchdog-step-20261026.py', 'run-source-step-20261024.py'):
+    take('runners/'+name, ROOT/'target'/name)
+take('collector.py', Path(__file__))
+previous = ROOT/'docs/testing/performance/0.74/local-runs/pipe-fixture-git-overhead-20261026'
+raw = (previous/'index.json').read_bytes()
+input_sha = '1ba276dcf62f97801f69806ea5efba138c7d47425f30d2563874aa393681fcff'
+assert hashlib.sha256(raw).hexdigest() == input_sha
+add('input/index.json', raw)
+old_index = json.loads(raw)
+selected_source = ('crates/xtask/tests/git_descendant_cpu_074.rs', 'scripts/ci/watchdog_windows_job.py',
+    'tools/xtask-package-attribution-074/pipe_capture.rs', 'tools/xtask-package-attribution-074/git_cpu_overhead.py',
+    'tools/xtask-package-attribution-074/git_job_cpu.py', 'tools/xtask-package-attribution-074/owned_process_observer.py')
+for name, entry in old_index['members'].items():
+    if name.startswith('native/') or name in ['source/'+v for v in selected_source]:
+        body = (previous/'objects'/entry['sha256']).read_bytes()
+        assert len(body) == entry['bytes'] and hashlib.sha256(body).hexdigest() == entry['sha256']
+        add('input/'+name, body)
+index = dict(schema='hc074-offline-git-cpu-variance-v1', source_commit='385feda3938aabf467857271047e60a5c961619f',
+    input_index_sha256=input_sha, input_git_calls=64, new_workload_calls=0, workload_replayed=False,
+    overhead_accepted=False, speedup_established=False, package_pass=False, server=False, members=members)
+raw = (json.dumps(index, sort_keys=True, indent=2)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(members), objects=len(list((OUT/'objects').iterdir()))))

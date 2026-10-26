@@ -1,0 +1,9 @@
+test_index_mutation_refuses (__main__.Integrity.test_index_mutation_refuses) ... ok
+test_input_counters_first_results_and_analysis_source_cannot_change (__main__.Integrity.test_input_counters_first_results_and_analysis_source_cannot_change) ... ok
+test_missing_object_refuses (__main__.Integrity.test_missing_object_refuses) ... ok
+test_recomputes_cpu_owners_without_replaying_workload (__main__.Integrity.test_recomputes_cpu_owners_without_replaying_workload) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.136s
+
+OK

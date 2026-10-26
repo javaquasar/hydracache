@@ -1,0 +1,33 @@
+"""Seal final offline checks separately from the first analysis packet."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+PACKET = ROOT/'docs/testing/performance/0.74/local-runs/git-cpu-variance-20261026'
+OUT = PACKET/'final-checks'
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+def take(name, path):
+    raw = path.read_bytes()
+    digest = hashlib.sha256(raw).hexdigest()
+    target = OUT/'objects'/digest
+    if not target.exists():
+        with target.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw), sha256=digest)
+for name, label in [('integrity', 'git-cpu-variance-integrity'), ('syntax', 'git-cpu-variance-verifier-syntax'),
+                    ('doc', 'git-cpu-variance-doc-check'), ('contract', 'git-cpu-variance-contract')]:
+    for part in ('intent.json', 'result.json', 'stdout.log', 'stderr.log'):
+        take(name+'/'+part, ROOT/'target/source-continuation-20261024'/label/part)
+for name in ('verify.py', 'test_verify.py'):
+    take(name, PACKET/name)
+take('collector.py', Path(__file__))
+take('qualification-manifest.toml', ROOT/'docs/testing/performance/0.74/qualification-manifest.toml')
+index = dict(analysis_index_sha256='586480e0b6800d416ea2a83504b1beb3386fc0e33bb67fb78bcad125cf8a95d6',
+             members=members, workload_replayed=False, package_pass=False, qualification=False, server=False)
+raw = (json.dumps(index, sort_keys=True, indent=2)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(members)))

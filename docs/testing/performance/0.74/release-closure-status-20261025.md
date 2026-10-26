@@ -38,6 +38,15 @@ attribution completes, but block Job CPU ratios of 0.856–1.042 and wall ratios
 measured. Attribute the saved variance before another cost candidate; no
 package retry or admission follows this focused success.
 
+The [offline variance follow-up](git-cpu-variance-result-20261026.md) partitions
+Job CPU into worker/descendants and keeps external coordinator CPU separate.
+It explains the third block's negative Job delta as +421.875 ms worker and
+-671.875 ms descendants, not negative observer cost. All 32 combined profile observation
+wall spans sum to 0.6435 ms; missing per-phase CPU/coordinator boundaries prevent
+causal API attribution or overhead acceptance. Seventeen tests pass with zero
+new workload calls. Preserve the old package verdict and design narrower
+telemetry before considering another measurement.
+
 The [approved plan](../../../plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md)
 keeps its original thresholds. Its closing rule is to publish the measurements
 and defer changes if none pass, not to tag a documentation-only substitute as

@@ -1,0 +1,502 @@
+{
+  "analysis": {
+    "all_samples_retained": true,
+    "blocks": [
+      {
+        "block": 0,
+        "calls_per_arm": 8,
+        "cpu": {
+          "coordinator_cpu_ns": {
+            "delta": 31250000,
+            "profile_sum": 62500000,
+            "reference_sum": 31250000
+          },
+          "descendant_cpu_ns": {
+            "delta": 15625000,
+            "profile_sum": 656250000,
+            "reference_sum": 640625000
+          },
+          "job_cpu_ns": {
+            "delta": 31250000,
+            "profile_sum": 781250000,
+            "reference_sum": 750000000
+          },
+          "recorded_cpu_envelope_ns": {
+            "delta": 62500000,
+            "profile_sum": 843750000,
+            "reference_sum": 781250000
+          },
+          "worker_cpu_ns": {
+            "delta": 15625000,
+            "profile_sum": 125000000,
+            "reference_sum": 109375000
+          }
+        },
+        "reference_call_wall_phases": null,
+        "reference_phases_reason": "not captured in original reference"
+      },
+      {
+        "block": 1,
+        "calls_per_arm": 8,
+        "cpu": {
+          "coordinator_cpu_ns": {
+            "delta": -500000000,
+            "profile_sum": 31250000,
+            "reference_sum": 531250000
+          },
+          "descendant_cpu_ns": {
+            "delta": 0,
+            "profile_sum": 578125000,
+            "reference_sum": 578125000
+          },
+          "job_cpu_ns": {
+            "delta": 15625000,
+            "profile_sum": 734375000,
+            "reference_sum": 718750000
+          },
+          "recorded_cpu_envelope_ns": {
+            "delta": -484375000,
+            "profile_sum": 765625000,
+            "reference_sum": 1250000000
+          },
+          "worker_cpu_ns": {
+            "delta": 15625000,
+            "profile_sum": 156250000,
+            "reference_sum": 140625000
+          }
+        },
+        "reference_call_wall_phases": null,
+        "reference_phases_reason": "not captured in original reference"
+      },
+      {
+        "block": 2,
+        "calls_per_arm": 8,
+        "cpu": {
+          "coordinator_cpu_ns": {
+            "delta": 15625000,
+            "profile_sum": 78125000,
+            "reference_sum": 62500000
+          },
+          "descendant_cpu_ns": {
+            "delta": -671875000,
+            "profile_sum": 968750000,
+            "reference_sum": 1640625000
+          },
+          "job_cpu_ns": {
+            "delta": -250000000,
+            "profile_sum": 1484375000,
+            "reference_sum": 1734375000
+          },
+          "recorded_cpu_envelope_ns": {
+            "delta": -234375000,
+            "profile_sum": 1562500000,
+            "reference_sum": 1796875000
+          },
+          "worker_cpu_ns": {
+            "delta": 421875000,
+            "profile_sum": 515625000,
+            "reference_sum": 93750000
+          }
+        },
+        "reference_call_wall_phases": null,
+        "reference_phases_reason": "not captured in original reference"
+      },
+      {
+        "block": 3,
+        "calls_per_arm": 8,
+        "cpu": {
+          "coordinator_cpu_ns": {
+            "delta": 500000000,
+            "profile_sum": 531250000,
+            "reference_sum": 31250000
+          },
+          "descendant_cpu_ns": {
+            "delta": 0,
+            "profile_sum": 578125000,
+            "reference_sum": 578125000
+          },
+          "job_cpu_ns": {
+            "delta": -31250000,
+            "profile_sum": 687500000,
+            "reference_sum": 718750000
+          },
+          "recorded_cpu_envelope_ns": {
+            "delta": 468750000,
+            "profile_sum": 1218750000,
+            "reference_sum": 750000000
+          },
+          "worker_cpu_ns": {
+            "delta": -31250000,
+            "profile_sum": 109375000,
+            "reference_sum": 140625000
+          }
+        },
+        "reference_call_wall_phases": null,
+        "reference_phases_reason": "not captured in original reference"
+      }
+    ],
+    "coordinator_leaf_cost_available": false,
+    "cpu_by_phase_available": false,
+    "exact_native_image_attested": false,
+    "input_git_calls": 64,
+    "job_overhead_measured": false,
+    "observed_cpu_counter_gcd_ns": 15625000,
+    "os_timer_resolution_proved": false,
+    "overhead_accepted": false,
+    "package_pass": false,
+    "primitive_cpu_counter_count": 144,
+    "profile_call_phase_wall_ns": {
+      "counter_observation_wall_ns": {
+        "count": 32,
+        "maximum": 47600,
+        "minimum": 14200,
+        "sum": 643500
+      },
+      "handle_observation_ns": {
+        "count": 32,
+        "maximum": 44700,
+        "minimum": 11600,
+        "sum": 553400
+      },
+      "spawn_ns": {
+        "count": 32,
+        "maximum": 516834000,
+        "minimum": 9560300,
+        "sum": 1379076300
+      },
+      "terminal_observation_ns": {
+        "count": 32,
+        "maximum": 4400,
+        "minimum": 2300,
+        "sum": 90100
+      },
+      "wait_and_collect_ns": {
+        "count": 32,
+        "maximum": 495581100,
+        "minimum": 64031700,
+        "sum": 3527173200
+      }
+    },
+    "profile_calls": 32,
+    "speedup_established": false,
+    "workers": [
+      {
+        "block": 0,
+        "cpu": {
+          "coordinator_cpu_ns": 0,
+          "descendant_cpu_ns": 390625000,
+          "job_cpu_ns": 437500000,
+          "recorded_cpu_envelope_ns": 437500000,
+          "worker_cpu_ns": 46875000
+        },
+        "direct_launcher_cpu_ns": null,
+        "mode": "reference_cpu_child",
+        "non_launcher_descendant_cpu_ns": null,
+        "recorded_frame_wall_ns": 668717700,
+        "recorded_phase_wall_ns": null,
+        "slot": 0,
+        "worker_pid": 52680
+      },
+      {
+        "block": 0,
+        "cpu": {
+          "coordinator_cpu_ns": 31250000,
+          "descendant_cpu_ns": 281250000,
+          "job_cpu_ns": 359375000,
+          "recorded_cpu_envelope_ns": 390625000,
+          "worker_cpu_ns": 78125000
+        },
+        "direct_launcher_cpu_ns": 93750000,
+        "mode": "accounted_cpu_child",
+        "non_launcher_descendant_cpu_ns": 187500000,
+        "recorded_frame_wall_ns": 524867100,
+        "recorded_phase_wall_ns": {
+          "handle_observation_ns": 63800,
+          "spawn_ns": 75484500,
+          "terminal_observation_ns": 10700,
+          "wait_and_collect_ns": 377733600
+        },
+        "slot": 1,
+        "worker_pid": 7024
+      },
+      {
+        "block": 0,
+        "cpu": {
+          "coordinator_cpu_ns": 31250000,
+          "descendant_cpu_ns": 375000000,
+          "job_cpu_ns": 421875000,
+          "recorded_cpu_envelope_ns": 453125000,
+          "worker_cpu_ns": 46875000
+        },
+        "direct_launcher_cpu_ns": 203125000,
+        "mode": "accounted_cpu_child",
+        "non_launcher_descendant_cpu_ns": 171875000,
+        "recorded_frame_wall_ns": 533362500,
+        "recorded_phase_wall_ns": {
+          "handle_observation_ns": 65800,
+          "spawn_ns": 53134300,
+          "terminal_observation_ns": 11100,
+          "wait_and_collect_ns": 411392400
+        },
+        "slot": 2,
+        "worker_pid": 46204
+      },
+      {
+        "block": 0,
+        "cpu": {
+          "coordinator_cpu_ns": 31250000,
+          "descendant_cpu_ns": 250000000,
+          "job_cpu_ns": 312500000,
+          "recorded_cpu_envelope_ns": 343750000,
+          "worker_cpu_ns": 62500000
+        },
+        "direct_launcher_cpu_ns": null,
+        "mode": "reference_cpu_child",
+        "non_launcher_descendant_cpu_ns": null,
+        "recorded_frame_wall_ns": 467864700,
+        "recorded_phase_wall_ns": null,
+        "slot": 3,
+        "worker_pid": 33600
+      },
+      {
+        "block": 1,
+        "cpu": {
+          "coordinator_cpu_ns": 0,
+          "descendant_cpu_ns": 296875000,
+          "job_cpu_ns": 375000000,
+          "recorded_cpu_envelope_ns": 375000000,
+          "worker_cpu_ns": 78125000
+        },
+        "direct_launcher_cpu_ns": 156250000,
+        "mode": "accounted_cpu_child",
+        "non_launcher_descendant_cpu_ns": 140625000,
+        "recorded_frame_wall_ns": 543547300,
+        "recorded_phase_wall_ns": {
+          "handle_observation_ns": 75600,
+          "spawn_ns": 51201900,
+          "terminal_observation_ns": 11200,
+          "wait_and_collect_ns": 405883300
+        },
+        "slot": 0,
+        "worker_pid": 42024
+      },
+      {
+        "block": 1,
+        "cpu": {
+          "coordinator_cpu_ns": 31250000,
+          "descendant_cpu_ns": 281250000,
+          "job_cpu_ns": 375000000,
+          "recorded_cpu_envelope_ns": 406250000,
+          "worker_cpu_ns": 93750000
+        },
+        "direct_launcher_cpu_ns": null,
+        "mode": "reference_cpu_child",
+        "non_launcher_descendant_cpu_ns": null,
+        "recorded_frame_wall_ns": 524300800,
+        "recorded_phase_wall_ns": null,
+        "slot": 1,
+        "worker_pid": 14188
+      },
+      {
+        "block": 1,
+        "cpu": {
+          "coordinator_cpu_ns": 500000000,
+          "descendant_cpu_ns": 296875000,
+          "job_cpu_ns": 343750000,
+          "recorded_cpu_envelope_ns": 843750000,
+          "worker_cpu_ns": 46875000
+        },
+        "direct_launcher_cpu_ns": null,
+        "mode": "reference_cpu_child",
+        "non_launcher_descendant_cpu_ns": null,
+        "recorded_frame_wall_ns": 1045998700,
+        "recorded_phase_wall_ns": null,
+        "slot": 2,
+        "worker_pid": 42056
+      },
+      {
+        "block": 1,
+        "cpu": {
+          "coordinator_cpu_ns": 31250000,
+          "descendant_cpu_ns": 281250000,
+          "job_cpu_ns": 359375000,
+          "recorded_cpu_envelope_ns": 390625000,
+          "worker_cpu_ns": 78125000
+        },
+        "direct_launcher_cpu_ns": 125000000,
+        "mode": "accounted_cpu_child",
+        "non_launcher_descendant_cpu_ns": 156250000,
+        "recorded_frame_wall_ns": 524411800,
+        "recorded_phase_wall_ns": {
+          "handle_observation_ns": 65300,
+          "spawn_ns": 49232800,
+          "terminal_observation_ns": 12400,
+          "wait_and_collect_ns": 397614300
+        },
+        "slot": 3,
+        "worker_pid": 51920
+      },
+      {
+        "block": 2,
+        "cpu": {
+          "coordinator_cpu_ns": 15625000,
+          "descendant_cpu_ns": 328125000,
+          "job_cpu_ns": 375000000,
+          "recorded_cpu_envelope_ns": 390625000,
+          "worker_cpu_ns": 46875000
+        },
+        "direct_launcher_cpu_ns": null,
+        "mode": "reference_cpu_child",
+        "non_launcher_descendant_cpu_ns": null,
+        "recorded_frame_wall_ns": 492775600,
+        "recorded_phase_wall_ns": null,
+        "slot": 0,
+        "worker_pid": 52884
+      },
+      {
+        "block": 2,
+        "cpu": {
+          "coordinator_cpu_ns": 46875000,
+          "descendant_cpu_ns": 656250000,
+          "job_cpu_ns": 718750000,
+          "recorded_cpu_envelope_ns": 765625000,
+          "worker_cpu_ns": 62500000
+        },
+        "direct_launcher_cpu_ns": 500000000,
+        "mode": "accounted_cpu_child",
+        "non_launcher_descendant_cpu_ns": 156250000,
+        "recorded_frame_wall_ns": 922182500,
+        "recorded_phase_wall_ns": {
+          "handle_observation_ns": 61100,
+          "spawn_ns": 49564000,
+          "terminal_observation_ns": 11000,
+          "wait_and_collect_ns": 786530500
+        },
+        "slot": 1,
+        "worker_pid": 11756
+      },
+      {
+        "block": 2,
+        "cpu": {
+          "coordinator_cpu_ns": 31250000,
+          "descendant_cpu_ns": 312500000,
+          "job_cpu_ns": 765625000,
+          "recorded_cpu_envelope_ns": 796875000,
+          "worker_cpu_ns": 453125000
+        },
+        "direct_launcher_cpu_ns": 125000000,
+        "mode": "accounted_cpu_child",
+        "non_launcher_descendant_cpu_ns": 187500000,
+        "recorded_frame_wall_ns": 1060139600,
+        "recorded_phase_wall_ns": {
+          "handle_observation_ns": 97100,
+          "spawn_ns": 561066100,
+          "terminal_observation_ns": 12200,
+          "wait_and_collect_ns": 427974600
+        },
+        "slot": 2,
+        "worker_pid": 21552
+      },
+      {
+        "block": 2,
+        "cpu": {
+          "coordinator_cpu_ns": 46875000,
+          "descendant_cpu_ns": 1312500000,
+          "job_cpu_ns": 1359375000,
+          "recorded_cpu_envelope_ns": 1406250000,
+          "worker_cpu_ns": 46875000
+        },
+        "direct_launcher_cpu_ns": null,
+        "mode": "reference_cpu_child",
+        "non_launcher_descendant_cpu_ns": null,
+        "recorded_frame_wall_ns": 1690846600,
+        "recorded_phase_wall_ns": null,
+        "slot": 3,
+        "worker_pid": 38472
+      },
+      {
+        "block": 3,
+        "cpu": {
+          "coordinator_cpu_ns": 500000000,
+          "descendant_cpu_ns": 343750000,
+          "job_cpu_ns": 375000000,
+          "recorded_cpu_envelope_ns": 875000000,
+          "worker_cpu_ns": 31250000
+        },
+        "direct_launcher_cpu_ns": 140625000,
+        "mode": "accounted_cpu_child",
+        "non_launcher_descendant_cpu_ns": 203125000,
+        "recorded_frame_wall_ns": 1535740700,
+        "recorded_phase_wall_ns": {
+          "handle_observation_ns": 59800,
+          "spawn_ns": 484926400,
+          "terminal_observation_ns": 11200,
+          "wait_and_collect_ns": 408603700
+        },
+        "slot": 0,
+        "worker_pid": 53404
+      },
+      {
+        "block": 3,
+        "cpu": {
+          "coordinator_cpu_ns": 15625000,
+          "descendant_cpu_ns": 281250000,
+          "job_cpu_ns": 359375000,
+          "recorded_cpu_envelope_ns": 375000000,
+          "worker_cpu_ns": 78125000
+        },
+        "direct_launcher_cpu_ns": null,
+        "mode": "reference_cpu_child",
+        "non_launcher_descendant_cpu_ns": null,
+        "recorded_frame_wall_ns": 549046400,
+        "recorded_phase_wall_ns": null,
+        "slot": 1,
+        "worker_pid": 16484
+      },
+      {
+        "block": 3,
+        "cpu": {
+          "coordinator_cpu_ns": 15625000,
+          "descendant_cpu_ns": 296875000,
+          "job_cpu_ns": 359375000,
+          "recorded_cpu_envelope_ns": 375000000,
+          "worker_cpu_ns": 62500000
+        },
+        "direct_launcher_cpu_ns": null,
+        "mode": "reference_cpu_child",
+        "non_launcher_descendant_cpu_ns": null,
+        "recorded_frame_wall_ns": 515782400,
+        "recorded_phase_wall_ns": null,
+        "slot": 2,
+        "worker_pid": 52764
+      },
+      {
+        "block": 3,
+        "cpu": {
+          "coordinator_cpu_ns": 31250000,
+          "descendant_cpu_ns": 234375000,
+          "job_cpu_ns": 312500000,
+          "recorded_cpu_envelope_ns": 343750000,
+          "worker_cpu_ns": 78125000
+        },
+        "direct_launcher_cpu_ns": 93750000,
+        "mode": "accounted_cpu_child",
+        "non_launcher_descendant_cpu_ns": 140625000,
+        "recorded_frame_wall_ns": 457554900,
+        "recorded_phase_wall_ns": {
+          "handle_observation_ns": 64900,
+          "spawn_ns": 54466300,
+          "terminal_observation_ns": 10300,
+          "wait_and_collect_ns": 311440800
+        },
+        "slot": 3,
+        "worker_pid": 30372
+      }
+    ],
+    "workload_replayed": false
+  },
+  "first_refusal": null,
+  "package_pass": false,
+  "passed": true,
+  "workload_replayed": false
+}

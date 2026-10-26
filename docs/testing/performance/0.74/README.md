@@ -5,6 +5,14 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [offline observer-variance analysis](git-cpu-variance-result-20261026.md)
+closes CPU-owner arithmetic on the saved sixteen-worker result without new
+measurements. A lower Job CPU in one block masks higher worker CPU; two separate
+500-ms coordinator observations also remain. Recorded direct observation wall
+spans total 0.6435 ms across 32 profile calls, not total instrumentation CPU.
+Seventeen tests pass; causal leaf cost, Job overhead and package admission stay
+unresolved. No V6 or workload replay occurs.
+
 The [pipe-fixture repair and fixed-Job attribution](pipe-fixture-git-overhead-result-20261026.md)
 close the changed-source pipe compatibility gate with six passing cases per
 compiler while preserving both old first failures. Thirty-six models and the
