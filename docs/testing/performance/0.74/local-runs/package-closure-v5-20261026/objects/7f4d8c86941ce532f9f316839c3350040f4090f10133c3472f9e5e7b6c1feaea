@@ -1,0 +1,18 @@
+"""Scoped checks and actual read-only review, without package dispatch."""
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+CASES = [
+    ('package-v5-review-first', [sys.executable, 'tools/historical-blob-batch-074/package_effects_review_v5.py',
+     'docs/testing/performance/0.74/local-runs/module-context-v5-20261026/objects/f3fc9b9f158a84334decac504c39a4f5d820a0a0265474dc91a7a3271d6bfc2d']),
+    ('package-v5-check-first', ['cargo', '+1.94.0', 'check', '--offline', '--locked', '-p', 'xtask', '--all-targets']),
+    ('package-v5-clippy-first', ['cargo', '+1.94.0', 'clippy', '--offline', '--locked', '-p', 'xtask', '--all-targets', '--all-features', '--', '-D', 'warnings']),
+    ('package-v5-fmt-first', ['cargo', '+1.94.0', 'fmt', '-p', 'xtask', '--', '--check']),
+    ('package-v5-contract-doc-first', ['cargo', 'xtask', 'doc-check']),
+]
+for label, argv in CASES:
+    result = subprocess.run([sys.executable, str(ROOT / 'target/run-fresh-reader-20261024.py'), label, *argv], cwd=ROOT)
+    if result.returncode:
+        raise SystemExit(result.returncode)

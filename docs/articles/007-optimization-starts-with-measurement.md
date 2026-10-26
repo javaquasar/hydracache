@@ -20560,3 +20560,34 @@ safety. There are 21 changed and 21 added source/AST rows against v4. They and
 the new auxiliary inputs still need manual effect review before a full run.
 The [result and raw packet](../testing/performance/0.74/module-context-v5-result-20261026.md)
 separate source closure from execution admission; the original package stays red.
+
+### Full replay exposes additional reader and cleanup gaps
+
+The separate v5 review fixes 365 source identities, 42 auxiliary inputs and all
+144 Windows default-package targets after manually reviewing the 21 changed and
+21 added source rows. Forty-two focused controls pass, including refusal of
+unknown source/data, continued rejection by v4 and exact single-dispatch behavior.
+The original full command then runs once with four threads and a 780-second bound
+including compilation. It times out with 76 completed targets, 457 passed and
+three failed cases; an incomplete target adds three passes and one missing verdict,
+while 67 targets never start. Focused passes are not spliced into that result.
+
+Two failures expose more exact-source consumers: the independent history gate
+still reads through its old frontier, and the status-reader proof expects the
+fresh-kernel caller before its latest declared successor. Their old body and
+runtime checks must survive the next repairs. The third failure is different:
+the watchdog descendant marker exists after its timeout. The old fixture suppresses
+termination output, so that assertion does not establish the failure's cause.
+
+The separate outer cleanup records two unsupported-termination errors. A later
+read-only query sees none of its named PIDs or marker-bearing Python processes,
+but missing original birth identities prevent an all-writer retirement claim.
+This keeps process cleanup distinct from merely observing a marker or a PID.
+
+Printed target spans locate existing reader work to investigate: artifact fixture
+159.62 seconds, document scratch 71.26, current-tree audit 70.76 and custody
+preparation 65.67. They are not CPU attribution, repeated performance estimates
+or justification for a longer deadline. The [first result and raw packet](../testing/performance/0.74/package-closure-v5-result-20261026.md)
+retain the failures, missing coverage and cleanup limits. The next work is exact
+reader compatibility, owned cleanup and attribution of those existing checks,
+not a new cache optimization hypothesis or release admission.

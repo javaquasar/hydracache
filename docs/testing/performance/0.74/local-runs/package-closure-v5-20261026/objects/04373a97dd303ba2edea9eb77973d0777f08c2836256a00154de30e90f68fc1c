@@ -1,0 +1,13 @@
+test_catalog_cannot_drop_add_reorder_or_duplicate_targets (test_package_effects_review_v5.ReaderRepairScope.test_catalog_cannot_drop_add_reorder_or_duplicate_targets) ... ok
+test_document_cannot_self_approve_or_enable_execution (test_package_effects_review_v5.ReaderRepairScope.test_document_cannot_self_approve_or_enable_execution) ... ok
+test_exact_scope_keeps_365_sources_42_auxiliary_144_targets_and_no_production_admission (test_package_effects_review_v5.ReaderRepairScope.test_exact_scope_keeps_365_sources_42_auxiliary_144_targets_and_no_production_admission) ... ok
+test_host_constructor_and_include_refuse_even_under_different_document_pin (test_package_effects_review_v5.ReaderRepairScope.test_host_constructor_and_include_refuse_even_under_different_document_pin) ... ok
+test_missing_duplicate_and_unclosed_rows_refuse (test_package_effects_review_v5.ReaderRepairScope.test_missing_duplicate_and_unclosed_rows_refuse) ... ok
+test_raw_source_auxiliary_and_old_packet_cannot_change (test_package_effects_review_v5.ReaderRepairScope.test_raw_source_auxiliary_and_old_packet_cannot_change) ... ok
+test_unchanged_ast_reclassification_and_manual_delta_drift_refuse (test_package_effects_review_v5.ReaderRepairScope.test_unchanged_ast_reclassification_and_manual_delta_drift_refuse) ... ok
+test_v4_still_refuses_current_document (test_package_effects_review_v5.ReaderRepairScope.test_v4_still_refuses_current_document) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 71.246s
+
+OK

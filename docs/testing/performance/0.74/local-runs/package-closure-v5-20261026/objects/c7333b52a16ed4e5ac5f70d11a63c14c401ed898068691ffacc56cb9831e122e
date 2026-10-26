@@ -1,0 +1,19 @@
+{
+  "cleanup_log_sha256": "90b061fa17ef9915fff082270ce46b90308a7358f67c0c35576e7f7951c94ab3",
+  "queried_pids": [
+    13832,
+    23456,
+    26252,
+    32556,
+    36296,
+    37504
+  ],
+  "named_pid_observations": [],
+  "watchdog_marker_process_observations": [],
+  "taskkill_path": "C:\\Windows\\System32\\taskkill.exe",
+  "taskkill_sha256": "1249717315fc8f4d2df17d5db9da0444795fdb9fb83dfb1f763c3f39282244f7",
+  "terminated_anything": false,
+  "original_process_birth_identities_recorded": false,
+  "original_all_writer_retirement_proven": false,
+  "server": false
+}

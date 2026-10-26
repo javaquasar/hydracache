@@ -1,0 +1,32 @@
+"""Read-only cleanup observations; never terminates or claims original retirement."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import shutil
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+log = (ROOT / 'target/source-continuation-20261024/package-v5-first/owned-cleanup.log').read_bytes()
+ids = sorted({int(value) for value in re.findall(rb'PID (\d+)', log)})
+assert ids and all(value > 0 for value in ids)
+query = ' OR '.join('ProcessId=' + str(value) for value in ids)
+code = ("$observed=@(Get-CimInstance Win32_Process -Filter '" + query +
+        "' | Select-Object ProcessId,ParentProcessId,CreationDate,ExecutablePath); "
+        "ConvertTo-Json -InputObject $observed -Depth 4")
+result = subprocess.run(['powershell', '-NoProfile', '-Command', code], capture_output=True, timeout=30, check=False)
+assert result.returncode == 0 and not result.stderr
+named = json.loads(result.stdout.decode('utf-8-sig'))
+code = ("$observed=@(Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | "
+        "Where-Object { $_.CommandLine -like '*descendant-survived.txt*' } | "
+        "Select-Object ProcessId,ParentProcessId,CreationDate,ExecutablePath); "
+        "ConvertTo-Json -InputObject $observed -Depth 4")
+result = subprocess.run(['powershell', '-NoProfile', '-Command', code], capture_output=True, timeout=30, check=False)
+assert result.returncode == 0 and not result.stderr
+fixture = json.loads(result.stdout.decode('utf-8-sig'))
+tool = Path(shutil.which('taskkill.exe')).resolve(strict=True)
+print(json.dumps(dict(cleanup_log_sha256=hashlib.sha256(log).hexdigest(), queried_pids=ids,
+    named_pid_observations=named, watchdog_marker_process_observations=fixture,
+    taskkill_path=str(tool), taskkill_sha256=hashlib.sha256(tool.read_bytes()).hexdigest(),
+    terminated_anything=False, original_process_birth_identities_recorded=False,
+    original_all_writer_retirement_proven=False, server=False), indent=2))
