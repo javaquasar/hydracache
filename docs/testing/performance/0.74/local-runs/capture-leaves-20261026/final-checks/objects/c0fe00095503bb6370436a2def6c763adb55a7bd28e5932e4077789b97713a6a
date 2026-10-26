@@ -1,0 +1,41 @@
+"""Retain verifier first errors and final local gates separately."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+PACKET = ROOT/'docs/testing/performance/0.74/local-runs/capture-leaves-20261026'
+OUT = PACKET/'final-checks'
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+
+
+def take(name, path):
+    raw = path.read_bytes()
+    digest = hashlib.sha256(raw).hexdigest()
+    target = OUT/'objects'/digest
+    if not target.exists():
+        with target.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw), sha256=digest)
+
+
+for label in ('capture-leaves-integrity-first', 'capture-leaves-integrity-corrected', 'capture-leaves-integrity-closure',
+              'capture-leaves-verifier-syntax', 'capture-leaves-doc-first', 'capture-leaves-contract-first'):
+    for part in ('intent.json', 'result.json', 'stdout.log', 'stderr.log'):
+        take('checks/'+label+'/'+part, ROOT/'target/source-continuation-20261024'/label/part)
+for name in ('verify.py', 'test_verify.py'):
+    take(name, PACKET/name)
+take('first-verify.py', ROOT/'target/capture-leaves-first-verify.py')
+take('first-test-verify.py', ROOT/'target/capture-leaves-first-test-verify.py')
+take('second-verify.py', ROOT/'target/capture-leaves-second-verify.py')
+take('qualification-manifest.toml', ROOT/'docs/testing/performance/0.74/qualification-manifest.toml')
+take('collector.py', Path(__file__))
+index = dict(schema='hc074-capture-leaves-final-checks-v1', checks=6,
+    model_index_sha256='d539ff2fa93959cf1fbb176e4994ebb5d7f83c5e141a0e1bae81f672f0cb2000',
+    native_control_executed=False, new_workload_calls=0, overhead_accepted=False, package_pass=False, members=members)
+raw = (json.dumps(index, indent=2, sort_keys=True)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(members)))

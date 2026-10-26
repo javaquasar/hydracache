@@ -1,0 +1,23 @@
+test_index_mutation_refuses (__main__.Integrity.test_index_mutation_refuses) ... ok
+test_missing_object_refuses (__main__.Integrity.test_missing_object_refuses) ... ok
+test_original_final_first_failure_and_source_bytes_cannot_change (__main__.Integrity.test_original_final_first_failure_and_source_bytes_cannot_change) ... ok
+test_source_ast_and_first_result (__main__.Integrity.test_source_ast_and_first_result) ... ERROR
+test_strip_does_not_accept_unknown_phase_or_substitution_arguments (__main__.Integrity.test_strip_does_not_accept_unknown_phase_or_substitution_arguments) ... ok
+
+======================================================================
+ERROR: test_source_ast_and_first_result (__main__.Integrity.test_source_ast_and_first_result)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\capture-leaves-20261026\test_verify.py", line 15, in test_source_ast_and_first_result
+    result = verify.verify(FOLDER)
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\capture-leaves-20261026\verify.py", line 119, in verify
+    require(ast.dump(a) == ast.dump(Strip().visit(b)), 'owner setter AST differs')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\capture-leaves-20261026\verify.py", line 17, in require
+    raise ValueError(reason)
+ValueError: owner setter AST differs
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.290s
+
+FAILED (errors=1)

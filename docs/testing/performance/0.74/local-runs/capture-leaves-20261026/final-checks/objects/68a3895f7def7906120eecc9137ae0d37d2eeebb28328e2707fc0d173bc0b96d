@@ -1,0 +1,10 @@
+test_index_mutation_refuses (__main__.Integrity.test_index_mutation_refuses) ... ok
+test_missing_object_refuses (__main__.Integrity.test_missing_object_refuses) ... ok
+test_original_final_first_failure_and_source_bytes_cannot_change (__main__.Integrity.test_original_final_first_failure_and_source_bytes_cannot_change) ... ok
+test_source_ast_and_first_result (__main__.Integrity.test_source_ast_and_first_result) ... ok
+test_strip_does_not_accept_unknown_phase_or_substitution_arguments (__main__.Integrity.test_strip_does_not_accept_unknown_phase_or_substitution_arguments) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.282s
+
+OK

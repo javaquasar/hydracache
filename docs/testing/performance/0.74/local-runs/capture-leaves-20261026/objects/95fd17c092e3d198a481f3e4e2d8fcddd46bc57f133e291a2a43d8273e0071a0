@@ -1,0 +1,224 @@
+"""Opt-in held-owner/decode leaves. No native/measurement entry point."""
+import json
+from pathlib import Path
+import re
+import time
+
+from coordinator_frames import Tape, attach
+from git_job_cpu import (AccountingJob, CALLS, CLEANUP, LOG_BYTES, SPEC, calculate,
+                         cleanup, require, terminal_job, validate)
+from git_cpu_overhead import PROFILE, ROOT
+
+GROUPS = dict(owner=('owner_identity', 'owner_initial'),
+              decode=('log_stat', 'log_read', 'text_decode', 'record_parse', 'protocol_validation', 'result_join'))
+
+
+def contract():
+    return dict(schema='hc074-capture-leaves-v1', groups={k: list(v) for k, v in GROUPS.items()},
+        max_additional_probes=16, max_additional_clock_reads=48, clock_domain='python-coordinator',
+        cpu_scope='coordinator process-wide, all threads; not worker or native Git CPU',
+        wall_bounds_scope='elapsed between bracketed CPU-read instants, not effect-only duration',
+        owner_already_retained_before_first_leaf=True, wait_with_output_unchanged=True,
+        native_create_call_wrapped=False, cleanup_instrumented=False, nested_scopes_additive=False,
+        window_renewed=False, existing_predicates_removed_or_reordered=False,
+        native_control_executed=False, overhead_accepted=False, package_pass=False)
+
+
+class LeafTape(Tape):
+    def __init__(self, group, **clocks):
+        require(group in GROUPS, 'fixed leaf group')
+        super().__init__(**clocks)
+        self.group, self.phases = group, GROUPS[group]
+
+    def _probe(self, phase, kind):
+        require(len(self.probes) < len(self.phases)*2, 'leaf probe budget exhausted')
+        return super()._probe(phase, kind)
+
+    def begin(self, phase):
+        if self.first_refusal is not None:
+            return
+        try:
+            require(not self.sealed and self.active is None and self.cursor < len(self.phases) and
+                    self.phases[self.cursor] == phase, 'unexpected leaf begin')
+            span = dict(phase=phase, status='open', start_probe=len(self.probes), end_probe=None, elapsed=None)
+            self.spans.append(span)
+            self.active = span
+            self._probe(phase, 'begin')
+        except Exception as error:
+            self.fault(f'{phase}/begin: {type(error).__name__}: {error}')
+
+    def finish(self, operation_passed):
+        if self.sealed:
+            self.fault('leaf capture already sealed')
+        if self.active is not None:
+            self.active['status'] = 'incomplete' if operation_passed else 'operation_interrupted'
+        if any(set(p['raw']) != {'wall_before_ns', 'process_cpu_ns', 'wall_after_ns'} for p in self.probes):
+            self.fault('interrupted leaf clock probe')
+        if operation_passed and self.cursor != len(self.phases):
+            self.fault('incomplete leaf schedule')
+        self.sealed = True
+        return dict(group=self.group, clock_domain=self.clock_domain,
+            complete=self.cursor == len(self.phases) and self.first_refusal is None,
+            capture_valid=self.first_refusal is None, first_refusal=self.first_refusal,
+            not_observed=list(self.phases[len(self.spans):]),
+            probes=[dict(phase=p['phase'], kind=p['kind'], raw=dict(p['raw'])) for p in self.probes],
+            spans=[dict(s, elapsed=dict(s['elapsed']) if s['elapsed'] is not None else None) for s in self.spans])
+
+
+class Leaves:
+    def __init__(self, **clocks):
+        self.tapes = {group: LeafTape(group, **clocks) for group in GROUPS}
+        self.first_refusal = None
+
+    def mark(self, group, phase, kind):
+        if self.first_refusal is not None:
+            return
+        require(group in self.tapes and kind in ('begin', 'end'), 'fixed leaf mark')
+        tape = self.tapes[group]
+        getattr(tape, kind)(phase)
+        if tape.first_refusal is not None:
+            self.first_refusal = group+': '+tape.first_refusal
+
+    def begin(self, group, phase):
+        self.mark(group, phase, 'begin')
+
+    def end(self, group, phase):
+        self.mark(group, phase, 'end')
+
+    def finish(self, operation_passed):
+        groups = {group: tape.finish(operation_passed) for group, tape in self.tapes.items()}
+        if self.first_refusal is None:
+            self.first_refusal = next((group+': '+v['first_refusal'] for group, v in groups.items()
+                                       if v['first_refusal'] is not None), None)
+        return dict(contract=contract(), groups=groups, first_refusal=self.first_refusal,
+            capture_valid=self.first_refusal is None, complete=all(v['complete'] for v in groups.values()))
+
+
+class LeafAccountingJob(AccountingJob):
+    def __init__(self, api, observer, image, leaves):
+        self.leaves = leaves
+        super().__init__(api, observer, image)
+
+    @AccountingJob.child.setter
+    def child(self, value):
+        require(getattr(self, '_child', None) is None, 'original worker cannot be replaced')
+        self._child = value  # Retain BEFORE any new clock observation.
+        if value is not None:
+            self.leaves.begin('owner', 'owner_identity')
+            pid, path = self.observer.identity(value.handle)
+            require(pid == value.pid and Path(path).resolve() == self.image, 'original worker identity drift')
+            self.worker_identity = (pid, path)
+            self.leaves.end('owner', 'owner_identity')
+            self.leaves.begin('owner', 'owner_initial')
+            first = self.observer.read(value.handle)
+            validate(None, first)
+            require(first['terminal'] is False, 'original worker exited before release')
+            self.worker_start = first
+            self.leaves.end('owner', 'owner_initial')
+
+
+def leaf_rows(raw, accounted, leaves):
+    # The caller starts log_read before the unchanged compound read/rows call.
+    leaves.end('decode', 'log_read')
+    leaves.begin('decode', 'text_decode')
+    text = raw.decode()
+    leaves.end('decode', 'text_decode')
+    leaves.begin('decode', 'record_parse')
+    records = [json.loads(line.removeprefix('HC074_GIT_CPU ')) for line in text.splitlines()
+               if line.startswith('HC074_GIT_CPU ')]
+    done = [json.loads(line.removeprefix('HC074_GIT_CPU_DONE ')) for line in text.splitlines()
+            if line.startswith('HC074_GIT_CPU_DONE ')]
+    leaves.end('decode', 'record_parse')
+    leaves.begin('decode', 'protocol_validation')
+    require(len(records) == CALLS and done == [dict(calls=CALLS, accounted=accounted,
+        git_argv=['git', 'show', SPEC], stdin_hold=False, git_suspended=False, native_bypass=False,
+        environment_changes=False, package_pass=False)], 'complete fixed worker protocol')
+    require(re.search(r'test result: ok\. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out;', text),
+            'one selected worker verdict missing')
+    for call, row in enumerate(records):
+        require(row['call'] == call and row['accounted'] is accounted and row['spec'] == SPEC and
+                row['stdout_bytes'] == 23589 and row['stderr_bytes'] == 0 and row['code'] == 0,
+                'Git semantics/schedule drift')
+        if accounted:
+            phase = row['phases']
+            first, last = phase['child_start'], phase['child_end']
+            require(first['pid'] == last['pid'] and first['created_100ns'] == last['created_100ns']
+                    and last['exited_100ns'] >= last['created_100ns'] > 0 and
+                    last['user_ns'] >= first['user_ns'] >= 0 and last['kernel_ns'] >= first['kernel_ns'] >= 0,
+                    'original retained launcher identity/counter drift')
+        else:
+            require(row['phases'] is None, 'reference command must remain original output()')
+    leaves.end('decode', 'protocol_validation')
+    return records
+
+
+def attach_leaves(result, leaves):
+    result['capture_leaves'] = leaves.finish(result['operation_verdict']['passed'])
+    if not result['capture_leaves']['capture_valid']:
+        if result['first_refusal'] is None:
+            result['first_refusal'] = 'Refusal: capture leaf telemetry: '+str(leaves.first_refusal)
+        result['passed'] = False
+    return result
+
+
+def measure(api, observer, image, block, slot, mode, folder, deadline, trace, leaves):
+    result = dict(block=block, slot=slot, mode=mode, passed=False, first_refusal=None, cleanup_errors=[])
+    job = child = None
+    wall, cpu = time.monotonic_ns(), time.process_time_ns()
+    try:
+        trace.begin('setup')
+        require(time.monotonic() < deadline, 'worker frame started too late')
+        job = LeafAccountingJob(api, observer, image, leaves)
+        require(api.counters(job.handle) == dict(user_ns=0, kernel_ns=0, total=0, active=0, terminated=0),
+                'new accounting Job has prior charges')
+        log_path = folder/f'{block}-{slot}-{mode}.log'
+        with log_path.open('xb') as log:
+            trace.end('setup')
+            trace.begin('spawn')
+            child = job.spawn([str(image), '--exact', mode, '--nocapture', '--test-threads=1'], ROOT, log, deadline)
+            trace.end('spawn')
+            trace.begin('wait')
+            code = child.wait(timeout=max(0, deadline-time.monotonic()))
+        require(time.monotonic() < deadline and code == 0, 'worker exit/deadline refused')
+        trace.end('wait')
+        trace.begin('terminal_reads')
+        pid, path = job.worker_identity
+        require(observer.dll.GetProcessId(child.handle) == pid == child.pid, 'retained terminal worker PID drift')
+        worker = observer.read(child.handle)
+        validate(job.worker_start, worker)
+        first, last = api.counters(job.handle), api.counters(job.handle)
+        terminal_job(first, last)
+        require(first['terminated'] == 0, 'unexpected forced Job termination')
+        trace.end('terminal_reads')
+        trace.begin('decode')
+        leaves.begin('decode', 'log_stat')
+        require(log_path.stat().st_size <= LOG_BYTES, 'worker log size refused')
+        leaves.end('decode', 'log_stat')
+        leaves.begin('decode', 'log_read')
+        data = leaf_rows(log_path.read_bytes(), mode == PROFILE, leaves)
+        leaves.begin('decode', 'result_join')
+        result.update(worker_pid=child.pid, worker_image=path, worker_initial=job.worker_start,
+                      worker=worker, job=first, job_terminal_samples=[first, last], records=data)
+        if mode == PROFILE:
+            result['native_inclusive'] = calculate(first, worker, [row['phases']['child_end'] for row in data])
+        leaves.end('decode', 'result_join')
+        trace.end('decode')
+        trace.begin('close')
+        child.close()
+        job.close()
+        child = job = None
+        trace.end('close')
+        result['metrics'] = dict(wall_ns=time.monotonic_ns()-wall,
+            coordinator_cpu_ns=time.process_time_ns()-cpu,
+            whole_job_cpu_ns=first['user_ns']+first['kernel_ns'],
+            whole_worker_cpu_ns=(worker['user_100ns']+worker['kernel_100ns'])*100)
+        require(time.monotonic() < deadline, 'late worker frame witness')
+        result['passed'] = True
+    except BaseException as error:
+        result['first_refusal'] = f'{type(error).__name__}: {error}'
+    finally:
+        if job is not None:
+            result['cleanup_errors'] = cleanup(job, child, time.monotonic()+CLEANUP)
+            if result['cleanup_errors']:
+                result['passed'] = False
+    return attach_leaves(attach(result, trace), leaves)
