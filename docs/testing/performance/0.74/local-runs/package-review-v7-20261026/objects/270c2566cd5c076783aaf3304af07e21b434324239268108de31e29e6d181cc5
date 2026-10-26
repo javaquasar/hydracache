@@ -1,0 +1,2095 @@
+use std::collections::{BTreeMap, BTreeSet};
+use std::error::Error;
+use std::fmt::Write as _;
+use std::fs;
+use std::path::{Component, Path, PathBuf};
+use std::process::Command;
+
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
+use syn::visit::Visit;
+
+use crate::canary_check;
+use crate::canary_sweep;
+use crate::doc_check;
+use crate::evidence_run::{self, EvidenceOutcome, EvidenceReceipt};
+use crate::fast_suite::{self, FastSuiteEntry};
+use crate::gated_tests::{self, GateEntry};
+use crate::management_center;
+use crate::quarantine;
+
+const RELEASES_PATH: &str = "docs/plans/releases.toml";
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct EvidenceManifest {
+    pub schema_version: u32,
+    pub release: String,
+    pub plan: String,
+    #[serde(default)]
+    pub canary_policy: CanaryPolicy,
+    #[serde(default)]
+    pub dynamic_canary_work_items: Vec<String>,
+    #[serde(default)]
+    pub work_item: Vec<EvidenceWorkItem>,
+}
+
+#[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum CanaryPolicy {
+    #[default]
+    DynamicRegistry,
+    DedicatedFlipSentinels,
+    DedicatedFlipSentinelsWithDynamicRegistry,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct EvidenceWorkItem {
+    pub id: String,
+    pub required_sources: Vec<String>,
+    pub required_tests: Vec<RequiredTest>,
+    pub required_artifacts: Vec<String>,
+    #[serde(default)]
+    pub active_ship_blocker_artifacts: Vec<String>,
+    pub fast_gate_ids: Vec<String>,
+    pub gated_gate_ids: Vec<String>,
+    pub ship_required: bool,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct RequiredTest {
+    pub source: String,
+    pub function: String,
+    #[serde(default)]
+    pub language: TestLanguage,
+}
+
+/// Source language used to validate a release-evidence test selector.
+#[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum TestLanguage {
+    /// Rust `#[test]`, `#[tokio::test]`, or registered proptest function.
+    #[default]
+    Rust,
+    /// JUnit method annotated with `@Test` or `@TestFactory`.
+    Java,
+    /// Python function whose name starts with `test_`.
+    Python,
+}
+
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
+#[serde(rename_all = "kebab-case")]
+pub enum EvidenceStage {
+    Planned,
+    Implemented,
+    FastGreen,
+    GatedGreen,
+    ShipReady,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WorkItemReport {
+    pub id: String,
+    pub stage: EvidenceStage,
+    pub reasons: Vec<String>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReleaseEvidenceReport {
+    pub schema_version: u32,
+    pub release: String,
+    pub source_commit: String,
+    pub current_worktree_dirty: bool,
+    pub receipts_supplied: bool,
+    pub counts: BTreeMap<String, usize>,
+    pub reasons: Vec<String>,
+    pub work_items: Vec<WorkItemReport>,
+}
+
+#[derive(Debug, Clone)]
+struct ReleaseDefinition {
+    version: String,
+    plan: String,
+    work_items: Vec<String>,
+    depends_on: Vec<String>,
+}
+
+pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
+    let options = Options::parse(args)?;
+    if options.emit_template {
+        let definition = load_release_definition(&options.root, &options.release)?;
+        let manifest = template_manifest(&options.root, &definition)?;
+        let path = manifest_path(&options.root, &options.release);
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        fs::write(&path, toml::to_string_pretty(&manifest)?)?;
+        println!("release-evidence: wrote template to {}", path.display());
+        return Ok(());
+    }
+
+    if normalize_release(&options.release) == "0.72.0" {
+        let management_problems = management_center::check(&options.root, options.require_ship)?;
+        if !management_problems.is_empty() {
+            for problem in &management_problems {
+                eprintln!("release-evidence: management-center: {problem}");
+            }
+            return Err(format!(
+                "release-evidence: management-center admission found {} problem(s)",
+                management_problems.len()
+            )
+            .into());
+        }
+    }
+
+    let report = build_report(
+        &options.root,
+        &options.release,
+        options.receipts_dir.as_deref(),
+    )?;
+    write_report(&options.root, &options.release, &report)?;
+    println!(
+        "release-evidence: planned={} implemented={} fast-green={} gated-green={} ship-ready={}",
+        count(&report, EvidenceStage::Planned),
+        count(&report, EvidenceStage::Implemented),
+        count(&report, EvidenceStage::FastGreen),
+        count(&report, EvidenceStage::GatedGreen),
+        count(&report, EvidenceStage::ShipReady),
+    );
+    for reason in &report.reasons {
+        println!("release-evidence: release-wide: {reason}");
+    }
+    for item in &report.work_items {
+        if item.stage != EvidenceStage::ShipReady {
+            println!(
+                "release-evidence: {} {:?}: {}",
+                item.id,
+                item.stage,
+                item.reasons.join("; ")
+            );
+        }
+    }
+    let claim_problems = if options.require_ship && options.release == "0.71" {
+        check_071_ship_claims(&options.root)?
+    } else {
+        Vec::new()
+    };
+    for problem in &claim_problems {
+        println!("release-evidence: 0.71 claim: {problem}");
+    }
+    if options.require_ship
+        && (report.current_worktree_dirty
+            || !report.reasons.is_empty()
+            || !claim_problems.is_empty()
+            || report
+                .work_items
+                .iter()
+                .any(|item| item.stage != EvidenceStage::ShipReady))
+    {
+        return Err("release-evidence: --require-ship rejected non-green evidence".into());
+    }
+    Ok(())
+}
+
+fn check_071_ship_claims(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
+    let claims_path = root.join("target/memory-evidence/0.71/release-claims.json");
+    if !claims_path.is_file() {
+        return Ok(vec!["missing generated release-claims.json".to_owned()]);
+    }
+    let acceptance_path = root.join("docs/testing/memory/0.71/d4-acceptance.json");
+    let policy_path = root.join("docs/testing/memory/0.71/release-policy.toml");
+    let claims: serde_json::Value = serde_json::from_slice(&fs::read(claims_path)?)?;
+    let acceptance: serde_json::Value = serde_json::from_slice(&fs::read(acceptance_path)?)?;
+    let policy: toml::Value = toml::from_str(&fs::read_to_string(policy_path)?)?;
+    let mut problems = check_071_claim_values(&claims, &acceptance, &policy);
+    if let Some(source_sha) = claims
+        .get("measured_source_sha")
+        .and_then(serde_json::Value::as_str)
+    {
+        if !git_is_ancestor(root, source_sha, "HEAD") {
+            problems
+                .push("measured source is not an ancestor of the release review commit".to_owned());
+        }
+        problems.extend(crate::memory_campaign::check_campaigns_for_source(
+            &root.join("target/memory-evidence/0.71/campaigns"),
+            "0.71",
+            true,
+            Some(source_sha),
+        )?);
+    }
+    Ok(problems)
+}
+
+pub fn check_071_claim_values(
+    claims: &serde_json::Value,
+    acceptance: &serde_json::Value,
+    policy: &toml::Value,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if claims.get("release").and_then(serde_json::Value::as_str) != Some("0.71") {
+        problems.push("wrong claims release".to_owned());
+    }
+    for (claim_field, acceptance_field) in [
+        ("measured_source_sha", "measured_source_sha"),
+        ("evidence_branch", "evidence_branch"),
+        ("evidence_commit", "evidence_commit"),
+    ] {
+        if claims.get(claim_field) != acceptance.get(acceptance_field) {
+            problems.push(format!("claims {claim_field} disagrees with D4 acceptance"));
+        }
+    }
+    let accepted_ids = acceptance
+        .get("campaigns")
+        .and_then(serde_json::Value::as_array)
+        .map(|campaigns| {
+            campaigns
+                .iter()
+                .filter_map(|item| item.get("id").and_then(serde_json::Value::as_str))
+                .collect::<Vec<_>>()
+        });
+    let claimed_ids = claims
+        .get("campaign_ids")
+        .and_then(serde_json::Value::as_array)
+        .map(|ids| {
+            ids.iter()
+                .filter_map(serde_json::Value::as_str)
+                .collect::<Vec<_>>()
+        });
+    if accepted_ids.as_ref().is_none_or(|ids| ids.len() != 4) || claimed_ids != accepted_ids {
+        problems
+            .push("claims campaign IDs disagree with the four accepted D4 campaigns".to_owned());
+    }
+    if claims
+        .get("numeric_memory_improvement_claims")
+        .and_then(serde_json::Value::as_array)
+        .is_none_or(|numeric| !numeric.is_empty())
+    {
+        problems.push("numerical memory claims are not authorized by D3".to_owned());
+    }
+    if claims
+        .get("negative_result")
+        .and_then(serde_json::Value::as_str)
+        .is_none_or(str::is_empty)
+    {
+        problems.push("release claims omit the negative result".to_owned());
+    }
+    let expected_dispositions = policy
+        .get("optional_work")
+        .and_then(toml::Value::as_array)
+        .map(|items| {
+            items
+                .iter()
+                .map(|item| {
+                    serde_json::json!({
+                        "id": item.get("id").and_then(toml::Value::as_str),
+                        "disposition": item.get("disposition").and_then(toml::Value::as_str),
+                        "reason": item.get("reason").and_then(toml::Value::as_str),
+                        "next_evidence": item.get("next_evidence").and_then(toml::Value::as_str),
+                    })
+                })
+                .collect::<Vec<_>>()
+        });
+    if claims
+        .get("optional_dispositions")
+        .and_then(serde_json::Value::as_array)
+        != expected_dispositions.as_ref()
+    {
+        problems.push("optional dispositions disagree with release policy".to_owned());
+    }
+    problems
+}
+
+pub fn build_report(
+    root: &Path,
+    release: &str,
+    receipts_dir: Option<&Path>,
+) -> Result<ReleaseEvidenceReport, Box<dyn Error>> {
+    let definition = load_release_definition(root, release)?;
+    let manifest = load_manifest(root, release)?;
+    let gates = gated_tests::load_registry(root)?;
+    let fast_suites = fast_suite::load_registry(root)?;
+    let canary_registry = canary_check::load_registry_for_release(root, release)?;
+    let canary_receipts = canary_sweep::load_receipts_for_release(root, &definition.version)?;
+    let canary_release_problem = dynamic_canary_release_problem(
+        manifest.canary_policy,
+        &canary_registry.release,
+        &definition.version,
+    );
+    validate_manifest(root, &definition, &manifest, &gates, &fast_suites)?;
+
+    let (source_commit, current_worktree_dirty) = git_identity(root)?;
+    let mut global_reasons = Vec::new();
+    // Ordinary green receipts are not qualification. Keep both CLI spellings
+    // of the prepared 0.74 release behind the same boundary as its contract CLI.
+    let release_ship_admission_closed = definition.version == "0.74.0";
+    if release_ship_admission_closed {
+        global_reasons.push(crate::performance_contract_074::SHIP_ADMISSION_BLOCKER.to_owned());
+    }
+    if current_worktree_dirty {
+        global_reasons.push("current worktree is dirty".to_owned());
+    }
+    for dependency in &definition.depends_on {
+        if definition.version == "0.71.0" && dependency == "0.67.1" {
+            global_reasons.extend(evidence_only_0671_dependency_problems(root, &source_commit));
+            continue;
+        }
+        let tag = format!("v{dependency}");
+        if !git_ref_exists(root, &format!("refs/tags/{tag}")) {
+            global_reasons.push(format!(
+                "required compatibility baseline tag {tag} is missing"
+            ));
+        } else if !git_is_ancestor(root, &tag, &source_commit) {
+            global_reasons.push(format!(
+                "required compatibility baseline {tag} is not an ancestor of the candidate commit"
+            ));
+        }
+    }
+    let receipts = load_receipts(root, receipts_dir, &mut global_reasons)?;
+    if receipts_dir.is_some() && normalize_release(release) == "0.72.0" {
+        global_reasons.extend(management_soak_pair_problems(root));
+    }
+    let quarantine_report = quarantine::check_at(root, release, time::OffsetDateTime::now_utc())?;
+    if !quarantine_report.problems.is_empty() {
+        return Err(quarantine_report.problems.join("; ").into());
+    }
+    if quarantine_report
+        .active
+        .iter()
+        .any(|entry| entry.ship_mandatory)
+    {
+        global_reasons.push("an active quarantine covers a ship-mandatory gate".to_owned());
+    }
+    let active_quarantines: BTreeSet<_> = quarantine_report
+        .active
+        .iter()
+        .map(|entry| entry.gate_id.as_str())
+        .collect();
+    let mut gates_by_id: BTreeMap<_, _> = gates
+        .gate
+        .iter()
+        .map(|gate| (gate.id.as_str(), ReceiptGate::Gated(gate)))
+        .collect();
+    gates_by_id.extend(
+        fast_suites
+            .suite
+            .iter()
+            .map(|suite| (suite.id.as_str(), ReceiptGate::Fast(suite))),
+    );
+    let canaries_by_id: BTreeMap<_, _> = canary_registry
+        .entries
+        .iter()
+        .map(|entry| (entry.w_item.as_str(), entry))
+        .collect();
+    let canary_receipts_by_id: BTreeMap<_, _> = canary_receipts
+        .iter()
+        .map(|receipt| (receipt.w_item.as_str(), receipt))
+        .collect();
+
+    let mut work_items = Vec::new();
+    for item in &manifest.work_item {
+        let mut reasons = Vec::new();
+        let implemented = implementation_resolves(root, item, &mut reasons);
+        let ship_blocker_reasons = active_ship_blocker_problems(root, item);
+        let active_ship_blocker = !ship_blocker_reasons.is_empty();
+        reasons.extend(ship_blocker_reasons);
+        let mut stage = if implemented {
+            EvidenceStage::Implemented
+        } else {
+            EvidenceStage::Planned
+        };
+
+        if item.id == "W32" && !git_is_ancestor(root, "v0.63.0", "HEAD") {
+            reasons.push("v0.63.0 is not an ancestor of the candidate commit".to_owned());
+        }
+
+        let quarantined = item
+            .fast_gate_ids
+            .iter()
+            .chain(&item.gated_gate_ids)
+            .filter(|id| active_quarantines.contains(id.as_str()))
+            .cloned()
+            .collect::<Vec<_>>();
+        if !quarantined.is_empty() {
+            reasons.push(format!("active quarantine: {}", quarantined.join(", ")));
+        }
+
+        let dynamic_canary_required = manifest
+            .dynamic_canary_work_items
+            .iter()
+            .any(|work_item| work_item == &item.id);
+        let canary_green = if dynamic_canary_required {
+            if let Some(problem) = &canary_release_problem {
+                reasons.push(problem.clone());
+                false
+            } else if let Some(entry) = canaries_by_id.get(item.id.as_str()) {
+                if let Some(receipt) = canary_receipts_by_id.get(item.id.as_str()) {
+                    let problems = canary_sweep::receipt_problems(
+                        root,
+                        &canary_registry,
+                        entry,
+                        receipt,
+                        &source_commit,
+                    );
+                    if problems.is_empty() {
+                        true
+                    } else {
+                        reasons.extend(
+                            problems
+                                .into_iter()
+                                .map(|problem| format!("dynamic canary: {problem}")),
+                        );
+                        false
+                    }
+                } else {
+                    reasons.push("missing exact-commit dynamic canary receipt".to_owned());
+                    false
+                }
+            } else {
+                reasons.push("missing dynamic canary registry row".to_owned());
+                false
+            }
+        } else if !manifest.dynamic_canary_work_items.is_empty()
+            || matches!(
+                manifest.canary_policy,
+                CanaryPolicy::DedicatedFlipSentinels
+                    | CanaryPolicy::DedicatedFlipSentinelsWithDynamicRegistry
+            )
+        {
+            true
+        } else if let Some(problem) = &canary_release_problem {
+            reasons.push(problem.clone());
+            false
+        } else if let Some(entry) = canaries_by_id.get(item.id.as_str()) {
+            if let Some(receipt) = canary_receipts_by_id.get(item.id.as_str()) {
+                let problems = canary_sweep::receipt_problems(
+                    root,
+                    &canary_registry,
+                    entry,
+                    receipt,
+                    &source_commit,
+                );
+                if problems.is_empty() {
+                    true
+                } else {
+                    reasons.extend(
+                        problems
+                            .into_iter()
+                            .map(|problem| format!("dynamic canary: {problem}")),
+                    );
+                    false
+                }
+            } else {
+                reasons.push("missing exact-commit dynamic canary receipt".to_owned());
+                false
+            }
+        } else {
+            reasons.push("missing dynamic canary registry row".to_owned());
+            false
+        };
+
+        if implemented && canary_green {
+            if item.fast_gate_ids.is_empty() {
+                reasons.push("no fast gate receipt contract is registered".to_owned());
+            } else if all_gates_green(
+                root,
+                release,
+                &source_commit,
+                &item.fast_gate_ids,
+                &gates_by_id,
+                &receipts,
+                &mut reasons,
+            ) {
+                let gated_green = !release_ship_admission_closed
+                    && all_gates_green(
+                        root,
+                        release,
+                        &source_commit,
+                        &item.gated_gate_ids,
+                        &gates_by_id,
+                        &receipts,
+                        &mut reasons,
+                    );
+                let ship_conditions_green = gated_green
+                    && quarantined.is_empty()
+                    && !current_worktree_dirty
+                    && (item.id != "W32" || git_is_ancestor(root, "v0.63.0", "HEAD"))
+                    && !active_ship_blocker;
+                stage = stage_after_fast_gate(
+                    release_ship_admission_closed,
+                    gated_green,
+                    ship_conditions_green,
+                );
+            }
+        }
+        work_items.push(WorkItemReport {
+            id: item.id.clone(),
+            stage,
+            reasons,
+        });
+    }
+
+    let mut counts = BTreeMap::new();
+    for stage in [
+        EvidenceStage::Planned,
+        EvidenceStage::Implemented,
+        EvidenceStage::FastGreen,
+        EvidenceStage::GatedGreen,
+        EvidenceStage::ShipReady,
+    ] {
+        counts.insert(
+            stage_name(stage).to_owned(),
+            work_items.iter().filter(|row| row.stage == stage).count(),
+        );
+    }
+    Ok(ReleaseEvidenceReport {
+        schema_version: 1,
+        release: definition.version,
+        source_commit,
+        current_worktree_dirty,
+        receipts_supplied: receipts_dir.is_some(),
+        counts,
+        reasons: global_reasons,
+        work_items,
+    })
+}
+
+fn stage_after_fast_gate(
+    ship_admission_closed: bool,
+    gated_green: bool,
+    ship_conditions_green: bool,
+) -> EvidenceStage {
+    if ship_admission_closed || !gated_green {
+        EvidenceStage::FastGreen
+    } else if ship_conditions_green {
+        EvidenceStage::ShipReady
+    } else {
+        EvidenceStage::GatedGreen
+    }
+}
+
+#[cfg(test)]
+mod pre_candidate_stage_tests {
+    use super::{stage_after_fast_gate, EvidenceStage};
+
+    #[test]
+    fn closed_admission_caps_even_all_green_receipts_at_fast_green() {
+        for gated_green in [false, true] {
+            for ship_conditions_green in [false, true] {
+                assert_eq!(
+                    stage_after_fast_gate(true, gated_green, ship_conditions_green),
+                    EvidenceStage::FastGreen
+                );
+            }
+        }
+        assert_eq!(
+            stage_after_fast_gate(false, false, true),
+            EvidenceStage::FastGreen
+        );
+        assert_eq!(
+            stage_after_fast_gate(false, true, false),
+            EvidenceStage::GatedGreen
+        );
+        assert_eq!(
+            stage_after_fast_gate(false, true, true),
+            EvidenceStage::ShipReady
+        );
+    }
+}
+
+// 0.67.1 shipped as a dedicated performance-evidence milestone after the
+// product workspace had advanced to 0.70. It deliberately has no package tag.
+fn evidence_only_0671_dependency_problems(root: &Path, source_commit: &str) -> Vec<String> {
+    const RECEIPT: &str = "docs/testing/perf-artifacts/0.67.1/hc0671-ax42-20260911-da/accepted-receipts/release-evidence-0.67.1.json";
+    const SHA256: &str = "22a4b57e791558412d7e397d9226c69e52fbb21c4f2e73183d7ef17cca146eb5";
+    const SOURCE: &str = "7bd31af9a5092466d7a7284995f388d33ed3110f";
+    let bytes = match fs::read(root.join(RECEIPT)) {
+        Ok(bytes) => bytes,
+        Err(error) => return vec![format!("0.67.1 evidence-only receipt is missing: {error}")],
+    };
+    let mut problems = Vec::new();
+    if sha256(&bytes) != SHA256 {
+        problems.push("0.67.1 evidence-only receipt digest mismatch".to_owned());
+    }
+    match serde_json::from_slice::<ReleaseEvidenceReport>(&bytes) {
+        Ok(report) => {
+            if report.schema_version != 1
+                || report.release != "0.67.1"
+                || report.source_commit != SOURCE
+                || report.current_worktree_dirty
+                || !report.receipts_supplied
+                || !report.reasons.is_empty()
+                || report.work_items.len() != 8
+                || report.work_items.iter().enumerate().any(|(index, item)| {
+                    item.id != format!("W{index}")
+                        || item.stage != EvidenceStage::ShipReady
+                        || !item.reasons.is_empty()
+                })
+            {
+                problems.push("0.67.1 evidence-only release closure is not ship-ready".to_owned());
+            }
+        }
+        Err(error) => problems.push(format!("0.67.1 evidence-only receipt is invalid: {error}")),
+    }
+    if !git_is_ancestor(root, SOURCE, source_commit) {
+        problems.push("0.67.1 evidence-only source is not an ancestor".to_owned());
+    }
+    problems
+}
+
+pub fn parse_manifest_text(text: &str) -> Result<EvidenceManifest, Box<dyn Error>> {
+    toml::from_str(text).map_err(|error| error.into())
+}
+
+pub fn receipt_problems(
+    root: &Path,
+    release: &str,
+    source_commit: &str,
+    gate: &GateEntry,
+    receipt: &EvidenceReceipt,
+) -> Vec<String> {
+    receipt_problems_for(
+        root,
+        release,
+        source_commit,
+        ReceiptGate::Gated(gate),
+        receipt,
+    )
+}
+
+pub fn fast_receipt_problems(
+    root: &Path,
+    release: &str,
+    source_commit: &str,
+    suite: &FastSuiteEntry,
+    receipt: &EvidenceReceipt,
+) -> Vec<String> {
+    receipt_problems_for(
+        root,
+        release,
+        source_commit,
+        ReceiptGate::Fast(suite),
+        receipt,
+    )
+}
+
+#[derive(Clone, Copy)]
+enum ReceiptGate<'a> {
+    Gated(&'a GateEntry),
+    Fast(&'a FastSuiteEntry),
+}
+
+impl<'a> ReceiptGate<'a> {
+    fn id(self) -> &'a str {
+        match self {
+            Self::Gated(gate) => &gate.id,
+            Self::Fast(suite) => &suite.id,
+        }
+    }
+
+    fn artifacts(self) -> &'a [String] {
+        match self {
+            Self::Gated(gate) => &gate.artifacts,
+            Self::Fast(suite) => &suite.artifacts,
+        }
+    }
+
+    fn expected_digests(
+        self,
+        root: &Path,
+    ) -> Result<evidence_run::ExpectedDigests, Box<dyn Error>> {
+        match self {
+            Self::Gated(gate) => evidence_run::expected_digests(root, gate),
+            Self::Fast(suite) => evidence_run::expected_fast_digests(root, suite),
+        }
+    }
+}
+
+fn receipt_problems_for(
+    root: &Path,
+    release: &str,
+    source_commit: &str,
+    gate: ReceiptGate<'_>,
+    receipt: &EvidenceReceipt,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if receipt.schema_version != 1 {
+        problems.push("unsupported receipt schema".to_owned());
+    }
+    if normalize_release(&receipt.release) != normalize_release(release) {
+        problems.push("wrong release".to_owned());
+    }
+    if receipt.gate_id != gate.id() {
+        problems.push("wrong gate id".to_owned());
+    }
+    if receipt.source_commit != source_commit {
+        problems.push("wrong source commit".to_owned());
+    }
+    if receipt.dirty_worktree {
+        problems.push("receipt was produced from a dirty worktree".to_owned());
+    }
+    match gate.expected_digests(root) {
+        Ok(expected) => {
+            if receipt.command_digest != expected.command {
+                problems.push("stale command digest".to_owned());
+            }
+            if receipt.registry_digest != expected.registry {
+                problems.push("stale registry digest".to_owned());
+            }
+            if receipt.input_digest != expected.input {
+                problems.push("stale input digest".to_owned());
+            }
+        }
+        Err(error) => problems.push(format!("cannot derive expected digests: {error}")),
+    }
+    if receipt.outcome != EvidenceOutcome::Pass {
+        problems.push(format!("receipt outcome is {:?}", receipt.outcome));
+    }
+    if let ReceiptGate::Fast(suite) = gate {
+        if receipt.duration_ms > suite.budget_seconds.saturating_mul(1_000) {
+            problems.push(format!(
+                "suite {} took {}ms, above its {}s budget",
+                suite.id, receipt.duration_ms, suite.budget_seconds
+            ));
+        }
+    }
+    if receipt.normalized_result.outcome != receipt.outcome
+        || receipt.normalized_result.exit_code != receipt.exit_code
+    {
+        problems.push("normalized result does not match receipt outcome".to_owned());
+    }
+    if receipt.normalized_result.stdout_sha256 != sha256(receipt.stdout.as_bytes())
+        || receipt.normalized_result.stderr_sha256 != sha256(receipt.stderr.as_bytes())
+    {
+        problems.push("captured output hash mismatch".to_owned());
+    }
+    if !receipt.missing_artifacts.is_empty() {
+        problems.push("receipt reports missing artifacts".to_owned());
+    }
+    let receipt_artifacts: BTreeMap<_, _> = receipt
+        .artifacts
+        .iter()
+        .map(|artifact| (artifact.path.as_str(), artifact))
+        .collect();
+    let expected_artifacts = gate
+        .artifacts()
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let observed_artifacts = receipt
+        .artifacts
+        .iter()
+        .map(|artifact| artifact.path.as_str())
+        .collect::<BTreeSet<_>>();
+    if receipt.artifacts.len() != receipt_artifacts.len()
+        || observed_artifacts != expected_artifacts
+    {
+        problems
+            .push("artifact receipt set is not the exact declared gate artifact set".to_owned());
+    }
+    for expected in gate.artifacts() {
+        let Some(recorded) = receipt_artifacts.get(expected.as_str()) else {
+            problems.push(format!("missing artifact receipt for {expected}"));
+            continue;
+        };
+        match safe_repo_path(root, expected) {
+            Ok(path) => match fs::read(path) {
+                Ok(bytes)
+                    if sha256(&bytes) == recorded.sha256
+                        && bytes.len() as u64 == recorded.bytes =>
+                {
+                    problems.extend(referenced_runtime_artifact_problems(
+                        root, release, expected, &bytes,
+                    ));
+                }
+                Ok(_) => problems.push(format!("artifact hash mismatch for {expected}")),
+                Err(_) => problems.push(format!("artifact is missing: {expected}")),
+            },
+            Err(error) => problems.push(error.to_string()),
+        }
+    }
+    problems
+}
+
+fn referenced_runtime_artifact_problems(
+    root: &Path,
+    release: &str,
+    artifact: &str,
+    bytes: &[u8],
+) -> Vec<String> {
+    const EVIDENCE_PREFIX: &str = "target/test-evidence/0.67/";
+
+    if normalize_release(release) == "0.72.0"
+        && matches!(
+            artifact,
+            "target/test-evidence/0.72/management-candidate-soak.json"
+                | "target/test-evidence/0.72/management-ship-soak.json"
+        )
+    {
+        return management_soak_artifact_problems(artifact, bytes);
+    }
+    if normalize_release(release) == "0.72.0"
+        && artifact == "target/test-evidence/0.72/management-mixed-071-072.json"
+    {
+        return management_mixed_artifact_problems(artifact, bytes);
+    }
+
+    if normalize_release(release) != "0.67.0"
+        || !artifact.replace('\\', "/").starts_with(EVIDENCE_PREFIX)
+        || !artifact.ends_with(".json")
+    {
+        return Vec::new();
+    }
+
+    let value: serde_json::Value = match serde_json::from_slice(bytes) {
+        Ok(value) => value,
+        Err(error) => {
+            return vec![format!(
+                "declared 0.67 JSON artifact {artifact} cannot be parsed for archived-file receipts: {error}"
+            )];
+        }
+    };
+    let mut receipts = Vec::new();
+    collect_archived_file_receipts(&value, &mut receipts);
+    let mut problems = Vec::new();
+    for (reported_path, expected_bytes, expected_sha256) in receipts {
+        let normalized = reported_path.replace('\\', "/");
+        let relative = if let Some(relative) = normalized.strip_prefix(EVIDENCE_PREFIX) {
+            format!("{EVIDENCE_PREFIX}{relative}")
+        } else if let Some((_, relative)) = normalized.split_once(&format!("/{EVIDENCE_PREFIX}")) {
+            format!("{EVIDENCE_PREFIX}{relative}")
+        } else {
+            continue;
+        };
+        let path = match safe_repo_path(root, &relative) {
+            Ok(path) => path,
+            Err(error) => {
+                problems.push(format!(
+                    "archived-file receipt in {artifact} has an unsafe path: {error}"
+                ));
+                continue;
+            }
+        };
+        match fs::read(&path) {
+            Ok(observed)
+                if observed.len() as u64 == expected_bytes
+                    && sha256(&observed) == expected_sha256 => {}
+            Ok(_) => problems.push(format!(
+                "archived-file receipt hash mismatch for {relative} referenced by {artifact}"
+            )),
+            Err(error) => problems.push(format!(
+                "archived file {relative} referenced by {artifact} is missing: {error}"
+            )),
+        }
+    }
+    problems
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementSoakArtifact {
+    schema_version: u32,
+    release: String,
+    tier: String,
+    required_duration_seconds: u64,
+    observed_duration_seconds: u64,
+    started_unix_seconds: u64,
+    ended_unix_seconds: u64,
+    host_fingerprint_sha256: String,
+    binary_sha256: String,
+    seed: u64,
+    management_samples: u64,
+    hc1_samples: u64,
+    hc1_keyspace_size: u64,
+    resp_samples: u64,
+    recovery_cycles: u64,
+    endpoint_p95_ms: u64,
+    schedule_digest: String,
+    event_digest: String,
+    baseline: ManagementSoakResource,
+    final_sample: ManagementSoakResource,
+    resource_sample_interval_seconds: u64,
+    resource_timeline: Vec<ManagementSoakTimelinePoint>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementSoakResource {
+    rss_kib: u64,
+    rss_hwm_kib: u64,
+    open_fds: u64,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementSoakTimelinePoint {
+    elapsed_seconds: u64,
+    processes: Vec<ManagementSoakProcessResource>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementSoakProcessResource {
+    node_index: usize,
+    node_id: String,
+    pid: u32,
+    rss_kib: u64,
+    rss_hwm_kib: u64,
+    open_fds: u64,
+}
+
+fn management_soak_artifact_problems(artifact: &str, bytes: &[u8]) -> Vec<String> {
+    let receipt: ManagementSoakArtifact = match serde_json::from_slice(bytes) {
+        Ok(receipt) => receipt,
+        Err(error) => {
+            return vec![format!(
+                "invalid management soak artifact {artifact}: {error}"
+            )]
+        }
+    };
+    let (tier, duration) = if artifact.ends_with("management-candidate-soak.json") {
+        ("candidate-six-hour", 21_600)
+    } else {
+        ("ship-twenty-four-hour", 86_400)
+    };
+    let mut problems = Vec::new();
+    if receipt.schema_version != 3
+        || receipt.release != "0.72.0"
+        || receipt.tier != tier
+        || receipt.required_duration_seconds != duration
+        || receipt.observed_duration_seconds < duration
+    {
+        problems.push(format!(
+            "{artifact} has wrong schema, tier or wall-clock duration"
+        ));
+    }
+    if receipt.ended_unix_seconds < receipt.started_unix_seconds.saturating_add(duration) {
+        problems.push(format!(
+            "{artifact} wall-clock timestamps are shorter than the tier"
+        ));
+    }
+    if receipt.hc1_keyspace_size != 64 {
+        problems.push(format!(
+            "{artifact} does not use the reviewed 64-key HC/1 soak keyspace"
+        ));
+    }
+    let timeline_is_complete = receipt.resource_sample_interval_seconds == 60
+        && receipt.resource_timeline.len() >= (duration / 60 + 1) as usize
+        && receipt
+            .resource_timeline
+            .first()
+            .is_some_and(|point| point.elapsed_seconds == 0)
+        && receipt
+            .resource_timeline
+            .last()
+            .is_some_and(|point| point.elapsed_seconds >= duration)
+        && receipt
+            .resource_timeline
+            .windows(2)
+            .all(|points| points[0].elapsed_seconds <= points[1].elapsed_seconds)
+        && receipt.resource_timeline.iter().all(|point| {
+            let mut indices = point
+                .processes
+                .iter()
+                .map(|process| process.node_index)
+                .collect::<Vec<_>>();
+            indices.sort_unstable();
+            indices.dedup();
+            indices.len() == 3
+                && point.processes.iter().all(|process| {
+                    !process.node_id.is_empty()
+                        && process.pid != 0
+                        && process.rss_kib != 0
+                        && process.rss_hwm_kib >= process.rss_kib
+                        && process.open_fds != 0
+                })
+        });
+    if !timeline_is_complete {
+        problems.push(format!(
+            "{artifact} lacks complete per-process 60-second resource evidence"
+        ));
+    }
+    let expected_recovery_cycles = duration.saturating_sub(1) / 3_600;
+    if receipt.management_samples < duration.saturating_sub(300)
+        || receipt.hc1_samples != receipt.management_samples
+        || receipt.resp_samples != receipt.management_samples
+        || receipt.recovery_cycles < expected_recovery_cycles
+    {
+        problems.push(format!(
+            "{artifact} lacks fixed-rate traffic or hourly recovery samples"
+        ));
+    }
+    if receipt.endpoint_p95_ms > 2_500
+        || receipt.final_sample.open_fds > receipt.baseline.open_fds.saturating_add(12)
+        || receipt.final_sample.rss_kib > receipt.baseline.rss_hwm_kib.saturating_add(65_536)
+    {
+        problems.push(format!("{artifact} exceeds latency, FD or RSS bounds"));
+    }
+    for (name, digest) in [
+        ("host fingerprint", &receipt.host_fingerprint_sha256),
+        ("binary", &receipt.binary_sha256),
+        ("schedule", &receipt.schedule_digest),
+        ("event", &receipt.event_digest),
+    ] {
+        if digest.len() != 64 || !digest.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+            problems.push(format!("{artifact} has invalid {name} digest"));
+        }
+    }
+    if receipt.seed != 0x0720_1200_0000_0001 {
+        problems.push(format!("{artifact} has an unreviewed seed"));
+    }
+    problems
+}
+
+fn management_soak_pair_problems(root: &Path) -> Vec<String> {
+    let candidate_path = root.join("target/test-evidence/0.72/management-candidate-soak.json");
+    let ship_path = root.join("target/test-evidence/0.72/management-ship-soak.json");
+    let candidate = fs::read(&candidate_path)
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<ManagementSoakArtifact>(&bytes).ok());
+    let ship = fs::read(&ship_path)
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<ManagementSoakArtifact>(&bytes).ok());
+    match (candidate, ship) {
+        (Some(candidate), Some(ship))
+            if candidate.host_fingerprint_sha256 == ship.host_fingerprint_sha256
+                && candidate.binary_sha256 == ship.binary_sha256 =>
+        {
+            Vec::new()
+        }
+        (Some(_), Some(_)) => vec![
+            "0.72 candidate and ship soak artifacts use different host or binary fingerprints"
+                .to_owned(),
+        ],
+        _ => vec!["0.72 candidate/ship soak artifact pair is incomplete".to_owned()],
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementMixedArtifact {
+    schema_version: u32,
+    release: String,
+    previous_tag: String,
+    previous_commit: String,
+    previous_binary_sha256: String,
+    candidate_binary_sha256: String,
+    scenarios: Vec<ManagementMixedScenario>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementMixedScenario {
+    id: String,
+    outcome: String,
+    observation_sha256: String,
+}
+
+fn management_mixed_artifact_problems(artifact: &str, bytes: &[u8]) -> Vec<String> {
+    let receipt: ManagementMixedArtifact = match serde_json::from_slice(bytes) {
+        Ok(receipt) => receipt,
+        Err(error) => {
+            return vec![format!(
+                "invalid management mixed artifact {artifact}: {error}"
+            )]
+        }
+    };
+    let mut problems = Vec::new();
+    if receipt.schema_version != 1
+        || receipt.release != "0.72.0"
+        || receipt.previous_tag != "v0.71.0"
+        || receipt.previous_commit.len() != 40
+        || !receipt
+            .previous_commit
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit())
+    {
+        problems.push(format!(
+            "{artifact} has wrong schema, release or v0.71.0 provenance"
+        ));
+    }
+    for (name, digest) in [
+        ("previous binary", &receipt.previous_binary_sha256),
+        ("candidate binary", &receipt.candidate_binary_sha256),
+    ] {
+        if digest.len() != 64 || !digest.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+            problems.push(format!("{artifact} has invalid {name} digest"));
+        }
+    }
+    if receipt.previous_binary_sha256 == receipt.candidate_binary_sha256 {
+        problems.push(format!(
+            "{artifact} used byte-identical old and new binaries"
+        ));
+    }
+    let expected = BTreeSet::from([
+        "old-leader-new-followers",
+        "new-leader-old-follower",
+        "leadership-change-during-aggregation",
+        "old-peer-restart-during-placement-trace",
+        "rollback-after-ui-observation",
+    ]);
+    let observed = receipt
+        .scenarios
+        .iter()
+        .map(|scenario| scenario.id.as_str())
+        .collect::<BTreeSet<_>>();
+    if receipt.scenarios.len() != expected.len()
+        || observed != expected
+        || receipt.scenarios.iter().any(|scenario| {
+            scenario.outcome != "pass"
+                || scenario.observation_sha256.len() != 64
+                || !scenario
+                    .observation_sha256
+                    .bytes()
+                    .all(|byte| byte.is_ascii_hexdigit())
+        })
+    {
+        problems.push(format!(
+            "{artifact} lacks the exact five passing mixed scenarios"
+        ));
+    }
+    problems
+}
+
+fn collect_archived_file_receipts<'a>(
+    value: &'a serde_json::Value,
+    receipts: &mut Vec<(&'a str, u64, &'a str)>,
+) {
+    match value {
+        serde_json::Value::Array(values) => {
+            for value in values {
+                collect_archived_file_receipts(value, receipts);
+            }
+        }
+        serde_json::Value::Object(object) => {
+            if let (Some(path), Some(bytes), Some(sha256)) = (
+                object
+                    .get("canonical_path")
+                    .and_then(|value| value.as_str()),
+                object.get("bytes").and_then(serde_json::Value::as_u64),
+                object.get("sha256").and_then(|value| value.as_str()),
+            ) {
+                receipts.push((path, bytes, sha256));
+            }
+            for value in object.values() {
+                collect_archived_file_receipts(value, receipts);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn all_gates_green(
+    root: &Path,
+    release: &str,
+    source_commit: &str,
+    gate_ids: &[String],
+    gates: &BTreeMap<&str, ReceiptGate<'_>>,
+    receipts: &BTreeMap<String, Vec<EvidenceReceipt>>,
+    reasons: &mut Vec<String>,
+) -> bool {
+    let mut green = true;
+    for gate_id in gate_ids {
+        let Some(gate) = gates.get(gate_id.as_str()) else {
+            reasons.push(format!("unknown gate id {gate_id}"));
+            green = false;
+            continue;
+        };
+        let candidates = receipts.get(gate_id).map(Vec::as_slice).unwrap_or_default();
+        if candidates.is_empty() {
+            reasons.push(format!("missing receipt for {gate_id}"));
+            green = false;
+            continue;
+        }
+        let mut candidate_reasons = Vec::new();
+        let valid = candidates.iter().any(|receipt| {
+            let problems = receipt_problems_for(root, release, source_commit, *gate, receipt);
+            if problems.is_empty() {
+                true
+            } else {
+                candidate_reasons.extend(problems);
+                false
+            }
+        });
+        if !valid {
+            candidate_reasons.sort();
+            candidate_reasons.dedup();
+            reasons.push(format!(
+                "no valid receipt for {gate_id}: {}",
+                candidate_reasons.join(", ")
+            ));
+            green = false;
+        }
+    }
+    green
+}
+
+fn implementation_resolves(
+    root: &Path,
+    item: &EvidenceWorkItem,
+    reasons: &mut Vec<String>,
+) -> bool {
+    if item.required_sources.is_empty() || item.required_tests.is_empty() {
+        reasons.push("required source/test contract is incomplete".to_owned());
+        return false;
+    }
+    let mut resolves = true;
+    for source in &item.required_sources {
+        match safe_repo_path(root, source) {
+            Ok(path) if path.exists() => {}
+            Ok(_) => {
+                reasons.push(format!("missing required source {source}"));
+                resolves = false;
+            }
+            Err(error) => {
+                reasons.push(error.to_string());
+                resolves = false;
+            }
+        }
+    }
+    for test in &item.required_tests {
+        match function_exists(root, test) {
+            Ok(true) => {}
+            Ok(false) => {
+                reasons.push(format!("missing test {}::{}", test.source, test.function));
+                resolves = false;
+            }
+            Err(error) => {
+                reasons.push(error.to_string());
+                resolves = false;
+            }
+        }
+    }
+    for artifact in &item.required_artifacts {
+        match safe_repo_path(root, artifact) {
+            Ok(path) if path.exists() => {}
+            Ok(_) => {
+                reasons.push(format!("missing required artifact {artifact}"));
+                resolves = false;
+            }
+            Err(error) => {
+                reasons.push(error.to_string());
+                resolves = false;
+            }
+        }
+    }
+    resolves
+}
+
+pub fn active_ship_blocker_problems(root: &Path, item: &EvidenceWorkItem) -> Vec<String> {
+    let mut problems = Vec::new();
+    for artifact in &item.active_ship_blocker_artifacts {
+        match safe_repo_path(root, artifact) {
+            Ok(path) if path.exists() => {
+                problems.push(format!("active ship blocker artifact {artifact}"));
+            }
+            Ok(_) => {}
+            Err(error) => {
+                problems.push(error.to_string());
+            }
+        }
+    }
+    problems
+}
+
+fn validate_manifest(
+    root: &Path,
+    definition: &ReleaseDefinition,
+    manifest: &EvidenceManifest,
+    gates: &gated_tests::GatedTestRegistry,
+    fast_suites: &fast_suite::FastSuiteRegistry,
+) -> Result<(), Box<dyn Error>> {
+    let mut problems = Vec::new();
+    if manifest.schema_version != 1 {
+        problems.push("evidence manifest schema_version must be 1".to_owned());
+    }
+    if normalize_release(&manifest.release) != definition.version {
+        problems.push("evidence manifest release mismatch".to_owned());
+    }
+    if manifest.plan.replace('\\', "/") != definition.plan.replace('\\', "/") {
+        problems.push("evidence manifest plan mismatch".to_owned());
+    }
+    let ids: Vec<_> = manifest
+        .work_item
+        .iter()
+        .map(|item| item.id.clone())
+        .collect();
+    if ids != definition.work_items {
+        problems
+            .push("evidence work items must match releases.toml exactly and in order".to_owned());
+    }
+    let unique: BTreeSet<_> = ids.iter().collect();
+    if unique.len() != ids.len() {
+        problems.push("duplicate evidence work item id".to_owned());
+    }
+    let plan = fs::read_to_string(root.join(&definition.plan))?;
+    let gate_ids: BTreeSet<_> = gates.gate.iter().map(|gate| gate.id.as_str()).collect();
+    let fast_ids: BTreeSet<_> = fast_suites
+        .suite
+        .iter()
+        .map(|suite| suite.id.as_str())
+        .collect();
+    for item in &manifest.work_item {
+        if !plan_has_work_item(&plan, &item.id) {
+            problems.push(format!("{} has no heading in the release plan", item.id));
+        }
+        for gate_id in &item.fast_gate_ids {
+            if !fast_ids.contains(gate_id.as_str()) {
+                problems.push(format!(
+                    "{} references unknown fast suite {gate_id}",
+                    item.id
+                ));
+            }
+        }
+        for gate_id in &item.gated_gate_ids {
+            if !gate_ids.contains(gate_id.as_str()) {
+                problems.push(format!(
+                    "{} references unknown gated proof {gate_id}",
+                    item.id
+                ));
+            }
+        }
+    }
+    if matches!(
+        manifest.canary_policy,
+        CanaryPolicy::DedicatedFlipSentinels
+            | CanaryPolicy::DedicatedFlipSentinelsWithDynamicRegistry
+    ) {
+        const REQUIRED_GATE: &str = "env.hydracache-run-redis-resp-multinode-e2e";
+        const REQUIRED_SOURCE: &str = "crates/hydracache-server/tests/redis_resp_multinode.rs";
+        const REQUIRED_SENTINELS: [&str; 9] = [
+            "multinode_resp_facade_documents_node_local_state",
+            "cross_node_mget_del_exists_are_node_local",
+            "cross_node_mset_is_node_local",
+            "multinode_resp_lock_subset_is_single_endpoint_only",
+            "cross_node_lock_release_is_node_local",
+            "cross_node_lock_extend_is_node_local",
+            "cross_node_ttl_visibility_is_node_local",
+            "cross_node_script_cache_is_node_local",
+            "cross_node_tag_index_is_node_local",
+        ];
+        let w3 = manifest.work_item.iter().find(|item| item.id == "W3");
+        if w3.is_none_or(|item| {
+            !item.gated_gate_ids.iter().any(|gate| gate == REQUIRED_GATE)
+                || REQUIRED_SENTINELS.iter().any(|required| {
+                    !item
+                        .required_tests
+                        .iter()
+                        .any(|test| test.source == REQUIRED_SOURCE && test.function == *required)
+                })
+        }) {
+            problems.push(format!(
+                "dedicated_flip_sentinels policy requires W3 gate {REQUIRED_GATE} and all nine exact Redis deployment sentinels"
+            ));
+        }
+    }
+    let dynamic_ids: BTreeSet<_> = manifest.dynamic_canary_work_items.iter().collect();
+    if dynamic_ids.len() != manifest.dynamic_canary_work_items.len() {
+        problems.push("duplicate dynamic canary work item id".to_owned());
+    }
+    for item in &manifest.dynamic_canary_work_items {
+        if !ids.iter().any(|id| id == item) {
+            problems.push(format!(
+                "dynamic canary references unknown work item {item}"
+            ));
+        }
+    }
+    if problems.is_empty() {
+        Ok(())
+    } else {
+        Err(problems.join("; ").into())
+    }
+}
+
+fn load_release_definition(
+    root: &Path,
+    release: &str,
+) -> Result<ReleaseDefinition, Box<dyn Error>> {
+    let value: toml::Value = toml::from_str(&fs::read_to_string(root.join(RELEASES_PATH))?)?;
+    let releases = value
+        .get("release")
+        .and_then(toml::Value::as_array)
+        .ok_or("releases.toml has no [[release]] rows")?;
+    let wanted = normalize_release(release);
+    let row = releases
+        .iter()
+        .find(|row| row.get("version").and_then(toml::Value::as_str) == Some(wanted.as_str()))
+        .ok_or_else(|| format!("release {wanted} is absent from releases.toml"))?;
+    let plan = row
+        .get("file")
+        .and_then(toml::Value::as_str)
+        .ok_or("release is missing file")?
+        .to_owned();
+    let work_items = row
+        .get("work_items")
+        .and_then(toml::Value::as_array)
+        .ok_or("release is missing work_items")?
+        .iter()
+        .map(|item| {
+            item.as_str()
+                .map(str::to_owned)
+                .ok_or("work_items must contain strings")
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let depends_on = row
+        .get("depends_on")
+        .and_then(toml::Value::as_array)
+        .map(|dependencies| {
+            dependencies
+                .iter()
+                .map(|dependency| {
+                    dependency
+                        .as_str()
+                        .map(str::to_owned)
+                        .ok_or("depends_on must contain strings")
+                })
+                .collect::<Result<Vec<_>, _>>()
+        })
+        .transpose()?
+        .unwrap_or_default();
+    Ok(ReleaseDefinition {
+        version: wanted,
+        plan,
+        work_items,
+        depends_on,
+    })
+}
+
+fn load_manifest(root: &Path, release: &str) -> Result<EvidenceManifest, Box<dyn Error>> {
+    let path = manifest_path(root, release);
+    parse_manifest_text(
+        &fs::read_to_string(&path)
+            .map_err(|error| format!("reading {}: {error}", path.display()))?,
+    )
+}
+
+fn manifest_path(root: &Path, release: &str) -> PathBuf {
+    root.join(format!(
+        "docs/testing/release-evidence/{}.toml",
+        release.trim_end_matches(".0")
+    ))
+}
+
+fn load_receipts(
+    root: &Path,
+    receipts_dir: Option<&Path>,
+    reasons: &mut Vec<String>,
+) -> Result<BTreeMap<String, Vec<EvidenceReceipt>>, Box<dyn Error>> {
+    let Some(receipts_dir) = receipts_dir else {
+        return Ok(BTreeMap::new());
+    };
+    let path = safe_target_path(root, receipts_dir)?;
+    if !path.is_dir() {
+        reasons.push(format!("receipts directory is missing: {}", path.display()));
+        return Ok(BTreeMap::new());
+    }
+    let mut receipts = BTreeMap::<String, Vec<EvidenceReceipt>>::new();
+    for entry in fs::read_dir(path)? {
+        let entry = entry?;
+        if entry.path().extension().and_then(|value| value.to_str()) != Some("json") {
+            continue;
+        }
+        match serde_json::from_slice::<EvidenceReceipt>(&fs::read(entry.path())?) {
+            Ok(receipt) => receipts
+                .entry(receipt.gate_id.clone())
+                .or_default()
+                .push(receipt),
+            Err(error) => reasons.push(format!(
+                "invalid receipt {}: {error}",
+                entry.path().display()
+            )),
+        }
+    }
+    Ok(receipts)
+}
+
+fn template_manifest(
+    root: &Path,
+    definition: &ReleaseDefinition,
+) -> Result<EvidenceManifest, Box<dyn Error>> {
+    let canaries = canary_check::load_registry_for_release(root, &definition.version)?;
+    if normalize_release(&canaries.release) != normalize_release(&definition.version) {
+        return Err(format!(
+            "canary registry release {} does not match template release {}",
+            canaries.release, definition.version
+        )
+        .into());
+    }
+    let by_id: BTreeMap<_, _> = canaries
+        .entries
+        .into_iter()
+        .map(|entry| (entry.w_item, entry.guard))
+        .collect();
+    let existing_manifest = load_manifest(root, &definition.version).ok();
+    let canary_policy = existing_manifest
+        .as_ref()
+        .map(|manifest| manifest.canary_policy)
+        .unwrap_or_default();
+    let dynamic_canary_work_items = existing_manifest.as_ref().map_or_else(
+        || {
+            if matches!(
+                canary_policy,
+                CanaryPolicy::DynamicRegistry
+                    | CanaryPolicy::DedicatedFlipSentinelsWithDynamicRegistry
+            ) {
+                by_id.keys().cloned().collect()
+            } else {
+                Vec::new()
+            }
+        },
+        |manifest| manifest.dynamic_canary_work_items.clone(),
+    );
+    let existing: BTreeMap<_, _> = existing_manifest
+        .map(|manifest| {
+            manifest
+                .work_item
+                .into_iter()
+                .map(|item| (item.id.clone(), item))
+                .collect()
+        })
+        .unwrap_or_default();
+    let fast_suites = fast_suite::load_registry(root)?;
+    let work_item = definition
+        .work_items
+        .iter()
+        .map(|id| {
+            let guard = by_id.get(id);
+            let current = existing.get(id);
+            EvidenceWorkItem {
+                id: id.clone(),
+                required_sources: current
+                    .map(|item| item.required_sources.clone())
+                    .unwrap_or_else(|| guard.iter().map(|guard| guard.file.clone()).collect()),
+                required_tests: current
+                    .map(|item| item.required_tests.clone())
+                    .unwrap_or_else(|| {
+                        guard
+                            .iter()
+                            .map(|guard| RequiredTest {
+                                source: guard.file.clone(),
+                                function: guard.function.clone(),
+                                language: TestLanguage::Rust,
+                            })
+                            .collect()
+                    }),
+                required_artifacts: current
+                    .map(|item| item.required_artifacts.clone())
+                    .unwrap_or_default(),
+                active_ship_blocker_artifacts: current
+                    .map(|item| item.active_ship_blocker_artifacts.clone())
+                    .unwrap_or_default(),
+                fast_gate_ids: current
+                    .map(|item| item.fast_gate_ids.clone())
+                    .unwrap_or_else(|| {
+                        fast_suites
+                            .suite
+                            .iter()
+                            .filter(|suite| suite.work_items.contains(id))
+                            .map(|suite| suite.id.clone())
+                            .collect()
+                    }),
+                gated_gate_ids: current
+                    .map(|item| item.gated_gate_ids.clone())
+                    .unwrap_or_default(),
+                ship_required: current.map(|item| item.ship_required).unwrap_or(true),
+            }
+        })
+        .collect();
+    Ok(EvidenceManifest {
+        schema_version: 1,
+        release: definition.version.clone(),
+        plan: definition.plan.clone(),
+        canary_policy,
+        dynamic_canary_work_items,
+        work_item,
+    })
+}
+
+pub fn dynamic_canary_release_problem(
+    policy: CanaryPolicy,
+    registry_release: &str,
+    candidate_release: &str,
+) -> Option<String> {
+    (matches!(
+        policy,
+        CanaryPolicy::DynamicRegistry
+            | CanaryPolicy::DedicatedFlipSentinelsWithDynamicRegistry
+    )
+        && normalize_release(registry_release) != normalize_release(candidate_release))
+    .then(|| {
+        format!(
+            "dynamic canary registry release {registry_release} does not match candidate release {}; equal work-item ids are not cross-release evidence",
+            normalize_release(candidate_release)
+        )
+    })
+}
+
+fn function_exists(root: &Path, test: &RequiredTest) -> Result<bool, Box<dyn Error>> {
+    let path = safe_repo_path(root, &test.source)?;
+    let source = fs::read_to_string(path)?;
+    match test.language {
+        TestLanguage::Rust => rust_test_exists(&source, &test.function),
+        TestLanguage::Java => Ok(java_test_exists(&source, &test.function)),
+        TestLanguage::Python => Ok(python_test_exists(&source, &test.function)),
+    }
+}
+
+fn rust_test_exists(source: &str, wanted: &str) -> Result<bool, Box<dyn Error>> {
+    struct Functions<'a> {
+        wanted: &'a str,
+        found: bool,
+    }
+    impl<'ast> Visit<'ast> for Functions<'_> {
+        fn visit_item_fn(&mut self, function: &'ast syn::ItemFn) {
+            if function.sig.ident == self.wanted
+                && function.attrs.iter().any(|attribute| {
+                    attribute
+                        .path()
+                        .segments
+                        .last()
+                        .is_some_and(|segment| segment.ident == "test")
+                })
+            {
+                self.found = true;
+            }
+            syn::visit::visit_item_fn(self, function);
+        }
+
+        fn visit_item_macro(&mut self, item: &'ast syn::ItemMacro) {
+            if item
+                .mac
+                .path
+                .segments
+                .last()
+                .is_some_and(|segment| segment.ident == "proptest")
+                && doc_check::proptest_test_names(item.mac.tokens.clone()).contains(self.wanted)
+            {
+                self.found = true;
+            }
+            syn::visit::visit_item_macro(self, item);
+        }
+    }
+    let syntax = syn::parse_file(source)?;
+    let mut functions = Functions {
+        wanted,
+        found: false,
+    };
+    functions.visit_file(&syntax);
+    Ok(functions.found)
+}
+
+fn java_test_exists(source: &str, wanted: &str) -> bool {
+    let signature = format!(" {wanted}(");
+    source.match_indices(&signature).any(|(index, _)| {
+        let prefix = &source[..index];
+        let annotation_window = &prefix[prefix.len().saturating_sub(512)..];
+        annotation_window.contains("@Test") || annotation_window.contains("@TestFactory")
+    })
+}
+
+fn python_test_exists(source: &str, wanted: &str) -> bool {
+    wanted.starts_with("test_")
+        && (source.contains(&format!("def {wanted}("))
+            || source.contains(&format!("async def {wanted}(")))
+}
+
+fn plan_has_work_item(plan: &str, id: &str) -> bool {
+    plan.lines().any(|line| {
+        let line = line.trim_start_matches('#').trim_start();
+        line.starts_with(&format!("{id}.")) || line.starts_with(&format!("{id} "))
+    })
+}
+
+fn safe_repo_path(root: &Path, value: &str) -> Result<PathBuf, Box<dyn Error>> {
+    let path = Path::new(value);
+    if value.trim().is_empty()
+        || path.is_absolute()
+        || path.components().any(|component| {
+            matches!(
+                component,
+                Component::ParentDir | Component::RootDir | Component::Prefix(_)
+            )
+        })
+    {
+        return Err(format!("unsafe repository path: {value:?}").into());
+    }
+    Ok(root.join(path))
+}
+
+fn safe_target_path(root: &Path, value: &Path) -> Result<PathBuf, Box<dyn Error>> {
+    let text = value.to_string_lossy();
+    let path = safe_repo_path(root, &text)?;
+    if value.components().next() != Some(Component::Normal(std::ffi::OsStr::new("target"))) {
+        return Err("receipts directory must be a relative path inside target".into());
+    }
+    Ok(path)
+}
+
+fn write_report(
+    root: &Path,
+    release: &str,
+    report: &ReleaseEvidenceReport,
+) -> Result<(), Box<dyn Error>> {
+    let directory = root.join("target/release-evidence");
+    fs::create_dir_all(&directory)?;
+    let stem = release.trim_end_matches(".0");
+    fs::write(
+        directory.join(format!("{stem}.json")),
+        serde_json::to_vec_pretty(report)?,
+    )?;
+    let mut markdown = format!(
+        "# Release {} evidence\n\nCommit: `{}`\n\n",
+        report.release, report.source_commit
+    );
+    if !report.reasons.is_empty() {
+        markdown.push_str("## Release-wide reasons\n\n");
+        for reason in &report.reasons {
+            writeln!(markdown, "- {reason}")?;
+        }
+        markdown.push('\n');
+    }
+    markdown.push_str("| Work item | Stage | Reasons |\n|---|---|---|\n");
+    for item in &report.work_items {
+        writeln!(
+            markdown,
+            "| {} | {} | {} |",
+            item.id,
+            stage_name(item.stage),
+            item.reasons.join("; ").replace('|', "\\|")
+        )?;
+    }
+    fs::write(directory.join(format!("{stem}.md")), markdown)?;
+    Ok(())
+}
+
+fn count(report: &ReleaseEvidenceReport, stage: EvidenceStage) -> usize {
+    report
+        .work_items
+        .iter()
+        .filter(|item| item.stage == stage)
+        .count()
+}
+
+fn stage_name(stage: EvidenceStage) -> &'static str {
+    match stage {
+        EvidenceStage::Planned => "planned",
+        EvidenceStage::Implemented => "implemented",
+        EvidenceStage::FastGreen => "fast-green",
+        EvidenceStage::GatedGreen => "gated-green",
+        EvidenceStage::ShipReady => "ship-ready",
+    }
+}
+
+fn git_identity(root: &Path) -> Result<(String, bool), Box<dyn Error>> {
+    let commit = command_output(root, &["rev-parse", "HEAD"])?;
+    let status = command_output(root, &["status", "--porcelain", "--untracked-files=normal"])?;
+    Ok((commit, !status.is_empty()))
+}
+
+fn git_is_ancestor(root: &Path, ancestor: &str, descendant: &str) -> bool {
+    Command::new("git")
+        .args(["merge-base", "--is-ancestor", ancestor, descendant])
+        .current_dir(root)
+        .status()
+        .is_ok_and(|status| status.success())
+}
+
+fn git_ref_exists(root: &Path, reference: &str) -> bool {
+    Command::new("git")
+        .args(["rev-parse", "--verify", reference])
+        .current_dir(root)
+        .output()
+        .is_ok_and(|output| output.status.success())
+}
+
+fn command_output(root: &Path, args: &[&str]) -> Result<String, Box<dyn Error>> {
+    let output = Command::new("git").args(args).current_dir(root).output()?;
+    if !output.status.success() {
+        return Err(format!("git {} failed", args.join(" ")).into());
+    }
+    Ok(String::from_utf8_lossy(&output.stdout).trim().to_owned())
+}
+
+fn sha256(bytes: &[u8]) -> String {
+    Sha256::digest(bytes)
+        .iter()
+        .fold(String::with_capacity(64), |mut output, byte| {
+            let _ = write!(output, "{byte:02x}");
+            output
+        })
+}
+
+fn normalize_release(release: &str) -> String {
+    if release.matches('.').count() == 1 {
+        format!("{release}.0")
+    } else {
+        release.to_owned()
+    }
+}
+
+struct Options {
+    root: PathBuf,
+    release: String,
+    receipts_dir: Option<PathBuf>,
+    require_ship: bool,
+    emit_template: bool,
+}
+
+impl Options {
+    fn parse(args: Vec<String>) -> Result<Self, Box<dyn Error>> {
+        let mut root = doc_check::find_repo_root()?;
+        let mut release = None;
+        let mut receipts_dir = None;
+        let mut require_ship = false;
+        let mut emit_template = false;
+        let mut args = args.into_iter();
+        while let Some(arg) = args.next() {
+            match arg.as_str() {
+                "--root" => root = PathBuf::from(args.next().ok_or("--root requires a path")?),
+                "--release" => release = Some(args.next().ok_or("--release requires a value")?),
+                "--receipts-dir" => {
+                    receipts_dir = Some(PathBuf::from(
+                        args.next().ok_or("--receipts-dir requires a path")?,
+                    ))
+                }
+                "--require-ship" => require_ship = true,
+                "--emit-template" => emit_template = true,
+                other => return Err(format!("unknown release-evidence argument: {other}").into()),
+            }
+        }
+        Ok(Self {
+            root,
+            release: release.ok_or("release-evidence requires --release")?,
+            receipts_dir,
+            require_ship,
+            emit_template,
+        })
+    }
+}
+
+#[cfg(test)]
+mod report_output_tests {
+    use super::{write_report, EvidenceStage, ReleaseEvidenceReport, WorkItemReport};
+
+    fn fixture() -> ReleaseEvidenceReport {
+        ReleaseEvidenceReport {
+            schema_version: 1,
+            release: "0.74.0".to_owned(),
+            source_commit: "synthetic-rendering-fixture".to_owned(),
+            current_worktree_dirty: false,
+            receipts_supplied: true,
+            counts: [("fast-green".to_owned(), 1), ("ship-ready".to_owned(), 0)].into(),
+            reasons: Vec::new(),
+            work_items: vec![WorkItemReport {
+                id: "W0".to_owned(),
+                stage: EvidenceStage::FastGreen,
+                reasons: Vec::new(),
+            }],
+        }
+    }
+
+    #[test]
+    fn markdown_preserves_every_release_wide_reason_before_work_item_rows() {
+        let root = tempfile::tempdir().unwrap();
+        let mut report = fixture();
+        report.reasons = vec![
+            crate::performance_contract_074::SHIP_ADMISSION_BLOCKER.to_owned(),
+            "required compatibility baseline tag v0.example is missing".to_owned(),
+        ];
+        report.work_items[0].reasons = vec!["row-local | reason".to_owned()];
+        for release in ["0.74", "0.74.0"] {
+            write_report(root.path(), release, &report).unwrap();
+            let markdown =
+                std::fs::read_to_string(root.path().join("target/release-evidence/0.74.md"))
+                    .unwrap();
+            let heading = markdown.find("## Release-wide reasons").unwrap();
+            let table = markdown.find("| Work item | Stage | Reasons |").unwrap();
+            for reason in &report.reasons {
+                let position = markdown.find(&format!("- {reason}\n")).unwrap();
+                assert!(heading < position && position < table);
+                assert_eq!(markdown.matches(reason).count(), 1);
+            }
+            assert!(markdown.contains("| W0 | fast-green | row-local \\| reason |"));
+            let json: serde_json::Value = serde_json::from_slice(
+                &std::fs::read(root.path().join("target/release-evidence/0.74.json")).unwrap(),
+            )
+            .unwrap();
+            assert_eq!(json, serde_json::to_value(&report).unwrap());
+        }
+    }
+
+    #[test]
+    fn markdown_without_release_wide_reasons_preserves_legacy_layout() {
+        let root = tempfile::tempdir().unwrap();
+        let mut report = fixture();
+        report.release = "0.64.0".to_owned();
+        write_report(root.path(), "0.64", &report).unwrap();
+        let markdown =
+            std::fs::read_to_string(root.path().join("target/release-evidence/0.64.md")).unwrap();
+        assert_eq!(
+            markdown,
+            "# Release 0.64.0 evidence\n\nCommit: `synthetic-rendering-fixture`\n\n| Work item | Stage | Reasons |\n|---|---|---|\n| W0 | fast-green |  |\n"
+        );
+    }
+}
+
+#[cfg(test)]
+mod language_selector_tests {
+    use super::{
+        evidence_only_0671_dependency_problems, java_test_exists,
+        management_mixed_artifact_problems, management_soak_artifact_problems, python_test_exists,
+        rust_test_exists,
+    };
+    use std::path::Path;
+
+    #[test]
+    fn evidence_only_0671_dependency_accepts_the_committed_closure() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let source = super::git_identity(&root).expect("git identity").0;
+        assert!(
+            evidence_only_0671_dependency_problems(&root, &source).is_empty(),
+            "the pinned 0.67.1 evidence milestone must remain verifiable"
+        );
+    }
+
+    #[test]
+    fn evidence_only_0671_dependency_rejects_missing_receipt() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("nonexistent-evidence-root");
+        assert!(
+            evidence_only_0671_dependency_problems(&root, "not-a-commit")
+                .iter()
+                .any(|reason| reason.contains("receipt is missing"))
+        );
+    }
+
+    #[test]
+    fn java_selector_requires_a_junit_annotation() {
+        let junit = "@Test\nvoid liveContract() {}";
+        assert!(java_test_exists(junit, "liveContract"));
+        assert!(!java_test_exists("void liveContract() {}", "liveContract"));
+    }
+
+    #[test]
+    fn python_selector_requires_test_prefix_and_definition() {
+        assert!(python_test_exists(
+            "async def test_contract():\n    pass",
+            "test_contract"
+        ));
+        assert!(!python_test_exists("def contract():\n    pass", "contract"));
+    }
+
+    #[test]
+    fn rust_selector_still_requires_a_test_attribute() {
+        assert!(rust_test_exists("#[test]\nfn contract() {}", "contract").unwrap());
+        assert!(!rust_test_exists("fn contract() {}", "contract").unwrap());
+    }
+
+    #[test]
+    fn management_soak_artifact_requires_real_duration_traffic_recovery_and_bounds() {
+        let artifact = serde_json::json!({
+            "schema_version": 3,
+            "release": "0.72.0",
+            "tier": "candidate-six-hour",
+            "required_duration_seconds": 21600,
+            "observed_duration_seconds": 21600,
+            "started_unix_seconds": 100,
+            "ended_unix_seconds": 21700,
+            "host_fingerprint_sha256": "a".repeat(64),
+            "binary_sha256": "b".repeat(64),
+            "seed": 0x0720_1200_0000_0001_u64,
+            "management_samples": 21600,
+            "hc1_samples": 21600,
+            "hc1_keyspace_size": 64,
+            "resp_samples": 21600,
+            "recovery_cycles": 5,
+            "endpoint_p95_ms": 100,
+            "schedule_digest": "c".repeat(64),
+            "event_digest": "d".repeat(64),
+            "baseline": {"rss_kib": 1000, "rss_hwm_kib": 1100, "open_fds": 20},
+            "final_sample": {"rss_kib": 1200, "rss_hwm_kib": 1250, "open_fds": 24},
+            "resource_sample_interval_seconds": 60,
+            "resource_timeline": (0..=360).map(|minute| serde_json::json!({
+                "elapsed_seconds": minute * 60,
+                "processes": (0..3).map(|node_index| serde_json::json!({
+                    "node_index": node_index,
+                    "node_id": format!("member-{node_index}"),
+                    "pid": 100 + node_index,
+                    "rss_kib": 400,
+                    "rss_hwm_kib": 450,
+                    "open_fds": 8
+                })).collect::<Vec<_>>()
+            })).collect::<Vec<_>>()
+        });
+        let bytes = serde_json::to_vec(&artifact).unwrap();
+        assert!(management_soak_artifact_problems(
+            "target/test-evidence/0.72/management-candidate-soak.json",
+            &bytes
+        )
+        .is_empty());
+
+        let mut shortened = artifact;
+        shortened["observed_duration_seconds"] = 60.into();
+        shortened["ended_unix_seconds"] = 160.into();
+        shortened["hc1_samples"] = 0.into();
+        shortened["hc1_keyspace_size"] = 0.into();
+        shortened["endpoint_p95_ms"] = 2501.into();
+        shortened["resource_timeline"] = serde_json::json!([]);
+        let problems = management_soak_artifact_problems(
+            "target/test-evidence/0.72/management-candidate-soak.json",
+            &serde_json::to_vec(&shortened).unwrap(),
+        );
+        assert!(problems.iter().any(|problem| problem.contains("duration")));
+        assert!(problems.iter().any(|problem| problem.contains("traffic")));
+        assert!(problems.iter().any(|problem| problem.contains("64-key")));
+        assert!(problems.iter().any(|problem| problem.contains("bounds")));
+        assert!(problems
+            .iter()
+            .any(|problem| problem.contains("per-process")));
+    }
+
+    #[test]
+    fn management_mixed_artifact_requires_distinct_binaries_and_all_scenarios() {
+        let scenario = |id: &str| {
+            serde_json::json!({
+                "id": id,
+                "outcome": "pass",
+                "observation_sha256": "c".repeat(64)
+            })
+        };
+        let artifact = serde_json::json!({
+            "schema_version": 1,
+            "release": "0.72.0",
+            "previous_tag": "v0.71.0",
+            "previous_commit": "a".repeat(40),
+            "previous_binary_sha256": "a".repeat(64),
+            "candidate_binary_sha256": "b".repeat(64),
+            "scenarios": [
+                scenario("old-leader-new-followers"),
+                scenario("new-leader-old-follower"),
+                scenario("leadership-change-during-aggregation"),
+                scenario("old-peer-restart-during-placement-trace"),
+                scenario("rollback-after-ui-observation")
+            ]
+        });
+        let path = "target/test-evidence/0.72/management-mixed-071-072.json";
+        assert!(
+            management_mixed_artifact_problems(path, &serde_json::to_vec(&artifact).unwrap())
+                .is_empty()
+        );
+
+        let mut tampered = artifact;
+        tampered["candidate_binary_sha256"] = "a".repeat(64).into();
+        tampered["scenarios"].as_array_mut().unwrap().pop();
+        let problems =
+            management_mixed_artifact_problems(path, &serde_json::to_vec(&tampered).unwrap());
+        assert!(problems
+            .iter()
+            .any(|problem| problem.contains("byte-identical")));
+        assert!(problems
+            .iter()
+            .any(|problem| problem.contains("five passing")));
+    }
+}

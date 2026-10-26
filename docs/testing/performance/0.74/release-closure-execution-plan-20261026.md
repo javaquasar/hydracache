@@ -52,6 +52,14 @@ Windows all-targets check, strict all-feature Clippy and local gates pass.
 The first GNU worktree-pointer refusal and corrected explicit test environment
 remain distinct. No original-execution or package admission follows.
 
+The [separate V7 source/effect review](package-review-v7-result-20261026.md)
+closes 372 Rust inputs and 25,988 sites in two rounds. Its 147-target catalog
+contains exactly two new ordinary targets; diagnostic Git CPU children remain
+off for the default argv. All 51 auxiliary inputs and inherited environment
+guards are pinned. Seventeen new refusal/dispatch controls pass. This prepares
+a changed-source full command under the original limit; it does not replace
+V6's first timeout or provide a package verdict.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

@@ -21178,3 +21178,22 @@ execution instead exposes the Windows worktree pointer as an invalid Linux Git
 path. Its refusal remains separate from the corrected explicit test environment;
 neither Git config nor the worktree pointer is rewritten. Offline inverse-view
 and six tamper controls validate the retained packet without executing its source.
+
+### Current effect review after the security input bridge
+
+The [separate current package review](../testing/performance/0.74/package-review-v7-result-20261026.md)
+distinguishes diagnostic entry points from default package effects. A new Git
+CPU target does not enable measurements merely by entering the test catalog:
+its child requires an exact single-thread argv, whereas the entire package
+retains four threads and no filter. The pipe fixture's independent oracle checks
+original raw bytes, status and absence of a variable libtest footer; it does not
+normalize observed output to obtain equality.
+
+The closed inventory contains 372 Rust sources and 25,988 syntax sites. Relative
+to the preceding review, 364 complete rows remain unchanged and eight have an
+explicit manual classification. Fifty-one auxiliary pins cover both inherited
+scripts and newly reached data/imports. Seventeen mutation and dispatch controls
+pass; changed review code refuses before import. These are coverage and safety
+checks, not measured speedups. Dependency successors still need a complete new
+package result under the original bound, and neither that result nor diagnostic
+CI cleanup can substitute for authenticated worker release and writer retirement.

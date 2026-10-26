@@ -425,6 +425,24 @@ Its positive unit fixture materializes the exact retained v2 data; a substituted
 catalog avoids executing archived Python, and current-tree refusal stays a
 separate negative control. This fixture is not current-source effect clearance.
 
+## Current security successor scope v7
+
+`package_effects_review_v7.py` checks a separately reviewed 372-source AST,
+364 unchanged complete rows, four changed/four added source pins, 51 auxiliary
+inputs and 147 default targets. Inherited V6 review is read from its sealed
+receipt, never refreshed against current sources. Project Python imports follow
+auxiliary checks; exact child argv keeps Git CPU diagnostic entries dormant.
+The source fixture and parser receipts are retained as data in the
+[V7 review packet](../../docs/testing/performance/0.74/local-runs/package-review-v7-20261026/index.json).
+
+`package_replay_v7.py NEW_LABEL` is preflight-only. Only `--execute` dispatches
+the unchanged 780-second/four-thread/default entire package command. It checks
+review bytes before import, original ignored wrappers, all inherited environment
+guards and a clean expanded source scope. It accepts no timeout, filter or retry
+option. Its coordinator deliberately never infers a package pass from process
+exit; complete target/case output must be assessed separately. V6 is immutable
+and is not retried. See the [review report](../../docs/testing/performance/0.74/package-review-v7-result-20261026.md).
+
 ## Repaired scope v3 without a dispatcher
 
 `package_effects_review_v3.py SYNTAX_JSON` requires the separately reviewed

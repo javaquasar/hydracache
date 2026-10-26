@@ -1,0 +1,7 @@
+{
+  "additions": {
+    "tools/security-input-view-074/contract.rs": "ae4138993c239ff11032ef333c1cb40c487badd9ea65ea4d1a40b99423071b4c",
+    "tools/source-successor-view-074/diagnostic.rs": "71e7926afafdb181aa65cb614a9eb0ec21f18c1e43a3d70f77208418cb8b9fee"
+  },
+  "unresolved": []
+}
