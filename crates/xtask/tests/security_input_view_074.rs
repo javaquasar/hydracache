@@ -11,9 +11,12 @@ const ROOT_TEST: &str = "crates/xtask/tests/performance_contract_074.rs";
 const PRODUCER: &str = "2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d";
 
 fn raw(path: &str) -> String {
-    std::fs::read_to_string(runtime::root().join(path))
+    let current = std::fs::read_to_string(runtime::root().join(path))
         .unwrap()
-        .replace("\r\n", "\n")
+        .replace("\r\n", "\n");
+    // Fresh current bytes must pass the separately approved roots boundary;
+    // the unchanged security rules then still see their exact producer body.
+    runtime::successor::roots::project(path, current)
 }
 
 fn predecessor(path: &str) -> String {
@@ -150,9 +153,9 @@ fn existing_five_path_rules_and_fresh_io_are_unchanged() {
     let current = raw(path);
     let old = runtime::frozen(security::BASE, path);
     let expected = old.replacen("use sha2::{Digest, Sha256};",
-        "use sha2::{Digest, Sha256};\n#[path = \"diagnostic.rs\"]\npub mod diagnostic;\n#[path = \"../security-input-view-074/contract.rs\"]\npub mod security;",1)
+        "use sha2::{Digest, Sha256};\n#[path = \"diagnostic.rs\"]\npub mod diagnostic;\n#[path = \"../roots-lock-view-074/contract.rs\"]\npub mod roots;\n#[path = \"../security-input-view-074/contract.rs\"]\npub mod security;",1)
         .replacen("pub fn project(path: &str, raw: String) -> String {",
-        "pub fn project(path: &str, raw: String) -> String {\n    let raw = diagnostic::project(path, raw);\n    let raw = security::project(path, raw);",1);
+        "pub fn project(path: &str, raw: String) -> String {\n    let raw = roots::project(path, raw);\n    let raw = diagnostic::project(path, raw);\n    let raw = security::project(path, raw);",1);
     assert_eq!(current, expected, "exact pure entry edit only");
 }
 

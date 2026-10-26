@@ -3,6 +3,8 @@ use serde::Deserialize;
 use sha2::{Digest, Sha256};
 #[path = "diagnostic.rs"]
 pub mod diagnostic;
+#[path = "../roots-lock-view-074/contract.rs"]
+pub mod roots;
 #[path = "../security-input-view-074/contract.rs"]
 pub mod security;
 
@@ -76,6 +78,7 @@ fn rules() -> &'static Rules {
 }
 
 pub fn project(path: &str, raw: String) -> String {
+    let raw = roots::project(path, raw);
     let raw = diagnostic::project(path, raw);
     let raw = security::project(path, raw);
     if !PATHS.contains(&path) {
