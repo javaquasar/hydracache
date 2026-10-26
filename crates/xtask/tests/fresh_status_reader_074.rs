@@ -17,8 +17,15 @@ fn expected_reader() -> String {
     let after = "    let loader = if path == runtime::status_fields::SOURCE {\n        runtime_io::read_to_string\n    } else {\n        std::fs::read_to_string\n    };\n    let raw = loader(\n";
     assert_eq!(old.matches(hook).count(), 1);
     assert_eq!(old.matches(before).count(), 1);
-    old.replacen(hook, &format!("{hook}{imports}"), 1)
-        .replacen(before, after, 1)
+    let previous = old
+        .replacen(hook, &format!("{hook}{imports}"), 1)
+        .replacen(before, after, 1);
+    let current = kernel_phase::current(kernel_phase::FRESH, &previous)
+        .expect("exact kernel reader successor");
+    kernel_phase::previous(kernel_phase::FRESH, &current)
+        .filter(|body| body == &previous)
+        .expect("exact kernel reader predecessor");
+    current
 }
 
 #[test]
@@ -69,3 +76,6 @@ fn fresh_status_admission_requires_exact_source_and_helper_before_old_input() {
         "{helper}\n// unreviewed helper"
     )));
 }
+
+#[path = "../../../tools/remaining-readers-074/contract.rs"]
+mod kernel_phase;

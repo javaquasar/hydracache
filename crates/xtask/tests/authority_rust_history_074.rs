@@ -1,6 +1,6 @@
 #[path = "../../../tools/authority-rust-history-074/contract.rs"]
 mod contract;
-#[path = "support/current_tree_input.rs"]
+#[path = "../../../tools/history-status-readers-074/inputs.rs"]
 mod current_inputs;
 #[path = "support/authority_history_io.rs"]
 mod history;

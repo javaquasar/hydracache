@@ -59,5 +59,9 @@ pub fn extend(original: &str) -> String {
         "fn read(path: &str) -> String {\n    current_inputs::read(path)\n}",
     );
     let before = "        assert!(history::safe_path(path));\n";
-    replace(&raw, before, &format!("{before}        if !previous.contains(path) && current_inputs::known_addition(path) {{\n            current_inputs::require_addition(path);\n            continue;\n        }}\n"))
+    let previous = replace(&raw, before, &format!("{before}        if !previous.contains(path) && current_inputs::known_addition(path) {{\n            current_inputs::require_addition(path);\n            continue;\n        }}\n"));
+    frontier_phase::current(frontier_phase::HISTORY, &previous).unwrap()
 }
+
+#[path = "../history-status-readers-074/contract.rs"]
+pub(crate) mod frontier_phase;
