@@ -69,6 +69,73 @@ fn pipe_fixture_child() {
         }
         _ => panic!("unknown fixture"),
     }
+    // This synthetic child is a byte/exit fixture, not a nested test verdict.
+    // Do not append libtest's variable elapsed-time footer to its raw output.
+    // Keep exact stream comparisons below; never normalize captured bytes.
+    std::io::stdout().flush().unwrap();
+    std::io::stderr().flush().unwrap();
+    std::process::exit(0);
+}
+
+fn fixture_streams_match(mode: &str, stdout: &[u8], stderr: &[u8], code: Option<i32>) -> bool {
+    let mut expected_stdout = b"\nrunning 1 test\ntest pipe_fixture_child ... ".to_vec();
+    let (out, err, expected_code) = match mode {
+        "empty" => (Vec::new(), Vec::new(), 0),
+        "nonzero" => (
+            b"original stdout\0\xff\n".to_vec(),
+            b"original stderr\0\xfe\n".to_vec(),
+            7,
+        ),
+        "large" => (vec![b'o'; 1024 * 1024], vec![b'e'; 1024 * 1024], 0),
+        _ => return false,
+    };
+    expected_stdout.extend_from_slice(&out);
+    code == Some(expected_code) && stdout == expected_stdout && stderr == err
+}
+
+#[test]
+fn independent_fixture_oracle_rejects_payload_status_and_footer_drift() {
+    let prefix = b"\nrunning 1 test\ntest pipe_fixture_child ... ";
+    for (mode, payload, stderr, code) in [
+        ("empty", Vec::new(), Vec::new(), 0),
+        (
+            "nonzero",
+            b"original stdout\0\xff\n".to_vec(),
+            b"original stderr\0\xfe\n".to_vec(),
+            7,
+        ),
+        ("large", vec![b'o'; 1024 * 1024], vec![b'e'; 1024 * 1024], 0),
+    ] {
+        let stdout = [prefix.as_slice(), &payload].concat();
+        assert!(fixture_streams_match(mode, &stdout, &stderr, Some(code)));
+        assert!(!fixture_streams_match(
+            mode,
+            &stdout,
+            &stderr,
+            Some(code + 1)
+        ));
+        assert!(!fixture_streams_match(mode, &stdout, &stderr, None));
+        let mut changed = stdout.clone();
+        *changed.last_mut().unwrap() ^= 1;
+        assert!(!fixture_streams_match(mode, &changed, &stderr, Some(code)));
+        let mut changed = stderr.clone();
+        changed.push(0);
+        assert!(!fixture_streams_match(mode, &stdout, &changed, Some(code)));
+        for footer in [b"finished in 0.00s\n", b"finished in 0.01s\n"] {
+            assert!(!fixture_streams_match(
+                mode,
+                &[stdout.as_slice(), footer].concat(),
+                &stderr,
+                Some(code)
+            ));
+        }
+        assert!(!fixture_streams_match(
+            "unknown",
+            &stdout,
+            &stderr,
+            Some(code)
+        ));
+    }
 }
 
 #[cfg(windows)]
@@ -94,6 +161,12 @@ fn pipe_semantics_empty_binary_nonzero_and_large_streams() {
         assert_eq!(original.status, observed.status, "{mode}");
         assert_eq!(original.stdout, observed.stdout, "{mode}");
         assert_eq!(original.stderr, observed.stderr, "{mode}");
+        for output in [&original, &observed] {
+            assert!(
+                fixture_streams_match(mode, &output.stdout, &output.stderr, output.status.code()),
+                "{mode}: independent exact stdout/stderr/status oracle"
+            );
+        }
         assert_eq!(
             original.status.code(),
             Some(if mode == "nonzero" { 7 } else { 0 })
