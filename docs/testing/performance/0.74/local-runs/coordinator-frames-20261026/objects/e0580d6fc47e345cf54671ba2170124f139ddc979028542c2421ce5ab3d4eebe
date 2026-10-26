@@ -1,0 +1,48 @@
+"""Tape-only examples on injected deterministic clocks; no owner/API/workload."""
+import json
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT/'target/coordinator-frames-synthetic-20261026/first'
+OUT.mkdir(parents=True, exist_ok=False)
+def write(name, value):
+    with (OUT/name).open('x', encoding='utf-8', newline='\n') as stream:
+        json.dump(value, stream, sort_keys=True, indent=2)
+        stream.write('\n')
+write('intent.json', dict(scope='tape-only synthetic; no owner or native APIs', new_workload_calls=0,
+    clocks='injected deterministic integers', cases=['healthy', 'clock-fault', 'dual-refusal', 'interrupted'],
+    native_control_executed=False, package_pass=False))
+sys.path.insert(0, str(ROOT/'tools/xtask-package-attribution-074'))
+from coordinator_frames import Tape, PHASES, attach
+
+class Clock:
+    def __init__(self, fail=None):
+        self.count, self.fail = 0, fail
+    def read(self):
+        self.count += 1
+        if self.count == self.fail:
+            raise OSError('synthetic first clock fault')
+        return self.count*10
+
+cases = []
+for name, failure in [('healthy', None), ('clock-fault', 8), ('dual-refusal', 1), ('interrupted', None)]:
+    clock = Clock(failure)
+    tape = Tape(wall=clock.read, cpu=clock.read, clock_domain='synthetic-control')
+    if name == 'interrupted':
+        tape.begin('setup')
+        tape.end('setup')
+        tape.begin('spawn')
+    else:
+        for phase in PHASES:
+            tape.begin(phase)
+            tape.end(phase)
+    operation_passed = name in ('healthy', 'clock-fault')
+    result = attach(dict(passed=operation_passed, first_refusal=None if operation_passed else
+                         'Refusal: synthetic original operation', cleanup_errors=[]), tape)
+    cases.append(dict(name=name, clock_reads=clock.count, modeled_operation_only=True, result=result))
+require = lambda ok: None if ok else (_ for _ in ()).throw(ValueError('synthetic example verdict differs'))
+require([case['clock_reads'] for case in cases] == [36, 8, 1, 9])
+require([case['result']['passed'] for case in cases] == [True, False, False, False])
+write('result.json', dict(passed=True, cases=cases, native_control_executed=False, new_workload_calls=0, package_pass=False))
+print(dict(synthetic_cases=4, new_workload_calls=0, native_control_executed=False, package_pass=False))

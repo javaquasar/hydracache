@@ -1,0 +1,9 @@
+test_arithmetic_and_ast_replay_without_native_control (__main__.Integrity.test_arithmetic_and_ast_replay_without_native_control) ... ok
+test_first_sources_refusals_raw_examples_and_operational_ast_cannot_change (__main__.Integrity.test_first_sources_refusals_raw_examples_and_operational_ast_cannot_change) ... ok
+test_index_mutation_refuses (__main__.Integrity.test_index_mutation_refuses) ... ok
+test_missing_object_refuses (__main__.Integrity.test_missing_object_refuses) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.156s
+
+OK

@@ -1,0 +1,22 @@
+test_bad_clock_domains_cannot_silently_mislabel_injected_clocks (test_coordinator_frames.Model.test_bad_clock_domains_cannot_silently_mislabel_injected_clocks) ... ok
+test_complete_bounded_raw_brackets_and_zero_cpu (test_coordinator_frames.Model.test_complete_bounded_raw_brackets_and_zero_cpu) ... ok
+test_default_gate_does_not_construct_tape_or_change_intent (test_coordinator_frames.Model.test_default_gate_does_not_construct_tape_or_change_intent) ... ok
+test_each_ordinary_probe_fault_drains_healthy_owner_without_termination (test_coordinator_frames.Model.test_each_ordinary_probe_fault_drains_healthy_owner_without_termination) ... ok
+test_effect_ast_matches_current_and_sealed_original_measure (test_coordinator_frames.Model.test_effect_ast_matches_current_and_sealed_original_measure) ... ok
+test_existing_late_deadline_still_refuses (test_coordinator_frames.Model.test_existing_late_deadline_still_refuses) ... ok
+test_fatal_probe_interrupt_after_spawn_still_uses_original_cleanup (test_coordinator_frames.Model.test_fatal_probe_interrupt_after_spawn_still_uses_original_cleanup) ... ok
+test_gate_is_strict_boolean_and_cli_flag_is_exact (test_coordinator_frames.Model.test_gate_is_strict_boolean_and_cli_flag_is_exact) ... ok
+test_import_failure_is_retained_after_exclusive_intent_before_any_api (test_coordinator_frames.Model.test_import_failure_is_retained_after_exclusive_intent_before_any_api) ... ok
+test_interrupted_operation_has_no_invented_end_or_unobserved_zero (test_coordinator_frames.Model.test_interrupted_operation_has_no_invented_end_or_unobserved_zero) ... ok
+test_model_differential_preserves_operations_clocks_command_and_original_fields (test_coordinator_frames.Model.test_model_differential_preserves_operations_clocks_command_and_original_fields) ... ok
+test_opt_in_first_telemetry_refusal_stops_without_subset_summary (test_coordinator_frames.Model.test_opt_in_first_telemetry_refusal_stops_without_subset_summary) ... ok
+test_opt_in_gate_separates_output_and_preserves_shared_origin (test_coordinator_frames.Model.test_opt_in_gate_separates_output_and_preserves_shared_origin) ... ok
+test_ordinary_clock_fault_freezes_after_first_read_and_keeps_partial_probe (test_coordinator_frames.Model.test_ordinary_clock_fault_freezes_after_first_read_and_keeps_partial_probe) ... ok
+test_runtime_first_refusal_and_original_custody_survive_telemetry_failure (test_coordinator_frames.Model.test_runtime_first_refusal_and_original_custody_survive_telemetry_failure) ... ok
+test_type_and_monotonicity_faults_do_not_retry (test_coordinator_frames.Model.test_type_and_monotonicity_faults_do_not_retry) ... ok
+test_unexpected_phase_and_capture_reuse_refuse_without_new_reads (test_coordinator_frames.Model.test_unexpected_phase_and_capture_reuse_refuse_without_new_reads) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 1.137s
+
+OK

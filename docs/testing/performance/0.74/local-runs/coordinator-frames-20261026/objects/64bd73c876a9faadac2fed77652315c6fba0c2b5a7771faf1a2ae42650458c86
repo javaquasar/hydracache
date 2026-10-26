@@ -1,0 +1,25 @@
+test_active_wrong_process_count_and_duplicate_lifetime_refuse (test_git_job_cpu.Accounting.test_active_wrong_process_count_and_duplicate_lifetime_refuse) ... ok
+test_bad_labels_refuse_without_job_or_process (test_git_job_cpu.Accounting.test_bad_labels_refuse_without_job_or_process) ... ok
+test_both_modes_require_stable_complete_terminal_job (test_git_job_cpu.Accounting.test_both_modes_require_stable_complete_terminal_job) ... ok
+test_cleanup_errors_cannot_skip_either_close (test_git_job_cpu.Accounting.test_cleanup_errors_cannot_skip_either_close) ... ok
+test_cleanup_healthy_does_not_terminate_or_reopen (test_git_job_cpu.Accounting.test_cleanup_healthy_does_not_terminate_or_reopen) ... ok
+test_cleanup_late_close_refuses_without_extending_deadline (test_git_job_cpu.Accounting.test_cleanup_late_close_refuses_without_extending_deadline) ... ok
+test_cleanup_live_job_is_bounded_and_still_closes_handles (test_git_job_cpu.Accounting.test_cleanup_live_job_is_bounded_and_still_closes_handles) ... ok
+test_cleanup_uses_retained_child_after_partial_spawn (test_git_job_cpu.Accounting.test_cleanup_uses_retained_child_after_partial_spawn) ... ok
+test_complete_reference_and_accounted_protocol (test_git_job_cpu.Accounting.test_complete_reference_and_accounted_protocol) ... ok
+test_default_job_does_not_install_limits_or_lifetime_policy (test_git_job_cpu.Accounting.test_default_job_does_not_install_limits_or_lifetime_policy) ... ok
+test_identity_failure_retains_owned_child_for_cleanup (test_git_job_cpu.Accounting.test_identity_failure_retains_owned_child_for_cleanup) ... ok
+test_missing_duplicate_reordered_output_or_changed_argv_refuse (test_git_job_cpu.Accounting.test_missing_duplicate_reordered_output_or_changed_argv_refuse) ... ok
+test_missing_terminal_missing_root_invalid_counter_and_scope_refuse (test_git_job_cpu.Accounting.test_missing_terminal_missing_root_invalid_counter_and_scope_refuse) ... ok
+test_original_child_cannot_be_reset_or_replaced (test_git_job_cpu.Accounting.test_original_child_cannot_be_reset_or_replaced) ... ok
+test_original_handle_identity_observed_at_child_publication_before_resume (test_git_job_cpu.Accounting.test_original_handle_identity_observed_at_child_publication_before_resume) ... ok
+test_reference_cannot_use_profile_or_incomplete_verdict (test_git_job_cpu.Accounting.test_reference_cannot_use_profile_or_incomplete_verdict) ... ok
+test_retained_launcher_birth_pid_and_cpu_cannot_change (test_git_job_cpu.Accounting.test_retained_launcher_birth_pid_and_cpu_cannot_change) ... ok
+test_terminal_worker_must_keep_pre_resume_creation_and_counters (test_git_job_cpu.Accounting.test_terminal_worker_must_keep_pre_resume_creation_and_counters) ... ok
+test_underflow_is_refusal_not_zero_or_saturated_subtraction (test_git_job_cpu.Accounting.test_underflow_is_refusal_not_zero_or_saturated_subtraction) ... ok
+test_whole_terminal_lifetimes_not_late_deltas (test_git_job_cpu.Accounting.test_whole_terminal_lifetimes_not_late_deltas) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 0.032s
+
+OK

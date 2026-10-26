@@ -1,0 +1,13 @@
+{
+  "cases": [
+    "healthy",
+    "clock-fault",
+    "dual-refusal",
+    "interrupted"
+  ],
+  "clocks": "injected deterministic integers",
+  "native_control_executed": false,
+  "new_workload_calls": 0,
+  "package_pass": false,
+  "scope": "tape-only synthetic; no owner or native APIs"
+}

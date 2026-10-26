@@ -1,0 +1,335 @@
+"""Synthetic telemetry/differential faults only; no process or native clock run."""
+import ast
+import copy
+import hashlib
+import inspect
+import json
+from pathlib import Path
+import runpy
+import tempfile
+import unittest
+from unittest.mock import Mock, patch
+
+import coordinator_frames as subject
+import git_cpu_overhead as base
+import test_git_cpu_overhead as fixture
+from owned_process_observer import Refusal
+
+
+class Clock:
+    def __init__(self, fail=None):
+        self.calls, self.fail = [], fail
+
+    def read(self, kind):
+        self.calls.append(kind)
+        if len(self.calls) == self.fail:
+            raise OSError('first clock fault')
+        return len(self.calls)*10
+
+    def tape(self):
+        return subject.Tape(wall=lambda: self.read('wall'), cpu=lambda: self.read('cpu'), clock_domain='synthetic-control')
+
+
+class Strip(ast.NodeTransformer):
+    """Strip ONLY literal begin/end calls and the final result attachment."""
+    def visit_Expr(self, node):
+        call = node.value
+        if isinstance(call, ast.Call) and isinstance(call.func, ast.Attribute) and isinstance(call.func.value, ast.Name) and call.func.value.id == 'trace':
+            assert call.func.attr in ('begin', 'end') and not call.keywords and len(call.args) == 1
+            assert isinstance(call.args[0], ast.Constant) and call.args[0].value in subject.PHASES
+            return None
+        return self.generic_visit(node)
+
+    def visit_Return(self, node):
+        if isinstance(node.value, ast.Call) and isinstance(node.value.func, ast.Name) and node.value.func.id == 'attach':
+            assert [v.id for v in node.value.args] == ['result', 'trace'] and not node.value.keywords
+            return ast.Return(value=ast.Name(id='result', ctx=ast.Load()))
+        return self.generic_visit(node)
+
+
+class Model(unittest.TestCase):
+    def test_effect_ast_matches_current_and_sealed_original_measure(self):
+        current = ast.parse(inspect.getsource(base.measure)).body[0]
+        traced = ast.parse(inspect.getsource(subject.measure)).body[0]
+        self.assertEqual(traced.args.args[-1].arg, 'trace')
+        traced.args.args.pop()
+        traced = Strip().visit(traced)
+        self.assertEqual(ast.dump(current), ast.dump(traced))
+        packet = base.ROOT/'docs/testing/performance/0.74/local-runs/pipe-fixture-git-overhead-20261026'
+        raw = (packet/'index.json').read_bytes()
+        self.assertEqual(hashlib.sha256(raw).hexdigest(), '1ba276dcf62f97801f69806ea5efba138c7d47425f30d2563874aa393681fcff')
+        index = json.loads(raw)
+        entry = index['members']['source/tools/xtask-package-attribution-074/git_cpu_overhead.py']
+        old = (packet/'objects'/entry['sha256']).read_bytes()
+        self.assertEqual(hashlib.sha256(old).hexdigest(), entry['sha256'])
+        original = next(v for v in ast.parse(old).body if isinstance(v, ast.FunctionDef) and v.name == 'measure')
+        self.assertEqual(ast.dump(current), ast.dump(original))
+
+    def test_complete_bounded_raw_brackets_and_zero_cpu(self):
+        clock = Clock()
+        tape = clock.tape()
+        for name in subject.PHASES:
+            tape.begin(name)
+            tape.end(name)
+        result = tape.finish(True)
+        self.assertTrue(result['complete'])
+        self.assertTrue(result['capture_valid'])
+        self.assertEqual(len(result['probes']), 12)
+        self.assertEqual(len(clock.calls), 36)
+        self.assertEqual([v['phase'] for v in result['spans']], list(subject.PHASES))
+        for row in result['spans']:
+            self.assertEqual(row['elapsed'], dict(wall_lower_ns=10, wall_upper_ns=50, process_cpu_ns=30))
+        zero = subject.Tape(wall=Mock(return_value=0), cpu=Mock(return_value=0), clock_domain='synthetic-control')
+        for name in subject.PHASES:
+            zero.begin(name)
+            zero.end(name)
+        self.assertTrue(zero.finish(True)['complete'])
+
+    def test_bad_clock_domains_cannot_silently_mislabel_injected_clocks(self):
+        for kwargs in (dict(wall=lambda: 0), dict(cpu=lambda: 0),
+                       dict(wall=lambda: 0, cpu=lambda: 0), dict(clock_domain='unknown')):
+            with self.assertRaisesRegex(Refusal, 'paired clock domain'):
+                subject.Tape(**kwargs)
+
+    def test_ordinary_clock_fault_freezes_after_first_read_and_keeps_partial_probe(self):
+        for failure in range(1, 37):
+            clock = Clock(failure)
+            tape = clock.tape()
+            for name in subject.PHASES:
+                tape.begin(name)
+                tape.end(name)
+            first = tape.first_refusal
+            tape.begin('setup')
+            tape.end('setup')
+            result = tape.finish(True)
+            self.assertFalse(result['capture_valid'])
+            self.assertIn('first clock fault', result['first_refusal'])
+            self.assertEqual(result['first_refusal'], first)
+            self.assertEqual(len(clock.calls), failure)
+            self.assertLessEqual(len(result['probes']), 12)
+
+    def test_type_and_monotonicity_faults_do_not_retry(self):
+        for value in (True, -1, 1.5):
+            wall, cpu = Mock(return_value=value), Mock(return_value=0)
+            tape = subject.Tape(wall=wall, cpu=cpu, clock_domain='synthetic-control')
+            tape.begin('setup')
+            self.assertIn('invalid wall_before_ns', tape.first_refusal)
+            self.assertEqual((wall.call_count, cpu.call_count), (1, 0))
+        for walls, cpus, expected, counts in (([20, 10], [0], 'bracket', (2, 1)),
+                                              ([10, 20, 15], [0], 'sequence', (3, 1)),
+                                              ([10, 20, 30], [10, 9], 'CPU regressed', (3, 2))):
+            wall, cpu = Mock(side_effect=walls), Mock(side_effect=cpus)
+            tape = subject.Tape(wall=wall, cpu=cpu, clock_domain='synthetic-control')
+            tape.begin('setup')
+            tape.end('setup')
+            self.assertIn(expected, tape.first_refusal)
+            self.assertEqual((wall.call_count, cpu.call_count), counts)
+
+    def test_unexpected_phase_and_capture_reuse_refuse_without_new_reads(self):
+        for fault in ('wrong-start', 'double-start', 'wrong-end'):
+            clock = Clock()
+            tape = clock.tape()
+            if fault == 'wrong-start': tape.begin('spawn')
+            else:
+                tape.begin('setup')
+                if fault == 'double-start': tape.begin('setup')
+                else: tape.end('spawn')
+            count = len(clock.calls)
+            tape.begin('setup')
+            tape.end('setup')
+            self.assertEqual(len(clock.calls), count)
+            self.assertIsNotNone(tape.first_refusal)
+        clock = Clock()
+        tape = clock.tape()
+        for name in subject.PHASES:
+            tape.begin(name)
+            tape.end(name)
+        saved = tape.finish(True)
+        before = copy.deepcopy(saved)
+        tape.begin('setup')
+        self.assertEqual(saved, before)
+        self.assertFalse(tape.finish(True)['capture_valid'])
+        self.assertEqual(len(clock.calls), 36)
+
+    def test_interrupted_operation_has_no_invented_end_or_unobserved_zero(self):
+        tape = Clock().tape()
+        tape.begin('setup')
+        tape.end('setup')
+        tape.begin('spawn')
+        result = tape.finish(False)
+        self.assertTrue(result['capture_valid'])
+        self.assertFalse(result['complete'])
+        self.assertEqual(result['not_observed'], ['wait', 'terminal_reads', 'decode', 'close'])
+        self.assertEqual(result['spans'][-1]['status'], 'operation_interrupted')
+        self.assertIsNone(result['spans'][-1]['end_probe'])
+        self.assertIsNone(result['spans'][-1]['elapsed'])
+
+    def scenario(self, module, folder, mode, tape=None, fault=None):
+        api, observer, job, image = fixture.Model().frame(folder, mode)
+        events = []
+        original_spawn = job.spawn.side_effect
+        counters = api.counters.side_effect
+        def spawn(*args):
+            events.append('spawn')
+            if fault == 'spawn':
+                raise Refusal('original spawn refusal')
+            return original_spawn(*args)
+        job.spawn.side_effect = spawn
+        api.counters.side_effect = lambda *args: (events.append('counters'), next(counters))[1]
+        observer.dll.GetProcessId.side_effect = lambda *args: (events.append('pid'), 43 if fault == 'pid' else 42)[1]
+        terminal = observer.read.return_value
+        observer.read.side_effect = lambda *args: (events.append('worker-read'), terminal)[1]
+        job.child.wait.side_effect = lambda **kwargs: (events.append('wait'), 0)[1]
+        job.child.close.side_effect = lambda: events.append('child-close')
+        job.close.side_effect = lambda: events.append('job-close')
+        with patch.object(module, 'AccountingJob', return_value=job), \
+             patch.object(module.time, 'monotonic', return_value=1) as deadline_clock, \
+             patch.object(module.time, 'monotonic_ns', side_effect=[100, 300]), \
+             patch.object(module.time, 'process_time_ns', side_effect=[10, 20]), \
+             patch.object(module, 'cleanup', return_value=['cleanup-second'] if fault else []) as cleanup:
+            args = (api, observer, image, 0, 0, mode, folder, 5)
+            result = module.measure(*args, tape) if tape is not None else module.measure(*args)
+        return result, events, deadline_clock.call_count, cleanup, job
+
+    def test_model_differential_preserves_operations_clocks_command_and_original_fields(self):
+        for mode in (base.REFERENCE, base.PROFILE):
+            with tempfile.TemporaryDirectory() as directory:
+                folder = Path(directory)
+                (folder/'old').mkdir()
+                (folder/'trace').mkdir()
+                original = self.scenario(base, folder/'old', mode)
+                traced = self.scenario(subject, folder/'trace', mode, Clock().tape())
+                result = dict(traced[0])
+                self.assertTrue(result.pop('coordinator_frames')['complete'])
+                operation = result.pop('operation_verdict')
+                # Fake image path differs only by the separate output fixture root.
+                result['worker_image'] = original[0]['worker_image']
+                self.assertEqual(result, original[0])
+                self.assertEqual(operation, dict(passed=True, first_refusal=None, cleanup_errors=[]))
+                self.assertEqual(traced[1:3], original[1:3])
+                self.assertEqual(traced[2], 4)
+                self.assertEqual(traced[4].spawn.call_args.args[0][1:],
+                                 ['--exact', mode, '--nocapture', '--test-threads=1'])
+                self.assertEqual(traced[4].spawn.call_args.args[-1], 5)
+                traced[3].assert_not_called()
+
+    def test_each_ordinary_probe_fault_drains_healthy_owner_without_termination(self):
+        for failure in range(1, 37):
+            with tempfile.TemporaryDirectory() as directory:
+                clock = Clock(failure)
+                result, events, checks, cleanup, job = self.scenario(subject, Path(directory), base.REFERENCE, clock.tape())
+                self.assertFalse(result['passed'])
+                self.assertTrue(result['operation_verdict']['passed'])
+                self.assertIn('first clock fault', result['first_refusal'])
+                self.assertEqual(checks, 4)
+                self.assertEqual(events, ['counters', 'spawn', 'wait', 'pid', 'worker-read', 'counters', 'counters',
+                                          'child-close', 'job-close'])
+                self.assertEqual(len(clock.calls), failure)
+                job.terminate.assert_not_called()
+                cleanup.assert_not_called()
+
+    def test_runtime_first_refusal_and_original_custody_survive_telemetry_failure(self):
+        for fault in ('spawn', 'pid'):
+            with tempfile.TemporaryDirectory() as directory:
+                result, events, _, cleanup, job = self.scenario(subject, Path(directory), base.REFERENCE, Clock(1).tape(), fault)
+                self.assertFalse(result['passed'])
+                self.assertEqual(result['first_refusal'], result['operation_verdict']['first_refusal'])
+                self.assertNotIn('clock fault', result['first_refusal'])
+                self.assertIn('clock fault', result['coordinator_frames']['first_refusal'])
+                self.assertEqual(result['cleanup_errors'], ['cleanup-second'])
+                cleanup.assert_called_once_with(job, None if fault == 'spawn' else job.child, 6)
+
+    def test_fatal_probe_interrupt_after_spawn_still_uses_original_cleanup(self):
+        with tempfile.TemporaryDirectory() as directory:
+            wall = Mock(side_effect=[0, 1, 2, 3, 4, 5, KeyboardInterrupt()])
+            tape = subject.Tape(wall=wall, cpu=Mock(return_value=0), clock_domain='synthetic-control')
+            result, events, _, cleanup, job = self.scenario(subject, Path(directory), base.REFERENCE, tape)
+            self.assertFalse(result['passed'])
+            self.assertIn('KeyboardInterrupt', result['first_refusal'])
+            self.assertFalse(result['coordinator_frames']['capture_valid'])
+            self.assertIn('spawn', events)
+            self.assertNotIn('wait', events)
+            cleanup.assert_called_once_with(job, job.child, 6)
+
+    def test_existing_late_deadline_still_refuses(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            api, observer, job, image = fixture.Model().frame(folder, base.REFERENCE)
+            with patch.object(subject, 'AccountingJob', return_value=job), \
+                 patch.object(subject.time, 'monotonic', side_effect=[1, 1, 1, 6]):
+                result = subject.measure(api, observer, image, 0, 0, base.REFERENCE, folder, 5, Clock().tape())
+            self.assertFalse(result['passed'])
+            self.assertIn('late worker frame witness', result['first_refusal'])
+            self.assertTrue(result['coordinator_frames']['complete'])
+            job.close.assert_called_once_with()
+
+    def cohort(self, folder, *, enabled, data):
+        image, gate = fixture.Model().orchestration(folder)
+        with patch.object(base, 'ROOT', folder), patch.object(base, 'pins', return_value={}), \
+             patch.dict('sys.modules', package_effects_review_v6=gate), \
+             patch.object(base.shutil, 'disk_usage', return_value=Mock(free=base.FREE_BYTES)), \
+             patch.object(base, 'artifact', return_value=(image, dict(source={}, head='head'))), \
+             patch.object(base, 'AccountingApi'), patch.object(base, 'WindowsApi'), \
+             patch.object(base.subprocess, 'check_output', return_value='head'), \
+             patch.object(base.time, 'monotonic', return_value=1), \
+             patch.object(base, 'measure', side_effect=data) as old, \
+             patch.object(subject, 'measure', side_effect=data) as traced, patch.object(subject, 'Tape') as tape:
+            result = base.run('build', 'first', coordinator_frames=enabled)
+        return result, old, traced, tape
+
+    def test_default_gate_does_not_construct_tape_or_change_intent(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            result, old, traced, tape = self.cohort(folder, enabled=False, data=fixture.attempts())
+            self.assertTrue(result['passed'])
+            self.assertEqual(old.call_count, 16)
+            traced.assert_not_called()
+            tape.assert_not_called()
+            intent = json.loads((folder/'target/git-cpu-overhead-20261026/first/intent.json').read_bytes())
+            self.assertNotIn('coordinator_frames', intent)
+            self.assertNotIn('coordinator_frames_contract', result)
+
+    def test_opt_in_gate_separates_output_and_preserves_shared_origin(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            result, old, traced, tape = self.cohort(folder, enabled=True, data=fixture.attempts())
+            self.assertTrue(result['passed'])
+            old.assert_not_called()
+            self.assertEqual((traced.call_count, tape.call_count), (16, 16))
+            self.assertEqual({call.args[-2] for call in traced.call_args_list}, {121})
+            self.assertEqual(result['coordinator_frames_contract'], subject.contract())
+            intent = json.loads((folder/'target/git-cpu-coordinator-frames-20261026/first/intent.json').read_bytes())
+            self.assertEqual(intent['coordinator_frames'], dict(enabled=True, schema='hc074-coordinator-frames-v1'))
+            self.assertFalse((folder/'target/git-cpu-overhead-20261026').exists())
+
+    def test_opt_in_first_telemetry_refusal_stops_without_subset_summary(self):
+        with tempfile.TemporaryDirectory() as directory:
+            failure = dict(block=0, slot=0, mode=base.REFERENCE, passed=False,
+                           first_refusal='first telemetry refusal', cleanup_errors=[])
+            result, _, traced, _ = self.cohort(Path(directory), enabled=True, data=[failure])
+            self.assertFalse(result['passed'])
+            self.assertIn('first telemetry refusal', result['first_refusal'])
+            self.assertEqual(traced.call_count, 1)
+            self.assertNotIn('analysis', result)
+
+    def test_import_failure_is_retained_after_exclusive_intent_before_any_api(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(base, 'ROOT', Path(directory)), \
+             patch.dict('sys.modules', coordinator_frames=None), patch.object(base, 'AccountingApi') as api:
+            result = base.run('build', 'first', coordinator_frames=True)
+            self.assertFalse(result['passed'])
+            self.assertIn('ModuleNotFoundError', result['first_refusal'])
+            self.assertTrue((Path(directory)/'target/git-cpu-coordinator-frames-20261026/first/intent.json').exists())
+            api.assert_not_called()
+
+    def test_gate_is_strict_boolean_and_cli_flag_is_exact(self):
+        with patch.object(base, 'AccountingApi') as api:
+            for value in (None, 1, 'true'):
+                with self.assertRaises(Refusal):
+                    base.run('build', 'first', coordinator_frames=value)
+            with patch('sys.argv', [base.__file__, 'build', 'first', '--other']), self.assertRaises(Refusal):
+                runpy.run_path(base.__file__, run_name='__main__')
+            api.assert_not_called()
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -5,6 +5,13 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [opt-in coordinator phase recorder](coordinator-frames-result-20261026.md)
+now preserves raw wall/CPU brackets around six stages. Twenty new models plus
+36 unchanged caller/accounting cases pass; independent AST comparison preserves
+the original operational body and deadline reads. Four injected-clock examples
+are synthetic only. No native control or workload runs; enabled-mode native
+compatibility, overhead and package admission remain open.
+
 The [offline observer-variance analysis](git-cpu-variance-result-20261026.md)
 closes CPU-owner arithmetic on the saved sixteen-worker result without new
 measurements. A lower Job CPU in one block masks higher worker CPU; two separate

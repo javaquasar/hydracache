@@ -1,0 +1,175 @@
+{
+  "accounting_regressions": 20,
+  "caller_regressions": 16,
+  "members": {
+    "baseline/git_cpu_overhead.py": {
+      "bytes": 8528,
+      "sha256": "250cc8ca3e85150ebf346ffcdff9ae1fbddcdf9b4a98bcb03238fdf7b6170854"
+    },
+    "baseline/index.json": {
+      "bytes": 17992,
+      "sha256": "1ba276dcf62f97801f69806ea5efba138c7d47425f30d2563874aa393681fcff"
+    },
+    "checks/coordinator-frames-accounting-regressions/intent.json": {
+      "bytes": 347901,
+      "sha256": "a56c6a3f6bd9efd9c0f6eb1608a534a86d47f019e599d1777567a4f35f97283c"
+    },
+    "checks/coordinator-frames-accounting-regressions/result.json": {
+      "bytes": 347536,
+      "sha256": "464b9bbb21340509afea489c7b1c56aa5894bf18afcb8bf2f10dbfadae357a6b"
+    },
+    "checks/coordinator-frames-accounting-regressions/stderr.log": {
+      "bytes": 3106,
+      "sha256": "64bd73c876a9faadac2fed77652315c6fba0c2b5a7771faf1a2ae42650458c86"
+    },
+    "checks/coordinator-frames-accounting-regressions/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/coordinator-frames-caller-regressions/intent.json": {
+      "bytes": 347906,
+      "sha256": "7cbc6599eb48a3686dbb133e9ac6c8562fcc926cbac301e5d65dc3c91de0d086"
+    },
+    "checks/coordinator-frames-caller-regressions/result.json": {
+      "bytes": 347536,
+      "sha256": "464b9bbb21340509afea489c7b1c56aa5894bf18afcb8bf2f10dbfadae357a6b"
+    },
+    "checks/coordinator-frames-caller-regressions/stderr.log": {
+      "bytes": 2298,
+      "sha256": "6377ad40d6cf076a1ca10bbe43e14f744f3ada93369a469c1d1a766c15837ab4"
+    },
+    "checks/coordinator-frames-caller-regressions/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/coordinator-frames-model-first/intent.json": {
+      "bytes": 347763,
+      "sha256": "35e0de845211db40041b2c5bccf2191c25ebbf37ba77c5818b6ad7233ef85692"
+    },
+    "checks/coordinator-frames-model-first/result.json": {
+      "bytes": 347391,
+      "sha256": "a99721f9c548076248f287ad49d934ad2ede87b8e6885b79c2cb3d9e1b7d7556"
+    },
+    "checks/coordinator-frames-model-first/stderr.log": {
+      "bytes": 2916,
+      "sha256": "0ea24c141ecef18d7905ad499359e6919aee3e2ddf9293a95d651f4decc474ff"
+    },
+    "checks/coordinator-frames-model-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/coordinator-frames-model-precommit/intent.json": {
+      "bytes": 347908,
+      "sha256": "c01d15c54deffa2b4b268333d5124998ec44672eed5830ec1534fd3bcc7aec57"
+    },
+    "checks/coordinator-frames-model-precommit/result.json": {
+      "bytes": 347536,
+      "sha256": "464b9bbb21340509afea489c7b1c56aa5894bf18afcb8bf2f10dbfadae357a6b"
+    },
+    "checks/coordinator-frames-model-precommit/stderr.log": {
+      "bytes": 3404,
+      "sha256": "d48c680174d83068de6cb186a8932d632be0a2ec187021d309a7c115022658ec"
+    },
+    "checks/coordinator-frames-model-precommit/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/coordinator-frames-syntax/intent.json": {
+      "bytes": 348224,
+      "sha256": "71afb78311ac284b220fa2be6f704a71816b8c769566e83580102165a3ec94f3"
+    },
+    "checks/coordinator-frames-syntax/result.json": {
+      "bytes": 347677,
+      "sha256": "0b25815be8068a803d699cf6dd1c392b0aa3495440fe9ebfd76b7d880eb80de2"
+    },
+    "checks/coordinator-frames-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/coordinator-frames-syntax/stdout.log": {
+      "bytes": 34,
+      "sha256": "873008b7ae2c96bcfda01e080f76d5998cfc3561f61df8e36dfc9c4dc8dada8b"
+    },
+    "checks/coordinator-frames-synthetic-first/intent.json": {
+      "bytes": 347948,
+      "sha256": "075b9735f86e19424f1380005c336376aeb1c5fa4a0dead536794f142475d3a8"
+    },
+    "checks/coordinator-frames-synthetic-first/result.json": {
+      "bytes": 347677,
+      "sha256": "0b25815be8068a803d699cf6dd1c392b0aa3495440fe9ebfd76b7d880eb80de2"
+    },
+    "checks/coordinator-frames-synthetic-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/coordinator-frames-synthetic-first/stdout.log": {
+      "bytes": 106,
+      "sha256": "daa8a7a178f8467308a979f4094eaa626990a4b354a2c7150677dc8cd69e79a0"
+    },
+    "collector.py": {
+      "bytes": 3107,
+      "sha256": "3256311e90b2510056962164c2ebe8c49eb3de81a8f2001cb33274d6884b3845"
+    },
+    "raw-first-model/coordinator_frames.py": {
+      "bytes": 8721,
+      "sha256": "1dfb7765e9afc6af03de172d01935d6feea4d6d14e7a5c6c51aea90f2d55fbb1"
+    },
+    "raw-first-model/git_cpu_overhead.py": {
+      "bytes": 9511,
+      "sha256": "5a48a9baf752e41c280a29ef51731a232a037e98897057dee78f8688fd578247"
+    },
+    "raw-first-model/test_coordinator_frames.py": {
+      "bytes": 18463,
+      "sha256": "b507c8348d5142538711d7f53da83101ac259d871044526cdb81fe051c00744d"
+    },
+    "runners/run-ci-watchdog-step-20261026.py": {
+      "bytes": 538,
+      "sha256": "8164762bc0c02aee22e49b50dba0bc877b8fcdeffca9d495f8425354bce3245c"
+    },
+    "runners/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "source/tools/xtask-package-attribution-074/coordinator-frames-design.md": {
+      "bytes": 4484,
+      "sha256": "99362f9b73dc5dcd95e95b7f44a8f2e78c88ef477a2c159d1064c7e59928b0ba"
+    },
+    "source/tools/xtask-package-attribution-074/coordinator-frames-protocol.toml": {
+      "bytes": 1004,
+      "sha256": "09512e557077a87c3d0272193b893b00f301cf8c1a6b571a60cbbd1d0deeee46"
+    },
+    "source/tools/xtask-package-attribution-074/coordinator_frames.py": {
+      "bytes": 8820,
+      "sha256": "8f15471120c30c4450ccfa05e8a0d641e667ba6e74561c3648ea25f8e4f813e8"
+    },
+    "source/tools/xtask-package-attribution-074/git_cpu_overhead.py": {
+      "bytes": 9511,
+      "sha256": "5a48a9baf752e41c280a29ef51731a232a037e98897057dee78f8688fd578247"
+    },
+    "source/tools/xtask-package-attribution-074/test_coordinator_frames.py": {
+      "bytes": 20732,
+      "sha256": "d95ca583aa5c375f8abd506c8563cb87d3ab6a6cbadf41bb91f66942860877b7"
+    },
+    "synthetic/control.py": {
+      "bytes": 2381,
+      "sha256": "e0580d6fc47e345cf54671ba2170124f139ddc979028542c2421ce5ab3d4eebe"
+    },
+    "synthetic/intent.json": {
+      "bytes": 287,
+      "sha256": "a94d2ff44dc4e002864a0a2700f560e84ddb2f78f156b388e52935e6ca88ad37"
+    },
+    "synthetic/result.json": {
+      "bytes": 14708,
+      "sha256": "2c98ef678a2b94fbbfd6c05f1ed68a839386b8ff8712530261d47ca2b0acf758"
+    }
+  },
+  "native_control_executed": false,
+  "new_models": 20,
+  "new_workload_calls": 0,
+  "overhead_accepted": false,
+  "package_pass": false,
+  "schema": "hc074-model-coordinator-frames-evidence-v1",
+  "server": false,
+  "source_commit": "e6ef8937297042a2cb4f45386af360db6c9c8732",
+  "synthetic_cases": 4
+}

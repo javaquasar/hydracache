@@ -1,0 +1,498 @@
+{
+  "cases": [
+    {
+      "clock_reads": 36,
+      "modeled_operation_only": true,
+      "name": "healthy",
+      "result": {
+        "cleanup_errors": [],
+        "coordinator_frames": {
+          "capture_valid": true,
+          "clock_domain": "synthetic-control",
+          "complete": true,
+          "contract": {
+            "clock_failure_policy": "freeze telemetry, drain original owner, refuse diagnostic verdict",
+            "complete_frame_partition": false,
+            "cpu_clock": "time.process_time_ns",
+            "cpu_is_native_git": false,
+            "cpu_scope": "coordinator process-wide, all threads",
+            "existing_predicates_removed_or_reordered": false,
+            "max_clock_reads": 36,
+            "max_probes": 12,
+            "overhead_accepted": false,
+            "phases": [
+              "setup",
+              "spawn",
+              "wait",
+              "terminal_reads",
+              "decode",
+              "close"
+            ],
+            "schema": "hc074-coordinator-frames-v1",
+            "units": "ns",
+            "wall_bounds_scope": "elapsed between bracketed CPU-read instants, not effect-only duration",
+            "wall_clock": "time.monotonic_ns",
+            "window_renewed": false
+          },
+          "first_refusal": null,
+          "not_observed": [],
+          "probes": [
+            {
+              "kind": "begin",
+              "phase": "setup",
+              "raw": {
+                "process_cpu_ns": 20,
+                "wall_after_ns": 30,
+                "wall_before_ns": 10
+              }
+            },
+            {
+              "kind": "end",
+              "phase": "setup",
+              "raw": {
+                "process_cpu_ns": 50,
+                "wall_after_ns": 60,
+                "wall_before_ns": 40
+              }
+            },
+            {
+              "kind": "begin",
+              "phase": "spawn",
+              "raw": {
+                "process_cpu_ns": 80,
+                "wall_after_ns": 90,
+                "wall_before_ns": 70
+              }
+            },
+            {
+              "kind": "end",
+              "phase": "spawn",
+              "raw": {
+                "process_cpu_ns": 110,
+                "wall_after_ns": 120,
+                "wall_before_ns": 100
+              }
+            },
+            {
+              "kind": "begin",
+              "phase": "wait",
+              "raw": {
+                "process_cpu_ns": 140,
+                "wall_after_ns": 150,
+                "wall_before_ns": 130
+              }
+            },
+            {
+              "kind": "end",
+              "phase": "wait",
+              "raw": {
+                "process_cpu_ns": 170,
+                "wall_after_ns": 180,
+                "wall_before_ns": 160
+              }
+            },
+            {
+              "kind": "begin",
+              "phase": "terminal_reads",
+              "raw": {
+                "process_cpu_ns": 200,
+                "wall_after_ns": 210,
+                "wall_before_ns": 190
+              }
+            },
+            {
+              "kind": "end",
+              "phase": "terminal_reads",
+              "raw": {
+                "process_cpu_ns": 230,
+                "wall_after_ns": 240,
+                "wall_before_ns": 220
+              }
+            },
+            {
+              "kind": "begin",
+              "phase": "decode",
+              "raw": {
+                "process_cpu_ns": 260,
+                "wall_after_ns": 270,
+                "wall_before_ns": 250
+              }
+            },
+            {
+              "kind": "end",
+              "phase": "decode",
+              "raw": {
+                "process_cpu_ns": 290,
+                "wall_after_ns": 300,
+                "wall_before_ns": 280
+              }
+            },
+            {
+              "kind": "begin",
+              "phase": "close",
+              "raw": {
+                "process_cpu_ns": 320,
+                "wall_after_ns": 330,
+                "wall_before_ns": 310
+              }
+            },
+            {
+              "kind": "end",
+              "phase": "close",
+              "raw": {
+                "process_cpu_ns": 350,
+                "wall_after_ns": 360,
+                "wall_before_ns": 340
+              }
+            }
+          ],
+          "spans": [
+            {
+              "elapsed": {
+                "process_cpu_ns": 30,
+                "wall_lower_ns": 10,
+                "wall_upper_ns": 50
+              },
+              "end_probe": 1,
+              "phase": "setup",
+              "start_probe": 0,
+              "status": "complete"
+            },
+            {
+              "elapsed": {
+                "process_cpu_ns": 30,
+                "wall_lower_ns": 10,
+                "wall_upper_ns": 50
+              },
+              "end_probe": 3,
+              "phase": "spawn",
+              "start_probe": 2,
+              "status": "complete"
+            },
+            {
+              "elapsed": {
+                "process_cpu_ns": 30,
+                "wall_lower_ns": 10,
+                "wall_upper_ns": 50
+              },
+              "end_probe": 5,
+              "phase": "wait",
+              "start_probe": 4,
+              "status": "complete"
+            },
+            {
+              "elapsed": {
+                "process_cpu_ns": 30,
+                "wall_lower_ns": 10,
+                "wall_upper_ns": 50
+              },
+              "end_probe": 7,
+              "phase": "terminal_reads",
+              "start_probe": 6,
+              "status": "complete"
+            },
+            {
+              "elapsed": {
+                "process_cpu_ns": 30,
+                "wall_lower_ns": 10,
+                "wall_upper_ns": 50
+              },
+              "end_probe": 9,
+              "phase": "decode",
+              "start_probe": 8,
+              "status": "complete"
+            },
+            {
+              "elapsed": {
+                "process_cpu_ns": 30,
+                "wall_lower_ns": 10,
+                "wall_upper_ns": 50
+              },
+              "end_probe": 11,
+              "phase": "close",
+              "start_probe": 10,
+              "status": "complete"
+            }
+          ]
+        },
+        "first_refusal": null,
+        "operation_verdict": {
+          "cleanup_errors": [],
+          "first_refusal": null,
+          "passed": true
+        },
+        "passed": true
+      }
+    },
+    {
+      "clock_reads": 8,
+      "modeled_operation_only": true,
+      "name": "clock-fault",
+      "result": {
+        "cleanup_errors": [],
+        "coordinator_frames": {
+          "capture_valid": false,
+          "clock_domain": "synthetic-control",
+          "complete": false,
+          "contract": {
+            "clock_failure_policy": "freeze telemetry, drain original owner, refuse diagnostic verdict",
+            "complete_frame_partition": false,
+            "cpu_clock": "time.process_time_ns",
+            "cpu_is_native_git": false,
+            "cpu_scope": "coordinator process-wide, all threads",
+            "existing_predicates_removed_or_reordered": false,
+            "max_clock_reads": 36,
+            "max_probes": 12,
+            "overhead_accepted": false,
+            "phases": [
+              "setup",
+              "spawn",
+              "wait",
+              "terminal_reads",
+              "decode",
+              "close"
+            ],
+            "schema": "hc074-coordinator-frames-v1",
+            "units": "ns",
+            "wall_bounds_scope": "elapsed between bracketed CPU-read instants, not effect-only duration",
+            "wall_clock": "time.monotonic_ns",
+            "window_renewed": false
+          },
+          "first_refusal": "spawn/begin: OSError: synthetic first clock fault",
+          "not_observed": [
+            "wait",
+            "terminal_reads",
+            "decode",
+            "close"
+          ],
+          "probes": [
+            {
+              "kind": "begin",
+              "phase": "setup",
+              "raw": {
+                "process_cpu_ns": 20,
+                "wall_after_ns": 30,
+                "wall_before_ns": 10
+              }
+            },
+            {
+              "kind": "end",
+              "phase": "setup",
+              "raw": {
+                "process_cpu_ns": 50,
+                "wall_after_ns": 60,
+                "wall_before_ns": 40
+              }
+            },
+            {
+              "kind": "begin",
+              "phase": "spawn",
+              "raw": {
+                "wall_before_ns": 70
+              }
+            }
+          ],
+          "spans": [
+            {
+              "elapsed": {
+                "process_cpu_ns": 30,
+                "wall_lower_ns": 10,
+                "wall_upper_ns": 50
+              },
+              "end_probe": 1,
+              "phase": "setup",
+              "start_probe": 0,
+              "status": "complete"
+            },
+            {
+              "elapsed": null,
+              "end_probe": null,
+              "phase": "spawn",
+              "start_probe": 2,
+              "status": "incomplete"
+            }
+          ]
+        },
+        "first_refusal": "Refusal: coordinator telemetry: spawn/begin: OSError: synthetic first clock fault",
+        "operation_verdict": {
+          "cleanup_errors": [],
+          "first_refusal": null,
+          "passed": true
+        },
+        "passed": false
+      }
+    },
+    {
+      "clock_reads": 1,
+      "modeled_operation_only": true,
+      "name": "dual-refusal",
+      "result": {
+        "cleanup_errors": [],
+        "coordinator_frames": {
+          "capture_valid": false,
+          "clock_domain": "synthetic-control",
+          "complete": false,
+          "contract": {
+            "clock_failure_policy": "freeze telemetry, drain original owner, refuse diagnostic verdict",
+            "complete_frame_partition": false,
+            "cpu_clock": "time.process_time_ns",
+            "cpu_is_native_git": false,
+            "cpu_scope": "coordinator process-wide, all threads",
+            "existing_predicates_removed_or_reordered": false,
+            "max_clock_reads": 36,
+            "max_probes": 12,
+            "overhead_accepted": false,
+            "phases": [
+              "setup",
+              "spawn",
+              "wait",
+              "terminal_reads",
+              "decode",
+              "close"
+            ],
+            "schema": "hc074-coordinator-frames-v1",
+            "units": "ns",
+            "wall_bounds_scope": "elapsed between bracketed CPU-read instants, not effect-only duration",
+            "wall_clock": "time.monotonic_ns",
+            "window_renewed": false
+          },
+          "first_refusal": "setup/begin: OSError: synthetic first clock fault",
+          "not_observed": [
+            "spawn",
+            "wait",
+            "terminal_reads",
+            "decode",
+            "close"
+          ],
+          "probes": [
+            {
+              "kind": "begin",
+              "phase": "setup",
+              "raw": {}
+            }
+          ],
+          "spans": [
+            {
+              "elapsed": null,
+              "end_probe": null,
+              "phase": "setup",
+              "start_probe": 0,
+              "status": "operation_interrupted"
+            }
+          ]
+        },
+        "first_refusal": "Refusal: synthetic original operation",
+        "operation_verdict": {
+          "cleanup_errors": [],
+          "first_refusal": "Refusal: synthetic original operation",
+          "passed": false
+        },
+        "passed": false
+      }
+    },
+    {
+      "clock_reads": 9,
+      "modeled_operation_only": true,
+      "name": "interrupted",
+      "result": {
+        "cleanup_errors": [],
+        "coordinator_frames": {
+          "capture_valid": true,
+          "clock_domain": "synthetic-control",
+          "complete": false,
+          "contract": {
+            "clock_failure_policy": "freeze telemetry, drain original owner, refuse diagnostic verdict",
+            "complete_frame_partition": false,
+            "cpu_clock": "time.process_time_ns",
+            "cpu_is_native_git": false,
+            "cpu_scope": "coordinator process-wide, all threads",
+            "existing_predicates_removed_or_reordered": false,
+            "max_clock_reads": 36,
+            "max_probes": 12,
+            "overhead_accepted": false,
+            "phases": [
+              "setup",
+              "spawn",
+              "wait",
+              "terminal_reads",
+              "decode",
+              "close"
+            ],
+            "schema": "hc074-coordinator-frames-v1",
+            "units": "ns",
+            "wall_bounds_scope": "elapsed between bracketed CPU-read instants, not effect-only duration",
+            "wall_clock": "time.monotonic_ns",
+            "window_renewed": false
+          },
+          "first_refusal": null,
+          "not_observed": [
+            "wait",
+            "terminal_reads",
+            "decode",
+            "close"
+          ],
+          "probes": [
+            {
+              "kind": "begin",
+              "phase": "setup",
+              "raw": {
+                "process_cpu_ns": 20,
+                "wall_after_ns": 30,
+                "wall_before_ns": 10
+              }
+            },
+            {
+              "kind": "end",
+              "phase": "setup",
+              "raw": {
+                "process_cpu_ns": 50,
+                "wall_after_ns": 60,
+                "wall_before_ns": 40
+              }
+            },
+            {
+              "kind": "begin",
+              "phase": "spawn",
+              "raw": {
+                "process_cpu_ns": 80,
+                "wall_after_ns": 90,
+                "wall_before_ns": 70
+              }
+            }
+          ],
+          "spans": [
+            {
+              "elapsed": {
+                "process_cpu_ns": 30,
+                "wall_lower_ns": 10,
+                "wall_upper_ns": 50
+              },
+              "end_probe": 1,
+              "phase": "setup",
+              "start_probe": 0,
+              "status": "complete"
+            },
+            {
+              "elapsed": null,
+              "end_probe": null,
+              "phase": "spawn",
+              "start_probe": 2,
+              "status": "operation_interrupted"
+            }
+          ]
+        },
+        "first_refusal": "Refusal: synthetic original operation",
+        "operation_verdict": {
+          "cleanup_errors": [],
+          "first_refusal": "Refusal: synthetic original operation",
+          "passed": false
+        },
+        "passed": false
+      }
+    }
+  ],
+  "native_control_executed": false,
+  "new_workload_calls": 0,
+  "package_pass": false,
+  "passed": true
+}

@@ -20837,3 +20837,36 @@ spawn/pre-resume checks, terminal reads, decoding and handle close, with raw
 endpoints and clock domains retained. That is a separate measurement design,
 not a product optimization inferred from the old aggregate or permission to
 repeat V6.
+
+### Add stage telemetry without rewriting the owner path
+
+The next implementation adds an explicit coordinator-frame opt-in instead of
+changing the default measurement path. Setup, spawn, wait, terminal reads,
+decode and close get raw wall/CPU clock brackets, with at most twelve probes.
+The operational AST, after stripping only telemetry marks and final metadata
+attachment, still equals the current and original sealed frame. Modeled calls
+also preserve the four original deadline observations, argv, wait budget and
+owned close. No check is removed, cached, reordered or given a new origin.
+
+Clock observations can fail. The recorder freezes on the first ordinary fault
+and allows the already-scheduled original frame to finish its wait/cleanup;
+it does not turn telemetry failure into termination of a healthy owner. The
+original operational verdict and cleanup errors stay separate. Bad telemetry
+refuses the diagnostic and stops later frames. Partial spans have no invented
+endpoints, later spans are not observed, and fatal interruptions still use the
+original custody path. All 36 clock-read fault positions are exercised in the
+models, alongside initial import/schema refusal and original late-deadline
+checks.
+
+The recorded wall bounds describe elapsed time between bracketed CPU-read
+instants, not exact effect-only latency. Process CPU includes all coordinator
+threads and clock bookends. Gaps, export and error cleanup do not form a complete
+frame partition. The new observations themselves have unqualified overhead;
+their presence cannot turn the earlier noisy blocks into accepted telemetry.
+
+The [implementation and evidence](../testing/performance/0.74/coordinator-frames-result-20261026.md)
+retain twenty new models, thirty-six old caller/accounting regressions and four
+Tape-only injected-clock examples. Every check passes, but these are not native
+process or timing controls. A separately recorded bounded enabled-mode native
+control remains before numerical use, without replaying V6, changing a live
+predicate or launching a product candidate.

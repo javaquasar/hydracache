@@ -321,3 +321,20 @@ locate observed variance by CPU owner and recorded wall span, not a causal API
 or native image. Seventeen tests cover immutable input, custody/counter faults,
 closed scope and exclusive first results. No new workload or V6 occurs, and
 Job overhead, causal leaf timing and release admission remain unresolved.
+
+## Opt in coordinator phase clock brackets
+
+The attribution CLI's exact `--coordinator-frames` flag selects
+`coordinator_frames.py` and a separate output root; default mode still uses its
+unchanged original frame. The [design](coordinator-frames-design.md) fixes setup,
+spawn, wait, terminal reads, decode and close with at most twelve raw wall/CPU
+probes. An ordinary clock fault freezes capture while original owner draining
+continues; operational refusals and cleanup remain separate from diagnostic
+failure. A failed diagnostic stops the cohort, never selects a successful subset.
+
+The [model-only result](../../docs/testing/performance/0.74/coordinator-frames-result-20261026.md)
+retains 56 passing model/regression cases, the operational AST differential and
+four injected-clock examples. No enabled-mode native control or workload is
+run. Wall bounds concern bracketed CPU-read instants, not effect-only latency;
+CPU is process-wide and includes bookends. Native compatibility, overhead and
+release admission remain unqualified, with all original deadlines unchanged.

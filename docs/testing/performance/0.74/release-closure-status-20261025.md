@@ -47,6 +47,15 @@ causal API attribution or overhead acceptance. Seventeen tests pass with zero
 new workload calls. Preserve the old package verdict and design narrower
 telemetry before considering another measurement.
 
+The [coordinator recorder implementation](coordinator-frames-result-20261026.md)
+adds six opt-in raw clock brackets without changing the default frame. All 56
+model/regression cases pass, including all 36 ordinary clock-fault positions,
+partial ownership, preserved operational refusals and the same deadline reads.
+AST comparison joins the traced operational body to the original sealed body.
+Four injected-clock examples are not native measurements. A separately recorded
+first native control and overhead evidence are still required; no V6, product
+candidate or server run follows this model-only implementation.
+
 The [approved plan](../../../plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md)
 keeps its original thresholds. Its closing rule is to publish the measurements
 and defer changes if none pass, not to tag a documentation-only substitute as
