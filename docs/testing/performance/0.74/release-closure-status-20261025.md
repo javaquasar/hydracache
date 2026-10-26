@@ -71,6 +71,13 @@ into +375 ms worker and +484.375 ms descendants while coordinator CPU falls.
 Wait/collection and creation/decoding leaf costs remain unseparated; no candidate
 or timeout change is supported. No workload or V6 is rerun.
 
+The [separate leaf recorder](capture-leaves-result-20261026.md) now models
+held-owner identity/initial observation and six log-decode boundaries. All 74
+model/regression cases and five final integrity cases pass, preserving both
+first fixture/verifier errors and exact original operational bodies. No native
+leaf run occurs. Wait/pipe-collection internals, recorder overhead, the package
+gate and production admission remain open; no source candidate is accepted.
+
 The [approved plan](../../../plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md)
 keeps its original thresholds. Its closing rule is to publish the measurements
 and defer changes if none pass, not to tag a documentation-only substitute as

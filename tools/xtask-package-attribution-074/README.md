@@ -360,3 +360,21 @@ regressions and five integrity controls. No process, clock or retained collector
 API is used by the analyzer. Zero CPU deltas are not zero work; positive wall
 does not isolate IO, scheduler or creation cost. The full package gate and
 recorder overhead remain unaccepted, with all live checks and deadlines intact.
+
+## Opt in held owner and decode leaves
+
+Only exact `--coordinator-frames --capture-leaves` on the fixed Git attribution
+CLI selects `capture_leaves.py` and its separate output root. The
+[design/protocol](capture-leaves-design.md) preserves the original worker, Job,
+rows operations, preflights, deadline origins and old modes. Two owner leaves
+start after child retention; six decode leaves add at most 48 clock reads,
+84 recorder reads including the existing outer Tape, excluding unchanged
+original metric/deadline reads. Ordinary leaf failure freezes both
+groups while original ownership drains; cleanup and CreateProcessW are not
+wrapped. Worker wait/collection remains unchanged and opaque.
+
+The [model-only result](../../docs/testing/performance/0.74/capture-leaves-result-20261026.md)
+retains eighteen new cases, all 56 old caller/accounting/outer cases and five
+final integrity cases, including preserved first errors. No native leaf control
+or measurement runs in this stage. Raw CPU/wall bracket semantics do not isolate
+pure API cost or establish overhead, package or production admission.

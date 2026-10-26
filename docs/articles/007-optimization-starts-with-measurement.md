@@ -20920,3 +20920,28 @@ measured operation. Its zero CPU complement also proves no absence of work.
 No check, clock window or process behavior changes. Further attribution needs
 narrower leaf observations under the same call graph before a runtime candidate
 can be justified; successful arithmetic alone is not an optimization.
+
+### Put new probes after ownership is retained
+
+Narrower telemetry is useful only if it preserves the failure boundary it
+observes. The new opt-in owner leaves start after the original child has been
+retained. They do not insert a clock call between successful CreateProcessW and
+publication or into Win32 error handling and cleanup. A fatal first probe still
+leaves the child available to the original cleanup path. Identity/path checks
+and initial process validation retain their original order and predicates.
+
+The decode leaves separate stat/bound, log read, text decode, record parse,
+protocol validation and result join. Read timing ends at the leaf-aware rows
+entry, so even that span is not pure disk IO. The worker's combined
+`wait_with_output` stays opaque: splitting it would replace the mechanism rather
+than add an observation at an existing boundary. No manual pipe-draining
+algorithm is introduced.
+
+All forty-eight added clock-read positions have ordinary and fatal model cuts.
+Ordinary leaf failure freezes both groups but drains the original owner;
+operational and recorder refusals remain separate. The
+[implementation, source comparison and first failures](../testing/performance/0.74/capture-leaves-result-20261026.md)
+retain 74 passing model/regression cases and five final integrity cases. Native
+leaf compatibility and overhead are still unqualified. This stage adds a
+bounded way to observe the next question, not a product optimization or a
+reason to change a live deadline.

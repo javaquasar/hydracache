@@ -5,6 +5,13 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [model-only capture leaves](capture-leaves-result-20261026.md) add a separate
+explicit gate for held-owner and decode subspans. Eighteen new and 56 existing
+cases pass, preserving original operations and four deadline reads; every new
+clock-read position has ordinary/fatal controls. Five final integrity cases
+pass, with all first errors retained. Native leaf mode and its overhead have
+not run; worker wait/collection stays opaque and unchanged.
+
 The [offline capture attribution](capture-attribution-result-20261026.md)
 now separates the new native packet's coordinator brackets and CPU owners from
 nested worker wall spans. Thirty-one model/regression cases and five integrity
