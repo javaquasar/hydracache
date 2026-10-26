@@ -5,12 +5,19 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [first native leaf control](capture-leaves-native-result-20261026.md) now
+passes sixteen workers/sixty-four Git calls with all 448 probes complete. Six
+integrity cases validate original semantics, raw clocks and parent containment.
+Recorded decode wall is concentrated in read/entry rather than JSON parse;
+zero leaf CPU deltas do not prove zero cost. Both arms trace leaves, so on/off
+overhead, causal spawn/read cost and full package admission remain unresolved.
+
 The [model-only capture leaves](capture-leaves-result-20261026.md) add a separate
 explicit gate for held-owner and decode subspans. Eighteen new and 56 existing
 cases pass, preserving original operations and four deadline reads; every new
 clock-read position has ordinary/fatal controls. Five final integrity cases
-pass, with all first errors retained. Native leaf mode and its overhead have
-not run; worker wait/collection stays opaque and unchanged.
+pass, with all first errors retained. That model stage ran no native control;
+worker wait/collection stays opaque and unchanged.
 
 The [offline capture attribution](capture-attribution-result-20261026.md)
 now separates the new native packet's coordinator brackets and CPU owners from

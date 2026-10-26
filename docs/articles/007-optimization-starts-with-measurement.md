@@ -20942,6 +20942,29 @@ Ordinary leaf failure freezes both groups but drains the original owner;
 operational and recorder refusals remain separate. The
 [implementation, source comparison and first failures](../testing/performance/0.74/capture-leaves-result-20261026.md)
 retain 74 passing model/regression cases and five final integrity cases. Native
-leaf compatibility and overhead are still unqualified. This stage adds a
+leaf compatibility and overhead were unqualified at that model boundary. It adds a
 bounded way to observe the next question, not a product optimization or a
 reason to change a live deadline.
+
+### A successful native leaf control does not establish overhead
+
+The first real leaf-enabled diagnostic completes sixteen workers and sixty-four
+ordinary Git calls, preserving source, identities, byte/status results, terminal
+census and the original time origins. All 448 outer/leaf probes are valid and
+nested inside the expected parent spans. This closes exact-build functional
+compatibility, not instrumentation cost or release admission.
+
+Across the sixteen frames, read/rows-entry wall brackets total
+380.6253–380.8455 ms; JSON record parsing totals 1.7270–1.7830 ms. The largest
+read bracket is about 54.07 ms for a 2658-byte log. That narrows the observed
+decode delay but does not identify disk, open/close, scheduling or security
+software as its cause. Every leaf CPU delta is zero, not zero work.
+
+Spawn retains 2375 ms measured coordinator CPU outside the two recorded owner
+leaf brackets. That arithmetic complement is not an isolated CreateProcessW
+cost: preparation, publication and resume remain unseparated. Both arms enable
+all recorder layers, and earlier unpaired attempts are not an overhead baseline.
+The [native packet and independent nested replay](../testing/performance/0.74/capture-leaves-native-result-20261026.md)
+preserve these observations and six integrity controls. Further causal work must
+start from these saved scopes; no check removal, native bypass or larger
+deadline follows from functional success.

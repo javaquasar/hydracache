@@ -378,3 +378,10 @@ retains eighteen new cases, all 56 old caller/accounting/outer cases and five
 final integrity cases, including preserved first errors. No native leaf control
 or measurement runs in this stage. Raw CPU/wall bracket semantics do not isolate
 pure API cost or establish overhead, package or production admission.
+
+The [first native leaf result](../../docs/testing/performance/0.74/capture-leaves-native-result-20261026.md)
+now completes the exact fixed schedule with all 448 outer/leaf probes valid,
+original semantics and zero cleanup errors. Six integrity cases check nesting,
+raw arithmetic and first outcomes. Read/entry, not JSON parsing, contains most
+recorded decode wall in that input. Both arms trace leaves; overhead remains
+unmeasured on/off, and zero leaf CPU or a spawn complement is not causal cost.
