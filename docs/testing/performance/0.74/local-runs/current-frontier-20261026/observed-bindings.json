@@ -1,0 +1,123 @@
+{
+  "independent_expected_hashes_unchanged": true,
+  "later_reconstruction_of_original_raw_inputs": true,
+  "members": {
+    "coordinator/retain-current-frontier-observed-20261026.py": {
+      "bytes": 3369,
+      "sha256": "e288683e13319e0056d8a2a5f179b707799ba9b564a1b4add21ffab18addccea"
+    },
+    "observed/crates/hydracache-redis-compat/Cargo.toml": {
+      "bytes": 1198,
+      "sha256": "95a1631cbb324c2e264d3a042034cda8532c24653ad6b2bb973c15f8393f7d59"
+    },
+    "observed/crates/hydracache-redis-compat/README.md": {
+      "bytes": 10903,
+      "sha256": "5e2f6a295ca71b04da667757c9b1e9f7a5361de9384b81090ba40934884c5842"
+    },
+    "observed/crates/hydracache-redis-compat/src/get_response_owner_074.rs": {
+      "bytes": 11905,
+      "sha256": "8bcf3db7aba9af2c9ae330cd637ade0ed3f174a8522071a4f3d2c026ceac2524"
+    },
+    "observed/crates/hydracache-redis-compat/src/lib.rs": {
+      "bytes": 320234,
+      "sha256": "2dfc0c2c338462e48feb0d46d53ab9970307a51ebcffaf5b1f62bb3b3ed6396d"
+    },
+    "observed/crates/xtask/tests/performance_contract_074.rs": {
+      "bytes": 544386,
+      "sha256": "30dc4166f86f71a2028b0adc3287e898920adf18c92a45cb7046ab67663f9207"
+    },
+    "observed/tools/get-owner-scheduled-controls-074/Cargo.toml": {
+      "bytes": 1672,
+      "sha256": "5db66cd792c79f62027c73685da0e445a33dec6928edc06d14400f74c3822c79"
+    },
+    "observed/tools/get-owner-scheduled-controls-074/README.md": {
+      "bytes": 10258,
+      "sha256": "25fda9905da24bf2942f6e09cb8a8d1349d5fdd52ae5c4d85d1f00da552cc81d"
+    },
+    "observed/tools/get-owner-scheduled-controls-074/src/bin/timing_controls.rs": {
+      "bytes": 9905,
+      "sha256": "47c0098334ab5d74c48b787450e30da2c976d5d81a678897f5b1935f4e68eb8d"
+    },
+    "observed/tools/get-owner-scheduled-controls-074/src/security.rs": {
+      "bytes": 3694,
+      "sha256": "1b3bb76ad8e55b4d4b355137fa205d515a34b31a4e78cd52526210bc95b94d35"
+    },
+    "observed/tools/get-owner-scheduled-controls-074/src/timing.rs": {
+      "bytes": 21565,
+      "sha256": "fc38612c44587405f87e0ae2a04b2f0f4cafd822adcdd689009ea8942e2c1de0"
+    },
+    "observed/tools/get-owner-scheduled-controls-074/tests/timing_cli.rs": {
+      "bytes": 9405,
+      "sha256": "b9438999c7ee60dd8079227d8973e01493b25632dc0e9efd98ed0570b018aed8"
+    },
+    "observed/tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs": {
+      "bytes": 13233,
+      "sha256": "70f9cb739d192c3662075bed70d821c8f62630ec1f43599d1a6ae1af26b6594e"
+    },
+    "observed/tools/long-run-supervisor-074/src/diagnostic_authority_directory_tests.rs": {
+      "bytes": 12972,
+      "sha256": "323be5e906892ee0b9507c8e01f10e6a9811fe6e436e19eeb27a0fc4086b4c76"
+    },
+    "observed/tools/long-run-supervisor-074/src/diagnostic_authority_parent_tests.rs": {
+      "bytes": 11854,
+      "sha256": "aca89e7b9748cb2df31f144043476c07d6665fbf3c206e25e593cc91915e36a1"
+    },
+    "observed/tools/long-run-supervisor-074/src/diagnostic_authority_stamp.rs": {
+      "bytes": 3178,
+      "sha256": "7c2a9b0d0166ae595bf582986182edaaa8696b9223045601d98bbeb5cc4f7e9b"
+    },
+    "observed/tools/long-run-supervisor-074/src/diagnostic_authority_stamp_tests.rs": {
+      "bytes": 9854,
+      "sha256": "cef0f6bf456564b3720e54c0c9533b2dec0f8e18a588f63d923de5af6ba3a37a"
+    },
+    "observed/tools/long-run-supervisor-074/src/diagnostic_filesystem_projection.rs": {
+      "bytes": 1404,
+      "sha256": "73326fee5790dd33c3dcae076770cd3be413d135e2d10ce72a90f8aa2ed3736b"
+    },
+    "observed/tools/long-run-supervisor-074/src/diagnostic_filesystem_projection_tests.rs": {
+      "bytes": 15019,
+      "sha256": "725d66ed4bd8ecc1c657dea2e9d906f411c2cffd4227b29e4a46acb1413e530f"
+    },
+    "observed/tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity.rs": {
+      "bytes": 1037,
+      "sha256": "52ca571f1ea7ae9a42e53cba8273b3e9b0a969323e529c4c4a9f25d4c3bc5dbd"
+    },
+    "observed/tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity_tests.rs": {
+      "bytes": 6716,
+      "sha256": "afaf3927e9289a55a2d07b84ec1e1006ae35cf54a89751d84704c8379344a757"
+    },
+    "observed/tools/long-run-supervisor-074/src/diagnostic_kernel_operation_cost.rs": {
+      "bytes": 6950,
+      "sha256": "0731eaf56828d138b5b6cd6a0eafbaeb5e6efb9d5a070024d2a5dae70b39f03b"
+    },
+    "observed/tools/long-run-supervisor-074/src/diagnostic_kernel_operation_reference.rs": {
+      "bytes": 4131,
+      "sha256": "119754c64f1c1e0078c0fed2a1892bbcb2bed06ebc3d64427f33590de39babd4"
+    },
+    "observed/tools/long-run-supervisor-074/src/diagnostic_kernel_operation_tests.rs": {
+      "bytes": 6276,
+      "sha256": "37a5ff7881ba73ec6fa429570459db51f01d8f64f532b245d2794a7796637a34"
+    },
+    "observed/tools/long-run-supervisor-074/src/diagnostic_namespace_open.rs": {
+      "bytes": 1746,
+      "sha256": "0d87da659557b2997c481f649010c7f0f125b6a4da7c81fd8517a0c5c57ac9d1"
+    },
+    "observed/tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs": {
+      "bytes": 15657,
+      "sha256": "c72ee0e7438bf6ffa72592063fb938cf86043cf67c55b65485f968ae32ca74d6"
+    },
+    "offline-enrichment-first-refusal.json": {
+      "bytes": 509,
+      "sha256": "b290ead9247955f21eba1585df35a539738d92473c1855be0c899bd0e55f536d"
+    },
+    "offline-enrichment-first-verifier.py": {
+      "bytes": 8766,
+      "sha256": "f5ea8675fb1cba8560fa83e10adcbd1bffa14beaa8ca9c2b658cff3f36008122"
+    }
+  },
+  "original_index_sha256": "685401b61760909eb6539a17f4f7ff3b4d1f567be3bbd808863a80697038e211",
+  "proposal_document_not_in_original_source_map": true,
+  "raw_inputs": 25,
+  "schema": "hc074-current-frontier-observed-bindings-v1",
+  "tests_rerun": false
+}

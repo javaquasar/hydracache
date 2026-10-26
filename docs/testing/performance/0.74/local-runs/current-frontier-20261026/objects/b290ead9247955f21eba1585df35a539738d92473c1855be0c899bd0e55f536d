@@ -1,0 +1,12 @@
+{
+  "derived_from_tool_transcript": true,
+  "raw_stream_capture_available": false,
+  "invocation": "offline verifier plus six integrity controls after adding raw-source binding assertions",
+  "verifier_exit": 1,
+  "controls_passed": 5,
+  "controls_errored": 1,
+  "error": "ValueError: observed producer binding differs",
+  "cause": "Oracle allowed only uniformly LF or CRLF, but two recorded inputs have mixed line endings.",
+  "runtime_or_case_rerun": false,
+  "earlier_successful_replays_preserved": true
+}

@@ -1,0 +1,80 @@
+"""Retain exact source accounting and first audit refusal, never a package pass."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'bf352a1dfbe3040af9ce058a5d42efe55202db62'
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+members, objects, intents = {}, {}, {}
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+labels = {name: 0 for name in ['current-frontier-candidate-first', 'current-frontier-msrv-first',
+    'current-frontier-producer-first', 'current-frontier-check-first', 'current-frontier-clippy-first',
+    'current-frontier-fmt-first', 'current-frontier-doc-check-first', 'current-frontier-contract-check-first']}
+labels['current-frontier-baseline-first'] = 101
+for label, expected in labels.items():
+    folder = ROOT / 'target/source-continuation-20261024' / label
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    assert result['exit'] == expected and result['outer_refusal'] is None
+    assert result['source_unchanged'] and result['head_unchanged'] and intent['head'] == BASE
+    assert result['source_after'] == intent['source']
+    intents[label] = intent
+    for path in sorted(folder.iterdir()):
+        assert path.is_file()
+        add('checks/' + label + '/' + path.name, path.read_bytes())
+rules_raw = (ROOT / 'tools/current-frontier-074/rules.json').read_bytes()
+assert sha(rules_raw) == '4ef20240b953381c2e4dbfe7892b0a9205dbdefba3012e89a113030372d0d389'
+rules = json.loads(rules_raw)
+files = [rules['audit']['path'], 'crates/xtask/tests/current_frontier_074.rs']
+files += [path.relative_to(ROOT).as_posix() for path in sorted((ROOT / 'tools/current-frontier-074').iterdir()) if path.is_file()]
+files += ['crates/xtask/tests/support/current_tree_input.rs', 'crates/xtask/tests/support/current_tree_input_rules_074.json']
+for path in files:
+    body = (ROOT / path).read_bytes()
+    for label in ['current-frontier-msrv-first', 'current-frontier-clippy-first']:
+        assert sha(body) == intents[label]['source'][path]
+    if not path.endswith('/README.md'):
+        assert sha(body) == intents['current-frontier-candidate-first']['source'][path]
+    add('source-final/' + path, body)
+for path in [rules['audit']['path'], *files[-2:]]:
+    add('baseline/' + path, subprocess.check_output(['git', '--no-replace-objects', 'show', BASE + ':' + path], cwd=ROOT))
+add('declared-audit-delta.raw', subprocess.check_output(['git', '--no-replace-objects', 'diff', '--no-ext-diff',
+    '--no-textconv', BASE, '--', rules['audit']['path']], cwd=ROOT))
+for row in rules['rows']:
+    for key in ['revision', 'previous_revision']:
+        rev = row[key]
+        body = subprocess.check_output(['git', '--no-replace-objects', 'show', rev + ':' + row['path']], cwd=ROOT)
+        add('producer/' + rev + '/' + row['path'], body)
+phase_path = 'docs/testing/performance/0.74/local-runs/inventory544-provenance-20261026/objects/fec2195d38bd7784e9c584704b90d5851f5a5c228a900513aa11cf91b42fad8f'
+phase = (ROOT / phase_path).read_bytes()
+assert sha(phase) == Path(phase_path).name
+add('independent-inventory544.json', phase)
+for path in json.loads(phase)['added']:
+    add('addition-producer/' + path, subprocess.check_output(['git', '--no-replace-objects', 'show',
+        json.loads(phase)['revision'] + ':' + path], cwd=ROOT))
+for name in ['run-fresh-reader-20261024.py', 'run-source-step-20261024.py',
+             'run-current-frontier-final-checks.py', 'retain-current-frontier-20261026.py']:
+    add('coordinator/' + name, (ROOT / 'target' / name).read_bytes())
+out = ROOT / 'docs/testing/performance/0.74/local-runs/current-frontier-20261026'
+out.mkdir(exist_ok=True)
+(out / 'objects').mkdir()
+for digest, body in objects.items():
+    with (out / 'objects' / digest).open('xb') as output:
+        output.write(body)
+index = dict(schema='hc074-current-frontier-evidence-v1', members=members, expected_exit=labels,
+             baseline_revision=BASE, baseline_cases=5, old_cases=14, new_cases=7,
+             accounted_existing=12, accounted_additions=14, full_package_rerun=False,
+             runtime_or_deadline_changes=False, server=False, qualification=False)
+with (out / 'index.json').open('x', encoding='utf-8', newline='\n') as output:
+    json.dump(index, output, sort_keys=True, indent=2)
+    output.write('\n')
+print(dict(members=len(members), objects=len(objects), index_sha256=sha((out / 'index.json').read_bytes())))

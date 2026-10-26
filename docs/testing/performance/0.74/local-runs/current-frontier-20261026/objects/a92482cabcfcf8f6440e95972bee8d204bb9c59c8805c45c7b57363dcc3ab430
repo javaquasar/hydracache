@@ -1,0 +1,46 @@
+"""Bounded append-only local checks, with immutable dependency inputs."""
+from pathlib import Path
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+ROOT=Path(__file__).resolve().parent.parent
+label,*argv=sys.argv[1:]
+if not label.replace('-','').isalnum() or not argv:raise SystemExit('Invalid phase')
+OUT=ROOT/'target/source-continuation-20261024'/label
+OUT.mkdir(parents=True,exist_ok=False)
+def snapshot():
+    names={s.decode() for s in subprocess.check_output(['git','ls-files','-z','--','Cargo.toml','Cargo.lock','deny.toml','.cargo','crates','tools'],cwd=ROOT).split(b'\0') if s}
+    extra='crates/xtask/tests/authority_hex_reader_074.rs'
+    if (ROOT/extra).exists():names.add(extra)
+    return {name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in sorted(names)}
+before=snapshot()
+head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+intent=dict(argv=argv,source=before,head=head,bound_seconds=1200,disk_floor_bytes=4*1024**3,
+    dependency_changes=False,observation_frequency_changed=False,services_or_clocks=False,
+    server=False,original_owner=False,qualification=False,retry=False)
+(OUT/'intent.json').write_text(json.dumps(intent,indent=2)+'\n',encoding='utf-8')
+reason=None
+with (OUT/'stdout.log').open('xb') as stdout,(OUT/'stderr.log').open('xb') as stderr:
+    process=subprocess.Popen(argv,cwd=ROOT,stdout=stdout,stderr=stderr,
+        env=dict(os.environ,CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2'))
+    started=time.monotonic()
+    while process.poll() is None:
+        if time.monotonic()-started>=1200:reason='outer-timeout'
+        if shutil.disk_usage(ROOT).free<4*1024**3:reason='disk-floor'
+        if reason:
+            with (OUT/'owned-cleanup.log').open('xb') as log:
+                subprocess.run(['taskkill','/PID',str(process.pid),'/T','/F'],stdout=log,stderr=subprocess.STDOUT,timeout=30,check=False)
+            process.wait(timeout=30);break
+        try:process.wait(timeout=5)
+        except subprocess.TimeoutExpired:pass
+after=snapshot()
+result=dict(exit=process.returncode,outer_refusal=reason,source_unchanged=before==after,source_after=after,
+    head_unchanged=head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+    admission=False,qualification=False)
+(OUT/'result.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
+print({k:v for k,v in result.items() if k!='source_after'},flush=True)
+raise SystemExit(int(process.returncode!=0 or reason is not None or before!=after or not result['head_unchanged']))

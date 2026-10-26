@@ -1,0 +1,56 @@
+
+running 1 test
+test current_tree_input_frontier_is_fully_accounted_without_path_exclusions ... FAILED
+
+failures:
+
+---- current_tree_input_frontier_is_fully_accounted_without_path_exclusions stdout ----
+
+thread 'current_tree_input_frontier_is_fully_accounted_without_path_exclusions' (53872) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\gate.rs:188:5:
+current runtime file refused before historical view: crates/xtask/tests/performance_contract_074.rs
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+CURRENT_TREE_FRONTIER body: crates/hydracache-redis-compat/Cargo.toml
+CURRENT_TREE_FRONTIER body: crates/hydracache-redis-compat/README.md
+CURRENT_TREE_FRONTIER body: crates/hydracache-redis-compat/src/get_response_owner_074.rs
+CURRENT_TREE_FRONTIER body: crates/hydracache-redis-compat/src/lib.rs
+CURRENT_TREE_FRONTIER input refused: crates/xtask/tests/performance_contract_074.rs
+CURRENT_TREE_FRONTIER body: docs/testing/performance/0.74/proposal-registry.toml
+CURRENT_TREE_FRONTIER body: tools/get-owner-scheduled-controls-074/Cargo.toml
+CURRENT_TREE_FRONTIER body: tools/get-owner-scheduled-controls-074/README.md
+CURRENT_TREE_FRONTIER body: tools/get-owner-scheduled-controls-074/src/bin/timing_controls.rs
+CURRENT_TREE_FRONTIER body: tools/get-owner-scheduled-controls-074/src/security.rs
+CURRENT_TREE_FRONTIER body: tools/get-owner-scheduled-controls-074/src/timing.rs
+CURRENT_TREE_FRONTIER body: tools/get-owner-scheduled-controls-074/tests/timing_cli.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_authority_directory_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_authority_parent_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_authority_stamp.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_authority_stamp_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_filesystem_projection.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_filesystem_projection_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_kernel_operation_cost.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_kernel_operation_reference.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_kernel_operation_tests.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_namespace_open.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs
+
+thread 'current_tree_input_frontier_is_fully_accounted_without_path_exclusions' (53872) panicked at crates\xtask\tests\current_tree_input_audit_074.rs:94:5:
+26 current-tree inputs remain
+
+
+failures:
+    current_tree_input_frontier_is_fully_accounted_without_path_exclusions
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 58.10s
+
+
+running 4 tests
+test runtime_contract_reader_changes_only_the_current_history_input ... ok
+test current_tree_reader_retains_entire_prior_gate_and_unknown_source_assertions ... ok
+test all_nine_current_inputs_are_exact_declared_patches_not_assertion_waivers ... ok
+test all_eighty_one_declared_sources_require_exact_bytes_index_and_regular_files ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 25.47s
+

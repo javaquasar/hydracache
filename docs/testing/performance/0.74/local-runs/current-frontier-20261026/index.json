@@ -1,0 +1,398 @@
+{
+  "accounted_additions": 14,
+  "accounted_existing": 12,
+  "baseline_cases": 5,
+  "baseline_revision": "bf352a1dfbe3040af9ce058a5d42efe55202db62",
+  "expected_exit": {
+    "current-frontier-baseline-first": 101,
+    "current-frontier-candidate-first": 0,
+    "current-frontier-check-first": 0,
+    "current-frontier-clippy-first": 0,
+    "current-frontier-contract-check-first": 0,
+    "current-frontier-doc-check-first": 0,
+    "current-frontier-fmt-first": 0,
+    "current-frontier-msrv-first": 0,
+    "current-frontier-producer-first": 0
+  },
+  "full_package_rerun": false,
+  "members": {
+    "addition-producer/tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs": {
+      "bytes": 13233,
+      "sha256": "70f9cb739d192c3662075bed70d821c8f62630ec1f43599d1a6ae1af26b6594e"
+    },
+    "addition-producer/tools/long-run-supervisor-074/src/diagnostic_authority_directory_tests.rs": {
+      "bytes": 12972,
+      "sha256": "323be5e906892ee0b9507c8e01f10e6a9811fe6e436e19eeb27a0fc4086b4c76"
+    },
+    "addition-producer/tools/long-run-supervisor-074/src/diagnostic_authority_parent_tests.rs": {
+      "bytes": 11854,
+      "sha256": "aca89e7b9748cb2df31f144043476c07d6665fbf3c206e25e593cc91915e36a1"
+    },
+    "addition-producer/tools/long-run-supervisor-074/src/diagnostic_authority_stamp.rs": {
+      "bytes": 3178,
+      "sha256": "7c2a9b0d0166ae595bf582986182edaaa8696b9223045601d98bbeb5cc4f7e9b"
+    },
+    "addition-producer/tools/long-run-supervisor-074/src/diagnostic_authority_stamp_tests.rs": {
+      "bytes": 9854,
+      "sha256": "cef0f6bf456564b3720e54c0c9533b2dec0f8e18a588f63d923de5af6ba3a37a"
+    },
+    "addition-producer/tools/long-run-supervisor-074/src/diagnostic_filesystem_projection.rs": {
+      "bytes": 1404,
+      "sha256": "73326fee5790dd33c3dcae076770cd3be413d135e2d10ce72a90f8aa2ed3736b"
+    },
+    "addition-producer/tools/long-run-supervisor-074/src/diagnostic_filesystem_projection_tests.rs": {
+      "bytes": 15019,
+      "sha256": "725d66ed4bd8ecc1c657dea2e9d906f411c2cffd4227b29e4a46acb1413e530f"
+    },
+    "addition-producer/tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity.rs": {
+      "bytes": 1037,
+      "sha256": "52ca571f1ea7ae9a42e53cba8273b3e9b0a969323e529c4c4a9f25d4c3bc5dbd"
+    },
+    "addition-producer/tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity_tests.rs": {
+      "bytes": 6716,
+      "sha256": "afaf3927e9289a55a2d07b84ec1e1006ae35cf54a89751d84704c8379344a757"
+    },
+    "addition-producer/tools/long-run-supervisor-074/src/diagnostic_kernel_operation_cost.rs": {
+      "bytes": 6950,
+      "sha256": "0731eaf56828d138b5b6cd6a0eafbaeb5e6efb9d5a070024d2a5dae70b39f03b"
+    },
+    "addition-producer/tools/long-run-supervisor-074/src/diagnostic_kernel_operation_reference.rs": {
+      "bytes": 4131,
+      "sha256": "119754c64f1c1e0078c0fed2a1892bbcb2bed06ebc3d64427f33590de39babd4"
+    },
+    "addition-producer/tools/long-run-supervisor-074/src/diagnostic_kernel_operation_tests.rs": {
+      "bytes": 6276,
+      "sha256": "37a5ff7881ba73ec6fa429570459db51f01d8f64f532b245d2794a7796637a34"
+    },
+    "addition-producer/tools/long-run-supervisor-074/src/diagnostic_namespace_open.rs": {
+      "bytes": 1746,
+      "sha256": "0d87da659557b2997c481f649010c7f0f125b6a4da7c81fd8517a0c5c57ac9d1"
+    },
+    "addition-producer/tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs": {
+      "bytes": 15657,
+      "sha256": "c72ee0e7438bf6ffa72592063fb938cf86043cf67c55b65485f968ae32ca74d6"
+    },
+    "baseline/crates/xtask/tests/current_tree_input_audit_074.rs": {
+      "bytes": 3548,
+      "sha256": "d65d950f210051b4d2a77636b22bfd51747863f8c256dfd2f3067d66d0061eab"
+    },
+    "baseline/crates/xtask/tests/support/current_tree_input.rs": {
+      "bytes": 5171,
+      "sha256": "78bb32368f8bb2fb235ec53052a12d908df7c27db152441881334ccdf64ec935"
+    },
+    "baseline/crates/xtask/tests/support/current_tree_input_rules_074.json": {
+      "bytes": 41725,
+      "sha256": "85ab712a7b5e11d5430749108df9a013887eb027f8d9ce8683b4676f1b5f83fa"
+    },
+    "checks/current-frontier-baseline-first/intent.json": {
+      "bytes": 340530,
+      "sha256": "98414b4a6f9bed913842031f96d9a7e8789d10b5e0c83f33a36337fb1b4ed3ae"
+    },
+    "checks/current-frontier-baseline-first/result.json": {
+      "bytes": 340088,
+      "sha256": "b8295eaa84481cbed8558b0d978c130ecdaa724b88f8bbfaccd17646fb15a162"
+    },
+    "checks/current-frontier-baseline-first/stderr.log": {
+      "bytes": 545,
+      "sha256": "99cd706d7c22e204ae6ed08ebd6f58a60b53cd1abebd34b9cac7e6ab831ed33b"
+    },
+    "checks/current-frontier-baseline-first/stdout.log": {
+      "bytes": 3816,
+      "sha256": "56f3c14f2dd4e540eaade9fe79b78837747f96ba0c43e3cf6cdbec17b111b539"
+    },
+    "checks/current-frontier-candidate-first/intent.json": {
+      "bytes": 341322,
+      "sha256": "d8c7b98cd06e771d8d37adc7cee4b01df27e99f9060be48f991ccd302648a525"
+    },
+    "checks/current-frontier-candidate-first/result.json": {
+      "bytes": 340778,
+      "sha256": "98835be52e2114d0fcdf51b57e661ce70932afe93265c6e5f4184453d7b5d4ae"
+    },
+    "checks/current-frontier-candidate-first/stderr.log": {
+      "bytes": 622,
+      "sha256": "5dd54a29a65797708bc94b6ce011d9d342aff060771183b77f5945a148ebb77d"
+    },
+    "checks/current-frontier-candidate-first/stdout.log": {
+      "bytes": 2127,
+      "sha256": "baf61406e6ab038ad3358221e3dacd9af8e7d7c8b34f5c4252a2375d527a0334"
+    },
+    "checks/current-frontier-check-first/intent.json": {
+      "bytes": 341200,
+      "sha256": "6a433d5625e3f351f8407ca1f06f2e773f462bfaf402bf214d201633db46ff0a"
+    },
+    "checks/current-frontier-check-first/result.json": {
+      "bytes": 340891,
+      "sha256": "49f2259ed21d9770dfefdfdbb411117458f3d39e6a914e9bd260acd07b08e5dd"
+    },
+    "checks/current-frontier-check-first/stderr.log": {
+      "bytes": 155,
+      "sha256": "5a8fff862bfc88ea44cc2ddc01e9d955162aa1b9bc6d5db47b82b3fba85ed2a2"
+    },
+    "checks/current-frontier-check-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/current-frontier-clippy-first/intent.json": {
+      "bytes": 341263,
+      "sha256": "1df0421cb140d2b34863db37be81d6bca5476365d54702d26536da374ca42c17"
+    },
+    "checks/current-frontier-clippy-first/result.json": {
+      "bytes": 340891,
+      "sha256": "49f2259ed21d9770dfefdfdbb411117458f3d39e6a914e9bd260acd07b08e5dd"
+    },
+    "checks/current-frontier-clippy-first/stderr.log": {
+      "bytes": 155,
+      "sha256": "f65b30723d8500ff52df04cc12cf6fdba5974e0cf66d93e27f084f958d6c4605"
+    },
+    "checks/current-frontier-clippy-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/current-frontier-contract-check-first/intent.json": {
+      "bytes": 341168,
+      "sha256": "722b92b87e2854d853c33c4d35fcbb42982a800e50bea401dee945bef6ecac6e"
+    },
+    "checks/current-frontier-contract-check-first/result.json": {
+      "bytes": 340891,
+      "sha256": "49f2259ed21d9770dfefdfdbb411117458f3d39e6a914e9bd260acd07b08e5dd"
+    },
+    "checks/current-frontier-contract-check-first/stderr.log": {
+      "bytes": 152,
+      "sha256": "cab1e2e57534d24df9f67e73daedae6b609cfca31c9d99321b4c24b165cd59d5"
+    },
+    "checks/current-frontier-contract-check-first/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/current-frontier-doc-check-first/intent.json": {
+      "bytes": 341120,
+      "sha256": "9acd80ab68452151a56f598c69058e25b579dbb5c6b0bbb82f971c6b26d38fbe"
+    },
+    "checks/current-frontier-doc-check-first/result.json": {
+      "bytes": 340891,
+      "sha256": "49f2259ed21d9770dfefdfdbb411117458f3d39e6a914e9bd260acd07b08e5dd"
+    },
+    "checks/current-frontier-doc-check-first/stderr.log": {
+      "bytes": 204,
+      "sha256": "6c87d1e63fd438fc1e38fb593970ab3961dbe749478904c46fc7906cb4337c17"
+    },
+    "checks/current-frontier-doc-check-first/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/current-frontier-fmt-first/intent.json": {
+      "bytes": 341168,
+      "sha256": "b7471fc12f78dde6cb5ea8fe77da492fcc81a52c765dd5e0adea64b7757b032c"
+    },
+    "checks/current-frontier-fmt-first/result.json": {
+      "bytes": 340891,
+      "sha256": "49f2259ed21d9770dfefdfdbb411117458f3d39e6a914e9bd260acd07b08e5dd"
+    },
+    "checks/current-frontier-fmt-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/current-frontier-fmt-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/current-frontier-msrv-first/intent.json": {
+      "bytes": 341435,
+      "sha256": "a4d04f6dacaffc92902ac39d5d51ec476a8711af8cb65fe4b3ec85d29e49d95f"
+    },
+    "checks/current-frontier-msrv-first/result.json": {
+      "bytes": 340891,
+      "sha256": "49f2259ed21d9770dfefdfdbb411117458f3d39e6a914e9bd260acd07b08e5dd"
+    },
+    "checks/current-frontier-msrv-first/stderr.log": {
+      "bytes": 623,
+      "sha256": "05d9604e0593048d9084dfae4e8f84e283e64e25788d541140c5560ddd7df762"
+    },
+    "checks/current-frontier-msrv-first/stdout.log": {
+      "bytes": 2240,
+      "sha256": "0d9287bfd0418cf7fd289486105bc81561f10a3f0f4027e795f496a6ed51a873"
+    },
+    "checks/current-frontier-producer-first/intent.json": {
+      "bytes": 341155,
+      "sha256": "bb05d60a5e9bcf672f4bafda6f665bb777f937712ae263dabd2e4a17731a0eae"
+    },
+    "checks/current-frontier-producer-first/result.json": {
+      "bytes": 340891,
+      "sha256": "49f2259ed21d9770dfefdfdbb411117458f3d39e6a914e9bd260acd07b08e5dd"
+    },
+    "checks/current-frontier-producer-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/current-frontier-producer-first/stdout.log": {
+      "bytes": 66,
+      "sha256": "4968e43c9d70f3768811e5f5ddaf099c36b003751af715c6cefa421385ee08cb"
+    },
+    "coordinator/retain-current-frontier-20261026.py": {
+      "bytes": 4609,
+      "sha256": "be9beae4152581654460e5134a6c0a02e8aadccea704411101c7f5d8e2641194"
+    },
+    "coordinator/run-current-frontier-final-checks.py": {
+      "bytes": 1446,
+      "sha256": "baa965ad2a243702d8cb5dff6e5769c4a5f7c21100aff5061080198053064b23"
+    },
+    "coordinator/run-fresh-reader-20261024.py": {
+      "bytes": 544,
+      "sha256": "851631e846ec7d3696a0e2fa550b6f87e8f07e8412f5dafc0530c0bc70c597ed"
+    },
+    "coordinator/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "declared-audit-delta.raw": {
+      "bytes": 1534,
+      "sha256": "df2213fb5c6eb9a1a10348f466585e5fd86a9e36b5f879fe07e4a3a4a2081bea"
+    },
+    "independent-inventory544.json": {
+      "bytes": 5521,
+      "sha256": "fec2195d38bd7784e9c584704b90d5851f5a5c228a900513aa11cf91b42fad8f"
+    },
+    "producer/33c54b0cda8c330b115009cdf092ad002077cedf/crates/hydracache-redis-compat/Cargo.toml": {
+      "bytes": 1064,
+      "sha256": "a842f6194e5dacba70872596129116cea232cbcc55906572142662408baf63e2"
+    },
+    "producer/33c54b0cda8c330b115009cdf092ad002077cedf/crates/hydracache-redis-compat/README.md": {
+      "bytes": 10629,
+      "sha256": "b7efc786f4ee5bfb1a75d01f89e602d5cea1130fef6f6562624fe7f188e642c2"
+    },
+    "producer/33c54b0cda8c330b115009cdf092ad002077cedf/crates/hydracache-redis-compat/src/get_response_owner_074.rs": {
+      "bytes": 11901,
+      "sha256": "76f105e44cae98bc742681409edcebbd7467e06aa15fe208104b3f68ed538d9f"
+    },
+    "producer/33c54b0cda8c330b115009cdf092ad002077cedf/crates/hydracache-redis-compat/src/lib.rs": {
+      "bytes": 320512,
+      "sha256": "8ce15adb039180000a9a558c234ec46ba40dab6a60ee326d3d9cb3dce8a00498"
+    },
+    "producer/33c54b0cda8c330b115009cdf092ad002077cedf/docs/testing/performance/0.74/proposal-registry.toml": {
+      "bytes": 11276,
+      "sha256": "64f568bcf9056c3a1c51ed5d314764fd1e402ed55e494f1a6a26daf3c48b0347"
+    },
+    "producer/33c54b0cda8c330b115009cdf092ad002077cedf/tools/get-owner-scheduled-controls-074/Cargo.toml": {
+      "bytes": 1545,
+      "sha256": "e07b8b341519369e96860e2213452903af1d027d0ff0fb95c6743b640c5371ae"
+    },
+    "producer/33c54b0cda8c330b115009cdf092ad002077cedf/tools/get-owner-scheduled-controls-074/README.md": {
+      "bytes": 8693,
+      "sha256": "e56bf7b85db31f793a838280dd00564ebc610f7a8fd323fc812c41743a07cdb8"
+    },
+    "producer/33c54b0cda8c330b115009cdf092ad002077cedf/tools/get-owner-scheduled-controls-074/src/bin/timing_controls.rs": {
+      "bytes": 6977,
+      "sha256": "a4bd8727f805608557601de89e953798233f53105e6ac000b21a487186875778"
+    },
+    "producer/33c54b0cda8c330b115009cdf092ad002077cedf/tools/get-owner-scheduled-controls-074/src/security.rs": {
+      "bytes": 3648,
+      "sha256": "ed8a0d1e5fc1333e8a49b8e6700b55295ef3ace5bfbc6948fb33a33c81e59ce9"
+    },
+    "producer/33c54b0cda8c330b115009cdf092ad002077cedf/tools/get-owner-scheduled-controls-074/src/timing.rs": {
+      "bytes": 19904,
+      "sha256": "eb6f12095589b52a2df3faa92ef8aa0b9051f6f40beb4598ba9ddbc60011ae5f"
+    },
+    "producer/33c54b0cda8c330b115009cdf092ad002077cedf/tools/get-owner-scheduled-controls-074/tests/timing_cli.rs": {
+      "bytes": 3957,
+      "sha256": "3e9e0e25345bb6bb3320ff4fbc17025acfe2cb1aa07a8d6165b888b9539558b5"
+    },
+    "producer/37db65f68e67ed7c0ee0f1cc84fed1c30bf9822a/crates/xtask/tests/performance_contract_074.rs": {
+      "bytes": 544808,
+      "sha256": "b99acaf03257db18bb5f52e53ed948bf9ca26250e9193c0cfeeabb4725fa5906"
+    },
+    "producer/5a3785a6a4de12cbfd8ee58470b333ac7677fda4/tools/get-owner-scheduled-controls-074/src/security.rs": {
+      "bytes": 3694,
+      "sha256": "1b3bb76ad8e55b4d4b355137fa205d515a34b31a4e78cd52526210bc95b94d35"
+    },
+    "producer/5a3785a6a4de12cbfd8ee58470b333ac7677fda4/tools/get-owner-scheduled-controls-074/tests/timing_cli.rs": {
+      "bytes": 9405,
+      "sha256": "b9438999c7ee60dd8079227d8973e01493b25632dc0e9efd98ed0570b018aed8"
+    },
+    "producer/8c5d4810837f91483625dff119edd5513c605e04/tools/get-owner-scheduled-controls-074/Cargo.toml": {
+      "bytes": 1672,
+      "sha256": "5db66cd792c79f62027c73685da0e445a33dec6928edc06d14400f74c3822c79"
+    },
+    "producer/a67a5299ab335424e9b11330dc06bd749ea9b859/crates/hydracache-redis-compat/Cargo.toml": {
+      "bytes": 1158,
+      "sha256": "86548e7516a7a73b05099f4c7ff7342949d5656f748b914c298dc02997297b3b"
+    },
+    "producer/a67a5299ab335424e9b11330dc06bd749ea9b859/crates/hydracache-redis-compat/README.md": {
+      "bytes": 10713,
+      "sha256": "ea6b0d6bcf142be9acd6e5a5fcfdf658729db23b53e36f86671ca674433d7124"
+    },
+    "producer/a67a5299ab335424e9b11330dc06bd749ea9b859/crates/hydracache-redis-compat/src/get_response_owner_074.rs": {
+      "bytes": 11905,
+      "sha256": "8bcf3db7aba9af2c9ae330cd637ade0ed3f174a8522071a4f3d2c026ceac2524"
+    },
+    "producer/a67a5299ab335424e9b11330dc06bd749ea9b859/crates/hydracache-redis-compat/src/lib.rs": {
+      "bytes": 320234,
+      "sha256": "2dfc0c2c338462e48feb0d46d53ab9970307a51ebcffaf5b1f62bb3b3ed6396d"
+    },
+    "producer/a67a5299ab335424e9b11330dc06bd749ea9b859/crates/xtask/tests/performance_contract_074.rs": {
+      "bytes": 544386,
+      "sha256": "30dc4166f86f71a2028b0adc3287e898920adf18c92a45cb7046ab67663f9207"
+    },
+    "producer/a67a5299ab335424e9b11330dc06bd749ea9b859/docs/testing/performance/0.74/proposal-registry.toml": {
+      "bytes": 11758,
+      "sha256": "1d88f321bbcdb9c7607378c77c004947132eb6e256a26393f2e844ca7a46bcd2"
+    },
+    "producer/a67a5299ab335424e9b11330dc06bd749ea9b859/tools/get-owner-scheduled-controls-074/README.md": {
+      "bytes": 10258,
+      "sha256": "25fda9905da24bf2942f6e09cb8a8d1349d5fdd52ae5c4d85d1f00da552cc81d"
+    },
+    "producer/be0499a8cb0a2ad0b7328d6ac0cf6227114cebcc/tools/get-owner-scheduled-controls-074/src/bin/timing_controls.rs": {
+      "bytes": 9905,
+      "sha256": "47c0098334ab5d74c48b787450e30da2c976d5d81a678897f5b1935f4e68eb8d"
+    },
+    "producer/be0499a8cb0a2ad0b7328d6ac0cf6227114cebcc/tools/get-owner-scheduled-controls-074/src/timing.rs": {
+      "bytes": 21565,
+      "sha256": "fc38612c44587405f87e0ae2a04b2f0f4cafd822adcdd689009ea8942e2c1de0"
+    },
+    "source-final/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9330,
+      "sha256": "4e091a52328a6eeda85d8a1cc13f0c633c5bdf7b5b14cd796914e8ee37a2027a"
+    },
+    "source-final/crates/xtask/tests/current_tree_input_audit_074.rs": {
+      "bytes": 3603,
+      "sha256": "c5d85fb42cc9ee6754fc00398923757cb0939a965750a588fdb0cc0de2738530"
+    },
+    "source-final/crates/xtask/tests/support/current_tree_input.rs": {
+      "bytes": 5171,
+      "sha256": "78bb32368f8bb2fb235ec53052a12d908df7c27db152441881334ccdf64ec935"
+    },
+    "source-final/crates/xtask/tests/support/current_tree_input_rules_074.json": {
+      "bytes": 41725,
+      "sha256": "85ab712a7b5e11d5430749108df9a013887eb027f8d9ce8683b4676f1b5f83fa"
+    },
+    "source-final/tools/current-frontier-074/README.md": {
+      "bytes": 2751,
+      "sha256": "ded40da932469988262c4b09a6dcb7e3cfbc8591d34bb75aea8858decfe0e202"
+    },
+    "source-final/tools/current-frontier-074/additions.rs": {
+      "bytes": 2892,
+      "sha256": "8fdb366c6bade0767a7bdd3b4b9570dcb8e6af036d156836d23c828a4699b9cc"
+    },
+    "source-final/tools/current-frontier-074/contract.rs": {
+      "bytes": 2137,
+      "sha256": "d214be91c11ec2f93f76ca20ea29deb697dbaffaac4aceddfcc62131c5b2caae"
+    },
+    "source-final/tools/current-frontier-074/generate.py": {
+      "bytes": 3952,
+      "sha256": "5f9fb74b814d784e77c5311df92b09fc8da4b36fd180ebb7b59fbdcf88f47e71"
+    },
+    "source-final/tools/current-frontier-074/reader.rs": {
+      "bytes": 1431,
+      "sha256": "3fc4f7da5124b18a418c69d4a8e7e2af855e085c9409d4ceaa3a1e590117870f"
+    },
+    "source-final/tools/current-frontier-074/rules.json": {
+      "bytes": 29700,
+      "sha256": "4ef20240b953381c2e4dbfe7892b0a9205dbdefba3012e89a113030372d0d389"
+    }
+  },
+  "new_cases": 7,
+  "old_cases": 14,
+  "qualification": false,
+  "runtime_or_deadline_changes": false,
+  "schema": "hc074-current-frontier-evidence-v1",
+  "server": false
+}

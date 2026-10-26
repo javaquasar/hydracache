@@ -20466,3 +20466,35 @@ exceptions. The final 69 cases pass on both compilers. That closes this boundary
 not the separate 26-input audit frontier, a performance hypothesis or server
 admission. A green historical view remains evidence about one approved change,
 never permission to skip the rest of the current tree.
+
+### Account for the whole audit frontier without excluding source paths
+
+The [next audit repair](../testing/performance/0.74/current-frontier-result-20261026.md)
+closes the separate 26-input frontier. Twelve bodies changed during fixed-material
+D3 preparation and the terminal GET-owner rollback; fourteen supervisor files
+already have an independent inventory receipt. Those groups need different
+proofs. An existing-body delta needs exact current and predecessor reconstruction.
+A new file needs current metadata, index identity and body validation before it
+can be counted as known. Neither group is a reason to exclude a directory.
+
+The existing 9-patch/81-addition rules remain byte-identical. New inverse source
+descriptions use independent fixed commits, and unknown inputs still enter the
+original reader. The main performance contract is especially important: its
+successor first reconstructs the pre-terminal body, then the old runtime gate
+still checks that complete expected body. Historical text is never compiled or
+written back; accepting the audit does not reactivate the rejected GET-owner.
+
+All fourteen additions require fresh regular-file metadata, exact stage-0
+mode/blob/path rows and independently fixed producer bytes on every invocation.
+Only expected descriptions are cached. A temporary-file control first succeeds,
+then changes the body and index and observes refusal; a directory refuses before
+index observation. Other controls exercise partial and duplicate inverse edits,
+unrelated drift, stale predecessors and unknown inputs. Complete audit-source
+construction and AST comparisons retain its protected filter and assertions.
+
+The final cohort passes fourteen old and seven new cases on current/MSRV,
+including the complete audit. The original red baseline remains. This is concrete
+progress in package preparation, not a throughput result: other reader targets
+and the full source/effect graph still need review before the next complete
+package run. The audit's historical protected scope is unchanged, so new sources
+outside that scope cannot borrow its passing verdict as execution clearance.

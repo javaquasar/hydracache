@@ -1,0 +1,41 @@
+
+running 9 tests
+test every_544_name_is_required_before_any_body_observation ... ok
+test extension_changes_exactly_three_old_entries_and_adds_fourteen ... ok
+test current_mode_blob_and_stage_are_pinned_to_independent_producer_tree ... ok
+test phase_chain_observes_every_current_body_before_releasing_old_names ... ok
+test successful_projection_never_caches_a_current_observation ... ok
+test the_frozen_530_phase_is_not_accepted_as_the_live_544_phase ... ok
+test every_late_body_or_read_error_blocks_both_predecessor_projections ... ok
+test current_phase_requires_all_544_sources_before_446_projection ... ok
+test physical_checks_and_all_five_original_tests_are_byte_preserved ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s
+
+
+running 7 tests
+test audit_changes_only_three_input_joins_and_preserves_every_original_predicate ... ok
+test successful_addition_validation_does_not_cache_body_or_index_observations ... ok
+test stale_partial_duplicate_and_unrelated_current_source_edits_refuse ... ok
+test main_retains_old_full_body_gate_and_all_twelve_current_reads_reach_source ... ok
+test twelve_current_sources_reconstruct_exact_independent_predecessors ... ok
+test all_fourteen_additions_require_independent_bodies_and_exact_index_entries ... ok
+test unknown_paths_are_not_approved_or_transformed_and_legacy_routes_stay_intact ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.04s
+
+
+running 1 test
+test current_tree_input_frontier_is_fully_accounted_without_path_exclusions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 56.93s
+
+
+running 4 tests
+test runtime_contract_reader_changes_only_the_current_history_input ... ok
+test current_tree_reader_retains_entire_prior_gate_and_unknown_source_assertions ... ok
+test all_nine_current_inputs_are_exact_declared_patches_not_assertion_waivers ... ok
+test all_eighty_one_declared_sources_require_exact_bytes_index_and_regular_files ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 25.17s
+

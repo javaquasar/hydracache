@@ -1,0 +1,257 @@
+schema_version = 1
+release = "0.74"
+registry_id = "proposal-registry-074-v1"
+state = "w0-closed-w1-local-and-kernel-attributed"
+product_mutation_allowed = true
+
+[[work_items]]
+id = "W0"
+title = "comparative baseline"
+decision = "complete-published-b73-pinned"
+primary_metric = "baseline-readiness"
+evidence = "baseline-identities.toml plus 0.73 W10/W11 release evidence"
+
+[[work_items]]
+id = "W1"
+title = "stage attribution"
+decision = "complete"
+primary_metric = "owner-reconciliation"
+evidence = "w1-local-attribution.md and w9c-linux-kernel-attribution.md"
+
+[[work_items]]
+id = "W2"
+title = "cursor input parsing"
+decision = "rejected-local-non-regression"
+primary_metric = "compaction-bytes-per-command"
+rollback = "remove only the RespReadBuffer candidate"
+evidence = "w1-local-attribution.md and local-runs/w2-*.json"
+
+[[work_items]]
+id = "W3"
+title = "bounded output coalescing"
+decision = "adaptive-retry-rejected-backpressure-before-measurement"
+primary_metric = "write-and-flush-calls-per-reply"
+rollback = "remove only the connection-local response batch"
+evidence = "w3-adaptive-coalescing-contract.toml, w3-adaptive-baseline.md, and local-runs/w3-adaptive-semantic-rejection.json"
+
+[[work_items]]
+id = "W4"
+title = "translation ownership"
+decision = "measured-below-isolated-floor"
+primary_metric = "gross-allocated-bytes-per-operation"
+evidence = "w1-local-attribution.md and local-runs/w4-stage-*.json"
+
+[[work_items]]
+id = "W5"
+title = "key representation"
+decision = "deferred-measured-below-floor"
+primary_metric = "copied-and-retained-key-bytes"
+evidence = "ADR-0022, w1-local-attribution.md, and local-runs/w5-key-*.json"
+
+[[work_items]]
+id = "W6"
+title = "read split and store sharding"
+decision = "w6a-rejected-w6b-not-authorized"
+primary_metric = "store-lock-wait-nanoseconds"
+rollback = "remove only the live-read lock split; retain canonical expiry write path"
+evidence = "w1-local-attribution.md and local-runs/w6a-*.json"
+
+[[work_items]]
+id = "W7"
+title = "vectorized multi-key"
+decision = "del-candidate-rejected-native-guard-local-aa-unresolved"
+primary_metric = "dispatches-and-locks-per-logical-operation"
+rollback = "remove only the DEL batch-invalidation seam"
+evidence = "w1-local-attribution.md and local-runs/w7-*.json"
+
+[[work_items]]
+id = "W8"
+title = "verified session and value ownership"
+decision = "w8a-rejected-local-tail-guard-w8b-no-compatible-candidate"
+primary_metric = "native-cpu-and-copied-bytes-per-operation"
+rollback = "remove only the generation-fenced session or only the immutable client value owner"
+evidence = "w1-local-attribution.md and local-runs/w8-*.json including w8a-v6 pairs"
+
+[[work_items]]
+id = "W9"
+title = "runtime syscall buffer and durability follow-ups"
+decision = "w9a-rejected-w9b-not-authorized-w9c-measured-no-new-candidate-w9d-unauthorized-w9e-measured-no-admissible-candidate"
+primary_metric = "proposal-specific"
+evidence = "w9-local-followups.md, w9a-atomic-ordering-registry.toml, w9c-linux-kernel-attribution.md, w9e-linux-allocator-attribution.md, and local-runs/w9*.json"
+
+[[native_investigations]]
+id = "N1"
+owner = "audit-metadata"
+decision = "measured-below-local-floor"
+evidence = "local-runs/native-owners-v6-*.json"
+[[native_investigations]]
+id = "N2"
+owner = "clock-and-expiry"
+decision = "measured-below-local-floor"
+evidence = "local-runs/native-owners-v6-*.json"
+[[native_investigations]]
+id = "N3"
+owner = "global-store-lock"
+decision = "preliminary-local-contention-observed"
+[[native_investigations]]
+id = "N4"
+owner = "structured-key-ownership"
+decision = "measured-below-local-floor"
+evidence = "local-runs/native-owners-v6-*.json"
+[[native_investigations]]
+id = "N5"
+owner = "identity-validation"
+decision = "session-removes-owner-but-candidate-fails-local-tail-guard"
+[[native_investigations]]
+id = "N6"
+owner = "value-ownership"
+decision = "raw-zero-copy-client-get-copy-blocked-by-stable-protocol-owner"
+[[native_investigations]]
+id = "N7"
+owner = "multi-key-dispatch"
+decision = "measured-existing-batch-core-one-lock-per-request"
+evidence = "local-runs/native-owners-v6-batch-*.json"
+[[native_investigations]]
+id = "N8"
+owner = "diagnostic-atomics"
+decision = "measured-frequency-cost-open"
+evidence = "local-runs/native-owners-v6-*.json"
+[[native_investigations]]
+id = "N9"
+owner = "expired-entry-cleanup"
+decision = "measured-expiry-specific-owner-normal-hit-unaffected"
+evidence = "local-runs/native-owners-v6-expired-get-c8.json"
+[[native_investigations]]
+id = "N10"
+owner = "embedded-cache-stages"
+decision = "preliminary-local-separated"
+
+# A new measured large-response owner; earlier terminal attempts are unchanged.
+[[followup_proposals]]
+id = "p74-w9b-serial-get-scratch-v1"
+owner = "canonical large GET encoder output allocation"
+state = "rejected-d3a-live-peak-regression-runtime-removed"
+baseline_source_sha = "4d733e3189bdc777635792795e1bbb58ab00a7cb"
+preregistration_sha = "4c5b16d77adf77a5c857ef5b04002dbdcf894bac"
+implementation_sha = "b8cc7c6c32afb6e4f7fa1efaf92e14846f7102b1"
+feature = "experimental-resp-serial-scratch-074"
+default_enabled = false
+accepted_product_change = false
+promotable = false
+numerical_candidate_comparison_started = true
+runtime_removed = true
+screen_source_sha = "3171d02a8ebb77111d819ebd845516ea797c996d"
+negative_evidence = "local-runs/w9b-d3a-3171d02a/summary.json"
+contract = "w9b-serial-scratch-proposal.toml"
+evidence = "local-runs/w9b-serial-scratch-semantic-b8cc7c6c.json"
+rollback = "disable/remove only the serial GET scratch feature and its candidate-specific guards; retain the D1/D2 records"
+
+# Attribution is not a proposal or a reopening of W4/W8/W9 terminal decisions.
+[[followup_attributions]]
+id = "response-reduction-owner-d1-074-v1"
+owner = "borrowed GET response payload duplication"
+state = "owner-classified-local-d1-only"
+measurement_source_sha = "2562f6f7e2ff598741d4fe9a4f38ae635786e8d9"
+product_mutation_allowed = false
+accepted_product_change = false
+promotable = false
+contract = "response-reduction-attribution-contract.toml"
+evidence = "local-runs/response-owner-2562f6f7/summary.json"
+result = "response-reduction-attribution-result.md"
+
+[[followup_proposals]]
+id = "p74-get-response-owner-v1"
+owner = "successful nonempty GET borrowed response payload clone"
+state = "rejected-full-d3-mtls-allocation-floor-runtime-disabled"
+baseline_source_sha = "36f602658b4ba806a669a329001108cfb0922c2d"
+owner_source_sha = "2562f6f7e2ff598741d4fe9a4f38ae635786e8d9"
+preregistration_sha = "bf42f776c1001cee3764e1103dfc4a4f27946f78"
+capacity_admission_amendment_sha = "d07c35f09f6f5c12faa0020344dc6265a2e9e437"
+implementation_sha = "2379698d6aa61280b6f6054403f4fbd3e4b60641"
+semantic_ci_enrollment_sha = "b3f9d2c4e27eb47ff625be8572ab660fe7be6354"
+screen_contract = "get-response-owner-d3-contract.toml"
+screen_state = "screen-passed-full-d3-controls-still-required"
+screen_source_sha = "213e9e0a3c9c50e089e5aed2583913f8c6d10807"
+screen_evidence = "local-runs/get-owner-d3a-213e9e0a/summary.json"
+screen_result = "get-response-owner-d3-result.md"
+phase_b0_contract = "get-response-owner-phase-b0-contract.toml"
+phase_b0_state = "invalidated-background-cpu-before-first-process"
+phase_b0_numerical_started = false
+phase_b0_design = "get-response-owner-phase-b0-design.md"
+phase_b0_source_sha = "18ee8cdc0d8e34a69e94e5c7a0afbb8288522013"
+phase_b0_attempts_retained = 1
+phase_b0_evidence = "local-runs/get-owner-b0-18ee8cdc/summary.json"
+phase_b0_result = "get-response-owner-phase-b0-result.md"
+scheduled_controls_contract = "get-response-owner-scheduled-controls-contract.toml"
+scheduled_controls_design = "get-response-owner-scheduled-controls-design.md"
+scheduled_controls_state = "local-instrumentation-and-semantic-controls-only"
+scheduled_controls_numerical_started = false
+scheduled_controls_source_sha = "a6047895509f8298f5c9154d9d508bc0eed92f26"
+scheduled_controls_evidence = "local-runs/get-owner-scheduled-instrumentation-checks-a6047895.json"
+resp_controls_state = "local-resp2-get-semantic-adapter-only"
+resp_controls_numerical_started = false
+resp_controls_source_sha = "a8440175478133dcea03ef4bdd7ef7114111b534"
+resp_controls_evidence = "local-runs/get-owner-resp-fifo-checks-a8440175.json"
+resp_connection_controls_state = "local-resp2-get-set-semantic-adapter-only"
+resp_connection_controls_numerical_started = false
+resp_connection_controls_source_sha = "83003e92bfe9652f430fd179931a781719679f79"
+resp_connection_controls_evidence = "local-runs/get-owner-resp-multiconnection-checks-83003e92.json"
+resp_batch_controls_state = "local-resp2-multikey-semantic-adapter-only"
+resp_batch_controls_numerical_started = false
+resp_batch_controls_source_sha = "35bbd4b894e4a39ba9d599d45b183bf4bcd17702"
+resp_batch_controls_evidence = "local-runs/get-owner-resp-multikey-checks-35bbd4b8.json"
+native_batch_controls_state = "local-independent-batch-semantic-controls-only"
+native_batch_controls_numerical_started = false
+native_batch_controls_source_sha = "e1b981c094b9040ad902694e2fdded963964335a"
+native_batch_controls_evidence = "local-runs/get-owner-native-batch-checks-e1b981c0.json"
+resp3_controls_state = "local-plaintext-resp3-semantic-controls-only"
+resp3_controls_numerical_started = false
+resp3_controls_source_sha = "fc07bf382e6f0c481f381c81b4d1e87108f34db4"
+resp3_controls_evidence = "local-runs/get-owner-resp3-checks-fc07bf38.json"
+resp_security_audit_state = "production-resp-mtls-gap-requires-policy-decision"
+resp_security_audit_source_sha = "b747502d4b63c4e0cdf1d1ee3857f439367f3545"
+resp_security_audit_evidence = "local-runs/get-owner-security-audit-b747502d.json"
+resp_security_matched_cohort_completed = false
+candidate_source_sha = "213e9e0a3c9c50e089e5aed2583913f8c6d10807"
+feature = "experimental-resp-get-owner-074"
+default_enabled = false
+runtime_present = false
+full_d3_terminal_rejection = true
+full_d3_allocation_attempts = 240
+full_d3_allocation_source_sha = "be0499a8cb0a2ad0b7328d6ac0cf6227114cebcc"
+full_d3_allocation_contract = "get-owner-full-d3-allocation-v2-contract.toml"
+full_d3_result = "get-owner-full-d3-terminal-result-20261025.md"
+full_d3_evidence = "local-runs/get-owner-full-d3-network-allocation-20261025/index.json"
+full_d3_timing_or_retention_claims = false
+retired_feature_is_compatibility_tombstone = true
+accepted_product_change = false
+promotable = false
+numerical_candidate_comparison_started = true
+contract = "get-response-owner-proposal.toml"
+design = "get-response-owner-design.md"
+evidence = "local-runs/get-response-owner-semantic-2379698d.json"
+existing_terminal_dispositions_reopened = false
+
+# Approved product security prerequisite, never an accepted performance proposal.
+[security_extensions.resp_mtls_074]
+state = "local-production-mtls-semantic-proof-only"
+authorization = "explicit-human-approval-2026-10-07"
+configuration = "redis_api.mtls_client_ca_path"
+policy_preregistration_sha = "11c78c6ddc1a8a1c6342bf5a72db298e72d04e27"
+implementation_sha = "8565dbfd11ae1ce6d8f20146a37058b8bfb77728"
+evidence = "local-runs/resp-mtls-product-checks-8565dbfd.json"
+contract = "get-response-owner-scheduled-controls-contract.toml"
+design = "get-response-owner-scheduled-controls-design.md"
+default_enabled = false
+production_implemented = true
+accepted_performance_change = false
+secure_scheduled_observer_implemented = true
+secure_observer_implementation_sha = "263d50758e82e1f7f317450cbbdfb7ab742f980b"
+secure_observer_and_memory_checked_source = "d22520123880a8a67c816c83a7f76448cbf50af9"
+secure_observer_and_memory_evidence = "local-runs/secure-memory-d2252012/checks.json"
+allocation_diagnostic_processes_completed = 30
+allocation_diagnostics_are_native_nonregression = false
+allocator_retention_admission = false
+matched_security_cohort_completed = false
+numerical_series_started = false
+qualification_completed = false

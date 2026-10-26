@@ -1,0 +1,22 @@
+"""Bounded local source checks; no workload, services, clocks or server."""
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+RUNNER = ROOT / 'target/run-fresh-reader-20261024.py'
+CASES = [
+    ('current-frontier-msrv-first', ['cargo', '+1.88.0', 'test', '--offline', '--locked', '--no-fail-fast', '-p', 'xtask',
+       '--test', 'current_frontier_074', '--test', 'current_tree_input_audit_074', '--test', 'current_tree_reader_074',
+       '--test', 'artifact_inventory_phase_544_074', '--', '--test-threads=4']),
+    ('current-frontier-producer-first', [sys.executable, 'tools/current-frontier-074/generate.py']),
+    ('current-frontier-check-first', ['cargo', '+1.94.0', 'check', '--offline', '--locked', '-p', 'xtask', '--all-targets']),
+    ('current-frontier-clippy-first', ['cargo', '+1.94.0', 'clippy', '--offline', '--locked', '-p', 'xtask', '--all-targets', '--all-features', '--', '-D', 'warnings']),
+    ('current-frontier-fmt-first', ['cargo', '+1.94.0', 'fmt', '-p', 'xtask', '--', '--check']),
+    ('current-frontier-doc-check-first', ['cargo', 'xtask', 'doc-check']),
+    ('current-frontier-contract-check-first', ['cargo', 'xtask', 'performance-contract-check', '--release', '0.74']),
+]
+for label, argv in CASES:
+    result = subprocess.run([sys.executable, str(RUNNER), label, *argv], cwd=ROOT, check=False)
+    if result.returncode:
+        raise SystemExit(result.returncode)

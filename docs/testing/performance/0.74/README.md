@@ -30,8 +30,15 @@ The [bootstrap document-reader repair](bootstrap-doc-reader-result-20261026.md)
 closes fifteen bootstrap failures: 53 unchanged bootstrap cases, ten preceding
 proof cases and six new controls pass on current/MSRV. Only two independently
 pinned document views change; source bodies, assertions and live checks stay
-unchanged. First lint/compile refusals remain. The complete audit still refuses
-26 inputs and the full package is not repeated or declared green.
+unchanged. First lint/compile refusals remain. That stage leaves 26 audit inputs
+for the following repair; it does not repeat or certify the full package.
+
+The [current-tree frontier successor](current-frontier-result-20261026.md) now
+accounts for those 26 inputs with no protected-path exclusions. Its complete
+audit, thirteen other old controls and seven new cases pass on current/MSRV.
+The immutable 9/81 rules, original main body gate and physical checks remain.
+This closes the audit, not the interrupted package: other historical reader
+frontiers and a new whole-package source/effect review remain before dispatch.
 
 The [original start material prerequisite](local-runs/original-collector-start-material-20261017/README.md)
 now retains the original reviewed bundle with Starting/pipes/sinks/fence.

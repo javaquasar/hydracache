@@ -1,0 +1,63 @@
+"""Reconstruct captured raw inputs without treating observed bytes as approval."""
+from pathlib import Path
+import hashlib
+import json
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/current-frontier-20261026'
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+index_raw = (OUT / 'index.json').read_bytes()
+assert sha(index_raw) == '685401b61760909eb6539a17f4f7ff3b4d1f567be3bbd808863a80697038e211'
+index = json.loads(index_raw)
+
+
+def member(name):
+    row = index['members'][name]
+    body = (OUT / 'objects' / row['sha256']).read_bytes()
+    assert sha(body) == row['sha256'] and len(body) == row['bytes']
+    return body
+
+
+rules = json.loads(member('source-final/tools/current-frontier-074/rules.json'))
+phase = json.loads(member('independent-inventory544.json'))
+labels = ['current-frontier-candidate-first', 'current-frontier-msrv-first', 'current-frontier-clippy-first']
+sources = {label: json.loads(member('checks/' + label + '/intent.json'))['source'] for label in labels}
+expected = {row['path']: row['current_sha256'] for row in rules['rows'] if row['path'] in sources[labels[0]]}
+assert len(expected) == 11
+expected.update({path: row['canonical_sha256'] for path, row in phase['added'].items()})
+members = {}
+
+
+def add(name, body):
+    digest = sha(body)
+    target = OUT / 'objects' / digest
+    if target.exists():
+        assert target.read_bytes() == body
+    else:
+        with target.open('xb') as stream:
+            stream.write(body)
+    members[name] = dict(sha256=digest, bytes=len(body))
+
+
+for path, canonical_digest in expected.items():
+    body = (ROOT / path).read_bytes()
+    assert all(sha(body) == source[path] for source in sources.values()), 'cannot reconstruct original raw input'
+    assert sha(body.decode().replace('\r\n', '\n').encode()) == canonical_digest, 'independent producer mismatch'
+    add('observed/' + path, body)
+add('offline-enrichment-first-verifier.py', (ROOT / 'target/current-frontier-offline-enrichment-first-20261026.py').read_bytes())
+note = dict(derived_from_tool_transcript=True, raw_stream_capture_available=False,
+            invocation='offline verifier plus six integrity controls after adding raw-source binding assertions',
+            verifier_exit=1, controls_passed=5, controls_errored=1,
+            error='ValueError: observed producer binding differs',
+            cause='Oracle allowed only uniformly LF or CRLF, but two recorded inputs have mixed line endings.',
+            runtime_or_case_rerun=False, earlier_successful_replays_preserved=True)
+add('offline-enrichment-first-refusal.json', (json.dumps(note, indent=2) + '\n').encode())
+add('coordinator/retain-current-frontier-observed-20261026.py', Path(__file__).read_bytes())
+result = dict(schema='hc074-current-frontier-observed-bindings-v1', original_index_sha256=sha(index_raw),
+              members=members, later_reconstruction_of_original_raw_inputs=True,
+              raw_inputs=25, independent_expected_hashes_unchanged=True,
+              proposal_document_not_in_original_source_map=True, tests_rerun=False)
+with (OUT / 'observed-bindings.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(result, stream, sort_keys=True, indent=2)
+    stream.write('\n')
+print(dict(members=len(members), index_sha256=sha((OUT / 'observed-bindings.json').read_bytes())))

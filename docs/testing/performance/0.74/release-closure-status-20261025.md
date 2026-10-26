@@ -93,8 +93,14 @@ The [bootstrap document-reader repair](bootstrap-doc-reader-result-20261026.md)
 subsequently closes fifteen bootstrap failures with 69 cases per compiler:
 53 old bootstrap, ten preceding proof and six new preservation/refusal controls.
 It changes only the two exact document views, retaining every old assertion and
-the first lint/compile refusals. The independent complete audit remains red at
-26 inputs; their accounting and the new source/effect review are still pending.
+the first lint/compile refusals. At that boundary the independent audit remains
+red at 26 inputs, addressed by the following separately tested repair.
+
+The [current-tree frontier successor](current-frontier-result-20261026.md)
+subsequently closes all 26 audit inputs using fixed independent producers and
+unchanged protected selection. Twenty-one cases pass per compiler, including
+the complete audit and old 9/81 controls. Other current reader targets and a new
+complete source/effect review remain; this is not a full package pass.
 
 Complete a newly reviewed whole-package replay within the unchanged
 780-second/four-thread guard, including the previously unstarted suffix. The
