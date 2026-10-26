@@ -443,6 +443,14 @@ option. Its coordinator deliberately never infers a package pass from process
 exit; complete target/case output must be assessed separately. V6 is immutable
 and is not retried. See the [review report](../../docs/testing/performance/0.74/package-review-v7-result-20261026.md).
 
+The first actual V7 command stops at the unchanged disk floor during compilation;
+no target starts. The outer capture terminates the coordinator before the inner
+result file is written. Both cleanup logs and that absence remain evidence;
+the old transcript parser is not relaxed. The data-only execution-packet
+verifier distinguishes this resource refusal from assessed test failures or a
+package pass. Capacity is repaired afterward by scoped obsolete-symbol cleanup,
+without an automatic replay or changed source/limit.
+
 ## Repaired scope v3 without a dispatcher
 
 `package_effects_review_v3.py SYNTAX_JSON` requires the separately reviewed

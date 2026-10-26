@@ -1,0 +1,49 @@
+$ErrorActionPreference = 'Stop'
+$taskRoot = 'C:\Workspace\prj\jq\cashe\hydracache-074'
+$taskDeps = Join-Path $taskRoot 'target\debug\deps'
+$taskResolved = (Resolve-Path -LiteralPath $taskDeps).Path
+if ($taskResolved -cne $taskDeps) { throw 'Unexpected symbol directory' }
+foreach ($taskPath in @($taskRoot, (Join-Path $taskRoot 'target'), (Join-Path $taskRoot 'target\debug'), $taskDeps)) {
+    if ((Get-Item -LiteralPath $taskPath).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Reparse directory refused' }
+}
+if (Get-CimInstance Win32_Process -Filter "Name='cargo.exe' OR Name='rustc.exe' OR Name='link.exe'") { throw 'Active compiler: cleanup refused' }
+$taskCutoff = [datetime]::Parse('2026-10-26T20:26:36Z').ToUniversalTime()
+$taskSymbols = @(Get-ChildItem -LiteralPath $taskDeps -File -Filter '*.pdb' | Where-Object { $_.BaseName -match '-[0-9a-f]{16}$' })
+$taskPlan = @($taskSymbols | Group-Object { $_.BaseName -replace '-[0-9a-f]{16}$','' } | ForEach-Object {
+    $taskGroup = @($_.Group | Sort-Object LastWriteTimeUtc -Descending)
+    if ($taskGroup.Count -gt 1) {
+        foreach ($taskFile in ($taskGroup | Select-Object -Skip 1)) {
+            if ($taskFile.LastWriteTimeUtc -lt $taskCutoff -and $taskFile.LastWriteTimeUtc -lt $taskGroup[0].LastWriteTimeUtc) {
+                [pscustomobject]@{ path=$taskFile.FullName; bytes=$taskFile.Length; ticks=$taskFile.LastWriteTimeUtc.Ticks; retained=$taskGroup[0].FullName }
+            }
+        }
+    }
+})
+$taskOut = Join-Path $taskRoot 'target\package-review-v7-20261026\symbol-cleanup-after-disk-first'
+New-Item -ItemType Directory -Path $taskOut -ErrorAction Stop | Out-Null
+$taskStream = [IO.File]::Open((Join-Path $taskOut 'intent.json'), [IO.FileMode]::CreateNew)
+try {
+    $taskBytes = [Text.Encoding]::UTF8.GetBytes((ConvertTo-Json -Depth 6 -InputObject @{ entries=$taskPlan; recursive=$false; sources=$false; evidence=$false; executables=$false }))
+    $taskStream.Write($taskBytes,0,$taskBytes.Length)
+} finally { $taskStream.Dispose() }
+$taskRemoved = 0L
+foreach ($taskEntry in $taskPlan) {
+    $taskFile = Get-Item -LiteralPath $taskEntry.path
+    if ($taskFile.DirectoryName -cne $taskDeps -or $taskFile.Extension -cne '.pdb' -or
+        ($taskFile.Attributes -band [IO.FileAttributes]::ReparsePoint) -or $taskFile.Length -ne $taskEntry.bytes -or
+        $taskFile.LastWriteTimeUtc.Ticks -ne $taskEntry.ticks -or -not (Test-Path -LiteralPath $taskEntry.retained -PathType Leaf)) {
+        throw 'Symbol selection changed'
+    }
+    Remove-Item -LiteralPath $taskEntry.path -Force -ErrorAction Stop
+    $taskRemoved += $taskEntry.bytes
+    Write-Output ('removed ' + $taskEntry.path)
+}
+$taskResult = @{ files=$taskPlan.Count; removed_bytes=$taskRemoved; free_after=(Get-PSDrive C).Free; rebuildable_symbols_only=$true }
+$taskStream = [IO.File]::Open((Join-Path $taskOut 'result.json'), [IO.FileMode]::CreateNew)
+try {
+    $taskBytes = [Text.Encoding]::UTF8.GetBytes((ConvertTo-Json $taskResult))
+    $taskStream.Write($taskBytes,0,$taskBytes.Length)
+} finally { $taskStream.Dispose() }
+ConvertTo-Json $taskResult
+
+

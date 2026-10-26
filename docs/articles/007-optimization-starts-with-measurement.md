@@ -21197,3 +21197,18 @@ pass; changed review code refuses before import. These are coverage and safety
 checks, not measured speedups. Dependency successors still need a complete new
 package result under the original bound, and neither that result nor diagnostic
 CI cleanup can substitute for authenticated worker release and writer retirement.
+
+The first complete-command attempt then exposes a capacity boundary before a
+test starts. Re-linking the package consumes the remaining build-volume space
+and reaches the unchanged 4 GiB floor. All 147 targets remain unstarted; the
+missing inner result cannot be reconstructed as a passing cleanup or test
+verdict. Both raw cleanup logs survive, and exact postflight confirms unchanged
+source, environment and HEAD. Seven offline tamper controls check that this
+refusal cannot be promoted to coverage.
+
+Cleaning older duplicate PDBs afterward restores local headroom while retaining
+every executable and the latest symbols. These bytes describe build artifacts,
+not library allocations or a memory optimization. A source review, available
+disk space, completed compilation and actual case coverage are distinct inputs
+to release readiness. None can fill the other's missing verdict, and an aborted
+build must not be joined with an older incomplete package suffix.

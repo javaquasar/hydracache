@@ -1,0 +1,152 @@
+[workspace]
+members = [
+    "crates/hydracache-cdc-postgres",
+    "crates/hydracache-cache-sim",
+    "crates/hydracache",
+    "crates/hydracache-actuator-axum",
+    "crates/hydracache-client",
+    "crates/hydracache-client-hc2",
+    "crates/hydracache-client-plane-spike",
+    "crates/hydracache-client-protocol",
+    "crates/hydracache-client-transport-axum",
+    "crates/hydracache-cluster",
+    "crates/hydracache-cluster-chitchat",
+    "crates/hydracache-cluster-raft",
+    "crates/hydracache-cluster-testkit",
+    "crates/hydracache-cluster-transport-axum",
+    "crates/hydracache-core",
+    "crates/hydracache-db",
+    "crates/hydracache-loadgen",
+    "crates/hydracache-diesel",
+    "crates/hydracache-macros",
+    "crates/hydracache-observability",
+    "crates/hydracache-operator",
+    "crates/hydracache-redis-compat",
+    "crates/hydracache-sandbox",
+    "crates/hydracache-seaorm",
+    "crates/hydracache-server",
+    "crates/hydracache-sim",
+    "crates/hydracache-sim-wasm",
+    "crates/hydracache-sql-lint",
+    "crates/hydracache-sqlx",
+    "crates/hydracache-transport-nats",
+    "crates/hydracache-transport-redis",
+    "crates/xtask",
+    "fuzz",
+    "tests/post-publish-consumer",
+    "tools/long-run-supervisor-074",
+    "tools/performance-integrated-074",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.73.0"
+edition = "2021"
+rust-version = "1.88"
+license = "Apache-2.0"
+authors = ["HydraCache Contributors"]
+repository = "https://github.com/javaquasar/hydracache"
+homepage = "https://github.com/javaquasar/hydracache"
+readme = "README.md"
+keywords = ["cache", "caching", "async", "runtime"]
+categories = ["caching", "asynchronous"]
+
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(coverage)", "cfg(fuzzing)", "cfg(hydracache_loom)"] }
+
+[workspace.dependencies]
+async-nats = { version = "0.49.1", default-features = false, features = ["ring"] }
+async-trait = "0.1.89"
+axum = "0.8"
+axum-server = { version = "0.8.0", default-features = false, features = ["tls-rustls"] }
+base64 = "0.22.1"
+bytes = "1.11.1"
+chitchat = "0.11.0"
+criterion = { version = "0.8", features = ["async_tokio"] }
+crossbeam-queue = "=0.3.12"
+diesel = { version = "2.3.10", default-features = false }
+ed25519-dalek = "2.2.0"
+futures-util = "0.3.32"
+fs2 = "0.4.3"
+hdrhistogram = { version = "7.5.4", default-features = false }
+h2 = "0.4.13"
+jsonschema = { version = "0.48.1", default-features = false }
+http = "1"
+hydracache-core = { path = "crates/hydracache-core", version = "0.73.0" }
+hydracache = { path = "crates/hydracache", version = "0.73.0" }
+hydracache-cache-sim = { path = "crates/hydracache-cache-sim", version = "0.73.0" }
+hydracache-actuator-axum = { path = "crates/hydracache-actuator-axum", version = "0.73.0" }
+hydracache-cdc-postgres = { path = "crates/hydracache-cdc-postgres", version = "0.73.0" }
+hydracache-client = { path = "crates/hydracache-client", version = "0.73.0" }
+hydracache-client-hc2 = { path = "crates/hydracache-client-hc2", version = "0.73.0" }
+hydracache-client-plane-spike = { path = "crates/hydracache-client-plane-spike", version = "0.73.0" }
+hydracache-client-protocol = { path = "crates/hydracache-client-protocol", version = "0.73.0" }
+hydracache-client-transport-axum = { path = "crates/hydracache-client-transport-axum", version = "0.73.0" }
+hydracache-cluster = { path = "crates/hydracache-cluster", version = "0.73.0" }
+hydracache-cluster-chitchat = { path = "crates/hydracache-cluster-chitchat", version = "0.73.0" }
+hydracache-cluster-raft = { path = "crates/hydracache-cluster-raft", version = "0.73.0" }
+hydracache-cluster-testkit = { path = "crates/hydracache-cluster-testkit" }
+hydracache-cluster-transport-axum = { path = "crates/hydracache-cluster-transport-axum", version = "0.73.0" }
+hydracache-db = { path = "crates/hydracache-db", version = "0.73.0" }
+hydracache-diesel = { path = "crates/hydracache-diesel", version = "0.73.0" }
+hydracache-loadgen = { path = "crates/hydracache-loadgen", version = "0.73.0" }
+hydracache-macros = { path = "crates/hydracache-macros", version = "0.73.0" }
+hydracache-observability = { path = "crates/hydracache-observability", version = "0.73.0" }
+hydracache-operator = { path = "crates/hydracache-operator", version = "0.73.0" }
+hydracache-redis-compat = { path = "crates/hydracache-redis-compat", version = "0.73.0" }
+hydracache-server = { path = "crates/hydracache-server", version = "0.73.0" }
+hydracache-seaorm = { path = "crates/hydracache-seaorm", version = "0.73.0" }
+hydracache-sim = { path = "crates/hydracache-sim" }
+hydracache-sql-lint = { path = "crates/hydracache-sql-lint", version = "0.73.0" }
+hydracache-sqlx = { path = "crates/hydracache-sqlx", version = "0.73.0" }
+hydracache-transport-nats = { path = "crates/hydracache-transport-nats", version = "0.73.0" }
+hydracache-transport-redis = { path = "crates/hydracache-transport-redis", version = "0.73.0" }
+k8s-openapi = { version = "0.28.0", features = ["v1_36", "schemars"] }
+kube = { version = "4.0.0", default-features = false, features = ["client", "derive", "ring", "runtime", "rustls-tls"] }
+loom = "0.7.2"
+moka = { package = "hydra-moka", version = "=0.12.15-hydra.1", features = ["future"] }
+postcard = { version = "1.1.3", features = ["alloc"] }
+prost = "0.14.4"
+prost-types = "0.14.4"
+proc-macro-crate = "3"
+proc-macro2 = "1"
+protobuf = "2.28.0"
+quote = "1"
+raft = { version = "0.7.0", default-features = false, features = ["protobuf-codec"] }
+rand_chacha = "0.9.0"
+rand_core = "0.9.5"
+rcgen = "0.14.8"
+redis = { version = "1.3.0", default-features = false, features = ["tokio-comp", "bytes"] }
+# redis-protocol 6.0.0's RESP2 frame types reference the RESP3 module at compile time.
+# HydraCache 0.63 still exposes an RESP2-only contract through hydracache-redis-compat.
+redis-protocol = { version = "6.0.0", default-features = false, features = ["std", "resp2", "resp3", "bytes"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "query", "rustls", "stream"] }
+rustls = "0.23.46"
+sea-orm = { version = "1.1.17", default-features = false }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1"
+schemars = "1.2.1"
+sha2 = "0.11"
+sled = "0.34.7"
+slog = "2.7"
+sqlx = { version = "0.8", default-features = false }
+sqlparser = "0.62.0"
+stateright = "0.31.0"
+subtle = "2.6.1"
+syn = { version = "2", features = ["full"] }
+testcontainers-modules = { version = "0.15.0", features = ["postgres", "redis", "nats"] }
+thiserror = "2.0.18"
+tokio = { version = "1.53.3", features = ["io-util", "macros", "net", "rt-multi-thread", "sync", "time"] }
+tokio-rustls = "0.26.4"
+tokio-stream = { version = "0.1", features = ["net"] }
+tonic = { version = "0.14.6", features = ["tls-ring"] }
+tonic-prost = "0.14.6"
+tonic-prost-build = "0.14.6"
+toml = "1"
+tower = { version = "0.5", features = ["util"] }
+trybuild = "1"
+proptest = "1"
+utoipa = "5"
+utoipa-swagger-ui = { version = "9", features = ["axum"] }
+wasm-bindgen = "0.2.122"
+wasm-bindgen-test = "0.3"

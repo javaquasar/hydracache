@@ -1,0 +1,15 @@
+"""Read-only exact source/effect/environment postflight; no tests or dispatch."""
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / 'tools/historical-blob-batch-074'))
+import package_replay_v7 as replay
+
+review = replay.load_review(ROOT)
+result = dict(source_review=review.source_review(ROOT, replay.load_document(ROOT)),
+              environment=review.environment_preflight(ROOT),
+              head=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True, timeout=10).strip())
+print(json.dumps(result, sort_keys=True, indent=2))

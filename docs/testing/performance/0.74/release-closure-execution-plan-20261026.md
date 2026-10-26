@@ -60,6 +60,16 @@ guards are pinned. Seventeen new refusal/dispatch controls pass. This prepares
 a changed-source full command under the original limit; it does not replace
 V6's first timeout or provide a package verdict.
 
+The first actual V7 command subsequently stops during compilation at the
+unchanged 4 GiB disk floor. No target starts and no test verdict is assessed;
+all 147 targets remain unstarted. Both cleanup logs and the absent inner result
+are retained, not synthesized. Exact source/effect/environment/HEAD postflight
+passes. A second scoped obsolete-PDB cleanup restores about 18.7 GiB free without
+removing executables, source or evidence. The [execution packet and report](package-review-v7-result-20261026.md)
+preserve this first resource refusal. Next preflight repaired build capacity
+before a distinct full gate under the same command, timeout, threads and floor;
+do not combine its future verdicts with V6 or this partial compilation.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

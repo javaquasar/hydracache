@@ -1,0 +1,99 @@
+"""Retain the sole V7 execution and strict offline accounting, without replay."""
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/package-closure-v7-20261026'
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+parser_path = ROOT / 'tools/xtask-package-attribution-074/review.py'
+assert sha(parser_path.read_bytes()) == '0229d4067fffd0d0b5acee7d864efc64aadfb201de1ea3f17944a2f8dddf3c4d'
+spec = importlib.util.spec_from_file_location('hc074_fixed_result_parser', parser_path)
+review = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(review)
+members, objects = {}, {}
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+for label in ('preflight-first', 'full-package-first', 'postflight-first'):
+    folder = ROOT / 'target/package-review-v7-20261026' / label
+    for path in sorted(folder.rglob('*')):
+        if path.is_file():
+            add('checks/' + label + '/' + path.relative_to(folder).as_posix(), path.read_bytes())
+for label in ('preflight-first', 'full-first'):
+    folder = ROOT / 'target/reviewed-package-v7-20261026' / label
+    for path in sorted(folder.iterdir()):
+        assert path.is_file()
+        add('coordinator/' + label + '/' + path.name, path.read_bytes())
+folder = ROOT / 'target/source-continuation-20261024/package-v7-full-first'
+for path in sorted(folder.iterdir()):
+    assert path.is_file()
+    add('package/' + path.name, path.read_bytes())
+
+gate = json.loads((ROOT / 'target/reviewed-package-v7-20261026/full-first/gate.json').read_bytes())
+assert gate['head'] == '1d1658f4e26ff7eeceb07dac7c7ab3ab2c5a65d9'
+intent = json.loads((folder / 'intent.json').read_bytes())
+assert intent['head'] == gate['head'] and intent['bound_seconds'] == 780
+outer_folder = ROOT / 'target/package-review-v7-20261026/full-package-first'
+outer_intent = json.loads((outer_folder / 'intent.json').read_bytes())
+outer_result = json.loads((outer_folder / 'result.json').read_bytes())
+assert outer_result['source_unchanged'] and outer_result['commit_unchanged']
+assert outer_intent['source'] == outer_result['source_after']
+assert outer_intent['source_commit'] == gate['head']
+result_path = folder / 'result.json'
+for name, digest in {**gate['sources'], **gate['auxiliary']}.items():
+    assert sha((ROOT / name).read_bytes()) == digest
+post = json.loads((ROOT / 'target/package-review-v7-20261026/postflight-first/stdout.log').read_bytes())
+assert post['source_review'] == {k: v for k, v in gate.items() if k not in ('environment', 'head')}
+assert post['environment'] == gate['environment'] and post['head'] == gate['head']
+if result_path.exists():
+    result = json.loads(result_path.read_bytes())
+    assert result['source_unchanged'] and result['head_unchanged']
+    assert intent['source'] == result['source_after']
+    analysis = review.parse_transcript((folder / 'stdout.log').read_text(), (folder / 'stderr.log').read_text(),
+                                       gate['targets'], result['exit'], result['outer_refusal'], 780)
+else:
+    # Do not fabricate an inner receipt or loosen the historical parser's
+    # accepted outer-result enum. Both original cleanup logs remain raw.
+    assert outer_result['outer_refusal'] == 'disk-floor' and outer_result['exit'] != 0
+    assert outer_intent['disk_floor_bytes'] == 4 * 1024 ** 3
+    assert (folder / 'stdout.log').read_bytes() == b''
+    stderr = (folder / 'stderr.log').read_text()
+    assert not any(line.strip().startswith(('Finished ', 'Running ')) for line in stderr.splitlines())
+    assert (folder / 'owned-cleanup.log').is_file() and (outer_folder / 'owned-cleanup.log').is_file()
+    analysis = dict(expected_targets=147, completed_targets=0, passed=None, failed=None,
+                    incomplete_target=None, unstarted_targets=gate['targets'], package_pass=False,
+                    result_kind='build-aborted-at-disk-floor', test_verdicts_present=False,
+                    original_inner_result_missing=True, strict_parser_executed=False,
+                    strict_parser_contract_unchanged=True, natural_compilation_exit_not_known=True,
+                    concurrent_cleanup_logs_retained=True)
+assert analysis['expected_targets'] == 147
+add('derived/accounting.json', (json.dumps(analysis, sort_keys=True, indent=2) + '\n').encode())
+add('parser/review.py', parser_path.read_bytes())
+for name in ('run-source-step-20261024.py', 'run-xtask-package-780-20261024.py', Path(__file__).name):
+    add('coordinators/' + name, (ROOT / 'target' / name).read_bytes())
+for name in ('intent.json', 'result.json'):
+    add('cleanup-after/' + name, (ROOT / 'target/package-review-v7-20261026/symbol-cleanup-after-disk-first' / name).read_bytes())
+for name in ('cleanup-obsolete-symbols-v7-after-disk-20261026.ps1', 'postflight-package-v7-20261026.py'):
+    add('coordinators/' + name, (ROOT / 'target' / name).read_bytes())
+OUT.mkdir(exist_ok=False)
+with (OUT / '.gitattributes').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+(OUT / 'objects').mkdir()
+for digest, raw in objects.items():
+    with (OUT / 'objects' / digest).open('xb') as stream:
+        stream.write(raw)
+index = dict(schema='hc074-package-closure-v7-evidence-v1', source_commit=gate['head'],
+             package_pass=analysis['package_pass'], automatic_retry=False,
+             qualification=False, server=False, members=members)
+with (OUT / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, sort_keys=True, indent=2)
+    stream.write('\n')
+print(json.dumps(dict(index_sha256=sha((OUT / 'index.json').read_bytes()), members=len(members),
+                     completed=analysis['completed_targets'], passed=analysis['passed'], failed=analysis['failed'],
+                     incomplete=analysis['incomplete_target'], unstarted=len(analysis['unstarted_targets']))))
