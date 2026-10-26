@@ -80,16 +80,19 @@ or ignored MSRV. Every changed graph needs its own focused semantic checks,
 complete lock review and subsequent full milestone. Earlier advisories remain
 historical first results, not a fresh vulnerability assessment.
 
-Security progress: the [public trust-roots candidate](roots-security-result-20261026.md)
-has focused Windows/MSRV/GNU evidence but remains archived pending a decision
-on four additional public authorities. Its narrow trust-delta gate fails;
-its restored pre-Tokio graph has ten pinned-DB findings. This does not complete
-package 3 or affect the original-execution authorization below.
+The [earlier public trust-roots candidate](roots-security-result-20261026.md)
+retains its pre-approval narrow-delta refusal and pre-Tokio results. The operator
+has now approved the complete upstream 1.0.10 catalog conditional on exact key/
+constraint audit. The [separate acceptance](roots-approved-result-20261026.md)
+passes that audit and applies exactly two catalog updates plus three dev-only
+test edges. Windows/MSRV/GNU TLS cohorts and RESP/server focused gates pass;
+the current combined graph has seven pinned-DB findings. Production enrollment
+and tenant pins are unchanged. Security policy and package 3 remain open.
 
 The separate [Tokio security repair](tokio-security-result-20261026.md) applies
 the reviewed minimum/lock update and owned alarm registration, with paired
-GNU/MSRV and focused compatibility checks. Its graph has nine findings;
-the preceding roots-only candidate's eight is not a combined-graph result.
+GNU/MSRV and focused compatibility checks. Before roots approval its graph has
+nine findings; the preceding roots-only candidate's eight is not a combined-graph result.
 Security policy, complete milestone coverage and package 3 remain open.
 
 ## 4 Finish original Linux execution and recovery

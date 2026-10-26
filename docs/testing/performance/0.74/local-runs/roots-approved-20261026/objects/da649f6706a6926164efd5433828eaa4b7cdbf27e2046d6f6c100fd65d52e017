@@ -1,0 +1,25 @@
+
+running 4 tests
+test port_conflict_fails_before_any_listener_accepts ... ok
+test real_daemon_shares_hc1_hc2_dispatch_and_exits_on_drain ... ok
+test reserved_listener_addresses_are_distinct_and_held ... ok
+test unreadable_hc2_tls_fails_before_readiness_or_listener_startup ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.58s
+
+
+running 11 tests
+test generated_mtls_configuration_requires_all_security_gates ... ok
+test redis_mtls_certificate_does_not_bypass_auth_or_select_tenant ... ok
+test redis_mtls_client_ca_startup_is_bounded_and_has_no_global_ca_fallback ... ok
+test redis_mtls_configuration_is_opt_in_and_never_dormant_or_authless ... ok
+test redis_mtls_client_checks_server_ca_and_hostname ... ok
+test redis_mtls_disconnect_and_completed_task_reuse_keep_binary_payload ... ok
+test redis_mtls_connection_cap_and_shutdown_release_incomplete_handshakes ... ok
+test redis_mtls_invalid_clients_never_reach_resp_or_dispatch ... ok
+test redis_mtls_stalled_handshake_times_out_before_dispatch ... ok
+test redis_mtls_shutdown_joins_authenticated_and_fragmented_resp_owners ... ok
+test redis_mtls_valid_resp2_resp3_and_auth_keep_binary_bytes ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+

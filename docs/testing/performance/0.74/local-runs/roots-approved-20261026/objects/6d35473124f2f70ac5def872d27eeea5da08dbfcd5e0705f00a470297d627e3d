@@ -1,0 +1,20 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 48s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_redis_compat-bde28b1fd1068e42.exe)
+     Running tests\connection_chaos.rs (target\debug\deps\connection_chaos-0777c1c62c71027b.exe)
+     Running tests\redis_batch_execution_074.rs (target\debug\deps\redis_batch_execution_074-e702d175bcd91a70.exe)
+     Running tests\redis_clients.rs (target\debug\deps\redis_clients-5ca0b1116b8f5f46.exe)
+     Running tests\redis_event_listeners.rs (target\debug\deps\redis_event_listeners-ec29bd44374baa42.exe)
+     Running tests\redis_mined_edge_corpus.rs (target\debug\deps\redis_mined_edge_corpus-a34351386d409987.exe)
+     Running tests\resp_adaptive_coalescing_074.rs (target\debug\deps\resp_adaptive_coalescing_074-678e192bd5404c3b.exe)
+     Running tests\resp_boundaries.rs (target\debug\deps\resp_boundaries-f1bf8687bbeba2f5.exe)
+     Running tests\resp_get_owner_074.rs (target\debug\deps\resp_get_owner_074-e03f53712f35e77c.exe)
+     Running tests\resp_pipeline_attribution_074.rs (target\debug\deps\resp_pipeline_attribution_074-ca426621bc1ca9b8.exe)
+     Running tests\resp_resource_smoke.rs (target\debug\deps\resp_resource_smoke-cec8dd6c6da9b703.exe)
+     Running tests\resp_staged_order_model_074.rs (target\debug\deps\resp_staged_order_model_074-813bc7d47cfc8ae0.exe)
+     Running tests\resp_transport_adversarial_074.rs (target\debug\deps\resp_transport_adversarial_074-51d222ad8b8a977a.exe)
+     Running tests\tls_roots_security_074.rs (target\debug\deps\tls_roots_security_074-ffbeaa57655f4bcd.exe)
+     Running tests\tls_session_security_074.rs (target\debug\deps\tls_session_security_074-abdb1d0b5d8e9287.exe)
+     Running tests\tls_spki_security_074.rs (target\debug\deps\tls_spki_security_074-119c5b3d390083dd.exe)
+   Doc-tests hydracache_redis_compat

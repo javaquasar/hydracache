@@ -1,0 +1,11 @@
+{
+  "operation": "first invocation of seal-roots-approved-20261026.py",
+  "exit": 1,
+  "error_type": "UnicodeDecodeError",
+  "error": "charmap codec cp1252 cannot decode byte 0x81 at position 506996",
+  "stage": "read dependency-policy-first/stderr.log with implicit Windows encoding",
+  "first_process_output_redirected": false,
+  "record_kind": "transcription of tool-reported failure, not a raw process log",
+  "packet_index_or_objects_created": false,
+  "candidate_or_first_outcomes_modified": false
+}

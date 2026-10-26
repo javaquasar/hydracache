@@ -1,0 +1,34 @@
+"""Compare the full current graph/manifests to the captured accepted baseline."""
+import hashlib
+import json
+from pathlib import Path
+import sys
+import tomllib
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / 'tools/roots-trust-admission-074'))
+import audit
+
+BASE = ROOT / 'target/roots-approved-20261026/accepted-inputs'
+before = tomllib.loads((BASE / 'Cargo.lock').read_text())
+after = tomllib.loads((ROOT / 'Cargo.lock').read_text())
+result = audit.validate_graph(before, after)
+name = 'crates/hydracache-redis-compat/Cargo.toml'
+old = tomllib.loads((BASE / name).read_text())
+new = tomllib.loads((ROOT / name).read_text())
+assert new['dev-dependencies'].pop('webpki-roots') == '=1.0.10'
+assert new['dev-dependencies'].pop('webpki-root-certs') == '=1.0.10'
+assert new['dev-dependencies'].pop('webpki-roots-legacy') == dict(package='webpki-roots', version='=0.26.11')
+assert old == new
+for name in ('Cargo.toml', 'deny.toml', 'docs/testing/performance/0.74/qualification-manifest.toml'):
+    assert (ROOT / name).read_bytes() == (BASE / name).read_bytes()
+assert tomllib.loads((ROOT / 'Cargo.toml').read_text())['workspace']['package']['rust-version'] == '1.88'
+name = 'crates/hydracache-redis-compat/tests/tls_roots_security_074.rs'
+assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == '655728cfa43e04ef1e26eabbfba8b382d5ddab8ce6232c1ef8d3603327c83f73'
+original = json.loads((BASE.parent / 'accepted-baseline-first/intent.json').read_bytes())['source']
+changed = [name for name, digest in original.items() if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest]
+assert sorted(changed) == ['Cargo.lock', 'crates/hydracache-redis-compat/Cargo.toml']
+result.update(runtime_source_unchanged=True, msrv='1.88', deny_and_qualification_unchanged=True,
+              archived_corrected_oracle_identical=True, graph_changes_only_two_nodes=True,
+              issuer_enrollment_authorization_unchanged=True, package_pass=False, release_admitted=False)
+print(json.dumps(result, sort_keys=True, indent=2))

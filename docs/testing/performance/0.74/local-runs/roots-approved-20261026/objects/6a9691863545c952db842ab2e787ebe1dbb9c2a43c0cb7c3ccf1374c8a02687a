@@ -1,0 +1,17 @@
+   Compiling tokio v1.53.3
+   Compiling hyper v1.10.1
+   Compiling hyper-util v0.1.20
+   Compiling hydracache v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache)
+   Compiling tower v0.5.3
+   Compiling axum v0.8.9
+   Compiling tokio-util v0.7.18
+   Compiling combine v4.6.7
+   Compiling tokio-rustls v0.26.4
+   Compiling redis v1.3.0
+   Compiling hydracache-observability v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-observability)
+   Compiling hydracache-client-transport-axum v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-client-transport-axum)
+   Compiling hydracache-redis-compat v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-redis-compat)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 45.49s
+     Running tests/tls_roots_security_074.rs (/tmp/hydracache-074-tls-security-20261024-gnu194/debug/deps/tls_roots_security_074-f373cf6a811bf043)
+     Running tests/tls_session_security_074.rs (/tmp/hydracache-074-tls-security-20261024-gnu194/debug/deps/tls_session_security_074-2bc1211e9857a9cf)
+     Running tests/tls_spki_security_074.rs (/tmp/hydracache-074-tls-security-20261024-gnu194/debug/deps/tls_spki_security_074-ab53325680af6bca)

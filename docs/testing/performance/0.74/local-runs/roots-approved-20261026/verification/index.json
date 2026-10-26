@@ -1,0 +1,113 @@
+{
+  "archived_code_executed": false,
+  "clocks": false,
+  "members": {
+    "checks/contract-final/intent.json": {
+      "bytes": 352627,
+      "sha256": "a101b54a856cdd8ccfd453a0c7d31691dac649dcbfe51ddbbf7e9b4807366645"
+    },
+    "checks/contract-final/process.json": {
+      "bytes": 14,
+      "sha256": "d66d5df56a337538f5d05376bb4325495fbbc2bab74f6dadc0229cf3f110d3ac"
+    },
+    "checks/contract-final/result.json": {
+      "bytes": 352522,
+      "sha256": "4c54ac1369daad121fcb1e3899e0a8269185211841133e04a0ec25670b8872d1"
+    },
+    "checks/contract-final/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/contract-final/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/doc-final/intent.json": {
+      "bytes": 352579,
+      "sha256": "0fec3786584382f3a11c7aa09046e75e7e8fe930edbb5bfd969968bde78e8280"
+    },
+    "checks/doc-final/process.json": {
+      "bytes": 14,
+      "sha256": "eb88ffc4ab69e70f10016d22f12da51e6a4709bc0ae52c2c0d32ec3d58398a4e"
+    },
+    "checks/doc-final/result.json": {
+      "bytes": 352522,
+      "sha256": "4c54ac1369daad121fcb1e3899e0a8269185211841133e04a0ec25670b8872d1"
+    },
+    "checks/doc-final/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/doc-final/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/packet-controls-first/intent.json": {
+      "bytes": 352736,
+      "sha256": "3f7ff8687215b0fe233e78f17172520e62b1aeef77292f55f72dea7abec4a0fd"
+    },
+    "checks/packet-controls-first/process.json": {
+      "bytes": 14,
+      "sha256": "45ab6a73c02fe97d862e9b1c8572cf7ef4c8d54b50b093cd0b36bac1b9709b65"
+    },
+    "checks/packet-controls-first/result.json": {
+      "bytes": 352522,
+      "sha256": "1cf8cec0cad833337e9444f7e8c4bd75df3ce2f2b00851854963f0387a7746a9"
+    },
+    "checks/packet-controls-first/stderr.log": {
+      "bytes": 840,
+      "sha256": "3d3c3eda135196b2d98740ef35f0295493bed2675212c08db3f7d71220625dbc"
+    },
+    "checks/packet-controls-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/packet-verify-first/intent.json": {
+      "bytes": 352645,
+      "sha256": "50facb495cbcd02ec08cbcd91aa2dbff81b84cd174311b618c71f47a5667711b"
+    },
+    "checks/packet-verify-first/process.json": {
+      "bytes": 14,
+      "sha256": "ba2aac4e7d9808ce9252f3c440795919543c87a9789b1389b30eb20d3f188876"
+    },
+    "checks/packet-verify-first/result.json": {
+      "bytes": 352522,
+      "sha256": "4248bdc7ace1fc4d05965548d0a43ced23d29f05db70f24bdadbb6c1d5d5be8b"
+    },
+    "checks/packet-verify-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/packet-verify-first/stdout.log": {
+      "bytes": 202,
+      "sha256": "8e1ff86713da3c57981288b142f8213e61c3ef18ae8384fc1dd3fd0e6c99700b"
+    },
+    "coordinator/seal-roots-approved-verification-20261026.py": {
+      "bytes": 2164,
+      "sha256": "13c81ea8425d9415931dffcf0aeed88d8903f22b23412b12c3b1be32383e9d04"
+    },
+    "documents/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 8405,
+      "sha256": "6b77623a73b7384f1d2ab8d9274e129c1ba3f705f3fc677b4143cad2042eab44"
+    },
+    "documents/docs/testing/performance/0.74/roots-approved-result-20261026.md": {
+      "bytes": 6755,
+      "sha256": "f12eecffcda54df559fa65fd76f4300e04b385394cca5cabb9879715c0fcf7dc"
+    },
+    "verifier/test_verify.py": {
+      "bytes": 2840,
+      "sha256": "4acc54a9044f13b582383c2fedab17941ce2e0a4f9c5156c426245394dd93515"
+    },
+    "verifier/verify.py": {
+      "bytes": 6693,
+      "sha256": "7215058cb269c79bd098b860bc07543ed5616e01e71faa767443fc093dca0b8f"
+    }
+  },
+  "package_replayed": false,
+  "production_trust_changed": false,
+  "qualification": false,
+  "release_admitted": false,
+  "schema": "hc074-approved-roots-final-checks-v1",
+  "server": false,
+  "services": false
+}

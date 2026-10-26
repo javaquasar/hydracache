@@ -1,0 +1,10 @@
+"""Read-only pinned advisory DB identity; never fetch, install or modify config."""
+import json
+from pathlib import Path
+import subprocess
+
+DB = Path('C:/Users/ArturBuzov/.cargo/advisory-dbs/advisory-db-3157b0e258782691')
+head = subprocess.check_output(['git', '-C', str(DB), 'rev-parse', 'HEAD'], text=True, timeout=10).strip()
+dirty = subprocess.check_output(['git', '-C', str(DB), 'status', '--porcelain'], timeout=10)
+assert head == '84d943a6deeb8cc6c6f632531aaf4f1c62275239' and dirty == b''
+print(json.dumps(dict(head=head, clean=True, fetch=False, database_modified=False)))

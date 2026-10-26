@@ -1,0 +1,18 @@
+"""Append-only current accepted inputs before the approved catalog update."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / 'target/roots-approved-20261026/accepted-inputs'
+OUT.mkdir(exist_ok=False)
+digests = {}
+for name in ('Cargo.toml', 'Cargo.lock', 'deny.toml', 'crates/hydracache-redis-compat/Cargo.toml',
+             'docs/testing/performance/0.74/qualification-manifest.toml'):
+    raw = (ROOT / name).read_bytes()
+    dest = OUT / name
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    with dest.open('xb') as stream:
+        stream.write(raw)
+    digests[name] = hashlib.sha256(raw).hexdigest()
+print(json.dumps(dict(inputs=digests, mutated=False, installed=False), sort_keys=True))

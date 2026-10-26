@@ -21212,3 +21212,21 @@ not library allocations or a memory optimization. A source review, available
 disk space, completed compilation and actual case coverage are distinct inputs
 to release readiness. None can fill the other's missing verdict, and an aborted
 build must not be joined with an older incomplete package suffix.
+
+### Public root updates require an explicit trust decision
+
+The [approved roots update](../testing/performance/0.74/roots-approved-result-20261026.md)
+separates removing a distrusted key from accepting four additional public
+authorities. The first removal-only gate correctly refuses the broader catalog
+delta. Later operator approval does not turn that refusal into a historical
+pass: a separate exact review checks all six changed SPKI/certificate identities,
+116 surviving complete anchors and the new roots' CA and name constraints.
+Published archive/source checks bind the audited bytes to the actual registry.
+
+The accepted graph fixes both catalogs at 1.0.10 and keeps the corrected paired
+oracle unchanged. Windows, MSRV and GNU TLS controls, server mTLS/daemon tests,
+ordinary RESP coverage and strict affected-package lint pass. At the same pinned
+database, findings fall from nine to seven, not zero. This is a scoped security
+and public-trust change, not a performance result or production enrollment.
+Earlier package/source-view pins continue to refuse the new lock until a narrow
+successor bridge and fresh complete gate cover it.

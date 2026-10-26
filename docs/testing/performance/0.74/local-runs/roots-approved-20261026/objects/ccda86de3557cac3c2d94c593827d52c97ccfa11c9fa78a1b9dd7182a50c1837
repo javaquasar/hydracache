@@ -1,0 +1,11 @@
+{
+  "archived_corrected_oracle_identical": true,
+  "deny_and_qualification_unchanged": true,
+  "exact_two_catalog_updates_and_three_test_edges": true,
+  "graph_changes_only_two_nodes": true,
+  "issuer_enrollment_authorization_unchanged": true,
+  "msrv": "1.88",
+  "package_pass": false,
+  "release_admitted": false,
+  "runtime_source_unchanged": true
+}

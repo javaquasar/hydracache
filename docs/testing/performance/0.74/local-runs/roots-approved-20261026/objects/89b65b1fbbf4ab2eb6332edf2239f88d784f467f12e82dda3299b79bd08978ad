@@ -1,0 +1,13 @@
+test_approved_exact_delta_not_release_admission (test_audit.ExactPublicCatalog.test_approved_exact_delta_not_release_admission) ... ok
+test_changed_unchanged_constraint_and_new_key_refuse (test_audit.ExactPublicCatalog.test_changed_unchanged_constraint_and_new_key_refuse) ... ok
+test_der_rejects_truncation_indefinite_and_nonminimal_lengths (test_audit.ExactPublicCatalog.test_der_rejects_truncation_indefinite_and_nonminimal_lengths) ... ok
+test_extra_dropped_duplicate_and_changed_der_refuse (test_audit.ExactPublicCatalog.test_extra_dropped_duplicate_and_changed_der_refuse) ... ok
+test_graph_exact_pair_and_unrelated_change_refusal (test_audit.ExactPublicCatalog.test_graph_exact_pair_and_unrelated_change_refusal) ... ok
+test_incomplete_source_parsers_refuse (test_audit.ExactPublicCatalog.test_incomplete_source_parsers_refuse) ... ok
+test_registry_missing_files_refuse (test_audit.ExactPublicCatalog.test_registry_missing_files_refuse) ... ok
+test_wrong_approved_fingerprint_or_version_or_production_scope_refuse (test_audit.ExactPublicCatalog.test_wrong_approved_fingerprint_or_version_or_production_scope_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.393s
+
+OK

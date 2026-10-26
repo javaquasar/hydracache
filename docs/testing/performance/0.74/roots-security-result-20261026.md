@@ -1,4 +1,9 @@
-# Bundled public roots: tested candidate, trust-scope decision pending
+# Historical public roots candidate before trust approval
+
+This is the preserved pre-approval outcome. The operator subsequently approved
+the full catalog after exact audit; the [separate acceptance report](roots-approved-result-20261026.md)
+records its application to the later Tokio graph. Counts and refusal flags below
+remain historical and are not rewritten as accepted results.
 
 This report records the graph before the separate
 [Tokio successor](tokio-security-result-20261026.md). Its ten-finding restored

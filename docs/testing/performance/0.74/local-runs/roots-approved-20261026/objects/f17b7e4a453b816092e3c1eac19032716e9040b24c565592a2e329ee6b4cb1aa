@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\target\audit-roots-catalog-delta-20261026.py", line 38, in <module>
+    raise ValueError('unreviewed anchor policy delta')
+ValueError: unreviewed anchor policy delta

@@ -1,0 +1,86 @@
+"""Append-only evidence for the separately approved combined-graph update."""
+import hashlib
+import json
+from pathlib import Path
+import re
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = ROOT / 'target/roots-approved-20261026'
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/roots-approved-20261026'
+OLD = ROOT / 'docs/testing/performance/0.74/local-runs/roots-security-20261026'
+assert {p.name for p in OUT.iterdir()} == {'.gitattributes'}
+members, objects, counts = {}, {}, {}
+
+def add(name, body):
+    assert name not in members
+    digest = hashlib.sha256(body).hexdigest()
+    members[name] = dict(sha256=digest, bytes=len(body))
+    objects[digest] = body
+
+phases = ('trust-audit-first', 'audit-controls-first', 'accepted-baseline-first', 'resolve-approved',
+          'current-graph-first', 'focused-windows-first', 'msrv-first', 'gnu-first',
+          'dependency-policy-first', 'server-first', 'check-first', 'clippy-first',
+          'resp-all-first', 'v7-pin-refusal-first', 'historical-packet-first', 'format-first',
+          'db-metadata-first', 'graph-final', 'doc-first', 'contract-first')
+assert {p.name for p in BASE.iterdir() if p.is_dir()} == set(phases) | {'accepted-inputs'}
+for phase in phases:
+    folder = BASE / phase
+    result = json.loads((folder / 'result.json').read_bytes())
+    assert result['exit'] == (1 if phase in ('dependency-policy-first', 'v7-pin-refusal-first') else 0)
+    assert result['outer_refusal'] is None and result['source_contract'] and result['commit_unchanged']
+    assert result['source_unchanged'] == (phase != 'resolve-approved')
+    for path in sorted(folder.iterdir()):
+        assert path.is_file()
+        add('checks/' + phase + '/' + path.name, path.read_bytes())
+    rows = re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;',
+                      (folder / 'stdout.log').read_text())
+    if rows:
+        counts[phase] = dict(targets=len(rows), totals=[sum(int(row[n]) for row in rows) for n in range(5)])
+for phase, targets, passed, ignored in (('focused-windows-first', 3, 10, 0), ('msrv-first', 3, 10, 0),
+        ('gnu-first', 3, 10, 0), ('server-first', 2, 15, 0), ('resp-all-first', 17, 188, 23)):
+    assert counts[phase] == dict(targets=targets, totals=[passed, 0, ignored, 0, 0])
+ids = sorted(set(re.findall(r'ID: (RUSTSEC-\d{4}-\d{4})', (BASE / 'dependency-policy-first/stderr.log').read_text())))
+assert ids == ['RUSTSEC-2024-0449', 'RUSTSEC-2026-0367', 'RUSTSEC-2026-0368', 'RUSTSEC-2026-0369',
+               'RUSTSEC-2026-0370', 'RUSTSEC-2026-0371', 'RUSTSEC-2026-0372']
+assert json.loads((ROOT / 'target/reviewed-package-v7-20261026/roots-approved-refusal/preflight-refusal.json').read_bytes())['package_dispatched'] is False
+for path in sorted((BASE / 'accepted-inputs').rglob('*')):
+    if path.is_file():
+        add('baseline/' + path.relative_to(BASE / 'accepted-inputs').as_posix(), path.read_bytes())
+for name in ('Cargo.toml', 'Cargo.lock', 'deny.toml', 'crates/hydracache-redis-compat/Cargo.toml',
+             'crates/hydracache-redis-compat/tests/tls_roots_security_074.rs',
+             'docs/testing/performance/0.74/qualification-manifest.toml'):
+    add('source/' + name, (ROOT / name).read_bytes())
+for path in sorted((ROOT / 'tools/roots-trust-admission-074').iterdir()):
+    if path.is_file():
+        add('implementation/' + path.name, path.read_bytes())
+old_raw = (OLD / 'index.json').read_bytes()
+assert hashlib.sha256(old_raw).hexdigest() == '5a66272e834fd917f87f7063f1415d1e50beba5b18f776104a7b8a19c4a6f73d'
+old = json.loads(old_raw)
+add('historical/index.json', old_raw)
+for name, row in old['members'].items():
+    if name.startswith('upstream/') or name in ('coordinator/roots-trust-inventory-20261026.json',
+            'checks/roots-catalog-delta/stderr.log', 'checks/roots-baseline-policy-corrected/stdout.log'):
+        raw = (OLD / 'objects' / row['sha256']).read_bytes()
+        assert len(raw) == row['bytes'] and hashlib.sha256(raw).hexdigest() == row['sha256']
+        add('historical/' + name, raw)
+for path in (ROOT / 'target/reviewed-package-v7-20261026/roots-approved-refusal').iterdir():
+    assert path.is_file()
+    add('v7-refusal/' + path.name, path.read_bytes())
+for name in ('run-roots-approved-20261026.py', 'capture-roots-accepted-baseline-20261026.py',
+             'check-approved-roots-current-20261026.py', 'check-approved-roots-db-20261026.py', Path(__file__).name):
+    add('coordinators/' + name, (ROOT / 'target' / name).read_bytes())
+(OUT / 'objects').mkdir()
+for digest, raw in objects.items():
+    with (OUT / 'objects' / digest).open('xb') as stream:
+        stream.write(raw)
+index = dict(schema='hc074-approved-public-roots-evidence-v1', members=members, counts=counts,
+             implementation_commit='63cb4d7b9bca1c901b2f7420f86effd3309a6882', phases=list(phases),
+             approved_exact_public_catalog=True, old_packet_promoted=False,
+             remaining_advisories=ids, original_checks_or_deadlines_changed=False,
+             runtime_source_changed=False, production_enrollment_changed=False, tenant_authorization_changed=False,
+             full_package_pass=False, policy_pass=False, server=False, release_admitted=False)
+with (OUT / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, sort_keys=True, indent=2)
+    stream.write('\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256((OUT / 'index.json').read_bytes()).hexdigest(),
+                     members=len(members), objects=len(objects), phases=len(phases))))

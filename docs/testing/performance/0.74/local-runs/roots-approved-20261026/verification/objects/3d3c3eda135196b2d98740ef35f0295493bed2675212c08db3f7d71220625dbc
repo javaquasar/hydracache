@@ -1,0 +1,12 @@
+test_exact_packet (test_verify.ApprovedEvidence.test_exact_packet) ... ok
+test_failed_policy_cannot_be_called_green (test_verify.ApprovedEvidence.test_failed_policy_cannot_be_called_green) ... ok
+test_fingerprint_and_constraint_changes (test_verify.ApprovedEvidence.test_fingerprint_and_constraint_changes) ... ok
+test_future_catalog_is_not_approved (test_verify.ApprovedEvidence.test_future_catalog_is_not_approved) ... ok
+test_index_and_body_changes (test_verify.ApprovedEvidence.test_index_and_body_changes) ... ok
+test_old_refusal_cannot_be_promoted (test_verify.ApprovedEvidence.test_old_refusal_cannot_be_promoted) ... ok
+test_v7_refusal_cannot_dispatch (test_verify.ApprovedEvidence.test_v7_refusal_cannot_dispatch) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.585s
+
+OK

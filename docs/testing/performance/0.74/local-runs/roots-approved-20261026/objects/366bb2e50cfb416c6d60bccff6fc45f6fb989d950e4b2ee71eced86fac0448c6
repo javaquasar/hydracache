@@ -1,0 +1,25 @@
+
+running 5 tests
+test compatibility_shim_reexports_the_same_parent_without_its_own_trust_store ... ok
+test bundled_anchor_catalog_does_not_trust_emsign_g3 ... ok
+test complete_der_and_anchor_catalogs_load_into_the_normal_verifier_store ... ok
+test catalog_oracle_refuses_unregistered_policy_and_key_mutations ... ok
+test bundled_der_catalog_does_not_contain_emsign_g3_public_key ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test debug_oracle_rejects_payloads_and_accepts_only_absent_or_redacted_secrets ... ok
+test tls12_session_debug_redacts_secrets_without_breaking_resumption ... ok
+test tls13_session_debug_redacts_secrets_without_breaking_resumption ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+
+running 2 tests
+test all_eight_distrusted_public_keys_are_rejected_even_under_a_trusted_test_ca ... ok
+test ordinary_chain_still_checks_name_time_and_issuer ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
