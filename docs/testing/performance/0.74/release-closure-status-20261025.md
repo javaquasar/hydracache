@@ -94,6 +94,13 @@ deltas do not establish causal API or instrumentation cost. The first Windows
 format command-line refusal is retained. No new workload, source optimization,
 V6 retry or server run occurs; the six release gates below remain unchanged.
 
+The [separate spawn prototype](spawn-frames-result-20261026.md) now models
+preparation, create-to-retention and membership/release with 130 passing cases
+and five independent integrity controls. No new observation enters the successful-
+create/publication gap; original CI/caller/worker bytes remain unchanged. This
+unwired model does not establish native cost, recorder overhead or admission.
+Its next boundary is explicitly gated integration, not another package retry.
+
 The [approved plan](../../../plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md)
 keeps its original thresholds. Its closing rule is to publish the measurements
 and defer changes if none pass, not to tag a documentation-only substitute as

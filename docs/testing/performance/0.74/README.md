@@ -5,6 +5,12 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [model-only spawn boundary](spawn-frames-result-20261026.md) now separates
+preparation, create-to-retention and membership/release without a probe in the
+unowned post-create gap. All 130 model/regression cases and five independent
+integrity cases pass. The original caller/worker/CI path is unchanged and the
+prototype is not connected; no native cost or package verdict is claimed.
+
 The [offline leaf attribution](leaf-attribution-result-20261026.md) retains all
 sixteen workers and signed blocks, with 115 passing model/regression cases and
 six independent integrity controls. Mixed spawn CPU deltas and varying read wall

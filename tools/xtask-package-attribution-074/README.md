@@ -399,3 +399,18 @@ retains 115 passing model/regression cases, six independent integrity controls
 and the first Windows formatting command-line refusal. Mixed block CPU signs
 and read variation at identical log size do not isolate creation/IO costs or
 support a runtime candidate. No new workload, V6 or server action occurs.
+
+## Model only spawn preparation and retained creation boundaries
+
+`spawn_frames.py` is an unwired prototype with no CLI or caller changes. The
+[design](spawn-frames-design.md) and [protocol](spawn-frames-protocol.toml) define
+preparation, create-to-retention and membership/release brackets. The first end
+probe after creation follows original child retention; the original error-read
+and cleanup paths are unchanged. Eighteen additional clock reads are bounded,
+not evidence of small overhead or pure creation cost.
+
+The [result](../../docs/testing/performance/0.74/spawn-frames-result-20261026.md)
+retains 130 passing model/regression cases and five independent source/integrity
+controls. All eighteen ordinary/fatal clock cuts are synthetic. Native caller
+integration, compatibility and overhead require separate gates; no measurement,
+V6 or server action occurs here.

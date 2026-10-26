@@ -20993,3 +20993,27 @@ complete. The next causal method must preserve the successful-create-to-retained
 owner boundary: a telemetry exception in that gap could lose custody of a live
 child. No API replacement, weakened check, changed deadline or release admission
 follows from an arithmetic complement.
+
+### Creation observations must preserve child custody
+
+Splitting the remaining spawn bracket requires more than timing a native API.
+After successful CreateProcessW, a process exists before its Python owner has
+published the child. A new clock read in that interval could raise and leave the
+caller without the child needed by cleanup. The separate model prototype ends
+its create-to-retention bracket only after the original retained assignment,
+before identity checks. The measured interval would include construction and
+publication, so it must not be labeled pure CreateProcessW cost.
+
+Preparation and membership/conditional-resume receive their own brackets while
+the failed-create error read and finally remain untouched. Restricted AST
+comparison and fake ABI differential controls preserve original effects, handles,
+argv, predicates and deadlines. All eighteen ordinary and fatal clock cuts keep
+the existing cleanup path available after creation. A completed recorder still
+does not prove resume: the original expired-deadline branch skips it.
+
+The [model implementation and evidence](../testing/performance/0.74/spawn-frames-result-20261026.md)
+retain 130 passing model/regression cases and five independent integrity controls.
+The existing native caller, worker and CI implementation remain unchanged. This
+is a model-tested observation boundary, not native compatibility, real SIGKILL,
+overhead acceptance or a product improvement. Integration must preserve the same
+ownership and verdict boundaries before another native control is considered.
