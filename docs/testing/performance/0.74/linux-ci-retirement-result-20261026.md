@@ -64,3 +64,11 @@ Independent offline integrity, doc-check and local performance-contract checks
 pass. Xtask all-targets check and all-targets/all-features strict Clippy pass;
 these are focused checks, not a complete milestone. Implementation commit:
 `bf3f048bd`. Original frozen qualification digest is unchanged.
+
+The first documentation commit `7746a88d9` omitted the packet's raw-byte Git
+attributes: 52 of 94 archived blobs were line-ending normalized on staging.
+The working evidence bytes and sealed indexes were unchanged. A follow-up
+applies the existing `-text` evidence convention and restores those raw bytes;
+independent Git-object verification finds zero mismatches in repaired staging.
+The [first-versus-repaired receipt](local-runs/closure-preflight-20261026/git-byte-verification.json)
+preserves that packaging failure; do not verify the packet at the first commit.
