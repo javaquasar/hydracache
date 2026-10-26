@@ -1,0 +1,718 @@
+{
+  "block": 3,
+  "capture_leaves": {
+    "capture_valid": true,
+    "complete": true,
+    "contract": {
+      "cleanup_instrumented": false,
+      "clock_domain": "python-coordinator",
+      "cpu_scope": "coordinator process-wide, all threads; not worker or native Git CPU",
+      "existing_predicates_removed_or_reordered": false,
+      "groups": {
+        "decode": [
+          "log_stat",
+          "log_read",
+          "text_decode",
+          "record_parse",
+          "protocol_validation",
+          "result_join"
+        ],
+        "owner": [
+          "owner_identity",
+          "owner_initial"
+        ]
+      },
+      "max_additional_clock_reads": 48,
+      "max_additional_probes": 16,
+      "native_create_call_wrapped": false,
+      "nested_scopes_additive": false,
+      "overhead_accepted": false,
+      "owner_already_retained_before_first_leaf": true,
+      "package_pass": false,
+      "schema": "hc074-capture-leaves-v1",
+      "wait_with_output_unchanged": true,
+      "wall_bounds_scope": "elapsed between bracketed CPU-read instants, not effect-only duration",
+      "window_renewed": false
+    },
+    "first_refusal": null,
+    "groups": {
+      "decode": {
+        "capture_valid": true,
+        "clock_domain": "python-coordinator",
+        "complete": true,
+        "first_refusal": null,
+        "group": "decode",
+        "not_observed": [],
+        "probes": [
+          {
+            "kind": "begin",
+            "phase": "log_stat",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872271116988200,
+              "wall_before_ns": 872271116986000
+            }
+          },
+          {
+            "kind": "end",
+            "phase": "log_stat",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872271117224800,
+              "wall_before_ns": 872271117221400
+            }
+          },
+          {
+            "kind": "begin",
+            "phase": "log_read",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872271117238600,
+              "wall_before_ns": 872271117236400
+            }
+          },
+          {
+            "kind": "end",
+            "phase": "log_read",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872271140734400,
+              "wall_before_ns": 872271140722300
+            }
+          },
+          {
+            "kind": "begin",
+            "phase": "text_decode",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872271140759300,
+              "wall_before_ns": 872271140757600
+            }
+          },
+          {
+            "kind": "end",
+            "phase": "text_decode",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872271140771600,
+              "wall_before_ns": 872271140769800
+            }
+          },
+          {
+            "kind": "begin",
+            "phase": "record_parse",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872271140777700,
+              "wall_before_ns": 872271140776700
+            }
+          },
+          {
+            "kind": "end",
+            "phase": "record_parse",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872271140852800,
+              "wall_before_ns": 872271140851500
+            }
+          },
+          {
+            "kind": "begin",
+            "phase": "protocol_validation",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872271140858200,
+              "wall_before_ns": 872271140857300
+            }
+          },
+          {
+            "kind": "end",
+            "phase": "protocol_validation",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872271140890800,
+              "wall_before_ns": 872271140889800
+            }
+          },
+          {
+            "kind": "begin",
+            "phase": "result_join",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872271140898700,
+              "wall_before_ns": 872271140897600
+            }
+          },
+          {
+            "kind": "end",
+            "phase": "result_join",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872271140921000,
+              "wall_before_ns": 872271140919900
+            }
+          }
+        ],
+        "spans": [
+          {
+            "elapsed": {
+              "process_cpu_ns": 0,
+              "wall_lower_ns": 233200,
+              "wall_upper_ns": 238800
+            },
+            "end_probe": 1,
+            "phase": "log_stat",
+            "start_probe": 0,
+            "status": "complete"
+          },
+          {
+            "elapsed": {
+              "process_cpu_ns": 0,
+              "wall_lower_ns": 23483700,
+              "wall_upper_ns": 23498000
+            },
+            "end_probe": 3,
+            "phase": "log_read",
+            "start_probe": 2,
+            "status": "complete"
+          },
+          {
+            "elapsed": {
+              "process_cpu_ns": 0,
+              "wall_lower_ns": 10500,
+              "wall_upper_ns": 14000
+            },
+            "end_probe": 5,
+            "phase": "text_decode",
+            "start_probe": 4,
+            "status": "complete"
+          },
+          {
+            "elapsed": {
+              "process_cpu_ns": 0,
+              "wall_lower_ns": 73800,
+              "wall_upper_ns": 76100
+            },
+            "end_probe": 7,
+            "phase": "record_parse",
+            "start_probe": 6,
+            "status": "complete"
+          },
+          {
+            "elapsed": {
+              "process_cpu_ns": 0,
+              "wall_lower_ns": 31600,
+              "wall_upper_ns": 33500
+            },
+            "end_probe": 9,
+            "phase": "protocol_validation",
+            "start_probe": 8,
+            "status": "complete"
+          },
+          {
+            "elapsed": {
+              "process_cpu_ns": 0,
+              "wall_lower_ns": 21200,
+              "wall_upper_ns": 23400
+            },
+            "end_probe": 11,
+            "phase": "result_join",
+            "start_probe": 10,
+            "status": "complete"
+          }
+        ]
+      },
+      "owner": {
+        "capture_valid": true,
+        "clock_domain": "python-coordinator",
+        "complete": true,
+        "first_refusal": null,
+        "group": "owner",
+        "not_observed": [],
+        "probes": [
+          {
+            "kind": "begin",
+            "phase": "owner_identity",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872269869017800,
+              "wall_before_ns": 872269869009600
+            }
+          },
+          {
+            "kind": "end",
+            "phase": "owner_identity",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872269869461000,
+              "wall_before_ns": 872269869458600
+            }
+          },
+          {
+            "kind": "begin",
+            "phase": "owner_initial",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872269869475300,
+              "wall_before_ns": 872269869474000
+            }
+          },
+          {
+            "kind": "end",
+            "phase": "owner_initial",
+            "raw": {
+              "process_cpu_ns": 3578125000,
+              "wall_after_ns": 872269869530400,
+              "wall_before_ns": 872269869528700
+            }
+          }
+        ],
+        "spans": [
+          {
+            "elapsed": {
+              "process_cpu_ns": 0,
+              "wall_lower_ns": 440800,
+              "wall_upper_ns": 451400
+            },
+            "end_probe": 1,
+            "phase": "owner_identity",
+            "start_probe": 0,
+            "status": "complete"
+          },
+          {
+            "elapsed": {
+              "process_cpu_ns": 0,
+              "wall_lower_ns": 53400,
+              "wall_upper_ns": 56400
+            },
+            "end_probe": 3,
+            "phase": "owner_initial",
+            "start_probe": 2,
+            "status": "complete"
+          }
+        ]
+      }
+    }
+  },
+  "cleanup_errors": [],
+  "coordinator_frames": {
+    "capture_valid": true,
+    "clock_domain": "python-coordinator",
+    "complete": true,
+    "contract": {
+      "clock_failure_policy": "freeze telemetry, drain original owner, refuse diagnostic verdict",
+      "complete_frame_partition": false,
+      "cpu_clock": "time.process_time_ns",
+      "cpu_is_native_git": false,
+      "cpu_scope": "coordinator process-wide, all threads",
+      "existing_predicates_removed_or_reordered": false,
+      "max_clock_reads": 36,
+      "max_probes": 12,
+      "overhead_accepted": false,
+      "phases": [
+        "setup",
+        "spawn",
+        "wait",
+        "terminal_reads",
+        "decode",
+        "close"
+      ],
+      "schema": "hc074-coordinator-frames-v1",
+      "units": "ns",
+      "wall_bounds_scope": "elapsed between bracketed CPU-read instants, not effect-only duration",
+      "wall_clock": "time.monotonic_ns",
+      "window_renewed": false
+    },
+    "first_refusal": null,
+    "not_observed": [],
+    "probes": [
+      {
+        "kind": "begin",
+        "phase": "setup",
+        "raw": {
+          "process_cpu_ns": 3562500000,
+          "wall_after_ns": 872269858829500,
+          "wall_before_ns": 872269858827000
+        }
+      },
+      {
+        "kind": "end",
+        "phase": "setup",
+        "raw": {
+          "process_cpu_ns": 3562500000,
+          "wall_after_ns": 872269859441700,
+          "wall_before_ns": 872269859438200
+        }
+      },
+      {
+        "kind": "begin",
+        "phase": "spawn",
+        "raw": {
+          "process_cpu_ns": 3562500000,
+          "wall_after_ns": 872269859456600,
+          "wall_before_ns": 872269859454900
+        }
+      },
+      {
+        "kind": "end",
+        "phase": "spawn",
+        "raw": {
+          "process_cpu_ns": 3578125000,
+          "wall_after_ns": 872269869570000,
+          "wall_before_ns": 872269869568600
+        }
+      },
+      {
+        "kind": "begin",
+        "phase": "wait",
+        "raw": {
+          "process_cpu_ns": 3578125000,
+          "wall_after_ns": 872269869578400,
+          "wall_before_ns": 872269869577000
+        }
+      },
+      {
+        "kind": "end",
+        "phase": "wait",
+        "raw": {
+          "process_cpu_ns": 3578125000,
+          "wall_after_ns": 872271116799700,
+          "wall_before_ns": 872271116785600
+        }
+      },
+      {
+        "kind": "begin",
+        "phase": "terminal_reads",
+        "raw": {
+          "process_cpu_ns": 3578125000,
+          "wall_after_ns": 872271116831300,
+          "wall_before_ns": 872271116828000
+        }
+      },
+      {
+        "kind": "end",
+        "phase": "terminal_reads",
+        "raw": {
+          "process_cpu_ns": 3578125000,
+          "wall_after_ns": 872271116958200,
+          "wall_before_ns": 872271116954200
+        }
+      },
+      {
+        "kind": "begin",
+        "phase": "decode",
+        "raw": {
+          "process_cpu_ns": 3578125000,
+          "wall_after_ns": 872271116972900,
+          "wall_before_ns": 872271116970500
+        }
+      },
+      {
+        "kind": "end",
+        "phase": "decode",
+        "raw": {
+          "process_cpu_ns": 3578125000,
+          "wall_after_ns": 872271140927500,
+          "wall_before_ns": 872271140926100
+        }
+      },
+      {
+        "kind": "begin",
+        "phase": "close",
+        "raw": {
+          "process_cpu_ns": 3578125000,
+          "wall_after_ns": 872271140934900,
+          "wall_before_ns": 872271140934000
+        }
+      },
+      {
+        "kind": "end",
+        "phase": "close",
+        "raw": {
+          "process_cpu_ns": 3578125000,
+          "wall_after_ns": 872271141116900,
+          "wall_before_ns": 872271141115400
+        }
+      }
+    ],
+    "spans": [
+      {
+        "elapsed": {
+          "process_cpu_ns": 0,
+          "wall_lower_ns": 608700,
+          "wall_upper_ns": 614700
+        },
+        "end_probe": 1,
+        "phase": "setup",
+        "start_probe": 0,
+        "status": "complete"
+      },
+      {
+        "elapsed": {
+          "process_cpu_ns": 15625000,
+          "wall_lower_ns": 10112000,
+          "wall_upper_ns": 10115100
+        },
+        "end_probe": 3,
+        "phase": "spawn",
+        "start_probe": 2,
+        "status": "complete"
+      },
+      {
+        "elapsed": {
+          "process_cpu_ns": 0,
+          "wall_lower_ns": 1247207200,
+          "wall_upper_ns": 1247222700
+        },
+        "end_probe": 5,
+        "phase": "wait",
+        "start_probe": 4,
+        "status": "complete"
+      },
+      {
+        "elapsed": {
+          "process_cpu_ns": 0,
+          "wall_lower_ns": 122900,
+          "wall_upper_ns": 130200
+        },
+        "end_probe": 7,
+        "phase": "terminal_reads",
+        "start_probe": 6,
+        "status": "complete"
+      },
+      {
+        "elapsed": {
+          "process_cpu_ns": 0,
+          "wall_lower_ns": 23953200,
+          "wall_upper_ns": 23957000
+        },
+        "end_probe": 9,
+        "phase": "decode",
+        "start_probe": 8,
+        "status": "complete"
+      },
+      {
+        "elapsed": {
+          "process_cpu_ns": 0,
+          "wall_lower_ns": 180500,
+          "wall_upper_ns": 182900
+        },
+        "end_probe": 11,
+        "phase": "close",
+        "start_probe": 10,
+        "status": "complete"
+      }
+    ]
+  },
+  "first_refusal": null,
+  "job": {
+    "active": 0,
+    "kernel_ns": 906250000,
+    "terminated": 0,
+    "total": 9,
+    "user_ns": 109375000
+  },
+  "job_terminal_samples": [
+    {
+      "active": 0,
+      "kernel_ns": 906250000,
+      "terminated": 0,
+      "total": 9,
+      "user_ns": 109375000
+    },
+    {
+      "active": 0,
+      "kernel_ns": 906250000,
+      "terminated": 0,
+      "total": 9,
+      "user_ns": 109375000
+    }
+  ],
+  "metrics": {
+    "coordinator_cpu_ns": 15625000,
+    "wall_ns": 1282308900,
+    "whole_job_cpu_ns": 1015625000,
+    "whole_worker_cpu_ns": 359375000
+  },
+  "mode": "accounted_cpu_child",
+  "native_inclusive": {
+    "cpu_includes_native": true,
+    "exact_native_image_attested": false,
+    "initial_sample_subtracted": false,
+    "non_launcher_descendant_cpu": {
+      "kernel_ns": 109375000,
+      "user_ns": 62500000
+    },
+    "overhead_accepted": false,
+    "package_pass": false,
+    "per_call_native_cpu": false,
+    "speedup_established": false
+  },
+  "operation_verdict": {
+    "cleanup_errors": [],
+    "first_refusal": null,
+    "passed": true
+  },
+  "passed": true,
+  "records": [
+    {
+      "accounted": true,
+      "call": 0,
+      "code": 0,
+      "phases": {
+        "child_end": {
+          "created_100ns": 134374943930381136,
+          "exited_100ns": 134374943931203523,
+          "kernel_ns": 15625000,
+          "pid": 38016,
+          "user_ns": 0
+        },
+        "child_start": {
+          "created_100ns": 134374943930381136,
+          "exited_100ns": 0,
+          "kernel_ns": 0,
+          "pid": 38016,
+          "user_ns": 0
+        },
+        "handle_observation_ns": 10500,
+        "spawn_ns": 15066800,
+        "terminal_observation_ns": 2900,
+        "wait_and_collect_ns": 74308800
+      },
+      "spec": "3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "stderr_bytes": 0,
+      "stdout_bytes": 23589
+    },
+    {
+      "accounted": true,
+      "call": 1,
+      "code": 0,
+      "phases": {
+        "child_end": {
+          "created_100ns": 134374943934339245,
+          "exited_100ns": 134374943935530379,
+          "kernel_ns": 31250000,
+          "pid": 20260,
+          "user_ns": 0
+        },
+        "child_start": {
+          "created_100ns": 134374943934339245,
+          "exited_100ns": 0,
+          "kernel_ns": 0,
+          "pid": 20260,
+          "user_ns": 0
+        },
+        "handle_observation_ns": 14200,
+        "spawn_ns": 323696100,
+        "terminal_observation_ns": 2600,
+        "wait_and_collect_ns": 108191500
+      },
+      "spec": "3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "stderr_bytes": 0,
+      "stdout_bytes": 23589
+    },
+    {
+      "accounted": true,
+      "call": 2,
+      "code": 0,
+      "phases": {
+        "child_end": {
+          "created_100ns": 134374943935590468,
+          "exited_100ns": 134374943936469209,
+          "kernel_ns": 0,
+          "pid": 52832,
+          "user_ns": 15625000
+        },
+        "child_start": {
+          "created_100ns": 134374943935590468,
+          "exited_100ns": 0,
+          "kernel_ns": 0,
+          "pid": 52832,
+          "user_ns": 0
+        },
+        "handle_observation_ns": 9600,
+        "spawn_ns": 14046000,
+        "terminal_observation_ns": 3700,
+        "wait_and_collect_ns": 79891900
+      },
+      "spec": "3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "stderr_bytes": 0,
+      "stdout_bytes": 23589
+    },
+    {
+      "accounted": true,
+      "call": 3,
+      "code": 0,
+      "phases": {
+        "child_end": {
+          "created_100ns": 134374943936536844,
+          "exited_100ns": 134374943942590862,
+          "kernel_ns": 406250000,
+          "pid": 40940,
+          "user_ns": 15625000
+        },
+        "child_start": {
+          "created_100ns": 134374943936536844,
+          "exited_100ns": 0,
+          "kernel_ns": 0,
+          "pid": 40940,
+          "user_ns": 0
+        },
+        "handle_observation_ns": 15000,
+        "spawn_ns": 14906900,
+        "terminal_observation_ns": 2300,
+        "wait_and_collect_ns": 597118800
+      },
+      "spec": "3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "stderr_bytes": 0,
+      "stdout_bytes": 23589
+    }
+  ],
+  "slot": 3,
+  "worker": {
+    "creation_100ns": 134374943930132322,
+    "exit_100ns": 134374943942640645,
+    "io": {
+      "other_bytes": 10788,
+      "other_ops": 473,
+      "read_bytes": 94356,
+      "read_ops": 56,
+      "write_bytes": 2641,
+      "write_ops": 19
+    },
+    "kernel_100ns": 3437500,
+    "memory": {
+      "peak_private_commit_bytes": 995328,
+      "peak_working_set_bytes": 6602752,
+      "private_usage": 77824,
+      "working_set_bytes": 32768
+    },
+    "terminal": true,
+    "terminal_memory_error": null,
+    "user_100ns": 156250
+  },
+  "worker_image": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\git_descendant_cpu_074-803e31ba3b260206.exe",
+  "worker_initial": {
+    "creation_100ns": 134374943930132322,
+    "exit_100ns": null,
+    "io": {
+      "other_bytes": 0,
+      "other_ops": 0,
+      "read_bytes": 0,
+      "read_ops": 0,
+      "write_bytes": 0,
+      "write_ops": 0
+    },
+    "kernel_100ns": 0,
+    "memory": {
+      "peak_private_commit_bytes": 385024,
+      "peak_working_set_bytes": 2043904,
+      "private_usage": 385024,
+      "working_set_bytes": 2043904
+    },
+    "terminal": false,
+    "terminal_memory_error": null,
+    "user_100ns": 0
+  },
+  "worker_pid": 51820
+}

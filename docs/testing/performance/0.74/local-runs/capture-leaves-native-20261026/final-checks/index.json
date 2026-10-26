@@ -1,0 +1,159 @@
+{
+  "checks": 8,
+  "members": {
+    "checks/capture-leaves-native-check/intent.json": {
+      "bytes": 348946,
+      "sha256": "580b5f7e750ebf6c0705f49ea22dea5ab1d9c9bf8416230cbb85cce40fc92ac9"
+    },
+    "checks/capture-leaves-native-check/result.json": {
+      "bytes": 348637,
+      "sha256": "4f3292f6b2bf15bdf6762d8a938d513106b4e60fcd0b71ac4af431a2d8ec5369"
+    },
+    "checks/capture-leaves-native-check/stderr.log": {
+      "bytes": 72,
+      "sha256": "08e519d360249c8f30a75e2f1df6be5ac34436df930e0b31e6cba7d7ff267e19"
+    },
+    "checks/capture-leaves-native-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/capture-leaves-native-clippy/intent.json": {
+      "bytes": 349009,
+      "sha256": "c5fa86126cfd34535d5b43627e8a0c168b0173ef237c0f213905c52b765766c1"
+    },
+    "checks/capture-leaves-native-clippy/result.json": {
+      "bytes": 348637,
+      "sha256": "4f3292f6b2bf15bdf6762d8a938d513106b4e60fcd0b71ac4af431a2d8ec5369"
+    },
+    "checks/capture-leaves-native-clippy/stderr.log": {
+      "bytes": 72,
+      "sha256": "5f24f989be9e09b902f79c21423586bb7cb4df3e218933fb02e2a0bf9e352701"
+    },
+    "checks/capture-leaves-native-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/capture-leaves-native-contract/intent.json": {
+      "bytes": 348999,
+      "sha256": "f7c8081f4f0ee63719da7873b87b07da00c3deb93443965e4fee8d666363f13c"
+    },
+    "checks/capture-leaves-native-contract/result.json": {
+      "bytes": 348637,
+      "sha256": "4f3292f6b2bf15bdf6762d8a938d513106b4e60fcd0b71ac4af431a2d8ec5369"
+    },
+    "checks/capture-leaves-native-contract/stderr.log": {
+      "bytes": 209,
+      "sha256": "4079e7062179129d653474b234ede77fa4d978ea5dbbe213c0c80d9e2a50cece"
+    },
+    "checks/capture-leaves-native-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/capture-leaves-native-doc/intent.json": {
+      "bytes": 348951,
+      "sha256": "4d84dfe9ff5531a69f09d389f4aabc61e9779bd6a66f853fc29c34a11a0733e3"
+    },
+    "checks/capture-leaves-native-doc/result.json": {
+      "bytes": 348637,
+      "sha256": "4f3292f6b2bf15bdf6762d8a938d513106b4e60fcd0b71ac4af431a2d8ec5369"
+    },
+    "checks/capture-leaves-native-doc/stderr.log": {
+      "bytes": 204,
+      "sha256": "c7a48fe53e4b68ee2222aba0e197551d65a0eb09b93deb4b2f05fc04cea9cf00"
+    },
+    "checks/capture-leaves-native-doc/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/capture-leaves-native-integrity-final/intent.json": {
+      "bytes": 348958,
+      "sha256": "5e8ea27f229f71a3c2e8ee6a90d2f53ad5dbcf3ddc03498ae81c58198cd707e1"
+    },
+    "checks/capture-leaves-native-integrity-final/result.json": {
+      "bytes": 348637,
+      "sha256": "6612ff45455a32a5ebf496a2256728bd7b18c804353711dce34393a9231ddd67"
+    },
+    "checks/capture-leaves-native-integrity-final/stderr.log": {
+      "bytes": 911,
+      "sha256": "8a7d63dd2a4ef8adea9b3fe581994617d48d9573cb1e07d4b71275ce113badd5"
+    },
+    "checks/capture-leaves-native-integrity-final/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/capture-leaves-native-integrity-first/intent.json": {
+      "bytes": 348958,
+      "sha256": "5e8ea27f229f71a3c2e8ee6a90d2f53ad5dbcf3ddc03498ae81c58198cd707e1"
+    },
+    "checks/capture-leaves-native-integrity-first/result.json": {
+      "bytes": 348637,
+      "sha256": "6612ff45455a32a5ebf496a2256728bd7b18c804353711dce34393a9231ddd67"
+    },
+    "checks/capture-leaves-native-integrity-first/stderr.log": {
+      "bytes": 911,
+      "sha256": "d2f863837d18144c9b379f05ef7a3fcac5fdc7b04b4e522d7936766a24152678"
+    },
+    "checks/capture-leaves-native-integrity-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/capture-leaves-native-models/intent.json": {
+      "bytes": 349190,
+      "sha256": "2071304f61ee6651bceca437a2a8c49ac71c426f20db9c7a23920f8927dab883"
+    },
+    "checks/capture-leaves-native-models/result.json": {
+      "bytes": 348637,
+      "sha256": "4f3292f6b2bf15bdf6762d8a938d513106b4e60fcd0b71ac4af431a2d8ec5369"
+    },
+    "checks/capture-leaves-native-models/stderr.log": {
+      "bytes": 11470,
+      "sha256": "52af0f05ef10b3c1db7197351d4e74c3ea2682b1b61fb3ec3392149c5fb21c29"
+    },
+    "checks/capture-leaves-native-models/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/capture-leaves-native-syntax/intent.json": {
+      "bytes": 349161,
+      "sha256": "2f32976a1b38b2f4231aaa86a2ba8d2425893a1282a645a42b617a4c4cb3920c"
+    },
+    "checks/capture-leaves-native-syntax/result.json": {
+      "bytes": 348637,
+      "sha256": "4f3292f6b2bf15bdf6762d8a938d513106b4e60fcd0b71ac4af431a2d8ec5369"
+    },
+    "checks/capture-leaves-native-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/capture-leaves-native-syntax/stdout.log": {
+      "bytes": 27,
+      "sha256": "4ed3877d4ea9e13fed34eb0b40ff036dab908348f3e3213ca6be1fea05367bcc"
+    },
+    "collector.py": {
+      "bytes": 1925,
+      "sha256": "ebaeb5a85244896cf325b101a74cbee0739d1621096e63c1c34c66b3416fd43a"
+    },
+    "first-test-verify.py": {
+      "bytes": 4747,
+      "sha256": "4d32520abf260ef2aabee00ec312cf33d6ec6e4fc74d8b8d2f56164af59c4834"
+    },
+    "qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "test_verify.py": {
+      "bytes": 5444,
+      "sha256": "227d5e97d62ae6e7d4f69f794863597e3df49f3b9a645e68427822cfde3c466b"
+    },
+    "verify.py": {
+      "bytes": 21054,
+      "sha256": "2ee409f03c99eb7f814e5b4574ec869d8240fd34343485a25f8b5eda078351da"
+    }
+  },
+  "native_index_sha256": "926f30f0eca6ae708b3706976f256a9ca52a3a5d7e9a9c447a8f45cec59a0855",
+  "new_native_attempts": 0,
+  "new_workload_calls": 0,
+  "overhead_accepted": false,
+  "package_pass": false,
+  "schema": "hc074-native-capture-leaves-final-checks-v1"
+}

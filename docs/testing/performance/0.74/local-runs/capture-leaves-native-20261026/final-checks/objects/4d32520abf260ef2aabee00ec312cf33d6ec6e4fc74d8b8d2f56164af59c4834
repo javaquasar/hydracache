@@ -1,0 +1,94 @@
+"""Pure first-packet integrity and leaf arithmetic faults, with no native run."""
+import copy
+import json
+from pathlib import Path
+import unittest
+from unittest.mock import patch
+
+import verify
+
+FOLDER = Path(__file__).resolve().parent
+
+
+class Integrity(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.members = verify.load(FOLDER)
+
+    def test_native_outcome_raw_leaf_counts_and_nested_arithmetic(self):
+        result = verify.audit(self.members)
+        leaf = result['leaf_summary']
+        self.assertEqual((result['native_attempts'], result['workers'], result['git_calls']), (1, 16, 64))
+        self.assertEqual((leaf['leaf_probes'], leaf['leaf_clock_reads'], leaf['total_recorder_probes'],
+                          leaf['total_recorder_clock_reads']), (256, 768, 448, 1344))
+        self.assertEqual(leaf['leaf_totals']['log_read']['wall_upper_ns'], 380845500)
+        self.assertEqual(leaf['leaf_totals']['record_parse']['wall_upper_ns'], 1783000)
+        self.assertTrue(all(v['process_cpu_ns'] == 0 for v in leaf['leaf_totals'].values()))
+        self.assertFalse(leaf['zero_delta_means_zero_cost'])
+        self.assertFalse(result['overhead_accepted'])
+        self.assertFalse(result['package_pass'])
+
+    def test_index_mutation_refuses(self):
+        original = Path.read_bytes
+        with patch.object(Path, 'read_bytes', lambda p: b'{}' if p == FOLDER/'index.json' else original(p)), \
+             self.assertRaisesRegex(ValueError, 'index differs'):
+            verify.load(FOLDER)
+
+    def test_missing_object_refuses(self):
+        original = Path.read_bytes
+        def read(p):
+            if p.parent.name == 'objects':
+                raise FileNotFoundError('missing object')
+            return original(p)
+        with patch.object(Path, 'read_bytes', read), self.assertRaises(FileNotFoundError):
+            verify.load(FOLDER)
+
+    def test_raw_build_worker_first_result_model_and_sources_cannot_change(self):
+        index = json.loads((FOLDER/'index.json').read_bytes())
+        original = Path.read_bytes
+        for name in ('native/result.json', 'native/build.json', 'native/0-0-result.json',
+                     'native/0-0-reference_cpu_child.log', 'baseline/model-index.json',
+                     'source/tools/xtask-package-attribution-074/capture_leaves.py',
+                     'checks/capture-leaves-native-first/result.json'):
+            target = FOLDER/'objects'/index['members'][name]['sha256']
+            with self.subTest(name=name), patch.object(Path, 'read_bytes',
+                    lambda p: original(p)+b'x' if p == target else original(p)), \
+                 self.assertRaisesRegex(ValueError, 'raw member differs'):
+                verify.load(FOLDER)
+
+    def test_leaf_domains_order_raw_counters_contract_and_span_faults_refuse(self):
+        base = json.loads(self.members['native/result.json'])
+        for change in (
+            lambda b: b.update(complete=False),
+            lambda b: b.update(first_refusal='original leaf refusal'),
+            lambda b: b['contract'].update(window_renewed=True),
+            lambda b: b['groups']['owner'].update(clock_domain='synthetic-control'),
+            lambda b: b['groups']['owner']['probes'][0]['raw'].update(process_cpu_ns=True),
+            lambda b: b['groups']['owner']['probes'][0].update(kind='end'),
+            lambda b: b['groups']['decode']['probes'][0]['raw'].update(wall_before_ns=0),
+            lambda b: b['groups']['decode']['spans'][0]['elapsed'].update(wall_upper_ns=0),
+            lambda b: b['groups']['decode']['probes'].pop(),
+        ):
+            data = copy.deepcopy(base)
+            change(data['attempts'][0]['capture_leaves'])
+            with self.assertRaises(ValueError):
+                verify.leaf_audit(data, self.members)
+
+    def test_parent_containment_and_first_operational_verdict_are_required(self):
+        base = json.loads(self.members['native/result.json'])
+        data = copy.deepcopy(base)
+        parent = next(s for s in data['attempts'][0]['coordinator_frames']['spans'] if s['phase'] == 'decode')
+        parent['elapsed'] = dict(wall_lower_ns=0, wall_upper_ns=0, process_cpu_ns=0)
+        with self.assertRaisesRegex(ValueError, 'leaf sum exceeds parent'):
+            verify.leaf_audit(data, self.members)
+        members = dict(self.members)
+        data = copy.deepcopy(base)
+        data['attempts'][0]['operation_verdict']['passed'] = False
+        members['native/0-0-result.json'] = json.dumps(data['attempts'][0]).encode()
+        members['native/result.json'] = json.dumps(data).encode()
+        with self.assertRaisesRegex(ValueError, 'operation differs'):
+            verify.audit(members)
+
+
+if __name__ == '__main__':
+    unittest.main()

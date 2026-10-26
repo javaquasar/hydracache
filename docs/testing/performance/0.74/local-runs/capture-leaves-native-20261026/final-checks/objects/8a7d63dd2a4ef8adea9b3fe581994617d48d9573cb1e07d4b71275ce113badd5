@@ -1,0 +1,11 @@
+test_index_mutation_refuses (__main__.Integrity.test_index_mutation_refuses) ... ok
+test_leaf_domains_order_raw_counters_contract_and_span_faults_refuse (__main__.Integrity.test_leaf_domains_order_raw_counters_contract_and_span_faults_refuse) ... ok
+test_missing_object_refuses (__main__.Integrity.test_missing_object_refuses) ... ok
+test_native_outcome_raw_leaf_counts_and_nested_arithmetic (__main__.Integrity.test_native_outcome_raw_leaf_counts_and_nested_arithmetic) ... ok
+test_parent_containment_and_first_operational_verdict_are_required (__main__.Integrity.test_parent_containment_and_first_operational_verdict_are_required) ... ok
+test_raw_build_worker_first_result_model_and_sources_cannot_change (__main__.Integrity.test_raw_build_worker_first_result_model_and_sources_cannot_change) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.331s
+
+OK

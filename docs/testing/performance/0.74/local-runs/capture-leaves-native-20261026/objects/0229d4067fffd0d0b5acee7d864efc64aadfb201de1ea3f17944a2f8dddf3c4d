@@ -1,0 +1,203 @@
+"""Read retained Cargo/libtest logs; never run a test, subprocess or network call."""
+from decimal import Decimal
+import hashlib
+import json
+from pathlib import Path
+import re
+import sys
+import tomllib
+
+
+DATASETS = [
+    ("current-tree-history-20261024", "current-tree-package-first",
+     "e93e5fcfe733d5e0dfca90660f1b98a2a749775f431de9886b1cad309cb8b23f",
+     "a329cac91784d79d9e5b925c22d882cb0d327283"),
+    ("cost-phase-readers-20261024", "cost-readers-package-first",
+     "ab6c73cdf85675786ab6f39b43365b06d3fa781fc8526fad1a167a5b81614ce2",
+     "798ca4fa3563519eb631a90bf12195af37c89c8f"),
+]
+ARGV = ["cargo", "+1.94.0", "test", "--offline", "--locked", "--no-fail-fast",
+        "-p", "xtask", "--lib", "--tests", "--", "--test-threads=4"]
+START = re.compile(r"^running (\d+) tests?$")
+CASE = re.compile(r"^test (\S+) \.\.\. (ok|FAILED|ignored)(?:, .+)?$")
+END = re.compile(
+    r"^test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored; "
+    r"(\d+) measured; (\d+) filtered out; finished in (\d+(?:\.\d+)?)s$"
+)
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def decode_json(raw):
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            require(key not in result, f"duplicate JSON key: {key}")
+            result[key] = value
+        return result
+
+    def constant(value):
+        raise ValueError(f"nonfinite JSON number: {value}")
+
+    return json.loads(raw, object_pairs_hook=pairs, parse_constant=constant)
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def member(folder, index, name):
+    entry = index.get("members", {}).get(name)
+    require(isinstance(entry, dict), f"missing retained member: {name}")
+    digest = entry.get("sha256")
+    require(isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest), "invalid object digest")
+    require(type(entry.get("bytes")) is int and entry["bytes"] >= 0, "invalid object length")
+    try:
+        raw = (folder / "objects" / digest).read_bytes()
+    except OSError as error:
+        raise ValueError(f"missing retained object: {name}") from error
+    require(len(raw) == entry["bytes"] and sha(raw) == digest, f"retained bytes differ: {name}")
+    return raw
+
+
+def catalog(source, manifest):
+    package = manifest.get("package", {})
+    require(package.get("name") == "xtask", "not the captured xtask package")
+    require(package.get("autotests", True) is True, "non-default test discovery")
+    require(not any(key in manifest for key in ["test", "bin", "lib"]), "explicit targets need separate attribution")
+    require(package.get("autobins", True) is True, "non-default binary discovery")
+    roots = ["unittests src/lib.rs", "unittests src/main.rs"]
+    require(all("crates/xtask/" + name[10:] in source for name in roots), "missing captured unit targets")
+    prefix = "crates/xtask/tests/"
+    tests = sorted("tests/" + path[len(prefix):] for path in source
+                   if path.startswith(prefix) and path.endswith(".rs") and "/" not in path[len(prefix):])
+    require(bool(tests), "empty captured integration target catalog")
+    return roots + tests
+
+
+def nanoseconds(seconds):
+    value = Decimal(seconds) * 1_000_000_000
+    require(value.is_finite() and value >= 0 and value == value.to_integral_value(), "unsupported printed duration")
+    return int(value)
+
+
+def parse_transcript(stdout, stderr, expected, code, outer, bound):
+    require(type(code) is int and type(bound) is int, "noninteger exit or bound")
+    require(outer in {None, "outer-timeout"}, "unknown outer refusal")
+    require(bound == 780, "outer bound changed")
+    require(code in {0, 101} if outer is None else code != 0, "exit/outer refusal disagree")
+    scheduled = []
+    build = []
+    for line in stderr.splitlines():
+        text = line.strip()
+        if text.startswith("Running "):
+            name, separator, _ = text[8:].partition(" (")
+            require(bool(separator), "unrecognized Cargo target line")
+            scheduled.append(name.replace("\\", "/"))
+        if text.startswith("Finished "):
+            duration = re.search(r" in (?:(\d+)m )?(\d+(?:\.\d+)?)s$", text)
+            require(duration is not None, "unrecognized Cargo build duration")
+            build.append(nanoseconds(duration[2]) + int(duration[1] or 0) * 60_000_000_000)
+    require(len(build) == 1, "missing or duplicate Cargo build duration")
+    require(scheduled == expected[:len(scheduled)] and len(scheduled) <= len(expected), "target schedule is not the captured catalog prefix")
+    targets = []
+    active = None
+    for number, line in enumerate(stdout.splitlines(), 1):
+        start, case, end = START.fullmatch(line), CASE.fullmatch(line), END.fullmatch(line)
+        if start:
+            require(active is None, "nested target start before prior summary")
+            require(len(targets) < len(scheduled), "stdout has an unscheduled target")
+            active = dict(target=scheduled[len(targets)], declared=int(start[1]),
+                          cases=[], reported_seconds=None, start_line=number)
+            targets.append(active)
+        elif case:
+            require(active is not None, "case verdict outside a target")
+            require(case[2] == "ignored" or ", " not in line, "reason on a non-ignored verdict")
+            require(case[1] not in {item["name"] for item in active["cases"]}, "duplicate case verdict")
+            active["cases"].append(dict(name=case[1], verdict=case[2]))
+            require(len(active["cases"]) <= active["declared"], "too many case verdicts")
+        elif end:
+            require(active is not None, "summary without target start")
+            passed, failed, ignored, measured, filtered = map(int, end.group(2, 3, 4, 5, 6))
+            require(measured == 0 and filtered == 0, "measurement/filter scope changed")
+            observed = [item["verdict"] for item in active["cases"]]
+            require((observed.count("ok"), observed.count("FAILED"), observed.count("ignored")) ==
+                    (passed, failed, ignored), "case verdicts and summary differ")
+            require(passed + failed + ignored == active["declared"], "declared case count differs")
+            require(end[1] == ("FAILED" if failed else "ok"), "summary status disagrees")
+            active.update(passed=passed, failed=failed, ignored=ignored, end_line=number,
+                          reported_seconds=end[7], reported_ns=nanoseconds(end[7]))
+            active = None
+        elif line.startswith("test result:") or line.startswith("running "):
+            raise ValueError("unsupported libtest header or summary")
+    require(len(targets) == len(scheduled), "stdout/stderr target counts differ")
+    complete = active is None and len(targets) == len(expected)
+    require(outer is not None or complete, "natural exit with incomplete target coverage")
+    done = [target for target in targets if target["reported_seconds"] is not None]
+    failed = sum(target["failed"] for target in done)
+    ignored = sum(target["ignored"] for target in done)
+    if outer is None:
+        require(code == (101 if failed else 0), "natural exit and case failures disagree")
+    elapsed = sum(target["reported_ns"] for target in done)
+    return dict(
+        complete=complete, package_pass=complete and outer is None and code == 0 and ignored == 0,
+        exit=code, outer_refusal=outer, outer_bound_seconds=bound,
+        expected_targets=len(expected), scheduled_targets=len(scheduled), completed_targets=len(done),
+        passed=sum(target["passed"] for target in done), failed=failed, ignored=ignored,
+        individual_passed=sum(case["verdict"] == "ok" for target in targets for case in target["cases"]),
+        individual_failed=sum(case["verdict"] == "FAILED" for target in targets for case in target["cases"]),
+        reported_completed_target_spans_ns=elapsed, reported_build_span_ns=build[0],
+        nominal_budget_minus_completed_spans_ns=bound * 1_000_000_000 - elapsed,
+        incomplete_target=active, unstarted_targets=expected[len(scheduled):], targets=targets,
+        ranking=sorted([dict(target=item["target"], reported_seconds=item["reported_seconds"],
+                             reported_ns=item["reported_ns"]) for item in done],
+                       key=lambda item: (-item["reported_ns"], item["target"])),
+    )
+
+
+def analyze(root):
+    runs = []
+    manifest_path = "crates/xtask/Cargo.toml"
+    manifest_raw = (root / manifest_path).read_bytes()
+    for folder_name, phase, index_sha, commit in DATASETS:
+        folder = root / "docs/testing/performance/0.74/local-runs" / folder_name
+        raw = (folder / "index.json").read_bytes()
+        require(sha(raw) == index_sha, "retained packet index changed")
+        index = decode_json(raw)
+        inputs = {name: member(folder, index, f"observation/{phase}/{name}")
+                  for name in ["intent.json", "result.json", "stdout.log", "stderr.log"]}
+        intent, result = (decode_json(inputs[name]) for name in ["intent.json", "result.json"])
+        require(intent["head"] == commit and intent["argv"] == ARGV, "source or command identity differs")
+        require(intent["bound_seconds"] == 780 and intent["retry"] is False, "bound or retry changed")
+        require(result["source_unchanged"] is True and result["head_unchanged"] is True, "source changed during run")
+        require(result["admission"] is False and result["qualification"] is False, "unexpected execution admission")
+        require(intent["source"] == result["source_after"], "before/after source maps differ")
+        require(sha(manifest_raw) == intent["source"][manifest_path], "current manifest does not match captured bytes")
+        expected = catalog(intent["source"], tomllib.loads(manifest_raw.decode("utf-8")))
+        value = parse_transcript(inputs["stdout.log"].decode("utf-8"), inputs["stderr.log"].decode("utf-8"),
+                                 expected, result["exit"], result["outer_refusal"], intent["bound_seconds"])
+        value.update(phase=phase, source_commit=commit, index_sha256=index_sha,
+                     input_sha256={name: sha(data) for name, data in inputs.items()},
+                     manifest_sha256=sha(manifest_raw))
+        runs.append(value)
+    return dict(schema="hc074-xtask-package-log-review-v1", runs=runs,
+                causal_attribution=False, per_test_timing=False, cpu_attribution=False,
+                filesystem_attribution=False, wall_time_residual_attributed=False,
+                workload_rerun=False, runtime_admission=False)
+
+
+def main():
+    try:
+        result = analyze(Path(__file__).resolve().parents[2])
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        print(f"Offline package review refused: {error}", file=sys.stderr)
+        return 2
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
