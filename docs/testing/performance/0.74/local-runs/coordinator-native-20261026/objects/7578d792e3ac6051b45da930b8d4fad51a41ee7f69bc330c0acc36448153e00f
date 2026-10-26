@@ -1,0 +1,59 @@
+"""Seal the sole native coordinator-frame control; no workload execution."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT/'docs/testing/performance/0.74/local-runs/coordinator-native-20261026'
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+
+
+def add(name, raw):
+    assert name not in members
+    digest = hashlib.sha256(raw).hexdigest()
+    path = OUT/'objects'/digest
+    if not path.exists():
+        with path.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw), sha256=digest)
+
+
+def take(name, path):
+    add(name, path.read_bytes())
+
+
+for label in ('coordinator-frames-native-build-first', 'coordinator-frames-native-first'):
+    for part in ('intent.json', 'result.json', 'stdout.log', 'stderr.log'):
+        take('checks/'+label+'/'+part, ROOT/'target/source-continuation-20261024'/label/part)
+for path in sorted((ROOT/'target/git-cpu-coordinator-frames-20261026/first').iterdir()):
+    assert path.is_file() and path.suffix in ('.json', '.log')
+    take('native/'+path.name, path)
+for folder in ('tools/xtask-package-attribution-074', 'tools/historical-blob-batch-074'):
+    for path in sorted((ROOT/folder).glob('*.py')):
+        take('source/'+folder+'/'+path.name, path)
+for name in ('tools/xtask-package-attribution-074/coordinator-frames-design.md',
+             'tools/xtask-package-attribution-074/coordinator-frames-protocol.toml',
+             'tools/xtask-package-attribution-074/git-cpu-overhead-protocol.toml',
+             'tools/xtask-package-attribution-074/git-cpu-overhead-design.md',
+             'scripts/ci/watchdog_windows_job.py', 'scripts/ci/run-with-heartbeat.py',
+             'crates/xtask/tests/git_descendant_cpu_074.rs',
+             'tools/xtask-package-attribution-074/pipe_capture.rs',
+             'docs/testing/performance/0.74/qualification-manifest.toml'):
+    take('source/'+name, ROOT/name)
+for name in ('run-ci-watchdog-step-20261026.py', 'run-source-step-20261024.py'):
+    take('runners/'+name, ROOT/'target'/name)
+take('collector.py', Path(__file__))
+old = ROOT/'docs/testing/performance/0.74/local-runs/coordinator-frames-20261026/index.json'
+assert hashlib.sha256(old.read_bytes()).hexdigest() == '7f768549711cb4cdd5a0e2de8bcac1502951499c5a36e28f05c678dd483d2eb1'
+take('baseline/model-index.json', old)
+index = dict(schema='hc074-native-coordinator-frames-evidence-v1',
+    source_commit='1030acb263e96d1e023f852dceb021de458ce6f4', native_control_executed=True,
+    native_attempts=1, workers=16, git_calls=64, retry=False, overhead_accepted=False,
+    package_pass=False, server=False, members=members)
+raw = (json.dumps(index, sort_keys=True, indent=2)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(members),
+           objects=len(list((OUT/'objects').iterdir()))))

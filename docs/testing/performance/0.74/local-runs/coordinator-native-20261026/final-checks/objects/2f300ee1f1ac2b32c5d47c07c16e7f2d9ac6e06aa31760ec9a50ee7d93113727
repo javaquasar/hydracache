@@ -1,0 +1,11 @@
+test_consistent_duplicate_ledgers_do_not_hide_semantic_faults (__main__.Integrity.test_consistent_duplicate_ledgers_do_not_hide_semantic_faults) ... ok
+test_deadline_build_pin_and_block_summary_drift_refuse (__main__.Integrity.test_deadline_build_pin_and_block_summary_drift_refuse) ... ok
+test_first_native_result_and_bracket_totals (__main__.Integrity.test_first_native_result_and_bracket_totals) ... ok
+test_index_corruption_refuses (__main__.Integrity.test_index_corruption_refuses) ... ok
+test_missing_object_refuses (__main__.Integrity.test_missing_object_refuses) ... ok
+test_raw_receipts_results_logs_and_sources_cannot_change (__main__.Integrity.test_raw_receipts_results_logs_and_sources_cannot_change) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.393s
+
+OK
