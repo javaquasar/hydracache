@@ -86,6 +86,14 @@ owns most recorded decode wall, while the large remaining spawn complement is
 not pure creation cost. This establishes only exact-build diagnostic
 compatibility; overhead, package coverage and production admission stay open.
 
+The [offline leaf follow-up](leaf-attribution-result-20261026.md) now closes the
+saved packet's worker/block projections and parent CPU partitions. All 115
+model/regression cases and six independent integrity controls pass. Identical
+reference log sizes have widely varying read brackets; mixed spawn CPU block
+deltas do not establish causal API or instrumentation cost. The first Windows
+format command-line refusal is retained. No new workload, source optimization,
+V6 retry or server run occurs; the six release gates below remain unchanged.
+
 The [approved plan](../../../plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md)
 keeps its original thresholds. Its closing rule is to publish the measurements
 and defer changes if none pass, not to tag a documentation-only substitute as

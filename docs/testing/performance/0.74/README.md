@@ -5,6 +5,12 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [offline leaf attribution](leaf-attribution-result-20261026.md) retains all
+sixteen workers and signed blocks, with 115 passing model/regression cases and
+six independent integrity controls. Mixed spawn CPU deltas and varying read wall
+at identical log sizes do not isolate a removable API cost. The first formatting
+command-line refusal is preserved; no workload, V6 or server action is repeated.
+
 The [first native leaf control](capture-leaves-native-result-20261026.md) now
 passes sixteen workers/sixty-four Git calls with all 448 probes complete. Six
 integrity cases validate original semantics, raw clocks and parent containment.

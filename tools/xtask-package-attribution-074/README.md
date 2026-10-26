@@ -385,3 +385,17 @@ original semantics and zero cleanup errors. Six integrity cases check nesting,
 raw arithmetic and first outcomes. Read/entry, not JSON parsing, contains most
 recorded decode wall in that input. Both arms trace leaves; overhead remains
 unmeasured on/off, and zero leaf CPU or a spawn complement is not causal cost.
+
+## Offline held owner and decode leaf attribution
+
+`leaf_attribution.py analyze NEW_LABEL` reads only the fixed first native leaf
+packet. Its [design](leaf-attribution-design.md) preserves old analyzers' input
+identities and joins all workers, log sizes, leaf/parent brackets, CPU owners and
+signed blocks without adding nested timing scopes. It starts no process and
+reads no clock or Git source. First intent/result files are exclusive.
+
+The [result](../../docs/testing/performance/0.74/leaf-attribution-result-20261026.md)
+retains 115 passing model/regression cases, six independent integrity controls
+and the first Windows formatting command-line refusal. Mixed block CPU signs
+and read variation at identical log size do not isolate creation/IO costs or
+support a runtime candidate. No new workload, V6 or server action occurs.

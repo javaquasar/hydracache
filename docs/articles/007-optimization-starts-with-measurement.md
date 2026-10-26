@@ -20968,3 +20968,28 @@ The [native packet and independent nested replay](../testing/performance/0.74/ca
 preserve these observations and six integrity controls. Further causal work must
 start from these saved scopes; no check removal, native bypass or larger
 deadline follows from functional success.
+
+### Signed blocks limit what the leaf observations can justify
+
+Offline replay of the same leaf packet retains every worker and closes each
+block's CPU partition without another Git call. Spawn CPU outside the two
+owner-observation brackets changes by +375, -31.25, -781.25 and -343.75 ms
+across the four profile-minus-reference blocks. These are observations of mixed
+preparation, creation, publication and resume, not positive or negative pure
+observer costs. Both arms enable tracing, so the contrast is not on/off overhead.
+
+The log data also prevents a simple byte-count explanation. All reference logs
+contain 1264 bytes, yet their read brackets range from about 3.75 to 32.66 ms.
+The largest observed read is for a 2658-byte profile log, not the largest log;
+block 0 even has a negative read-wall delta despite larger profile logs. This
+does not identify disk, scheduler or security software as the cause. It does
+show why changing JSON parsing or adding a source cache would not follow from
+the available attribution.
+
+The [offline result and independent arithmetic controls](../testing/performance/0.74/leaf-attribution-result-20261026.md)
+retain 115 passing model/regression cases, six integrity controls and the first
+Windows formatting command-line refusal. Offline analysis of this packet is
+complete. The next causal method must preserve the successful-create-to-retained-
+owner boundary: a telemetry exception in that gap could lose custody of a live
+child. No API replacement, weakened check, changed deadline or release admission
+follows from an arithmetic complement.
