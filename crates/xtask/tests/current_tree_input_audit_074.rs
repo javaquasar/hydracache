@@ -61,8 +61,8 @@ fn current_tree_input_frontier_is_fully_accounted_without_path_exclusions() {
         .filter(|p| protected(p, previous.contains(*p)))
     {
         if !previous.contains(path) {
-            if current_inputs::known_addition(path) {
-                current_inputs::require_addition(path);
+            if frontier::known_addition(path) {
+                frontier::require_addition(path);
             } else {
                 refused.push(format!("new runtime: {path}"));
             }
@@ -70,7 +70,7 @@ fn current_tree_input_frontier_is_fully_accounted_without_path_exclusions() {
         }
         let metadata = std::fs::symlink_metadata(runtime::root().join(path)).unwrap();
         assert!(metadata.is_file() && !metadata.file_type().is_symlink());
-        let current = std::panic::catch_unwind(|| current_inputs::read(path));
+        let current = std::panic::catch_unwind(|| frontier::read(path));
         let Ok(current) = current else {
             refused.push(format!("input refused: {path}"));
             continue;
@@ -97,3 +97,6 @@ fn current_tree_input_frontier_is_fully_accounted_without_path_exclusions() {
         refused.len()
     );
 }
+
+#[path = "../../../tools/current-frontier-074/reader.rs"]
+mod frontier;
