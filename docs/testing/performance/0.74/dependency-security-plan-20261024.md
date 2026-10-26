@@ -12,6 +12,11 @@ Reapplying a reviewed patch requires new exact-source gates and a distinct resul
 the [earlier experiment report](rustls-security-result-20261024.md) is not reused
 as evidence for a newly built release candidate.
 
+The first newly authorized [rustls application](rustls-authorized-result-20261026.md)
+is now committed separately. Only rustls and its checksum change in Cargo.lock;
+focused Windows/GNU/MSRV and compatibility gates pass. The pinned database still
+reports eleven findings. The remaining repairs and full milestone stay open.
+
 ## First result, not a waiver
 
 The one bounded standard `cargo xtask verify` at source `7e6c8ee8` exits 1 at

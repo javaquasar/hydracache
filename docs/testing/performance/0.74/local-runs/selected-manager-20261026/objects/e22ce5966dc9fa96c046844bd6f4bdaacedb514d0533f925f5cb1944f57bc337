@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "HydraCache074Native",
+    "-u",
+    "root",
+    "--exec",
+    "/bin/sh",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/held-environment-preflight-20261026.sh"
+  ],
+  "shell_sha256": "3013940b624c59277f97c113306ae1ea3b3a0633d52a217e74a1becc4a569525",
+  "read_only": true,
+  "service_mutation": false,
+  "clocks_changed": false,
+  "original_attempt": false,
+  "server": false
+}

@@ -7,6 +7,11 @@ Original execution is to finish in existing local systemd 257; the server's
 observed 255 remains incompatible with required extra-FD delivery. The
 [bounded Linux CI retirement repair](linux-ci-retirement-result-20261026.md)
 passes focused controls but does not promote package or server admission.
+The [authorized rustls patch](rustls-authorized-result-20261026.md) is applied
+with passing focused Windows/GNU/MSRV, RESP and server controls; eleven pinned-DB
+findings remain. The [selected local manager snapshot and transfer boundary](original-execution-transfer-plan-20261026.md)
+confirm systemd 257.13, not authenticated release or completion. All five closure
+packages are tracked; only recording the no-performance-claim scope is complete.
 
 As of 2026-10-26, GET-owner is **terminally rejected for 0.74**, not waiting for
 another acceptance run. The release still has zero accepted performance

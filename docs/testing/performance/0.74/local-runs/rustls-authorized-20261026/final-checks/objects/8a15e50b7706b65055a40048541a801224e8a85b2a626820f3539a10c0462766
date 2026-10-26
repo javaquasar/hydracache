@@ -1,0 +1,36 @@
+"""Retain final archive/model/governance checks, separate from first gates."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+PACKET = ROOT/'docs/testing/performance/0.74/local-runs/rustls-authorized-20261026'
+OUT = PACKET/'final-checks'
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+
+
+def take(name, path):
+    raw = path.read_bytes()
+    digest = hashlib.sha256(raw).hexdigest()
+    target = OUT/'objects'/digest
+    if not target.exists():
+        with target.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw), sha256=digest)
+
+
+for phase in ('rustls-seal', 'rustls-integrity', 'rustls-final-doc', 'rustls-git-main'):
+    for name in ('intent.json', 'result.json', 'stdout.log', 'stderr.log'):
+        take('checks/'+phase+'/'+name, ROOT/'target/security-patch-20261026'/phase/name)
+for name in ('index.json', 'verify.py', 'test_verify.py'):
+    take('main/'+name, PACKET/name)
+take('git-verifier.py', ROOT/'target/verify-staged-closure-packets-20261026.py')
+take('collector.py', Path(__file__))
+index = dict(schema='hc074-authorized-rustls-final-checks-v1', implementation_commit='c626ea951',
+    full_package_pass=False, full_policy_pass=False, release_admitted=False, members=members)
+raw = (json.dumps(index, sort_keys=True, indent=2)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(members)))

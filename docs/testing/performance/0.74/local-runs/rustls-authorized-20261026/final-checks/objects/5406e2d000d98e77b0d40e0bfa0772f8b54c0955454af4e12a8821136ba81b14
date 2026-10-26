@@ -1,0 +1,368 @@
+{
+  "advisory_database_commit": "84d943a6deeb8cc6c6f632531aaf4f1c62275239",
+  "authorization": "operator compatible updates 2026-10-26; Rust 1.88, no new deny exceptions",
+  "base_commit": "94e1c16f45e29a3ff0ca69481b59439cc01860d0",
+  "baseline_not_repeated": true,
+  "counts": {
+    "rustls-candidate": {
+      "targets": 1,
+      "totals": [
+        3,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "rustls-linux-gnu194": {
+      "targets": 1,
+      "totals": [
+        3,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "rustls-msrv": {
+      "targets": 1,
+      "totals": [
+        3,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "rustls-resp-regression": {
+      "targets": 15,
+      "totals": [
+        181,
+        0,
+        23,
+        0,
+        0
+      ]
+    },
+    "rustls-server-mtls": {
+      "targets": 2,
+      "totals": [
+        15,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "earlier_first_results_preserved": true,
+  "full_package_pass": false,
+  "full_policy_pass": false,
+  "full_verify_pass": false,
+  "members": {
+    "baseline/Cargo.lock": {
+      "bytes": 175330,
+      "sha256": "d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c"
+    },
+    "baseline/Cargo.toml": {
+      "bytes": 6971,
+      "sha256": "f1e96866c7a279f9682487d5294870d7be12e7fd95a1c89f2d99277c0e4e37b9"
+    },
+    "baseline/deny.toml": {
+      "bytes": 2354,
+      "sha256": "07f195fbffecbb1aaad5ec2ec6e0c11d4020e42a837256ba6a57f675d033bd3b"
+    },
+    "checks/rustls-candidate/intent.json": {
+      "bytes": 349876,
+      "sha256": "dfaefbd1d60916963da4406002c7a791d9abc7542d37e225728d0b0492353dd2"
+    },
+    "checks/rustls-candidate/process.json": {
+      "bytes": 14,
+      "sha256": "e38732467fffc97145fe77cb8b224cfbbed55a59eda82afc049ce01f7da702ed"
+    },
+    "checks/rustls-candidate/result.json": {
+      "bytes": 349699,
+      "sha256": "7f037c1c1d3307fc00cbe538c817a1659749c87144ab4c88574143223e40c366"
+    },
+    "checks/rustls-candidate/stderr.log": {
+      "bytes": 306,
+      "sha256": "d427bee1b06b59ef4b5b4feaa637a6ff0d02a75017dd11cc0e3e118b0bf12422"
+    },
+    "checks/rustls-candidate/stdout.log": {
+      "bytes": 351,
+      "sha256": "7952d36c85622f07fe80cc0121c85be59d0f77fd55ca4566e0b58349bc7f043c"
+    },
+    "checks/rustls-contract/intent.json": {
+      "bytes": 349817,
+      "sha256": "aba39ad8edc10b6448eb48063b7cc076ed236f5edb1884e8862c17942906f653"
+    },
+    "checks/rustls-contract/process.json": {
+      "bytes": 14,
+      "sha256": "bcfdef759d24bfcf0d57abf506132941dae344f775b438d441f415792d82d860"
+    },
+    "checks/rustls-contract/result.json": {
+      "bytes": 349699,
+      "sha256": "5b6b800a614dd8fa1cd9de95637bc569feb0648a4860d5e842bd3cb4da07958b"
+    },
+    "checks/rustls-contract/stderr.log": {
+      "bytes": 210,
+      "sha256": "2b24207cd92931cd282f64caeaab1fab5e366eaaa040fa678feda7caea51753e"
+    },
+    "checks/rustls-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/rustls-doc/intent.json": {
+      "bytes": 349769,
+      "sha256": "18e6e19017b32f045245666acf8248c69ae468a0e896d8c242e42116f1beb21c"
+    },
+    "checks/rustls-doc/process.json": {
+      "bytes": 14,
+      "sha256": "931d0c7a557b4cd7c440bc238fe7f4beb99c738e7e6b1eda78486e688b48c60a"
+    },
+    "checks/rustls-doc/result.json": {
+      "bytes": 349699,
+      "sha256": "48adb26ddec6df9a09171faf213b60ccf67bd12a454dba74cdd4961621949563"
+    },
+    "checks/rustls-doc/stderr.log": {
+      "bytes": 370,
+      "sha256": "7bc4864e38648df225723d83363e2dda83feb6b99609bbd2d5a077862d507e3e"
+    },
+    "checks/rustls-doc/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/rustls-format/intent.json": {
+      "bytes": 349819,
+      "sha256": "93009d11bff80967b6c8a610842bc8259fd210ca4c288d89b3340392dd6a8bc4"
+    },
+    "checks/rustls-format/process.json": {
+      "bytes": 14,
+      "sha256": "f8e704510e0421489d1421ce6a0ef21ea635cebbb3c94898a8cd870f1f0d7e9e"
+    },
+    "checks/rustls-format/result.json": {
+      "bytes": 349699,
+      "sha256": "d75bca7ffd467fa3bb6634cf15fa748484f274920e45544d4b19f36a686fdf71"
+    },
+    "checks/rustls-format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/rustls-format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/rustls-linux-gnu194/intent.json": {
+      "bytes": 350352,
+      "sha256": "0eabe77f82bbf7310ec202a329c69232b05711f696922c8d0c4f0b2ef9c89bbd"
+    },
+    "checks/rustls-linux-gnu194/process.json": {
+      "bytes": 14,
+      "sha256": "d2e93dcda03adea795a39e0c485f52b3f840a8d48880a56815103d3de97b8b69"
+    },
+    "checks/rustls-linux-gnu194/result.json": {
+      "bytes": 349699,
+      "sha256": "87e00e042b3b32a135fa6f0b8c9ecd062f4513058c26e00f667c1259ed38d221"
+    },
+    "checks/rustls-linux-gnu194/stderr.log": {
+      "bytes": 348,
+      "sha256": "fa0f5dbb1c6eeed75b748a4af2e27144f6e8cc330a5ed813922979938dbb5fa1"
+    },
+    "checks/rustls-linux-gnu194/stdout.log": {
+      "bytes": 351,
+      "sha256": "7952d36c85622f07fe80cc0121c85be59d0f77fd55ca4566e0b58349bc7f043c"
+    },
+    "checks/rustls-msrv/intent.json": {
+      "bytes": 349971,
+      "sha256": "8c67381229b53014050315e139975932c678a45de4336f1785c3bc21dda9ed23"
+    },
+    "checks/rustls-msrv/process.json": {
+      "bytes": 14,
+      "sha256": "c59fca533846b2f5649c1488d7076f971683268a80053d6b06ee85cbadaa4020"
+    },
+    "checks/rustls-msrv/result.json": {
+      "bytes": 349699,
+      "sha256": "007ed2e6e94a0efc2ed30de9cc74db7ab1df40a9d7465392c5c1727e4a219464"
+    },
+    "checks/rustls-msrv/stderr.log": {
+      "bytes": 329,
+      "sha256": "0c0b16f173468563d66fa0d36b10e8901574be02262c2fe933170305c073c718"
+    },
+    "checks/rustls-msrv/stdout.log": {
+      "bytes": 351,
+      "sha256": "ade05e794e59e3197a63962e427d1c03ac55e65f3bf14baaf39eeedb360dab7d"
+    },
+    "checks/rustls-policy/intent.json": {
+      "bytes": 349789,
+      "sha256": "ff2cefcb67fade425701210f9a0a4ca44b544c138121abbd9895034c8a384610"
+    },
+    "checks/rustls-policy/process.json": {
+      "bytes": 14,
+      "sha256": "b2da55e3a226a2840b159051efe95533516525bd4f0213bb41e0d2005d88b494"
+    },
+    "checks/rustls-policy/result.json": {
+      "bytes": 349699,
+      "sha256": "94310639a63c357d0822ba603dec07aa641c5e4ef4783cb4aa54180b37ba81ed"
+    },
+    "checks/rustls-policy/stderr.log": {
+      "bytes": 546599,
+      "sha256": "b1f20cdcfb6f1de14592cd063989a63cfb91cea3cfaf62fb2702b9a16745b308"
+    },
+    "checks/rustls-policy/stdout.log": {
+      "bytes": 52,
+      "sha256": "da37e522d5b3103a1c4aba99887f6c3cc89aee5534b41819544124a22f55dfd3"
+    },
+    "checks/rustls-resp-regression/intent.json": {
+      "bytes": 349828,
+      "sha256": "8dfd9545cbd30b5c820956d0020c4418f2f15f243f94416515e4aba900aa89d6"
+    },
+    "checks/rustls-resp-regression/process.json": {
+      "bytes": 14,
+      "sha256": "a6cddd837c3d64313d1448157600ed0426e56bfd1ab557d6b45e0f820fca29c3"
+    },
+    "checks/rustls-resp-regression/result.json": {
+      "bytes": 349699,
+      "sha256": "c376485bba021cae814eca5395575e865f85de10c2c259a3bb2987c03f5363a9"
+    },
+    "checks/rustls-resp-regression/stderr.log": {
+      "bytes": 1750,
+      "sha256": "e582cc3a6d3d66fba68410fd1478afb9b165d8f59174ff9c3f1aa34cf3b65dfd"
+    },
+    "checks/rustls-resp-regression/stdout.log": {
+      "bytes": 19561,
+      "sha256": "2cc5a761fabe94757eb36895672d36505c4fec0c35175240d75ac1dce27d2bbe"
+    },
+    "checks/rustls-server-mtls/intent.json": {
+      "bytes": 349938,
+      "sha256": "a4e6310248ca39ec103454a7306066c1cba811b253079ab8e72b1bc026e18db8"
+    },
+    "checks/rustls-server-mtls/process.json": {
+      "bytes": 13,
+      "sha256": "db0f0cbadb8d5c1ce05d5a7df4eae78e294c3289bd8c15148a4b969179e5abf6"
+    },
+    "checks/rustls-server-mtls/result.json": {
+      "bytes": 349699,
+      "sha256": "c201eec3b8bcb4fabdf61de4226ca7fc042090a9c318bd89942598cc1a8d3873"
+    },
+    "checks/rustls-server-mtls/stderr.log": {
+      "bytes": 494,
+      "sha256": "5a7ae0b0a5b6dcf9b5abb8bc727292ac9367cbc30b30fb96439f811f6a696ff6"
+    },
+    "checks/rustls-server-mtls/stdout.log": {
+      "bytes": 1294,
+      "sha256": "770feede7003f577ddf369a48cd287ff9f08b504c42f206de0ad3734d4cc78ff"
+    },
+    "checks/rustls-strict-check/intent.json": {
+      "bytes": 349888,
+      "sha256": "205b12a51ce65558ef60465e3027caac95ffe0caeffc52262eeeaa13df42c36b"
+    },
+    "checks/rustls-strict-check/process.json": {
+      "bytes": 14,
+      "sha256": "69b690f9df62c916cac3cdbc643fa6b6768aa8f1f8d705cdf09988b0c1b309cf"
+    },
+    "checks/rustls-strict-check/result.json": {
+      "bytes": 349699,
+      "sha256": "1d062ffff9b78578ca767105129cd95110eaaae029e07ff8bbd6f679d4aaac70"
+    },
+    "checks/rustls-strict-check/stderr.log": {
+      "bytes": 353,
+      "sha256": "4a297440143ed9898905e33c1f018a9a9a4899d1921fb552173df5c325123dc3"
+    },
+    "checks/rustls-strict-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/rustls-strict-clippy/intent.json": {
+      "bytes": 349951,
+      "sha256": "c7bc9a591173ca6e732e52a4fbc2ac53f85523bd689f6726d36750bdb7962a0b"
+    },
+    "checks/rustls-strict-clippy/process.json": {
+      "bytes": 14,
+      "sha256": "91c2ea2ff6aa0e68adc38d869e7a60fecacafe4e84a7f8c7b77c875f622a4824"
+    },
+    "checks/rustls-strict-clippy/result.json": {
+      "bytes": 349699,
+      "sha256": "25f8709aa9119401aef6a2b61febe00bdcd0e4030d40506845a8ff0ba774f013"
+    },
+    "checks/rustls-strict-clippy/stderr.log": {
+      "bytes": 1832,
+      "sha256": "da8c2f36f888308db1d60bfa502033ab1aef74df13b49a46127c76b5a8554626"
+    },
+    "checks/rustls-strict-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/rustls-update/intent.json": {
+      "bytes": 349822,
+      "sha256": "4e7461007f7a8ce9c03c0cb56e9a66f911b9173ae8e9de103fbab88ec1129a0f"
+    },
+    "checks/rustls-update/process.json": {
+      "bytes": 14,
+      "sha256": "5027e2df9cbe229c9917571b10a6ad5f5def23f7ca07c419318871742036fc57"
+    },
+    "checks/rustls-update/result.json": {
+      "bytes": 349721,
+      "sha256": "a9efb2ba618f9a5bda1d817067c9b691155ddd03ddd52ed01fa01b041533b3c7"
+    },
+    "checks/rustls-update/stderr.log": {
+      "bytes": 112,
+      "sha256": "b186bec64369617ce43510289b4a0db1d321d9cebd989b1f0944fbc1cd392e71"
+    },
+    "checks/rustls-update/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "collector.py": {
+      "bytes": 5549,
+      "sha256": "21104000843e576aa7f48a8ccddb3af92d23b39240eaea13f7cd8c592d94bbc9"
+    },
+    "earlier-experiment/index.json": {
+      "bytes": 12622,
+      "sha256": "ed6fd42ee402c6f59f2b803097bed32ce9fa94b6d4550aa90fe47f6efa82a296"
+    },
+    "runner.py": {
+      "bytes": 3234,
+      "sha256": "2dc0f83ab53828888ec9657fecc21e0381539fed03c95904db1f69a7507b4ab2"
+    },
+    "source/Cargo.lock": {
+      "bytes": 175330,
+      "sha256": "552f8c1fbb9fb06aadefca3fffb4f90cc1b78f4aed3e2c001cdf399b9b6bf0b1"
+    },
+    "source/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "8602b3d437090cc3989017a46550be2052893fcffb156d024817bccbb3d4c4e3"
+    },
+    "source/crates/hydracache-redis-compat/tests/tls_session_security_074.rs": {
+      "bytes": 8450,
+      "sha256": "2de5de1805611192817fc1a3256f11a33371271c63a2629dce3e9f2b5132d439"
+    },
+    "source/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "source/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    }
+  },
+  "new_version": "0.23.46",
+  "old_version": "0.23.45",
+  "product_performance_claim": false,
+  "qualification_allowed": false,
+  "remaining_advisories": [
+    "RUSTSEC-2024-0449",
+    "RUSTSEC-2026-0367",
+    "RUSTSEC-2026-0368",
+    "RUSTSEC-2026-0369",
+    "RUSTSEC-2026-0370",
+    "RUSTSEC-2026-0371",
+    "RUSTSEC-2026-0372",
+    "RUSTSEC-2026-0381",
+    "RUSTSEC-2026-0382",
+    "RUSTSEC-2026-0383",
+    "RUSTSEC-2026-0386"
+  ],
+  "schema": "hc074-authorized-rustls-security-v1",
+  "server_admitted": false,
+  "unrelated_lock_delta": false
+}

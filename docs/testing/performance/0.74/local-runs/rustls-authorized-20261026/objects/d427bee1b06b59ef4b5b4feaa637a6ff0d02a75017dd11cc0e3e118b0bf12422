@@ -1,0 +1,3 @@
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 19.34s
+     Running tests\tls_session_security_074.rs (target\debug\deps\tls_session_security_074-bbbf63dfaf0720f9.exe)

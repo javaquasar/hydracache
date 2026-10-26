@@ -1,5 +1,10 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [newly authorized rustls security patch](rustls-authorized-result-20261026.md)
+is applied with passing Windows 1.94/MSRV 1.88 and GNU session tests, complete
+RESP regression and mTLS/daemon controls. The pinned-database policy still has
+eleven findings; this is not a green complete security or package gate.
+
 Current entry point: [release closure and server launch status](release-closure-status-20261025.md).
 The [five-package execution plan](release-closure-execution-plan-20261026.md)
 records the approved no-performance-claim scope, compatible security updates

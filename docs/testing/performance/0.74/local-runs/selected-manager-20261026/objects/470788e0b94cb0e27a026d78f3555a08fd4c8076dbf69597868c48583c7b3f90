@@ -1,0 +1,22 @@
+"""Read existing selected WSL manager metadata; no fixture dispatch."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT/'target/held-environment-preflight-20261026'
+OUT.mkdir(exist_ok=False)
+source = ROOT/'target/held-environment-preflight-20261026.sh'
+argv = ['wsl.exe', '-d', 'HydraCache074Native', '-u', 'root', '--exec', '/bin/sh',
+        '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/held-environment-preflight-20261026.sh']
+intent = dict(argv=argv, shell_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
+    read_only=True, service_mutation=False, clocks_changed=False, original_attempt=False, server=False)
+with (OUT/'intent.json').open('x') as stream:
+    json.dump(intent, stream, indent=2)
+with (OUT/'stdout.log').open('xb') as stdout, (OUT/'stderr.log').open('xb') as stderr:
+    result = subprocess.run(argv, stdout=stdout, stderr=stderr, timeout=45)
+with (OUT/'result.json').open('x') as stream:
+    json.dump(dict(exit=result.returncode, delivery_proved=False, time_admission=False), stream, indent=2)
+print(dict(exit=result.returncode, output=str(OUT)))
+raise SystemExit(result.returncode)

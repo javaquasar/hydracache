@@ -1272,3 +1272,19 @@ If only W2/W3 pass, 0.74 may ship as a narrow pipeline-efficiency release. If no
 its practical effect and regression gates, publish the measurements and defer the changes rather
 than weakening thresholds. The tag must resolve to the measured `C74`, not a documentation-only
 substitute.
+
+### Closure continuation recorded on 2026-10-26
+
+The operator approved the [five-package closure sequence](../testing/performance/0.74/release-closure-execution-plan-20261026.md):
+retain all rejected performance experiments and implementations, publish no
+numerical improvement claim, and close package/security/original-execution gates
+before host rehearsal. Zero candidates are accepted; C74 is not frozen. This
+records scope, not an exception to any final release criterion above.
+The [Linux CI descendant repair](../testing/performance/0.74/linux-ci-retirement-result-20261026.md)
+and [authorized rustls update](../testing/performance/0.74/rustls-authorized-result-20261026.md)
+have focused evidence. Compatible security patches retain Rust 1.88 and add no
+deny exceptions. Original execution is to finish in existing local systemd 257;
+the [selected environment and transfer boundary](../testing/performance/0.74/original-execution-transfer-plan-20261026.md)
+do not authorize server OS/service changes or prove FD delivery. Full package,
+remaining security, lifecycle/crash/reconnect, trust and qualification gates stay
+open; no new performance hypothesis or unchanged V6 replay is admitted.

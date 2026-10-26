@@ -1,6 +1,10 @@
 # Rustls security experiment retained after dependency rollback
 
-Current disposition: **not applied**. The operator's explicit asynchronous reply
+Update 2026-10-26: the operator authorized compatible patches. The separate
+[new current-source application and gates](rustls-authorized-result-20261026.md)
+now apply rustls 0.23.46. The rollback and first results below remain historical.
+
+Historical rollback disposition: **not applied at that boundary**. The operator's explicit asynchronous reply
 authorizes dependency audit and planning only, superseding the earlier broad
 continuation permission. The code delta from `e0244861` is reverted: the rustls
 manifest minimum returns to 0.23.41 and its locked version to 0.23.45. Manifests
@@ -117,8 +121,8 @@ has eleven objects, index SHA256
 Code commit: `e0244861`. The preceding Windows/Linux packets are committed
 separately in `ec044bd0`; no prior archive or release receipt is rewritten.
 
-Further WebPKI/trust-root, Tokio and major YAML/ZIP/D-Bus work is audit/planning
-only until separately authorized. The zbus 6/Rust 1.89 conflict remains an explicit
+At that earlier boundary further WebPKI/trust-root, Tokio and major YAML/ZIP/D-Bus
+work was audit/planning only until separately authorized. The zbus 6/Rust 1.89 conflict remains an explicit
 decision; the project stays on Rust 1.88. Exact-source contract failures, complete preparation fit,
 original manager delivery, execution/watchdog/all-writer retirement, completion,
 crash/reconnect and real enrollment remain in the

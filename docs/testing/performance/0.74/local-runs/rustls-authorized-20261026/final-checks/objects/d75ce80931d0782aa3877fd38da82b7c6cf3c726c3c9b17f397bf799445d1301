@@ -1,0 +1,8 @@
+test_actual_packet_keeps_admission_closed (test_verify.Integrity.test_actual_packet_keeps_admission_closed) ... ok
+test_changed_index_is_refused (test_verify.Integrity.test_changed_index_is_refused) ... ok
+test_changed_object_is_refused (test_verify.Integrity.test_changed_object_is_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 1.352s
+
+OK

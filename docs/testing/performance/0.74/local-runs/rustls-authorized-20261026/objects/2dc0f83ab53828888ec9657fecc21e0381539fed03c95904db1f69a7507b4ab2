@@ -1,0 +1,56 @@
+"""Append-only bounded local security checks; never start campaigns/services."""
+from pathlib import Path
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+
+ROOT = Path(__file__).resolve().parent.parent
+label, *argv = sys.argv[1:]
+if not label.replace('-', '').isalnum() or not argv:
+    raise SystemExit('Invalid output label or empty command')
+OUT = ROOT / 'target/security-patch-20261026' / label
+OUT.mkdir(parents=True, exist_ok=False)
+source_paths = subprocess.check_output(['git','ls-files','-z','--','Cargo.toml','Cargo.lock','deny.toml','crates','tools','.cargo'],cwd=ROOT).split(b'\0')
+names = {name.decode() for name in source_paths if name}
+names.add('crates/hydracache-redis-compat/tests/tls_session_security_074.rs')
+def snapshot():
+    return {name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in sorted(names)}
+before = snapshot()
+head = subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+intent = dict(argv=argv, source_commit=head, source=before, bound_seconds=1200,
+    disk_floor_bytes=4*1024**3, free_before=shutil.disk_usage(ROOT).free,
+    qualification=False, server=False, services=False, clocks=False, retry=False)
+(OUT/'intent.json').write_text(json.dumps(intent,indent=2)+'\n',encoding='utf-8')
+refusal = None
+with (OUT/'stdout.log').open('xb') as stdout, (OUT/'stderr.log').open('xb') as stderr:
+    process = subprocess.Popen(argv,cwd=ROOT,stdout=stdout,stderr=stderr,
+        env=dict(os.environ,CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2'))
+    (OUT/'process.json').write_text(json.dumps(dict(pid=process.pid)),encoding='utf-8')
+    start = time.monotonic()
+    while process.poll() is None:
+        if time.monotonic()-start >= 1200: refusal='outer-timeout'
+        if shutil.disk_usage(ROOT).free < 4*1024**3: refusal='disk-floor'
+        if refusal:
+            with (OUT/'owned-cleanup.log').open('xb') as log:
+                subprocess.run(['taskkill','/PID',str(process.pid),'/T','/F'],stdout=log,stderr=subprocess.STDOUT,check=False,timeout=30)
+            process.wait(timeout=30)
+            break
+        try: process.wait(timeout=5)
+        except subprocess.TimeoutExpired: pass
+after = snapshot()
+changed = sorted(name for name in before if before[name] != after[name])
+expected_mutation = label == 'rustls-update' and argv == [
+    'cargo', 'update', '--offline', '-p', 'rustls@0.23.45', '--precise', '0.23.46']
+source_contract = changed == ['Cargo.lock'] if expected_mutation else before == after
+result = dict(exit=process.returncode, outer_refusal=refusal, source_unchanged=before==after,
+    source_after=after, free_after=shutil.disk_usage(ROOT).free,
+    changed=changed, expected_lock_mutation=expected_mutation, source_contract=source_contract,
+    commit_unchanged=head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+    qualification=False, release_admission=False)
+(OUT/'result.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
+print({key:value for key,value in result.items() if key!='source_after'},flush=True)
+raise SystemExit(int(process.returncode!=0 or refusal is not None or not source_contract or not result['commit_unchanged']))

@@ -21065,3 +21065,11 @@ will be completed in the existing local systemd 257 environment; the dedicated
 host's observed systemd 255 does not prove the required extra-FD delivery.
 Neither focused green tests nor this environment choice complete the red full
 package gate, production enrollment, crash/reconnect matrix or release admission.
+
+The first [newly authorized security application](../testing/performance/0.74/rustls-authorized-result-20261026.md)
+updates only rustls and restores its archived ordinary session regression.
+Current-source Windows 1.94, MSRV 1.88 and GNU controls pass; the full RESP package
+and server mTLS/daemon tests also pass. The fixed historical advisory database
+still reports eleven findings after the four rustls findings disappear. These
+are security/compatibility results, not a measured throughput win, a fresh
+all-advisory assessment or permission to install the release.

@@ -1,0 +1,104 @@
+"""Retain newly authorized exact-source security gates, not old release receipts."""
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+import tomllib
+
+ROOT = Path(__file__).resolve().parent.parent
+RAW = ROOT/'target/security-patch-20261026'
+OUT = ROOT/'docs/testing/performance/0.74/local-runs/rustls-authorized-20261026'
+BASE = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+PHASES = ('rustls-update', 'rustls-candidate', 'rustls-msrv', 'rustls-resp-regression',
+          'rustls-linux-gnu194', 'rustls-policy', 'rustls-server-mtls', 'rustls-strict-check',
+          'rustls-strict-clippy', 'rustls-format', 'rustls-doc', 'rustls-contract')
+
+
+def git(path, revision=BASE):
+    return subprocess.check_output(['git', 'show', revision+':'+path], cwd=ROOT)
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+old = tomllib.loads(git('Cargo.lock').decode())
+new = tomllib.loads((ROOT/'Cargo.lock').read_text())
+node = next(p for p in old['package'] if p['name'] == 'rustls')
+fixed = next(p for p in new['package'] if p['name'] == 'rustls')
+if node['version'] != '0.23.45' or fixed['version'] != '0.23.46':
+    raise ValueError('unexpected dependency version')
+node.update(version=fixed['version'], checksum=fixed['checksum'])
+if old != new:
+    raise ValueError('unrelated dependency change')
+manifest = (ROOT/'Cargo.toml').read_bytes().replace(b'\r\n', b'\n')
+if manifest != git('Cargo.toml').replace(b'rustls = "0.23.41"', b'rustls = "0.23.46"'):
+    raise ValueError('unrelated manifest change')
+if tomllib.loads(manifest.decode())['workspace']['package']['rust-version'] != '1.88':
+    raise ValueError('MSRV changed')
+if (ROOT/'deny.toml').read_bytes().replace(b'\r\n', b'\n') != git('deny.toml'):
+    raise ValueError('dependency exceptions changed')
+test = 'crates/hydracache-redis-compat/tests/tls_session_security_074.rs'
+if (ROOT/test).read_bytes().replace(b'\r\n', b'\n') != git(test, 'e02448617c7073e499c1d6ddbf7d3330518db0ae'):
+    raise ValueError('archived regression semantics changed')
+counts = {}
+for phase in PHASES:
+    result = json.loads((RAW/phase/'result.json').read_bytes())
+    expected = 1 if phase == 'rustls-policy' else 0
+    if (result['exit'] != expected or result['outer_refusal'] is not None
+            or result['source_contract'] is not True or result['commit_unchanged'] is not True):
+        raise ValueError('unexpected focused result: '+phase)
+    text = (RAW/phase/'stdout.log').read_text(encoding='utf-8')
+    rows = re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;', text)
+    if rows:
+        counts[phase] = dict(targets=len(rows), totals=[sum(int(row[i]) for row in rows) for i in range(5)])
+policy = (RAW/'rustls-policy/stderr.log').read_text(encoding='utf-8')
+ids = sorted(set(re.findall(r'ID: (RUSTSEC-\d{4}-\d{4})', policy)))
+expected_ids = ['RUSTSEC-2024-0449'] + ['RUSTSEC-2026-'+v for v in ('0367','0368','0369','0370','0371','0372','0381','0382','0383','0386')]
+if ids != expected_ids or 'advisories FAILED, bans ok, licenses ok, sources ok' not in (RAW/'rustls-policy/stdout.log').read_text():
+    raise ValueError('policy first result differs')
+db = Path('C:/Users/ArturBuzov/.cargo/advisory-dbs/advisory-db-3157b0e258782691')
+db_commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=db, text=True).strip()
+if db_commit != '84d943a6deeb8cc6c6f632531aaf4f1c62275239' or subprocess.check_output(['git','status','--porcelain'],cwd=db):
+    raise ValueError('pinned database changed')
+qual = 'docs/testing/performance/0.74/qualification-manifest.toml'
+if sha((ROOT/qual).read_bytes()) != '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc':
+    raise ValueError('qualification changed')
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+
+
+def take(name, raw):
+    digest = sha(raw)
+    target = OUT/'objects'/digest
+    if not target.exists():
+        with target.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw), sha256=digest)
+
+
+for phase in PHASES:
+    for path in sorted((RAW/phase).iterdir()):
+        if path.is_file():
+            take('checks/'+phase+'/'+path.name, path.read_bytes())
+for path in ('Cargo.toml', 'Cargo.lock', 'deny.toml'):
+    take('baseline/'+path, git(path))
+for path in ('Cargo.toml', 'Cargo.lock', 'deny.toml', test, qual):
+    take('source/'+path, (ROOT/path).read_bytes())
+take('collector.py', Path(__file__).read_bytes())
+take('runner.py', (ROOT/'target/run-security-step-20261026.py').read_bytes())
+previous = ROOT/'docs/testing/performance/0.74/local-runs/rustls-security-20261024/index.json'
+take('earlier-experiment/index.json', previous.read_bytes())
+index = dict(schema='hc074-authorized-rustls-security-v1', base_commit=BASE,
+    authorization='operator compatible updates 2026-10-26; Rust 1.88, no new deny exceptions',
+    old_version='0.23.45', new_version='0.23.46', unrelated_lock_delta=False,
+    baseline_not_repeated=True, earlier_first_results_preserved=True, counts=counts,
+    advisory_database_commit=db_commit, remaining_advisories=ids, full_policy_pass=False,
+    full_package_pass=False, full_verify_pass=False, server_admitted=False,
+    product_performance_claim=False, qualification_allowed=False, members=members)
+raw = (json.dumps(index, sort_keys=True, indent=2)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=sha(raw), members=len(members), counts=counts))

@@ -1,0 +1,93 @@
+{
+  "full_package_pass": false,
+  "full_policy_pass": false,
+  "implementation_commit": "c626ea951",
+  "members": {
+    "checks/rustls-final-doc/intent.json": {
+      "bytes": 349769,
+      "sha256": "9ca5db3b33bbce7dde642baf6f7f6579add97db11b5fc3f96c6e5960b064e853"
+    },
+    "checks/rustls-final-doc/result.json": {
+      "bytes": 349699,
+      "sha256": "d3af19dae881444053a9053051ba701481e09294558be73f182ae3fb8df80579"
+    },
+    "checks/rustls-final-doc/stderr.log": {
+      "bytes": 120,
+      "sha256": "b4f9b1cf12bff22ab9d7d7f3f752652759ecd59a7b592930a62e5f4470bad5c4"
+    },
+    "checks/rustls-final-doc/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/rustls-git-main/intent.json": {
+      "bytes": 349796,
+      "sha256": "73b39ccba5df11d00769b38b2f6f80709547f07acbbd217d7e3a66315229177b"
+    },
+    "checks/rustls-git-main/result.json": {
+      "bytes": 349699,
+      "sha256": "ba1b9f644c83ff6cc11d514ad40d5ef6ceceb2d878aefeaafe84cd8a81b9dc3d"
+    },
+    "checks/rustls-git-main/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/rustls-git-main/stdout.log": {
+      "bytes": 94,
+      "sha256": "71e8a8fe2557bc590d05820f15adfd8f498800e839802a72f411125195d0e8a3"
+    },
+    "checks/rustls-integrity/intent.json": {
+      "bytes": 349916,
+      "sha256": "73064961b9d8c1f1a5ab75a43428d679900aa6dc74924bb271d9844154ed34d0"
+    },
+    "checks/rustls-integrity/result.json": {
+      "bytes": 349699,
+      "sha256": "4dd7633a3f1a8252e550d78f960a10c5d51f71dc2935c511585ef46ae11d9e67"
+    },
+    "checks/rustls-integrity/stderr.log": {
+      "bytes": 405,
+      "sha256": "d75ce80931d0782aa3877fd38da82b7c6cf3c726c3c9b17f397bf799445d1301"
+    },
+    "checks/rustls-integrity/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/rustls-seal/intent.json": {
+      "bytes": 349789,
+      "sha256": "0a204378da0657714611fad6de1dad52acba632335f2ab1afc2a44a18cb214e8"
+    },
+    "checks/rustls-seal/result.json": {
+      "bytes": 349699,
+      "sha256": "df3dec6df8c1cea262086ac5e90212781a69a0b059c6d143da6a2de125b24389"
+    },
+    "checks/rustls-seal/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/rustls-seal/stdout.log": {
+      "bytes": 439,
+      "sha256": "1c14e3794c19760fb189586b65f6ffc76cac57683f9c134c7786bb288082bdb6"
+    },
+    "collector.py": {
+      "bytes": 1515,
+      "sha256": "8a15e50b7706b65055a40048541a801224e8a85b2a626820f3539a10c0462766"
+    },
+    "git-verifier.py": {
+      "bytes": 1632,
+      "sha256": "de2018dbc0e519b193b176674c38fd1d330ffadbc5138ea1d006d43d3aed34d7"
+    },
+    "main/index.json": {
+      "bytes": 12613,
+      "sha256": "5406e2d000d98e77b0d40e0bfa0772f8b54c0955454af4e12a8821136ba81b14"
+    },
+    "main/test_verify.py": {
+      "bytes": 1180,
+      "sha256": "46713161687d86f56eeeac7b2864af2dccf2e3488699bdb614dfd15a5e66b0c5"
+    },
+    "main/verify.py": {
+      "bytes": 3254,
+      "sha256": "bd6b57f742fd987464905d11cd831a435663848d1916526cfe92b32e70059547"
+    }
+  },
+  "release_admitted": false,
+  "schema": "hc074-authorized-rustls-final-checks-v1"
+}

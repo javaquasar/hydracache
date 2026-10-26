@@ -1,0 +1,5 @@
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+   Compiling hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 58s
+     Running tests\hc2_daemon_process.rs (target\debug\deps\hc2_daemon_process-a8ca9ee8840cdb57.exe)
+     Running tests\redis_mtls_074.rs (target\debug\deps\redis_mtls_074-0ee57587327d462c.exe)

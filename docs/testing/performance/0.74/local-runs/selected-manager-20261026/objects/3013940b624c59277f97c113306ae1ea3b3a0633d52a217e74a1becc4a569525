@@ -1,0 +1,21 @@
+#!/bin/sh
+# Read-only environment characterization, not delivery or time admission.
+set -eu
+systemctl --version
+uname -r
+stat -fc '%T' /sys/fs/cgroup
+systemctl show --property=Version --property=SystemState
+read -r boot074 < /proc/sys/kernel/random/boot_id
+printf 'boot=%s\n' "$boot074"
+for path074 in /opt/hydracache-perf/bin/diagnostic-held-bootstrap-074 /etc/hydracache-perf; do
+    if test -e "$path074"; then
+        stat -Lc 'fixture-path=%n mode=%a uid=%u gid=%g' "$path074"
+    else
+        printf 'absent=%s\n' "$path074"
+    fi
+done
+# The minimal manager distro need not host the compiler/Python. GNU builds use
+# the existing Ubuntu toolchain and transfer an exact diagnostic test image.
+for tool074 in python3 cargo systemctl; do
+    if command -v "$tool074"; then :; else printf 'optional-tool-absent=%s\n' "$tool074"; fi
+done

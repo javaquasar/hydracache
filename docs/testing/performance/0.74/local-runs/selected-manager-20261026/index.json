@@ -1,0 +1,42 @@
+{
+  "clocks_changed": false,
+  "distro": "HydraCache074Native",
+  "installation": false,
+  "members": {
+    "collector.py": {
+      "bytes": 1742,
+      "sha256": "ac70956b7cc70c48f8c7f1d70c21f77ccf037502b7a2e855df993589657ab494"
+    },
+    "intent.json": {
+      "bytes": 447,
+      "sha256": "e22ce5966dc9fa96c046844bd6f4bdaacedb514d0533f925f5cb1944f57bc337"
+    },
+    "result.json": {
+      "bytes": 74,
+      "sha256": "7f3d2439995f9e7d17d4779ff706961e5d1003387a6b205d1fb00aa88b851d43"
+    },
+    "source/held-environment-preflight-20261026.sh": {
+      "bytes": 840,
+      "sha256": "3013940b624c59277f97c113306ae1ea3b3a0633d52a217e74a1becc4a569525"
+    },
+    "source/run-held-environment-preflight-20261026.py": {
+      "bytes": 1200,
+      "sha256": "470788e0b94cb0e27a026d78f3555a08fd4c8076dbf69597868c48583c7b3f90"
+    },
+    "stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout.log": {
+      "bytes": 643,
+      "sha256": "4c182fcbfecd4c1f365fa57b715d0a38218a9a5f8742e33ce624eb8f3921d40b"
+    }
+  },
+  "original_delivery_proved": false,
+  "qualification_allowed": false,
+  "schema": "hc074-selected-manager-readonly-v1",
+  "server": false,
+  "services_changed": false,
+  "time_admission": false,
+  "version": "257.13-1~deb13u1"
+}

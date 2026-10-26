@@ -61,6 +61,8 @@ not a continuing host reservation or FD-delivery capability proof. The earlier
 255 incompatibility remains. The operator selected the existing local WSL systemd
 257 environment for completion and transfer preparation. Do not upgrade the server
 OS or alter its existing services. This selection is not server admission.
+The [captured local preflight and transfer boundary](original-execution-transfer-plan-20261026.md)
+confirm installed systemd 257.13/cgroup v2 without replaying original-owner.
 
 ## 5 Rehearse on an admitted host
 
