@@ -5,6 +5,13 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [offline capture attribution](capture-attribution-result-20261026.md)
+now separates the new native packet's coordinator brackets and CPU owners from
+nested worker wall spans. Thirty-one model/regression cases and five integrity
+controls pass. The largest block wall increase lies mainly in wait while its
+coordinator CPU falls; capture/IO/creation leaf CPU remains unmeasured. No
+runtime optimization, new workload, overhead acceptance or V6 replay follows.
+
 The [first native coordinator-frame control](coordinator-native-result-20261026.md)
 passes all sixteen workers and sixty-four Git calls on exact source/build,
 retaining all 192 probes. Independent arithmetic and six integrity controls

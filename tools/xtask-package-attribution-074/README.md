@@ -345,3 +345,18 @@ completes the unchanged sixteen-worker schedule on exact source/build with all
 enabled-mode compatibility for that diagnostic only: both arms have coordinator
 tracing, not an on/off overhead comparison. Phase wall brackets and process CPU
 observations remain distinct from pure API cost and production authority.
+
+## Offline nested capture attribution
+
+`capture_attribution.py analyze NEW_LABEL` reads only the fixed native
+coordinator packet. The [design](capture-attribution-design.md) preserves both
+arms' raw coordinator brackets and separate profile-only nested worker wall
+durations. CPU-owner partitions, signed blocks and arithmetic complements
+close without adding nested timing scopes or inventing reference phases.
+
+The [result](../../docs/testing/performance/0.74/capture-attribution-result-20261026.md)
+retains the first offline output, fourteen new models, seventeen unchanged
+regressions and five integrity controls. No process, clock or retained collector
+API is used by the analyzer. Zero CPU deltas are not zero work; positive wall
+does not isolate IO, scheduler or creation cost. The full package gate and
+recorder overhead remain unaccepted, with all live checks and deadlines intact.

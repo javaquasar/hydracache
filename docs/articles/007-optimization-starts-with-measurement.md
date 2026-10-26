@@ -20896,3 +20896,27 @@ The [native result and independent replay](../testing/performance/0.74/coordinat
 retain all samples, exact arithmetic and six corruption controls. The next use
 of these endpoints is offline attribution, with the full-package timeout and
 production admission still unresolved.
+
+### Separate nested capture spans before assigning a cause
+
+Offline analysis of the new native packet exposes another misleading aggregate.
+In the block with the largest wall increase, profile Job CPU rises 859.375 ms:
+375 ms belongs to the worker and 484.375 ms to descendants. Coordinator CPU
+falls 15.625 ms in the same block. Its wait bracket grows about 1051 ms and
+decode about 96.5 ms. These observations locate variation, not a cause: waiting
+contains useful child execution, pipe collection and possible scheduling, while
+decoding contains file operations, parsing and validation.
+
+The thirty-two profile calls separately record 1778.4263 ms spawn wall,
+4107.1967 ms wait/collection wall and 0.6291 ms combined direct observation
+wall. They are nested inside the coordinator frame and cannot be added to it.
+Reference per-call phases and child-phase CPU do not exist in this packet;
+neither zeros nor FILETIME timestamps can reconstruct them.
+
+The [pure analyzer and independent replay](../testing/performance/0.74/capture-attribution-result-20261026.md)
+preserve all samples, raw domains, signed differences and first outcomes. The
+small arithmetic gap between complete-frame wall and phase sums is not a new
+measured operation. Its zero CPU complement also proves no absence of work.
+No check, clock window or process behavior changes. Further attribution needs
+narrower leaf observations under the same call graph before a runtime candidate
+can be justified; successful arithmetic alone is not an optimization.

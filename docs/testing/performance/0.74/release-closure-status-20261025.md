@@ -64,6 +64,13 @@ functional compatibility, not recorder-overhead acceptance. Saved phase data
 supports the next offline attribution; package coverage and production admission
 remain red, and V6 is not repeated.
 
+The [offline capture follow-up](capture-attribution-result-20261026.md) closes
+the new packet's owner/phase arithmetic with 31 passing model/regression cases
+and five independent integrity controls. Block 2's +859.375 ms Job CPU splits
+into +375 ms worker and +484.375 ms descendants while coordinator CPU falls.
+Wait/collection and creation/decoding leaf costs remain unseparated; no candidate
+or timeout change is supported. No workload or V6 is rerun.
+
 The [approved plan](../../../plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md)
 keeps its original thresholds. Its closing rule is to publish the measurements
 and defer changes if none pass, not to tag a documentation-only substitute as
