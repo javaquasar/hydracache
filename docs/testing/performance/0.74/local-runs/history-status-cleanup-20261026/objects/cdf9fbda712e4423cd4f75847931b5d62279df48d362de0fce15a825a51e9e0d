@@ -1,0 +1,58 @@
+
+running 5 tests
+test full_contract_adapters_change_only_one_preservation_reader_per_module ... ok
+test legacy_adapters_preserve_complete_prior_test_bodies_and_assertions ... ok
+test baseline_partial_install_and_unrelated_effects_refuse_before_restoration ... ok
+test installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set ... ok
+test approved_predecessor_views_do_not_replace_current_runtime_validation ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.99s
+
+
+running 10 tests
+test diff_translation_adds_only_fixed_rhs_and_retains_all_paths_and_flags ... ok
+test archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation ... ok
+test historical_reads_are_fixed_and_never_fall_back_to_current_artifacts ... ok
+test every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion ... ok
+test all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions ... ok
+test unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files ... ok
+test unsupported_commands_revisions_scopes_and_cwd_refuse_before_execution ... ok
+test qualification_raw_identity_and_previous_candidate_guard_remain_independent ... ok
+test guard_assertion_test_and_io_mutations_cannot_hide_behind_history ... ok
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift has been running for over 60 seconds
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 87.26s
+
+
+running 1 test
+test current_tree_input_frontier_is_fully_accounted_without_path_exclusions has been running for over 60 seconds
+test current_tree_input_frontier_is_fully_accounted_without_path_exclusions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 60.49s
+
+
+running 4 tests
+test runtime_contract_reader_changes_only_the_current_history_input ... ok
+test current_tree_reader_retains_entire_prior_gate_and_unknown_source_assertions ... ok
+test all_nine_current_inputs_are_exact_declared_patches_not_assertion_waivers ... ok
+test all_eighty_one_declared_sources_require_exact_bytes_index_and_regular_files ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 25.90s
+
+
+running 2 tests
+test fresh_status_reader_changes_only_admission_input_before_original_normalizers ... ok
+test fresh_status_admission_requires_exact_source_and_helper_before_old_input ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+
+
+running 4 tests
+test constructors_refuse_stale_producers_and_keep_all_selected_bytes_and_branch_mutations_visible ... ok
+test all_three_bodies_match_the_fixed_constructions_without_changing_twelve_cases_or_assertions ... ok
+test helper_keeps_original_fixed_git_read_and_no_extra_observation_or_effect ... ok
+test facade_joins_twelve_current_paths_and_fourteen_additions_and_preserves_legacy_gates ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 37.32s
+

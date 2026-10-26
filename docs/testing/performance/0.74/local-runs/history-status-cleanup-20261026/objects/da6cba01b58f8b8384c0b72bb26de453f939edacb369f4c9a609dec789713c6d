@@ -1,0 +1,124 @@
+"""Exclusive capture of source compatibility checks and a separate cleanup control."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = '52abf7ab0efd35557eb3117a45c253e0ebe76469'
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/history-status-cleanup-20261026'
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+members, objects, intents = {}, {}, {}
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+labels = {name: 0 for name in ['history-status-candidate-first',
+    'history-status-current-final', 'history-status-msrv-final',
+    'history-status-producer-final', 'history-status-check-final',
+    'history-status-current-shared', 'history-status-msrv-shared',
+    'history-status-producer-shared', 'history-status-check-shared',
+    'history-status-clippy-shared', 'history-status-fmt-shared', 'watchdog-taskkill-held-first',
+    'history-status-doc-check-first', 'history-status-contract-check-first']}
+labels.update({'history-status-red-first': 101, 'history-status-fmt-first': 1,
+               'history-status-clippy-final': 101})
+for label, expected in labels.items():
+    folder = ROOT / 'target/source-continuation-20261024' / label
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    assert result['exit'] == expected and result['outer_refusal'] is None
+    assert result['source_unchanged'] and result['head_unchanged'] and intent['head'] == BASE
+    assert result['source_after'] == intent['source']
+    intents[label] = intent
+    for leaf in ['intent.json', 'result.json', 'stdout.log', 'stderr.log']:
+        add('checks/' + label + '/' + leaf, (folder / leaf).read_bytes())
+
+rules = json.loads((ROOT / 'tools/history-status-readers-074/rules.json').read_bytes())
+paths = [row['path'] for row in rules['rows']]
+for path in paths:
+    add('baseline/' + path, subprocess.check_output(['git', '--no-replace-objects', 'show', BASE + ':' + path], cwd=ROOT))
+paths += ['crates/xtask/tests/history_status_readers_074.rs']
+paths += [p.relative_to(ROOT).as_posix() for p in sorted((ROOT / 'tools/history-status-readers-074').iterdir()) if p.is_file()]
+paths += ['crates/xtask/tests/support/current_tree_input.rs',
+    'crates/xtask/tests/support/current_tree_input_rules_074.json',
+    'tools/remaining-readers-074/inputs.rs', 'tools/remaining-readers-074/contract.rs',
+    'tools/remaining-readers-074/rules.json', 'tools/current-frontier-074/reader.rs',
+    'tools/current-frontier-074/contract.rs', 'tools/current-frontier-074/rules.json',
+    'tools/current-frontier-074/additions.rs',
+    'Cargo.toml', 'Cargo.lock']
+for path in paths:
+    raw = (ROOT / path).read_bytes()
+    for label in ['history-status-current-shared', 'history-status-msrv-shared', 'history-status-clippy-shared']:
+        assert sha(raw) == intents[label]['source'][path], (path, label)
+    add('source-final/' + path, raw)
+
+initial_map = {'inputs.rs': 'tools/history-status-readers-074/inputs.rs',
+    'contract.rs': 'tools/history-status-readers-074/contract.rs',
+    'rules.json': 'tools/history-status-readers-074/rules.json',
+    'generate.py': 'tools/history-status-readers-074/generate.py',
+    'history_status_readers_074.rs': 'crates/xtask/tests/history_status_readers_074.rs',
+    'authority_rust_history_074.rs': 'crates/xtask/tests/authority_rust_history_074.rs',
+    'fresh_status_reader_074.rs': 'crates/xtask/tests/fresh_status_reader_074.rs',
+    'history_reader.rs': 'tools/authority-runtime-074/history_reader.rs'}
+for leaf, path in initial_map.items():
+    raw = (ROOT / 'target/history-status-initial-candidate-20261026' / leaf).read_bytes()
+    assert sha(raw) == intents['history-status-candidate-first']['source'][path]
+    add('initial-candidate/' + path, raw)
+for leaf in ['inputs.rs', 'contract.rs', 'rules.json', 'generate.py',
+             'history_status_readers_074.rs', 'fresh_status_reader_074.rs']:
+    path = initial_map[leaf]
+    raw = (ROOT / 'target/history-status-preformat-20261026' / leaf).read_bytes()
+    assert sha(raw) == intents['history-status-fmt-first']['source'][path]
+    add('preformat/' + path, raw)
+raw = (ROOT / 'target/history-status-initial-test-20261026.rs').read_bytes()
+assert sha(raw) == intents['history-status-red-first']['source']['crates/xtask/tests/history_status_readers_074.rs']
+add('initial-red-test.rs', raw)
+for leaf in ['contract.rs', 'rules.json', 'generate.py', 'README.md',
+             'history_status_readers_074.rs', 'history_reader.rs']:
+    path = 'tools/history-status-readers-074/README.md' if leaf == 'README.md' else initial_map[leaf]
+    raw = (ROOT / 'target/history-status-preclippy-20261026' / leaf).read_bytes()
+    for label in ['history-status-current-final', 'history-status-msrv-final', 'history-status-clippy-final']:
+        assert sha(raw) == intents[label]['source'][path]
+    add('preclippy/' + path, raw)
+
+for name in ['intent.json', 'result.json', 'stdout.log', 'stderr.log',
+             'taskkill-stdout.log', 'taskkill-stderr.log', 'root-ready', 'leaf-ready', 'release', 'marker']:
+    add('cleanup/' + name, (ROOT / 'target/watchdog-taskkill-handles-first-20261026' / name).read_bytes())
+for name in ['run-history-status-final-20261026.py', 'run-history-status-shared-20261026.py', 'run-fresh-reader-20261024.py',
+             'run-source-step-20261024.py', 'watchdog-taskkill-handles-20261026.py',
+             'retain-history-status-20261026.py']:
+    add('coordinator/' + name, (ROOT / 'target' / name).read_bytes())
+for path in ['tools/xtask-package-attribution-074/owned_process_observer.py',
+             'tools/xtask-package-attribution-074/process_lineage.py',
+             'scripts/ci/run-with-heartbeat.py',
+             'docs/testing/performance/0.74/watchdog-held-taskkill-contract-20261026.md']:
+    add('cleanup-source/' + path, (ROOT / path).read_bytes())
+for path in ['crates/xtask/tests/ci_reliability_071.rs',
+             'crates/xtask/src/evidence_run/windows_job.rs',
+             'crates/xtask/src/evidence_run.rs',
+             'docs/testing/performance/0.74/qualification-manifest.toml']:
+    raw = (ROOT / path).read_bytes()
+    old = subprocess.check_output(['git', '--no-replace-objects', 'show', BASE + ':' + path], cwd=ROOT)
+    assert raw.replace(b'\r\n', b'\n') == old.replace(b'\r\n', b'\n')
+    add('protected/' + path, raw)
+
+index = dict(schema='hc074-history-status-cleanup-evidence-v1', baseline_revision=BASE,
+    expected_exit=labels, members=members, each_compiler_cases=82,
+    original_cases=78, new_cases=4, modified_old_cases=12,
+    original_watchdog_rerun=False, full_package_rerun=False, server=False,
+    qualification=False, runtime_changes=False,
+    previous_package_index_sha256='d6e157fecd2749e29122dfd95f6029e864284c407ab5a6aad91880f41bb4b011')
+OUT.mkdir(exist_ok=True)
+(OUT / 'objects').mkdir()
+for digest, raw in objects.items():
+    with (OUT / 'objects' / digest).open('xb') as stream:
+        stream.write(raw)
+with (OUT / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, sort_keys=True, indent=2)
+    stream.write('\n')
+print(dict(members=len(members), objects=len(objects), index_sha256=sha((OUT / 'index.json').read_bytes())))

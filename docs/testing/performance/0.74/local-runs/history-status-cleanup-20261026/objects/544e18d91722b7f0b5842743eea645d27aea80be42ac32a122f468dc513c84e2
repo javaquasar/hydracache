@@ -1,0 +1,20 @@
+{
+  "schema": "hc074-taskkill-held-control-v1",
+  "source_sha256": "00f3eff8548c5354e399c1283b8bce05fb272e1d9833087e7d5a7c62a26baf6f",
+  "contract_sha256": "69e7a505ac3ce2332c2f069e8ca7fbeb59e2fb990f5957c8db97c567e1a3c63e",
+  "original_watchdog_sha256": "f42cda4480a8c29c649954f838ddda3425a163e062a1016cbad612a393a7f53c",
+  "readiness_seconds": 5,
+  "node_self_exit_seconds": 8,
+  "post_enrollment_delay_seconds": 0.35,
+  "marker_delay_seconds": 1.5,
+  "post_taskkill_observation_seconds": 2,
+  "taskkill_attempt_limit": 1,
+  "diagnostic_only": true,
+  "original_test_rerun": false,
+  "original_timeout_changed": false,
+  "services": false,
+  "clocks_changed": false,
+  "server": false,
+  "package_pass": false,
+  "production_retirement_admission": false
+}

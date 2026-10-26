@@ -1,0 +1,37 @@
+# History and status reader successors
+
+Three explicit constructions from `52abf7ab0efd35557eb3117a45c253e0ebe76469`
+close the two reader failures from the first v5 full package. Fixed description
+SHA256: `188763c292af6f6f603414ace264926009c59d7795cea1047084867609c77023`.
+`generate.py` reconstructs the description from that literal Git revision;
+default invocation verifies rather than updates it. `--emit` emits proposed
+description data and `--write` refuses an existing destination.
+
+The history consumer changes only its input-module path. All ten cases,
+assertions, protected-path selection, safe-path checks and mutation probes stay.
+The adapter composes the previous reader with the already admitted twelve-path
+frontier and fourteen exact additions. Its selected IO body is byte-equivalent
+to the old frontier reader apart from the declared fallback alias; the new test
+checks that construction. The original 9/81 implementation and ledger stay
+byte-identical. No current filesystem observation is cached or skipped.
+
+The history helper retains its complete fixed Git-read/check prefix and all old
+extension checks, then constructs the new whole caller before comparison. Stale,
+partial and unrelated callers refuse. Its original historical result stays fixed.
+Other existing consumers can therefore retain their full expected/current checks
+without accepting an old caller as the current one.
+The helper exposes that single constructor module within the crate so the new
+preservation test can reuse it rather than load the same file twice.
+
+The status consumer extends its expected kernel reader with the existing pinned
+successor and verifies its reverse projection before the unchanged complete-body
+assertion. This adds one fixed historical expected-input lookup through the
+existing cache, not a new current-file observation. The two old cases and every
+old assertion/mutation input remain; no cost improvement is claimed.
+
+`crates/xtask/tests/history_status_readers_074.rs` covers exact constructions,
+all twelve old cases/assertion tokens, producer drift, stale-caller refusal,
+all selected paths and additions, original 9/81 controls and exact IO-body reuse.
+This is test-source compatibility only, not runtime, package or server admission.
+V5's first full timeout/refusals, its frozen effect pins and qualification inputs
+remain unchanged. A new source/effect review is required before another full run.

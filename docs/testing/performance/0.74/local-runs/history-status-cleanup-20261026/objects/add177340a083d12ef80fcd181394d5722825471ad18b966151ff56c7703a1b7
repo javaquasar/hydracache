@@ -1,0 +1,30 @@
+{
+  "schema": "hc074-history-status-readers-v1",
+  "baseline": "52abf7ab0efd35557eb3117a45c253e0ebe76469",
+  "rows": [
+    {
+      "path": "crates/xtask/tests/authority_rust_history_074.rs",
+      "before_sha256": "d09ff8438d371b59a6c17731dcd94aeff053a0b3f73c5db9257589ff534c2553",
+      "after_sha256": "9333de6f4dff9c470eadff2a97dc3434ae8a760e51ec7de2b6256903ccef07e1",
+      "before": "#[path = \"support/current_tree_input.rs\"]",
+      "after": "#[path = \"../../../tools/history-status-readers-074/inputs.rs\"]",
+      "append": ""
+    },
+    {
+      "path": "crates/xtask/tests/fresh_status_reader_074.rs",
+      "before_sha256": "69bd016f0be59482f22f797d03ca9239d234c190d423110df9cdcd216adf4a2d",
+      "after_sha256": "edad2f373f97739550f4c1307925861e472d5805a5dd57a8ac6f9170b9fc3bea",
+      "before": "    old.replacen(hook, &format!(\"{hook}{imports}\"), 1)\n        .replacen(before, after, 1)",
+      "after": "    let previous = old.replacen(hook, &format!(\"{hook}{imports}\"), 1)\n        .replacen(before, after, 1);\n    kernel_phase::current(kernel_phase::FRESH, &previous).expect(\"exact kernel reader successor\")",
+      "append": "\n#[path = \"../../../tools/remaining-readers-074/contract.rs\"]\nmod kernel_phase;\n"
+    },
+    {
+      "path": "tools/authority-runtime-074/history_reader.rs",
+      "before_sha256": "2c0e8c6313054cde8d8aa0bd27d8739e64db9c72fe224c85cd8e4be9b34f7950",
+      "after_sha256": "7312c2b59ce7a27af0b54ff5ccc262f201f267d3b51e7c25c5b01fe6ba16abaa",
+      "before": "    replace(&raw, before, &format!(\"{before}        if !previous.contains(path) && current_inputs::known_addition(path) {{\\n            current_inputs::require_addition(path);\\n            continue;\\n        }}\\n\"))",
+      "after": "    let previous = replace(&raw, before, &format!(\"{before}        if !previous.contains(path) && current_inputs::known_addition(path) {{\\n            current_inputs::require_addition(path);\\n            continue;\\n        }}\\n\"));\n    frontier_phase::current(frontier_phase::HISTORY, &previous).unwrap()",
+      "append": "\n#[path = \"../history-status-readers-074/contract.rs\"]\nmod frontier_phase;\n"
+    }
+  ]
+}

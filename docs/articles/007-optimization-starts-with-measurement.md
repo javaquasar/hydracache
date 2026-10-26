@@ -20591,3 +20591,34 @@ or justification for a longer deadline. The [first result and raw packet](../tes
 retain the failures, missing coverage and cleanup limits. The next work is exact
 reader compatibility, owned cleanup and attribution of those existing checks,
 not a new cache optimization hypothesis or release admission.
+
+### Repair exact consumers without changing what they prove
+
+The next repair changes two additional source-proof consumers, not the product
+hot path. The history consumer reaches the already reviewed frontier through a
+narrow adapter; its original 9/81 gate and all ten cases stay unchanged. Its helper
+retains the fixed Git read and old extension checks, then constructs the new whole
+caller before comparison. The status consumer constructs and reverses the existing
+kernel successor before its unchanged full-body assertion. Both old status cases
+remain. That reverse check adds a fixed historical expected-input lookup: this is
+not a claimed cost optimization or elimination of a fresh observation.
+
+Four new controls check complete constructions, old assertion tokens, selected
+inputs and stale/unrelated refusal. First outcomes remain visible: the initial
+regression includes a new oracle's wrong historical revision, then a candidate
+passes with warnings, formatting refuses a layout and Clippy refuses duplicate
+loading of the new module after two passing compiler cohorts. The corrected graph
+reuses a single module instead of suppressing the lint. Final focused current/MSRV
+coverage is 82 cases each, separate from the earlier runs and incomplete package.
+The [repair report and raw evidence](../testing/performance/0.74/history-status-readers-result-20261026.md)
+record those boundaries; no focused result is promoted to a full gate.
+
+The Windows cleanup diagnostic illustrates a different measurement trap. One
+taskkill succeeds and both original held process objects become terminal, while
+the descendant marker exists. That marker alone cannot say whether its write
+preceded or followed the termination call. The diagnostic also starts its delay
+after enrollment, unlike the old test's launch-relative deadline. Without the
+write/cut chronology, neither an escaped-writer claim nor a successful original
+cleanup claim follows. Keep the old assertion and deadline; establish that missing
+timeline before changing the termination path. This is tooling correctness work,
+not an accepted cache improvement or production admission.

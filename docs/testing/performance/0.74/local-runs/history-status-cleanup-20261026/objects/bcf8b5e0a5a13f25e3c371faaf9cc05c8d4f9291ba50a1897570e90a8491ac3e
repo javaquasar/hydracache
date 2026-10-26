@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.67s
+     Running tests\history_status_readers_074.rs (target\debug\deps\history_status_readers_074-eb79eb146922742b.exe)
+error: test failed, to rerun pass `-p xtask --test history_status_readers_074`

@@ -1,0 +1,141 @@
+"""One finite taskkill characterization with held synthetic root/leaf handles.
+
+No production writer authority. Never restarts a fixture or kills by a new PID
+census. Node processes also have an eight-second self-exit bound.
+"""
+from pathlib import Path
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / 'target/watchdog-taskkill-handles-first-20261026'
+SCRIPT = Path(__file__).resolve()
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+
+
+def node(mode):
+    if mode not in ('root', 'leaf') or not OUT.is_dir():
+        raise ValueError('fixed node only')
+    started = time.monotonic()
+    if mode == 'leaf':
+        (OUT / 'leaf-ready').write_bytes(b'ready')
+        while time.monotonic() - started < 8 and not (OUT / 'release').exists():
+            if time.monotonic() - started >= 1.5 and not (OUT / 'marker').exists():
+                (OUT / 'marker').write_bytes(b'alive')
+            time.sleep(0.01)
+        return
+    child = subprocess.Popen([sys.executable, '-I', str(SCRIPT), 'node', 'leaf'], stdin=subprocess.DEVNULL)
+    try:
+        while not (OUT / 'leaf-ready').exists():
+            if child.poll() is not None or time.monotonic() - started >= 5:
+                raise RuntimeError('leaf readiness bound')
+            time.sleep(0.01)
+        (OUT / 'root-ready').write_bytes(b'ready')
+        while time.monotonic() - started < 8 and not (OUT / 'release').exists():
+            time.sleep(0.01)
+    finally:
+        (OUT / 'release').touch(exist_ok=True)
+        child.wait(timeout=10)
+
+
+def control():
+    OUT.mkdir(exist_ok=False)
+    intent = dict(schema='hc074-taskkill-held-control-v1', source_sha256=sha(SCRIPT.read_bytes()),
+        contract_sha256=sha((ROOT / 'docs/testing/performance/0.74/watchdog-held-taskkill-contract-20261026.md').read_bytes()),
+        original_watchdog_sha256=sha((ROOT / 'scripts/ci/run-with-heartbeat.py').read_bytes()),
+        readiness_seconds=5, node_self_exit_seconds=8, post_enrollment_delay_seconds=0.35,
+        marker_delay_seconds=1.5, post_taskkill_observation_seconds=2,
+        taskkill_attempt_limit=1, diagnostic_only=True, original_test_rerun=False,
+        original_timeout_changed=False, services=False, clocks_changed=False, server=False,
+        package_pass=False, production_retirement_admission=False)
+    (OUT / 'intent.json').write_text(json.dumps(intent, indent=2) + '\n', encoding='utf-8')
+    result = dict(captured=False, refusal=None, cleanup_errors=[], termination_calls=0,
+                  cleanup_terminal=False, original_test_pass=False, package_pass=False)
+    child = root = lineage = api = None
+    try:
+        if os.name != 'nt' or intent['original_watchdog_sha256'] != 'f42cda4480a8c29c649954f838ddda3425a163e062a1016cbad612a393a7f53c':
+            raise ValueError('fixed Windows/watchdog preflight')
+        helper = ROOT / 'tools/xtask-package-attribution-074'
+        pins = {'owned_process_observer.py': 'bc9d46bdf731c7d5a376e878d86b0382c73fcfec7e2d01ffe762756ad880b206',
+                'process_lineage.py': 'af700ff622f291a16dd0b3930f696ea20b1c184d192e2ce925a2422ba0255d9c'}
+        if any(sha((helper / name).read_bytes()) != digest for name, digest in pins.items()):
+            raise ValueError('fixed read-only observer source drift')
+        taskkill = Path(shutil.which('taskkill.exe')).resolve(strict=True)
+        result['taskkill_path'] = str(taskkill)
+        if sha(taskkill.read_bytes()) != '1249717315fc8f4d2df17d5db9da0444795fdb9fb83dfb1f763c3f39282244f7':
+            raise ValueError('taskkill binary differs from first postflight observation')
+        sys.path.insert(0, str(helper))
+        from owned_process_observer import OwnedObserver
+        from process_lineage import HeldLineage, SnapshotApi
+        api = SnapshotApi()
+        image = str(Path(sys.executable).resolve())
+        result['python_image'] = image
+        with (OUT / 'stdout.log').open('xb') as stdout, (OUT / 'stderr.log').open('xb') as stderr:
+            child = subprocess.Popen([sys.executable, '-I', str(SCRIPT), 'node', 'root'],
+                stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+            root = OwnedObserver(child, image, api)
+            deadline = time.monotonic() + 5
+            while not (OUT / 'root-ready').exists():
+                if child.poll() is not None or time.monotonic() >= deadline:
+                    raise RuntimeError('root readiness bound')
+                time.sleep(0.01)
+            lineage = HeldLineage(root, api, [(image,)])
+            result['identities'] = lineage.identities
+            time.sleep(0.35)
+            root.sample()
+            lineage.sample()
+            result['termination_calls'] += 1
+            with (OUT / 'taskkill-stdout.log').open('xb') as output, (OUT / 'taskkill-stderr.log').open('xb') as errors:
+                killed = subprocess.run([str(taskkill), '/PID', str(root.pid), '/T', '/F'],
+                                        stdout=output, stderr=errors, timeout=5, check=False)
+            result['taskkill_exit'] = killed.returncode
+            time.sleep(2)
+            result['marker_after_cut'] = (OUT / 'marker').exists()
+            result['after_cut'] = [api.read(handle) for handle in [root.handle, *lineage.handles]]
+            result['captured'] = True
+    except BaseException as error:
+        result['refusal'] = type(error).__name__ + ': ' + str(error)
+    finally:
+        (OUT / 'release').touch(exist_ok=True)
+        if child is not None:
+            try:
+                result['root_exit'] = child.wait(timeout=12)
+                if lineage is not None:
+                    terminal = []
+                    for handle, identity in zip([root.handle, *lineage.handles], lineage.identities):
+                        if api.dll.WaitForSingleObject(handle, 12000) != 0:
+                            raise RuntimeError('original held object is not terminal')
+                        row = api.read(handle)
+                        if row['creation_100ns'] != identity['creation_100ns'] or not row['terminal']:
+                            raise RuntimeError('original held terminal identity differs')
+                        terminal.append(row)
+                    result['terminal_objects'] = terminal
+                    result['cleanup_terminal'] = True
+            except Exception as error:
+                result['cleanup_errors'].append(type(error).__name__ + ': ' + str(error))
+        for observer in (lineage, root):
+            if observer is not None:
+                try:
+                    observer.close()
+                except Exception as error:
+                    result['cleanup_errors'].append(str(error))
+        (OUT / 'result.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
+    print(json.dumps(result, indent=2))
+    return 0 if result['captured'] and result['cleanup_terminal'] and not result['cleanup_errors'] else 1
+
+
+if __name__ == '__main__':
+    if sys.argv[1:3] == ['node', 'root'] and len(sys.argv) == 3:
+        node('root')
+    elif sys.argv[1:3] == ['node', 'leaf'] and len(sys.argv) == 3:
+        node('leaf')
+    elif len(sys.argv) == 1:
+        raise SystemExit(control())
+    else:
+        raise SystemExit('fixed modes only')

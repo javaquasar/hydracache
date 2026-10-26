@@ -1,0 +1,27 @@
+"""Verify the shared-module correction before two unchanged-source correctness cohorts."""
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+TARGETS = ['history_status_readers_074', 'authority_rust_history_074', 'fresh_status_reader_074',
+    'authority_runtime_074', 'remaining_readers_074', 'fresh_kernel_cost_074',
+    'held_activation_ingress_074', 'current_tree_reader_074', 'current_tree_input_audit_074',
+    'current_frontier_074', 'authority_reader_phase_074', 'bootstrap_doc_reader_074',
+    'owned_case_074', 'custody_preparation_cost_074', 'document_scratch_cost_074',
+    'document_scratch_reader_074', 'package_diagnostics_074']
+CASES = [
+    ('history-status-clippy-shared', ['cargo', '+1.94.0', 'clippy', '--offline', '--locked', '-p', 'xtask', '--all-targets', '--all-features', '--', '-D', 'warnings']),
+    ('history-status-fmt-shared', ['cargo', '+1.94.0', 'fmt', '-p', 'xtask', '--', '--check']),
+    ('history-status-producer-shared', [sys.executable, 'tools/history-status-readers-074/generate.py']),
+    ('history-status-check-shared', ['cargo', '+1.94.0', 'check', '--offline', '--locked', '-p', 'xtask', '--all-targets']),
+]
+for compiler, label in [('+1.94.0', 'current'), ('+1.88.0', 'msrv')]:
+    argv = ['cargo', compiler, 'test', '--offline', '--locked', '--no-fail-fast', '-p', 'xtask']
+    for target in TARGETS:
+        argv.extend(['--test', target])
+    CASES.append(('history-status-' + label + '-shared', [*argv, '--', '--test-threads=4']))
+for label, argv in CASES:
+    result = subprocess.run([sys.executable, str(ROOT / 'target/run-fresh-reader-20261024.py'), label, *argv], cwd=ROOT)
+    if result.returncode:
+        raise SystemExit(result.returncode)

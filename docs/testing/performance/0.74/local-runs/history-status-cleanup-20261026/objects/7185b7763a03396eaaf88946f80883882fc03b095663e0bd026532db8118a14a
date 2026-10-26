@@ -1,0 +1,181 @@
+//! Exact source-reader compatibility, never runtime or release admission.
+#[path = "../../../tools/history-status-readers-074/inputs.rs"]
+mod current_inputs;
+#[path = "../../../tools/history-status-readers-074/contract.rs"]
+mod phase;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
+use current_inputs::previous as original;
+
+fn raw(path: &str) -> String {
+    std::fs::read_to_string(runtime::root().join(path))
+        .unwrap()
+        .replace("\r\n", "\n")
+}
+fn predicates(source: &str) -> (Vec<String>, Vec<String>) {
+    use syn::visit::Visit;
+    #[derive(Default)]
+    struct Visitor(Vec<String>);
+    impl<'ast> Visit<'ast> for Visitor {
+        fn visit_macro(&mut self, value: &'ast syn::Macro) {
+            if value.path.segments.last().is_some_and(|name| {
+                matches!(
+                    name.ident.to_string().as_str(),
+                    "assert" | "assert_eq" | "assert_ne"
+                )
+            }) {
+                self.0.push(format!(
+                    "{} {}",
+                    value.path.segments.last().unwrap().ident,
+                    value.tokens
+                ));
+            }
+            syn::visit::visit_macro(self, value);
+        }
+    }
+    let parsed = syn::parse_file(source).unwrap();
+    let names = parsed
+        .items
+        .iter()
+        .filter_map(|item| match item {
+            syn::Item::Fn(value) if value.attrs.iter().any(|attr| attr.path().is_ident("test")) => {
+                Some(value.sig.ident.to_string())
+            }
+            _ => None,
+        })
+        .collect();
+    let mut visitor = Visitor::default();
+    visitor.visit_file(&parsed);
+    (names, visitor.0)
+}
+#[test]
+fn all_three_bodies_match_the_fixed_constructions_without_changing_twelve_cases_or_assertions() {
+    for (index, row) in phase::rules()["rows"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .enumerate()
+    {
+        let path = row["path"].as_str().unwrap();
+        let old = runtime::frozen(phase::BASE, path);
+        let expected = phase::current(path, &old).unwrap();
+        assert_eq!(raw(path), expected, "exact new source: {path}");
+        assert_eq!(predicates(&old).0.len(), [10, 2, 0][index]);
+        assert_eq!(predicates(&old), predicates(&expected));
+    }
+}
+#[test]
+fn constructors_refuse_stale_producers_and_keep_all_selected_bytes_and_branch_mutations_visible() {
+    for row in phase::rules()["rows"].as_array().unwrap() {
+        let path = row["path"].as_str().unwrap();
+        let old = runtime::frozen(phase::BASE, path);
+        let expected = phase::current(path, &old).unwrap();
+        assert_ne!(expected, old);
+        assert_eq!(
+            phase::current(path, &old.replace('\n', "\r\n")),
+            Some(expected)
+        );
+        for bad in [
+            String::new(),
+            format!("{old}x"),
+            old.replace("assert", "silenced_assert"),
+        ] {
+            assert_ne!(bad, old);
+            assert!(std::panic::catch_unwind(|| phase::current(path, &bad)).is_err());
+        }
+        let current = raw(path);
+        assert_ne!(current, format!("{current}\n// unrelated"));
+    }
+    assert!(phase::current("unknown.rs", "unknown").is_none());
+}
+#[test]
+fn facade_joins_twelve_current_paths_and_fourteen_additions_and_preserves_legacy_gates() {
+    let frontier = &current_inputs::contract::rules()["rows"];
+    for row in frontier.as_array().unwrap() {
+        let path = row["path"].as_str().unwrap();
+        assert_eq!(
+            current_inputs::read(path),
+            runtime::frozen(original::SOURCE, path)
+        );
+    }
+    for path in current_inputs::additions::rows().keys() {
+        assert!(current_inputs::known_addition(path));
+        current_inputs::require_addition(path);
+        assert!(current_inputs::additions::known(path));
+        current_inputs::additions::require(path);
+    }
+    assert_eq!(original::patches().len(), 9);
+    assert_eq!(original::additions().len(), 81);
+    for (path, row) in original::additions() {
+        assert!(current_inputs::known_addition(path));
+        current_inputs::require_addition(path);
+        assert!(original::accepts_addition(path, &raw(path)));
+        assert!(original::addition_index_matches(
+            path,
+            &format!(
+                "{} {} 0\t{path}\n",
+                row["mode"].as_str().unwrap(),
+                row["blob"].as_str().unwrap()
+            )
+        ));
+    }
+    for path in original::patches().keys() {
+        assert!(original::accepts_patch(path, &raw(path)));
+        assert_eq!(
+            current_inputs::read(path),
+            runtime::frozen(original::SOURCE, path)
+        );
+    }
+    for path in [
+        "crates/xtask/tests/support/current_tree_input.rs",
+        "crates/xtask/tests/support/current_tree_input_rules_074.json",
+    ] {
+        assert_eq!(raw(path), runtime::frozen(phase::BASE, path));
+    }
+    assert!(!current_inputs::known_addition("unknown.rs"));
+}
+#[test]
+fn helper_keeps_original_fixed_git_read_and_no_extra_observation_or_effect() {
+    let path = "tools/authority-runtime-074/history_reader.rs";
+    let previous = runtime::frozen(phase::BASE, path);
+    let expected = phase::current(path, &previous).unwrap();
+    let unchanged = previous.split_once("pub fn extend(").unwrap().0;
+    assert!(expected.starts_with(unchanged));
+    assert_eq!(expected.matches("std::process::Command::new").count(), 1);
+    assert_eq!(expected.matches(".output().unwrap()").count(), 1);
+    assert_eq!(
+        current_inputs::read(runtime::HISTORY_TEST),
+        runtime::frozen(runtime::HISTORY, runtime::HISTORY_TEST)
+    );
+    assert!(
+        std::panic::catch_unwind(|| original::history_reader::previous(&format!(
+            "{}\n// unknown caller",
+            raw(runtime::HISTORY_TEST)
+        )))
+        .is_err()
+    );
+    assert!(
+        std::panic::catch_unwind(|| original::history_reader::previous(&runtime::frozen(
+            phase::BASE,
+            runtime::HISTORY_TEST
+        )))
+        .is_err()
+    );
+    let old_io = runtime::frozen(phase::BASE, "tools/current-frontier-074/reader.rs");
+    let selected_io = raw("tools/history-status-readers-074/inputs.rs");
+    assert_eq!(
+        selected_io
+            .split_once("pub(crate) fn read(path: &str) -> String")
+            .unwrap()
+            .1,
+        old_io
+            .split_once("pub fn read(path: &str) -> String")
+            .unwrap()
+            .1
+            .replace("crate::current_inputs::read(path)", "previous::read(path)")
+    );
+}

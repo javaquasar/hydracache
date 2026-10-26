@@ -1,0 +1,170 @@
+
+running 6 tests
+test current_fixture_entry_keeps_fresh_current_bytes_separate_from_old_body_checks ... ok
+test five_readers_are_exact_declared_edits_of_independent_fixed_sources ... ok
+test partial_duplicate_wrong_branch_and_assertion_drift_cannot_enter_old_reader_views ... ok
+test every_original_case_and_assertion_survives_the_two_explicit_input_substitutions ... ok
+test terminal_main_text_matches_fixed_producers_without_compiling_the_old_runtime ... ok
+test all_eighteen_entry_inputs_and_current_mutants_retain_original_phase_checks ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.29s
+
+
+running 5 tests
+test full_contract_adapters_change_only_one_preservation_reader_per_module ... ok
+test legacy_adapters_preserve_complete_prior_test_bodies_and_assertions ... ok
+test baseline_partial_install_and_unrelated_effects_refuse_before_restoration ... ok
+test installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set ... ok
+test approved_predecessor_views_do_not_replace_current_runtime_validation ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.86s
+
+
+running 10 tests
+test diff_translation_adds_only_fixed_rhs_and_retains_all_paths_and_flags ... ok
+test archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation ... ok
+test historical_reads_are_fixed_and_never_fall_back_to_current_artifacts ... ok
+test every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion ... ok
+test all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions ... ok
+test unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files ... ok
+test unsupported_commands_revisions_scopes_and_cwd_refuse_before_execution ... ok
+test qualification_raw_identity_and_previous_candidate_guard_remain_independent ... ok
+test guard_assertion_test_and_io_mutations_cannot_hide_behind_history ... ok
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift has been running for over 60 seconds
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 73.57s
+
+
+running 6 tests
+test lexical_selection_is_narrow_and_unknown_inputs_remain_byte_identical ... ok
+test exactly_one_ordered_observation_preserves_io_errors_without_caching_success ... ok
+test current_stale_partial_duplicate_and_unrelated_document_mutations_refuse ... ok
+test only_the_two_current_documents_reconstruct_the_exact_reviewed_phase ... ok
+test preceding_owned_case_proof_accepts_only_the_exact_extended_current_reader ... ok
+test all_eleven_callers_preserve_complete_original_cases_and_predicates ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.77s
+
+
+running 7 tests
+test audit_changes_only_three_input_joins_and_preserves_every_original_predicate ... ok
+test successful_addition_validation_does_not_cache_body_or_index_observations ... ok
+test stale_partial_duplicate_and_unrelated_current_source_edits_refuse ... ok
+test main_retains_old_full_body_gate_and_all_twelve_current_reads_reach_source ... ok
+test twelve_current_sources_reconstruct_exact_independent_predecessors ... ok
+test all_fourteen_additions_require_independent_bodies_and_exact_index_entries ... ok
+test unknown_paths_are_not_approved_or_transformed_and_legacy_routes_stay_intact ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.52s
+
+
+running 1 test
+test current_tree_input_frontier_is_fully_accounted_without_path_exclusions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 58.75s
+
+
+running 4 tests
+test runtime_contract_reader_changes_only_the_current_history_input ... ok
+test current_tree_reader_retains_entire_prior_gate_and_unknown_source_assertions ... ok
+test all_nine_current_inputs_are_exact_declared_patches_not_assertion_waivers ... ok
+test all_eighty_one_declared_sources_require_exact_bytes_index_and_regular_files ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 24.60s
+
+
+running 2 tests
+test custody_observer_adapter_refuses_missing_duplicate_and_preserves_unrelated_drift ... ok
+test custody_observation_hooks_reconstruct_all_preceding_469_bodies has been running for over 60 seconds
+test custody_observation_hooks_reconstruct_all_preceding_469_bodies ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 76.70s
+
+
+running 3 tests
+test document_scratch_reference_and_prototype_preserve_complete_sender_and_pidfd_checks ... ok
+test legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scratch_shapes ... ok
+test document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies has been running for over 60 seconds
+test document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 75.38s
+
+
+running 2 tests
+test scratch_reader_preserves_every_original_assertion_and_both_old_counts ... ok
+test scratch_five_reader_inputs_differ_only_by_known_io_not_old_assertions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.95s
+
+
+running 2 tests
+test fresh_status_reconstructs_all_changed_old_bodies_and_hooks ... ok
+test fresh_status_adapter_refuses_missing_duplicate_and_other_validation_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.03s
+
+
+running 2 tests
+test fresh_status_reader_changes_only_admission_input_before_original_normalizers ... ok
+test fresh_status_admission_requires_exact_source_and_helper_before_old_input ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.83s
+
+
+running 4 tests
+test activation_ingress_has_no_clock_descriptor_manager_or_unknown_environment_cleanup ... ok
+test activation_ingress_compatibility_registration_preserves_every_old_format_byte ... ok
+test activation_ingress_only_two_exact_hooks_change_the_binary_entry ... ok
+test activation_ingress_is_explicit_and_keeps_the_complete_old_kernel ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.91s
+
+
+running 4 tests
+test constructors_refuse_stale_producers_and_keep_all_selected_bytes_and_branch_mutations_visible ... ok
+test all_three_bodies_match_the_fixed_constructions_without_changing_twelve_cases_or_assertions ... ok
+test helper_keeps_original_fixed_git_read_and_no_extra_observation_or_effect ... ok
+test facade_joins_twelve_current_paths_and_fourteen_additions_and_preserves_legacy_gates ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 36.76s
+
+
+running 4 tests
+test owned_case_whole_helper_pins_reject_mutation_before_any_compatibility_view ... ok
+test owned_case_bootstrap_reader_changes_one_read_and_keeps_every_assertion ... ok
+test authority_context_reader_adapts_only_the_exact_reviewed_registry_input ... ok
+test owned_case_exact_current_additions_preserve_every_old_body_and_reader ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.96s
+
+
+running 16 tests
+test guard_path_comparison_refuses_missing_duplicate_and_already_changed_baselines ... ok
+test helper_model_preserves_nested_order_bytes_and_unwind_without_additive_claims ... ok
+test helper_instrumentation_erases_only_exact_observers_and_preserves_twenty_cases ... ok
+test helper_observer_fixture_child ... ok
+test helper_observer_is_default_off_and_does_not_read_fixture_inputs ... ok
+test history_namespace_cost_child ... ok
+test helper_model_refuses_unknown_operations_budgets_reverse_time_and_bad_retirement ... ok
+test history_namespace_protocol_and_unrelated_input_are_exact ... ok
+test history_namespace_still_refuses_missing_and_duplicate_namespace_hook ... ok
+test history_prefix_cost_child ... ok
+test history_prefix_protocol_and_unrelated_input_are_exact ... ok
+test normalization_cost_child ... ok
+test normalization_cost_protocol_keeps_separate_scopes ... ok
+test guard_path_comparison_is_isolated_and_original_installation_stays_exact ... ok
+test guard_path_comparison_leaves_other_reader_expectations_unchanged ... ok
+test history_namespace_matches_independent_frozen_sources_and_keeps_body_drift ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+
+
+running 4 tests
+test selected_kernel_and_compat_join_use_independent_producers_without_extra_reads ... ok
+test stale_partial_duplicate_and_unrelated_caller_edits_refuse_after_success ... ok
+test seven_exact_caller_constructions_preserve_all_eighteen_cases_and_assertions ... ok
+test immutable_nine_eighty_one_gate_still_refuses_new_caller_without_explicit_join ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 27.31s
+

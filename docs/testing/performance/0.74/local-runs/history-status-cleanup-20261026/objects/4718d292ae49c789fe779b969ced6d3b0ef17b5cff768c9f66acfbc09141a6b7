@@ -1,0 +1,40 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: function `previous` is never used
+  --> crates\xtask\tests\..\..\..\tools\remaining-readers-074\contract.rs:48:8
+   |
+48 | pub fn previous(path: &str, raw: &str) -> Option<String> {
+   |        ^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `xtask` (test "fresh_status_reader_074") generated 1 warning
+warning: unused import: `previous::*`
+ --> crates\xtask\tests\..\..\..\tools\history-status-readers-074\inputs.rs:4:16
+  |
+4 | pub(crate) use previous::*;
+  |                ^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `known_addition` is never used
+ --> crates\xtask\tests\..\..\..\tools\history-status-readers-074\..\current-frontier-074\reader.rs:4:8
+  |
+4 | pub fn known_addition(path: &str) -> bool {
+  |        ^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `require_addition` is never used
+ --> crates\xtask\tests\..\..\..\tools\history-status-readers-074\..\current-frontier-074\reader.rs:7:8
+  |
+7 | pub fn require_addition(path: &str) {
+  |        ^^^^^^^^^^^^^^^^
+
+warning: `xtask` (test "authority_rust_history_074") generated 3 warnings (run `cargo fix --test "authority_rust_history_074" -p xtask` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.93s
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-b34664d35eca545a.exe)
+     Running tests\authority_rust_history_074.rs (target\debug\deps\authority_rust_history_074-4c9fed59f38331dc.exe)
+     Running tests\current_tree_input_audit_074.rs (target\debug\deps\current_tree_input_audit_074-c3765a3eaa3bd40a.exe)
+     Running tests\current_tree_reader_074.rs (target\debug\deps\current_tree_reader_074-5e0026a4ef1e7069.exe)
+     Running tests\fresh_status_reader_074.rs (target\debug\deps\fresh_status_reader_074-3087550c9b324258.exe)
+     Running tests\history_status_readers_074.rs (target\debug\deps\history_status_readers_074-eb79eb146922742b.exe)

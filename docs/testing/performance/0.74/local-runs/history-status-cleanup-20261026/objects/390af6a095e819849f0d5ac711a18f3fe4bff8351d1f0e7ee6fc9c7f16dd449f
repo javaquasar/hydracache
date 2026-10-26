@@ -1,0 +1,55 @@
+"""Three explicit caller/helper edits from a fixed predecessor, not observed approval."""
+from pathlib import Path
+import argparse
+import hashlib
+import json
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[2]
+BASE = '52abf7ab0efd35557eb3117a45c253e0ebe76469'
+HISTORY = 'crates/xtask/tests/authority_rust_history_074.rs'
+STATUS = 'crates/xtask/tests/fresh_status_reader_074.rs'
+HELPER = 'tools/authority-runtime-074/history_reader.rs'
+sha = lambda raw: hashlib.sha256(raw.encode()).hexdigest()
+
+
+def rows():
+    status = ('    old.replacen(hook, &format!("{hook}{imports}"), 1)\n'
+              '        .replacen(before, after, 1)')
+    status_after = ('    let previous = old.replacen(hook, &format!("{hook}{imports}"), 1)\n'
+                    '        .replacen(before, after, 1);\n'
+                    '    kernel_phase::current(kernel_phase::FRESH, &previous).expect("exact kernel reader successor")')
+    helper = '    replace(&raw, before, &format!("{before}        if !previous.contains(path) && current_inputs::known_addition(path) {{\\n            current_inputs::require_addition(path);\\n            continue;\\n        }}\\n"))'
+    changes = [
+        (HISTORY, '#[path = "support/current_tree_input.rs"]',
+         '#[path = "../../../tools/history-status-readers-074/inputs.rs"]', ''),
+        (STATUS, status, status_after,
+         '\n#[path = "../../../tools/remaining-readers-074/contract.rs"]\nmod kernel_phase;\n'),
+        (HELPER, helper, helper.replace('    replace(', '    let previous = replace(', 1) + ';\n'
+         '    frontier_phase::current(frontier_phase::HISTORY, &previous).unwrap()',
+         '\n#[path = "../history-status-readers-074/contract.rs"]\nmod frontier_phase;\n'),
+    ]
+    result = []
+    for path, before, after, append in changes:
+        old = subprocess.check_output(['git', '--no-replace-objects', 'show', BASE + ':' + path],
+                                      cwd=ROOT).decode().replace('\r\n', '\n')
+        assert old.count(before) == 1, path
+        current = old.replace(before, after) + append
+        result.append(dict(path=path, before_sha256=sha(old), after_sha256=sha(current),
+                           before=before, after=after, append=append))
+    return result
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--write', action='store_true')
+    args = parser.parse_args()
+    raw = (json.dumps(dict(schema='hc074-history-status-readers-v1', baseline=BASE, rows=rows()),
+                      indent=2) + '\n').encode()
+    destination = Path(__file__).with_name('rules.json')
+    if args.write:
+        with destination.open('xb') as stream:
+            stream.write(raw)
+    else:
+        assert destination.read_bytes() == raw, 'fixed description differs'
+    print(hashlib.sha256(raw).hexdigest())

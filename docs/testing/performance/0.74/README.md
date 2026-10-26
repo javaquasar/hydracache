@@ -5,12 +5,19 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [history/status repair and separate cleanup diagnostic](history-status-readers-result-20261026.md)
+close the two additional reader consumers in focused current/MSRV checks. The
+Windows marker failure remains open: successful taskkill and original terminal
+objects do not establish when the marker was written. No full package retry or
+deadline/assertion change follows; its old pins and first red result remain.
+
 The [first repaired-source v5 package result](package-closure-v5-result-20261026.md)
 retains the same 780-second/four-thread command: 76/144 targets complete with
 457 passed/3 failed cases; the incomplete target has three more passes and one
 missing verdict; 67 targets do not start. A separate exact v5 effect review passes,
-but the package remains red. Additional history/status reader consumers, owned
-watchdog cleanup and existing source-validation cost are the next repair owners.
+but the package remains red. The follow-up above repairs its reader consumers;
+owned watchdog cleanup and existing source-validation cost remain before a new
+exact source/effect review and full dispatch.
 
 The [contextual package module inventory](module-context-v5-result-20261026.md)
 closes 365 Rust sources after preserving the old scanner's first path-resolution

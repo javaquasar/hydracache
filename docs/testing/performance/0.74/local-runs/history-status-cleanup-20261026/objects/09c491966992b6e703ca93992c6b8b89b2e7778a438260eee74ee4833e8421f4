@@ -1,0 +1,10 @@
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask\tests\fresh_status_reader_074.rs:17:
+     let after = "    let loader = if path == runtime::status_fields::SOURCE {\n        runtime_io::read_to_string\n    } else {\n        std::fs::read_to_string\n    };\n    let raw = loader(\n";
+     assert_eq!(old.matches(hook).count(), 1);
+     assert_eq!(old.matches(before).count(), 1);
+-    let previous = old.replacen(hook, &format!("{hook}{imports}"), 1)
++    let previous = old
++        .replacen(hook, &format!("{hook}{imports}"), 1)
+         .replacen(before, after, 1);
+     let current = kernel_phase::current(kernel_phase::FRESH, &previous)
+         .expect("exact kernel reader successor");

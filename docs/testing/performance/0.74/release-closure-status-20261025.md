@@ -67,14 +67,24 @@ identity. Do not reopen rejected hypotheses merely to populate a release.
 
 ### 2 Obtain a complete green package and security milestone
 
+The [next history/status compatibility repair](history-status-readers-result-20261026.md)
+closes those two additional reader failures locally, preserving all twelve old
+cases/assertions and adding exact construction/refusal controls. This does not
+replace the full result below. A separate held-object taskkill diagnostic records
+terminal original root/leaf objects and an existing marker; without write/cut
+chronology it does not close the watchdog failure. Owned cleanup, existing
+validation cost and a new complete exact source/effect review remain before any
+changed-source full dispatch. Old source pins must continue refusing the new graph.
+
 The [subsequent v5 exact review and full result](package-closure-v5-result-20261026.md)
 cover 365 source identities/42 auxiliary inputs and the 144-target catalog.
 The first unchanged-bound full command still times out: 76 targets complete,
 457 cases pass/three fail; the incomplete four-case target has three passes and
 one missing verdict; 67 targets never start. First raw evidence and cleanup errors
-remain. Close the additional history/status reader consumers, investigate owned
-watchdog cleanup and attribute the existing validation cost before any newly
-reviewed source changes and full run. No unchanged-source retry or limit increase.
+remain. The focused follow-up above closes those reader consumers, not this full
+result. Investigate owned watchdog cleanup and attribute existing validation cost
+before a new exact source/effect review and full run. No unchanged-source retry
+or limit increase.
 
 The [first current-source full package gate](package-closure-v4-result-20261025.md)
 is retained: unchanged 780-second/four-thread run, 114/138 targets completed,

@@ -1,0 +1,26 @@
+//! Reuse the admitted current frontier without modifying the original 9/81 gate.
+#[path = "../remaining-readers-074/inputs.rs"]
+mod previous;
+pub(crate) use previous::*;
+#[path = "../current-frontier-074/reader.rs"]
+pub mod frontier;
+
+pub(crate) fn known_addition(path: &str) -> bool {
+    previous::known_addition(path) || frontier::additions::known(path)
+}
+pub(crate) fn require_addition(path: &str) {
+    if previous::known_addition(path) {
+        previous::require_addition(path);
+    } else {
+        frontier::additions::require(path);
+    }
+}
+pub(crate) fn read(path: &str) -> String {
+    if frontier::contract::known(path) {
+        // The selected branch performs the same read/canonical-path/full-body
+        // checks as the complete current-tree audit. It cannot take its fallback.
+        frontier::read(path)
+    } else {
+        previous::read(path)
+    }
+}
