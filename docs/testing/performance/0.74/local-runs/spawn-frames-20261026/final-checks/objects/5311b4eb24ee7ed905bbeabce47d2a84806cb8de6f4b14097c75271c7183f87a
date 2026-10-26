@@ -1,0 +1,10 @@
+test_index_missing_and_byte_corruption (test_verify.Integrity.test_index_missing_and_byte_corruption) ... ok
+test_mark_relocation_and_unsupported_mark_refuse (test_verify.Integrity.test_mark_relocation_and_unsupported_mark_refuse) ... ok
+test_nontelemetry_mutation_cannot_be_stripped (test_verify.Integrity.test_nontelemetry_mutation_cannot_be_stripped) ... ok
+test_positive (test_verify.Integrity.test_positive) ... ok
+test_provenance_source_receipt_and_closed_protocol_faults (test_verify.Integrity.test_provenance_source_receipt_and_closed_protocol_faults) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.158s
+
+OK

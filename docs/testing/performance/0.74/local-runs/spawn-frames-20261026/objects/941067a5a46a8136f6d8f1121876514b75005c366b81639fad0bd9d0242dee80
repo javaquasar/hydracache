@@ -1,0 +1,20 @@
+test_all_18_fatal_cuts_never_lose_a_created_child (test_spawn_frames.Model.test_all_18_fatal_cuts_never_lose_a_created_child) ... ok
+test_all_18_ordinary_clock_faults_keep_original_effects_and_cleanup (test_spawn_frames.Model.test_all_18_ordinary_clock_faults_keep_original_effects_and_cleanup) ... ok
+test_differential_healthy_argv_handles_deadline_custody_and_cleanup (test_spawn_frames.Model.test_differential_healthy_argv_handles_deadline_custody_and_cleanup) ... ok
+test_expired_original_deadline_never_resumes_even_with_complete_tape (test_spawn_frames.Model.test_expired_original_deadline_never_resumes_even_with_complete_tape) ... ok
+test_first_fault_freezes_reads_and_partial_export_has_no_invented_end (test_spawn_frames.Model.test_first_fault_freezes_reads_and_partial_export_has_no_invented_end) ... ok
+test_fixed_schedule_clock_domains_types_and_regressions_refuse (test_spawn_frames.Model.test_fixed_schedule_clock_domains_types_and_regressions_refuse) ... ok
+test_missing_program_last_error_is_consumed_before_any_new_observation (test_spawn_frames.Model.test_missing_program_last_error_is_consumed_before_any_new_observation) ... ok
+test_no_standard_handles_path_is_unchanged (test_spawn_frames.Model.test_no_standard_handles_path_is_unchanged) ... ok
+test_none_publication_and_first_fatal_retention_probe (test_spawn_frames.Model.test_none_publication_and_first_fatal_retention_probe) ... ok
+test_operational_faults_still_refuse_at_exact_original_step (test_spawn_frames.Model.test_operational_faults_still_refuse_at_exact_original_step) ... ok
+test_operational_refusal_and_clock_refusal_remain_separate (test_spawn_frames.Model.test_operational_refusal_and_clock_refusal_remain_separate) ... ok
+test_original_caller_ci_and_worker_bytes_match_retained_native_input (test_spawn_frames.Model.test_original_caller_ci_and_worker_bytes_match_retained_native_input) ... ok
+test_partial_stdio_cleanup_and_original_error_composition_stay_identical (test_spawn_frames.Model.test_partial_stdio_cleanup_and_original_error_composition_stay_identical) ... ok
+test_protocol_closed_scope_and_explicit_owner_gate (test_spawn_frames.Model.test_protocol_closed_scope_and_explicit_owner_gate) ... ok
+test_restricted_ast_preserves_original_api_and_retained_setter (test_spawn_frames.Model.test_restricted_ast_preserves_original_api_and_retained_setter) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.195s
+
+OK

@@ -1,0 +1,54 @@
+"""Retain model receipts and source only; never execute a retained input."""
+import hashlib
+import json
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+PACKET = ROOT/'docs/testing/performance/0.74/local-runs/spawn-frames-20261026'
+final = sys.argv[1:] == ['final']
+if sys.argv[1:] not in ([], ['final']):
+    raise SystemExit('usage: seal-spawn-frames-20261026.py [final]')
+OUT = PACKET/'final-checks' if final else PACKET
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+
+
+def take(name, path):
+    raw = path.read_bytes()
+    digest = hashlib.sha256(raw).hexdigest()
+    target = OUT/'objects'/digest
+    if not target.exists():
+        with target.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw), sha256=digest)
+
+
+labels = ('spawn-frames-integrity-first', 'spawn-frames-doc', 'spawn-frames-contract') if final else (
+    'spawn-frames-models-first', 'spawn-frames-models-extended', 'spawn-frames-models-final',
+    'spawn-frames-regressions', 'spawn-frames-syntax', 'spawn-frames-check', 'spawn-frames-clippy')
+for label in labels:
+    for part in ('intent.json', 'result.json', 'stdout.log', 'stderr.log'):
+        take('checks/'+label+'/'+part, ROOT/'target/source-continuation-20261024'/label/part)
+take('collector.py', Path(__file__))
+take('qualification-manifest.toml', ROOT/'docs/testing/performance/0.74/qualification-manifest.toml')
+if final:
+    for name in ('verify.py', 'test_verify.py', 'index.json'):
+        take('main/'+name, PACKET/name)
+else:
+    for name in ('spawn_frames.py', 'test_spawn_frames.py', 'spawn-frames-protocol.toml', 'spawn-frames-design.md',
+                 'capture_leaves.py', 'coordinator_frames.py', 'git_cpu_overhead.py', 'git_job_cpu.py'):
+        take('source/tools/xtask-package-attribution-074/'+name, ROOT/'tools/xtask-package-attribution-074'/name)
+    for name in ('scripts/ci/watchdog_windows_job.py', 'crates/xtask/tests/git_descendant_cpu_074.rs'):
+        take('source/'+name, ROOT/name)
+    for label in ('capture-leaves-native-20261026', 'leaf-attribution-20261026'):
+        take('baseline/'+label+'-index.json', ROOT/'docs/testing/performance/0.74/local-runs'/label/'index.json')
+index = dict(schema='hc074-spawn-frames-model-evidence-v1', final_checks=final,
+    source_commit='7a6556aa0f04f4e2cf0d716968e5eab36f2cc529', checks=len(labels),
+    native_attempts=0, new_workload_calls=0, caller_connected=False, native_control_executed=False,
+    overhead_accepted=False, package_pass=False, server=False, members=members)
+raw = (json.dumps(index, indent=2, sort_keys=True)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(members)))

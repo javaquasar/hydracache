@@ -1,0 +1,183 @@
+{
+  "caller_connected": false,
+  "checks": 7,
+  "final_checks": false,
+  "members": {
+    "baseline/capture-leaves-native-20261026-index.json": {
+      "bytes": 29066,
+      "sha256": "926f30f0eca6ae708b3706976f256a9ca52a3a5d7e9a9c447a8f45cec59a0855"
+    },
+    "baseline/leaf-attribution-20261026-index.json": {
+      "bytes": 11913,
+      "sha256": "70ba30460b8e4c995c23d3f37090b0ef849bc2915e6507e62dfc5b23a7837417"
+    },
+    "checks/spawn-frames-check/intent.json": {
+      "bytes": 349889,
+      "sha256": "67914561e67b075e0f0a46a7c16652965fa09eac54711e4317c6add820d193d2"
+    },
+    "checks/spawn-frames-check/result.json": {
+      "bytes": 349580,
+      "sha256": "dcc202b07e6dba259081b736de7a5965a26daad0d5f3f961ea49fc4de16801c7"
+    },
+    "checks/spawn-frames-check/stderr.log": {
+      "bytes": 72,
+      "sha256": "113909059a6dcecaf3de576c460249bf68c132f35a1e11b649b30c5964f6d31e"
+    },
+    "checks/spawn-frames-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/spawn-frames-clippy/intent.json": {
+      "bytes": 349952,
+      "sha256": "6eb57f11096a36d1ff38ac834df5b79402105fda99d30e0620f14182f65c8680"
+    },
+    "checks/spawn-frames-clippy/result.json": {
+      "bytes": 349580,
+      "sha256": "dcc202b07e6dba259081b736de7a5965a26daad0d5f3f961ea49fc4de16801c7"
+    },
+    "checks/spawn-frames-clippy/stderr.log": {
+      "bytes": 72,
+      "sha256": "b520856f5c8930b1004376445131d3a6c481cddad8fb6342b54ff729cbdac8f2"
+    },
+    "checks/spawn-frames-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/spawn-frames-models-extended/intent.json": {
+      "bytes": 349811,
+      "sha256": "257f0b185ad4675217abcf121a45ac8189b6aef1a25e34b0306d4571a3222d26"
+    },
+    "checks/spawn-frames-models-extended/result.json": {
+      "bytes": 349445,
+      "sha256": "8bb79537f16eadc0ce957cdadfaefaad08def044e9ba4c1b848a6d91a2fb6aa6"
+    },
+    "checks/spawn-frames-models-extended/stderr.log": {
+      "bytes": 2340,
+      "sha256": "4c460c9307b6c2be3bdc933402d73d8c32c3c1293641b2d626820bf4906e62e4"
+    },
+    "checks/spawn-frames-models-extended/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/spawn-frames-models-final/intent.json": {
+      "bytes": 349946,
+      "sha256": "e064ff661e69f1415a37cceb6bdc0f526f6cc2bb15cda2b111b7cefd8b873f8c"
+    },
+    "checks/spawn-frames-models-final/result.json": {
+      "bytes": 349580,
+      "sha256": "dcc202b07e6dba259081b736de7a5965a26daad0d5f3f961ea49fc4de16801c7"
+    },
+    "checks/spawn-frames-models-final/stderr.log": {
+      "bytes": 2476,
+      "sha256": "941067a5a46a8136f6d8f1121876514b75005c366b81639fad0bd9d0242dee80"
+    },
+    "checks/spawn-frames-models-final/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/spawn-frames-models-first/intent.json": {
+      "bytes": 349672,
+      "sha256": "c942503b3923fd9f2bf88b188f1d282fad592858e87e6f22239f7312c40ef7ee"
+    },
+    "checks/spawn-frames-models-first/result.json": {
+      "bytes": 349306,
+      "sha256": "e6fdb144f49b7c26fba61fb8ecbab05db8a9a4947ade4e7e660931dced3e0616"
+    },
+    "checks/spawn-frames-models-first/stderr.log": {
+      "bytes": 1856,
+      "sha256": "bae5361f815c7cabcca2e66060bd443faecc7a17c0a0756eacb77f84d7b0cf46"
+    },
+    "checks/spawn-frames-models-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/spawn-frames-regressions/intent.json": {
+      "bytes": 350228,
+      "sha256": "1c617316690c73ebbd36e6eda6a87c7391eeea7f3758d45c6042965ad7439533"
+    },
+    "checks/spawn-frames-regressions/result.json": {
+      "bytes": 349580,
+      "sha256": "dcc202b07e6dba259081b736de7a5965a26daad0d5f3f961ea49fc4de16801c7"
+    },
+    "checks/spawn-frames-regressions/stderr.log": {
+      "bytes": 19923,
+      "sha256": "01cff63ea7cd65e89a9005da6460098fa857749b9177684cebfba0b80e55abe0"
+    },
+    "checks/spawn-frames-regressions/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/spawn-frames-syntax/intent.json": {
+      "bytes": 349950,
+      "sha256": "29fa1ccd7cb6c4452219e372faa3b1cad93f7521f674bc97d60d6dc748e55723"
+    },
+    "checks/spawn-frames-syntax/result.json": {
+      "bytes": 349580,
+      "sha256": "dcc202b07e6dba259081b736de7a5965a26daad0d5f3f961ea49fc4de16801c7"
+    },
+    "checks/spawn-frames-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/spawn-frames-syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "collector.py": {
+      "bytes": 2787,
+      "sha256": "3f4230c218e7bb51bab10357bf2b6e0437ecabf83c6dc273b3627bc14274c3ca"
+    },
+    "qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "source/crates/xtask/tests/git_descendant_cpu_074.rs": {
+      "bytes": 3415,
+      "sha256": "b9e775a0a63662b364f544c01de58ca9b1f90b521e7d2100440976e276da2624"
+    },
+    "source/scripts/ci/watchdog_windows_job.py": {
+      "bytes": 12151,
+      "sha256": "8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1"
+    },
+    "source/tools/xtask-package-attribution-074/capture_leaves.py": {
+      "bytes": 11782,
+      "sha256": "fe2a0eeed86f1917c3a59b84c3aa028599f499792da648f2300183b543e9bfb5"
+    },
+    "source/tools/xtask-package-attribution-074/coordinator_frames.py": {
+      "bytes": 8820,
+      "sha256": "8f15471120c30c4450ccfa05e8a0d641e667ba6e74561c3648ea25f8e4f813e8"
+    },
+    "source/tools/xtask-package-attribution-074/git_cpu_overhead.py": {
+      "bytes": 10525,
+      "sha256": "f182f129bf4e990b68777ff4eb93ab1e8fec5221bcfeba707ad7e9748338169a"
+    },
+    "source/tools/xtask-package-attribution-074/git_job_cpu.py": {
+      "bytes": 13488,
+      "sha256": "750784a88b445b4b295032c29dd62e10f78a4eecb52ac9d2dd2445ce1a432f6e"
+    },
+    "source/tools/xtask-package-attribution-074/spawn-frames-design.md": {
+      "bytes": 3624,
+      "sha256": "adfa04ae53f03096edb54e58e7d7f036cb49f2db51629860337027a5d5c418af"
+    },
+    "source/tools/xtask-package-attribution-074/spawn-frames-protocol.toml": {
+      "bytes": 1053,
+      "sha256": "9f05e10a3de0f5001b3fa1e47dcc916b07b66b9abe93250e9dbcd7d60b4a415c"
+    },
+    "source/tools/xtask-package-attribution-074/spawn_frames.py": {
+      "bytes": 7217,
+      "sha256": "0349f4151993acacf0b75f10b4335a2f8b7512d14c0826a740fd2e5395f9835e"
+    },
+    "source/tools/xtask-package-attribution-074/test_spawn_frames.py": {
+      "bytes": 18837,
+      "sha256": "29d2704085c863a27bf76b58f9e9bd258702c2c197316fb9790c40785b210747"
+    }
+  },
+  "native_attempts": 0,
+  "native_control_executed": false,
+  "new_workload_calls": 0,
+  "overhead_accepted": false,
+  "package_pass": false,
+  "schema": "hc074-spawn-frames-model-evidence-v1",
+  "server": false,
+  "source_commit": "7a6556aa0f04f4e2cf0d716968e5eab36f2cc529"
+}
