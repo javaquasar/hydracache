@@ -1,0 +1,11 @@
+{
+  "clock_reads_by_analyzer": 0,
+  "input_git_calls": 64,
+  "input_index_sha256": "926f30f0eca6ae708b3706976f256a9ca52a3a5d7e9a9c447a8f45cec59a0855",
+  "input_source": "ef3d0cadd70e436b75be94e579a605447aaf7e2b",
+  "package_pass": false,
+  "processes_launched_by_analyzer": 0,
+  "retry": false,
+  "schema": "hc074-offline-leaf-attribution-v1",
+  "workload_replayed": false
+}

@@ -1,0 +1,15 @@
+test_all_workers_nested_scopes_zeros_and_raw_totals (test_leaf_attribution.Offline.test_all_workers_nested_scopes_zeros_and_raw_totals) ... ok
+test_contract_and_domain_types_and_partial_groups_refuse (test_leaf_attribution.Offline.test_contract_and_domain_types_and_partial_groups_refuse) ... ok
+test_exclusive_first_refusal_and_success_custody (test_leaf_attribution.Offline.test_exclusive_first_refusal_and_success_custody) ... ok
+test_fixed_index_and_object_size_missing_corruption_refuse (test_leaf_attribution.Offline.test_fixed_index_and_object_size_missing_corruption_refuse) ... ok
+test_imports_exclude_process_clock_collector_and_retained_code (test_leaf_attribution.Offline.test_imports_exclude_process_clock_collector_and_retained_code) ... ok
+test_incomplete_schedule_operation_and_owner_faults_refuse (test_leaf_attribution.Offline.test_incomplete_schedule_operation_and_owner_faults_refuse) ... ok
+test_log_inventory_and_bounds_refuse (test_leaf_attribution.Offline.test_log_inventory_and_bounds_refuse) ... ok
+test_preserved_local_deltas_cannot_escape_parent (test_leaf_attribution.Offline.test_preserved_local_deltas_cannot_escape_parent) ... ok
+test_probe_order_integer_clock_and_span_mutations_refuse (test_leaf_attribution.Offline.test_probe_order_integer_clock_and_span_mutations_refuse) ... ok
+test_signed_blocks_close_and_read_size_order_is_not_latency_order (test_leaf_attribution.Offline.test_signed_blocks_close_and_read_size_order_is_not_latency_order) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.435s
+
+OK

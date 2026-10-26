@@ -1,0 +1,84 @@
+{
+  "checks": 3,
+  "final_checks": true,
+  "input_git_calls": 64,
+  "input_index_sha256": "926f30f0eca6ae708b3706976f256a9ca52a3a5d7e9a9c447a8f45cec59a0855",
+  "members": {
+    "checks/leaf-attribution-contract/intent.json": {
+      "bytes": 349407,
+      "sha256": "435ec6bfd48fffd7d9bcb2839b59dbdcd5eeac924799f4a86f9ffd133be26e26"
+    },
+    "checks/leaf-attribution-contract/result.json": {
+      "bytes": 349045,
+      "sha256": "2aa90054f156772a814afaac98d64e36b8cbc44121b104088a2a22a65fb6496f"
+    },
+    "checks/leaf-attribution-contract/stderr.log": {
+      "bytes": 152,
+      "sha256": "8fd642fdb95c7b0b56c76350a54089e235b917f86f839debf46617cc7134e9d9"
+    },
+    "checks/leaf-attribution-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/leaf-attribution-doc/intent.json": {
+      "bytes": 349359,
+      "sha256": "77b87bc36afa4f85fd3d3b844b700a076ba3f83514f340cadab7b6ac6c2aadb6"
+    },
+    "checks/leaf-attribution-doc/result.json": {
+      "bytes": 349045,
+      "sha256": "2aa90054f156772a814afaac98d64e36b8cbc44121b104088a2a22a65fb6496f"
+    },
+    "checks/leaf-attribution-doc/stderr.log": {
+      "bytes": 120,
+      "sha256": "04b4a4f1e3cfb16c6b56f77150c2246a83d45b414a6d524546b4525f88dc9cd0"
+    },
+    "checks/leaf-attribution-doc/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/leaf-attribution-integrity-first/intent.json": {
+      "bytes": 349436,
+      "sha256": "bf6254f88da36ed0425bb758f7557316aded8afbb79acc1a65f1f45ecd2427e4"
+    },
+    "checks/leaf-attribution-integrity-first/result.json": {
+      "bytes": 349045,
+      "sha256": "4659301ba318be6f466ae0babd0167b460123c4388e63b86986dfe7ed61bee63"
+    },
+    "checks/leaf-attribution-integrity-first/stderr.log": {
+      "bytes": 807,
+      "sha256": "44883ffa9d6d8fb53a481a767a85070ab104c9d661207cf1327d513a20690eba"
+    },
+    "checks/leaf-attribution-integrity-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "collector.py": {
+      "bytes": 2989,
+      "sha256": "113ff5694a9423f3190ce775e9a4519ab6531e09fc2f6d16aa447aa3df582aae"
+    },
+    "main/index.json": {
+      "bytes": 11913,
+      "sha256": "70ba30460b8e4c995c23d3f37090b0ef849bc2915e6507e62dfc5b23a7837417"
+    },
+    "main/test_verify.py": {
+      "bytes": 4032,
+      "sha256": "ad699dd705e313a158165bedd4e0664c4e90a27e1ae5ff3ecb3352f5cb756a06"
+    },
+    "main/verify.py": {
+      "bytes": 10351,
+      "sha256": "72c8b4c1412124994f5d0d4c09e4f099d417cc5ac1cee4ae9a95cb3d85940d7b"
+    },
+    "qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    }
+  },
+  "new_native_attempts": 0,
+  "new_workload_calls": 0,
+  "overhead_accepted": false,
+  "package_pass": false,
+  "schema": "hc074-offline-leaf-attribution-evidence-v1",
+  "server": false,
+  "source_commit": "10f160bef32c02171d42f0f8138acbbbc4d8695d",
+  "workload_replayed": false
+}

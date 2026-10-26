@@ -1,0 +1,15 @@
+
+running 1 test
+test accounted_cpu_child ... 
+HC074_GIT_CPU {"accounted":true,"call":0,"code":0,"phases":{"child_end":{"created_100ns":134374943746267118,"exited_100ns":134374943747746187,"kernel_ns":15625000,"pid":20988,"user_ns":31250000},"child_start":{"created_100ns":134374943746267118,"exited_100ns":0,"kernel_ns":0,"pid":20988,"user_ns":0},"handle_observation_ns":20700,"spawn_ns":22340500,"terminal_observation_ns":3000,"wait_and_collect_ns":134812400},"spec":"3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs","stderr_bytes":0,"stdout_bytes":23589}
+
+HC074_GIT_CPU {"accounted":true,"call":1,"code":0,"phases":{"child_end":{"created_100ns":134374943747832255,"exited_100ns":134374943748711438,"kernel_ns":31250000,"pid":43036,"user_ns":15625000},"child_start":{"created_100ns":134374943747832255,"exited_100ns":0,"kernel_ns":0,"pid":43036,"user_ns":0},"handle_observation_ns":13300,"spawn_ns":10278000,"terminal_observation_ns":4500,"wait_and_collect_ns":84388600},"spec":"3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs","stderr_bytes":0,"stdout_bytes":23589}
+
+HC074_GIT_CPU {"accounted":true,"call":2,"code":0,"phases":{"child_end":{"created_100ns":134374943748788089,"exited_100ns":134374943749636892,"kernel_ns":46875000,"pid":49668,"user_ns":46875000},"child_start":{"created_100ns":134374943748788089,"exited_100ns":0,"kernel_ns":0,"pid":49668,"user_ns":0},"handle_observation_ns":17500,"spawn_ns":15318400,"terminal_observation_ns":2700,"wait_and_collect_ns":76725600},"spec":"3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs","stderr_bytes":0,"stdout_bytes":23589}
+
+HC074_GIT_CPU {"accounted":true,"call":3,"code":0,"phases":{"child_end":{"created_100ns":134374943753447581,"exited_100ns":134374943754548387,"kernel_ns":15625000,"pid":29524,"user_ns":31250000},"child_start":{"created_100ns":134374943753447581,"exited_100ns":0,"kernel_ns":0,"pid":29524,"user_ns":0},"handle_observation_ns":16900,"spawn_ns":387653100,"terminal_observation_ns":2300,"wait_and_collect_ns":104095100},"spec":"3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs","stderr_bytes":0,"stdout_bytes":23589}
+HC074_GIT_CPU_DONE {"accounted":true,"calls":4,"environment_changes":false,"git_argv":["git","show","3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs"],"git_suspended":false,"native_bypass":false,"package_pass":false,"stdin_hold":false}
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.84s
+

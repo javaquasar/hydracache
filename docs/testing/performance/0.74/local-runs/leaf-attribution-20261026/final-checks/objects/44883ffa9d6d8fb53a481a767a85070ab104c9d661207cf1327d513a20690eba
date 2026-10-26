@@ -1,0 +1,11 @@
+test_first_format_refusal_receipt_and_intent_are_preserved (test_verify.Integrity.test_first_format_refusal_receipt_and_intent_are_preserved) ... ok
+test_index_mutation_and_missing_object (test_verify.Integrity.test_index_mutation_and_missing_object) ... ok
+test_native_provenance_mutation (test_verify.Integrity.test_native_provenance_mutation) ... ok
+test_positive_independent_arithmetic (test_verify.Integrity.test_positive_independent_arithmetic) ... ok
+test_projection_blocks_totals_distributions_and_scope_mutations (test_verify.Integrity.test_projection_blocks_totals_distributions_and_scope_mutations) ... ok
+test_raw_object_mutation (test_verify.Integrity.test_raw_object_mutation) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 1.707s
+
+OK

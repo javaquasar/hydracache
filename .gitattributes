@@ -798,6 +798,7 @@ docs/testing/performance/0.74/local-runs/coordinator-native-20261026/** -text wh
 docs/testing/performance/0.74/local-runs/capture-attribution-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/capture-leaves-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/capture-leaves-native-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/leaf-attribution-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/package-review-v6-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/package-closure-v6-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
 docs/testing/performance/0.74/local-runs/package-closure-v5-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof

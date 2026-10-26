@@ -1,0 +1,59 @@
+"""Seal exact offline bytes and first receipts; never rerun an input."""
+import hashlib
+import json
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+PACKET = ROOT/'docs/testing/performance/0.74/local-runs/leaf-attribution-20261026'
+final = sys.argv[1:] == ['final']
+if sys.argv[1:] not in ([], ['final']):
+    raise SystemExit('usage: seal-leaf-attribution-20261026.py [final]')
+OUT = PACKET/'final-checks' if final else PACKET
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+
+
+def take(name, path):
+    raw = path.read_bytes()
+    digest = hashlib.sha256(raw).hexdigest()
+    target = OUT/'objects'/digest
+    if not target.exists():
+        with target.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw), sha256=digest)
+
+
+labels = ('leaf-attribution-integrity-first', 'leaf-attribution-doc', 'leaf-attribution-contract') if final else (
+    'leaf-attribution-models-first', 'leaf-attribution-regressions', 'leaf-attribution-syntax',
+    'leaf-attribution-offline-first', 'leaf-attribution-check', 'leaf-attribution-clippy', 'leaf-attribution-format')
+for label in labels:
+    for part in ('intent.json', 'result.json', 'stdout.log', 'stderr.log'):
+        take('checks/'+label+'/'+part, ROOT/'target/source-continuation-20261024'/label/part)
+take('collector.py', Path(__file__))
+take('qualification-manifest.toml', ROOT/'docs/testing/performance/0.74/qualification-manifest.toml')
+if final:
+    for name in ('verify.py', 'test_verify.py', 'index.json'):
+        take('main/'+name, PACKET/name)
+else:
+    base = ROOT/'docs/testing/performance/0.74/local-runs/capture-leaves-native-20261026'
+    take('native-index.json', base/'index.json')
+    native = json.loads((base/'index.json').read_bytes())
+    for name, entry in native['members'].items():
+        if name.startswith('native/'):
+            take(name, base/'objects'/entry['sha256'])
+    for name in ('intent.json', 'result.json'):
+        take('offline/'+name, ROOT/'target/leaf-attribution-20261026/first'/name)
+    for name in ('leaf_attribution.py', 'test_leaf_attribution.py', 'capture_attribution.py', 'git_cpu_variance.py',
+                 'leaf-attribution-design.md'):
+        take('source/tools/xtask-package-attribution-074/'+name, ROOT/'tools/xtask-package-attribution-074'/name)
+index = dict(schema='hc074-offline-leaf-attribution-evidence-v1', final_checks=final,
+    source_commit='10f160bef32c02171d42f0f8138acbbbc4d8695d', checks=len(labels),
+    input_index_sha256='926f30f0eca6ae708b3706976f256a9ca52a3a5d7e9a9c447a8f45cec59a0855',
+    input_git_calls=64, new_workload_calls=0, new_native_attempts=0, workload_replayed=False,
+    overhead_accepted=False, package_pass=False, server=False, members=members)
+raw = (json.dumps(index, indent=2, sort_keys=True)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(members)))
