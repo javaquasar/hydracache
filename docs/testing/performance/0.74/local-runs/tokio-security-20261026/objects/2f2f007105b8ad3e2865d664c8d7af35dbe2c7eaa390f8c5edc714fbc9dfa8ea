@@ -1,0 +1,1 @@
+{"only_one_locked_package": true, "same_oracle": true, "two_bound_clock_reads_preserved": true, "biased_selection_preserved": true, "original_kernel_clock_and_absolute_alarm_unchanged": true, "msrv": "1.88", "original_execution": false, "full_package_pass": false, "release_admitted": false}

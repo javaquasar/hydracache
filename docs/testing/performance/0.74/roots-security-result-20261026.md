@@ -1,5 +1,10 @@
 # Bundled public roots: tested candidate, trust-scope decision pending
 
+This report records the graph before the separate
+[Tokio successor](tokio-security-result-20261026.md). Its ten-finding restored
+baseline and eight-finding pending candidate remain historical, not the later
+active graph's nine findings. The root catalogs themselves are still unchanged.
+
 The compatible security candidate updates webpki-roots and webpki-root-certs
 1.0.8 to 1.0.10. Its focused tests pass, but it is **not accepted or installed**:
 the complete catalog changes more than removing the distrusted emSign key.

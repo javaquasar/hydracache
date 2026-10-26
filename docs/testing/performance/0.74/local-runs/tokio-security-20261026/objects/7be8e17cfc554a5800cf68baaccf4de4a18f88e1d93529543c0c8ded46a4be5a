@@ -1,0 +1,36 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling tokio v1.53.3
+   Compiling tokio-util v0.7.18
+   Compiling h2 v0.4.19
+   Compiling tower v0.5.3
+   Compiling hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+   Compiling hyper v1.10.1
+   Compiling hyper-util v0.1.20
+   Compiling axum v0.8.9
+   Compiling tokio-rustls v0.26.4
+   Compiling tokio-stream v0.1.18
+   Compiling hydracache-observability v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-observability)
+   Compiling hyper-timeout v0.5.2
+   Compiling tonic v0.14.6
+   Compiling chitchat v0.11.1
+   Compiling hyper-rustls v0.27.9
+   Compiling hydracache-cluster-raft v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-raft)
+   Compiling tower-http v0.6.11
+   Compiling reqwest v0.13.4
+   Compiling tonic-prost v0.14.6
+   Compiling hydracache-client-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-transport-axum)
+   Compiling fs-err v3.3.1
+   Compiling axum-server v0.8.0
+   Compiling hydracache-cluster-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-transport-axum)
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+   Compiling hydracache-client-hc2 v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-hc2)
+   Compiling hydracache-cluster-chitchat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-chitchat)
+   Compiling hydracache-actuator-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-actuator-axum)
+   Compiling hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server)
+   Compiling combine v4.6.7
+   Compiling redis v1.3.0
+   Compiling hydracache-sim v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sim)
+   Compiling hydracache-cluster-testkit v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-testkit)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7m 53s
+     Running tests\hc2_daemon_process.rs (target\debug\deps\hc2_daemon_process-f9dfabee5d0afe32.exe)
+     Running tests\redis_mtls_074.rs (target\debug\deps\redis_mtls_074-150b666f7829b6b1.exe)

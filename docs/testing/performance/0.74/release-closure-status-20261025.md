@@ -1,5 +1,11 @@
 # Release 0.74 closure and server launch status
 
+Latest security successor: the [Tokio repair](tokio-security-result-20261026.md)
+updates only the locked Tokio node and its declared floor, with explicit owned
+alarm registration. Paired GNU/MSRV ownership, ordinary channel, RESP/mTLS and
+focused compile/lint controls pass. The active graph now has nine pinned-DB
+findings. This is not full policy/package coverage or a production launch gate.
+
 The operator-approved [five-package closure plan](release-closure-execution-plan-20261026.md)
 records an honest zero-performance-win scope without freezing C74. Compatible
 security updates are authorized with Rust 1.88 and no new deny exceptions.
@@ -11,14 +17,14 @@ The [authorized rustls patch](rustls-authorized-result-20261026.md) is applied
 with passing focused Windows/GNU/MSRV, RESP and server controls; eleven pinned-DB
 findings remain at that boundary. The [subsequent WebPKI repair](webpki-security-result-20261026.md)
 passes its paired public-key, Windows/MSRV/GNU and compatibility gates; ten
-pinned-database findings now remain. The [selected local manager snapshot and transfer boundary](original-execution-transfer-plan-20261026.md)
+pinned-database findings remain at that boundary. The [selected local manager snapshot and transfer boundary](original-execution-transfer-plan-20261026.md)
 confirm systemd 257.13, not authenticated release or completion. All five closure
 packages are tracked; only recording the no-performance-claim scope is complete.
 
 The subsequent [trust-roots experiment](roots-security-result-20261026.md) is
 archived pending the explicit scope decision for four additional public CAs.
 Focused tests pass and its pinned-DB graph has eight findings, but the narrow
-trust-delta gate fails. The active graph is restored: ten findings still remain.
+trust-delta gate fails. Its restored pre-Tokio graph has ten findings.
 This is not accepted security work, a new performance hypothesis or host admission.
 
 As of 2026-10-26, GET-owner is **terminally rejected for 0.74**, not waiting for

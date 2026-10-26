@@ -45,8 +45,14 @@ historical first results, not a fresh vulnerability assessment.
 Security progress: the [public trust-roots candidate](roots-security-result-20261026.md)
 has focused Windows/MSRV/GNU evidence but remains archived pending a decision
 on four additional public authorities. Its narrow trust-delta gate fails;
-the active graph remains at ten pinned-DB findings. This does not complete
+its restored pre-Tokio graph has ten pinned-DB findings. This does not complete
 package 3 or affect the original-execution authorization below.
+
+The separate [Tokio security repair](tokio-security-result-20261026.md) applies
+the reviewed minimum/lock update and owned alarm registration, with paired
+GNU/MSRV and focused compatibility checks. Its graph has nine findings;
+the preceding roots-only candidate's eight is not a combined-graph result.
+Security policy, complete milestone coverage and package 3 remain open.
 
 ## 4 Finish original Linux execution and recovery
 

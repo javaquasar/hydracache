@@ -1,15 +1,21 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [Tokio ownership/security repair](tokio-security-result-20261026.md) raises
+the declared minimum and lock to 1.53.3 and explicitly owns the registered alarm
+FD. Same-source GNU/MSRV controls and focused Windows/GNU gates pass. Nine
+pinned-DB findings remain; roots trust scope and full release gates stay open.
+
 The [bundled-roots candidate](roots-security-result-20261026.md) passes focused
 Windows/MSRV/GNU and compatibility controls but is archived, not applied. Full
 catalog comparison finds two removals and four new public authorities; the narrow
 trust-delta gate refuses it pending a trust-scope decision. Exact candidate code
-and first results remain recoverable; accepted graph findings remain ten.
+and first results remain recoverable; that pre-Tokio graph has ten findings.
 
 The [separate WebPKI repair](webpki-security-result-20261026.md) retains a baseline
 that accepted all eight distrusted public keys and the same-source rejection on
 0.103.16. Windows/MSRV/GNU and compatibility gates pass; ten pinned-DB findings
-remain. This supersedes the current graph, not earlier experiment evidence.
+remain at that WebPKI boundary. The Tokio successor above gives the current graph;
+earlier experiment evidence is unchanged.
 
 The [newly authorized rustls security patch](rustls-authorized-result-20261026.md)
 is applied with passing Windows 1.94/MSRV 1.88 and GNU session tests, complete

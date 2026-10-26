@@ -1,0 +1,32 @@
+ Downloading crates ...
+  Downloaded tokio v1.53.3
+   Compiling tokio v1.53.3
+   Compiling hyper v1.10.1
+   Compiling hyper-util v0.1.20
+   Compiling hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+   Compiling tower v0.5.3
+   Compiling axum v0.8.9
+   Compiling tokio-util v0.7.18
+   Compiling combine v4.6.7
+   Compiling hydracache-observability v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-observability)
+   Compiling hydracache-client-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-transport-axum)
+   Compiling tokio-rustls v0.26.4
+   Compiling redis v1.3.0
+   Compiling hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3m 57s
+     Running unittests src\lib.rs (target\debug\deps\hydracache_redis_compat-f37b9573096191ff.exe)
+     Running tests\connection_chaos.rs (target\debug\deps\connection_chaos-b3025b5e715ec21b.exe)
+     Running tests\redis_batch_execution_074.rs (target\debug\deps\redis_batch_execution_074-d26c23ec03f29a01.exe)
+     Running tests\redis_clients.rs (target\debug\deps\redis_clients-9c9c608dcffb54f8.exe)
+     Running tests\redis_event_listeners.rs (target\debug\deps\redis_event_listeners-8c345a8ce26916d4.exe)
+     Running tests\redis_mined_edge_corpus.rs (target\debug\deps\redis_mined_edge_corpus-ee070f076ebbfc08.exe)
+     Running tests\resp_adaptive_coalescing_074.rs (target\debug\deps\resp_adaptive_coalescing_074-4f047caf690b7b9e.exe)
+     Running tests\resp_boundaries.rs (target\debug\deps\resp_boundaries-b99ebc01f33a178b.exe)
+     Running tests\resp_get_owner_074.rs (target\debug\deps\resp_get_owner_074-490e6afed792d356.exe)
+     Running tests\resp_pipeline_attribution_074.rs (target\debug\deps\resp_pipeline_attribution_074-1a861a5b9cde94bd.exe)
+     Running tests\resp_resource_smoke.rs (target\debug\deps\resp_resource_smoke-30cd8ef12b127ac2.exe)
+     Running tests\resp_staged_order_model_074.rs (target\debug\deps\resp_staged_order_model_074-1cec4e952c2a2622.exe)
+     Running tests\resp_transport_adversarial_074.rs (target\debug\deps\resp_transport_adversarial_074-0ee11f4e18689741.exe)
+     Running tests\tls_session_security_074.rs (target\debug\deps\tls_session_security_074-4f56e43793e62533.exe)
+     Running tests\tls_spki_security_074.rs (target\debug\deps\tls_spki_security_074-8ea0f578154e6d4e.exe)
+   Doc-tests hydracache_redis_compat

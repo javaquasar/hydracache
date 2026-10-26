@@ -1288,7 +1288,11 @@ also retains its vulnerable-version public-key baseline and focused gates.
 The [bundled-roots candidate](../testing/performance/0.74/roots-security-result-20261026.md)
 is tested but archived pending a public trust-scope decision: the full upstream
 delta removes two CAs and adds four, so the narrow removal-only gate refuses it.
-Its eight-finding candidate result does not replace the accepted graph's ten.
+Its eight-finding candidate result does not replace the pre-Tokio graph's ten.
+The subsequent [Tokio repair](../testing/performance/0.74/tokio-security-result-20261026.md)
+changes one locked node and its minimum, explicitly owns alarm registration and
+passes paired GNU/MSRV controls. Its graph has nine pinned-DB findings; no
+root-catalog decision, package pass or original execution admission follows.
 Original execution is to finish in existing local systemd 257;
 the [selected environment and transfer boundary](../testing/performance/0.74/original-execution-transfer-plan-20261026.md)
 do not authorize server OS/service changes or prove FD delivery. Full package,

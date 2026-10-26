@@ -21105,3 +21105,28 @@ silently accepted. Its eight pinned-database findings are not the restored activ
 graph's ten. This experiment confirms regression coverage and exposes a policy
 boundary; it proves neither a performance gain nor production readiness. No live
 validation frequency, original deadline, server service or clock is changed.
+
+### A patched async runtime still needs an ownership argument
+
+The [Tokio security follow-up](../testing/performance/0.74/tokio-security-result-20261026.md)
+moves the declared minimum and single locked node to 1.53.3. The deprecated
+constructor remains available upstream, so a clean advisory version cannot prove
+descriptor safety by itself. Our one direct caller already used an owned File;
+the old positive baseline is not an exploit reproduction. The new private
+registration boundary states why that File remains open and unchanged, why other
+aliases cannot close its descriptor, and why deregistration precedes File drop.
+
+Four isolated synthetic-process controls pass on both APIs, with identical test
+bytes: alias lifetime, cancellation and reuse of the same FD number for another
+resource, failed registration without closing the original, and unpolled/ready/
+error paths. GNU 1.94 and MSRV 1.88 also pass the unchanged channel cohort,
+including actual absolute-alarm expiry. Exact source comparison preserves both
+clock reads, biased selection and the original kernel module rather than merely
+showing that a timeout assertion passes.
+
+Focused RESP, mTLS/daemon, compile and strict lint checks pass. The pinned
+dependency database falls from ten findings to nine, not zero. This is a
+security/ownership result: it establishes neither a throughput win nor full
+transitive I/O safety, authenticated worker release or all-writer retirement.
+Final native/RESP regression qualification still belongs to the eventual exact
+release candidate. The larger root-catalog trust decision remains separate.

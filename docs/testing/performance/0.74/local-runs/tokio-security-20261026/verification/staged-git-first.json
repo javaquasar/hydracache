@@ -1,0 +1,8 @@
+{
+  "schema": "hc074-staged-git-byte-check-v1",
+  "scope": "first stage before adding this receipt",
+  "command": "C:/Python313/python.exe target/verify-tokio-staged-20261026.py",
+  "staged_blobs": 125,
+  "byte_mismatches": 0,
+  "release_admitted": false
+}

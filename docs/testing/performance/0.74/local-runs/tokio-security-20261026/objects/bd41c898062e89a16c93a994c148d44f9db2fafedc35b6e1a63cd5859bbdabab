@@ -1,0 +1,15 @@
+
+running 3 tests
+test debug_oracle_rejects_payloads_and_accepts_only_absent_or_redacted_secrets ... ok
+test tls12_session_debug_redacts_secrets_without_breaking_resumption ... ok
+test tls13_session_debug_redacts_secrets_without_breaking_resumption ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 2 tests
+test ordinary_chain_still_checks_name_time_and_issuer ... ok
+test all_eight_distrusted_public_keys_are_rejected_even_under_a_trusted_test_ca ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

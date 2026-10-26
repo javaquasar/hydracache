@@ -1,0 +1,56 @@
+{
+  "commit_unchanged": true,
+  "full_package_pass": false,
+  "members": {
+    "coordinator/check-tokio-packet-20261026.py": {
+      "bytes": 2815,
+      "sha256": "04629b4780d9c331ae99978d3c7c5c79b65050efdab85b147ae51bbaaf5040a2"
+    },
+    "integrity/intent.json": {
+      "bytes": 911,
+      "sha256": "06618bb816d92b3d574adee995691a0fbbad397b6be3b4311360e0505cbedd13"
+    },
+    "integrity/result.json": {
+      "bytes": 39,
+      "sha256": "d791f8bc2688a1fce909ede9df56eaae143be31e440fbb70c1017777f7a9fa87"
+    },
+    "integrity/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "integrity/stdout.log": {
+      "bytes": 142,
+      "sha256": "38cb79b435b9f76efd73431caeeaf93348b12539323b76637abbc0a6007c0e63"
+    },
+    "tamper/intent.json": {
+      "bytes": 916,
+      "sha256": "70bc0363e137d42b42cb4e63610edd2bcfab8d32e35216293abcd534da19ce8f"
+    },
+    "tamper/result.json": {
+      "bytes": 39,
+      "sha256": "d791f8bc2688a1fce909ede9df56eaae143be31e440fbb70c1017777f7a9fa87"
+    },
+    "tamper/stderr.log": {
+      "bytes": 109,
+      "sha256": "466ed8e42c053592fa368bbfa25ec45722c66587e31fe3cee582ce5b64e21e72"
+    },
+    "tamper/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "verifier/test_verify.py": {
+      "bytes": 3252,
+      "sha256": "483021314e41c875195ba0a33f827739914733bd43d63ee8374e2464d25a161f"
+    },
+    "verifier/verify.py": {
+      "bytes": 6046,
+      "sha256": "c016cc7e649aa4ed861075c7d6827e786c11b6b0f166761804bab9e2c6122132"
+    }
+  },
+  "parent_index_sha256": "2f984fa20ea11841a8b69a961cbdea872238b97baa00f47fc87c70057879e83e",
+  "policy_pass": false,
+  "release_admitted": false,
+  "schema": "hc074-tokio-packet-controls-v1",
+  "source_commit": "500b16d7d39758170d2bfa0a808c55f5470abc16",
+  "source_unchanged": true
+}

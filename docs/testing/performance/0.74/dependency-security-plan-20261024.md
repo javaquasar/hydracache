@@ -2,10 +2,16 @@
 
 ## Current authority
 
+The [Tokio successor](tokio-security-result-20261026.md) now selects 1.53.3,
+raises the declared minimum and replaces the one direct old constructor with
+explicitly owned unsafe registration. Paired GNU/MSRV controls and focused
+Windows/GNU gates pass; nine findings remain in the current pinned-DB graph.
+No root-catalog trust decision or major YAML/ZIP/D-Bus migration follows from it.
+
 The [subsequent bundled-roots candidate](roots-security-result-20261026.md) is
 tested and archived, not accepted: its 1.0.8 to 1.0.10 catalog comparison removes
 two authorities and adds four. Pending the explicit public trust-scope decision,
-the accepted graph stays restored with ten pinned-DB findings; eight belongs
+that pre-Tokio graph stays restored with ten pinned-DB findings; eight belongs
 only to that archived candidate. Its first test-oracle and admission-gate
 failures remain intact. This is distinct from production issuer/enrollment pins.
 
