@@ -32,7 +32,13 @@ CLI must be exactly the selected diagnostic case, `--exact`, `--nocapture` and
 `--test-threads=1` in the fixed order. Ordinary test execution and listing cannot
 launch this diagnostic workload. No environment opt-in is introduced.
 
-After worker exit, its original creation handle supplies whole-lifetime CPU.
+The worker's path/PID and live creation sample are checked through its original
+handle at the CI primitive's retained-child publication, before its existing
+membership check and single resume. The local accounting owner implements that
+publication hook without changing the CI primitive. Observation failure retains
+the child for cleanup and cannot resume it or adopt a replacement. After exit,
+the same handle must keep its PID, creation identity and monotonic counters;
+it supplies whole-lifetime CPU without another image-path query.
 Two consecutive equal Job snapshots must show no active process and exactly
 nine lifetime members: one worker, four direct launchers and four other
 descendants. Any other count refuses rather than guessing. For the accounted
@@ -71,3 +77,16 @@ raw first results remain evidence; there is no retry-to-pass. The existing
 frequency remain untouched. No server, clock, service, dependency or product
 change is included. CPU numbers from this one control cannot support a speedup
 or overhead acceptance claim.
+
+## First native refusal and changed source follow up
+
+The original committed implementation completes four reference calls, then
+`QueryFullProcessImageNameW` returns error 31 on the already-terminal worker.
+No accounted worker runs and no CPU result is accepted. Preserve that first
+receipt and unchanged source. This is a lifetime boundary error in the observer,
+not a Git failure. Move the worker image query to the already-suspended creation
+boundary as described above; do not delay, suspend or change any Git call.
+One separately recorded control on the changed committed source may then cover
+the fixed schedule. The old attempt is never overwritten or repeated unchanged;
+the original windows and checks remain, with terminal identity carried through
+the original handle rather than an unavailable terminal path query.

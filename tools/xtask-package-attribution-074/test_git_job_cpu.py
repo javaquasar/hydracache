@@ -181,6 +181,56 @@ class Accounting(unittest.TestCase):
         child.close.assert_called_once_with()
         job.close.assert_called_once_with()
 
+    def owner(self):
+        from pathlib import Path
+        api, observer = Mock(), Mock()
+        owner = subject.AccountingJob(api, observer, Path(__file__).resolve())
+        child = Mock(pid=42, handle=123)
+        observer.identity.return_value = (42, str(Path(__file__).resolve()))
+        observer.read.return_value = dict(terminal=False, creation_100ns=1, exit_100ns=None,
+                                          user_100ns=0, kernel_100ns=0, io={})
+        return owner, observer, child
+
+    def test_original_handle_identity_observed_at_child_publication_before_resume(self):
+        owner, observer, child = self.owner()
+        owner.child = child
+        self.assertIs(owner.child, child)
+        self.assertEqual(owner.worker_identity[0], 42)
+        self.assertFalse(owner.worker_start['terminal'])
+        observer.identity.assert_called_once_with(123)
+        observer.read.assert_called_once_with(123)
+        observer.open.assert_not_called()
+        owner.api.spawn.assert_not_called()
+
+    def test_identity_failure_retains_owned_child_for_cleanup(self):
+        for failure in ('query', 'pid', 'path', 'terminal'):
+            owner, observer, child = self.owner()
+            if failure == 'query': observer.identity.side_effect = Refusal('query')
+            elif failure == 'pid': observer.identity.return_value = (43, str(subject.ROOT))
+            elif failure == 'path': observer.identity.return_value = (42, str(subject.ROOT))
+            elif failure == 'terminal': observer.read.return_value.update(terminal=True, exit_100ns=2)
+            with self.subTest(failure=failure), self.assertRaises(Refusal):
+                owner.child = child
+            self.assertIs(owner.child, child)
+
+    def test_original_child_cannot_be_reset_or_replaced(self):
+        owner, _, child = self.owner()
+        owner.child = child
+        for replacement in (None, child, Mock()):
+            with self.assertRaisesRegex(Refusal, 'cannot be replaced'):
+                owner.child = replacement
+            self.assertIs(owner.child, child)
+
+    def test_terminal_worker_must_keep_pre_resume_creation_and_counters(self):
+        owner, _, child = self.owner()
+        owner.child = child
+        first = owner.worker_start
+        terminal = dict(first, terminal=True, exit_100ns=2)
+        subject.validate(first, terminal)
+        for key, value in (('creation_100ns', 2), ('user_100ns', -1), ('kernel_100ns', -1)):
+            with self.subTest(key=key), self.assertRaises(Refusal):
+                subject.validate(first, dict(terminal, **{key: value}))
+
 
 if __name__ == '__main__':
     unittest.main()

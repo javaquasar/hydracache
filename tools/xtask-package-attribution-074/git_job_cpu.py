@@ -44,6 +44,31 @@ class AccountingApi(Api):
                     total=value.total, active=value.active, terminated=value.terminated)
 
 
+class AccountingJob(WindowsJob):
+    """Use CI's retained-child publication BEFORE membership check and resume."""
+    def __init__(self, api, observer, image):
+        self.observer, self.image = observer, image
+        self.worker_identity = self.worker_start = None
+        super().__init__(api)
+
+    @property
+    def child(self):
+        return self._child
+
+    @child.setter
+    def child(self, value):
+        require(getattr(self, '_child', None) is None, 'original worker cannot be replaced')
+        self._child = value  # Retain even if a pre-resume observation refuses.
+        if value is not None:
+            pid, path = self.observer.identity(value.handle)
+            require(pid == value.pid and Path(path).resolve() == self.image, 'original worker identity drift')
+            self.worker_identity = (pid, path)
+            first = self.observer.read(value.handle)
+            validate(None, first)
+            require(first['terminal'] is False, 'original worker exited before release')
+            self.worker_start = first
+
+
 def calculate(job, worker, launcher_rows, calls=CALLS):
     require(type(calls) is int and calls == CALLS, 'fixed call count')
     require(type(job['total']) is int and job['total'] == 1+2*calls and
@@ -178,23 +203,24 @@ def run(build_label, label):
         origin = time.monotonic()
         api, process_api = AccountingApi(), WindowsApi()
         for name in ('reference_cpu_child', 'accounted_cpu_child'):
-            job = WindowsJob(api)
+            job = AccountingJob(api, process_api, image)
             require(api.counters(job.handle) == dict(user_ns=0, kernel_ns=0, total=0, active=0, terminated=0),
                     'new accounting job has prior charges')
             with (out/(name+'.log')).open('xb') as log:
                 child = job.spawn([str(image), '--exact', name, '--nocapture', '--test-threads=1'], ROOT, log, origin+BOUND)
                 code = child.wait(timeout=max(0, origin+BOUND-time.monotonic()))
             require(time.monotonic() < origin+BOUND and code == 0, 'worker exit/deadline refused')
-            pid, path = process_api.identity(child.handle)
-            require(pid == child.pid and Path(path).resolve() == image, 'original worker identity drift')
+            pid, path = job.worker_identity
+            require(process_api.dll.GetProcessId(child.handle) == pid == child.pid, 'retained terminal worker PID drift')
             worker = process_api.read(child.handle)
-            validate(None, worker)
+            validate(job.worker_start, worker)
             first, last = api.counters(job.handle), api.counters(job.handle)
             terminal_job(first, last)
             log_path = out/(name+'.log')
             require(log_path.stat().st_size <= LOG_BYTES, 'worker log size refused')
             data = rows(log_path.read_bytes(), name == 'accounted_cpu_child')
-            row = dict(mode=name, worker_pid=child.pid, worker_image=path, worker=worker, job=first,
+            row = dict(mode=name, worker_pid=child.pid, worker_image=path, worker_initial=job.worker_start,
+                       worker=worker, job=first,
                        job_terminal_samples=[first, last], records=data)
             if name == 'accounted_cpu_child':
                 row['analysis'] = calculate(first, worker, [value['phases']['child_end'] for value in data])

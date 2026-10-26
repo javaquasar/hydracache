@@ -1,4 +1,5 @@
 schema = "hc074-short-git-descendant-cpu-v1"
+revision = "live-worker-identity-before-existing-resume"
 scope = "local diagnostic accounting not V6 or a performance comparison"
 calls_per_worker = 4
 workers = ["reference_cpu_child", "accounted_cpu_child"]
