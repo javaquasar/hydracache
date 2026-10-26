@@ -1,5 +1,12 @@
 # HydraCache Compatibility Register
 
+The separate local diagnostic `hc074-spawn-capture-v1` connects the model-stage
+spawn brackets only through `git_cpu_spawn.py BUILD LABEL --spawn-frames` and a
+new exclusive output root. Matching tools are required; unknown/missing schemas
+refuse after intent before API creation. It does not change the old three caller
+modes or rewrite model/native packets. Operational verdicts remain separate from
+all recorder verdicts; completeness is not activation or production admission.
+
 The local model metadata `hc074-spawn-frames-model-v1` describes three unwired
 coordinator spans for preparation, create-to-retention and membership/release.
 It has no CLI/caller or installed reader and is not a dispatch, product wire or
