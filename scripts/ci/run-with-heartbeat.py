@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import math
 import os
 import signal
 import subprocess
@@ -13,6 +14,8 @@ import sys
 import tempfile
 import time
 from pathlib import Path
+
+from watchdog_windows_job import WindowsJob
 
 
 def parse_args() -> argparse.Namespace:
@@ -29,8 +32,9 @@ def parse_args() -> argparse.Namespace:
         args.command = args.command[1:]
     if not args.command:
         parser.error("a command is required after --")
-    if args.timeout_seconds <= 0 or args.heartbeat_seconds <= 0:
-        parser.error("timeouts must be positive")
+    if (not math.isfinite(args.timeout_seconds) or not math.isfinite(args.heartbeat_seconds)
+            or args.timeout_seconds <= 0 or args.heartbeat_seconds <= 0):
+        parser.error("timeouts must be finite and positive")
     return args
 
 
@@ -50,16 +54,11 @@ def write_receipt(path: Path, receipt: dict[str, object]) -> None:
 
 
 def terminate_tree(process: subprocess.Popen[object]) -> None:
+    if os.name == "nt":
+        raise RuntimeError("Windows cleanup requires the original owned Job")
     if process.poll() is not None:
         return
-    if os.name == "nt":
-        subprocess.run(
-            ["taskkill", "/PID", str(process.pid), "/T", "/F"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=False,
-        )
-    else:
+    if os.name != "nt":
         try:
             os.killpg(process.pid, signal.SIGTERM)
             try:
@@ -78,35 +77,40 @@ def main() -> int:
     classification = "runner-loss"
     exit_code: int | None = None
     process: subprocess.Popen[object] | None = None
+    job = None
     log_handle = None
     detail = "watchdog did not reach a terminal state"
 
     try:
-        creation_flags = subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
         if args.log_file is not None:
             args.log_file.parent.mkdir(parents=True, exist_ok=True)
             log_handle = args.log_file.open("wb")
-        process = subprocess.Popen(
-            args.command,
-            cwd=args.cwd,
-            stdout=log_handle,
-            stderr=subprocess.STDOUT if log_handle is not None else None,
-            start_new_session=os.name != "nt",
-            creationflags=creation_flags,
-        )
         deadline = started + args.timeout_seconds
+        if os.name == "nt":
+            job = WindowsJob()
+            process = job.spawn(args.command, args.cwd, log_handle, deadline)
+        else:
+            process = subprocess.Popen(
+                args.command,
+                cwd=args.cwd,
+                stdout=log_handle,
+                stderr=subprocess.STDOUT if log_handle is not None else None,
+                start_new_session=True,
+                creationflags=0,
+            )
         next_heartbeat = started
         while True:
             exit_code = process.poll()
             now = time.monotonic()
-            if exit_code is not None:
+            if exit_code is not None and (exit_code != 0 or job is None or job.is_empty()):
                 classification = "success" if exit_code == 0 else "product-failure"
                 detail = f"child exited with code {exit_code}"
                 break
             if now >= deadline:
                 classification = "timeout"
                 detail = f"hard deadline of {args.timeout_seconds:g}s exceeded"
-                terminate_tree(process)
+                if job is None:
+                    terminate_tree(process)
                 exit_code = process.poll()
                 break
             if now >= next_heartbeat:
@@ -126,16 +130,50 @@ def main() -> int:
     except KeyboardInterrupt:
         classification = "cancelled"
         detail = "watchdog interrupted"
-        if process is not None:
+        if process is not None and job is None:
             terminate_tree(process)
         exit_code = 130
     except Exception as error:  # noqa: BLE001 - runner failures must become receipts
         classification = "runner-loss"
         detail = f"{type(error).__name__}: {error}"
-        if process is not None:
+        if process is not None and job is None:
             terminate_tree(process)
         exit_code = 125
     finally:
+        if job is not None:
+            process = process if process is not None else job.child
+            cleanup_deadline = time.monotonic() + 5
+            failures = []
+            try:
+                if not job.is_empty():
+                    job.terminate()
+                while not job.is_empty():
+                    if time.monotonic() >= cleanup_deadline:
+                        raise RuntimeError("owned CI Job cleanup exceeded five seconds")
+                    time.sleep(0.01)
+                if process is not None:
+                    process.wait(timeout=max(0, cleanup_deadline - time.monotonic()))
+            except Exception as error:  # Cleanup refusal must override a green/timeout receipt.
+                failures.append(str(error))
+            finally:
+                try:
+                    job.close()
+                except Exception as error:
+                    failures.append(str(error))
+                if process is not None:
+                    try:
+                        if process.poll() is None:
+                            process.kill()  # Failure fallback uses only the original handle.
+                        process.wait(timeout=max(0, cleanup_deadline - time.monotonic()))
+                    except Exception as error:
+                        failures.append(str(error))
+                    try:
+                        process.close()
+                    except Exception as error:
+                        failures.append(str(error))
+            if failures:
+                detail = f"{classification}: {detail}; owned cleanup failed: {'; '.join(failures)}"
+                classification, exit_code = "runner-loss", 125
         if log_handle is not None:
             log_handle.close()
         elapsed = time.monotonic() - started
