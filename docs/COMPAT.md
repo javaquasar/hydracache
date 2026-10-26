@@ -1,5 +1,15 @@
 # HydraCache Compatibility Register
 
+The local offline intent `hc074-offline-capture-attribution-v1` identifies only
+the fixed native coordinator evidence index and its source, never an execution
+request. It creates exclusive intent/result files in a separate diagnostic
+output root. The analyzer accepts only its literal-pinned native index and
+exact `hc074-coordinator-frames-v1` contract; different/future input refuses.
+No old packet is rewritten or migrated, and no installed product reader, wire,
+durable store, ownership protocol or release admission changes. Matching offline
+tooling is required to interpret the new analysis fields; prior packets retain
+their original interpretation.
+
 The opt-in joined original collector output layout v1 creates
 `diagnostic-collector-output-074-<sha256 of original Reserved LF bytes>/collector-attempt-v1/{collector-stdout.bin,collector-stderr.bin}`
 under the original retained `/var/lib/hydracache-performance` parent. Both
