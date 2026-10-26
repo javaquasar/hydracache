@@ -6,6 +6,14 @@ proposals, no frozen C74, and no production server admission. Isolated diagnosti
 experiments have run on the dedicated host; that is different from installing
 the release or starting its production execution path.
 
+Latest package result: [the exact V6 attempt](package-closure-v6-result-20261026.md)
+passes the three previously failing targets, but reaches the same 780-second
+guard. It completes 72/145 targets with 448 passed/zero failed cases; the
+incomplete target has three passes and one missing verdict, while 72 targets
+never start. Fourteen new review/dispatch controls and nine integrity controls
+pass. Full package coverage remains red, independently of the repaired failures;
+no unchanged retry or deadline relaxation is admitted.
+
 The [approved plan](../../../plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md)
 keeps its original thresholds. Its closing rule is to publish the measurements
 and defer changes if none pass, not to tag a documentation-only substitute as

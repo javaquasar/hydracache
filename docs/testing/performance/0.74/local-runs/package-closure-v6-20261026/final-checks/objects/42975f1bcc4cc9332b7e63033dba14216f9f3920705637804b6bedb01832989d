@@ -1,0 +1,10 @@
+test_changed_index_refuses (test_verify.Integrity.test_changed_index_refuses) ... ok
+test_missing_object_refuses (test_verify.Integrity.test_missing_object_refuses) ... ok
+test_original_replays_offline (test_verify.Integrity.test_original_replays_offline) ... ok
+test_source_streams_accounting_cleanup_and_first_refusal_cannot_change (test_verify.Integrity.test_source_streams_accounting_cleanup_and_first_refusal_cannot_change) ... ok
+test_unreviewed_local_parser_refuses (test_verify.Integrity.test_unreviewed_local_parser_refuses) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.983s
+
+OK

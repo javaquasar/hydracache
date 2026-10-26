@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\target\package-v6-offline-join-20261026.py", line 29, in <module>
+    for v in account['targets'] if v['reported_ns'] is not None], key=lambda v: -v['reported_ns'])[:10],
+                                   ~^^^^^^^^^^^^^^^
+KeyError: 'reported_ns'

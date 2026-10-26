@@ -5,6 +5,14 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [first exact V6 package check](package-closure-v6-result-20261026.md) passes
+all three formerly failing targets in its actual prefix. The unchanged
+780-second command still times out: 72/145 targets complete, 448 passed/zero
+failed, one target has three passes and one missing verdict, and 72 targets are
+unstarted. Fourteen review/dispatch controls and nine offline integrity controls
+pass. This closes the observed repairs, not full package coverage. No unchanged
+retry, cache installation, new product hypothesis or admission follows.
+
 The [Windows CI cleanup repair](ci-watchdog-owned-cleanup-result-20261026.md)
 passes all twelve unchanged old cases per compiler, nineteen deterministic
 controls and separate native owner-loss/setup/stream controls. The original

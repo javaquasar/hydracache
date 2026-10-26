@@ -20666,3 +20666,32 @@ checks close those edges without changing either window. The identical nineteen
 tests then pass, followed by six native controls and the twelve old cases per
 compiler on the corrected source. The earlier pass remains a bounded stage result,
 not proof that these previously untested edges were safe.
+
+### Repairing every observed failure does not complete a timed out package
+
+The next exact source/effect review covers 368 Rust files, their closed module
+graph, 45 auxiliary inputs and all 145 ordinary package targets. It is separate
+from the preceding review, which still rejects the new graph. In particular, the
+Windows Job companion is an actual imported effect edge: pinning only the Python
+entry script would miss part of the behavior under test. Dirty-source refusal now
+also includes CI scripts and their line-ending policy. Fourteen controls confirm
+the fixed command, original wrappers, exact scope and refusal without dispatch.
+
+The first complete V6 command then passes all three targets containing the old
+failures: ten history cases, twelve CI cases and two status-reader cases. Yet it
+still hits the original 780-second guard. Only 72 of 145 targets complete, with
+448 passed and zero failed cases. Another target has three successful observations
+but no final verdict for its fourth case; 72 targets never start. Those missing
+verdicts are not failures we can repair from a stack trace, nor passes supplied
+by older focused runs. The package remains red without a retry or longer window.
+
+The saved artifact helper is byte-identical to its older attributed baseline,
+where cumulative helper wall was concentrated in `Command::output()`. That joins
+an existing cost owner, not its old timings or every transitive reader, to the
+current investigation. Creation, useful Git execution and collection still
+overlap in the output interval. Source equivalence and a large interval alone
+cannot tell us which replacement is safe or fast. The earlier cache refusal
+therefore stands: fresh refs/config, short revisions and conditional observations
+must survive an eventual cost repair. The
+[complete result and immutable evidence](../testing/performance/0.74/package-closure-v6-result-20261026.md)
+keep the successful repairs separate from the unresolved capacity and release gates.

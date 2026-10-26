@@ -1,0 +1,115 @@
+"""Retain first v6 outcomes and offline accounting; never launches a package."""
+from pathlib import Path
+import hashlib
+import json
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'tools/xtask-package-attribution-074'))
+import review
+
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/package-closure-v6-20261026'
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+members = {}
+def add(name, raw):
+    assert name not in members
+    members[name] = raw
+
+labels = ['package-v6-controls-first', 'package-v6-dispatch-controls-first',
+          'package-v6-cost-evidence-first', 'package-v6-review-first', 'package-v6-bytecode-first',
+          'package-v6-controls-corrected', 'package-v6-dispatch-controls-corrected',
+          'package-v6-cost-evidence-corrected', 'package-v6-check-first', 'package-v6-indent-first',
+          'package-v6-clippy-first', 'package-v6-controls-final', 'package-v6-fmt-first',
+          'package-v6-syntax-replay-first', 'package-v6-syntax-integrity-first',
+          'package-v6-doc-check-first', 'package-v6-preflight-first', 'package-v6-doc-check-final',
+          'package-v6-contract-check-first', 'package-v6-contract-check-corrected',
+          'package-v6-first', 'package-v6-postflight-first']
+for label in labels:
+    folder = ROOT / 'target/source-continuation-20261024' / label
+    for path in folder.iterdir():
+        assert path.is_file()
+        add('checks/' + label + '/' + path.name, path.read_bytes())
+for label in ('preflight-first', 'first'):
+    for path in (ROOT / 'target/reviewed-package-v6-20261026' / label).iterdir():
+        assert path.is_file()
+        add('coordinator/' + label + '/' + path.name, path.read_bytes())
+gate = json.loads(members['coordinator/first/gate.json'])
+assert gate['head'] == 'fa9e708868b22999d60c9ccd97b694662910a095'
+post = json.loads(members['checks/package-v6-postflight-first/stdout.log'])
+assert {k: v for k, v in gate.items() if k != 'head'} == post
+intent, result = (json.loads(members['checks/package-v6-first/' + name]) for name in ('intent.json', 'result.json'))
+assert intent['source'] == result['source_after'] and result['source_unchanged'] and result['head_unchanged']
+assert intent['head'] == gate['head'] and intent['bound_seconds'] == 780
+analysis = review.parse_transcript(members['checks/package-v6-first/stdout.log'].decode(),
+    members['checks/package-v6-first/stderr.log'].decode(), gate['targets'], result['exit'], result['outer_refusal'], 780)
+assert analysis['expected_targets'] == 145
+add('derived/accounting.json', (json.dumps(analysis, indent=2, sort_keys=True) + '\n').encode())
+for name, digest in gate['auxiliary'].items():
+    raw = (ROOT / name).read_bytes()
+    assert sha(raw) == digest
+    add('auxiliary/' + name, raw)
+for name in ('package_effects_review_v6.py', 'package_replay_v6.py',
+             'test_package_effects_review_v6.py', 'test_package_replay_v6.py'):
+    path = 'tools/historical-blob-batch-074/' + name
+    raw = (ROOT / path).read_bytes()
+    assert sha(raw) == intent['source'][path]
+    add('implementation/' + path, raw)
+path = 'tools/xtask-package-attribution-074/review.py'
+raw = (ROOT / path).read_bytes()
+assert sha(raw) == '0229d4067fffd0d0b5acee7d864efc64aadfb201de1ea3f17944a2f8dddf3c4d'
+add('parser/' + path, raw)
+# Reconstruct only these exact first test versions, then require their captured
+# pre-execution hashes. These are inverse-edit reconstructions, not raw copies.
+name = 'tools/historical-blob-batch-074/test_package_replay_v6.py'
+raw = (ROOT / name).read_text().replace(
+    "replay.run('fixture', root=Path(directory), execute=True)",
+    "replay.run('fixture', root=root, execute=True)")
+first = json.loads(members['checks/package-v6-dispatch-controls-first/intent.json'])
+assert sha(raw.encode()) == first['source'][name]
+add('reconstructed-first-source/' + name, raw.encode())
+name = 'tools/historical-blob-batch-074/test_package_effects_review_v6.py'
+raw = (ROOT / name).read_text()
+before = """            with self.assertRaisesRegex(ValueError, 'unreviewed v6'):
+                self.review(bad)
+        # Even overriding the document pin cannot classify an extra changed
+        # formerly unchanged row as part of the three explicitly reviewed files.
+        with patch.object(gate, 'REVIEWED_AST_SHA256', gate.legacy.document_digest(bad)):
+            with self.assertRaisesRegex(ValueError, 'source/AST delta'):
+                self.review(bad)
+"""
+after = """            with patch.object(gate, 'REVIEWED_AST_SHA256', gate.legacy.document_digest(bad)):
+                with self.assertRaisesRegex(ValueError, 'source/AST delta'):
+                    self.review(bad)
+"""
+assert raw.count(before) == 1
+raw = raw.replace(before, after)
+first = json.loads(members['checks/package-v6-controls-first/intent.json'])
+assert sha(raw.encode()) == first['source'][name]
+add('reconstructed-first-source/' + name, raw.encode())
+add('derived/reconstruction-provenance.json', (json.dumps(dict(
+    method='inverse exact edits; verified against original pre-execution source maps; NOT raw capture',
+    ignored_offline_join_initial_source_not_captured=True), indent=2) + '\n').encode())
+for name in ('run-ci-watchdog-step-20261026.py', 'run-source-step-20261024.py',
+             'run-xtask-package-780-20261024.py', 'package-v6-offline-join-20261026.py', Path(__file__).name):
+    add('wrapper/' + name, (ROOT / 'target' / name).read_bytes())
+add('contract.md', (ROOT / 'docs/testing/performance/0.74/package-closure-v6-contract-20261026.md').read_bytes())
+OUT.mkdir(exist_ok=False)
+(OUT / 'objects').mkdir()
+index = dict(schema='hc074-package-closure-v6-evidence-v1', source_commit=gate['head'],
+             package_pass=analysis['package_pass'], qualification=False, server=False,
+             automatic_retry=False, members={})
+for name, raw in sorted(members.items()):
+    digest = sha(raw)
+    path = OUT / 'objects' / digest
+    if path.exists():
+        assert path.read_bytes() == raw
+    else:
+        with path.open('xb') as stream:
+            stream.write(raw)
+    index['members'][name] = dict(sha256=digest, bytes=len(raw))
+raw = (json.dumps(index, indent=2, sort_keys=True) + '\n').encode()
+with (OUT / 'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=sha(raw), members=len(members), objects=len(list((OUT / 'objects').iterdir())),
+           completed=analysis['completed_targets'], passed=analysis['passed'], failed=analysis['failed'],
+           incomplete=analysis['incomplete_target'], unstarted=len(analysis['unstarted_targets'])))

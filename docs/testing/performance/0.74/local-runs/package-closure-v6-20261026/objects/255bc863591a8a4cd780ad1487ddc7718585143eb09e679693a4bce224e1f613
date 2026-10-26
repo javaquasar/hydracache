@@ -1,0 +1,99 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.04s
+     Running unittests src\lib.rs (target\debug\deps\xtask-3c1584f2b95edf39.exe)
+     Running unittests src\main.rs (target\debug\deps\xtask-3a518eb23cd819f3.exe)
+     Running tests\allocation_copy_071.rs (target\debug\deps\allocation_copy_071-1bd52969ad6dc1f8.exe)
+     Running tests\allocation_retention_070.rs (target\debug\deps\allocation_retention_070-6568b134446e5460.exe)
+     Running tests\allocator_matrix_071.rs (target\debug\deps\allocator_matrix_071-ae8bc70f4857062c.exe)
+     Running tests\artifact_inventory_phase_544_074.rs (target\debug\deps\artifact_inventory_phase_544_074-982330693c7ab609.exe)
+     Running tests\artifact_inventory_reader_074.rs (target\debug\deps\artifact_inventory_reader_074-81312be1991ba5ce.exe)
+     Running tests\authority_breakdown_074.rs (target\debug\deps\authority_breakdown_074-8a1b60003ffc8cce.exe)
+     Running tests\authority_context_074.rs (target\debug\deps\authority_context_074-7bfa8ec9583d5044.exe)
+     Running tests\authority_cpu_074.rs (target\debug\deps\authority_cpu_074-b10306d60decb846.exe)
+     Running tests\authority_expected_name_074.rs (target\debug\deps\authority_expected_name_074-349ea7c5ba3ff15d.exe)
+     Running tests\authority_fd_path_074.rs (target\debug\deps\authority_fd_path_074-a1758de6d3c9df65.exe)
+     Running tests\authority_hex_reader_074.rs (target\debug\deps\authority_hex_reader_074-76568c3c20fa1f3f.exe)
+     Running tests\authority_inventory_074.rs (target\debug\deps\authority_inventory_074-d0a2c801217ddebb.exe)
+     Running tests\authority_key_hex_074.rs (target\debug\deps\authority_key_hex_074-cd6937e62036ede2.exe)
+     Running tests\authority_leaf_cpu_074.rs (target\debug\deps\authority_leaf_cpu_074-895777206d352b8c.exe)
+     Running tests\authority_leaf_name_074.rs (target\debug\deps\authority_leaf_name_074-4095f89c9f169da4.exe)
+     Running tests\authority_name_capacity_074.rs (target\debug\deps\authority_name_capacity_074-4ddc9fdbb567c074.exe)
+     Running tests\authority_open_name_074.rs (target\debug\deps\authority_open_name_074-8b88f469cd38f27a.exe)
+     Running tests\authority_operator_order_074.rs (target\debug\deps\authority_operator_order_074-7efa2792395690f1.exe)
+     Running tests\authority_owned_journal_074.rs (target\debug\deps\authority_owned_journal_074-ea7ff2513d0bc74c.exe)
+     Running tests\authority_owners_074.rs (target\debug\deps\authority_owners_074-77e765e56a41409b.exe)
+     Running tests\authority_read_baseline_074.rs (target\debug\deps\authority_read_baseline_074-4068feec09792c8f.exe)
+     Running tests\authority_reader_phase_074.rs (target\debug\deps\authority_reader_phase_074-26337be553043668.exe)
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-b34664d35eca545a.exe)
+     Running tests\authority_rust_history_074.rs (target\debug\deps\authority_rust_history_074-4c9fed59f38331dc.exe)
+     Running tests\authority_scratch_reuse_074.rs (target\debug\deps\authority_scratch_reuse_074-7e07b9940407ca02.exe)
+     Running tests\authority_storage_source_074.rs (target\debug\deps\authority_storage_source_074-2a6cbf7516727bd9.exe)
+     Running tests\bench_budget.rs (target\debug\deps\bench_budget-f40b21b88cbf2532.exe)
+     Running tests\boot_operations_074.rs (target\debug\deps\boot_operations_074-dd2843e431b8b099.exe)
+     Running tests\bootstrap_build_owner_074.rs (target\debug\deps\bootstrap_build_owner_074-d7767d56854d3940.exe)
+     Running tests\bootstrap_child_boundary_074.rs (target\debug\deps\bootstrap_child_boundary_074-6adfd941ea926e0e.exe)
+     Running tests\bootstrap_child_census_074.rs (target\debug\deps\bootstrap_child_census_074-9c7b2bca07a66280.exe)
+     Running tests\bootstrap_child_reader_074.rs (target\debug\deps\bootstrap_child_reader_074-9d5829d2766fd0c3.exe)
+     Running tests\bootstrap_current_image_074.rs (target\debug\deps\bootstrap_current_image_074-563c666aed8902ce.exe)
+     Running tests\bootstrap_doc_reader_074.rs (target\debug\deps\bootstrap_doc_reader_074-c395d4820476b54c.exe)
+     Running tests\bootstrap_enrollment_074.rs (target\debug\deps\bootstrap_enrollment_074-4bd39d8e9da06c4c.exe)
+     Running tests\bootstrap_entry_binding_074.rs (target\debug\deps\bootstrap_entry_binding_074-d8473b32742535cf.exe)
+     Running tests\bootstrap_image_census_074.rs (target\debug\deps\bootstrap_image_census_074-5d9c0fa9f80c334d.exe)
+     Running tests\bootstrap_installed_origin_074.rs (target\debug\deps\bootstrap_installed_origin_074-5211a27306de9542.exe)
+     Running tests\canary_check.rs (target\debug\deps\canary_check-ad316d7a02d07cd7.exe)
+     Running tests\cancellation_safety.rs (target\debug\deps\cancellation_safety-0d803c6eb7f6ace5.exe)
+     Running tests\census_cost_074.rs (target\debug\deps\census_cost_074-cc21f9b43c2ba5b5.exe)
+     Running tests\ci_reliability_071.rs (target\debug\deps\ci_reliability_071-d1de727d5aa8dc83.exe)
+     Running tests\client_plane_ci.rs (target\debug\deps\client_plane_ci-93e43fddbb87e1f8.exe)
+Error: "HC/2 release admission is missing lanes: fixed-host-soak"
+Error: "HC/2 release admission receipts do not share one commit"
+Error: "HC/2 release admission is missing lanes: fuzz"
+Error: "HC/2 Docker receipt does not bind the reviewed image digest"
+Error: "HC/2 release admission has red lanes: fuzz"
+     Running tests\client_release_068.rs (target\debug\deps\client_release_068-e93db522fd2b0703.exe)
+     Running tests\collector_peer_baseline_074.rs (target\debug\deps\collector_peer_baseline_074-953c516c63f43d12.exe)
+     Running tests\collector_peer_capacity_074.rs (target\debug\deps\collector_peer_capacity_074-fbfcf741c4628d07.exe)
+     Running tests\context_document_baseline_074.rs (target\debug\deps\context_document_baseline_074-a5033dff8642789f.exe)
+     Running tests\context_document_stack_074.rs (target\debug\deps\context_document_stack_074-ab8ea539477b211f.exe)
+     Running tests\cost_phase_reader_074.rs (target\debug\deps\cost_phase_reader_074-428f493febfa69ec.exe)
+     Running tests\coverage_ratchet.rs (target\debug\deps\coverage_ratchet-4b245681e3013140.exe)
+     Running tests\current_frontier_074.rs (target\debug\deps\current_frontier_074-86f93fccfd1affc3.exe)
+     Running tests\current_tree_input_audit_074.rs (target\debug\deps\current_tree_input_audit_074-c3765a3eaa3bd40a.exe)
+     Running tests\current_tree_reader_074.rs (target\debug\deps\current_tree_reader_074-5e0026a4ef1e7069.exe)
+     Running tests\custody_preparation_cost_074.rs (target\debug\deps\custody_preparation_cost_074-9cf5d34a7aea0a6d.exe)
+     Running tests\custody_reader_074.rs (target\debug\deps\custody_reader_074-73adf2d682286a9a.exe)
+     Running tests\demo_static.rs (target\debug\deps\demo_static-b8bf069315418a90.exe)
+     Running tests\determinism_sweep.rs (target\debug\deps\determinism_sweep-071a8f2d482b62b6.exe)
+     Running tests\diagnostic_artifact_fixture_074.rs (target\debug\deps\diagnostic_artifact_fixture_074-0f5571a089bacb49.exe)
+     Running tests\direct_output_cost_074.rs (target\debug\deps\direct_output_cost_074-ddf8936fa3e84b73.exe)
+     Running tests\doc_check.rs (target\debug\deps\doc_check-74c8f39e043cea48.exe)
+     Running tests\document_scratch_cost_074.rs (target\debug\deps\document_scratch_cost_074-bfd87b7eb8eef06c.exe)
+     Running tests\document_scratch_reader_074.rs (target\debug\deps\document_scratch_reader_074-a06e22265a13169e.exe)
+     Running tests\evidence_run.rs (target\debug\deps\evidence_run-325839df405665c2.exe)
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/fast-suite-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+     Running tests\fast_suite.rs (target\debug\deps\fast_suite-a330e97d2c08840b.exe)
+     Running tests\fresh_kernel_cost_074.rs (target\debug\deps\fresh_kernel_cost_074-b7d065423f52a828.exe)
+     Running tests\fresh_status_reader_074.rs (target\debug\deps\fresh_status_reader_074-3087550c9b324258.exe)
+     Running tests\gated_tests.rs (target\debug\deps\gated_tests-eb180a28e1a77ad9.exe)
+     Running tests\get_owner_terminal_074.rs (target\debug\deps\get_owner_terminal_074-c5695dab60237c56.exe)
+     Running tests\held_activation_ingress_074.rs (target\debug\deps\held_activation_ingress_074-95fd4a15fe644fd6.exe)
+     Running tests\held_bind_alias_refusal_074.rs (target\debug\deps\held_bind_alias_refusal_074-9b443963aa7ce01d.exe)
+     Running tests\held_complete_role_census_074.rs (target\debug\deps\held_complete_role_census_074-8d8652a4de24ccda.exe)

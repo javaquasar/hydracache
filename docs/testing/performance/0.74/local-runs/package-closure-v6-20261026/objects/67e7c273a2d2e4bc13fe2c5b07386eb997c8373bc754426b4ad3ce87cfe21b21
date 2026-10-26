@@ -1,0 +1,11 @@
+test_bad_labels_and_wrapper_drift_refuse (test_package_replay_v6.ReplayV6.test_bad_labels_and_wrapper_drift_refuse) ... ok
+test_default_and_exclusive_destination_do_not_dispatch (test_package_replay_v6.ReplayV6.test_default_and_exclusive_destination_do_not_dispatch) ... ok
+test_dirty_source_retains_refusal_without_dispatch (test_package_replay_v6.ReplayV6.test_dirty_source_retains_refusal_without_dispatch) ... ok
+test_environment_or_review_failure_never_dispatches (test_package_replay_v6.ReplayV6.test_environment_or_review_failure_never_dispatches) ... ok
+test_missing_input_and_syntax_drift_refuse (test_package_replay_v6.ReplayV6.test_missing_input_and_syntax_drift_refuse) ... ok
+test_single_dispatch_keeps_original_command_wrappers_and_expanded_dirty_scope (test_package_replay_v6.ReplayV6.test_single_dispatch_keeps_original_command_wrappers_and_expanded_dirty_scope) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.159s
+
+OK

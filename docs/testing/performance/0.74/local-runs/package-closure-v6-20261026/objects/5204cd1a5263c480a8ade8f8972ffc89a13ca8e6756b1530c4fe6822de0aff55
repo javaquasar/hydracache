@@ -1,0 +1,13 @@
+test_catalog_cannot_drop_add_duplicate_or_reorder (test_package_effects_review_v6.RepairedWindowsScope.test_catalog_cannot_drop_add_duplicate_or_reorder) ... ok
+test_changed_added_and_unchanged_ast_are_all_exact (test_package_effects_review_v6.RepairedWindowsScope.test_changed_added_and_unchanged_ast_are_all_exact) ... ok
+test_fixed_368_sources_45_auxiliary_145_targets_do_not_admit_product (test_package_effects_review_v6.RepairedWindowsScope.test_fixed_368_sources_45_auxiliary_145_targets_do_not_admit_product) ... ok
+test_missing_duplicate_module_and_host_effects_refuse (test_package_effects_review_v6.RepairedWindowsScope.test_missing_duplicate_module_and_host_effects_refuse) ... ok
+test_preserved_v5_auxiliary_pins_change_only_for_explicit_heartbeat_successor (test_package_effects_review_v6.RepairedWindowsScope.test_preserved_v5_auxiliary_pins_change_only_for_explicit_heartbeat_successor) ... ok
+test_rust_heartbeat_companion_descriptor_and_old_auxiliary_are_fixed (test_package_effects_review_v6.RepairedWindowsScope.test_rust_heartbeat_companion_descriptor_and_old_auxiliary_are_fixed) ... ok
+test_source_document_cannot_learn_its_own_pin_or_enable_execution (test_package_effects_review_v6.RepairedWindowsScope.test_source_document_cannot_learn_its_own_pin_or_enable_execution) ... ok
+test_v5_still_refuses_new_graph (test_package_effects_review_v6.RepairedWindowsScope.test_v5_still_refuses_new_graph) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 75.040s
+
+OK

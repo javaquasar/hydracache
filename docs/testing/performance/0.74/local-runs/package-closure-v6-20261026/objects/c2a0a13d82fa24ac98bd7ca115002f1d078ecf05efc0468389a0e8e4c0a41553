@@ -1,0 +1,4 @@
+{
+  "method": "inverse exact edits; verified against original pre-execution source maps; NOT raw capture",
+  "ignored_offline_join_initial_source_not_captured": true
+}

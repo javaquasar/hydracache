@@ -1,0 +1,7 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.70s
+     Running `target\debug\xtask.exe performance-contract-check --manifest docs/testing/performance/0.74/qualification-manifest.toml`
+Error: "unsupported performance contract argument: --manifest"
+error: process didn't exit successfully: `target\debug\xtask.exe performance-contract-check --manifest docs/testing/performance/0.74/qualification-manifest.toml` (exit code: 1)

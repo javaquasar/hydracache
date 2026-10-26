@@ -1,0 +1,5 @@
+ERROR: The process with PID 31880 (child process of PID 32728) could not be terminated.
+Reason: The operation attempted is not supported.
+SUCCESS: The process with PID 32728 (child process of PID 36812) has been terminated.
+SUCCESS: The process with PID 36812 (child process of PID 50920) has been terminated.
+SUCCESS: The process with PID 50920 (child process of PID 52052) has been terminated.

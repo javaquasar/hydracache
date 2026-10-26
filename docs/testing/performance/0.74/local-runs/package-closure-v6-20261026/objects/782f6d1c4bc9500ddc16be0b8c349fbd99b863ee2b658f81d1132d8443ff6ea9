@@ -1,0 +1,34 @@
+"""Join immutable helper evidence and v5 source identities without another profile."""
+import hashlib
+import json
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'tools/xtask-package-attribution-074'))
+import preservation_reuse_audit as reuse
+import review
+
+folder = ROOT / 'docs/testing/performance/0.74/local-runs/package-closure-v5-20261026'
+raw = (folder / 'index.json').read_bytes()
+assert review.sha(raw) == 'd6e157fecd2749e29122dfd95f6029e864284c407ab5a6aad91880f41bb4b011'
+index = review.decode_json(raw)
+def member(name):
+    return review.member(folder, index, name)
+gate = review.decode_json(member('coordinator/first/gate.json'))
+account = review.decode_json(member('derived/accounting.json'))
+assert gate['sources'][reuse.sweep.SOURCE] == reuse.sweep.SOURCE_SHA256
+assert review.sha((ROOT / reuse.sweep.SOURCE).read_bytes()) == reuse.sweep.SOURCE_SHA256
+audit = reuse.audit(ROOT)
+assert audit['current_helper_equals_original'] and audit['retained_measured_helper_erases_to_original']
+result = dict(schema='hc074-v5-existing-cost-evidence-join-v1',
+    v5_source='9cc82116af63c7eac2e6ca4a6ff4c4f5e815a8c3', helper_source_sha256=reuse.sweep.SOURCE_SHA256,
+    v5_helper_bytes_identical_to_old_profile_baseline=True, old_profile=audit,
+    completed_targets=account['completed_targets'], expected_targets=account['expected_targets'],
+    ranked_completed_spans=sorted([dict(target=v['target'], reported_ns=v['reported_ns'])
+        for v in account['targets'] if v['reported_seconds'] is not None], key=lambda v: -v['reported_ns'])[:10],
+    old_profile_times_transferred_to_v5=False, current_helper_unchanged=True,
+    current_transitive_read_graph_attested=False, cost_saving_estimated=False,
+    runtime_cache_or_batch_admitted=False, observations_changed=False,
+    package_replayed=False, workload_or_git_launched=False, server=False, package_pass=False)
+print(json.dumps(result, indent=2, sort_keys=True))

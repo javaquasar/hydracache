@@ -1,0 +1,393 @@
+{
+  "completed_targets": 76,
+  "cost_saving_estimated": false,
+  "current_helper_unchanged": true,
+  "current_transitive_read_graph_attested": false,
+  "expected_targets": 144,
+  "helper_source_sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+  "observations_changed": false,
+  "old_profile": {
+    "cases": [
+      {
+        "case": "actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift",
+        "commands": {
+          "show": 4
+        },
+        "distinct_literal_show_queries": 4,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 4
+      },
+      {
+        "case": "actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats",
+        "commands": {
+          "ls-files": 1,
+          "ls-tree": 1,
+          "show": 450
+        },
+        "distinct_literal_show_queries": 450,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 450
+      },
+      {
+        "case": "consuming_held_join_exact_adapter_rejects_missing_duplicate_extra_and_body_drift",
+        "commands": {
+          "show": 3
+        },
+        "distinct_literal_show_queries": 3,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 3
+      },
+      {
+        "case": "consuming_held_join_preserves_all_443_old_sources_and_formats",
+        "commands": {
+          "ls-files": 1,
+          "ls-tree": 1,
+          "show": 448
+        },
+        "distinct_literal_show_queries": 448,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 448
+      },
+      {
+        "case": "held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift",
+        "commands": {
+          "show": 4
+        },
+        "distinct_literal_show_queries": 2,
+        "literal_occurrences_beyond_first": 2,
+        "show_calls": 4
+      },
+      {
+        "case": "held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift",
+        "commands": {
+          "show": 2
+        },
+        "distinct_literal_show_queries": 2,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 2
+      },
+      {
+        "case": "held_trust_preserves_all_442_preceding_sources_and_production_inputs",
+        "commands": {
+          "ls-files": 1,
+          "ls-tree": 1,
+          "show": 446
+        },
+        "distinct_literal_show_queries": 446,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 446
+      },
+      {
+        "case": "immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift",
+        "commands": {
+          "show": 2
+        },
+        "distinct_literal_show_queries": 2,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 2
+      },
+      {
+        "case": "immutable_fixture_changes_only_old_input_helper_not_any_old_assertion",
+        "commands": {
+          "show": 2
+        },
+        "distinct_literal_show_queries": 2,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 2
+      },
+      {
+        "case": "immutable_fixture_is_exact_worker_blob_and_checkout_keeps_raw_lf",
+        "commands": {
+          "check-attr": 1,
+          "hash-object": 1
+        },
+        "distinct_literal_show_queries": 0,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 0
+      },
+      {
+        "case": "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs",
+        "commands": {
+          "ls-files": 1,
+          "ls-tree": 1,
+          "show": 442
+        },
+        "distinct_literal_show_queries": 442,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 442
+      },
+      {
+        "case": "launcher_adapter_refuses_missing_duplicate_and_unrelated_drift",
+        "commands": {
+          "show": 2
+        },
+        "distinct_literal_show_queries": 2,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 2
+      },
+      {
+        "case": "launcher_preserves_all_438_preceding_sources_and_exact_old_formats",
+        "commands": {
+          "ls-files": 1,
+          "ls-tree": 1,
+          "show": 442
+        },
+        "distinct_literal_show_queries": 442,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 442
+      },
+      {
+        "case": "namespace_adapter_refuses_missing_duplicate_and_unrelated_drift",
+        "commands": {
+          "show": 2
+        },
+        "distinct_literal_show_queries": 2,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 2
+      },
+      {
+        "case": "namespace_fixture_is_test_only_private_mount_and_not_manager_authority",
+        "commands": {},
+        "distinct_literal_show_queries": 0,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 0
+      },
+      {
+        "case": "role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift",
+        "commands": {
+          "show": 2
+        },
+        "distinct_literal_show_queries": 2,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 2
+      },
+      {
+        "case": "role_binding_preserves_all_441_preceding_runtime_sources_and_inputs",
+        "commands": {
+          "ls-files": 1,
+          "ls-tree": 1,
+          "show": 445
+        },
+        "distinct_literal_show_queries": 445,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 445
+      },
+      {
+        "case": "role_files_adapter_refuses_missing_duplicate_and_unrelated_drift",
+        "commands": {
+          "show": 1
+        },
+        "distinct_literal_show_queries": 1,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 1
+      },
+      {
+        "case": "role_files_preserve_all_440_previous_runtime_sources_and_inputs",
+        "commands": {
+          "ls-files": 1,
+          "ls-tree": 1,
+          "show": 444
+        },
+        "distinct_literal_show_queries": 444,
+        "literal_occurrences_beyond_first": 0,
+        "show_calls": 444
+      }
+    ],
+    "command_shapes": {
+      "fresh_fixture_attributes": 1,
+      "fresh_fixture_bytes": 1,
+      "fresh_worktree_inventory": 7,
+      "full40_default_replacements": 1346,
+      "historical_inventory_default_replacements": 7,
+      "short_default_replacements": 1795
+    },
+    "current_helper_equals_original": true,
+    "current_helper_erases_to_original": false,
+    "default_replacement_policy_may_change_between_original_calls": true,
+    "distinct_literal_show_queries": 3124,
+    "elapsed_or_cpu_saving_estimated": false,
+    "frames": 19,
+    "fresh_read_calls": 3140,
+    "git_calls": 3157,
+    "helper_packet_sha256": "f239630ed26fc19beae9ab4163a59e4807747307b81293e859ef6499208b8b99",
+    "idealized_exact_key_model": "initially empty shared cache; no misses or failed publication hidden; literal keys only",
+    "independently_enrolled_per_query_body_pins": false,
+    "literal_occurrences_beyond_first": 17,
+    "literal_reuse_is_admission": false,
+    "measurements_repeated": false,
+    "observed_cache_hits": false,
+    "original_packet_sha256": "e9b8a923723360bce644c9de558113bf084630d1c4a72916dd0bfd3d418fc553",
+    "original_proven_sweep_lower_bound": 3116,
+    "original_replacement_or_config_stability_attested": false,
+    "other_helpers_or_previous_warming_included": false,
+    "package_pass": false,
+    "preplanned_prefetch_changes_conditional_observation_schedule": true,
+    "profile_log_sha256": "c6ec56f2d6fd855e61f1c7d05b0fb9fe922f8501c5146f016d78c611b7ba04eb",
+    "reduced_startup_candidate_admitted": false,
+    "repeated_queries": [
+      {
+        "arguments": [
+          "show",
+          "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8:docs/COMPAT.md"
+        ],
+        "occurrences": 3
+      },
+      {
+        "arguments": [
+          "show",
+          "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8:docs/testing/gated-test-registry.toml"
+        ],
+        "occurrences": 2
+      },
+      {
+        "arguments": [
+          "show",
+          "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8:tools/long-run-supervisor-074/src/diagnostic_builder.rs"
+        ],
+        "occurrences": 3
+      },
+      {
+        "arguments": [
+          "show",
+          "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8:tools/long-run-supervisor-074/src/diagnostic_fixed_slice_tests.rs"
+        ],
+        "occurrences": 2
+      },
+      {
+        "arguments": [
+          "show",
+          "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8:tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs"
+        ],
+        "occurrences": 2
+      },
+      {
+        "arguments": [
+          "show",
+          "23c57b77523ad1cc16b1a79fc90b02a125f8d9b8:tools/long-run-supervisor-074/tests/diagnostic_receipts.rs"
+        ],
+        "occurrences": 2
+      },
+      {
+        "arguments": [
+          "show",
+          "2a86c1fd:docs/COMPAT.md"
+        ],
+        "occurrences": 2
+      },
+      {
+        "arguments": [
+          "show",
+          "2a86c1fd:docs/testing/gated-test-registry.toml"
+        ],
+        "occurrences": 2
+      },
+      {
+        "arguments": [
+          "show",
+          "697a911a:docs/COMPAT.md"
+        ],
+        "occurrences": 2
+      },
+      {
+        "arguments": [
+          "show",
+          "697a911a:tools/long-run-supervisor-074/src/diagnostic_held_build.rs"
+        ],
+        "occurrences": 2
+      },
+      {
+        "arguments": [
+          "show",
+          "6c6e47ee:docs/testing/gated-test-registry.toml"
+        ],
+        "occurrences": 2
+      },
+      {
+        "arguments": [
+          "show",
+          "6c6e47ee:tools/long-run-supervisor-074/src/diagnostic_consuming_held_join.rs"
+        ],
+        "occurrences": 2
+      },
+      {
+        "arguments": [
+          "show",
+          "6c6e47ee:tools/long-run-supervisor-074/src/diagnostic_held_late_trust.rs"
+        ],
+        "occurrences": 2
+      },
+      {
+        "arguments": [
+          "show",
+          "6c6e47ee:tools/long-run-supervisor-074/src/diagnostic_privileged_root_cgroup_fixture.rs"
+        ],
+        "occurrences": 2
+      },
+      {
+        "arguments": [
+          "show",
+          "773e6bf0:tools/long-run-supervisor-074/src/diagnostic_held_build.rs"
+        ],
+        "occurrences": 2
+      }
+    ],
+    "retained_measured_helper_erases_to_original": true,
+    "runtime_changed": false,
+    "schema": "hc074-preservation-reuse-audit-v1",
+    "server_admission": false,
+    "show_calls": 3141,
+    "source_sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+    "subprocesses_executed": false
+  },
+  "old_profile_times_transferred_to_v5": false,
+  "package_pass": false,
+  "package_replayed": false,
+  "ranked_completed_spans": [
+    {
+      "reported_ns": 159620000000,
+      "target": "tests/diagnostic_artifact_fixture_074.rs"
+    },
+    {
+      "reported_ns": 71260000000,
+      "target": "tests/document_scratch_cost_074.rs"
+    },
+    {
+      "reported_ns": 70760000000,
+      "target": "tests/current_tree_input_audit_074.rs"
+    },
+    {
+      "reported_ns": 65670000000,
+      "target": "tests/custody_preparation_cost_074.rs"
+    },
+    {
+      "reported_ns": 25570000000,
+      "target": "tests/gated_tests.rs"
+    },
+    {
+      "reported_ns": 22300000000,
+      "target": "tests/current_tree_reader_074.rs"
+    },
+    {
+      "reported_ns": 17390000000,
+      "target": "tests/authority_rust_history_074.rs"
+    },
+    {
+      "reported_ns": 16630000000,
+      "target": "tests/authority_runtime_074.rs"
+    },
+    {
+      "reported_ns": 14770000000,
+      "target": "tests/evidence_run.rs"
+    },
+    {
+      "reported_ns": 12690000000,
+      "target": "unittests src/lib.rs"
+    }
+  ],
+  "runtime_cache_or_batch_admitted": false,
+  "schema": "hc074-v5-existing-cost-evidence-join-v1",
+  "server": false,
+  "v5_helper_bytes_identical_to_old_profile_baseline": true,
+  "v5_source": "9cc82116af63c7eac2e6ca4a6ff4c4f5e815a8c3",
+  "workload_or_git_launched": false
+}

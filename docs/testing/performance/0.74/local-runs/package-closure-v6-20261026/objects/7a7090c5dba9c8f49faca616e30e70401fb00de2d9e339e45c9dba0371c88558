@@ -1,0 +1,9 @@
+test_index_change_refuses (test_verify.Integrity.test_index_change_refuses) ... ok
+test_missing_object_refuses (test_verify.Integrity.test_missing_object_refuses) ... ok
+test_original_replays_offline (test_verify.Integrity.test_original_replays_offline) ... ok
+test_source_syntax_receipts_and_unchanged_auxiliary_mutations_refuse (test_verify.Integrity.test_source_syntax_receipts_and_unchanged_auxiliary_mutations_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 1.007s
+
+OK

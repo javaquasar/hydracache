@@ -1,0 +1,123 @@
+{
+  "members": {
+    "bytecode/intent.json": {
+      "bytes": 345644,
+      "sha256": "916a02cecec8674e9ceea93e6c2b60d217da3d30b1000445081bcaf51c5fefcf"
+    },
+    "bytecode/result.json": {
+      "bytes": 344956,
+      "sha256": "6b4937bac9dd21202d67bab9a10f5a5c829e80648c76f79ab374edb620efe7c3"
+    },
+    "bytecode/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "bytecode/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "collector.py": {
+      "bytes": 2293,
+      "sha256": "3b3b75ea87bf3b08d334683c804c8049117c24dd2eeb52670eab257b23afd997"
+    },
+    "contract-check/intent.json": {
+      "bytes": 345318,
+      "sha256": "2b7f65486abc1b81c37dffad7d74f7a625b7ad48035262fcdbe4b22f783fbadf"
+    },
+    "contract-check/result.json": {
+      "bytes": 344956,
+      "sha256": "6b4937bac9dd21202d67bab9a10f5a5c829e80648c76f79ab374edb620efe7c3"
+    },
+    "contract-check/stderr.log": {
+      "bytes": 392,
+      "sha256": "e0010d0675d4ce514304cbe6cb0dcd870f7d89e796147abe0b7ed2997c842a16"
+    },
+    "contract-check/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "doc-check/intent.json": {
+      "bytes": 345270,
+      "sha256": "998d1022cbe47e41362d26c1c8b072cedb84af2db01e0256e442c02cba7dd4ad"
+    },
+    "doc-check/result.json": {
+      "bytes": 344956,
+      "sha256": "6b4937bac9dd21202d67bab9a10f5a5c829e80648c76f79ab374edb620efe7c3"
+    },
+    "doc-check/stderr.log": {
+      "bytes": 334,
+      "sha256": "e9f4306a79d55431999c80992bbba96f456599f919e2d0da847d1fd848111e2c"
+    },
+    "doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "indent/intent.json": {
+      "bytes": 345469,
+      "sha256": "e34ae8a7ae1130a19cd4887cc247ad294296c176aa33c141405c9a8c677cc2c6"
+    },
+    "indent/result.json": {
+      "bytes": 344956,
+      "sha256": "6b4937bac9dd21202d67bab9a10f5a5c829e80648c76f79ab374edb620efe7c3"
+    },
+    "indent/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "indent/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "result-integrity/intent.json": {
+      "bytes": 345349,
+      "sha256": "b1f8a23e2545a919a6da939b7f6a82e1da371a19ff4856d8ce2749321d450ae4"
+    },
+    "result-integrity/result.json": {
+      "bytes": 344956,
+      "sha256": "6b4937bac9dd21202d67bab9a10f5a5c829e80648c76f79ab374edb620efe7c3"
+    },
+    "result-integrity/stderr.log": {
+      "bytes": 649,
+      "sha256": "42975f1bcc4cc9332b7e63033dba14216f9f3920705637804b6bedb01832989d"
+    },
+    "result-integrity/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "syntax-integrity/intent.json": {
+      "bytes": 345348,
+      "sha256": "9bc1ac031e180aa9d4958cbeea48a112a3ccb10126c5b2b2ce4c955f1bd820e9"
+    },
+    "syntax-integrity/result.json": {
+      "bytes": 344956,
+      "sha256": "6b4937bac9dd21202d67bab9a10f5a5c829e80648c76f79ab374edb620efe7c3"
+    },
+    "syntax-integrity/stderr.log": {
+      "bytes": 537,
+      "sha256": "aa34178508164aa68c8e1a16a719296e3456c34d17998fef9414440de7118095"
+    },
+    "syntax-integrity/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "verifier/package-closure-v6-20261026/test_verify.py": {
+      "bytes": 2590,
+      "sha256": "1ca317ece2474083c61b5d358a1f35b69e905c6e2a5686763dd475559f3e5089"
+    },
+    "verifier/package-closure-v6-20261026/verify.py": {
+      "bytes": 9370,
+      "sha256": "bc2c4abcc5eed2707cad6025a6009e1d82b663e2d47a7806182ea939ae6333b7"
+    },
+    "verifier/package-review-v6-20261026/test_verify.py": {
+      "bytes": 2016,
+      "sha256": "c5435b1fdf58cec2e67cb87801d4b20cf359d223352677a9edaf639bc34bd063"
+    },
+    "verifier/package-review-v6-20261026/verify.py": {
+      "bytes": 3594,
+      "sha256": "acd98662765e4bceb6819de71be357dfa757d096b340b738633cd2cf3cc97e3f"
+    }
+  },
+  "package_pass": false,
+  "product_or_qualification_admission": false,
+  "schema": "hc074-v6-final-checks-v1"
+}
