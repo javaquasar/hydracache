@@ -1,7 +1,7 @@
 //! Enumerate the complete current gate frontier, never stop at its first drift.
 #[path = "../../../tools/authority-rust-history-074/contract.rs"]
 mod contract;
-#[path = "support/current_tree_input.rs"]
+#[path = "../../../tools/remaining-readers-074/inputs.rs"]
 mod current_inputs;
 #[path = "../../../tools/authority-runtime-074/gate.rs"]
 mod runtime;

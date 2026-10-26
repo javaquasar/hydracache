@@ -8,7 +8,7 @@ pub(crate) const PATHS: [&str; 5] = [
     "crates/xtask/tests/pid_path_cost_074.rs",
     "crates/xtask/tests/held_preparation_cost_074.rs",
 ];
-pub(crate) fn accepts(path: &str, raw: &str) -> bool {
+fn accepts_previous(path: &str, raw: &str) -> bool {
     PATHS.contains(&path) && raw.replace("\r\n", "\n") == crate::runtime::frozen(REVIEWED, path)
 }
 pub(crate) fn predecessor(path: &str, raw: &str) -> String {
@@ -26,4 +26,14 @@ pub(crate) fn read(path: &str) -> String {
     crate::runtime_io::read_to_string(input)
         .unwrap()
         .replace('\r', "")
+}
+
+#[path = "../../../../tools/remaining-readers-074/contract.rs"]
+mod remaining_phase;
+pub(crate) fn accepts(path: &str, raw: &str) -> bool {
+    if path == remaining_phase::FRESH {
+        return remaining_phase::previous(path, raw)
+            .is_some_and(|previous| accepts_previous(path, &previous));
+    }
+    accepts_previous(path, raw)
 }

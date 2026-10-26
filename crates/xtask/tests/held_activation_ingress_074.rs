@@ -117,7 +117,7 @@ fn activation_ingress_has_no_clock_descriptor_manager_or_unknown_environment_cle
 #[test]
 fn activation_ingress_compatibility_registration_preserves_every_old_format_byte() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let raw = std::fs::read_to_string(root.join("docs/COMPAT.md"))
+    let raw = bootstrap_docs::read_to_string(root.join("docs/COMPAT.md"))
         .unwrap()
         .replace('\r', "");
     let raw = bootstrap_guard::compat_view(&build_guard::compat_view(&raw));
@@ -139,3 +139,6 @@ fn activation_ingress_compatibility_registration_preserves_every_old_format_byte
     assert!(raw.contains("release:worker:config:creator:root-a:root-b:alarm:bootstrap"));
     assert!(raw.contains("--systemd-activation-v1"));
 }
+
+#[path = "../../../tools/bootstrap-doc-reader-074/io.rs"]
+mod bootstrap_docs;

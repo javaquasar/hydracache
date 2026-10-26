@@ -20,6 +20,11 @@ fn read(path: &str) -> String {
     )
     .unwrap()
     .replace('\r', "");
+    let raw = if path == "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs" {
+        runtime::successor::project(path, raw)
+    } else {
+        raw
+    };
     guard::pid_path::custody_cost::document_scratch::normalize(path, &raw)
 }
 fn old(path: &str) -> String {
