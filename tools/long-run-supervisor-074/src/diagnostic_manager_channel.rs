@@ -226,12 +226,25 @@ impl FixedManagerChannel {
     }
 }
 
+// Private ownership boundary; the only production consumer is bound below.
+fn register_operation_alarm(
+    file: &std::fs::File,
+) -> Result<tokio::io::unix::AsyncFd<std::fs::File>> {
+    let owned = io(file.try_clone())?;
+    // SAFETY: the private duplicate is owned by File, which always returns the
+    // same live FD. The sole production consumer keeps AsyncFd immutable and
+    // local to bound: no get_mut, into_inner, raw close/rebind, leak or escape.
+    // Cancellation/return drops AsyncFd, deregistering before closing its File;
+    // aliases own distinct descriptor numbers and cannot close this duplicate.
+    unsafe { tokio::io::unix::AsyncFd::register(owned) }.map_err(|_| ChannelError::Io)
+}
+
 impl Operation {
     async fn bound<T>(&self, future: impl Future<Output = Result<T>>) -> Result<T> {
         if clock()? >= self.deadline {
             return Err(ChannelError::Deadline);
         }
-        let alarm = io(tokio::io::unix::AsyncFd::new(io(self.file.try_clone())?))?;
+        let alarm = register_operation_alarm(&self.file)?;
         tokio::select! {
             biased;
             readiness=alarm.readable() => { let _guard=readiness.map_err(|_|ChannelError::Io)?; Err(ChannelError::Deadline) }
@@ -245,6 +258,10 @@ impl Operation {
 #[cfg(test)]
 #[path = "diagnostic_manager_channel_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "diagnostic_manager_alarm_tests.rs"]
+mod alarm_tests;
 
 #[path = "diagnostic_original_manager_join.rs"]
 mod original_join;
