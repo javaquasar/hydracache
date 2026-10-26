@@ -32,6 +32,14 @@ not production all-writer proof. A new exact source/effect review is required
 before any changed-source full dispatch. Cost attribution and source-reader
 semantics must not be replaced by a cache, filtered suffix or larger timeout.
 
+The [current security successor audit](security-successor-audit-result-20261026.md)
+retains the first old lock-guard failure and V6 preflight source-drift refusal.
+Twenty-two strict controls separate the three approved security nodes from other
+changes. A fresh closed syntax census has 369 Rust files/146 default targets;
+the Linux heartbeat companion is outside the old auxiliary catalog. Complete
+the narrow historical input bridge and current effect review before dispatch;
+the audit itself installs neither a projection nor an execution permission.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

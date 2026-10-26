@@ -1,0 +1,46 @@
+"""Append verifier provenance; the primary evidence index remains immutable."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+PACKET = ROOT/'docs/testing/performance/0.74/local-runs/security-successor-audit-20261026'
+OUT = PACKET/'verification'
+RAW = ROOT/'target/security-successor-20261026'
+PHASES = {'packet-verify':1,'packet-controls':1,'packet-stdout-oracle':0,'packet-stdout-controls':0}
+if hashlib.sha256((PACKET/'index.json').read_bytes()).hexdigest() != 'af9931a32cb6e60a0cd4390845056b8df5eea027fb6fa1ef9d8834573389835c':
+    raise ValueError('primary index differs')
+for name,code in PHASES.items():
+    value = json.loads((RAW/name/'result.json').read_bytes())
+    if value['exit'] != code or value['outer_refusal'] is not None or value['source_unchanged'] is not True:
+        raise ValueError('verifier first outcome differs')
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+def take(name, raw):
+    digest = hashlib.sha256(raw).hexdigest()
+    path = OUT/'objects'/digest
+    if not path.exists():
+        with path.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw),sha256=digest)
+for phase in PHASES:
+    for path in sorted((RAW/phase).rglob('*')):
+        if path.is_file():
+            take('checks/'+phase+'/'+path.relative_to(RAW/phase).as_posix(),path.read_bytes())
+for name in ('verify.py','test_verify.py'):
+    take('final/'+name,(PACKET/name).read_bytes())
+for name in ('security-successor-verify-initial-20261026.py',
+        'security-successor-test-verify-initial-20261026.py',Path(__file__).name):
+    take('coordinator/'+name,(ROOT/'target'/name).read_bytes())
+value = dict(schema='hc074-security-successor-verification-v1',
+    primary_index_sha256='af9931a32cb6e60a0cd4390845056b8df5eea027fb6fa1ef9d8834573389835c',
+    implementation_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+    first_wrong_stream_oracle_preserved=True,independent_controls=6,
+    test_only_semantic_repin_not_archive_approval=True,package_pass=False,
+    release_admitted=False,members=members)
+raw = (json.dumps(value,sort_keys=True,indent=2)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members)))

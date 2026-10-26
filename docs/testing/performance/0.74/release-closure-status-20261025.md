@@ -1,5 +1,13 @@
 # Release 0.74 closure and server launch status
 
+Latest package prerequisite: the [security successor audit](security-successor-audit-result-20261026.md)
+verifies the three authorized dependency updates and retains the old lock guard's
+first failure plus V6's preflight source-drift refusal. Fresh syntax inventory
+finds 369 Rust files/146 default targets and an additional Linux heartbeat import
+outside the old auxiliary catalog. Twenty-two audit controls pass, but historical
+compatibility integration and current effect clearance are still required.
+The unchanged V6 is not repeated; complete package coverage remains red.
+
 Latest security successor: the [Tokio repair](tokio-security-result-20261026.md)
 updates only the locked Tokio node and its declared floor, with explicit owned
 alarm registration. Paired GNU/MSRV ownership, ordinary channel, RESP/mTLS and

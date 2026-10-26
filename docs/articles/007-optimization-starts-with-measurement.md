@@ -21130,3 +21130,26 @@ security/ownership result: it establishes neither a throughput win nor full
 transitive I/O safety, authenticated worker release or all-writer retirement.
 Final native/RESP regression qualification still belongs to the eventual exact
 release candidate. The larger root-catalog trust decision remains separate.
+
+### A historical preservation check must distinguish approved successors
+
+The [security successor audit](../testing/performance/0.74/security-successor-audit-result-20261026.md)
+exposes a different compatibility boundary. The old lock preservation assertion
+allows two supervisor crypto edges but predates the three accepted security
+updates. Its first exact test fails, and the old full-package dispatcher refuses
+source drift before executing anything. Removing the assertion or refreshing
+all hashes would hide which changes were actually approved.
+
+The separate read-only audit instead compares six whole pinned inputs and the
+complete dependency graph. Exactly three locked versions/checksums and two
+declared floors differ; MSRV, features, other edges and policy do not. Twenty-two
+mutation controls reject broader changes. The fresh syntax inventory closes
+369 Rust files and 25,910 sites, but still identifies changed diagnostic code
+and a Linux heartbeat import missing from the older auxiliary catalog. A correct
+dependency delta is therefore not a complete side-effect review or package pass.
+
+The first directory-collision and wrong-envelope setup errors remain alongside
+the corrected single parser capture. This audit adds no runtime optimization,
+renews no live deadline and repeats no unchanged package workload. Its useful
+result is a precise next implementation boundary: a narrow historical input
+bridge, followed by current effect review and the unchanged complete gate.

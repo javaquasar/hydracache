@@ -1,0 +1,69 @@
+"""Append-only bounded local dependency gates, no campaign/service authority."""
+from pathlib import Path
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+
+ROOT = Path(__file__).resolve().parent.parent
+label, *argv = sys.argv[1:]
+if not label.replace('-', '').isalnum() or not argv:
+    raise SystemExit('invalid label/command')
+OUT = ROOT/'target/security-successor-20261026'/label
+OUT.mkdir(parents=True, exist_ok=False)
+names = {n.decode() for n in subprocess.check_output(['git','ls-files','-z','--',
+    'Cargo.toml','Cargo.lock','deny.toml','crates','tools','.cargo'], cwd=ROOT).split(b'\0') if n}
+extra = 'tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs'
+if (ROOT/extra).exists():
+    names.add(extra)
+def snapshot():
+    return {name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in sorted(names)}
+before = snapshot()
+head = subprocess.check_output(['git','rev-parse','HEAD'], cwd=ROOT, text=True).strip()
+for name in ('Cargo.toml','Cargo.lock','deny.toml',
+        'tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs',
+        'tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs',
+        extra, 'docs/testing/performance/0.74/qualification-manifest.toml'):
+    if (ROOT/name).exists():
+        dest = OUT/'inputs'/name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes((ROOT/name).read_bytes())
+intent = dict(argv=argv, source_commit=head, source=before, bound_seconds=1200,
+    disk_floor_bytes=4*1024**3, free_before=shutil.disk_usage(ROOT).free,
+    qualification=False, server=False, services=False, clocks=False, product_load=False)
+(OUT/'intent.json').write_text(json.dumps(intent, indent=2)+'\n')
+refusal = None
+with (OUT/'stdout.log').open('xb') as stdout, (OUT/'stderr.log').open('xb') as stderr:
+    process = subprocess.Popen(argv, cwd=ROOT, stdout=stdout, stderr=stderr,
+        env=dict(os.environ, CARGO_INCREMENTAL='0', CARGO_BUILD_JOBS='2'))
+    (OUT/'process.json').write_text(json.dumps(dict(pid=process.pid)))
+    start = time.monotonic()
+    while process.poll() is None:
+        if time.monotonic()-start >= 1200:
+            refusal = 'outer-timeout'
+        if shutil.disk_usage(ROOT).free < 4*1024**3:
+            refusal = 'disk-floor'
+        if refusal:
+            with (OUT/'owned-cleanup.log').open('xb') as log:
+                subprocess.run(['taskkill','/PID',str(process.pid),'/T','/F'],
+                    stdout=log, stderr=subprocess.STDOUT, timeout=30, check=False)
+            process.wait(timeout=30)
+            break
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
+after = snapshot()
+changed = sorted(name for name in before if before[name] != after[name])
+resolver = False
+source_contract = changed == ['Cargo.lock'] if resolver else before == after
+result = dict(exit=process.returncode, outer_refusal=refusal, changed=changed,
+    source_contract=source_contract, source_unchanged=before == after,
+    commit_unchanged=head == subprocess.check_output(['git','rev-parse','HEAD'], cwd=ROOT, text=True).strip(),
+    free_after=shutil.disk_usage(ROOT).free, source_after=after, release_admitted=False)
+(OUT/'result.json').write_text(json.dumps(result, indent=2)+'\n')
+print({k:v for k,v in result.items() if k != 'source_after'})
+raise SystemExit(int(process.returncode != 0 or refusal is not None or not source_contract or not result['commit_unchanged']))

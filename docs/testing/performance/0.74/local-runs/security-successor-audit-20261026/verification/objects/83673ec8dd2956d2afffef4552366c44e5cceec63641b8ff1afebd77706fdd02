@@ -1,0 +1,113 @@
+"""Offline evidence integrity and scope checks; no Git, process or live workload."""
+import hashlib
+import json
+from pathlib import Path
+import re
+
+HERE = Path(__file__).resolve().parent
+INDEX_SHA256 = 'af9931a32cb6e60a0cd4390845056b8df5eea027fb6fa1ef9d8834573389835c'
+QUAL = 'docs/testing/performance/0.74/qualification-manifest.toml'
+QUAL_SHA = '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
+
+
+def require(value, reason):
+    if not value:
+        raise ValueError(reason)
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def decode(raw):
+    def pairs(items):
+        value = {}
+        for key, item in items:
+            require(key not in value, 'duplicate JSON key')
+            value[key] = item
+        return value
+    return json.loads(raw, object_pairs_hook=pairs)
+
+
+def check(load=None):
+    load = load or (lambda name:(HERE/name).read_bytes())
+    raw = load('index.json')
+    require(sha(raw) == INDEX_SHA256, 'index differs')
+    index = decode(raw)
+    require(len(index['members']) == 219, 'member count differs')
+    for row in index['members'].values():
+        require(re.fullmatch('[0-9a-f]{64}',row['sha256']) is not None, 'invalid object name')
+        raw = load('objects/'+row['sha256'])
+        require(len(raw) == row['bytes'] and sha(raw) == row['sha256'], 'object differs')
+    def read(name):
+        return load('objects/'+index['members'][name]['sha256'])
+    def data(name):
+        return decode(read(name))
+    for field in ('historical_guard_changes','production_projection_installed',
+            'current_effect_review_complete','package_dispatched','package_pass',
+            'original_checks_or_deadlines_changed','roots_candidate_accepted',
+            'server','services','clocks','qualification','release_admitted'):
+        require(index[field] is False, 'packet promoted')
+    require((index['controls'],index['source_files'],index['syntax_sites'],
+             index['syntax_rounds'],index['default_targets']) == (22,369,25910,1,146), 'counts differ')
+    require(index['intermediate_audit_source_captured'] is False and
+            index['source_snapshot_includes_new_audit_from_phase'] == 'controls', 'provenance scope differs')
+    for phase,code in index['phases'].items():
+        result = data('checks/'+phase+'/result.json')
+        require(result['exit'] == code and result['outer_refusal'] is None and
+                result['source_unchanged'] is True and result['commit_unchanged'] is True,
+                'first phase verdict differs')
+    require(index['phases']['old-lock-baseline'] == 101 and
+            index['phases']['old-v6-preflight'] == 1, 'first refusal lost')
+    require(b'performance_contract_074.rs:1338' in read('checks/old-lock-baseline/stderr.log'),
+            'first lock failure missing')
+    refusal = data('old-v6-preflight/preflight-refusal.json')
+    require(refusal['package_dispatched'] is False and
+            'source bytes/path drift' in str(refusal), 'preflight refusal missing')
+    require(b'FileExistsError' in read('checks/syntax-first/stderr.log') and
+            b'KeyError' in read('checks/audit-first/stderr.log'), 'initial setup errors missing')
+    require(b'Ran 22 tests' in read('checks/controls/stderr.log') and
+            read('checks/controls/stderr.log').rstrip().endswith(b'OK'), 'controls differ')
+    syntax = data('checks/syntax-data-first/result.json')
+    require(syntax['executed_input_code'] is False and syntax['compiler_expansion'] is False,
+            'syntax scope promoted')
+    require(len(syntax['sources']) == 369 and sum(len(r['sites']) for r in syntax['sources']) == 25910,
+            'syntax membership differs')
+    receipt = data('checks/syntax-data-first/receipt.json')
+    require(receipt['context_closed'] is True and receipt['rounds'] == 1 and
+            receipt['source_unchanged'] is True, 'syntax closure differs')
+    value = data('checks/audit-explicit-heartbeat/stdout.log')
+    security = value['security']
+    require(security['approved_security_input_delta_verified'] is True and
+            security['locked_node_changes'] == ['rustls','rustls-webpki','tokio'] and
+            security['root_floor_changes'] == ['rustls','tokio'], 'security scope differs')
+    for field in ('production_projection_installed','historical_checks_updated',
+            'roots_candidate_accepted','policy_pass','package_pass','release_admitted'):
+        require(security[field] is False, 'security result promoted')
+    delta = value['v6_delta']
+    require((delta['old_source_count'],delta['current_source_count'],delta['unchanged_old_sources'],
+             delta['auxiliary_count'],len(delta['targets'])) == (368,369,367,45,146), 'delta counts differ')
+    require(set(delta['changed_sources']) == {'crates/xtask/tests/direct_output_cost_074.rs'} and
+            delta['added_sources'] == ['crates/xtask/tests/git_descendant_cpu_074.rs'] and
+            not delta['missing_sources'] and not delta['missing_targets'], 'source delta differs')
+    require(set(delta['changed_auxiliary']) == {'Cargo.lock','Cargo.toml','scripts/ci/run-with-heartbeat.py'},
+            'auxiliary delta differs')
+    require(value['heartbeat']['outside_previous_auxiliary'] == ['scripts/ci/watchdog_linux_group.py'] and
+            value['heartbeat']['effect_clearance'] is False, 'heartbeat scope differs')
+    require((value['package_bound_seconds'],value['case_threads']) == (780,4) and
+            value['repeat_V6_allowed'] is False, 'original package contract differs')
+    require(sha(read('current/'+QUAL)) == QUAL_SHA and
+            read('baseline/'+QUAL) == read('approved/'+QUAL) == read('current/'+QUAL), 'qualification differs')
+    # These accepted final checks captured the newly staged audit, unlike the
+    # intermediate audit record. Never infer an uncaptured intermediate source.
+    for phase in ('controls','audit-explicit-heartbeat'):
+        inputs = data('checks/'+phase+'/intent.json')['source']
+        for name in ('audit.py','test_audit.py'):
+            source = 'tools/security-successor-audit-074/'+name
+            require(inputs[source] == sha(read('current/'+source)), 'final producer snapshot differs')
+    return dict(members=len(index['members']),controls=22,source_files=369,
+                syntax_sites=25910,package_pass=False,release_admitted=False)
+
+
+if __name__ == '__main__':
+    print(json.dumps(check(),sort_keys=True))

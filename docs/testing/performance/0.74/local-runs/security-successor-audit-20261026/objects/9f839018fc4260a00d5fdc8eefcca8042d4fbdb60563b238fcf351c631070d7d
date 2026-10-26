@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\package_replay_v6.py", line 71, in <module>
+    print(json.dumps(run(args.label, execute=args.execute), sort_keys=True))
+                     ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\package_replay_v6.py", line 38, in run
+    gate = review.source_review(root, load_document(root))
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\package_effects_review_v6.py", line 63, in source_review
+    require(path.is_relative_to(root) and path.suffix == '.rs' and sha(path.read_bytes()) == row['sha256'],
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            'source bytes/path drift')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\package_effects_review_v2.py", line 57, in require
+    raise ValueError(message)
+ValueError: source bytes/path drift

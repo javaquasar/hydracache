@@ -1,0 +1,97 @@
+"""Retain audit inputs and first refusals without authorizing a package replay."""
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+RAW = ROOT/'target/security-successor-20261026'
+OUT = ROOT/'docs/testing/performance/0.74/local-runs/security-successor-audit-20261026'
+PHASES = {
+    'old-lock-baseline':101, 'parser-build':0, 'old-v6-preflight':1,
+    'syntax-first':1, 'audit-first':1, 'syntax-separated-path':0,
+    'audit-syntax-input':0, 'controls':0, 'audit-explicit-heartbeat':0,
+    'python-compile':0, 'python-tabnanny':0, 'format':0, 'doc':0, 'contract':0,
+}
+for phase, code in PHASES.items():
+    value = json.loads((RAW/phase/'result.json').read_bytes())
+    if (value['exit'] != code or value['outer_refusal'] is not None
+            or value['source_unchanged'] is not True or value['commit_unchanged'] is not True):
+        raise ValueError('unexpected first result: '+phase)
+if 'Ran 22 tests' not in (RAW/'controls/stderr.log').read_text():
+    raise ValueError('control count differs')
+receipt = json.loads((RAW/'syntax-data-first/receipt.json').read_bytes())
+if (receipt['source_files'],receipt['syntax_sites'],receipt['rounds'],receipt['context_closed']) != (369,25910,1,True):
+    raise ValueError('syntax census differs')
+head = subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+if head != 'cb8fb1f878cd962fec08049693e6633a56021b13':
+    raise ValueError('source commit differs')
+spec = importlib.util.spec_from_file_location('audit',ROOT/'tools/security-successor-audit-074/audit.py')
+audit = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(audit)
+value = json.loads((RAW/'audit-explicit-heartbeat/stdout.log').read_bytes())
+if value != audit.audit(ROOT,audit.decode((RAW/'syntax-data-first/result.json').read_bytes())):
+    raise ValueError('fresh final input audit differs')
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+def take(name, raw):
+    if name in members:
+        raise ValueError('duplicate member')
+    digest = hashlib.sha256(raw).hexdigest()
+    path = OUT/'objects'/digest
+    if not path.exists():
+        with path.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw),sha256=digest)
+for phase in (*PHASES,'syntax-data-first'):
+    for path in sorted((RAW/phase).rglob('*')):
+        if path.is_file():
+            take('checks/'+phase+'/'+path.relative_to(RAW/phase).as_posix(),path.read_bytes())
+for path in sorted((ROOT/'target/reviewed-package-v6-20261026/security-successor-audit-first').rglob('*')):
+    if path.is_file():
+        take('old-v6-preflight/'+path.name,path.read_bytes())
+for name in audit.PINS:
+    take('current/'+name,(ROOT/name).read_bytes())
+    take('baseline/'+name,audit.frozen(ROOT,audit.BASE,name))
+    take('approved/'+name,audit.frozen(ROOT,audit.APPROVED,name))
+for name in (*audit.WRAPPERS,*audit.HEARTBEAT_COMPANIONS,
+        'scripts/ci/run-with-heartbeat.py',
+        'tools/security-successor-audit-074/audit.py',
+        'tools/security-successor-audit-074/test_audit.py',
+        'tools/security-successor-audit-074/README.md',
+        'tools/historical-blob-batch-074/module_context_v5.py',
+        'crates/xtask/tests/census_cost_074.rs',
+        'crates/xtask/tests/performance_contract_074.rs',
+        'crates/xtask/tests/direct_output_cost_074.rs',
+        'crates/xtask/tests/git_descendant_cpu_074.rs'):
+    take('current/'+name,(ROOT/name).read_bytes())
+for name in ('run-security-successor-20261026.py',
+        'capture-security-successor-syntax-20261026.py',
+        'capture-security-successor-syntax-initial-20261026.py',
+        'discover-security-successor-20261026.py',
+        'security-successor-audit-initial-20261026.py',
+        'security-successor-audit-20261026.py',Path(__file__).name):
+    take('coordinator/'+name,(ROOT/'target'/name).read_bytes())
+for name in ('index.json','objects/'+audit.GATE_SHA):
+    take('old-packet/'+name,(ROOT/audit.PACKET/name).read_bytes())
+take('review/source-and-heartbeat-delta.patch',subprocess.check_output(
+    ['git','diff',audit.BASE,'--','crates/xtask/tests/direct_output_cost_074.rs',
+     'scripts/ci/run-with-heartbeat.py'],cwd=ROOT))
+index = dict(schema='hc074-security-successor-evidence-v1',source_commit=head,
+    phases=PHASES,controls=22,source_files=369,syntax_sites=25910,syntax_rounds=1,
+    default_targets=146,locked_nodes_changed=3,declared_floors_changed=2,
+    first_lock_guard_failed=True,first_v6_preflight_refused_before_dispatch=True,
+    initial_capture_directory_collision=True,initial_audit_wrong_envelope=True,
+    intermediate_audit_source_captured=False,
+    source_snapshot_includes_new_audit_from_phase='controls',
+    historical_guard_changes=False,production_projection_installed=False,
+    current_effect_review_complete=False,package_dispatched=False,package_pass=False,
+    original_checks_or_deadlines_changed=False,roots_candidate_accepted=False,
+    server=False,services=False,clocks=False,qualification=False,release_admitted=False,
+    members=members)
+raw = (json.dumps(index,sort_keys=True,indent=2)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=len(members),objects=len(list((OUT/'objects').iterdir()))))

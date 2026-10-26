@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\target\capture-security-successor-syntax-20261026.py", line 21, in <module>
+    OUT.mkdir(exist_ok=False)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\pathlib\_local.py", line 722, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\security-successor-20261026\\syntax-first'

@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [security successor and package audit](security-successor-audit-result-20261026.md)
+verifies exactly three approved locked-node changes with 22 mutation controls.
+The fresh syntax census closes 369 Rust files and 25,910 sites, but identifies
+two diagnostic source changes and a heartbeat import missing from V6's old
+auxiliary catalog. The first old lock assertion and V6 preflight refusals are
+retained; no full package rerun or historical guard relaxation occurs.
+
 The [Tokio ownership/security repair](tokio-security-result-20261026.md) raises
 the declared minimum and lock to 1.53.3 and explicitly owns the registered alarm
 FD. Same-source GNU/MSRV controls and focused Windows/GNU gates pass. Nine

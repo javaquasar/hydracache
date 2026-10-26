@@ -1,0 +1,36 @@
+"""Read fixed committed inputs and the sealed V6 receipt, never dispatch it."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import tomllib
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = 'fa9e708868b22999d60c9ccd97b694662910a095'
+SOURCE = '2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d'
+PACKET = ROOT/'docs/testing/performance/0.74/local-runs/package-closure-v6-20261026'
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+raw = (PACKET/'index.json').read_bytes()
+assert sha(raw) == 'd194f84a6258a060156271d6704af3f38f3f5d7590e0f9f8ad672b531abacbd7'
+index = json.loads(raw)
+row = index['members']['coordinator/preflight-first/gate.json']
+raw = (PACKET/'objects'/row['sha256']).read_bytes()
+assert sha(raw) == row['sha256'] and len(raw) == row['bytes']
+gate = json.loads(raw)
+result = dict(base=BASE, source=SOURCE, v6_gate_sha256=sha(raw),
+    v6_sources=len(gate['sources']), v6_auxiliary=len(gate['auxiliary']),
+    v6_targets=len(gate['targets']), hashes={}, node_delta=[])
+for name in ('Cargo.toml','Cargo.lock','deny.toml','crates/xtask/Cargo.toml',
+    'docs/testing/performance/0.74/qualification-manifest.toml',
+    'tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs'):
+    values = [subprocess.check_output(['git','--no-replace-objects','show',ref+':'+name],cwd=ROOT)
+              for ref in (BASE,SOURCE)]
+    result['hashes'][name] = dict(baseline=sha(values[0]), approved=sha(values[1]))
+    if name == 'Cargo.lock':
+        old, new = [tomllib.loads(v.decode()) for v in values]
+        for a,b in zip(old['package'],new['package'],strict=True):
+            if a != b:
+                result['node_delta'].append(dict(name=a['name'],before=a['version'],after=b['version'],
+                    before_checksum=a['checksum'],after_checksum=b['checksum']))
+print(json.dumps(result,indent=2))

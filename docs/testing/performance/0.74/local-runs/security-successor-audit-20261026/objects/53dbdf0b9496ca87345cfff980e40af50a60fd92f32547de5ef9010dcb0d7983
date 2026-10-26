@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\security-successor-audit-074\audit.py", line 178, in <module>
+    print(json.dumps(audit(Path(__file__).resolve().parents[2], decode(args.syntax.read_bytes())),
+                     ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\security-successor-audit-074\audit.py", line 160, in audit
+    delta = catalog_delta(gate,syntax,targets,lambda n:read_inside(root,n))
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\security-successor-audit-074\audit.py", line 127, in catalog_delta
+    require(syntax['executed_input_code'] is False and syntax['compiler_expansion'] is False,
+            ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'executed_input_code'

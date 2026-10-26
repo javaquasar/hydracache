@@ -1,0 +1,11 @@
+test_count_and_first_outcome_changes_refuse (test_verify.Evidence.test_count_and_first_outcome_changes_refuse) ... ok
+test_exact_packet (test_verify.Evidence.test_exact_packet) ... ok
+test_index_and_raw_object_tamper (test_verify.Evidence.test_index_and_raw_object_tamper) ... ok
+test_missing_heartbeat_and_uncaptured_producer_refuse (test_verify.Evidence.test_missing_heartbeat_and_uncaptured_producer_refuse) ... ok
+test_package_or_projection_promotion_refuses (test_verify.Evidence.test_package_or_projection_promotion_refuses) ... ok
+test_syntax_and_security_scope_changes_refuse (test_verify.Evidence.test_syntax_and_security_scope_changes_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.629s
+
+OK

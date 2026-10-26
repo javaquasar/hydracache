@@ -1,0 +1,202 @@
+"""Read-only security/package delta census. Never a projection or dispatch gate."""
+import argparse
+import ast
+import copy
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import tomllib
+
+BASE = 'fa9e708868b22999d60c9ccd97b694662910a095'
+APPROVED = '2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d'
+PACKET = 'docs/testing/performance/0.74/local-runs/package-closure-v6-20261026'
+INDEX_SHA = 'd194f84a6258a060156271d6704af3f38f3f5d7590e0f9f8ad672b531abacbd7'
+GATE_SHA = '1a789f972418ffa531dde23ac2400651e0d55b6b30c664928e813db9dd9d5075'
+QUAL = 'docs/testing/performance/0.74/qualification-manifest.toml'
+PINS = {
+    'Cargo.toml': ('f1e96866c7a279f9682487d5294870d7be12e7fd95a1c89f2d99277c0e4e37b9', '7877b4051e4952e7a809896cf46c03a80c6ae3bae3fd13ed95ed0b47d377f472'),
+    'Cargo.lock': ('d2c7736ebaa8381cece9162bbbf384db60c46111051e4e78e51d4bae12feaf5c', '91a009119e13184958de1a29f3b58d900e8756aaa47878c991a114b5ea2079d0'),
+    'deny.toml': ('07f195fbffecbb1aaad5ec2ec6e0c11d4020e42a837256ba6a57f675d033bd3b',)*2,
+    'crates/xtask/Cargo.toml': ('9e1b7d0249dc246e2d50bff92b14540c08f379eb98448cb80e13ed325d5c039b',)*2,
+    QUAL: ('11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',)*2,
+    'tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs': ('9b87094f570bbe0bb9408cd9dc2c52ff20868503f7b7cc2e73fb7fab653cd5d6', '1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d'),
+}
+NODES = {
+    'rustls': ('0.23.45','0.23.46','0d41d731c7d2f962d1ccc364cec258de3c0e93b38c2fb3ba97ac74513048d634','48e13bd8c0e9365c43cfa5c9e8f9ad49d3c8444926c9aac819e0e4dc503c8fdf'),
+    'rustls-webpki': ('0.103.15','0.103.16','f3c3cf1d8b1e7d4927e2d154c3fcb02979afb9939629c62cd9048d4f07b60ac2','4443b1b6d39d7c663139942cc4558262562d2c84123bb6282ef177009ca8b281'),
+    'tokio': ('1.52.3','1.53.3','8fc7f01b389ac15039e4dc9531aa973a135d7a4135281b12d7c1bc79fd57fffe','ce3335fa71841cda333a58d7615b03901380ecf09d59b3296d21f8bbac0dde4e'),
+}
+WRAPPERS = {
+    'target/run-xtask-package-780-20261024.py': '52504f2b489d16f344b477df0568f33ac224c5cadacc552f32f427f39c09d04d',
+    'target/run-source-step-20261024.py': 'a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430',
+}
+HEARTBEAT_COMPANIONS = {
+    'scripts/ci/watchdog_windows_job.py': '8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1',
+    'scripts/ci/watchdog_linux_group.py': 'e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691',
+}
+
+
+def require(value, reason):
+    if not value:
+        raise ValueError(reason)
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def canonical(raw):
+    return raw.replace(b'\r\n', b'\n')
+
+
+def decode(raw):
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            require(key not in result, 'duplicate JSON key')
+            result[key] = value
+        return result
+    return json.loads(raw, object_pairs_hook=pairs)
+
+
+def validate_graph(before, after):
+    before = copy.deepcopy(before)
+    for graph in (before, after):
+        ids = [(p['name'],p['version'],p.get('source')) for p in graph['package']]
+        require(len(ids) == len(set(ids)), 'duplicate package identity')
+    for name, (old,new,old_sum,new_sum) in NODES.items():
+        rows = [p for p in before['package'] if p['name'] == name]
+        targets = [p for p in after['package'] if p['name'] == name]
+        require(len(rows) == len(targets) == 1, 'security node membership')
+        row, target = rows[0], targets[0]
+        require((row['version'],row['checksum'],target['version'],target['checksum']) ==
+                (old,old_sum,new,new_sum), 'security version/checksum differs')
+        row.update(version=new,checksum=new_sum)
+    require(before == after, 'unapproved graph delta')
+
+
+def validate_manifest(before, after):
+    before = copy.deepcopy(before)
+    old, new = before['workspace']['dependencies'], after['workspace']['dependencies']
+    require((old['rustls'],new['rustls']) == ('0.23.41','0.23.46'), 'rustls floor differs')
+    require((old['tokio']['version'],new['tokio']['version']) == ('1.52.3','1.53.3'), 'Tokio floor differs')
+    old['rustls'] = '0.23.46'
+    old['tokio']['version'] = '1.53.3'
+    require(before == after and after['workspace']['package']['rust-version'] == '1.88',
+            'unapproved manifest/feature/MSRV delta')
+
+
+def security_inputs(baseline, current):
+    require(set(baseline) == set(current) == set(PINS), 'input path allowlist differs')
+    for name, (old,new) in PINS.items():
+        require(sha(canonical(baseline[name])) == old, 'baseline pin differs: '+name)
+        require(sha(canonical(current[name])) == new, 'approved current pin differs: '+name)
+    validate_graph(tomllib.loads(baseline['Cargo.lock'].decode()), tomllib.loads(current['Cargo.lock'].decode()))
+    validate_manifest(tomllib.loads(baseline['Cargo.toml'].decode()), tomllib.loads(current['Cargo.toml'].decode()))
+    return dict(approved_security_input_delta_verified=True, locked_node_changes=list(NODES),
+        root_floor_changes=['rustls','tokio'], msrv='1.88',
+        production_projection_installed=False, historical_checks_updated=False,
+        roots_candidate_accepted=False, policy_pass=False, package_pass=False,
+        release_admitted=False)
+
+
+def read_inside(root, name):
+    relative = Path(name)
+    require(not relative.is_absolute() and '..' not in relative.parts, 'nonrelative audit input')
+    path = (root/relative).resolve(strict=True)
+    require(path.is_relative_to(root), 'audit input outside repository')
+    return path.read_bytes()
+
+
+def frozen(root, revision, name):
+    require(revision in (BASE, APPROVED) and name in PINS, 'fixed Git input allowlist')
+    return subprocess.check_output(['git','--no-replace-objects','show',revision+':'+name],
+        cwd=root, timeout=10)
+
+
+def load_v6(root):
+    raw = read_inside(root,PACKET+'/index.json')
+    require(sha(raw) == INDEX_SHA, 'V6 index pin differs')
+    row = decode(raw)['members']['coordinator/preflight-first/gate.json']
+    require(row['sha256'] == GATE_SHA, 'V6 gate pointer differs')
+    raw = read_inside(root,PACKET+'/objects/'+GATE_SHA)
+    require(len(raw) == row['bytes'] and sha(raw) == GATE_SHA, 'V6 gate bytes differ')
+    gate = decode(raw)
+    require((len(gate['sources']),len(gate['auxiliary']),len(gate['targets'])) == (368,45,145),
+        'V6 catalog membership differs')
+    return gate
+
+
+def catalog_delta(gate, syntax, current_targets, read):
+    require(isinstance(syntax,dict) and set(syntax) == {'sources','executed_input_code','compiler_expansion'}
+            and isinstance(syntax['sources'],list), 'syntax envelope differs')
+    require(syntax['executed_input_code'] is False and syntax['compiler_expansion'] is False,
+        'syntax-only scope differs')
+    rows = {row['source']:row for row in syntax['sources']}
+    require(len(rows) == len(syntax['sources']), 'duplicate syntax source')
+    actual = {name:sha(read(name)) for name in rows}
+    require(actual == {name:row['sha256'] for name,row in rows.items()}, 'fresh source differs from syntax')
+    require(len(current_targets) == len(set(current_targets)), 'duplicate target')
+    auxiliary = {name:sha(read(name)) for name in gate['auxiliary']}
+    changed = lambda old,new: {name:dict(previous=old[name],current=new[name])
+        for name in old.keys() & new.keys() if old[name] != new[name]}
+    return dict(old_source_count=len(gate['sources']),current_source_count=len(rows),
+        unchanged_old_sources=sum(actual.get(n) == v for n,v in gate['sources'].items()),
+        changed_sources=changed(gate['sources'],actual),
+        added_sources=sorted(actual.keys()-gate['sources'].keys()),
+        missing_sources=sorted(gate['sources'].keys()-actual.keys()),
+        auxiliary_count=len(auxiliary),changed_auxiliary=changed(gate['auxiliary'],auxiliary),
+        targets=current_targets,added_targets=sorted(set(current_targets)-set(gate['targets'])),
+        missing_targets=sorted(set(gate['targets'])-set(current_targets)),
+        package_dispatched=False, current_effect_review_complete=False,
+        package_pass=False, original_execution_or_release_admitted=False)
+
+
+def heartbeat_inputs(read, previous_auxiliary):
+    """Name two explicit import edges, not a transitive Python effect clearance."""
+    tree = ast.parse(read('scripts/ci/run-with-heartbeat.py'))
+    imports = {node.module: [(alias.name, alias.asname) for alias in node.names]
+               for node in tree.body if isinstance(node, ast.ImportFrom) and not node.level}
+    require(imports.get('watchdog_windows_job') == [('WindowsJob',None)] and
+            imports.get('watchdog_linux_group') == [('LinuxGroup',None)],
+            'explicit heartbeat companion import differs')
+    actual = {name:sha(read(name)) for name in HEARTBEAT_COMPANIONS}
+    require(actual == HEARTBEAT_COMPANIONS, 'heartbeat companion bytes differ')
+    return dict(explicit_companion_inputs=actual,
+        outside_previous_auxiliary=sorted(actual.keys()-previous_auxiliary.keys()),
+        transitive_python_review_complete=False, effect_clearance=False)
+
+
+def audit(root, syntax):
+    root = root.resolve(strict=True)
+    baseline = {name:frozen(root,BASE,name) for name in PINS}
+    approved = {name:frozen(root,APPROVED,name) for name in PINS}
+    require(all(sha(canonical(approved[n])) == PINS[n][1] for n in PINS), 'independent producer pins differ')
+    current = {name:read_inside(root,name) for name in PINS}
+    security = security_inputs(baseline,current)
+    require({n:sha(read_inside(root,n)) for n in WRAPPERS} == WRAPPERS, 'original package wrapper differs')
+    gate = load_v6(root)
+    targets = ['unittests src/lib.rs','unittests src/main.rs']+[
+        'tests/'+p.name for p in sorted((root/'crates/xtask/tests').glob('*.rs'))]
+    delta = catalog_delta(gate,syntax,targets,lambda n:read_inside(root,n))
+    heartbeat = heartbeat_inputs(lambda n:read_inside(root,n),gate['auxiliary'])
+    return dict(schema='hc074-security-successor-audit-v1', baseline=BASE,approved=APPROVED,
+        security=security, v6_delta=delta, heartbeat=heartbeat,
+        raw_input_sha256={n:sha(v) for n,v in current.items()},
+        canonical_input_sha256={n:sha(canonical(v)) for n,v in current.items()},
+        historical_guard_changes=False, audit_changes_live_checks=False,
+        audit_changes_original_windows=False, package_bound_seconds=780, case_threads=4,
+        repeat_V6_allowed=False, server=False, qualification=False,release_admitted=False)
+
+
+def arguments(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('syntax', type=Path, help='fresh source-only syntax document; never code')
+    return parser.parse_args(argv)
+
+
+if __name__ == '__main__':
+    args = arguments()
+    print(json.dumps(audit(Path(__file__).resolve().parents[2], decode(args.syntax.read_bytes())),
+        sort_keys=True,indent=2))

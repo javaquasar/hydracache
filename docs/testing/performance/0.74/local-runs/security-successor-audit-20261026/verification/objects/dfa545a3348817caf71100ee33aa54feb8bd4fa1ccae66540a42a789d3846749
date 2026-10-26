@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\security-successor-audit-20261026\verify.py", line 113, in <module>
+    print(json.dumps(check(),sort_keys=True))
+                     ~~~~~^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\security-successor-audit-20261026\verify.py", line 62, in check
+    require(b'performance_contract_074.rs:1338' in read('checks/old-lock-baseline/stderr.log'),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            'first lock failure missing')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\docs\testing\performance\0.74\local-runs\security-successor-audit-20261026\verify.py", line 15, in require
+    raise ValueError(reason)
+ValueError: first lock failure missing
