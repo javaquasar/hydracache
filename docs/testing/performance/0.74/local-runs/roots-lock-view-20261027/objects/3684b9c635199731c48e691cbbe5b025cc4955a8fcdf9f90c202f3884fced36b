@@ -1,0 +1,10 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error[E0433]: failed to resolve: use of unresolved module or unlinked crate `proptest`
+   --> crates\xtask\tests\roots_lock_view_074.rs:115:1
+    |
+115 | proptest::proptest! {
+    | ^^^^^^^^ use of unresolved module or unlinked crate `proptest`
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `xtask` (test "roots_lock_view_074") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

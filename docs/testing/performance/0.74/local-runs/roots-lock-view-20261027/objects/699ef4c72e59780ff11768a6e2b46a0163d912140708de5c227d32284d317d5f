@@ -1,0 +1,37 @@
+"""Prepare inert inverse-edit data for the separately audited exact roots delta."""
+import difflib
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import tomllib
+
+ROOT = Path(__file__).resolve().parent.parent
+OLD = 'ba9c5535311ffd0e6759506898077dbc6a56830a'
+NEW = '63cb4d7b9bca1c901b2f7420f86effd3309a6882'
+def blob(rev):
+    return subprocess.check_output(['git', '--no-replace-objects', 'show', rev + ':Cargo.lock'], cwd=ROOT).decode().replace('\r\n', '\n')
+old, new = blob(OLD), blob(NEW)
+assert (ROOT / 'Cargo.lock').read_text(encoding='utf-8') == new
+before, after = tomllib.loads(old), tomllib.loads(new)
+import sys
+sys.path.insert(0, str(ROOT / 'tools/roots-trust-admission-074'))
+import audit
+assert audit.validate_graph(before, after)['exact_two_catalog_updates_and_three_test_edges']
+offsets, total = [0], 0
+for line in new.splitlines(keepends=True):
+    total += len(line.encode())
+    offsets.append(total)
+patches = []
+a, b = new.splitlines(keepends=True), old.splitlines(keepends=True)
+for kind, i, j, k, l in difflib.SequenceMatcher(a=a, b=b, autojunk=False).get_opcodes():
+    if kind != 'equal':
+        patches.append(dict(offset=offsets[i], current=''.join(a[i:j]), previous=''.join(b[k:l])))
+value = dict(schema='hc074-approved-roots-lock-view-v1', path='Cargo.lock', previous_revision=OLD,
+             producer_revision=NEW, current_sha256=hashlib.sha256(new.encode()).hexdigest(),
+             previous_sha256=hashlib.sha256(old.encode()).hexdigest(), patches=patches)
+OUT = ROOT / 'target/roots-lock-view-rules-20261027.json'
+with OUT.open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(value, stream, indent=2)
+    stream.write('\n')
+print(json.dumps(value, indent=2))

@@ -1,0 +1,44 @@
+
+running 3 tests
+test historical_input_list_covers_all_changed_old_files_except_the_existing_exact_authority_gate ... ok
+test historical_input_reader_is_one_exact_additive_verified_branch has been running for over 60 seconds
+test historical_inputs_require_the_complete_reviewed_current_file_before_predecessor has been running for over 60 seconds
+test historical_inputs_require_the_complete_reviewed_current_file_before_predecessor ... ok
+test historical_input_reader_is_one_exact_additive_verified_branch ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 97.37s
+
+
+running 7 tests
+test unknown_paths_are_not_approved_or_normalized ... ok
+test seeded_byte_mutation_corpus_refuses ... ok
+test composed_fresh_reader_preserves_the_existing_security_predecessor ... ok
+test successful_input_is_never_reused_for_a_later_observation ... ok
+test exact_producer_and_complete_predecessor_match_independent_git_inputs ... ok
+test stale_partial_duplicate_and_unrelated_edits_refuse ... ok
+test existing_security_rules_reader_and_product_lock_are_not_rewritten ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.45s
+
+
+running 7 tests
+test path_aliases_and_cross_file_approval_cannot_enter_known_paths ... ok
+test diagnostic_document_successor_is_separate_and_exact ... ok
+test existing_five_path_rules_and_fresh_io_are_unchanged ... ok
+test stale_partial_duplicate_and_unrelated_edits_refuse ... ok
+test successful_observation_is_never_cached_or_reused_for_stale_input ... ok
+test fresh_readers_join_old_gates_without_bypassing_current_body_validation ... ok
+test complete_current_inputs_match_independent_producers_and_predecessors ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.14s
+
+
+running 5 tests
+test wrong_path_cannot_borrow_another_files_approval_and_unknowns_stay_unchanged ... ok
+test whole_body_projection_matches_independent_fixed_producers ... ok
+test stale_partial_duplicate_and_unrelated_edits_refuse_before_projection ... ok
+test exact_successor_inputs_reach_unchanged_historical_chain ... ok
+test old_gates_and_assertions_survive_exact_entry_edits ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.48s
+

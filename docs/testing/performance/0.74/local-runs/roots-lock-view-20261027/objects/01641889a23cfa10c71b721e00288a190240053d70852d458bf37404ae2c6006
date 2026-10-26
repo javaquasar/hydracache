@@ -1,0 +1,6 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.28s
+     Running tests\historical_input_view_074.rs (target\debug\deps\historical_input_view_074-d52dc7099b3a66b6.exe)
+     Running tests\roots_lock_view_074.rs (target\debug\deps\roots_lock_view_074-9961def68ab23e2d.exe)
+     Running tests\security_input_view_074.rs (target\debug\deps\security_input_view_074-5d51299aa0ac7da2.exe)
+     Running tests\source_successor_view_074.rs (target\debug\deps\source_successor_view_074-3d8c7cedfe7c3d71.exe)

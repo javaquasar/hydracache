@@ -451,6 +451,24 @@ verifier distinguishes this resource refusal from assessed test failures or a
 package pass. Capacity is repaired afterward by scoped obsolete-symbol cleanup,
 without an automatic replay or changed source/limit.
 
+## Exact approved roots scope v8
+
+`package_effects_review_v8.py` preserves V7 and requires a separately reviewed
+374-source/26,044-site AST. Exactly two existing rows change and two are added;
+370 complete rows remain exact. All 54 auxiliary inputs are pinned before project
+imports. The one ordinary target adds only read-only fixed Git/source and bounded
+memory-mutation controls. The approved public-root graph is not projected into
+the product runtime; only preservation-test text sees an exact predecessor.
+
+`package_replay_v8.py NEW_LABEL` remains preflight-only unless `--execute` is
+explicit. Review source is checked before import, source must be clean and the
+unchanged original wrappers/command enforce 780 seconds including compilation,
+four case threads and the original disk floor. No retry/filter/limit option is
+available. Complete output needs independent assessment; the dispatcher never
+infers a package pass. The [report](../../docs/testing/performance/0.74/roots-lock-view-package-v8-result-20261027.md)
+separates the immutable first defects and earlier package refusals from current
+source/effect clearance, focused passes and the eventual entire-package result.
+
 ## Repaired scope v3 without a dispatcher
 
 `package_effects_review_v3.py SYNTAX_JSON` requires the separately reviewed

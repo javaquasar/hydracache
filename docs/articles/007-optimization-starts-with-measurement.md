@@ -21230,3 +21230,18 @@ database, findings fall from nine to seven, not zero. This is a scoped security
 and public-trust change, not a performance result or production enrollment.
 Earlier package/source-view pins continue to refuse the new lock until a narrow
 successor bridge and fresh complete gate cover it.
+
+The [exact lock successor](../testing/performance/0.74/roots-lock-view-package-v8-result-20261027.md)
+keeps the approved product lock intact. Complete current-file validation brackets
+six inverse edits with a complete predecessor check; stale old input cannot
+authorize a new observation. The previous security rules and fresh reads remain
+unchanged. This lets historical assertions keep checking their original contract
+without pretending the active binary uses the older public roots.
+
+Twenty-two focused cases pass on Windows, MSRV and GNU, while the fresh current
+review closes 374 Rust sources and 26,044 sites. Its 17 refusal/dispatch controls
+cover source/AST/auxiliary/catalog substitutions and remain separate from the
+actual complete package result. The initial missing test dependency, rustfmt
+oracle ordering mismatch and wrong revision label remain first outcomes. Such
+repairs concern test-source compatibility; they are not an allocation or
+throughput hypothesis, removed live observation or renewed deadline.

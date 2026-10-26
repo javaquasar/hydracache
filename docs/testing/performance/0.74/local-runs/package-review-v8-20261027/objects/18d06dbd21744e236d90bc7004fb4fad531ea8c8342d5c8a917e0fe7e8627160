@@ -1,0 +1,36 @@
+The separate local diagnostic `hc074-spawn-capture-v1` connects the model-stage
+spawn brackets only through `git_cpu_spawn.py BUILD LABEL --spawn-frames` and a
+new exclusive output root. Matching tools are required; unknown/missing schemas
+refuse after intent before API creation. It does not change the old three caller
+modes or rewrite model/native packets. Operational verdicts remain separate from
+all recorder verdicts; completeness is not activation or production admission.
+
+The local model metadata `hc074-spawn-frames-model-v1` describes three unwired
+coordinator spans for preparation, create-to-retention and membership/release.
+It has no CLI/caller or installed reader and is not a dispatch, product wire or
+authority protocol. A matching model reader is required; no old native packet
+or schema is rewritten. Native compatibility and overhead remain unqualified.
+
+The local offline intent `hc074-offline-leaf-attribution-v1` identifies only
+fixed-packet arithmetic replay of the sealed native leaf control. It introduces
+no runtime or dispatch field, new measurement, clock read or server admission.
+Earlier offline and native schemas retain their original inputs and meanings.
+
+The opt-in local diagnostic metadata `hc074-capture-leaves-v1` adds owner/decode
+clock-bracket groups only under exact `--coordinator-frames --capture-leaves`.
+Old default and outer-only output shapes remain unchanged. The new caller
+requires the exact leaf schema before APIs/workers; stale or future schemas
+refuse after exclusive intent without fallback. Only matching diagnostic tools
+understand this separate output root; no old packet is migrated or rewritten.
+This is not a product wire/store, installed execution or authority protocol.
+
+The local offline intent `hc074-offline-capture-attribution-v1` identifies only
+the fixed native coordinator evidence index and its source, never an execution
+request. It creates exclusive intent/result files in a separate diagnostic
+output root. The analyzer accepts only its literal-pinned native index and
+exact `hc074-coordinator-frames-v1` contract; different/future input refuses.
+No old packet is rewritten or migrated, and no installed product reader, wire,
+durable store, ownership protocol or release admission changes. Matching offline
+tooling is required to interpret the new analysis fields; prior packets retain
+their original interpretation.
+

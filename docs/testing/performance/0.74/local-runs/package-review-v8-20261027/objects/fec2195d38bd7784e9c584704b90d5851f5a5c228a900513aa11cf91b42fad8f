@@ -1,0 +1,119 @@
+{
+  "added": {
+    "tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs": {
+      "blob": "b479b8d97323f7ac1a2d122d63268fc850a362ba",
+      "canonical_sha256": "70f9cb739d192c3662075bed70d821c8f62630ec1f43599d1a6ae1af26b6594e",
+      "mode": "100644"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_authority_directory_tests.rs": {
+      "blob": "3c463b697c8af6a21082cdc8f224b2a2f69f7fdb",
+      "canonical_sha256": "323be5e906892ee0b9507c8e01f10e6a9811fe6e436e19eeb27a0fc4086b4c76",
+      "mode": "100644"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_authority_parent_tests.rs": {
+      "blob": "030bd41e585017d6d9c488b489a26dd2b37db901",
+      "canonical_sha256": "aca89e7b9748cb2df31f144043476c07d6665fbf3c206e25e593cc91915e36a1",
+      "mode": "100644"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_authority_stamp.rs": {
+      "blob": "e4e39e21d5af2743374bc7ea19d838847ea8743f",
+      "canonical_sha256": "7c2a9b0d0166ae595bf582986182edaaa8696b9223045601d98bbeb5cc4f7e9b",
+      "mode": "100644"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_authority_stamp_tests.rs": {
+      "blob": "712181ccec98f37cb142f2b249b922e920444237",
+      "canonical_sha256": "cef0f6bf456564b3720e54c0c9533b2dec0f8e18a588f63d923de5af6ba3a37a",
+      "mode": "100644"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_filesystem_projection.rs": {
+      "blob": "747f84632592129c79059fd6f3a755c55b2e74a4",
+      "canonical_sha256": "73326fee5790dd33c3dcae076770cd3be413d135e2d10ce72a90f8aa2ed3736b",
+      "mode": "100644"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_filesystem_projection_tests.rs": {
+      "blob": "33c731ec4cfe72507636796f8a567c4965a5eef2",
+      "canonical_sha256": "725d66ed4bd8ecc1c657dea2e9d906f411c2cffd4227b29e4a46acb1413e530f",
+      "mode": "100644"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity.rs": {
+      "blob": "4023f7339d5a32ccf1df9fdd489b5f4675b0cf75",
+      "canonical_sha256": "52ca571f1ea7ae9a42e53cba8273b3e9b0a969323e529c4c4a9f25d4c3bc5dbd",
+      "mode": "100644"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity_tests.rs": {
+      "blob": "a10380eb9c018456da47cecf4afff31749a6390a",
+      "canonical_sha256": "afaf3927e9289a55a2d07b84ec1e1006ae35cf54a89751d84704c8379344a757",
+      "mode": "100644"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_operation_cost.rs": {
+      "blob": "2a8cb313722b24f19d473abc35c2f25cd6a8c624",
+      "canonical_sha256": "0731eaf56828d138b5b6cd6a0eafbaeb5e6efb9d5a070024d2a5dae70b39f03b",
+      "mode": "100644"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_operation_reference.rs": {
+      "blob": "620eb561e7f77363f5b818dc31b74609a693fb15",
+      "canonical_sha256": "119754c64f1c1e0078c0fed2a1892bbcb2bed06ebc3d64427f33590de39babd4",
+      "mode": "100644"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_operation_tests.rs": {
+      "blob": "995cf92946605d0487fe3d0b9d706ca5251641ce",
+      "canonical_sha256": "37a5ff7881ba73ec6fa429570459db51f01d8f64f532b245d2794a7796637a34",
+      "mode": "100644"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_namespace_open.rs": {
+      "blob": "3d3f9b41166efc1f50542185b166450da0804522",
+      "canonical_sha256": "0d87da659557b2997c481f649010c7f0f125b6a4da7c81fd8517a0c5c57ac9d1",
+      "mode": "100644"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs": {
+      "blob": "ac282064aacfa28e23be4f920d634655aac69220",
+      "canonical_sha256": "c72ee0e7438bf6ffa72592063fb938cf86043cf67c55b65485f968ae32ca74d6",
+      "mode": "100644"
+    }
+  },
+  "changed": {
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs": {
+      "current": {
+        "blob": "c24b038928729d0a6240364ea69e6df2768fb4f6",
+        "canonical_sha256": "55d1372e62984d2ccda29879fd65951f3cd7415ad2d68be2c567d2a329c06b9d",
+        "mode": "100644"
+      },
+      "previous": {
+        "blob": "457443354c043afe8d171a695cc5abdabf5bc3bd",
+        "canonical_sha256": "fd1e10a038ae046888c8ff3c76303e36e5ed49a46aef2025391f8aa009d554a1",
+        "mode": "100644"
+      }
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs": {
+      "current": {
+        "blob": "a1f4d803bbfefbd3c2f50847eb6f1f0c34f444e5",
+        "canonical_sha256": "81edd92cedb2f223a7f218b2610b3e59cf30614a7c4c70a1bd1196f49d3c85e3",
+        "mode": "100644"
+      },
+      "previous": {
+        "blob": "58b05c76fe8e3ed48c937322bfcb6ea2bd07e6cd",
+        "canonical_sha256": "65cc390d5bb547ab19caa5c84a324404bd8b95da207b7577c7cbb13c3fc29032",
+        "mode": "100644"
+      }
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs": {
+      "current": {
+        "blob": "57ab5957fd13de59679770d620bbda9c313840ac",
+        "canonical_sha256": "7c7e78b3734efe3d04559a1e5dd4eeb04118b8bb47e8ccfb032bcb0a66ada89f",
+        "mode": "100644"
+      },
+      "previous": {
+        "blob": "1f1e6adae5c749eff3f8a5a3ddc76ab16da3c4ff",
+        "canonical_sha256": "4e18523c71b6b5bdf3a74d75e58df096f25c6f773067d013a07db2a8cfde5214",
+        "mode": "100644"
+      }
+    }
+  },
+  "current_count": 544,
+  "previous_count": 530,
+  "previous_ledger_sha256": "cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0",
+  "previous_revision": "c91068bfa8b297bb075b63457da235aaa9c6232e",
+  "removed": [],
+  "revision": "958b3135a15c00b9f6aad41522cef9d1f6608d3a",
+  "schema": "hc074-inventory544-phase-v1"
+}

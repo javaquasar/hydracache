@@ -1,0 +1,20 @@
+
+running 1 test
+test fresh_readers_join_old_gates_without_bypassing_current_body_validation ... FAILED
+
+failures:
+
+---- fresh_readers_join_old_gates_without_bypassing_current_body_validation stdout ----
+
+thread 'fresh_readers_join_old_gates_without_bypassing_current_body_validation' (53096) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\source-successor-view-074\..\security-input-view-074\contract.rs:80:5:
+assertion `left == right` failed: unreviewed current security input: Cargo.lock
+  left: "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+ right: "91a009119e13184958de1a29f3b58d900e8756aaa47878c991a114b5ea2079d0"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    fresh_readers_join_old_gates_without_bypassing_current_body_validation
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.15s
+

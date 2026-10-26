@@ -1,0 +1,5 @@
+   Compiling hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3m 01s
+     Running tests\security_input_view_074.rs (target\debug\deps\security_input_view_074-5d51299aa0ac7da2.exe)
+error: test failed, to rerun pass `-p xtask --test security_input_view_074`

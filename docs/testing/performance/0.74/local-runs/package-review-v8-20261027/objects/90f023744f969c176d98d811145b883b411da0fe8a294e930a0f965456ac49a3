@@ -1,0 +1,3 @@
+# Repo-local cargo aliases. `cargo xtask <cmd>` runs the automation crate.
+[alias]
+xtask = "run -p xtask --locked --"

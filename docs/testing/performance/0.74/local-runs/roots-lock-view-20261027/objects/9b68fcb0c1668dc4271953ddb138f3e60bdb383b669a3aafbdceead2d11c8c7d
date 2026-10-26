@@ -1,0 +1,77 @@
+"""Fresh source-only parser run and context-aware closure; no package replay."""
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+def load(name, path):
+    spec = importlib.util.spec_from_file_location(name,path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+audit = load('security_successor',ROOT/'tools/security-successor-audit-074/audit.py')
+context_path = ROOT/'tools/historical-blob-batch-074/module_context_v5.py'
+audit.require(audit.sha(context_path.read_bytes()) == 'c4bbc2d6b69e416ac3fcb30a1a64fb3bb54473b70977a1875ff90ca264b0cd44', 'context algorithm drift')
+context = load('fixed_module_context',context_path)
+BUILD = ROOT/'target/roots-lock-view-20261027/parser-build'
+OUT = ROOT/'target/roots-lock-view-20261027/syntax-data-first'
+OUT.mkdir(exist_ok=False)
+def write(name, value):
+    with (OUT/name).open('x',encoding='utf-8',newline='\n') as stream:
+        json.dump(value,stream,sort_keys=True,indent=2)
+        stream.write('\n')
+receipt = audit.decode((BUILD/'result.json').read_bytes())
+audit.require(receipt['exit'] == 0 and receipt['source_contract'] and receipt['commit_unchanged'], 'parser build refused')
+captured = audit.decode((BUILD/'intent.json').read_bytes())['source']
+messages = [audit.decode(v) for v in (BUILD/'stdout.log').read_bytes().splitlines() if v.startswith(b'{')]
+artifacts = [m for m in messages if m.get('reason') == 'compiler-artifact' and m.get('target',{}).get('name') == 'census_cost_074' and m.get('executable')]
+audit.require(len(artifacts) == 1 and artifacts[0]['profile']['test'], 'parser artifact membership')
+binary = Path(artifacts[0]['executable']).resolve(strict=True)
+audit.require(binary.parent == (ROOT/'target/debug/deps').resolve(), 'parser artifact outside exact build')
+binary_sha = audit.sha(binary.read_bytes())
+gate = audit.load_v6(ROOT)
+names = set(gate['sources'])
+for folder in ('crates/xtask/src','crates/xtask/tests'):
+    names.update(p.relative_to(ROOT).as_posix() for p in (ROOT/folder).rglob('*.rs'))
+sources = {n:audit.sha(audit.read_inside(ROOT,n)) for n in sorted(names)}
+write('intent.json',dict(binary=str(binary),binary_sha256=binary_sha,round_bound=8,
+    per_round_seconds=120,compiler_expansion=False,executed_input_code=False,
+    package_dispatched=False,services=False,server=False,clocks=False))
+for number in range(8):
+    audit.require(all(captured.get(n) == digest for n,digest in sources.items()), 'source differs from parser build snapshot')
+    suffix = str(number)
+    write('input-'+suffix+'.json',dict(sources=sources))
+    argv = [str(binary),'--exact','package_syntax_child','--nocapture','--test-threads=1']
+    with (OUT/('stdout-'+suffix+'.log')).open('xb') as stdout, (OUT/('stderr-'+suffix+'.log')).open('xb') as stderr:
+        process = subprocess.run(argv,cwd=ROOT,env=dict(os.environ,
+            HC074_PACKAGE_SYNTAX_INPUT=str(OUT/('input-'+suffix+'.json'))),
+            stdout=stdout,stderr=stderr,timeout=120,check=False)
+    write('process-'+suffix+'.json',dict(argv=argv,exit=process.returncode))
+    audit.require(process.returncode == 0, 'first syntax child refusal')
+    text = (OUT/('stdout-'+suffix+'.log')).read_text(encoding='utf-8')
+    values = [audit.decode(line.split('HC074_SYNTAX ',1)[1]) for line in text.splitlines() if 'HC074_SYNTAX ' in line]
+    audit.require(len(values) == 1, 'syntax envelope membership')
+    result = values[0]
+    audit.require(result['executed_input_code'] is False and result['compiler_expansion'] is False, 'syntax scope')
+    audit.require({row['source']:row['sha256'] for row in result['sources']} == sources, 'syntax source membership')
+    additions, unresolved = context.module_edges(ROOT,result)
+    write('edges-'+suffix+'.json',dict(additions=additions,unresolved=unresolved))
+    audit.require(not unresolved, 'unresolved contextual module')
+    if not additions:
+        break
+    sources = dict(sorted({**sources,**additions}.items()))
+else:
+    raise ValueError('context closure bound')
+audit.require(all(audit.sha(audit.read_inside(ROOT,n)) == digest for n,digest in sources.items()), 'source changed during parser')
+audit.require(audit.sha(binary.read_bytes()) == binary_sha, 'parser artifact changed')
+write('result.json',result)
+write('receipt.json',dict(rounds=number+1,source_files=len(sources),
+    syntax_sites=sum(len(row['sites']) for row in result['sources']),
+    binary_sha256=binary_sha,source_unchanged=True,context_closed=True,
+    package_dispatched=False,current_effect_review_complete=False,release_admitted=False))
+print(json.dumps(audit.decode((OUT/'receipt.json').read_bytes())))
+
+

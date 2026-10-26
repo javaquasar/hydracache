@@ -70,6 +70,15 @@ preserve this first resource refusal. Next preflight repaired build capacity
 before a distinct full gate under the same command, timeout, threads and floor;
 do not combine its future verdicts with V6 or this partial compilation.
 
+The [exact approved roots lock view and V8 review](roots-lock-view-package-v8-result-20261027.md)
+retain the old reader's first refusal and restore its complete predecessor only
+after whole current-body validation. Old security/IO rules are unchanged.
+Twenty-two focused cases pass on Windows/MSRV/GNU, and the 17 V8 gate controls
+pass. Fresh source closure covers 374 Rust inputs/26,044 sites, 54 auxiliary
+bodies and 148 default targets. This is a separately reviewed current source
+state; the original full package command and 780-second/four-thread/floor
+contract still require an actual complete verdict, not a joined old suffix.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,
