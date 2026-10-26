@@ -1,0 +1,13 @@
+test_ambiguous_or_missing_files_do_not_fallback (test_module_context_v5.ContextControls.test_ambiguous_or_missing_files_do_not_fallback) ... ok
+test_conflicting_declaration_contexts_refuse (test_module_context_v5.ContextControls.test_conflicting_declaration_contexts_refuse) ... ok
+test_literal_import_uses_parent_for_default_children (test_module_context_v5.ContextControls.test_literal_import_uses_parent_for_default_children) ... ok
+test_nested_inline_scope_and_reordered_rows (test_module_context_v5.ContextControls.test_nested_inline_scope_and_reordered_rows) ... ok
+test_ordinary_and_mod_rs_children_keep_their_directories (test_module_context_v5.ContextControls.test_ordinary_and_mod_rs_children_keep_their_directories) ... ok
+test_rustc_metadata_confirms_literal_and_ordinary_contexts_without_execution (test_module_context_v5.ContextControls.test_rustc_metadata_confirms_literal_and_ordinary_contexts_without_execution) ... ok
+test_unknown_duplicate_and_outside_inputs_refuse (test_module_context_v5.ContextControls.test_unknown_duplicate_and_outside_inputs_refuse) ... ok
+test_unowned_source_does_not_infer_a_context_from_existing_files (test_module_context_v5.ContextControls.test_unowned_source_does_not_infer_a_context_from_existing_files) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.978s
+
+OK

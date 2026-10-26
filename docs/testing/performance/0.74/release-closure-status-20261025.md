@@ -109,6 +109,12 @@ cases pass per compiler, including the complete audit and old proof chain.
 No validator/ledger is relaxed. The next boundary is a new exact whole-package
 source/effect review, followed by the complete unchanged-bound package command.
 
+The [contextual module inventory](module-context-v5-result-20261026.md) then
+closes the current graph at 365 Rust sources, preserving the old scanner's first
+two-edge refusal. Twenty-three controls and seven offline integrity controls
+pass. The 21 changed/21 added AST rows and auxiliary data still require manual
+effect review; no new package run or admission is inferred from source closure.
+
 Complete a newly reviewed whole-package replay within the unchanged
 780-second/four-thread guard, including the previously unstarted suffix. The
 separate 321-case performance-contract pass and repaired focused cohorts do not

@@ -1,0 +1,9 @@
+"""One finite correctness cohort; compiler metadata only, no fixture execution."""
+import unittest
+
+loader = unittest.TestLoader()
+suite = unittest.TestSuite(loader.discover('tools/historical-blob-batch-074', pattern=pattern)
+                           for pattern in ('test_module_context_v5.py', 'test_syntax_audit.py',
+                                           'test_syntax_audit_v5.py', 'test_package_effects_review_v4.py'))
+result = unittest.TextTestRunner(verbosity=2).run(suite)
+raise SystemExit(not result.wasSuccessful())

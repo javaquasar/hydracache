@@ -1,0 +1,23 @@
+{
+  "provenance": "Manually transcribed from the tool response; NOT a raw stdout/stderr receipt.",
+  "argv": [
+    "C:/Python313/python.exe",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/historical-blob-batch-074",
+    "-p",
+    "test_module_context_v5.py",
+    "-v"
+  ],
+  "cases": 8,
+  "passed": 7,
+  "errors": 1,
+  "error": "NameError: name doc is not defined",
+  "site": "test_rustc_metadata_confirms_literal_and_ordinary_contexts_without_execution, line 110",
+  "cause": "Two existing row-reordering assertions were left inside the newly inserted compiler test.",
+  "repair": "Move the two assertions back into their original inline-scope test.",
+  "raw_streams_retained": false,
+  "product_or_source_capture_failure": false
+}

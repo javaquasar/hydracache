@@ -1,0 +1,101 @@
+"""Append-only retention of source-only module closure, not effect approval."""
+from pathlib import Path
+import hashlib
+import json
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/module-context-v5-20261026'
+OLD = ROOT / 'docs/testing/performance/0.74/local-runs/package-effect-syntax-v4-closure-20261025'
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+old_index_raw = (OLD / 'index.json').read_bytes()
+assert sha(old_index_raw) == 'e46b334397fcb7ef6ffe36335fbe86a908be481dc12832109bf1da99b93ea6fb'
+old_index = json.loads(old_index_raw)
+
+
+def old_member(name):
+    row = old_index['members'][name]
+    raw = (OLD / 'objects' / row['sha256']).read_bytes()
+    assert len(raw) == row['bytes'] and sha(raw) == row['sha256']
+    return raw
+
+
+old = json.loads(old_member('syntax/result.json'))
+new = json.loads((ROOT / 'target/package-v5-syntax-context-first-20261026/result.json').read_bytes())
+previous = {row['source']: row for row in old['sources']}
+current = {row['source']: row for row in new['sources']}
+changed = sorted(name for name in previous if previous[name] != current.get(name))
+added = sorted(current.keys() - previous.keys())
+assert (len(previous), len(current), len(changed), len(added)) == (344, 365, 21, 21)
+assert not previous.keys() - current.keys()
+members = {}
+
+
+def add(name, raw):
+    assert name not in members
+    members[name] = raw
+
+
+labels = ['package-v5-syntax-build-first', 'package-v5-syntax-first',
+          'module-context-v5-controls-first', 'module-context-v5-controls-final',
+          'package-v5-syntax-context-first', 'module-context-v5-check',
+          'module-context-v5-clippy', 'module-context-v5-fmt']
+for label in labels:
+    folder = ROOT / 'target/source-continuation-20261024' / label
+    intent, result = (json.loads((folder / file).read_bytes()) for file in ('intent.json', 'result.json'))
+    assert result['exit'] == (1 if label == 'package-v5-syntax-first' else 0)
+    assert result['outer_refusal'] is None and result['head_unchanged'] and result['source_unchanged']
+    assert intent['source'] == result['source_after']
+    assert intent['head'] == '6897daaed9aef668f86d77e3ce5076346c20a8f3'
+    for file in folder.iterdir():
+        assert file.is_file()
+        add('checks/' + label + '/' + file.name, file.read_bytes())
+for label, folder in [('first-refusal', 'package-v5-syntax-first-20261026'),
+                      ('contextual-closure', 'package-v5-syntax-context-first-20261026')]:
+    for file in (ROOT / 'target' / folder).iterdir():
+        assert file.is_file()
+        add('syntax/' + label + '/' + file.name, file.read_bytes())
+for name, row in current.items():
+    raw = (ROOT / name).read_bytes()
+    assert sha(raw) == row['sha256']
+    if name in changed or name in added:
+        add('delta-source/' + name, raw)
+    else:
+        assert old_member('fixture/' + name) == raw
+for name in ['module_context_v5.py', 'syntax_audit_v5.py', 'test_module_context_v5.py', 'test_syntax_audit_v5.py',
+             'syntax_audit.py']:
+    path = 'tools/historical-blob-batch-074/' + name
+    add('coordinator/' + path, (ROOT / path).read_bytes())
+for name in ['run-module-context-v5-controls-20261026.py', 'run-module-context-v5-checks-20261026.py',
+             'run-fresh-reader-20261024.py', 'run-source-step-20261024.py', Path(__file__).name]:
+    add('coordinator/' + name, (ROOT / 'target' / name).read_bytes())
+add('derived/first-control-error.json', (json.dumps(dict(
+    provenance='Manually transcribed from the tool response; NOT a raw stdout/stderr receipt.',
+    argv=['C:/Python313/python.exe', '-m', 'unittest', 'discover', '-s', 'tools/historical-blob-batch-074',
+          '-p', 'test_module_context_v5.py', '-v'],
+    cases=8, passed=7, errors=1, error='NameError: name doc is not defined',
+    site='test_rustc_metadata_confirms_literal_and_ordinary_contexts_without_execution, line 110',
+    cause='Two existing row-reordering assertions were left inside the newly inserted compiler test.',
+    repair='Move the two assertions back into their original inline-scope test.',
+    raw_streams_retained=False, product_or_source_capture_failure=False), indent=2) + '\n').encode())
+add('derived/delta.json', (json.dumps(dict(changed=changed, added=added, removed=[],
+    execution_effects_review_complete=False, package_dispatched=False), indent=2) + '\n').encode())
+OUT.mkdir(parents=True, exist_ok=True)
+(OUT / 'objects').mkdir()
+index = dict(schema='hc074-module-context-v5-evidence-v1',
+             old_packet=OLD.relative_to(ROOT).as_posix(), old_index_sha256=sha(old_index_raw),
+             sources=365, syntax_sites=25774, controls=23,
+             package_dispatched=False, execution_effects_review_complete=False,
+             server=False, qualification=False, members={})
+for name, raw in sorted(members.items()):
+    digest = sha(raw)
+    path = OUT / 'objects' / digest
+    if path.exists():
+        assert path.read_bytes() == raw
+    else:
+        with path.open('xb') as stream:
+            stream.write(raw)
+    index['members'][name] = dict(sha256=digest, bytes=len(raw))
+raw = (json.dumps(index, indent=2, sort_keys=True) + '\n').encode()
+with (OUT / 'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=sha(raw), members=len(members), objects=len(list((OUT / 'objects').iterdir()))))

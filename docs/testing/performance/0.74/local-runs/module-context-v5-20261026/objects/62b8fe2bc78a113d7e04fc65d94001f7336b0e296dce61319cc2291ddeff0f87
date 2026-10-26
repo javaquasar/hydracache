@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\syntax_audit.py", line 93, in <module>
+    capture(Path(__file__).resolve().parents[2], Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve())
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\syntax_audit.py", line 74, in capture
+    assert not unresolved, 'unresolved actual module edge'
+           ^^^^^^^^^^^^^^
+AssertionError: unresolved actual module edge

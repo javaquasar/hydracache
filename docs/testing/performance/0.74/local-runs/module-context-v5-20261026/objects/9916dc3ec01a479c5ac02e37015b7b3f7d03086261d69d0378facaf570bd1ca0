@@ -1,0 +1,24 @@
+{
+  "additions": {
+    "tools/historical-blob-batch-074/census_caller.rs": "8019c0b741a21a58eea1e19564f4ebd27e1926403c363ec724741841f92c8df5",
+    "tools/historical-blob-batch-074/census_reference.rs": "bda5ea1b318109501e796434064b37c5dbb652fb867db6a3b9f9bf6dd0b0b0dc"
+  },
+  "unresolved": [
+    {
+      "candidates": [
+        "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\current-frontier-074\\reader\\additions.rs",
+        "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\current-frontier-074\\reader\\additions\\mod.rs"
+      ],
+      "scope": "additions",
+      "source": "tools/current-frontier-074/reader.rs"
+    },
+    {
+      "candidates": [
+        "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\current-frontier-074\\reader\\contract.rs",
+        "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\current-frontier-074\\reader\\contract\\mod.rs"
+      ],
+      "scope": "contract",
+      "source": "tools/current-frontier-074/reader.rs"
+    }
+  ]
+}

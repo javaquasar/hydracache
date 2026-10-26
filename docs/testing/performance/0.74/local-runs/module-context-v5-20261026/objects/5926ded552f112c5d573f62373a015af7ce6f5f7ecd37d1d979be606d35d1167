@@ -1,0 +1,14 @@
+"""Local scoped checks only; no package replay or host operations."""
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+for label, argv in [
+    ('module-context-v5-check', ['cargo', '+1.94.0', 'check', '--offline', '--locked', '-p', 'xtask', '--all-targets']),
+    ('module-context-v5-clippy', ['cargo', '+1.94.0', 'clippy', '--offline', '--locked', '-p', 'xtask', '--all-targets', '--all-features', '--', '-D', 'warnings']),
+    ('module-context-v5-fmt', ['cargo', '+1.94.0', 'fmt', '-p', 'xtask', '--', '--check']),
+]:
+    result = subprocess.run([sys.executable, str(ROOT / 'target/run-fresh-reader-20261024.py'), label, *argv], cwd=ROOT)
+    if result.returncode:
+        raise SystemExit(result.returncode)

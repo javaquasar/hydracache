@@ -5,6 +5,12 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [contextual package module inventory](module-context-v5-result-20261026.md)
+closes 365 Rust sources after preserving the old scanner's first path-resolution
+refusal. Its 23 controls and seven offline integrity controls pass. This is only
+source closure: manual review of 42 source/AST deltas and auxiliary inputs must
+precede any new complete package command. V4 pins and the red result stay fixed.
+
 The [first current-source full package gate](package-closure-v4-result-20261025.md)
 retains the unchanged 780-second run: 114/138 targets completed, 46 completed-case
 failures plus 30 failed observations in the incomplete target, 23 unstarted

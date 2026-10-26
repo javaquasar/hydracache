@@ -20538,3 +20538,25 @@ one invocation per compiler on the formatted source.
 That closes two
 specific compatibility failures, not the interrupted package. The next step is
 a new complete source/effect review, followed by an actual full package result.
+
+### A compiling graph can still expose an inventory-tool defect
+
+The next source-only capture stops before package execution: its old resolver
+looks for two children of a `#[path]`-imported `reader.rs` under `reader/`.
+For that declaration mode the compiler uses the containing directory instead.
+Two synthetic libraries compiled to metadata distinguish this from ordinary
+module lookup, without running either library.
+
+A separate contextual resolver follows declared import contexts rather than
+trying filesystem fallbacks. Missing, ambiguous, conflicting and outside-root
+edges still refuse. The old scanner, pins and first failure remain unchanged;
+the capture's original child limits and body checks stay in place. Closure now
+contains 365 Rust files and 25,774 syntax sites, with 23 correctness controls
+and seven offline integrity controls passing. Initial test-editing and offline
+root mistakes remain explicitly documented, not promoted to product findings.
+
+This is evidence about the inventory tool, not cache performance or package
+safety. There are 21 changed and 21 added source/AST rows against v4. They and
+the new auxiliary inputs still need manual effect review before a full run.
+The [result and raw packet](../testing/performance/0.74/module-context-v5-result-20261026.md)
+separate source closure from execution admission; the original package stays red.

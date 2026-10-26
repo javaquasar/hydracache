@@ -1,0 +1,9 @@
+{
+  "additions": {
+    "tools/current-frontier-074/additions.rs": "8fdb366c6bade0767a7bdd3b4b9570dcb8e6af036d156836d23c828a4699b9cc",
+    "tools/current-frontier-074/contract.rs": "d214be91c11ec2f93f76ca20ea29deb697dbaffaac4aceddfcc62131c5b2caae",
+    "tools/historical-blob-batch-074/census_caller.rs": "8019c0b741a21a58eea1e19564f4ebd27e1926403c363ec724741841f92c8df5",
+    "tools/historical-blob-batch-074/census_reference.rs": "bda5ea1b318109501e796434064b37c5dbb652fb867db6a3b9f9bf6dd0b0b0dc"
+  },
+  "unresolved": []
+}
