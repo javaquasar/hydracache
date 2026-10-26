@@ -414,3 +414,18 @@ retains 130 passing model/regression cases and five independent source/integrity
 controls. All eighteen ordinary/fatal clock cuts are synthetic. Native caller
 integration, compatibility and overhead require separate gates; no measurement,
 V6 or server action occurs here.
+
+## Separate integrated spawn capture
+
+Only `git_cpu_spawn.py BUILD_LABEL NEW_LABEL --spawn-frames` enables the new
+`hc074-spawn-capture-v1` path and exclusive root. The old caller and modes remain
+byte-identical. The [design](spawn-capture-design.md) preserves the original
+measure body, shared origin, predicates, cleanup and separate operational verdict;
+all recorder failures retain deterministic precedence and their own details.
+
+The [first native result](../../docs/testing/performance/0.74/spawn-capture-native-result-20261026.md)
+passes sixteen workers/sixty-four Git calls and all 544 probes. All 142 combined
+models and seven integrity cases pass, with first fixture/reader failures kept.
+This is healthy-path compatibility, not pure creation cost, native fault proof,
+overhead acceptance or release admission. No server run is useful for this
+Windows-only diagnostic; no V6 or product workload is launched.

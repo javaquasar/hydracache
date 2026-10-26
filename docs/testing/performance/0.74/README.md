@@ -5,7 +5,14 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
-The [model-only spawn boundary](spawn-frames-result-20261026.md) now separates
+The [integrated native spawn control](spawn-capture-native-result-20261026.md)
+passes all sixteen workers/sixty-four Git calls with 544 valid probes and zero
+cleanup errors. A separate explicit gate preserves old modes and first fixture/
+reader refusals. All 142 model/regression cases and seven integrity cases pass.
+Observed creation-to-retention is not pure API cost; native fault behavior and
+recorder overhead still need their own evidence. No V6 or server run occurs.
+
+The [model-only spawn boundary](spawn-frames-result-20261026.md) separates
 preparation, create-to-retention and membership/release without a probe in the
 unowned post-create gap. All 130 model/regression cases and five independent
 integrity cases pass. The original caller/worker/CI path is unchanged and the

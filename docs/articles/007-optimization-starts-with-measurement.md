@@ -21017,3 +21017,26 @@ The existing native caller, worker and CI implementation remain unchanged. This
 is a model-tested observation boundary, not native compatibility, real SIGKILL,
 overhead acceptance or a product improvement. Integration must preserve the same
 ownership and verdict boundaries before another native control is considered.
+
+### The first integrated spawn control locates an elapsed interval
+
+The separately gated native diagnostic now completes sixteen workers and
+sixty-four ordinary Git calls with every recorder layer valid. All 142 combined
+model/regression cases and seven integrity cases pass. The original caller's
+three modes remain unchanged; the first fixture and reader mistakes are retained
+without replaying the native attempt.
+
+Create-to-retention sums to 843.7488–844.0902 ms wall and 234.375 ms measured
+coordinator CPU. Preparation sums to 4.2822–4.4133 ms wall and membership with
+conditional resume to 0.9856–1.0799 ms. The raw observations place most recorded
+spawn wall inside the combined create/publication bracket, not the small setup
+or membership brackets. They do not identify a specific native operation or
+explain the largest 235.3-ms bracket, which has zero measured CPU.
+
+The [exact native evidence](../testing/performance/0.74/spawn-capture-native-result-20261026.md)
+checks cross-recorder nesting from the outer spawn entry through creation,
+retained identity observations and release to outer exit. It retains the
+remaining parent complement rather than calling it a measured API. Both arms
+trace all layers, so this successful control is not an overhead estimate or
+comparison with earlier unpaired attempts. Real Windows fault paths remain the
+next gate; the Linux server cannot establish this Windows ABI contract.

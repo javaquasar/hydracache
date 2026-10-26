@@ -101,6 +101,13 @@ create/publication gap; original CI/caller/worker bytes remain unchanged. This
 unwired model does not establish native cost, recorder overhead or admission.
 Its next boundary is explicitly gated integration, not another package retry.
 
+The [first integrated native spawn control](spawn-capture-native-result-20261026.md)
+passes its exact 16-worker/64-call healthy path through a separate gate with
+unchanged old modes. All 142 models and seven integrity controls pass, preserving
+first fixture/reader failures. New span ordering and CPU arithmetic close without
+an ownership-gap probe; healthy compatibility is not native fault/overhead or
+product admission. No V6 or dedicated-server action is performed.
+
 The [approved plan](../../../plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md)
 keeps its original thresholds. Its closing rule is to publish the measurements
 and defer changes if none pass, not to tag a documentation-only substitute as
