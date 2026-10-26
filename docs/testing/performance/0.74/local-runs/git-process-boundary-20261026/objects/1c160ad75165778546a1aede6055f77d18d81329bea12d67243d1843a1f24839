@@ -1,0 +1,156 @@
+{
+  "all_descendants_accounted": false,
+  "analysis": {
+    "current_full_helper_cost_attributed": false,
+    "directly_created_counter_excludes_native": true,
+    "numeric_speedup_established": false,
+    "old_cohort_topology_attested": false,
+    "package_pass": false,
+    "two_distinct_held_processes": true
+  },
+  "argv": [
+    "C:\\Program Files\\Git\\cmd\\git.exe",
+    "--no-optional-locks",
+    "cat-file",
+    "--batch"
+  ],
+  "cleanup_errors": [],
+  "cleanup_seconds": 5,
+  "discovery_seconds": 5,
+  "discovery_snapshots": 1,
+  "environment": {
+    "external_cargo_configuration_absent": true,
+    "fixture_overrides_absent": true,
+    "git_effect_config_active": false,
+    "git_effect_config_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "negative_fixture_executable_absent": true,
+    "target_and_protoc_scratch_not_reparse": true,
+    "unreviewed_build_overrides_absent": true
+  },
+  "exit_code": 0,
+  "identities": [
+    {
+      "creation_100ns": 134374696810486493,
+      "image": "C:\\Program Files\\Git\\cmd\\git.exe",
+      "pid": 35512
+    },
+    {
+      "creation_100ns": 134374696810944890,
+      "image": "c:\\program files\\git\\mingw64\\bin\\git.exe",
+      "pid": 20648
+    }
+  ],
+  "image_pins_after": {
+    "C:\\Program Files\\Git\\cmd\\git.exe": "34a408843194be320d8a87a3c12cd5c7d2e08d03b24567a41db32e21d12569d2",
+    "C:\\Program Files\\Git\\mingw64\\bin\\git.exe": "755d4896d35663d0ff08924f84507f35236b83d240635b512c519bf43cc71a87"
+  },
+  "image_pins_before": {
+    "C:\\Program Files\\Git\\cmd\\git.exe": "34a408843194be320d8a87a3c12cd5c7d2e08d03b24567a41db32e21d12569d2",
+    "C:\\Program Files\\Git\\mingw64\\bin\\git.exe": "755d4896d35663d0ff08924f84507f35236b83d240635b512c519bf43cc71a87"
+  },
+  "mapped_image_attested": false,
+  "native_samples": [
+    {
+      "creation_100ns": 134374696810944890,
+      "exit_100ns": null,
+      "io": {
+        "other_bytes": 8984,
+        "other_ops": 384,
+        "read_bytes": 65374,
+        "read_ops": 43,
+        "write_bytes": 0,
+        "write_ops": 0
+      },
+      "kernel_100ns": 312500,
+      "memory": {
+        "peak_private_commit_bytes": 35536896,
+        "peak_working_set_bytes": 9113600,
+        "private_usage": 35536896,
+        "working_set_bytes": 9113600
+      },
+      "observed_monotonic_ns": 847558035329400,
+      "terminal": false,
+      "terminal_memory_error": null,
+      "user_100ns": 156250
+    },
+    {
+      "creation_100ns": 134374696810944890,
+      "exit_100ns": 134374696811962776,
+      "io": {
+        "other_bytes": 9110,
+        "other_ops": 390,
+        "read_bytes": 65374,
+        "read_ops": 43,
+        "write_bytes": 0,
+        "write_ops": 0
+      },
+      "kernel_100ns": 312500,
+      "memory": {
+        "peak_private_commit_bytes": 35536896,
+        "peak_working_set_bytes": 9375744,
+        "private_usage": 81920,
+        "working_set_bytes": 36864
+      },
+      "observed_monotonic_ns": 847558066308300,
+      "terminal": true,
+      "terminal_memory_error": null,
+      "user_100ns": 156250
+    }
+  ],
+  "object_requests": 0,
+  "original_helper_executed": false,
+  "package_pass": false,
+  "passed": true,
+  "performance_cohort": false,
+  "product_admission": false,
+  "refusal": null,
+  "retry": false,
+  "root_samples": [
+    {
+      "creation_100ns": 134374696810486493,
+      "exit_100ns": null,
+      "io": {
+        "other_bytes": 0,
+        "other_ops": 0,
+        "read_bytes": 0,
+        "read_ops": 0,
+        "write_bytes": 0,
+        "write_ops": 0
+      },
+      "kernel_100ns": 0,
+      "memory": {
+        "peak_private_commit_bytes": 667648,
+        "peak_working_set_bytes": 2113536,
+        "private_usage": 659456,
+        "working_set_bytes": 2113536
+      },
+      "terminal": false,
+      "terminal_memory_error": null,
+      "user_100ns": 0
+    },
+    {
+      "creation_100ns": 134374696810486493,
+      "exit_100ns": 134374696812145165,
+      "io": {
+        "other_bytes": 6348,
+        "other_ops": 186,
+        "read_bytes": 0,
+        "read_ops": 0,
+        "write_bytes": 0,
+        "write_ops": 0
+      },
+      "kernel_100ns": 312500,
+      "memory": {
+        "peak_private_commit_bytes": 1634304,
+        "peak_working_set_bytes": 8290304,
+        "private_usage": 77824,
+        "working_set_bytes": 32768
+      },
+      "terminal": true,
+      "terminal_memory_error": null,
+      "user_100ns": 0
+    }
+  ],
+  "run_seconds": 10,
+  "scope": "git-launcher-native-boundary-only"
+}

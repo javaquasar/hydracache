@@ -1,0 +1,40 @@
+"""Seal final local checks separately from the first native outcome."""
+from pathlib import Path
+import hashlib
+import json
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/git-process-boundary-20261026/final-checks'
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+members = {}
+for suffix in ('doc', 'contract', 'integrity', 'verifier', 'indent'):
+    folder = ROOT / 'target/source-continuation-20261024' / ('git-boundary-final-' + suffix)
+    intent, result = (json.loads((folder / name).read_bytes()) for name in ('intent.json', 'result.json'))
+    assert result['exit'] == 0 and result['source_unchanged'] and result['head_unchanged']
+    assert result['outer_refusal'] is None and intent['source'] == result['source_after']
+    assert intent['head'] == '3807c4749873d9a3e9495c755bbf3ef1f73f9c7b'
+    for path in folder.iterdir():
+        assert path.is_file()
+        members[suffix + '/' + path.name] = path.read_bytes()
+for name in ('verify.py', 'test_verify.py'):
+    members['verifier-source/' + name] = (OUT.parent / name).read_bytes()
+members['collector.py'] = Path(__file__).read_bytes()
+OUT.mkdir(exist_ok=False)
+(OUT / 'objects').mkdir()
+index = dict(schema='hc074-git-boundary-final-checks-v1', package_pass=False, product_admission=False, members={})
+for name, raw in sorted(members.items()):
+    digest = sha(raw)
+    path = OUT / 'objects' / digest
+    if path.exists():
+        assert path.read_bytes() == raw
+    else:
+        with path.open('xb') as stream:
+            stream.write(raw)
+    index['members'][name] = dict(sha256=digest, bytes=len(raw))
+raw = (json.dumps(index, indent=2, sort_keys=True) + '\n').encode()
+with (OUT / 'index.json').open('xb') as stream:
+    stream.write(raw)
+for row in index['members'].values():
+    body = (OUT / 'objects' / row['sha256']).read_bytes()
+    assert len(body) == row['bytes'] and sha(body) == row['sha256']
+print(dict(index_sha256=sha(raw), members=len(members), objects=len(list((OUT / 'objects').iterdir())), staged_readback=True))

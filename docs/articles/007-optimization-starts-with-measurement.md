@@ -20695,3 +20695,28 @@ therefore stands: fresh refs/config, short revisions and conditional observation
 must survive an eventual cost repair. The
 [complete result and immutable evidence](../testing/performance/0.74/package-closure-v6-result-20261026.md)
 keep the successful repairs separate from the unresolved capacity and release gates.
+
+### The process you create may not own the work you want to measure
+
+The direct-pipe diagnostic correctly labels its child CPU as excluding
+descendants. That qualification matters on the actual Windows Git installation:
+a separate committed control now holds the cmd Git launcher and a distinct
+mingw64 native child. A zero-request `cat-file --batch` keeps the child observable
+until EOF; both original held objects then become terminal with empty output
+and a successful root exit. Independent image pins, live identity brackets and
+unchanged ten/five-second diagnostic bounds constrain that single control.
+
+Launcher lifetime CPU cannot stand for native Git CPU on this observed chain.
+Nor does attachment create a valid new CPU origin: the native counter is already
+nonzero when attached and does not advance while the control waits for EOF.
+Subtracting that late initial sample would hide earlier work. Whole-lifetime
+terminal accounting and interval accounting answer different questions.
+
+This does not retroactively attest the earlier cohort, isolate startup from
+pipe collection or prove that bypassing the launcher is safe or faster. No
+source-loader cache, native-image shortcut or repeated package attempt follows.
+The next observer must cover actual fresh calls, including short-lived native
+work, without changing their conditional graph. The
+[boundary result and first fault evidence](../testing/performance/0.74/git-process-boundary-result-20261026.md)
+retain the initial late-close refusal and its unchanged-window repair alongside
+sixty passing models and the sole successful native control.

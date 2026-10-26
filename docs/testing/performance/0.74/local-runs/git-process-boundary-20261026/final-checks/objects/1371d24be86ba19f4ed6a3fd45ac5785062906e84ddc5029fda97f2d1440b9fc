@@ -1,0 +1,1 @@
+{'native_attempts': 1, 'distinct_held_processes': 2, 'object_requests': 0, 'models': 60, 'first_late_close_failure_preserved': True, 'directly_created_counter_excludes_native': True, 'performance_cohort': False, 'package_pass': False, 'workload_replayed': False}

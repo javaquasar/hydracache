@@ -14,6 +14,13 @@ never start. Fourteen new review/dispatch controls and nine integrity controls
 pass. Full package coverage remains red, independently of the repaired failures;
 no unchanged retry or deadline relaxation is admitted.
 
+The subsequent [real Git process-boundary control](git-process-boundary-result-20261026.md)
+confirms distinct held launcher/native processes, with sixty passing models and
+four integrity controls. It closes the diagnostic counter-scope question, not
+the complete helper's CPU attribution or timeout. The old directly-created-child
+counters remain valid only for that narrower scope; no native bypass or source
+cache is installed and the V6 package verdict is unchanged.
+
 The [approved plan](../../../plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md)
 keeps its original thresholds. Its closing rule is to publish the measurements
 and defer changes if none pass, not to tag a documentation-only substitute as

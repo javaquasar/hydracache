@@ -1,0 +1,9 @@
+test_first_result_replays_offline (test_verify.Integrity.test_first_result_replays_offline) ... ok
+test_identities_pins_streams_source_first_failure_and_raw_baseline_cannot_change (test_verify.Integrity.test_identities_pins_streams_source_first_failure_and_raw_baseline_cannot_change) ... ok
+test_index_mutation_refuses (test_verify.Integrity.test_index_mutation_refuses) ... ok
+test_missing_object_refuses (test_verify.Integrity.test_missing_object_refuses) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.506s
+
+OK

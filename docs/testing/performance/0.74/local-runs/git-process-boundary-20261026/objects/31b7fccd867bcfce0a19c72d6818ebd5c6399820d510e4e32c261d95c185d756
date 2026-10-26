@@ -1,0 +1,18 @@
+test_bad_labels_refuse_before_directory_creation (test_git_process_boundary.Boundary.test_bad_labels_refuse_before_directory_creation) ... ok
+test_borrows_original_root_holds_one_native_and_releases_with_eof (test_git_process_boundary.Boundary.test_borrows_original_root_holds_one_native_and_releases_with_eof) ... ok
+test_close_failure_overrides_an_otherwise_healthy_control_and_is_retained (test_git_process_boundary.Boundary.test_close_failure_overrides_an_otherwise_healthy_control_and_is_retained) ... ok
+test_counter_regression_remains_a_refusal_with_owned_query_cleanup (test_git_process_boundary.Boundary.test_counter_regression_remains_a_refusal_with_owned_query_cleanup) ... ok
+test_early_root_exit_does_not_open_another_process (test_git_process_boundary.Boundary.test_early_root_exit_does_not_open_another_process) ... ok
+test_first_preflight_refusal_has_intent_and_does_not_spawn_or_retry (test_git_process_boundary.Boundary.test_first_preflight_refusal_has_intent_and_does_not_spawn_or_retry) ... ok
+test_image_checks_refuse_path_or_bytes_without_adopting_discovery (test_git_process_boundary.Boundary.test_image_checks_refuse_path_or_bytes_without_adopting_discovery) ... ok
+test_late_attachment_and_exit_are_not_accepted (test_git_process_boundary.Boundary.test_late_attachment_and_exit_are_not_accepted) ... ok
+test_late_close_cannot_publish_a_passing_cleanup (test_git_process_boundary.Boundary.test_late_close_cannot_publish_a_passing_cleanup) ... ok
+test_missing_native_exhausts_discovery_without_attachment (test_git_process_boundary.Boundary.test_missing_native_exhausts_discovery_without_attachment) ... ok
+test_positive_reader_excludes_speedup_and_old_cohort_claims (test_git_process_boundary.Boundary.test_positive_reader_excludes_speedup_and_old_cohort_claims) ... ok
+test_scope_pin_budget_identity_and_missing_terminal_mutations_refuse (test_git_process_boundary.Boundary.test_scope_pin_budget_identity_and_missing_terminal_mutations_refuse) ... ok
+test_wrong_image_is_one_failed_attachment_without_fallback (test_git_process_boundary.Boundary.test_wrong_image_is_one_failed_attachment_without_fallback) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.089s
+
+OK

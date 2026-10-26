@@ -1,0 +1,311 @@
+{
+  "members": {
+    "checks/git-boundary-all-models/intent.json": {
+      "bytes": 345869,
+      "sha256": "29da5a4ac8915c491f6f2426825c08578409da93fb891038b1a14a9a41e1a259"
+    },
+    "checks/git-boundary-all-models/result.json": {
+      "bytes": 345507,
+      "sha256": "6ca7edc1b6a5602b5766332b730f4ebb2ebe1752f4bacbcf7110f9d3320526ac"
+    },
+    "checks/git-boundary-all-models/stderr.log": {
+      "bytes": 7982,
+      "sha256": "f3f863f2dc9f3c534c6873600427c1f6466414e9467e11e9d0097667df448f77"
+    },
+    "checks/git-boundary-all-models/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-bytecode/intent.json": {
+      "bytes": 345893,
+      "sha256": "7feaae3a31079e9f13000f7e4a88f8408b5175c20b7e4508b432ad5d8510f140"
+    },
+    "checks/git-boundary-bytecode/result.json": {
+      "bytes": 345507,
+      "sha256": "6ca7edc1b6a5602b5766332b730f4ebb2ebe1752f4bacbcf7110f9d3320526ac"
+    },
+    "checks/git-boundary-bytecode/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-bytecode/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-check/intent.json": {
+      "bytes": 345816,
+      "sha256": "db7e69b102651c9a16288b6f9103041e731c071e14050320622e020559c4755c"
+    },
+    "checks/git-boundary-check/result.json": {
+      "bytes": 345507,
+      "sha256": "6ca7edc1b6a5602b5766332b730f4ebb2ebe1752f4bacbcf7110f9d3320526ac"
+    },
+    "checks/git-boundary-check/stderr.log": {
+      "bytes": 73,
+      "sha256": "ce5ea8bac84b6385850eaf74d8a098379774f64f97f3fd552536030baa2cfaed"
+    },
+    "checks/git-boundary-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-clippy/intent.json": {
+      "bytes": 345879,
+      "sha256": "9433d72c2a52eaeb62430aa14e2cc94fd8122ab1ef5c65fd42d2d9e58b9f73e4"
+    },
+    "checks/git-boundary-clippy/result.json": {
+      "bytes": 345507,
+      "sha256": "5d0fd13c5a48468f9909b0ee0e2ea6ad024fa15c01bb2a5296b95aece37a995b"
+    },
+    "checks/git-boundary-clippy/stderr.log": {
+      "bytes": 72,
+      "sha256": "8286f4eafd83e2e1102fe32eebc340d5aa557e8ca44976ebc7a80578b851a5e4"
+    },
+    "checks/git-boundary-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-close-budget-first/intent.json": {
+      "bytes": 345881,
+      "sha256": "bdc5bf6825df858919b7949d0e0f93ccecf500999ca76b84fb28db2736d51828"
+    },
+    "checks/git-boundary-close-budget-first/result.json": {
+      "bytes": 345507,
+      "sha256": "ca5a39664f85a584ff8ae95f1d92dfa0d96a1f2914c81d8d58537d580e61be65"
+    },
+    "checks/git-boundary-close-budget-first/stderr.log": {
+      "bytes": 2892,
+      "sha256": "966919da1de63bf4f6dac6aee7112e98c2618f851006c6005a91777d878584a5"
+    },
+    "checks/git-boundary-close-budget-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-close-budget-fixed/intent.json": {
+      "bytes": 345881,
+      "sha256": "70bca6b0412d16aad40fa29e3d3071a1ff047883438da1469b221bb589f4ad43"
+    },
+    "checks/git-boundary-close-budget-fixed/result.json": {
+      "bytes": 345507,
+      "sha256": "6ca7edc1b6a5602b5766332b730f4ebb2ebe1752f4bacbcf7110f9d3320526ac"
+    },
+    "checks/git-boundary-close-budget-fixed/stderr.log": {
+      "bytes": 2255,
+      "sha256": "31b7fccd867bcfce0a19c72d6818ebd5c6399820d510e4e32c261d95c185d756"
+    },
+    "checks/git-boundary-close-budget-fixed/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-final-python/intent.json": {
+      "bytes": 345893,
+      "sha256": "290708b3d5d013c65935adab99de64d98e1d02c6d9cd4dd3abe3e51b3dd82379"
+    },
+    "checks/git-boundary-final-python/result.json": {
+      "bytes": 345507,
+      "sha256": "5d0fd13c5a48468f9909b0ee0e2ea6ad024fa15c01bb2a5296b95aece37a995b"
+    },
+    "checks/git-boundary-final-python/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-final-python/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-final-scope-models/intent.json": {
+      "bytes": 345869,
+      "sha256": "0d2262f4ca5f58ed2c991258b825643182339991e656bac38d15fd4b5db314fa"
+    },
+    "checks/git-boundary-final-scope-models/result.json": {
+      "bytes": 345507,
+      "sha256": "5d0fd13c5a48468f9909b0ee0e2ea6ad024fa15c01bb2a5296b95aece37a995b"
+    },
+    "checks/git-boundary-final-scope-models/stderr.log": {
+      "bytes": 8306,
+      "sha256": "3e238b17de78bfcb7f9fa3e6fb3a70af49aa46faeb11a1ffa57db68a22ca7129"
+    },
+    "checks/git-boundary-final-scope-models/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-fmt/intent.json": {
+      "bytes": 345784,
+      "sha256": "cace058dfd9855849ae60dc1c8899ae7a4ffa038f5cf0a941cf78efd97214aa3"
+    },
+    "checks/git-boundary-fmt/result.json": {
+      "bytes": 345507,
+      "sha256": "5d0fd13c5a48468f9909b0ee0e2ea6ad024fa15c01bb2a5296b95aece37a995b"
+    },
+    "checks/git-boundary-fmt/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-fmt/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-indent/intent.json": {
+      "bytes": 345891,
+      "sha256": "02cd6c5cfb38cd8806b4dc8b8dcc2de496b0238fd0948f835d8bb8c205f857f2"
+    },
+    "checks/git-boundary-indent/result.json": {
+      "bytes": 345507,
+      "sha256": "6ca7edc1b6a5602b5766332b730f4ebb2ebe1752f4bacbcf7110f9d3320526ac"
+    },
+    "checks/git-boundary-indent/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-indent/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-model-final/intent.json": {
+      "bytes": 345881,
+      "sha256": "602491011932201086162febecfe03de382a46f42f9ab7c4fb68c241fce1711e"
+    },
+    "checks/git-boundary-model-final/result.json": {
+      "bytes": 345507,
+      "sha256": "596f8887e0f5b39cc08372ffb7b2a9be669ccbc1ef63cc4b637dbb985ac27be6"
+    },
+    "checks/git-boundary-model-final/stderr.log": {
+      "bytes": 2112,
+      "sha256": "9f5f33666b7f792b8d42a7322b5c81c1b3a5bf795c27c93ae2130d464c806df1"
+    },
+    "checks/git-boundary-model-final/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-model-first/intent.json": {
+      "bytes": 345746,
+      "sha256": "e4bec51ca34b3b0d840036c6391c0bccbff82a97a6bce74495071f762541d5a9"
+    },
+    "checks/git-boundary-model-first/result.json": {
+      "bytes": 345372,
+      "sha256": "7f1ab0e6d6bcb77d61ee50238cc234a1fecf77f5d8c92896cce83a7a75ba0a36"
+    },
+    "checks/git-boundary-model-first/stderr.log": {
+      "bytes": 1742,
+      "sha256": "a8e88719ad60f218bb41c856ec8f1f3d28d29059bb0ae56985aff44b474e0787"
+    },
+    "checks/git-boundary-model-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-native-first/intent.json": {
+      "bytes": 345820,
+      "sha256": "b18f5c55e6cc33d6803fe2cc07e539d82c073717b63d2ba5874c87cd4d374631"
+    },
+    "checks/git-boundary-native-first/result.json": {
+      "bytes": 345507,
+      "sha256": "85b9cfb03aafd78c5a9d691977a2ffdce6a9bea94895c59e680695ff2e1ba066"
+    },
+    "checks/git-boundary-native-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/git-boundary-native-first/stdout.log": {
+      "bytes": 58,
+      "sha256": "4e9d4fc8f5d0dd3626155e819e5f1af3b3e477dc438eead21af7d0bb2ed29ef7"
+    },
+    "checks/git-boundary-precommit-models/intent.json": {
+      "bytes": 345869,
+      "sha256": "8631e514ec2396365c0e9ba8f594be3a8169319b630dbf14e0e79c00691b9446"
+    },
+    "checks/git-boundary-precommit-models/result.json": {
+      "bytes": 345507,
+      "sha256": "85b9cfb03aafd78c5a9d691977a2ffdce6a9bea94895c59e680695ff2e1ba066"
+    },
+    "checks/git-boundary-precommit-models/stderr.log": {
+      "bytes": 8668,
+      "sha256": "9509b64426319325055a549387c60b510aa64b449ed53306a94f79e8e6b6da14"
+    },
+    "checks/git-boundary-precommit-models/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "collector/retain-git-boundary-20261026.py": {
+      "bytes": 3977,
+      "sha256": "436178608a16dbabe910f192d0cd2ded61ac80c76c4f0524749cdec7e37ee697"
+    },
+    "collector/run-ci-watchdog-step-20261026.py": {
+      "bytes": 538,
+      "sha256": "8164762bc0c02aee22e49b50dba0bc877b8fcdeffca9d495f8425354bce3245c"
+    },
+    "collector/run-source-step-20261024.py": {
+      "bytes": 2596,
+      "sha256": "a92482cabcfcf8f6440e95972bee8d204bb9c59c8805c45c7b57363dcc3ab430"
+    },
+    "native/intent.json": {
+      "bytes": 802,
+      "sha256": "7c861460ab9b9cd418bba0108ac79589c09628451904959c9657cad1dd4474b4"
+    },
+    "native/result.json": {
+      "bytes": 4483,
+      "sha256": "1c160ad75165778546a1aede6055f77d18d81329bea12d67243d1843a1f24839"
+    },
+    "native/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "native/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "raw-before-close-budget/git_process_boundary.py": {
+      "bytes": 9953,
+      "sha256": "a8e6aeef773ea25393d8e0fddeafbe27c521ff4dc7243f42a5adddfd8f74d260"
+    },
+    "raw-before-close-budget/test_git_process_boundary.py": {
+      "bytes": 11079,
+      "sha256": "7daff31baaba7d9522eed15ff37d04798ed1f4c28150903b2f7b50582e7f3f48"
+    },
+    "source/tools/historical-blob-batch-074/census_cost.py": {
+      "bytes": 10795,
+      "sha256": "d953065d5b5617efa5c854b25d4491a223a0b1866c229d268876f261624a80cc"
+    },
+    "source/tools/historical-blob-batch-074/package_effects_review.py": {
+      "bytes": 9888,
+      "sha256": "2930cba469aec96c9f6846aedfeb8d94f91b1fecf81a123c15e025f272d6028a"
+    },
+    "source/tools/historical-blob-batch-074/package_effects_review_v5.py": {
+      "bytes": 14078,
+      "sha256": "46a02302218d99e8fbf00c9d1ffad5d9c1b9b79dd56dc0641dea86f3a75ab805"
+    },
+    "source/tools/historical-blob-batch-074/package_effects_review_v6.py": {
+      "bytes": 8400,
+      "sha256": "0b397d78e76d1b108c5a5cce331cfe0e0f33ea741caed5cc5fc0fc39d6925057"
+    },
+    "source/tools/xtask-package-attribution-074/git-boundary-design.md": {
+      "bytes": 3030,
+      "sha256": "a6caba246033fc1ca672cf85ce443ff587bc9a4222a39fb702044313a961c1b0"
+    },
+    "source/tools/xtask-package-attribution-074/git-boundary-protocol.toml": {
+      "bytes": 1069,
+      "sha256": "9db48174c7e9d5d808c170f46a8b67195ba08d7dc6a9e17a1e9550b4eeaafd72"
+    },
+    "source/tools/xtask-package-attribution-074/git_process_boundary.py": {
+      "bytes": 10158,
+      "sha256": "9c474377e1be2083047b165f386a113c287a4a0fb6dcb4d01f4ec3b730547a3d"
+    },
+    "source/tools/xtask-package-attribution-074/owned_process_observer.py": {
+      "bytes": 11193,
+      "sha256": "bc9d46bdf731c7d5a376e878d86b0382c73fcfec7e2d01ffe762756ad880b206"
+    },
+    "source/tools/xtask-package-attribution-074/process_lineage.py": {
+      "bytes": 8858,
+      "sha256": "af700ff622f291a16dd0b3930f696ea20b1c184d192e2ce925a2422ba0255d9c"
+    },
+    "source/tools/xtask-package-attribution-074/test_git_process_boundary.py": {
+      "bytes": 14698,
+      "sha256": "462b588c16c7f6d360bb4b5ba5151ac74235d82ab0aef6c8d9375e1d47df5389"
+    }
+  },
+  "native_control_attempts": 1,
+  "package_pass": false,
+  "performance_cohort": false,
+  "product_admission": false,
+  "schema": "hc074-git-process-boundary-evidence-v1",
+  "server": false,
+  "source_commit": "3807c4749873d9a3e9495c755bbf3ef1f73f9c7b"
+}

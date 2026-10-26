@@ -1,0 +1,27 @@
+{
+  "all_descendants_accounted": false,
+  "argv": [
+    "C:\\Program Files\\Git\\cmd\\git.exe",
+    "--no-optional-locks",
+    "cat-file",
+    "--batch"
+  ],
+  "cleanup_errors": [],
+  "cleanup_seconds": 5,
+  "discovery_seconds": 5,
+  "independent_images": {
+    "C:\\Program Files\\Git\\cmd\\git.exe": "34a408843194be320d8a87a3c12cd5c7d2e08d03b24567a41db32e21d12569d2",
+    "C:\\Program Files\\Git\\mingw64\\bin\\git.exe": "755d4896d35663d0ff08924f84507f35236b83d240635b512c519bf43cc71a87"
+  },
+  "mapped_image_attested": false,
+  "object_requests": 0,
+  "original_helper_executed": false,
+  "package_pass": false,
+  "passed": false,
+  "performance_cohort": false,
+  "product_admission": false,
+  "refusal": null,
+  "retry": false,
+  "run_seconds": 10,
+  "scope": "git-launcher-native-boundary-only"
+}

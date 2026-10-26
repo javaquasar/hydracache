@@ -5,6 +5,12 @@ It lists the six remaining gates and archived implementations, including the
 terminal GET-owner D3 rejection. Historical stage reports below retain their
 original scope; they are not a current production admission verdict.
 
+The [first real Git boundary control](git-process-boundary-result-20261026.md)
+holds distinct cmd-launcher/native objects through EOF and terminal collection.
+All sixty models and four integrity controls pass, retaining a first late-close
+fault. Launcher CPU excludes native work on this chain; no old cohort is
+recomputed and no speedup, cache, batch or full-package pass follows.
+
 The [first exact V6 package check](package-closure-v6-result-20261026.md) passes
 all three formerly failing targets in its actual prefix. The unchanged
 780-second command still times out: 72/145 targets complete, 448 passed/zero
