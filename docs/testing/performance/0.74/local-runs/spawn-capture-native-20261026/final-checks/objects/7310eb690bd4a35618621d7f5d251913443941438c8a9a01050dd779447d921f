@@ -1,0 +1,12 @@
+test_first_fixture_exit_and_source_are_preserved (test_verify.Integrity.test_first_fixture_exit_and_source_are_preserved) ... ok
+test_index_missing_and_raw_mutations_refuse (test_verify.Integrity.test_index_missing_and_raw_mutations_refuse) ... ok
+test_old_leaf_domains_counters_and_parent_containment_still_refuse (test_verify.Integrity.test_old_leaf_domains_counters_and_parent_containment_still_refuse) ... ok
+test_operational_verdict_and_explicit_new_gate_cannot_be_promoted (test_verify.Integrity.test_operational_verdict_and_explicit_new_gate_cannot_be_promoted) ... ok
+test_positive_raw_joins_and_nested_arithmetic (test_verify.Integrity.test_positive_raw_joins_and_nested_arithmetic) ... ok
+test_preserved_local_deltas_cannot_escape_parent_and_owner_order (test_verify.Integrity.test_preserved_local_deltas_cannot_escape_parent_and_owner_order) ... ok
+test_spawn_contract_order_types_completeness_and_arithmetic_faults (test_verify.Integrity.test_spawn_contract_order_types_completeness_and_arithmetic_faults) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.379s
+
+OK

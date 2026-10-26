@@ -1,0 +1,357 @@
+"""Verify retained native brackets and joins without launching retained code."""
+import hashlib
+import json
+from pathlib import Path
+
+INDEX = '4e83b67104ea30709616d7a9f65055c8b1c293900861f5c874796dd3166fe62f'
+SOURCE = 'd3256fc08b8da2df424d6da5bce99c0e168939b0'
+PHASES = ('setup', 'spawn', 'wait', 'terminal_reads', 'decode', 'close')
+REFERENCE, PROFILE = 'reference_cpu_child', 'accounted_cpu_child'
+SPEC = '3e9bcc06ebce3439495200162cb0c1900b8eda53:crates/xtask/tests/diagnostic_artifact_fixture_074.rs'
+PINS = {
+    r'C:\Program Files\Git\cmd\git.exe': '34a408843194be320d8a87a3c12cd5c7d2e08d03b24567a41db32e21d12569d2',
+    r'C:\Program Files\Git\mingw64\bin\git.exe': '755d4896d35663d0ff08924f84507f35236b83d240635b512c519bf43cc71a87',
+}
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+
+
+def require(value, reason):
+    if not value:
+        raise ValueError(reason)
+
+
+def load(folder):
+    raw = (folder/'index.json').read_bytes()
+    require(sha(raw) == INDEX, 'index differs')
+    index = json.loads(raw)
+    require(index['source_commit'] == SOURCE and index['native_attempts'] == 1 and
+            index['native_control_executed'] is True and index['workers'] == 16 and index['git_calls'] == 64 and
+            all(index[k] is False for k in ('retry', 'overhead_accepted', 'package_pass', 'server')), 'scope differs')
+    members = {}
+    require(len(index['members']) == 213, 'member count differs')
+    for name, entry in index['members'].items():
+        body = (folder/'objects'/entry['sha256']).read_bytes()
+        require(len(body) == entry['bytes'] and sha(body) == entry['sha256'], 'raw member differs: '+name)
+        members[name] = body
+    return members
+
+
+def audit(members):
+    def obj(name):
+        return json.loads(members[name])
+    labels = ('spawn-capture-native-build-first', 'spawn-capture-native-first')
+    receipts = []
+    for label in labels:
+        before, after = (obj('checks/'+label+'/'+part) for part in ('intent.json', 'result.json'))
+        require(before['head'] == SOURCE and after['exit'] == 0 and after['outer_refusal'] is None and
+                after['source_unchanged'] is True and after['head_unchanged'] is True and
+                before['source'] == after['source_after'], 'receipt/source differs')
+        require(before['bound_seconds'] == 1200 and before['disk_floor_bytes'] == 4*1024**3 and
+                all(before[k] is False for k in ('dependency_changes', 'observation_frequency_changed',
+                    'services_or_clocks', 'server', 'qualification', 'retry')), 'wrapper scope differs')
+        receipts.append(before)
+    require(receipts[0]['argv'] == ['cargo', '+1.94.0', 'test', '--offline', '--locked', '-p', 'xtask',
+        '--test', 'git_descendant_cpu_074', '--no-run', '--message-format=json'], 'build argv differs')
+    require(receipts[1]['argv'] == ['C:/Python313/python.exe', 'tools/xtask-package-attribution-074/git_cpu_spawn.py',
+        labels[0], 'first', '--spawn-frames'], 'native argv differs')
+    require(receipts[0]['source'] == receipts[1]['source'], 'build/native source differs')
+    for name, raw in members.items():
+        if name.startswith('source/') and not name.endswith('/qualification-manifest.toml'):
+            require(sha(raw) == receipts[0]['source'][name[7:]], 'retained source differs')
+    require(sha(members['qualification-manifest.toml']) ==
+            '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc', 'qualification changed')
+    require(sha(members['baseline/spawn-frames-20261026-index.json']) ==
+            'a518934e04231820823c0535c5865c4fe5e19794694fc2b787ea6dc102a7de88', 'model history differs')
+    build = obj('native/build.json')
+    require(build['head'] == SOURCE and build['source'] == receipts[0]['source'] and
+            build['image_sha256'] == 'c0e2478e96d31e1b9d2100d0bce4706720f274b68e8cda698b9dcc6780dba94f',
+            'image/build join differs')
+    artifacts = [r for line in members['checks/'+labels[0]+'/stdout.log'].splitlines()
+                 if line.startswith(b'{') for r in [json.loads(line)] if r.get('reason') == 'compiler-artifact'
+                 and r.get('target', {}).get('name') == 'git_descendant_cpu_074']
+    require(len(artifacts) == 1 and artifacts[0]['executable'] == build['image'] and
+            artifacts[0]['profile']['test'] is True, 'compiler image differs')
+    intent, result = obj('native/intent.json'), obj('native/result.json')
+    schedule = [(b, s, mode) for b in range(4) for s, mode in enumerate(
+        (REFERENCE, PROFILE, PROFILE, REFERENCE) if b % 2 == 0 else (PROFILE, REFERENCE, REFERENCE, PROFILE))]
+    require(intent['schedule'] == [list(v) for v in schedule] and intent['calls_per_worker'] == 4 and
+            (intent['bound_seconds'], intent['cleanup_seconds'], intent['free_bytes'], intent['log_bytes']) ==
+            (120, 5, 4*1024**3, 16*1024**2) and intent['build_label'] == labels[0] and
+            intent['coordinator_frames'] == dict(enabled=True, schema='hc074-coordinator-frames-v1'), 'intent differs')
+    require(all(intent[k] is False for k in ('job_overhead_measured', 'pure_counter_api_cost_isolated',
+            'overhead_accepted', 'git_suspended', 'stdin_hold', 'native_bypass', 'environment_changes',
+            'retry', 'package_pass', 'server')), 'native scope promoted')
+    require(result['passed'] is True and result['first_refusal'] is None and len(result['attempts']) == 16 and
+            all(result[k] is False for k in ('overhead_accepted', 'speedup_established', 'package_pass', 'server')),
+            'native verdict differs')
+    require(result['pins_before'] == result['pins_after'] == PINS, 'Git pins differ')
+    environment = result['environment']
+    require(environment['git_effect_config_active'] is False and environment['git_effect_config_sha256'] == sha(b'') and
+            all(environment[k] is True for k in ('external_cargo_configuration_absent', 'fixture_overrides_absent',
+                'negative_fixture_executable_absent', 'target_and_protoc_scratch_not_reparse',
+                'unreviewed_build_overrides_absent')), 'environment differs')
+    totals = {p: dict(wall_lower_ns=0, wall_upper_ns=0, process_cpu_ns=0, zero_cpu_spans=0) for p in PHASES}
+    maxima = {p: dict(wall_upper_ns=-1, block=None, slot=None) for p in PHASES}
+    worker_ids = set()
+    for attempt, (block, slot, mode) in zip(result['attempts'], schedule):
+        require(attempt == obj(f'native/{block}-{slot}-result.json') and
+                (attempt['block'], attempt['slot'], attempt['mode']) == (block, slot, mode), 'worker ledger differs')
+        require(attempt['passed'] is True and attempt['first_refusal'] is None and attempt['cleanup_errors'] == [] and
+                attempt['operation_verdict'] == dict(passed=True, first_refusal=None, cleanup_errors=[]), 'operation differs')
+        worker, start, job = (attempt[k] for k in ('worker', 'worker_initial', 'job'))
+        identity = (attempt['worker_pid'], start['creation_100ns'])
+        require(identity not in worker_ids and type(identity[0]) is int and identity[0] > 0 and
+                start['terminal'] is False and worker['terminal'] is True and
+                worker['creation_100ns'] == start['creation_100ns'] > 0 and
+                worker['exit_100ns'] >= worker['creation_100ns'] and attempt['worker_image'] == build['image'], 'identity differs')
+        worker_ids.add(identity)
+        require(attempt['job_terminal_samples'] == [job, job] and job['active'] == job['terminated'] == 0 and
+                job['total'] == 9 and job['user_ns'] >= 0 and job['kernel_ns'] >= 0, 'terminal Job differs')
+        require(all(worker[k] >= start[k] >= 0 for k in ('user_100ns', 'kernel_100ns')), 'worker CPU regressed')
+        metric = attempt['metrics']
+        require(metric['whole_job_cpu_ns'] == job['user_ns']+job['kernel_ns'] and
+                metric['whole_worker_cpu_ns'] == (worker['user_100ns']+worker['kernel_100ns'])*100 and
+                all(type(v) is int and v >= 0 for v in metric.values()) and
+                metric['whole_job_cpu_ns'] >= metric['whole_worker_cpu_ns'], 'CPU arithmetic differs')
+        raw = members[f'native/{block}-{slot}-{mode}.log']
+        records = [json.loads(line[len(b'HC074_GIT_CPU '):]) for line in raw.splitlines() if line.startswith(b'HC074_GIT_CPU ')]
+        done = [json.loads(line[len(b'HC074_GIT_CPU_DONE '):]) for line in raw.splitlines() if line.startswith(b'HC074_GIT_CPU_DONE ')]
+        require(len(raw) <= 16*1024**2 and b'test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out;' in raw and
+                records == attempt['records'] and len(records) == 4 and done == [dict(calls=4, accounted=mode == PROFILE,
+                    git_argv=['git', 'show', SPEC], stdin_hold=False, git_suspended=False, native_bypass=False,
+                    environment_changes=False, package_pass=False)], 'worker log differs')
+        for call, row in enumerate(records):
+            require(row['call'] == call and row['accounted'] is (mode == PROFILE) and row['spec'] == SPEC and
+                    row['stdout_bytes'] == 23589 and row['stderr_bytes'] == 0 and row['code'] == 0, 'Git semantics differs')
+            if mode == REFERENCE:
+                require(row['phases'] is None, 'reference phases invented')
+            else:
+                a, b = (row['phases'][k] for k in ('child_start', 'child_end'))
+                require(a['pid'] == b['pid'] and a['created_100ns'] == b['created_100ns'] > 0 and
+                        b['exited_100ns'] >= b['created_100ns'] and
+                        all(b[k] >= a[k] >= 0 for k in ('user_ns', 'kernel_ns')), 'launcher identity/counter differs')
+        if mode == PROFILE:
+            residual = attempt['native_inclusive']
+            for metric_name, field in (('user_ns', 'user_100ns'), ('kernel_ns', 'kernel_100ns')):
+                value = job[metric_name]-worker[field]*100-sum(r['phases']['child_end'][metric_name] for r in records)
+                require(value >= 0 and residual['non_launcher_descendant_cpu'][metric_name] == value, 'residual differs')
+            require(residual['cpu_includes_native'] is True and all(residual[k] is False for k in
+                ('exact_native_image_attested', 'per_call_native_cpu', 'initial_sample_subtracted',
+                 'overhead_accepted', 'speedup_established', 'package_pass')), 'residual scope promoted')
+        tape = attempt['coordinator_frames']
+        contract = tape['contract']
+        require(contract == result['coordinator_frames_contract'] and contract['schema'] == 'hc074-coordinator-frames-v1' and
+                contract['phases'] == list(PHASES) and (contract['max_probes'], contract['max_clock_reads']) == (12, 36) and
+                all(contract[k] is False for k in ('existing_predicates_removed_or_reordered', 'window_renewed',
+                    'complete_frame_partition', 'cpu_is_native_git', 'overhead_accepted')), 'phase contract differs')
+        require(tape['clock_domain'] == 'python-coordinator' and tape['complete'] is tape['capture_valid'] is True and
+                tape['first_refusal'] is None and tape['not_observed'] == [] and len(tape['probes']) == 12 and
+                len(tape['spans']) == 6, 'incomplete native phase capture')
+        previous = None
+        for i, probe in enumerate(tape['probes']):
+            q = probe['raw']
+            require(probe['phase'] == PHASES[i//2] and probe['kind'] == ('begin' if i % 2 == 0 else 'end') and
+                    set(q) == {'wall_before_ns', 'process_cpu_ns', 'wall_after_ns'} and
+                    all(type(v) is int and v >= 0 for v in q.values()) and q['wall_after_ns'] >= q['wall_before_ns'], 'probe differs')
+            require(previous is None or (q['wall_before_ns'] >= previous['wall_after_ns'] and
+                    q['process_cpu_ns'] >= previous['process_cpu_ns']), 'probe sequence regressed')
+            previous = q
+        for i, span in enumerate(tape['spans']):
+            require((span['phase'], span['status'], span['start_probe'], span['end_probe']) ==
+                    (PHASES[i], 'complete', i*2, i*2+1), 'span schedule differs')
+            a, b = (tape['probes'][j]['raw'] for j in (i*2, i*2+1))
+            elapsed = dict(wall_lower_ns=b['wall_before_ns']-a['wall_after_ns'],
+                wall_upper_ns=b['wall_after_ns']-a['wall_before_ns'], process_cpu_ns=b['process_cpu_ns']-a['process_cpu_ns'])
+            require(span['elapsed'] == elapsed and all(v >= 0 for v in elapsed.values()), 'bracket arithmetic differs')
+            phase = PHASES[i]
+            for key, value in elapsed.items():
+                totals[phase][key] += value
+            totals[phase]['zero_cpu_spans'] += int(elapsed['process_cpu_ns'] == 0)
+            if elapsed['wall_upper_ns'] > maxima[phase]['wall_upper_ns']:
+                maxima[phase] = dict(wall_upper_ns=elapsed['wall_upper_ns'], block=block, slot=slot)
+        require(sum(s['elapsed']['process_cpu_ns'] for s in tape['spans']) <= metric['coordinator_cpu_ns'] and
+                sum(s['elapsed']['wall_upper_ns'] for s in tape['spans']) <= metric['wall_ns'], 'phase totals exceed frame')
+    analysis = result['analysis']
+    require(analysis['workers'] == 16 and analysis['git_calls'] == 64 and len(analysis['blocks']) == 4 and
+            all(analysis[k] is False for k in ('job_overhead_measured', 'pure_counter_api_cost_isolated',
+                'overhead_accepted', 'speedup_established', 'package_pass')), 'analysis scope promoted')
+    for block in range(4):
+        summary = analysis['blocks'][block]
+        require(summary['block'] == block and summary['calls_per_arm'] == 8, 'block scope differs')
+        for metric_name, reported in summary['metrics'].items():
+            a, b = (sum(v['metrics'][metric_name] for v in result['attempts'][block*4:(block+1)*4] if v['mode'] == mode)
+                    for mode in (REFERENCE, PROFILE))
+            require(reported == dict(reference_sum=a, profile_sum=b, delta=b-a,
+                    ratio_numerator=b if a else None, ratio_denominator=a if a else None,
+                    unavailable_reason=None if a else 'zero reference counter'), 'block arithmetic differs')
+    return dict(native_attempts=1, workers=16, git_calls=64, outer_probes=192, outer_clock_reads=576,
+        leaf_summary=leaf_audit(result, members), spawn_summary=spawn_audit(result), model_summary=model_audit(members),
+        phase_totals=totals, phase_maxima=maxima, whole_frame_wall_ns=sum(a['metrics']['wall_ns'] for a in result['attempts']),
+        whole_coordinator_cpu_ns=sum(a['metrics']['coordinator_cpu_ns'] for a in result['attempts']),
+        overhead_accepted=False, package_pass=False, new_workload_calls=0)
+
+
+def leaf_audit(result, members):
+    groups = dict(owner=('owner_identity', 'owner_initial'),
+                  decode=('log_stat', 'log_read', 'text_decode', 'record_parse', 'protocol_validation', 'result_join'))
+    expected = dict(schema='hc074-capture-leaves-v1', groups={g: list(p) for g, p in groups.items()},
+        max_additional_probes=16, max_additional_clock_reads=48, clock_domain='python-coordinator',
+        cpu_scope='coordinator process-wide, all threads; not worker or native Git CPU',
+        wall_bounds_scope='elapsed between bracketed CPU-read instants, not effect-only duration',
+        owner_already_retained_before_first_leaf=True, wait_with_output_unchanged=True,
+        native_create_call_wrapped=False, cleanup_instrumented=False, nested_scopes_additive=False,
+        window_renewed=False, existing_predicates_removed_or_reordered=False,
+        overhead_accepted=False, package_pass=False)
+    require(result['capture_leaves_contract'] == expected, 'leaf contract differs')
+    require(json.loads(members['native/intent.json'])['capture_leaves'] ==
+            dict(enabled=True, schema='hc074-capture-leaves-v1'), 'explicit leaf intent differs')
+    totals = {phase: dict(wall_lower_ns=0, wall_upper_ns=0, process_cpu_ns=0, zero_cpu_spans=0)
+              for phases in groups.values() for phase in phases}
+    complements = {g: dict(wall_lower_ns=0, wall_upper_ns=0, process_cpu_ns=0) for g in groups}
+    read_rows, count = [], 0
+    for attempt in result['attempts']:
+        bundle = attempt['capture_leaves']
+        require(bundle['contract'] == expected and bundle['complete'] is bundle['capture_valid'] is True and
+                bundle['first_refusal'] is None and set(bundle['groups']) == set(groups), 'leaf bundle differs')
+        previous = None
+        for group, phases in groups.items():
+            tape = bundle['groups'][group]
+            require(tape['group'] == group and tape['clock_domain'] == 'python-coordinator' and
+                    tape['complete'] is tape['capture_valid'] is True and tape['first_refusal'] is None and
+                    tape['not_observed'] == [] and len(tape['probes']) == len(phases)*2 and
+                    len(tape['spans']) == len(phases), 'incomplete leaf group')
+            count += len(tape['probes'])
+            for i, probe in enumerate(tape['probes']):
+                q = probe['raw']
+                require(probe['phase'] == phases[i//2] and probe['kind'] == ('end' if i % 2 else 'begin') and
+                        set(q) == {'wall_before_ns', 'process_cpu_ns', 'wall_after_ns'} and
+                        all(type(v) is int and v >= 0 for v in q.values()) and
+                        q['wall_after_ns'] >= q['wall_before_ns'], 'invalid leaf probe')
+                require(previous is None or (q['wall_before_ns'] >= previous['wall_after_ns'] and
+                        q['process_cpu_ns'] >= previous['process_cpu_ns']), 'leaf clock sequence regressed')
+                previous = q
+            local = {key: 0 for key in complements[group]}
+            for i, phase in enumerate(phases):
+                span = tape['spans'][i]
+                require((span['phase'], span['status'], span['start_probe'], span['end_probe']) ==
+                        (phase, 'complete', i*2, i*2+1) and
+                        type(span['start_probe']) is type(span['end_probe']) is int, 'leaf span order differs')
+                a, b = (tape['probes'][j]['raw'] for j in (i*2, i*2+1))
+                elapsed = dict(wall_lower_ns=b['wall_before_ns']-a['wall_after_ns'],
+                    wall_upper_ns=b['wall_after_ns']-a['wall_before_ns'], process_cpu_ns=b['process_cpu_ns']-a['process_cpu_ns'])
+                require(span['elapsed'] == elapsed and all(type(v) is int and v >= 0 for v in span['elapsed'].values()),
+                        'leaf bracket arithmetic differs')
+                for key, value in elapsed.items():
+                    totals[phase][key] += value
+                    local[key] += value
+                totals[phase]['zero_cpu_spans'] += int(elapsed['process_cpu_ns'] == 0)
+            outer_name = 'spawn' if group == 'owner' else 'decode'
+            parent = next(s for s in attempt['coordinator_frames']['spans'] if s['phase'] == outer_name)
+            a, b = (attempt['coordinator_frames']['probes'][j]['raw'] for j in (parent['start_probe'], parent['end_probe']))
+            x, y = tape['probes'][0]['raw'], tape['probes'][-1]['raw']
+            require(a['wall_after_ns'] <= x['wall_before_ns'] <= y['wall_after_ns'] <= b['wall_before_ns'] and
+                    a['process_cpu_ns'] <= x['process_cpu_ns'] <= y['process_cpu_ns'] <= b['process_cpu_ns'],
+                    'leaf group outside original parent')
+            complement = dict(wall_lower_ns=parent['elapsed']['wall_lower_ns']-local['wall_upper_ns'],
+                wall_upper_ns=parent['elapsed']['wall_upper_ns']-local['wall_lower_ns'],
+                process_cpu_ns=parent['elapsed']['process_cpu_ns']-local['process_cpu_ns'])
+            require(all(value >= 0 for value in complement.values()), 'leaf sum exceeds parent')
+            for key, value in complement.items():
+                complements[group][key] += value
+        log = members['native/{}-{}-{}.log'.format(attempt['block'], attempt['slot'], attempt['mode'])]
+        read = next(s['elapsed'] for s in bundle['groups']['decode']['spans'] if s['phase'] == 'log_read')
+        read_rows.append(dict(block=attempt['block'], slot=attempt['slot'], mode=attempt['mode'],
+                              log_bytes=len(log), elapsed=read))
+    require(count == 256, 'leaf probe count differs')
+    return dict(leaf_probes=count, leaf_clock_reads=count*3, outer_and_leaf_recorder_probes=count+192,
+        outer_and_leaf_recorder_clock_reads=(count+192)*3, leaf_totals=totals, parent_complements=complements,
+        read_rows=read_rows, max_log_read=max(read_rows, key=lambda r: r['elapsed']['wall_upper_ns']),
+        complement_is_pure_creation_or_io_cost=False, zero_delta_means_zero_cost=False,
+        telemetry_on_off_compared=False, nested_scopes_additive=False, overhead_accepted=False)
+
+
+def model_audit(members):
+    first = json.loads(members['checks/spawn-capture-models-first/intent.json'])
+    require(sha(members['first-test-spawn-capture.py']) ==
+            first['source']['tools/xtask-package-attribution-074/test_spawn_capture.py'], 'first test source differs')
+    for label, expected_exit, count in (('spawn-capture-models-first', 1, 10),
+            ('spawn-capture-models-corrected', 0, 10), ('spawn-capture-regressions', 0, 142),
+            ('spawn-capture-syntax', 0, None), ('spawn-capture-check', 0, None), ('spawn-capture-clippy', 0, None)):
+        before, after = (json.loads(members['checks/'+label+'/'+p]) for p in ('intent.json', 'result.json'))
+        require(before['head'] == 'ea00464b304d365909a29c4b2e22cd52927a08ec' and after['exit'] == expected_exit and
+                after['outer_refusal'] is None and after['source_unchanged'] is after['head_unchanged'] is True and
+                before['source'] == after['source_after'], 'model/check receipt differs')
+        if count is not None:
+            require(('Ran '+str(count)+' tests').encode() in members['checks/'+label+'/stderr.log'], 'model count differs')
+    require(b'FAILED (failures=1)' in members['checks/spawn-capture-models-first/stderr.log'] and
+            b'c.args[8]' in members['first-test-spawn-capture.py'], 'first fixture refusal missing')
+    return dict(final_cases=142, retained_first_fixture_failures=1, native_retries=0)
+
+
+def spawn_audit(result):
+    phases = ('preparation', 'create_to_retention', 'membership_release')
+    expected = dict(schema='hc074-spawn-capture-v1', model_schema='hc074-spawn-frames-model-v1', phases=list(phases),
+        max_additional_probes=6, max_additional_clock_reads=18, max_recorder_clock_reads_with_outer_and_leaves=102,
+        cpu_scope='coordinator process-wide, all threads; not child or native Git CPU',
+        wall_bounds_scope='elapsed between bracketed CPU-read instants, not effect-only duration',
+        successful_create_to_retention_has_no_added_probe=True, failed_create_last_error_read_unchanged=True,
+        complete_frame_does_not_prove_resume=True, caller_connected=True, cleanup_instrumented=False,
+        pure_create_cost_isolated=False, existing_predicates_removed_or_reordered=False,
+        window_renewed=False, overhead_accepted=False, package_pass=False)
+    require(result['spawn_frames_contract'] == expected and
+            all(type(result['spawn_frames_contract'][k]) is type(v) for k, v in expected.items()), 'spawn contract differs')
+    totals = {p: dict(wall_lower_ns=0, wall_upper_ns=0, process_cpu_ns=0) for p in phases}
+    complements = dict(wall_lower_ns=0, wall_upper_ns=0, process_cpu_ns=0)
+    for attempt in result['attempts']:
+        tape = attempt['spawn_frames']
+        require(tape['contract'] == expected and tape['group'] == 'spawn' and tape['clock_domain'] == 'python-coordinator' and
+                tape['capture_valid'] is tape['complete'] is True and tape['first_refusal'] is None and
+                tape['not_observed'] == [] and len(tape['probes']) == 6 and len(tape['spans']) == 3,
+                'incomplete/invalid spawn tape')
+        previous = None
+        for i, probe in enumerate(tape['probes']):
+            q = probe['raw']
+            require(probe['phase'] == phases[i//2] and probe['kind'] == ('end' if i % 2 else 'begin') and
+                    set(q) == {'wall_before_ns', 'process_cpu_ns', 'wall_after_ns'} and
+                    all(type(v) is int and v >= 0 for v in q.values()) and q['wall_after_ns'] >= q['wall_before_ns'] and
+                    (previous is None or (q['wall_before_ns'] >= previous['wall_after_ns'] and
+                        q['process_cpu_ns'] >= previous['process_cpu_ns'])), 'spawn probe/order differs')
+            previous = q
+        for i, span in enumerate(tape['spans']):
+            require((span['phase'], span['status'], span['start_probe'], span['end_probe']) ==
+                    (phases[i], 'complete', i*2, i*2+1) and type(span['start_probe']) is type(span['end_probe']) is int,
+                    'spawn span schedule differs')
+            a, b = (tape['probes'][j]['raw'] for j in (i*2, i*2+1))
+            elapsed = dict(wall_lower_ns=b['wall_before_ns']-a['wall_after_ns'],
+                wall_upper_ns=b['wall_after_ns']-a['wall_before_ns'], process_cpu_ns=b['process_cpu_ns']-a['process_cpu_ns'])
+            require(span['elapsed'] == elapsed and all(type(v) is int and v >= 0 for v in span['elapsed'].values()),
+                    'spawn arithmetic differs')
+            for key, value in elapsed.items():
+                totals[phases[i]][key] += value
+        outer = attempt['coordinator_frames']
+        parent = next(s for s in outer['spans'] if s['phase'] == 'spawn')
+        a, b = (outer['probes'][j]['raw'] for j in (parent['start_probe'], parent['end_probe']))
+        owner = attempt['capture_leaves']['groups']['owner']
+        ordered = [a, *tape['probes'][0:4], *owner['probes'], *tape['probes'][4:6], b]
+        ordered = [v.get('raw', v) for v in ordered]
+        require(all(x['wall_after_ns'] <= y['wall_before_ns'] and x['process_cpu_ns'] <= y['process_cpu_ns']
+                    for x, y in zip(ordered, ordered[1:])), 'spawn/owner leaves outside original parent or custody order')
+        spans = [*tape['spans'], *owner['spans']]
+        complement = dict(wall_lower_ns=parent['elapsed']['wall_lower_ns']-sum(s['elapsed']['wall_upper_ns'] for s in spans),
+            wall_upper_ns=parent['elapsed']['wall_upper_ns']-sum(s['elapsed']['wall_lower_ns'] for s in spans),
+            process_cpu_ns=parent['elapsed']['process_cpu_ns']-sum(s['elapsed']['process_cpu_ns'] for s in spans))
+        require(all(v >= 0 for v in complement.values()), 'spawn and owner sums exceed parent')
+        for key, value in complement.items():
+            complements[key] += value
+    return dict(spawn_probes=96, spawn_clock_reads=288, total_recorder_probes=544, total_recorder_clock_reads=1632,
+        phase_totals=totals, parent_complement_after_spawn_and_owner_leaves=complements,
+        original_metric_and_deadline_reads_additional=True, pure_api_cost_proved=False, zero_delta_means_zero_work=False,
+        telemetry_on_off_compared=False, overhead_accepted=False, package_pass=False)
+
+
+def verify(folder):
+    return audit(load(folder))
+
+
+if __name__ == '__main__':
+    print(json.dumps(verify(Path(__file__).resolve().parent), indent=2, sort_keys=True))

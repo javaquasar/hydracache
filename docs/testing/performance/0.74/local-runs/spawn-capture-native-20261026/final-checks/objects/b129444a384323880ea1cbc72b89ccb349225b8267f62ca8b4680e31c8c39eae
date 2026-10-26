@@ -1,0 +1,9 @@
+{
+  "kind": "direct verifier tool outcome, not a source-wrapper receipt",
+  "verifier_source_file": "spawn-capture-first-verifier-20261026.py",
+  "exit": 1,
+  "error": "KeyError: 'git_calls'",
+  "location": "load: inherited reader expected git_calls; the sealed new index uses input_git_calls",
+  "native_result_changed": false,
+  "native_retry": false
+}

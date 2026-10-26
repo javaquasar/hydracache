@@ -1,0 +1,42 @@
+test_all_18_fatal_cuts_reach_original_cleanup_with_caller_child_unset (test_spawn_capture.Integration.test_all_18_fatal_cuts_reach_original_cleanup_with_caller_child_unset) ... ok
+test_all_18_ordinary_faults_refuse_diagnostic_after_original_healthy_close (test_spawn_capture.Integration.test_all_18_ordinary_faults_refuse_diagnostic_after_original_healthy_close) ... ok
+test_caller_exclusive_intent_16_workers_and_same_origin (test_spawn_capture.Integration.test_caller_exclusive_intent_16_workers_and_same_origin) ... FAIL
+test_differential_frame_keeps_fields_and_four_original_deadline_reads (test_spawn_capture.Integration.test_differential_frame_keeps_fields_and_four_original_deadline_reads) ... ok
+test_first_worker_refusal_never_becomes_successful_subset (test_spawn_capture.Integration.test_first_worker_refusal_never_becomes_successful_subset) ... ok
+test_lazy_import_and_schema_failure_retain_intent_before_api (test_spawn_capture.Integration.test_lazy_import_and_schema_failure_retain_intent_before_api) ... ok
+test_measure_ast_preserves_original_body_and_new_attachment_only (test_spawn_capture.Integration.test_measure_ast_preserves_original_body_and_new_attachment_only) ... ok
+test_only_explicit_true_and_exact_new_cli_select_this_path (test_spawn_capture.Integration.test_only_explicit_true_and_exact_new_cli_select_this_path) ... ok
+test_original_final_deadline_remains_a_refusal_after_healthy_close (test_spawn_capture.Integration.test_original_final_deadline_remains_a_refusal_after_healthy_close) ... ok
+test_prior_operational_and_outer_errors_take_precedence_without_erasing_spawn_error (test_spawn_capture.Integration.test_prior_operational_and_outer_errors_take_precedence_without_erasing_spawn_error) ... ok
+
+======================================================================
+FAIL: test_caller_exclusive_intent_16_workers_and_same_origin (test_spawn_capture.Integration.test_caller_exclusive_intent_16_workers_and_same_origin)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\xtask-package-attribution-074\test_spawn_capture.py", line 161, in test_caller_exclusive_intent_16_workers_and_same_origin
+    self.assertEqual({c.args[8] for c in measure.call_args_list}, {121})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Items in the first set but not the second:
+<coordinator_frames.Tape object at 0x0000028DAE4D8410>
+<coordinator_frames.Tape object at 0x0000028DAE4DAC10>
+<coordinator_frames.Tape object at 0x0000028DAE4DA850>
+<coordinator_frames.Tape object at 0x0000028DAE4DA490>
+<coordinator_frames.Tape object at 0x0000028DAE4D8CD0>
+<coordinator_frames.Tape object at 0x0000028DAE4DA0D0>
+<coordinator_frames.Tape object at 0x0000028DAE4D9D10>
+<coordinator_frames.Tape object at 0x0000028DAE399950>
+<coordinator_frames.Tape object at 0x0000028DAE4D9950>
+<coordinator_frames.Tape object at 0x0000028DAE4D9590>
+<coordinator_frames.Tape object at 0x0000028DAE4D9270>
+<coordinator_frames.Tape object at 0x0000028DAE4D8AF0>
+<coordinator_frames.Tape object at 0x0000028DAE4DB750>
+<coordinator_frames.Tape object at 0x0000028DAE4DB390>
+<coordinator_frames.Tape object at 0x0000028DAE3993B0>
+<coordinator_frames.Tape object at 0x0000028DAE4DAFD0>
+Items in the second set but not the first:
+121
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.594s
+
+FAILED (failures=1)

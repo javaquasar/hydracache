@@ -1,0 +1,63 @@
+"""Seal the sole native attempt and all earlier model outcomes verbatim."""
+import hashlib
+import json
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+PACKET = ROOT/'docs/testing/performance/0.74/local-runs/spawn-capture-native-20261026'
+final = sys.argv[1:] == ['final']
+if sys.argv[1:] not in ([], ['final']):
+    raise SystemExit('usage: seal-spawn-capture-20261026.py [final]')
+OUT = PACKET/'final-checks' if final else PACKET
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members = {}
+
+
+def take(name, path):
+    raw = path.read_bytes()
+    digest = hashlib.sha256(raw).hexdigest()
+    target = OUT/'objects'/digest
+    if not target.exists():
+        with target.open('xb') as stream:
+            stream.write(raw)
+    members[name] = dict(bytes=len(raw), sha256=digest)
+
+
+labels = ('spawn-capture-integrity-first', 'spawn-capture-doc', 'spawn-capture-contract') if final else (
+    'spawn-capture-models-first', 'spawn-capture-models-corrected', 'spawn-capture-regressions',
+    'spawn-capture-syntax', 'spawn-capture-check', 'spawn-capture-clippy',
+    'spawn-capture-native-build-first', 'spawn-capture-native-first')
+for label in labels:
+    for name in ('intent.json', 'result.json', 'stdout.log', 'stderr.log'):
+        take('checks/'+label+'/'+name, ROOT/'target/source-continuation-20261024'/label/name)
+take('collector.py', Path(__file__))
+take('qualification-manifest.toml', ROOT/'docs/testing/performance/0.74/qualification-manifest.toml')
+if final:
+    for name in ('verify.py', 'test_verify.py', 'index.json'):
+        take('main/'+name, PACKET/name)
+else:
+    for file in sorted((ROOT/'target/git-cpu-spawn-capture-20261026/first').iterdir()):
+        take('native/'+file.name, file)
+    for file in sorted((ROOT/'tools/xtask-package-attribution-074').iterdir()):
+        if file.is_file():
+            take('source/'+file.relative_to(ROOT).as_posix(), file)
+    for file in sorted((ROOT/'tools/historical-blob-batch-074').glob('*.py')):
+        take('source/'+file.relative_to(ROOT).as_posix(), file)
+    for name in ('scripts/ci/watchdog_windows_job.py', 'crates/xtask/tests/git_descendant_cpu_074.rs',
+                 'crates/xtask/tests/support/windows_child_cpu_074.rs'):
+        if (ROOT/name).exists():
+            take('source/'+name, ROOT/name)
+    take('first-test-spawn-capture.py', ROOT/'target/spawn-capture-first-test-20261026.py')
+    for label in ('spawn-frames-20261026', 'capture-leaves-native-20261026'):
+        take('baseline/'+label+'-index.json', ROOT/'docs/testing/performance/0.74/local-runs'/label/'index.json')
+index = dict(schema='hc074-native-spawn-capture-evidence-v1', final_checks=final,
+    source_commit='d3256fc08b8da2df424d6da5bce99c0e168939b0', checks=len(labels),
+    native_attempts=0 if final else 1, native_control_executed=not final,
+    workers=16, input_git_calls=64, new_workload_calls=0 if final else 64,
+    retry=False, overhead_accepted=False, package_pass=False, server=False, members=members)
+raw = (json.dumps(index, sort_keys=True, indent=2)+'\n').encode()
+with (OUT/'index.json').open('xb') as stream:
+    stream.write(raw)
+print(dict(index_sha256=hashlib.sha256(raw).hexdigest(), members=len(members)))
