@@ -1,0 +1,9 @@
+{
+  "build": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\source-continuation-20261024\\package-v6-syntax-build-first",
+  "clocks_changed": false,
+  "package_replay": false,
+  "server": false,
+  "services": false,
+  "source_only": true,
+  "timeout_seconds": 120
+}

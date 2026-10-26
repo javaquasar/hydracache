@@ -1,0 +1,9 @@
+{
+  "declaration_contexts": true,
+  "execution_effects_cleared": false,
+  "fallback_search": false,
+  "package_dispatched": false,
+  "previous_scanner_sha256": "a1b8045abbee202569ed50fc5df43ad9f633524883a71d590cca6ab0ea547b5e",
+  "resolver_sha256": "c4bbc2d6b69e416ac3fcb30a1a64fb3bb54473b70977a1875ff90ca264b0cd44",
+  "schema": "hc074-contextual-module-capture-v5"
+}
