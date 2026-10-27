@@ -113,3 +113,13 @@ The full gate result additionally requires natural successful exit, empty origin
 Job, successful bounded cleanup and byte-exact source/ref/config/environment
 postflight. Parser errors retain raw streams and an explicit unassessed accounting
 record. No partial suffix, GNU result or metadata verifier substitutes for a gate.
+
+The [2026-10-28 security successor](../../docs/testing/performance/0.74/security-review-20261028.md)
+adds exactly one reviewed zstd-sys version/checksum change. `security_lock.py`
+checks the entire current lock and reconstructs the entire previous lock before
+the inherited source closure runs with that single new auxiliary digest. Other
+catalog entries, Rust syntax inventory and historical receipts stay exact. This
+does not establish dependency-policy success or a new historical package pass.
+Execution now requires the separate complete security-successor controls receipt
+at `target/security-review-20261028/controls`; old green controls cannot authorize
+new helper bodies. No deadline, capacity or live-check frequency changes.

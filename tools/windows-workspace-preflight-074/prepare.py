@@ -10,6 +10,8 @@ import subprocess
 import sys
 import tomllib
 
+import security_lock
+
 from storage import now, write
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -120,12 +122,16 @@ def source_review(root):
     raw = checked(root, PACKET + '/objects/' + row['sha256'], row['sha256'])
     require(len(raw) == row['bytes'], 'syntax member size')
     review = load(root / 'tools/package-frontier-gate-074/review.py', 'hc074_prepared_source_review')
-    data = review.inputs()
+    data = security_lock.reviewed_inputs(root, review.inputs())
     context = review.load(root / 'tools/historical-blob-batch-074/module_context_v5.py',
                           'hc074_prepared_context', review.CONTEXT_SHA)
     result = review.source_review(root, data, json.loads(raw), context)
     # This is a source-only closure; GNU execution success is not Windows admission.
     result.update(windows_execution_cleared=False, workspace_effect_review_complete=False)
+    result['security_lock_successor'] = dict(previous_sha256=security_lock.PREVIOUS,
+        current_sha256=security_lock.CURRENT, advisory='RUSTSEC-2026-0410',
+        dependency_source_review='docs/testing/performance/0.74/security-review-20261028.md',
+        historical_execution_receipts_unchanged=True)
     return result
 
 
