@@ -1,0 +1,11 @@
+{
+  "additions": {
+    "tools/authority-reader-phase-074/current_main.rs": "a3ba5395893c152a1224699ffb48cccc3dd6336518d719243bae23c26b2d30a5",
+    "tools/bootstrap-doc-reader-074/fixture.rs": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428",
+    "tools/current-frontier-074/alarm_addition.rs": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67",
+    "tools/current-frontier-074/current.rs": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522",
+    "tools/current-frontier-074/reader_source.rs": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d",
+    "tools/held-security-view-074/contract.rs": "13e37a065d7435e8e1b53cb7f561ac0009e12c22684222a3f7e4063b4db0cfcc"
+  },
+  "unresolved": []
+}

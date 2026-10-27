@@ -493,3 +493,21 @@ includes one unfiltered four-thread 321-case contract target inside the unchange
 780-second limit. Its complete names match the independent offline catalog.
 No full package is repeated or declared green, no measured candidate is accepted,
 and no Linux/live/qualification admission follows from v3.
+
+## Current preservation repair scope v9 without a dispatcher
+
+`package_effects_review_v9.py SYNTAX_JSON` checks a separately fixed 386-source,
+26,627-site inventory, 56 auxiliary bodies and 153 default Windows targets. It
+reads the immutable V8 receipt as data: 357 complete rows stay exact; seventeen
+change and twelve are added. The five new ordinary targets retain independent
+producer/phase, mutation, observation-order and source-preservation controls.
+All old auxiliary inputs stay exact; only the inventory545 descriptor and its
+text policy add new pins. Project imports follow auxiliary checks; the actual
+module-context resolver and inherited environment review are independently pinned.
+
+Eleven refusal controls use a fixed data fixture and explicitly substitute the
+module callback, never executing archived Python. The real current-tree review
+separately checks module closure and environment. The first incorrect text-policy
+pin refusal is retained. There is no V9 dispatcher, enlarged limit or joined old
+suffix. Full package and GNU frontier results remain open. See the
+[review and Linux boundary](../../docs/testing/performance/0.74/package-review-v9-result-20261027.md).

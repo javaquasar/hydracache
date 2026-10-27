@@ -1,0 +1,12 @@
+{
+  "archived_code_executed": false,
+  "compiler_expansion": false,
+  "complete_effect_review": false,
+  "linux_frontier_complete": false,
+  "package_dispatched": false,
+  "release_admitted": false,
+  "rounds": 2,
+  "source_commit": "cd0c391536f644082f13a7e5e9d2652d0e81f028",
+  "sources": 386,
+  "syntax_sites": 26627
+}

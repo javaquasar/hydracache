@@ -1,0 +1,13 @@
+{
+  "binary": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\census_cost_074-9b34c3543a08c964.exe",
+  "binary_sha256": "863d31cee39c679ed9805def40e2e41d90863dc865cc96d2c7b57bce2a8d65d5",
+  "clocks": false,
+  "compiler_expansion": false,
+  "executed_input_code": false,
+  "package_dispatched": false,
+  "per_round_seconds": 120,
+  "round_bound": 8,
+  "server": false,
+  "services": false,
+  "source_commit": "cd0c391536f644082f13a7e5e9d2652d0e81f028"
+}
