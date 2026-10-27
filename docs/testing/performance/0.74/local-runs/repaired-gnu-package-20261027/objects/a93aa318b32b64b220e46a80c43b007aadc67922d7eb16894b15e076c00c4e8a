@@ -1,0 +1,9 @@
+from pathlib import Path
+import re
+text=Path('target/gnu-repaired-local-20261027/full/stdout.log').read_text()
+blocks=re.findall(r'---- (.*?) stdout ----\n(.*?)(?=\n---- |\n\nfailures:)',text,re.S)
+for name,block in blocks:
+    print(name)
+    starts=list(re.finditer(r"(?m)^thread '.* panicked at ",block))
+    tail=block[starts[-1].start():] if starts else block
+    print('\n'.join(line[:500] for line in tail.splitlines()[:10]))

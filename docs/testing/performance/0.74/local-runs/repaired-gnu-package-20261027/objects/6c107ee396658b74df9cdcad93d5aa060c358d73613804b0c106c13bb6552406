@@ -1,0 +1,25 @@
+[
+  {
+    "case": "independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift",
+    "frontier_lines": [],
+    "terminal_lines": [
+      "thread 'independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift' (1219) panicked at crates/xtask/tests/authority_rust_history_074.rs:143:9:",
+      "current source drift crates/xtask/tests/memory_compat_071.rs",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ]
+  },
+  {
+    "case": "current_tree_input_frontier_is_fully_accounted_without_path_exclusions",
+    "frontier_lines": [
+      "CURRENT_TREE_FRONTIER body: crates/xtask/tests/memory_compat_071.rs",
+      "CURRENT_TREE_FRONTIER body: crates/xtask/tests/memory_profile_071.rs",
+      "CURRENT_TREE_FRONTIER body: crates/xtask/tests/support/fresh_status_guard.rs",
+      "CURRENT_TREE_FRONTIER body: crates/xtask/tests/support/pid_path_guard.rs"
+    ],
+    "terminal_lines": [
+      "thread 'current_tree_input_frontier_is_fully_accounted_without_path_exclusions' (2071) panicked at crates/xtask/tests/current_tree_input_audit_074.rs:94:5:",
+      "4 current-tree inputs remain",
+      "note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ]
+  }
+]

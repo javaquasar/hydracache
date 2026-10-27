@@ -1,0 +1,113 @@
+{
+  "all_live_checks_unchanged": true,
+  "auxiliary": 58,
+  "clocks": false,
+  "first_outcomes_retained": true,
+  "focused_passes": 42,
+  "full_failures": 2,
+  "full_package_pass": false,
+  "full_passes": 1340,
+  "native_checkout_advanced_not_newly_cloned": true,
+  "old_checkout_directory_name_is_not_source_identity": true,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "phases": {
+    "check-native-capture": {
+      "commit_unchanged": true,
+      "exit": 0,
+      "free_after": 6966796288,
+      "outer_refusal": null,
+      "source_unchanged": true
+    },
+    "clippy-native-capture": {
+      "commit_unchanged": true,
+      "exit": 0,
+      "free_after": 7095844864,
+      "outer_refusal": null,
+      "source_unchanged": true
+    },
+    "controls-native": {
+      "commit_unchanged": true,
+      "exit": 0,
+      "free_after": 7105130496,
+      "outer_refusal": null,
+      "source_unchanged": true
+    },
+    "controls-windows-corrected": {
+      "commit_unchanged": true,
+      "exit": 0,
+      "free_after": 7103254528,
+      "outer_refusal": null,
+      "source_unchanged": true
+    },
+    "controls-windows-first": {
+      "commit_unchanged": true,
+      "exit": 1,
+      "free_after": 7022931968,
+      "outer_refusal": null,
+      "source_unchanged": true
+    },
+    "export-current": {
+      "commit_unchanged": true,
+      "exit": 0,
+      "free_after": 8313634816,
+      "outer_refusal": null,
+      "source_unchanged": true
+    },
+    "focused-native-capture": {
+      "commit_unchanged": true,
+      "exit": 0,
+      "free_after": 7100215296,
+      "outer_refusal": null,
+      "source_unchanged": true
+    },
+    "full-native-capture": {
+      "commit_unchanged": true,
+      "exit": 1,
+      "free_after": 7093104640,
+      "outer_refusal": null,
+      "source_unchanged": true
+    },
+    "native-refresh-capture": {
+      "commit_unchanged": true,
+      "exit": 0,
+      "free_after": 8040562688,
+      "outer_refusal": null,
+      "source_unchanged": true
+    },
+    "parser-build": {
+      "commit_unchanged": true,
+      "exit": 0,
+      "free_after": 8306786304,
+      "outer_refusal": null,
+      "source_unchanged": true
+    },
+    "review-native-first": {
+      "commit_unchanged": true,
+      "exit": 0,
+      "free_after": 7103905792,
+      "outer_refusal": null,
+      "source_unchanged": true
+    },
+    "syntax-capture": {
+      "commit_unchanged": true,
+      "exit": 0,
+      "free_after": 8278683648,
+      "outer_refusal": null,
+      "source_unchanged": true
+    }
+  },
+  "prior_gnu_result_unchanged": true,
+  "product_load": false,
+  "qualification": false,
+  "release_admitted": false,
+  "review_sources": 391,
+  "scripts_perf_in_new_outer_map": true,
+  "server": false,
+  "services": false,
+  "source": "fe4b3a0f9060615185895337181780a6f3f55439",
+  "targets": 155
+}

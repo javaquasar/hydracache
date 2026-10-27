@@ -1,0 +1,40 @@
+{
+  "schema": "hc074-approved-roots-lock-view-v1",
+  "path": "Cargo.lock",
+  "previous_revision": "ba9c5535311ffd0e6759506898077dbc6a56830a",
+  "producer_revision": "63cb4d7b9bca1c901b2f7420f86effd3309a6882",
+  "current_sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5",
+  "previous_sha256": "91a009119e13184958de1a29f3b58d900e8756aaa47878c991a114b5ea2079d0",
+  "patches": [
+    {
+      "offset": 59728,
+      "current": " \"webpki-root-certs\",\n \"webpki-roots 0.26.11\",\n \"webpki-roots 1.0.10\",\n",
+      "previous": ""
+    },
+    {
+      "offset": 158583,
+      "current": "version = \"1.0.10\"\n",
+      "previous": "version = \"1.0.8\"\n"
+    },
+    {
+      "offset": 158667,
+      "current": "checksum = \"58ec80e73fd8baf57bf0d9615554c75348bda990d6d5bbeab964dd068319fecb\"\n",
+      "previous": "checksum = \"0d46a5a140e6f7afeccd8eae97eff335163939eac8b929834875168b29b3d267\"\n"
+    },
+    {
+      "offset": 159000,
+      "current": " \"webpki-roots 1.0.10\",\n",
+      "previous": " \"webpki-roots 1.0.8\",\n"
+    },
+    {
+      "offset": 159061,
+      "current": "version = \"1.0.10\"\n",
+      "previous": "version = \"1.0.8\"\n"
+    },
+    {
+      "offset": 159145,
+      "current": "checksum = \"1c1c8e20c8a38fc7d65abfe74eb7280e4aa667e8eec8bc84996d2874810748d9\"\n",
+      "previous": "checksum = \"bf85cb06032201fa7c6f829d7db5a7e5aa45bcc0655327713065f6f0576731bf\"\n"
+    }
+  ]
+}

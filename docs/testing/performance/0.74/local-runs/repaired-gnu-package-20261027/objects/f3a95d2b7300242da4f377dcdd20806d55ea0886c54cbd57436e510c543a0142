@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\census_cost_074-9b34c3543a08c964.exe",
+    "--exact",
+    "package_syntax_child",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "exit": 0
+}

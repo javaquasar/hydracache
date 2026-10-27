@@ -1,0 +1,17 @@
+GNU package heartbeat elapsed=0.0s remaining=780.0s
+GNU package heartbeat elapsed=30.2s remaining=749.8s
+GNU package heartbeat elapsed=60.2s remaining=719.8s
+GNU package heartbeat elapsed=90.4s remaining=689.6s
+GNU package heartbeat elapsed=120.5s remaining=659.5s
+GNU package heartbeat elapsed=150.7s remaining=629.3s
+{
+  "check_pass": false,
+  "cohort_pass": false,
+  "mode": "full",
+  "package_pass": false,
+  "release_admitted": false,
+  "request_sha256": "8b7cb4fea8fa4e6f5c61d1905cf852ba7219913b168e1c32ba229c01d3125383",
+  "source": "fe4b3a0f9060615185895337181780a6f3f55439",
+  "source_and_refs_and_environment_unchanged": true
+}
+

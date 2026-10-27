@@ -1,0 +1,2 @@
+*.py text eol=lf
+inputs.json -text

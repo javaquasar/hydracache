@@ -1,0 +1,240 @@
+{
+  "schema": "hc074-source-successor-view-v1",
+  "rows": [
+    {
+      "path": "docs/COMPAT.md",
+      "previous_revision": "3c52c0aa34b8d00b2fac44375d5ba8fdf532bb9f",
+      "revision": "a67a5299ab335424e9b11330dc06bd749ea9b859",
+      "current_sha256": "8743a9ad50122f733571e8106a49d43ccc5e44c79e864470842e6d9b4e0c9780",
+      "previous_sha256": "254cd4e0db8d7f1ef6814aa2aa395bddd622a9603ebb480eecd1503fcfb6a11e",
+      "patches": [
+        {
+          "offset": 190312,
+          "current": "\n## GET owner diagnostic TLS material v1\n\nThe standalone `timing-controls-074` fixed-material modes use a private JSON\nfile with `schema_version=1` and exactly CA, server certificate/key and client\ncertificate/key fields. Readers require the exact raw SHA256 before parsing,\nreject unknown/duplicate/missing/future fields, malformed or mismatched key\npairs, oversized input and unsafe Unix file metadata. Creation is exclusive;\nUnix file and parent publication are synced. This is temporary diagnostic PKI,\nnot production issuer/host enrollment. Windows functional readers do not attest\nprivate ACLs. Keep the secret file outside source control and evidence packets.\n\nOnly `--run-with-material` adds the public-only `fixed_material` seal to its\nenvelope. It requires a matched new reader; old receipt verifiers are not given\nthis new mode's output or silently relaxed. Legacy `--run` emits no new field,\nand existing config/report schemas, ephemeral APIs, protocols, AUTH and TLS\nrequirements remain unchanged. A matching material seal alone cannot admit a\nnumerical cohort or replace dataset, source, ownership and lifecycle checks.\n\n## GET owner allocation stage v2\n\nThe private `full-d3-allocation-074` config/envelope uses schema 2 and profile\n`get-owner-full-d3-allocation-074-v2`. Its strict config contains `schema_version`,\n`profile_id`, the unchanged timing-v1 `workload`, and required `resp_connections`.\nThe canonical stage hash binds physical placement independently of execution\nconcurrency. Missing, duplicate, unknown, future or out-of-contract fields refuse\nbefore a fixture. RESP requires one socket and an observed wire-overlap high-water\nequal to the configured limit, not a pipeline-sized operation multiplier.\n\nThe matched envelope adds the stage config/hash and actual wire overlap. Its\nnested requested-layout report remains v1 and binds the base workload only;\nreaders must validate both identities. Historical timing modes and requested-v1\nAPIs retain their schema and placement. Unexecuted allocation-v1 images cannot\nproduce v2 evidence. This counting lane never certifies timing, retention or\ncandidate admission.\n\nThe 2026-10-25 full-D3 decision rejects GET-owner on the fixed secure allocation\nfloor. `experimental-resp-get-owner-074` remains an empty compatibility tombstone,\nbut no longer selects a runtime branch. Historical consuming-helper tests remain\ntest-only. Current allocation-stage `--run` refuses before config/fixture access;\nmetadata validation and historical packet replay keep their format. Old report\nfeature booleans describe compiled flags, not proof of current activation. No\nwire, persistence, authorization or native API format changes with this rollback.\n",
+          "previous": ""
+        }
+      ]
+    },
+    {
+      "path": "docs/testing/gated-test-registry.toml",
+      "previous_revision": "3c52c0aa34b8d00b2fac44375d5ba8fdf532bb9f",
+      "revision": "958b3135a15c00b9f6aad41522cef9d1f6608d3a",
+      "current_sha256": "7e879f84b299b43e9d344c6baa83e77a4455320d31421712b3703e9bc7fe80a0",
+      "previous_sha256": "a100bb06a49a7e316bf4b39ad5d783467c636ff7486643ce7f88dce68ddbc88b",
+      "patches": [
+        {
+          "offset": 38,
+          "current": "\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.filesystem-projection-prototype-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_filesystem_projection_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"filesystem_projection_prototype_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\" , target_env = \"gnu\")'\nenv = \"\"\nreason = \"manual finite baseline filesystem projection screen; no preparation retry or admission\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_FILESYSTEM_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"filesystem_projection_prototype_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_FILESYSTEM_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.filesystem-projection-installed-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_filesystem_projection_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"filesystem_projection_installed_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\" , target_env = \"gnu\")'\nenv = \"\"\nreason = \"manual finite integrated filesystem projection screen; no preparation retry or admission\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_FILESYSTEM_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"filesystem_projection_installed_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_FILESYSTEM_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.namespace-open-prototype-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"namespace_open_prototype_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\" , target_env = \"gnu\")'\nenv = \"\"\nreason = \"manual finite baseline Namespace open CPU screen; no preparation retry or admission\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_NAMESPACE_OPEN_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"namespace_open_prototype_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_NAMESPACE_OPEN_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.namespace-open-installed-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"namespace_open_installed_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\" , target_env = \"gnu\")'\nenv = \"\"\nreason = \"manual finite integrated Namespace open CPU screen; no preparation retry or admission\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_NAMESPACE_OPEN_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"namespace_open_installed_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_NAMESPACE_OPEN_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.kernel-operation-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_kernel_operation_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_kernel_operation_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite Boot Namespace operation attribution; no preparation retry or admission\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_KERNEL_OPERATION_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_kernel_operation_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_KERNEL_OPERATION_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.parent-prototype-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_authority_parent_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_authority_parent_prototype_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite baseline parent-device CPU attribution; no admission or preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_PARENT_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_authority_parent_prototype_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_PARENT_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.parent-installed-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_authority_parent_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_authority_parent_installed_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite installed parent-device CPU attribution; no admission or preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_PARENT_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_authority_parent_installed_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_PARENT_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.before-prototype-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_authority_before_prototype_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite baseline before-read CPU attribution; no admission or preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_BEFORE_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_authority_before_prototype_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_BEFORE_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.before-installed-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_authority_before_installed_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite installed before-read CPU attribution; no admission or preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_BEFORE_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_authority_before_installed_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_BEFORE_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.directory-prototype-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_authority_directory_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_authority_directory_prototype_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite baseline directory CPU attribution; no admission or preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_DIRECTORY_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_authority_directory_prototype_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_DIRECTORY_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.directory-installed-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_authority_directory_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_authority_directory_installed_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite installed directory CPU attribution; no admission or preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_DIRECTORY_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_authority_directory_installed_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_DIRECTORY_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.fresh-authority-stamp-leaf\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_authority_stamp_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_authority_stamp_installed_leaf_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite authority leaf CPU screen; not admission or a preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_STAMP_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_authority_stamp_installed_leaf_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_STAMP_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.fresh-fd-identity-origin\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_fd_identity_original_origin_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite installed-origin CPU screen; not admission or a live preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_FD_IDENTITY_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_fd_identity_original_origin_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_FD_IDENTITY_COHORT = \"0\"\n",
+          "previous": ""
+        }
+      ]
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixed.rs",
+      "previous_revision": "c91068bfa8b297bb075b63457da235aaa9c6232e",
+      "revision": "958b3135a15c00b9f6aad41522cef9d1f6608d3a",
+      "current_sha256": "55d1372e62984d2ccda29879fd65951f3cd7415ad2d68be2c567d2a329c06b9d",
+      "previous_sha256": "fd1e10a038ae046888c8ff3c76303e36e5ed49a46aef2025391f8aa009d554a1",
+      "patches": [
+        {
+          "offset": 793,
+          "current": "        if !self.root_stamp.directory_matches_file(root)?\n            || !self.root_stamp.directory_matches_file(&named_root)?\n",
+          "previous": "        if !self.root_stamp.directory_matches(&root.metadata()?)\n            || !self.root_stamp.directory_matches(&named_root.metadata()?)\n"
+        },
+        {
+          "offset": 1126,
+          "current": "            if !ancestor.stamp.directory_matches_file(&named)?\n                || !ancestor.stamp.directory_matches_file(&ancestor.file)?\n",
+          "previous": "            if !ancestor.stamp.directory_matches(&named.metadata()?)\n                || !ancestor.stamp.directory_matches(&ancestor.file.metadata()?)\n"
+        },
+        {
+          "offset": 6490,
+          "current": "#[cfg(all(test, target_arch = \"x86_64\"))]\n#[path = \"diagnostic_authority_directory_tests.rs\"]\nmod directory_cost;\n\n",
+          "previous": ""
+        }
+      ]
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs",
+      "previous_revision": "c91068bfa8b297bb075b63457da235aaa9c6232e",
+      "revision": "958b3135a15c00b9f6aad41522cef9d1f6608d3a",
+      "current_sha256": "81edd92cedb2f223a7f218b2610b3e59cf30614a7c4c70a1bd1196f49d3c85e3",
+      "previous_sha256": "65cc390d5bb547ab19caa5c84a324404bd8b95da207b7577c7cbb13c3fc29032",
+      "patches": [
+        {
+          "offset": 723,
+          "current": "\n#[path = \"diagnostic_authority_stamp.rs\"]\nmod fresh_stamp;\n",
+          "previous": ""
+        },
+        {
+          "offset": 1406,
+          "current": "    #[cfg(any(test, not(target_arch = \"x86_64\")))]\n",
+          "previous": ""
+        },
+        {
+          "offset": 2430,
+          "current": "        let stamp = Stamp::fresh_regular(&file, uid, gid, 0o400)?;\n        if stamp.dev != Stamp::fresh_device(dir)? || stamp.len > budget as u64 {\n",
+          "previous": "        let before = file.metadata()?;\n        regular(&before, uid, gid, 0o400)?;\n        if before.dev() != dir.metadata()?.dev() || before.len() > budget as u64 {\n"
+        },
+        {
+          "offset": 2636,
+          "current": "        let mut raw = Vec::with_capacity(stamp.len as usize);\n",
+          "previous": "        let stamp = Stamp::of(&before);\n        let mut raw = Vec::with_capacity(before.len() as usize);\n"
+        },
+        {
+          "offset": 2766,
+          "current": "        if Stamp::fresh(&file)? != stamp || raw.len() as u64 != stamp.len {\n",
+          "previous": "        if Stamp::of(&file.metadata()?) != stamp || raw.len() as u64 != stamp.len {\n"
+        },
+        {
+          "offset": 3203,
+          "current": "        let stamp = Stamp::fresh_regular(&file, uid, gid, 0o400)?;\n        if stamp.dev != Stamp::fresh_device(dir)? || stamp.len > budget as u64 {\n",
+          "previous": "        let before = file.metadata()?;\n        regular(&before, uid, gid, 0o400)?;\n        if before.dev() != dir.metadata()?.dev() || before.len() > budget as u64 {\n"
+        },
+        {
+          "offset": 3409,
+          "current": "",
+          "previous": "        let stamp = Stamp::of(&before);\n"
+        },
+        {
+          "offset": 3451,
+          "current": "            Some(mut raw) if raw.capacity() == stamp.len as usize => {\n",
+          "previous": "            Some(mut raw) if raw.capacity() == before.len() as usize => {\n"
+        },
+        {
+          "offset": 3585,
+          "current": "            _ => Vec::with_capacity(stamp.len as usize),\n",
+          "previous": "            _ => Vec::with_capacity(before.len() as usize),\n"
+        },
+        {
+          "offset": 3721,
+          "current": "        if Stamp::fresh(&file)? != stamp || raw.len() as u64 != stamp.len {\n",
+          "previous": "        if Stamp::of(&file.metadata()?) != stamp || raw.len() as u64 != stamp.len {\n"
+        },
+        {
+          "offset": 4354,
+          "current": "        if Stamp::fresh(&self.file)? != self.stamp {\n",
+          "previous": "        if Stamp::of(&self.file.metadata()?) != self.stamp {\n"
+        },
+        {
+          "offset": 8423,
+          "current": "                .directory_matches_file(&self.temporary)?\n                || !self.leaf_stamp.directory_matches_file(&named)?\n                || !self.leaf_stamp.directory_matches_file(&self.leaf)?\n",
+          "previous": "                .directory_matches(&self.temporary.metadata()?)\n                || !self.leaf_stamp.directory_matches(&named.metadata()?)\n                || !self.leaf_stamp.directory_matches(&self.leaf.metadata()?)\n"
+        },
+        {
+          "offset": 8798,
+          "current": "        if !self.temporary_stamp.directory_matches_file(&temporary)?\n",
+          "previous": "        if !self\n            .temporary_stamp\n            .directory_matches(&temporary.metadata()?)\n"
+        },
+        {
+          "offset": 8921,
+          "current": "                .directory_matches_file(&self.temporary)?\n",
+          "previous": "                .directory_matches(&self.temporary.metadata()?)\n"
+        },
+        {
+          "offset": 9113,
+          "current": "        if !self.leaf_stamp.directory_matches_file(&named)?\n            || !self.leaf_stamp.directory_matches_file(&self.leaf)?\n",
+          "previous": "        if !self.leaf_stamp.directory_matches(&named.metadata()?)\n            || !self.leaf_stamp.directory_matches(&self.leaf.metadata()?)\n"
+        },
+        {
+          "offset": 22505,
+          "current": "#[cfg(all(test, target_arch = \"x86_64\"))]\n#[path = \"diagnostic_authority_before_tests.rs\"]\nmod before_cost;\n\n#[cfg(all(test, target_arch = \"x86_64\"))]\n#[path = \"diagnostic_authority_parent_tests.rs\"]\nmod parent_cost;\n\n",
+          "previous": ""
+        }
+      ]
+    },
+    {
+      "path": "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs",
+      "previous_revision": "c91068bfa8b297bb075b63457da235aaa9c6232e",
+      "revision": "958b3135a15c00b9f6aad41522cef9d1f6608d3a",
+      "current_sha256": "7c7e78b3734efe3d04559a1e5dd4eeb04118b8bb47e8ccfb032bcb0a66ada89f",
+      "previous_sha256": "4e18523c71b6b5bdf3a74d75e58df096f25c6f773067d013a07db2a8cfde5214",
+      "patches": [
+        {
+          "offset": 142,
+          "current": "\n#[path = \"diagnostic_kernel_fd_identity.rs\"]\nmod fd_identity;\n\n#[cfg(test)]\n#[path = \"diagnostic_kernel_operation_cost.rs\"]\nmod operation_cost;\n\n#[cfg(all(test, target_arch = \"x86_64\"))]\n#[path = \"diagnostic_kernel_operation_tests.rs\"]\nmod operation_tests;\n\n#[cfg(all(test, target_arch = \"x86_64\", target_env = \"gnu\"))]\n#[path = \"diagnostic_namespace_open.rs\"]\nmod fixed_namespace_open;\n\n#[cfg(all(test, target_arch = \"x86_64\", target_env = \"gnu\"))]\n#[path = \"diagnostic_namespace_open_tests.rs\"]\nmod namespace_open_tests;\n\n#[cfg(all(test, target_arch = \"x86_64\", target_env = \"gnu\"))]\n#[path = \"diagnostic_filesystem_projection.rs\"]\nmod filesystem_projection;\n\n#[cfg(all(test, target_arch = \"x86_64\", target_env = \"gnu\"))]\n#[path = \"diagnostic_filesystem_projection_tests.rs\"]\nmod filesystem_projection_tests;\n",
+          "previous": ""
+        },
+        {
+          "offset": 2586,
+          "current": "    #[cfg(test)]\n    let _operation_fs = operation_cost::span(operation_cost::Kind::Filesystem);\n",
+          "previous": ""
+        },
+        {
+          "offset": 3691,
+          "current": "    drop(operation_cost::span(operation_cost::Kind::Empty));\n    #[cfg(test)]\n",
+          "previous": ""
+        },
+        {
+          "offset": 4016,
+          "current": "    #[cfg(test)]\n    let operation_open = operation_cost::span(operation_cost::Kind::Open);\n",
+          "previous": ""
+        },
+        {
+          "offset": 4248,
+          "current": "    #[cfg(test)]\n    drop(operation_open);\n",
+          "previous": ""
+        },
+        {
+          "offset": 4327,
+          "current": "    #[cfg(test)]\n    let operation_identity = operation_cost::span(operation_cost::Kind::Identity);\n    let id = fd_identity::fresh(&file)?;\n    #[cfg(test)]\n    drop(operation_identity);\n    Ok((file, id))\n",
+          "previous": "    let m = file.metadata()?;\n    Ok((file, (m.dev(), m.ino())))\n"
+        },
+        {
+          "offset": 4882,
+          "current": "    #[cfg(test)]\n    drop(operation_cost::span(operation_cost::Kind::Empty));\n",
+          "previous": ""
+        },
+        {
+          "offset": 5820,
+          "current": "    #[cfg(test)]\n    let operation_open = operation_cost::span(operation_cost::Kind::Open);\n",
+          "previous": ""
+        },
+        {
+          "offset": 5992,
+          "current": "    #[cfg(test)]\n    drop(operation_open);\n",
+          "previous": ""
+        },
+        {
+          "offset": 6279,
+          "current": "    #[cfg(test)]\n    let _operation_path = operation_cost::span(operation_cost::Kind::Path);\n",
+          "previous": ""
+        },
+        {
+          "offset": 6869,
+          "current": "    let _operation_document = operation_cost::span(operation_cost::Kind::Document);\n    #[cfg(test)]\n",
+          "previous": ""
+        },
+        {
+          "offset": 7361,
+          "current": "    #[cfg(test)]\n    let _operation_decode = operation_cost::span(operation_cost::Kind::Decode);\n",
+          "previous": ""
+        },
+        {
+          "offset": 8717,
+          "current": "    if fd_identity::fresh(file)? != expected {\n",
+          "previous": "    let metadata = file.metadata()?;\n    if (metadata.dev(), metadata.ino()) != expected {\n"
+        },
+        {
+          "offset": 9493,
+          "current": "        let id = fd_identity::fresh(&root)?;\n",
+          "previous": "        let m = root.metadata()?;\n"
+        },
+        {
+          "offset": 9715,
+          "current": "            id,\n",
+          "previous": "            id: (m.dev(), m.ino()),\n"
+        },
+        {
+          "offset": 10389,
+          "current": "            if fd_identity::fresh(file)? != self.id || !boot_comparison::matches(file, &self.boot)?\n            {\n",
+          "previous": "            let m = file.metadata()?;\n            if (m.dev(), m.ino()) != self.id || !boot_comparison::matches(file, &self.boot)? {\n"
+        },
+        {
+          "offset": 10710,
+          "current": "            if fd_identity::fresh(file)? != *id || namespace(NAMES[index])?.1 != *id {\n",
+          "previous": "            let m = file.metadata()?;\n            if (m.dev(), m.ino()) != *id || namespace(NAMES[index])?.1 != *id {\n"
+        }
+      ]
+    }
+  ]
+}

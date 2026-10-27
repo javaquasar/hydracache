@@ -1,0 +1,29 @@
+{
+  "schema": "hc074-inventory545-phase-v1",
+  "previous_revision": "958b3135a15c00b9f6aad41522cef9d1f6608d3a",
+  "revision": "2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d",
+  "previous_count": 544,
+  "current_count": 545,
+  "removed": [],
+  "changed": {
+    "tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "previous": {
+        "mode": "100644",
+        "blob": "166cd0ea9849016e89a945c21ec038d224588251",
+        "canonical_sha256": "9b87094f570bbe0bb9408cd9dc2c52ff20868503f7b7cc2e73fb7fab653cd5d6"
+      },
+      "current": {
+        "mode": "100644",
+        "blob": "9878c27461687827b227e343c8b3009d41b1773d",
+        "canonical_sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+      }
+    }
+  },
+  "added": {
+    "tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "mode": "100644",
+      "blob": "ef7c2f27acf1d89e6854d328c21898fc90312611",
+      "canonical_sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    }
+  }
+}

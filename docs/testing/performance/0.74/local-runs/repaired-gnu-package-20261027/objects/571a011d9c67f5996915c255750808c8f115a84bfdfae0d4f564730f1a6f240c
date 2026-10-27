@@ -1,0 +1,58 @@
+"""Freeze the manually reviewed eight changed and five added source bodies."""
+import hashlib
+import json
+from pathlib import Path
+import sys
+ROOT=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(ROOT/'tools/package-closure-offline-074'))
+import analysis as a
+_, gate, old_document, old_texts=a.inputs(ROOT)
+document=json.loads((ROOT/'target/gnu-repaired-local-20261027/syntax-current/result.json').read_bytes())
+rows={r['source']:r for r in document['sources']}
+old={r['source']:r for r in old_document['sources']}
+changed={p for p in old if old[p]!=rows[p]}
+added=set(rows)-set(old)
+assert changed=={
+ 'crates/xtask/tests/historical_source_cache_074.rs','crates/xtask/tests/memory_compat_071.rs',
+ 'crates/xtask/tests/memory_profile_071.rs','crates/xtask/tests/remaining_readers_074.rs',
+ 'crates/xtask/tests/role_census_reader_074.rs','crates/xtask/tests/support/fresh_status_guard.rs',
+ 'crates/xtask/tests/support/pid_path_guard.rs','crates/xtask/tests/validation_leaf_reader_074.rs'}
+assert added=={'crates/xtask/tests/package_closure_inputs_074.rs','crates/xtask/tests/pid_stage_join_074.rs',
+ 'crates/xtask/tests/support/fixture_python_074.rs','crates/xtask/tests/support/pid_stage_join.rs',
+ 'tools/package-closure-inputs-074/contract.rs'}
+assert len(rows)==391 and not(set(old)-set(rows))
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+def lf(raw): return raw.replace(b'\r\n',b'\n')
+sources={}
+for name,row in rows.items():
+    raw=(ROOT/name).read_bytes()
+    assert sha(raw)==row['sha256']
+    sources[name]=sha(lf(raw))
+    if name not in changed|added:
+        assert lf(raw)==lf(old_texts[name]) and row==old[name]
+auxiliary={}
+for name,digest in gate['auxiliary'].items():
+    raw=(ROOT/name).read_bytes()
+    assert sha(raw)==digest
+    auxiliary[name]=sha(lf(raw))
+for name in ['tools/package-closure-inputs-074/rules.json','tools/package-closure-inputs-074/.gitattributes']:
+    auxiliary[name]=sha(lf((ROOT/name).read_bytes()))
+targets=gate['targets'][:2]+sorted(gate['targets'][2:]+['tests/package_closure_inputs_074.rs','tests/pid_stage_join_074.rs'])
+assert len(targets)==155 and len(auxiliary)==58
+data=dict(schema='hc074-repaired-gnu-source-review-v1',source='fe4b3a0f9060615185895337181780a6f3f55439',
+ request_sha256='8b7cb4fea8fa4e6f5c61d1905cf852ba7219913b168e1c32ba229c01d3125383',
+ syntax_sha256=sha(json.dumps(document,sort_keys=True,separators=(',',':')).encode()),
+ sources=sources,auxiliary=auxiliary,targets=targets,changed=sorted(changed),added=sorted(added),
+ delta_review={
+ 'python':'Two memory fixtures select fixed python3 on GNU, without probing or PATH edits. Public API --check resolves v0.70 tag and cargo metadata --no-deps only, never semver checks. Provider fixture runs system.normalize on synthetic temp files; ordering/redaction controls and all imports are reviewed and pinned.',
+ 'six_inputs':'Six whole-current and whole-predecessor pins bracket ten exact offset inverse edits. The helper has no IO or observed-state cache. Four old source tests retain their assertions; compatibility-document producer alone advances explicitly. No runtime/current authority input is changed.',
+ 'pid':'Only origin receives fifteen exact inverse literal hunks between old custody and unchanged PID loop. Existing conditional readers remain exact; fresh-status selects explicit legacy processing. Old immutable current-tree guard and all semantic mutants remain active.',
+ 'new_controls':'Two new ordinary targets execute bounded read-only fixed Git show and current source reads, AST assertion comparisons and seeded in-memory mutations only. No manager, listener, product, clock, root, SSH or service entry is added.',
+ 'inherited':'378 complete source/AST rows and all 56 prior auxiliary bodies remain exact. Eight existing bodies and five added ones are separately reviewed, no removal. GNU manual groups and default-off diagnostic review remain applicable. Source-only closure is not compiler expansion or a test verdict.'},
+ package_bound_seconds=780,test_threads=4,disk_floor_bytes=4*1024**3,
+ compiler_expansion=False,package_pass=False,release_admitted=False)
+raw=(json.dumps(data,indent=2,sort_keys=True)+'\n').encode()
+print('*** Begin Patch\n*** Add File: C:/Workspace/prj/jq/cashe/hydracache-074/tools/package-repaired-gnu-074/inputs.json')
+print('\n'.join('+'+line for line in raw.decode().splitlines()))
+print('*** End Patch')
+print(sha(raw),file=sys.stderr)

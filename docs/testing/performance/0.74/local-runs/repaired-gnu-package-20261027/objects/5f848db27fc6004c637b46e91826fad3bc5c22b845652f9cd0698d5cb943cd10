@@ -1,0 +1,85 @@
+"""Bounded source-only syntax census; never dispatch the reviewed package."""
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BUILD = ROOT / 'target/gnu-repaired-local-20261027/parser-build'
+OUT = ROOT / 'target/gnu-repaired-local-20261027/syntax-current'
+CONTEXT = 'tools/historical-blob-batch-074/module_context_v5.py'
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+def require(value, reason):
+    if not value:
+        raise ValueError(reason)
+def write(name, value):
+    with (OUT / name).open('x', encoding='utf-8', newline='\n') as stream:
+        json.dump(value, stream, sort_keys=True, indent=2)
+        stream.write('\n')
+require(sha((ROOT / CONTEXT).read_bytes()) == 'c4bbc2d6b69e416ac3fcb30a1a64fb3bb54473b70977a1875ff90ca264b0cd44', 'context body drift')
+spec = importlib.util.spec_from_file_location('hc074_fixed_context_v9', ROOT / CONTEXT)
+context = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(context)
+receipt = json.loads((BUILD / 'result.json').read_bytes())
+require(receipt['exit'] == 0 and receipt['source_unchanged'] and receipt['commit_unchanged'], 'parser build refusal')
+captured = json.loads((BUILD / 'intent.json').read_bytes())
+head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True, timeout=10).strip()
+require(head == captured['source_commit'], 'build HEAD differs')
+messages = [json.loads(line) for line in (BUILD / 'stdout.log').read_bytes().splitlines() if line.startswith(b'{')]
+artifacts = [m for m in messages if m.get('reason') == 'compiler-artifact' and m.get('target', {}).get('name') == 'census_cost_074' and m.get('executable')]
+require(len(artifacts) == 1 and artifacts[0]['profile']['test'], 'parser artifact membership')
+binary = Path(artifacts[0]['executable']).resolve(strict=True)
+require(binary.parent == (ROOT / 'target/debug/deps').resolve(), 'parser artifact outside build')
+binary_sha = sha(binary.read_bytes())
+old_folder = ROOT / 'docs/testing/performance/0.74/local-runs/package-review-v8-20261027'
+old_raw = (old_folder / 'index.json').read_bytes()
+require(sha(old_raw) == 'ccb759b4905dc9685485937507e346748c7ed77ae50ed6a24512666393f4a47d', 'V8 index drift')
+old_index = json.loads(old_raw)
+row = old_index['members']['review/gate.json']
+old_raw = (old_folder / 'objects' / row['sha256']).read_bytes()
+require(len(old_raw) == row['bytes'] and sha(old_raw) == row['sha256'], 'V8 review data drift')
+names = set(json.loads(old_raw)['sources'])
+for folder in ('crates/xtask/src', 'crates/xtask/tests'):
+    names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / folder).rglob('*.rs'))
+sources = {n: sha((ROOT / n).read_bytes()) for n in sorted(names)}
+OUT.mkdir(exist_ok=False)
+write('intent.json', dict(source_commit=head, binary=str(binary), binary_sha256=binary_sha,
+    round_bound=8, per_round_seconds=120, compiler_expansion=False, executed_input_code=False,
+    package_dispatched=False, clocks=False, services=False, server=False))
+for number in range(8):
+    require(all(captured['source'].get(n) == digest for n, digest in sources.items()), 'build source differs')
+    suffix = str(number)
+    write('input-' + suffix + '.json', dict(sources=sources))
+    argv = [str(binary), '--exact', 'package_syntax_child', '--nocapture', '--test-threads=1']
+    with (OUT / ('stdout-' + suffix + '.log')).open('xb') as stdout, (OUT / ('stderr-' + suffix + '.log')).open('xb') as stderr:
+        process = subprocess.run(argv, cwd=ROOT, env=dict(os.environ,
+            HC074_PACKAGE_SYNTAX_INPUT=str(OUT / ('input-' + suffix + '.json'))),
+            stdout=stdout, stderr=stderr, timeout=120, check=False)
+    write('process-' + suffix + '.json', dict(argv=argv, exit=process.returncode))
+    require(process.returncode == 0, 'first parser refusal')
+    values = [json.loads(line.split('HC074_SYNTAX ', 1)[1]) for line in
+        (OUT / ('stdout-' + suffix + '.log')).read_text(encoding='utf-8').splitlines() if 'HC074_SYNTAX ' in line]
+    require(len(values) == 1, 'syntax envelope membership')
+    result = values[0]
+    require(result['executed_input_code'] is False and result['compiler_expansion'] is False, 'scope drift')
+    require({r['source']: r['sha256'] for r in result['sources']} == sources, 'source membership')
+    additions, unresolved = context.module_edges(ROOT, result)
+    write('edges-' + suffix + '.json', dict(additions=additions, unresolved=unresolved))
+    require(not unresolved, 'unresolved contextual module')
+    if not additions:
+        break
+    sources = dict(sorted({**sources, **additions}.items()))
+else:
+    raise ValueError('context closure bound')
+require(all(sha((ROOT / n).read_bytes()) == digest for n, digest in sources.items()), 'source changed during capture')
+require(sha(binary.read_bytes()) == binary_sha, 'parser artifact changed')
+require(head == subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True, timeout=10).strip(), 'HEAD changed')
+write('result.json', result)
+summary = dict(rounds=number + 1, sources=len(sources), sites=sum(len(r['sites']) for r in result['sources']),
+    binary_sha256=binary_sha, source_unchanged=True, context_closed=True, package_dispatched=False,
+    current_effect_review_complete=False, release_admitted=False)
+write('receipt.json', summary)
+print(json.dumps(summary))

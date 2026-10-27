@@ -259,6 +259,17 @@ closure remain prerequisites to another full command; do not call these focused
 passes package coverage or reuse the old fixed 153-target review. Preserve the
 source-map limitations and distinguish caught panics from the terminal refusal.
 
+The [fresh repaired GNU review and complete command](repaired-gnu-package-result-20261027.md)
+then validate 391 Rust/58 auxiliary inputs and all 155 targets. The focused Linux
+cohort passes 42 cases; GNU check and strict Clippy pass. The complete command
+reports 1,340 passes and two failures, with no ignored/unstarted cases. All ten
+earlier failing cases now pass. Two global current-tree audits independently
+reject the two changed memory-fixture bodies and the PID/fresh-status helpers.
+Preserve that red result and the global pins. Next compose those four exact
+bodies with their named predecessors under the unchanged observation/fallback
+order, test the global consumers, and review a distinct candidate before another
+full command. No unchanged retry or source-path exclusion is admitted.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

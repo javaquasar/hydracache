@@ -55,3 +55,9 @@ pass ten Linux cases and seven Windows cases with three Linux-only skips. Two
 fixtures require an unreviewed `python` executable; eight source/predecessor
 assertions refuse. Review/repair those exact boundaries before any distinct
 candidate; source review alone did not establish a green whole package.
+
+The later [repaired GNU controller](../package-repaired-gnu-074/README.md) has
+separate fixed inputs and outputs; these old entry points remain consumed and
+unchanged. Its full 155-target result closes the ten earlier failing cases but
+stays red at two global source-frontier refusals. Preserve both complete results
+and the four newly identified current-body boundaries.

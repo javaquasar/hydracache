@@ -1,0 +1,10 @@
+{
+  "check_pass": false,
+  "cohort_pass": true,
+  "mode": "focused",
+  "package_pass": false,
+  "release_admitted": false,
+  "request_sha256": "8b7cb4fea8fa4e6f5c61d1905cf852ba7219913b168e1c32ba229c01d3125383",
+  "source": "fe4b3a0f9060615185895337181780a6f3f55439",
+  "source_and_refs_and_environment_unchanged": true
+}

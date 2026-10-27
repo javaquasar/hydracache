@@ -1,0 +1,6 @@
+{
+  "hard_quota": false,
+  "low_native_free_bytes": 878580039680,
+  "low_physical_free_bytes": 6890479616,
+  "sampled_floor_bytes": 4294967296
+}

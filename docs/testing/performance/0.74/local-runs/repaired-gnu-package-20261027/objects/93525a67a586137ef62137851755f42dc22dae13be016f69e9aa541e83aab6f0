@@ -1,0 +1,408 @@
+{
+  "complete": true,
+  "completed_targets": 12,
+  "exit": 0,
+  "expected_targets": 12,
+  "failed": 0,
+  "ignored": 0,
+  "incomplete_target": null,
+  "individual_failed": 0,
+  "individual_passed": 42,
+  "nominal_budget_minus_completed_spans_ns": 778220000000,
+  "outer_bound_seconds": 780,
+  "outer_refusal": null,
+  "package_pass": true,
+  "passed": 42,
+  "ranking": [
+    {
+      "reported_ns": 730000000,
+      "reported_seconds": "0.73",
+      "target": "tests/remaining_readers_074.rs"
+    },
+    {
+      "reported_ns": 290000000,
+      "reported_seconds": "0.29",
+      "target": "tests/package_closure_inputs_074.rs"
+    },
+    {
+      "reported_ns": 160000000,
+      "reported_seconds": "0.16",
+      "target": "tests/role_census_reader_074.rs"
+    },
+    {
+      "reported_ns": 100000000,
+      "reported_seconds": "0.10",
+      "target": "tests/memory_profile_071.rs"
+    },
+    {
+      "reported_ns": 90000000,
+      "reported_seconds": "0.09",
+      "target": "tests/fresh_kernel_cost_074.rs"
+    },
+    {
+      "reported_ns": 90000000,
+      "reported_seconds": "0.09",
+      "target": "tests/fresh_status_reader_074.rs"
+    },
+    {
+      "reported_ns": 80000000,
+      "reported_seconds": "0.08",
+      "target": "tests/memory_compat_071.rs"
+    },
+    {
+      "reported_ns": 80000000,
+      "reported_seconds": "0.08",
+      "target": "tests/pid_path_cost_074.rs"
+    },
+    {
+      "reported_ns": 60000000,
+      "reported_seconds": "0.06",
+      "target": "tests/validation_leaf_reader_074.rs"
+    },
+    {
+      "reported_ns": 40000000,
+      "reported_seconds": "0.04",
+      "target": "tests/pid_path_reader_074.rs"
+    },
+    {
+      "reported_ns": 30000000,
+      "reported_seconds": "0.03",
+      "target": "tests/historical_source_cache_074.rs"
+    },
+    {
+      "reported_ns": 30000000,
+      "reported_seconds": "0.03",
+      "target": "tests/pid_stage_join_074.rs"
+    }
+  ],
+  "reported_build_span_ns": 8940000000,
+  "reported_completed_target_spans_ns": 1780000000,
+  "scheduled_targets": 12,
+  "targets": [
+    {
+      "cases": [
+        {
+          "name": "fresh_status_reconstructs_all_changed_old_bodies_and_hooks",
+          "verdict": "ok"
+        },
+        {
+          "name": "fresh_status_adapter_refuses_missing_duplicate_and_other_validation_drift",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 6,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 90000000,
+      "reported_seconds": "0.09",
+      "start_line": 2,
+      "target": "tests/fresh_kernel_cost_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "fresh_status_reader_changes_only_admission_input_before_original_normalizers",
+          "verdict": "ok"
+        },
+        {
+          "name": "fresh_status_admission_requires_exact_source_and_helper_before_old_input",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 13,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 90000000,
+      "reported_seconds": "0.09",
+      "start_line": 9,
+      "target": "tests/fresh_status_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "controls::tests::failed_loader_never_publishes_partial_data_or_poisons_other_keys",
+          "verdict": "ok"
+        },
+        {
+          "name": "controls::tests::revisions_paths_and_cache_instances_do_not_share_entries",
+          "verdict": "ok"
+        },
+        {
+          "name": "controls::tests::loader_can_read_another_key_without_holding_the_index_lock",
+          "verdict": "ok"
+        },
+        {
+          "name": "controls::tests::concurrent_same_key_runs_one_complete_loader",
+          "verdict": "ok"
+        },
+        {
+          "name": "controls::tests::same_immutable_key_loads_once_and_returned_strings_are_independent",
+          "verdict": "ok"
+        },
+        {
+          "name": "reviewed_inputs_delegate_only_their_exact_frozen_lookup",
+          "verdict": "ok"
+        },
+        {
+          "name": "immutable_source_cache_changes_only_the_historical_loader_not_current_validation",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 7,
+      "end_line": 25,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 7,
+      "reported_ns": 30000000,
+      "reported_seconds": "0.03",
+      "start_line": 16,
+      "target": "tests/historical_source_cache_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "fixture_python::fixture_python_selection_is_explicit_for_both_platforms",
+          "verdict": "ok"
+        },
+        {
+          "name": "m10_executes_real_binary_compatibility_before_the_long_row",
+          "verdict": "ok"
+        },
+        {
+          "name": "primary_rust_gate_uses_the_reviewed_release_toolchain",
+          "verdict": "ok"
+        },
+        {
+          "name": "checked_in_upgrade_rollback_and_mixed_version_matrix_is_valid",
+          "verdict": "ok"
+        },
+        {
+          "name": "missing_rollback_and_wire_generation_are_rejected",
+          "verdict": "ok"
+        },
+        {
+          "name": "public_api_gate_covers_every_publishable_package_and_blocks_release",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 6,
+      "end_line": 36,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 6,
+      "reported_ns": 80000000,
+      "reported_seconds": "0.08",
+      "start_line": 28,
+      "target": "tests/memory_compat_071.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "fixture_python::fixture_python_selection_is_explicit_for_both_platforms",
+          "verdict": "ok"
+        },
+        {
+          "name": "every_admitted_allocator_has_the_complete_provider_protocol",
+          "verdict": "ok"
+        },
+        {
+          "name": "loadgen_declares_the_exact_phase_order_and_epoch_fields",
+          "verdict": "ok"
+        },
+        {
+          "name": "host_fingerprint_excludes_volatile_admission_observations",
+          "verdict": "ok"
+        },
+        {
+          "name": "profile_output_is_excluded_from_production_sizing",
+          "verdict": "ok"
+        },
+        {
+          "name": "provider_fixture_proves_ordering_classification_and_redaction",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 6,
+      "end_line": 47,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 6,
+      "reported_ns": 100000000,
+      "reported_seconds": "0.10",
+      "start_line": 39,
+      "target": "tests/memory_profile_071.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "every_original_case_and_assertion_token_stays_exact",
+          "verdict": "ok"
+        },
+        {
+          "name": "exact_current_and_previous_producers_bind_all_six_inverse_rows",
+          "verdict": "ok"
+        },
+        {
+          "name": "fresh_complete_body_is_required_for_each_call_and_seeded_mutants_refuse",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 55,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 290000000,
+      "reported_seconds": "0.29",
+      "start_line": 50,
+      "target": "tests/package_closure_inputs_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "pid_path_adopted_formatter_is_exactly_the_measured_frozen_prototype",
+          "verdict": "ok"
+        },
+        {
+          "name": "pid_path_reconstructs_every_changed_old_body_and_test_hook",
+          "verdict": "ok"
+        },
+        {
+          "name": "pid_path_adapter_refuses_missing_duplicate_and_unrelated_live_drift",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 63,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 80000000,
+      "reported_seconds": "0.08",
+      "start_line": 58,
+      "target": "tests/pid_path_cost_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "pid_path_reader_preserves_all_old_assertions_and_normalizer_order",
+          "verdict": "ok"
+        },
+        {
+          "name": "pid_path_admission_view_requires_the_exact_current_candidate",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 70,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 40000000,
+      "reported_seconds": "0.04",
+      "start_line": 66,
+      "target": "tests/pid_path_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "old_pid_body_and_both_readers_remain_exact_and_fresh_status_explicitly_uses_legacy",
+          "verdict": "ok"
+        },
+        {
+          "name": "exact_join_refuses_missing_duplicate_stale_and_seeded_drift_without_hiding_bytes",
+          "verdict": "ok"
+        },
+        {
+          "name": "original_conditional_reader_and_custody_stages_are_bound_to_named_producers",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 78,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 30000000,
+      "reported_seconds": "0.03",
+      "start_line": 73,
+      "target": "tests/pid_stage_join_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "stale_partial_duplicate_and_unrelated_caller_edits_refuse_after_success",
+          "verdict": "ok"
+        },
+        {
+          "name": "selected_kernel_and_compat_join_use_independent_producers_without_extra_reads",
+          "verdict": "ok"
+        },
+        {
+          "name": "seven_exact_caller_constructions_preserve_all_eighteen_cases_and_assertions",
+          "verdict": "ok"
+        },
+        {
+          "name": "immutable_nine_eighty_one_gate_still_refuses_new_caller_without_explicit_join",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 4,
+      "end_line": 87,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 4,
+      "reported_ns": 730000000,
+      "reported_seconds": "0.73",
+      "start_line": 81,
+      "target": "tests/remaining_readers_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "census_reader_preserves_every_original_assertion_and_only_adapts_one_provider",
+          "verdict": "ok"
+        },
+        {
+          "name": "census_provider_requires_complete_known_fixture_delta_and_pinned_helper",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 94,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 160000000,
+      "reported_seconds": "0.16",
+      "start_line": 90,
+      "target": "tests/role_census_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "leaf_reader_preserves_entire_original_test_and_exact_registry_selection",
+          "verdict": "ok"
+        },
+        {
+          "name": "leaf_registry_input_checks_current_bytes_before_returning_predecessor",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 101,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 60000000,
+      "reported_seconds": "0.06",
+      "start_line": 97,
+      "target": "tests/validation_leaf_reader_074.rs"
+    }
+  ],
+  "unstarted_targets": []
+}

@@ -1,0 +1,6 @@
+/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/native-frontier-20261027/fe4b3a0f9060615185895337181780a6f3f55439/history.bundle is okay
+From /mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/native-frontier-20261027/fe4b3a0f9060615185895337181780a6f3f55439/history.bundle
+   0ee795186..fe4b3a0f9  origin/feat/0.74-resp-native-throughput -> origin/feat/0.74-resp-native-throughput
+   636feb166..fe4b3a0f9  feat/0.74-resp-native-throughput -> feat/0.74-resp-native-throughput
+Previous HEAD position was 636feb166 test: prepare independent offline native Linux checkout
+HEAD is now at fe4b3a0f9 docs: retain PID stage witnesses and focused closure results

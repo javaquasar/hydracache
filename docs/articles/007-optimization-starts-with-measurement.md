@@ -21597,3 +21597,31 @@ focused targets pass 42 cases separately on Windows 1.94 and MSRV 1.88; strict
 lint, all-targets check and targeted formatting pass. This closes a source-test
 composition defect, not a throughput experiment. GNU validation and a newly
 reviewed full package command still precede any release admission.
+
+The [fresh GNU continuation](../testing/performance/0.74/repaired-gnu-package-result-20261027.md)
+checks 391 Rust bodies, 58 auxiliary inputs and 155 targets. A complete native
+tree/ref check precedes reuse of the separate nonqualification checkout and
+its warm Cargo context. This avoids another whole-history copy and cold-path
+build under a tight physical-volume budget without deleting evidence or changing
+the original 780-second limit, four threads or 4 GiB floor. Cache reuse here is
+a preparation method, not a product performance result.
+
+The actual Linux cohort passes 42 cases, including the real Python provider
+imports and Cargo metadata call inside the test-child environment. GNU check
+and strict Clippy also pass. The subsequent whole-package command nevertheless
+remains red: every one of its 155 targets completes, with 1,340 passing and two
+failing cases. All ten earlier failing cases pass in this command; the remaining
+two are independent global current-tree audits.
+
+Those audits catch a different contract. The two memory fixtures preserve their
+runtime assertions while changing interpreter selection, and PID/fresh-status
+preserve their consumer behavior through an explicit legacy path. Their complete
+source identities still change. Dedicated green cohorts cannot admit those new
+bodies into a separately pinned global frontier. The complete audit identifies
+four bodies rather than hiding everything behind the first failure. The proper
+next step is an exact four-input composition with mutation and global-consumer
+controls, not a path exclusion, relaxed hash or another unchanged full run.
+Fresh source/effect review establishes which code may be tested; execution must
+still establish every independent preservation contract. Neither one replaces
+the other, and successful CI cleanup does not turn a red result into release
+readiness or production all-writer proof.

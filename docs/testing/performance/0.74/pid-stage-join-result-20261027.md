@@ -110,3 +110,9 @@ product workload, installation, qualification or release admission.
 Doc-check and the local non-promotable performance-contract check pass. Their
 [separate local-check packet](local-runs/pid-stage-join-checks-20261027/index.json)
 retains the command receipts; neither check substitutes for the GNU package gate.
+
+The subsequent [GNU continuation](repaired-gnu-package-result-20261027.md) passes
+the 42-case Linux cohort and strict compilation/lint checks. Its full command
+completes all 155 targets but remains red at two global current-tree audit cases;
+the PID/fresh-status helper source bodies are two of their four rejected inputs.
+The local PID behavior repair is not global source-frontier admission.
