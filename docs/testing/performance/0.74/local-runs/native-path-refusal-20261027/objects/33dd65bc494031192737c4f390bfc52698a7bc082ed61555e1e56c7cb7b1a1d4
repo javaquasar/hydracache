@@ -1,0 +1,12 @@
+{
+  "baseline_failed": 1,
+  "baseline_passed": 8,
+  "fixed_passed_per_platform": 9,
+  "formatter_repeated": false,
+  "implementation": "12f5f73c2f43a96a106afcf1af168a2efcf6d5ca",
+  "live_predicates_or_windows_changed": false,
+  "native_context_recreated": false,
+  "package_pass": false,
+  "pure_path_refusal_only": true,
+  "release_admitted": false
+}

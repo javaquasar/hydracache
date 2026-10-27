@@ -127,3 +127,16 @@ All live checks/frequencies and 300/60/10 windows stay exact. Security policy,
 original worker release/all-writer retirement, durable completion/cells 2–4,
 reconnect, production trust and compatible-host admission remain open. No new
 performance hypothesis, clock/service change, server run or qualification occurs.
+
+## Subsequent degenerate path refusal
+
+Final leaf review finds that `PurePosixPath('.')` has an empty component tuple,
+so the initial pure selector accepts that degenerate name. A new regression
+first records eight passes and one failure. The separate fix
+`12f5f73c2f43a96a106afcf1af168a2efcf6d5ca` requires a nonempty component tuple;
+all nine portable controls then pass on Windows and Linux. The
+[separate first-result packet](local-runs/native-path-refusal-20261027/index.json)
+binds both source versions to their pre-execution digests. No valid Git tree
+entry is affected, and the already checked context remains exact at source
+`636feb166b2`. Neither native materialization nor formatting is repeated. This
+strengthens a new transfer validator, not any product/live predicate or window.

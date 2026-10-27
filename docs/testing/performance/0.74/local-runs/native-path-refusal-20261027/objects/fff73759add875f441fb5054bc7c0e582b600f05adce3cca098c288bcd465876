@@ -1,0 +1,2 @@
+watchdog heartbeat attempt=local elapsed=0.0s remaining=60.0s pid=127307
+watchdog result classification=success elapsed=1.2s receipt=target/native-dot-gnu-20261027.json

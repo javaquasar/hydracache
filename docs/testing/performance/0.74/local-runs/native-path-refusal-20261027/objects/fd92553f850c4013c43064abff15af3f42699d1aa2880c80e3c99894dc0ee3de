@@ -1,0 +1,14 @@
+test_exact_request_and_tree_refs (test_contract.Contract.test_exact_request_and_tree_refs) ... ok
+test_export_inventory_keeps_full_scope_and_refuses_dirty_or_stale_head (test_contract.Contract.test_export_inventory_keeps_full_scope_and_refuses_dirty_or_stale_head) ... ok
+test_git_preparation_environment_is_not_inherited_execution_authority (test_contract.Contract.test_git_preparation_environment_is_not_inherited_execution_authority) ... ok
+test_native_content_drift_and_nonregular_refuse_without_git_status (test_contract.Contract.test_native_content_drift_and_nonregular_refuse_without_git_status) ... ok
+test_native_request_binding_refuses_before_directory_creation (test_contract.Contract.test_native_request_binding_refuses_before_directory_creation) ... ok
+test_physical_capacity_includes_full_tree_and_both_bundles (test_contract.Contract.test_physical_capacity_includes_full_tree_and_both_bundles) ... ok
+test_ref_duplicates_nonrelative_and_duplicate_json_refuse (test_contract.Contract.test_ref_duplicates_nonrelative_and_duplicate_json_refuse) ... ok
+test_request_does_not_accept_partial_extra_or_changed_identity (test_contract.Contract.test_request_does_not_accept_partial_extra_or_changed_identity) ... ok
+test_unsafe_alias_duplicate_and_nonregular_tree_refuse (test_contract.Contract.test_unsafe_alias_duplicate_and_nonregular_tree_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.013s
+
+OK

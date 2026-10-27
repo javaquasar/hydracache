@@ -56,3 +56,5 @@ topology. The 404 bindings are resolved ref/object IDs; file modes mean Git
 executable identities, not production UID/GID or account enrollment. The full
 native format-check passes after a separately retained LF/CRLF preflight refusal.
 GNU frontier and full package admission remain closed.
+The subsequent pure path guard also refuses `.` via a nonempty component check;
+its retained red regression and Windows/Linux fixes do not repeat the transfer.

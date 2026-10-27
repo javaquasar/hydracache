@@ -21457,3 +21457,9 @@ the unchanged 120-second bound, and fresh full-tree postflight shows no edits.
 That closes a formatting result, not a speedup estimate or the GNU frontier.
 The next GNU attempt still needs exact native environment/effect review, while
 the old package and timeout receipts keep their original identities and verdicts.
+
+Final transfer-validator review also catches the degenerate `.` path: its parsed
+component tuple is empty. A separate regression first fails, then passes on both
+platforms after requiring a nonempty tuple. Valid Git entries and the checked
+native context are unaffected; no transfer or format attempt is repeated for
+this pure refusal repair.

@@ -1,0 +1,187 @@
+{
+  "members": {
+    "capture/native-dot-gnu-20261027.json": {
+      "bytes": 487,
+      "sha256": "dce156be547692d10d296d26ed3aabfd193c1d9c77fd71119ec9e7dd0976d182"
+    },
+    "capture/native-dot-gnu-20261027.log": {
+      "bytes": 1462,
+      "sha256": "fd92553f850c4013c43064abff15af3f42699d1aa2880c80e3c99894dc0ee3de"
+    },
+    "checks/native-dot-baseline/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/native-dot-baseline/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/native-dot-baseline/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/native-dot-baseline/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/native-dot-baseline/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/native-dot-baseline/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/native-dot-baseline/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/native-dot-baseline/intent.json": {
+      "bytes": 358703,
+      "sha256": "f940020ecb555a7877df2e61c2497de7894c46c5bddab0287e762949b17b5786"
+    },
+    "checks/native-dot-baseline/process.json": {
+      "bytes": 14,
+      "sha256": "88c9b961e0500f43b930d59d9a980b9fc361eae73194c7645c72e9928f2e53b1"
+    },
+    "checks/native-dot-baseline/result.json": {
+      "bytes": 358455,
+      "sha256": "a1fad9afbfaa3eba71b927c439ec2b350faa76505a0f06d91c5548bab91a5262"
+    },
+    "checks/native-dot-baseline/stderr.log": {
+      "bytes": 2114,
+      "sha256": "98dfc7f2a1e1380de26ce9fa7a093cd2fdf42c1b5cfc99d513b193846a6bc4a6"
+    },
+    "checks/native-dot-baseline/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/native-dot-fixed/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/native-dot-fixed/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/native-dot-fixed/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/native-dot-fixed/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/native-dot-fixed/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/native-dot-fixed/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/native-dot-fixed/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/native-dot-fixed/intent.json": {
+      "bytes": 358703,
+      "sha256": "f2daea3f97f0dde784bd19cd0407783460840d2c8561fe1315660d36e1b38954"
+    },
+    "checks/native-dot-fixed/process.json": {
+      "bytes": 14,
+      "sha256": "93fb611d03806e29e26547c0dd53488e1ca297ec1ff811606965104830b57592"
+    },
+    "checks/native-dot-fixed/result.json": {
+      "bytes": 358455,
+      "sha256": "e6476dc475e27065be24e482354423215b60e9faaf7525dd4eb4d4ffc52b6f24"
+    },
+    "checks/native-dot-fixed/stderr.log": {
+      "bytes": 1476,
+      "sha256": "364cf61913ce2670c55deb8a2283a5425a499e8df794db8fb50f1ac7b87863c1"
+    },
+    "checks/native-dot-fixed/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/native-dot-gnu-fixed/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/native-dot-gnu-fixed/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/native-dot-gnu-fixed/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/native-dot-gnu-fixed/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/native-dot-gnu-fixed/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/native-dot-gnu-fixed/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/native-dot-gnu-fixed/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/native-dot-gnu-fixed/intent.json": {
+      "bytes": 359086,
+      "sha256": "95aa54fee7a4785e62f025d95f6c9be781516223011335d0f1a0b8fc0e2c5b6a"
+    },
+    "checks/native-dot-gnu-fixed/process.json": {
+      "bytes": 14,
+      "sha256": "2a71cbbdd48929421c45c70ca678eea739235bd49da1c5635b6d2a642af21224"
+    },
+    "checks/native-dot-gnu-fixed/result.json": {
+      "bytes": 358455,
+      "sha256": "a44e3db2d66506a0d1242c921f26223bdb8a8fa56842a680b6f14d63bffc788a"
+    },
+    "checks/native-dot-gnu-fixed/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/native-dot-gnu-fixed/stdout.log": {
+      "bytes": 169,
+      "sha256": "fff73759add875f441fb5054bc7c0e582b600f05adce3cca098c288bcd465876"
+    },
+    "review/scope.json": {
+      "bytes": 352,
+      "sha256": "33dd65bc494031192737c4f390bfc52698a7bc082ed61555e1e56c7cb7b1a1d4"
+    },
+    "sources/native-dot-baseline/tools/native-frontier-074/contract.py": {
+      "bytes": 4023,
+      "sha256": "9d52e631d36031bed12a71c46109222b2b9e1bd1d53bd5de74dbd560ed92e49d"
+    },
+    "sources/native-dot-baseline/tools/native-frontier-074/test_contract.py": {
+      "bytes": 7222,
+      "sha256": "faca40686279a72e8e73644b97250901bcea670339f129ca03f85e206ef0041e"
+    },
+    "sources/native-dot-fixed/tools/native-frontier-074/contract.py": {
+      "bytes": 4018,
+      "sha256": "13a92353314ab7b6b3f443f4d8244b823e38f390a35885edd050bbb73a5c2353"
+    },
+    "sources/native-dot-fixed/tools/native-frontier-074/test_contract.py": {
+      "bytes": 7222,
+      "sha256": "faca40686279a72e8e73644b97250901bcea670339f129ca03f85e206ef0041e"
+    },
+    "sources/native-dot-gnu-fixed/tools/native-frontier-074/contract.py": {
+      "bytes": 4018,
+      "sha256": "13a92353314ab7b6b3f443f4d8244b823e38f390a35885edd050bbb73a5c2353"
+    },
+    "sources/native-dot-gnu-fixed/tools/native-frontier-074/test_contract.py": {
+      "bytes": 7222,
+      "sha256": "faca40686279a72e8e73644b97250901bcea670339f129ca03f85e206ef0041e"
+    }
+  },
+  "package_pass": false,
+  "release_admitted": false,
+  "schema": "hc074-native-path-refusal-evidence-v1"
+}
