@@ -1,0 +1,9 @@
+{
+  "external_cargo_configuration_absent": true,
+  "fixture_overrides_absent": true,
+  "git_effect_config_active": false,
+  "git_effect_config_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "negative_fixture_executable_absent": true,
+  "target_and_protoc_scratch_not_reparse": true,
+  "unreviewed_build_overrides_absent": true
+}

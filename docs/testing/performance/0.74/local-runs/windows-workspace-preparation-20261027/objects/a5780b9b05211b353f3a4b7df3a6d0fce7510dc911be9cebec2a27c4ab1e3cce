@@ -1,0 +1,55 @@
+from pathlib import Path
+from datetime import datetime, timezone
+import hashlib
+import json
+import subprocess
+import sys
+
+root = Path(__file__).resolve().parent.parent
+label = sys.argv[1]
+commands = {
+    'controls-first': [sys.executable, '-B', '-m', 'unittest', 'discover', '-s',
+        'tools/windows-workspace-preflight-074', '-p', 'test_prepare.py', '-v'],
+    'prepare-first': [sys.executable, '-B', 'tools/windows-workspace-preflight-074/prepare.py',
+        'target/windows-workspace-preflight-20261027/prepare-first'],
+    'controls-reviewed': [sys.executable, '-B', '-m', 'unittest', 'discover', '-s',
+        'tools/windows-workspace-preflight-074', '-p', 'test_prepare.py', '-v'],
+    'prepare-reviewed': [sys.executable, '-B', 'tools/windows-workspace-preflight-074/prepare.py',
+        'target/windows-workspace-preflight-20261027/prepare-reviewed'],
+    'allocation-query': [sys.executable, '-B', str(root/'target/query-windows-allocation-20261027.py')],
+    'syntax-final': [sys.executable, '-B', '-c',
+        "import ast,pathlib,json; paths=sorted(pathlib.Path('tools/windows-workspace-preflight-074').glob('*.py')); [ast.parse(p.read_bytes(),filename=str(p)) for p in paths]; print(json.dumps({'parsed':len(paths),'compiled_or_dispatched':False}))"],
+    'doc-check-first': [str(root/'target/debug/xtask.exe'), 'doc-check'],
+    'doc-check-final': [str(root/'target/debug/xtask.exe'), 'doc-check'],
+    'versions': [sys.executable, '-B', str(root/'target/windows-preflight-versions-20261027.py')],
+}
+argv = commands[label]
+out = root/'target/windows-workspace-preflight-20261027'/(label+'-capture')
+out.mkdir(parents=True, exist_ok=False)
+def write(name, value):
+    with (out/name).open('x', encoding='utf-8', newline='\n') as stream:
+        json.dump(value, stream, indent=2, sort_keys=True)
+        stream.write('\n')
+def sources():
+    return {p.relative_to(root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+        for p in sorted((root/'tools/windows-workspace-preflight-074').iterdir()) if p.is_file()}
+def head():
+    return subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,timeout=10).decode().strip()
+before = sources()
+commit = head()
+write('intent.json',dict(argv=argv, utc=datetime.now(timezone.utc).isoformat(),
+    head=commit, sources=before, diagnostic_bound_seconds=180, heavy_gate=False))
+with (out/'stdout.log').open('xb') as stdout, (out/'stderr.log').open('xb') as stderr:
+    try:
+        if label in ('doc-check-first','doc-check-final'):
+            assert hashlib.sha256((root/'target/debug/xtask.exe').read_bytes()).hexdigest() == '80a24427ad0e6ae4259952472061324eda32a405d4146941fae24c9554f7e8c6'
+        result = subprocess.run(argv, cwd=root, stdout=stdout, stderr=stderr, timeout=180, check=False)
+        after = sources()
+        after_commit = head()
+        write('result.json',dict(exit=result.returncode, source_unchanged=before==after,
+            head_unchanged=commit==after_commit, sources_after=after, heavy_gate=False,
+            utc=datetime.now(timezone.utc).isoformat()))
+        print(json.dumps(dict(label=label,exit=result.returncode,source_unchanged=before==after)))
+    except BaseException as error:
+        write('refusal.json',dict(type=type(error).__name__,reason=str(error)))
+        raise

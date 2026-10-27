@@ -1,0 +1,26 @@
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+root = Path(__file__).resolve().parent.parent
+base = root/'target/windows-workspace-preflight-20261027'
+receipt = json.loads((base/'controls-reviewed-capture/result.json').read_bytes())
+assert receipt['exit']==0 and receipt['source_unchanged'] and receipt['head_unchanged']
+for path, digest in receipt['sources_after'].items():
+    work = (root/path).read_bytes()
+    staged = subprocess.check_output(['git','show',':'+path],cwd=root,timeout=10)
+    assert hashlib.sha256(work).hexdigest()==digest and staged==work, path
+assert subprocess.check_output(['git','show',':tools/windows-workspace-preflight-074/.gitattributes'],cwd=root)==b'* text eol=lf\n'
+assert subprocess.check_output(['git','diff','--cached','--name-only'],cwd=root).decode().splitlines()==[
+    'tools/windows-workspace-preflight-074/.gitattributes',
+    'tools/windows-workspace-preflight-074/README.md',
+    'tools/windows-workspace-preflight-074/metadata.py',
+    'tools/windows-workspace-preflight-074/prepare.py',
+    'tools/windows-workspace-preflight-074/storage.py',
+    'tools/windows-workspace-preflight-074/test_prepare.py']
+out=base/'staged-source-verified.json'
+with out.open('x',encoding='utf-8',newline='\n') as stream:
+    json.dump(dict(checked=6,controlled_sources_exact=True,lf_policy_only_addition=True),stream)
+    stream.write('\n')
+print('six exact staged tool blobs; reviewed control bytes unchanged')

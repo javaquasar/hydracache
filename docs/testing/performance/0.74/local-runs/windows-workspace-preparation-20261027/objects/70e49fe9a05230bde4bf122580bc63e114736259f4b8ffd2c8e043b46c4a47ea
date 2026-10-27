@@ -1,0 +1,2969 @@
+{
+  "allocation_or_growth_measurement": false,
+  "complete": true,
+  "errors": [],
+  "groups": {
+    "<root-files>": {
+      "created_since_files": 2,
+      "created_since_logical_bytes": 4683,
+      "files": 2135,
+      "logical_bytes": 549245495,
+      "modified_since_files": 4,
+      "modified_since_logical_bytes": 13182
+    },
+    "__pycache__": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 14,
+      "logical_bytes": 132415,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "artifact-inventory-audit-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1,
+      "logical_bytes": 576734,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "artifact-phase-first-passing-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 34265,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "artifact-phase-format-refusal-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 34177,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-history-view-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 4256,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-history-view-first-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 26,
+      "logical_bytes": 39150,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-integration-audit-first-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 23,
+      "logical_bytes": 35465,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-operator-argv-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 1364259,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-operator-order-188": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 51,
+      "logical_bytes": 10166262,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-operator-order-194": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 61,
+      "logical_bytes": 15701834,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-operator-order-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 24,
+      "logical_bytes": 2310547,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-operator-order-final-first-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 21,
+      "logical_bytes": 27961,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-operator-targeted-188": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 51,
+      "logical_bytes": 9993848,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-operator-targeted-194": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 53,
+      "logical_bytes": 9986643,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-operator-targeted-final-first-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 22,
+      "logical_bytes": 29252,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-operator-targeted-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 22,
+      "logical_bytes": 3971847,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-owned-journal-188": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 51,
+      "logical_bytes": 9423748,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-owned-journal-194": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 57,
+      "logical_bytes": 11670092,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-owned-journal-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 24,
+      "logical_bytes": 1055800,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-owned-journal-final-first-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 20,
+      "logical_bytes": 25985,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-read-audit-checks-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 14,
+      "logical_bytes": 17586,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-read-baseline-188": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 51,
+      "logical_bytes": 7832569,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-read-baseline-194": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 53,
+      "logical_bytes": 7967924,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-read-baseline-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 14,
+      "logical_bytes": 114842,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-read-baseline-final-checks-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 14,
+      "logical_bytes": 11180,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-allocation-development": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 35,
+      "logical_bytes": 3673198,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-allocation-doc-followup": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 9,
+      "logical_bytes": 2808,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-allocation-fifth": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 84,
+      "logical_bytes": 823104,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-allocation-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 15,
+      "logical_bytes": 244597,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-allocation-fourth": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 21,
+      "logical_bytes": 528835,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-allocation-second": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 15,
+      "logical_bytes": 522876,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-allocation-seventh": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 150,
+      "logical_bytes": 2464443,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-allocation-sixth": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 19,
+      "logical_bytes": 910642,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-allocation-third": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 21,
+      "logical_bytes": 528456,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-balanced-checks-20261022": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 43,
+      "logical_bytes": 33115,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-balanced-doc-followup-first-20261022": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 48,
+      "logical_bytes": 47856,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-balanced-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 349,
+      "logical_bytes": 7059657,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-baseline": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 4022,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-cpu-development": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 11,
+      "logical_bytes": 10417,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-cpu-doc-followup": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 9,
+      "logical_bytes": 2727,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-cpu-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 152,
+      "logical_bytes": 3052356,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-dev-194": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1,
+      "logical_bytes": 1885,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-dev-194-path-fixed": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 77,
+      "logical_bytes": 463932,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-development": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 31,
+      "logical_bytes": 14191172,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-doc-followup": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 4869,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-final-188": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 77,
+      "logical_bytes": 466063,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-final-194": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 77,
+      "logical_bytes": 458876,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-first-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 20,
+      "logical_bytes": 85719,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-native-checks-20261022": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 13,
+      "logical_bytes": 15689,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-native-second": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 55,
+      "logical_bytes": 3392881,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-runtime-variance-checks-20261022": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 16,
+      "logical_bytes": 14724,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-rust-history-development": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6,
+      "logical_bytes": 27133,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-rust-history-first-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 16,
+      "logical_bytes": 22841,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-scratch-owner-audit-first-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 19,
+      "logical_bytes": 23900,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-scratch-reuse-188": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 51,
+      "logical_bytes": 8940305,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-scratch-reuse-194": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 61,
+      "logical_bytes": 13426348,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-scratch-reuse-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 26,
+      "logical_bytes": 1192437,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-scratch-reuse-final-checks-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 15,
+      "logical_bytes": 12639,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authority-storage-source-first-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 28,
+      "logical_bytes": 40533,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authorized-server-build-inventory-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 8577,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authorized-server-preflight-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 86195,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authorized-server-preflight-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 87375,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authorized-server-session-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1300,
+      "logical_bytes": 73150394,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "authorized-server-session-staged-reader-first-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 304,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "blob-batch-retained-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 21092,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "blob-caller-linux-preflight-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6,
+      "logical_bytes": 949,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "blob-caller-linux-session-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 8,
+      "logical_bytes": 423886,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "blob-caller-linux-session-v2-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 28804639,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "blob-fault-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1773,
+      "logical_bytes": 165779690,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "blob-fault-source-snapshots-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1884,
+      "logical_bytes": 15530262,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "blob-native-source-snapshots-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 173,
+      "logical_bytes": 1158657,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "blob-native-transport-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 86,
+      "logical_bytes": 44245748,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "boot-authority-ops-20261021": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1,
+      "logical_bytes": 291,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "boot-buffer-20261018": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 45,
+      "logical_bytes": 113996,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "boot-buffer-plain-20261018": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 73,
+      "logical_bytes": 86232213,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-build-owner-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 167,
+      "logical_bytes": 166401,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-child-boundary-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 270,
+      "logical_bytes": 7301836,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-child-census-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 490,
+      "logical_bytes": 2343340,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-child-reader-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 138,
+      "logical_bytes": 271128,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-current-image-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 522,
+      "logical_bytes": 5190225,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-entry-binding-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 272,
+      "logical_bytes": 1306563,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-held-delivery-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1818,
+      "logical_bytes": 14859586,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-held-entry-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2729,
+      "logical_bytes": 22752310,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-image-census-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 103,
+      "logical_bytes": 92871,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-installed-child-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1799,
+      "logical_bytes": 15047423,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-installed-entry-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1112,
+      "logical_bytes": 9789484,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-installed-material-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1336,
+      "logical_bytes": 11391369,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-installed-origin-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1149,
+      "logical_bytes": 10661342,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-original-getunit-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 242,
+      "logical_bytes": 30895512,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-original-service-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2819,
+      "logical_bytes": 84558162,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "bootstrap-sandbox-owner-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 785,
+      "logical_bytes": 6454926,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "canary-sweep": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 9433,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "canonical-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6,
+      "logical_bytes": 355754,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "capture-attribution-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 65861,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "capture-leaves-final17-source": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 40940,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "capture-leaves-first-source": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 37647,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "capture-leaves-precommit-source": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 39775,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "census-cost-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 12,
+      "logical_bytes": 357893,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "census-integration-first-source-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 12391,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "census-integration-linux-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 9,
+      "logical_bytes": 32591084,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "census-integration-linux-v2-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 8,
+      "logical_bytes": 32584901,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "census-integration-linux-v3-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 8,
+      "logical_bytes": 32585518,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "census-integration-linux-v4-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 8,
+      "logical_bytes": 32585788,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "census-integration-sources-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 150,
+      "logical_bytes": 361831,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "census-narrow-comment-oracle-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 9821,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "census-panic-linux-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 9,
+      "logical_bytes": 2288396,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "census-panic-linux-v2-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 9,
+      "logical_bytes": 6508626,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "census-panic-linux-v3-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 8,
+      "logical_bytes": 32176917,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "census-panic-linux-v4-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 8,
+      "logical_bytes": 32177414,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "census-rejected-generic-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 8443,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "ci-watchdog-before-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 16059,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "ci-watchdog-before-budget-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 17660,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "ci-watchdog-budget-native-first-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 30,
+      "logical_bytes": 19802,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "ci-watchdog-budget-red-source-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1,
+      "logical_bytes": 10241,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "ci-watchdog-candidate-first-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 24794,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "ci-watchdog-native-first-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 25,
+      "logical_bytes": 17629,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "ci-watchdog-native-source-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 38209,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "ci-watchdog-posix-first-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 17,
+      "logical_bytes": 5112,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "ci-watchdog-streams-first-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 2090,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "ci-watchdog-streams-source-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1,
+      "logical_bytes": 11699,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "ci-watchdog-unsupported-first-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 162,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "collector-peer-baseline-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 25,
+      "logical_bytes": 99802,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "collector-peer-capacity-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 23,
+      "logical_bytes": 145075,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "compat": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1,
+      "logical_bytes": 210,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "context-document-baseline-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 22,
+      "logical_bytes": 25981,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "context-document-baseline-first-source": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 10302,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "context-document-stack-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 33,
+      "logical_bytes": 59044,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "controller-component-cost-bin-20261017": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 37214624,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "coordinator-frames-first-model-source": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 36695,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "coordinator-frames-synthetic-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 14995,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "coordinator-native-first-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 20,
+      "logical_bytes": 5841,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "cost-reader-byte-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 7445,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "cost-reader-first-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 27220,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "cost-reader-import-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 27220,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "current-tree-first-candidate-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 77251,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "current-tree-first-scoped-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 6330,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "current-tree-generic-gateway-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 77893,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "custody-loss": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 81,
+      "logical_bytes": 1470956,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "debug": {
+      "created_since_files": 5,
+      "created_since_logical_bytes": 854882000,
+      "files": 119563,
+      "logical_bytes": 69555509336,
+      "modified_since_files": 26,
+      "modified_since_logical_bytes": 1477919903
+    },
+    "debug-w11-observation-37398568113": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 5238,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "diagnostic-artifacts-evidence-70ca60eb": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 28766,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "diagnostic-hosted-build-37923423889": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 19,
+      "logical_bytes": 36794537,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "diagnostic-ipc-evidence-403696a7": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 26234,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "diagnostic-local-build-62114be0-native": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 20,
+      "logical_bytes": 394351,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "diagnostic-manager-capture-097ab6fa": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 35223,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "diagnostic-manager-capture-224f6ed3": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 36974,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "diagnostic-manager-capture-9a225347": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 37064,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "diagnostic-manager-capture-c2fdc3f4": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 36185,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "diagnostic-process-local-capture": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 40148,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "diagnostic-receipts-ceaa8b07-capture": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 35257,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "diagnostic-start-material-bundle-20261017": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 9,
+      "logical_bytes": 27117795,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "direct-pipe-20261025-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 357256,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "dispatch-handoff-staged-reader-first-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 315,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "doc": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6408,
+      "logical_bytes": 153060303,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "enrollment-host": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 39683216,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "evidence-inspect-37348230051": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 8213,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "evidence-inspect-37350765373": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 1410,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "evidence-inspect-37352537768": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 2306,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "evidence-run-cargo": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 203,
+      "logical_bytes": 123782588,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "fixed-grouped-bin-v5u5LH": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 75361056,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "fixed-grouped-process-bin-GFI9jW": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 37774544,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "get-owner-allocation-v2-private-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 3367,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "get-owner-b0-18ee8cdc": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 47704,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "get-owner-b0-binaries-18ee8cdc": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 11741184,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "get-owner-d3a-213e9e0a": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 362,
+      "logical_bytes": 595914,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "git-boundary-pre-close-budget-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 21032,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "git-cpu-capture-leaves-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 35,
+      "logical_bytes": 1007215,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "git-cpu-coordinator-frames-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 35,
+      "logical_bytes": 717934,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "git-cpu-overhead-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 35,
+      "logical_bytes": 530252,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "git-cpu-overhead-model-first-source": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 22076,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "git-cpu-spawn-capture-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 35,
+      "logical_bytes": 1126915,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "git-cpu-variance-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 15416,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "git-cpu-variance-first-model-source": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 23575,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "git-job-cpu-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 9,
+      "logical_bytes": 704656,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "git-job-cpu-before-live-identity": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 21930,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "git-job-cpu-first-model-source": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 17873,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "git-process-boundary-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 5285,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "gnu-frontier-local-20261027": {
+      "created_since_files": 122,
+      "created_since_logical_bytes": 8418537,
+      "files": 232,
+      "logical_bytes": 25880830,
+      "modified_since_files": 123,
+      "modified_since_logical_bytes": 8425654
+    },
+    "gnu-repaired-local-20261027": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 315,
+      "logical_bytes": 31894063,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "grouped-preparation-bin-LmaZ0c": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 37286192,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "grouped-process-bin-LNpZoJ": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 37562432,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "guard-path-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 14002,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "handoff-native-first-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 19,
+      "logical_bytes": 10000,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "hc2-python-generation": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 9,
+      "logical_bytes": 80914,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-activation-ingress-20261022": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 66,
+      "logical_bytes": 38650,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-bind-alias-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 87,
+      "logical_bytes": 58814,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-complete-census-20261022": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 89,
+      "logical_bytes": 110289,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-environment-preflight-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 1164,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-lineage-staged-reader-first-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 309,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-manager-compat-checks-20261022": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 24,
+      "logical_bytes": 16927,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-manager-compat-final-checks-20261022": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 12,
+      "logical_bytes": 1860,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-manager-compat-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 1926,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-manager-compat-second": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6,
+      "logical_bytes": 3194,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-manager-compat-third": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 12,
+      "logical_bytes": 8044,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-material-gate-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 29,
+      "logical_bytes": 74571,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-material-roles-20261022": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 70,
+      "logical_bytes": 59618,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-native-fd-20261022": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 40,
+      "logical_bytes": 7558,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-native-fd-cli-regression-20261022": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6,
+      "logical_bytes": 16232,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-native-fd-v2-20261022": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 72,
+      "logical_bytes": 10149,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-root-transfer-b3161ea17aad430d99622c74853c0625": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 46850856,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "held-wsl-native-environment-20261022": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 67,
+      "logical_bytes": 565309916,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "helper-spans-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 28,
+      "logical_bytes": 14346554,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "history-namespace-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 9,
+      "logical_bytes": 358906,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "history-prefix-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 8,
+      "logical_bytes": 390071,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "history-status-initial-candidate-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 8,
+      "logical_bytes": 34817,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "history-status-preclippy-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6,
+      "logical_bytes": 19259,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "history-status-preformat-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6,
+      "logical_bytes": 19463,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "launch-coordinator-staged-reader-first-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 279,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "launch-preflight-first-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 1662,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "leaf-attribution-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 143732,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "lineage-native-first-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 20,
+      "logical_bytes": 9821,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "linux-ci-group-baseline-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 47495,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "linux-ci-group-candidate-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 45919,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "linux-ci-group-candidate-v2-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 46954,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "linux-ci-group-extended-v2-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 47377,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "linux-clock-control-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 111,
+      "logical_bytes": 8185792,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "linux-watchdog-windows-compat-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 30,
+      "logical_bytes": 19899,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "memory-evidence": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1,
+      "logical_bytes": 66693,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "native-context-launch-20261027": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6,
+      "logical_bytes": 40156,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "native-format-exact-config-20261027": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 1925,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "native-format-once-20261027": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 636,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "native-frontier-20261027": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 12,
+      "logical_bytes": 787055448,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "native-full-package-capacity-restored-20261027": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 1916759,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "native-full-package-checked-first-20261027": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 103300,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "native-full-package-first-20261027": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6,
+      "logical_bytes": 103476,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "native-gnu-frontier-first-20261027": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 42598,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "native-preparation-cost-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 40,
+      "logical_bytes": 282933,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "native-recheck-transfer-e771b63a22ff4a24a407b4df17ea2b63": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 13,
+      "logical_bytes": 75043768,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "negotiated-dispatch-20261018": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 108,
+      "logical_bytes": 106360366,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "nextest": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1,
+      "logical_bytes": 829686,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "normalization-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 411772,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "observer-dispatch-074": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6,
+      "logical_bytes": 4462,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "ordinary-ci-074": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 45,
+      "logical_bytes": 2749068,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "original-kernel-walk-20261018": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 41983958,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "original-live-walk-20261018": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 41779124,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "original-manager-grouped-message-20261018": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 41417687,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "original-manager-join-20261018": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 41490936,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "original-manager-message-20261018": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 62411019,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "original-output-binding-staged-reader-first-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 283,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "original-pipe-transport-bin-20261017": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 36923312,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "original-preparation-budget-20261018": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 41759081,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "original-reply-binding-20261018": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 75,
+      "logical_bytes": 1904789,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "original-safety-alarm-bin-20261017": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 74269720,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "original-start-material-bin-20261017": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 91093048,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "output-binding-native-first-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 18,
+      "logical_bytes": 11467,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "owned-observer-reader-first-refusal-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 6074,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "owned-process-control-first-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 268446,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "owned-process-final-control-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 268446,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "package-closure-inputs-audit-20261027": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 80922,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "package-log-ast-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 20912,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "package-log-first-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 19297,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "package-review-v7-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 198,
+      "logical_bytes": 24208322,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "package-syntax-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 35,
+      "logical_bytes": 31383625,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "package-syntax-v2-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 10,
+      "logical_bytes": 9395098,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "package-syntax-v4-closure-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 10,
+      "logical_bytes": 9404955,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "package-v5-syntax-context-first-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 11,
+      "logical_bytes": 9672091,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "package-v5-syntax-first-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6,
+      "logical_bytes": 2766350,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "package-v6-syntax-first-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 11,
+      "logical_bytes": 9718056,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "performance-evidence": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 500,
+      "logical_bytes": 9325308,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "pidfd-info-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 30,
+      "logical_bytes": 50085,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "proc-document-baseline-188": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 51,
+      "logical_bytes": 6893477,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "proc-document-baseline-194": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 53,
+      "logical_bytes": 7001409,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "proc-document-baseline-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 14,
+      "logical_bytes": 15807,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "proc-document-baseline-final-checks-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 9,
+      "logical_bytes": 5252,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "projection-groups-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 30,
+      "logical_bytes": 47267,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "projection-groups-controls": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 10,
+      "logical_bytes": 10630,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "release": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1884,
+      "logical_bytes": 621253376,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "release-evidence": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6,
+      "logical_bytes": 35440,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "remaining-readers-initial-source-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 9933,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "remaining-readers-interim-source-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 14643,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "remaining-readers-preformat-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 5,
+      "logical_bytes": 16393,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "repaired-scope-syntax-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 10,
+      "logical_bytes": 9395327,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "reply-state-owner-20261018": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 38,
+      "logical_bytes": 122447,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "reserved-leaf-audit-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 13,
+      "logical_bytes": 14640,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "reserved-reconciliation-checks-20261022": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 13,
+      "logical_bytes": 17939,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "result-join-saved-replay-first-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 70821,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "reviewed-package-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3,
+      "logical_bytes": 106417,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "reviewed-package-v2-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 225404,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "reviewed-package-v4-closure-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6,
+      "logical_bytes": 112866,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "reviewed-package-v5-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 241728,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "reviewed-package-v6-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 9,
+      "logical_bytes": 244489,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "reviewed-package-v7-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 9,
+      "logical_bytes": 252903,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "reviewed-package-v8-20261027": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 257935,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "reviewed-package-v9-20261027": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 273449,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "roots-approved-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 125,
+      "logical_bytes": 17665747,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "roots-baseline-inputs-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 194472,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "roots-final-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 30,
+      "logical_bytes": 2102904,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "roots-lock-view-20261027": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2527,
+      "logical_bytes": 220901526,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "roots-patch-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 105,
+      "logical_bytes": 15748359,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "sample-boot-baseline-188": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 51,
+      "logical_bytes": 7016761,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "sample-boot-baseline-194": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 53,
+      "logical_bytes": 7119983,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "sample-boot-baseline-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 14,
+      "logical_bytes": 32892,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "sample-boot-baseline-final-checks-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 10,
+      "logical_bytes": 6793,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "sample-boot-inline-188": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 51,
+      "logical_bytes": 7980473,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "sample-boot-inline-194": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 71,
+      "logical_bytes": 11662347,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "sample-boot-inline-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 31,
+      "logical_bytes": 82323,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "sample-boot-inline-final-checks-first": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 12,
+      "logical_bytes": 7237,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "security-input-view-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 288,
+      "logical_bytes": 22102113,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "security-patch-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 89,
+      "logical_bytes": 11342321,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "security-patch-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 80,
+      "logical_bytes": 11769387,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "security-patch-msrv188": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4493,
+      "logical_bytes": 4919343776,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "security-successor-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 248,
+      "logical_bytes": 26087100,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "server-source-capsule-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 7541216,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "source-continuation-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4475,
+      "logical_bytes": 793827471,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "static-contract-trace-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 12436,
+      "logical_bytes": 26292233,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "static-trace-initial-source-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 11861,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "status-field-memory-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 11,
+      "logical_bytes": 31679,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "status-field-memory-20261024-v2-doc-placement": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 69,
+      "logical_bytes": 15930460,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "status-field-scan-20261024": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 789,
+      "logical_bytes": 408626603,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "sweep-trees-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 20,
+      "logical_bytes": 393856,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "test-evidence": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 4172,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "test-hydracache-daemon-process": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 18,
+      "logical_bytes": 1573927,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "tests": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 8398,
+      "logical_bytes": 4263708755,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "timing-instrumentation-9e79b012": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 14,
+      "logical_bytes": 29243,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "tokio-security-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 227,
+      "logical_bytes": 17999297,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "transport-capture-20261025": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 6,
+      "logical_bytes": 247601,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "trust-component-baseline-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 27,
+      "logical_bytes": 58866,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "trust-component-stack-checks": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 30,
+      "logical_bytes": 88726,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "validation-leaf-cost-bin-20261017": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 36964896,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "w11-controller-abort-cancelled-37400171345": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 1270,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "w11-controller-start-37399781792": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 4,
+      "logical_bytes": 2901,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "w11-host-capability-37307408040": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1,
+      "logical_bytes": 6016,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "w11-start-bundle-37399210572": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 7092,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "w9b-d3a-3171d02a-binaries": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 3660800,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "w9c-capability-37301889560": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 1,
+      "logical_bytes": 12084,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "w9c-kernel-37303375748": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 334,
+      "logical_bytes": 54696708,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "w9c-kernel-37304417778": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 575,
+      "logical_bytes": 60183439,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "w9e-run-37300775917": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 46,
+      "logical_bytes": 1171840,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "watchdog-taskkill-handles-first-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 10,
+      "logical_bytes": 4080,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "webpki-fixtures-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 5037,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "webpki-patch-20261026": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 85,
+      "logical_bytes": 12472034,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "windows-workspace-preflight-20261027": {
+      "created_since_files": 5,
+      "created_since_logical_bytes": 4212,
+      "files": 5,
+      "logical_bytes": 4212,
+      "modified_since_files": 5,
+      "modified_since_logical_bytes": 4212
+    },
+    "wsl-clock-causality-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 17,
+      "logical_bytes": 38922,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-causality-root-context-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 33,
+      "logical_bytes": 109276,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-einval-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 17,
+      "logical_bytes": 17623,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-offline-join-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 13,
+      "logical_bytes": 6086,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-policy-review-controls-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 19,
+      "logical_bytes": 2602,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-readonly-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 53,
+      "logical_bytes": 24084501,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-registration-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 30,
+      "logical_bytes": 28858,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-root-namespace-controls-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 36,
+      "logical_bytes": 14055,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-root-namespace-journal-controls-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 41,
+      "logical_bytes": 35197,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-root-namespace-logged-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 8,
+      "logical_bytes": 2485,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-root-namespace-logged-invocation-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 17,
+      "logical_bytes": 3562,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-root-namespace-uac-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 39,
+      "logical_bytes": 29187,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-root-namespace-uac-controls-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 33,
+      "logical_bytes": 15941,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-root-namespace-uac-outcome-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 106,
+      "logical_bytes": 253664,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-root-namespace-uac-post-report-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 10,
+      "logical_bytes": 774,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-root-namespace-uac-request-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 7,
+      "logical_bytes": 2548,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-setter-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 39,
+      "logical_bytes": 268331,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-setter-attribution-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 13,
+      "logical_bytes": 9127,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-trace-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 18,
+      "logical_bytes": 10521,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-writer-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 26,
+      "logical_bytes": 61238,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-clock-writer-identity-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 74,
+      "logical_bytes": 46183,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "wsl-debug-transport-audit-20261023": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 44,
+      "logical_bytes": 13730,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "xtask-check": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 2,
+      "logical_bytes": 1294,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    },
+    "xtask-verify-39960": {
+      "created_since_files": 0,
+      "created_since_logical_bytes": 0,
+      "files": 3207,
+      "logical_bytes": 1786532000,
+      "modified_since_files": 0,
+      "modified_since_logical_bytes": 0
+    }
+  },
+  "largest": [
+    [
+      482277600,
+      "debug\\deps\\libhydracache_loadgen-047f442196b8fa54.rlib",
+      1791313447544704600
+    ],
+    [
+      482124900,
+      "debug\\deps\\libhydracache_loadgen-0083be2e3ae39ca4.rlib",
+      1792092269129523400
+    ],
+    [
+      481764042,
+      "debug\\deps\\libhydracache_loadgen-6435c875d6803baa.rlib",
+      1791112116868974900
+    ],
+    [
+      481452124,
+      "debug\\deps\\libhydracache_loadgen-e105f1601cd070f6.rlib",
+      1791152497518212900
+    ],
+    [
+      481138760,
+      "debug\\deps\\libhydracache_loadgen-9345bcbd507591bf.rlib",
+      1792299519857373500
+    ],
+    [
+      481014782,
+      "debug\\deps\\libhydracache_loadgen-57afefb1b2499171.rlib",
+      1793072169573090600
+    ],
+    [
+      480656358,
+      "debug\\deps\\libhydracache_loadgen-30af0d185cbd66ce.rlib",
+      1792985955861871700
+    ],
+    [
+      480605762,
+      "debug\\deps\\libhydracache_loadgen-5fecbe3dfced8c1f.rlib",
+      1791152469760444700
+    ],
+    [
+      480551558,
+      "debug\\deps\\libhydracache_loadgen-254a2f821fc036ea.rlib",
+      1791123964757177900
+    ],
+    [
+      480378820,
+      "debug\\deps\\libhydracache_loadgen-9dcb1b964b0de0f4.rlib",
+      1791115265517254400
+    ],
+    [
+      480099676,
+      "debug\\deps\\libhydracache_loadgen-905604af6a1a01c7.rlib",
+      1791350656069870500
+    ],
+    [
+      453765614,
+      "debug\\deps\\libhydracache_server-56f1adb099465c14.rlib",
+      1791330760416270800
+    ],
+    [
+      453461538,
+      "debug\\deps\\libhydracache_server-4cc5688beb8c0bd4.rlib",
+      1791385816341224200
+    ],
+    [
+      451781090,
+      "debug\\deps\\libhydracache_server-f23f75f9ddd528bc.rlib",
+      1791385431634670000
+    ],
+    [
+      451734310,
+      "debug\\deps\\libhydracache_server-0b0df3f8108980b4.rlib",
+      1791350818229345000
+    ],
+    [
+      365709328,
+      "debug\\deps\\long_run_campaign_074-929890488ad5d01f",
+      1791151273293939200
+    ],
+    [
+      354816078,
+      "debug\\deps\\libhydracache_loadgen-db02c2f2338a0b95.rlib",
+      1792167561436221100
+    ],
+    [
+      352705858,
+      "debug\\deps\\libhydracache_loadgen-9c8cf43e23cba902.rlib",
+      1793108761154206300
+    ],
+    [
+      352165068,
+      "debug\\deps\\libhydracache_loadgen-bf5772a7ea72d57e.rlib",
+      1793056472016468300
+    ],
+    [
+      348281416,
+      "debug\\deps\\libhydracache_loadgen-7a081d74aeb6e908.rlib",
+      1793029832823099500
+    ]
+  ],
+  "root": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target",
+  "since_epoch": 1793106560.0,
+  "skipped_reparse": [],
+  "utc": "2026-10-27T14:51:07.746249+00:00"
+}

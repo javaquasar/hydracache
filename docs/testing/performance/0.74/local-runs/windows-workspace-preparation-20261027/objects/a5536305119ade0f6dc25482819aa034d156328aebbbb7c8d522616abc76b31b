@@ -1,0 +1,19 @@
+from pathlib import Path
+import hashlib
+import json
+
+root = Path(__file__).resolve().parent.parent
+out = root/'target/windows-workspace-preflight-20261027/initial-source'
+out.mkdir(exist_ok=False)
+rows = {}
+for path in sorted((root/'tools/windows-workspace-preflight-074').iterdir()):
+    if not path.is_file():
+        continue
+    raw = path.read_bytes()
+    with (out/path.name).open('xb') as stream:
+        stream.write(raw)
+    rows[path.name] = dict(sha256=hashlib.sha256(raw).hexdigest(),bytes=len(raw))
+with (out/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+    json.dump(rows,stream,indent=2,sort_keys=True)
+    stream.write('\n')
+print(json.dumps(dict(retained=len(rows),archived_code_executed=False)))

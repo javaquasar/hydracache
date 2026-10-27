@@ -1,0 +1,8 @@
+{
+  "dispatch_supported": false,
+  "preparation_only": true,
+  "process_stops": false,
+  "settings_changes": false,
+  "source_sha256": "7e85e9c648a462f3c5801cf7731e7ce22cde87428c0845998b3fad914f427096",
+  "utc": "2026-10-27T14:54:33.220755+00:00"
+}

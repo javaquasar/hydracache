@@ -1,0 +1,14 @@
+import json
+import os
+import subprocess
+
+rows=[]
+for argv in [['cargo','--version'],['rustc','-vV'],['cargo','deny','--version'],['node','--version'],['npm.cmd','--version']]:
+    result=subprocess.run(argv,capture_output=True,timeout=20,check=False,
+        env=dict(os.environ,RUSTUP_AUTO_INSTALL='0'))
+    rows.append(dict(argv=argv,exit=result.returncode,stdout=result.stdout.decode('utf-8'),
+        stderr=result.stderr.decode('utf-8')))
+assert rows[0]['exit']==rows[1]['exit']==0
+assert rows[0]['stdout'].startswith('cargo 1.94.0 ')
+assert 'release: 1.94.0\n' in rows[1]['stdout'] and 'host: x86_64-pc-windows-msvc\n' in rows[1]['stdout']
+print(json.dumps(dict(rows=rows,cargo_build_or_gate=False,settings_changed=False)))

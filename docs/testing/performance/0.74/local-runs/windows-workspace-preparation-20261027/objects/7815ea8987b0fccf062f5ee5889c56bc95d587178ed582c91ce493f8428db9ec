@@ -1,0 +1,10 @@
+{
+  "gates_dispatched": false,
+  "process_stops": false,
+  "read_only": true,
+  "root": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074",
+  "since_epoch": 1793106560.0,
+  "source_sha256": "aedfad1efcaae5197c15f6ecb551d88f9aaf5c89e87825e7378ef880c7a097e3",
+  "system_changes": false,
+  "utc": "2026-10-27T14:47:39.782880+00:00"
+}

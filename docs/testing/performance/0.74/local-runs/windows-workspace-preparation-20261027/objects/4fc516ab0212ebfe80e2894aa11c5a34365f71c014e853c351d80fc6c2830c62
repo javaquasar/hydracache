@@ -1,0 +1,113 @@
+"""Retain diagnostic data and first outcomes; never execute archived inputs."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+root = Path(__file__).resolve().parent.parent
+base = root/'target/windows-workspace-preflight-20261027'
+out = root/'docs/testing/performance/0.74/local-runs/windows-workspace-preparation-20261027'
+assert not out.exists()
+def read(name):
+    return json.loads((base/name).read_bytes())
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+for phase in ('controls-reviewed','prepare-reviewed','allocation-query','syntax-final','doc-check-first','doc-check-final','versions'):
+    result=read(phase+'-capture/result.json')
+    assert result['exit']==0 and result['source_unchanged'] and result['head_unchanged'],phase
+first=read('controls-first-capture/result.json')
+assert first['exit']==1 and first['source_unchanged'] and first['head_unchanged']
+assert b'Ran 10 tests' in (base/'controls-first-capture/stderr.log').read_bytes()
+assert b'FAILED (errors=1)' in (base/'controls-first-capture/stderr.log').read_bytes()
+assert b'Ran 11 tests' in (base/'controls-reviewed-capture/stderr.log').read_bytes()
+initial=read('initial-source/index.json')
+for name,row in initial.items():
+    raw=(base/'initial-source'/name).read_bytes()
+    assert sha(raw)==row['sha256'] and len(raw)==row['bytes']
+for path,digest in read('controls-first-capture/result.json')['sources_after'].items():
+    assert initial[Path(path).name]['sha256']==digest
+assert not read('prepare-first/result.json')['gate_dispatched']
+prepared=read('prepare-reviewed/result.json')
+assert prepared['contract_prepared'] and not prepared['gate_dispatched'] and not prepared['launch_ready']
+assert prepared['source_only_review_complete'] and not prepared['source_worktree_clean']
+assert not prepared['windows_package_pass'] and not prepared['workspace_pass'] and not prepared['release_admitted']
+assert len(read('prepare-reviewed/workspace-members.json'))==36
+contract=read('prepare-reviewed/contract.json')
+assert (contract['package']['bound_seconds'],contract['package']['test_threads'],contract['package']['physical_floor_bytes'])==(780,4,4294967296)
+assert contract['workspace']['original_captured_outer_bound_seconds']==4800
+assert contract['workspace']['original_start_free_bytes']==17179869184
+assert contract['workspace']['argv']==['cargo','xtask','verify']
+assert not read('prepare-reviewed/capacity.json')['original_workspace_start_satisfied']
+source=read('prepare-reviewed/source-review.json')
+assert (source['sources'],source['auxiliary'],source['sites'],len(source['targets']))==(394,58,26832,156)
+assert not source['tests_dispatched'] and not source['windows_execution_cleared']
+before=read('storage-first/before.json')
+after=read('storage-first/after.json')
+target=read('storage-first/target.json')
+objects=read('storage-first/git-objects.json')
+assert target['complete'] and objects['complete'] and not any(read('storage-first/removals.json').values())
+def sums(scan,key):
+    return sum(row[key] for row in scan['groups'].values())
+bf={Path(row['path']).name+(':'+str(i)):row for i,row in enumerate(before['files'])}
+ubuntu_before=next(row for row in before['files'] if 'CanonicalGroupLimited.Ubuntu_' in row['path'])
+ubuntu_after=next(row for row in after['files'] if 'CanonicalGroupLimited.Ubuntu_' in row['path'])
+page_before=next(row for row in before['files'] if row['path']=='C:\\pagefile.sys')
+page_after=next(row for row in after['files'] if row['path']=='C:\\pagefile.sys')
+memory_before=json.loads((base/'storage-first/memory-before.stdout.log').read_bytes())
+memory_after=json.loads((base/'storage-first/memory-after.stdout.log').read_bytes())
+assert read('storage-first/memory-before.json')['exit']==read('storage-first/memory-after.json')['exit']==0
+allocation=json.loads((base/'allocation-query-capture/stdout.log').read_bytes())
+assert allocation['rows'][0]['open_winerror']==32 and allocation['rows'][0]['allocation_bytes'] is None
+analysis=dict(schema='hc074-storage-observation-v1',
+    volume_free_before_bytes=before['volume_free_bytes'],volume_free_after_bytes=after['volume_free_bytes'],
+    bracket_net_free_drop_bytes=before['volume_free_bytes']-after['volume_free_bytes'],
+    ubuntu_allocated_growth_bytes=ubuntu_after['allocated_bytes']-ubuntu_before['allocated_bytes'],
+    target_logical_bytes=sums(target,'logical_bytes'),target_created_since_logical_bytes=sums(target,'created_since_logical_bytes'),
+    target_modified_since_logical_bytes=sums(target,'modified_since_logical_bytes'),
+    debug_logical_bytes=target['groups']['debug']['logical_bytes'],shared_git_objects_logical_bytes=sums(objects,'logical_bytes'),
+    pagefile_logical_before_bytes=page_before['logical_bytes'],pagefile_logical_after_bytes=page_after['logical_bytes'],
+    pagefile_actual_allocation_bytes=None,allocation_refusal_winerror=32,
+    cim_free_physical_kib=[memory_before['os']['FreePhysicalMemory'],memory_after['os']['FreePhysicalMemory']],
+    cim_pagefile_allocated_mib=[memory_before['pagefiles'][0]['AllocatedBaseSize'],memory_after['pagefiles'][0]['AllocatedBaseSize']],
+    pre_drop_file_allocation_baseline_available=False,physical_balance_or_owner_attribution_proved=False,
+    process_private_commit_is_not_rss=True,metadata_created_modified_totals_are_not_growth=True,
+    observations_not_simultaneous=True,product_memory_or_performance_claim=False,
+    settings_changes=False,foreign_process_stops=False,gate_dispatched=False)
+assert analysis['target_logical_bytes']==87424805907
+assert analysis['ubuntu_allocated_growth_bytes']==33554432
+with (base/'analysis.json').open('x',encoding='utf-8',newline='\n') as stream:
+    json.dump(analysis,stream,indent=2,sort_keys=True);stream.write('\n')
+(out/'objects').mkdir(parents=True)
+members={}
+def add(name,path):
+    assert path.is_file() and not path.is_symlink() and not path.is_junction()
+    raw=path.read_bytes();digest=sha(raw);obj=out/'objects'/digest
+    if obj.exists(): assert obj.read_bytes()==raw
+    else:
+        with obj.open('xb') as stream:stream.write(raw)
+    assert name not in members
+    members[name]=dict(sha256=digest,bytes=len(raw))
+for path in sorted(base.rglob('*')):
+    if path.is_file():add('capture/'+path.relative_to(base).as_posix(),path)
+for path in sorted((root/'tools/windows-workspace-preflight-074').iterdir()):
+    if path.is_file():add('source/current/'+path.name,path)
+for name in ('record-windows-preflight-20261027.py','retain-windows-preflight-source-20261027.py',
+             'query-windows-allocation-20261027.py','windows-preflight-versions-20261027.py',
+             'verify-windows-preflight-staged-20261027.py','seal-windows-workspace-preflight-20261027.py',
+             'run-full-verify-bounded-20261024.py','run-xtask-package-780-20261024.py','run-source-step-20261024.py'):
+    add('helper/'+name,root/'target'/name)
+for name in ('intent.json','result.json'):
+    add('original-whole-verify/'+name,root/'target/status-field-scan-20261024/full-verify-first'/name)
+head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root).decode().strip()
+assert head=='3d335a17c31af6c2660014b36a1445414ef2b17b'
+index=dict(schema='hc074-local-evidence-collection-v1',members=members,
+    tool_commit=head,archived_code_executed=False,preparation_only=True,local_controls_pass=True,
+    first_controls_exit=1,final_controls_passed=11,first_outcomes_rewritten=False,
+    causal_historical_balance_proved=False,gate_dispatched=False,
+    windows_package_pass=False,workspace_pass=False,release_admitted=False)
+raw=(json.dumps(index,indent=2,sort_keys=True)+'\n').encode()
+with (out/'index.json').open('xb') as stream:stream.write(raw)
+with (out/'.gitattributes').open('x',encoding='utf-8',newline='\n') as stream:
+    stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+print(json.dumps(dict(index_sha256=sha(raw),members=len(members),objects=len(list((out/'objects').iterdir())),
+    preparation_only=True,heavy_gate_dispatched=False)))

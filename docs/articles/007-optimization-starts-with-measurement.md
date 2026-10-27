@@ -21665,3 +21665,34 @@ exist. A concurrent capacity drop and system paging pressure likewise cannot
 be labelled product retention without a controlled owner attribution. The
 archive separates the successful GNU package verdict from release admission,
 and the remaining thin disk headroom does not authorize a cold build or campaign.
+
+### A cleaned build tree is not a storage or memory reservation
+
+The subsequent [Windows/workspace preparation](../testing/performance/0.74/windows-workspace-preparation-20261027.md)
+separates the new capacity investigation from product performance. The manually
+removed directories remain absent, but the surviving 074 target still contains
+81.42 GiB of logical data, including 64.78 GiB in debug. Currently surviving
+files created there after the GNU command began account for only about 0.80 GiB;
+that metadata set is not a net-growth measurement and cannot explain the earlier
+roughly 24 GiB loss by itself. The main Ubuntu disk is a different registered
+VHDX from the small diagnostic distro. Its allocated bytes rise by 32 MiB during
+the new observation bracket, while net physical free space falls by 43.62 MiB.
+
+Fresh system observations also show little free RAM, many applications with
+large private commitments and a growing pagefile logical length/CIM counter.
+Neither private commit nor logical length is a physical disk attribution. Both
+read-only attempts to query pagefile allocation return sharing violation; the
+refusal stays evidence, without privilege changes or touching the file. With no
+pre-drop per-file baseline, an exact historical balance remains unproved. Calling
+this a HydraCache memory regression, or claiming a cleanup fixed it, would go
+beyond the measurements.
+
+Preparation preserves a second important distinction. The package still has
+780 seconds/four threads and a 4 GiB sampled floor; complete workspace verify
+has its own previously recorded 4800-second outer budget and 16 GiB starting
+prerequisite. Only about 4.86 GiB is available. Eleven focused tool controls,
+the fixed package source/environment review and the 36-member workspace manifest
+inventory pass, but neither heavy gate is dispatched. First fixture/staging
+refusals and initial preparation stay intact. This is reproducible preparation
+and a resource-based no-launch decision, not an allocation improvement, workspace
+pass or server admission. All original live checks, frequency and windows remain.

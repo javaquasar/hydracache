@@ -1,0 +1,15 @@
+{
+  "exit": 1,
+  "failure": "First milestone refusal retained",
+  "outer_refusal": null,
+  "source_unchanged": true,
+  "commit_unchanged": true,
+  "source_commit_after": "7e6c8ee8a63ad8596a73383686444b54da04b863",
+  "free_after": 30184452096,
+  "qualification": false,
+  "server": false,
+  "services": false,
+  "clocks": false,
+  "admission": false,
+  "retry": false
+}

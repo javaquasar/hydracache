@@ -1,0 +1,33 @@
+{
+  "allocation_refusal_winerror": 32,
+  "bracket_net_free_drop_bytes": 45735936,
+  "cim_free_physical_kib": [
+    214812,
+    523008
+  ],
+  "cim_pagefile_allocated_mib": [
+    81987,
+    84066
+  ],
+  "debug_logical_bytes": 69555509336,
+  "foreign_process_stops": false,
+  "gate_dispatched": false,
+  "metadata_created_modified_totals_are_not_growth": true,
+  "observations_not_simultaneous": true,
+  "pagefile_actual_allocation_bytes": null,
+  "pagefile_logical_after_bytes": 88149598208,
+  "pagefile_logical_before_bytes": 85969817600,
+  "physical_balance_or_owner_attribution_proved": false,
+  "pre_drop_file_allocation_baseline_available": false,
+  "process_private_commit_is_not_rss": true,
+  "product_memory_or_performance_claim": false,
+  "schema": "hc074-storage-observation-v1",
+  "settings_changes": false,
+  "shared_git_objects_logical_bytes": 387454702,
+  "target_created_since_logical_bytes": 863309432,
+  "target_logical_bytes": 87424805907,
+  "target_modified_since_logical_bytes": 1486362951,
+  "ubuntu_allocated_growth_bytes": 33554432,
+  "volume_free_after_bytes": 5190668288,
+  "volume_free_before_bytes": 5236404224
+}

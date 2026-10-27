@@ -1,0 +1,13 @@
+from pathlib import Path
+import json
+import sys
+
+root = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(root/'tools/windows-workspace-preflight-074'))
+from storage import now
+from metadata import query
+
+print(json.dumps(dict(utc=now(), mode='zero-content-access-FileStandardInfo',
+    rows=[query(path) for path in [Path('C:/pagefile.sys'), Path('C:/hiberfil.sys'),
+        Path('C:/Users/ArturBuzov/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu_79rhkp1fndgsc/LocalState/ext4.vhdx')]],
+    settings_changed=False, privileges_changed=False, process_stops=False)))

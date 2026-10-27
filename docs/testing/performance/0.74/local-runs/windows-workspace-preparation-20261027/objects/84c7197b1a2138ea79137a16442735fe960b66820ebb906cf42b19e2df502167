@@ -1,0 +1,7 @@
+{
+  "kind": "manual-transcription-of-tool-response-not-a-raw-command-capture",
+  "command": "git -c core.safecrlf=true add -- tools/windows-workspace-preflight-074",
+  "refusal": "fatal: LF would be replaced by CRLF in tools/windows-workspace-preflight-074/README.md",
+  "correction": "Added only scoped '* text eol=lf' policy; no Git or system settings changed. Exact staged blobs checked independently.",
+  "gate_dispatched": false
+}

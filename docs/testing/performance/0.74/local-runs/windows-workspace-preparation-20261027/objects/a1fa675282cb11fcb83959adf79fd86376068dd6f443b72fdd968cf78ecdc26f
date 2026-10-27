@@ -1,0 +1,74 @@
+{
+  "distros": [
+    {
+      "base": "C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\CanonicalGroupLimited.Ubuntu_79rhkp1fndgsc\\LocalState",
+      "name": "Ubuntu",
+      "vhd": "ext4.vhdx"
+    },
+    {
+      "base": "\\\\?\\C:\\Users\\ArturBuzov\\AppData\\Local\\Docker\\wsl\\main",
+      "name": "docker-desktop",
+      "vhd": "ext4.vhdx"
+    },
+    {
+      "base": "\\\\?\\C:\\Workspace\\prj\\jq\\cashe\\hydracache-074-wsl-native",
+      "name": "HydraCache074Native",
+      "vhd": "ext4.vhdx"
+    }
+  ],
+  "files": [
+    {
+      "allocated_bytes": null,
+      "attributes": 38,
+      "created_ns": 1731656855613919200,
+      "logical_bytes": 85969817600,
+      "modified_ns": 1793112265702392300,
+      "observed_utc": "2026-10-27T14:47:39.799624+00:00",
+      "path": "C:\\pagefile.sys",
+      "winerror": 32
+    },
+    {
+      "allocated_bytes": null,
+      "attributes": 8230,
+      "created_ns": 1731656954674188200,
+      "logical_bytes": 13453774848,
+      "modified_ns": 1792148528826203200,
+      "observed_utc": "2026-10-27T14:47:39.805663+00:00",
+      "path": "C:\\hiberfil.sys",
+      "winerror": 32
+    },
+    {
+      "allocated_bytes": 153762136064,
+      "attributes": 32,
+      "created_ns": 1759218183952855900,
+      "logical_bytes": 153762136064,
+      "modified_ns": 1793112450903634100,
+      "observed_utc": "2026-10-27T14:47:39.805962+00:00",
+      "path": "C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\CanonicalGroupLimited.Ubuntu_79rhkp1fndgsc\\LocalState\\ext4.vhdx",
+      "winerror": null
+    },
+    {
+      "allocated_bytes": 128974848,
+      "attributes": 32,
+      "created_ns": 1779702322025710700,
+      "logical_bytes": 128974848,
+      "modified_ns": 1793108542511032600,
+      "observed_utc": "2026-10-27T14:47:39.806283+00:00",
+      "path": "\\\\?\\C:\\Users\\ArturBuzov\\AppData\\Local\\Docker\\wsl\\main\\ext4.vhdx",
+      "winerror": null
+    },
+    {
+      "allocated_bytes": 643825664,
+      "attributes": 32,
+      "created_ns": 1792685979685091700,
+      "logical_bytes": 643825664,
+      "modified_ns": 1793038662909989200,
+      "observed_utc": "2026-10-27T14:47:39.821863+00:00",
+      "path": "\\\\?\\C:\\Workspace\\prj\\jq\\cashe\\hydracache-074-wsl-native\\ext4.vhdx",
+      "winerror": null
+    }
+  ],
+  "utc": "2026-10-27T14:47:39.797821+00:00",
+  "volume_free_bytes": 5236404224,
+  "volume_total_bytes": 1021469593600
+}

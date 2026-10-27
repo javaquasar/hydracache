@@ -286,6 +286,23 @@ returns to roughly 5 GiB amid system memory pressure; preserve the original floo
 and preflight real capacity before any new large build. No server or new
 performance hypothesis is admitted by this result.
 
+The [Windows/workspace preparation and storage audit](windows-workspace-preparation-20261027.md)
+then closes the same 394-body source census and existing Windows environment
+preflight without dispatch. Eleven new diagnostic controls and doc-check pass.
+All 36 workspace member manifests and the exact `verify.rs` body are recorded.
+The original whole-verify receipt establishes a separate 4800-second outer bound,
+16 GiB initial prerequisite, 4 GiB running floor and five-second polling; these
+are retained independently of the 780-second package contract. Current free space
+is only about 4.86 GiB, so no heavy execution is admitted. Read-only scans find
+81.42 GiB logical in 074 target (64.78 GiB debug), and actual Ubuntu VHDX growth
+of 32 MiB during a new short bracket amid high paging pressure. The earlier large
+capacity loss cannot be assigned exactly without a pre-drop allocation baseline;
+pagefile allocation queries refuse with sharing violation and are not bypassed.
+Old refusals, initial preparation and the first new fixture failure remain
+separate evidence. No deletion, system setting, service, foreign process or
+server operation occurs. Next restore resource headroom and review the owned
+Windows/whole-workspace execution envelope; do not extend deadlines or join results.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

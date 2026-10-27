@@ -1,0 +1,35 @@
+test_cli_has_no_execution_retry_timeout_or_filter_switch (test_prepare.Contracts.test_cli_has_no_execution_retry_timeout_or_filter_switch) ... ok
+test_first_refusal_and_raw_streams_are_retained_and_exclusive (test_prepare.Contracts.test_first_refusal_and_raw_streams_are_retained_and_exclusive) ... ok
+test_fixed_verify_and_source_helper_drift_refuses_before_import (test_prepare.Contracts.test_fixed_verify_and_source_helper_drift_refuses_before_import) ... ERROR
+test_metadata_reparse_entry_is_not_traversed (test_prepare.Contracts.test_metadata_reparse_entry_is_not_traversed) ... ok
+test_metadata_scan_does_not_read_contents_or_claim_growth (test_prepare.Contracts.test_metadata_scan_does_not_read_contents_or_claim_growth) ... ok
+test_original_complete_package_contract (test_prepare.Contracts.test_original_complete_package_contract) ... ok
+test_path_escape_refuses (test_prepare.Contracts.test_path_escape_refuses) ... ok
+test_sampled_floor_never_implies_growth_reservation (test_prepare.Contracts.test_sampled_floor_never_implies_growth_reservation) ... ok
+test_workspace_inventory_is_manifest_only (test_prepare.Contracts.test_workspace_inventory_is_manifest_only) ... ok
+test_workspace_is_not_replaced_by_package_or_new_budget (test_prepare.Contracts.test_workspace_is_not_replaced_by_package_or_new_budget) ... ok
+
+======================================================================
+ERROR: test_fixed_verify_and_source_helper_drift_refuses_before_import (test_prepare.Contracts.test_fixed_verify_and_source_helper_drift_refuses_before_import)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\windows-workspace-preflight-074\test_prepare.py", line 60, in test_fixed_verify_and_source_helper_drift_refuses_before_import
+    p.source_review(root)
+    ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\windows-workspace-preflight-074\prepare.py", line 109, in source_review
+    checked(root, name, digest)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\windows-workspace-preflight-074\prepare.py", line 41, in checked
+    raw = path.read_bytes()
+  File "C:\Python313\Lib\pathlib\_abc.py", line 625, in read_bytes
+    with self.open(mode='rb') as f:
+         ~~~~~~~~~^^^^^^^^^^^
+  File "C:\Python313\Lib\pathlib\_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\ARTURB~1\\AppData\\Local\\Temp\\tmp5anjd3qp\\tools\\package-frontier-gate-074\\review.py'
+
+----------------------------------------------------------------------
+Ran 10 tests in 1.617s
+
+FAILED (errors=1)
