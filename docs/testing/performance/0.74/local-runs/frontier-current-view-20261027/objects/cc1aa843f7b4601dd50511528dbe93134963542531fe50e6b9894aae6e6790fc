@@ -1,0 +1,105 @@
+
+running 10 tests
+test diff_translation_adds_only_fixed_rhs_and_retains_all_paths_and_flags ... ok
+test archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation ... ok
+test historical_reads_are_fixed_and_never_fall_back_to_current_artifacts ... ok
+test every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion ... ok
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift ... FAILED
+test unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files ... ok
+test unsupported_commands_revisions_scopes_and_cwd_refuse_before_execution ... ok
+test all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions ... ok
+test qualification_raw_identity_and_previous_candidate_guard_remain_independent ... ok
+test guard_assertion_test_and_io_mutations_cannot_hide_behind_history ... ok
+
+failures:
+
+---- independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift stdout ----
+
+thread 'independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift' (43336) panicked at crates\xtask\tests\..\..\..\tools\history-status-readers-074\..\current-frontier-074\contract.rs:45:5:
+assertion `left == right` failed
+  left: "b28b823581bf37c9b828a8b166098e0a13add0a487e6d139a61a381dba0da652"
+ right: "86548e7516a7a73b05099f4c7ff7342949d5656f748b914c298dc02997297b3b"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift
+
+test result: FAILED. 9 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.60s
+
+
+running 7 tests
+test main_retains_old_full_body_gate_and_all_twelve_current_reads_reach_source ... FAILED
+test stale_partial_duplicate_and_unrelated_current_source_edits_refuse ... FAILED
+test successful_addition_validation_does_not_cache_body_or_index_observations ... ok
+test twelve_current_sources_reconstruct_exact_independent_predecessors ... FAILED
+test audit_changes_only_three_input_joins_and_preserves_every_original_predicate ... ok
+test unknown_paths_are_not_approved_or_transformed_and_legacy_routes_stay_intact ... ok
+test all_fourteen_additions_require_independent_bodies_and_exact_index_entries ... ok
+
+failures:
+
+---- main_retains_old_full_body_gate_and_all_twelve_current_reads_reach_source stdout ----
+
+thread 'main_retains_old_full_body_gate_and_all_twelve_current_reads_reach_source' (23544) panicked at crates\xtask\tests\..\..\..\tools\current-frontier-074\contract.rs:45:5:
+assertion `left == right` failed
+  left: "b28b823581bf37c9b828a8b166098e0a13add0a487e6d139a61a381dba0da652"
+ right: "86548e7516a7a73b05099f4c7ff7342949d5656f748b914c298dc02997297b3b"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- stale_partial_duplicate_and_unrelated_current_source_edits_refuse stdout ----
+
+thread 'stale_partial_duplicate_and_unrelated_current_source_edits_refuse' (29312) panicked at crates\xtask\tests\..\..\..\tools\current-frontier-074\contract.rs:45:5:
+assertion `left == right` failed
+  left: "b28b823581bf37c9b828a8b166098e0a13add0a487e6d139a61a381dba0da652"
+ right: "86548e7516a7a73b05099f4c7ff7342949d5656f748b914c298dc02997297b3b"
+
+thread 'stale_partial_duplicate_and_unrelated_current_source_edits_refuse' (29312) panicked at crates\xtask\tests\current_frontier_074.rs:61:9:
+assertion failed: std::panic::catch_unwind(|| contract::project(path, current)).is_ok()
+
+---- twelve_current_sources_reconstruct_exact_independent_predecessors stdout ----
+
+thread 'twelve_current_sources_reconstruct_exact_independent_predecessors' (40884) panicked at crates\xtask\tests\current_frontier_074.rs:30:9:
+assertion `left == right` failed
+  left: "[package]\nname = \"hydracache-redis-compat\"\nversion.workspace = true\nedition.workspace = true\nrust-version.workspace = true\nlicense.workspace = true\nrepository.workspace = true\nhomepage.workspace = true\nreadme = \"README.md\"\nkeywords.workspace = true\ncategories.workspace = true\ndescription = \"Off-by-default Redis RESP edge facade for HydraCache cache-subset compatibility.\"\n\n[features]\ndefault = []\n# Retired after full-D3 mTLS allocation rejection. Compatibility tombstone only;\n# this feature cannot activate ownership transfer, including all-feature builds.\nexperimental-resp-get-owner-074 = []\n\n[dependencies]\nbytes.workspace = true\nhydracache.workspace = true\nhydracache-client-protocol.workspace = true\nhydracache-client-transport-axum.workspace = true\nredis-protocol.workspace = true\nsubtle.workspace = true\nthiserror.workspace = true\ntokio.workspace = true\n\n[dev-dependencies]\nfutures-util.workspace = true\nproptest.workspace = true\nrcgen.workspace = true\nredis = { workspace = true, features = [\"tokio-rustls-comp\", \"tls-rustls-insecure\"] }\nrustls.workspace = true\nserde_json.workspace = true\ntokio-rustls.workspace = true\nwebpki-root-certs = \"=1.0.10\"\nwebpki-roots = \"=1.0.10\"\nwebpki-roots-legacy = { package = \"webpki-roots\", version = \"=0.26.11\" }\n\n[lints]\nworkspace = true\n"
+ right: "[package]\nname = \"hydracache-redis-compat\"\nversion.workspace = true\nedition.workspace = true\nrust-version.workspace = true\nlicense.workspace = true\nrepository.workspace = true\nhomepage.workspace = true\nreadme = \"README.md\"\nkeywords.workspace = true\ncategories.workspace = true\ndescription = \"Off-by-default Redis RESP edge facade for HydraCache cache-subset compatibility.\"\n\n[features]\ndefault = []\n# Retired after full-D3 mTLS allocation rejection. Compatibility tombstone only;\n# this feature cannot activate ownership transfer, including all-feature builds.\nexperimental-resp-get-owner-074 = []\n\n[dependencies]\nbytes.workspace = true\nhydracache.workspace = true\nhydracache-client-protocol.workspace = true\nhydracache-client-transport-axum.workspace = true\nredis-protocol.workspace = true\nsubtle.workspace = true\nthiserror.workspace = true\ntokio.workspace = true\n\n[dev-dependencies]\nfutures-util.workspace = true\nproptest.workspace = true\nrcgen.workspace = true\nredis = { workspace = true, features = [\"tokio-rustls-comp\", \"tls-rustls-insecure\"] }\nrustls.workspace = true\nserde_json.workspace = true\ntokio-rustls.workspace = true\n\n[lints]\nworkspace = true\n"
+
+
+failures:
+    main_retains_old_full_body_gate_and_all_twelve_current_reads_reach_source
+    stale_partial_duplicate_and_unrelated_current_source_edits_refuse
+    twelve_current_sources_reconstruct_exact_independent_predecessors
+
+test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.81s
+
+
+running 1 test
+test current_tree_input_frontier_is_fully_accounted_without_path_exclusions ... FAILED
+
+failures:
+
+---- current_tree_input_frontier_is_fully_accounted_without_path_exclusions stdout ----
+
+thread 'current_tree_input_frontier_is_fully_accounted_without_path_exclusions' (33496) panicked at crates\xtask\tests\..\..\..\tools\current-frontier-074\contract.rs:45:5:
+assertion `left == right` failed
+  left: "b28b823581bf37c9b828a8b166098e0a13add0a487e6d139a61a381dba0da652"
+ right: "86548e7516a7a73b05099f4c7ff7342949d5656f748b914c298dc02997297b3b"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'current_tree_input_frontier_is_fully_accounted_without_path_exclusions' (33496) panicked at crates\xtask\tests\..\..\..\tools\current-frontier-074\contract.rs:45:5:
+assertion `left == right` failed
+  left: "0565355c592d59d49a7c2a1b1631f10711ff5d6101e42cf50925261a6e4bed6c"
+ right: "30dc4166f86f71a2028b0adc3287e898920adf18c92a45cb7046ab67663f9207"
+CURRENT_TREE_FRONTIER input refused: crates/hydracache-redis-compat/Cargo.toml
+CURRENT_TREE_FRONTIER input refused: crates/xtask/tests/performance_contract_074.rs
+CURRENT_TREE_FRONTIER new runtime: tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs
+
+thread 'current_tree_input_frontier_is_fully_accounted_without_path_exclusions' (33496) panicked at crates\xtask\tests\current_tree_input_audit_074.rs:94:5:
+3 current-tree inputs remain
+
+
+failures:
+    current_tree_input_frontier_is_fully_accounted_without_path_exclusions
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 49.03s
+

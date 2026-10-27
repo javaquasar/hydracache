@@ -1,0 +1,12 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.94s
+     Running tests\authority_rust_history_074.rs (target\debug\deps\authority_rust_history_074-aed2135a4a4dcb53.exe)
+error: test failed, to rerun pass `-p xtask --test authority_rust_history_074`
+     Running tests\current_frontier_074.rs (target\debug\deps\current_frontier_074-590611d413a1fc32.exe)
+error: test failed, to rerun pass `-p xtask --test current_frontier_074`
+     Running tests\current_tree_input_audit_074.rs (target\debug\deps\current_tree_input_audit_074-cd19873f92652053.exe)
+error: test failed, to rerun pass `-p xtask --test current_tree_input_audit_074`
+error: 3 targets failed:
+    `-p xtask --test authority_rust_history_074`
+    `-p xtask --test current_frontier_074`
+    `-p xtask --test current_tree_input_audit_074`

@@ -1,0 +1,13 @@
+
+running 8 tests
+test alarm_index_mode_blob_stage_path_missing_and_duplicate_changes_refuse ... ok
+test alarm_checks_observe_every_body_index_and_nonregular_failure_afresh ... ok
+test stale_partial_duplicate_wrong_and_unknown_current_inputs_cannot_gain_approval ... ok
+test approved_current_edges_match_fixed_producers_and_unchanged_twelve_rules ... ok
+test the_one_new_alarm_source_requires_the_independent_producer_and_index ... ok
+test successful_current_projection_never_caches_later_observations ... ok
+test old_rules_protected_selection_physical_prefixes_and_assertions_are_preserved ... ok
+test live_frontier_reader_keeps_the_old_phase_and_the_fresh_main_gate ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.06s
+

@@ -1,0 +1,40 @@
+{
+  "tracked_performance_document_entries": 48690,
+  "observations": [
+    {
+      "argv": [
+        "ps",
+        "-p",
+        "118374",
+        "-o",
+        "pid,etimes,pcpu,args"
+      ],
+      "exit": 1,
+      "stdout": "    PID ELAPSED %CPU COMMAND\n",
+      "stderr": "your 131072x1 screen size is bogus. expect trouble\n"
+    },
+    {
+      "argv": [
+        "cat",
+        "/proc/118374/wchan"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "cat: /proc/118374/wchan: No such file or directory\n"
+    },
+    {
+      "argv": [
+        "cat",
+        "/proc/118374/io"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "cat: /proc/118374/io: No such file or directory\n"
+    }
+  ],
+  "existing_gate_only": true,
+  "workload_rerun": false,
+  "clock_or_service_change": false,
+  "server": false,
+  "performance_claim": false
+}

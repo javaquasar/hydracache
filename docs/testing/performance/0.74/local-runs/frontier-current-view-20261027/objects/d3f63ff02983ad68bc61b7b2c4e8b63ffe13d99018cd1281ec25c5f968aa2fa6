@@ -1,0 +1,57 @@
+
+running 10 tests
+test diff_translation_adds_only_fixed_rhs_and_retains_all_paths_and_flags ... ok
+test archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation ... ok
+test historical_reads_are_fixed_and_never_fall_back_to_current_artifacts ... ok
+test every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion ... ok
+test all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions ... ok
+test unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files ... ok
+test unsupported_commands_revisions_scopes_and_cwd_refuse_before_execution ... ok
+test qualification_raw_identity_and_previous_candidate_guard_remain_independent ... ok
+test guard_assertion_test_and_io_mutations_cannot_hide_behind_history ... ok
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift has been running for over 60 seconds
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 91.85s
+
+
+running 7 tests
+test audit_changes_only_three_input_joins_and_preserves_every_original_predicate ... ok
+test successful_addition_validation_does_not_cache_body_or_index_observations ... ok
+test twelve_current_sources_reconstruct_exact_independent_predecessors ... ok
+test stale_partial_duplicate_and_unrelated_current_source_edits_refuse ... ok
+test main_retains_old_full_body_gate_and_all_twelve_current_reads_reach_source ... ok
+test all_fourteen_additions_require_independent_bodies_and_exact_index_entries ... ok
+test unknown_paths_are_not_approved_or_transformed_and_legacy_routes_stay_intact ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.66s
+
+
+running 1 test
+test current_tree_input_frontier_is_fully_accounted_without_path_exclusions has been running for over 60 seconds
+test current_tree_input_frontier_is_fully_accounted_without_path_exclusions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 76.91s
+
+
+running 8 tests
+test alarm_index_mode_blob_stage_path_missing_and_duplicate_changes_refuse ... ok
+test alarm_checks_observe_every_body_index_and_nonregular_failure_afresh ... ok
+test stale_partial_duplicate_wrong_and_unknown_current_inputs_cannot_gain_approval ... ok
+test approved_current_edges_match_fixed_producers_and_unchanged_twelve_rules ... ok
+test the_one_new_alarm_source_requires_the_independent_producer_and_index ... ok
+test successful_current_projection_never_caches_later_observations ... ok
+test old_rules_protected_selection_physical_prefixes_and_assertions_are_preserved ... ok
+test both_live_readers_keep_the_old_phase_and_the_fresh_main_gate ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.89s
+
+
+running 4 tests
+test constructors_refuse_stale_producers_and_keep_all_selected_bytes_and_branch_mutations_visible ... ok
+test all_three_bodies_match_the_fixed_constructions_without_changing_twelve_cases_or_assertions ... ok
+test helper_keeps_original_fixed_git_read_and_no_extra_observation_or_effect ... ok
+test facade_joins_twelve_current_paths_and_fourteen_additions_and_preserves_legacy_gates ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 39.14s
+

@@ -1,0 +1,3 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.04s
+     Running tests\frontier_current_view_074.rs (target/security-patch-msrv188\debug\deps\frontier_current_view_074-b0fd6728ef75459c.exe)

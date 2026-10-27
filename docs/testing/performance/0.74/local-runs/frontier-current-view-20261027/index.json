@@ -1,0 +1,1831 @@
+{
+  "final_lint_wiring_cases_gnu": 9,
+  "final_lint_wiring_cases_msrv": 8,
+  "final_lint_wiring_cases_windows": 8,
+  "first_sources_match_preexecution_digests": true,
+  "focused_cases_msrv": 30,
+  "focused_cases_windows": 30,
+  "implementation": "8ad56a22486bcf3dded6a7a2b4833ab2b6efada5",
+  "initial_gnu_cohort_complete": false,
+  "initial_gnu_cohort_exit": 124,
+  "members": {
+    "capture/docs/testing/performance/0.74/frontier-current-view-result-20261027.md": {
+      "bytes": 8332,
+      "sha256": "c775edffae10ee75f19cb3bfbd47aa07f62f47db04b6c209dad2dacfdd6c06ea"
+    },
+    "capture/target/capture-frontier-wsl-observation-20261027.py": {
+      "bytes": 1022,
+      "sha256": "88ff3a59c5f79b1d5c13b89e4d6277effff871323c7e2bf3013d043bb89229d9"
+    },
+    "capture/target/run-roots-lock-view-20261027.py": {
+      "bytes": 3795,
+      "sha256": "28fb80b9e80fd7594791d7793022b79e305664c12565818f7a9c72ef77f0a45a"
+    },
+    "capture/target/seal-frontier-current-20261027.py": {
+      "bytes": 8478,
+      "sha256": "9dc57f7e5d31d48d4ccf0acf537e2a555781156219f43beb2cb29c0f746806c1"
+    },
+    "capture/target/verify-frontier-packet-20261027.py": {
+      "bytes": 1543,
+      "sha256": "872c0065c466ece0fb7287ecdd2f167ba38918fa49facb860a56b6014071504d"
+    },
+    "capture/tools/current-frontier-074/README.md": {
+      "bytes": 5604,
+      "sha256": "e168e0a628ac61c54c4f3007e02d337b8c4c8123fab2e491ed34899322b0b3ec"
+    },
+    "checks/baseline-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/baseline-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/baseline-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/baseline-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/baseline-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/baseline-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/baseline-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/baseline-first/intent.json": {
+      "bytes": 356685,
+      "sha256": "19aa69925b9aca44aeaa85c0f117a6469fcd14417557d2dc52f95abd9d25e105"
+    },
+    "checks/baseline-first/process.json": {
+      "bytes": 14,
+      "sha256": "df482413e3b0b1cd2fe953d3c458e6387fe95177a3e2f5de71da17917e4b9f09"
+    },
+    "checks/baseline-first/result.json": {
+      "bytes": 356300,
+      "sha256": "3a3fb5f778514bae9974c1c146e20b1e2fd338267322974e5c63008fce9d32d1"
+    },
+    "checks/baseline-first/stderr.log": {
+      "bytes": 900,
+      "sha256": "dbfead9975b0883800595e66d1a5392650b2d5b29668f8279c3e48eabe1e46e6"
+    },
+    "checks/baseline-first/stdout.log": {
+      "bytes": 8253,
+      "sha256": "cc1aa843f7b4601dd50511528dbe93134963542531fe50e6b9894aae6e6790fc"
+    },
+    "checks/check-corrected/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/check-corrected/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/check-corrected/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/check-corrected/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/check-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/check-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/check-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/check-corrected/intent.json": {
+      "bytes": 356982,
+      "sha256": "510754889c93a1131c78aa70a7ae4ae700bcd406257d42b692d99e7fce1abbb9"
+    },
+    "checks/check-corrected/process.json": {
+      "bytes": 14,
+      "sha256": "53f2178699197ab9c20906572fbf1ac9067a3cfef0af3ebb71eed455405781e1"
+    },
+    "checks/check-corrected/result.json": {
+      "bytes": 356777,
+      "sha256": "d17f700b46f47177f895a6623386b8b490ad8977a990cd69a1e2edcf7ba90678"
+    },
+    "checks/check-corrected/stderr.log": {
+      "bytes": 155,
+      "sha256": "b3be3700e02eceb2274573aaa6171867b873dfb0c816bf2f756281411345a328"
+    },
+    "checks/check-corrected/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/check-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/check-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/check-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/check-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/check-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/check-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/check-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/check-first/intent.json": {
+      "bytes": 356982,
+      "sha256": "ca3a1e8d42285f3f7c7d5e6b9852abccfdb0518f650387d9394dd63767d57ea0"
+    },
+    "checks/check-first/process.json": {
+      "bytes": 14,
+      "sha256": "feaf83ec807fa7c4531a18281344758d0ca04b97fbc75d08ef9bde9e363653c1"
+    },
+    "checks/check-first/result.json": {
+      "bytes": 356777,
+      "sha256": "a4ed8002c73f6829e16e2e0d0afd37d191993ca85414a19ad51bfb8aa70854ea"
+    },
+    "checks/check-first/stderr.log": {
+      "bytes": 156,
+      "sha256": "80fee43e60a5dfd6b68d95b34abc1af184b5dd44f52dd4c34c4705f28a76be77"
+    },
+    "checks/check-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/clippy-corrected/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/clippy-corrected/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/clippy-corrected/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/clippy-corrected/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/clippy-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/clippy-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/clippy-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/clippy-corrected/intent.json": {
+      "bytes": 357045,
+      "sha256": "03f5a34b814a534e4e3159a5bd520a29262ee981ad834e45ed03d1c3085d07ee"
+    },
+    "checks/clippy-corrected/process.json": {
+      "bytes": 14,
+      "sha256": "52ca3eba54b043cb73f06f0211c5d4d70146e2a78b9fca427177dcd739623982"
+    },
+    "checks/clippy-corrected/result.json": {
+      "bytes": 356777,
+      "sha256": "ee24a80ac6f568bb3cbfab4494662c813d16c2fdaa03f1027897a890245ef9f8"
+    },
+    "checks/clippy-corrected/stderr.log": {
+      "bytes": 155,
+      "sha256": "f103db43b34d98f03e4797c67837f59a8de8d388acc3a1055ba8528e20c85932"
+    },
+    "checks/clippy-corrected/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/clippy-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/clippy-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/clippy-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/clippy-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/clippy-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/clippy-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/clippy-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/clippy-first/intent.json": {
+      "bytes": 357045,
+      "sha256": "56f52bfab1f8bb06d7a85432b5e1dc2e22a2fa68b5ff80fe958a59daf00e593f"
+    },
+    "checks/clippy-first/process.json": {
+      "bytes": 13,
+      "sha256": "c02ebdf025206990ffc9c6afe63740ded93513cbb6fc7a5655d766d56d9f9802"
+    },
+    "checks/clippy-first/result.json": {
+      "bytes": 356779,
+      "sha256": "3a8370c49d0ebbf1107209965c7fadb04a8078c9bfe8486b144459cf9f28b272"
+    },
+    "checks/clippy-first/stderr.log": {
+      "bytes": 4006,
+      "sha256": "a1c39ce957b2db9ca305f9bdb9f1591ee09149a71db31a18be04a62087d5ac11"
+    },
+    "checks/clippy-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/contract-final/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/contract-final/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/contract-final/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/contract-final/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/contract-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/contract-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/contract-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/contract-final/intent.json": {
+      "bytes": 356953,
+      "sha256": "2682d06afc577d70c2c97e8a7d1c942fc82ec3942282e368cd04d90e16ced78d"
+    },
+    "checks/contract-final/process.json": {
+      "bytes": 14,
+      "sha256": "f3db681b3159bda1ec0c52d9c75944d19652441f7b2f3dfc11a654ea56da9b18"
+    },
+    "checks/contract-final/result.json": {
+      "bytes": 356777,
+      "sha256": "a068e6b186eedf9cdfb71561f716526bb71116330e77a6b48e96e400d48e047a"
+    },
+    "checks/contract-final/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/contract-final/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/contract-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/contract-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/contract-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/contract-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/contract-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/contract-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/contract-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/contract-first/intent.json": {
+      "bytes": 356953,
+      "sha256": "9a7c0d54c65a675411e242790a9497dbb8b62d7daec76f3f2dc84317c514eb65"
+    },
+    "checks/contract-first/process.json": {
+      "bytes": 14,
+      "sha256": "d66d5df56a337538f5d05376bb4325495fbbc2bab74f6dadc0229cf3f110d3ac"
+    },
+    "checks/contract-first/result.json": {
+      "bytes": 356777,
+      "sha256": "2779a8c3a5c8f591882a934833260a5764e814c09ca5ea683529444d1195ab10"
+    },
+    "checks/contract-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/contract-first/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/controls-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/controls-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/controls-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/controls-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/controls-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/controls-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/controls-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/controls-first/intent.json": {
+      "bytes": 357263,
+      "sha256": "90c88d86a95e9b6bb7743988f6ae82bfe7e5e6cf59a3ff0a21ba5eef75c59dfa"
+    },
+    "checks/controls-first/process.json": {
+      "bytes": 14,
+      "sha256": "a48fb5e2d45604d0ca28dc6b48359a70e2d514244473ac45064597d3c833300e"
+    },
+    "checks/controls-first/result.json": {
+      "bytes": 356777,
+      "sha256": "66200c21e46ebf31cbc420de2454f8434f24049fc15032017bbc19d1c9f5c387"
+    },
+    "checks/controls-first/stderr.log": {
+      "bytes": 731,
+      "sha256": "30187f14c1df700153cf396a2768853e5c7232036256215ed292274802d6632d"
+    },
+    "checks/controls-first/stdout.log": {
+      "bytes": 3119,
+      "sha256": "51a86837c7ac32ceb1eaaaa2034c4e07b17e711e1164c16e8eb7140476bbfcee"
+    },
+    "checks/doc-final/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/doc-final/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/doc-final/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/doc-final/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/doc-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/doc-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/doc-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/doc-final/intent.json": {
+      "bytes": 356905,
+      "sha256": "53906444dba1f3b2eeff80b5444b60aee1a1e4d4d6dc87cc9114c011e0cb3ba1"
+    },
+    "checks/doc-final/process.json": {
+      "bytes": 14,
+      "sha256": "1454d24315643a5024eb6dae2a287a50d4f903244f5b15ca18c02ecdc4f9d42e"
+    },
+    "checks/doc-final/result.json": {
+      "bytes": 356777,
+      "sha256": "554d1422af38cfda74b05c84dbbbbb21f5c227ca66c2acfa2ec06d6da12a4236"
+    },
+    "checks/doc-final/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/doc-final/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/doc-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/doc-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/doc-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/doc-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/doc-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/doc-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/doc-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/doc-first/intent.json": {
+      "bytes": 356905,
+      "sha256": "3a6c3c4ea3c47c9dcb9e07fbee16f21c881714fc1b81eafd769f1a1c06475955"
+    },
+    "checks/doc-first/process.json": {
+      "bytes": 14,
+      "sha256": "786ebfc6f1ada8040479023737b1295f34531eb8a8021f6f9848af2c5cacbbe4"
+    },
+    "checks/doc-first/result.json": {
+      "bytes": 356777,
+      "sha256": "aa8d4ddbe7948300f60088a5ee2406986f67fefb1809e1334fccfa13483b59ae"
+    },
+    "checks/doc-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/doc-first/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/final-corrected/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/final-corrected/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/final-corrected/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/final-corrected/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/final-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/final-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/final-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/final-corrected/intent.json": {
+      "bytes": 357044,
+      "sha256": "570e59517bb60974e91a4f0bffada677415c58ca5d23b3ec23ffd226b0f34228"
+    },
+    "checks/final-corrected/process.json": {
+      "bytes": 14,
+      "sha256": "aee5830efda6c93f28073c52136858791a257c409b471e519effb1d58bb69ae1"
+    },
+    "checks/final-corrected/result.json": {
+      "bytes": 356777,
+      "sha256": "1891bd4f8d889a646b860bc014483c8e68544ca892f8b6e7a93722a9aacdc2eb"
+    },
+    "checks/final-corrected/stderr.log": {
+      "bytes": 271,
+      "sha256": "6098fa2d5f80ab0693a96d9666322f99f316e5184ad6d36a5d6bd1778e2556b4"
+    },
+    "checks/final-corrected/stdout.log": {
+      "bytes": 770,
+      "sha256": "d9d0dc31331cabf3eb1cd31f24992b0f99bb930ba165a0a8f52875b1b8d6c688"
+    },
+    "checks/final-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/final-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/final-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/final-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/final-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/final-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/final-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/final-first/intent.json": {
+      "bytes": 357263,
+      "sha256": "735c45bf769eea39f02256707f5eff6b8ceb1e60015f0c3e974d99578ed3282b"
+    },
+    "checks/final-first/process.json": {
+      "bytes": 14,
+      "sha256": "fd7867275f7f8981655004803a74efb8eb399cd5245f9908a5117c018ff576d7"
+    },
+    "checks/final-first/result.json": {
+      "bytes": 356777,
+      "sha256": "0f267e381c4e1ff33d88ec432bba7c927ae7330b2bf074fadbb7f2f879b91a68"
+    },
+    "checks/final-first/stderr.log": {
+      "bytes": 732,
+      "sha256": "a3842ae10e0fad038e50797ae118ffc8fdffcf1da404a43f10c32c68696b16c5"
+    },
+    "checks/final-first/stdout.log": {
+      "bytes": 3348,
+      "sha256": "e322b52eb8ab6e7e85e8a9879646cc648af91ac5d32e829fe3bc34de7cba7523"
+    },
+    "checks/focused-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/focused-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/focused-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/focused-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/focused-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/focused-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/focused-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/focused-first/intent.json": {
+      "bytes": 356920,
+      "sha256": "81fb26bb1d87e5f11c3b633e39d2907fa4aad267ff0248e706a65e2336ca3f3e"
+    },
+    "checks/focused-first/process.json": {
+      "bytes": 14,
+      "sha256": "24956eb06de7af33ff1c22fd439a45e25ee8c3762ef2220de41c9821d0712f5d"
+    },
+    "checks/focused-first/result.json": {
+      "bytes": 356533,
+      "sha256": "ee27ebd07f573f7091215b4c54b600b05def61ddd48f956ed1ca3bf5f17039ca"
+    },
+    "checks/focused-first/stderr.log": {
+      "bytes": 499,
+      "sha256": "c3d3ae517733728d5f76809bd1f812828990ef6dc3e81a65f1dd6c939c6c9850"
+    },
+    "checks/focused-first/stdout.log": {
+      "bytes": 1851,
+      "sha256": "861e3f96bbcc58448260e99ca76552e4af0e9c6a178a2fabe13de80b21a098f3"
+    },
+    "checks/format-final/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/format-final/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/format-final/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/format-final/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/format-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/format-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/format-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/format-final/intent.json": {
+      "bytes": 356939,
+      "sha256": "1dbb1ee6ac296ff219130fa6ff7b3cab40a1c5f8917e82d4232dabf7cf09e9e3"
+    },
+    "checks/format-final/process.json": {
+      "bytes": 14,
+      "sha256": "9f9f89bedbfb8f6bcb7ef15be1d38bc31eb24ce3ba5a35f107287422a774d378"
+    },
+    "checks/format-final/result.json": {
+      "bytes": 356777,
+      "sha256": "69fb3cca4322ed0742cb1befd9fdda5a2a1d2d9e941a6d3219dcc3f60b998f98"
+    },
+    "checks/format-final/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/format-final/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/format-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/format-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/format-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/format-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/format-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/format-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/format-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/format-first/intent.json": {
+      "bytes": 356939,
+      "sha256": "a125a1c601af6747754238a094a4fb1d434036aa6f308dd0d6bb84dfc4648e33"
+    },
+    "checks/format-first/process.json": {
+      "bytes": 14,
+      "sha256": "acede1e1b43192a6b8ea195b2920f21e3f5c1f0bc23aabca675f113e8c9f2ed7"
+    },
+    "checks/format-first/result.json": {
+      "bytes": 356777,
+      "sha256": "df9dac1c6831dc1ee9bcb53b53d1c8ac1fd4da55b6496d3340c49921e50bbf28"
+    },
+    "checks/format-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/format-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/gnu-corrected/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/gnu-corrected/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/gnu-corrected/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/gnu-corrected/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/gnu-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/gnu-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/gnu-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/gnu-corrected/intent.json": {
+      "bytes": 357633,
+      "sha256": "e98b8f30d39d2a2cc15c15479b5948d5a220c838995dc50c610bb2b7f5145a0a"
+    },
+    "checks/gnu-corrected/process.json": {
+      "bytes": 14,
+      "sha256": "89c3c14b8acabab4a6137b191dd6a7a09f9dc0f25dc607af1f99731fbe5e0653"
+    },
+    "checks/gnu-corrected/result.json": {
+      "bytes": 356777,
+      "sha256": "a9cd1882faf5e1739bb42cc0e26db2f7ac55788a51f596c0f2b06ddaa3025784"
+    },
+    "checks/gnu-corrected/stderr.log": {
+      "bytes": 309,
+      "sha256": "ebe9f9665ed71d60bed5c6f63b482f782ee49a12376f0104c25df4ca5de742d4"
+    },
+    "checks/gnu-corrected/stdout.log": {
+      "bytes": 830,
+      "sha256": "9805353cf69e27af522f00d82b9b6ff5916291857998bc73aa5e7c74daec426c"
+    },
+    "checks/gnu-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/gnu-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/gnu-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/gnu-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/gnu-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/gnu-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/gnu-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/gnu-first/intent.json": {
+      "bytes": 357852,
+      "sha256": "d30a3f4e2cc63feb3685e053a028a243cff94b1752f9dd2024e9dc20e22c7e72"
+    },
+    "checks/gnu-first/process.json": {
+      "bytes": 14,
+      "sha256": "a9435010d2c3616bccffbc16f976f3a618986c57380b4631947583c1e80c7d22"
+    },
+    "checks/gnu-first/result.json": {
+      "bytes": 356779,
+      "sha256": "f6243f4e4c5600fd53c137b0e99b0c35ab0c51604f3d274c09a47dead28d3b6c"
+    },
+    "checks/gnu-first/stderr.log": {
+      "bytes": 311,
+      "sha256": "ae8c85bffc36a3c34a446ff7c6e434dafe3a701f7c5865a348b610b610860230"
+    },
+    "checks/gnu-first/stdout.log": {
+      "bytes": 1226,
+      "sha256": "d697bd3ab5ca6ed2fd84ab71594c449f5dfb3e3e7b15466ccf1f7429a4ff240f"
+    },
+    "checks/gnu-observation-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/gnu-observation-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/gnu-observation-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/gnu-observation-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/gnu-observation-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/gnu-observation-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/gnu-observation-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/gnu-observation-first/intent.json": {
+      "bytes": 356948,
+      "sha256": "2e8417b051e9148fde3cbebc0bc888ff575e188194fb4c75b42696a49c782c76"
+    },
+    "checks/gnu-observation-first/process.json": {
+      "bytes": 14,
+      "sha256": "41ac5d498aa96088c229e78737f7146af7dbde6df1d711d1d4f4dc96410a8adb"
+    },
+    "checks/gnu-observation-first/result.json": {
+      "bytes": 356777,
+      "sha256": "0b5866acad367fc3e52a6d14aab408654bb4d20a461b9f97eedcd762c4464bbd"
+    },
+    "checks/gnu-observation-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/gnu-observation-first/stdout.log": {
+      "bytes": 1171,
+      "sha256": "f1952dab4aeaa91d2b5235d742f918e2a834d7b47335011a1c6f4e156b0879cb"
+    },
+    "checks/gnu-post-timeout-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/gnu-post-timeout-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/gnu-post-timeout-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/gnu-post-timeout-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/gnu-post-timeout-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/gnu-post-timeout-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/gnu-post-timeout-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/gnu-post-timeout-first/intent.json": {
+      "bytes": 356948,
+      "sha256": "01c4c835bc4d141a6ab72feb6c0acb7e46d84791e2760c21c5e2c3d4f0b8f413"
+    },
+    "checks/gnu-post-timeout-first/process.json": {
+      "bytes": 14,
+      "sha256": "9cd083ee4c8af359b09a3e317a09631ab101f3a52152c416d03826fd2069130b"
+    },
+    "checks/gnu-post-timeout-first/result.json": {
+      "bytes": 356777,
+      "sha256": "3b0faa651f3ce507aebdf9ef445aade772413fd488a9dfcd920d8963b79610b3"
+    },
+    "checks/gnu-post-timeout-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/gnu-post-timeout-first/stdout.log": {
+      "bytes": 899,
+      "sha256": "765edfb79456528001224ba7f5660304799ebdc91bfc0003f6b53c07b61d4625"
+    },
+    "checks/msrv-corrected/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/msrv-corrected/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/msrv-corrected/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/msrv-corrected/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/msrv-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/msrv-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/msrv-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/msrv-corrected/intent.json": {
+      "bytes": 357103,
+      "sha256": "5fc33f4e10d0f3b77c025b845dc9db9db0b28b9634cb29f1f0d4327445203660"
+    },
+    "checks/msrv-corrected/process.json": {
+      "bytes": 14,
+      "sha256": "f3da9ba583ba71009fea9296a2d043cf41d2fbb69634c9ba5386a94ec0f8ad81"
+    },
+    "checks/msrv-corrected/result.json": {
+      "bytes": 356777,
+      "sha256": "2b58f9d9e1ed4c7a3f8a0ff4fcf628301294e361ec0bd4ef1c4dc024872ae77d"
+    },
+    "checks/msrv-corrected/stderr.log": {
+      "bytes": 294,
+      "sha256": "1daeabc00526b27fcf179a43e392dab033b0a9201f01f64dbc9815a875c5f6e1"
+    },
+    "checks/msrv-corrected/stdout.log": {
+      "bytes": 770,
+      "sha256": "9c28efc15c51e7170ea7a2faaa23a4b634e0e64caef216d98e988b21b50eb4ca"
+    },
+    "checks/msrv-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/msrv-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/msrv-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/msrv-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/msrv-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/msrv-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/msrv-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/msrv-first/intent.json": {
+      "bytes": 357322,
+      "sha256": "979b71db62ef9c03fab8631dfc6e535611df224852eb9fad4c2e558d9d04a856"
+    },
+    "checks/msrv-first/process.json": {
+      "bytes": 14,
+      "sha256": "8148dbeb79cf52142ef68f7e3bef34746fe6a7b11e3df311538989c388b5f681"
+    },
+    "checks/msrv-first/result.json": {
+      "bytes": 356777,
+      "sha256": "db1842bb50703835908fbc988333a63c78c6c2580ca64ef4718b0b44a32394c2"
+    },
+    "checks/msrv-first/stderr.log": {
+      "bytes": 847,
+      "sha256": "c20e5b6269f231ae8a9a5813ac92a6b0a2cdf8392da38af054507e45bfa2ff39"
+    },
+    "checks/msrv-first/stdout.log": {
+      "bytes": 3348,
+      "sha256": "d3f63ff02983ad68bc61b7b2c4e8b63ffe13d99018cd1281ec25c5f968aa2fa6"
+    },
+    "checks/old-v8-receipt-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/old-v8-receipt-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/old-v8-receipt-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/old-v8-receipt-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/old-v8-receipt-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/old-v8-receipt-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/old-v8-receipt-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/old-v8-receipt-first/intent.json": {
+      "bytes": 356949,
+      "sha256": "2dc9b4d6b3008f8b207750bad8b8ea646901f4d1ab1de93ef00b9a5df44450f2"
+    },
+    "checks/old-v8-receipt-first/process.json": {
+      "bytes": 14,
+      "sha256": "11b8741edaa1e960a30045528a111f00eb8ef85530dacbb18437530bba8b2ea4"
+    },
+    "checks/old-v8-receipt-first/result.json": {
+      "bytes": 356777,
+      "sha256": "714cd942d12b6229dba5ecc12b929387e85a295e12e21a740e9e0bb1178265fb"
+    },
+    "checks/old-v8-receipt-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/old-v8-receipt-first/stdout.log": {
+      "bytes": 227,
+      "sha256": "0fdf3c972fb60efb2912d8e8a4eb2f8cb7c74906442d683ae0501a06665ded11"
+    },
+    "first-sources/check-corrected/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/check-corrected/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13696,
+      "sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+    },
+    "first-sources/check-corrected/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/check-corrected/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/check-corrected/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/check-corrected/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/check-corrected/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/check-corrected/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/check-first/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/check-first/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13941,
+      "sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+    },
+    "first-sources/check-first/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/check-first/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/check-first/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/check-first/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/check-first/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/check-first/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/clippy-corrected/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/clippy-corrected/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13696,
+      "sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+    },
+    "first-sources/clippy-corrected/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/clippy-corrected/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/clippy-corrected/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/clippy-corrected/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/clippy-corrected/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/clippy-corrected/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/clippy-first/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/clippy-first/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13941,
+      "sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+    },
+    "first-sources/clippy-first/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/clippy-first/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/clippy-first/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/clippy-first/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/clippy-first/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/clippy-first/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/contract-final/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/contract-final/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13696,
+      "sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+    },
+    "first-sources/contract-final/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/contract-final/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/contract-final/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/contract-final/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/contract-final/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/contract-final/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/contract-first/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/contract-first/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13941,
+      "sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+    },
+    "first-sources/contract-first/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/contract-first/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/contract-first/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/contract-first/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/contract-first/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/contract-first/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/controls-first/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/controls-first/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 12721,
+      "sha256": "824dbd06837ef61acf1d807b1d68f92b7be57cebfbfa30f0d8ed8ab842503b4d"
+    },
+    "first-sources/controls-first/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/controls-first/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/controls-first/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/controls-first/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/controls-first/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/controls-first/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/doc-final/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/doc-final/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13696,
+      "sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+    },
+    "first-sources/doc-final/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/doc-final/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/doc-final/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/doc-final/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/doc-final/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/doc-final/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/doc-first/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/doc-first/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13941,
+      "sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+    },
+    "first-sources/doc-first/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/doc-first/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/doc-first/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/doc-first/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/doc-first/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/doc-first/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/final-corrected/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/final-corrected/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13696,
+      "sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+    },
+    "first-sources/final-corrected/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/final-corrected/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/final-corrected/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/final-corrected/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/final-corrected/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/final-corrected/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/final-first/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/final-first/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13941,
+      "sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+    },
+    "first-sources/final-first/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/final-first/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/final-first/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/final-first/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/final-first/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/final-first/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/focused-first/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/focused-first/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6691,
+      "sha256": "0c4b01d77f9808e3170cb7703231a4c380bab5c6db439afa7ce6b0b9aeea9e03"
+    },
+    "first-sources/focused-first/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/focused-first/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/focused-first/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/focused-first/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/format-final/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/format-final/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13696,
+      "sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+    },
+    "first-sources/format-final/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/format-final/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/format-final/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/format-final/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/format-final/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/format-final/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/format-first/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/format-first/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13941,
+      "sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+    },
+    "first-sources/format-first/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/format-first/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/format-first/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/format-first/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/format-first/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/format-first/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/gnu-corrected/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/gnu-corrected/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13696,
+      "sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+    },
+    "first-sources/gnu-corrected/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/gnu-corrected/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/gnu-corrected/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/gnu-corrected/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/gnu-corrected/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/gnu-corrected/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/gnu-first/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/gnu-first/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13941,
+      "sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+    },
+    "first-sources/gnu-first/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/gnu-first/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/gnu-first/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/gnu-first/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/gnu-first/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/gnu-first/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/gnu-observation-first/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/gnu-observation-first/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13941,
+      "sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+    },
+    "first-sources/gnu-observation-first/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/gnu-observation-first/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/gnu-observation-first/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/gnu-observation-first/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/gnu-observation-first/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/gnu-observation-first/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/gnu-post-timeout-first/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/gnu-post-timeout-first/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13696,
+      "sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+    },
+    "first-sources/gnu-post-timeout-first/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/gnu-post-timeout-first/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/gnu-post-timeout-first/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/gnu-post-timeout-first/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/gnu-post-timeout-first/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/gnu-post-timeout-first/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/msrv-corrected/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/msrv-corrected/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13696,
+      "sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+    },
+    "first-sources/msrv-corrected/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/msrv-corrected/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/msrv-corrected/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/msrv-corrected/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/msrv-corrected/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/msrv-corrected/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/msrv-first/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/msrv-first/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13941,
+      "sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+    },
+    "first-sources/msrv-first/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/msrv-first/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/msrv-first/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/msrv-first/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/msrv-first/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/msrv-first/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "first-sources/old-v8-receipt-first/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "first-sources/old-v8-receipt-first/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13696,
+      "sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+    },
+    "first-sources/old-v8-receipt-first/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "first-sources/old-v8-receipt-first/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "first-sources/old-v8-receipt-first/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "first-sources/old-v8-receipt-first/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "first-sources/old-v8-receipt-first/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "first-sources/old-v8-receipt-first/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "review/current/crates/xtask/tests/current_frontier_074.rs": {
+      "bytes": 9604,
+      "sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+    },
+    "review/current/crates/xtask/tests/frontier_current_view_074.rs": {
+      "bytes": 13696,
+      "sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+    },
+    "review/current/crates/xtask/tests/history_status_readers_074.rs": {
+      "bytes": 6824,
+      "sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+    },
+    "review/current/tools/current-frontier-074/alarm_addition.rs": {
+      "bytes": 2862,
+      "sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+    },
+    "review/current/tools/current-frontier-074/current.rs": {
+      "bytes": 2046,
+      "sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+    },
+    "review/current/tools/current-frontier-074/reader.rs": {
+      "bytes": 1570,
+      "sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+    },
+    "review/current/tools/current-frontier-074/reader_source.rs": {
+      "bytes": 1189,
+      "sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+    },
+    "review/current/tools/history-status-readers-074/inputs.rs": {
+      "bytes": 1782,
+      "sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+    },
+    "review/first-source-bindings.json": {
+      "bytes": 45499,
+      "sha256": "2223a2b7124c0bc0d3f8f097a7b2e249e9b96f6f1762fceddbf5cd533d2dc6b4"
+    },
+    "review/scope.json": {
+      "bytes": 1537,
+      "sha256": "fc6b15441ed41706f0912521a62a9586d7777078bae3009d464181938139137c"
+    },
+    "review/tools/inventory-545-view-074/rules.json": {
+      "bytes": 1030,
+      "sha256": "1f41899edf172c4ae0a29f17a5fd8a1cee0fd8bf1047c5da5c4ea94b1dca962b"
+    }
+  },
+  "package_pass": false,
+  "phases": [
+    "baseline-first",
+    "check-corrected",
+    "check-first",
+    "clippy-corrected",
+    "clippy-first",
+    "contract-final",
+    "contract-first",
+    "controls-first",
+    "doc-final",
+    "doc-first",
+    "final-corrected",
+    "final-first",
+    "focused-first",
+    "format-final",
+    "format-first",
+    "gnu-corrected",
+    "gnu-first",
+    "gnu-observation-first",
+    "gnu-post-timeout-first",
+    "msrv-corrected",
+    "msrv-first",
+    "old-v8-receipt-first"
+  ],
+  "qualification": false,
+  "release_admitted": false,
+  "schema": "hc074-frontier-current-view-evidence-v1",
+  "server": false,
+  "source_parent": "dcb53f184fedbcce700a55c50996e876731dea6d"
+}

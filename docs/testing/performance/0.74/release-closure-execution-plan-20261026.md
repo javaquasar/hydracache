@@ -112,6 +112,18 @@ close current-frontier/manifest, authority-rust-history and remaining bootstrap/
 document/held-role boundaries; this does not change V8's red incomplete verdict
 or authorize an unchanged full retry, host execution or qualification.
 
+The [current frontier continuation](frontier-current-view-result-20261027.md)
+repairs the RESP dev-only manifest edge, MAIN phase composition and the one
+independently pinned alarm-test addition, without changing old rules or either
+protected audit body. The original eighteen cases and expanded thirty-case
+cohort pass on Windows/MSRV. After removing duplicated imports from the new
+test, its eight Windows/MSRV and nine GNU controls pass with strict Clippy.
+The first full GNU focused cohort remains incomplete at its original 900-second
+limit during the frontier Git diff over the Windows mount; no automatic retry
+or target-summary substitution follows. Resolve that Linux validation boundary
+separately, then the retained bootstrap lock/document and held-role boundaries.
+The old V8 remains red/incomplete and the full package is still open.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

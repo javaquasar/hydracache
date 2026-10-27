@@ -1,0 +1,30 @@
+{
+  "clocks": false,
+  "complete_package_review": false,
+  "implementation": "8ad56a22486bcf3dded6a7a2b4833ab2b6efada5",
+  "measurement": false,
+  "old_rules_product_and_selected_guards_preserved": true,
+  "original_gate_and_io_preserved": true,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "package_rerun": false,
+  "qualifier_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "raw_sha256": {
+    "crates/xtask/tests/current_frontier_074.rs": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9",
+    "crates/xtask/tests/frontier_current_view_074.rs": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2",
+    "crates/xtask/tests/history_status_readers_074.rs": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8",
+    "tools/current-frontier-074/alarm_addition.rs": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67",
+    "tools/current-frontier-074/current.rs": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522",
+    "tools/current-frontier-074/reader.rs": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b",
+    "tools/current-frontier-074/reader_source.rs": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d",
+    "tools/history-status-readers-074/inputs.rs": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  "release_admitted": false,
+  "rust_bodies": 8,
+  "server": false,
+  "services": false,
+  "source_parent": "dcb53f184fedbcce700a55c50996e876731dea6d"
+}

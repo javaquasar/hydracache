@@ -1,0 +1,1186 @@
+[
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "check-corrected",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "check-corrected",
+    "raw_sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "check-corrected",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "check-corrected",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "check-corrected",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "check-corrected",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "check-corrected",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "check-corrected",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "check-first",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "blob": "2f96b7dcc0cfb37032be63934a66c33fdaa3db8e",
+    "fixed_parent": null,
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "check-first",
+    "raw_sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "check-first",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "check-first",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "check-first",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "check-first",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "check-first",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "check-first",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "clippy-corrected",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "clippy-corrected",
+    "raw_sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "clippy-corrected",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "clippy-corrected",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "clippy-corrected",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "clippy-corrected",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "clippy-corrected",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "clippy-corrected",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "blob": "2f96b7dcc0cfb37032be63934a66c33fdaa3db8e",
+    "fixed_parent": null,
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "contract-final",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "contract-final",
+    "raw_sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "contract-final",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "contract-final",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "contract-final",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "contract-final",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "contract-final",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "contract-final",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "contract-first",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "blob": "2f96b7dcc0cfb37032be63934a66c33fdaa3db8e",
+    "fixed_parent": null,
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "contract-first",
+    "raw_sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "contract-first",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "contract-first",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "contract-first",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "contract-first",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "contract-first",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "contract-first",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "controls-first",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "blob": "64e8c20f63a632a2af8fc1d9eba99a09bdba717f",
+    "fixed_parent": null,
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "controls-first",
+    "raw_sha256": "824dbd06837ef61acf1d807b1d68f92b7be57cebfbfa30f0d8ed8ab842503b4d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "controls-first",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "controls-first",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "controls-first",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "controls-first",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "controls-first",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "controls-first",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "doc-final",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "doc-final",
+    "raw_sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "doc-final",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "doc-final",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "doc-final",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "doc-final",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "doc-final",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "doc-final",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "doc-first",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "blob": "2f96b7dcc0cfb37032be63934a66c33fdaa3db8e",
+    "fixed_parent": null,
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "doc-first",
+    "raw_sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "doc-first",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "doc-first",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "doc-first",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "doc-first",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "doc-first",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "doc-first",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "final-corrected",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "final-corrected",
+    "raw_sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "final-corrected",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "final-corrected",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "final-corrected",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "final-corrected",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "final-corrected",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "final-corrected",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "final-first",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "blob": "2f96b7dcc0cfb37032be63934a66c33fdaa3db8e",
+    "fixed_parent": null,
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "final-first",
+    "raw_sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "final-first",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "final-first",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "final-first",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "final-first",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "final-first",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "final-first",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "focused-first",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "blob": null,
+    "fixed_parent": "dcb53f184fedbcce700a55c50996e876731dea6d",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "focused-first",
+    "raw_sha256": "0c4b01d77f9808e3170cb7703231a4c380bab5c6db439afa7ce6b0b9aeea9e03"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "focused-first",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "focused-first",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "focused-first",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "focused-first",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "format-final",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "format-final",
+    "raw_sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "format-final",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "format-final",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "format-final",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "format-final",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "format-final",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "format-final",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "format-first",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "blob": "2f96b7dcc0cfb37032be63934a66c33fdaa3db8e",
+    "fixed_parent": null,
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "format-first",
+    "raw_sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "format-first",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "format-first",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "format-first",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "format-first",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "format-first",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "format-first",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "gnu-corrected",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "gnu-corrected",
+    "raw_sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "gnu-corrected",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "gnu-corrected",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "gnu-corrected",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "gnu-corrected",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "gnu-corrected",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "gnu-corrected",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "blob": "2f96b7dcc0cfb37032be63934a66c33fdaa3db8e",
+    "fixed_parent": null,
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "gnu-observation-first",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "blob": "2f96b7dcc0cfb37032be63934a66c33fdaa3db8e",
+    "fixed_parent": null,
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "gnu-observation-first",
+    "raw_sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "gnu-observation-first",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "gnu-observation-first",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "gnu-observation-first",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "gnu-observation-first",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "gnu-observation-first",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "gnu-observation-first",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "gnu-post-timeout-first",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "gnu-post-timeout-first",
+    "raw_sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "gnu-post-timeout-first",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "gnu-post-timeout-first",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "gnu-post-timeout-first",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "gnu-post-timeout-first",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "gnu-post-timeout-first",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "gnu-post-timeout-first",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "msrv-corrected",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "msrv-corrected",
+    "raw_sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "msrv-corrected",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "msrv-corrected",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "msrv-corrected",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "msrv-corrected",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "msrv-corrected",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "msrv-corrected",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "blob": "2f96b7dcc0cfb37032be63934a66c33fdaa3db8e",
+    "fixed_parent": null,
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "b2b47de2e161d754938cf994faa1a8530590fa56d856c0d0c4ec0b1c004dbaac"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/current_frontier_074.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/frontier_current_view_074.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "d5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/history_status_readers_074.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/alarm_addition.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/current.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/current-frontier-074/reader_source.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/history-status-readers-074/inputs.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353"
+  }
+]

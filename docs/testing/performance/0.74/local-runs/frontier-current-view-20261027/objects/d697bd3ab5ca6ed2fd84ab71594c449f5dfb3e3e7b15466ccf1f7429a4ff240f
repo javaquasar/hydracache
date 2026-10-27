@@ -1,0 +1,15 @@
+
+running 10 tests
+test diff_translation_adds_only_fixed_rhs_and_retains_all_paths_and_flags ... ok
+test archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation ... ok
+test historical_reads_are_fixed_and_never_fall_back_to_current_artifacts ... ok
+test all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions has been running for over 60 seconds
+test every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion has been running for over 60 seconds
+test guard_assertion_test_and_io_mutations_cannot_hide_behind_history has been running for over 60 seconds
+test every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion ... ok
+test guard_assertion_test_and_io_mutations_cannot_hide_behind_history ... ok
+test unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files ... ok
+test unsupported_commands_revisions_scopes_and_cwd_refuse_before_execution ... ok
+test all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions ... ok
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift has been running for over 60 seconds
+test qualification_raw_identity_and_previous_candidate_guard_remain_independent ... ok

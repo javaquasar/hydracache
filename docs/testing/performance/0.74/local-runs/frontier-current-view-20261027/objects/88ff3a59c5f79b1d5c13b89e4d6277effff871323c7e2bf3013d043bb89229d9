@@ -1,0 +1,19 @@
+"""One read-only observation of the already running Linux gate, no rerun."""
+import json
+from pathlib import Path
+import subprocess
+
+root = Path(__file__).resolve().parent.parent
+tracked = subprocess.check_output(['git', 'ls-files', '-z', '--', 'docs/testing/performance/0.74'], cwd=root, timeout=10)
+observations = []
+for args in [
+    ['ps', '-p', '118374', '-o', 'pid,etimes,pcpu,args'],
+    ['cat', '/proc/118374/wchan'],
+    ['cat', '/proc/118374/io'],
+]:
+    result = subprocess.run(['wsl.exe', '-d', 'Ubuntu', '-u', 'artur', '--exec', *args],
+                            cwd=root, capture_output=True, text=True, timeout=10, check=False)
+    observations.append(dict(argv=args, exit=result.returncode, stdout=result.stdout, stderr=result.stderr))
+print(json.dumps(dict(tracked_performance_document_entries=len([n for n in tracked.split(b'\0') if n]),
+    observations=observations, existing_gate_only=True, workload_rerun=False,
+    clock_or_service_change=False, server=False, performance_claim=False), indent=2))

@@ -1,0 +1,60 @@
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error: file is loaded as a module multiple times: `crates\xtask\tests\..\..\..\tools\remaining-readers-074\..\..\crates\xtask\tests\support\current_tree_input.rs`
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+  = note: `-D clippy::duplicate-mod` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(clippy::duplicate_mod)]`
+
+error: file is loaded as a module multiple times: `crates\xtask\tests\..\..\..\tools\current-frontier-074\..\authority-reader-phase-074\current_main.rs`
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+
+error: file is loaded as a module multiple times: `crates\xtask\tests\..\..\..\tools\remaining-readers-074\..\..\crates\xtask\tests\support\..\..\..\..\tools\authority-runtime-074\cost_reader.rs`
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+
+error: file is loaded as a module multiple times: `crates\xtask\tests\..\..\..\tools\remaining-readers-074\..\..\crates\xtask\tests\support\..\..\..\..\tools\authority-runtime-074\history_reader.rs`
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+
+error: file is loaded as a module multiple times: `crates\xtask\tests\..\..\..\tools\current-frontier-074\additions.rs`
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+
+error: file is loaded as a module multiple times: `crates\xtask\tests\..\..\..\tools\current-frontier-074\alarm_addition.rs`
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+
+error: file is loaded as a module multiple times: `crates\xtask\tests\..\..\..\tools\current-frontier-074\contract.rs`
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+
+error: file is loaded as a module multiple times: `crates\xtask\tests\..\..\..\tools\current-frontier-074\current.rs`
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+
+error: file is loaded as a module multiple times: `crates\xtask\tests\..\..\..\tools\remaining-readers-074\..\..\crates\xtask\tests\support\..\..\..\..\tools\authority-runtime-074\..\history-status-readers-074\contract.rs`
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+
+error: file is loaded as a module multiple times: `crates\xtask\tests\..\..\..\tools\remaining-readers-074\contract.rs`
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+
+error: file is loaded as a module multiple times: `crates\xtask\tests\..\..\..\tools\remaining-readers-074\inputs.rs`
+  |
+  = help: replace all but one `mod` item with `use` items
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#duplicate_mod
+
+error: could not compile `xtask` (test "frontier_current_view_074") due to 11 previous errors
+warning: build failed, waiting for other jobs to finish...

@@ -21308,3 +21308,40 @@ runtime changes or a performance claim. The full package still needs the other
 historical-frontier repairs and a separately reviewed complete run under its
 original limit. These focused passes do not amend the older timeout or fill
 missing target verdicts.
+
+The [current frontier repair](../testing/performance/0.74/frontier-current-view-result-20261027.md)
+isolates three more preservation mismatches: the approved root tests add three
+dev-only manifest edges, MAIN has a qualified new reader expression, and the
+Tokio repair adds one alarm-test source. None justifies replacing an old catalog
+with the discovered live index. Exact independent producers and complete-body
+inverse checks connect those inputs to the unchanged twelve-path rules and
+fourteen-addition gate. The alarm source receives its own exact metadata/index/
+body check under the already pinned 545-file inventory.
+
+MAIN illustrates a separate constraint: proving a historical representation
+does not make it the correct input for a current gate. The join proves the old
+whole legacy body, then sends the original fresh observation to the unchanged
+security/runtime route. Both physical reader prefixes and original guard bodies
+remain exact. Even the old source test for the reader tail keeps its original
+assertion: a whole-current-facade check and one qualified inverse handoff make
+that assertion composable, while a separate construction proves the complete
+current facade from the fixed parent.
+
+The Windows and MSRV focused cohorts pass thirty cases. Strict Clippy finds a
+real test-wiring defect: two facades load their shared modules twice. Removing
+the redundant import, rather than suppressing the lint, leaves the new eight
+portable cases intact; they pass again on Windows/MSRV and with a ninth symlink
+case on GNU/Linux. The separate original targets still exercise the actual
+history reader. These are source-compatibility and refusal checks, not new CPU,
+allocation or throughput results.
+
+The first full GNU cohort supplies a different negative result. All selected
+targets compile, but the original frontier Git diff over the Windows mount does
+not finish before the unchanged 900-second bound. A read-only observation sees
+`p9_client_rpc` while the evidence directory contains 48,690 tracked files. That
+observation does not prove the entire cost's cause. Nine printed individual
+passes without a completed target summary cannot establish the requested
+cohort. Its timeout, source postflight and first Clippy refusal remain separate
+evidence. The later small GNU target does not fill those missing verdicts, and
+none of these local repairs changes the old full-package V8 result or admits a
+server run.

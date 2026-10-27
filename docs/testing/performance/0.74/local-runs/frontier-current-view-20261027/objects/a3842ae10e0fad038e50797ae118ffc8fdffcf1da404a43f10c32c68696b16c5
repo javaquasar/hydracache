@@ -1,0 +1,7 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 59.15s
+     Running tests\authority_rust_history_074.rs (target\debug\deps\authority_rust_history_074-aed2135a4a4dcb53.exe)
+     Running tests\current_frontier_074.rs (target\debug\deps\current_frontier_074-590611d413a1fc32.exe)
+     Running tests\current_tree_input_audit_074.rs (target\debug\deps\current_tree_input_audit_074-cd19873f92652053.exe)
+     Running tests\frontier_current_view_074.rs (target\debug\deps\frontier_current_view_074-1b4dc86b4f781bb8.exe)
+     Running tests\history_status_readers_074.rs (target\debug\deps\history_status_readers_074-9525694c70ce8cf5.exe)

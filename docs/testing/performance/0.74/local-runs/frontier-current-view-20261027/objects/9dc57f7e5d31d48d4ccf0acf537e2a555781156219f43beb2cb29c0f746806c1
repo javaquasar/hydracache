@@ -1,0 +1,162 @@
+"""Retain scoped source checks and their original outcomes as data only."""
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = ROOT / 'target/roots-lock-view-20261027'
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/frontier-current-view-20261027'
+PARENT = 'dcb53f184fedbcce700a55c50996e876731dea6d'
+IMPLEMENTATION = sys.argv[1]
+members, objects, intents = {}, {}, {}
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+def doc(name, value):
+    add(name, (json.dumps(value, sort_keys=True, indent=2) + '\n').encode())
+
+
+def git(*args):
+    return subprocess.check_output(['git', '--no-replace-objects', *args], cwd=ROOT, timeout=10)
+
+
+assert git('rev-parse', 'HEAD').decode().strip() == IMPLEMENTATION
+phases = sorted(p.name.removeprefix('frontier-') for p in BASE.glob('frontier-*') if p.is_dir())
+for phase in phases:
+    folder = BASE / ('frontier-' + phase)
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    intents[phase] = intent
+    assert intent['source_commit'] == PARENT and intent['disk_floor_bytes'] == 4 * 1024**3
+    assert not any(intent[k] for k in ('qualification', 'server', 'services', 'clocks', 'product_load'))
+    assert result['source_unchanged'] and result['commit_unchanged'] and not result['release_admitted']
+    assert result['source_after'] == intent['source']
+    expected_exit = 124 if phase == 'gnu-first' else (101 if phase in ('baseline-first', 'clippy-first') else 0)
+    assert result['exit'] == expected_exit, phase
+    for path in sorted(folder.rglob('*')):
+        if path.is_file():
+            add('checks/' + phase + '/' + path.relative_to(folder).as_posix(), path.read_bytes())
+    if phase in ('final-corrected', 'msrv-corrected', 'gnu-corrected'):
+        text = (folder / 'stdout.log').read_text(encoding='utf-8')
+        expected = ['9' if phase == 'gnu-corrected' else '8']
+        assert sorted(re.findall(r'^test result: ok\. (\d+) passed; 0 failed; 0 ignored;', text, re.M)) == sorted(expected), phase
+    if phase in ('final-first', 'msrv-first'):
+        text = (folder / 'stdout.log').read_text(encoding='utf-8')
+        expected = ['1', '10', '4', '7', '8']
+        assert sorted(re.findall(r'^test result: ok\. (\d+) passed; 0 failed; 0 ignored;', text, re.M)) == sorted(expected), phase
+    if phase == 'gnu-first':
+        text = (folder / 'stdout.log').read_text(encoding='utf-8')
+        assert not re.search(r'^test result:', text, re.M)
+        assert len(re.findall(r'^test .* \.\.\. ok$', text, re.M)) == 9
+        assert 'Running tests/authority_rust_history_074.rs' in (folder / 'stderr.log').read_text(encoding='utf-8')
+
+scope = [
+    'crates/xtask/tests/current_frontier_074.rs',
+    'crates/xtask/tests/frontier_current_view_074.rs',
+    'crates/xtask/tests/history_status_readers_074.rs',
+    'tools/current-frontier-074/alarm_addition.rs',
+    'tools/current-frontier-074/current.rs',
+    'tools/current-frontier-074/reader.rs',
+    'tools/current-frontier-074/reader_source.rs',
+    'tools/history-status-readers-074/inputs.rs',
+]
+old_blobs = {
+    ('controls-first', scope[1]): '64e8c20f63a632a2af8fc1d9eba99a09bdba717f',
+    **{(phase, scope[1]): '2f96b7dcc0cfb37032be63934a66c33fdaa3db8e' for phase in
+       ('final-first', 'msrv-first', 'gnu-first', 'check-first', 'clippy-first',
+        'format-first', 'doc-first', 'contract-first', 'gnu-observation-first')},
+}
+first_matches = []
+for phase, intent in intents.items():
+    if phase == 'baseline-first':
+        continue
+    for path in scope:
+        if path not in intent['source']:
+            continue
+        current = (ROOT / path).read_bytes()
+        if sha(current) == intent['source'][path]:
+            body = current
+            provenance = dict(matches_reviewed_current_source=True)
+        else:
+            blob = old_blobs.get((phase, path))
+            raw = git('cat-file', 'blob', blob) if blob else git('show', f'{PARENT}:{path}')
+            variants = [raw, raw.replace(b'\r\n', b'\n').replace(b'\n', b'\r\n')]
+            body = next((value for value in variants if sha(value) == intent['source'][path]), None)
+            assert body is not None, (phase, path)
+            provenance = dict(blob=blob, fixed_parent=None if blob else PARENT,
+                              matches_preserved_git_blob=True)
+        add('first-sources/' + phase + '/' + path, body)
+        first_matches.append(dict(phase=phase, path=path, raw_sha256=sha(body),
+                                  matches_preexecution_digest=True, **provenance))
+doc('review/first-source-bindings.json', first_matches)
+reviewed = {}
+for path in scope:
+    raw = (ROOT / path).read_bytes()
+    add('review/current/' + path, raw)
+    reviewed[path] = sha(raw)
+    for phase in ('final-corrected', 'check-corrected', 'clippy-corrected', 'msrv-corrected', 'gnu-corrected'):
+        assert intents[phase]['source'][path] == sha(raw), (phase, path)
+    if path != scope[1]:
+        for phase in ('final-first', 'msrv-first', 'gnu-first'):
+            assert intents[phase]['source'][path] == sha(raw), (phase, path)
+
+protected = [
+    'tools/current-frontier-074/contract.rs', 'tools/current-frontier-074/rules.json',
+    'tools/current-frontier-074/additions.rs', 'tools/remaining-readers-074/inputs.rs',
+    'crates/xtask/tests/support/current_tree_input.rs',
+    'crates/xtask/tests/support/current_tree_input_rules_074.json',
+    'crates/xtask/tests/authority_rust_history_074.rs',
+    'crates/xtask/tests/current_tree_input_audit_074.rs',
+    'tools/authority-runtime-074/gate.rs', 'tools/authority-runtime-074/io.rs',
+    'tools/authority-reader-phase-074', 'tools/long-run-supervisor-074/src',
+    'Cargo.toml', 'Cargo.lock', 'crates/hydracache-redis-compat/Cargo.toml',
+    'crates/xtask/tests/performance_contract_074.rs',
+    'docs/testing/performance/0.74/qualification-manifest.toml',
+]
+assert git('diff', '--name-only', PARENT, '--', *protected) == b''
+manifest_sha = sha((ROOT / protected[-1]).read_bytes())
+assert manifest_sha == '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
+descriptor = 'tools/inventory-545-view-074/rules.json'
+add('review/' + descriptor, (ROOT / descriptor).read_bytes())
+doc('review/scope.json', dict(source_parent=PARENT, implementation=IMPLEMENTATION,
+    raw_sha256=reviewed, rust_bodies=8, original_gate_and_io_preserved=True,
+    old_rules_product_and_selected_guards_preserved=True, qualifier_sha256=manifest_sha,
+    original_windows=[300,60,10], complete_package_review=False, package_rerun=False,
+    server=False, clocks=False, services=False, measurement=False, release_admitted=False))
+for path in ('tools/current-frontier-074/README.md',
+             'docs/testing/performance/0.74/frontier-current-view-result-20261027.md',
+             'target/run-roots-lock-view-20261027.py', 'target/seal-frontier-current-20261027.py',
+             'target/capture-frontier-wsl-observation-20261027.py',
+             'target/verify-frontier-packet-20261027.py'):
+    add('capture/' + path, (ROOT / path).read_bytes())
+
+OUT.mkdir(exist_ok=False)
+with (OUT / '.gitattributes').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+(OUT / 'objects').mkdir()
+for digest, raw in objects.items():
+    with (OUT / 'objects' / digest).open('xb') as stream:
+        stream.write(raw)
+index = dict(schema='hc074-frontier-current-view-evidence-v1', source_parent=PARENT,
+    implementation=IMPLEMENTATION, members=members, phases=phases,
+    first_sources_match_preexecution_digests=True, focused_cases_windows=30,
+    focused_cases_msrv=30, initial_gnu_cohort_complete=False, initial_gnu_cohort_exit=124,
+    final_lint_wiring_cases_windows=8, final_lint_wiring_cases_msrv=8, final_lint_wiring_cases_gnu=9,
+    package_pass=False, qualification=False, server=False, release_admitted=False)
+with (OUT / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, sort_keys=True, indent=2)
+    stream.write('\n')
+print(json.dumps(dict(members=len(members), objects=len(objects), index_sha256=sha((OUT / 'index.json').read_bytes()))))

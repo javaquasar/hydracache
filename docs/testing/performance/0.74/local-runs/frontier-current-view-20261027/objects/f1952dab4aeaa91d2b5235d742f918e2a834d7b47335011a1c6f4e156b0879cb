@@ -1,0 +1,40 @@
+{
+  "tracked_performance_document_entries": 48690,
+  "observations": [
+    {
+      "argv": [
+        "ps",
+        "-p",
+        "118374",
+        "-o",
+        "pid,etimes,pcpu,args"
+      ],
+      "exit": 0,
+      "stdout": "    PID ELAPSED %CPU COMMAND\n 118374     709  3.4 git --no-replace-objects diff --name-only 33c54b0cda8c330b115009cdf092ad002077cedf -- tools crates Cargo.toml Cargo.lock docs/COMPAT.md docs/plans/releases.toml docs/testing/gated-test-registry.toml docs/testing/performance/0.74\n",
+      "stderr": "your 131072x1 screen size is bogus. expect trouble\n"
+    },
+    {
+      "argv": [
+        "cat",
+        "/proc/118374/wchan"
+      ],
+      "exit": 0,
+      "stdout": "p9_client_rpc",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "cat",
+        "/proc/118374/io"
+      ],
+      "exit": 0,
+      "stdout": "rchar: 71824\nwchar: 0\nsyscr: 55\nsyscw: 0\nread_bytes: 11616256\nwrite_bytes: 0\ncancelled_write_bytes: 0\n",
+      "stderr": ""
+    }
+  ],
+  "existing_gate_only": true,
+  "workload_rerun": false,
+  "clock_or_service_change": false,
+  "server": false,
+  "performance_claim": false
+}
