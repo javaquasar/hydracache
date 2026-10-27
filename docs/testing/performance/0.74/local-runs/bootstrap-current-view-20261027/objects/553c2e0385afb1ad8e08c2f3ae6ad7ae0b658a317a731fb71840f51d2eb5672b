@@ -1,0 +1,22 @@
+   Compiling xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+warning: unused import: `read_to_string`
+ --> crates/xtask/tests/../../../tools/bootstrap-doc-reader-074/fixture.rs:4:18
+  |
+4 | ...::{read_to_stri...s...
+  |       ^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `xtask` (test "bootstrap_current_view_074") generated 1 warning (run `cargo fix --test "bootstrap_current_view_074" -p xtask` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 40.47s
+     Running tests/bootstrap_build_owner_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/bootstrap_build_owner_074-02af095f753458bd)
+     Running tests/bootstrap_child_boundary_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/bootstrap_child_boundary_074-199a08296a7ae592)
+     Running tests/bootstrap_child_census_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/bootstrap_child_census_074-0c2ae0af052f54b5)
+     Running tests/bootstrap_child_reader_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/bootstrap_child_reader_074-d876e90dd02e523f)
+     Running tests/bootstrap_current_image_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/bootstrap_current_image_074-a89bab2c259d79f8)
+     Running tests/bootstrap_current_view_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/bootstrap_current_view_074-bf76ea134408d7ab)
+     Running tests/bootstrap_doc_reader_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/bootstrap_doc_reader_074-153d92c2812ea505)
+     Running tests/bootstrap_enrollment_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/bootstrap_enrollment_074-d3da0bdbb71f4329)
+     Running tests/bootstrap_entry_binding_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/bootstrap_entry_binding_074-5fb38ebefcc62658)
+     Running tests/bootstrap_image_census_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/bootstrap_image_census_074-4c6c0066de6a25c5)
+     Running tests/bootstrap_installed_origin_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/bootstrap_installed_origin_074-1857f69ad76b313c)

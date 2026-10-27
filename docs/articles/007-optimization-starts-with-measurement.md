@@ -21345,3 +21345,37 @@ cohort. Its timeout, source postflight and first Clippy refusal remain separate
 evidence. The later small GNU target does not fill those missing verdicts, and
 none of these local repairs changes the old full-package V8 result or admits a
 server run.
+
+The [bootstrap continuation](../testing/performance/0.74/bootstrap-current-view-result-20261027.md)
+separates current observations from positive assertion fixtures at another shared
+boundary. Its fresh baseline has 41 passes and 15 failures. Cargo.lock and manager
+channel reads bypass the approved security projections, while the old document
+test compares a new diagnostic prefix and terminal-reader join against preceding
+producers. A test body remaining unchanged does not imply that its transitive
+input phase remains compatible.
+
+The repair adds exactly two separately selected security paths after the original
+single observation. They reuse the unchanged complete roots/security projectors;
+the old document selector, unknown-byte behavior and error propagation remain.
+The old assertion fixtures take a different route: whole-current validation,
+exact inverse edits and a whole-predecessor check. A positive old COMPAT fixture
+can be expanded forward only after its entire old body is validated. The actual
+fresh reader still rejects that old body, so fixture compatibility cannot become
+permission to accept stale current input. The same rule covers the two exact
+source additions in the previously approved terminal reader.
+
+The first candidate exposes two missed joins instead of completing the package:
+57 cases pass, but the old callback still supplies a predecessor to a fresh-only
+projector and the eleven-caller comparison still receives the later source.
+Those failures remain with the candidate. The corrected bootstrap cohort passes
+67 cases on Windows, MSRV and GNU/Linux, including all 22 installed-origin cases.
+Eight new controls check exact producers, errors/order, 48 seeded byte mutations,
+temporary-file drift and preserved old cases/guards. A separate unused-import
+Clippy refusal is fixed by exercising the same reader alias, without an exception;
+the changed target then passes eight cases per environment.
+
+This is a confirmed source/IO compatibility result, not a CPU or throughput gain
+and not proof of original delivery or all-writer cessation. The old full-package
+verdict and separate Linux frontier timeout remain unchanged. Held-role and
+diagnostic-artifact boundaries, complete package/security checks and original
+execution/recovery still precede server admission.

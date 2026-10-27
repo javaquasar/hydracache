@@ -1,0 +1,361 @@
+//! Current observations and older assertion fixtures are separate exact phases.
+#[path = "../../../tools/bootstrap-doc-reader-074/fixture.rs"]
+mod fixture;
+use fixture::actual as live;
+use std::path::{Path, PathBuf};
+const STEP: &str = "4211860d0de8f9bbd2fbb0afd907709a8f0baaf1";
+const SECURITY_BASE: &str = "fa9e708868b22999d60c9ccd97b694662910a095";
+const DOC_BASE: &str = "3c52c0aa34b8d00b2fac44375d5ba8fdf532bb9f";
+const LOCK: &str = "Cargo.lock";
+const CHANNEL: &str = "tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs";
+const REGISTRY: &str = "docs/testing/gated-test-registry.toml";
+fn root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
+}
+fn raw(path: &str) -> String {
+    std::fs::read_to_string(root().join(path))
+        .unwrap()
+        .replace("\r\n", "\n")
+}
+fn frozen(revision: &str, path: &str) -> String {
+    let out = std::process::Command::new("git")
+        .arg("--no-replace-objects")
+        .args(["show", &format!("{revision}:{path}")])
+        .current_dir(root())
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    String::from_utf8(out.stdout).unwrap().replace("\r\n", "\n")
+}
+fn observe(path: &str, body: String) -> String {
+    live::read_with(&root(), &root().join(path), |_| Ok(body)).unwrap()
+}
+#[test]
+fn current_security_inputs_match_fixed_producers_and_complete_old_bodies() {
+    for (path, producer) in [
+        (LOCK, "63cb4d7b9bca1c901b2f7420f86effd3309a6882"),
+        (CHANNEL, "2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d"),
+    ] {
+        let current = raw(path);
+        assert_eq!(current, frozen(producer, path));
+        let previous = frozen(SECURITY_BASE, path);
+        assert_eq!(live::read_to_string(root().join(path)).unwrap(), previous);
+        assert_eq!(observe(path, current.replace('\n', "\r\n")), previous);
+        assert_eq!(raw(path), current, "the actual product is never rewritten");
+    }
+}
+#[test]
+fn fresh_documents_and_old_assertion_fixtures_cannot_substitute_for_each_other() {
+    for (path, producer) in [
+        (fixture::PATH, fixture::PRODUCER),
+        (REGISTRY, "958b3135a15c00b9f6aad41522cef9d1f6608d3a"),
+    ] {
+        let current = raw(path);
+        assert_eq!(current, frozen(producer, path));
+        let expected = frozen(DOC_BASE, path);
+        assert_eq!(live::read_to_string(root().join(path)).unwrap(), expected);
+        assert_eq!(observe(path, current.clone()), expected);
+        let legacy = fixture::assertion_input(path, current);
+        assert_eq!(
+            fixture::project(&root(), &root().join(path), legacy.clone()),
+            expected
+        );
+        if path == fixture::PATH {
+            assert_eq!(
+                legacy,
+                frozen("a67a5299ab335424e9b11330dc06bd749ea9b859", path)
+            );
+            assert!(std::panic::catch_unwind(|| live::project(
+                &root(),
+                &root().join(path),
+                legacy
+            ))
+            .is_err());
+        }
+    }
+}
+#[test]
+fn selectors_remain_disjoint_and_unknown_inputs_keep_exact_bytes() {
+    for path in [LOCK, CHANNEL] {
+        let target = root().join(path);
+        assert_eq!(live::security_selected(&root(), &target), Some(path));
+        assert_eq!(live::selected(&root(), &target), None);
+        assert_eq!(
+            live::project(&root(), &target, "unchanged\r\n".into()),
+            "unchanged\r\n"
+        );
+        assert!(std::panic::catch_unwind(|| observe(path, "unreviewed".into())).is_err());
+    }
+    for path in [fixture::PATH, REGISTRY] {
+        assert_eq!(live::security_selected(&root(), &root().join(path)), None);
+        assert_eq!(live::selected(&root(), &root().join(path)), Some(path));
+    }
+    for path in [
+        "cargo.lock",
+        "Cargo.toml",
+        "../outside/Cargo.lock",
+        "other/Cargo.lock",
+        "tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs",
+    ] {
+        let target = root().join(path);
+        assert_eq!(live::security_selected(&root(), &target), None);
+        assert_eq!(
+            live::read_with(&root(), &target, |_| Ok("unchanged\r\n".into())).unwrap(),
+            "unchanged\r\n"
+        );
+        assert_eq!(
+            fixture::assertion_input(path, "unchanged\r\n".into()),
+            "unchanged\r\n"
+        );
+    }
+    assert_eq!(live::security_selected(&root(), Path::new(LOCK)), None);
+    assert_eq!(
+        live::security_selected(Path::new("relative"), &root().join(LOCK)),
+        None
+    );
+    assert_eq!(
+        live::security_selected(&root(), &root().join("./tools/../Cargo.lock")),
+        Some(LOCK)
+    );
+}
+#[test]
+fn each_ordered_observation_preserves_exact_errors_before_any_projection() {
+    for path in [LOCK, CHANNEL, fixture::PATH, REGISTRY, "unknown"] {
+        let target = root().join(path);
+        let calls = std::cell::Cell::new(0);
+        let body = if path == "unknown" {
+            "unchanged".into()
+        } else {
+            raw(path)
+        };
+        live::read_with(&root(), &target, |observed| {
+            calls.set(calls.get() + 1);
+            assert_eq!(observed, target);
+            Ok(body)
+        })
+        .unwrap();
+        assert_eq!(calls.get(), 1);
+        for kind in [
+            std::io::ErrorKind::Interrupted,
+            std::io::ErrorKind::PermissionDenied,
+            std::io::ErrorKind::NotFound,
+        ] {
+            let result = live::read_with(&root(), &target, |_| {
+                calls.set(calls.get() + 1);
+                Err(std::io::Error::from(kind))
+            });
+            assert_eq!(result.unwrap_err().kind(), kind);
+        }
+        assert_eq!(calls.get(), 4);
+        let error = live::read_with(&root(), &target, |_| {
+            Err(std::io::Error::from_raw_os_error(22))
+        })
+        .unwrap_err();
+        assert_eq!(error.raw_os_error(), Some(22));
+    }
+}
+#[test]
+fn success_never_caches_later_current_observations_or_accepts_stale_inputs() {
+    let mut seed = 0x0740_2026_1027_u64;
+    for (path, previous) in [
+        (LOCK, SECURITY_BASE),
+        (CHANNEL, SECURITY_BASE),
+        (fixture::PATH, DOC_BASE),
+        (REGISTRY, DOC_BASE),
+    ] {
+        let current = raw(path);
+        let expected = frozen(previous, path);
+        for case in 0..12 {
+            assert_eq!(observe(path, current.clone()), expected);
+            seed ^= seed << 13;
+            seed ^= seed >> 7;
+            seed ^= seed << 17;
+            let mut at = (seed % current.len() as u64) as usize;
+            if !current.as_bytes()[at].is_ascii() {
+                at = 0;
+            }
+            let mut mutated = current.clone().into_bytes();
+            mutated[at] ^= 1;
+            let mutated = String::from_utf8(mutated).unwrap();
+            assert_ne!(mutated, current, "seed={seed:#x} case={case}");
+            assert!(std::panic::catch_unwind(|| observe(path, mutated)).is_err());
+        }
+        for mutated in [expected, String::new(), format!("{current}\n// drift")] {
+            assert!(std::panic::catch_unwind(|| observe(path, mutated)).is_err());
+        }
+    }
+}
+#[test]
+fn assertion_fixtures_require_whole_producers_before_exact_inverse_edits() {
+    for (path, producer, previous) in [
+        (
+            fixture::PATH,
+            fixture::PRODUCER,
+            "a67a5299ab335424e9b11330dc06bd749ea9b859",
+        ),
+        (
+            fixture::READER,
+            fixture::READER_PRODUCER,
+            "5c7ef1c893a91d57a566e0a484a218f87c3df48f",
+        ),
+    ] {
+        let current = raw(path);
+        assert_eq!(current, frozen(producer, path));
+        let old = frozen(previous, path);
+        assert_eq!(fixture::assertion_input(path, current.clone()), old);
+        assert_eq!(
+            fixture::assertion_input(path, current.replace('\n', "\r\n")),
+            old
+        );
+        for bad in [
+            old,
+            String::new(),
+            format!("{current}{current}"),
+            format!("{current}\n// drift"),
+        ] {
+            assert!(std::panic::catch_unwind(|| fixture::assertion_input(path, bad)).is_err());
+        }
+    }
+    let target = root().join(fixture::PATH);
+    let legacy = fixture::assertion_input(fixture::PATH, raw(fixture::PATH));
+    assert_eq!(
+        fixture::read_with(&root(), &target, |_| Ok(legacy.clone())).unwrap(),
+        frozen(DOC_BASE, fixture::PATH)
+    );
+    for bad in [
+        raw(fixture::PATH),
+        format!("{legacy}{legacy}"),
+        legacy.replacen("Register", "changed", 1),
+    ] {
+        assert!(std::panic::catch_unwind(|| fixture::project(&root(), &target, bad)).is_err());
+    }
+}
+#[test]
+fn temporary_files_are_observed_again_after_mutation_and_removal() {
+    let owned = tempfile::tempdir().unwrap();
+    let path = owned.path().join(LOCK);
+    std::fs::write(&path, raw(LOCK)).unwrap();
+    let read = || live::read_with(owned.path(), &path, |p| std::fs::read_to_string(p));
+    assert_eq!(read().unwrap(), frozen(SECURITY_BASE, LOCK));
+    std::fs::write(&path, "drift").unwrap();
+    assert!(std::panic::catch_unwind(read).is_err());
+    std::fs::remove_file(&path).unwrap();
+    assert_eq!(read().unwrap_err().kind(), std::io::ErrorKind::NotFound);
+}
+fn predicates(source: &str) -> (Vec<String>, Vec<String>) {
+    use syn::visit::Visit;
+    #[derive(Default)]
+    struct Visitor(Vec<String>);
+    impl<'ast> Visit<'ast> for Visitor {
+        fn visit_macro(&mut self, node: &'ast syn::Macro) {
+            let name = node.path.segments.last().unwrap().ident.to_string();
+            if matches!(name.as_str(), "assert" | "assert_eq" | "assert_ne") {
+                self.0.push(format!("{name} {}", node.tokens));
+            }
+            syn::visit::visit_macro(self, node);
+        }
+    }
+    let file = syn::parse_file(source).unwrap();
+    let names = file
+        .items
+        .iter()
+        .filter_map(|item| match item {
+            syn::Item::Fn(value) if value.attrs.iter().any(|attr| attr.path().is_ident("test")) => {
+                Some(value.sig.ident.to_string())
+            }
+            _ => None,
+        })
+        .collect();
+    let mut visitor = Visitor::default();
+    visitor.visit_file(&file);
+    (names, visitor.0)
+}
+#[test]
+fn all_old_cases_guards_rules_and_the_observation_primitive_remain_exact() {
+    for path in [
+        "tools/bootstrap-doc-reader-074/contract.rs",
+        "tools/bootstrap-doc-reader-074/rules.json",
+        "tools/bootstrap-doc-reader-074/reader.rs",
+        "tools/bootstrap-doc-reader-074/proof.rs",
+        "tools/source-successor-view-074/contract.rs",
+        "tools/source-successor-view-074/rules.json",
+        "tools/source-successor-view-074/diagnostic.rs",
+        "tools/source-successor-view-074/diagnostic-additions.txt",
+        "tools/security-input-view-074/contract.rs",
+        "tools/security-input-view-074/rules.json",
+        "tools/roots-lock-view-074/contract.rs",
+        "tools/roots-lock-view-074/rules.json",
+        "tools/authority-runtime-074/gate.rs",
+        "tools/authority-runtime-074/io.rs",
+        "Cargo.toml",
+        LOCK,
+        fixture::PATH,
+        REGISTRY,
+        "docs/testing/performance/0.74/qualification-manifest.toml",
+    ] {
+        assert_eq!(raw(path), frozen(STEP, path), "{path}");
+    }
+    for name in [
+        "bootstrap_build_owner_074",
+        "bootstrap_child_boundary_074",
+        "bootstrap_child_census_074",
+        "bootstrap_child_reader_074",
+        "bootstrap_current_image_074",
+        "bootstrap_enrollment_074",
+        "bootstrap_entry_binding_074",
+        "bootstrap_image_census_074",
+        "bootstrap_installed_origin_074",
+    ] {
+        let path = format!("crates/xtask/tests/{name}.rs");
+        assert_eq!(raw(&path), frozen(STEP, &path));
+    }
+    let path = "crates/xtask/tests/bootstrap_doc_reader_074.rs";
+    let old = frozen(STEP, path);
+    let now = raw(path);
+    assert_eq!(predicates(&now), predicates(&old));
+    let expected = old
+        .replacen(
+            "../../../tools/bootstrap-doc-reader-074/io.rs",
+            "../../../tools/bootstrap-doc-reader-074/fixture.rs",
+            1,
+        )
+        .replacen(
+            "fn raw(path: &str) -> String {\n    std::fs::read_to_string",
+            "fn raw(path: &str) -> String {\n    let raw = std::fs::read_to_string",
+            1,
+        )
+        .replacen(
+            "        .replace(\"\\r\\n\", \"\\n\")\n}",
+            "        .replace(\"\\r\\n\", \"\\n\");\n    docs::assertion_input(path, raw)\n}",
+            1,
+        );
+    assert_eq!(now, expected);
+    let path = "tools/bootstrap-doc-reader-074/read.rs";
+    let old = frozen(STEP, path);
+    let now = raw(path);
+    assert_eq!(
+        now.split_once("// Separate from").unwrap().0,
+        old.split_once("pub fn read_with(").unwrap().0
+    );
+    assert_eq!(
+        now.split_once("pub fn read_with(").unwrap().1,
+        old.split_once("pub fn read_with(").unwrap().1
+    );
+    let path = "tools/bootstrap-doc-reader-074/io.rs";
+    let old = frozen(STEP, path);
+    let now = raw(path);
+    assert_eq!(
+        now.split_once("pub fn project(")
+            .unwrap()
+            .1
+            .split_once("pub fn read_to_string(")
+            .unwrap()
+            .0,
+        old.split_once("pub fn project(")
+            .unwrap()
+            .1
+            .split_once("pub fn read_to_string(")
+            .unwrap()
+            .0
+    );
+}

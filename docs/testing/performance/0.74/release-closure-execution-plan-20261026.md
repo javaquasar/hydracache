@@ -124,6 +124,18 @@ or target-summary substitution follows. Resolve that Linux validation boundary
 separately, then the retained bootstrap lock/document and held-role boundaries.
 The old V8 remains red/incomplete and the full package is still open.
 
+The [bootstrap current-input continuation](bootstrap-current-view-result-20261027.md)
+now passes the ten prior bootstrap targets and eight new controls: 67 cases on
+Windows/MSRV/GNU. Exactly two security paths pass the already approved projectors
+after one original observation; the old two-document selector and observer/error
+primitive stay exact. Separate whole-pinned assertion fixtures retain the old
+document and authority-source comparisons without admitting stale current bytes.
+First baseline/candidate failures and the unused-import Clippy refusal remain
+evidence; final small-target checks pass on all three environments. Next repair
+held-role/diagnostic-artifact preservation and resolve the independent full Linux
+frontier boundary before complete source review/full package dispatch. Neither
+the old V8 nor server/original-execution admission changes.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

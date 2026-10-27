@@ -1,0 +1,144 @@
+"""Retain bounded compatibility gates and first source outcomes as inert data."""
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = ROOT / 'target/roots-lock-view-20261027'
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/bootstrap-current-view-20261027'
+PARENT = '4211860d0de8f9bbd2fbb0afd907709a8f0baaf1'
+IMPLEMENTATION = sys.argv[1]
+members, objects, intents = {}, {}, {}
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+def doc(name, value):
+    add(name, (json.dumps(value, sort_keys=True, indent=2) + '\n').encode())
+
+
+def git(*args):
+    return subprocess.check_output(['git', '--no-replace-objects', *args], cwd=ROOT, timeout=10)
+
+
+assert git('rev-parse', 'HEAD').decode().strip() == IMPLEMENTATION
+phases = sorted(p.name.removeprefix('bootstrap-') for p in BASE.glob('bootstrap-*') if p.is_dir())
+for phase in phases:
+    folder = BASE / ('bootstrap-' + phase)
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    intents[phase] = intent
+    assert intent['source_commit'] == PARENT and intent['disk_floor_bytes'] == 4 * 1024**3
+    assert not any(intent[k] for k in ('qualification', 'server', 'services', 'clocks', 'product_load'))
+    assert result['source_unchanged'] and result['commit_unchanged'] and not result['release_admitted']
+    assert result['source_after'] == intent['source']
+    assert result['exit'] == (101 if phase in ('baseline-first', 'focused-first', 'clippy-first') else 0), phase
+    for path in sorted(folder.rglob('*')):
+        if path.is_file():
+            add('checks/' + phase + '/' + path.relative_to(folder).as_posix(), path.read_bytes())
+    if phase in ('focused-corrected', 'msrv-first', 'gnu-first'):
+        text = (folder / 'stdout.log').read_text(encoding='utf-8')
+        actual = re.findall(r'^test result: ok\. (\d+) passed; 0 failed; 0 ignored;', text, re.M)
+        assert sorted(actual) == sorted(['4'] * 7 + ['3', '6', '8', '22']), phase
+    if phase in ('focused-final', 'msrv-final', 'gnu-final'):
+        text = (folder / 'stdout.log').read_text(encoding='utf-8')
+        assert re.findall(r'^test result: ok\. (\d+) passed; 0 failed; 0 ignored;', text, re.M) == ['8'], phase
+    if phase in ('baseline-first', 'focused-first'):
+        text = (folder / 'stdout.log').read_text(encoding='utf-8')
+        rows = re.findall(r'^test result: (?:ok|FAILED)\. (\d+) passed; (\d+) failed; 0 ignored;', text, re.M)
+        actual = len(rows), sum(int(a) for a, b in rows), sum(int(b) for a, b in rows)
+        assert actual == ((9, 41, 15) if phase == 'baseline-first' else (10, 57, 2)), (phase, actual)
+
+scope = ['crates/xtask/tests/bootstrap_current_view_074.rs',
+    'crates/xtask/tests/bootstrap_doc_reader_074.rs',
+    'tools/bootstrap-doc-reader-074/fixture.rs', 'tools/bootstrap-doc-reader-074/installed_io.rs',
+    'tools/bootstrap-doc-reader-074/io.rs', 'tools/bootstrap-doc-reader-074/read.rs']
+first_matches = []
+for phase, intent in intents.items():
+    if phase == 'baseline-first':
+        continue
+    for path in scope:
+        if path not in intent['source']:
+            continue
+        current = (ROOT / path).read_bytes()
+        provenance = dict(matches_reviewed_current_source=True)
+        if sha(current) == intent['source'][path]:
+            body = current
+        else:
+            blob = ('d1e20e675bf4e64b6f156e1c4741235f16ca6010' if path == scope[2]
+                    else '79f9ef2f57a784ee4cc38f62b981fb77cf59b830')
+            assert (path == scope[2] and phase == 'focused-first') or path == scope[0]
+            raw = git('cat-file', 'blob', blob)
+            variants = [raw, raw.replace(b'\r\n', b'\n').replace(b'\n', b'\r\n')]
+            body = next((value for value in variants if sha(value) == intent['source'][path]), None)
+            assert body is not None, (phase, path)
+            provenance = dict(blob=blob, matches_preserved_git_blob=True)
+        add('first-sources/' + phase + '/' + path, body)
+        first_matches.append(dict(phase=phase, path=path, raw_sha256=sha(body),
+                                  matches_preexecution_digest=True, **provenance))
+doc('review/first-source-bindings.json', first_matches)
+reviewed = {}
+for path in scope:
+    raw = (ROOT / path).read_bytes()
+    add('review/current/' + path, raw)
+    reviewed[path] = sha(raw)
+    for phase in ('focused-final', 'check-final', 'clippy-final', 'msrv-final', 'gnu-final'):
+        assert intents[phase]['source'][path] == sha(raw), (phase, path)
+    if path != scope[0]:
+        for phase in ('focused-corrected', 'msrv-first', 'gnu-first'):
+            assert intents[phase]['source'][path] == sha(raw), (phase, path)
+
+protected = ['tools/bootstrap-doc-reader-074/contract.rs', 'tools/bootstrap-doc-reader-074/rules.json',
+    'tools/bootstrap-doc-reader-074/proof.rs', 'tools/bootstrap-doc-reader-074/reader.rs',
+    'tools/source-successor-view-074', 'tools/security-input-view-074', 'tools/roots-lock-view-074',
+    'tools/authority-runtime-074', 'tools/authority-reader-phase-074',
+    'tools/long-run-supervisor-074/src', 'crates/xtask/tests/support',
+    'Cargo.toml', 'Cargo.lock', 'docs/COMPAT.md', 'docs/testing/gated-test-registry.toml',
+    'docs/testing/performance/0.74/qualification-manifest.toml']
+protected += ['crates/xtask/tests/' + name + '.rs' for name in [
+    'bootstrap_build_owner_074', 'bootstrap_child_boundary_074', 'bootstrap_child_census_074',
+    'bootstrap_child_reader_074', 'bootstrap_current_image_074', 'bootstrap_enrollment_074',
+    'bootstrap_entry_binding_074', 'bootstrap_image_census_074', 'bootstrap_installed_origin_074',
+    'authority_reader_phase_074', 'performance_contract_074']]
+assert git('diff', '--name-only', PARENT, '--', *protected) == b''
+manifest = sha((ROOT / 'docs/testing/performance/0.74/qualification-manifest.toml').read_bytes())
+assert manifest == '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
+doc('review/scope.json', dict(source_parent=PARENT, implementation=IMPLEMENTATION,
+    raw_sha256=reviewed, rust_bodies=6, shared_runtime_gate_io_and_old_caller_guards_preserved=True,
+    two_document_selector_and_read_primitive_preserved=True, qualifier_sha256=manifest,
+    source_fixture_view_is_not_fresh_read_admission=True, original_windows=[300,60,10],
+    complete_package_review=False, package_rerun=False, server=False, clocks=False,
+    services=False, measurement=False, release_admitted=False))
+for path in ('tools/bootstrap-doc-reader-074/README.md',
+    'docs/testing/performance/0.74/bootstrap-current-view-result-20261027.md',
+    'target/run-roots-lock-view-20261027.py', 'target/seal-bootstrap-current-20261027.py',
+    'target/bootstrap-source-pins-20261027.py', 'target/verify-bootstrap-packet-20261027.py'):
+    add('capture/' + path, (ROOT / path).read_bytes())
+OUT.mkdir(exist_ok=False)
+with (OUT / '.gitattributes').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+(OUT / 'objects').mkdir()
+for digest, raw in objects.items():
+    with (OUT / 'objects' / digest).open('xb') as stream:
+        stream.write(raw)
+index = dict(schema='hc074-bootstrap-current-view-evidence-v1', source_parent=PARENT,
+    implementation=IMPLEMENTATION, members=members, phases=phases,
+    first_sources_match_preexecution_digests=True, cohort_cases_per_environment=67,
+    final_lint_wiring_cases_per_environment=8,
+    package_pass=False, qualification=False, server=False, release_admitted=False)
+with (OUT / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, sort_keys=True, indent=2)
+    stream.write('\n')
+print(json.dumps(dict(members=len(members), objects=len(objects), index_sha256=sha((OUT / 'index.json').read_bytes()))))

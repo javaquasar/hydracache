@@ -1,0 +1,3 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.57s
+     Running tests\bootstrap_current_view_074.rs (target\debug\deps\bootstrap_current_view_074-ce5aa705fe5e7947.exe)

@@ -1,0 +1,631 @@
+[
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_current_view_074.rs",
+    "phase": "check-final",
+    "raw_sha256": "89ea2482fe5552c171b719fc7f29482756da71fc9b90aee2d268a46be89f0912"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "check-final",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "check-final",
+    "raw_sha256": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "check-final",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "check-final",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "check-final",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  {
+    "blob": "79f9ef2f57a784ee4cc38f62b981fb77cf59b830",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/bootstrap_current_view_074.rs",
+    "phase": "check-first",
+    "raw_sha256": "258c7dd9312a7386b0ff881e2e9d04fe37d9b2fc5ced37fdbfbffaa74e6233d6"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "check-first",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "check-first",
+    "raw_sha256": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "check-first",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "check-first",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "check-first",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_current_view_074.rs",
+    "phase": "clippy-final",
+    "raw_sha256": "89ea2482fe5552c171b719fc7f29482756da71fc9b90aee2d268a46be89f0912"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "clippy-final",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "clippy-final",
+    "raw_sha256": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "clippy-final",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "clippy-final",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "clippy-final",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  {
+    "blob": "79f9ef2f57a784ee4cc38f62b981fb77cf59b830",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/bootstrap_current_view_074.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "258c7dd9312a7386b0ff881e2e9d04fe37d9b2fc5ced37fdbfbffaa74e6233d6"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_current_view_074.rs",
+    "phase": "contract-final",
+    "raw_sha256": "89ea2482fe5552c171b719fc7f29482756da71fc9b90aee2d268a46be89f0912"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "contract-final",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "contract-final",
+    "raw_sha256": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "contract-final",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "contract-final",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "contract-final",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_current_view_074.rs",
+    "phase": "doc-final",
+    "raw_sha256": "89ea2482fe5552c171b719fc7f29482756da71fc9b90aee2d268a46be89f0912"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "doc-final",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "doc-final",
+    "raw_sha256": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "doc-final",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "doc-final",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "doc-final",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  {
+    "blob": "79f9ef2f57a784ee4cc38f62b981fb77cf59b830",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/bootstrap_current_view_074.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "258c7dd9312a7386b0ff881e2e9d04fe37d9b2fc5ced37fdbfbffaa74e6233d6"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_current_view_074.rs",
+    "phase": "focused-final",
+    "raw_sha256": "89ea2482fe5552c171b719fc7f29482756da71fc9b90aee2d268a46be89f0912"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "focused-final",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "focused-final",
+    "raw_sha256": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "focused-final",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "focused-final",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "focused-final",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "focused-first",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "blob": "d1e20e675bf4e64b6f156e1c4741235f16ca6010",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "focused-first",
+    "raw_sha256": "42333d1c1f3e7942abc26719c4ecd602ee972ece6840ade6667f0fc343b870d8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "focused-first",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "focused-first",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "focused-first",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_current_view_074.rs",
+    "phase": "format-final",
+    "raw_sha256": "89ea2482fe5552c171b719fc7f29482756da71fc9b90aee2d268a46be89f0912"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "format-final",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "format-final",
+    "raw_sha256": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "format-final",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "format-final",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "format-final",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_current_view_074.rs",
+    "phase": "gnu-final",
+    "raw_sha256": "89ea2482fe5552c171b719fc7f29482756da71fc9b90aee2d268a46be89f0912"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "gnu-final",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "gnu-final",
+    "raw_sha256": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "gnu-final",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "gnu-final",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "gnu-final",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  {
+    "blob": "79f9ef2f57a784ee4cc38f62b981fb77cf59b830",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/bootstrap_current_view_074.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "258c7dd9312a7386b0ff881e2e9d04fe37d9b2fc5ced37fdbfbffaa74e6233d6"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_current_view_074.rs",
+    "phase": "msrv-final",
+    "raw_sha256": "89ea2482fe5552c171b719fc7f29482756da71fc9b90aee2d268a46be89f0912"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "msrv-final",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "msrv-final",
+    "raw_sha256": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "msrv-final",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "msrv-final",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "msrv-final",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  {
+    "blob": "79f9ef2f57a784ee4cc38f62b981fb77cf59b830",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/bootstrap_current_view_074.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "258c7dd9312a7386b0ff881e2e9d04fe37d9b2fc5ced37fdbfbffaa74e6233d6"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_current_view_074.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "89ea2482fe5552c171b719fc7f29482756da71fc9b90aee2d268a46be89f0912"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/fixture.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/installed_io.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/read.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  }
+]

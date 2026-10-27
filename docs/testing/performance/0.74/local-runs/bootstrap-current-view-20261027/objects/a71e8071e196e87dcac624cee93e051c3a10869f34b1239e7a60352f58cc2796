@@ -1,0 +1,29 @@
+{
+  "clocks": false,
+  "complete_package_review": false,
+  "implementation": "1ffb7410e796661ef08a4ff76cbefca036f65031",
+  "measurement": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "package_rerun": false,
+  "qualifier_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "raw_sha256": {
+    "crates/xtask/tests/bootstrap_current_view_074.rs": "89ea2482fe5552c171b719fc7f29482756da71fc9b90aee2d268a46be89f0912",
+    "crates/xtask/tests/bootstrap_doc_reader_074.rs": "915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032",
+    "tools/bootstrap-doc-reader-074/fixture.rs": "af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428",
+    "tools/bootstrap-doc-reader-074/installed_io.rs": "20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588",
+    "tools/bootstrap-doc-reader-074/io.rs": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3",
+    "tools/bootstrap-doc-reader-074/read.rs": "0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7"
+  },
+  "release_admitted": false,
+  "rust_bodies": 6,
+  "server": false,
+  "services": false,
+  "shared_runtime_gate_io_and_old_caller_guards_preserved": true,
+  "source_fixture_view_is_not_fresh_read_admission": true,
+  "source_parent": "4211860d0de8f9bbd2fbb0afd907709a8f0baaf1",
+  "two_document_selector_and_read_primitive_preserved": true
+}

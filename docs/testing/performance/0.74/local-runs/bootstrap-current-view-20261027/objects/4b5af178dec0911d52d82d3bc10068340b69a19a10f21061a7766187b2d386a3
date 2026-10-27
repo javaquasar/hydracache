@@ -1,0 +1,181 @@
+
+running 4 tests
+test bootstrap_original_wrapper_consumes_material_and_keeps_closing_frames ... ok
+test bootstrap_build_has_separate_policy_and_receipt_domains_without_execution ... ok
+test bootstrap_hooks_restore_entire_old_bodies_and_compatibility_bytes ... ok
+test bootstrap_owner_adds_no_execution_or_clock_capability_and_keeps_exact_original_context ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.88s
+
+
+running 4 tests
+test child_cannot_borrow_root_only_worker_or_held_trust_by_weakening_the_opener ... ok
+test executable_consistency_does_not_supply_a_systemd_address_for_a_sealed_copy ... ok
+test sandbox_hardening_is_not_a_host_mount_namespace_enrollment ... ok
+test boundary_audit_preserves_entire_runtime_and_frozen_qualification ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.35s
+
+
+running 4 tests
+test bootstrap_child_complete_census_exists_before_authentication ... ok
+test bootstrap_roles_add_no_execution_repair_or_authority_and_close_extra_fds ... ok
+test bootstrap_roles_additive_compat_and_qualification_are_exact ... ok
+test bootstrap_roles_exact_hooks_keep_whole_old_entry_mode_and_original_frames ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.46s
+
+
+running 4 tests
+test bootstrap_child_executable_exists_before_any_original_start ... ok
+test bootstrap_child_has_no_authority_transport_mutation_fallback_or_new_clock ... ok
+test bootstrap_child_compares_exact_additive_compatibility_and_refuses_mutation ... ok
+test bootstrap_child_keeps_entire_original_runtime_and_qualification_bytes ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.59s
+
+
+running 4 tests
+test bootstrap_current_executable_component_is_present_before_admission ... ok
+test current_image_queries_cannot_repair_roles_send_or_execute ... ok
+test current_image_compat_registry_and_qualification_remain_exact ... ok
+test current_image_only_adds_exact_hooks_and_keeps_old_modes_frames_and_deadlines ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.32s
+
+
+running 6 tests
+test lexical_selection_is_narrow_and_unknown_inputs_remain_byte_identical ... ok
+test exactly_one_ordered_observation_preserves_io_errors_without_caching_success ... FAILED
+test current_stale_partial_duplicate_and_unrelated_document_mutations_refuse ... ok
+test only_the_two_current_documents_reconstruct_the_exact_reviewed_phase ... ok
+test preceding_owned_case_proof_accepts_only_the_exact_extended_current_reader ... ok
+test all_eleven_callers_preserve_complete_original_cases_and_predicates ... FAILED
+
+failures:
+
+---- exactly_one_ordered_observation_preserves_io_errors_without_caching_success stdout ----
+
+thread 'exactly_one_ordered_observation_preserves_io_errors_without_caching_success' (29568) panicked at crates\xtask\tests\..\..\..\tools\bootstrap-doc-reader-074\..\source-successor-view-074\diagnostic.rs:20:5:
+assertion `left == right` failed: unreviewed diagnostic document successor
+  left: "8743a9ad50122f733571e8106a49d43ccc5e44c79e864470842e6d9b4e0c9780"
+ right: "da3ea98f49625b4bf85a45f5b6b60fc70e4b58480b3249e1e44e0a2e5ec10089"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- all_eleven_callers_preserve_complete_original_cases_and_predicates stdout ----
+
+thread 'all_eleven_callers_preserve_complete_original_cases_and_predicates' (28556) panicked at crates\xtask\tests\..\..\..\tools\bootstrap-doc-reader-074\contract.rs:31:5:
+assertion `left == right` failed: fixed caller predecessor: crates/xtask/tests/bootstrap_build_owner_074.rs
+  left: "69155289912d3e61fe66ded83933ac65266ce3daed2cf3456d81357b4c8cca41"
+ right: "10c91cceb895b3516703404e540afc11e3e1c130144c3c5c80f7c2bd3672c4dd"
+
+thread 'all_eleven_callers_preserve_complete_original_cases_and_predicates' (28556) panicked at crates\xtask\tests\..\..\..\tools\bootstrap-doc-reader-074\contract.rs:31:5:
+assertion `left == right` failed: fixed caller predecessor: crates/xtask/tests/bootstrap_child_boundary_074.rs
+  left: "a08a7fec42c579d17729fb7c86deae4794996a0b08e7f2ae1495dbf081ccb9fa"
+ right: "ce6db3b318f32bac8adebf3105ac3694fe4aca663cd80d83662d18075e8ccbcd"
+
+thread 'all_eleven_callers_preserve_complete_original_cases_and_predicates' (28556) panicked at crates\xtask\tests\..\..\..\tools\bootstrap-doc-reader-074\contract.rs:31:5:
+assertion `left == right` failed: fixed caller predecessor: crates/xtask/tests/bootstrap_child_census_074.rs
+  left: "6a9f2dc2a9a4d041902da2594e9874cf5b6d0d8bb8dceb6969162871ef151910"
+ right: "e9cb88ce9eace5c1ba3b20c9fb186524ed1dc2b75260c14bbd48212bda5ff8e3"
+
+thread 'all_eleven_callers_preserve_complete_original_cases_and_predicates' (28556) panicked at crates\xtask\tests\..\..\..\tools\bootstrap-doc-reader-074\contract.rs:31:5:
+assertion `left == right` failed: fixed caller predecessor: crates/xtask/tests/bootstrap_child_reader_074.rs
+  left: "8a4e49ee9b8621d35cceb36cd97dfd69bba0bdfdaed5da3ed97f6069e67cae1d"
+ right: "66d5ca82cf8837f86db9bb1f0577eb68e831ef0b15a9c536e163a7f706079fff"
+
+thread 'all_eleven_callers_preserve_complete_original_cases_and_predicates' (28556) panicked at crates\xtask\tests\..\..\..\tools\bootstrap-doc-reader-074\contract.rs:31:5:
+assertion `left == right` failed: fixed caller predecessor: crates/xtask/tests/bootstrap_current_image_074.rs
+  left: "32053aaf455f445ccf8e5d5e826bfe3e2ec15a331f6cf351d695c73cd673e8fb"
+ right: "95e309e7f3be196d38977ad2acd45d365e2e334cba7c943e5f17bfcdad5c9e7c"
+
+thread 'all_eleven_callers_preserve_complete_original_cases_and_predicates' (28556) panicked at crates\xtask\tests\..\..\..\tools\bootstrap-doc-reader-074\contract.rs:31:5:
+assertion `left == right` failed: fixed caller predecessor: crates/xtask/tests/bootstrap_enrollment_074.rs
+  left: "bcc3e408f37cdd865920dc75f3c1d6158b93f4bee89fe21067a1f3a8ea69c039"
+ right: "bb7b7f64f5a2c51b48c0bf18eccfefcbe15df0d6e29f5aa93305abf171ffbb6e"
+
+thread 'all_eleven_callers_preserve_complete_original_cases_and_predicates' (28556) panicked at crates\xtask\tests\..\..\..\tools\bootstrap-doc-reader-074\contract.rs:31:5:
+assertion `left == right` failed: fixed caller predecessor: crates/xtask/tests/bootstrap_entry_binding_074.rs
+  left: "94cece7b54358984682057b12cd3924b58e5658c3724c511e7cdda9e00062c43"
+ right: "d9dfbfcd379e6870272d58f5ebacfb27187c348c58042a4f0bd9688506926c7c"
+
+thread 'all_eleven_callers_preserve_complete_original_cases_and_predicates' (28556) panicked at crates\xtask\tests\..\..\..\tools\bootstrap-doc-reader-074\contract.rs:31:5:
+assertion `left == right` failed: fixed caller predecessor: crates/xtask/tests/bootstrap_image_census_074.rs
+  left: "0ceb0eb005916cb9d08d0fa9468cede187eb3a1cd6d738301ac5e44f84fd8374"
+ right: "423ce467d263aa322278bdfe8aa2526a955163984292644f0122eb811ea3d09f"
+
+thread 'all_eleven_callers_preserve_complete_original_cases_and_predicates' (28556) panicked at crates\xtask\tests\..\..\..\tools\bootstrap-doc-reader-074\contract.rs:31:5:
+assertion `left == right` failed: fixed caller predecessor: crates/xtask/tests/bootstrap_installed_origin_074.rs
+  left: "d8621e8260def4902a11dd184029a040c0a6a5f5ac112b208279dd593aa9d215"
+ right: "0396712e97cf26f9378293607883a3ccc692626add945cd36a8a9a4dcabaec42"
+
+thread 'all_eleven_callers_preserve_complete_original_cases_and_predicates' (28556) panicked at crates\xtask\tests\..\..\..\tools\bootstrap-doc-reader-074\contract.rs:31:5:
+assertion `left == right` failed: fixed caller predecessor: crates/xtask/tests/owned_case_074.rs
+  left: "aaebdb382b11274e7a9adb8a4a9e51db0d00f3e2bf4b574cc3da0f4d49f316a1"
+ right: "4bfc0062cbab2bc8ef0ba0bc2eceac2495a1281874ed1468083d1fbfb58536dc"
+
+thread 'all_eleven_callers_preserve_complete_original_cases_and_predicates' (28556) panicked at crates\xtask\tests\bootstrap_doc_reader_074.rs:84:9:
+assertion `left == right` failed: exact caller crates/xtask/tests/authority_reader_phase_074.rs
+  left: "//! Reader routing is a source compatibility proof, never runtime admission.\n#[path = \"../../../tools/authority-reader-phase-074/main.rs\"]\nmod main_phase;\n#[path = \"../../../tools/authority-reader-phase-074/contract.rs\"]\nmod phase;\n#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\nconst BASE: &str = \"628bc3c113ce12e9ecb10ee4daee6961a6b2ad15\";\n\nfn accepts(path: &str, original: &str, current: &str) -> bool {\n    phase::expected(path, original)\n        .is_some_and(|expected| current.replace(\"\\r\\n\", \"\\n\") == expected)\n}\n\nfn raw(path: &str) -> String {\n    let raw = std::fs::read_to_string(runtime::root().join(path))\n        .unwrap()\n        .replace(\"\\r\\n\", \"\\n\");\n    bootstrap_phase_reader::read(path, raw)\n}\n\n#[test]\nfn five_readers_are_exact_declared_edits_of_independent_fixed_sources() {\n    for (path, _) in phase::FILES {\n        let old = runtime::frozen(BASE, path);\n        let current = raw(path);\n        assert_ne!(old, current);\n        assert_eq!(phase::expected(path, &old).unwrap(), current, \"{path}\");\n        assert!(accepts(path, &old, &current));\n        assert!(accepts(path, &old, &current.replace('\\n', \"\\r\\n\")));\n        assert!(!accepts(path, &old, &old));\n        if path == phase::FILES[3].0 {\n            assert_eq!(phase::runtime(&old), current);\n        }\n        assert!(std::panic::catch_unwind(|| phase::expected(path, &format!(\"{old}x\"))).is_err());\n    }\n    assert!(phase::expected(\"unrelated.rs\", \"unknown\").is_none());\n    assert!(!accepts(\"unrelated.rs\", \"unknown\", \"unknown\"));\n}\n\nfn assertions(source: &str) -> (Vec<String>, Vec<String>) {\n    use syn::visit::Visit;\n    #[derive(Default)]\n    struct Assertions(Vec<String>);\n    impl<'ast> Visit<'ast> for Assertions {\n        fn visit_macro(&mut self, node: &'ast syn::Macro) {\n            if node.path.segments.last().is_some_and(|name| {\n                matches!(\n                    name.ident.to_string().as_str(),\n                    \"assert\" | \"assert_eq\" | \"assert_ne\"\n                )\n            }) {\n                self.0.push(format!(\n                    \"{} {}\",\n                    node.path.segments.last().unwrap().ident,\n                    node.tokens\n                ));\n            }\n            syn::visit::visit_macro(self, node);\n        }\n    }\n    let file = syn::parse_file(source).unwrap();\n    let names = file\n        .items\n        .iter()\n        .filter_map(|item| match item {\n            syn::Item::Fn(function)\n                if function\n                    .attrs\n                    .iter()\n                    .any(|attr| attr.path().is_ident(\"test\")) =>\n            {\n                Some(function.sig.ident.to_string())\n            }\n            _ => None,\n        })\n        .collect();\n    let mut visitor = Assertions::default();\n    visitor.visit_file(&file);\n    (names, visitor.0)\n}\n\n#[test]\nfn every_original_case_and_assertion_survives_the_two_explicit_input_substitutions() {\n    for (index, (path, _)) in phase::FILES.into_iter().enumerate() {\n        let old = runtime::frozen(BASE, path);\n        let current = raw(path)\n            .replace(\n                \"gate::view(&path, view_input(&path))\",\n                \"gate::view(&path, read(&path))\",\n            )\n            .replace(\n                \"contract::predecessor(path, &entry)\",\n                \"contract::predecessor(path, &current)\",\n            );\n        let before = assertions(&old);\n        assert_eq!(before.0.len(), [2, 4, 3, 5, 4][index]);\n        assert!(!before.1.is_empty());\n        assert_eq!(\n            assertions(&current),\n            before,\n            \"every original predicate: {path}\"\n        );\n    }\n}\n\n#[test]\nfn partial_duplicate_wrong_branch_and_assertion_drift_cannot_enter_old_reader_views() {\n    for (path, _) in phase::FILES {\n        let old = runtime::frozen(BASE, path);\n        let current = raw(path);\n        for changed in [\n            String::new(),\n            format!(\"{current}{current}\"),\n            format!(\"{current}\\n// unexpected edit\"),\n            current.replace(\"assert_eq!\", \"assert_ne!\"),\n            current.chars().skip(1).collect(),\n        ] {\n            assert_ne!(changed, current);\n            assert!(!accepts(path, &old, &changed), \"{path}\");\n        }\n        for anchor in [\n            \"runtime::successor::project\",\n            \"gate::successor::project\",\n            \"if path == gate::FIXTURE\",\n            \"reader_phase::runtime(&expected)\",\n            \"let entry = current.clone();\",\n        ] {\n            if current.contains(anchor) {\n                for changed in [\n                    current.replacen(anchor, \"\", 1),\n                    current.replacen(anchor, &format!(\"{anchor}{anchor}\"), 1),\n                ] {\n                    assert!(\n                        !accepts(path, &old, &changed),\n                        \"routing edit {path}: {anchor}\"\n                    );\n                }\n            }\n        }\n    }\n}\n\n#[test]\nfn current_fixture_entry_keeps_fresh_current_bytes_separate_from_old_body_checks() {\n    let current = raw(runtime::FIXTURE);\n    let previous = runtime::successor::project(runtime::FIXTURE, current.clone());\n    assert!(runtime::accepts(runtime::FIXTURE, &previous));\n    assert!(!runtime::accepts(runtime::FIXTURE, &current));\n    assert_eq!(\n        runtime::view(runtime::FIXTURE, current.clone()),\n        runtime::frozen(runtime::BASE, runtime::FIXTURE)\n    );\n    for changed in [\n        previous,\n        String::new(),\n        format!(\"{current}\\n// unknown current edit\"),\n        current.chars().skip(1).collect(),\n    ] {\n        assert!(std::panic::catch_unwind(|| runtime::view(runtime::FIXTURE, changed)).is_err());\n    }\n    assert_eq!(\n        runtime::view(runtime::FIXTURE, raw(runtime::FIXTURE)),\n        runtime::frozen(runtime::BASE, runtime::FIXTURE)\n    );\n}\n\n#[test]\nfn all_eighteen_entry_inputs_and_current_mutants_retain_original_phase_checks() {\n    for path in runtime_io::reviewed_inputs::PATHS {\n        let mut entry = raw(path);\n        if runtime_io::owned_case_view::PATHS.contains(&path) {\n            runtime_io::owned_case_view::require_helpers(&runtime::root());\n            let old = runtime::frozen(runtime_io::owned_case_view::BASE, path);\n            assert!(runtime_io::owned_case_view::accepts(path, &old, &entry));\n            entry = old;\n        }\n        let previous = runtime::successor::project(path, entry.clone());\n        assert!(runtime_io::reviewed_inputs::accepts(path, &previous));\n        assert_eq!(\n            runtime_io::reviewed_inputs::predecessor(path, &entry),\n            runtime::frozen(runtime_io::reviewed_inputs::PREDECESSOR, path)\n        );\n        assert_eq!(\n            runtime_io::read_to_string(runtime::root().join(path)).unwrap(),\n            runtime::frozen(runtime_io::reviewed_inputs::PREDECESSOR, path)\n        );\n        for changed in [\n            String::new(),\n            format!(\"{entry}\\nUNREVIEWED_CHANGE\\n\"),\n            entry.chars().skip(1).collect(),\n        ] {\n            assert!(\n                std::panic::catch_unwind(|| runtime_io::reviewed_inputs::predecessor(\n                    path, &changed\n                ))\n                .is_err(),\n                \"latest input {path}\"\n            );\n        }\n    }\n}\n\n#[test]\nfn terminal_main_text_matches_fixed_producers_without_compiling_the_old_runtime() {\n    let current = raw(main_phase::SOURCE);\n    assert_eq!(\n        current,\n        runtime::frozen(\n            \"a67a5299ab335424e9b11330dc06bd749ea9b859\",\n            main_phase::SOURCE\n        )\n    );\n    let previous = runtime::frozen(\n        \"37db65f68e67ed7c0ee0f1cc84fed1c30bf9822a\",\n        main_phase::SOURCE,\n    );\n    assert_eq!(main_phase::project(current.clone()), previous);\n    assert!(runtime::accepts(main_phase::SOURCE, &previous));\n    assert!(!runtime::accepts(main_phase::SOURCE, &current));\n    assert_eq!(main_phase::project(current.replace('\\n', \"\\r\\n\")), previous);\n    let rules: serde_json::Value = serde_json::from_str(include_str!(\n        \"../../../tools/authority-reader-phase-074/main-rules.json\"\n    ))\n    .unwrap();\n    let current = raw(main_phase::SOURCE);\n    let mut mutants = vec![\n        previous,\n        String::new(),\n        format!(\"{current}\\n// unknown body\"),\n    ];\n    for edit in rules[\"rows\"][0][\"patches\"].as_array().unwrap() {\n        let at = edit[\"offset\"].as_u64().unwrap() as usize;\n        let exact = edit[\"current\"].as_str().unwrap();\n        let prior = edit[\"previous\"].as_str().unwrap();\n        let mut partial = current.clone();\n        partial.replace_range(at..at + exact.len(), prior);\n        mutants.push(partial);\n        let mut duplicate = current.clone();\n        duplicate.insert_str(at, if exact.is_empty() { prior } else { exact });\n        mutants.push(duplicate);\n    }\n    for changed in mutants {\n        assert_ne!(changed, current);\n        assert!(std::panic::catch_unwind(|| main_phase::project(changed)).is_err());\n    }\n}\n\n#[path = \"../../../tools/bootstrap-doc-reader-074/reader.rs\"]\nmod bootstrap_phase_reader;\n"
+ right: "//! Reader routing is a source compatibility proof, never runtime admission.\n#[path = \"../../../tools/authority-reader-phase-074/current_main.rs\"]\nmod current_main;\n#[path = \"../../../tools/authority-reader-phase-074/main.rs\"]\nmod main_phase;\n#[path = \"../../../tools/authority-reader-phase-074/contract.rs\"]\nmod phase;\n#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\nconst BASE: &str = \"628bc3c113ce12e9ecb10ee4daee6961a6b2ad15\";\n\nfn accepts(path: &str, original: &str, current: &str) -> bool {\n    phase::expected(path, original)\n        .is_some_and(|expected| current.replace(\"\\r\\n\", \"\\n\") == expected)\n}\n\nfn raw(path: &str) -> String {\n    let raw = std::fs::read_to_string(runtime::root().join(path))\n        .unwrap()\n        .replace(\"\\r\\n\", \"\\n\");\n    let raw = if path == main_phase::SOURCE {\n        current_main::project(raw)\n    } else {\n        raw\n    };\n    bootstrap_phase_reader::read(path, raw)\n}\n\n#[test]\nfn five_readers_are_exact_declared_edits_of_independent_fixed_sources() {\n    for (path, _) in phase::FILES {\n        let old = runtime::frozen(BASE, path);\n        let current = raw(path);\n        assert_ne!(old, current);\n        assert_eq!(phase::expected(path, &old).unwrap(), current, \"{path}\");\n        assert!(accepts(path, &old, &current));\n        assert!(accepts(path, &old, &current.replace('\\n', \"\\r\\n\")));\n        assert!(!accepts(path, &old, &old));\n        if path == phase::FILES[3].0 {\n            assert_eq!(phase::runtime(&old), current);\n        }\n        assert!(std::panic::catch_unwind(|| phase::expected(path, &format!(\"{old}x\"))).is_err());\n    }\n    assert!(phase::expected(\"unrelated.rs\", \"unknown\").is_none());\n    assert!(!accepts(\"unrelated.rs\", \"unknown\", \"unknown\"));\n}\n\nfn assertions(source: &str) -> (Vec<String>, Vec<String>) {\n    use syn::visit::Visit;\n    #[derive(Default)]\n    struct Assertions(Vec<String>);\n    impl<'ast> Visit<'ast> for Assertions {\n        fn visit_macro(&mut self, node: &'ast syn::Macro) {\n            if node.path.segments.last().is_some_and(|name| {\n                matches!(\n                    name.ident.to_string().as_str(),\n                    \"assert\" | \"assert_eq\" | \"assert_ne\"\n                )\n            }) {\n                self.0.push(format!(\n                    \"{} {}\",\n                    node.path.segments.last().unwrap().ident,\n                    node.tokens\n                ));\n            }\n            syn::visit::visit_macro(self, node);\n        }\n    }\n    let file = syn::parse_file(source).unwrap();\n    let names = file\n        .items\n        .iter()\n        .filter_map(|item| match item {\n            syn::Item::Fn(function)\n                if function\n                    .attrs\n                    .iter()\n                    .any(|attr| attr.path().is_ident(\"test\")) =>\n            {\n                Some(function.sig.ident.to_string())\n            }\n            _ => None,\n        })\n        .collect();\n    let mut visitor = Assertions::default();\n    visitor.visit_file(&file);\n    (names, visitor.0)\n}\n\n#[test]\nfn every_original_case_and_assertion_survives_the_two_explicit_input_substitutions() {\n    for (index, (path, _)) in phase::FILES.into_iter().enumerate() {\n        let old = runtime::frozen(BASE, path);\n        let current = raw(path)\n            .replace(\n                \"gate::view(&path, view_input(&path))\",\n                \"gate::view(&path, read(&path))\",\n            )\n            .replace(\n                \"contract::predecessor(path, &entry)\",\n                \"contract::predecessor(path, &current)\",\n            );\n        let before = assertions(&old);\n        assert_eq!(before.0.len(), [2, 4, 3, 5, 4][index]);\n        assert!(!before.1.is_empty());\n        assert_eq!(\n            assertions(&current),\n            before,\n            \"every original predicate: {path}\"\n        );\n    }\n}\n\n#[test]\nfn partial_duplicate_wrong_branch_and_assertion_drift_cannot_enter_old_reader_views() {\n    for (path, _) in phase::FILES {\n        let old = runtime::frozen(BASE, path);\n        let current = raw(path);\n        for changed in [\n            String::new(),\n            format!(\"{current}{current}\"),\n            format!(\"{current}\\n// unexpected edit\"),\n            current.replace(\"assert_eq!\", \"assert_ne!\"),\n            current.chars().skip(1).collect(),\n        ] {\n            assert_ne!(changed, current);\n            assert!(!accepts(path, &old, &changed), \"{path}\");\n        }\n        for anchor in [\n            \"runtime::successor::project\",\n            \"gate::successor::project\",\n            \"if path == gate::FIXTURE\",\n            \"reader_phase::runtime(&expected)\",\n            \"let entry = current.clone();\",\n        ] {\n            if current.contains(anchor) {\n                for changed in [\n                    current.replacen(anchor, \"\", 1),\n                    current.replacen(anchor, &format!(\"{anchor}{anchor}\"), 1),\n                ] {\n                    assert!(\n                        !accepts(path, &old, &changed),\n                        \"routing edit {path}: {anchor}\"\n                    );\n                }\n            }\n        }\n    }\n}\n\n#[test]\nfn current_fixture_entry_keeps_fresh_current_bytes_separate_from_old_body_checks() {\n    let current = raw(runtime::FIXTURE);\n    let previous = runtime::successor::project(runtime::FIXTURE, current.clone());\n    assert!(runtime::accepts(runtime::FIXTURE, &previous));\n    assert!(!runtime::accepts(runtime::FIXTURE, &current));\n    assert_eq!(\n        runtime::view(runtime::FIXTURE, current.clone()),\n        runtime::frozen(runtime::BASE, runtime::FIXTURE)\n    );\n    for changed in [\n        previous,\n        String::new(),\n        format!(\"{current}\\n// unknown current edit\"),\n        current.chars().skip(1).collect(),\n    ] {\n        assert!(std::panic::catch_unwind(|| runtime::view(runtime::FIXTURE, changed)).is_err());\n    }\n    assert_eq!(\n        runtime::view(runtime::FIXTURE, raw(runtime::FIXTURE)),\n        runtime::frozen(runtime::BASE, runtime::FIXTURE)\n    );\n}\n\n#[test]\nfn all_eighteen_entry_inputs_and_current_mutants_retain_original_phase_checks() {\n    for path in runtime_io::reviewed_inputs::PATHS {\n        let mut entry = raw(path);\n        if runtime_io::owned_case_view::PATHS.contains(&path) {\n            runtime_io::owned_case_view::require_helpers(&runtime::root());\n            let old = runtime::frozen(runtime_io::owned_case_view::BASE, path);\n            assert!(runtime_io::owned_case_view::accepts(path, &old, &entry));\n            entry = old;\n        }\n        let previous = runtime::successor::project(path, entry.clone());\n        assert!(runtime_io::reviewed_inputs::accepts(path, &previous));\n        assert_eq!(\n            runtime_io::reviewed_inputs::predecessor(path, &entry),\n            runtime::frozen(runtime_io::reviewed_inputs::PREDECESSOR, path)\n        );\n        assert_eq!(\n            runtime_io::read_to_string(runtime::root().join(path)).unwrap(),\n            runtime::frozen(runtime_io::reviewed_inputs::PREDECESSOR, path)\n        );\n        for changed in [\n            String::new(),\n            format!(\"{entry}\\nUNREVIEWED_CHANGE\\n\"),\n            entry.chars().skip(1).collect(),\n        ] {\n            assert!(\n                std::panic::catch_unwind(|| runtime_io::reviewed_inputs::predecessor(\n                    path, &changed\n                ))\n                .is_err(),\n                \"latest input {path}\"\n            );\n        }\n    }\n}\n\n#[test]\nfn terminal_main_text_matches_fixed_producers_without_compiling_the_old_runtime() {\n    let current = raw(main_phase::SOURCE);\n    assert_eq!(\n        current,\n        runtime::frozen(\n            \"a67a5299ab335424e9b11330dc06bd749ea9b859\",\n            main_phase::SOURCE\n        )\n    );\n    let previous = runtime::frozen(\n        \"37db65f68e67ed7c0ee0f1cc84fed1c30bf9822a\",\n        main_phase::SOURCE,\n    );\n    assert_eq!(main_phase::project(current.clone()), previous);\n    assert!(runtime::accepts(main_phase::SOURCE, &previous));\n    assert!(!runtime::accepts(main_phase::SOURCE, &current));\n    assert_eq!(main_phase::project(current.replace('\\n', \"\\r\\n\")), previous);\n    let rules: serde_json::Value = serde_json::from_str(include_str!(\n        \"../../../tools/authority-reader-phase-074/main-rules.json\"\n    ))\n    .unwrap();\n    let current = raw(main_phase::SOURCE);\n    let mut mutants = vec![\n        previous,\n        String::new(),\n        format!(\"{current}\\n// unknown body\"),\n    ];\n    for edit in rules[\"rows\"][0][\"patches\"].as_array().unwrap() {\n        let at = edit[\"offset\"].as_u64().unwrap() as usize;\n        let exact = edit[\"current\"].as_str().unwrap();\n        let prior = edit[\"previous\"].as_str().unwrap();\n        let mut partial = current.clone();\n        partial.replace_range(at..at + exact.len(), prior);\n        mutants.push(partial);\n        let mut duplicate = current.clone();\n        duplicate.insert_str(at, if exact.is_empty() { prior } else { exact });\n        mutants.push(duplicate);\n    }\n    for changed in mutants {\n        assert_ne!(changed, current);\n        assert!(std::panic::catch_unwind(|| main_phase::project(changed)).is_err());\n    }\n}\n\n#[path = \"../../../tools/bootstrap-doc-reader-074/reader.rs\"]\nmod bootstrap_phase_reader;\n"
+
+
+failures:
+    all_eleven_callers_preserve_complete_original_cases_and_predicates
+    exactly_one_ordered_observation_preserves_io_errors_without_caching_success
+
+test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.89s
+
+
+running 3 tests
+test bootstrap_selector_keeps_original_checks_without_key_fd_or_execution_exports ... ok
+test independent_bootstrap_selection_has_only_one_additive_parent_hook ... ok
+test bootstrap_selection_compatibility_is_exactly_additive_and_mutations_refuse ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+
+running 4 tests
+test bootstrap_entry_binding_exists_before_child_delivery ... ok
+test bootstrap_entry_uses_original_sealed_config_and_no_transport_or_new_time ... ok
+test bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen ... ok
+test bootstrap_entry_exact_additions_restore_whole_old_frames_and_kernel_bodies ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+
+
+running 4 tests
+test bootstrap_image_census_has_closed_twenty_six_descriptors_and_fourteen_roles ... ok
+test bootstrap_image_census_is_inside_the_same_existing_validation_observation ... ok
+test bootstrap_image_census_exact_hooks_preserve_whole_old_owner_and_all_old_queries ... ok
+test bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.61s
+
+
+running 22 tests
+test bootstrap_held_delivery_components_precede_execution_admission ... ok
+test bootstrap_held_entry_component_precedes_activation ... ok
+test bootstrap_installed_child_component_precedes_delivery ... ok
+test bootstrap_held_entry_additions_preserve_exact_old_modes_and_role_checks ... ok
+test bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed ... ok
+test bootstrap_installed_entry_component_precedes_runtime ... ok
+test bootstrap_installed_child_is_separate_consistency_not_authority_or_transport ... ok
+test bootstrap_installed_material_additive_compat_keeps_schema_and_qualification ... ok
+test bootstrap_installed_material_component_precedes_delivery ... ok
+test bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records ... ok
+test bootstrap_original_service_fixture_precedes_live_admission ... ok
+test bootstrap_installed_material_only_three_hooks_keep_whole_old_owner_and_kernel ... ok
+test bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame ... ok
+test bootstrap_sandbox_owner_component_precedes_admission ... ok
+test bootstrap_installed_entry_only_one_codec_hook_no_owner_or_child_activation ... ok
+test bootstrap_sandbox_takes_no_caller_pid_or_manager_and_cannot_start_or_release ... ok
+test installed_origin_consumes_same_owner_and_cannot_recreate_retained_source_or_export_execution ... ok
+test installed_origin_exists_before_systemd_or_child_admission ... ok
+test bootstrap_original_service_keeps_old_fixture_and_production_frames_exact ... ok
+test bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines ... ok
+test installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen ... ok
+test installed_origin_only_three_additive_hooks_preserve_old_live_frames_and_child_modes ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.15s
+

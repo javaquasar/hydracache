@@ -1,0 +1,11 @@
+    Checking xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: unused import: `read_to_string`
+ --> crates\xtask\tests\..\..\..\tools\bootstrap-doc-reader-074\fixture.rs:4:18
+  |
+4 | pub use actual::{read_to_string, selected};
+  |                  ^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `xtask` (test "bootstrap_current_view_074") generated 1 warning (run `cargo fix --test "bootstrap_current_view_074" -p xtask` to apply 1 suggestion)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.76s

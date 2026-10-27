@@ -1,0 +1,13 @@
+
+running 8 tests
+test each_ordered_observation_preserves_exact_errors_before_any_projection ... ok
+test current_security_inputs_match_fixed_producers_and_complete_old_bodies ... ok
+test selectors_remain_disjoint_and_unknown_inputs_keep_exact_bytes ... ok
+test assertion_fixtures_require_whole_producers_before_exact_inverse_edits ... ok
+test fresh_documents_and_old_assertion_fixtures_cannot_substitute_for_each_other ... ok
+test temporary_files_are_observed_again_after_mutation_and_removal ... ok
+test success_never_caches_later_current_observations_or_accepts_stale_inputs ... ok
+test all_old_cases_guards_rules_and_the_observation_primitive_remain_exact ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.30s
+

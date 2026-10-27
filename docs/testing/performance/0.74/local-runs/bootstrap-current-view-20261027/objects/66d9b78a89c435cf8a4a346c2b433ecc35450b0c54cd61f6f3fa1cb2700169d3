@@ -1,0 +1,30 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.42s
+     Running tests\bootstrap_build_owner_074.rs (target\debug\deps\bootstrap_build_owner_074-1617c8ce495e2c75.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_build_owner_074`
+     Running tests\bootstrap_child_boundary_074.rs (target\debug\deps\bootstrap_child_boundary_074-cb7fac5011c36155.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_child_boundary_074`
+     Running tests\bootstrap_child_census_074.rs (target\debug\deps\bootstrap_child_census_074-fc0c6ce131b406ca.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_child_census_074`
+     Running tests\bootstrap_child_reader_074.rs (target\debug\deps\bootstrap_child_reader_074-cdcb81b2ea628a5c.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_child_reader_074`
+     Running tests\bootstrap_current_image_074.rs (target\debug\deps\bootstrap_current_image_074-f56d9cecdaab1714.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_current_image_074`
+     Running tests\bootstrap_doc_reader_074.rs (target\debug\deps\bootstrap_doc_reader_074-011c9e50ef6b3633.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_doc_reader_074`
+     Running tests\bootstrap_entry_binding_074.rs (target\debug\deps\bootstrap_entry_binding_074-0c985ae950aee6aa.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_entry_binding_074`
+     Running tests\bootstrap_image_census_074.rs (target\debug\deps\bootstrap_image_census_074-527f74a0f8e66a51.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_image_census_074`
+     Running tests\bootstrap_installed_origin_074.rs (target\debug\deps\bootstrap_installed_origin_074-e2fd50c663c15b7b.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_installed_origin_074`
+error: 9 targets failed:
+    `-p xtask --test bootstrap_build_owner_074`
+    `-p xtask --test bootstrap_child_boundary_074`
+    `-p xtask --test bootstrap_child_census_074`
+    `-p xtask --test bootstrap_child_reader_074`
+    `-p xtask --test bootstrap_current_image_074`
+    `-p xtask --test bootstrap_doc_reader_074`
+    `-p xtask --test bootstrap_entry_binding_074`
+    `-p xtask --test bootstrap_image_census_074`
+    `-p xtask --test bootstrap_installed_origin_074`

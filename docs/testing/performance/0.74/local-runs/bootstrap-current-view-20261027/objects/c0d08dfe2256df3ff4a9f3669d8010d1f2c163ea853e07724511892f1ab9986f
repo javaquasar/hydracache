@@ -1,0 +1,11 @@
+import hashlib
+from pathlib import Path
+import subprocess
+root = Path(__file__).resolve().parent.parent
+for revision, path in [
+    ('5ec4dd647195c286299842c9faa71d3c2fa58efd', 'crates/xtask/tests/authority_reader_phase_074.rs'),
+    ('5c7ef1c893a91d57a566e0a484a218f87c3df48f', 'crates/xtask/tests/authority_reader_phase_074.rs'),
+    ('dd820049', 'Cargo.lock'), ('fa9e708868b22999d60c9ccd97b694662910a095', 'Cargo.lock'),
+]:
+    raw = subprocess.check_output(['git', '--no-replace-objects', 'show', f'{revision}:{path}'], cwd=root).replace(b'\r\n', b'\n')
+    print(revision, path, hashlib.sha256(raw).hexdigest())
