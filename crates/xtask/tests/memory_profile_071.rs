@@ -3,6 +3,9 @@ use std::process::Command;
 
 use serde_json::json;
 
+#[path = "support/fixture_python_074.rs"]
+mod fixture_python;
+
 fn repository_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -63,7 +66,7 @@ fn every_admitted_allocator_has_the_complete_provider_protocol() {
 #[test]
 fn provider_fixture_proves_ordering_classification_and_redaction() {
     let script = repository_root().join("scripts/perf/memory-providers/test_provider_contract.py");
-    let output = Command::new("python")
+    let output = Command::new(fixture_python::program())
         .arg(script)
         .output()
         .expect("python is required by the 0.71 provider contract gate");

@@ -4,6 +4,9 @@ use std::path::{Path, PathBuf};
 use serde_json::Value as JsonValue;
 use toml::Value;
 
+#[path = "support/fixture_python_074.rs"]
+mod fixture_python;
+
 fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
@@ -94,7 +97,7 @@ fn public_api_gate_covers_every_publishable_package_and_blocks_release() {
         serde_json::json!(["default", "all-features"])
     );
 
-    let output = std::process::Command::new("python")
+    let output = std::process::Command::new(fixture_python::program())
         .current_dir(root())
         .args([
             "scripts/ci/public_api_compat_071.py",
