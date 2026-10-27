@@ -1,4 +1,6 @@
 //! Registry compatibility only; no changed measurement or runtime predicate.
+#[path = "../../../tools/package-closure-inputs-074/contract.rs"]
+mod closure_inputs;
 #[path = "../../../tools/authority-runtime-074/gate.rs"]
 mod runtime;
 #[path = "../../../tools/authority-runtime-074/io.rs"]
@@ -48,6 +50,7 @@ fn leaf_reader_preserves_entire_original_test_and_exact_registry_selection() {
 #[test]
 fn leaf_registry_input_checks_current_bytes_before_returning_predecessor() {
     let raw = std::fs::read_to_string(runtime::root().join(REGISTRY)).unwrap();
+    let raw = closure_inputs::project("leaf", REGISTRY, raw);
     assert_eq!(raw.replace("\r\n", "\n"), runtime::frozen(BASE, REGISTRY));
     assert!(runtime_io::reviewed_inputs::accepts(REGISTRY, &raw));
     assert_eq!(

@@ -1,6 +1,8 @@
 //! Exact single-provider fixture view, never a whole phase rollback.
 #[path = "../../../tools/historical-blob-batch-074/mod.rs"]
 pub mod census_runtime;
+#[path = "../../../tools/package-closure-inputs-074/contract.rs"]
+mod closure_inputs;
 #[path = "support/census_provider_input.rs"]
 mod provider_input;
 
@@ -44,6 +46,7 @@ fn census_reader_preserves_every_original_assertion_and_only_adapts_one_provider
     let current = std::fs::read_to_string(root().join(FILE))
         .unwrap()
         .replace("\r\n", "\n");
+    let current = closure_inputs::project("census", FILE, current);
     let build = "#[path = \"support/bootstrap_build_guard.rs\"]\nmod build_guard;\n";
     assert_eq!(expected.matches(build).count(), 1);
     let expected = expected.replacen(build, &format!("{build}{runtime}"), 1);

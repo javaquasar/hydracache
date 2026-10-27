@@ -1,3 +1,5 @@
+#[path = "../../../tools/package-closure-inputs-074/contract.rs"]
+mod closure_inputs;
 #[path = "../../../tools/historical-source-cache-074/cache.rs"]
 mod controls;
 #[path = "../../../tools/owned-case-074/contract.rs"]
@@ -9,6 +11,7 @@ fn read(path: &str) -> String {
     let raw = std::fs::read_to_string(root().join(path))
         .unwrap()
         .replace("\r\n", "\n");
+    let raw = closure_inputs::project("cache", path, raw);
     if path == "tools/authority-runtime-074/io.rs" {
         let out = std::process::Command::new("git")
             .args([

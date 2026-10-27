@@ -8,10 +8,13 @@ mod runtime_io;
 #[path = "../../../tools/authority-storage-source-074/contract.rs"]
 mod storage_contract;
 use current_inputs::phase;
+#[path = "../../../tools/package-closure-inputs-074/contract.rs"]
+mod closure_inputs;
 fn raw(path: &str) -> String {
-    std::fs::read_to_string(runtime::root().join(path))
+    let raw = std::fs::read_to_string(runtime::root().join(path))
         .unwrap()
-        .replace("\r\n", "\n")
+        .replace("\r\n", "\n");
+    closure_inputs::project("remaining", path, raw)
 }
 fn assertions(source: &str) -> (Vec<String>, Vec<String>) {
     use syn::visit::Visit;
@@ -170,7 +173,7 @@ fn selected_kernel_and_compat_join_use_independent_producers_without_extra_reads
         ),
         (
             "docs/COMPAT.md",
-            "a67a5299ab335424e9b11330dc06bd749ea9b859",
+            "d3256fc08b8da2df424d6da5bce99c0e168939b0",
             "3c52c0aa34b8d00b2fac44375d5ba8fdf532bb9f",
         ),
     ] {
