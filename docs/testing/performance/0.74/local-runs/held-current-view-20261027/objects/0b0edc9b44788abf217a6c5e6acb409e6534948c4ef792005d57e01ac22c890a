@@ -1,0 +1,10 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.11s
+     Running tests\held_activation_ingress_074.rs (target\debug\deps\held_activation_ingress_074-960e5f5c17de8041.exe)
+     Running tests\held_bind_alias_refusal_074.rs (target\debug\deps\held_bind_alias_refusal_074-f70718154c796378.exe)
+     Running tests\held_complete_role_census_074.rs (target\debug\deps\held_complete_role_census_074-83ae831ae0ac68df.exe)
+     Running tests\held_material_roles_074.rs (target\debug\deps\held_material_roles_074-e7036d7ccadefb2e.exe)
+     Running tests\held_security_view_074.rs (target\debug\deps\held_security_view_074-25e146d1560da366.exe)
+error: test failed, to rerun pass `-p xtask --test held_security_view_074`
+error: 1 target failed:
+    `-p xtask --test held_security_view_074`

@@ -1,0 +1,779 @@
+[
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "check-final",
+    "raw_sha256": "43592054eeef39fb068984ddc65ab4b345893e68922bf70e700f422d26f2b44f"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "check-final",
+    "raw_sha256": "ec255a597a2f969c0fb73dd825f6c480c22d7adb72610633c95f350cf103dbd8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "check-final",
+    "raw_sha256": "43094f856ed4d6cf53985a076d8cbfd0958bfd651a0cb3398fec5b4189c1718d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "check-final",
+    "raw_sha256": "0a8ed9bf8ea0d30747523ef4bf11f4c9be43cf4162b766ef1a110e2d481c1547"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "check-final",
+    "raw_sha256": "7bfc284e49f335aead8856bdcd12d3bf007d783cabdbb71b5a3fe0022f6d9a17"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "check-final",
+    "raw_sha256": "13e37a065d7435e8e1b53cb7f561ac0009e12c22684222a3f7e4063b4db0cfcc"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "check-final",
+    "raw_sha256": "57135359ac92e6c8b486cb06035b07476d9ca877bac832dc87c6921a392609d5"
+  },
+  {
+    "blob": "acd43f2d192b1c9ff004d54c0e2c74cc6f9ecd36",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "check-first",
+    "raw_sha256": "b64620feda8b8dc318e65b211e0ceb92f5df2af1d7cd9dfaef222f3de0b5aa3b"
+  },
+  {
+    "blob": "9768ac2e50d7b123c67ce6280f34fc0cf9d68285",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "check-first",
+    "raw_sha256": "3bc91f6147e6f9730135f5220cab287ae93ffa86b62d9f4dc48136ff11da1f6e"
+  },
+  {
+    "blob": "098e6fc183d5afb2b0a78fdf583c40f14a27a25b",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "check-first",
+    "raw_sha256": "8145a107c0fe23bb1d318b7e246c64682f870324b8b283002a393e2a3a7f3051"
+  },
+  {
+    "blob": "fff2ad81077e9c63f9208671f25d5bab0888d827",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "check-first",
+    "raw_sha256": "7519b5d78c7cab6c33749385632cfe4739f26bf1d7f84101558d8f3b07137924"
+  },
+  {
+    "blob": "dc45fcf099f837edc2446c6e2431f0182e9fc0ba",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "check-first",
+    "raw_sha256": "faf5383607df1e857626607fe5472f693120df0a1ba34f16562a4ec11e58ede0"
+  },
+  {
+    "blob": "ce7af0656e4b980b5a4d8a91e088da0746bd0307",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "check-first",
+    "raw_sha256": "a42b7740a41321676bd5228968a72f4d989fe846626e84373da8954189a2538f"
+  },
+  {
+    "blob": "8bb5d55c2a165d06a6340f61b34a984c61093f12",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "check-first",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "clippy-final",
+    "raw_sha256": "43592054eeef39fb068984ddc65ab4b345893e68922bf70e700f422d26f2b44f"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "clippy-final",
+    "raw_sha256": "ec255a597a2f969c0fb73dd825f6c480c22d7adb72610633c95f350cf103dbd8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "clippy-final",
+    "raw_sha256": "43094f856ed4d6cf53985a076d8cbfd0958bfd651a0cb3398fec5b4189c1718d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "clippy-final",
+    "raw_sha256": "0a8ed9bf8ea0d30747523ef4bf11f4c9be43cf4162b766ef1a110e2d481c1547"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "clippy-final",
+    "raw_sha256": "7bfc284e49f335aead8856bdcd12d3bf007d783cabdbb71b5a3fe0022f6d9a17"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "clippy-final",
+    "raw_sha256": "13e37a065d7435e8e1b53cb7f561ac0009e12c22684222a3f7e4063b4db0cfcc"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "clippy-final",
+    "raw_sha256": "57135359ac92e6c8b486cb06035b07476d9ca877bac832dc87c6921a392609d5"
+  },
+  {
+    "blob": "acd43f2d192b1c9ff004d54c0e2c74cc6f9ecd36",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "b64620feda8b8dc318e65b211e0ceb92f5df2af1d7cd9dfaef222f3de0b5aa3b"
+  },
+  {
+    "blob": "9768ac2e50d7b123c67ce6280f34fc0cf9d68285",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "3bc91f6147e6f9730135f5220cab287ae93ffa86b62d9f4dc48136ff11da1f6e"
+  },
+  {
+    "blob": "098e6fc183d5afb2b0a78fdf583c40f14a27a25b",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "8145a107c0fe23bb1d318b7e246c64682f870324b8b283002a393e2a3a7f3051"
+  },
+  {
+    "blob": "fff2ad81077e9c63f9208671f25d5bab0888d827",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "7519b5d78c7cab6c33749385632cfe4739f26bf1d7f84101558d8f3b07137924"
+  },
+  {
+    "blob": "dc45fcf099f837edc2446c6e2431f0182e9fc0ba",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "faf5383607df1e857626607fe5472f693120df0a1ba34f16562a4ec11e58ede0"
+  },
+  {
+    "blob": "ce7af0656e4b980b5a4d8a91e088da0746bd0307",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "a42b7740a41321676bd5228968a72f4d989fe846626e84373da8954189a2538f"
+  },
+  {
+    "blob": "8bb5d55c2a165d06a6340f61b34a984c61093f12",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "clippy-first",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "contract-final",
+    "raw_sha256": "43592054eeef39fb068984ddc65ab4b345893e68922bf70e700f422d26f2b44f"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "contract-final",
+    "raw_sha256": "ec255a597a2f969c0fb73dd825f6c480c22d7adb72610633c95f350cf103dbd8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "contract-final",
+    "raw_sha256": "43094f856ed4d6cf53985a076d8cbfd0958bfd651a0cb3398fec5b4189c1718d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "contract-final",
+    "raw_sha256": "0a8ed9bf8ea0d30747523ef4bf11f4c9be43cf4162b766ef1a110e2d481c1547"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "contract-final",
+    "raw_sha256": "7bfc284e49f335aead8856bdcd12d3bf007d783cabdbb71b5a3fe0022f6d9a17"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "contract-final",
+    "raw_sha256": "13e37a065d7435e8e1b53cb7f561ac0009e12c22684222a3f7e4063b4db0cfcc"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "contract-final",
+    "raw_sha256": "57135359ac92e6c8b486cb06035b07476d9ca877bac832dc87c6921a392609d5"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "doc-final",
+    "raw_sha256": "43592054eeef39fb068984ddc65ab4b345893e68922bf70e700f422d26f2b44f"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "doc-final",
+    "raw_sha256": "ec255a597a2f969c0fb73dd825f6c480c22d7adb72610633c95f350cf103dbd8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "doc-final",
+    "raw_sha256": "43094f856ed4d6cf53985a076d8cbfd0958bfd651a0cb3398fec5b4189c1718d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "doc-final",
+    "raw_sha256": "0a8ed9bf8ea0d30747523ef4bf11f4c9be43cf4162b766ef1a110e2d481c1547"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "doc-final",
+    "raw_sha256": "7bfc284e49f335aead8856bdcd12d3bf007d783cabdbb71b5a3fe0022f6d9a17"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "doc-final",
+    "raw_sha256": "13e37a065d7435e8e1b53cb7f561ac0009e12c22684222a3f7e4063b4db0cfcc"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "doc-final",
+    "raw_sha256": "57135359ac92e6c8b486cb06035b07476d9ca877bac832dc87c6921a392609d5"
+  },
+  {
+    "blob": "acd43f2d192b1c9ff004d54c0e2c74cc6f9ecd36",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "b64620feda8b8dc318e65b211e0ceb92f5df2af1d7cd9dfaef222f3de0b5aa3b"
+  },
+  {
+    "blob": "9768ac2e50d7b123c67ce6280f34fc0cf9d68285",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "3bc91f6147e6f9730135f5220cab287ae93ffa86b62d9f4dc48136ff11da1f6e"
+  },
+  {
+    "blob": "098e6fc183d5afb2b0a78fdf583c40f14a27a25b",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "8145a107c0fe23bb1d318b7e246c64682f870324b8b283002a393e2a3a7f3051"
+  },
+  {
+    "blob": "fff2ad81077e9c63f9208671f25d5bab0888d827",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "7519b5d78c7cab6c33749385632cfe4739f26bf1d7f84101558d8f3b07137924"
+  },
+  {
+    "blob": "dc45fcf099f837edc2446c6e2431f0182e9fc0ba",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "faf5383607df1e857626607fe5472f693120df0a1ba34f16562a4ec11e58ede0"
+  },
+  {
+    "blob": "ce7af0656e4b980b5a4d8a91e088da0746bd0307",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "a42b7740a41321676bd5228968a72f4d989fe846626e84373da8954189a2538f"
+  },
+  {
+    "blob": "8bb5d55c2a165d06a6340f61b34a984c61093f12",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "focused-final",
+    "raw_sha256": "43592054eeef39fb068984ddc65ab4b345893e68922bf70e700f422d26f2b44f"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "focused-final",
+    "raw_sha256": "ec255a597a2f969c0fb73dd825f6c480c22d7adb72610633c95f350cf103dbd8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "focused-final",
+    "raw_sha256": "43094f856ed4d6cf53985a076d8cbfd0958bfd651a0cb3398fec5b4189c1718d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "focused-final",
+    "raw_sha256": "0a8ed9bf8ea0d30747523ef4bf11f4c9be43cf4162b766ef1a110e2d481c1547"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "focused-final",
+    "raw_sha256": "7bfc284e49f335aead8856bdcd12d3bf007d783cabdbb71b5a3fe0022f6d9a17"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "focused-final",
+    "raw_sha256": "13e37a065d7435e8e1b53cb7f561ac0009e12c22684222a3f7e4063b4db0cfcc"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "focused-final",
+    "raw_sha256": "57135359ac92e6c8b486cb06035b07476d9ca877bac832dc87c6921a392609d5"
+  },
+  {
+    "blob": "acd43f2d192b1c9ff004d54c0e2c74cc6f9ecd36",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "focused-first",
+    "raw_sha256": "b64620feda8b8dc318e65b211e0ceb92f5df2af1d7cd9dfaef222f3de0b5aa3b"
+  },
+  {
+    "blob": "9768ac2e50d7b123c67ce6280f34fc0cf9d68285",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "focused-first",
+    "raw_sha256": "3bc91f6147e6f9730135f5220cab287ae93ffa86b62d9f4dc48136ff11da1f6e"
+  },
+  {
+    "blob": "098e6fc183d5afb2b0a78fdf583c40f14a27a25b",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "focused-first",
+    "raw_sha256": "8145a107c0fe23bb1d318b7e246c64682f870324b8b283002a393e2a3a7f3051"
+  },
+  {
+    "blob": "fff2ad81077e9c63f9208671f25d5bab0888d827",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "focused-first",
+    "raw_sha256": "7519b5d78c7cab6c33749385632cfe4739f26bf1d7f84101558d8f3b07137924"
+  },
+  {
+    "blob": "b2954ea6711e56560a0869772ed5e77d33afd780",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "focused-first",
+    "raw_sha256": "16e92a38161e0a176869a7ca4a4ae0ba172454b5686a0b85121898542d640440"
+  },
+  {
+    "blob": "ce7af0656e4b980b5a4d8a91e088da0746bd0307",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "focused-first",
+    "raw_sha256": "a42b7740a41321676bd5228968a72f4d989fe846626e84373da8954189a2538f"
+  },
+  {
+    "blob": "8bb5d55c2a165d06a6340f61b34a984c61093f12",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "focused-first",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "format-final",
+    "raw_sha256": "43592054eeef39fb068984ddc65ab4b345893e68922bf70e700f422d26f2b44f"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "format-final",
+    "raw_sha256": "ec255a597a2f969c0fb73dd825f6c480c22d7adb72610633c95f350cf103dbd8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "format-final",
+    "raw_sha256": "43094f856ed4d6cf53985a076d8cbfd0958bfd651a0cb3398fec5b4189c1718d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "format-final",
+    "raw_sha256": "0a8ed9bf8ea0d30747523ef4bf11f4c9be43cf4162b766ef1a110e2d481c1547"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "format-final",
+    "raw_sha256": "7bfc284e49f335aead8856bdcd12d3bf007d783cabdbb71b5a3fe0022f6d9a17"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "format-final",
+    "raw_sha256": "13e37a065d7435e8e1b53cb7f561ac0009e12c22684222a3f7e4063b4db0cfcc"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "format-final",
+    "raw_sha256": "57135359ac92e6c8b486cb06035b07476d9ca877bac832dc87c6921a392609d5"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "gnu-final",
+    "raw_sha256": "43592054eeef39fb068984ddc65ab4b345893e68922bf70e700f422d26f2b44f"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "gnu-final",
+    "raw_sha256": "ec255a597a2f969c0fb73dd825f6c480c22d7adb72610633c95f350cf103dbd8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "gnu-final",
+    "raw_sha256": "43094f856ed4d6cf53985a076d8cbfd0958bfd651a0cb3398fec5b4189c1718d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "gnu-final",
+    "raw_sha256": "0a8ed9bf8ea0d30747523ef4bf11f4c9be43cf4162b766ef1a110e2d481c1547"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "gnu-final",
+    "raw_sha256": "7bfc284e49f335aead8856bdcd12d3bf007d783cabdbb71b5a3fe0022f6d9a17"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "gnu-final",
+    "raw_sha256": "13e37a065d7435e8e1b53cb7f561ac0009e12c22684222a3f7e4063b4db0cfcc"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "gnu-final",
+    "raw_sha256": "57135359ac92e6c8b486cb06035b07476d9ca877bac832dc87c6921a392609d5"
+  },
+  {
+    "blob": "acd43f2d192b1c9ff004d54c0e2c74cc6f9ecd36",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "b64620feda8b8dc318e65b211e0ceb92f5df2af1d7cd9dfaef222f3de0b5aa3b"
+  },
+  {
+    "blob": "9768ac2e50d7b123c67ce6280f34fc0cf9d68285",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "3bc91f6147e6f9730135f5220cab287ae93ffa86b62d9f4dc48136ff11da1f6e"
+  },
+  {
+    "blob": "098e6fc183d5afb2b0a78fdf583c40f14a27a25b",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "8145a107c0fe23bb1d318b7e246c64682f870324b8b283002a393e2a3a7f3051"
+  },
+  {
+    "blob": "fff2ad81077e9c63f9208671f25d5bab0888d827",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "7519b5d78c7cab6c33749385632cfe4739f26bf1d7f84101558d8f3b07137924"
+  },
+  {
+    "blob": "dc45fcf099f837edc2446c6e2431f0182e9fc0ba",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "faf5383607df1e857626607fe5472f693120df0a1ba34f16562a4ec11e58ede0"
+  },
+  {
+    "blob": "ce7af0656e4b980b5a4d8a91e088da0746bd0307",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "a42b7740a41321676bd5228968a72f4d989fe846626e84373da8954189a2538f"
+  },
+  {
+    "blob": "8bb5d55c2a165d06a6340f61b34a984c61093f12",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "gnu-first",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "msrv-final",
+    "raw_sha256": "43592054eeef39fb068984ddc65ab4b345893e68922bf70e700f422d26f2b44f"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "msrv-final",
+    "raw_sha256": "ec255a597a2f969c0fb73dd825f6c480c22d7adb72610633c95f350cf103dbd8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "msrv-final",
+    "raw_sha256": "43094f856ed4d6cf53985a076d8cbfd0958bfd651a0cb3398fec5b4189c1718d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "msrv-final",
+    "raw_sha256": "0a8ed9bf8ea0d30747523ef4bf11f4c9be43cf4162b766ef1a110e2d481c1547"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "msrv-final",
+    "raw_sha256": "7bfc284e49f335aead8856bdcd12d3bf007d783cabdbb71b5a3fe0022f6d9a17"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "msrv-final",
+    "raw_sha256": "13e37a065d7435e8e1b53cb7f561ac0009e12c22684222a3f7e4063b4db0cfcc"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "msrv-final",
+    "raw_sha256": "57135359ac92e6c8b486cb06035b07476d9ca877bac832dc87c6921a392609d5"
+  },
+  {
+    "blob": "acd43f2d192b1c9ff004d54c0e2c74cc6f9ecd36",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "b64620feda8b8dc318e65b211e0ceb92f5df2af1d7cd9dfaef222f3de0b5aa3b"
+  },
+  {
+    "blob": "9768ac2e50d7b123c67ce6280f34fc0cf9d68285",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "3bc91f6147e6f9730135f5220cab287ae93ffa86b62d9f4dc48136ff11da1f6e"
+  },
+  {
+    "blob": "098e6fc183d5afb2b0a78fdf583c40f14a27a25b",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "8145a107c0fe23bb1d318b7e246c64682f870324b8b283002a393e2a3a7f3051"
+  },
+  {
+    "blob": "fff2ad81077e9c63f9208671f25d5bab0888d827",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "7519b5d78c7cab6c33749385632cfe4739f26bf1d7f84101558d8f3b07137924"
+  },
+  {
+    "blob": "dc45fcf099f837edc2446c6e2431f0182e9fc0ba",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "faf5383607df1e857626607fe5472f693120df0a1ba34f16562a4ec11e58ede0"
+  },
+  {
+    "blob": "ce7af0656e4b980b5a4d8a91e088da0746bd0307",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "a42b7740a41321676bd5228968a72f4d989fe846626e84373da8954189a2538f"
+  },
+  {
+    "blob": "8bb5d55c2a165d06a6340f61b34a984c61093f12",
+    "matches_preexecution_digest": true,
+    "matches_preserved_git_blob": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "msrv-first",
+    "raw_sha256": "4af90438bac57e06b0195f95c4b7f5245e76f40d700760cd56361bd01fe32ed3"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "43592054eeef39fb068984ddc65ab4b345893e68922bf70e700f422d26f2b44f"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "ec255a597a2f969c0fb73dd825f6c480c22d7adb72610633c95f350cf103dbd8"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "43094f856ed4d6cf53985a076d8cbfd0958bfd651a0cb3398fec5b4189c1718d"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_material_roles_074.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "0a8ed9bf8ea0d30747523ef4bf11f4c9be43cf4162b766ef1a110e2d481c1547"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "crates/xtask/tests/held_security_view_074.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "7bfc284e49f335aead8856bdcd12d3bf007d783cabdbb71b5a3fe0022f6d9a17"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/held-security-view-074/contract.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "13e37a065d7435e8e1b53cb7f561ac0009e12c22684222a3f7e4063b4db0cfcc"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "matches_reviewed_current_source": true,
+    "path": "tools/bootstrap-doc-reader-074/io.rs",
+    "phase": "old-v8-receipt-first",
+    "raw_sha256": "57135359ac92e6c8b486cb06035b07476d9ca877bac832dc87c6921a392609d5"
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "bootstrap_facade_changes_only_module_visibility": true,
+  "census_panic_api_conditional_reads_pins_and_deadlines_preserved": true,
+  "clocks": false,
+  "complete_package_review": false,
+  "implementation": "dc2e54a45c40cdee07115496b08680b66b8e8147",
+  "measurement": false,
+  "old_guards_primary_rules_and_product_preserved": true,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "package_rerun": false,
+  "qualifier_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "raw_sha256": {
+    "crates/xtask/tests/held_activation_ingress_074.rs": "43592054eeef39fb068984ddc65ab4b345893e68922bf70e700f422d26f2b44f",
+    "crates/xtask/tests/held_bind_alias_refusal_074.rs": "ec255a597a2f969c0fb73dd825f6c480c22d7adb72610633c95f350cf103dbd8",
+    "crates/xtask/tests/held_complete_role_census_074.rs": "43094f856ed4d6cf53985a076d8cbfd0958bfd651a0cb3398fec5b4189c1718d",
+    "crates/xtask/tests/held_material_roles_074.rs": "0a8ed9bf8ea0d30747523ef4bf11f4c9be43cf4162b766ef1a110e2d481c1547",
+    "crates/xtask/tests/held_security_view_074.rs": "7bfc284e49f335aead8856bdcd12d3bf007d783cabdbb71b5a3fe0022f6d9a17",
+    "tools/bootstrap-doc-reader-074/io.rs": "57135359ac92e6c8b486cb06035b07476d9ca877bac832dc87c6921a392609d5",
+    "tools/held-security-view-074/contract.rs": "13e37a065d7435e8e1b53cb7f561ac0009e12c22684222a3f7e4063b4db0cfcc"
+  },
+  "release_admitted": false,
+  "rust_bodies": 7,
+  "server": false,
+  "services": false,
+  "source_parent": "b073cdaf3e96fe2400a20a7c76cecae0cf90bf6a"
+}

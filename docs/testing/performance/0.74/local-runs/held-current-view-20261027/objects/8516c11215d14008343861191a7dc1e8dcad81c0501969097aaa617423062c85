@@ -1,0 +1,44 @@
+
+running 4 tests
+test activation_ingress_has_no_clock_descriptor_manager_or_unknown_environment_cleanup ... ok
+test activation_ingress_compatibility_registration_preserves_every_old_format_byte ... ok
+test activation_ingress_only_two_exact_hooks_change_the_binary_entry ... ok
+test activation_ingress_is_explicit_and_keeps_the_complete_old_kernel ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+
+
+running 2 tests
+test memfd_probe_has_no_retry_copy_fallback_or_automatic_promotion ... ok
+test rejected_bind_alias_does_not_install_unproved_runtime_or_change_old_bytes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.77s
+
+
+running 4 tests
+test census_standalone_panic_api_signatures_do_not_add_source_reads ... ok
+test complete_role_census_is_inside_the_same_original_material_inventory ... ok
+test complete_role_census_uses_owned_contributions_before_the_existing_closing_owner_check ... ok
+test complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.36s
+
+
+running 3 tests
+test held_material_roles_are_private_and_share_the_full_frame_inventory ... ok
+test held_material_roles_leaf_has_no_new_live_query_effect_or_transport ... ok
+test held_material_roles_only_add_values_and_leave_complete_frame_and_retirement_unchanged ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.92s
+
+
+running 6 tests
+test seeded_mutations_remain_fresh_under_both_names_without_caching_success ... ok
+test stale_partial_duplicate_and_unrelated_channel_changes_refuse_after_success ... ok
+test unknown_names_and_other_security_inputs_are_not_projected_or_normalized ... ok
+test all_four_complete_callers_keep_cases_predicates_reads_and_original_hook_order ... ok
+test both_explicit_names_recover_the_independently_fixed_complete_old_channel ... ok
+test helper_has_only_the_pure_fixed_security_call_and_all_old_guards_stay_exact ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.29s
+

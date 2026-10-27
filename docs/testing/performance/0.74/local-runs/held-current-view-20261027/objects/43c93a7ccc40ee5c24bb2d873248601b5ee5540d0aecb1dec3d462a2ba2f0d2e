@@ -1,0 +1,129 @@
+"""Retain source compatibility checks as data, never execute archived bodies."""
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+import sys
+ROOT = Path(__file__).resolve().parent.parent
+BASE = ROOT / 'target/roots-lock-view-20261027'
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/held-current-view-20261027'
+PARENT = 'b073cdaf3e96fe2400a20a7c76cecae0cf90bf6a'
+IMPLEMENTATION = sys.argv[1]
+members, objects, intents = {}, {}, {}
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+def doc(name, value):
+    add(name, (json.dumps(value, sort_keys=True, indent=2) + '\n').encode())
+
+
+def git(*args):
+    return subprocess.check_output(['git', '--no-replace-objects', *args], cwd=ROOT, timeout=10)
+
+
+assert git('rev-parse', 'HEAD').decode().strip() == IMPLEMENTATION
+phases = sorted(p.name.removeprefix('held-') for p in BASE.glob('held-*') if p.is_dir())
+for phase in phases:
+    folder = BASE / ('held-' + phase)
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    intents[phase] = intent
+    assert intent['source_commit'] == PARENT and intent['disk_floor_bytes'] == 4 * 1024**3
+    assert not any(intent[k] for k in ('qualification', 'server', 'services', 'clocks', 'product_load'))
+    assert result['source_unchanged'] and result['commit_unchanged'] and not result['release_admitted']
+    assert result['source_after'] == intent['source']
+    assert result['exit'] == (101 if phase in ('baseline-first', 'focused-first', 'clippy-first') else 0), phase
+    for path in sorted(folder.rglob('*')):
+        if path.is_file():
+            add('checks/' + phase + '/' + path.relative_to(folder).as_posix(), path.read_bytes())
+    text = (folder / 'stdout.log').read_text(encoding='utf-8')
+    rows = re.findall(r'^test result: (?:ok|FAILED)\. (\d+) passed; (\d+) failed; 0 ignored;', text, re.M)
+    if phase in ('baseline-first', 'focused-first'):
+        actual = len(rows), sum(int(a) for a, b in rows), sum(int(b) for a, b in rows)
+        assert actual == ((5, 29, 4) if phase == 'baseline-first' else (5, 17, 2)), (phase, actual)
+    expected = None
+    if phase == 'focused-corrected': expected = ['4', '2', '4', '3', '6']
+    if phase in ('msrv-first', 'gnu-first'): expected = ['20', '4', '2', '4', '3', '6']
+    if phase in ('focused-final', 'msrv-final', 'gnu-final'): expected = ['4', '2', '4', '3', '6', '8', '6']
+    if expected is not None:
+        assert sorted(rows) == sorted((count, '0') for count in expected), phase
+
+old_blobs = {
+    'crates/xtask/tests/held_activation_ingress_074.rs': 'acd43f2d192b1c9ff004d54c0e2c74cc6f9ecd36',
+    'crates/xtask/tests/held_bind_alias_refusal_074.rs': '9768ac2e50d7b123c67ce6280f34fc0cf9d68285',
+    'crates/xtask/tests/held_complete_role_census_074.rs': '098e6fc183d5afb2b0a78fdf583c40f14a27a25b',
+    'crates/xtask/tests/held_material_roles_074.rs': 'fff2ad81077e9c63f9208671f25d5bab0888d827',
+    'crates/xtask/tests/held_security_view_074.rs': 'dc45fcf099f837edc2446c6e2431f0182e9fc0ba',
+    'tools/held-security-view-074/contract.rs': 'ce7af0656e4b980b5a4d8a91e088da0746bd0307',
+    'tools/bootstrap-doc-reader-074/io.rs': '8bb5d55c2a165d06a6340f61b34a984c61093f12',
+}
+scope = list(old_blobs)
+bindings = []
+for phase, intent in intents.items():
+    if phase == 'baseline-first': continue
+    for path in scope:
+        if path not in intent['source']: continue
+        raw = (ROOT / path).read_bytes()
+        provenance = dict(matches_reviewed_current_source=True)
+        if sha(raw) != intent['source'][path]:
+            blob = ('b2954ea6711e56560a0869772ed5e77d33afd780'
+                    if phase == 'focused-first' and path.endswith('/held_security_view_074.rs') else old_blobs[path])
+            original = git('cat-file', 'blob', blob)
+            variants = [original, original.replace(b'\r\n', b'\n').replace(b'\n', b'\r\n')]
+            raw = next((value for value in variants if sha(value) == intent['source'][path]), None)
+            assert raw is not None, (phase, path, blob)
+            provenance = dict(blob=blob, matches_preserved_git_blob=True)
+        add('first-sources/' + phase + '/' + path, raw)
+        bindings.append(dict(phase=phase, path=path, raw_sha256=sha(raw), matches_preexecution_digest=True, **provenance))
+doc('review/first-source-bindings.json', bindings)
+reviewed = {}
+for path in scope:
+    raw = (ROOT / path).read_bytes()
+    add('review/current/' + path, raw)
+    reviewed[path] = sha(raw)
+    for phase in ('focused-final', 'msrv-final', 'gnu-final', 'check-final', 'clippy-final'):
+        assert intents[phase]['source'][path] == sha(raw), (phase, path)
+protected = ['tools/security-input-view-074', 'tools/source-successor-view-074', 'tools/roots-lock-view-074',
+    'tools/authority-runtime-074', 'tools/historical-blob-batch-074', 'tools/long-run-supervisor-074/src',
+    'crates/xtask/tests/support', 'crates/xtask/tests/diagnostic_artifact_fixture_074.rs',
+    'crates/xtask/tests/bootstrap_current_view_074.rs', 'crates/xtask/tests/bootstrap_doc_reader_074.rs',
+    'Cargo.toml', 'Cargo.lock', 'docs/COMPAT.md', 'docs/testing/gated-test-registry.toml',
+    'docs/testing/performance/0.74/qualification-manifest.toml']
+assert git('diff', '--name-only', PARENT, '--', *protected) == b''
+manifest = sha((ROOT / protected[-1]).read_bytes())
+assert manifest == '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
+doc('review/scope.json', dict(source_parent=PARENT, implementation=IMPLEMENTATION, raw_sha256=reviewed,
+    rust_bodies=7, old_guards_primary_rules_and_product_preserved=True,
+    census_panic_api_conditional_reads_pins_and_deadlines_preserved=True,
+    bootstrap_facade_changes_only_module_visibility=True, qualifier_sha256=manifest,
+    original_windows=[300,60,10], complete_package_review=False, package_rerun=False,
+    measurement=False, server=False, clocks=False, services=False, release_admitted=False))
+for path in ('tools/held-security-view-074/README.md',
+    'docs/testing/performance/0.74/held-current-view-result-20261027.md',
+    'target/run-roots-lock-view-20261027.py', 'target/seal-held-current-20261027.py',
+    'target/verify-held-packet-20261027.py'):
+    add('capture/' + path, (ROOT / path).read_bytes())
+OUT.mkdir(exist_ok=False)
+with (OUT / '.gitattributes').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+(OUT / 'objects').mkdir()
+for digest, raw in objects.items():
+    with (OUT / 'objects' / digest).open('xb') as stream: stream.write(raw)
+index = dict(schema='hc074-held-current-view-evidence-v1', source_parent=PARENT, implementation=IMPLEMENTATION,
+    members=members, phases=phases, first_sources_match_preexecution_digests=True,
+    final_held_and_bootstrap_cases_per_environment=33, separate_diagnostic_cases_per_environment=20,
+    package_pass=False, qualification=False, server=False, release_admitted=False)
+with (OUT / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, sort_keys=True, indent=2); stream.write('\n')
+print(json.dumps(dict(members=len(members), objects=len(objects), index_sha256=sha((OUT / 'index.json').read_bytes()))))

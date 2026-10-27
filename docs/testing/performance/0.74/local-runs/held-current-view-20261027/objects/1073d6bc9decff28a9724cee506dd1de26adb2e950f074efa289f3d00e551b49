@@ -1,0 +1,76 @@
+
+running 20 tests
+test consuming_held_join_exact_adapter_rejects_missing_duplicate_extra_and_body_drift ... ok
+test actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift ... ok
+test held_build_source_allowlist_requires_all_old_files_and_exactly_one_named_addition ... ok
+test held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift ... ok
+test held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift ... ok
+test immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift ... ok
+test immutable_fixture_changes_only_old_input_helper_not_any_old_assertion ... ok
+test immutable_fixture_is_exact_worker_blob_and_checkout_keeps_raw_lf ... ok
+test actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats has been running for over 60 seconds
+test consuming_held_join_preserves_all_443_old_sources_and_formats has been running for over 60 seconds
+test held_trust_preserves_all_442_preceding_sources_and_production_inputs has been running for over 60 seconds
+test immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs has been running for over 60 seconds
+test consuming_held_join_preserves_all_443_old_sources_and_formats ... ok
+test actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats ... ok
+test held_trust_preserves_all_442_preceding_sources_and_production_inputs ... ok
+test launcher_adapter_refuses_missing_duplicate_and_unrelated_drift ... ok
+test namespace_fixture_is_test_only_private_mount_and_not_manager_authority ... ok
+test namespace_adapter_refuses_missing_duplicate_and_unrelated_drift ... ok
+test immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs ... ok
+test role_files_adapter_refuses_missing_duplicate_and_unrelated_drift ... ok
+test role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift ... ok
+test launcher_preserves_all_438_preceding_sources_and_exact_old_formats has been running for over 60 seconds
+test role_binding_preserves_all_441_preceding_runtime_sources_and_inputs has been running for over 60 seconds
+test role_files_preserve_all_440_previous_runtime_sources_and_inputs has been running for over 60 seconds
+test launcher_preserves_all_438_preceding_sources_and_exact_old_formats ... ok
+test role_binding_preserves_all_441_preceding_runtime_sources_and_inputs ... ok
+test role_files_preserve_all_440_previous_runtime_sources_and_inputs ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 182.53s
+
+
+running 4 tests
+test activation_ingress_has_no_clock_descriptor_manager_or_unknown_environment_cleanup ... ok
+test activation_ingress_compatibility_registration_preserves_every_old_format_byte ... ok
+test activation_ingress_only_two_exact_hooks_change_the_binary_entry ... ok
+test activation_ingress_is_explicit_and_keeps_the_complete_old_kernel ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.84s
+
+
+running 2 tests
+test memfd_probe_has_no_retry_copy_fallback_or_automatic_promotion ... ok
+test rejected_bind_alias_does_not_install_unproved_runtime_or_change_old_bytes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.29s
+
+
+running 4 tests
+test census_standalone_panic_api_signatures_do_not_add_source_reads ... ok
+test complete_role_census_is_inside_the_same_original_material_inventory ... ok
+test complete_role_census_uses_owned_contributions_before_the_existing_closing_owner_check ... ok
+test complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.20s
+
+
+running 3 tests
+test held_material_roles_leaf_has_no_new_live_query_effect_or_transport ... ok
+test held_material_roles_are_private_and_share_the_full_frame_inventory ... ok
+test held_material_roles_only_add_values_and_leave_complete_frame_and_retirement_unchanged ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.95s
+
+
+running 6 tests
+test seeded_mutations_remain_fresh_under_both_names_without_caching_success ... ok
+test stale_partial_duplicate_and_unrelated_channel_changes_refuse_after_success ... ok
+test unknown_names_and_other_security_inputs_are_not_projected_or_normalized ... ok
+test all_four_complete_callers_keep_cases_predicates_reads_and_original_hook_order ... ok
+test both_explicit_names_recover_the_independently_fixed_complete_old_channel ... ok
+test helper_has_only_the_pure_fixed_security_call_and_all_old_guards_stay_exact ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.53s
+

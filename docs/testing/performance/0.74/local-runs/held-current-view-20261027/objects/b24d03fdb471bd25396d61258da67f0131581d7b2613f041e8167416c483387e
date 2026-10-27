@@ -1,0 +1,16 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.46s
+     Running tests\diagnostic_artifact_fixture_074.rs (target\debug\deps\diagnostic_artifact_fixture_074-f1e58a7942832e8b.exe)
+     Running tests\held_activation_ingress_074.rs (target\debug\deps\held_activation_ingress_074-960e5f5c17de8041.exe)
+error: test failed, to rerun pass `-p xtask --test held_activation_ingress_074`
+     Running tests\held_bind_alias_refusal_074.rs (target\debug\deps\held_bind_alias_refusal_074-f70718154c796378.exe)
+error: test failed, to rerun pass `-p xtask --test held_bind_alias_refusal_074`
+     Running tests\held_complete_role_census_074.rs (target\debug\deps\held_complete_role_census_074-83ae831ae0ac68df.exe)
+error: test failed, to rerun pass `-p xtask --test held_complete_role_census_074`
+     Running tests\held_material_roles_074.rs (target\debug\deps\held_material_roles_074-e7036d7ccadefb2e.exe)
+error: test failed, to rerun pass `-p xtask --test held_material_roles_074`
+error: 4 targets failed:
+    `-p xtask --test held_activation_ingress_074`
+    `-p xtask --test held_bind_alias_refusal_074`
+    `-p xtask --test held_complete_role_census_074`
+    `-p xtask --test held_material_roles_074`

@@ -1,0 +1,29 @@
+"""Verify retained data and staged blobs, without executing archived sources."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+root = Path(__file__).resolve().parent.parent
+folder = root / 'docs/testing/performance/0.74/local-runs/held-current-view-20261027'
+raw_index = (folder / 'index.json').read_bytes()
+assert hashlib.sha256(raw_index).hexdigest() == sys.argv[1]
+index = json.loads(raw_index)
+assert index['schema'] == 'hc074-held-current-view-evidence-v1'
+assert index['package_pass'] is False and index['release_admitted'] is False
+checked = {}
+for name, row in index['members'].items():
+    assert name and not name.startswith('/') and '..' not in Path(name).parts
+    digest = row['sha256']
+    assert len(digest) == 64 and all(c in '0123456789abcdef' for c in digest)
+    if digest not in checked:
+        path = folder / 'objects' / digest
+        raw = path.read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == digest
+        assert subprocess.check_output(['git', 'show', ':' + path.relative_to(root).as_posix()], cwd=root, timeout=10) == raw
+        checked[digest] = raw
+    assert len(checked[digest]) == row['bytes']
+assert set(checked) == {p.name for p in (folder / 'objects').iterdir()}
+assert subprocess.check_output(['git', 'show', ':' + (folder / 'index.json').relative_to(root).as_posix()], cwd=root, timeout=10) == raw_index
+print(json.dumps(dict(members=len(index['members']), objects=len(checked), index_sha256=hashlib.sha256(raw_index).hexdigest(),
+    data_and_staged_blobs_exact=True, archived_source_executed=False, package_pass=False)))

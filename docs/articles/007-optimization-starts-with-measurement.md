@@ -21379,3 +21379,34 @@ and not proof of original delivery or all-writer cessation. The old full-package
 verdict and separate Linux frontier timeout remain unchanged. Held-role and
 diagnostic-artifact boundaries, complete package/security checks and original
 execution/recovery still precede server admission.
+
+The [held-source continuation](../testing/performance/0.74/held-current-view-result-20261027.md)
+shows why a retained failure list must be checked against the actual current
+source before adding another repair. Diagnostic-artifact already passes its
+twenty cases after the earlier inventory/source-view work. The fresh baseline
+instead isolates four remaining held-reader failures, all at the approved
+manager-channel change. The diagnostic target and its normalizers stay untouched.
+
+A two-name pure text bridge places that source through the unchanged security
+projector before the original provider/entry guards. The security predecessor is
+not the oldest held phase: sandbox/delivery hooks still have their own exact
+removals. The first new oracle assumes otherwise and correctly fails; another
+mutation control fails because its anchor is absent. Both outcomes remain with
+their sources. Correcting those controls preserves every old assertion and
+requires the actual mutation anchors before altering text.
+
+Strict Clippy then exposes a composition defect, not a reason to ignore a lint:
+activation already owns the bootstrap reader's security module. Sharing that
+single module requires only test-facade visibility, with every read function
+unchanged. Other targets import the same fixed module once. The new step adds
+no filesystem/Git/clock observation to the census guard and retains its independent
+pins, panic API and original deadline. Unknown source names are not normalized.
+
+The final held/bootstrap cohort passes 33 cases on Windows, MSRV and GNU/Linux.
+The diagnostic target separately passes twenty per environment; those commands
+are not pooled into a complete package verdict. Six new controls include exact
+producer/phase agreement, 48 seeded mutations after prior success, whole old
+caller constructions and unchanged assertion/call order. These are compatibility
+and refusal results, not a performance gain or all-writer cessation proof. The
+old V8 and independent Linux frontier timeout still retain their original status;
+fresh complete source/effect review and the remaining release gates come next.

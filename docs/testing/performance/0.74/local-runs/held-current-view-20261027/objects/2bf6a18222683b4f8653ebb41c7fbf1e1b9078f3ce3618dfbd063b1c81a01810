@@ -1,0 +1,9 @@
+   Compiling xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 38.76s
+     Running tests/bootstrap_current_view_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/bootstrap_current_view_074-bf76ea134408d7ab)
+     Running tests/bootstrap_doc_reader_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/bootstrap_doc_reader_074-153d92c2812ea505)
+     Running tests/held_activation_ingress_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/held_activation_ingress_074-ce1dba33d7f45d7e)
+     Running tests/held_bind_alias_refusal_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/held_bind_alias_refusal_074-c05389766b08be86)
+     Running tests/held_complete_role_census_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/held_complete_role_census_074-4a2fa16885fb1849)
+     Running tests/held_material_roles_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/held_material_roles_074-063b9133089fa625)
+     Running tests/held_security_view_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/held_security_view_074-24383be4655cf456)
