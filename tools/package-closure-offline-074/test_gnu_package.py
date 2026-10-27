@@ -32,6 +32,18 @@ class Group:
 
 
 class PureControls(unittest.TestCase):
+    def test_restored_attempt_preserves_package_contract(self):
+        import gnu_review as review
+        self.assertEqual(review.TARGET.as_posix(), '/home/artur/.cache/hydracache-074-194-check')
+        self.assertEqual(review.command(), ['/home/artur/.cargo/bin/cargo', '+1.94.0',
+            'test', '--offline', '--locked', '--no-fail-fast', '--target-dir',
+            str(review.TARGET), '-p', 'xtask',
+            '--lib', '--tests', '--', '--test-threads=4'])
+        self.assertEqual((p.BOUND, p.FLOOR), (780, 4 * 1024**3))
+        self.assertEqual(p.ENV, dict(RUSTUP_AUTO_INSTALL='0', CARGO_INCREMENTAL='0', CARGO_BUILD_JOBS='2'))
+        self.assertEqual(p.OUT, p.CONTROL / 'target/native-full-package-capacity-restored-20261027')
+        self.assertEqual(p.CONTROL_PHASE, 'native-full-coordinator-restored-final-controls')
+
     def test_default_and_unknown_cli_never_dispatch(self):
         run = subprocess.run([sys.executable, str(Path(p.__file__))], capture_output=True, timeout=10)
         self.assertEqual(run.returncode, 0)

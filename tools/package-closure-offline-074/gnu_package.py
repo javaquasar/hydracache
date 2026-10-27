@@ -10,7 +10,7 @@ import sys
 import time
 
 CONTROL = Path('/mnt/c/Workspace/prj/jq/cashe/hydracache-074')
-OUT = CONTROL / 'target/native-full-package-checked-first-20261027'
+OUT = CONTROL / 'target/native-full-package-capacity-restored-20261027'
 PINS = {'analysis.py': 'dd53d98e0b299e892a0ccd3597335409a3c3e476db08dd2317706918e1092474',
         'gnu_review.py': '816c467195b4d58ee1e25cd530258b15241023cf61bbea56ac284bf80b21c1c4'}
 GROUP_SHA = 'e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691'
@@ -18,7 +18,7 @@ PARSER_SHA = '0229d4067fffd0d0b5acee7d864efc64aadfb201de1ea3f17944a2f8dddf3c4d'
 BOUND = 780
 FLOOR = 4 * 1024**3
 ENV = dict(RUSTUP_AUTO_INSTALL='0', CARGO_INCREMENTAL='0', CARGO_BUILD_JOBS='2')
-CONTROL_PHASE = 'native-full-coordinator-checked-controls'
+CONTROL_PHASE = 'native-full-coordinator-restored-final-controls'
 
 
 def require(value, reason):
