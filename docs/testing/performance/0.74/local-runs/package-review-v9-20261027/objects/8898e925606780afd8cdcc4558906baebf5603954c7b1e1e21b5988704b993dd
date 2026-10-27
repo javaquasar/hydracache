@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\package_effects_review_v9.py", line 202, in <module>
+    result = source_review(root, decode(args.syntax.read_bytes()))
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\package_effects_review_v9.py", line 167, in source_review
+    auxiliary = checked_auxiliary(root)
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\package_effects_review_v9.py", line 125, in checked_auxiliary
+    require(actual == expected and len(actual) == 56, 'reviewed auxiliary input drift')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\historical-blob-batch-074\package_effects_review_v9.py", line 73, in require
+    raise ValueError(reason)
+ValueError: reviewed auxiliary input drift

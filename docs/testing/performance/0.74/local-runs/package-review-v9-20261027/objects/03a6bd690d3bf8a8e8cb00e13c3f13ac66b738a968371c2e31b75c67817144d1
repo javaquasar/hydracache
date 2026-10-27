@@ -1,0 +1,83 @@
+{
+  "clocks": false,
+  "linux_frontier_complete": false,
+  "observations": [
+    {
+      "argv": [
+        "wsl.exe",
+        "-d",
+        "Ubuntu",
+        "-u",
+        "artur",
+        "--exec",
+        "findmnt",
+        "--noheadings",
+        "--output",
+        "FSTYPE,TARGET",
+        "--target",
+        "/mnt/c/Workspace/prj/jq/cashe/hydracache-074"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout": "9p     /mnt/c\n"
+    },
+    {
+      "argv": [
+        "wsl.exe",
+        "-d",
+        "Ubuntu",
+        "-u",
+        "artur",
+        "--exec",
+        "findmnt",
+        "--noheadings",
+        "--output",
+        "FSTYPE,TARGET",
+        "--target",
+        "/home/artur"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout": "ext4   /\n"
+    },
+    {
+      "argv": [
+        "wsl.exe",
+        "-d",
+        "Ubuntu",
+        "-u",
+        "artur",
+        "--exec",
+        "df",
+        "-B1",
+        "--output=avail,target",
+        "/home/artur",
+        "/mnt/c"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout": "       Avail Mounted on\n893846638592 /\n 11943952384 /mnt/c\n"
+    },
+    {
+      "argv": [
+        "wsl.exe",
+        "-d",
+        "Ubuntu",
+        "-u",
+        "artur",
+        "--exec",
+        "test",
+        "-e",
+        "/home/artur/.cache/hydracache-074-frontier-native"
+      ],
+      "exit": 1,
+      "stderr": "",
+      "stdout": ""
+    }
+  ],
+  "read_only": true,
+  "server": false,
+  "services": false,
+  "tests_replayed": false,
+  "worktree_created": false
+}

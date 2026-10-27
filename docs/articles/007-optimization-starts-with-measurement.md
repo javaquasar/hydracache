@@ -21410,3 +21410,33 @@ caller constructions and unchanged assertion/call order. These are compatibility
 and refusal results, not a performance gain or all-writer cessation proof. The
 old V8 and independent Linux frontier timeout still retain their original status;
 fresh complete source/effect review and the remaining release gates come next.
+
+The [complete current package review](../testing/performance/0.74/package-review-v9-result-20261027.md)
+then closes the repaired default-Windows graph rather than summing focused test
+passes. Two syntax-only rounds inventory 386 Rust inputs and 26,627 sites. Of
+the V8 rows, 357 remain exact; seventeen change and twelve are added. All 54
+old auxiliary bodies remain exact, with two separately pinned inventory inputs.
+The complete default catalog now has 153 targets. Five new command-constructor
+sites are literal read-only Git operations, not new manager or workload starts.
+The original diagnostic opt-ins and cleanup retain their inherited review.
+
+Eleven negative controls protect source/AST pins, module closure, imports and
+the full target catalog. They operate on fixed source data with a substituted
+module callback; a separate actual-tree check proves real closure and environment
+conditions. An incorrect text-policy digest in the first review refuses before
+imports and remains retained. This review establishes source/effect scope, not
+that every package test has run or that original writers have been retired.
+
+The retained Linux timeout illustrates a separate environmental boundary. Its
+Git child waits in `p9_client_rpc`, and read-only storage checks identify the
+worktree's 9p mount beside an available native ext4 location. That observation
+does not prove how much native storage would save, nor complete the failed
+cohort. The next method must preserve the complete tracked source, evidence,
+history and fresh predicates in a separately bounded native context, without
+path pruning, larger windows or a hidden retry. Linux virtual free space also
+cannot substitute for the physical Windows backing-volume floor.
+
+Workspace-wide formatting also remains distinct from the focused tooling gate:
+Windows refuses its command length before a verdict, while one GNU check reaches
+its separate 120-second diagnostic bound without changing source. Scoped xtask
+formatting passes, but cannot stand in for either missing complete verdict.

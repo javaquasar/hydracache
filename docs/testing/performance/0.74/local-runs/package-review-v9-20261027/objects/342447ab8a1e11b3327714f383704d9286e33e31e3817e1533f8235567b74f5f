@@ -1,0 +1,204 @@
+"""Fixed current default-Windows source review, without a package dispatcher.
+
+V8 and all first refusals remain immutable data. Pins below follow manual review
+of the five preservation repairs, not an inventory-to-approval refresh.
+"""
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import tomllib
+
+REVIEWED_AST_SHA256 = '556959c6a9dc136f3ef2f6b61f0b8c52b2e6f5d9015327c872b9ef6af4105ad7'
+PREVIOUS_AST_SHA256 = '68339f045870a9a106058c2e12c6403ac32bab4ee9ee220c12aceddf82528c81'
+PREVIOUS_PACKET = 'docs/testing/performance/0.74/local-runs/package-review-v8-20261027'
+PREVIOUS_INDEX_SHA256 = 'ccb759b4905dc9685485937507e346748c7ed77ae50ed6a24512666393f4a47d'
+PREVIOUS_GATE_SHA256 = '51973688856a443b32e6de83a8bf8a2a0883b3bdedc6235babbf298280d3a00c'
+PREVIOUS_SYNTAX_SHA256 = 'c5327a528cf0650022afab49dbb298c920573cd821e2923fdadd6d6e5813b70e'
+PREVIOUS_REVIEW_SHA256 = '05a75665dd501d8171ff65c5f19f07169678b4310782f6fc5b500c80de4bd5d5'
+CONTEXT_SHA256 = 'c4bbc2d6b69e416ac3fcb30a1a64fb3bb54473b70977a1875ff90ca264b0cd44'
+CHANGED = {
+    'crates/xtask/tests/artifact_inventory_phase_544_074.rs': '1bd57a4fdfefe059a79e63cdc30bf1978b29427d14542829ed2d46189b7d77b5',
+    'crates/xtask/tests/authority_reader_phase_074.rs': '58a8f0c7fc36df765b970ebf2f91015b077210a6f45a04441241f6d93f123f7d',
+    'crates/xtask/tests/authority_runtime_074.rs': '49622c02585384120e3921403f9d86b57a38810d6a3a24865b19dbfdb924fc44',
+    'crates/xtask/tests/bootstrap_doc_reader_074.rs': '915b11f047585c3bf256d4059a71400d09729e56cb9150ee295ffa4b2109b032',
+    'crates/xtask/tests/current_frontier_074.rs': '56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9',
+    'crates/xtask/tests/held_activation_ingress_074.rs': '43592054eeef39fb068984ddc65ab4b345893e68922bf70e700f422d26f2b44f',
+    'crates/xtask/tests/held_bind_alias_refusal_074.rs': 'ec255a597a2f969c0fb73dd825f6c480c22d7adb72610633c95f350cf103dbd8',
+    'crates/xtask/tests/held_complete_role_census_074.rs': '43094f856ed4d6cf53985a076d8cbfd0958bfd651a0cb3398fec5b4189c1718d',
+    'crates/xtask/tests/held_material_roles_074.rs': '0a8ed9bf8ea0d30747523ef4bf11f4c9be43cf4162b766ef1a110e2d481c1547',
+    'crates/xtask/tests/history_status_readers_074.rs': '13f3b9e5d08d9fe6f351ea82b23d038b892c913ac240190d3c0538b0836828f8',
+    'crates/xtask/tests/support/artifact_inventory_input.rs': '603a6efe10142c1caee01e93535613e62e556f8c685be947a451e7dee589792c',
+    'tools/authority-reader-phase-074/contract.rs': '284026c79fd18247d9ace9bb707d0746d469d242cc15fc82bb6b59bbd432b239',
+    'tools/bootstrap-doc-reader-074/installed_io.rs': '20267538de546dd58a7660f65f5ca29d6ca572f2e3aa530c86418a2deb67b588',
+    'tools/bootstrap-doc-reader-074/io.rs': '57135359ac92e6c8b486cb06035b07476d9ca877bac832dc87c6921a392609d5',
+    'tools/bootstrap-doc-reader-074/read.rs': '0422ea62d8a65aad5d6d70dd68a6bc2840dae0f222fde3a97bdf5c3742402ba7',
+    'tools/current-frontier-074/reader.rs': 'a379e6690d2c52f4c259024e9f197e4cf845fbdd628bf90a1f041b356a7bb30b',
+    'tools/history-status-readers-074/inputs.rs': 'f0b1e70f06838dbf336f4efe4805e7ba6da2b31a0f9b3e134bf525bf16901353',
+}
+ADDED = {
+    'crates/xtask/tests/artifact_inventory_phase_545_074.rs': '2244639876e1edd2ab45404ee6387d8e535d4eba234b4a42dbe566a98ee88786',
+    'crates/xtask/tests/bootstrap_current_view_074.rs': '89ea2482fe5552c171b719fc7f29482756da71fc9b90aee2d268a46be89f0912',
+    'crates/xtask/tests/frontier_current_view_074.rs': 'd5d9e03ca0ffa9b46e00075fbb44d5519d9f03e3fda134659de04212924dcbd2',
+    'crates/xtask/tests/held_security_view_074.rs': '7bfc284e49f335aead8856bdcd12d3bf007d783cabdbb71b5a3fe0022f6d9a17',
+    'crates/xtask/tests/support/artifact_inventory_phase_545.rs': '5a4cab8f27392fe4f64823754719cc5a0649f0ab49ddc83bf99dd592ef3d0c4c',
+    'crates/xtask/tests/terminal_current_view_074.rs': 'fd902192824a64f27ca2cdf0a38036ee21874785a0c03fd23c469e2176cd7c03',
+    'tools/authority-reader-phase-074/current_main.rs': 'a3ba5395893c152a1224699ffb48cccc3dd6336518d719243bae23c26b2d30a5',
+    'tools/bootstrap-doc-reader-074/fixture.rs': 'af6747ef516572713498d4bfc6e7fc365c40f78ddb1f3f453a08939df6453428',
+    'tools/current-frontier-074/alarm_addition.rs': '13b4a98e3dfbf6d016e83da68a7eff52f9e3b441b285871bc3b3401aec06ba67',
+    'tools/current-frontier-074/current.rs': 'c7494ac0f08c487fbbd64b071fc614cc913d5ebae077cba2e381cd0afd1db522',
+    'tools/current-frontier-074/reader_source.rs': '960a96c25396dab4d7f5055879d6adf1af96bbbf289363e55e1d4196c78b5f1d',
+    'tools/held-security-view-074/contract.rs': '13e37a065d7435e8e1b53cb7f561ac0009e12c22684222a3f7e4063b4db0cfcc',
+}
+NEW_TARGETS = sorted('tests/' + Path(name).name for name in ADDED
+                     if Path(name).parent == Path('crates/xtask/tests'))
+EXTRA_AUXILIARY = {
+    'tools/inventory-545-view-074/rules.json': '1f41899edf172c4ae0a29f17a5fd8a1cee0fd8bf1047c5da5c4ea94b1dca962b',
+    'tools/inventory-545-view-074/.gitattributes': '069a61310a1ce4c5daa612a2fab549d88485e54b5ae47a31c66367a5383dc26d',
+}
+DELTA_REVIEW = {
+    'inventory': 'The fixed 545 descriptor changes one channel and adds one alarm test from the independently pinned Tokio producer. Every actual body/index/metadata check still runs before 545 -> 544 -> 530 -> 446 projection. The old 544 phase stays exact; old tests retain its complete predecessor assertions and additionally require 545 current observations. Only immutable descriptors/names are cached, never current observations.',
+    'terminal': 'One whole-pinned MAIN text edge reverses only the already approved lock-reader join. Original terminal/security rules and full runtime gate/IO are unchanged. Authority callers preserve assertion tokens. Current MAIN, not a historical projection, goes into the unchanged current gate. The five-body source oracle constructs only those exact reader joins.',
+    'frontier': 'Manifest reverses exactly three approved dev-only edges under complete current/predecessor hashes. MAIN composes the qualified terminal bridge and old twelve-path rules. Both reader facades preserve physical-read/canonical-root/path/fallback order. One new alarm addition checks fresh metadata/index/body against a fixed producer. The assertion-only history facade inverse leaves the actual read tail/current gate intact. No path excluded from complete audits.',
+    'bootstrap': 'A separate exact two-path security selector follows the one original observation; the old two-document selector and observe-error-project primitive are unchanged. Installed reader shares its existing runtime successor. The separate fixture checks whole current docs/reader bodies and only reconstructs exact old positive fixtures in test assertions. It is not the live filesystem reader and cannot admit stale bytes there.',
+    'held': 'Four original read helpers insert only a pure two-name manager-channel projection before unchanged hook guards. Census adapter/pins/panic/conditional reads are unchanged. Activation reuses its existing security module via test-facade visibility; no observation or live authority is added.',
+    'controls': 'Five new ordinary targets use fixed read-only Git show/ls-tree/archive/ls-files plus fresh source reads, seeded in-memory mutations and owned tempfile controls. Archive is parsed as tar data, never executed. GNU-only symlink control touches only its owned temporary directory. No manager, product, privilege, clock, service, SSH, kill or server entry is added. Existing default-off diagnostic children and exact self-child argv retain inherited review.',
+    'inherited': '357 complete V8 source/AST rows and all 54 auxiliary bodies stay byte-identical. Twelve new and seventeen changed complete rows are fixed separately; no source removal. The one new immutable inventory descriptor and its text policy are pinned before imports. Heartbeat and both cleanup companions retain exact bytes. This is default Windows source/effect closure, not GNU execution clearance or compiler expansion.',
+    'remaining': 'No package dispatcher or fresh full-package result. Preserve 780 seconds including compilation, four threads, 4 GiB floor, no filter/retry. V8 and the GNU frontier first timeout remain red/incomplete. Native Linux frontier environment/method, security policy, original release/all-writer retirement, lifecycle/reconnect/trust and host admission stay open.',
+}
+
+
+def require(value, reason):
+    if not value:
+        raise ValueError(reason)
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def decode(raw):
+    def pairs(items):
+        value = {}
+        for key, item in items:
+            require(key not in value, 'duplicate JSON key')
+            value[key] = item
+        return value
+    return json.loads(raw, object_pairs_hook=pairs)
+
+
+def document_digest(document):
+    return sha(json.dumps(document, sort_keys=True, separators=(',', ':')).encode())
+
+
+def read_inside(root, name):
+    relative = Path(name)
+    require(not relative.is_absolute() and '..' not in relative.parts, 'nonrelative review input')
+    path = (root / relative).resolve(strict=True)
+    require(path.is_relative_to(root), 'review input outside repository')
+    return path.read_bytes()
+
+
+def previous(root):
+    raw = read_inside(root, PREVIOUS_PACKET + '/index.json')
+    require(sha(raw) == PREVIOUS_INDEX_SHA256, 'V8 index drift')
+    index = decode(raw)
+    values = []
+    for name, digest in [('review/gate.json', PREVIOUS_GATE_SHA256), ('syntax/result.json', PREVIOUS_SYNTAX_SHA256)]:
+        row = index['members'][name]
+        require(row['sha256'] == digest, 'V8 member pointer drift')
+        raw = read_inside(root, PREVIOUS_PACKET + '/objects/' + digest)
+        require(sha(raw) == digest and len(raw) == row['bytes'], 'V8 member bytes drift')
+        values.append(decode(raw))
+    gate, document = values
+    require((len(gate['sources']), len(gate['auxiliary']), len(gate['targets'])) == (374, 54, 148), 'V8 inventory drift')
+    require(document_digest(document) == PREVIOUS_AST_SHA256 and
+            {r['source']: r['sha256'] for r in document['sources']} == gate['sources'], 'V8 syntax/source drift')
+    return gate, document
+
+
+def checked_auxiliary(root):
+    old = previous(root)[0]['auxiliary']
+    require(not old.keys() & EXTRA_AUXILIARY.keys(), 'auxiliary addition collision')
+    expected = {**old, **EXTRA_AUXILIARY}
+    actual = {name: sha(read_inside(root, name)) for name in expected}
+    require(actual == expected and len(actual) == 56, 'reviewed auxiliary input drift')
+    return actual
+
+
+def load_context(root):
+    path = root / 'tools/historical-blob-batch-074/module_context_v5.py'
+    require(sha(path.read_bytes()) == CONTEXT_SHA256, 'context body drift')
+    spec = importlib.util.spec_from_file_location('hc074_checked_context_v9', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def target_catalog(root):
+    manifest = tomllib.loads(read_inside(root, 'crates/xtask/Cargo.toml').decode())
+    require(manifest['package']['name'] == 'xtask' and manifest['package'].get('autotests', True)
+            and 'test' not in manifest, 'default package discovery drift')
+    return ['unittests src/lib.rs', 'unittests src/main.rs'] + sorted(
+        'tests/' + p.name for p in (root / 'crates/xtask/tests').glob('*.rs'))
+
+
+def source_review(root, document):
+    root = root.resolve(strict=True)
+    require(document_digest(document) == REVIEWED_AST_SHA256, 'unreviewed v9 syntax/source inventory')
+    require(document['executed_input_code'] is False and document['compiler_expansion'] is False, 'source-only inventory scope')
+    rows = {r['source']: r for r in document['sources']}
+    require(len(rows) == len(document['sources']) == 386, 'duplicate or changed source count')
+    prior, old_document = previous(root)
+    old = {r['source']: r for r in old_document['sources']}
+    require(not old.keys() - rows.keys(), 'old source removal')
+    changed = {name for name in old if old[name] != rows[name]}
+    added = rows.keys() - old.keys()
+    require({n: rows[n]['sha256'] for n in changed} == CHANGED and len(changed) == 17, 'manual changed source/AST delta drift')
+    require({n: rows[n]['sha256'] for n in added} == ADDED and len(added) == 12, 'manual added source/AST delta drift')
+    constructors = []
+    for name, row in rows.items():
+        require(Path(name).suffix == '.rs' and sha(read_inside(root, name)) == row['sha256'], 'source bytes/path drift')
+        for site in row['sites']:
+            require(site['kind'] != 'include', 'unexpanded include edge')
+            if site['kind'] in ('command-constructor', 'macro-command-constructor'):
+                require(site['detail'] not in {'literal:ssh', 'literal:systemctl', 'literal:systemd-run', 'literal:wsl', 'literal:timedatectl'}, 'host/service constructor')
+                constructors.append(dict(source=name, **site))
+    auxiliary = checked_auxiliary(root)
+    additions, unresolved = load_context(root).module_edges(root, document)
+    require(not additions and not unresolved, 'module graph not closed')
+    discovered = {p.relative_to(root).as_posix() for folder in ('crates/xtask/src', 'crates/xtask/tests')
+                  for p in (root / folder).rglob('*.rs')}
+    require(discovered <= rows.keys(), 'new uncensused Rust source')
+    targets = target_catalog(root)
+    expected = prior['targets'][:2] + sorted(prior['targets'][2:] + NEW_TARGETS)
+    require(targets == expected and len(set(targets)) == len(targets) == 153, 'default target catalog drift')
+    return dict(schema='hc074-package-effect-review-v9', reviewed_ast_sha256=REVIEWED_AST_SHA256,
+        previous_ast_sha256=PREVIOUS_AST_SHA256, sources={n: r['sha256'] for n, r in rows.items()},
+        auxiliary=auxiliary, targets=targets, constructors=constructors,
+        changed_sources=sorted(changed), added_sources=sorted(added), delta_review=DELTA_REVIEW,
+        inherited_review={k: v for k, v in prior.items() if 'review' in k},
+        source_effect_review_complete=True, formal_whole_program_proof=False,
+        package_dispatched=False, package_pass=False, linux_or_all_features_cleared=False,
+        original_execution_or_product_or_qualification_admission=False)
+
+
+def environment_preflight(root):
+    checked_auxiliary(root)
+    path = root / 'tools/historical-blob-batch-074/package_effects_review_v8.py'
+    require(sha(path.read_bytes()) == PREVIOUS_REVIEW_SHA256, 'inherited environment review body drift')
+    spec = importlib.util.spec_from_file_location('hc074_checked_review_v8_environment', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.environment_preflight(root)
+
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('syntax', type=Path)
+    args = parser.parse_args()
+    root = Path(__file__).resolve().parents[2]
+    result = source_review(root, decode(args.syntax.read_bytes()))
+    result['environment'] = environment_preflight(root)
+    print(json.dumps(result, sort_keys=True, indent=2))

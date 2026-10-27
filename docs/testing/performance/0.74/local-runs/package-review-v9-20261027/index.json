@@ -1,0 +1,693 @@
+{
+  "archived_code_executed": false,
+  "implementation": "b02a2ba42412ad5b0310ab609250de7ad0c5db2a",
+  "members": {
+    "checks/v9-check/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/v9-check/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/v9-check/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/v9-check/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/v9-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/v9-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/v9-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/v9-check/intent.json": {
+      "bytes": 357857,
+      "sha256": "e48061919e9e4da256cdfa7af1ffdfbeba82d6184929552a8fbc929619d09d82"
+    },
+    "checks/v9-check/process.json": {
+      "bytes": 14,
+      "sha256": "ada9a33af6c77d3b4594d363ab97a1b528e16dd02b805d9f8982891dd33d2b8a"
+    },
+    "checks/v9-check/result.json": {
+      "bytes": 357652,
+      "sha256": "b01ba1be4f169c36ca89ad7e78133c0f9d4c330dd4a35c08e0dfa549f748f756"
+    },
+    "checks/v9-check/stderr.log": {
+      "bytes": 72,
+      "sha256": "bbb0a124a071c1b273698c1046d5aecc4f89deed91cef00be6db1350ac3064c8"
+    },
+    "checks/v9-check/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-clippy/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/v9-clippy/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/v9-clippy/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/v9-clippy/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/v9-clippy/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/v9-clippy/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/v9-clippy/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/v9-clippy/intent.json": {
+      "bytes": 357920,
+      "sha256": "45404f13ab20647f3e4e10371a0c1f46edae4a4a93cbad71c48bb2ccdc195e6b"
+    },
+    "checks/v9-clippy/process.json": {
+      "bytes": 14,
+      "sha256": "c03033f709c0ab4721a64ca93c75afb52ec2363879542c8dae1d5c69802088fb"
+    },
+    "checks/v9-clippy/result.json": {
+      "bytes": 357652,
+      "sha256": "3c6dbb7bb5e58e79b5abcf8e1b529f9a57bfdff998393bf4fcf53cefbc1b81bd"
+    },
+    "checks/v9-clippy/stderr.log": {
+      "bytes": 72,
+      "sha256": "250bd07c3fbc0e6801a65c19ab526f81b84fba0d8be78d62e06a7992769083ae"
+    },
+    "checks/v9-clippy/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-contract-final/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/v9-contract-final/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/v9-contract-final/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/v9-contract-final/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/v9-contract-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/v9-contract-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/v9-contract-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/v9-contract-final/intent.json": {
+      "bytes": 357828,
+      "sha256": "cf47bde08604e19eb7db009842f3e432266c37696416f697ece5c279fc82995d"
+    },
+    "checks/v9-contract-final/process.json": {
+      "bytes": 14,
+      "sha256": "d9d1ac06e1a548bb8656e811eedaa04637769462bca2f9bc0ba846d4c9b17a51"
+    },
+    "checks/v9-contract-final/result.json": {
+      "bytes": 357652,
+      "sha256": "2a421ca854f34f436d026ba8e29fdf12ca8b3a825d84f25a2f1d7dd69fe99f1c"
+    },
+    "checks/v9-contract-final/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-contract-final/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "checks/v9-controls-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/v9-controls-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/v9-controls-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/v9-controls-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/v9-controls-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/v9-controls-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/v9-controls-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/v9-controls-first/intent.json": {
+      "bytes": 357923,
+      "sha256": "1cebc4e41ae31e956bffbaf47d0e4e55f9d65af60c2737eec19acfa18e9220ed"
+    },
+    "checks/v9-controls-first/process.json": {
+      "bytes": 14,
+      "sha256": "18e95bfdcd14bb19dcf56e4fb8465b376df549d71e5a06ee0ab60e13f87e36d0"
+    },
+    "checks/v9-controls-first/result.json": {
+      "bytes": 357652,
+      "sha256": "ae4109efdbbc9ec0dda73736dd00dde5e14ea1d448fe44ec4d660a1ed3a12e77"
+    },
+    "checks/v9-controls-first/stderr.log": {
+      "bytes": 1970,
+      "sha256": "943c372172b7577d5d3a391fa77b6fa142c5ec54249da9ca1073f2fc0fb4d85a"
+    },
+    "checks/v9-controls-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-doc-final/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/v9-doc-final/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/v9-doc-final/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/v9-doc-final/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/v9-doc-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/v9-doc-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/v9-doc-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/v9-doc-final/intent.json": {
+      "bytes": 357780,
+      "sha256": "5491dd22a6107b2ccad05624c193a6daa40516bdc1c5f1f8faa71bcb0b7a991f"
+    },
+    "checks/v9-doc-final/process.json": {
+      "bytes": 14,
+      "sha256": "75f3833b41b9e4ad96265a783df32545b3cbfc453cbd6e23953c1a0c13038fcd"
+    },
+    "checks/v9-doc-final/result.json": {
+      "bytes": 357652,
+      "sha256": "ea808ebb80d3aa7066725f7ff6f3cf6a2c56f4a2e09ac7224e40f21fe06cbb5d"
+    },
+    "checks/v9-doc-final/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-doc-final/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/v9-format-final/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/v9-format-final/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/v9-format-final/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/v9-format-final/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/v9-format-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/v9-format-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/v9-format-final/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/v9-format-final/intent.json": {
+      "bytes": 357814,
+      "sha256": "12750483c0092a9ed4590586666fd68610b22b0ce534f3cbc6cb2f56924dac70"
+    },
+    "checks/v9-format-final/process.json": {
+      "bytes": 13,
+      "sha256": "7d7c1603b19947876f6e35ff1a747f890245e04413cdc478175b141ac6b8d377"
+    },
+    "checks/v9-format-final/result.json": {
+      "bytes": 357652,
+      "sha256": "b572f050b915e345668015145a3c4f13d9a3a059f461b0e2dbb9a3c0f9000049"
+    },
+    "checks/v9-format-final/stderr.log": {
+      "bytes": 817,
+      "sha256": "a3c64adc493a218a5a8332dfc60b9e9fd0cf455d8215931a5888f9bc84a29c70"
+    },
+    "checks/v9-format-final/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-format-gnu-all/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/v9-format-gnu-all/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/v9-format-gnu-all/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/v9-format-gnu-all/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/v9-format-gnu-all/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/v9-format-gnu-all/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/v9-format-gnu-all/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/v9-format-gnu-all/intent.json": {
+      "bytes": 358330,
+      "sha256": "75bc86ec41dd2c063184a6a3817982ee9aeca504a2c9d115abe878b66d67b206"
+    },
+    "checks/v9-format-gnu-all/process.json": {
+      "bytes": 14,
+      "sha256": "c87ba8210a2384b20a26bf7d6a7e49c9a3eccf621d2dd6c092a3cac7639ca69c"
+    },
+    "checks/v9-format-gnu-all/result.json": {
+      "bytes": 357654,
+      "sha256": "1f24b4177386e8ea11794b802e355c7fec47cc946c260ecb3de1c8ed2ae1f831"
+    },
+    "checks/v9-format-gnu-all/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-format-gnu-all/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-format-xtask/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/v9-format-xtask/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/v9-format-xtask/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/v9-format-xtask/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/v9-format-xtask/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/v9-format-xtask/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/v9-format-xtask/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/v9-format-xtask/intent.json": {
+      "bytes": 357814,
+      "sha256": "09339793238cf65917ddcc0f43c0550ac7a48a4d313f338659515d55f841a151"
+    },
+    "checks/v9-format-xtask/process.json": {
+      "bytes": 14,
+      "sha256": "45e8fda25939fc74f2313abeab600a34949c5559cd1b4d8d7882aebcd99bafa6"
+    },
+    "checks/v9-format-xtask/result.json": {
+      "bytes": 357652,
+      "sha256": "bfc59ac47d66312eba7db2e8e63fe2ed2cb4abe81973a9a3d1e71635057b18f9"
+    },
+    "checks/v9-format-xtask/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-format-xtask/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-linux-storage-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/v9-linux-storage-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/v9-linux-storage-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/v9-linux-storage-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/v9-linux-storage-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/v9-linux-storage-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/v9-linux-storage-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/v9-linux-storage-first/intent.json": {
+      "bytes": 357821,
+      "sha256": "6af69922db5b6265a3898a488dc6c6c3c44b8bddce5523719f2d3124d102e302"
+    },
+    "checks/v9-linux-storage-first/process.json": {
+      "bytes": 14,
+      "sha256": "9215e380eb8ed99b5651bbd11852b300fd153613834a454061c9566020e0060f"
+    },
+    "checks/v9-linux-storage-first/result.json": {
+      "bytes": 357652,
+      "sha256": "7ff54158f5bc0ec051d32f3b4164f8029ba268d7063647489a3dff39fa1f0392"
+    },
+    "checks/v9-linux-storage-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-linux-storage-first/stdout.log": {
+      "bytes": 1630,
+      "sha256": "03a6bd690d3bf8a8e8cb00e13c3f13ac66b738a968371c2e31b75c67817144d1"
+    },
+    "checks/v9-python-compile/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/v9-python-compile/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/v9-python-compile/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/v9-python-compile/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/v9-python-compile/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/v9-python-compile/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/v9-python-compile/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/v9-python-compile/intent.json": {
+      "bytes": 357936,
+      "sha256": "35fdf6d939b57f289a5b39c0c869f139d217140de47e0e8cef1e227d93d8c47d"
+    },
+    "checks/v9-python-compile/process.json": {
+      "bytes": 14,
+      "sha256": "8df4e247fe3bdfa6779c00c0e50226dbdfaa30e8345c751a5f5e2ddf58bce97b"
+    },
+    "checks/v9-python-compile/result.json": {
+      "bytes": 357652,
+      "sha256": "774e3d92dd2e2ca3ff2c324e385d2c0a94205931134c966b9cc165dd33a4fcf3"
+    },
+    "checks/v9-python-compile/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-python-compile/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-source-review-corrected/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/v9-source-review-corrected/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/v9-source-review-corrected/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/v9-source-review-corrected/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/v9-source-review-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/v9-source-review-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/v9-source-review-corrected/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/v9-source-review-corrected/intent.json": {
+      "bytes": 357758,
+      "sha256": "0a5adb3199e1a7fbdf7d114d8bb37c8d62e71f5b1192c375a64216e98138acb4"
+    },
+    "checks/v9-source-review-corrected/process.json": {
+      "bytes": 14,
+      "sha256": "8587e3fbfb08f2b815896a1c80d25a6e6f7d2a6df2c5dbc5f6ec06892bf4a1a5"
+    },
+    "checks/v9-source-review-corrected/result.json": {
+      "bytes": 357510,
+      "sha256": "8c0169c42fed0c115fbb03d41007133994eb9578ddf77a03ffdd1756e3250442"
+    },
+    "checks/v9-source-review-corrected/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-source-review-corrected/stdout.log": {
+      "bytes": 138227,
+      "sha256": "441f491f714dbca3a27e0bd37bb58d6b6cc63b95b54f8fc5f1b8cf8759121704"
+    },
+    "checks/v9-source-review-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/v9-source-review-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/v9-source-review-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/v9-source-review-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/v9-source-review-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/v9-source-review-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/v9-source-review-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/v9-source-review-first/intent.json": {
+      "bytes": 357621,
+      "sha256": "d404caf3d89e1b069b5aeb71e72e79df53242edb80680041919d0841fb112eab"
+    },
+    "checks/v9-source-review-first/process.json": {
+      "bytes": 14,
+      "sha256": "77960d902fc0c50e917ba44b556444d800d55e6b2807067134b5efa52387d57e"
+    },
+    "checks/v9-source-review-first/result.json": {
+      "bytes": 357373,
+      "sha256": "8c09780ff46ddb0ee8b25d9da688ea17d909b8c2250a58f31b9fd4417dfac59b"
+    },
+    "checks/v9-source-review-first/stderr.log": {
+      "bytes": 949,
+      "sha256": "8898e925606780afd8cdcc4558906baebf5603954c7b1e1e21b5988704b993dd"
+    },
+    "checks/v9-source-review-first/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/v9-v8-receipt-controls/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "checks/v9-v8-receipt-controls/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "checks/v9-v8-receipt-controls/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "checks/v9-v8-receipt-controls/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "checks/v9-v8-receipt-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "checks/v9-v8-receipt-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "checks/v9-v8-receipt-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "checks/v9-v8-receipt-controls/intent.json": {
+      "bytes": 357915,
+      "sha256": "1af17ca1cc9e5446b74eaeedf7d9ebdb25444644c8e6032cf7f75b35b5c78112"
+    },
+    "checks/v9-v8-receipt-controls/process.json": {
+      "bytes": 14,
+      "sha256": "25102456cfd5e5b8ee40f0a716953a84d4e9f76f457c08715bdaa7e1d8943629"
+    },
+    "checks/v9-v8-receipt-controls/result.json": {
+      "bytes": 357652,
+      "sha256": "68525fdea663f2595d0bf75dee8198ce39a4eeace6c316a3d0951d69d5564644"
+    },
+    "checks/v9-v8-receipt-controls/stderr.log": {
+      "bytes": 1011,
+      "sha256": "bde51cab1ccee76e03a7dfd4ff7df11589966c463bdeb39f8f79a5092082e40a"
+    },
+    "checks/v9-v8-receipt-controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "first-source/package_effects_review_v9.py": {
+      "bytes": 15085,
+      "sha256": "342447ab8a1e11b3327714f383704d9286e33e31e3817e1533f8235567b74f5f"
+    },
+    "review/current/docs/testing/performance/0.74/package-review-v9-result-20261027.md": {
+      "bytes": 8389,
+      "sha256": "942d9e3016a527fa76989dfcc995834171ddbe86ebdb173d1ac3769b308f41df"
+    },
+    "review/current/target/capture-linux-frontier-storage-20261027.py": {
+      "bytes": 1326,
+      "sha256": "b4206b7f126c2e06e77db0e56c80efa13f45511412a942fc6456618a6be959a2"
+    },
+    "review/current/target/seal-package-review-v9-20261027.py": {
+      "bytes": 5622,
+      "sha256": "f103fb475959454283665517fe9a589550e28c83b967d26e1503883df4bd90ad"
+    },
+    "review/current/target/verify-v9-packets-20261027.py": {
+      "bytes": 2393,
+      "sha256": "96fbc6c40759f1db91db378c89c808a940b3068475d87857a9133b70766f5796"
+    },
+    "review/current/tools/historical-blob-batch-074/package_effects_review_v9.py": {
+      "bytes": 15085,
+      "sha256": "761d2f40cc751ab6874b8385735b633e1d7203372fbd972c29f7985952da73a6"
+    },
+    "review/current/tools/historical-blob-batch-074/test_package_effects_review_v9.py": {
+      "bytes": 8888,
+      "sha256": "be9668b6e8048814aff80ca944cdb8a2fcb8e4ae216cc9eb0a7662387f2487d7"
+    },
+    "review/first-source-witness.json": {
+      "bytes": 337,
+      "sha256": "2af9f6708e55b5ff6de32a284bad2fd821b7ccfc8b17102ac60bae9e8753f3e0"
+    },
+    "review/gate.json": {
+      "bytes": 135829,
+      "sha256": "49258d4de07a1ee6f88938ebf4099e979002440babd1fb62cc92543d348120a9"
+    },
+    "review/scope.json": {
+      "bytes": 664,
+      "sha256": "be1d0f71d114ef27322ee0352cecfd613f68c6a7edd7eb2a350db00d2167141b"
+    },
+    "review/source-data-index.json": {
+      "bytes": 84171,
+      "sha256": "e2c54681e571204fc927d7df3fe99a08303474c52af7a945d1a2764bb601bfc9"
+    }
+  },
+  "outcomes": {
+    "v9-check": 0,
+    "v9-clippy": 0,
+    "v9-contract-final": 0,
+    "v9-controls-first": 0,
+    "v9-doc-final": 0,
+    "v9-format-final": 1,
+    "v9-format-gnu-all": 124,
+    "v9-format-xtask": 0,
+    "v9-linux-storage-first": 0,
+    "v9-python-compile": 0,
+    "v9-source-review-corrected": 0,
+    "v9-source-review-first": 1,
+    "v9-v8-receipt-controls": 0
+  },
+  "package_pass": false,
+  "release_admitted": false,
+  "schema": "hc074-package-effect-review-v9-evidence",
+  "source_parent": "cd0c391536f644082f13a7e5e9d2652d0e81f028"
+}

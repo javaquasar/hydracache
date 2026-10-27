@@ -1,0 +1,25 @@
+{
+  "case_threads": 4,
+  "clocks": false,
+  "disk_floor_bytes": 4294967296,
+  "first_refusals_retained": true,
+  "full_gnu_format_complete": false,
+  "full_windows_format_complete": false,
+  "implementation": "b02a2ba42412ad5b0310ab609250de7ad0c5db2a",
+  "linux_frontier_complete": false,
+  "measurement": false,
+  "native_worktree_created": false,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "package_bound_seconds": 780,
+  "package_dispatched": false,
+  "package_pass": false,
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_effect_review_complete": true,
+  "source_parent": "cd0c391536f644082f13a7e5e9d2652d0e81f028"
+}

@@ -1,0 +1,21 @@
+"""One read-only storage preflight, not a replay or a native checkout creator."""
+import json
+from pathlib import Path
+import subprocess
+ROOT = Path(__file__).resolve().parent.parent
+queries = [
+    ['findmnt', '--noheadings', '--output', 'FSTYPE,TARGET', '--target', '/mnt/c/Workspace/prj/jq/cashe/hydracache-074'],
+    ['findmnt', '--noheadings', '--output', 'FSTYPE,TARGET', '--target', '/home/artur'],
+    ['df', '-B1', '--output=avail,target', '/home/artur', '/mnt/c'],
+    ['test', '-e', '/home/artur/.cache/hydracache-074-frontier-native'],
+]
+results = []
+for query in queries:
+    argv = ['wsl.exe', '-d', 'Ubuntu', '-u', 'artur', '--exec', *query]
+    process = subprocess.run(argv, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=15, check=False)
+    results.append(dict(argv=argv, exit=process.returncode,
+        stdout=process.stdout.decode('utf-8', errors='strict'), stderr=process.stderr.decode('utf-8', errors='strict')))
+print(json.dumps(dict(observations=results, read_only=True, worktree_created=False,
+    tests_replayed=False, linux_frontier_complete=False, services=False, clocks=False, server=False), sort_keys=True, indent=2))
+assert all(r['exit'] == 0 and not r['stderr'] for r in results[:3])
+assert results[3]['exit'] == 1 and not results[3]['stdout'] and not results[3]['stderr']

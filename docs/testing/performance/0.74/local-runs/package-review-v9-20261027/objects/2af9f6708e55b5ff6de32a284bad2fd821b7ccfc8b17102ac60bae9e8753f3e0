@@ -1,0 +1,7 @@
+{
+  "blob": "89e3ed4c19d6963b549a0713a3453914f4443a89",
+  "canonical_sha256": "342447ab8a1e11b3327714f383704d9286e33e31e3817e1533f8235567b74f5f",
+  "observed_after_refusal": true,
+  "preexecution_digest_binding": false,
+  "reason": "The then-untracked review script was absent from the coordinator source map; no binding is invented."
+}

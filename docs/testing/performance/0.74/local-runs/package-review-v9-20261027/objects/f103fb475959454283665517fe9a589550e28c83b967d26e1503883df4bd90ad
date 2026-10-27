@@ -1,0 +1,84 @@
+"""Retain V9 review checks, including refusals, as inert append-only data."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+ROOT = Path(__file__).resolve().parent.parent
+BASE = ROOT / 'target/roots-lock-view-20261027'
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/package-review-v9-20261027'
+PARENT = 'cd0c391536f644082f13a7e5e9d2652d0e81f028'
+IMPLEMENTATION = sys.argv[1]
+members, objects, outcomes = {}, {}, {}
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+def doc(name, value): add(name, (json.dumps(value, sort_keys=True, indent=2) + '\n').encode())
+def git(*args): return subprocess.check_output(['git', '--no-replace-objects', *args], cwd=ROOT, timeout=10)
+assert git('rev-parse', 'HEAD').decode().strip() == IMPLEMENTATION
+phases = sorted(p.name for p in BASE.glob('v9-*') if p.is_dir() and p.name not in ('v9-parser-build', 'v9-syntax-first'))
+assert {'v9-controls-first', 'v9-source-review-first', 'v9-source-review-corrected',
+    'v9-format-final', 'v9-format-xtask', 'v9-format-gnu-all', 'v9-python-compile',
+    'v9-check', 'v9-clippy', 'v9-v8-receipt-controls', 'v9-linux-storage-first',
+    'v9-doc-final', 'v9-contract-final'} == set(phases)
+for phase in phases:
+    folder = BASE / phase
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    assert intent['source_commit'] == PARENT and intent['disk_floor_bytes'] == 4 * 1024**3
+    assert result['source_unchanged'] and result['commit_unchanged'] and result['source_contract']
+    assert not result['release_admitted'] and not result['outer_refusal']
+    assert result['source_after'] == intent['source']
+    assert not any(intent[k] for k in ('qualification', 'server', 'services', 'clocks', 'product_load'))
+    expected = (124 if phase == 'v9-format-gnu-all' else
+                1 if phase in ('v9-source-review-first', 'v9-format-final') else 0)
+    assert result['exit'] == expected, (phase, result['exit'])
+    outcomes[phase] = result['exit']
+    for path in sorted(folder.rglob('*')):
+        if path.is_file(): add('checks/' + phase + '/' + path.relative_to(folder).as_posix(), path.read_bytes())
+assert 'Ran 11 tests' in (BASE / 'v9-controls-first/stderr.log').read_text()
+assert 'Ran 6 tests' in (BASE / 'v9-v8-receipt-controls/stderr.log').read_text()
+gate = json.loads((BASE / 'v9-source-review-corrected/stdout.log').read_bytes())
+assert (len(gate['sources']), len(gate['auxiliary']), len(gate['targets'])) == (386, 56, 153)
+assert gate['source_effect_review_complete'] and not gate['package_dispatched'] and not gate['package_pass']
+assert not gate['linux_or_all_features_cleared'] and not gate['original_execution_or_product_or_qualification_admission']
+for name, digest in {**gate['sources'], **gate['auxiliary']}.items():
+    assert sha((ROOT / name).read_bytes()) == digest, name
+doc('review/gate.json', gate)
+first = git('cat-file', 'blob', '89e3ed4c19d6963b549a0713a3453914f4443a89')
+add('first-source/package_effects_review_v9.py', first)
+doc('review/first-source-witness.json', dict(blob='89e3ed4c19d6963b549a0713a3453914f4443a89',
+    canonical_sha256=sha(first), observed_after_refusal=True, preexecution_digest_binding=False,
+    reason='The then-untracked review script was absent from the coordinator source map; no binding is invented.'))
+for path in ('tools/historical-blob-batch-074/package_effects_review_v9.py',
+    'tools/historical-blob-batch-074/test_package_effects_review_v9.py',
+    'docs/testing/performance/0.74/package-review-v9-result-20261027.md',
+    'target/capture-linux-frontier-storage-20261027.py',
+    'target/seal-package-review-v9-20261027.py', 'target/verify-v9-packets-20261027.py'):
+    add('review/current/' + path, (ROOT / path).read_bytes())
+source_packet = 'docs/testing/performance/0.74/local-runs/package-effect-syntax-v9-20261027/index.json'
+raw = (ROOT / source_packet).read_bytes()
+assert sha(raw) == 'e2c54681e571204fc927d7df3fe99a08303474c52af7a945d1a2764bb601bfc9'
+add('review/source-data-index.json', raw)
+doc('review/scope.json', dict(source_parent=PARENT, implementation=IMPLEMENTATION,
+    source_effect_review_complete=True, original_windows=[300,60,10],
+    package_bound_seconds=780, case_threads=4, disk_floor_bytes=4*1024**3,
+    first_refusals_retained=True, full_windows_format_complete=False,
+    full_gnu_format_complete=False, linux_frontier_complete=False, native_worktree_created=False,
+    package_dispatched=False, package_pass=False, measurement=False, server=False,
+    services=False, clocks=False, release_admitted=False))
+OUT.mkdir(exist_ok=False)
+(OUT / 'objects').mkdir()
+with (OUT / '.gitattributes').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+for digest, raw in objects.items():
+    with (OUT / 'objects' / digest).open('xb') as stream: stream.write(raw)
+with (OUT / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(dict(schema='hc074-package-effect-review-v9-evidence', members=members,
+        source_parent=PARENT, implementation=IMPLEMENTATION, outcomes=outcomes,
+        package_pass=False, archived_code_executed=False, release_admitted=False), stream, sort_keys=True, indent=2)
+    stream.write('\n')
+print(json.dumps(dict(members=len(members), objects=len(objects), index_sha256=sha((OUT / 'index.json').read_bytes()))))

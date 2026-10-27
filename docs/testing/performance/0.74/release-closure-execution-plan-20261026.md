@@ -148,6 +148,23 @@ remain evidence. Next resolve the full Linux frontier boundary and review the
 complete current package/source/effect/target closure before any fresh full
 command. Neither the red old V8 nor original-execution/host admission is replaced.
 
+The [separate V9 complete source/effect review](package-review-v9-result-20261027.md)
+now closes 386 Rust inputs/26,627 sites, 56 auxiliary bodies and 153 default
+Windows targets. Relative to V8, seventeen rows change, twelve are added and
+357 remain exact; no source is removed. Eleven mutation/refusal controls pass,
+and real current-tree closure/environment checks pass separately. The first
+incorrect text-policy pin refusal remains evidence. There is no dispatcher or
+fresh full-package verdict. Read-only WSL storage checks confirm the worktree
+is on 9p and a native ext4 location exists, but no checkout is created and the
+prior GNU timeout is not replayed. Prepare and independently review that bounded
+native context with full source/evidence/history and the physical disk floor;
+then finish the GNU boundary and current coordinator review before a distinct
+full Windows command under the unchanged 780-second/four-thread contract.
+Scoped xtask formatting passes; full workspace formatting remains incomplete:
+Windows refuses on command length before a verdict, and one separate GNU check
+reaches its 120-second diagnostic bound. Both first outcomes are retained without
+retry or source edits. This does not change the package's original time limit.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,
