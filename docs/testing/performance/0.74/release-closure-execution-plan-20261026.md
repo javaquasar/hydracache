@@ -198,6 +198,18 @@ separately review any complete native GNU package scope before a distinct
 command. Do not rerun unchanged V9, join a suffix, extend the bound or waive
 required platform coverage. Security/original-execution/host admission stay open.
 
+The [offline attribution and full GNU scope continuation](package-v9-offline-gnu-review-result-20261027.md)
+now maps seven exact preservation loops to retained target spans without new
+samples. Six completed selected cases contain 2,731 logical member comparisons;
+the incomplete held case's progress remains unknown. CPU/Git/filesystem leaf
+cost is not inferred. A separate manual GNU review covers eight groups/forty
+bodies, all 386 Rust/56 auxiliary inputs and 153 default targets. Actual native
+module closure and full transfer/environment preflight pass, as do ten pure
+controls on both platforms. No full package is dispatched. Next implement/test
+the distinct bounded GNU coordinator and preflight build capacity, retaining
+780 seconds including compilation, four threads, physical floor, original owned
+cleanup and separate streams. V9 and all required platform gates remain open.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

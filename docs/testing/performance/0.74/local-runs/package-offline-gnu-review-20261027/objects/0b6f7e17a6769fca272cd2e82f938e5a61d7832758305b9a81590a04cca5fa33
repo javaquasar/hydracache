@@ -1,0 +1,15 @@
+test_accounting_cannot_promote_or_fill_missing_coverage (test_analysis.OfflineControls.test_accounting_cannot_promote_or_fill_missing_coverage) ... ok
+test_body_and_missing_source_drift_refuse (test_analysis.OfflineControls.test_body_and_missing_source_drift_refuse) ... ok
+test_index_and_duplicate_json_refuse (test_analysis.OfflineControls.test_index_and_duplicate_json_refuse) ... ok
+test_object_identity_precedes_read_and_never_executes (test_analysis.OfflineControls.test_object_identity_precedes_read_and_never_executes) ... ok
+test_real_first_result_stays_incomplete (test_analysis.OfflineControls.test_real_first_result_stays_incomplete) ... ok
+test_syntax_scope_and_census_cannot_change (test_analysis.OfflineControls.test_syntax_scope_and_census_cannot_change) ... ok
+test_body_graph_census_and_constructor_drift_refuse (test_gnu_review.GnuReviewControls.test_body_graph_census_and_constructor_drift_refuse) ... ok
+test_full_data_scope_does_not_dispatch_or_admit (test_gnu_review.GnuReviewControls.test_full_data_scope_does_not_dispatch_or_admit) ... ok
+test_helper_hash_precedes_import (test_gnu_review.GnuReviewControls.test_helper_hash_precedes_import) ... ok
+test_unchanged_complete_command_without_filters (test_gnu_review.GnuReviewControls.test_unchanged_complete_command_without_filters) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 31.064s
+
+OK

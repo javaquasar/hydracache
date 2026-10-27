@@ -1,0 +1,16 @@
+{
+  "archived_code_executed": false,
+  "benchmark_dispatched": false,
+  "immutable_source_index_sha256": "e2c54681e571204fc927d7df3fe99a08303474c52af7a945d1a2764bb601bfc9",
+  "immutable_v9_index_sha256": "eea96bfe5da0766983b1bbbceff0ee55b46ec67fd49cfe049e465c8fbedc8161",
+  "implementation": "5f02ab72a07757e19fed3b695337c388fdc42be5",
+  "logical_members_in_six_completed_selected_cases": 2731,
+  "native_source": "636feb166b273b5c3d6fc0b93c4fccf57560cf03",
+  "package_dispatched": false,
+  "package_pass": false,
+  "per_case_or_leaf_cost_measured": false,
+  "pure_controls_passed_per_platform": 10,
+  "release_admitted": false,
+  "selected_loop_contracts": 7,
+  "windows_v9_reinterpreted": false
+}

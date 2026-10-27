@@ -21495,3 +21495,24 @@ full GNU scope review, not fewer fresh checks, a larger deadline or another
 unchanged run. Strict data-only verification preserves the red receipt alongside
 its exact source/environment postflight and cleanup warnings. This tooling work
 adds no product speedup claim and grants no original-execution or host admission.
+
+The [offline preservation analysis](../testing/performance/0.74/package-v9-offline-gnu-review-result-20261027.md)
+connects that timing frontier to exact source contracts without another run.
+Six selected passed cases compare 2,731 logical members; an unfinished held
+case has a 466-member contract but no observed completion count. Each comparison
+retains its read helper, predecessor projection and old-output assertion. Those
+logical members are not a count of physical reads or Git processes, and their
+target spans contain concurrent cases and nested work. The data narrows the
+question to preservation-oracle work without pretending to isolate leaf costs
+or justify fewer fresh observations.
+
+Moving the complete package to a distinct GNU context requires more than the
+earlier five-target success. A separate source review now resolves all actual
+module edges on the native filesystem and checks 386 Rust/56 auxiliary inputs,
+153 targets and eight platform-sensitive entry-point groups. Linux supervisor
+imports in the contract are constants, while privileged fixture strings remain
+data; actual Unix child cleanup, metadata and Python generation receive separate
+review. Ten pure controls pass on both platforms and real environment preflight
+passes. No full package result follows yet: a bounded coordinator, stream
+accounting and fresh build-capacity check still precede execution. The Windows
+timeout, original deadlines and all live predicates keep their original meaning.

@@ -1,0 +1,1034 @@
+{
+  "attribution_level": "printed target spans plus exact source-path contracts; not measured leaf causality",
+  "complete_summary_passes": 488,
+  "completed_target_spans_ns": 581260000000,
+  "completed_targets": 80,
+  "frontier_witnesses": {
+    "crates/xtask/tests/authority_rust_history_074.rs": {
+      "sha256": "9333de6f4dff9c470eadff2a97dc3434ae8a760e51ec7de2b6256903ccef07e1",
+      "source_sites": [
+        {
+          "detail": "std::process::Command::new",
+          "kind": "function-call",
+          "scope": "git"
+        },
+        {
+          "detail": "old",
+          "kind": "function-call",
+          "scope": "all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions"
+        },
+        {
+          "detail": "read",
+          "kind": "function-call",
+          "scope": "all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions::macro:assert"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift"
+        },
+        {
+          "detail": "read",
+          "kind": "function-call",
+          "scope": "independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift::macro:assert"
+        },
+        {
+          "detail": "old",
+          "kind": "function-call",
+          "scope": "independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift::macro:assert"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift::macro:assert"
+        },
+        {
+          "detail": "history::read_to_string",
+          "kind": "function-call",
+          "scope": "historical_reads_are_fixed_and_never_fall_back_to_current_artifacts::macro:assert_eq"
+        },
+        {
+          "detail": "old",
+          "kind": "function-call",
+          "scope": "historical_reads_are_fixed_and_never_fall_back_to_current_artifacts::macro:assert_eq"
+        },
+        {
+          "detail": "history::read_to_string",
+          "kind": "function-call",
+          "scope": "historical_reads_are_fixed_and_never_fall_back_to_current_artifacts::macro:assert"
+        },
+        {
+          "detail": "history::command",
+          "kind": "function-call",
+          "scope": "diff_translation_adds_only_fixed_rhs_and_retains_all_paths_and_flags"
+        },
+        {
+          "detail": "history::command",
+          "kind": "function-call",
+          "scope": "unsupported_commands_revisions_scopes_and_cwd_refuse_before_execution::macro:assert"
+        },
+        {
+          "detail": "history::read_to_string",
+          "kind": "function-call",
+          "scope": "unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files::macro:assert"
+        },
+        {
+          "detail": "history::read_to_string",
+          "kind": "function-call",
+          "scope": "unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files::macro:assert"
+        },
+        {
+          "detail": "old",
+          "kind": "function-call",
+          "scope": "archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation"
+        },
+        {
+          "detail": "old",
+          "kind": "function-call",
+          "scope": "archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation::macro:assert_eq"
+        },
+        {
+          "detail": "read",
+          "kind": "function-call",
+          "scope": "archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation::macro:assert"
+        },
+        {
+          "detail": "old",
+          "kind": "function-call",
+          "scope": "archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation::macro:assert"
+        },
+        {
+          "detail": "old",
+          "kind": "function-call",
+          "scope": "guard_assertion_test_and_io_mutations_cannot_hide_behind_history"
+        },
+        {
+          "detail": "old",
+          "kind": "function-call",
+          "scope": "every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "qualification_raw_identity_and_previous_candidate_guard_remain_independent"
+        },
+        {
+          "detail": "read",
+          "kind": "function-call",
+          "scope": "qualification_raw_identity_and_previous_candidate_guard_remain_independent::macro:assert_eq"
+        }
+      ]
+    },
+    "crates/xtask/tests/current_tree_input_audit_074.rs": {
+      "sha256": "99f97a36d1bc3e974dda573da731875f1d7af511dceb30aa7c6e2bcc101418cb",
+      "source_sites": [
+        {
+          "detail": "std::process::Command::new",
+          "kind": "function-call",
+          "scope": "git"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "current_tree_input_frontier_is_fully_accounted_without_path_exclusions"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "current_tree_input_frontier_is_fully_accounted_without_path_exclusions"
+        }
+      ]
+    }
+  },
+  "git_dispatched": false,
+  "incomplete_target": {
+    "cases": [
+      {
+        "name": "projection_reference_is_the_complete_frozen_decoder_not_a_relaxed_model",
+        "verdict": "ok"
+      },
+      {
+        "name": "projection_prefix_adapter_refuses_missing_duplicate_and_unrelated_guard_drift",
+        "verdict": "ok"
+      },
+      {
+        "name": "held_preparation_observer_adapter_cannot_hide_missing_duplicate_or_changed_assertion",
+        "verdict": "ok"
+      }
+    ],
+    "declared": 4,
+    "reported_seconds": null,
+    "start_line": 900,
+    "target": "tests/held_preparation_cost_074.rs"
+  },
+  "input_code_executed": false,
+  "measured_cpu_attribution": false,
+  "measured_git_or_filesystem_attribution": false,
+  "new_hypothesis": false,
+  "packet_index_sha256": "eea96bfe5da0766983b1bbbceff0ee55b46ec67fd49cfe049e465c8fbedc8161",
+  "printed_passes": 491,
+  "product_performance_claim": false,
+  "ranking": [
+    {
+      "reported_ns": 178440000000,
+      "reported_seconds": "178.44",
+      "target": "tests/diagnostic_artifact_fixture_074.rs"
+    },
+    {
+      "reported_ns": 64150000000,
+      "reported_seconds": "64.15",
+      "target": "tests/authority_rust_history_074.rs"
+    },
+    {
+      "reported_ns": 59530000000,
+      "reported_seconds": "59.53",
+      "target": "tests/custody_preparation_cost_074.rs"
+    },
+    {
+      "reported_ns": 58350000000,
+      "reported_seconds": "58.35",
+      "target": "tests/document_scratch_cost_074.rs"
+    },
+    {
+      "reported_ns": 52460000000,
+      "reported_seconds": "52.46",
+      "target": "tests/current_tree_input_audit_074.rs"
+    },
+    {
+      "reported_ns": 42990000000,
+      "reported_seconds": "42.99",
+      "target": "tests/gated_tests.rs"
+    },
+    {
+      "reported_ns": 19030000000,
+      "reported_seconds": "19.03",
+      "target": "tests/current_tree_reader_074.rs"
+    },
+    {
+      "reported_ns": 12650000000,
+      "reported_seconds": "12.65",
+      "target": "tests/evidence_run.rs"
+    },
+    {
+      "reported_ns": 12270000000,
+      "reported_seconds": "12.27",
+      "target": "unittests src/lib.rs"
+    },
+    {
+      "reported_ns": 9220000000,
+      "reported_seconds": "9.22",
+      "target": "tests/authority_runtime_074.rs"
+    },
+    {
+      "reported_ns": 5380000000,
+      "reported_seconds": "5.38",
+      "target": "tests/authority_reader_phase_074.rs"
+    },
+    {
+      "reported_ns": 4340000000,
+      "reported_seconds": "4.34",
+      "target": "tests/current_frontier_074.rs"
+    },
+    {
+      "reported_ns": 4340000000,
+      "reported_seconds": "4.34",
+      "target": "tests/held_material_074.rs"
+    },
+    {
+      "reported_ns": 3900000000,
+      "reported_seconds": "3.90",
+      "target": "tests/bootstrap_installed_origin_074.rs"
+    },
+    {
+      "reported_ns": 3720000000,
+      "reported_seconds": "3.72",
+      "target": "tests/bootstrap_current_view_074.rs"
+    },
+    {
+      "reported_ns": 2840000000,
+      "reported_seconds": "2.84",
+      "target": "tests/ci_reliability_071.rs"
+    },
+    {
+      "reported_ns": 2340000000,
+      "reported_seconds": "2.34",
+      "target": "tests/authority_operator_order_074.rs"
+    },
+    {
+      "reported_ns": 1760000000,
+      "reported_seconds": "1.76",
+      "target": "tests/frontier_current_view_074.rs"
+    },
+    {
+      "reported_ns": 1710000000,
+      "reported_seconds": "1.71",
+      "target": "tests/authority_storage_source_074.rs"
+    },
+    {
+      "reported_ns": 1680000000,
+      "reported_seconds": "1.68",
+      "target": "tests/bootstrap_child_reader_074.rs"
+    },
+    {
+      "reported_ns": 1580000000,
+      "reported_seconds": "1.58",
+      "target": "tests/boot_operations_074.rs"
+    },
+    {
+      "reported_ns": 1510000000,
+      "reported_seconds": "1.51",
+      "target": "tests/bootstrap_child_boundary_074.rs"
+    },
+    {
+      "reported_ns": 1480000000,
+      "reported_seconds": "1.48",
+      "target": "tests/context_document_stack_074.rs"
+    },
+    {
+      "reported_ns": 1390000000,
+      "reported_seconds": "1.39",
+      "target": "tests/bootstrap_current_image_074.rs"
+    },
+    {
+      "reported_ns": 1370000000,
+      "reported_seconds": "1.37",
+      "target": "tests/bootstrap_child_census_074.rs"
+    },
+    {
+      "reported_ns": 1360000000,
+      "reported_seconds": "1.36",
+      "target": "tests/client_plane_ci.rs"
+    },
+    {
+      "reported_ns": 1290000000,
+      "reported_seconds": "1.29",
+      "target": "tests/authority_leaf_cpu_074.rs"
+    },
+    {
+      "reported_ns": 1260000000,
+      "reported_seconds": "1.26",
+      "target": "tests/held_bind_alias_refusal_074.rs"
+    },
+    {
+      "reported_ns": 1240000000,
+      "reported_seconds": "1.24",
+      "target": "tests/authority_open_name_074.rs"
+    },
+    {
+      "reported_ns": 1190000000,
+      "reported_seconds": "1.19",
+      "target": "tests/held_complete_role_census_074.rs"
+    },
+    {
+      "reported_ns": 1160000000,
+      "reported_seconds": "1.16",
+      "target": "tests/bootstrap_doc_reader_074.rs"
+    },
+    {
+      "reported_ns": 1130000000,
+      "reported_seconds": "1.13",
+      "target": "tests/bootstrap_image_census_074.rs"
+    },
+    {
+      "reported_ns": 1110000000,
+      "reported_seconds": "1.11",
+      "target": "tests/authority_owners_074.rs"
+    },
+    {
+      "reported_ns": 1100000000,
+      "reported_seconds": "1.10",
+      "target": "tests/authority_owned_journal_074.rs"
+    },
+    {
+      "reported_ns": 1060000000,
+      "reported_seconds": "1.06",
+      "target": "tests/fresh_kernel_cost_074.rs"
+    },
+    {
+      "reported_ns": 1050000000,
+      "reported_seconds": "1.05",
+      "target": "tests/artifact_inventory_reader_074.rs"
+    },
+    {
+      "reported_ns": 1050000000,
+      "reported_seconds": "1.05",
+      "target": "tests/authority_scratch_reuse_074.rs"
+    },
+    {
+      "reported_ns": 1010000000,
+      "reported_seconds": "1.01",
+      "target": "tests/held_activation_ingress_074.rs"
+    },
+    {
+      "reported_ns": 970000000,
+      "reported_seconds": "0.97",
+      "target": "tests/authority_name_capacity_074.rs"
+    },
+    {
+      "reported_ns": 970000000,
+      "reported_seconds": "0.97",
+      "target": "tests/collector_peer_baseline_074.rs"
+    },
+    {
+      "reported_ns": 960000000,
+      "reported_seconds": "0.96",
+      "target": "tests/document_scratch_reader_074.rs"
+    },
+    {
+      "reported_ns": 930000000,
+      "reported_seconds": "0.93",
+      "target": "tests/authority_cpu_074.rs"
+    },
+    {
+      "reported_ns": 910000000,
+      "reported_seconds": "0.91",
+      "target": "tests/authority_expected_name_074.rs"
+    },
+    {
+      "reported_ns": 910000000,
+      "reported_seconds": "0.91",
+      "target": "tests/authority_fd_path_074.rs"
+    },
+    {
+      "reported_ns": 850000000,
+      "reported_seconds": "0.85",
+      "target": "tests/authority_breakdown_074.rs"
+    },
+    {
+      "reported_ns": 850000000,
+      "reported_seconds": "0.85",
+      "target": "tests/authority_context_074.rs"
+    },
+    {
+      "reported_ns": 830000000,
+      "reported_seconds": "0.83",
+      "target": "tests/authority_inventory_074.rs"
+    },
+    {
+      "reported_ns": 810000000,
+      "reported_seconds": "0.81",
+      "target": "tests/context_document_baseline_074.rs"
+    },
+    {
+      "reported_ns": 780000000,
+      "reported_seconds": "0.78",
+      "target": "tests/bootstrap_entry_binding_074.rs"
+    },
+    {
+      "reported_ns": 760000000,
+      "reported_seconds": "0.76",
+      "target": "tests/artifact_inventory_phase_545_074.rs"
+    },
+    {
+      "reported_ns": 720000000,
+      "reported_seconds": "0.72",
+      "target": "tests/bootstrap_build_owner_074.rs"
+    },
+    {
+      "reported_ns": 710000000,
+      "reported_seconds": "0.71",
+      "target": "tests/authority_key_hex_074.rs"
+    },
+    {
+      "reported_ns": 670000000,
+      "reported_seconds": "0.67",
+      "target": "tests/canary_check.rs"
+    },
+    {
+      "reported_ns": 640000000,
+      "reported_seconds": "0.64",
+      "target": "tests/held_material_roles_074.rs"
+    },
+    {
+      "reported_ns": 550000000,
+      "reported_seconds": "0.55",
+      "target": "tests/collector_peer_capacity_074.rs"
+    },
+    {
+      "reported_ns": 530000000,
+      "reported_seconds": "0.53",
+      "target": "tests/authority_leaf_name_074.rs"
+    },
+    {
+      "reported_ns": 460000000,
+      "reported_seconds": "0.46",
+      "target": "tests/authority_read_baseline_074.rs"
+    },
+    {
+      "reported_ns": 440000000,
+      "reported_seconds": "0.44",
+      "target": "tests/cost_phase_reader_074.rs"
+    },
+    {
+      "reported_ns": 370000000,
+      "reported_seconds": "0.37",
+      "target": "tests/artifact_inventory_phase_544_074.rs"
+    },
+    {
+      "reported_ns": 340000000,
+      "reported_seconds": "0.34",
+      "target": "tests/demo_static.rs"
+    },
+    {
+      "reported_ns": 320000000,
+      "reported_seconds": "0.32",
+      "target": "tests/fresh_status_reader_074.rs"
+    },
+    {
+      "reported_ns": 270000000,
+      "reported_seconds": "0.27",
+      "target": "tests/authority_hex_reader_074.rs"
+    },
+    {
+      "reported_ns": 260000000,
+      "reported_seconds": "0.26",
+      "target": "tests/held_material_live_074.rs"
+    },
+    {
+      "reported_ns": 190000000,
+      "reported_seconds": "0.19",
+      "target": "tests/custody_reader_074.rs"
+    },
+    {
+      "reported_ns": 140000000,
+      "reported_seconds": "0.14",
+      "target": "tests/doc_check.rs"
+    },
+    {
+      "reported_ns": 130000000,
+      "reported_seconds": "0.13",
+      "target": "tests/direct_output_cost_074.rs"
+    },
+    {
+      "reported_ns": 120000000,
+      "reported_seconds": "0.12",
+      "target": "tests/bootstrap_enrollment_074.rs"
+    },
+    {
+      "reported_ns": 120000000,
+      "reported_seconds": "0.12",
+      "target": "tests/census_cost_074.rs"
+    },
+    {
+      "reported_ns": 80000000,
+      "reported_seconds": "0.08",
+      "target": "tests/allocation_retention_070.rs"
+    },
+    {
+      "reported_ns": 70000000,
+      "reported_seconds": "0.07",
+      "target": "tests/bench_budget.rs"
+    },
+    {
+      "reported_ns": 40000000,
+      "reported_seconds": "0.04",
+      "target": "tests/client_release_068.rs"
+    },
+    {
+      "reported_ns": 40000000,
+      "reported_seconds": "0.04",
+      "target": "tests/fast_suite.rs"
+    },
+    {
+      "reported_ns": 30000000,
+      "reported_seconds": "0.03",
+      "target": "tests/get_owner_terminal_074.rs"
+    },
+    {
+      "reported_ns": 20000000,
+      "reported_seconds": "0.02",
+      "target": "tests/coverage_ratchet.rs"
+    },
+    {
+      "reported_ns": 10000000,
+      "reported_seconds": "0.01",
+      "target": "tests/allocation_copy_071.rs"
+    },
+    {
+      "reported_ns": 10000000,
+      "reported_seconds": "0.01",
+      "target": "tests/allocator_matrix_071.rs"
+    },
+    {
+      "reported_ns": 10000000,
+      "reported_seconds": "0.01",
+      "target": "tests/cancellation_safety.rs"
+    },
+    {
+      "reported_ns": 0,
+      "reported_seconds": "0.00",
+      "target": "tests/determinism_sweep.rs"
+    },
+    {
+      "reported_ns": 0,
+      "reported_seconds": "0.00",
+      "target": "tests/git_descendant_cpu_074.rs"
+    },
+    {
+      "reported_ns": 0,
+      "reported_seconds": "0.00",
+      "target": "unittests src/main.rs"
+    }
+  ],
+  "release_admitted": false,
+  "reported_build_span_ns": 93000000000,
+  "schema": "hc074-package-v9-offline-attribution-v1",
+  "selected_loop_contracts": [
+    {
+      "case": "actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats",
+      "explicit_extra_paths": 4,
+      "historical_paths": 446,
+      "logical_operations": "one retained read helper, predecessor projection and old-output comparison per member; nested helper work is additional",
+      "per_case_elapsed_measured": false,
+      "physical_io_or_process_count_measured": false,
+      "source": "crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "source_sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+      "static_loop_members": 450,
+      "syntax_calls": [
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats::macro:assert_eq"
+        },
+        {
+          "detail": "held_live::normalize",
+          "kind": "function-call",
+          "scope": "actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats::macro:assert_eq"
+        },
+        {
+          "detail": "read",
+          "kind": "function-call",
+          "scope": "actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats::macro:assert_eq"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats::macro:assert_eq"
+        }
+      ],
+      "target": "tests/diagnostic_artifact_fixture_074.rs",
+      "target_complete": true,
+      "verdict": "ok"
+    },
+    {
+      "case": "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs",
+      "explicit_extra_paths": 5,
+      "historical_paths": 437,
+      "logical_operations": "one retained read helper, predecessor projection and old-output comparison per member; nested helper work is additional",
+      "per_case_elapsed_measured": false,
+      "physical_io_or_process_count_measured": false,
+      "source": "crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "source_sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+      "static_loop_members": 442,
+      "syntax_calls": [
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs"
+        },
+        {
+          "detail": "previous_runtime_list",
+          "kind": "function-call",
+          "scope": "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs"
+        },
+        {
+          "detail": "only_new_source",
+          "kind": "function-call",
+          "scope": "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs::macro:assert"
+        },
+        {
+          "detail": "namespace::normalize",
+          "kind": "function-call",
+          "scope": "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs::macro:assert_eq"
+        },
+        {
+          "detail": "read",
+          "kind": "function-call",
+          "scope": "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs::macro:assert_eq"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs::macro:assert_eq"
+        }
+      ],
+      "target": "tests/diagnostic_artifact_fixture_074.rs",
+      "target_complete": true,
+      "verdict": "ok"
+    },
+    {
+      "case": "held_trust_preserves_all_442_preceding_sources_and_production_inputs",
+      "explicit_extra_paths": 4,
+      "historical_paths": 442,
+      "logical_operations": "one retained read helper, predecessor projection and old-output comparison per member; nested helper work is additional",
+      "per_case_elapsed_measured": false,
+      "physical_io_or_process_count_measured": false,
+      "source": "crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "source_sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+      "static_loop_members": 446,
+      "syntax_calls": [
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "held_trust_preserves_all_442_preceding_sources_and_production_inputs"
+        },
+        {
+          "detail": "trust::previous_list",
+          "kind": "function-call",
+          "scope": "held_trust_preserves_all_442_preceding_sources_and_production_inputs::macro:assert_eq"
+        },
+        {
+          "detail": "trust::consuming::previous_list",
+          "kind": "function-call",
+          "scope": "held_trust_preserves_all_442_preceding_sources_and_production_inputs::macro:assert_eq"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "held_trust_preserves_all_442_preceding_sources_and_production_inputs::macro:assert_eq"
+        },
+        {
+          "detail": "trust::normalize",
+          "kind": "function-call",
+          "scope": "held_trust_preserves_all_442_preceding_sources_and_production_inputs::macro:assert_eq"
+        },
+        {
+          "detail": "read",
+          "kind": "function-call",
+          "scope": "held_trust_preserves_all_442_preceding_sources_and_production_inputs::macro:assert_eq"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "held_trust_preserves_all_442_preceding_sources_and_production_inputs::macro:assert_eq"
+        }
+      ],
+      "target": "tests/diagnostic_artifact_fixture_074.rs",
+      "target_complete": true,
+      "verdict": "ok"
+    },
+    {
+      "case": "consuming_held_join_preserves_all_443_old_sources_and_formats",
+      "explicit_extra_paths": 4,
+      "historical_paths": 443,
+      "logical_operations": "one retained read helper, predecessor projection and old-output comparison per member; nested helper work is additional",
+      "per_case_elapsed_measured": false,
+      "physical_io_or_process_count_measured": false,
+      "source": "crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "source_sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+      "static_loop_members": 447,
+      "syntax_calls": [
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "consuming_held_join_preserves_all_443_old_sources_and_formats"
+        },
+        {
+          "detail": "consuming::previous_list",
+          "kind": "function-call",
+          "scope": "consuming_held_join_preserves_all_443_old_sources_and_formats::macro:assert_eq"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "consuming_held_join_preserves_all_443_old_sources_and_formats::macro:assert_eq"
+        },
+        {
+          "detail": "consuming::normalize",
+          "kind": "function-call",
+          "scope": "consuming_held_join_preserves_all_443_old_sources_and_formats::macro:assert_eq"
+        },
+        {
+          "detail": "read",
+          "kind": "function-call",
+          "scope": "consuming_held_join_preserves_all_443_old_sources_and_formats::macro:assert_eq"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "consuming_held_join_preserves_all_443_old_sources_and_formats::macro:assert_eq"
+        },
+        {
+          "detail": "read",
+          "kind": "function-call",
+          "scope": "consuming_held_join_preserves_all_443_old_sources_and_formats"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "consuming_held_join_preserves_all_443_old_sources_and_formats::macro:assert_eq"
+        }
+      ],
+      "target": "tests/diagnostic_artifact_fixture_074.rs",
+      "target_complete": true,
+      "verdict": "ok"
+    },
+    {
+      "case": "custody_observation_hooks_reconstruct_all_preceding_469_bodies",
+      "explicit_extra_paths": 4,
+      "historical_paths": 469,
+      "logical_operations": "one retained read helper, predecessor projection and old-output comparison per member; nested helper work is additional",
+      "per_case_elapsed_measured": false,
+      "physical_io_or_process_count_measured": false,
+      "source": "crates/xtask/tests/custody_preparation_cost_074.rs",
+      "source_sha256": "71a81eccf4595f2d99fcfe51cbe731c50097014ac32fb37bac89444cc6d0c3cb",
+      "static_loop_members": 473,
+      "syntax_calls": [
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "custody_observation_hooks_reconstruct_all_preceding_469_bodies"
+        },
+        {
+          "detail": "guard::normalize",
+          "kind": "function-call",
+          "scope": "custody_observation_hooks_reconstruct_all_preceding_469_bodies::macro:assert_eq"
+        },
+        {
+          "detail": "read",
+          "kind": "function-call",
+          "scope": "custody_observation_hooks_reconstruct_all_preceding_469_bodies::macro:assert_eq"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "custody_observation_hooks_reconstruct_all_preceding_469_bodies::macro:assert_eq"
+        }
+      ],
+      "target": "tests/custody_preparation_cost_074.rs",
+      "target_complete": true,
+      "verdict": "ok"
+    },
+    {
+      "case": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies",
+      "explicit_extra_paths": 0,
+      "historical_paths": 473,
+      "logical_operations": "one retained read helper, predecessor projection and old-output comparison per member; nested helper work is additional",
+      "per_case_elapsed_measured": false,
+      "physical_io_or_process_count_measured": false,
+      "source": "crates/xtask/tests/document_scratch_cost_074.rs",
+      "source_sha256": "3f221c36780e053481009987b27bda38f69385d55ef778364882030ef856248c",
+      "static_loop_members": 473,
+      "syntax_calls": [
+        {
+          "detail": "std::process::Command::new",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies"
+        },
+        {
+          "detail": "root",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies"
+        },
+        {
+          "detail": "String::from_utf8",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies"
+        },
+        {
+          "detail": "read",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies"
+        },
+        {
+          "detail": "old",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies"
+        },
+        {
+          "detail": "std::process::Command::new",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies"
+        },
+        {
+          "detail": "root",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies"
+        },
+        {
+          "detail": "String::from_utf8",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies"
+        },
+        {
+          "detail": "guard::normalize",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies::macro:assert_eq"
+        },
+        {
+          "detail": "read",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies::macro:assert_eq"
+        },
+        {
+          "detail": "old",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies::macro:assert_eq"
+        },
+        {
+          "detail": "read",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies"
+        },
+        {
+          "detail": "std::panic::catch_unwind",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies::macro:assert"
+        },
+        {
+          "detail": "guard::normalize",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies::macro:assert"
+        },
+        {
+          "detail": "guard::normalize",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies::macro:assert_ne"
+        },
+        {
+          "detail": "old",
+          "kind": "function-call",
+          "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies::macro:assert_ne"
+        }
+      ],
+      "target": "tests/document_scratch_cost_074.rs",
+      "target_complete": true,
+      "verdict": "ok"
+    },
+    {
+      "case": "held_preparation_and_prefix_reconstruct_all_old_runtime_and_fixture_assertions",
+      "explicit_extra_paths": 4,
+      "historical_paths": 462,
+      "logical_operations": "one retained read helper, predecessor projection and old-output comparison per member; nested helper work is additional",
+      "per_case_elapsed_measured": false,
+      "physical_io_or_process_count_measured": false,
+      "source": "crates/xtask/tests/held_preparation_cost_074.rs",
+      "source_sha256": "2567678853fb35be818ff18c3387fcb9d488b3cc2fa661902e952e9b80692af5",
+      "static_loop_members": 466,
+      "syntax_calls": [
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "held_preparation_and_prefix_reconstruct_all_old_runtime_and_fixture_assertions"
+        },
+        {
+          "detail": "prefix::normalize",
+          "kind": "function-call",
+          "scope": "held_preparation_and_prefix_reconstruct_all_old_runtime_and_fixture_assertions"
+        },
+        {
+          "detail": "read",
+          "kind": "function-call",
+          "scope": "held_preparation_and_prefix_reconstruct_all_old_runtime_and_fixture_assertions"
+        },
+        {
+          "detail": "fixture",
+          "kind": "function-call",
+          "scope": "held_preparation_and_prefix_reconstruct_all_old_runtime_and_fixture_assertions"
+        },
+        {
+          "detail": "git",
+          "kind": "function-call",
+          "scope": "held_preparation_and_prefix_reconstruct_all_old_runtime_and_fixture_assertions::macro:assert_eq"
+        }
+      ],
+      "target": "tests/held_preparation_cost_074.rs",
+      "target_complete": false,
+      "verdict": null
+    }
+  ],
+  "source_commit": "0c60d80d097b15f7d4bf59203d4455eb8d537441",
+  "source_index_sha256": "e2c54681e571204fc927d7df3fe99a08303474c52af7a945d1a2764bb601bfc9",
+  "summed_case_times": false,
+  "tests_dispatched": false,
+  "unstarted_targets": [
+    "tests/held_security_view_074.rs",
+    "tests/held_unit_projection_074.rs",
+    "tests/historical_blob_batch_074.rs",
+    "tests/historical_blob_caller_074.rs",
+    "tests/historical_blob_fault_074.rs",
+    "tests/historical_blob_transport_074.rs",
+    "tests/historical_input_view_074.rs",
+    "tests/historical_source_cache_074.rs",
+    "tests/history_status_readers_074.rs",
+    "tests/long_run_campaign_074.rs",
+    "tests/management_center_072.rs",
+    "tests/management_compat_072.rs",
+    "tests/material_lock_fixture_074.rs",
+    "tests/memory_baseline_071.rs",
+    "tests/memory_campaign_admission_071.rs",
+    "tests/memory_compat_071.rs",
+    "tests/memory_contracts_071.rs",
+    "tests/memory_decision_071.rs",
+    "tests/memory_host_profile_071.rs",
+    "tests/memory_ownership_071.rs",
+    "tests/memory_profile_071.rs",
+    "tests/memory_regression_071.rs",
+    "tests/memory_statistics_071.rs",
+    "tests/migration_conformance_069.rs",
+    "tests/miri_check.rs",
+    "tests/mutants.rs",
+    "tests/owned_case_074.rs",
+    "tests/package_diagnostics_074.rs",
+    "tests/perf_attestation_0671.rs",
+    "tests/perf_bootstrap_0671.rs",
+    "tests/perf_budget_067.rs",
+    "tests/perf_ci_instruction.rs",
+    "tests/perf_exploratory_harness.rs",
+    "tests/perf_exploratory_reports.rs",
+    "tests/perf_full_dress_0671.rs",
+    "tests/perf_host_tuning.rs",
+    "tests/perf_local_orchestration_0671.rs",
+    "tests/perf_prebuild_067.rs",
+    "tests/perf_qualification_0671.rs",
+    "tests/perf_reference_0671.rs",
+    "tests/perf_runner_0671.rs",
+    "tests/performance_contract_067.rs",
+    "tests/performance_contract_073.rs",
+    "tests/performance_contract_074.rs",
+    "tests/performance_local_073.rs",
+    "tests/pid_path_cost_074.rs",
+    "tests/pid_path_reader_074.rs",
+    "tests/pidfd_info_path_074.rs",
+    "tests/proc_document_baseline_074.rs",
+    "tests/projection_groups_074.rs",
+    "tests/quarantine.rs",
+    "tests/raft_spec_check.rs",
+    "tests/release_evidence.rs",
+    "tests/release_governance.rs",
+    "tests/release_governance_071.rs",
+    "tests/remaining_preparation_cost_074.rs",
+    "tests/remaining_readers_074.rs",
+    "tests/role_census_reader_074.rs",
+    "tests/roots_lock_view_074.rs",
+    "tests/sample_boot_baseline_074.rs",
+    "tests/sample_boot_inline_074.rs",
+    "tests/security_input_view_074.rs",
+    "tests/source_successor_view_074.rs",
+    "tests/starting_effects_cost_074.rs",
+    "tests/status_field_scan_074.rs",
+    "tests/terminal_current_view_074.rs",
+    "tests/trust_component_baseline_074.rs",
+    "tests/trust_component_stack_074.rs",
+    "tests/tsan_check.rs",
+    "tests/validation_leaf_reader_074.rs",
+    "tests/validation_leaf_requests_074.rs",
+    "tests/validation_round_cost_074.rs"
+  ],
+  "windows_package_pass": false
+}
