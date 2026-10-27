@@ -1,17 +1,23 @@
 //! Reuse the admitted current frontier without modifying the original 9/81 gate.
 #[path = "../current-frontier-074/additions.rs"]
 pub mod additions;
+#[path = "../current-frontier-074/alarm_addition.rs"]
+pub mod alarm_addition;
 #[path = "../current-frontier-074/contract.rs"]
 pub mod contract;
+#[path = "../current-frontier-074/current.rs"]
+pub mod current;
 #[path = "../remaining-readers-074/inputs.rs"]
 pub mod previous;
 
 pub(crate) fn known_addition(path: &str) -> bool {
-    previous::known_addition(path) || additions::known(path)
+    previous::known_addition(path) || additions::known(path) || alarm_addition::known(path)
 }
 pub(crate) fn require_addition(path: &str) {
     if previous::known_addition(path) {
         previous::require_addition(path);
+    } else if alarm_addition::known(path) {
+        alarm_addition::require(path);
     } else {
         additions::require(path);
     }
@@ -37,5 +43,5 @@ pub(crate) fn read(path: &str) -> String {
     assert!(!crate::runtime_io::reviewed_inputs::PATHS.contains(&path));
     // MAIN first becomes the exact pre-terminal body, then the unchanged runtime
     // gate checks its complete expected body before releasing SOURCE.
-    crate::runtime::view(path, contract::project(path, raw))
+    current::view(path, raw)
 }

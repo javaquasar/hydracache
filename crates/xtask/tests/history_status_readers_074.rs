@@ -1,6 +1,8 @@
 //! Exact source-reader compatibility, never runtime or release admission.
 #[path = "../../../tools/history-status-readers-074/inputs.rs"]
 mod current_inputs;
+#[path = "../../../tools/current-frontier-074/reader_source.rs"]
+mod reader_source;
 #[path = "../../../tools/authority-runtime-074/gate.rs"]
 mod runtime;
 #[path = "../../../tools/authority-runtime-074/io.rs"]
@@ -11,9 +13,10 @@ use current_inputs::previous as original;
 use original::history_reader::frontier_phase as phase;
 
 fn raw(path: &str) -> String {
-    std::fs::read_to_string(runtime::root().join(path))
+    let raw = std::fs::read_to_string(runtime::root().join(path))
         .unwrap()
-        .replace("\r\n", "\n")
+        .replace("\r\n", "\n");
+    reader_source::project(path, raw)
 }
 fn predicates(source: &str) -> (Vec<String>, Vec<String>) {
     use syn::visit::Visit;

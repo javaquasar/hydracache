@@ -1,0 +1,373 @@
+//! New current edges/addition retain the complete older protected frontier.
+#[path = "../../../tools/remaining-readers-074/inputs.rs"]
+mod current_inputs;
+#[path = "../../../tools/current-frontier-074/reader.rs"]
+mod frontier;
+#[path = "../../../tools/current-frontier-074/reader_source.rs"]
+mod reader_source;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
+use frontier::{alarm_addition as alarm, contract, current};
+const STEP: &str = "dcb53f184fedbcce700a55c50996e876731dea6d";
+const TERMINAL: &str = "a67a5299ab335424e9b11330dc06bd749ea9b859";
+fn raw(path: &str) -> String {
+    std::fs::read_to_string(runtime::root().join(path))
+        .unwrap()
+        .replace("\r\n", "\n")
+}
+fn index() -> String {
+    let out = std::process::Command::new("git")
+        .arg("--no-replace-objects")
+        .args(["ls-tree", alarm::PRODUCER, "--", alarm::PATH])
+        .current_dir(runtime::root())
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let text = String::from_utf8(out.stdout).unwrap();
+    let (meta, path) = text.trim_end().split_once('\t').unwrap();
+    let fields: Vec<_> = meta.split_whitespace().collect();
+    assert_eq!(&fields[..2], ["100644", "blob"]);
+    assert_eq!(path, alarm::PATH);
+    format!("{} {} 0\t{path}\n", fields[0], fields[2])
+}
+#[test]
+fn approved_current_edges_match_fixed_producers_and_unchanged_twelve_rules() {
+    for (path, producer) in [
+        (current::MANIFEST, current::PRODUCER),
+        (current::MAIN, "49cbb7bef1255c63491fd5e8abe081bf4168d1df"),
+    ] {
+        let body = raw(path);
+        assert_eq!(body, runtime::frozen(producer, path));
+        let previous = current::project(path, body.clone());
+        assert_eq!(previous, runtime::frozen(TERMINAL, path));
+        assert_eq!(current::project(path, body.replace('\n', "\r\n")), previous);
+        let row = contract::rules()["rows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|r| r["path"] == path)
+            .unwrap();
+        assert_eq!(
+            contract::project(path, previous),
+            runtime::frozen(row["previous_revision"].as_str().unwrap(), path)
+        );
+    }
+}
+#[test]
+fn stale_partial_duplicate_wrong_and_unknown_current_inputs_cannot_gain_approval() {
+    for path in [current::MANIFEST, current::MAIN] {
+        let body = raw(path);
+        for bad in [
+            String::new(),
+            runtime::frozen(TERMINAL, path),
+            body.replacen("runtime_io::read_to_string", "std::fs::read_to_string", 1),
+            format!("{body}\n# unrelated"),
+            body.replace('\n', "\r"),
+        ] {
+            if bad == body {
+                continue;
+            }
+            assert!(std::panic::catch_unwind(|| current::project(path, bad)).is_err());
+        }
+    }
+    let body = raw(current::MANIFEST);
+    for edge in [
+        "webpki-root-certs = \"=1.0.10\"\n",
+        "webpki-roots = \"=1.0.10\"\n",
+        "webpki-roots-legacy = { package = \"webpki-roots\", version = \"=0.26.11\" }\n",
+    ] {
+        for bad in [
+            body.replacen(edge, "", 1),
+            body.replacen(edge, &format!("{edge}{edge}"), 1),
+        ] {
+            assert!(std::panic::catch_unwind(|| current::project(current::MANIFEST, bad)).is_err());
+        }
+    }
+    for path in [
+        "unknown.rs",
+        "../escape",
+        "./crates/hydracache-redis-compat/Cargo.toml",
+    ] {
+        assert_eq!(
+            current::project(path, "unchanged\r\n".into()),
+            "unchanged\r\n"
+        );
+        assert!(!alarm::known(path));
+        assert!(!alarm::accepts(path, ""));
+        assert!(!alarm::index_matches(path, ""));
+        assert_eq!(
+            reader_source::project(path, "unchanged\r\n".into()),
+            "unchanged\r\n"
+        );
+    }
+}
+#[test]
+fn successful_current_projection_never_caches_later_observations() {
+    let mut seed = 0x0740_2026_1027_u64;
+    for path in [current::MANIFEST, current::MAIN] {
+        let body = raw(path);
+        for case in 0..24 {
+            assert_eq!(
+                current::project(path, body.clone()),
+                runtime::frozen(TERMINAL, path)
+            );
+            seed ^= seed << 13;
+            seed ^= seed >> 7;
+            seed ^= seed << 17;
+            let mut at = (seed % body.len() as u64) as usize;
+            if !body.as_bytes()[at].is_ascii() {
+                at = 0;
+            }
+            let mut changed = body.clone().into_bytes();
+            changed[at] ^= 1;
+            let changed = String::from_utf8(changed).unwrap();
+            assert_ne!(changed, body, "seed={seed:#x} case={case}");
+            assert!(std::panic::catch_unwind(|| current::project(path, changed)).is_err());
+        }
+    }
+}
+#[test]
+fn live_frontier_reader_keeps_the_old_phase_and_the_fresh_main_gate() {
+    for path in [current::MANIFEST, current::MAIN] {
+        let source = runtime::frozen(current_inputs::SOURCE, path);
+        assert_eq!(frontier::read(path), source);
+        assert_eq!(current::view(path, raw(path)), source);
+        assert!(
+            std::panic::catch_unwind(|| current::view(path, runtime::frozen(TERMINAL, path)))
+                .is_err()
+        );
+    }
+    assert!(std::panic::catch_unwind(|| current::view("unknown.rs", "unknown".into())).is_err());
+}
+#[test]
+fn the_one_new_alarm_source_requires_the_independent_producer_and_index() {
+    let body = raw(alarm::PATH);
+    assert_eq!(body, runtime::frozen(alarm::PRODUCER, alarm::PATH));
+    assert!(alarm::accepts(alarm::PATH, &body));
+    assert!(alarm::accepts(alarm::PATH, &body.replace('\n', "\r\n")));
+    assert!(alarm::index_matches(alarm::PATH, &index()));
+    assert!(frontier::known_addition(alarm::PATH));
+    assert!(!frontier::additions::known(alarm::PATH));
+    assert!(!current_inputs::known_addition(alarm::PATH));
+    frontier::require_addition(alarm::PATH);
+}
+#[test]
+fn alarm_index_mode_blob_stage_path_missing_and_duplicate_changes_refuse() {
+    let good = index();
+    let blob = good.split_whitespace().nth(1).unwrap();
+    for bad in [
+        String::new(),
+        good.replace("100644", "100755"),
+        good.replace(" 0\t", " 1\t"),
+        good.replace(blob, &"0".repeat(40)),
+        good.replace(alarm::PATH, "foreign.rs"),
+        format!("{good}{good}"),
+    ] {
+        assert!(!alarm::index_matches(alarm::PATH, &bad));
+    }
+    assert!(!alarm::accepts(
+        alarm::PATH,
+        &format!("{}\n// changed", raw(alarm::PATH))
+    ));
+}
+#[test]
+fn alarm_checks_observe_every_body_index_and_nonregular_failure_afresh() {
+    let root = tempfile::tempdir().unwrap();
+    let file = root.path().join(alarm::PATH);
+    std::fs::create_dir_all(file.parent().unwrap()).unwrap();
+    let body = raw(alarm::PATH);
+    std::fs::write(&file, &body).unwrap();
+    let good = index();
+    let calls = std::cell::Cell::new(0);
+    let observer = || {
+        calls.set(calls.get() + 1);
+        good.clone()
+    };
+    alarm::require_with(root.path(), alarm::PATH, observer);
+    assert_eq!(calls.get(), 1);
+    std::fs::write(&file, "changed").unwrap();
+    assert!(
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| alarm::require_with(
+            root.path(),
+            alarm::PATH,
+            observer
+        )))
+        .is_err()
+    );
+    assert_eq!(calls.get(), 2);
+    std::fs::write(&file, &body).unwrap();
+    assert!(std::panic::catch_unwind(|| alarm::require_with(
+        root.path(),
+        alarm::PATH,
+        || format!("{good}{good}")
+    ))
+    .is_err());
+    std::fs::remove_file(&file).unwrap();
+    assert!(
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| alarm::require_with(
+            root.path(),
+            alarm::PATH,
+            observer
+        )))
+        .is_err()
+    );
+    std::fs::create_dir(&file).unwrap();
+    assert!(
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| alarm::require_with(
+            root.path(),
+            alarm::PATH,
+            observer
+        )))
+        .is_err()
+    );
+    assert_eq!(
+        calls.get(),
+        2,
+        "missing/nonregular sources refuse before index"
+    );
+    let unknown_observed = std::cell::Cell::new(false);
+    assert!(std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        alarm::require_with(root.path(), "unknown", || {
+            unknown_observed.set(true);
+            good.clone()
+        })
+    }))
+    .is_err());
+    assert!(!unknown_observed.get());
+}
+fn predicates(source: &str) -> Vec<String> {
+    use syn::visit::Visit;
+    #[derive(Default)]
+    struct Visitor(Vec<String>);
+    impl<'ast> Visit<'ast> for Visitor {
+        fn visit_macro(&mut self, node: &'ast syn::Macro) {
+            let name = node.path.segments.last().unwrap().ident.to_string();
+            if matches!(name.as_str(), "assert" | "assert_eq" | "assert_ne") {
+                self.0.push(format!("{name} {}", node.tokens));
+            }
+            syn::visit::visit_macro(self, node);
+        }
+    }
+    let mut visitor = Visitor::default();
+    visitor.visit_file(&syn::parse_file(source).unwrap());
+    visitor.0
+}
+#[test]
+fn old_rules_protected_selection_physical_prefixes_and_assertions_are_preserved() {
+    for path in [
+        "tools/current-frontier-074/contract.rs",
+        "tools/current-frontier-074/rules.json",
+        "tools/current-frontier-074/additions.rs",
+        "tools/remaining-readers-074/inputs.rs",
+        "crates/xtask/tests/support/current_tree_input.rs",
+        "crates/xtask/tests/support/current_tree_input_rules_074.json",
+        "crates/xtask/tests/authority_rust_history_074.rs",
+        "crates/xtask/tests/current_tree_input_audit_074.rs",
+        "tools/authority-runtime-074/gate.rs",
+        "tools/authority-runtime-074/io.rs",
+        "Cargo.lock",
+        "Cargo.toml",
+        "crates/xtask/tests/performance_contract_074.rs",
+        "docs/testing/performance/0.74/qualification-manifest.toml",
+    ] {
+        assert_eq!(raw(path), runtime::frozen(STEP, path), "{path}");
+    }
+    for path in [
+        "crates/xtask/tests/current_frontier_074.rs",
+        "crates/xtask/tests/history_status_readers_074.rs",
+    ] {
+        assert_eq!(
+            predicates(&raw(path)),
+            predicates(&runtime::frozen(STEP, path))
+        );
+    }
+    for (path, start) in [
+        (
+            "tools/current-frontier-074/reader.rs",
+            "pub fn read(path: &str) -> String",
+        ),
+        (
+            reader_source::PATH,
+            "pub(crate) fn read(path: &str) -> String",
+        ),
+    ] {
+        let old = runtime::frozen(STEP, path);
+        let now = raw(path);
+        let old = old
+            .split_once(start)
+            .unwrap()
+            .1
+            .split_once("    // MAIN")
+            .unwrap()
+            .0;
+        let now = now
+            .split_once(start)
+            .unwrap()
+            .1
+            .split_once("    // MAIN")
+            .unwrap()
+            .0;
+        assert_eq!(old, now, "all old physical checks: {path}");
+    }
+    let facade = raw(reader_source::PATH);
+    let mut expected = runtime::frozen(STEP, reader_source::PATH);
+    for (before, after) in [
+        ("pub mod additions;\n", "pub mod additions;\n#[path = \"../current-frontier-074/alarm_addition.rs\"]\npub mod alarm_addition;\n"),
+        ("pub mod contract;\n", "pub mod contract;\n#[path = \"../current-frontier-074/current.rs\"]\npub mod current;\n"),
+        ("previous::known_addition(path) || additions::known(path)", "previous::known_addition(path) || additions::known(path) || alarm_addition::known(path)"),
+        ("        previous::require_addition(path);\n    } else {", "        previous::require_addition(path);\n    } else if alarm_addition::known(path) {\n        alarm_addition::require(path);\n    } else {"),
+        ("    crate::runtime::view(path, contract::project(path, raw))", "    current::view(path, raw)"),
+    ] {
+        assert_eq!(expected.matches(before).count(), 1);
+        expected = expected.replacen(before, after, 1);
+    }
+    assert_eq!(
+        facade, expected,
+        "complete independently constructed facade"
+    );
+    let projected = reader_source::project(reader_source::PATH, facade.clone());
+    let tail = "pub(crate) fn read(path: &str) -> String";
+    assert_eq!(
+        projected.split_once(tail).unwrap().1,
+        runtime::frozen(STEP, reader_source::PATH)
+            .split_once(tail)
+            .unwrap()
+            .1
+    );
+    for bad in [
+        facade.replacen("canonicalize()", "not_a_check()", 1),
+        format!("{facade}\n// changed"),
+        runtime::frozen(STEP, reader_source::PATH),
+    ] {
+        assert!(
+            std::panic::catch_unwind(|| reader_source::project(reader_source::PATH, bad)).is_err()
+        );
+    }
+}
+#[cfg(unix)]
+#[test]
+fn alarm_symlink_refuses_before_index_observation() {
+    let root = tempfile::tempdir().unwrap();
+    let file = root.path().join(alarm::PATH);
+    std::fs::create_dir_all(file.parent().unwrap()).unwrap();
+    let target = root.path().join("own-source");
+    std::fs::write(&target, raw(alarm::PATH)).unwrap();
+    std::os::unix::fs::symlink(&target, &file).unwrap();
+    let seen = std::cell::Cell::new(false);
+    assert!(
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| alarm::require_with(
+            root.path(),
+            alarm::PATH,
+            || {
+                seen.set(true);
+                index()
+            }
+        )))
+        .is_err()
+    );
+    assert!(!seen.get());
+}

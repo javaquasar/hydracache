@@ -15,6 +15,7 @@ fn raw(path: &str) -> String {
     let raw = std::fs::read_to_string(runtime::root().join(path))
         .unwrap()
         .replace("\r\n", "\n");
+    let raw = frontier::current::project(path, raw);
     if path == "crates/xtask/tests/current_tree_input_audit_074.rs" {
         current_inputs::phase::previous(path, &raw).expect("exact next audit reader phase")
     } else {
