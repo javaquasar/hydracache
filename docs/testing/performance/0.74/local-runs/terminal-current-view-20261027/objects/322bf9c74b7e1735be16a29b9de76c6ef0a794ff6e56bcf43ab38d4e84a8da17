@@ -1,0 +1,138 @@
+"""Retain first and final source checks without executing archived code."""
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = ROOT / 'target/roots-lock-view-20261027'
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/terminal-current-view-20261027'
+PARENT = '5c7ef1c893a91d57a566e0a484a218f87c3df48f'
+IMPLEMENTATION = '5ec4dd647195c286299842c9faa71d3c2fa58efd'
+members, objects = {}, {}
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+def doc(name, value):
+    add(name, (json.dumps(value, sort_keys=True, indent=2) + '\n').encode())
+
+
+def git(*args):
+    return subprocess.check_output(['git', '--no-replace-objects', *args], cwd=ROOT, timeout=10)
+
+
+assert git('rev-parse', 'HEAD').decode().strip() == IMPLEMENTATION
+phases = ['baseline-first', 'focused-first', 'focused-corrected', 'focused-final',
+          'check-first', 'clippy-first', 'msrv-first', 'gnu-first',
+          'format-first', 'doc-first', 'contract-first']
+intents = {}
+for phase in phases:
+    folder = BASE / ('terminal-' + phase)
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    intents[phase] = intent
+    assert intent['source_commit'] == PARENT and intent['disk_floor_bytes'] == 4 * 1024**3
+    assert not any(intent[k] for k in ('qualification', 'server', 'services', 'clocks', 'product_load'))
+    assert result['source_unchanged'] and result['commit_unchanged'] and not result['release_admitted']
+    assert result['source_after'] == intent['source']
+    assert result['exit'] == (101 if phase in ('baseline-first', 'focused-first') else 0)
+    for path in sorted(folder.rglob('*')):
+        if path.is_file():
+            add('checks/' + phase + '/' + path.relative_to(folder).as_posix(), path.read_bytes())
+    if phase in ('focused-final', 'msrv-first', 'gnu-first'):
+        text = (folder / 'stdout.log').read_text(encoding='utf-8')
+        assert sorted(re.findall(r'^test result: ok\. (\d+) passed; 0 failed; 0 ignored;', text, re.M)) == ['4', '5', '5', '6', '7', '8']
+
+first = [
+    ('focused-first', 'tools/authority-reader-phase-074/current_main.rs', '4728014fe21127ffedf9706fef87e6f6e5e1522f'),
+    ('focused-first', 'tools/authority-runtime-074/gate.rs', 'c944631714775f36474a743d1c57c497b28e3717'),
+    ('focused-first', 'tools/authority-reader-phase-074/contract.rs', '0d4068231d3660988fcbfcecdc41af137e5278ae'),
+    ('focused-corrected', 'tools/authority-reader-phase-074/current_main.rs', 'e2e8c7ade492545e0e089a8c84fb13dc40e59230'),
+    ('focused-corrected', 'tools/authority-runtime-074/gate.rs', '23de53d009e9fde9af92753ce3248d221978576f'),
+    ('focused-corrected', 'tools/authority-reader-phase-074/contract.rs', '0d4068231d3660988fcbfcecdc41af137e5278ae'),
+    ('focused-corrected', 'crates/xtask/tests/terminal_current_view_074.rs', '74669dfaba6f6abb0d2852006067f73c7beecec2')]
+first_matches = []
+for phase, path, blob in first:
+    raw = git('cat-file', 'blob', blob)
+    variants = [raw, raw.replace(b'\r\n', b'\n').replace(b'\n', b'\r\n')]
+    body = next((value for value in variants if sha(value) == intents[phase]['source'][path]), None)
+    assert body is not None, (phase, path)
+    add('first-sources/' + phase + '/' + path, body)
+    first_matches.append(dict(phase=phase, path=path, blob=blob, raw_sha256=sha(body),
+                              matches_preexecution_digest=True))
+
+runtime_path = 'crates/xtask/tests/authority_runtime_074.rs'
+reader_path = 'crates/xtask/tests/authority_reader_phase_074.rs'
+for path in (runtime_path, reader_path):
+    raw = git('show', f'{PARENT}:{path}').decode().replace('\r\n', '\n')
+    if path == runtime_path:
+        raw = raw.replace('        main_phase::project(raw)',
+                          '        main_phase::project(gate::terminal_current::project(raw))', 1)
+        raw = raw.replace('    if path == gate::FIXTURE {\n        observed(path)',
+                          '    if path == gate::FIXTURE || path == main_phase::SOURCE {\n        observed(path)', 1)
+    else:
+        raw = raw.replace('    bootstrap_phase_reader::read(path, raw)',
+            '    let raw = if path == main_phase::SOURCE {\n        runtime::terminal_current::project(raw)\n    } else {\n        raw\n    };\n    bootstrap_phase_reader::read(path, raw)', 1)
+    for phase in ('focused-first', 'focused-corrected'):
+        variants = [raw.encode(), raw.replace('\n', '\r\n').encode()]
+        body = next((value for value in variants if sha(value) == intents[phase]['source'][path]), None)
+        assert body is not None, (phase, path)
+        add('first-sources/' + phase + '/' + path, body)
+        first_matches.append(dict(phase=phase, path=path, raw_sha256=sha(body),
+            reconstructed_from_fixed_parent_and_declared_edits=True, matches_preexecution_digest=True))
+doc('review/first-source-bindings.json', first_matches)
+
+scope = [runtime_path, reader_path, 'crates/xtask/tests/terminal_current_view_074.rs',
+         'tools/authority-reader-phase-074/current_main.rs', 'tools/authority-reader-phase-074/contract.rs']
+reviewed = {}
+for path in scope:
+    raw = (ROOT / path).read_bytes()
+    add('review/current/' + path, raw)
+    reviewed[path] = sha(raw)
+    for phase in ('focused-final', 'check-first', 'clippy-first', 'msrv-first', 'gnu-first'):
+        assert intents[phase]['source'][path] == sha(raw)
+protected = ['tools/authority-runtime-074/gate.rs', 'tools/authority-runtime-074/io.rs',
+             'tools/authority-reader-phase-074/main.rs', 'tools/authority-reader-phase-074/main-rules.json',
+             'tools/security-input-view-074/contract.rs', 'tools/security-input-view-074/rules.json',
+             'tools/source-successor-view-074/contract.rs', 'tools/long-run-supervisor-074/src',
+             'Cargo.toml', 'Cargo.lock', 'crates/xtask/tests/performance_contract_074.rs',
+             'docs/testing/performance/0.74/qualification-manifest.toml']
+assert git('diff', '--name-only', PARENT, '--', *protected) == b''
+manifest_sha = sha((ROOT / protected[-1]).read_bytes())
+assert manifest_sha == '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
+doc('review/scope.json', dict(source_parent=PARENT, implementation=IMPLEMENTATION,
+    raw_sha256=reviewed, rust_bodies=5, original_gate_and_io_preserved=True,
+    old_rules_and_product_preserved=True, qualifier_sha256=manifest_sha,
+    original_windows=[300,60,10], complete_package_review=False, package_rerun=False,
+    server=False, clocks=False, services=False, measurement=False, release_admitted=False))
+for path in ('tools/authority-reader-phase-074/README.md',
+             'docs/testing/performance/0.74/terminal-current-view-result-20261027.md',
+             'target/run-roots-lock-view-20261027.py', 'target/seal-terminal-current-20261027.py'):
+    add('capture/' + path, (ROOT / path).read_bytes())
+
+OUT.mkdir(exist_ok=False)
+with (OUT / '.gitattributes').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+(OUT / 'objects').mkdir()
+for digest, raw in objects.items():
+    with (OUT / 'objects' / digest).open('xb') as stream:
+        stream.write(raw)
+index = dict(schema='hc074-terminal-current-view-evidence-v1', source_parent=PARENT,
+    implementation=IMPLEMENTATION, members=members, phases=phases,
+    first_sources_match_preexecution_digests=True, focused_cases_per_environment=35,
+    package_pass=False, qualification=False, server=False, release_admitted=False)
+with (OUT / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, sort_keys=True, indent=2)
+    stream.write('\n')
+print(json.dumps(dict(members=len(members), objects=len(objects), index_sha256=sha((OUT / 'index.json').read_bytes()))))

@@ -1,0 +1,27 @@
+{
+  "clocks": false,
+  "complete_package_review": false,
+  "implementation": "5ec4dd647195c286299842c9faa71d3c2fa58efd",
+  "measurement": false,
+  "old_rules_and_product_preserved": true,
+  "original_gate_and_io_preserved": true,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "package_rerun": false,
+  "qualifier_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "raw_sha256": {
+    "crates/xtask/tests/authority_reader_phase_074.rs": "58a8f0c7fc36df765b970ebf2f91015b077210a6f45a04441241f6d93f123f7d",
+    "crates/xtask/tests/authority_runtime_074.rs": "49622c02585384120e3921403f9d86b57a38810d6a3a24865b19dbfdb924fc44",
+    "crates/xtask/tests/terminal_current_view_074.rs": "fd902192824a64f27ca2cdf0a38036ee21874785a0c03fd23c469e2176cd7c03",
+    "tools/authority-reader-phase-074/contract.rs": "284026c79fd18247d9ace9bb707d0746d469d242cc15fc82bb6b59bbd432b239",
+    "tools/authority-reader-phase-074/current_main.rs": "a3ba5395893c152a1224699ffb48cccc3dd6336518d719243bae23c26b2d30a5"
+  },
+  "release_admitted": false,
+  "rust_bodies": 5,
+  "server": false,
+  "services": false,
+  "source_parent": "5c7ef1c893a91d57a566e0a484a218f87c3df48f"
+}

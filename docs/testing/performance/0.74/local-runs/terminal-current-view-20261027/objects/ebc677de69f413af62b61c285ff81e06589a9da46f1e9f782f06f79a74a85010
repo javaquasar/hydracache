@@ -1,0 +1,48 @@
+//! One approved IO edge in test-source text; not runtime trust or execution.
+use sha2::{Digest, Sha256};
+#[path = "main.rs"]
+mod terminal;
+
+pub const SOURCE: &str = "crates/xtask/tests/performance_contract_074.rs";
+pub const PRODUCER: &str = "49cbb7bef1255c63491fd5e8abe081bf4168d1df";
+pub const PREVIOUS: &str = "a67a5299ab335424e9b11330dc06bd749ea9b859";
+const CURRENT: &str = "0565355c592d59d49a7c2a1b1631f10711ff5d6101e42cf50925261a6e4bed6c";
+const TERMINAL: &str = "30dc4166f86f71a2028b0adc3287e898920adf18c92a45cb7046ab67663f9207";
+const SECURITY: &str = "1a12172f2312f5592efafaedfcb8c74d51925d12fcb5ba3529338da73e4ce20d";
+const NEW: &str =
+    "    let raw_lock = runtime_io::read_to_string(root().join(\"Cargo.lock\")).unwrap();";
+const OLD: &str =
+    "    let raw_lock = std::fs::read_to_string(root().join(\"Cargo.lock\")).unwrap();";
+
+fn digest(raw: &str) -> String {
+    Sha256::digest(raw.as_bytes())
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect()
+}
+
+pub fn project(raw: String) -> String {
+    let raw = raw.replace("\r\n", "\n");
+    assert_eq!(digest(&raw), CURRENT, "unreviewed {SOURCE} at {PRODUCER}");
+    assert_eq!(
+        raw.matches(NEW).count(),
+        1,
+        "one approved security reader edge"
+    );
+    let previous = raw.replacen(NEW, OLD, 1);
+    assert_eq!(
+        digest(&previous),
+        TERMINAL,
+        "complete terminal predecessor at {PREVIOUS}"
+    );
+    previous
+}
+
+pub fn historical(raw: String, security_previous: String) -> String {
+    assert_eq!(
+        digest(&security_previous.replace("\r\n", "\n")),
+        SECURITY,
+        "complete independently checked security predecessor"
+    );
+    terminal::project(project(raw))
+}

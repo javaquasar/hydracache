@@ -1,0 +1,34 @@
+
+running 6 tests
+test current_fixture_entry_keeps_fresh_current_bytes_separate_from_old_body_checks ... ok
+test partial_duplicate_wrong_branch_and_assertion_drift_cannot_enter_old_reader_views ... ok
+test five_readers_are_exact_declared_edits_of_independent_fixed_sources ... ok
+test every_original_case_and_assertion_survives_the_two_explicit_input_substitutions ... ok
+test terminal_main_text_matches_fixed_producers_without_compiling_the_old_runtime ... ok
+test all_eighteen_entry_inputs_and_current_mutants_retain_original_phase_checks ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.22s
+
+
+running 5 tests
+test approved_predecessor_views_do_not_replace_current_runtime_validation ... FAILED
+test legacy_adapters_preserve_complete_prior_test_bodies_and_assertions ... ok
+test full_contract_adapters_change_only_one_preservation_reader_per_module ... ok
+test baseline_partial_install_and_unrelated_effects_refuse_before_restoration ... ok
+test installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set ... ok
+
+failures:
+
+---- approved_predecessor_views_do_not_replace_current_runtime_validation stdout ----
+
+thread 'approved_predecessor_views_do_not_replace_current_runtime_validation' (36568) panicked at crates\xtask\tests\..\..\..\tools\authority-runtime-074\..\authority-reader-phase-074\current_main.rs:42:5:
+assertion `left == right` failed: complete independently checked security predecessor
+  left: "b99acaf03257db18bb5f52e53ed948bf9ca26250e9193c0cfeeabb4725fa5906"
+ right: "1a12172f2312f5592efafaedfcb8c74d51925d12fcb5ba3529338da73e4ce20d"
+
+
+failures:
+    approved_predecessor_views_do_not_replace_current_runtime_validation
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.30s
+

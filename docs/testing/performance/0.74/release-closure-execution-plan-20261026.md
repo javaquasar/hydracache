@@ -102,6 +102,16 @@ validation, not the old red V8 or a complete package verdict. Next repair the
 terminal/authority view and the other retained exact-source boundaries before
 reviewing another changed-source full command.
 
+The [terminal current-source continuation](terminal-current-view-result-20261027.md)
+now passes the original eleven terminal/authority-reader cases plus eight new
+mutation/preservation controls and their current-tree/security/successor
+consumers: 35 cases on Windows/MSRV/GNU. The one-reader text bridge and fresh
+MAIN routing leave the complete shared gate and IO reader byte-identical.
+The rejected first gate branch and all first results remain retained. Next
+close current-frontier/manifest, authority-rust-history and remaining bootstrap/
+document/held-role boundaries; this does not change V8's red incomplete verdict
+or authorize an unchanged full retry, host execution or qualification.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

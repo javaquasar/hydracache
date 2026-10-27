@@ -21287,3 +21287,24 @@ This is confirmed test-source compatibility, not a performance improvement.
 The old full-package timeout and failures retain their original verdicts;
 terminal/authority and the other historical-view boundaries still require
 their own reviewed changes.
+
+The [terminal compatibility repair](../testing/performance/0.74/terminal-current-view-result-20261027.md)
+shows why a phase label cannot replace checking its complete output. The security
+view already returns a constructed legacy main body, including the older
+terminal reversal; it does not return the raw file at its revision label.
+A first candidate that assumed the latter refused correctly. Applying another
+projection to that output would conflate two source phases.
+
+The final repair adds a narrow inverse of the single approved reader expression
+only where the old terminal proof still consumes current text. The real gate
+receives freshly observed MAIN bytes and retains its original security route.
+Its complete code and IO reader remain unchanged; old rules, case names and
+assertion tokens stay exact. Both routes independently reach the same legacy
+body, and stale or mutated input still refuses after a prior success.
+
+The 35-case Windows/MSRV/GNU cohort confirms this source-compatibility boundary.
+The rejected bridge and unnecessary gate branch remain evidence, not accepted
+runtime changes or a performance claim. The full package still needs the other
+historical-frontier repairs and a separately reviewed complete run under its
+original limit. These focused passes do not amend the older timeout or fill
+missing target verdicts.

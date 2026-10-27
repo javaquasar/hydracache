@@ -1,0 +1,5 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.59s
+     Running tests\authority_reader_phase_074.rs (target\debug\deps\authority_reader_phase_074-4802d61dde0c4f38.exe)
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-8e223b6ed657b4a1.exe)
+     Running tests\terminal_current_view_074.rs (target\debug\deps\terminal_current_view_074-54c039b1dfe15c06.exe)

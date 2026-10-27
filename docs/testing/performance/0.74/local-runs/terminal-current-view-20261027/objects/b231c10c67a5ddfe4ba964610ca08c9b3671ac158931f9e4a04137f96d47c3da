@@ -1,0 +1,7 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.21s
+     Running tests\authority_reader_phase_074.rs (target\debug\deps\authority_reader_phase_074-4802d61dde0c4f38.exe)
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-8e223b6ed657b4a1.exe)
+error: test failed, to rerun pass `-p xtask --test authority_runtime_074`
+error: 1 target failed:
+    `-p xtask --test authority_runtime_074`

@@ -1,0 +1,8 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.96s
+     Running tests\authority_reader_phase_074.rs (target\debug\deps\authority_reader_phase_074-4802d61dde0c4f38.exe)
+error: test failed, to rerun pass `-p xtask --test authority_reader_phase_074`
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-8e223b6ed657b4a1.exe)
+error: test failed, to rerun pass `-p xtask --test authority_runtime_074`
+error: 2 targets failed:
+    `-p xtask --test authority_reader_phase_074`
+    `-p xtask --test authority_runtime_074`

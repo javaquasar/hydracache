@@ -1,0 +1,79 @@
+[
+  {
+    "blob": "4728014fe21127ffedf9706fef87e6f6e5e1522f",
+    "matches_preexecution_digest": true,
+    "path": "tools/authority-reader-phase-074/current_main.rs",
+    "phase": "focused-first",
+    "raw_sha256": "ebc677de69f413af62b61c285ff81e06589a9da46f1e9f782f06f79a74a85010"
+  },
+  {
+    "blob": "c944631714775f36474a743d1c57c497b28e3717",
+    "matches_preexecution_digest": true,
+    "path": "tools/authority-runtime-074/gate.rs",
+    "phase": "focused-first",
+    "raw_sha256": "bb0a52316306f5f9bcbc3d4055bac579c995f91c5b44f6e58b5fa9b965734e9a"
+  },
+  {
+    "blob": "0d4068231d3660988fcbfcecdc41af137e5278ae",
+    "matches_preexecution_digest": true,
+    "path": "tools/authority-reader-phase-074/contract.rs",
+    "phase": "focused-first",
+    "raw_sha256": "5624568980f4375ebbbcb8367ba6db7cd2f29dafb7262cfefb2df46198e82d4c"
+  },
+  {
+    "blob": "e2e8c7ade492545e0e089a8c84fb13dc40e59230",
+    "matches_preexecution_digest": true,
+    "path": "tools/authority-reader-phase-074/current_main.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "a3ba5395893c152a1224699ffb48cccc3dd6336518d719243bae23c26b2d30a5"
+  },
+  {
+    "blob": "23de53d009e9fde9af92753ce3248d221978576f",
+    "matches_preexecution_digest": true,
+    "path": "tools/authority-runtime-074/gate.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "0657cce0220a56f3a2c32b483287238202b3926d17f807481404e93eedbe6dac"
+  },
+  {
+    "blob": "0d4068231d3660988fcbfcecdc41af137e5278ae",
+    "matches_preexecution_digest": true,
+    "path": "tools/authority-reader-phase-074/contract.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "5624568980f4375ebbbcb8367ba6db7cd2f29dafb7262cfefb2df46198e82d4c"
+  },
+  {
+    "blob": "74669dfaba6f6abb0d2852006067f73c7beecec2",
+    "matches_preexecution_digest": true,
+    "path": "crates/xtask/tests/terminal_current_view_074.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "35bf9b3c7c60ecb11f3cf745b0bf9f33d4d48574ac02fb42c6aebb02cdd95fa9"
+  },
+  {
+    "matches_preexecution_digest": true,
+    "path": "crates/xtask/tests/authority_runtime_074.rs",
+    "phase": "focused-first",
+    "raw_sha256": "34db61319ceba15c91675aa439daa27cececb49d21b18d1d8e7d0e17c458e836",
+    "reconstructed_from_fixed_parent_and_declared_edits": true
+  },
+  {
+    "matches_preexecution_digest": true,
+    "path": "crates/xtask/tests/authority_runtime_074.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "34db61319ceba15c91675aa439daa27cececb49d21b18d1d8e7d0e17c458e836",
+    "reconstructed_from_fixed_parent_and_declared_edits": true
+  },
+  {
+    "matches_preexecution_digest": true,
+    "path": "crates/xtask/tests/authority_reader_phase_074.rs",
+    "phase": "focused-first",
+    "raw_sha256": "a80312b6af8f2231a597cbbdfe786963720156c17564e71925f57b79e5ed314a",
+    "reconstructed_from_fixed_parent_and_declared_edits": true
+  },
+  {
+    "matches_preexecution_digest": true,
+    "path": "crates/xtask/tests/authority_reader_phase_074.rs",
+    "phase": "focused-corrected",
+    "raw_sha256": "a80312b6af8f2231a597cbbdfe786963720156c17564e71925f57b79e5ed314a",
+    "reconstructed_from_fixed_parent_and_declared_edits": true
+  }
+]

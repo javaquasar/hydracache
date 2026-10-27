@@ -1,0 +1,65 @@
+
+running 6 tests
+test current_fixture_entry_keeps_fresh_current_bytes_separate_from_old_body_checks ... ok
+test five_readers_are_exact_declared_edits_of_independent_fixed_sources ... ok
+test partial_duplicate_wrong_branch_and_assertion_drift_cannot_enter_old_reader_views ... ok
+test every_original_case_and_assertion_survives_the_two_explicit_input_substitutions ... ok
+test terminal_main_text_matches_fixed_producers_without_compiling_the_old_runtime ... ok
+test all_eighteen_entry_inputs_and_current_mutants_retain_original_phase_checks ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.84s
+
+
+running 5 tests
+test full_contract_adapters_change_only_one_preservation_reader_per_module ... ok
+test legacy_adapters_preserve_complete_prior_test_bodies_and_assertions ... ok
+test baseline_partial_install_and_unrelated_effects_refuse_before_restoration ... ok
+test installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set ... ok
+test approved_predecessor_views_do_not_replace_current_runtime_validation ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.24s
+
+
+running 4 tests
+test runtime_contract_reader_changes_only_the_current_history_input ... ok
+test current_tree_reader_retains_entire_prior_gate_and_unknown_source_assertions ... ok
+test all_nine_current_inputs_are_exact_declared_patches_not_assertion_waivers ... ok
+test all_eighty_one_declared_sources_require_exact_bytes_index_and_regular_files ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.18s
+
+
+running 7 tests
+test diagnostic_document_successor_is_separate_and_exact ... ok
+test path_aliases_and_cross_file_approval_cannot_enter_known_paths ... ok
+test existing_five_path_rules_and_fresh_io_are_unchanged ... ok
+test successful_observation_is_never_cached_or_reused_for_stale_input ... ok
+test complete_current_inputs_match_independent_producers_and_predecessors ... ok
+test stale_partial_duplicate_and_unrelated_edits_refuse ... ok
+test fresh_readers_join_old_gates_without_bypassing_current_body_validation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s
+
+
+running 5 tests
+test stale_partial_duplicate_and_unrelated_edits_refuse_before_projection ... ok
+test old_gates_and_assertions_survive_exact_entry_edits ... ok
+test whole_body_projection_matches_independent_fixed_producers ... ok
+test exact_successor_inputs_reach_unchanged_historical_chain ... ok
+test wrong_path_cannot_borrow_another_files_approval_and_unknowns_stay_unchanged ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.63s
+
+
+running 8 tests
+test one_reader_edge_matches_independent_producer_and_terminal_predecessor ... ok
+test all_old_assertions_cases_and_fixed_reader_inputs_remain_exact ... ok
+test gate_requires_fresh_current_input_not_either_historical_representation ... ok
+test stale_partial_duplicate_and_unknown_source_edits_refuse ... ok
+test the_complete_original_gate_and_io_bodies_are_unchanged ... ok
+test security_and_terminal_routes_reach_the_same_complete_legacy_body ... ok
+test old_terminal_security_and_product_artifacts_remain_unchanged ... ok
+test seeded_single_byte_corpus_cannot_reuse_a_successful_approval ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.64s
+
