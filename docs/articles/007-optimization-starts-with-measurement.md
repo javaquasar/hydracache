@@ -21696,3 +21696,21 @@ inventory pass, but neither heavy gate is dispatched. First fixture/staging
 refusals and initial preparation stay intact. This is reproducible preparation
 and a resource-based no-launch decision, not an allocation improvement, workspace
 pass or server admission. All original live checks, frequency and windows remain.
+
+The [owned Windows envelope follow-up](../testing/performance/0.74/windows-owned-envelope-20261027.md)
+preserves attribution discipline when capacity recovers: about 75 GiB is already
+available before the requested cache removal, and the tool blocks deletion before
+starting PowerShell. The 8.12 GiB logical cache selection remains present; neither
+that inventory nor the unrelated capacity recovery is reported as our cleanup
+success. Main warm dependencies, source and evidence are deliberately retained.
+
+The useful code result is narrower: a private no-CLI envelope around the unchanged
+SHA-pinned Windows Job helper. Its final 24-case command checks separated binary
+streams, live-descendant refusal, floor, cancellation and bounded retirement.
+Six existing native Job fault controls separately confirm creator-loss/setup
+boundaries. Two first model-clock errors stay archived; correcting the fake
+clock does not alter a real check or deadline. A fresh clean-commit source and
+environment preflight now satisfies the original capacity prerequisite, yet the
+full Windows package and workspace commands are still not dispatched. Preserving
+that distinction prevents a successful harness test from becoming an unsupported
+release or production all-writer claim.

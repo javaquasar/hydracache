@@ -1,0 +1,13 @@
+from pathlib import Path
+import json,sys
+root=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(root/'tools/windows-workspace-preflight-074'))
+import storage
+out=root/'target/windows-cleanup-gate-20261027/resource-post'
+out.mkdir(exist_ok=False)
+storage.write(out,'intent.json',dict(read_only=True,deletion_executed=False,settings_changed=False,foreign_process_stops=False))
+storage.write(out,'snapshot.json',storage.snapshot())
+storage.capture_ps(out,'memory')
+paths=['target/debug/incremental','target/xtask-verify-39960/debug/deps','target/security-patch-msrv188/debug/deps']
+storage.write(out,'caches-still-present.json',{name:(root/name).is_dir() for name in paths})
+print(json.dumps(dict(evidence=str(out),deletion_executed=False)))

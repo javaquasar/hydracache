@@ -1,0 +1,123 @@
+{
+  "utc": "2026-10-27T15:54:34.1814871Z",
+  "candidates": [
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\incremental",
+      "files": 2232,
+      "logical_bytes": 2835268439.0,
+      "newest_utc": "2026-10-27T03:37:23.1144232Z",
+      "extensions": [
+        {
+          "Name": ".bin",
+          "Count": 42
+        },
+        {
+          "Name": ".lock",
+          "Count": 14
+        },
+        {
+          "Name": ".o",
+          "Count": 2165
+        },
+        {
+          "Name": ".rmeta",
+          "Count": 11
+        }
+      ],
+      "tracked_files": [],
+      "reparse_entries": 0
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\xtask-verify-39960\\debug\\deps",
+      "files": 1101,
+      "logical_bytes": 1544504939.0,
+      "newest_utc": "2026-10-11T02:41:49.4668391Z",
+      "extensions": [
+        {
+          "Name": ".d",
+          "Count": 357
+        },
+        {
+          "Name": ".dll",
+          "Count": 15
+        },
+        {
+          "Name": ".exe",
+          "Count": 58
+        },
+        {
+          "Name": ".exp",
+          "Count": 15
+        },
+        {
+          "Name": ".lib",
+          "Count": 15
+        },
+        {
+          "Name": ".pdb",
+          "Count": 73
+        },
+        {
+          "Name": ".rlib",
+          "Count": 284
+        },
+        {
+          "Name": ".rmeta",
+          "Count": 284
+        }
+      ],
+      "tracked_files": [],
+      "reparse_entries": 0
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\security-patch-msrv188\\debug\\deps",
+      "files": 1461,
+      "logical_bytes": 4337871378.0,
+      "newest_utc": "2026-10-27T02:09:32.5146269Z",
+      "extensions": [
+        {
+          "Name": ".d",
+          "Count": 463
+        },
+        {
+          "Name": ".dll",
+          "Count": 25
+        },
+        {
+          "Name": ".exe",
+          "Count": 45
+        },
+        {
+          "Name": ".exp",
+          "Count": 36
+        },
+        {
+          "Name": ".lib",
+          "Count": 36
+        },
+        {
+          "Name": ".pdb",
+          "Count": 70
+        },
+        {
+          "Name": ".rlib",
+          "Count": 393
+        },
+        {
+          "Name": ".rmeta",
+          "Count": 393
+        }
+      ],
+      "tracked_files": [],
+      "reparse_entries": 0
+    }
+  ],
+  "active_consumers": [],
+  "volume": {
+    "SizeRemaining": 80133902336,
+    "Size": 1021469593600
+  },
+  "delete_executed": false,
+  "source_head": "1371413dbd91c52805946f33e2a8d31bae7b4b44",
+  "git_status": []
+}

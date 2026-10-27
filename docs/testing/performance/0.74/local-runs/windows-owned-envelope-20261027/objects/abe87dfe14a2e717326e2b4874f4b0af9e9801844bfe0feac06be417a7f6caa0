@@ -1,0 +1,12 @@
+from pathlib import Path
+import hashlib,json
+root=Path(__file__).resolve().parent.parent
+folder=root/'target/windows-cleanup-gate-20261027/envelope-first-capture'
+rows=json.loads((folder/'result.json').read_bytes())['source_after']
+out=folder/'source'
+out.mkdir(exist_ok=False)
+for name,digest in rows.items():
+    raw=(root/name).read_bytes()
+    assert hashlib.sha256(raw).hexdigest()==digest
+    with (out/Path(name).name).open('xb') as stream:stream.write(raw)
+print('retained exact first eight source blobs before correcting model clocks')

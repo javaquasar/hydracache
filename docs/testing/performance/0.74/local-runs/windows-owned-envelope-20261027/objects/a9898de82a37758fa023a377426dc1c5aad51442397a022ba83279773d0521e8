@@ -1,0 +1,1 @@
+{"classification": "success", "exit": 0, "observed_child_exit": 0, "retired": true, "errors": [], "bound_seconds": 3, "cleanup_seconds": 5, "capacity_poll_seconds": 5, "production_writer_authority": false}

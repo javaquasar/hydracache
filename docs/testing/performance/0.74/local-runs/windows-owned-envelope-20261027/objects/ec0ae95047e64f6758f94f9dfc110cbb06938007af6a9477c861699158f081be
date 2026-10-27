@@ -1,0 +1,9 @@
+{
+  "kind": "manual-transcription-of-tool-response-not-a-raw-process-log",
+  "operation": "native PowerShell Remove-Item -LiteralPath on the three explicitly resolved and audited cache directories",
+  "reason": "exec_command CreateProcess was rejected: blocked by policy",
+  "process_started": false,
+  "deletion_executed": false,
+  "alternative_deletion_api_or_policy_bypass_attempted": false,
+  "foreign_process_stopped": false
+}

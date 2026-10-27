@@ -1,0 +1,10 @@
+{
+  "kind": "manual-transcription-of-separate-tool-readings-not-raw-telemetry",
+  "before_any_cleanup_command": true,
+  "initial_volume_free_bytes": 80254029824,
+  "later_pagefile_logical_bytes": 33634439168,
+  "later_cim_free_physical_kib": 10842276,
+  "same_instant": false,
+  "attribution_to_this_task_cleanup": false,
+  "settings_or_foreign_process_changed_by_this_task": false
+}

@@ -1,0 +1,26 @@
+watchdog heartbeat attempt=local elapsed=0.0s remaining=5.0s pid=2708
+watchdog heartbeat attempt=local elapsed=0.2s remaining=4.8s pid=2708
+watchdog heartbeat attempt=local elapsed=0.4s remaining=4.6s pid=2708
+watchdog heartbeat attempt=local elapsed=0.6s remaining=4.4s pid=2708
+watchdog heartbeat attempt=local elapsed=0.8s remaining=4.2s pid=2708
+watchdog heartbeat attempt=local elapsed=1.0s remaining=4.0s pid=2708
+watchdog heartbeat attempt=local elapsed=1.2s remaining=3.8s pid=2708
+watchdog heartbeat attempt=local elapsed=1.4s remaining=3.6s pid=2708
+watchdog heartbeat attempt=local elapsed=1.6s remaining=3.4s pid=2708
+watchdog heartbeat attempt=local elapsed=1.8s remaining=3.2s pid=2708
+watchdog heartbeat attempt=local elapsed=2.0s remaining=3.0s pid=2708
+watchdog heartbeat attempt=local elapsed=2.2s remaining=2.8s pid=2708
+watchdog heartbeat attempt=local elapsed=2.4s remaining=2.6s pid=2708
+watchdog heartbeat attempt=local elapsed=2.6s remaining=2.4s pid=2708
+watchdog heartbeat attempt=local elapsed=2.8s remaining=2.2s pid=2708
+watchdog heartbeat attempt=local elapsed=3.0s remaining=2.0s pid=2708
+watchdog heartbeat attempt=local elapsed=3.2s remaining=1.8s pid=2708
+watchdog heartbeat attempt=local elapsed=3.4s remaining=1.6s pid=2708
+watchdog heartbeat attempt=local elapsed=3.6s remaining=1.4s pid=2708
+watchdog heartbeat attempt=local elapsed=3.8s remaining=1.2s pid=2708
+watchdog heartbeat attempt=local elapsed=4.0s remaining=1.0s pid=2708
+watchdog heartbeat attempt=local elapsed=4.2s remaining=0.8s pid=2708
+watchdog heartbeat attempt=local elapsed=4.4s remaining=0.6s pid=2708
+watchdog heartbeat attempt=local elapsed=4.6s remaining=0.4s pid=2708
+watchdog heartbeat attempt=local elapsed=4.8s remaining=0.2s pid=2708
+watchdog result classification=timeout elapsed=5.0s receipt=C:\Workspace\prj\jq\cashe\hydracache-074\target\windows-cleanup-gate-20261027\job-native-first\test_successful_root_leaving_writer_is_timeout_not_success\receipt.json

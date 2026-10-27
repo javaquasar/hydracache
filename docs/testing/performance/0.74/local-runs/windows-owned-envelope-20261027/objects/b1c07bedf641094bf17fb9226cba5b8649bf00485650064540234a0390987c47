@@ -1,0 +1,27 @@
+test_cleanup_failure_cannot_turn_zero_into_green (test_owned.Models.test_cleanup_failure_cannot_turn_zero_into_green) ... ok
+test_fixed_specs_preserve_distinct_original_budgets_and_environment (test_owned.Models.test_fixed_specs_preserve_distinct_original_budgets_and_environment) ... ok
+test_initial_floor_refuses_before_spawn (test_owned.Models.test_initial_floor_refuses_before_spawn) ... ok
+test_job_pin_failure_precedes_import (test_owned.Models.test_job_pin_failure_precedes_import) ... ok
+test_periodic_capacity_failure_keeps_five_second_schedule_and_retires (test_owned.Models.test_periodic_capacity_failure_keeps_five_second_schedule_and_retires) ... ok
+test_setup_failure_retires_already_retained_child (test_owned.Models.test_setup_failure_retires_already_retained_child) ... ok
+test_success_and_nonzero_require_original_job_retirement (test_owned.Models.test_success_and_nonzero_require_original_job_retirement) ... ok
+test_successful_leader_leaving_descendant_times_out (test_owned.Models.test_successful_leader_leaving_descendant_times_out) ... ok
+test_native_descendant_is_not_success (test_owned.Native.test_native_descendant_is_not_success) ... ok
+test_native_floor_never_spawns (test_owned.Native.test_native_floor_never_spawns) ... ok
+test_native_separate_binary_streams (test_owned.Native.test_native_separate_binary_streams) ... ok
+test_cli_has_no_execution_retry_timeout_or_filter_switch (test_prepare.Contracts.test_cli_has_no_execution_retry_timeout_or_filter_switch) ... ok
+test_first_refusal_and_raw_streams_are_retained_and_exclusive (test_prepare.Contracts.test_first_refusal_and_raw_streams_are_retained_and_exclusive) ... ok
+test_fixed_verify_and_source_helper_drift_refuses_before_import (test_prepare.Contracts.test_fixed_verify_and_source_helper_drift_refuses_before_import) ... ok
+test_metadata_reparse_entry_is_not_traversed (test_prepare.Contracts.test_metadata_reparse_entry_is_not_traversed) ... ok
+test_metadata_scan_does_not_read_contents_or_claim_growth (test_prepare.Contracts.test_metadata_scan_does_not_read_contents_or_claim_growth) ... ok
+test_original_complete_package_contract (test_prepare.Contracts.test_original_complete_package_contract) ... ok
+test_path_escape_refuses (test_prepare.Contracts.test_path_escape_refuses) ... ok
+test_sampled_floor_never_implies_growth_reservation (test_prepare.Contracts.test_sampled_floor_never_implies_growth_reservation) ... ok
+test_workspace_inventory_is_manifest_only (test_prepare.Contracts.test_workspace_inventory_is_manifest_only) ... ok
+test_workspace_is_not_replaced_by_package_or_new_budget (test_prepare.Contracts.test_workspace_is_not_replaced_by_package_or_new_budget) ... ok
+test_zero_access_metadata_query_and_missing_file_refusal (test_prepare.Contracts.test_zero_access_metadata_query_and_missing_file_refusal) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 2.860s
+
+OK

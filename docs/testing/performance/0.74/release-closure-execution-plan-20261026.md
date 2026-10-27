@@ -303,6 +303,20 @@ separate evidence. No deletion, system setting, service, foreign process or
 server operation occurs. Next restore resource headroom and review the owned
 Windows/whole-workspace execution envelope; do not extend deadlines or join results.
 
+The [owned Windows envelope follow-up](windows-owned-envelope-20261027.md)
+then observes resource recovery before its cleanup attempt. Three exact old-cache
+targets total 8.12 GiB logical, with no tracked files/reparse entries or observed
+active target consumer; native deletion is rejected by tool policy before process
+creation. No deletion or bypass occurs, and all three caches remain present.
+Fresh preflight on the clean tool commit observes about 75.26 GiB free and keeps
+all source/environment guards exact. A private no-CLI owned-Job prototype passes
+its complete 24-case focused command; the six existing native CI Job fault cases
+also pass independently. First model timestamp-exhaustion errors, corrected
+source, native streams and cleanup refusal remain separate evidence. No Cargo
+gate is dispatched. Next bind/review the fixed worker and full target accounting;
+restored capacity and synthetic Job retirement do not admit product execution,
+waive security or change 780/4800-second, 16/4-GiB or 300/60/10 contracts.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\xtask.exe",
+    "doc-check"
+  ],
+  "diagnostic_bound_seconds": 180,
+  "foreign_process_stops": false,
+  "head": "624cf170667c5da1c6ed01d38c72de516687c089",
+  "heavy_gate": false,
+  "server": false,
+  "source": {
+    "tools/windows-workspace-preflight-074/.gitattributes": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+    "tools/windows-workspace-preflight-074/README.md": "78dfcddcc753ada3e8feff06ea5c9d5f27564ef28ae4a80f074aafc4cc3bed1e",
+    "tools/windows-workspace-preflight-074/metadata.py": "9dbf4ce5277c1de56ab48d71ab24045f1b50d93c095c99cecd589d63a8b2b4cf",
+    "tools/windows-workspace-preflight-074/owned.py": "0514fb8cce6920447054a7d357bd0ecce16f7027b0d6da8df8a629140c725357",
+    "tools/windows-workspace-preflight-074/prepare.py": "564d69cfebeb996042aa34ae3cf26a18dc129a0f1e464576b3aebaf3cbdf06a6",
+    "tools/windows-workspace-preflight-074/storage.py": "aedfad1efcaae5197c15f6ecb551d88f9aaf5c89e87825e7378ef880c7a097e3",
+    "tools/windows-workspace-preflight-074/test_owned.py": "03a9e10cb43f9f542d123ceb3e43e6a9a3c47f3973d1451006fac387115efa59",
+    "tools/windows-workspace-preflight-074/test_prepare.py": "ef290a89a2b64aa65c5a27de9029b551c30f825ef732857898c0874f8719e110"
+  },
+  "utc": "2026-10-27T16:31:20.411534+00:00"
+}

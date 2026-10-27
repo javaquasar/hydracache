@@ -1,0 +1,93 @@
+"""Seal own local data, without importing or executing archived inputs."""
+from pathlib import Path
+import hashlib,json,subprocess,tempfile
+
+root=Path(__file__).resolve().parent.parent
+base=root/'target/windows-cleanup-gate-20261027'
+out=root/'docs/testing/performance/0.74/local-runs/windows-owned-envelope-20261027'
+assert not out.exists()
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def read(name):return json.loads((base/name).read_bytes())
+phases=('envelope-model-corrected','envelope-final','job-native-first','preparation-first','preparation-clean','syntax','doc-check')
+for phase in phases:
+    result=read(phase+'-capture/result.json')
+    assert result['exit']==0 and result['source_unchanged'] and result['head_unchanged'],phase
+first=read('envelope-first-capture/result.json')
+assert first['exit']==1 and first['source_unchanged'] and first['head_unchanged']
+assert b'Ran 22 tests' in (base/'envelope-first-capture/stderr.log').read_bytes()
+assert b'FAILED (errors=2)' in (base/'envelope-first-capture/stderr.log').read_bytes()
+assert b'Ran 24 tests' in (base/'envelope-final-capture/stderr.log').read_bytes()
+initial=(base/'envelope-first-capture/source/owned.py').read_bytes()
+assert initial==(root/'tools/windows-workspace-preflight-074/owned.py').read_bytes()
+for phase in ('envelope-first','envelope-model-corrected','envelope-final'):
+    values=read(phase+'-capture/result.json')['source_after']
+    for name,digest in values.items():
+        assert sha((base/(phase+'-capture/source')/Path(name).name).read_bytes())==digest
+audit=read('cache-audit/result.json')
+assert audit['source_head']=='1371413dbd91c52805946f33e2a8d31bae7b4b44'
+assert not audit['delete_executed'] and not audit['git_status'] and not audit['active_consumers']
+assert sum(row['logical_bytes'] for row in audit['candidates'])==8717644756
+assert sum(row['files'] for row in audit['candidates'])==4794
+assert all(not row['tracked_files'] and row['reparse_entries']==0 for row in audit['candidates'])
+assert all(read('resource-post/caches-still-present.json').values())
+assert read('cleanup-tool-refusal.json')['process_started'] is False
+prepared=read('preparation-clean/result.json')
+assert prepared['head']=='624cf170667c5da1c6ed01d38c72de516687c089'
+assert prepared['source_worktree_clean'] and prepared['source_only_review_complete']
+assert not any(prepared[k] for k in ('gate_dispatched','launch_ready','windows_package_pass','workspace_pass','release_admitted'))
+capacity=read('preparation-clean/capacity.json')
+assert capacity['original_workspace_start_satisfied'] and capacity['original_floor_satisfied']
+assert capacity['original_workspace_start_bytes']==17179869184 and capacity['original_floor_bytes']==4294967296
+assert len(read('preparation-clean/workspace-members.json'))==36
+review=read('preparation-clean/source-review.json')
+assert (review['sources'],review['auxiliary'],review['sites'],len(review['targets']))==(394,58,26832,156)
+assert read('resource-post/memory.json')['exit']==0
+assert len(list((base/'job-native-first').glob('*/result.json')))==6
+for path in (base/'job-native-first').glob('*/result.json'):assert json.loads(path.read_bytes())['pass']
+assert sha((root/'scripts/ci/watchdog_windows_job.py').read_bytes())=='8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1'
+assert sha((root/'Cargo.lock').read_bytes())=='e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5'
+assert sha((root/'docs/testing/performance/0.74/qualification-manifest.toml').read_bytes())=='11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
+(out/'objects').mkdir(parents=True)
+members={}
+def add(name,path):
+    assert path.is_file() and not path.is_symlink() and not path.is_junction()
+    raw=path.read_bytes();digest=sha(raw);obj=out/'objects'/digest
+    if obj.exists():assert obj.read_bytes()==raw
+    else:
+        with obj.open('xb') as stream:stream.write(raw)
+    assert name not in members
+    members[name]=dict(sha256=digest,bytes=len(raw))
+for path in sorted(base.rglob('*')):
+    if path.is_file():add('capture/'+path.relative_to(base).as_posix(),path)
+for path in sorted((root/'tools/windows-workspace-preflight-074').iterdir()):
+    if path.is_file():add('source/current/'+path.name,path)
+for phase in ('envelope-first','envelope-model-corrected','envelope-final'):
+    count=0
+    for line in (base/(phase+'-capture/stdout.log')).read_text().splitlines():
+        assert line.startswith('retained-fixture ')
+        folder=Path(line.removeprefix('retained-fixture ')).resolve(strict=True)
+        assert folder.is_relative_to(Path(tempfile.gettempdir()).resolve())
+        assert folder.name.startswith('hc074-owned-envelope-')
+        result=json.loads((folder/'result.json').read_bytes())
+        assert result['retired']
+        for path in folder.iterdir():
+            if path.is_file():add('fixture/'+phase+'/'+str(count)+'/'+path.name,path)
+        count+=1
+    assert count==3
+for name in ('record-cleanup-gate-20261027.py','retain-first-envelope-sources-20261027.py',
+             'verify-owned-stage-20261027.py','capture-cleanup-resource-post-20261027.py',
+             'audit-old-build-caches-20261027.ps1','seal-windows-owned-envelope-20261027.py'):
+    add('helper/'+name,root/'target'/name)
+for name in ('scripts/ci/watchdog_windows_job.py','scripts/ci/test_watchdog_windows_074.py'):
+    add('unchanged-ci/'+Path(name).name,root/name)
+index=dict(schema='hc074-local-evidence-collection-v1',members=members,
+    tool_commit=prepared['head'],archived_code_executed=False,preparation_only=True,
+    deleted_bytes=0,deletion_executed=False,policy_bypass=False,
+    first_focused_exit=1,final_focused_passed=24,separate_native_ci_passed=6,
+    heavy_gate_dispatched=False,windows_package_pass=False,workspace_pass=False,release_admitted=False)
+raw=(json.dumps(index,indent=2,sort_keys=True)+'\n').encode()
+with (out/'index.json').open('xb') as stream:stream.write(raw)
+with (out/'.gitattributes').open('x',encoding='utf-8',newline='\n') as stream:
+    stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+print(json.dumps(dict(index_sha256=sha(raw),members=len(members),objects=len(list((out/'objects').iterdir())),
+    deleted_bytes=0,gate_dispatched=False)))

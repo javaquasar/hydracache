@@ -1,0 +1,49 @@
+from datetime import datetime,timezone
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import sys
+
+root=Path(__file__).resolve().parent.parent
+label=sys.argv[1]
+base=root/'target/windows-cleanup-gate-20261027'
+commands={
+    'envelope-first':[sys.executable,'-B','-m','unittest','discover','-s','tools/windows-workspace-preflight-074','-p','test_*.py','-v'],
+    'envelope-model-corrected':[sys.executable,'-B','-m','unittest','discover','-s','tools/windows-workspace-preflight-074','-p','test_*.py','-v'],
+    'envelope-final':[sys.executable,'-B','-m','unittest','discover','-s','tools/windows-workspace-preflight-074','-p','test_*.py','-v'],
+    'preparation-clean':[sys.executable,'-B','tools/windows-workspace-preflight-074/prepare.py',str(base/'preparation-clean')],
+    'syntax':[sys.executable,'-B','-c',"import ast,pathlib,json; files=sorted(pathlib.Path('tools/windows-workspace-preflight-074').glob('*.py'));[ast.parse(p.read_bytes(),filename=str(p)) for p in files];print(json.dumps({'parsed':len(files),'gate_dispatched':False}))"],
+    'job-native-first':[sys.executable,'-B','scripts/ci/test_watchdog_windows_074.py','--evidence-dir',str(base/'job-native-first')],
+    'preparation-first':[sys.executable,'-B','tools/windows-workspace-preflight-074/prepare.py',str(base/'preparation-first')],
+    'doc-check':[str(root/'target/debug/xtask.exe'),'doc-check'],
+}
+out=base/(label+'-capture')
+out.mkdir(parents=True,exist_ok=False)
+def write(name,value):
+    with (out/name).open('x',encoding='utf-8',newline='\n') as stream:
+        json.dump(value,stream,indent=2,sort_keys=True);stream.write('\n')
+def snapshot():
+    return {p.relative_to(root).as_posix():hashlib.sha256(p.read_bytes()).hexdigest()
+        for p in sorted((root/'tools/windows-workspace-preflight-074').iterdir()) if p.is_file()}
+before=snapshot()
+head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,timeout=10).decode().strip()
+write('intent.json',dict(utc=datetime.now(timezone.utc).isoformat(),argv=commands[label],source=before,
+    head=head,diagnostic_bound_seconds=180,heavy_gate=False,server=False,foreign_process_stops=False))
+(out/'source').mkdir()
+for name,digest in before.items():
+    raw=(root/name).read_bytes()
+    assert hashlib.sha256(raw).hexdigest()==digest
+    with (out/'source'/Path(name).name).open('xb') as stream:stream.write(raw)
+with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+    try:
+        if label=='doc-check':
+            assert hashlib.sha256((root/'target/debug/xtask.exe').read_bytes()).hexdigest()=='80a24427ad0e6ae4259952472061324eda32a405d4146941fae24c9554f7e8c6'
+        process=subprocess.run(commands[label],cwd=root,stdout=stdout,stderr=stderr,stdin=subprocess.DEVNULL,timeout=180,check=False)
+        after=snapshot()
+        write('result.json',dict(exit=process.returncode,source_unchanged=before==after,source_after=after,
+            head_unchanged=head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,timeout=10).decode().strip(),heavy_gate=False))
+        print(json.dumps(dict(label=label,exit=process.returncode,source_unchanged=before==after)))
+    except BaseException as error:
+        write('refusal.json',dict(type=type(error).__name__,reason=str(error)))
+        raise

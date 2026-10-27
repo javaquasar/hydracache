@@ -1,0 +1,170 @@
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+import unittest
+from unittest.mock import patch
+
+import owned
+import prepare
+
+
+class Child:
+    def __init__(self, group, code): self.group, self.code = group, code
+    def poll(self): return self.code
+    def wait(self, timeout):
+        if not self.group.empty: raise AssertionError('wait before Job empty')
+    def close(self): self.group.child_closed = True
+
+
+class Group:
+    def __init__(self, code, descendant=False):
+        self.code, self.empty = code, code is not None and not descendant
+        self.child, self.closed, self.child_closed, self.terminated = None, False, False, False
+    def spawn(self, *args):
+        self.child = Child(self, self.code)
+        return self.child
+    def is_empty(self): return self.empty
+    def terminate(self): self.terminated, self.empty = True, True
+    def close(self): self.closed = True
+
+
+class Models(unittest.TestCase):
+    def test_fixed_specs_preserve_distinct_original_budgets_and_environment(self):
+        package, workspace = owned.specification('package'), owned.specification('workspace')
+        self.assertEqual(package['argv'], prepare.contract()['package']['argv'])
+        self.assertEqual(workspace['argv'], ['cargo','xtask','verify'])
+        self.assertEqual((package['bound_seconds'], workspace['bound_seconds']), (780,4800))
+        self.assertEqual((package['start_free_bytes'], workspace['start_free_bytes']), (4*1024**3,16*1024**3))
+        self.assertEqual(package['environment'], {'CARGO_INCREMENTAL':'0','CARGO_BUILD_JOBS':'2'})
+        self.assertEqual(workspace['environment'], {'CARGO_INCREMENTAL':'0'})
+        for row in (package,workspace):
+            self.assertEqual((row['cleanup_seconds'],row['capacity_poll_seconds']), (5,5))
+            self.assertFalse(row['retry'])
+        with self.assertRaises(ValueError): owned.specification('unknown')
+
+    def test_success_and_nonzero_require_original_job_retirement(self):
+        for code in (0,101):
+            group=Group(code)
+            result=owned._owned(group,['synthetic'],None,lambda:None,bound=780,now=lambda:0)
+            self.assertEqual(result['exit'],code)
+            self.assertTrue(result['retired'] and group.closed and group.child_closed)
+            self.assertFalse(result['production_writer_authority'])
+
+    def test_successful_leader_leaving_descendant_times_out(self):
+        group=Group(0,descendant=True)
+        ticks=iter([0,0,0,0,781,781,781,781,781])
+        result=owned._owned(group,['synthetic'],None,lambda:None,bound=780,
+            now=lambda:next(ticks),pause=lambda _:None)
+        self.assertEqual((result['classification'],result['exit']),('timeout',124))
+        self.assertTrue(group.terminated and result['retired'])
+
+    def test_initial_floor_refuses_before_spawn(self):
+        group=Group(None)
+        def floor(): raise owned.CapacityError('original floor')
+        result=owned._owned(group,['never'],None,floor,bound=780,now=lambda:0)
+        self.assertIsNone(group.child)
+        self.assertEqual(result['classification'],'resource-floor')
+        self.assertTrue(group.closed and result['retired'])
+
+    def test_setup_failure_retires_already_retained_child(self):
+        group=Group(None)
+        def refuse(*_):
+            group.child=Child(group,None)
+            raise RuntimeError('post-create')
+        group.spawn=refuse
+        result=owned._owned(group,['never-resume'],None,lambda:None,bound=780,now=lambda:0)
+        self.assertEqual(result['exit'],125)
+        self.assertTrue(group.terminated and group.child_closed and result['retired'])
+
+    def test_periodic_capacity_failure_keeps_five_second_schedule_and_retires(self):
+        group=Group(None)
+        ticks=iter([0,6,6,6,6])
+        calls=[]
+        def capacity():
+            calls.append(True)
+            if len(calls)==2: raise owned.CapacityError('sampled floor')
+        result=owned._owned(group,['synthetic'],None,capacity,bound=780,
+            now=lambda:next(ticks),pause=lambda _:None)
+        self.assertEqual(len(calls),2)
+        self.assertEqual(result['classification'],'resource-floor')
+        self.assertTrue(group.terminated and result['retired'])
+
+    def test_cleanup_failure_cannot_turn_zero_into_green(self):
+        group=Group(0)
+        def refuse(): raise RuntimeError('close failure')
+        group.close=refuse
+        result=owned._owned(group,['synthetic'],None,lambda:None,bound=780,now=lambda:0)
+        self.assertEqual((result['classification'],result['exit']),('runner-loss',125))
+
+    def test_job_pin_failure_precedes_import(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(owned.importlib.util,'spec_from_file_location') as imported:
+            root=Path(folder)
+            path=root/'scripts/ci/watchdog_windows_job.py'
+            path.parent.mkdir(parents=True)
+            path.write_bytes(b'not approved')
+            with self.assertRaises(ValueError): owned.load_job(root)
+            imported.assert_not_called()
+
+
+def fixture(mode):
+    job=owned.load_job().WindowsJob()
+    if mode=='streams':
+        argv=[sys.executable,'-c',"import sys;sys.stdout.buffer.write(b'out\\x00\\xff');sys.stderr.buffer.write(b'err\\x00\\xfe')"]
+        bound=3
+        capacity=lambda:None
+    elif mode=='tree':
+        argv=[sys.executable,'-c',"import subprocess,sys;subprocess.Popen([sys.executable,'-c','import time;time.sleep(4)']);print('child-created',flush=True)"]
+        bound=1
+        capacity=lambda:None
+    elif mode=='floor':
+        argv=[sys.executable,'-c','raise AssertionError("must not spawn")']
+        bound=3
+        def capacity(): raise owned.CapacityError('synthetic floor')
+    else:
+        raise ValueError('fixed synthetic fixture only')
+    result=owned._owned(job,argv,None,capacity,bound=bound)
+    with Path(sys.argv[3]).open('x',encoding='utf-8') as stream: json.dump(result,stream)
+
+
+@unittest.skipUnless(os.name=='nt','Windows native Job controls')
+class Native(unittest.TestCase):
+    def run_fixture(self,mode):
+        folder=Path(tempfile.mkdtemp(prefix='hc074-owned-envelope-'))
+        # Preserve first outputs even if this fixture fails; no auto-retry or cleanup deletion.
+        result=folder/'result.json'
+        with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+            process=subprocess.run([sys.executable,'-B',str(Path(__file__)), 'fixture',mode,str(result)],
+                stdout=stdout,stderr=stderr,stdin=subprocess.DEVNULL,timeout=10,check=False)
+        print('retained-fixture '+str(folder),flush=True)
+        self.assertEqual(process.returncode,0,(folder/'stderr.log').read_bytes())
+        return folder,json.loads(result.read_bytes())
+
+    def test_native_separate_binary_streams(self):
+        folder,result=self.run_fixture('streams')
+        self.assertEqual(result['classification'],'success')
+        self.assertTrue(result['retired'])
+        self.assertEqual((folder/'stdout.log').read_bytes(),b'out\x00\xff')
+        self.assertEqual((folder/'stderr.log').read_bytes(),b'err\x00\xfe')
+
+    def test_native_descendant_is_not_success(self):
+        folder,result=self.run_fixture('tree')
+        self.assertEqual((result['classification'],result['exit']),('timeout',124))
+        self.assertEqual(result['observed_child_exit'],0)
+        self.assertEqual((folder/'stdout.log').read_bytes(),b'child-created\r\n')
+        self.assertTrue(result['retired'])
+
+    def test_native_floor_never_spawns(self):
+        folder,result=self.run_fixture('floor')
+        self.assertEqual(result['classification'],'resource-floor')
+        self.assertIsNone(result['observed_child_exit'])
+        self.assertTrue(result['retired'])
+        self.assertEqual((folder/'stdout.log').read_bytes(),b'')
+        self.assertEqual((folder/'stderr.log').read_bytes(),b'')
+
+
+if __name__=='__main__':
+    if len(sys.argv)==4 and sys.argv[1]=='fixture': fixture(sys.argv[2])
+    else: unittest.main()

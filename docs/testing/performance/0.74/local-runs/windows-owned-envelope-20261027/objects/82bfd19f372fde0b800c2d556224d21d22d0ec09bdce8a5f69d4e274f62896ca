@@ -1,0 +1,18 @@
+{
+  "contract_prepared": true,
+  "gate_dispatched": false,
+  "head": "624cf170667c5da1c6ed01d38c72de516687c089",
+  "launch_ready": false,
+  "release_admitted": false,
+  "remaining": [
+    "fresh clean source/environment and owned Windows containment gate",
+    "establish build and pagefile headroom without changing settings or foreign processes",
+    "review owned whole-verify envelope at original captured 4800s, 16 GiB start, 4 GiB floor",
+    "one distinct full Windows command, then complete workspace verify; retain first outcomes"
+  ],
+  "source_only_review_complete": true,
+  "source_worktree_clean": true,
+  "utc": "2026-10-27T16:27:39.313357+00:00",
+  "windows_package_pass": false,
+  "workspace_pass": false
+}

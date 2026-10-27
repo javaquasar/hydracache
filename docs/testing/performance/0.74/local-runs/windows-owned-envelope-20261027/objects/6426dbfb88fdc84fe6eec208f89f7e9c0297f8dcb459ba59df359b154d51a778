@@ -1,0 +1,51 @@
+$ErrorActionPreference = 'Stop'
+$workspace = 'C:\Workspace\prj\jq\cashe\hydracache-074'
+$output = Join-Path $workspace 'target\windows-cleanup-gate-20261027\cache-audit'
+if (Test-Path -LiteralPath $output) { throw 'Consumed audit directory' }
+New-Item -ItemType Directory -Path $output | Out-Null
+$candidates = @(
+    'C:\Workspace\prj\jq\cashe\hydracache-074\target\debug\incremental',
+    'C:\Workspace\prj\jq\cashe\hydracache-074\target\xtask-verify-39960\debug\deps',
+    'C:\Workspace\prj\jq\cashe\hydracache-074\target\security-patch-msrv188\debug\deps'
+)
+try {
+    $rows = foreach ($candidate in $candidates) {
+        $resolved = (Resolve-Path -LiteralPath $candidate).ProviderPath
+        if ($resolved -cne $candidate -or -not $resolved.StartsWith($workspace + '\target\', [StringComparison]::OrdinalIgnoreCase)) {
+            throw 'Unexpected absolute cleanup target'
+        }
+        $cursor = Get-Item -LiteralPath $resolved -Force
+        while ($cursor.FullName.Length -ge $workspace.Length) {
+            if ($cursor.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Reparse ancestor' }
+            $cursor = $cursor.Parent
+        }
+        $entries = @(Get-ChildItem -LiteralPath $resolved -Recurse -Force)
+        if (@($entries | Where-Object {$_.Attributes -band [IO.FileAttributes]::ReparsePoint}).Count) { throw 'Reparse entry' }
+        $files = @($entries | Where-Object {-not $_.PSIsContainer})
+        $tracked = @(& git -C $workspace ls-files -- $candidate)
+        if ($LASTEXITCODE -ne 0 -or $tracked.Count) { throw 'Tracked cleanup input or failed Git check' }
+        [pscustomobject]@{
+            path=$resolved;files=$files.Count;logical_bytes=($files | Measure-Object Length -Sum).Sum
+            newest_utc=($files | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1).LastWriteTimeUtc
+            extensions=@($files | Group-Object Extension | Select-Object Name,Count)
+            tracked_files=$tracked;reparse_entries=0
+        }
+    }
+    $consumers = @(Get-CimInstance Win32_Process | Where-Object {
+        $exe = $_.ExecutablePath
+        $cmd = $_.CommandLine
+        ($_.Name -match '^(cargo|rustc|rustdoc|clippy-driver|link|lld-link)(\.exe)?$') -or
+        ($exe -and $exe.StartsWith($workspace + '\target\', [StringComparison]::OrdinalIgnoreCase)) -or
+        ($cmd -and @($candidates | Where-Object {$cmd.IndexOf($_,[StringComparison]::OrdinalIgnoreCase) -ge 0}).Count)
+    } | Select-Object ProcessId,Name,ExecutablePath,CreationDate)
+    if ($consumers.Count) { throw 'Active build or target consumer; no deletion authorized by this audit' }
+    [pscustomobject]@{utc=[DateTime]::UtcNow.ToString('o');candidates=$rows;active_consumers=$consumers;
+        volume=(Get-Volume -DriveLetter C | Select-Object SizeRemaining,Size);delete_executed=$false;
+        source_head=(& git -C $workspace rev-parse HEAD);git_status=@(& git -C $workspace status --porcelain)
+    } | ConvertTo-Json -Depth 7 | Set-Content -LiteralPath (Join-Path $output 'result.json') -Encoding utf8
+    $rows | Select-Object path,files,logical_bytes,newest_utc | ConvertTo-Json -Compress
+} catch {
+    [pscustomobject]@{error=$_.Exception.Message;delete_executed=$false} | ConvertTo-Json |
+        Set-Content -LiteralPath (Join-Path $output 'refusal.json') -Encoding utf8
+    throw
+}
