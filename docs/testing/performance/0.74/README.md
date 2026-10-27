@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [2026-10-28 eleven-advisory review](security-review-20261028.md) applies the
+compatible zstd-sys 2.1.2 patch under unchanged Rust 1.88 and deny policy. Four
+stable-source archive cases, check/Clippy/MSRV, 49 runner controls and five native
+allocator semantic controls pass. The exact successor full workspace command
+completes eleven stages, then refuses ten remaining security findings; nine
+stages stay unstarted. First results and full streams are retained. D-Bus/MSRV,
+YAML parser, Swagger/ZIP extraction/assets and chitchat compression migrations
+remain separate blockers; this is not release/server admission. Historical
+reports below keep their original graph and execution scope.
+
 The [exact security-input integration](security-input-view-result-20261026.md)
 now connects whole pinned successor bodies to unchanged preservation assertions.
 The old OIDC lock case, fourteen manager guards, fifteen adapter/history cases

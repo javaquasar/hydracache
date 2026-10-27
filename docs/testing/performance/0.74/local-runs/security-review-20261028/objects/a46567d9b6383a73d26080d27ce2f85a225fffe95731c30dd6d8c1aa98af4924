@@ -1,0 +1,40 @@
+"""Checksum primary release archives and retain source as data before any build."""
+from pathlib import Path
+import hashlib,io,json,tarfile,urllib.request
+root=Path(__file__).resolve().parent.parent
+catalog=json.loads((root/'target/security-review-20261028/catalog-first/result.json').read_bytes())['packages']
+out=root/'target/security-review-20261028/upstream-first'
+out.mkdir(exist_ok=False)
+cases=[('zstd-sys','2.0.16+zstd.1.5.7'),('zstd-sys','2.1.2+zstd.1.5.7'),
+       ('zstd','0.13.3'),('zstd','0.14.3'),('zstd-safe','8.2.0'),
+       ('utoipa-swagger-ui','9.0.2'),('utoipa-swagger-ui','10.0.2'),('zip','9.0.0')]
+records={}
+try:
+    for name,version in cases:
+        raw_index=(root/'target/security-review-20261028/catalog-first'/(name+'.index')).read_bytes()
+        rows=[json.loads(line) for line in raw_index.splitlines()]
+        metadata=next(row for row in rows if row['vers']==version)
+        url='https://static.crates.io/crates/'+name+'/'+name+'-'+version+'.crate'
+        with urllib.request.urlopen(url,timeout=45) as response:raw=response.read()
+        assert hashlib.sha256(raw).hexdigest()==metadata['cksum'] and not metadata['yanked']
+        folder=out/(name+'-'+version)
+        folder.mkdir()
+        with (folder/'source.crate').open('xb') as stream:stream.write(raw)
+        members={}
+        with tarfile.open(fileobj=io.BytesIO(raw),mode='r:gz') as archive:
+            for member in archive.getmembers():
+                if not member.isfile():continue
+                relative=Path(member.name).relative_to(name+'-'+version)
+                assert '..' not in relative.parts
+                if relative.suffix not in ('.rs','.toml','.md','.c','.h') or member.size>16*1024**2:continue
+                data=archive.extractfile(member).read()
+                path=folder/'review-source'/relative
+                path.parent.mkdir(parents=True,exist_ok=True)
+                with path.open('xb') as stream:stream.write(data)
+                members[relative.as_posix()]=dict(bytes=len(data),sha256=hashlib.sha256(data).hexdigest())
+        records[name+'@'+version]=dict(url=url,checksum=metadata['cksum'],rust_version=metadata.get('rust_version'),members=members)
+        print(json.dumps(dict(package=name,version=version,rust_version=metadata.get('rust_version'),files=len(members))),flush=True)
+    with (out/'result.json').open('x',encoding='utf-8') as stream:json.dump(dict(releases=records,source_only=True,archived_code_executed=False),stream,indent=2,sort_keys=True)
+except BaseException as error:
+    with (out/'refusal.json').open('x',encoding='utf-8') as stream:json.dump(dict(type=type(error).__name__,reason=str(error)),stream)
+    raise

@@ -1,0 +1,83 @@
+"""Independent inert packet checks; never import archive code or replay Cargo."""
+from pathlib import Path
+import contextlib,hashlib,json,re,subprocess,traceback,tomllib
+ROOT=Path(__file__).resolve().parent.parent
+PACKET=ROOT/'docs/testing/performance/0.74/local-runs/security-review-20261028'
+OUT=ROOT/'target/security-review-verification-20261028'
+OUT.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(OUT/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n')
+write('intent.json',dict(source_sha256=sha(Path(__file__).read_bytes()),no_cargo=True,
+ archived_code_executed=False,packet_index_sha256='ec37fd3b0087032b44a417360dc7531e6251ee2e36e61a868283aaca9a76f1be'))
+with (OUT/'stdout.log').open('x',encoding='utf-8') as stdout,(OUT/'stderr.log').open('x',encoding='utf-8') as stderr,contextlib.redirect_stdout(stdout),contextlib.redirect_stderr(stderr):
+ try:
+  raw=(PACKET/'index.json').read_bytes()
+  assert sha(raw)=='ec37fd3b0087032b44a417360dc7531e6251ee2e36e61a868283aaca9a76f1be'
+  index=json.loads(raw)
+  objects=set()
+  for name,row in index['members'].items():
+   assert re.fullmatch('[0-9a-f]{64}',row['sha256']) and '..' not in Path(name).parts
+   path=PACKET/'objects'/row['sha256']
+   assert path.is_file() and not path.is_symlink() and not path.is_junction()
+   blob=path.read_bytes()
+   assert len(blob)==row['bytes'] and sha(blob)==row['sha256']
+   objects.add(row['sha256'])
+  assert {p.name for p in (PACKET/'objects').iterdir()}==objects
+  def member(name):return (PACKET/'objects'/index['members'][name]['sha256']).read_bytes()
+  def document(name):return json.loads(member(name))
+  before=document('capture/workspace/frame-before.json')
+  assert before==document('capture/workspace/frame-after.json')
+  assert before['head']==index['source_commit']=='58a994a4c79fd5e8dd2fa622bcd57bbf640ff2df'
+  for name,digest in before['helpers'].items():
+   key='source/current/'+(Path(name).name if name.startswith('tools/windows-workspace-preflight-074/') else name)
+   body=member(key)
+   assert sha(body)==digest
+   expected=subprocess.check_output(['git','--no-replace-objects','show',index['source_commit']+':'+name],cwd=ROOT,timeout=10)
+   assert body.replace(b'\r\n',b'\n')==expected.replace(b'\r\n',b'\n')
+  controller=document('capture/workspace/controller.json')
+  assert sha(member('capture/workspace/request.json'))==controller['request_sha256']
+  assert controller['execution']['retired'] and not controller['execution']['errors']
+  assert controller['execution']['exit']==1 and controller['execution']['bound_seconds']==4800
+  assert controller['execution']['cleanup_seconds']==5
+  assert controller['specification']['argv']==['cargo','xtask','verify']
+  assert controller['specification']['start_free_bytes']==16*1024**3
+  assert controller['specification']['floor_bytes']==4*1024**3
+  ledger=document('capture/workspace/accounting.json')
+  assert [r['state'] for r in ledger['stages']]==['complete']*11+['incomplete-or-failed']+['unstarted']*9
+  assert not ledger['workspace_pass'] and not ledger['complete'] and not ledger['targets']
+  diagnostics=member('capture/workspace/stderr.log').decode()
+  identifiers=sorted(set(re.findall(r'RUSTSEC-\d{4}-\d{4}',diagnostics)))
+  assert len(identifiers)==10 and identifiers==index['remaining']
+  assert 'RUSTSEC-2026-0410' not in diagnostics
+  advisories=document('capture/review-db-first/result.json')['advisories']
+  assert len(advisories)==11
+  for identifier,row in advisories.items():
+   body=member('capture/review-db-first/'+identifier+'.md')
+   parsed=tomllib.loads(body.decode().split('```toml\n',1)[1].split('```',1)[0])
+   assert parsed['advisory']['id']==identifier and sha(body)==row['sha256']
+  current=member('source/current/Cargo.lock').replace(b'\r\n',b'\n')
+  previous=member('capture/resolve-sys/before-Cargo.lock').replace(b'\r\n',b'\n')
+  def graph(raw):return {p['name']+'@'+p['version']:p for p in tomllib.loads(raw.decode())['package']}
+  a,b=graph(previous),graph(current)
+  assert a.keys()-b.keys()=={'zstd-sys@2.0.16+zstd.1.5.7'}
+  assert b.keys()-a.keys()=={'zstd-sys@2.1.2+zstd.1.5.7'}
+  assert all(a[k]==b[k] for k in a.keys()&b.keys())
+  assert sha(current)=='50ec8e7e20a8caebeefdbdde7bbafb36b96257daf1204dcd6dfa8f6c5b7c925a'
+  assert member('source/current/Cargo.toml')==member('capture/baseline-archive/before-Cargo.toml')
+  assert member('source/current/deny.toml')==member('capture/baseline-archive/before-deny.toml')
+  assert document('capture/postflight/result.json')['same_revision_as_review_preflight']
+  assert b'Ran 49 tests' in member('capture/controls/stderr.log')
+  assert b'5 passed; 0 failed;' in member('capture/shim-test/stdout.log')
+  assert b'4 passed; 0 failed;' in member('capture/patched-archive-successor/stdout.log')
+  assert document('capture/patched-archive-successor/result.json')['source_unchanged']
+  assert not document('capture/patched-archive/result.json')['source_unchanged']
+  result=dict(pass_=True,members=len(index['members']),objects=len(objects),
+   source_commit=index['source_commit'],reviewed_advisories=11,remaining_advisories=10,
+   gate_replayed=False,archived_code_executed=False,workspace_pass=False,release_admitted=False)
+  write('result.json',result)
+  print(json.dumps(result,sort_keys=True))
+ except BaseException as error:
+  write('refusal.json',dict(type=type(error).__name__,reason=str(error),gate_replayed=False))
+  traceback.print_exc()
+  raise
+print(json.dumps(dict(verified=True,members=len(index['members']),objects=len(objects))))

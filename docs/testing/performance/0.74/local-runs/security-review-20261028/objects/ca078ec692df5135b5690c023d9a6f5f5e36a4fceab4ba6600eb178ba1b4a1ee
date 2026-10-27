@@ -1,0 +1,48 @@
+zstd-sys v2.0.16+zstd.1.5.7
+└── zstd-safe v7.2.4
+    └── zstd v0.13.3
+        ├── chitchat v0.11.1
+        │   ├── hydracache-cluster-chitchat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-chitchat)
+        │   │   ├── hydracache-cluster v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster)
+        │   │   │   [dev-dependencies]
+        │   │   │   └── hydracache-post-publish-consumer v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tests\post-publish-consumer)
+        │   │   ├── hydracache-sandbox v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sandbox)
+        │   │   └── hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server)
+        │   │       └── hydracache-fuzz v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\fuzz)
+        │   │   [dev-dependencies]
+        │   │   ├── hydracache-cluster-raft v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-raft)
+        │   │   │   ├── hydracache-cluster v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster) (*)
+        │   │   │   ├── hydracache-cluster-testkit v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-testkit)
+        │   │   │   │   [dev-dependencies]
+        │   │   │   │   ├── hydracache-client-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-transport-axum)
+        │   │   │   │   │   ├── hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+        │   │   │   │   │   │   └── xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+        │   │   │   │   │   ├── hydracache-redis-compat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-redis-compat)
+        │   │   │   │   │   │   ├── hydracache-fuzz v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\fuzz)
+        │   │   │   │   │   │   ├── hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen) (*)
+        │   │   │   │   │   │   └── hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server) (*)
+        │   │   │   │   │   └── hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server) (*)
+        │   │   │   │   │   [dev-dependencies]
+        │   │   │   │   │   └── hydracache-client v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client)
+        │   │   │   │   ├── hydracache-cluster-raft v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-raft) (*)
+        │   │   │   │   ├── hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server) (*)
+        │   │   │   │   └── hydracache-sim v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sim)
+        │   │   │   │       ├── hydracache-sandbox v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sandbox)
+        │   │   │   │       └── hydracache-sim-wasm v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sim-wasm)
+        │   │   │   │       [dev-dependencies]
+        │   │   │   │       └── hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server) (*)
+        │   │   │   ├── hydracache-fuzz v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\fuzz)
+        │   │   │   ├── hydracache-sandbox v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sandbox)
+        │   │   │   ├── hydracache-server v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-server) (*)
+        │   │   │   └── hydracache-sim v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sim) (*)
+        │   │   │   [dev-dependencies]
+        │   │   │   └── hydracache-post-publish-consumer v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tests\post-publish-consumer)
+        │   │   └── hydracache-post-publish-consumer v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tests\post-publish-consumer)
+        │   ├── hydracache-cluster-testkit v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-testkit) (*)
+        │   └── hydracache-sandbox v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sandbox)
+        │   [dev-dependencies]
+        │   └── hydracache-cluster-raft v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-raft) (*)
+        └── hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+            └── hydracache-performance-integrated-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\performance-integrated-074)
+            [dev-dependencies]
+            └── xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)

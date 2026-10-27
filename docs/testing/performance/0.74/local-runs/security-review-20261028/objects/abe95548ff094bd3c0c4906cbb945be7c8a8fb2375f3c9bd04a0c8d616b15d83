@@ -1,0 +1,13 @@
+{
+  "advisory_db_clean": true,
+  "advisory_db_revision": "99670cfc0bc574433034b75876a4b791ccaa2efb",
+  "deny_sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+  "gate_replayed": false,
+  "immutable_per_lookup_db_pin_claimed": false,
+  "manifest_sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8",
+  "qualification_manifest_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "release_admitted": false,
+  "same_revision_as_review_preflight": true,
+  "source_commit": "58a994a4c79fd5e8dd2fa622bcd57bbf640ff2df",
+  "zstd_environment_overrides": []
+}

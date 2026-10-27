@@ -49,8 +49,9 @@ verified against the primary sparse index before Cargo built it. Manifests,
 qualification identity and deny.toml are unchanged. No fork or patch override
 is introduced, and no unrelated resolver update occurred.
 
-The reviewed upstream delta contains nine changed text members. Bundled Zstd
-1.5.7 C/header files are unchanged. Rust changes include checked allocation size
+The reviewed source subset contains nine changed text members; the full archive
+inventory separately records license/manifest and newly packaged CMake inputs.
+All 90 bundled Zstd 1.5.7 C/header/assembly members are unchanged. Rust changes include checked allocation size
 and Layout, allocation-null return and null-free handling; pregenerated bindings
 are regenerated. Build changes add optional CMake/vendored support and symbol
 visibility configuration. Bindgen leaves upstream defaults and changes optional
@@ -77,15 +78,45 @@ updated graph, four archive tests also pass, but their first broad source frame
 records edits to prepare.py/dispatch.py made during that run. This first result
 is retained as **source-drift**, not a clean command acceptance. The affected
 package check and all-target/all-feature Clippy completed with stable source
-frames. A Rust 1.88 check of zstd-sys passes. These are Windows/native results,
-not a wasm32 end-to-end exploit test or a complete Linux lifecycle gate.
+frames. A Rust 1.88 check of zstd-sys passes. After the helper changes were
+complete, a distinct stable-source archive command passed all four cases; it
+does not overwrite the first drift result. The complete helper cohort passes
+49 cases, including seven exact-lock mutation controls. Five additional native
+semantic controls compile with Rust 1.88 and pass on the checksum-reviewed
+upstream shim: allocator refusal, addition/Layout overflow, calloc multiplication
+overflow, free(NULL), and successful aligned/zeroed allocation/free. These are
+Windows/native results, not a wasm32 end-to-end exploit test or a complete Linux
+lifecycle gate. The generated harness and its exact source are retained as data.
 
-The fixed workspace entry will be run once on the committed successor with its
-unchanged 4800-second envelope, original stage ordering, 16 GiB initial/4 GiB
-running floors and five-second retirement. A policy failure leaves its suffix
-unstarted; it cannot be replaced by the old green package receipt. The remaining
-ten findings are expected to keep release admission closed. Exact measured
-workspace outcome and retained packet are recorded below after execution.
+The fixed workspace entry ran **once** on
+`58a994a4c79fd5e8dd2fa622bcd57bbf640ff2df`, preserving the 4800-second
+envelope, original stage ordering, 16 GiB initial/4 GiB running floors and
+five-second retirement. Eleven stages completed: doc-check, management/performance
+contracts, release feature leak, format, the five preceding Clippy configurations
+and dependency bans. Dependency policy then failed with the ten remaining IDs
+listed above: **six vulnerability and four unmaintained findings**. Licenses,
+bans and sources report success. Nine subsequent stages, including workspace
+tests, rustdoc and performance/console gates, remain unstarted. Zero reported
+test failures here does not mean the workspace tests passed.
+
+Execution exits naturally with code 1, not a timeout or parser failure. The
+original Job retires with no cleanup errors. Source/refs/configuration/toolchain/
+environment frames match exactly. Lowest sampled physical free space is
+75,616,149,504 bytes; a sample is not a capacity reservation. The clean advisory
+DB has the same revision before review and after the command; no immutable
+per-lookup database pin is claimed. The old green package receipt does not cover
+this new lock. Release and server admission remain **false**.
+
+The [retained packet](local-runs/security-review-20261028/index.json) contains
+245 named references to 154 content-addressed objects: all eleven advisory
+bodies, primary sparse metadata, reviewed upstream manifests/build/allocator
+source, complete graph/feature comparison, baseline and first-drift records,
+focused commands, controls, and the actual full workspace streams and ledger.
+Index SHA-256:
+`ec37fd3b0087032b44a417360dc7531e6251ee2e36e61a868283aaca9a76f1be`.
+Independent inert verification checks every object, source/helper provenance,
+the exact lock delta, request/receipt identity and eleven-complete/one-failed/
+nine-unstarted accounting. It neither imports archived code nor repeats Cargo.
 
 ## Remaining decisions
 

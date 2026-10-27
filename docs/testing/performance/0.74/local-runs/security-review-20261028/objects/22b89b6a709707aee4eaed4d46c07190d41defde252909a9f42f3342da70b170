@@ -1,0 +1,11 @@
+{
+  "Cargo.toml": "changed",
+  "Readme.md": "changed",
+  "build.rs": "changed",
+  "src/bindings_zdict.rs": "changed",
+  "src/bindings_zdict_experimental.rs": "changed",
+  "src/bindings_zstd.rs": "changed",
+  "src/bindings_zstd_experimental.rs": "changed",
+  "src/bindings_zstd_seekable.rs": "changed",
+  "src/wasm_shim.rs": "changed"
+}

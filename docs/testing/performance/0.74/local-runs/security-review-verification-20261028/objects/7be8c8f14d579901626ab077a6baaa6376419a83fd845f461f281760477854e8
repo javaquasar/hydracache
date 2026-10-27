@@ -1,0 +1,31 @@
+"""Read-only postflight, no advisory fetch or gate replay."""
+from pathlib import Path
+import hashlib,json,os,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'target/security-review-20261028/postflight'
+OUT.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(OUT/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n')
+write('intent.json',dict(read_only=True,launcher_sha256=sha(Path(__file__).read_bytes()),gate_replay=False))
+db='C:/Users/ArturBuzov/.cargo/advisory-dbs/advisory-db-3157b0e258782691'
+with (OUT/'stdout.log').open('xb') as stdout,(OUT/'stderr.log').open('xb') as stderr:
+ def command(argv):
+  r=subprocess.run(argv,cwd=ROOT,stdout=subprocess.PIPE,stderr=stderr,timeout=10,check=True)
+  return r.stdout
+ revision=command(['git','-C',db,'rev-parse','HEAD']).decode().strip()
+ status=command(['git','-C',db,'status','--porcelain'])
+ assert not status
+ current=command(['git','rev-parse','HEAD']).decode().strip()
+ before=json.loads((ROOT/'target/security-review-20261028/workspace/frame-before.json').read_bytes())
+ assert current==before['head']
+ overrides=[k for k in os.environ if k.startswith('ZSTD_')]
+ assert not overrides
+ write('result.json',dict(advisory_db_revision=revision,advisory_db_clean=True,
+  same_revision_as_review_preflight=revision=='99670cfc0bc574433034b75876a4b791ccaa2efb',
+  immutable_per_lookup_db_pin_claimed=False,source_commit=current,zstd_environment_overrides=overrides,
+  deny_sha256=sha((ROOT/'deny.toml').read_bytes()),
+  manifest_sha256=sha((ROOT/'Cargo.toml').read_bytes()),
+  qualification_manifest_sha256=sha((ROOT/'docs/testing/performance/0.74/qualification-manifest.toml').read_bytes()),
+  gate_replayed=False,release_admitted=False))
+ stdout.write(json.dumps(dict(revision=revision,source_commit=current,db_clean=True)).encode())
+print(json.dumps(dict(revision=revision,source_commit=current,db_clean=True)))

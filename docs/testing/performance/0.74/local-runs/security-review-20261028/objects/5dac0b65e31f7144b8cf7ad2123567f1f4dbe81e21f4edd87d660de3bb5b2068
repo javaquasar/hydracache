@@ -1,0 +1,46 @@
+"""Read primary crates.io release metadata; do not resolve or change dependencies."""
+from datetime import datetime,timezone
+from pathlib import Path
+import hashlib,json,subprocess,tomllib,urllib.request
+root=Path(__file__).resolve().parent.parent
+out=root/'target/security-review-20261028/catalog-first'
+out.mkdir(parents=True,exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):
+    with (out/name).open('x',encoding='utf-8') as stream:json.dump(value,stream,indent=2,sort_keys=True)
+names=['zstd','zstd-safe','zstd-sys','chitchat','zbus','zvariant','zvariant_derive','zbus_names',
+       'unsafe-libyaml','serde_yaml','serde_yaml_ng','serde-saphyr','serde_yml','utoipa-swagger-ui','zip']
+protected=['Cargo.toml','Cargo.lock','deny.toml','tools/long-run-supervisor-074/Cargo.toml',
+           'crates/xtask/Cargo.toml','docs/testing/performance/0.74/qualification-manifest.toml']
+before={n:sha((root/n).read_bytes()) for n in protected}
+write('intent.json',dict(utc=datetime.now(timezone.utc).isoformat(),source=before,
+    head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root).decode().strip(),
+    names=names,read_only=True,dependency_changes=False))
+results={}
+try:
+    for name in names:
+        key=('1/'+name if len(name)==1 else '2/'+name if len(name)==2 else '3/'+name[0]+'/'+name if len(name)==3 else name[:2]+'/'+name[2:4]+'/'+name)
+        request=urllib.request.Request('https://index.crates.io/'+key,headers={'User-Agent':'HydraCache-074-security-review'})
+        with urllib.request.urlopen(request,timeout=30) as response:
+            raw=response.read()
+            headers=dict(response.headers)
+        with (out/(name+'.index')).open('xb') as stream:stream.write(raw)
+        rows=[json.loads(line) for line in raw.splitlines()]
+        families={}
+        for row in rows:
+            if row['yanked'] or '-' in row['vers'].split('+')[0]:continue
+            major,minor,*_=row['vers'].split('.')
+            family=major+'.'+minor if major=='0' else major
+            families.setdefault(family,[]).append(row)
+        chosen={family:values[-2:] for family,values in families.items()}
+        results[name]=dict(url=request.full_url,sha256=sha(raw),headers=headers,families=chosen)
+    after={n:sha((root/n).read_bytes()) for n in protected}
+    assert before==after
+    write('result.json',dict(packages=results,source_unchanged=True,source_after=after))
+    for name in names:
+        selected=list(results[name]['families'].items())[-3:]
+        print(json.dumps(dict(name=name,families={k:[dict(version=r['vers'],rust_version=r.get('rust_version'),
+            relevant_dependencies=[dict(name=d['name'],req=d['req'],kind=d['kind'],target=d['target']) for d in r['deps'] if d['name'] in names]) for r in values] for k,values in selected})))
+except BaseException as error:
+    write('refusal.json',dict(type=type(error).__name__,reason=str(error)))
+    raise

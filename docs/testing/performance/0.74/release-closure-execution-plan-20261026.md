@@ -344,6 +344,19 @@ or ignored MSRV. Every changed graph needs its own focused semantic checks,
 complete lock review and subsequent full milestone. Earlier advisories remain
 historical first results, not a fresh vulnerability assessment.
 
+The [2026-10-28 review of all eleven findings](security-review-20261028.md)
+applies exactly zstd-sys 2.1.2, with unchanged native Zstd source/features,
+passing focused check/Clippy/MSRV/archive and exact-source controls. The full
+workspace command on `58a994a4c79fd5e8dd2fa622bcd57bbf640ff2df` completes
+eleven stages and fails policy with ten findings, leaving nine stages unstarted.
+The earlier eleven-finding refusal and the first focused source-drift result are
+retained. No workspace suffix is borrowed from another source. Rust 1.88 and
+deny.toml remain exact. Remaining work requires separate YAML, Swagger/ZIP,
+chitchat/Zstd and D-Bus migration/backport decisions: zbus 6's published minimum
+is Rust 1.89; serde_yaml_ng still uses unsafe-libyaml; a supervisor-only Zstd
+bump leaves chitchat's ^0.13 branch. No fork, hidden target exclusion, exception
+or compiler-floor change is introduced to make this gate green.
+
 The [earlier public trust-roots candidate](roots-security-result-20261026.md)
 retains its pre-approval narrow-delta refusal and pre-Tokio results. The operator
 has now approved the complete upstream 1.0.10 catalog conditional on exact key/

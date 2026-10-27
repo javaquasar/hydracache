@@ -1,0 +1,10 @@
+
+running 5 tests
+test allocator_failure_returns_null_for_both_paths ... ok
+test calloc_multiplication_overflow_returns_null ... ok
+test free_null_is_noop ... ok
+test malloc_overflow_and_invalid_layout_return_null ... ok
+test successful_zeroed_allocation_roundtrips ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

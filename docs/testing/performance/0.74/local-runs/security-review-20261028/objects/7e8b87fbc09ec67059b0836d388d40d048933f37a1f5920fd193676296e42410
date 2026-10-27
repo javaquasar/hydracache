@@ -1,0 +1,89 @@
+"""Seal source review, first outcomes and one exact successor workspace command."""
+from pathlib import Path
+import hashlib,json,re,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/security-review-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/security-review-20261028'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def read(name):return json.loads((BASE/name).read_bytes())
+source=read('workspace/frame-before.json')['head']
+assert source.startswith('58a994a4c')
+assert read('workspace/frame-before.json')==read('workspace/frame-after.json')
+execution=read('workspace/controller.json')['execution']
+assert execution['classification']=='test-failure' and execution['exit']==1
+assert execution['retired'] and not execution['errors']
+assert (execution['bound_seconds'],execution['cleanup_seconds'],execution['capacity_poll_seconds'])==(4800,5,5)
+assert read('workspace/result.json')['source_refs_configuration_environment_unchanged']
+ledger=read('workspace/accounting.json')
+assert len(ledger['stages'])==21 and not ledger['workspace_pass']
+assert sum(r['state']=='complete' for r in ledger['stages'])==11
+assert ledger['stages'][11]==dict(name='dependency policy',state='incomplete-or-failed')
+assert sum(r['state']=='unstarted' for r in ledger['stages'])==9
+for name in ('baseline-tree','baseline-features','baseline-yaml','baseline-archive','fetch','patched-tree',
+             'patched-check','patched-clippy','patched-msrv','controls','source-review','patched-archive-successor','shim-build','shim-test'):
+ result=read(name+'/result.json')
+ assert result['exit']==0 and result['source_unchanged'] and result['head_unchanged']
+assert read('resolve-sys/result.json')['changed']==['Cargo.lock']
+assert read('patched-archive/result.json')['changed']==['tools/windows-workspace-preflight-074/dispatch.py','tools/windows-workspace-preflight-074/prepare.py']
+assert not read('patched-archive/result.json')['source_unchanged']
+assert b'Ran 49 tests' in (BASE/'controls/stderr.log').read_bytes()
+assert b'5 passed; 0 failed;' in (BASE/'shim-test/stdout.log').read_bytes()
+assert b'4 passed; 0 failed;' in (BASE/'patched-archive-successor/stdout.log').read_bytes()
+diagnostics=(BASE/'workspace/stderr.log').read_text(encoding='utf-8')
+ids=sorted(set(re.findall(r'RUSTSEC-\d{4}-\d{4}',diagnostics)))
+original=sorted(read('review-db-first/result.json')['advisories'])
+assert ids==[i for i in original if i!='RUSTSEC-2026-0410'],ids
+assert sha((ROOT/'Cargo.lock').read_bytes().replace(b'\r\n',b'\n'))=='50ec8e7e20a8caebeefdbdde7bbafb36b96257daf1204dcd6dfa8f6c5b7c925a'
+assert sha((ROOT/'deny.toml').read_bytes())=='16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930'
+assert sha((ROOT/'docs/testing/performance/0.74/qualification-manifest.toml').read_bytes())=='11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
+assert read('review-db-first/result.json')['unchanged_native_c_header_assembly_count']==90
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:
+  with dest.open('xb') as stream:stream.write(raw)
+ assert name not in members
+ members[name]=dict(sha256=digest,bytes=len(raw))
+for path in sorted(BASE.rglob('*')):
+ if not path.is_file() or path.suffix=='.exe':continue
+ # Large upstream sources remain inert primary data. Preserve reviewed manifests,
+ # build/allocator/control code and metadata; checksum receipts identify full crates.
+ rel=path.relative_to(BASE).as_posix()
+ if rel.startswith('upstream-first/') and '/review-source/' in rel:
+  tail=rel.split('/review-source/',1)[1]
+  if tail not in ('Cargo.toml','README.md','Readme.md','CHANGELOG.md','build.rs','src/wasm_shim.rs','src/axum.rs','src/lib.rs'):continue
+ if rel.endswith('/source.crate'):continue
+ add('capture/'+rel,path)
+for name in ('security-step-20261028.py','security-metadata-20261028.py','review-security-index-20261028.py',
+             'review-security-sources-20261028.py','seal-security-20261028.py'):
+ add('producer/'+name,ROOT/'target'/name)
+for path in sorted((ROOT/'tools/windows-workspace-preflight-074').iterdir()):
+ if path.is_file():add('source/current/'+path.name,path)
+for name in ('Cargo.lock','Cargo.toml','deny.toml','scripts/ci/watchdog_windows_job.py',
+             'crates/xtask/src/verify.rs','tools/xtask-package-attribution-074/review.py',
+             'docs/testing/performance/0.74/qualification-manifest.toml'):
+ add('source/current/'+name,ROOT/name)
+frame=read('workspace/frame-before.json')
+spec=read('workspace/request.json')['specification']
+identity=sha(json.dumps(dict(sources=frame['sources'],specification=spec,
+ versions=frame['versions'],environment=frame['environment']),sort_keys=True).encode())
+claim=ROOT/'target/windows-fixed-cargo-20261027/claims'/(identity+'-workspace.json')
+assert json.loads(claim.read_bytes())['output']==str(BASE/'workspace')
+add('capture/execution-claim.json',claim)
+index=dict(schema='hc074-eleven-advisory-review-v1',source_commit=source,members=members,
+ security_review_count=11,applied=['RUSTSEC-2026-0410'],remaining=ids,
+ controls_passed=49,allocator_semantic_controls_passed=5,archive_cases_passed=4,
+ first_archive_source_drift_retained=True,workspace_pass=False,release_admitted=False,
+ source_refs_configuration_environment_unchanged=True,full_gate_retry=False,
+ msrv='1.88',deny_exceptions_added=False,new_hypotheses=False,
+ historical_package_receipts_reused=False,server=False,services=False,clocks=False,
+ archive_code_executed_by_sealer=False)
+with (OUT/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+ json.dump(index,stream,indent=2,sort_keys=True);stream.write('\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),
+ index_sha256=sha((OUT/'index.json').read_bytes()),source_commit=source,remaining=ids,
+ minimum_observed_free_bytes=read('workspace/controller.json')['low_observed_free_bytes'])))

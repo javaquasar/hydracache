@@ -1,0 +1,31 @@
+{
+  "dependency_changes": false,
+  "head": "685e2c0b5b3e5808aeabe2a6712657384c42f492",
+  "names": [
+    "zstd",
+    "zstd-safe",
+    "zstd-sys",
+    "chitchat",
+    "zbus",
+    "zvariant",
+    "zvariant_derive",
+    "zbus_names",
+    "unsafe-libyaml",
+    "serde_yaml",
+    "serde_yaml_ng",
+    "serde-saphyr",
+    "serde_yml",
+    "utoipa-swagger-ui",
+    "zip"
+  ],
+  "read_only": true,
+  "source": {
+    "Cargo.lock": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5",
+    "Cargo.toml": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8",
+    "crates/xtask/Cargo.toml": "0b00525d41119bdb1215b1fb658ac66fa1bcd0d99428e9903cf1bb8ee8f4e0b5",
+    "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "tools/long-run-supervisor-074/Cargo.toml": "f38fc2c3e40b71fbac2aa2c54ed545828177860bed060d4c43981af796fd73e1"
+  },
+  "utc": "2026-10-27T23:03:44.429227+00:00"
+}

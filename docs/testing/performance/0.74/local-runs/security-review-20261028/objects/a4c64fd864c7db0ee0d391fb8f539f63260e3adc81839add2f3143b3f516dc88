@@ -1,0 +1,6 @@
+{
+  "advisories_expected": 11,
+  "launcher_sha256": "3c2b2425bd91b402f3cb03378578a28c11ede0820601a3b211dfa11e66e36f4a",
+  "no_cargo_or_source_code_execution": true,
+  "source_only": true
+}

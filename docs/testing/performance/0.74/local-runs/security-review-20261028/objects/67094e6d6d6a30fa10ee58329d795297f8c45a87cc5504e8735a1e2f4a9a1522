@@ -1,0 +1,63 @@
+"""Append-only local security steps. Original full gate is dispatched separately."""
+from pathlib import Path
+import hashlib,json,os,shutil,subprocess,sys,time
+ROOT=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(ROOT/'tools/windows-workspace-preflight-074'))
+import owned
+import prepare as p
+BASE=ROOT/'target/security-review-20261028'
+COMMANDS={
+ 'baseline-tree':['cargo','tree','--locked','--offline','--workspace','--target','all','-i','zstd-sys'],
+ 'baseline-features':['cargo','tree','--locked','--offline','--workspace','--target','all','-e','features','-i','zstd-sys'],
+ 'baseline-yaml':['cargo','tree','--locked','--offline','--workspace','--target','all','-i','unsafe-libyaml'],
+ 'baseline-archive':['cargo','+1.94.0','test','--locked','--offline','-p','hydracache-long-run-supervisor-074','--test','archive'],
+ 'resolve-sys':['cargo','update','-p','zstd-sys','--precise','2.1.2+zstd.1.5.7'],
+ 'fetch':['cargo','fetch','--locked'],
+ 'patched-tree':['cargo','tree','--locked','--offline','--workspace','--target','all','-e','features','-i','zstd-sys'],
+ 'patched-archive':['cargo','+1.94.0','test','--locked','--offline','-p','hydracache-long-run-supervisor-074','--test','archive'],
+ 'patched-check':['cargo','+1.94.0','check','--locked','--offline','-p','hydracache-long-run-supervisor-074','--all-targets'],
+ 'patched-clippy':['cargo','+1.94.0','clippy','--locked','--offline','-p','hydracache-long-run-supervisor-074','--all-targets','--all-features','--','-D','warnings'],
+ 'patched-msrv':['cargo','+1.88.0','check','--locked','--offline','-p','zstd-sys'],
+ 'policy':['cargo','deny','--offline','check','advisories'],
+ 'controls':[sys.executable,'-B','-m','unittest','discover','-s','tools/windows-workspace-preflight-074','-p','test_*.py','-v'],
+ 'source-review':[sys.executable,'-B','-c',"import sys,json;sys.path.insert(0,'tools/windows-workspace-preflight-074');import prepare;print(json.dumps(dict(source=prepare.source_review(prepare.ROOT),environment=prepare.environment_review(prepare.ROOT)),sort_keys=True))"],
+ 'patched-archive-successor':['cargo','+1.94.0','test','--locked','--offline','-p','hydracache-long-run-supervisor-074','--test','archive'],
+ 'shim-build':['rustc','+1.88.0','--edition=2018','--test',str(BASE/'shim-controls.rs'),'-o',str(BASE/'shim-controls.exe')],
+ 'shim-test':[str(BASE/'shim-controls.exe'),'--test-threads=1'],
+}
+def sources():
+ names=[s.decode() for s in subprocess.check_output(['git','ls-files','-z','--','Cargo.lock','Cargo.toml','deny.toml','tools','crates','.cargo','scripts'],cwd=ROOT).split(b'\0') if s]
+ return {n:p.sha((ROOT/n).read_bytes()) for n in names}
+def write(out,name,value):p.write(out,name,value)
+label=sys.argv[1]
+out=BASE/label
+if len(sys.argv)>2:
+ assert sys.argv[2:] == ['--worker'] and label in COMMANDS
+ def capacity():
+  if shutil.disk_usage(ROOT).free < p.FLOOR:raise owned.CapacityError('original 4 GiB floor')
+ group=owned.load_job().WindowsJob()
+ result=owned._owned(group,COMMANDS[label],str(ROOT),capacity,bound=1200)
+ write(out,'execution.json',result)
+ raise SystemExit(result['exit'])
+out.mkdir(exist_ok=False)
+before=sources()
+head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+write(out,'intent.json',dict(argv=COMMANDS[label],source=before,head=head,utc=p.now(),bound_seconds=1200,
+ launcher_sha256=p.sha(Path(__file__).read_bytes()),retry=False,source_step_not_full_gate=True,settings=False,services=False,server=False))
+(out/'launcher.py').write_bytes(Path(__file__).read_bytes())
+for name in ('Cargo.lock','Cargo.toml','deny.toml'):
+ (out/('before-'+name)).write_bytes((ROOT/name).read_bytes())
+with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+ process=subprocess.Popen([sys.executable,'-B',str(Path(__file__)),label,'--worker'],cwd=ROOT,
+  stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,env=dict(os.environ,CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2'))
+ try:code=process.wait(timeout=1210)
+ except subprocess.TimeoutExpired:
+  process.kill();process.wait(timeout=5)
+  write(out,'refusal.json',dict(reason='original worker lost',retry=False));raise
+after=sources()
+changed=[n for n in before if before[n]!=after[n]]
+write(out,'result.json',dict(exit=code,source_unchanged=before==after,changed=changed,source_after=after,
+ head_unchanged=head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ release_admitted=False))
+print(json.dumps(dict(label=label,exit=code,changed=changed)))
+raise SystemExit(code)

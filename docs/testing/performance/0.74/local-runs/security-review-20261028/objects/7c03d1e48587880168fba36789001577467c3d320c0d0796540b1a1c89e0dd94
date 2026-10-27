@@ -1,0 +1,5 @@
+   Compiling zstd-sys v2.1.2+zstd.1.5.7
+   Compiling zstd-safe v7.2.4
+    Checking zstd v0.13.3
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 14.70s

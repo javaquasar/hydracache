@@ -1,0 +1,77 @@
+// Native semantic controls of the checksum-reviewed upstream wasm shim.
+// This is not a wasm32 end-to-end decompression or exploit claim.
+extern crate alloc;
+
+use std::alloc::{GlobalAlloc, Layout, System};
+use std::cell::Cell;
+
+thread_local! {
+    static FAIL: Cell<bool> = const { Cell::new(false) };
+}
+
+struct ControlledAllocator;
+unsafe impl GlobalAlloc for ControlledAllocator {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        if FAIL.try_with(Cell::get).unwrap_or(false) {
+            std::ptr::null_mut()
+        } else {
+            System.alloc(layout)
+        }
+    }
+
+    unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
+        if FAIL.try_with(Cell::get).unwrap_or(false) {
+            std::ptr::null_mut()
+        } else {
+            System.alloc_zeroed(layout)
+        }
+    }
+
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+        System.dealloc(ptr, layout)
+    }
+}
+#[global_allocator]
+static ALLOCATOR: ControlledAllocator = ControlledAllocator;
+
+#[path = "upstream-first/zstd-sys-2.1.2+zstd.1.5.7/review-source/src/wasm_shim.rs"]
+mod shim;
+
+#[test]
+fn malloc_overflow_and_invalid_layout_return_null() {
+    assert!(shim::rust_zstd_wasm_shim_malloc(usize::MAX).is_null());
+    assert!(shim::rust_zstd_wasm_shim_malloc(isize::MAX as usize).is_null());
+}
+
+#[test]
+fn calloc_multiplication_overflow_returns_null() {
+    assert!(shim::rust_zstd_wasm_shim_calloc(usize::MAX, 2).is_null());
+}
+
+#[test]
+fn free_null_is_noop() {
+    unsafe { shim::rust_zstd_wasm_shim_free(std::ptr::null_mut()) };
+}
+
+#[test]
+fn allocator_failure_returns_null_for_both_paths() {
+    FAIL.with(|fail| fail.set(true));
+    let malloc = shim::rust_zstd_wasm_shim_malloc(64);
+    let calloc = shim::rust_zstd_wasm_shim_calloc(8, 8);
+    FAIL.with(|fail| fail.set(false));
+    assert!(malloc.is_null());
+    assert!(calloc.is_null());
+}
+
+#[test]
+fn successful_zeroed_allocation_roundtrips() {
+    let ptr = shim::rust_zstd_wasm_shim_calloc(8, 8).cast::<u8>();
+    assert!(!ptr.is_null());
+    assert_eq!(ptr as usize % std::mem::align_of::<usize>(), 0);
+    unsafe {
+        assert_eq!(std::slice::from_raw_parts(ptr, 64), [0; 64]);
+        ptr.write_bytes(0x5a, 64);
+        assert_eq!(std::slice::from_raw_parts(ptr, 64), [0x5a; 64]);
+        shim::rust_zstd_wasm_shim_free(ptr.cast());
+    }
+}

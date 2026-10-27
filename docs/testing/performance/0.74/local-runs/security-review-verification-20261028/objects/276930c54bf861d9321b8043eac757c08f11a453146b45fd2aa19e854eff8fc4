@@ -1,0 +1,42 @@
+"""Retain independent verification, final document checks and producer source."""
+from pathlib import Path
+import hashlib,json
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/security-review-verification-20261028'
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+members={}
+def add(name,path):
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:
+  with dest.open('xb') as stream:stream.write(raw)
+ assert name not in members
+ members[name]=dict(sha256=digest,bytes=len(raw))
+verification=ROOT/'target/security-review-verification-20261028'
+result=json.loads((verification/'result.json').read_bytes())
+assert result['pass_'] and not result['gate_replayed'] and not result['workspace_pass']
+for path in sorted(verification.iterdir()):
+ if path.is_file():add('verification/'+path.name,path)
+for name in ('verify-security-packet-20261028.py','security-postflight-20261028.py',
+             'retain-security-verification-20261028.py'):
+ add('producer/'+name,ROOT/'target'/name)
+docs=ROOT/'target/security-review-20261028/doc-check-final'
+outcome=json.loads((docs/'result.json').read_bytes())
+assert outcome['exit']==0 and outcome['source_unchanged'] and outcome['head_unchanged']
+for path in sorted(docs.iterdir()):
+ if path.is_file():add('doc-check/'+path.name,path)
+inputs=json.loads((docs/'document-inputs.json').read_bytes())
+for name,digest in inputs['documents'].items():
+ assert sha((ROOT/name).read_bytes())==digest
+ add('document/'+name,ROOT/name)
+index=dict(schema='hc074-security-inert-verification-v1',members=members,
+ parent_index_sha256='ec37fd3b0087032b44a417360dc7531e6251ee2e36e61a868283aaca9a76f1be',
+ primary_members_verified=245,primary_objects_verified=154,doc_check_pass=True,
+ workspace_pass=False,gate_replayed=False,archived_code_executed=False,release_admitted=False)
+with (OUT/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+ json.dump(index,stream,indent=2,sort_keys=True);stream.write('\n')
+with (OUT/'.gitattributes').open('x',encoding='utf-8',newline='\n') as stream:
+ stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+print(json.dumps(dict(members=len(members),index_sha256=sha((OUT/'index.json').read_bytes()))))

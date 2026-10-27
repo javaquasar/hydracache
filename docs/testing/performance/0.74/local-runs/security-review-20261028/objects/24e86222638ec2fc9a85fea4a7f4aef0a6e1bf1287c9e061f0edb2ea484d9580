@@ -1,0 +1,352 @@
+{
+  "advisories": {
+    "RUSTSEC-2024-0449": {
+      "metadata": {
+        "advisory": {
+          "date": "2024-03-25",
+          "id": "RUSTSEC-2024-0449",
+          "informational": "unmaintained",
+          "package": "unsafe-libyaml",
+          "url": "https://github.com/dtolnay/unsafe-libyaml"
+        },
+        "versions": {
+          "patched": [],
+          "unaffected": []
+        }
+      },
+      "sha256": "99da8fa8d7ce73ca12b32cadedef33ff160d120dd63a338447a8fa70eac0d549",
+      "unchanged_from_first": false,
+      "url": "https://rustsec.org/advisories/RUSTSEC-2024-0449.html"
+    },
+    "RUSTSEC-2026-0367": {
+      "metadata": {
+        "advisory": {
+          "aliases": [
+            "GHSA-vv5m-jxxh-4627"
+          ],
+          "categories": [
+            "privilege-escalation"
+          ],
+          "cvss": "CVSS:3.1/AV:L/AC:L/PR:L/UI:R/S:U/C:H/I:H/A:H",
+          "date": "2026-10-09",
+          "id": "RUSTSEC-2026-0367",
+          "keywords": [
+            "privilege-escalation",
+            "suid",
+            "sgid"
+          ],
+          "package": "zip"
+        },
+        "versions": {
+          "patched": [
+            ">= 9.0.0"
+          ]
+        }
+      },
+      "sha256": "a3ceec31db85c2e07a2b8daf0a7a17a5a624601bb256cedab4c508750ff677df",
+      "unchanged_from_first": false,
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0367.html"
+    },
+    "RUSTSEC-2026-0368": {
+      "metadata": {
+        "advisory": {
+          "aliases": [
+            "GHSA-4v9h-p7m9-rh26"
+          ],
+          "categories": [
+            "privilege-escalation"
+          ],
+          "date": "2026-10-09",
+          "id": "RUSTSEC-2026-0368",
+          "keywords": [
+            "privilege-escalation",
+            "symlink"
+          ],
+          "package": "zip"
+        },
+        "versions": {
+          "patched": [
+            ">= 9.0.0"
+          ]
+        }
+      },
+      "sha256": "c056588fb9936466517e99b8644aab34804502a01f34c6cae323bd40e4e63ba0",
+      "unchanged_from_first": false,
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0368.html"
+    },
+    "RUSTSEC-2026-0369": {
+      "metadata": {
+        "advisory": {
+          "aliases": [
+            "GHSA-4684-h2q9-2vcp"
+          ],
+          "categories": [
+            "privilege-escalation"
+          ],
+          "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:H",
+          "date": "2026-10-10",
+          "id": "RUSTSEC-2026-0369",
+          "keywords": [
+            "privilege-escalation",
+            "symlink",
+            "permissions"
+          ],
+          "package": "zip"
+        },
+        "versions": {
+          "patched": [
+            ">= 9.0.0"
+          ]
+        }
+      },
+      "sha256": "4bed2ec03d7b53525422dc136075476eaeb644e2ab3483547a525437ae722dc5",
+      "unchanged_from_first": false,
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0369.html"
+    },
+    "RUSTSEC-2026-0370": {
+      "metadata": {
+        "advisory": {
+          "date": "2026-10-16",
+          "id": "RUSTSEC-2026-0370",
+          "informational": "unmaintained",
+          "package": "zvariant",
+          "url": "https://github.com/z-galaxy/zbus/issues/2043"
+        },
+        "versions": {
+          "patched": []
+        }
+      },
+      "sha256": "55991b6a4484c3541c8091cb16cf7446c8610de09ac642ab3ff88c332e394bf0",
+      "unchanged_from_first": false,
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0370.html"
+    },
+    "RUSTSEC-2026-0371": {
+      "metadata": {
+        "advisory": {
+          "date": "2026-10-16",
+          "id": "RUSTSEC-2026-0371",
+          "informational": "unmaintained",
+          "package": "zbus_names",
+          "url": "https://github.com/z-galaxy/zbus/issues/2043"
+        },
+        "versions": {
+          "patched": []
+        }
+      },
+      "sha256": "3e618914dab3ef0d6d2434f42ac8aa1947cb1738fd156b4f0092d6c7ad53b394",
+      "unchanged_from_first": false,
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0371.html"
+    },
+    "RUSTSEC-2026-0372": {
+      "metadata": {
+        "advisory": {
+          "date": "2026-10-16",
+          "id": "RUSTSEC-2026-0372",
+          "informational": "unmaintained",
+          "package": "zvariant_derive",
+          "url": "https://github.com/z-galaxy/zbus/issues/2043"
+        },
+        "versions": {
+          "patched": []
+        }
+      },
+      "sha256": "e03677b3351db11984e2fd3bd839b6368cfc3a93aca08c4401980264b228635d",
+      "unchanged_from_first": false,
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0372.html"
+    },
+    "RUSTSEC-2026-0391": {
+      "metadata": {
+        "advisory": {
+          "categories": [
+            "memory-exposure"
+          ],
+          "date": "2026-10-16",
+          "id": "RUSTSEC-2026-0391",
+          "keywords": [
+            "information-leak",
+            "context-reuse"
+          ],
+          "package": "zstd",
+          "references": [
+            "https://github.com/gyscos/zstd-rs/pull/384"
+          ],
+          "url": "https://github.com/gyscos/zstd-rs/commit/74ace2dcdca62a2ce0f034895d6079458311e003"
+        },
+        "affected": {
+          "functions": {
+            "zstd::stream::raw::Decoder::with_context": [
+              ">= 0.13.2, < 0.14.3"
+            ],
+            "zstd::stream::raw::Encoder::with_context": [
+              ">= 0.13.2, < 0.14.3"
+            ]
+          }
+        },
+        "versions": {
+          "patched": [
+            ">= 0.14.3"
+          ],
+          "unaffected": [
+            "< 0.13.2"
+          ]
+        }
+      },
+      "sha256": "80b6c3a9c20db6c6c9b62fa9215905859493d02b376e1cc390e23f2f30fc0481",
+      "unchanged_from_first": false,
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0391.html"
+    },
+    "RUSTSEC-2026-0398": {
+      "metadata": {
+        "advisory": {
+          "categories": [
+            "memory-exposure",
+            "memory-corruption"
+          ],
+          "date": "2026-10-16",
+          "id": "RUSTSEC-2026-0398",
+          "keywords": [
+            "seekable",
+            "out-of-bounds"
+          ],
+          "package": "zstd-safe",
+          "references": [
+            "https://github.com/gyscos/zstd-rs/pull/384"
+          ],
+          "url": "https://github.com/gyscos/zstd-rs/commit/80506be743fae2ed0c2fe8b21c374c6a2eab0be7"
+        },
+        "affected": {
+          "functions": {
+            "zstd_safe::seekable::AdvancedSeekable::decompress": [
+              ">= 7.2.2, < 8.2.0"
+            ],
+            "zstd_safe::seekable::Seekable::decompress": [
+              ">= 7.2.2, < 8.2.0"
+            ]
+          }
+        },
+        "versions": {
+          "patched": [
+            ">= 8.2.0"
+          ],
+          "unaffected": [
+            "< 7.2.2"
+          ]
+        }
+      },
+      "sha256": "04d6d98f826402766ae3bbdd7d395335f6503d071dbe158c9d271dd3c46c1d96",
+      "unchanged_from_first": false,
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0398.html"
+    },
+    "RUSTSEC-2026-0403": {
+      "metadata": {
+        "advisory": {
+          "categories": [
+            "memory-exposure"
+          ],
+          "date": "2026-10-16",
+          "id": "RUSTSEC-2026-0403",
+          "keywords": [
+            "uninitialized-memory",
+            "decompression",
+            "legacy"
+          ],
+          "package": "zstd-safe",
+          "references": [
+            "https://github.com/gyscos/zstd-rs/pull/384"
+          ],
+          "url": "https://github.com/gyscos/zstd-rs/commit/006e1d1ad1eeaf6b5d4c28329e70217adabcec43"
+        },
+        "affected": {
+          "functions": {
+            "zstd_safe::DCtx::decompress_stream": [
+              ">= 4.0.0, < 8.2.0"
+            ]
+          }
+        },
+        "versions": {
+          "patched": [
+            ">= 8.2.0"
+          ],
+          "unaffected": [
+            "< 4.0.0"
+          ]
+        }
+      },
+      "sha256": "05ac3b7223d7837dae022a5a857185b891f89801d94468d65b214c747b0bf432",
+      "unchanged_from_first": false,
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0403.html"
+    },
+    "RUSTSEC-2026-0410": {
+      "metadata": {
+        "advisory": {
+          "categories": [
+            "memory-corruption"
+          ],
+          "date": "2026-10-16",
+          "id": "RUSTSEC-2026-0410",
+          "keywords": [
+            "wasm",
+            "allocation"
+          ],
+          "package": "zstd-sys",
+          "references": [
+            "https://github.com/gyscos/zstd-rs/pull/384"
+          ],
+          "url": "https://github.com/gyscos/zstd-rs/commit/165d1625553c236b9700ca794b8a7c51f5d98314"
+        },
+        "affected": {
+          "arch": [
+            "wasm32"
+          ]
+        },
+        "versions": {
+          "patched": [
+            ">= 2.1.2"
+          ],
+          "unaffected": [
+            "< 2.0.9"
+          ]
+        }
+      },
+      "sha256": "5b7e7181131b2b3f5236f650229f62cb3c45e79ed5de2764ca3d5a6d47b81356",
+      "unchanged_from_first": false,
+      "url": "https://rustsec.org/advisories/RUSTSEC-2026-0410.html"
+    }
+  },
+  "advisory_db_revision": "99670cfc0bc574433034b75876a4b791ccaa2efb",
+  "all_archive_member_delta": {
+    ".cargo_vcs_info.json": "changed",
+    "Cargo.lock": "changed",
+    "Cargo.toml": "changed",
+    "Cargo.toml.orig": "changed",
+    "LICENSE": "changed",
+    "LICENSE.Apache-2.0": "removed",
+    "LICENSE.BSD-3-Clause": "changed",
+    "LICENSE.Mit": "removed",
+    "Readme.md": "changed",
+    "build.rs": "changed",
+    "src/bindings_zdict.rs": "changed",
+    "src/bindings_zdict_experimental.rs": "changed",
+    "src/bindings_zstd.rs": "changed",
+    "src/bindings_zstd_experimental.rs": "changed",
+    "src/bindings_zstd_seekable.rs": "changed",
+    "src/wasm_shim.rs": "changed",
+    "zstd/build/cmake/CMakeLists.txt": "added",
+    "zstd/build/cmake/CMakeModules/AddZstdCompilationFlags.cmake": "added",
+    "zstd/build/cmake/CMakeModules/FindLibLZ4.cmake": "added",
+    "zstd/build/cmake/CMakeModules/GetZstdLibraryVersion.cmake": "added",
+    "zstd/build/cmake/CMakeModules/JoinPaths.cmake": "added",
+    "zstd/build/cmake/lib/CMakeLists.txt": "added",
+    "zstd/build/cmake/lib/cmake_uninstall.cmake.in": "added",
+    "zstd/build/cmake/zstdConfig.cmake.in": "added",
+    "zstd/lib/libzstd.pc.in": "added"
+  },
+  "all_target_features_identical_except_version": true,
+  "complete_graph_delta_only_sys": true,
+  "db_clean": true,
+  "new_lock": "50ec8e7e20a8caebeefdbdde7bbafb36b96257daf1204dcd6dfa8f6c5b7c925a",
+  "old_lock": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5",
+  "release_admitted": false,
+  "remaining_by_original_policy_bounds": 10,
+  "unchanged_native_c_header_assembly_count": 90
+}

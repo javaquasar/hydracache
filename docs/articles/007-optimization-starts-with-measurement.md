@@ -21739,3 +21739,30 @@ pin we do not pretend to know its exact state at every lookup. Nothing is waived
 for a green result: security review/compatible repairs and separate migration
 gates come next. Dispatcher completion, package success and release/server
 admission stay distinct.
+
+The [eleven-advisory review on 2026-10-28](../testing/performance/0.74/security-review-20261028.md)
+separates a version update from a dependency migration. The compatible
+zstd-sys 2.1.2 update changes only one locked package's version and checksum;
+all 90 bundled native C/header/assembly files and the selected feature tree
+match baseline. Four archive cases pass before the change. Afterward,
+check/Clippy and a Rust 1.88 build pass, followed by five native allocator-shim
+controls for null allocation, overflow, zeroing and free(NULL). Those controls
+do not establish wasm32 end-to-end behavior. The first post-update archive run
+passed its cases while two Python gate helpers changed; its source-drift result
+stays rejected. A distinct stable-source successor passes four archive cases
+and 49 helper controls. Preserving that difference keeps a useful test result
+from becoming an unsupported complete-source acceptance.
+
+The exact new workspace command then completes eleven stages and stops at
+dependency policy with ten findings, leaving nine stages unstarted. Its original
+budget and source/environment frames hold, and owned Job retirement succeeds.
+Only the wasm allocator advisory disappears. The remaining review explains why
+blind version movement cannot finish the job: zbus 6 requires Rust 1.89;
+serde_yaml_ng retains unsafe-libyaml; chitchat still constrains Zstd to ^0.13;
+and Swagger 10 changes web assets and embedding in addition to upgrading ZIP.
+Swagger's custom Unix extraction also forwards archive modes, so a clean ZIP
+library number alone would not prove the whole build path safe. A reachability
+observation is neither a policy exemption nor proof that another code path is
+safe. These are explicit migration/backport boundaries, not throughput hypotheses
+or permission to lower the release bar. The complete review, original refusals,
+candidate code and raw workspace ledger remain recoverable from the repository.

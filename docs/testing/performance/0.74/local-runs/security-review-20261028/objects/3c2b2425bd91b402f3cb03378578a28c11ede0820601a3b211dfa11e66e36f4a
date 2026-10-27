@@ -1,0 +1,54 @@
+"""Retain primary security data and independently verify the exact candidate delta."""
+from pathlib import Path
+import hashlib,json,subprocess,tarfile,tomllib
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/security-review-20261028'
+OUT=BASE/'review-db-first'
+OUT.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(OUT/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n')
+write('intent.json',dict(source_only=True,no_cargo_or_source_code_execution=True,
+ launcher_sha256=sha(Path(__file__).read_bytes()),advisories_expected=11))
+db=Path('C:/Users/ArturBuzov/.cargo/advisory-dbs/advisory-db-3157b0e258782691')
+with (OUT/'stdout.log').open('xb') as stdout,(OUT/'stderr.log').open('xb') as stderr:
+ def git(*argv):
+  r=subprocess.run(['git','-C',str(db),*argv],stdout=subprocess.PIPE,stderr=stderr,timeout=10,check=True)
+  return r.stdout
+ revision=git('rev-parse','HEAD').decode().strip()
+ assert not git('status','--porcelain')
+ old=json.loads((ROOT/'target/windows-fixed-cargo-20261027/security-postflight-reviewed/result.json').read_bytes())['advisories']
+ rows={}
+ for identifier,row in old.items():
+  raw=git('show',revision+':'+row['path'])
+  (OUT/(identifier+'.md')).write_bytes(raw)
+  body=tomllib.loads(raw.decode().split('```toml\n',1)[1].split('```',1)[0])
+  assert body['advisory']['id']==identifier
+  rows[identifier]=dict(sha256=sha(raw),unchanged_from_first=sha(raw)==row['sha256'],
+   metadata=body,url='https://rustsec.org/advisories/'+identifier+'.html')
+ new=(ROOT/'Cargo.lock').read_bytes().replace(b'\r\n',b'\n')
+ previous=(BASE/'resolve-sys/before-Cargo.lock').read_bytes().replace(b'\r\n',b'\n')
+ a=tomllib.loads(previous.decode());b=tomllib.loads(new.decode())
+ def inventory(v):return {p['name']+'@'+p['version']:p for p in v['package']}
+ ai=inventory(a);bi=inventory(b)
+ assert set(ai)-set(bi)=={'zstd-sys@2.0.16+zstd.1.5.7'}
+ assert set(bi)-set(ai)=={'zstd-sys@2.1.2+zstd.1.5.7'}
+ assert all(ai[k]==bi[k] for k in ai.keys()&bi.keys())
+ oldsys=ai['zstd-sys@2.0.16+zstd.1.5.7'];newsys=bi['zstd-sys@2.1.2+zstd.1.5.7']
+ assert {k:v for k,v in oldsys.items() if k not in ('version','checksum')}=={k:v for k,v in newsys.items() if k not in ('version','checksum')}
+ before=(BASE/'baseline-features/stdout.log').read_bytes()
+ after=(BASE/'patched-tree/stdout.log').read_bytes()
+ assert before==after.replace(b'2.1.2+zstd.1.5.7',b'2.0.16+zstd.1.5.7')
+ def members(version):
+  with tarfile.open(BASE/'upstream-first'/('zstd-sys-'+version)/'source.crate','r:gz') as archive:
+   return {m.name.split('/',1)[1]:sha(archive.extractfile(m).read()) for m in archive.getmembers() if m.isfile()}
+ before_members=members('2.0.16+zstd.1.5.7');after_members=members('2.1.2+zstd.1.5.7')
+ native={k:v for k,v in before_members.items() if k.startswith('zstd/lib/') and k.endswith(('.c','.h','.S'))}
+ assert native and all(after_members[k]==v for k,v in native.items())
+ write('result.json',dict(advisory_db_revision=revision,db_clean=True,advisories=rows,
+  old_lock=sha(previous),new_lock=sha(new),complete_graph_delta_only_sys=True,
+  all_target_features_identical_except_version=True,unchanged_native_c_header_assembly_count=len(native),
+  all_archive_member_delta={k:('added' if k not in before_members else 'removed' if k not in after_members else 'changed')
+   for k in sorted(before_members.keys()|after_members.keys()) if before_members.get(k)!=after_members.get(k)},
+  remaining_by_original_policy_bounds=10,release_admitted=False))
+ stdout.write(json.dumps(dict(reviewed=len(rows),native_source_members_identical=len(native),exact_graph_delta=True)).encode())
+print(json.dumps(dict(reviewed=len(rows),native_source_members_identical=len(native),exact_graph_delta=True)))
