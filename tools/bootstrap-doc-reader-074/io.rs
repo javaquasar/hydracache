@@ -5,7 +5,7 @@ mod read;
 pub use read::security_selected;
 pub use read::selected;
 #[path = "../source-successor-view-074/contract.rs"]
-mod successor;
+pub mod successor;
 pub fn project(root: &Path, path: &Path, raw: String) -> String {
     match selected(root, path) {
         Some(relative) => successor::project(relative, raw),

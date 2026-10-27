@@ -6,13 +6,14 @@ mod census_guard;
 mod entry_guard;
 
 fn read(name: &str) -> String {
-    std::fs::read_to_string(
+    let raw = std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../tools/long-run-supervisor-074/src")
             .join(name),
     )
     .unwrap()
-    .replace('\r', "")
+    .replace('\r', "");
+    current::project(name, raw)
 }
 
 #[test]
@@ -101,3 +102,9 @@ fn held_material_roles_leaf_has_no_new_live_query_effect_or_transport() {
     assert!(leaf.contains("inventory.len() == 20"));
     assert!(leaf.contains("inventory[at].fd"));
 }
+
+#[path = "../../../tools/held-security-view-074/contract.rs"]
+mod current;
+
+#[path = "../../../tools/security-input-view-074/contract.rs"]
+mod current_security;

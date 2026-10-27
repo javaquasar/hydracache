@@ -12,6 +12,7 @@ fn read(path: &str) -> String {
     let raw = std::fs::read_to_string(root().join(path))
         .unwrap()
         .replace('\r', "");
+    let raw = current::project(path, raw);
     if let Some(name) = path.strip_prefix("tools/long-run-supervisor-074/src/") {
         image_guard::provider_view(name, &raw)
     } else {
@@ -79,3 +80,9 @@ fn memfd_probe_has_no_retry_copy_fallback_or_automatic_promotion() {
         assert!(!probe.contains(word), "{word}");
     }
 }
+
+#[path = "../../../tools/held-security-view-074/contract.rs"]
+mod current;
+
+#[path = "../../../tools/security-input-view-074/contract.rs"]
+mod current_security;

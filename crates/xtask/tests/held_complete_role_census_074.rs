@@ -24,6 +24,7 @@ fn read(name: &str) -> String {
     )
     .unwrap()
     .replace('\r', "");
+    let raw = current::project(name, raw);
     provider_input::view(name, &raw)
 }
 
@@ -154,3 +155,9 @@ fn complete_role_census_is_inside_the_same_original_material_inventory() {
     assert_eq!(source.matches("owner.full_frame()?;").count(), 2);
     assert_eq!(source.matches("pub(crate) fn ").count(), 4);
 }
+
+#[path = "../../../tools/held-security-view-074/contract.rs"]
+mod current;
+
+#[path = "../../../tools/security-input-view-074/contract.rs"]
+mod current_security;

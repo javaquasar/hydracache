@@ -14,6 +14,7 @@ fn source(name: &str) -> String {
     )
     .unwrap()
     .replace('\r', "");
+    let raw = current::project(name, raw);
     image_guard::provider_view(name, &raw)
 }
 fn baseline(name: &str) -> String {
@@ -142,3 +143,8 @@ fn activation_ingress_compatibility_registration_preserves_every_old_format_byte
 
 #[path = "../../../tools/bootstrap-doc-reader-074/io.rs"]
 mod bootstrap_docs;
+
+#[path = "../../../tools/held-security-view-074/contract.rs"]
+mod current;
+
+use bootstrap_docs::successor::security as current_security;

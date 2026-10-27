@@ -67,3 +67,10 @@ See the [result and preserved first outcomes](../../docs/testing/performance/0.7
 This focused source compatibility result does not close the old red V8, incomplete
 Linux frontier, held-role/diagnostic boundaries, security or original execution.
 No new performance hypothesis, server, service, clock or product workload is used.
+
+The [held-source continuation](../../docs/testing/performance/0.74/held-current-view-result-20261027.md)
+makes only the already imported successor module visible for reuse by activation's
+test reader. Every facade function stays byte-identical; no new reader or
+production authority is exported. Sharing its existing security module avoids
+compiling a second instance. The 33-case held/bootstrap regression passes on
+Windows/MSRV/GNU, separately from the diagnostic-artifact target's 20 cases.
