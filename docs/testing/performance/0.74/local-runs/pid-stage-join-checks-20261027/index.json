@@ -1,0 +1,153 @@
+{
+  "archived_code_executed": false,
+  "local_checks_pass": true,
+  "members": {
+    "capture/pid-stage-doc-check/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/pid-stage-doc-check/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/pid-stage-doc-check/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/pid-stage-doc-check/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/pid-stage-doc-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/pid-stage-doc-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/pid-stage-doc-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/pid-stage-doc-check/intent.json": {
+      "bytes": 361324,
+      "sha256": "94bc8b2d5c6fec5bab37d3611e7bb03b500f46c18015e45927201241c57fbb35"
+    },
+    "capture/pid-stage-doc-check/process.json": {
+      "bytes": 14,
+      "sha256": "9a824aa841f0247aa1cbd91c112a1d716876f7c9df313aa2a6c5e83643f03e10"
+    },
+    "capture/pid-stage-doc-check/result.json": {
+      "bytes": 361196,
+      "sha256": "9d531ee69106556ff2e1160de152227e2146807a4ac8aa327523a8b422948094"
+    },
+    "capture/pid-stage-doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/pid-stage-doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "capture/pid-stage-final-doc-check/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/pid-stage-final-doc-check/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/pid-stage-final-doc-check/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/pid-stage-final-doc-check/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/pid-stage-final-doc-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/pid-stage-final-doc-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/pid-stage-final-doc-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/pid-stage-final-doc-check/intent.json": {
+      "bytes": 361324,
+      "sha256": "afcecd7300e2bf6b13fcdc422d9258eb1fd27fef69f957b983628c1397180ba5"
+    },
+    "capture/pid-stage-final-doc-check/process.json": {
+      "bytes": 14,
+      "sha256": "baeea0fe16a76f28093d78cd4d0169723cf91778901158ba1bd59146025b3749"
+    },
+    "capture/pid-stage-final-doc-check/result.json": {
+      "bytes": 361196,
+      "sha256": "2ca54952a2df84914e84d5a31a9db67602d2a07791697deecd0cec510020eaca"
+    },
+    "capture/pid-stage-final-doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/pid-stage-final-doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "capture/pid-stage-performance-contract/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/pid-stage-performance-contract/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/pid-stage-performance-contract/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/pid-stage-performance-contract/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/pid-stage-performance-contract/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/pid-stage-performance-contract/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/pid-stage-performance-contract/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/pid-stage-performance-contract/intent.json": {
+      "bytes": 361372,
+      "sha256": "4c8c4fa427631c18ec651ed7e1f48bf134a41c51ea43ae39167859543d25b154"
+    },
+    "capture/pid-stage-performance-contract/process.json": {
+      "bytes": 14,
+      "sha256": "2882aad84aa5f7b368a0cdc4eb3950b58699d9b8062e9e1e3a5a24716b4fb8b1"
+    },
+    "capture/pid-stage-performance-contract/result.json": {
+      "bytes": 361196,
+      "sha256": "0f4fff9ffeeef7eb49d0628a9d3dd25c38aaaf1be394735e0f520d7e670662f3"
+    },
+    "capture/pid-stage-performance-contract/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/pid-stage-performance-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    }
+  },
+  "package_pass": false,
+  "release_admitted": false,
+  "schema": "hc074-local-evidence-collection-v1"
+}

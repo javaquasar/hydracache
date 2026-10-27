@@ -36,3 +36,9 @@ Its exact source, compile refusal and failed controls remain in the
 [repair evidence](../../docs/testing/performance/0.74/package-closure-repairs-result-20261027.md).
 Keep PID's conditional read order and existing guards when designing a separate
 composition. A green focused cohort does not complete GNU or full package gates.
+
+The later [isolated PID stage repair](../../docs/testing/performance/0.74/pid-stage-join-result-20261027.md)
+leaves these six rules unchanged. It joins only origin after custody, retains
+the complete old PID comparison and explicitly keeps fresh-status on its
+legacy path. The original conditional readers remain unchanged. Composed
+Windows/MSRV cohorts each pass 42 cases; GNU/full package admission remains open.

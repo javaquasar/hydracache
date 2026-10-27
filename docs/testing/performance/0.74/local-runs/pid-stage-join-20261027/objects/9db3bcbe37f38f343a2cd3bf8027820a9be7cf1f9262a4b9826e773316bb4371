@@ -1,0 +1,90 @@
+{
+  "clocks": false,
+  "focused_repair_pass": true,
+  "full_package_pass": false,
+  "gnu_validation_pass": false,
+  "implementation_commit": "7f4d185820e0c14a9fba4bb482f98e65df5172ce",
+  "limitations": [
+    "Initial stage probe source is bound by its pre/post map; only its output, not a standalone initial probe source snapshot, is retained.",
+    "The reused outer source map excludes scripts/perf. Provider script witnesses below are after-run comparisons, not temporal pre/post evidence.",
+    "These are Windows source-only/focused fixtures, not GNU full-package or original execution admission."
+  ],
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "performance_measurement": false,
+  "qualification": false,
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "stage_join_edits": 15,
+  "stage_join_paths": 1,
+  "summary": {
+    "pid-package-composed-msrv": {
+      "exit": 0,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 42,
+      "targets": 12
+    },
+    "pid-package-composed-windows": {
+      "exit": 0,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 42,
+      "targets": 12
+    },
+    "pid-stage-all-features-clippy": {
+      "exit": 0,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 0,
+      "targets": 0
+    },
+    "pid-stage-all-targets-check": {
+      "exit": 0,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 0,
+      "targets": 0
+    },
+    "pid-stage-boundaries-first": {
+      "exit": 0,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "targets": 1
+    },
+    "pid-stage-join-byte-digest": {
+      "exit": 101,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 18,
+      "targets": 7
+    },
+    "pid-stage-join-composed": {
+      "exit": 0,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 19,
+      "targets": 7
+    },
+    "pid-stage-join-first": {
+      "exit": 101,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 0,
+      "targets": 0
+    },
+    "pid-stage-targeted-format": {
+      "exit": 0,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 0,
+      "targets": 0
+    }
+  },
+  "unchanged_full_gnu_result": "1324 passed; 10 failed; 153 targets; source 636feb166b273b5c3d6fc0b93c4fccf57560cf03"
+}

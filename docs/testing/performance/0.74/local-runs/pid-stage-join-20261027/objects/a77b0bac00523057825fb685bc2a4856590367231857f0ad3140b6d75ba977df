@@ -1,0 +1,67 @@
+
+running 2 tests
+test fresh_status_reconstructs_all_changed_old_bodies_and_hooks ... ok
+test fresh_status_adapter_refuses_missing_duplicate_and_other_validation_drift ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+
+
+running 2 tests
+test fresh_status_reader_changes_only_admission_input_before_original_normalizers ... ok
+test fresh_status_admission_requires_exact_source_and_helper_before_old_input ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+
+
+running 3 tests
+test every_original_case_and_assertion_token_stays_exact ... ok
+test exact_current_and_previous_producers_bind_all_six_inverse_rows ... ok
+test fresh_complete_body_is_required_for_each_call_and_seeded_mutants_refuse ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.38s
+
+
+running 3 tests
+test pid_path_adopted_formatter_is_exactly_the_measured_frozen_prototype ... ok
+test pid_path_reconstructs_every_changed_old_body_and_test_hook ... ok
+test pid_path_adapter_refuses_missing_duplicate_and_unrelated_live_drift ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.77s
+
+
+running 2 tests
+test pid_path_reader_preserves_all_old_assertions_and_normalizer_order ... ok
+test pid_path_admission_view_requires_the_exact_current_candidate ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+
+running 3 tests
+test exact_join_refuses_missing_duplicate_stale_and_seeded_drift_without_hiding_bytes ... ok
+test old_pid_body_and_both_readers_remain_exact_and_fresh_status_explicitly_uses_legacy ... FAILED
+test original_conditional_reader_and_custody_stages_are_bound_to_named_producers ... ok
+
+failures:
+
+---- old_pid_body_and_both_readers_remain_exact_and_fresh_status_explicitly_uses_legacy stdout ----
+
+thread 'old_pid_body_and_both_readers_remain_exact_and_fresh_status_explicitly_uses_legacy' (16444) panicked at crates\xtask\tests\support\custody_cost_guard.rs:27:13:
+assertion `left == right` failed: exact custody observation hook
+  left: 0
+ right: 1
+
+
+failures:
+    old_pid_body_and_both_readers_remain_exact_and_fresh_status_explicitly_uses_legacy
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+
+
+running 4 tests
+test selected_kernel_and_compat_join_use_independent_producers_without_extra_reads ... ok
+test stale_partial_duplicate_and_unrelated_caller_edits_refuse_after_success ... ok
+test seven_exact_caller_constructions_preserve_all_eighteen_cases_and_assertions ... ok
+test immutable_nine_eighty_one_gate_still_refuses_new_caller_without_explicit_join ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.51s
+

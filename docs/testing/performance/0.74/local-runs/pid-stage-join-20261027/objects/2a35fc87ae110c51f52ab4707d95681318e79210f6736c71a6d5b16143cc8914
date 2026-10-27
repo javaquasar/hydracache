@@ -1,0 +1,13 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.95s
+     Running tests\fresh_kernel_cost_074.rs (target\debug\deps\fresh_kernel_cost_074-25f993699deed3cd.exe)
+     Running tests\fresh_status_reader_074.rs (target\debug\deps\fresh_status_reader_074-6e4f5a5772244580.exe)
+     Running tests\historical_source_cache_074.rs (target\debug\deps\historical_source_cache_074-f3d58766fe894dcc.exe)
+     Running tests\memory_compat_071.rs (target\debug\deps\memory_compat_071-02c4893712f4aecd.exe)
+     Running tests\memory_profile_071.rs (target\debug\deps\memory_profile_071-834a7f9825207aa1.exe)
+     Running tests\package_closure_inputs_074.rs (target\debug\deps\package_closure_inputs_074-9e21ebe05bf97dd8.exe)
+     Running tests\pid_path_cost_074.rs (target\debug\deps\pid_path_cost_074-9cd86608a5ecc5f9.exe)
+     Running tests\pid_path_reader_074.rs (target\debug\deps\pid_path_reader_074-4e4daced4151fe19.exe)
+     Running tests\pid_stage_join_074.rs (target\debug\deps\pid_stage_join_074-adfddf0a560b4736.exe)
+     Running tests\remaining_readers_074.rs (target\debug\deps\remaining_readers_074-0d83a871dff85d09.exe)
+     Running tests\role_census_reader_074.rs (target\debug\deps\role_census_reader_074-9e43509eb2457541.exe)
+     Running tests\validation_leaf_reader_074.rs (target\debug\deps\validation_leaf_reader_074-ce3c503f1907ea1e.exe)

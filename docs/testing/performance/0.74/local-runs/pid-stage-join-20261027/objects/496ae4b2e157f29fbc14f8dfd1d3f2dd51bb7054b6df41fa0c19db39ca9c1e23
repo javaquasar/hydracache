@@ -1,0 +1,24 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: constant `STACK` is never used
+  --> crates\xtask\tests\support\pid_path_guard.rs:17:18
+   |
+17 | pub(crate) const STACK: &str = r#"
+   |                  ^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `CHANGES` is never used
+  --> crates\xtask\tests\support\pid_path_guard.rs:49:18
+   |
+49 | pub(crate) const CHANGES: [(&str, &str, &str); 5] = [
+   |                  ^^^^^^^
+
+warning: function `normalize` is never used
+  --> crates\xtask\tests\support\pid_path_guard.rs:56:15
+   |
+56 | pub(crate) fn normalize(path: &str, raw: &str) -> String {
+   |               ^^^^^^^^^
+
+warning: `xtask` (test "pid_stage_join_074") generated 3 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 46.96s
+     Running tests\pid_stage_join_074.rs (target\debug\deps\pid_stage_join_074-adfddf0a560b4736.exe)

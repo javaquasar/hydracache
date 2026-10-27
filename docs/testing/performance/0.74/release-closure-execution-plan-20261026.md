@@ -251,8 +251,10 @@ preservation controls pass; check/strict Clippy and targeted formatting pass.
 The first Windows workspace-format error 206, digest compile refusal and rejected
 PID candidate remain in evidence. PID's source edits/three rows are reverted:
 its admission input already follows a verified runtime reader, and changing the
-PID caller correctly trips the immutable old source guard. That join still needs
-an isolated repair. GNU validation and fresh complete source/script/environment
+PID caller correctly trips the immutable old source guard. The later
+[isolated PID stage repair](pid-stage-join-result-20261027.md) preserves both
+readers and that guard; Windows/MSRV composed cohorts each pass 42 cases.
+GNU validation and fresh complete source/script/environment
 closure remain prerequisites to another full command; do not call these focused
 passes package coverage or reuse the old fixed 153-target review. Preserve the
 source-map limitations and distinguish caught panics from the terminal refusal.

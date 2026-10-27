@@ -21571,3 +21571,29 @@ only its edits are reverted; neither check is weakened to accommodate it. The
 next composition must account for those stages explicitly. Reading the terminal
 uncaught panic also matters: an earlier panic in a negative control can be
 expected and caught, and must not be mistaken for the actual cause of failure.
+
+The [separate PID stage repair](../testing/performance/0.74/pid-stage-join-result-20261027.md)
+then records the actual intermediate bodies rather than inferring their state
+from the shared path name. Admission already matches the PID producer after
+document normalization; the allocation-hook file matches after custody. Only
+origin retains later FD-identity and operation-observer edits. Fifteen exact
+inverse hunks join that one path before the unchanged PID substitutions and
+complete old-body comparison. The original conditional reader stays untouched.
+
+Consumer identity matters as much as input identity. Fresh-status uses the same
+helper but already enters an earlier origin stage. It must explicitly retain
+the legacy path instead of receiving origin's new join. This also preserves
+the old mutation contract: unrelated changed bytes reach the final comparison,
+while a missing or duplicated required hunk refuses. A strict intermediate
+whole-body hash would incorrectly turn some expected semantic comparisons into
+early panics; the new stage hashes instead provide independent provenance
+controls. They are not permission to skip a live check or execute old code.
+
+The first diagnostic formatter has a compile refusal. The next new control
+also catches a real stage error in itself: it feeds post-custody bytes into a
+function that must still consume custody hooks. Both first outcomes and exact
+candidate sources remain retained. After correcting those test defects, twelve
+focused targets pass 42 cases separately on Windows 1.94 and MSRV 1.88; strict
+lint, all-targets check and targeted formatting pass. This closes a source-test
+composition defect, not a throughput experiment. GNU validation and a newly
+reviewed full package command still precede any release admission.

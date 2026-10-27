@@ -1,0 +1,12 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.47s
+     Running tests\fresh_kernel_cost_074.rs (target\debug\deps\fresh_kernel_cost_074-25f993699deed3cd.exe)
+     Running tests\fresh_status_reader_074.rs (target\debug\deps\fresh_status_reader_074-6e4f5a5772244580.exe)
+     Running tests\package_closure_inputs_074.rs (target\debug\deps\package_closure_inputs_074-9e21ebe05bf97dd8.exe)
+     Running tests\pid_path_cost_074.rs (target\debug\deps\pid_path_cost_074-9cd86608a5ecc5f9.exe)
+     Running tests\pid_path_reader_074.rs (target\debug\deps\pid_path_reader_074-4e4daced4151fe19.exe)
+     Running tests\pid_stage_join_074.rs (target\debug\deps\pid_stage_join_074-adfddf0a560b4736.exe)
+error: test failed, to rerun pass `-p xtask --test pid_stage_join_074`
+     Running tests\remaining_readers_074.rs (target\debug\deps\remaining_readers_074-0d83a871dff85d09.exe)
+error: 1 target failed:
+    `-p xtask --test pid_stage_join_074`

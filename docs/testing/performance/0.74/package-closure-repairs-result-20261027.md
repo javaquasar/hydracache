@@ -120,3 +120,8 @@ then admit a distinct full command under the same 780-second/four-thread/floor
 contract. No unchanged full run, new performance hypothesis, dependency update,
 server/service/clock action, product load or qualification occurs. Qualification
 identity, all live checks and original 300/60/10 origins/windows remain unchanged.
+
+The subsequent [PID stage repair](pid-stage-join-result-20261027.md) closes the
+focused Windows/MSRV composition without editing either original reader or the
+six rules above. It preserves these first rejected outcomes. GNU validation and
+a fresh full-package admission remain the next requirements.
