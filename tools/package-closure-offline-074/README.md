@@ -46,3 +46,12 @@ on Windows, with three Linux-only skips on Windows. Earlier control defects and
 their exact source witnesses remain in the evidence. Restore physical build
 capacity before admitting any distinct attempt; do not lower the floor, extend
 the bound or infer a package pass from cleanup success.
+
+The operator subsequently restores capacity. The [separate full result](../../docs/testing/performance/0.74/native-full-capacity-restored-result-20261027.md)
+completes 153/153 targets with 1,324 passes, ten failures and no ignored cases,
+under the same contract and with complete postflight. Its new fixed output is
+also consumed; current `--execute` must not be invoked again. The final controls
+pass ten Linux cases and seven Windows cases with three Linux-only skips. Two
+fixtures require an unreviewed `python` executable; eight source/predecessor
+assertions refuse. Review/repair those exact boundaries before any distinct
+candidate; source review alone did not establish a green whole package.

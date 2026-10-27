@@ -21536,3 +21536,20 @@ quota. Capacity planning therefore becomes a prerequisite for the next distinct
 attempt, not grounds to relax the gate or retry until green. These findings improve
 the test controller, not HydraCache throughput, production writer retirement or
 release readiness. All live checks, original deadlines and first outcomes remain.
+
+After the operator removes old Windows symbols, the [separate full GNU command](../testing/performance/0.74/native-full-capacity-restored-result-20261027.md)
+finally completes every one of the 153 targets inside the unchanged bound. It
+reports 1,324 passes and ten failures, without ignored cases or a missing suffix.
+Complete postflight and kernel-owned CI retirement pass. Restoring capacity
+therefore closes a resource prerequisite, not test correctness or release
+readiness; the earlier Windows timeout remains a separate result.
+
+The failures reveal limits of the preceding source review. Two old fixtures ask
+for `python`, although the actual GNU preflight only checks `python3`. Eight
+other cases reject exact source or historical composition. A reviewed source
+inventory cannot substitute for executing every default target, and a later
+source edit does not become compatible merely because its author intended to
+preserve semantics. The next repair must account for each complete delta while
+retaining pins, read order, original assertions and mutation controls. Neither
+installing an interpreter alias mid-run nor loosening a historical comparison
+would make the retained command pass. No performance hypothesis is reopened.

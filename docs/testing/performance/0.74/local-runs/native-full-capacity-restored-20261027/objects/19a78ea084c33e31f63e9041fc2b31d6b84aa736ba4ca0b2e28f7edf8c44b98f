@@ -1,0 +1,33 @@
+{
+  "accounting_present": true,
+  "actual_package_dispatches": 1,
+  "automatic_retry": false,
+  "clocks": false,
+  "controller": {
+    "bound_seconds": 780,
+    "classification": "test-failure",
+    "cleanup_errors": [],
+    "cleanup_seconds": 5,
+    "exit": 101,
+    "observed_cargo_exit": 101,
+    "retired": true
+  },
+  "controller_commit": "160dbe09bc4bbe80d847761d23a1ce2bf71ab10f",
+  "first_portable_path_oracle_failure_retained": true,
+  "full_native_postflight": true,
+  "native_source": "636feb166b273b5c3d6fc0b93c4fccf57560cf03",
+  "original_bound_seconds": 780,
+  "package_pass": false,
+  "physical_floor_bytes": 4294967296,
+  "physical_free_after": 13178982400,
+  "physical_free_before": 25734336512,
+  "prior_resource_refusals_unchanged": true,
+  "product_load": false,
+  "qualification": false,
+  "release_admitted": false,
+  "schema": "hc074-capacity-restored-package-evidence-v1",
+  "server": false,
+  "services": false,
+  "test_threads": 4,
+  "windows_source_and_head_unchanged": true
+}

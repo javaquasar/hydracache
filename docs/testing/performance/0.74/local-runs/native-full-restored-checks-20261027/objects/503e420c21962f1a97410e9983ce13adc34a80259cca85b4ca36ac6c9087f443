@@ -1,0 +1,86 @@
+"""Strict current-parser replay over retained data and exact staged bytes only."""
+import hashlib
+import importlib.util
+import json
+from pathlib import Path, PurePosixPath
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+FOLDER = ROOT / 'docs/testing/performance/0.74/local-runs/native-full-capacity-restored-20261027'
+DIGEST = 'e9ca6dd7620d908055ad4c6cc36e739b168a473cdf2380224a8ada9de4ac6564'
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+raw = (FOLDER / 'index.json').read_bytes()
+assert sha(raw) == DIGEST
+index = json.loads(raw)
+assert not index['package_pass'] and not index['release_admitted'] and not index['archived_code_executed']
+expected = {(FOLDER / 'index.json').relative_to(ROOT).as_posix(): raw}
+values, digests = {}, set()
+for name, row in index['members'].items():
+    path = PurePosixPath(name)
+    assert path.parts and not path.is_absolute() and '..' not in path.parts
+    assert re.fullmatch('[0-9a-f]{64}', row['sha256'])
+    value = (FOLDER / 'objects' / row['sha256']).read_bytes()
+    assert len(value) == row['bytes'] and sha(value) == row['sha256'], name
+    values[name] = value
+    digests.add(row['sha256'])
+    expected[(FOLDER / 'objects' / row['sha256']).relative_to(ROOT).as_posix()] = value
+assert len(values) == 81 and len(digests) == 42
+assert {p.name for p in (FOLDER / 'objects').iterdir()} == digests
+for name, value in values.items():
+    if name.startswith('source-witnesses/'):
+        _, phase, file = name.split('/')
+        intent = json.loads(values[f'capture/{phase}/intent.json'])
+        assert sha(value) == intent['source']['tools/package-closure-offline-074/' + file], name
+prefix = 'attempt/native-full-package-capacity-restored-20261027/'
+review = json.loads(values[prefix+'review.json'])
+controller = json.loads(values[prefix+'controller.json'])
+result = json.loads(values[prefix+'result.json'])
+accounting = json.loads(values[prefix+'accounting.json'])
+assert controller == dict(bound_seconds=780, classification='test-failure', cleanup_errors=[],
+    cleanup_seconds=5, exit=101, observed_cargo_exit=101, retired=True)
+assert result['complete_native_source_and_refs_unchanged'] and result['accounting_assessed']
+assert not result['package_pass'] and not result['release_admitted']
+assert (accounting['passed'], accounting['failed'], accounting['ignored']) == (1324, 10, 0)
+assert accounting['complete'] and accounting['completed_targets'] == 153
+assert not accounting['unstarted_targets'] and accounting['incomplete_target'] is None
+parser_path = ROOT / 'tools/xtask-package-attribution-074/review.py'
+assert sha(parser_path.read_bytes()) == '0229d4067fffd0d0b5acee7d864efc64aadfb201de1ea3f17944a2f8dddf3c4d'
+spec = importlib.util.spec_from_file_location('current_checked_package_parser', parser_path)
+parser = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(parser)
+stdout, stderr = (values[prefix+n].decode('utf-8') for n in ('stdout.log', 'stderr.log'))
+assert parser.parse_transcript(stdout, stderr, review['targets'], 101, None, 780) == accounting
+changed = re.sub(r'(?m)^(test result: ok\. )(\d+)( passed;)',
+    lambda m: m[1]+str(int(m[2])+1)+m[3], stdout, count=1)
+assert changed != stdout
+mutants = [(changed, stderr, review['targets'], 101, None, 780),
+           (stdout, stderr, review['targets'], 101, None, 781),
+           (stdout, stderr, review['targets'], 0, None, 780),
+           (stdout, stderr, review['targets'][:-1], 101, None, 780)]
+for args in mutants:
+    try:
+        parser.parse_transcript(*args)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('tampered transcript accepted')
+assert sha((ROOT / 'Cargo.lock').read_bytes()) == 'e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5'
+assert sha((ROOT / 'docs/testing/performance/0.74/qualification-manifest.toml').read_bytes()) == '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
+names = sorted(expected)
+batch = subprocess.run(['git', '--no-replace-objects', 'cat-file', '--batch'], cwd=ROOT,
+    input=''.join(':'+name+'\n' for name in names).encode(), capture_output=True, timeout=60, check=True)
+assert not batch.stderr
+at = 0
+for name in names:
+    end = batch.stdout.index(b'\n', at)
+    header = batch.stdout[at:end].split()
+    assert len(header) == 3 and header[1] == b'blob', name
+    size = int(header[2]); at = end+1
+    assert batch.stdout[at:at+size] == expected[name], name
+    assert batch.stdout[at+size:at+size+1] == b'\n'
+    at += size+1
+assert at == len(batch.stdout)
+print(json.dumps(dict(index_sha256=DIGEST, members=len(values), staged_blobs=len(names),
+    source_witnesses_exact=True, data_and_staged_bytes_exact=True, strict_reparse_exact=True,
+    tamper_controls=len(mutants), package_pass=False, release_admitted=False)))

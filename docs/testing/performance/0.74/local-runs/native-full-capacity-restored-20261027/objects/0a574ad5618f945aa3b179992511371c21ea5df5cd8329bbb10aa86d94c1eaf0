@@ -1,0 +1,143 @@
+{
+  "all_causes_repaired": false,
+  "failures": [
+    {
+      "block_bytes": 187,
+      "block_sha256": "67becabf71c35532c999458ce00840db06ad204a24719381f41d0514d380d088",
+      "case": "reviewed_inputs_delegate_only_their_exact_frozen_lookup",
+      "classification": "source-or-predecessor-assertion-mismatch",
+      "first_two_lines": [
+        "thread 'reviewed_inputs_delegate_only_their_exact_frozen_lookup' (143548) panicked at crates/xtask/tests/historical_source_cache_074.rs:102:5:",
+        "assertion failed: same(&expected, &actual)"
+      ]
+    },
+    {
+      "block_bytes": 211,
+      "block_sha256": "281a82ab244edd52fc8a9cc0d57f6a49bfdf04b7b4e80cde62adf7314dd6ace6",
+      "case": "immutable_source_cache_changes_only_the_historical_loader_not_current_validation",
+      "classification": "source-or-predecessor-assertion-mismatch",
+      "first_two_lines": [
+        "thread 'immutable_source_cache_changes_only_the_historical_loader_not_current_validation' (143546) panicked at crates/xtask/tests/historical_source_cache_074.rs:69:5:",
+        "assertion failed: same(&expected, &actual)"
+      ]
+    },
+    {
+      "block_bytes": 326,
+      "block_sha256": "a7feefd136d71a57f5d041df519da191db56ae520ee8239f7058b21da4cd1473",
+      "case": "public_api_gate_covers_every_publishable_package_and_blocks_release",
+      "classification": "missing-python-executable",
+      "first_two_lines": [
+        "thread 'public_api_gate_covers_every_publishable_package_and_blocks_release' (143953) panicked at crates/xtask/tests/memory_compat_071.rs:106:10:",
+        "run public API inventory check: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }"
+      ]
+    },
+    {
+      "block_bytes": 343,
+      "block_sha256": "e301c12be7b18848504e3cb837bc954d6de5ee8f8c31ea56191d59c92c5ba384",
+      "case": "provider_fixture_proves_ordering_classification_and_redaction",
+      "classification": "missing-python-executable",
+      "first_two_lines": [
+        "thread 'provider_fixture_proves_ordering_classification_and_redaction' (143987) panicked at crates/xtask/tests/memory_profile_071.rs:69:10:",
+        "python is required by the 0.71 provider contract gate: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }"
+      ]
+    },
+    {
+      "block_bytes": 37472,
+      "block_sha256": "0a8ff907856c96f5e1731dcb5bfad187ba0f71c81d03040673a4ec2a29b1dc05",
+      "case": "pid_path_reconstructs_every_changed_old_body_and_test_hook",
+      "classification": "source-or-predecessor-assertion-mismatch",
+      "first_two_lines": [
+        "thread 'pid_path_reconstructs_every_changed_old_body_and_test_hook' (157149) panicked at crates/xtask/tests/pid_path_cost_074.rs:36:9:",
+        "assertion `left == right` failed: tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs"
+      ]
+    },
+    {
+      "block_bytes": 6014,
+      "block_sha256": "3335a4df9c2a2ce445e157c5dd094aad29d388b21a09816c1da1830aeda53cd7",
+      "case": "stale_partial_duplicate_and_unrelated_caller_edits_refuse_after_success",
+      "classification": "source-or-predecessor-assertion-mismatch",
+      "first_two_lines": [
+        "thread 'stale_partial_duplicate_and_unrelated_caller_edits_refuse_after_success' (158072) panicked at crates/xtask/tests/remaining_readers_074.rs:95:9:",
+        "assertion `left == right` failed"
+      ]
+    },
+    {
+      "block_bytes": 393946,
+      "block_sha256": "530d55327e9077f029ae0abffeedee82453a4045fdad63e28c40fd6e5d0b193a",
+      "case": "selected_kernel_and_compat_join_use_independent_producers_without_extra_reads",
+      "classification": "source-or-predecessor-assertion-mismatch",
+      "first_two_lines": [
+        "thread 'selected_kernel_and_compat_join_use_independent_producers_without_extra_reads' (158070) panicked at crates/xtask/tests/../../../tools/authority-runtime-074/../source-successor-view-074/contract.rs:89:5:",
+        "assertion `left == right` failed: unreviewed source successor before historical assertions: tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs"
+      ]
+    },
+    {
+      "block_bytes": 12387,
+      "block_sha256": "965cccfbe003fa0b56f9967333390adf8e4cf6a026ae4c7abcbe03ac8b9888d7",
+      "case": "seven_exact_caller_constructions_preserve_all_eighteen_cases_and_assertions",
+      "classification": "source-or-predecessor-assertion-mismatch",
+      "first_two_lines": [
+        "thread 'seven_exact_caller_constructions_preserve_all_eighteen_cases_and_assertions' (158071) panicked at crates/xtask/tests/../../../tools/remaining-readers-074/contract.rs:34:5:",
+        "assertion `left == right` failed"
+      ]
+    },
+    {
+      "block_bytes": 12709,
+      "block_sha256": "066e90203de7a10a3f2eb5f911d13e6b1107ed3118813d48d3d10f3179af99bf",
+      "case": "census_reader_preserves_every_original_assertion_and_only_adapts_one_provider",
+      "classification": "source-or-predecessor-assertion-mismatch",
+      "first_two_lines": [
+        "thread 'census_reader_preserves_every_original_assertion_and_only_adapts_one_provider' (158262) panicked at crates/xtask/tests/role_census_reader_074.rs:52:5:",
+        "assertion `left == right` failed"
+      ]
+    },
+    {
+      "block_bytes": 911250,
+      "block_sha256": "53585bf74cb0f47b05b133dd85e5949539e3dcf43b3b31bbb027c0c0a9a93a18",
+      "case": "leaf_registry_input_checks_current_bytes_before_returning_predecessor",
+      "classification": "source-or-predecessor-assertion-mismatch",
+      "first_two_lines": [
+        "thread 'leaf_registry_input_checks_current_bytes_before_returning_predecessor' (158471) panicked at crates/xtask/tests/validation_leaf_reader_074.rs:51:5:",
+        "assertion `left == right` failed"
+      ]
+    }
+  ],
+  "live_predicates_weakened": false,
+  "targets": [
+    {
+      "failed": 2,
+      "passed": 5,
+      "target": "tests/historical_source_cache_074.rs"
+    },
+    {
+      "failed": 1,
+      "passed": 4,
+      "target": "tests/memory_compat_071.rs"
+    },
+    {
+      "failed": 1,
+      "passed": 4,
+      "target": "tests/memory_profile_071.rs"
+    },
+    {
+      "failed": 1,
+      "passed": 2,
+      "target": "tests/pid_path_cost_074.rs"
+    },
+    {
+      "failed": 3,
+      "passed": 1,
+      "target": "tests/remaining_readers_074.rs"
+    },
+    {
+      "failed": 1,
+      "passed": 1,
+      "target": "tests/role_census_reader_074.rs"
+    },
+    {
+      "failed": 1,
+      "passed": 1,
+      "target": "tests/validation_leaf_reader_074.rs"
+    }
+  ]
+}

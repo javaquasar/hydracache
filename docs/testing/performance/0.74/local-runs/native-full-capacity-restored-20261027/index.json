@@ -1,0 +1,332 @@
+{
+  "archived_code_executed": false,
+  "members": {
+    "attempt/native-full-package-capacity-restored-20261027/accounting.json": {
+      "bytes": 267066,
+      "sha256": "c23babd2c557e189da7a5bfa0271c7a8d63fc9d6fc58f3578d7d05ab51d9e1a7"
+    },
+    "attempt/native-full-package-capacity-restored-20261027/controller.json": {
+      "bytes": 175,
+      "sha256": "fb79e5e2cd2d51858768143d77dee781a50dadd9fa3c0b32f743b883ac7e33d4"
+    },
+    "attempt/native-full-package-capacity-restored-20261027/intent.json": {
+      "bytes": 811,
+      "sha256": "8d9c720d11b42a0528c15858086b0cbf83b62d7e401a4646a0ed27f6be8318a0"
+    },
+    "attempt/native-full-package-capacity-restored-20261027/result.json": {
+      "bytes": 241,
+      "sha256": "c4da6122aa64913ec34111717444546169f4c6e49df7d58c7f1f472d1cef4951"
+    },
+    "attempt/native-full-package-capacity-restored-20261027/review.json": {
+      "bytes": 102113,
+      "sha256": "9ba7b393a433b48112df57615f91c5019998ed96cc01b03237a9c4dbcf86ea07"
+    },
+    "attempt/native-full-package-capacity-restored-20261027/stderr.log": {
+      "bytes": 23071,
+      "sha256": "ef194f14661a45956497315b7dca170d69a4d43b66f7a1b7ce924936c72a4410"
+    },
+    "attempt/native-full-package-capacity-restored-20261027/stdout.log": {
+      "bytes": 1523282,
+      "sha256": "29f2216d535ad9d56b6b8f01d6dbb1a454919b0ba68ecf9ef3e2a17423958fd8"
+    },
+    "capture/native-full-coordinator-restored-controls/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/native-full-coordinator-restored-controls/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/native-full-coordinator-restored-controls/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/native-full-coordinator-restored-controls/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/native-full-coordinator-restored-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/native-full-coordinator-restored-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/native-full-coordinator-restored-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/native-full-coordinator-restored-controls/intent.json": {
+      "bytes": 360604,
+      "sha256": "50e5e5c9aab9b71b58094cf35104af140c70333f0e4e291c1786f29ccd9c7e2d"
+    },
+    "capture/native-full-coordinator-restored-controls/process.json": {
+      "bytes": 14,
+      "sha256": "d8103c810a15336b9d6e346dedcb8500ebc9b16e075abbb2d9104ffad7088079"
+    },
+    "capture/native-full-coordinator-restored-controls/result.json": {
+      "bytes": 360225,
+      "sha256": "462d0f5242c6f2209310aaa080b4d03ab95a99fe167e1e17ecb1f1679a0bc930"
+    },
+    "capture/native-full-coordinator-restored-controls/stderr.log": {
+      "bytes": 1461,
+      "sha256": "499f57440a2c16b3befb1e94b10ecaa73950f92d15d7f8d700f1718e9f4e5f4d"
+    },
+    "capture/native-full-coordinator-restored-controls/stdout.log": {
+      "bytes": 150,
+      "sha256": "6db60fb7e5a80a2c51c65588a38d512fd09380c9859f8f7b39e6c969cf2fcce8"
+    },
+    "capture/native-full-coordinator-restored-final-controls/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/native-full-coordinator-restored-final-controls/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/native-full-coordinator-restored-final-controls/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/native-full-coordinator-restored-final-controls/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/native-full-coordinator-restored-final-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/native-full-coordinator-restored-final-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/native-full-coordinator-restored-final-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/native-full-coordinator-restored-final-controls/intent.json": {
+      "bytes": 360604,
+      "sha256": "c709f5a0e3333d90d798c214b8d9212fd5af0a5f2ea489075d65173081065a9e"
+    },
+    "capture/native-full-coordinator-restored-final-controls/process.json": {
+      "bytes": 14,
+      "sha256": "f8c5fa78af0ac8de365a1397ef67965e6288e965133b330ad32ae5ab0333d4ed"
+    },
+    "capture/native-full-coordinator-restored-final-controls/result.json": {
+      "bytes": 360225,
+      "sha256": "415bacd9a01dd77682691d4156b91558567a3f313d4071fbdace9f6f2030acaf"
+    },
+    "capture/native-full-coordinator-restored-final-controls/stderr.log": {
+      "bytes": 1461,
+      "sha256": "21b0af23c1c7b2a7eb9796da44a18e0cd7801e88419b2fb9e82ade5e42aac261"
+    },
+    "capture/native-full-coordinator-restored-final-controls/stdout.log": {
+      "bytes": 150,
+      "sha256": "6db60fb7e5a80a2c51c65588a38d512fd09380c9859f8f7b39e6c969cf2fcce8"
+    },
+    "capture/native-full-package-capacity-restored/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/native-full-package-capacity-restored/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/native-full-package-capacity-restored/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/native-full-package-capacity-restored/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/native-full-package-capacity-restored/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/native-full-package-capacity-restored/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/native-full-package-capacity-restored/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/native-full-package-capacity-restored/intent.json": {
+      "bytes": 360531,
+      "sha256": "3eae6c9e6160a2a1b64753736e7a2371dcc6f6ca77822b23b63739f7036edeca"
+    },
+    "capture/native-full-package-capacity-restored/process.json": {
+      "bytes": 13,
+      "sha256": "6e02472f50ba614c6949c0e89f100555a26d26851163822d023338843e374439"
+    },
+    "capture/native-full-package-capacity-restored/result.json": {
+      "bytes": 360225,
+      "sha256": "b3500d5936dfde969972dd22e9a28a6f47e14dfe5ca3f987d45f23168ca0e479"
+    },
+    "capture/native-full-package-capacity-restored/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/native-full-package-capacity-restored/stdout.log": {
+      "bytes": 1133,
+      "sha256": "2f2e3dcf830801fdb02fdb39e8687cfc6818e316b9354cf8452d0ba5540011a3"
+    },
+    "capture/native-full-restored-portable-final-controls/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/native-full-restored-portable-final-controls/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/native-full-restored-portable-final-controls/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/native-full-restored-portable-final-controls/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/native-full-restored-portable-final-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/native-full-restored-portable-final-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/native-full-restored-portable-final-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/native-full-restored-portable-final-controls/intent.json": {
+      "bytes": 360484,
+      "sha256": "64dfbd1a08db9a2837f53fc10cb8b5d5ca0c0083577c1db154d975549d3ed275"
+    },
+    "capture/native-full-restored-portable-final-controls/process.json": {
+      "bytes": 14,
+      "sha256": "9cc8138e22cbec2946f18a09ced8269988e11c9cd0b8dac4ee43ac647da57624"
+    },
+    "capture/native-full-restored-portable-final-controls/result.json": {
+      "bytes": 360225,
+      "sha256": "a856ba7ff3c8af863f287f4c757adfd3cc5cc274fac13d1aac3042e8ffe66f45"
+    },
+    "capture/native-full-restored-portable-final-controls/stderr.log": {
+      "bytes": 1611,
+      "sha256": "c83341bdc17fb7c95b3e02d56827a3717d09df2d70f9fc3827ce0a6cb0f35172"
+    },
+    "capture/native-full-restored-portable-final-controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/native-full-restored-windows-controls/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/native-full-restored-windows-controls/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/native-full-restored-windows-controls/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/native-full-restored-windows-controls/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/native-full-restored-windows-controls/inputs/gnu_package.py": {
+      "bytes": 11266,
+      "sha256": "4181e1e5bda2cd14a66a32eee7da27a47f8f0f3893b01c7996a8b93dcc40a200"
+    },
+    "capture/native-full-restored-windows-controls/inputs/test_gnu_package.py": {
+      "bytes": 9162,
+      "sha256": "7a94e2d2af42f6186c50f032100d18258ae1abc800468583768d177678a53516"
+    },
+    "capture/native-full-restored-windows-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/native-full-restored-windows-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/native-full-restored-windows-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/native-full-restored-windows-controls/intent.json": {
+      "bytes": 360484,
+      "sha256": "d3e32f8889a4c326a3f8cd9c40b1931842110adc31b746c04faf53c52723f078"
+    },
+    "capture/native-full-restored-windows-controls/process.json": {
+      "bytes": 14,
+      "sha256": "25415e27439da2c6f7fa9cc58dd219b6782f9f4aa907e6972cedb492084d5ec5"
+    },
+    "capture/native-full-restored-windows-controls/result.json": {
+      "bytes": 360225,
+      "sha256": "7ca17ca7aef3d3e754cb42d3889c5cd236c2f29b93003f10de2dcf6440b814f7"
+    },
+    "capture/native-full-restored-windows-controls/stderr.log": {
+      "bytes": 3396,
+      "sha256": "3f2824278b7266634d914b79414daab140e01ced26fcef9c2c167c347453a63c"
+    },
+    "capture/native-full-restored-windows-controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "review/failures.json": {
+      "bytes": 6480,
+      "sha256": "0a574ad5618f945aa3b179992511371c21ea5df5cd8329bbb10aa86d94c1eaf0"
+    },
+    "review/scope.json": {
+      "bytes": 1004,
+      "sha256": "19a78ea084c33e31f63e9041fc2b31d6b84aa736ba4ca0b2e28f7edf8c44b98f"
+    },
+    "source-witnesses/native-full-coordinator-restored-controls/gnu_package.py": {
+      "bytes": 11266,
+      "sha256": "4181e1e5bda2cd14a66a32eee7da27a47f8f0f3893b01c7996a8b93dcc40a200"
+    },
+    "source-witnesses/native-full-coordinator-restored-controls/test_gnu_package.py": {
+      "bytes": 9162,
+      "sha256": "7a94e2d2af42f6186c50f032100d18258ae1abc800468583768d177678a53516"
+    },
+    "source-witnesses/native-full-coordinator-restored-final-controls/gnu_package.py": {
+      "bytes": 11272,
+      "sha256": "2f43410ab4c579f7119bdbd4746fed3710694627caf373fde56fd070bba21f2f"
+    },
+    "source-witnesses/native-full-coordinator-restored-final-controls/test_gnu_package.py": {
+      "bytes": 9239,
+      "sha256": "f80772a568cc70d00724239277fe354ccf82b236001a245144487a3de46b998d"
+    },
+    "source-witnesses/native-full-package-capacity-restored/gnu_package.py": {
+      "bytes": 11272,
+      "sha256": "2f43410ab4c579f7119bdbd4746fed3710694627caf373fde56fd070bba21f2f"
+    },
+    "source-witnesses/native-full-package-capacity-restored/test_gnu_package.py": {
+      "bytes": 9239,
+      "sha256": "f80772a568cc70d00724239277fe354ccf82b236001a245144487a3de46b998d"
+    },
+    "source-witnesses/native-full-restored-portable-final-controls/gnu_package.py": {
+      "bytes": 11272,
+      "sha256": "2f43410ab4c579f7119bdbd4746fed3710694627caf373fde56fd070bba21f2f"
+    },
+    "source-witnesses/native-full-restored-portable-final-controls/test_gnu_package.py": {
+      "bytes": 9239,
+      "sha256": "f80772a568cc70d00724239277fe354ccf82b236001a245144487a3de46b998d"
+    },
+    "source-witnesses/native-full-restored-windows-controls/gnu_package.py": {
+      "bytes": 11266,
+      "sha256": "4181e1e5bda2cd14a66a32eee7da27a47f8f0f3893b01c7996a8b93dcc40a200"
+    },
+    "source-witnesses/native-full-restored-windows-controls/test_gnu_package.py": {
+      "bytes": 9162,
+      "sha256": "7a94e2d2af42f6186c50f032100d18258ae1abc800468583768d177678a53516"
+    }
+  },
+  "package_pass": false,
+  "release_admitted": false,
+  "schema": "hc074-local-evidence-collection-v1"
+}

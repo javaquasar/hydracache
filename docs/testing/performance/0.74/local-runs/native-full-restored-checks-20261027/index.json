@@ -1,0 +1,157 @@
+{
+  "archived_code_executed": false,
+  "local_checks_pass": true,
+  "members": {
+    "capture/native-full-restored-doc-check/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/native-full-restored-doc-check/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/native-full-restored-doc-check/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/native-full-restored-doc-check/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/native-full-restored-doc-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/native-full-restored-doc-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/native-full-restored-doc-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/native-full-restored-doc-check/intent.json": {
+      "bytes": 360353,
+      "sha256": "0a41edae3d297337eeb96331661eca0a02e6b5a3ce8dd5b54e2c29012c791241"
+    },
+    "capture/native-full-restored-doc-check/process.json": {
+      "bytes": 14,
+      "sha256": "ef3ae10c7c66768ab291d0435867e125bd477b988783b20f55999aec0f6eaeb9"
+    },
+    "capture/native-full-restored-doc-check/result.json": {
+      "bytes": 360225,
+      "sha256": "d7ebfad5e29fcc28f531c262ca8a9e91e99f0b6acc0374da7f3c241b51469af2"
+    },
+    "capture/native-full-restored-doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/native-full-restored-doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "capture/native-full-restored-performance-contract/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/native-full-restored-performance-contract/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/native-full-restored-performance-contract/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/native-full-restored-performance-contract/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/native-full-restored-performance-contract/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/native-full-restored-performance-contract/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/native-full-restored-performance-contract/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/native-full-restored-performance-contract/intent.json": {
+      "bytes": 360401,
+      "sha256": "4bc4c01ab299146e2a6708a70c4b66df171faf12848b7fcf0192b3323de92cae"
+    },
+    "capture/native-full-restored-performance-contract/process.json": {
+      "bytes": 14,
+      "sha256": "555a30729ece64da5d24774df52a2047f5601c9e54e125cf6bcdc9868db1ed05"
+    },
+    "capture/native-full-restored-performance-contract/result.json": {
+      "bytes": 360225,
+      "sha256": "b22f8b42c6c9b4599ec498b9b97cfc99de3ff5e5995591ee5284114c730acc9d"
+    },
+    "capture/native-full-restored-performance-contract/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/native-full-restored-performance-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "capture/native-full-restored-receipt-verification/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/native-full-restored-receipt-verification/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/native-full-restored-receipt-verification/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/native-full-restored-receipt-verification/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/native-full-restored-receipt-verification/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/native-full-restored-receipt-verification/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/native-full-restored-receipt-verification/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/native-full-restored-receipt-verification/intent.json": {
+      "bytes": 360391,
+      "sha256": "ee99dcce6699785d3d82ae5a2fd175ef166bb0b3d7c3173b7ff842659e58764e"
+    },
+    "capture/native-full-restored-receipt-verification/process.json": {
+      "bytes": 14,
+      "sha256": "212307b7fd854c17317e73a3628bec88a0e293e60ac8329b09dd7fccab56ffa6"
+    },
+    "capture/native-full-restored-receipt-verification/result.json": {
+      "bytes": 360225,
+      "sha256": "0113a464fb114810417d65b81df839a0ca73eb2fd051fe1cd73fe4689e61a6dd"
+    },
+    "capture/native-full-restored-receipt-verification/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/native-full-restored-receipt-verification/stdout.log": {
+      "bytes": 292,
+      "sha256": "d5c5cae83ed7fa4c34a96938409a2fd053e62cc31cff83692e14ae8192094e85"
+    },
+    "source/verify-native-full-restored-20261027.py": {
+      "bytes": 4791,
+      "sha256": "503e420c21962f1a97410e9983ce13adc34a80259cca85b4ca36ac6c9087f443"
+    }
+  },
+  "package_pass": false,
+  "release_admitted": false,
+  "schema": "hc074-local-evidence-collection-v1"
+}

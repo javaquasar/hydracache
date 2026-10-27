@@ -1,0 +1,9 @@
+{
+  "bound_seconds": 780,
+  "classification": "test-failure",
+  "cleanup_errors": [],
+  "cleanup_seconds": 5,
+  "exit": 101,
+  "observed_cargo_exit": 101,
+  "retired": true
+}

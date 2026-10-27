@@ -1,0 +1,20 @@
+GNU package heartbeat elapsed=0.0s remaining=780.0s
+GNU package heartbeat elapsed=30.0s remaining=750.0s
+GNU package heartbeat elapsed=60.2s remaining=719.8s
+GNU package heartbeat elapsed=90.3s remaining=689.7s
+GNU package heartbeat elapsed=120.5s remaining=659.5s
+GNU package heartbeat elapsed=150.6s remaining=629.4s
+GNU package heartbeat elapsed=180.7s remaining=599.3s
+GNU package heartbeat elapsed=210.8s remaining=569.2s
+GNU package heartbeat elapsed=240.9s remaining=539.1s
+GNU package heartbeat elapsed=270.9s remaining=509.1s
+GNU package heartbeat elapsed=301.0s remaining=479.0s
+GNU package heartbeat elapsed=331.2s remaining=448.8s
+GNU package heartbeat elapsed=361.2s remaining=418.8s
+GNU package heartbeat elapsed=391.2s remaining=388.8s
+GNU package heartbeat elapsed=421.3s remaining=358.7s
+GNU package heartbeat elapsed=451.5s remaining=328.5s
+GNU package heartbeat elapsed=481.6s remaining=298.4s
+GNU package heartbeat elapsed=511.7s remaining=268.3s
+GNU package heartbeat elapsed=541.8s remaining=238.2s
+{"package_pass": false, "native_source": "636feb166b273b5c3d6fc0b93c4fccf57560cf03", "release_admitted": false}

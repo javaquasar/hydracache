@@ -231,6 +231,18 @@ After capacity repair, separately admit a distinct attempt with exact current
 controls; do not lower the floor, extend the bound, replay unchanged Windows V9
 or combine partial commands. No server, service or clock operation is added.
 
+After operator capacity repair, the [distinct complete GNU command](native-full-capacity-restored-result-20261027.md)
+finishes all 153 targets under the same 780-second/four-thread/floor contract:
+1,324 cases pass, ten fail, none are ignored, and complete native and Windows
+source/ref/HEAD postflight passes. This closes execution coverage for that exact
+GNU attempt, not the package gate. Two fixtures invoke missing `python`; the
+earlier `python3` preflight missed these prerequisites. Eight source/predecessor
+assertions also refuse. Preserve the 81-member result packet and first portable
+control failure. Next review script effects/interpreter selection and each exact
+whole-body composition, repair with focused refusal controls, then review a new
+source closure before any distinct full command. Do not repeat the consumed
+candidate, weaken pins/assertions, join pass sets or replace Windows coverage.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,
