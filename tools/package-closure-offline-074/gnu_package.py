@@ -10,7 +10,7 @@ import sys
 import time
 
 CONTROL = Path('/mnt/c/Workspace/prj/jq/cashe/hydracache-074')
-OUT = CONTROL / 'target/native-full-package-first-20261027'
+OUT = CONTROL / 'target/native-full-package-checked-first-20261027'
 PINS = {'analysis.py': 'dd53d98e0b299e892a0ccd3597335409a3c3e476db08dd2317706918e1092474',
         'gnu_review.py': '816c467195b4d58ee1e25cd530258b15241023cf61bbea56ac284bf80b21c1c4'}
 GROUP_SHA = 'e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691'
@@ -18,6 +18,7 @@ PARSER_SHA = '0229d4067fffd0d0b5acee7d864efc64aadfb201de1ea3f17944a2f8dddf3c4d'
 BOUND = 780
 FLOOR = 4 * 1024**3
 ENV = dict(RUSTUP_AUTO_INSTALL='0', CARGO_INCREMENTAL='0', CARGO_BUILD_JOBS='2')
+CONTROL_PHASE = 'native-full-coordinator-checked-controls'
 
 
 def require(value, reason):
@@ -36,6 +37,23 @@ def load(path, name, expected):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def check_controls(root):
+    """A stale/red/missing local gate cannot reach Cargo, even in a bad shell chain."""
+    folder = root / 'target/roots-lock-view-20261027' / CONTROL_PHASE
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    require(result['exit'] == 0 and result['outer_refusal'] is None
+        and result['source_unchanged'] and result['commit_unchanged'], 'native controls not green')
+    expected = ['wsl.exe', '-d', 'Ubuntu', '-u', 'artur', '--exec', '/usr/bin/python3', '-m',
+        'unittest', 'discover', '-s', '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/package-closure-offline-074',
+        '-p', 'test_gnu_package.py', '-v']
+    require(intent['argv'] == expected, 'native controls command drift')
+    for name in ('gnu_package.py', 'test_gnu_package.py', 'analysis.py', 'gnu_review.py'):
+        relative = 'tools/package-closure-offline-074/' + name
+        digest = sha((root / relative).read_bytes())
+        require(intent['source'][relative] == result['source_after'][relative] == digest, 'native controls source drift')
 
 
 def spawn_separate(group, argv, cwd, out, deadline):
@@ -140,6 +158,7 @@ def execute():
         floor_bytes=FLOOR, child_environment=ENV, retry=False, services=False, clocks=False,
         server=False, product_load=False, qualification=False, release_admitted=False))
     try:
+        check_controls(CONTROL)
         for name, digest in PINS.items():
             require(sha((Path(__file__).parent / name).read_bytes()) == digest, 'current review body drift')
         import gnu_review as g
