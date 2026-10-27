@@ -1,0 +1,259 @@
+{
+  "members": {
+    "capture/native-gnu-frontier-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/native-gnu-frontier-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/native-gnu-frontier-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/native-gnu-frontier-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/native-gnu-frontier-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/native-gnu-frontier-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/native-gnu-frontier-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/native-gnu-frontier-first/intent.json": {
+      "bytes": 358991,
+      "sha256": "201417e055e2a8496d268611db83ecfb5e1e966152b7ee485ce8d2972a5cea55"
+    },
+    "capture/native-gnu-frontier-first/process.json": {
+      "bytes": 14,
+      "sha256": "bee48ce3d1304fb8486e6dfa881d055a2ef2c8c1399a12dd1a594e6955c226f9"
+    },
+    "capture/native-gnu-frontier-first/result.json": {
+      "bytes": 358696,
+      "sha256": "82fbcd0e2367c1fe6ca691ca36f41af6673cca37c190c0646bd6ea754a791f2e"
+    },
+    "capture/native-gnu-frontier-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/native-gnu-frontier-first/stdout.log": {
+      "bytes": 62,
+      "sha256": "1c380e7ca59b69d2c36b559353120b6518f85c90b36a46ef74a22adc7f1bc6fc"
+    },
+    "capture/native-gnu-review-first/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/native-gnu-review-first/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/native-gnu-review-first/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/native-gnu-review-first/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/native-gnu-review-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/native-gnu-review-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/native-gnu-review-first/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/native-gnu-review-first/intent.json": {
+      "bytes": 358736,
+      "sha256": "43620933ab8976739bec24ee16e79d5c497268fae67f8ec9e795391d54f66af4"
+    },
+    "capture/native-gnu-review-first/process.json": {
+      "bytes": 14,
+      "sha256": "4f9327c77a26a063bda2ed23b8358ceb40016627a1a9effa972d5ae7206884f8"
+    },
+    "capture/native-gnu-review-first/result.json": {
+      "bytes": 358455,
+      "sha256": "d5223d2f57d04312867af71000cd2d1201c0e257479c0a4b38e9b24e742b4dd5"
+    },
+    "capture/native-gnu-review-first/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/native-gnu-review-first/stdout.log": {
+      "bytes": 33649,
+      "sha256": "ec15fa7ea5c00b05380fc71b234d814e62bb430c0a016ee1e11494e0e63e0382"
+    },
+    "capture/native-gnu-runner-controls-linux/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/native-gnu-runner-controls-linux/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/native-gnu-runner-controls-linux/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/native-gnu-runner-controls-linux/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/native-gnu-runner-controls-linux/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/native-gnu-runner-controls-linux/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/native-gnu-runner-controls-linux/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/native-gnu-runner-controls-linux/intent.json": {
+      "bytes": 358827,
+      "sha256": "e7c1de6580315c4001345997e0b20222adb3137881f28ba28a81af3fde17c4bd"
+    },
+    "capture/native-gnu-runner-controls-linux/process.json": {
+      "bytes": 14,
+      "sha256": "3c314808d29d85012be29f93f3f2e59f55f7abe2ccef898c7b70df27ed12ed4d"
+    },
+    "capture/native-gnu-runner-controls-linux/result.json": {
+      "bytes": 358455,
+      "sha256": "42ba7f689b8e96155073b68be34d0d158af320bfd20a69eeb2a874dce3edaee9"
+    },
+    "capture/native-gnu-runner-controls-linux/stderr.log": {
+      "bytes": 606,
+      "sha256": "976ecbd39f621e6102895691d8075aaff23dffc2967951a7681ca804fc851cf5"
+    },
+    "capture/native-gnu-runner-controls-linux/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/native-gnu-runner-controls/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/native-gnu-runner-controls/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/native-gnu-runner-controls/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/native-gnu-runner-controls/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/native-gnu-runner-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/native-gnu-runner-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/native-gnu-runner-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/native-gnu-runner-controls/intent.json": {
+      "bytes": 358707,
+      "sha256": "a6ec6ebfb94f64d73d2ed8217ca8218ecfaabed298bdc63d94c6b53c8c53f556"
+    },
+    "capture/native-gnu-runner-controls/process.json": {
+      "bytes": 14,
+      "sha256": "4458481cc6dac3dcf53d319d6c2f053acadc69a501123e9e404fa1a752fd36ee"
+    },
+    "capture/native-gnu-runner-controls/result.json": {
+      "bytes": 358455,
+      "sha256": "ad00049de542dd1df324031ba50f5d445ac81ba2192d14a832f73aca39114e0c"
+    },
+    "capture/native-gnu-runner-controls/stderr.log": {
+      "bytes": 616,
+      "sha256": "c97ff57985d0ada2182a67e435e5f5f13a6804a3c7da61ed6f40d24192c3b437"
+    },
+    "capture/native-gnu-runner-controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "native/frontier.log": {
+      "bytes": 6192,
+      "sha256": "bf6ed63209571859161378b00b4f2ea67abc51d46650b34d3aff74c2fd3d4a9f"
+    },
+    "native/heartbeat.json": {
+      "bytes": 881,
+      "sha256": "21dec711fbcb3d906bf32cde434d08ba82b357fa828039e93bc1a111561d9223"
+    },
+    "native/intent.json": {
+      "bytes": 1326,
+      "sha256": "685dca5229e57be0c3024ce45adff6746a414d1014f7047886f1f19839af4cef"
+    },
+    "native/preflight.json": {
+      "bytes": 33649,
+      "sha256": "ec15fa7ea5c00b05380fc71b234d814e62bb430c0a016ee1e11494e0e63e0382"
+    },
+    "native/result.json": {
+      "bytes": 163,
+      "sha256": "132eaab7920e050d3d2656e89e856b0d65406122674ca812f3b293f85f7b09e5"
+    },
+    "native/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "native/stdout.log": {
+      "bytes": 387,
+      "sha256": "35dd7134c9bd8f1492e126062abc0a971db09d94ba77db06e5d6f1634fc9e09e"
+    },
+    "review/scope.json": {
+      "bytes": 694,
+      "sha256": "1128564ad832f88d6cc4ba25ed7209500b9406d7468935523c72dbf112bb9b74"
+    },
+    "sources/scripts/ci/run-with-heartbeat.py": {
+      "bytes": 8227,
+      "sha256": "cedf938f80b3697efa219e5e8566d5d4f869cc2769dc7de6a176efb6e3af7afb"
+    },
+    "sources/scripts/ci/watchdog_linux_group.py": {
+      "bytes": 6163,
+      "sha256": "e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691"
+    },
+    "sources/scripts/ci/watchdog_windows_job.py": {
+      "bytes": 12151,
+      "sha256": "8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1"
+    },
+    "sources/tools/native-frontier-074/contract.py": {
+      "bytes": 4018,
+      "sha256": "13a92353314ab7b6b3f443f4d8244b823e38f390a35885edd050bbb73a5c2353"
+    },
+    "sources/tools/native-frontier-074/gnu_frontier.py": {
+      "bytes": 11745,
+      "sha256": "8cb4397761714aee264ba52c17f8d7d2579358a8995d8f7ea5ba5e4c9a0eb631"
+    },
+    "sources/tools/native-frontier-074/native.py": {
+      "bytes": 6110,
+      "sha256": "8badd8357fd491b01e65c3c118421cdd8f41eb952909678c97f78ac2bffe3769"
+    },
+    "sources/tools/native-frontier-074/test_gnu_frontier.py": {
+      "bytes": 2940,
+      "sha256": "51806e5939819038487ceb2e4ec00a4b0b7b154a69c3394bc089a13e02c1b897"
+    }
+  },
+  "package_pass": false,
+  "release_admitted": false,
+  "schema": "hc074-native-gnu-frontier-evidence-v1"
+}

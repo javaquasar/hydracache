@@ -1,0 +1,10 @@
+test_archived_object_is_data_and_hash_bound (test_gnu_frontier.Controls.test_archived_object_is_data_and_hash_bound) ... ok
+test_complete_receipt_only (test_gnu_frontier.Controls.test_complete_receipt_only) ... ok
+test_duplicate_keys_refuse (test_gnu_frontier.Controls.test_duplicate_keys_refuse) ... ok
+test_exact_command_contract (test_gnu_frontier.Controls.test_exact_command_contract) ... ok
+test_only_directional_text_eol_change (test_gnu_frontier.Controls.test_only_directional_text_eol_change) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.009s
+
+OK

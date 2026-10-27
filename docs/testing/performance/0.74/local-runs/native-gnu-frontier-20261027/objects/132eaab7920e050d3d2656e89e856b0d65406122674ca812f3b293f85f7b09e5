@@ -1,0 +1,8 @@
+{
+  "exit": 0,
+  "expected_cases": 31,
+  "frontier_complete": true,
+  "full_tree_and_refs_unchanged": true,
+  "package_pass": false,
+  "release_admitted": false
+}

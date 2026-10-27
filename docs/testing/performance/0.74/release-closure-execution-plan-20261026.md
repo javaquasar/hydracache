@@ -176,6 +176,16 @@ No GNU frontier or package is dispatched. Review that exact native environment
 and GNU effect scope next, then allow one distinct 900-second/four-thread native
 frontier attempt. Earlier timeouts and the complete package contract remain exact.
 
+The [first distinct native GNU attempt](native-gnu-frontier-result-20261027.md)
+now passes all 31 cases across the five complete targets, including the full
+protected-path audit and Unix symlink refusal. Fresh full-tree/ref and Windows
+source/HEAD postflight pass. Actual Git/Cargo environment and all 442 reviewed
+source/auxiliary bodies are checked before dispatch; only explicit CRLF-to-LF
+text representation differs. The 900-second/four-thread bound and all old
+predicates remain exact. This closes the separate GNU frontier, not V8 or the
+whole package. Next finish current full-package coordinator review and one
+distinct full command under its original 780-second/four-thread contract.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

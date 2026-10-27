@@ -55,6 +55,12 @@ detached copy, not a mirror of source Git configuration/reflogs/symbolic-ref
 topology. The 404 bindings are resolved ref/object IDs; file modes mean Git
 executable identities, not production UID/GID or account enrollment. The full
 native format-check passes after a separately retained LF/CRLF preflight refusal.
-GNU frontier and full package admission remain closed.
+The subsequent [separate GNU frontier](../../docs/testing/performance/0.74/native-gnu-frontier-result-20261027.md)
+passes all 31 cases across five complete targets under the unchanged 900-second/
+four-thread contract. `gnu_frontier.py` defaults to a read-only preflight; its
+explicit `--run` destination is exclusive and has already been consumed. It
+checks the actual caller environment and fixed V9 source data without executing
+archived code. Do not reuse it as a retry or full-package dispatcher. Full package
+and release admission remain closed.
 The subsequent pure path guard also refuses `.` via a nonempty component check;
 its retained red regression and Windows/Linux fixes do not repeat the transfer.

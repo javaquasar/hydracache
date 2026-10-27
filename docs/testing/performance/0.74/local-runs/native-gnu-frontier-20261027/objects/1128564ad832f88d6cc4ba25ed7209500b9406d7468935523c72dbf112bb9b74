@@ -1,0 +1,25 @@
+{
+  "actual_attempt_launcher_preexecution_bound": true,
+  "checked_inputs": 442,
+  "completed_targets": 5,
+  "crlf_to_lf_only": 110,
+  "failed": 0,
+  "filtered": 0,
+  "ignored": 0,
+  "implementation": "3abf66ac6",
+  "native_source": "636feb166b273b5c3d6fc0b93c4fccf57560cf03",
+  "old_timeout_reinterpreted": false,
+  "package_pass": false,
+  "passed": 31,
+  "performance_measurement": false,
+  "preliminary_controls_before_commit": true,
+  "raw_exact": 332,
+  "release_admitted": false,
+  "target_counts": {
+    "authority_rust_history_074": 10,
+    "current_frontier_074": 7,
+    "current_tree_input_audit_074": 1,
+    "frontier_current_view_074": 9,
+    "history_status_readers_074": 4
+  }
+}

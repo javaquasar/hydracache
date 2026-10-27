@@ -1,0 +1,45 @@
+{
+  "argv": [
+    "/home/artur/.cargo/bin/cargo",
+    "+1.94.0",
+    "test",
+    "--offline",
+    "--locked",
+    "--no-fail-fast",
+    "--target-dir",
+    "/home/artur/.cache/hydracache-074-194-check",
+    "-p",
+    "xtask",
+    "--test",
+    "frontier_current_view_074",
+    "--test",
+    "current_frontier_074",
+    "--test",
+    "current_tree_input_audit_074",
+    "--test",
+    "authority_rust_history_074",
+    "--test",
+    "history_status_readers_074",
+    "--",
+    "--test-threads=4"
+  ],
+  "clocks": false,
+  "full_package": false,
+  "heartbeat": {
+    "run-with-heartbeat.py": "cedf938f80b3697efa219e5e8566d5d4f869cc2769dc7de6a176efb6e3af7afb",
+    "watchdog_linux_group.py": "e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691",
+    "watchdog_windows_job.py": "8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1"
+  },
+  "helpers": {
+    "contract.py": "13a92353314ab7b6b3f443f4d8244b823e38f390a35885edd050bbb73a5c2353",
+    "native.py": "8badd8357fd491b01e65c3c118421cdd8f41eb952909678c97f78ac2bffe3769"
+  },
+  "launcher_sha256": "8cb4397761714aee264ba52c17f8d7d2579358a8995d8f7ea5ba5e4c9a0eb631",
+  "product_load": false,
+  "retry": false,
+  "server": false,
+  "services": false,
+  "source": "636feb166b273b5c3d6fc0b93c4fccf57560cf03",
+  "test_threads": 4,
+  "timeout_seconds": 900
+}

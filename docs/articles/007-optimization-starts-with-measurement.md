@@ -21463,3 +21463,18 @@ component tuple is empty. A separate regression first fails, then passes on both
 platforms after requiring a nonempty tuple. Valid Git entries and the checked
 native context are unaffected; no transfer or format attempt is repeated for
 this pure refusal repair.
+
+The [separate native GNU frontier](../testing/performance/0.74/native-gnu-frontier-result-20261027.md)
+then passes all 31 cases in five complete targets. The experiment changes the
+storage/context boundary, not the protected audit, test selection or 900-second
+budget. Actual Git/Cargo settings are reviewed separately from transfer-time
+sanitization. All 442 reviewed source/auxiliary bodies match either raw bytes or
+the explicit CRLF-to-LF text representation; opaque evidence objects stay exact.
+The full 53,842-file/404-ref postflight also passes.
+
+This establishes a complete Linux compatibility result where the prior 9p
+attempt was incomplete. It does not quantify a storage speedup: the watchdog's
+87.873-second diagnostic receipt includes compilation and is not a paired CPU
+experiment. The old timeout remains intact, and the next full package still
+requires its own complete command and original 780-second bound. No live check,
+deadline, product workload or server service is changed.

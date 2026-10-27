@@ -1,0 +1,4 @@
+watchdog heartbeat attempt=local elapsed=0.0s remaining=900.0s pid=127480
+watchdog heartbeat attempt=local elapsed=30.0s remaining=870.0s pid=127480
+watchdog heartbeat attempt=local elapsed=60.0s remaining=840.0s pid=127480
+watchdog result classification=success elapsed=87.9s receipt=/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/native-gnu-frontier-first-20261027/heartbeat.json
