@@ -8,7 +8,9 @@ pub fn read_to_string(path: impl AsRef<Path>) -> io::Result<String> {
         &root,
         path.as_ref(),
         |path| std::fs::read_to_string(path),
-        |root, path, raw| match read::selected(root, path) {
+        |root, path, raw| match read::security_selected(root, path)
+            .or_else(|| read::selected(root, path))
+        {
             Some(relative) => crate::runtime::successor::project(relative, raw),
             None => raw,
         },

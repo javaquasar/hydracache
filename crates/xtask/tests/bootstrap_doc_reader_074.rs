@@ -1,5 +1,5 @@
 //! Two document views only, with every preceding caller predicate retained.
-#[path = "../../../tools/bootstrap-doc-reader-074/io.rs"]
+#[path = "../../../tools/bootstrap-doc-reader-074/fixture.rs"]
 mod docs;
 #[path = "../../../tools/bootstrap-doc-reader-074/reader.rs"]
 mod proof_reader;
@@ -26,9 +26,10 @@ mod runtime {
 const BASE: &str = "181c077abdfbae5a8c4dfe67cee6f1c95519d529";
 const DOCS: [&str; 2] = ["docs/COMPAT.md", "docs/testing/gated-test-registry.toml"];
 fn raw(path: &str) -> String {
-    std::fs::read_to_string(runtime::root().join(path))
+    let raw = std::fs::read_to_string(runtime::root().join(path))
         .unwrap()
-        .replace("\r\n", "\n")
+        .replace("\r\n", "\n");
+    docs::assertion_input(path, raw)
 }
 fn description() -> serde_json::Value {
     serde_json::from_str(include_str!(

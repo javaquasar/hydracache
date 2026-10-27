@@ -2,6 +2,7 @@
 use std::{io, path::Path};
 #[path = "read.rs"]
 mod read;
+pub use read::security_selected;
 pub use read::selected;
 #[path = "../source-successor-view-074/contract.rs"]
 mod successor;
@@ -21,5 +22,13 @@ pub fn read_with(
     path: &Path,
     observe: impl FnOnce(&Path) -> io::Result<String>,
 ) -> io::Result<String> {
-    read::read_with(root, path, observe, project)
+    read::read_with(
+        root,
+        path,
+        observe,
+        |root, path, raw| match security_selected(root, path) {
+            Some(relative) => successor::project(relative, raw),
+            None => project(root, path, raw),
+        },
+    )
 }

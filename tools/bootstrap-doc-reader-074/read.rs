@@ -33,6 +33,18 @@ pub fn selected(root: &Path, path: &Path) -> Option<&'static str> {
         None
     }
 }
+// Separate from the original two-document selector: never broaden its contract.
+pub fn security_selected(root: &Path, path: &Path) -> Option<&'static str> {
+    let root = lexical(root)?;
+    let path = lexical(path)?;
+    let relative = path.strip_prefix(root).ok()?;
+    [
+        "Cargo.lock",
+        "tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs",
+    ]
+    .into_iter()
+    .find(|candidate| relative == Path::new(candidate))
+}
 pub fn read_with(
     root: &Path,
     path: &Path,
