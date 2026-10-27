@@ -40,6 +40,18 @@ fn edit(raw: &str, before: &str, after: &str) -> String {
     );
     raw.replacen(before, after, 1)
 }
+fn current_read() -> String {
+    let raw = edit(
+        NEW_READ,
+        "main_phase::project(raw)",
+        "main_phase::project(current_main::project(raw))",
+    );
+    edit(
+        &raw,
+        "    if path == gate::FIXTURE {\n        observed(path)",
+        "    if path == gate::FIXTURE || path == main_phase::SOURCE {\n        observed(path)",
+    )
+}
 pub fn expected(path: &str, original: &str) -> Option<String> {
     let index = FILES.iter().position(|(file, _)| *file == path)?;
     let raw = original.replace("\r\n", "\n");
@@ -58,7 +70,8 @@ pub fn expected(path: &str, original: &str) -> Option<String> {
         }
         3 => {
             let raw = edit(&raw, "mod history_reader;", "mod history_reader;\n#[path = \"../../../tools/authority-reader-phase-074/main.rs\"]\nmod main_phase;");
-            let raw = edit(&raw, OLD_READ, NEW_READ);
+            let raw = format!("#[path = \"../../../tools/authority-reader-phase-074/current_main.rs\"]\nmod current_main;\n{raw}");
+            let raw = edit(&raw, OLD_READ, &current_read());
             edit(&raw, "gate::view(&path, read(&path))", "gate::view(&path, view_input(&path))")
         }
         4 => {

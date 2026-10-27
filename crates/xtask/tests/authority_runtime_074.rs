@@ -1,3 +1,5 @@
+#[path = "../../../tools/authority-reader-phase-074/current_main.rs"]
+mod current_main;
 #[path = "../../../tools/authority-runtime-074/gate.rs"]
 mod gate;
 #[path = "../../../tools/authority-runtime-074/history_reader.rs"]
@@ -16,7 +18,7 @@ fn read(path: &str) -> String {
     if path == gate::FIXTURE {
         gate::successor::project(path, raw)
     } else if path == main_phase::SOURCE {
-        main_phase::project(raw)
+        main_phase::project(current_main::project(raw))
     } else if path == gate::HISTORY_TEST {
         history_reader::previous(&raw)
     } else {
@@ -24,7 +26,7 @@ fn read(path: &str) -> String {
     }
 }
 fn view_input(path: &str) -> String {
-    if path == gate::FIXTURE {
+    if path == gate::FIXTURE || path == main_phase::SOURCE {
         observed(path)
     } else {
         read(path)

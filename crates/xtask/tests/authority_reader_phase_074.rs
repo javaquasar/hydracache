@@ -1,4 +1,6 @@
 //! Reader routing is a source compatibility proof, never runtime admission.
+#[path = "../../../tools/authority-reader-phase-074/current_main.rs"]
+mod current_main;
 #[path = "../../../tools/authority-reader-phase-074/main.rs"]
 mod main_phase;
 #[path = "../../../tools/authority-reader-phase-074/contract.rs"]
@@ -20,6 +22,11 @@ fn raw(path: &str) -> String {
     let raw = std::fs::read_to_string(runtime::root().join(path))
         .unwrap()
         .replace("\r\n", "\n");
+    let raw = if path == main_phase::SOURCE {
+        current_main::project(raw)
+    } else {
+        raw
+    };
     bootstrap_phase_reader::read(path, raw)
 }
 
