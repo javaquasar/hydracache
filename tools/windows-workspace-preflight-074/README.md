@@ -48,3 +48,27 @@ python -B tools/windows-workspace-preflight-074/prepare.py target/windows-worksp
 All live predicates, frequency/order and 300/60/10 origins/windows stay exact.
 These are local diagnostics and preparation, not a performance improvement,
 full workspace/security pass, product-memory claim or release/server admission.
+
+## Owned Windows CI mechanism prototype
+
+`owned.py` has no CLI and does not connect the prepared contracts to Cargo.
+Its private fixture-tested mechanism loads only the original SHA-pinned CI
+Windows Job helper; that helper is unchanged. The worker inherits already
+separated streams, without global stdio/environment replacement. A successful
+leader with live descendants is not success. Timeout, floor, cancellation and
+setup/cleanup failures retire only the held Job/original child handles, with no
+PID reopen, `taskkill`, privilege changes or access to foreign processes. The
+five-second cleanup budget and capacity polling stay explicit. CI containment
+does not establish production all-writer cessation or release authority.
+
+Run `test_*.py` to include the mechanism's models and three tiny native Python
+fixtures. Fixtures retain their own temporary stdout/stderr/result even on failure;
+their deliberately small synthetic bounds are not gate deadline overrides.
+The existing six-case native CI Job cohort separately checks creator loss before
+resume and during a live descendant, setup/unsupported-Job refusal and stdio/CWD.
+No service, original-owner product path, WSL or server fixture is involved.
+
+Connecting a fixed Cargo dispatcher still requires clean source/environment,
+the exact controlled worker/envelope bytes, current capacity and complete target
+accounting. The old timeouts are not retried, and these controls do not admit a
+whole-package/workspace run or turn `launch_ready` true.
