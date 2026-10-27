@@ -1,0 +1,11 @@
+test_archived_parser_never_imported_and_current_drift_refuses_before_import (test_package_result_v8.FirstV8Result.test_archived_parser_never_imported_and_current_drift_refuses_before_import) ... ok
+test_first_timeout_is_integral_but_not_a_pass (test_package_result_v8.FirstV8Result.test_first_timeout_is_integral_but_not_a_pass) ... ok
+test_index_drift_refuses_before_object_read (test_package_result_v8.FirstV8Result.test_index_drift_refuses_before_object_read) ... ok
+test_missing_and_changed_objects_refuse (test_package_result_v8.FirstV8Result.test_missing_and_changed_objects_refuse) ... ok
+test_source_environment_and_accounting_drift_refuse (test_package_result_v8.FirstV8Result.test_source_environment_and_accounting_drift_refuse) ... ok
+test_unchanged_bound_and_no_retry_cannot_be_relabelled (test_package_result_v8.FirstV8Result.test_unchanged_bound_and_no_retry_cannot_be_relabelled) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.418s
+
+OK

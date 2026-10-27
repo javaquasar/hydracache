@@ -1,0 +1,230 @@
+{
+  "causal_attribution": false,
+  "excerpts_not_terminal_cause_proof": true,
+  "failed_target_bodies": [
+    {
+      "failed_cases": [
+        "current_phase_requires_all_544_sources_before_446_projection"
+      ],
+      "git_body_sha256": "83b801e8f21b5d20ef1d92649450f364438ea9a7259d37b14e7cc2ace04b4344",
+      "path": "crates/xtask/tests/artifact_inventory_phase_544_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "inventory_projection_requires_all_current_source_files_before_old_list"
+      ],
+      "git_body_sha256": "42b8a38942c40b66d5df580afb1a001802c0a7a235347bb9c458679f130909c6",
+      "path": "crates/xtask/tests/artifact_inventory_reader_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "terminal_main_text_matches_fixed_producers_without_compiling_the_old_runtime"
+      ],
+      "git_body_sha256": "04b3d1c95ec0a5ecfedf89a880e01c9a4a9cd843bdbf5118ce8fcb2f1da248f4",
+      "path": "crates/xtask/tests/authority_reader_phase_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "approved_predecessor_views_do_not_replace_current_runtime_validation",
+        "installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set",
+        "baseline_partial_install_and_unrelated_effects_refuse_before_restoration"
+      ],
+      "git_body_sha256": "fab409c900b1e3188d9ea5e4aaa40a2a33dde2c656dcf8e8b37dc522f82ebc60",
+      "path": "crates/xtask/tests/authority_runtime_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift"
+      ],
+      "git_body_sha256": "9333de6f4dff9c470eadff2a97dc3434ae8a760e51ec7de2b6256903ccef07e1",
+      "path": "crates/xtask/tests/authority_rust_history_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "bootstrap_owner_adds_no_execution_or_clock_capability_and_keeps_exact_original_context"
+      ],
+      "git_body_sha256": "61b2a36945b470de67c57da90c2a85169c88fd1c626fad5b076f38353e2046bc",
+      "path": "crates/xtask/tests/bootstrap_build_owner_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "boundary_audit_preserves_entire_runtime_and_frozen_qualification"
+      ],
+      "git_body_sha256": "2fdb8eccff508532bb30173ea5b1cd8cb7fb12b1c52a3f9b2ba61626e6c7a739",
+      "path": "crates/xtask/tests/bootstrap_child_boundary_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "bootstrap_roles_additive_compat_and_qualification_are_exact"
+      ],
+      "git_body_sha256": "74ab14264aece844010f5ccdc82c99b06c07be3b3fcafc3d7285d438cd08f204",
+      "path": "crates/xtask/tests/bootstrap_child_census_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "bootstrap_child_keeps_entire_original_runtime_and_qualification_bytes"
+      ],
+      "git_body_sha256": "88a89f705032085c50906c7e06f60411c1cdd91f029ef140ebe42157465f8523",
+      "path": "crates/xtask/tests/bootstrap_child_reader_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "current_image_compat_registry_and_qualification_remain_exact"
+      ],
+      "git_body_sha256": "435cc579ba5fdd856dae104835e5c298232fd4dbdb03a88b39ee812646b625e3",
+      "path": "crates/xtask/tests/bootstrap_current_image_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "only_the_two_current_documents_reconstruct_the_exact_reviewed_phase"
+      ],
+      "git_body_sha256": "586e748182ddc5ad701b85da3d35b55483e43e037dbea346036ccad47aff7aa3",
+      "path": "crates/xtask/tests/bootstrap_doc_reader_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen"
+      ],
+      "git_body_sha256": "d1e1018fa96cc863e72610a38d8e67a91ea50e75a55e77c4ae11369ff2423140",
+      "path": "crates/xtask/tests/bootstrap_entry_binding_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock"
+      ],
+      "git_body_sha256": "d1a654883f3ad9d906c79dbc1a13637816e5cd7c5354c536329e7603cd7b2953",
+      "path": "crates/xtask/tests/bootstrap_image_census_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "bootstrap_installed_child_is_separate_consistency_not_authority_or_transport",
+        "bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed",
+        "bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records",
+        "bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines",
+        "bootstrap_original_service_keeps_old_fixture_and_production_frames_exact",
+        "installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen"
+      ],
+      "git_body_sha256": "1913c9a0dc47701b999b8077ac55fc302b4c9264d21c48f79a530c385224d21d",
+      "path": "crates/xtask/tests/bootstrap_installed_origin_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "main_retains_old_full_body_gate_and_all_twelve_current_reads_reach_source",
+        "stale_partial_duplicate_and_unrelated_current_source_edits_refuse",
+        "twelve_current_sources_reconstruct_exact_independent_predecessors"
+      ],
+      "git_body_sha256": "62b2b19f1c71cd9d3328e63aac6c300cdf85f80204047bb4ffac5c02a8a3c784",
+      "path": "crates/xtask/tests/current_frontier_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "current_tree_input_frontier_is_fully_accounted_without_path_exclusions"
+      ],
+      "git_body_sha256": "99f97a36d1bc3e974dda573da731875f1d7af511dceb30aa7c6e2bcc101418cb",
+      "path": "crates/xtask/tests/current_tree_input_audit_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats",
+        "consuming_held_join_preserves_all_443_old_sources_and_formats",
+        "held_trust_preserves_all_442_preceding_sources_and_production_inputs",
+        "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs",
+        "launcher_preserves_all_438_preceding_sources_and_exact_old_formats",
+        "role_binding_preserves_all_441_preceding_runtime_sources_and_inputs",
+        "role_files_preserve_all_440_previous_runtime_sources_and_inputs"
+      ],
+      "git_body_sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+      "path": "crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "activation_ingress_is_explicit_and_keeps_the_complete_old_kernel"
+      ],
+      "git_body_sha256": "e895b3f0fe09678d39201840124742a18ce2aea98045006c1dd3fe90c9a53541",
+      "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "rejected_bind_alias_does_not_install_unproved_runtime_or_change_old_bytes"
+      ],
+      "git_body_sha256": "34cf73ac411bfc0f052981021db3cb6ade88a4af807228936af55cb77bc1e517",
+      "path": "crates/xtask/tests/held_bind_alias_refusal_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks"
+      ],
+      "git_body_sha256": "afee11f16f157f7ef9cbc254950fd0b853c8ee7ef553a92981b0fbf823a302a9",
+      "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+      "unchanged": true
+    },
+    {
+      "failed_cases": [
+        "held_material_roles_only_add_values_and_leave_complete_frame_and_retirement_unchanged"
+      ],
+      "git_body_sha256": "dfb789b3c9a3ab9403812846d5a5729b59ad641b94db567f2aea38c271e491c0",
+      "path": "crates/xtask/tests/held_material_roles_074.rs",
+      "unchanged": true
+    }
+  ],
+  "first_failure_output_excerpts": {
+    "activation_ingress_is_explicit_and_keeps_the_complete_old_kernel": "\n\nthread 'activation_ingress_is_explicit_and_keeps_the_complete_old_kernel' (30212) panicked at crates\\xtask\\tests\\held_activation_ingress_074.rs:54:9:\nassertion `left == right` failed: diagnostic_manager_channel.rs\n  left: \"//! Private fixed read-only channel; no original message or execution authority.\\nuse std::future::Future;\\nuse std::time::Duration;\\nuse tokio::runtime::{Builder, Runtime};\\nuse zbus::{Connection, Message};\\n#[path = \\\"diagnostic_manager_channel_kernel.rs\\\"]\\nmod kernel;\\nuse kernel::{boot, clock, KernelPins, Operation, PathPins};\\n\\nconst SOCKET: &str = \\\"/run/dbus/syste",
+    "actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats": "\n\nthread 'actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats' (23112) panicked at crates\\xtask\\tests\\diagnostic_artifact_fixture_074.rs:154:34:\ncurrent inventory refused before historical phase: \"source list drift\"\n\n",
+    "approved_predecessor_views_do_not_replace_current_runtime_validation": "\n\nthread 'approved_predecessor_views_do_not_replace_current_runtime_validation' (25608) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\authority-reader-phase-074\\main.rs:36:5:\nassertion `left == right` failed: current terminal test body\n  left: \"0565355c592d59d49a7c2a1b1631f10711ff5d6101e42cf50925261a6e4bed6c\"\n right: \"30dc4166f86f71a2028b0adc3287e898920adf18c92a45cb7046ab67663f9207\"\n\n",
+    "baseline_partial_install_and_unrelated_effects_refuse_before_restoration": "\n\nthread 'baseline_partial_install_and_unrelated_effects_refuse_before_restoration' (52000) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\authority-runtime-074\\..\\source-successor-view-074\\contract.rs:89:5:\nassertion `left == right` failed: unreviewed source successor before historical assertions: tools/long-run-supervisor-074/src/diagnostic_authority_fixture.rs\n  left: \"0cfe86e287cca9f82fc0698b38309fcaa60e2f0f1cdc2fd658f7c946a7ba0285\"\n right: \"81edd92cedb2f223a7f218b2610b3e59cf30614a7c4c70a1bd1196f49d3c85e3\"\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\nthread",
+    "bootstrap_child_keeps_entire_original_runtime_and_qualification_bytes": "\n\nthread 'bootstrap_child_keeps_entire_original_runtime_and_qualification_bytes' (42824) panicked at crates\\xtask\\tests\\bootstrap_child_reader_074.rs:68:9:\nassertion `left == right` failed\n  left: \"# This file is automatically @generated by Cargo.\\n# It is not intended for manual editing.\\nversion = 4\\n\\n[[package]]\\nname = \\\"adler2\\\"\\nversion = \\\"2.0.1\\\"\\nsource = \\\"registry+https://github.com/rust-lang/crates.io-index\\\"\\nchecksum = \\\"320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa\\\"\\n\\n[[package]]\\nname = \\\"ahash\\\"\\nversion = \\\"0.8.12\\\"\\nsource = \\\"registry+https://github.co",
+    "bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen": "\n\nthread 'bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen' (9060) panicked at crates\\xtask\\tests\\support\\bootstrap_entry_guard.rs:40:5:\nassertion `left == right` failed\n  left: 0\n right: 1\n\nthread 'bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen' (9060) panicked at crates\\xtask\\tests\\support\\bootstrap_entry_guard.rs:40:5:\nassertion `left == right` failed\n  left: 0\n right: 1\n\nthread 'bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen' (9060) panicked at crates\\xtask\\tests\\support\\bootstrap_entry_guard.rs:40:5:\nassertion `left ",
+    "bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed": "\n\nthread 'bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed' (41540) panicked at crates\\xtask\\tests\\support\\bootstrap_held_delivery_guard.rs:64:9:\nassertion `left == right` failed\n  left: 0\n right: 1\n\nthread 'bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed' (41540) panicked at crates\\xtask\\tests\\support\\bootstrap_held_delivery_guard.rs:64:9:\nassertion `left == right` failed\n  left: 2\n right: 1\n\nthread 'bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed' (41540) panicked at crates\\xtask\\tests\\support\\bootstrap_held_delivery_guar",
+    "bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock": "\n\nthread 'bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock' (5644) panicked at crates\\xtask\\tests\\bootstrap_image_census_074.rs:152:9:\nassertion `left == right` failed\n  left: \"# This file is automatically @generated by Cargo.\\n# It is not intended for manual editing.\\nversion = 4\\n\\n[[package]]\\nname = \\\"adler2\\\"\\nversion = \\\"2.0.1\\\"\\nsource = \\\"registry+https://github.com/rust-lang/crates.io-index\\\"\\nchecksum = \\\"320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa\\\"\\n\\n[[package]]\\nname = \\\"ahash\\\"\\nversion = \\\"0.8.12\\\"\\nsource = \\\"registry+https://github.com/",
+    "bootstrap_installed_child_is_separate_consistency_not_authority_or_transport": "\n\nthread 'bootstrap_installed_child_is_separate_consistency_not_authority_or_transport' (53652) panicked at crates\\xtask\\tests\\support\\bootstrap_installed_child_guard.rs:49:5:\nassertion `left == right` failed\n  left: 0\n right: 1\n\nthread 'bootstrap_installed_child_is_separate_consistency_not_authority_or_transport' (53652) panicked at crates\\xtask\\tests\\support\\bootstrap_installed_child_guard.rs:49:5:\nassertion `left == right` failed\n  left: 2\n right: 1\n\nthread 'bootstrap_installed_child_is_separate_consistency_not_authority_or_transport' (53652) panicked at crates\\xtask\\tests\\bootstrap_install",
+    "bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records": "\n\nthread 'bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records' (36960) panicked at crates\\xtask\\tests\\support\\bootstrap_installed_entry_guard.rs:34:5:\nassertion `left == right` failed\n  left: 0\n right: 1\n\nthread 'bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records' (36960) panicked at crates\\xtask\\tests\\support\\bootstrap_installed_entry_guard.rs:34:5:\nassertion `left == right` failed\n  left: 2\n right: 1\n\nthread 'bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records' (36960) panicked at crates\\xtask\\tests\\support\\bootstrap_held_ent",
+    "bootstrap_original_service_keeps_old_fixture_and_production_frames_exact": "\n\nthread 'bootstrap_original_service_keeps_old_fixture_and_production_frames_exact' (26884) panicked at crates\\xtask\\tests\\bootstrap_installed_origin_074.rs:64:13:\nassertion `left == right` failed\n  left: \"//! Private fixed read-only channel; no original message or execution authority.\\nuse std::future::Future;\\nuse std::time::Duration;\\nuse tokio::runtime::{Builder, Runtime};\\nuse zbus::{Connection, Message};\\n#[path = \\\"diagnostic_manager_channel_kernel.rs\\\"]\\nmod kernel;\\nuse kernel::{boot, clock, KernelPins, Operation, PathPins};\\n\\nconst SOCKET: &str = \\\"/run/dbus/system_bus_socket\\\";\\nco",
+    "bootstrap_owner_adds_no_execution_or_clock_capability_and_keeps_exact_original_context": "\n\nthread 'bootstrap_owner_adds_no_execution_or_clock_capability_and_keeps_exact_original_context' (38808) panicked at crates\\xtask\\tests\\bootstrap_build_owner_074.rs:143:9:\nassertion `left == right` failed\n  left: \"# This file is automatically @generated by Cargo.\\n# It is not intended for manual editing.\\nversion = 4\\n\\n[[package]]\\nname = \\\"adler2\\\"\\nversion = \\\"2.0.1\\\"\\nsource = \\\"registry+https://github.com/rust-lang/crates.io-index\\\"\\nchecksum = \\\"320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa\\\"\\n\\n[[package]]\\nname = \\\"ahash\\\"\\nversion = \\\"0.8.12\\\"\\nsource = \\\"registry+",
+    "bootstrap_roles_additive_compat_and_qualification_are_exact": "\n\nthread 'bootstrap_roles_additive_compat_and_qualification_are_exact' (26532) panicked at crates\\xtask\\tests\\support\\bootstrap_roles_guard.rs:35:5:\nassertion `left == right` failed\n  left: 0\n right: 1\n\nthread 'bootstrap_roles_additive_compat_and_qualification_are_exact' (26532) panicked at crates\\xtask\\tests\\support\\bootstrap_roles_guard.rs:35:5:\nassertion `left == right` failed\n  left: 2\n right: 1\n\nthread 'bootstrap_roles_additive_compat_and_qualification_are_exact' (26532) panicked at crates\\xtask\\tests\\support\\bootstrap_roles_guard.rs:35:5:\nassertion `left == right` failed\n  left: 0\n right",
+    "bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines": "\n\nthread 'bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines' (5708) panicked at crates\\xtask\\tests\\support\\bootstrap_sandbox_guard.rs:17:9:\nassertion `left == right` failed\n  left: 0\n right: 1\n\nthread 'bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines' (5708) panicked at crates\\xtask\\tests\\support\\bootstrap_sandbox_guard.rs:17:9:\nassertion `left == right` failed\n  left: 2\n right: 1\n\nthread 'bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines' (5708) panicked at crates\\xtask\\tests\\bootstrap_installed_origin_074.rs",
+    "boundary_audit_preserves_entire_runtime_and_frozen_qualification": "\n\nthread 'boundary_audit_preserves_entire_runtime_and_frozen_qualification' (44472) panicked at crates\\xtask\\tests\\bootstrap_child_boundary_074.rs:132:9:\nassertion `left == right` failed: Cargo.lock\n  left: \"# This file is automatically @generated by Cargo.\\n# It is not intended for manual editing.\\nversion = 4\\n\\n[[package]]\\nname = \\\"adler2\\\"\\nversion = \\\"2.0.1\\\"\\nsource = \\\"registry+https://github.com/rust-lang/crates.io-index\\\"\\nchecksum = \\\"320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa\\\"\\n\\n[[package]]\\nname = \\\"ahash\\\"\\nversion = \\\"0.8.12\\\"\\nsource = \\\"registry+https:/",
+    "complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks": "\n\nthread 'complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks' (47596) panicked at crates\\xtask\\tests\\support\\held_role_census_guard.rs:11:9:\nassertion `left == right` failed: exact census addition: \n#[path = \"diagnostic_material_role_census.rs\"]\nmod role_census;\n\n  left: 0\n right: 1\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\nthread 'complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks' (47596) panicked at crates\\xtask\\tests\\support\\held_role_census_guard.rs:11:9:\nassertion `left == right` fa",
+    "consuming_held_join_preserves_all_443_old_sources_and_formats": "\n\nthread 'consuming_held_join_preserves_all_443_old_sources_and_formats' (38232) panicked at crates\\xtask\\tests\\diagnostic_artifact_fixture_074.rs:154:34:\ncurrent inventory refused before historical phase: \"source list drift\"\n\n",
+    "current_image_compat_registry_and_qualification_remain_exact": "\n\nthread 'current_image_compat_registry_and_qualification_remain_exact' (42540) panicked at crates\\xtask\\tests\\support\\bootstrap_current_image_guard.rs:57:5:\nassertion `left == right` failed\n  left: 0\n right: 1\n\nthread 'current_image_compat_registry_and_qualification_remain_exact' (42540) panicked at crates\\xtask\\tests\\support\\bootstrap_current_image_guard.rs:57:5:\nassertion `left == right` failed\n  left: 2\n right: 1\n\nthread 'current_image_compat_registry_and_qualification_remain_exact' (42540) panicked at crates\\xtask\\tests\\support\\bootstrap_current_image_guard.rs:57:5:\nassertion `left == rig",
+    "current_phase_requires_all_544_sources_before_446_projection": "\n\nthread 'current_phase_requires_all_544_sources_before_446_projection' (34708) panicked at crates\\xtask\\tests\\artifact_inventory_phase_544_074.rs:56:62:\ncalled `Result::unwrap()` on an `Err` value: \"source index drift\"\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    current_phase_requires_all_544_sources_before_446_projection\n\ntest result: FAILED. 8 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s\n\n\nrunning 5 tests\ntest inventory_projection_rejects_every_missing_duplicate_unknown_and_reordered_path ... ok\ntest inventory_p",
+    "current_tree_input_frontier_is_fully_accounted_without_path_exclusions": "\n\nthread 'current_tree_input_frontier_is_fully_accounted_without_path_exclusions' (44412) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\current-frontier-074\\contract.rs:45:5:\nassertion `left == right` failed\n  left: \"b28b823581bf37c9b828a8b166098e0a13add0a487e6d139a61a381dba0da652\"\n right: \"86548e7516a7a73b05099f4c7ff7342949d5656f748b914c298dc02997297b3b\"\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\nthread 'current_tree_input_frontier_is_fully_accounted_without_path_exclusions' (44412) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\current-frontier-074\\contract",
+    "held_material_roles_only_add_values_and_leave_complete_frame_and_retirement_unchanged": "\n\nthread 'held_material_roles_only_add_values_and_leave_complete_frame_and_retirement_unchanged' (14872) panicked at crates\\xtask\\tests\\held_material_roles_074.rs:63:9:\nassertion `left == right` failed: diagnostic_manager_channel.rs\n  left: \"//! Private fixed read-only channel; no original message or execution authority.\\nuse std::future::Future;\\nuse std::time::Duration;\\nuse tokio::runtime::{Builder, Runtime};\\nuse zbus::{Connection, Message};\\n#[path = \\\"diagnostic_manager_channel_kernel.rs\\\"]\\nmod kernel;\\nuse kernel::{boot, clock, KernelPins, Operation, PathPins};\\n\\nconst SOCKET: &str = ",
+    "held_trust_preserves_all_442_preceding_sources_and_production_inputs": "\n\nthread 'held_trust_preserves_all_442_preceding_sources_and_production_inputs' (15916) panicked at crates\\xtask\\tests\\diagnostic_artifact_fixture_074.rs:154:34:\ncurrent inventory refused before historical phase: \"source list drift\"\n\n",
+    "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs": "\n\nthread 'immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs' (6684) panicked at crates\\xtask\\tests\\diagnostic_artifact_fixture_074.rs:154:34:\ncurrent inventory refused before historical phase: \"source list drift\"\n\n",
+    "independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift": "\n\nthread 'independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift' (16480) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\history-status-readers-074\\..\\current-frontier-074\\contract.rs:45:5:\nassertion `left == right` failed\n  left: \"b28b823581bf37c9b828a8b166098e0a13add0a487e6d139a61a381dba0da652\"\n right: \"86548e7516a7a73b05099f4c7ff7342949d5656f748b914c298dc02997297b3b\"\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift\n\ntest result: FAILED. 9 passed; 1 failed;",
+    "installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen": "\n\nthread 'installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen' (13144) panicked at crates\\xtask\\tests\\support\\bootstrap_installed_guard.rs:29:5:\nassertion `left == right` failed\n  left: 0\n right: 1\n\nthread 'installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen' (13144) panicked at crates\\xtask\\tests\\support\\bootstrap_installed_guard.rs:29:5:\nassertion `left == right` failed\n  left: 2\n right: 1\n\nthread 'installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen' (13144) panicked at crates\\xtask\\tests\\support\\bootstrap_installed_guard.rs:29:5",
+    "installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set": "\n\nthread 'installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set' (16204) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\authority-reader-phase-074\\main.rs:36:5:\nassertion `left == right` failed: current terminal test body\n  left: \"0565355c592d59d49a7c2a1b1631f10711ff5d6101e42cf50925261a6e4bed6c\"\n right: \"30dc4166f86f71a2028b0adc3287e898920adf18c92a45cb7046ab67663f9207\"\n\n",
+    "inventory_projection_requires_all_current_source_files_before_old_list": "\n\nthread 'inventory_projection_requires_all_current_source_files_before_old_list' (8348) panicked at crates\\xtask\\tests\\artifact_inventory_reader_074.rs:39:62:\ncalled `Result::unwrap()` on an `Err` value: \"source index drift\"\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    inventory_projection_requires_all_current_source_files_before_old_list\n\ntest result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.83s\n\n\nrunning 2 tests\ntest authority_breakdown_contract_preserves_scan_reader_and_non_admission_scope ... ok\ntest ",
+    "launcher_preserves_all_438_preceding_sources_and_exact_old_formats": "\n\nthread 'launcher_preserves_all_438_preceding_sources_and_exact_old_formats' (43724) panicked at crates\\xtask\\tests\\diagnostic_artifact_fixture_074.rs:154:34:\ncurrent inventory refused before historical phase: \"source list drift\"\n\n",
+    "main_retains_old_full_body_gate_and_all_twelve_current_reads_reach_source": "\n\nthread 'main_retains_old_full_body_gate_and_all_twelve_current_reads_reach_source' (9208) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\current-frontier-074\\contract.rs:45:5:\nassertion `left == right` failed\n  left: \"b28b823581bf37c9b828a8b166098e0a13add0a487e6d139a61a381dba0da652\"\n right: \"86548e7516a7a73b05099f4c7ff7342949d5656f748b914c298dc02997297b3b\"\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n",
+    "only_the_two_current_documents_reconstruct_the_exact_reviewed_phase": "\n\nthread 'only_the_two_current_documents_reconstruct_the_exact_reviewed_phase' (42532) panicked at crates\\xtask\\tests\\bootstrap_doc_reader_074.rs:112:9:\nassertion `left == right` failed\n  left: \"# HydraCache Compatibility Register\\n\\nThe separate local diagnostic `hc074-spawn-capture-v1` connects the model-stage\\nspawn brackets only through `git_cpu_spawn.py BUILD LABEL --spawn-frames` and a\\nnew exclusive output root. Matching tools are required; unknown/missing schemas\\nrefuse after intent before API creation. It does not change the old three caller\\nmodes or rewrite model/native packets. Op",
+    "rejected_bind_alias_does_not_install_unproved_runtime_or_change_old_bytes": "\n\nthread 'rejected_bind_alias_does_not_install_unproved_runtime_or_change_old_bytes' (10084) panicked at crates\\xtask\\tests\\held_bind_alias_refusal_074.rs:42:9:\nassertion `left == right` failed: tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs\n  left: \"//! Private fixed read-only channel; no original message or execution authority.\\nuse std::future::Future;\\nuse std::time::Duration;\\nuse tokio::runtime::{Builder, Runtime};\\nuse zbus::{Connection, Message};\\n#[path = \\\"diagnostic_manager_channel_kernel.rs\\\"]\\nmod kernel;\\nuse kernel::{boot, clock, KernelPins, Operation, PathPins}",
+    "role_binding_preserves_all_441_preceding_runtime_sources_and_inputs": "\n\nthread 'role_binding_preserves_all_441_preceding_runtime_sources_and_inputs' (49972) panicked at crates\\xtask\\tests\\diagnostic_artifact_fixture_074.rs:154:34:\ncurrent inventory refused before historical phase: \"source list drift\"\n\n",
+    "role_files_preserve_all_440_previous_runtime_sources_and_inputs": "\n\nthread 'role_files_preserve_all_440_previous_runtime_sources_and_inputs' (36020) panicked at crates\\xtask\\tests\\diagnostic_artifact_fixture_074.rs:154:34:\ncurrent inventory refused before historical phase: \"source list drift\"\n\n\nfailures:\n    actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats\n    consuming_held_join_preserves_all_443_old_sources_and_formats\n    held_trust_preserves_all_442_preceding_sources_and_production_inputs\n    immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs\n    launcher_preserves_all_438_preceding_sources_and_exact_old_for",
+    "stale_partial_duplicate_and_unrelated_current_source_edits_refuse": "\n\nthread 'stale_partial_duplicate_and_unrelated_current_source_edits_refuse' (45372) panicked at crates\\xtask\\tests\\..\\..\\..\\tools\\current-frontier-074\\contract.rs:45:5:\nassertion `left == right` failed\n  left: \"b28b823581bf37c9b828a8b166098e0a13add0a487e6d139a61a381dba0da652\"\n right: \"86548e7516a7a73b05099f4c7ff7342949d5656f748b914c298dc02997297b3b\"\n\nthread 'stale_partial_duplicate_and_unrelated_current_source_edits_refuse' (45372) panicked at crates\\xtask\\tests\\current_frontier_074.rs:61:9:\nassertion failed: std::panic::catch_unwind(|| contract::project(path, current)).is_ok()\n\n",
+    "terminal_main_text_matches_fixed_producers_without_compiling_the_old_runtime": "\n\nthread 'terminal_main_text_matches_fixed_producers_without_compiling_the_old_runtime' (39920) panicked at crates\\xtask\\tests\\authority_reader_phase_074.rs:211:5:\nassertion `left == right` failed\n  left: \"#[path = \\\"../../../tools/authority-runtime-074/gate.rs\\\"]\\nmod runtime;\\n#[path = \\\"../../../tools/authority-runtime-074/io.rs\\\"]\\nmod runtime_io;\\n#[path = \\\"../../../tools/authority-storage-source-074/contract.rs\\\"]\\nmod storage_contract;\\n\\nuse serde_json::{json, Value};\\nuse sha2::{Digest, Sha256};\\nuse std::path::{Path, PathBuf};\\n\\n#[path = \\\"support/performance_contract_074_live_walk",
+    "twelve_current_sources_reconstruct_exact_independent_predecessors": "\n\nthread 'twelve_current_sources_reconstruct_exact_independent_predecessors' (8500) panicked at crates\\xtask\\tests\\current_frontier_074.rs:30:9:\nassertion `left == right` failed\n  left: \"[package]\\nname = \\\"hydracache-redis-compat\\\"\\nversion.workspace = true\\nedition.workspace = true\\nrust-version.workspace = true\\nlicense.workspace = true\\nrepository.workspace = true\\nhomepage.workspace = true\\nreadme = \\\"README.md\\\"\\nkeywords.workspace = true\\ncategories.workspace = true\\ndescription = \\\"Off-by-default Redis RESP edge facade for HydraCache cache-subset compatibility.\\\"\\n\\n[features]\\ndefault"
+  },
+  "server": false,
+  "transitive_inputs_unchanged_not_claimed": true,
+  "workload_rerun": false
+}

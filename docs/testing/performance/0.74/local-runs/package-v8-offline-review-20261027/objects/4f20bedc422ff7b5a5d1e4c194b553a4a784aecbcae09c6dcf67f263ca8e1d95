@@ -1,0 +1,41 @@
+"""Read-only triage of the retained first V8 failure; no case replay."""
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+FOLDER = ROOT / 'docs/testing/performance/0.74/local-runs/package-closure-v8-20261027'
+raw = (FOLDER / 'index.json').read_bytes()
+assert hashlib.sha256(raw).hexdigest() == 'ad41027076d5cc20e52267976e05b507bd9b25e35fc0e71b08adc280be062432'
+index = json.loads(raw)
+
+
+def member(name):
+    row = index['members'][name]
+    raw = (FOLDER / 'objects' / row['sha256']).read_bytes()
+    assert len(raw) == row['bytes'] and hashlib.sha256(raw).hexdigest() == row['sha256']
+    return raw
+
+
+accounting = json.loads(member('derived/accounting.json'))
+failed = [t for t in accounting['targets'] if t.get('failed')]
+assert len(failed) == 21
+rows = []
+for target in failed:
+    path = 'crates/xtask/' + target['target']
+    bodies = [subprocess.check_output(['git', 'show', f'{revision}:{path}'],
+                                     cwd=ROOT, timeout=10) for revision in (
+        'aa21376a1e7d3efbab77142d83f08278121ab891',
+        '0a6f8c8e6d6467777d519bd6799800bf694142f3')]
+    assert bodies[0] == bodies[1]
+    rows.append(dict(path=path, unchanged=True, git_body_sha256=hashlib.sha256(bodies[0]).hexdigest(),
+                     failed_cases=[c['name'] for c in target['cases'] if c['verdict'] == 'FAILED']))
+stdout = member('package/stdout.log').decode('utf-8')
+blocks = re.split(r'^---- (.*?) stdout ----$', stdout, flags=re.M)
+excerpts = {blocks[n]: blocks[n+1][:600] for n in range(1, len(blocks), 2)}
+assert sum(len(row['failed_cases']) for row in rows) == 36
+print(json.dumps(dict(failed_target_bodies=rows, first_failure_output_excerpts=excerpts,
+    excerpts_not_terminal_cause_proof=True, transitive_inputs_unchanged_not_claimed=True,
+    causal_attribution=False, workload_rerun=False, server=False), sort_keys=True, indent=2))

@@ -1,0 +1,91 @@
+"""Retain the single V8 attempt and unchanged strict parser outcome; no replay."""
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = ROOT / 'target/roots-lock-view-20261027'
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/package-closure-v8-20261027'
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+parser_path = ROOT / 'tools/xtask-package-attribution-074/review.py'
+assert sha(parser_path.read_bytes()) == '0229d4067fffd0d0b5acee7d864efc64aadfb201de1ea3f17944a2f8dddf3c4d'
+spec = importlib.util.spec_from_file_location('hc074_checked_package_parser_v8', parser_path)
+parser = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(parser)
+members, objects = {}, {}
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+for phase in ('preflight-first', 'full-package-first', 'postflight-first'):
+    for path in sorted((BASE / phase).rglob('*')):
+        if path.is_file():
+            add('checks/' + phase + '/' + path.relative_to(BASE / phase).as_posix(), path.read_bytes())
+for label in ('preflight-first', 'full-first'):
+    folder = ROOT / 'target/reviewed-package-v8-20261027' / label
+    for path in folder.iterdir():
+        assert path.is_file()
+        add('coordinator/' + label + '/' + path.name, path.read_bytes())
+folder = ROOT / 'target/source-continuation-20261024/package-v8-full-first'
+for path in sorted(folder.iterdir()):
+    assert path.is_file()
+    add('package/' + path.name, path.read_bytes())
+gate = json.loads((ROOT / 'target/reviewed-package-v8-20261027/full-first/gate.json').read_bytes())
+assert gate['head'] == '0a6f8c8e6d6467777d519bd6799800bf694142f3'
+intent = json.loads((folder / 'intent.json').read_bytes())
+assert intent['head'] == gate['head'] and intent['bound_seconds'] == 780 and len(gate['targets']) == 148
+outer = json.loads((BASE / 'full-package-first/result.json').read_bytes())
+outer_before = json.loads((BASE / 'full-package-first/intent.json').read_bytes())
+assert outer['source_unchanged'] and outer['commit_unchanged']
+assert outer['source_after'] == outer_before['source'] and outer_before['source_commit'] == gate['head']
+for name, digest in {**gate['sources'], **gate['auxiliary']}.items():
+    assert sha((ROOT / name).read_bytes()) == digest
+post = json.loads((BASE / 'postflight-first/stdout.log').read_bytes())
+assert post['source_review'] == {k: v for k, v in gate.items() if k not in ('environment', 'head')}
+assert post['environment'] == gate['environment'] and post['head'] == gate['head']
+analysis, refusal = None, None
+result_path = folder / 'result.json'
+if result_path.exists():
+    result = json.loads(result_path.read_bytes())
+    assert result['source_unchanged'] and result['head_unchanged'] and result['source_after'] == intent['source']
+    try:
+        analysis = parser.parse_transcript((folder / 'stdout.log').read_text(encoding='utf-8'),
+                (folder / 'stderr.log').read_text(encoding='utf-8'), gate['targets'],
+                result['exit'], result['outer_refusal'], 780)
+    except ValueError as error:
+        refusal = dict(type=type(error).__name__, reason=str(error), package_pass=False,
+                       original_parser_unchanged=True, test_coverage_not_assessed=True)
+else:
+    refusal = dict(reason='original inner result absent', package_pass=False,
+                   original_parser_unchanged=True, test_coverage_not_assessed=True)
+if analysis is not None:
+    add('derived/accounting.json', (json.dumps(analysis, sort_keys=True, indent=2) + '\n').encode())
+else:
+    add('derived/accounting-refusal.json', (json.dumps(refusal, sort_keys=True, indent=2) + '\n').encode())
+add('parser/review.py', parser_path.read_bytes())
+for name in ('run-roots-lock-view-20261027.py', 'run-source-step-20261024.py',
+             'run-xtask-package-780-20261024.py', 'postflight-package-v8-20261027.py', Path(__file__).name):
+    add('coordinators/' + name, (ROOT / 'target' / name).read_bytes())
+OUT.mkdir(exist_ok=False)
+with (OUT / '.gitattributes').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+(OUT / 'objects').mkdir()
+for digest, raw in objects.items():
+    with (OUT / 'objects' / digest).open('xb') as stream:
+        stream.write(raw)
+index = dict(schema='hc074-package-closure-v8-evidence-v1', source_commit=gate['head'], members=members,
+             accounting_assessed=analysis is not None, package_pass=analysis is not None and analysis['package_pass'],
+             automatic_retry=False, source_and_head_preserved=True, server=False,
+             qualification=False, release_admitted=False)
+with (OUT / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, sort_keys=True, indent=2)
+    stream.write('\n')
+print(json.dumps(dict(index_sha256=sha((OUT / 'index.json').read_bytes()), members=len(members),
+    assessment=refusal if analysis is None else {k: analysis[k] for k in
+        ('expected_targets','completed_targets','passed','failed','incomplete_target','unstarted_targets','package_pass')})))
+if refusal is not None:
+    raise SystemExit(1)

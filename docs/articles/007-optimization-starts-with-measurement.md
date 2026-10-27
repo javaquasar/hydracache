@@ -21245,3 +21245,27 @@ actual complete package result. The initial missing test dependency, rustfmt
 oracle ordering mismatch and wrong revision label remain first outcomes. Such
 repairs concern test-source compatibility; they are not an allocation or
 throughput hypothesis, removed live observation or renewed deadline.
+
+The first full V8 attempt supplies a concrete negative result: compilation
+finishes in a printed 342 seconds, but the unchanged 780-second command limit
+leaves 67 of 148 targets unstarted. Completed targets contain 456 passes and
+36 failures across 21 failing targets. Exact source/effect/environment postflight
+passes; the package does not. Current roots, security and milestone targets in
+the unstarted suffix cannot inherit their earlier focused verdicts.
+
+The failures expose distinct preservation boundaries: independent source-index
+accounting, current terminal/authority bodies, old lock and document views,
+manifest frontier and held-role exact additions. All failing target files are
+unchanged from the pre-step commit, but this does not attribute their failures:
+their transitive inputs and projection chain can change. The narrow lock bridge
+is therefore a confirmed compatibility result only for its tested entry path,
+not proof that every historical reader is connected to it.
+
+The [first execution receipt and analysis](../testing/performance/0.74/roots-lock-view-package-v8-result-20261027.md)
+retain raw logs, all first outcomes, exact source and original timeout cleanup.
+An offline verifier re-derives the counts using the unchanged current transcript
+parser, without executing archived sources. A valid red receipt must stay red.
+The next work is reviewed composition at the identified boundaries, not replacing
+old assertions, skipping costly targets or increasing the budget. Printed target
+spans identify where to inspect saved data; they are not a new CPU or throughput
+claim and do not authorize another measurement hypothesis.

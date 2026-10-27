@@ -79,6 +79,19 @@ bodies and 148 default targets. This is a separately reviewed current source
 state; the original full package command and 780-second/four-thread/floor
 contract still require an actual complete verdict, not a joined old suffix.
 
+The first actual V8 command now ends at the unchanged 780-second limit after
+342 seconds printed compilation. The preserved strict accounting is 81/148
+complete targets, 456 passing and 36 failing cases; 67 targets are unstarted.
+There is no incomplete target summary, but target coverage is incomplete and the
+package is red. Source/effect/environment/HEAD postflight remains exact. The
+[first execution and failure analysis](roots-lock-view-package-v8-result-20261027.md)
+distinguishes inventory-index, terminal/authority, historical lock/docs,
+current-frontier and held-role compatibility boundaries. The 21 failing target
+bodies are unchanged since `aa21376a1`, not evidence that their transitive inputs
+are unchanged. Next repair exact historical composition and independently
+review each source delta; no unchanged V8 retry, suffix completion, enlarged
+limit or removed check. The existing focused passes do not close package 1/2.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

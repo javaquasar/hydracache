@@ -1,0 +1,128 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5m 42s
+     Running unittests src\lib.rs (target\debug\deps\xtask-47d506090f3c7a8e.exe)
+     Running unittests src\main.rs (target\debug\deps\xtask-660e08ba560700e3.exe)
+     Running tests\allocation_copy_071.rs (target\debug\deps\allocation_copy_071-d36e3154eb386b26.exe)
+     Running tests\allocation_retention_070.rs (target\debug\deps\allocation_retention_070-18cc0c385cf51a27.exe)
+     Running tests\allocator_matrix_071.rs (target\debug\deps\allocator_matrix_071-17e3bd043a9c7389.exe)
+     Running tests\artifact_inventory_phase_544_074.rs (target\debug\deps\artifact_inventory_phase_544_074-c6b94f2a422238ee.exe)
+error: test failed, to rerun pass `-p xtask --test artifact_inventory_phase_544_074`
+     Running tests\artifact_inventory_reader_074.rs (target\debug\deps\artifact_inventory_reader_074-8d6a8247d59551b3.exe)
+error: test failed, to rerun pass `-p xtask --test artifact_inventory_reader_074`
+     Running tests\authority_breakdown_074.rs (target\debug\deps\authority_breakdown_074-000d098ec8bbe1ca.exe)
+     Running tests\authority_context_074.rs (target\debug\deps\authority_context_074-93366802e8ffbee5.exe)
+     Running tests\authority_cpu_074.rs (target\debug\deps\authority_cpu_074-d2b4ca9e789a8899.exe)
+     Running tests\authority_expected_name_074.rs (target\debug\deps\authority_expected_name_074-4d1641f09f027615.exe)
+     Running tests\authority_fd_path_074.rs (target\debug\deps\authority_fd_path_074-1868b08ff1c502e0.exe)
+     Running tests\authority_hex_reader_074.rs (target\debug\deps\authority_hex_reader_074-ea13aab8881fd670.exe)
+     Running tests\authority_inventory_074.rs (target\debug\deps\authority_inventory_074-ed440cdda34cb868.exe)
+     Running tests\authority_key_hex_074.rs (target\debug\deps\authority_key_hex_074-7121b55b400151f2.exe)
+     Running tests\authority_leaf_cpu_074.rs (target\debug\deps\authority_leaf_cpu_074-ee3f479dbe14b1e8.exe)
+     Running tests\authority_leaf_name_074.rs (target\debug\deps\authority_leaf_name_074-7ae895299b5a194b.exe)
+     Running tests\authority_name_capacity_074.rs (target\debug\deps\authority_name_capacity_074-bc7042f86b8596f7.exe)
+     Running tests\authority_open_name_074.rs (target\debug\deps\authority_open_name_074-b5e919165482f529.exe)
+     Running tests\authority_operator_order_074.rs (target\debug\deps\authority_operator_order_074-483bf8809553e5a9.exe)
+     Running tests\authority_owned_journal_074.rs (target\debug\deps\authority_owned_journal_074-4638ac093a92b03f.exe)
+     Running tests\authority_owners_074.rs (target\debug\deps\authority_owners_074-fc174191de008b97.exe)
+     Running tests\authority_read_baseline_074.rs (target\debug\deps\authority_read_baseline_074-0a7c4e4757136468.exe)
+     Running tests\authority_reader_phase_074.rs (target\debug\deps\authority_reader_phase_074-4802d61dde0c4f38.exe)
+error: test failed, to rerun pass `-p xtask --test authority_reader_phase_074`
+     Running tests\authority_runtime_074.rs (target\debug\deps\authority_runtime_074-8e223b6ed657b4a1.exe)
+error: test failed, to rerun pass `-p xtask --test authority_runtime_074`
+     Running tests\authority_rust_history_074.rs (target\debug\deps\authority_rust_history_074-aed2135a4a4dcb53.exe)
+error: test failed, to rerun pass `-p xtask --test authority_rust_history_074`
+     Running tests\authority_scratch_reuse_074.rs (target\debug\deps\authority_scratch_reuse_074-bd74f800dcb5833f.exe)
+     Running tests\authority_storage_source_074.rs (target\debug\deps\authority_storage_source_074-9fb46060ec5a1abb.exe)
+     Running tests\bench_budget.rs (target\debug\deps\bench_budget-d3c5fb3acf7d1a36.exe)
+     Running tests\boot_operations_074.rs (target\debug\deps\boot_operations_074-398e6a82a7851115.exe)
+     Running tests\bootstrap_build_owner_074.rs (target\debug\deps\bootstrap_build_owner_074-1617c8ce495e2c75.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_build_owner_074`
+     Running tests\bootstrap_child_boundary_074.rs (target\debug\deps\bootstrap_child_boundary_074-cb7fac5011c36155.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_child_boundary_074`
+     Running tests\bootstrap_child_census_074.rs (target\debug\deps\bootstrap_child_census_074-fc0c6ce131b406ca.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_child_census_074`
+     Running tests\bootstrap_child_reader_074.rs (target\debug\deps\bootstrap_child_reader_074-cdcb81b2ea628a5c.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_child_reader_074`
+     Running tests\bootstrap_current_image_074.rs (target\debug\deps\bootstrap_current_image_074-f56d9cecdaab1714.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_current_image_074`
+     Running tests\bootstrap_doc_reader_074.rs (target\debug\deps\bootstrap_doc_reader_074-011c9e50ef6b3633.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_doc_reader_074`
+     Running tests\bootstrap_enrollment_074.rs (target\debug\deps\bootstrap_enrollment_074-735e56be175fc707.exe)
+     Running tests\bootstrap_entry_binding_074.rs (target\debug\deps\bootstrap_entry_binding_074-0c985ae950aee6aa.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_entry_binding_074`
+     Running tests\bootstrap_image_census_074.rs (target\debug\deps\bootstrap_image_census_074-527f74a0f8e66a51.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_image_census_074`
+     Running tests\bootstrap_installed_origin_074.rs (target\debug\deps\bootstrap_installed_origin_074-e2fd50c663c15b7b.exe)
+error: test failed, to rerun pass `-p xtask --test bootstrap_installed_origin_074`
+     Running tests\canary_check.rs (target\debug\deps\canary_check-1ec5f35e3f0d09c2.exe)
+     Running tests\cancellation_safety.rs (target\debug\deps\cancellation_safety-b768a50bf3c47692.exe)
+     Running tests\census_cost_074.rs (target\debug\deps\census_cost_074-9b34c3543a08c964.exe)
+     Running tests\ci_reliability_071.rs (target\debug\deps\ci_reliability_071-a2c1025cc3467b1d.exe)
+     Running tests\client_plane_ci.rs (target\debug\deps\client_plane_ci-dce842f5861eccbd.exe)
+Error: "HC/2 release admission receipts do not share one commit"
+Error: "HC/2 release admission is missing lanes: fixed-host-soak"
+Error: "HC/2 release admission is missing lanes: fuzz"
+Error: "HC/2 release admission has red lanes: fuzz"
+Error: "HC/2 Docker receipt does not bind the reviewed image digest"
+     Running tests\client_release_068.rs (target\debug\deps\client_release_068-c8ce532d7925e5bc.exe)
+     Running tests\collector_peer_baseline_074.rs (target\debug\deps\collector_peer_baseline_074-f8ad2c3ffcdbfc57.exe)
+     Running tests\collector_peer_capacity_074.rs (target\debug\deps\collector_peer_capacity_074-346161be1335dcd0.exe)
+     Running tests\context_document_baseline_074.rs (target\debug\deps\context_document_baseline_074-fe219082422e8d1b.exe)
+     Running tests\context_document_stack_074.rs (target\debug\deps\context_document_stack_074-e2604e1b4e4ce97a.exe)
+     Running tests\cost_phase_reader_074.rs (target\debug\deps\cost_phase_reader_074-586c8f91a290cc3f.exe)
+     Running tests\coverage_ratchet.rs (target\debug\deps\coverage_ratchet-834f3f4e4f7ea12d.exe)
+     Running tests\current_frontier_074.rs (target\debug\deps\current_frontier_074-590611d413a1fc32.exe)
+error: test failed, to rerun pass `-p xtask --test current_frontier_074`
+     Running tests\current_tree_input_audit_074.rs (target\debug\deps\current_tree_input_audit_074-cd19873f92652053.exe)
+error: test failed, to rerun pass `-p xtask --test current_tree_input_audit_074`
+     Running tests\current_tree_reader_074.rs (target\debug\deps\current_tree_reader_074-01604d1a91da0685.exe)
+     Running tests\custody_preparation_cost_074.rs (target\debug\deps\custody_preparation_cost_074-b5b9bb388ff7144a.exe)
+     Running tests\custody_reader_074.rs (target\debug\deps\custody_reader_074-b379f19a7d45b8db.exe)
+     Running tests\demo_static.rs (target\debug\deps\demo_static-ac6d604a4aa39122.exe)
+     Running tests\determinism_sweep.rs (target\debug\deps\determinism_sweep-1c8dd19278b61f58.exe)
+     Running tests\diagnostic_artifact_fixture_074.rs (target\debug\deps\diagnostic_artifact_fixture_074-f1e58a7942832e8b.exe)
+error: test failed, to rerun pass `-p xtask --test diagnostic_artifact_fixture_074`
+     Running tests\direct_output_cost_074.rs (target\debug\deps\direct_output_cost_074-ce94959fe691069e.exe)
+     Running tests\doc_check.rs (target\debug\deps\doc_check-72178ea825c93b9d.exe)
+     Running tests\document_scratch_cost_074.rs (target\debug\deps\document_scratch_cost_074-a5a2c23235e28154.exe)
+     Running tests\document_scratch_reader_074.rs (target\debug\deps\document_scratch_reader_074-1129562daada7549.exe)
+     Running tests\evidence_run.rs (target\debug\deps\evidence_run-1621b2bdac8f3ec9.exe)
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/fast-suite-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/testing/gated-test-registry.toml', LF will be replaced by CRLF the next time Git touches it
+     Running tests\fast_suite.rs (target\debug\deps\fast_suite-99e151011705a797.exe)
+     Running tests\fresh_kernel_cost_074.rs (target\debug\deps\fresh_kernel_cost_074-25f993699deed3cd.exe)
+     Running tests\fresh_status_reader_074.rs (target\debug\deps\fresh_status_reader_074-6e4f5a5772244580.exe)
+     Running tests\gated_tests.rs (target\debug\deps\gated_tests-72b8d04a6d957810.exe)
+     Running tests\get_owner_terminal_074.rs (target\debug\deps\get_owner_terminal_074-05e18a18725fe526.exe)
+     Running tests\git_descendant_cpu_074.rs (target\debug\deps\git_descendant_cpu_074-783b07bfaad13375.exe)
+     Running tests\held_activation_ingress_074.rs (target\debug\deps\held_activation_ingress_074-960e5f5c17de8041.exe)
+error: test failed, to rerun pass `-p xtask --test held_activation_ingress_074`
+     Running tests\held_bind_alias_refusal_074.rs (target\debug\deps\held_bind_alias_refusal_074-f70718154c796378.exe)
+error: test failed, to rerun pass `-p xtask --test held_bind_alias_refusal_074`
+     Running tests\held_complete_role_census_074.rs (target\debug\deps\held_complete_role_census_074-83ae831ae0ac68df.exe)
+error: test failed, to rerun pass `-p xtask --test held_complete_role_census_074`
+     Running tests\held_material_074.rs (target\debug\deps\held_material_074-4f9792071787d270.exe)
+     Running tests\held_material_live_074.rs (target\debug\deps\held_material_live_074-1722c7dd47873834.exe)
+     Running tests\held_material_roles_074.rs (target\debug\deps\held_material_roles_074-e7036d7ccadefb2e.exe)
+error: test failed, to rerun pass `-p xtask --test held_material_roles_074`
+     Running tests\held_preparation_cost_074.rs (target\debug\deps\held_preparation_cost_074-f2b2271c0b527c17.exe)
+     Running tests\held_unit_projection_074.rs (target\debug\deps\held_unit_projection_074-0b7e1de1736eed48.exe)
+     Running tests\historical_blob_batch_074.rs (target\debug\deps\historical_blob_batch_074-51a97739b5e30738.exe)
+     Running tests\historical_blob_caller_074.rs (target\debug\deps\historical_blob_caller_074-92b67e3687f44421.exe)

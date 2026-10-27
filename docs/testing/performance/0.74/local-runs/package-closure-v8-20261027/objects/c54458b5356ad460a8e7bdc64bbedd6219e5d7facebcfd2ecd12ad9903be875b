@@ -1,0 +1,3517 @@
+{
+  "complete": false,
+  "completed_targets": 81,
+  "exit": 1,
+  "expected_targets": 148,
+  "failed": 36,
+  "ignored": 0,
+  "incomplete_target": null,
+  "individual_failed": 36,
+  "individual_passed": 456,
+  "nominal_budget_minus_completed_spans_ns": 372670000000,
+  "outer_bound_seconds": 780,
+  "outer_refusal": "outer-timeout",
+  "package_pass": false,
+  "passed": 456,
+  "ranking": [
+    {
+      "reported_ns": 100040000000,
+      "reported_seconds": "100.04",
+      "target": "tests/held_preparation_cost_074.rs"
+    },
+    {
+      "reported_ns": 58520000000,
+      "reported_seconds": "58.52",
+      "target": "tests/document_scratch_cost_074.rs"
+    },
+    {
+      "reported_ns": 54130000000,
+      "reported_seconds": "54.13",
+      "target": "tests/custody_preparation_cost_074.rs"
+    },
+    {
+      "reported_ns": 43460000000,
+      "reported_seconds": "43.46",
+      "target": "tests/current_tree_input_audit_074.rs"
+    },
+    {
+      "reported_ns": 32620000000,
+      "reported_seconds": "32.62",
+      "target": "tests/gated_tests.rs"
+    },
+    {
+      "reported_ns": 17840000000,
+      "reported_seconds": "17.84",
+      "target": "tests/current_tree_reader_074.rs"
+    },
+    {
+      "reported_ns": 13680000000,
+      "reported_seconds": "13.68",
+      "target": "tests/historical_blob_caller_074.rs"
+    },
+    {
+      "reported_ns": 10280000000,
+      "reported_seconds": "10.28",
+      "target": "tests/evidence_run.rs"
+    },
+    {
+      "reported_ns": 8900000000,
+      "reported_seconds": "8.90",
+      "target": "unittests src/lib.rs"
+    },
+    {
+      "reported_ns": 6800000000,
+      "reported_seconds": "6.80",
+      "target": "tests/authority_runtime_074.rs"
+    },
+    {
+      "reported_ns": 5690000000,
+      "reported_seconds": "5.69",
+      "target": "tests/authority_rust_history_074.rs"
+    },
+    {
+      "reported_ns": 3870000000,
+      "reported_seconds": "3.87",
+      "target": "tests/held_unit_projection_074.rs"
+    },
+    {
+      "reported_ns": 3430000000,
+      "reported_seconds": "3.43",
+      "target": "tests/authority_reader_phase_074.rs"
+    },
+    {
+      "reported_ns": 3000000000,
+      "reported_seconds": "3.00",
+      "target": "tests/held_material_074.rs"
+    },
+    {
+      "reported_ns": 2730000000,
+      "reported_seconds": "2.73",
+      "target": "tests/ci_reliability_071.rs"
+    },
+    {
+      "reported_ns": 2610000000,
+      "reported_seconds": "2.61",
+      "target": "tests/bootstrap_installed_origin_074.rs"
+    },
+    {
+      "reported_ns": 2460000000,
+      "reported_seconds": "2.46",
+      "target": "tests/current_frontier_074.rs"
+    },
+    {
+      "reported_ns": 2430000000,
+      "reported_seconds": "2.43",
+      "target": "tests/authority_operator_order_074.rs"
+    },
+    {
+      "reported_ns": 1930000000,
+      "reported_seconds": "1.93",
+      "target": "tests/diagnostic_artifact_fixture_074.rs"
+    },
+    {
+      "reported_ns": 1640000000,
+      "reported_seconds": "1.64",
+      "target": "tests/authority_storage_source_074.rs"
+    },
+    {
+      "reported_ns": 1460000000,
+      "reported_seconds": "1.46",
+      "target": "tests/bootstrap_child_reader_074.rs"
+    },
+    {
+      "reported_ns": 1100000000,
+      "reported_seconds": "1.10",
+      "target": "tests/boot_operations_074.rs"
+    },
+    {
+      "reported_ns": 1090000000,
+      "reported_seconds": "1.09",
+      "target": "tests/bootstrap_current_image_074.rs"
+    },
+    {
+      "reported_ns": 1040000000,
+      "reported_seconds": "1.04",
+      "target": "tests/bootstrap_doc_reader_074.rs"
+    },
+    {
+      "reported_ns": 1020000000,
+      "reported_seconds": "1.02",
+      "target": "tests/authority_fd_path_074.rs"
+    },
+    {
+      "reported_ns": 1000000000,
+      "reported_seconds": "1.00",
+      "target": "tests/fresh_kernel_cost_074.rs"
+    },
+    {
+      "reported_ns": 960000000,
+      "reported_seconds": "0.96",
+      "target": "tests/authority_leaf_name_074.rs"
+    },
+    {
+      "reported_ns": 920000000,
+      "reported_seconds": "0.92",
+      "target": "tests/bootstrap_child_boundary_074.rs"
+    },
+    {
+      "reported_ns": 920000000,
+      "reported_seconds": "0.92",
+      "target": "tests/bootstrap_child_census_074.rs"
+    },
+    {
+      "reported_ns": 910000000,
+      "reported_seconds": "0.91",
+      "target": "tests/authority_expected_name_074.rs"
+    },
+    {
+      "reported_ns": 910000000,
+      "reported_seconds": "0.91",
+      "target": "tests/collector_peer_capacity_074.rs"
+    },
+    {
+      "reported_ns": 900000000,
+      "reported_seconds": "0.90",
+      "target": "tests/authority_owned_journal_074.rs"
+    },
+    {
+      "reported_ns": 900000000,
+      "reported_seconds": "0.90",
+      "target": "tests/authority_scratch_reuse_074.rs"
+    },
+    {
+      "reported_ns": 870000000,
+      "reported_seconds": "0.87",
+      "target": "tests/document_scratch_reader_074.rs"
+    },
+    {
+      "reported_ns": 850000000,
+      "reported_seconds": "0.85",
+      "target": "tests/context_document_stack_074.rs"
+    },
+    {
+      "reported_ns": 830000000,
+      "reported_seconds": "0.83",
+      "target": "tests/artifact_inventory_reader_074.rs"
+    },
+    {
+      "reported_ns": 800000000,
+      "reported_seconds": "0.80",
+      "target": "tests/client_plane_ci.rs"
+    },
+    {
+      "reported_ns": 740000000,
+      "reported_seconds": "0.74",
+      "target": "tests/bootstrap_image_census_074.rs"
+    },
+    {
+      "reported_ns": 730000000,
+      "reported_seconds": "0.73",
+      "target": "tests/authority_leaf_cpu_074.rs"
+    },
+    {
+      "reported_ns": 730000000,
+      "reported_seconds": "0.73",
+      "target": "tests/authority_open_name_074.rs"
+    },
+    {
+      "reported_ns": 730000000,
+      "reported_seconds": "0.73",
+      "target": "tests/bootstrap_entry_binding_074.rs"
+    },
+    {
+      "reported_ns": 700000000,
+      "reported_seconds": "0.70",
+      "target": "tests/held_complete_role_census_074.rs"
+    },
+    {
+      "reported_ns": 670000000,
+      "reported_seconds": "0.67",
+      "target": "tests/canary_check.rs"
+    },
+    {
+      "reported_ns": 650000000,
+      "reported_seconds": "0.65",
+      "target": "tests/authority_breakdown_074.rs"
+    },
+    {
+      "reported_ns": 620000000,
+      "reported_seconds": "0.62",
+      "target": "tests/authority_name_capacity_074.rs"
+    },
+    {
+      "reported_ns": 600000000,
+      "reported_seconds": "0.60",
+      "target": "tests/held_material_roles_074.rs"
+    },
+    {
+      "reported_ns": 590000000,
+      "reported_seconds": "0.59",
+      "target": "tests/context_document_baseline_074.rs"
+    },
+    {
+      "reported_ns": 570000000,
+      "reported_seconds": "0.57",
+      "target": "tests/authority_read_baseline_074.rs"
+    },
+    {
+      "reported_ns": 550000000,
+      "reported_seconds": "0.55",
+      "target": "tests/bootstrap_build_owner_074.rs"
+    },
+    {
+      "reported_ns": 540000000,
+      "reported_seconds": "0.54",
+      "target": "tests/collector_peer_baseline_074.rs"
+    },
+    {
+      "reported_ns": 530000000,
+      "reported_seconds": "0.53",
+      "target": "tests/authority_key_hex_074.rs"
+    },
+    {
+      "reported_ns": 520000000,
+      "reported_seconds": "0.52",
+      "target": "tests/authority_inventory_074.rs"
+    },
+    {
+      "reported_ns": 520000000,
+      "reported_seconds": "0.52",
+      "target": "tests/authority_owners_074.rs"
+    },
+    {
+      "reported_ns": 510000000,
+      "reported_seconds": "0.51",
+      "target": "tests/held_bind_alias_refusal_074.rs"
+    },
+    {
+      "reported_ns": 500000000,
+      "reported_seconds": "0.50",
+      "target": "tests/authority_cpu_074.rs"
+    },
+    {
+      "reported_ns": 480000000,
+      "reported_seconds": "0.48",
+      "target": "tests/authority_context_074.rs"
+    },
+    {
+      "reported_ns": 460000000,
+      "reported_seconds": "0.46",
+      "target": "tests/held_activation_ingress_074.rs"
+    },
+    {
+      "reported_ns": 400000000,
+      "reported_seconds": "0.40",
+      "target": "tests/cost_phase_reader_074.rs"
+    },
+    {
+      "reported_ns": 320000000,
+      "reported_seconds": "0.32",
+      "target": "tests/artifact_inventory_phase_544_074.rs"
+    },
+    {
+      "reported_ns": 270000000,
+      "reported_seconds": "0.27",
+      "target": "tests/authority_hex_reader_074.rs"
+    },
+    {
+      "reported_ns": 260000000,
+      "reported_seconds": "0.26",
+      "target": "tests/direct_output_cost_074.rs"
+    },
+    {
+      "reported_ns": 230000000,
+      "reported_seconds": "0.23",
+      "target": "tests/custody_reader_074.rs"
+    },
+    {
+      "reported_ns": 230000000,
+      "reported_seconds": "0.23",
+      "target": "tests/fresh_status_reader_074.rs"
+    },
+    {
+      "reported_ns": 230000000,
+      "reported_seconds": "0.23",
+      "target": "tests/held_material_live_074.rs"
+    },
+    {
+      "reported_ns": 210000000,
+      "reported_seconds": "0.21",
+      "target": "tests/demo_static.rs"
+    },
+    {
+      "reported_ns": 120000000,
+      "reported_seconds": "0.12",
+      "target": "tests/census_cost_074.rs"
+    },
+    {
+      "reported_ns": 110000000,
+      "reported_seconds": "0.11",
+      "target": "tests/doc_check.rs"
+    },
+    {
+      "reported_ns": 90000000,
+      "reported_seconds": "0.09",
+      "target": "tests/bootstrap_enrollment_074.rs"
+    },
+    {
+      "reported_ns": 80000000,
+      "reported_seconds": "0.08",
+      "target": "tests/bench_budget.rs"
+    },
+    {
+      "reported_ns": 50000000,
+      "reported_seconds": "0.05",
+      "target": "tests/allocation_retention_070.rs"
+    },
+    {
+      "reported_ns": 50000000,
+      "reported_seconds": "0.05",
+      "target": "tests/historical_blob_batch_074.rs"
+    },
+    {
+      "reported_ns": 40000000,
+      "reported_seconds": "0.04",
+      "target": "tests/client_release_068.rs"
+    },
+    {
+      "reported_ns": 30000000,
+      "reported_seconds": "0.03",
+      "target": "tests/coverage_ratchet.rs"
+    },
+    {
+      "reported_ns": 30000000,
+      "reported_seconds": "0.03",
+      "target": "tests/fast_suite.rs"
+    },
+    {
+      "reported_ns": 30000000,
+      "reported_seconds": "0.03",
+      "target": "tests/get_owner_terminal_074.rs"
+    },
+    {
+      "reported_ns": 30000000,
+      "reported_seconds": "0.03",
+      "target": "tests/git_descendant_cpu_074.rs"
+    },
+    {
+      "reported_ns": 20000000,
+      "reported_seconds": "0.02",
+      "target": "tests/allocation_copy_071.rs"
+    },
+    {
+      "reported_ns": 10000000,
+      "reported_seconds": "0.01",
+      "target": "tests/allocator_matrix_071.rs"
+    },
+    {
+      "reported_ns": 10000000,
+      "reported_seconds": "0.01",
+      "target": "tests/cancellation_safety.rs"
+    },
+    {
+      "reported_ns": 0,
+      "reported_seconds": "0.00",
+      "target": "tests/determinism_sweep.rs"
+    },
+    {
+      "reported_ns": 0,
+      "reported_seconds": "0.00",
+      "target": "unittests src/main.rs"
+    }
+  ],
+  "reported_build_span_ns": 342000000000,
+  "reported_completed_target_spans_ns": 407330000000,
+  "scheduled_targets": 81,
+  "targets": [
+    {
+      "cases": [
+        {
+          "name": "canary_sweep::platform_program_tests::command_line_package_managers_use_windows_batch_shims",
+          "verdict": "ok"
+        },
+        {
+          "name": "ci_admission::tests::admission_status_accepts_only_all_success_and_exact_shas",
+          "verdict": "ok"
+        },
+        {
+          "name": "ci_admission::tests::admission_status_is_fail_loud_for_failed_or_skipped_lanes",
+          "verdict": "ok"
+        },
+        {
+          "name": "ci_topology::tests::release_expiration_is_numeric",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_package::tests::frozen_manifest_names_all_four_preview_packages",
+          "verdict": "ok"
+        },
+        {
+          "name": "ci_admission::tests::downloaded_lane_status_must_be_an_exact_consistent_pass",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_package::tests::rust_api_manifest_tracks_the_workspace_release_version",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_bakeoff::tests::accepted_bakeoff_manifest_is_complete",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_ci::tests::admission_discovers_receipts_in_download_artifact_subtrees",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_ci::tests::receipt_validation_is_bounded_and_lane_specific",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_ci::tests::workflow_provenance_bindings_are_fail_closed",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_compat::tests::bounded_retry_is_scoped_only_to_maven_executables",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_compat::tests::reachability_requires_an_exact_commit_line",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_conformance::tests::cross_sdk_manifest_is_complete_and_source_bound",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_compat::tests::retained_maven_pom_identity_is_stable_across_checkout_line_endings",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_compat::tests::traversal_and_skip_status_are_not_accepted",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_fault::tests::h03_candidate_plans_are_retained_and_bounded",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_fault::tests::h11_reconnect_and_repair_plans_are_distinct_and_bounded",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_fault::tests::h20_lifecycle_plans_have_distinct_terminal_actions",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_fault::tests::retained_plan_is_valid_and_bounded",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_generation::tests::compare_reports_changed_generated_files",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_generation::tests::generation_paths_are_present",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_ci::tests::admission_rejects_missing_or_mixed_lane_receipts",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_java::tests::sdk_and_consumer_are_independent_maven_projects",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_ci::tests::checked_in_contract_matches_workflow",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_rust::tests::production_sdk_owns_the_contract_and_hc1_remains_separate",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_spike::tests::fixture_paths_are_workspace_relative_and_present",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_schema::tests::schema_manifests_and_sdk_generations_agree",
+          "verdict": "ok"
+        },
+        {
+          "name": "compat_check::tests::compat_preflight_rejects_a_branch_without_v063_ancestry_or_with_stale_internal_versions",
+          "verdict": "ok"
+        },
+        {
+          "name": "doc_check::tests::parses_in_progress_value",
+          "verdict": "ok"
+        },
+        {
+          "name": "doc_check::tests::parses_status_header_trimming_trailing_period",
+          "verdict": "ok"
+        },
+        {
+          "name": "doc_check::tests::prose_status_and_missing_header_return_none",
+          "verdict": "ok"
+        },
+        {
+          "name": "doc_check::tests::takes_only_the_leading_token_from_an_annotated_header",
+          "verdict": "ok"
+        },
+        {
+          "name": "evidence_run::registry_digest_tests::registry_digest_is_stable_across_checkout_line_endings",
+          "verdict": "ok"
+        },
+        {
+          "name": "feature_leak::tests::clean_release_tree_has_no_leaks",
+          "verdict": "ok"
+        },
+        {
+          "name": "feature_leak::tests::detects_failpoint_feature_and_dependency_leaks",
+          "verdict": "ok"
+        },
+        {
+          "name": "feature_leak::tests::detects_testkit_and_test_support_leaks",
+          "verdict": "ok"
+        },
+        {
+          "name": "host_attestation::tests::identity_omission_and_placeholder_values_fail_closed",
+          "verdict": "ok"
+        },
+        {
+          "name": "host_attestation::tests::measurement_host_probes_are_dispatched_on_housekeeping_cpus",
+          "verdict": "ok"
+        },
+        {
+          "name": "host_attestation::tests::protected_provisioning_digest_replaces_raw_host_identity",
+          "verdict": "ok"
+        },
+        {
+          "name": "host_attestation::tests::raw_host_and_storage_identity_are_hashed_and_never_serialized",
+          "verdict": "ok"
+        },
+        {
+          "name": "host_attestation::tests::raw_lsblk_identity_captures_every_raid_leaf_independent_of_order",
+          "verdict": "ok"
+        },
+        {
+          "name": "host_attestation::tests::raw_lsblk_identity_ignores_nvme_name_swaps_across_reboots",
+          "verdict": "ok"
+        },
+        {
+          "name": "host_attestation::tests::vm_sibling_and_non_nvme_inputs_are_rejected",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_python::tests::wheelhouse_is_exact_and_hash_verified",
+          "verdict": "ok"
+        },
+        {
+          "name": "management_center::claim_receipt_persistence_tests::failed_complete_batch_preparation_writes_no_partial_receipts",
+          "verdict": "ok"
+        },
+        {
+          "name": "management_center::claim_receipt_persistence_tests::prepared_claim_batch_is_invisible_until_persisted",
+          "verdict": "ok"
+        },
+        {
+          "name": "memory_baseline::line_ending_tests::frozen_text_identity_is_stable_across_checkout_line_endings",
+          "verdict": "ok"
+        },
+        {
+          "name": "memory_campaign::tests::missing_campaigns_are_allowed_before_ship_and_rejected_for_ship",
+          "verdict": "ok"
+        },
+        {
+          "name": "memory_campaign::tests::sha_identity_is_exact_and_lowercase",
+          "verdict": "ok"
+        },
+        {
+          "name": "memory_contracts::calibration_tests::summary_records_discarded_warmup_and_measured_spread",
+          "verdict": "ok"
+        },
+        {
+          "name": "memory_ownership::additions_tests::additions_reject_identity_drift_malformed_input_and_replacement",
+          "verdict": "ok"
+        },
+        {
+          "name": "memory_ownership::additions_tests::merged_reviews_still_reject_stale_expired_and_unreviewed_candidates",
+          "verdict": "ok"
+        },
+        {
+          "name": "memory_ownership::option_tests::inventory_check_is_read_only_and_excludes_output",
+          "verdict": "ok"
+        },
+        {
+          "name": "migration_conformance::tests::current_manifests_are_structurally_valid",
+          "verdict": "ok"
+        },
+        {
+          "name": "migration_conformance::tests::legacy_execution_must_cover_every_manifest_row",
+          "verdict": "ok"
+        },
+        {
+          "name": "migration_conformance::tests::non_pass_outcome_requires_a_reason",
+          "verdict": "ok"
+        },
+        {
+          "name": "migration_conformance::tests::pinned_upstream_selector_must_resolve_in_the_exact_source",
+          "verdict": "ok"
+        },
+        {
+          "name": "migration_conformance::tests::postgres_canary_requires_both_failure_and_the_semantic_marker",
+          "verdict": "ok"
+        },
+        {
+          "name": "migration_conformance::tests::unknown_outcome_fails_closed",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf::preflight_tests::amd_pstate_active_turbo_requires_cpb_and_equal_positive_maxima",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf::preflight_tests::cgroup_quota_parser_uses_the_effective_v2_membership",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf::preflight_tests::cgroup_quota_rejects_a_hierarchy_without_the_cpu_controller",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf::preflight_tests::cgroup_quota_walks_ancestors_when_the_leaf_controller_is_not_enabled",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_python::tests::checked_in_python_generation_is_clean",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf::preflight_tests::preflight_rejects_noise_or_any_attempt_to_shorten_the_sample_set",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf::preflight_tests::preflight_retains_all_fixed_samples_and_accepts_stable_runner",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf::preflight_tests::reference_affinity_accepts_measurement_child_and_exact_housekeeping_controller",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf::preflight_tests::reference_affinity_rejects_untrusted_mode_or_cpuset_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf::preflight_tests::tmpfs_prebuild_publication_requires_the_exact_commit_bound_contract",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf::preflight_tests::turbo_policy_parsers_cover_generic_and_intel_backends",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_budget::semantic_tests::archived_source_identity_does_not_require_the_live_file",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_budget::semantic_tests::archived_source_identity_still_requires_safe_shape",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_budget::semantic_tests::bootstrap_rejects_unstable_reviewed_report_before_sealing_sample",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_budget::semantic_tests::capacity_aggregate_units_are_normalized_for_budget_rules",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_budget::semantic_tests::frozen_threshold_uses_the_larger_of_relative_tolerance_and_robust_mad",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_budget::semantic_tests::grid_model_checker_keeps_spread_scoped_to_the_budget_metric",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_budget::semantic_tests::legacy_surface_capability_methodology_has_an_exact_normalization_bridge",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_budget::semantic_tests::methodology_projection_excludes_per_run_runtime_identity",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_budget::semantic_tests::overload_reference_contract_uses_published_surface_and_window_shape",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_budget::semantic_tests::perf_knee_metric_is_recomputed_from_raw_repeats",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_budget::semantic_tests::resp_stall_probe_uses_its_reviewed_three_repeat_contract",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_budget::semantic_tests::w1_path_cost_window_bridge_is_exact_and_one_way",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_budget::semantic_tests::w5c_sampling_window_bridge_is_exact_and_one_way",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_budget::semantic_tests::w5c_summary_recomputes_with_the_ten_thousand_iteration_window",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf_reference::tests::generated_contracts_have_exactly_one_trailing_newline",
+          "verdict": "ok"
+        },
+        {
+          "name": "performance_overhead::tests::pair_order_is_deterministic_and_counterbalanced",
+          "verdict": "ok"
+        },
+        {
+          "name": "management_center::baseline_receipt_tests::baseline_receipt_rejects_invalid_json_and_empty_measurement_claims",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_evidence::language_selector_tests::evidence_only_0671_dependency_rejects_missing_receipt",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_evidence::language_selector_tests::java_selector_requires_a_junit_annotation",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_evidence::language_selector_tests::management_mixed_artifact_requires_distinct_binaries_and_all_scenarios",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_evidence::language_selector_tests::management_soak_artifact_requires_real_duration_traffic_recovery_and_bounds",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_evidence::language_selector_tests::python_selector_requires_test_prefix_and_definition",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_evidence::language_selector_tests::rust_selector_still_requires_a_test_attribute",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_evidence::pre_candidate_stage_tests::closed_admission_caps_even_all_green_receipts_at_fast_green",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_evidence::report_output_tests::markdown_preserves_every_release_wide_reason_before_work_item_rows",
+          "verdict": "ok"
+        },
+        {
+          "name": "perf::preflight_tests::fingerprint_accepts_only_bounded_page_aligned_memtotal_boot_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "verify::tests::allocator_clippy_lanes_keep_common_features_and_one_allocator",
+          "verdict": "ok"
+        },
+        {
+          "name": "verify::tests::non_windows_uses_single_workspace_test_gate",
+          "verdict": "ok"
+        },
+        {
+          "name": "verify::tests::verify_enforces_full_dependency_policy",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_evidence::report_output_tests::markdown_without_release_wide_reasons_preserves_legacy_layout",
+          "verdict": "ok"
+        },
+        {
+          "name": "verify::tests::verify_has_optional_management_console_gate_contract",
+          "verdict": "ok"
+        },
+        {
+          "name": "verify::tests::verify_includes_dst_fast_budget_gate",
+          "verdict": "ok"
+        },
+        {
+          "name": "verify::tests::verify_includes_raft_failpoint_crash_safety_gate",
+          "verdict": "ok"
+        },
+        {
+          "name": "verify::tests::verify_includes_soak_fast_budget_gate",
+          "verdict": "ok"
+        },
+        {
+          "name": "verify::tests::windows_clippy_uses_only_supported_allocator_features",
+          "verdict": "ok"
+        },
+        {
+          "name": "verify::tests::windows_clippy_uses_only_supported_allocator_matrix",
+          "verdict": "ok"
+        },
+        {
+          "name": "verify::tests::windows_isolates_all_xtask_test_gates",
+          "verdict": "ok"
+        },
+        {
+          "name": "verify::tests::windows_test_gates_avoid_rebuilding_running_xtask_binary",
+          "verdict": "ok"
+        },
+        {
+          "name": "verify::tests::windows_verify_target_dir_is_inside_repo_target",
+          "verdict": "ok"
+        },
+        {
+          "name": "verify::tests::workspace_clippy_never_unifies_exclusive_allocators",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_evidence::language_selector_tests::evidence_only_0671_dependency_accepts_the_committed_closure",
+          "verdict": "ok"
+        },
+        {
+          "name": "client_plane_compat::tests::retained_manifest_is_structurally_valid",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 113,
+      "end_line": 117,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 113,
+      "reported_ns": 8900000000,
+      "reported_seconds": "8.90",
+      "start_line": 2,
+      "target": "unittests src/lib.rs"
+    },
+    {
+      "cases": [],
+      "declared": 0,
+      "end_line": 122,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 0,
+      "reported_ns": 0,
+      "reported_seconds": "0.00",
+      "start_line": 120,
+      "target": "unittests src/main.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "allocation_provider_contract_has_count_bytes_phase_and_redaction_fields",
+          "verdict": "ok"
+        },
+        {
+          "name": "archived_receipts_are_secret_free_by_contract",
+          "verdict": "ok"
+        },
+        {
+          "name": "copy_optimization_is_not_promoted_without_paired_evidence",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 130,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 20000000,
+      "reported_seconds": "0.02",
+      "start_line": 125,
+      "target": "tests/allocation_copy_071.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "canary_release_070_accepts_missing_work_item_evidence",
+          "verdict": "ok"
+        },
+        {
+          "name": "hosted_memory_diagnostic_is_explicitly_non_promotable",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_070_allocation_retention_closure_is_fail_closed",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_070_ci_hardening_is_fail_closed",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_070_workflows_use_node24_action_runtimes",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 5,
+      "end_line": 140,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 5,
+      "reported_ns": 50000000,
+      "reported_seconds": "0.05",
+      "start_line": 133,
+      "target": "tests/allocation_retention_070.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "allocator_change_remains_deferred_without_same_host_ab",
+          "verdict": "ok"
+        },
+        {
+          "name": "rss_only_candidate_and_second_default_are_rejected",
+          "verdict": "ok"
+        },
+        {
+          "name": "checked_in_allocator_capability_and_source_matrix_is_closed",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 148,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 10000000,
+      "reported_seconds": "0.01",
+      "start_line": 143,
+      "target": "tests/allocator_matrix_071.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "every_544_name_is_required_before_any_body_observation",
+          "verdict": "ok"
+        },
+        {
+          "name": "current_mode_blob_and_stage_are_pinned_to_independent_producer_tree",
+          "verdict": "ok"
+        },
+        {
+          "name": "extension_changes_exactly_three_old_entries_and_adds_fourteen",
+          "verdict": "ok"
+        },
+        {
+          "name": "current_phase_requires_all_544_sources_before_446_projection",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "successful_projection_never_caches_a_current_observation",
+          "verdict": "ok"
+        },
+        {
+          "name": "the_frozen_530_phase_is_not_accepted_as_the_live_544_phase",
+          "verdict": "ok"
+        },
+        {
+          "name": "phase_chain_observes_every_current_body_before_releasing_old_names",
+          "verdict": "ok"
+        },
+        {
+          "name": "physical_checks_and_all_five_original_tests_are_byte_preserved",
+          "verdict": "ok"
+        },
+        {
+          "name": "every_late_body_or_read_error_blocks_both_predecessor_projections",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 9,
+      "end_line": 174,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 8,
+      "reported_ns": 320000000,
+      "reported_seconds": "0.32",
+      "start_line": 151,
+      "target": "tests/artifact_inventory_phase_544_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "inventory_projection_rejects_every_missing_duplicate_unknown_and_reordered_path",
+          "verdict": "ok"
+        },
+        {
+          "name": "inventory_projection_requires_all_current_source_files_before_old_list",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "inventory_projection_rejects_each_changed_old_or_new_body_and_read_failure",
+          "verdict": "ok"
+        },
+        {
+          "name": "inventory_reader_preserves_every_old_assertion_and_comparison_count",
+          "verdict": "ok"
+        },
+        {
+          "name": "inventory_index_requires_exact_mode_blob_stage_and_path_for_every_entry",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 5,
+      "end_line": 196,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 4,
+      "reported_ns": 830000000,
+      "reported_seconds": "0.83",
+      "start_line": 177,
+      "target": "tests/artifact_inventory_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "authority_breakdown_contract_preserves_scan_reader_and_non_admission_scope",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_breakdown_restores_every_runtime_byte_and_rejects_hook_drift",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 203,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 650000000,
+      "reported_seconds": "0.65",
+      "start_line": 199,
+      "target": "tests/authority_breakdown_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "authority_context_candidate_matches_contract_and_frozen_prefix_order",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_context_restores_preceding_sources_without_changing_key_encoder",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 210,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 480000000,
+      "reported_seconds": "0.48",
+      "start_line": 206,
+      "target": "tests/authority_context_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "authority_cpu_only_adds_exact_test_hooks_and_preserves_runtime",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 1,
+      "end_line": 216,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "reported_ns": 500000000,
+      "reported_seconds": "0.50",
+      "start_line": 213,
+      "target": "tests/authority_cpu_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "authority_expected_name_contract_keeps_exact_formatter_and_closed_gates",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_expected_name_exact_view_preserves_baseline_and_refuses_drift",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 223,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 910000000,
+      "reported_seconds": "0.91",
+      "start_line": 219,
+      "target": "tests/authority_expected_name_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "authority_fd_path_contract_keeps_fresh_scan_and_exact_formatter",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_fd_path_exact_view_preserves_baseline_and_refuses_drift",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 230,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 1020000000,
+      "reported_seconds": "1.02",
+      "start_line": 226,
+      "target": "tests/authority_fd_path_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "hex_reader_changes_only_registry_input_and_preserves_every_old_assertion",
+          "verdict": "ok"
+        },
+        {
+          "name": "hex_registry_view_requires_exact_current_bytes_before_the_old_view",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 237,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 270000000,
+      "reported_seconds": "0.27",
+      "start_line": 233,
+      "target": "tests/authority_hex_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "authority_inventory_contract_preserves_observed_prefix_formatter_and_deadlines",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_inventory_exact_view_restores_baseline_and_rejects_unknown_or_duplicate_hooks",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 244,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 520000000,
+      "reported_seconds": "0.52",
+      "start_line": 240,
+      "target": "tests/authority_inventory_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "authority_hex_current_candidate_is_exact_and_reference_is_frozen",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_hex_restores_preceding_bodies_and_rejects_unknown_encoder",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 251,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 530000000,
+      "reported_seconds": "0.53",
+      "start_line": 247,
+      "target": "tests/authority_key_hex_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "authority_leaf_cpu_only_adds_exact_test_hooks_and_preserves_runtime",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_leaf_cpu_reuses_frozen_traces_and_exact_clock_bodies",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 258,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 730000000,
+      "reported_seconds": "0.73",
+      "start_line": 254,
+      "target": "tests/authority_leaf_cpu_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "authority_leaf_name_contract_keeps_full_read_reference_and_original_drop_scope",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_leaf_name_restores_previous_sources_and_refuses_unknown_implementations",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 265,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 960000000,
+      "reported_seconds": "0.96",
+      "start_line": 261,
+      "target": "tests/authority_leaf_name_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "authority_name_capacity_contract_keeps_formatter_and_all_admission_gates_closed",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_name_capacity_exact_view_preserves_every_baseline_byte_and_old_assertion",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 272,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 620000000,
+      "reported_seconds": "0.62",
+      "start_line": 268,
+      "target": "tests/authority_name_capacity_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "authority_open_name_candidate_restores_only_the_exact_allocation_branch",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_open_name_restores_exact_test_hooks_and_preserves_unrelated_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_open_name_freezes_original_syscall_and_clock_bodies",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 280,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 730000000,
+      "reported_seconds": "0.73",
+      "start_line": 275,
+      "target": "tests/authority_open_name_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "operator_fresh_validation_precedes_transition_and_publication",
+          "verdict": "ok"
+        },
+        {
+          "name": "operator_image_has_no_clock_os_or_transport_capability",
+          "verdict": "ok"
+        },
+        {
+          "name": "operator_reference_and_frozen_storage_remain_unchanged",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 288,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 2430000000,
+      "reported_seconds": "2.43",
+      "start_line": 283,
+      "target": "tests/authority_operator_order_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "owned_storage_only_changes_borrowed_owner_to_value_and_adds_eviction",
+          "verdict": "ok"
+        },
+        {
+          "name": "owned_model_has_no_os_clock_transport_or_launch_path",
+          "verdict": "ok"
+        },
+        {
+          "name": "owned_journal_keeps_whole_reference_bodies_receiver_and_main",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 296,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 900000000,
+      "reported_seconds": "0.90",
+      "start_line": 291,
+      "target": "tests/authority_owned_journal_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "authority_owners_observation_wrappers_restore_exact_runtime_tokens_and_refuse_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_owners_contract_keeps_request_scope_and_frozen_io_reader",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_owners_only_adds_exact_hooks_and_preserves_every_runtime_byte",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 304,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 520000000,
+      "reported_seconds": "0.52",
+      "start_line": 299,
+      "target": "tests/authority_owners_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "authority_read_baseline_adapter_rejects_omissions_bounds_and_ownership_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_read_baseline_receivers_have_no_os_clock_or_launch_capability",
+          "verdict": "ok"
+        },
+        {
+          "name": "authority_read_baseline_copies_complete_bodies_and_leaves_runtime_unchanged",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 312,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 570000000,
+      "reported_seconds": "0.57",
+      "start_line": 307,
+      "target": "tests/authority_read_baseline_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "current_fixture_entry_keeps_fresh_current_bytes_separate_from_old_body_checks",
+          "verdict": "ok"
+        },
+        {
+          "name": "five_readers_are_exact_declared_edits_of_independent_fixed_sources",
+          "verdict": "ok"
+        },
+        {
+          "name": "partial_duplicate_wrong_branch_and_assertion_drift_cannot_enter_old_reader_views",
+          "verdict": "ok"
+        },
+        {
+          "name": "every_original_case_and_assertion_survives_the_two_explicit_input_substitutions",
+          "verdict": "ok"
+        },
+        {
+          "name": "terminal_main_text_matches_fixed_producers_without_compiling_the_old_runtime",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "all_eighteen_entry_inputs_and_current_mutants_retain_original_phase_checks",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 6,
+      "end_line": 336,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 5,
+      "reported_ns": 3430000000,
+      "reported_seconds": "3.43",
+      "start_line": 315,
+      "target": "tests/authority_reader_phase_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "approved_predecessor_views_do_not_replace_current_runtime_validation",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "installed_runtime_is_the_exact_candidate_and_explicit_compatibility_set",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "baseline_partial_install_and_unrelated_effects_refuse_before_restoration",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "legacy_adapters_preserve_complete_prior_test_bodies_and_assertions",
+          "verdict": "ok"
+        },
+        {
+          "name": "full_contract_adapters_change_only_one_preservation_reader_per_module",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 5,
+      "end_line": 393,
+      "failed": 3,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 6800000000,
+      "reported_seconds": "6.80",
+      "start_line": 339,
+      "target": "tests/authority_runtime_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "diff_translation_adds_only_fixed_rhs_and_retains_all_paths_and_flags",
+          "verdict": "ok"
+        },
+        {
+          "name": "archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation",
+          "verdict": "ok"
+        },
+        {
+          "name": "historical_reads_are_fixed_and_never_fall_back_to_current_artifacts",
+          "verdict": "ok"
+        },
+        {
+          "name": "independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "qualification_raw_identity_and_previous_candidate_guard_remain_independent",
+          "verdict": "ok"
+        },
+        {
+          "name": "unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files",
+          "verdict": "ok"
+        },
+        {
+          "name": "unsupported_commands_revisions_scopes_and_cwd_refuse_before_execution",
+          "verdict": "ok"
+        },
+        {
+          "name": "every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion",
+          "verdict": "ok"
+        },
+        {
+          "name": "all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions",
+          "verdict": "ok"
+        },
+        {
+          "name": "guard_assertion_test_and_io_mutations_cannot_hide_behind_history",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 10,
+      "end_line": 422,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 9,
+      "reported_ns": 5690000000,
+      "reported_seconds": "5.69",
+      "start_line": 396,
+      "target": "tests/authority_rust_history_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "scratch_only_substitutes_storage_not_fresh_validation",
+          "verdict": "ok"
+        },
+        {
+          "name": "scratch_image_has_no_os_transport_launch_or_admission_clock",
+          "verdict": "ok"
+        },
+        {
+          "name": "scratch_reference_receivers_and_cost_helper_remain_frozen",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 430,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 900000000,
+      "reported_seconds": "0.90",
+      "start_line": 425,
+      "target": "tests/authority_scratch_reuse_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "observer_complete_bodies_restore_candidate_and_exact_hook_order",
+          "verdict": "ok"
+        },
+        {
+          "name": "every_refusal_site_is_independently_guarded",
+          "verdict": "ok"
+        },
+        {
+          "name": "original_read_reopen_publication_and_validation_order_remain_intact",
+          "verdict": "ok"
+        },
+        {
+          "name": "observer_mutations_and_extra_effects_refuse",
+          "verdict": "ok"
+        },
+        {
+          "name": "patch_generator_refuses_changed_or_duplicated_anchor_shapes",
+          "verdict": "ok"
+        },
+        {
+          "name": "storage_only_body_restoration_preserves_fresh_io_and_comparisons",
+          "verdict": "ok"
+        },
+        {
+          "name": "exact_unapplied_files_match_pinned_patch_and_unchanged_runtime",
+          "verdict": "ok"
+        },
+        {
+          "name": "storage_validation_and_effect_mutations_refuse",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 8,
+      "end_line": 443,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 8,
+      "reported_ns": 1640000000,
+      "reported_seconds": "1.64",
+      "start_line": 433,
+      "target": "tests/authority_storage_source_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "budget_toml_parser_keeps_section_ids",
+          "verdict": "ok"
+        },
+        {
+          "name": "amplification_ratio_computed",
+          "verdict": "ok"
+        },
+        {
+          "name": "criterion_base_estimates_directory_is_loaded",
+          "verdict": "ok"
+        },
+        {
+          "name": "criterion_estimates_directory_is_loaded",
+          "verdict": "ok"
+        },
+        {
+          "name": "missing_baseline_is_explicit_error",
+          "verdict": "ok"
+        },
+        {
+          "name": "criterion_new_estimates_override_base",
+          "verdict": "ok"
+        },
+        {
+          "name": "criterion_benchmark_json_restores_slash_containing_ids",
+          "verdict": "ok"
+        },
+        {
+          "name": "over_pct_budget_fails",
+          "verdict": "ok"
+        },
+        {
+          "name": "within_budget_passes",
+          "verdict": "ok"
+        },
+        {
+          "name": "repository_budget_accepts_current_ci_benchmark_shape",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 10,
+      "end_line": 458,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 10,
+      "reported_ns": 80000000,
+      "reported_seconds": "0.08",
+      "start_line": 446,
+      "target": "tests/bench_budget.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "boot_operations_only_exact_hook_gate_and_directory_ownership_may_normalize",
+          "verdict": "ok"
+        },
+        {
+          "name": "boot_operations_fresh_open_expression_and_original_runtime_are_frozen",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 465,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 1100000000,
+      "reported_seconds": "1.10",
+      "start_line": 461,
+      "target": "tests/boot_operations_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "bootstrap_build_has_separate_policy_and_receipt_domains_without_execution",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_original_wrapper_consumes_material_and_keeps_closing_frames",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_hooks_restore_entire_old_bodies_and_compatibility_bytes",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_owner_adds_no_execution_or_clock_capability_and_keeps_exact_original_context",
+          "verdict": "FAILED"
+        }
+      ],
+      "declared": 4,
+      "end_line": 487,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 550000000,
+      "reported_seconds": "0.55",
+      "start_line": 468,
+      "target": "tests/bootstrap_build_owner_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "child_cannot_borrow_root_only_worker_or_held_trust_by_weakening_the_opener",
+          "verdict": "ok"
+        },
+        {
+          "name": "executable_consistency_does_not_supply_a_systemd_address_for_a_sealed_copy",
+          "verdict": "ok"
+        },
+        {
+          "name": "sandbox_hardening_is_not_a_host_mount_namespace_enrollment",
+          "verdict": "ok"
+        },
+        {
+          "name": "boundary_audit_preserves_entire_runtime_and_frozen_qualification",
+          "verdict": "FAILED"
+        }
+      ],
+      "declared": 4,
+      "end_line": 510,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 920000000,
+      "reported_seconds": "0.92",
+      "start_line": 490,
+      "target": "tests/bootstrap_child_boundary_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "bootstrap_child_complete_census_exists_before_authentication",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_roles_add_no_execution_repair_or_authority_and_close_extra_fds",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_roles_additive_compat_and_qualification_are_exact",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "bootstrap_roles_exact_hooks_keep_whole_old_entry_mode_and_original_frames",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 4,
+      "end_line": 547,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 920000000,
+      "reported_seconds": "0.92",
+      "start_line": 513,
+      "target": "tests/bootstrap_child_census_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "bootstrap_child_has_no_authority_transport_mutation_fallback_or_new_clock",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_child_executable_exists_before_any_original_start",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_child_compares_exact_additive_compatibility_and_refuses_mutation",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_child_keeps_entire_original_runtime_and_qualification_bytes",
+          "verdict": "FAILED"
+        }
+      ],
+      "declared": 4,
+      "end_line": 569,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 1460000000,
+      "reported_seconds": "1.46",
+      "start_line": 550,
+      "target": "tests/bootstrap_child_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "bootstrap_current_executable_component_is_present_before_admission",
+          "verdict": "ok"
+        },
+        {
+          "name": "current_image_queries_cannot_repair_roles_send_or_execute",
+          "verdict": "ok"
+        },
+        {
+          "name": "current_image_compat_registry_and_qualification_remain_exact",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "current_image_only_adds_exact_hooks_and_keeps_old_modes_frames_and_deadlines",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 4,
+      "end_line": 621,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 1090000000,
+      "reported_seconds": "1.09",
+      "start_line": 572,
+      "target": "tests/bootstrap_current_image_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "lexical_selection_is_narrow_and_unknown_inputs_remain_byte_identical",
+          "verdict": "ok"
+        },
+        {
+          "name": "exactly_one_ordered_observation_preserves_io_errors_without_caching_success",
+          "verdict": "ok"
+        },
+        {
+          "name": "only_the_two_current_documents_reconstruct_the_exact_reviewed_phase",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "current_stale_partial_duplicate_and_unrelated_document_mutations_refuse",
+          "verdict": "ok"
+        },
+        {
+          "name": "preceding_owned_case_proof_accepts_only_the_exact_extended_current_reader",
+          "verdict": "ok"
+        },
+        {
+          "name": "all_eleven_callers_preserve_complete_original_cases_and_predicates",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 6,
+      "end_line": 645,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 5,
+      "reported_ns": 1040000000,
+      "reported_seconds": "1.04",
+      "start_line": 624,
+      "target": "tests/bootstrap_doc_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "bootstrap_selector_keeps_original_checks_without_key_fd_or_execution_exports",
+          "verdict": "ok"
+        },
+        {
+          "name": "independent_bootstrap_selection_has_only_one_additive_parent_hook",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_selection_compatibility_is_exactly_additive_and_mutations_refuse",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 653,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 90000000,
+      "reported_seconds": "0.09",
+      "start_line": 648,
+      "target": "tests/bootstrap_enrollment_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "bootstrap_entry_binding_exists_before_child_delivery",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_entry_uses_original_sealed_config_and_no_transport_or_new_time",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_entry_compat_is_exact_additive_and_qualification_stays_frozen",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "bootstrap_entry_exact_additions_restore_whole_old_frames_and_kernel_bodies",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 4,
+      "end_line": 690,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 730000000,
+      "reported_seconds": "0.73",
+      "start_line": 656,
+      "target": "tests/bootstrap_entry_binding_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "bootstrap_image_census_has_closed_twenty_six_descriptors_and_fourteen_roles",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_image_census_is_inside_the_same_existing_validation_observation",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_image_census_exact_hooks_preserve_whole_old_owner_and_all_old_queries",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock",
+          "verdict": "FAILED"
+        }
+      ],
+      "declared": 4,
+      "end_line": 712,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 740000000,
+      "reported_seconds": "0.74",
+      "start_line": 693,
+      "target": "tests/bootstrap_image_census_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "bootstrap_held_entry_component_precedes_activation",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_held_delivery_components_precede_execution_admission",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_installed_child_component_precedes_delivery",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_installed_child_is_separate_consistency_not_authority_or_transport",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "bootstrap_installed_entry_component_precedes_runtime",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_held_entry_additions_preserve_exact_old_modes_and_role_checks",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_installed_entry_compat_is_exact_and_does_not_change_old_records",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "bootstrap_installed_material_component_precedes_delivery",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_installed_material_additive_compat_keeps_schema_and_qualification",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_original_service_fixture_precedes_live_admission",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_installed_material_only_three_hooks_keep_whole_old_owner_and_kernel",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "bootstrap_sandbox_owner_component_precedes_admission",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_sandbox_takes_no_caller_pid_or_manager_and_cannot_start_or_release",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_original_service_keeps_old_fixture_and_production_frames_exact",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "installed_origin_consumes_same_owner_and_cannot_recreate_retained_source_or_export_execution",
+          "verdict": "ok"
+        },
+        {
+          "name": "installed_origin_exists_before_systemd_or_child_admission",
+          "verdict": "ok"
+        },
+        {
+          "name": "bootstrap_installed_entry_only_one_codec_hook_no_owner_or_child_activation",
+          "verdict": "ok"
+        },
+        {
+          "name": "installed_origin_compat_is_additive_and_qualification_inputs_stay_frozen",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "bootstrap_installed_child_exact_hooks_preserve_every_old_mode_and_frame",
+          "verdict": "ok"
+        },
+        {
+          "name": "installed_origin_only_three_additive_hooks_preserve_old_live_frames_and_child_modes",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 22,
+      "end_line": 862,
+      "failed": 6,
+      "ignored": 0,
+      "passed": 16,
+      "reported_ns": 2610000000,
+      "reported_seconds": "2.61",
+      "start_line": 715,
+      "target": "tests/bootstrap_installed_origin_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "dynamic_canary_fixture_process",
+          "verdict": "ok"
+        },
+        {
+          "name": "dynamic_canary_runner_rejects_a_guard_that_stays_green",
+          "verdict": "ok"
+        },
+        {
+          "name": "dynamic_canary_runner_rejects_timeout_compile_failure_or_unrelated_panic_as_red_evidence",
+          "verdict": "ok"
+        },
+        {
+          "name": "canary_receipt_artifact_cannot_escape_the_evidence_directory",
+          "verdict": "ok"
+        },
+        {
+          "name": "canary_registry_lists_a_canary_that_does_not_fail_its_guard",
+          "verdict": "ok"
+        },
+        {
+          "name": "each_canary_makes_its_paired_guard_fail_red",
+          "verdict": "ok"
+        },
+        {
+          "name": "missing_plan_section_and_canary_diagnostics_are_exact",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_070_canary_registry_covers_every_declared_work_item",
+          "verdict": "ok"
+        },
+        {
+          "name": "requested_release_does_not_borrow_an_older_canary_registry",
+          "verdict": "ok"
+        },
+        {
+          "name": "requested_release_without_work_items_is_rejected_before_canary_evidence",
+          "verdict": "ok"
+        },
+        {
+          "name": "every_w_item_has_a_registered_canary_that_references_real_functions",
+          "verdict": "ok"
+        },
+        {
+          "name": "dynamic_canary_receipt_is_bound_to_command_defect_and_source_commit",
+          "verdict": "ok"
+        },
+        {
+          "name": "equal_work_item_receipts_from_different_releases_do_not_shadow_each_other",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 13,
+      "end_line": 880,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 13,
+      "reported_ns": 670000000,
+      "reported_seconds": "0.67",
+      "start_line": 865,
+      "target": "tests/canary_check.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "canary_noncancelsafe_fixture_leaks_a_permit_on_drop",
+          "verdict": "ok"
+        },
+        {
+          "name": "w39_contract_registry_requires_all_three_cancellation_surfaces",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 887,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 10000000,
+      "reported_seconds": "0.01",
+      "start_line": 883,
+      "target": "tests/cancellation_safety.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "attribution_order_is_balanced_and_not_a_package_measurement",
+          "verdict": "ok"
+        },
+        {
+          "name": "package_syntax_child",
+          "verdict": "ok"
+        },
+        {
+          "name": "census_cost_child",
+          "verdict": "ok"
+        },
+        {
+          "name": "package_syntax_distinguishes_quoted_code_and_macro_effects",
+          "verdict": "ok"
+        },
+        {
+          "name": "transport_capture_child",
+          "verdict": "ok"
+        },
+        {
+          "name": "profiled_capture_keeps_output_and_early_refusals",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 6,
+      "end_line": 898,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 6,
+      "reported_ns": 120000000,
+      "reported_seconds": "0.12",
+      "start_line": 890,
+      "target": "tests/census_cost_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "default_manual_dispatch_runs_core_ci_jobs",
+          "verdict": "ok"
+        },
+        {
+          "name": "rust_canaries_install_locked_console_dependencies_first",
+          "verdict": "ok"
+        },
+        {
+          "name": "diagnostic_builder_is_manual_protected_and_sha_bound",
+          "verdict": "ok"
+        },
+        {
+          "name": "topology_rejects_install_step_without_a_bounded_timeout",
+          "verdict": "ok"
+        },
+        {
+          "name": "topology_rejects_missing_timeout_and_duplicate_branch_tag_execution",
+          "verdict": "ok"
+        },
+        {
+          "name": "topology_rejects_mixed_artifact_identity",
+          "verdict": "ok"
+        },
+        {
+          "name": "topology_rejects_two_crate_publishers",
+          "verdict": "ok"
+        },
+        {
+          "name": "watchdog_classifies_missing_provisioning_tool",
+          "verdict": "ok"
+        },
+        {
+          "name": "live_builder_inventory_preserves_the_frozen_memory_input",
+          "verdict": "ok"
+        },
+        {
+          "name": "checked_in_topology_is_closed_and_valid",
+          "verdict": "ok"
+        },
+        {
+          "name": "watchdog_classifies_silent_success_and_product_failure",
+          "verdict": "ok"
+        },
+        {
+          "name": "watchdog_times_out_and_kills_descendant_processes",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 12,
+      "end_line": 915,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 12,
+      "reported_ns": 2730000000,
+      "reported_seconds": "2.73",
+      "start_line": 901,
+      "target": "tests/ci_reliability_071.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "docker_interop_uses_https_ubuntu_archives_with_bounded_retries",
+          "verdict": "ok"
+        },
+        {
+          "name": "intentional_mixed_commit_canary_is_rejected",
+          "verdict": "ok"
+        },
+        {
+          "name": "complete_same_commit_receipts_are_admitted",
+          "verdict": "ok"
+        },
+        {
+          "name": "hosted_scope_does_not_require_the_deferred_fixed_host",
+          "verdict": "ok"
+        },
+        {
+          "name": "intentional_missing_and_red_canaries_are_rejected",
+          "verdict": "ok"
+        },
+        {
+          "name": "intentional_wrong_interop_image_canary_is_rejected",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 6,
+      "end_line": 928,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 6,
+      "reported_ns": 800000000,
+      "reported_seconds": "0.80",
+      "start_line": 918,
+      "target": "tests/client_plane_ci.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "workflow_step_order_check_accepts_crlf",
+          "verdict": "ok"
+        },
+        {
+          "name": "canary_release_068_client_plane_accepts_missing_work_item_evidence",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_068_client_plane_closure_is_fail_closed",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 936,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 40000000,
+      "reported_seconds": "0.04",
+      "start_line": 931,
+      "target": "tests/client_release_068.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "collector_peer_baseline_controls_have_no_live_capabilities",
+          "verdict": "ok"
+        },
+        {
+          "name": "collector_peer_baseline_freezes_complete_peer_and_wrapper_bodies",
+          "verdict": "ok"
+        },
+        {
+          "name": "collector_peer_baseline_changes_only_a_private_allocator_test_hook",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 944,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 540000000,
+      "reported_seconds": "0.54",
+      "start_line": 939,
+      "target": "tests/collector_peer_baseline_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "collector_peer_capacity_controls_have_no_live_capabilities_or_ignored_tests",
+          "verdict": "ok"
+        },
+        {
+          "name": "collector_peer_capacity_freezes_baseline_corpus_reference_and_complete_wrapper",
+          "verdict": "ok"
+        },
+        {
+          "name": "collector_peer_capacity_restores_both_old_files_and_rejects_validation_or_union_drift",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 952,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 910000000,
+      "reported_seconds": "0.91",
+      "start_line": 947,
+      "target": "tests/collector_peer_capacity_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "context_document_baseline_controls_have_no_live_or_host_capabilities",
+          "verdict": "ok"
+        },
+        {
+          "name": "context_document_baseline_model_has_the_complete_original_read_body",
+          "verdict": "ok"
+        },
+        {
+          "name": "context_document_baseline_changes_only_one_test_hook_not_any_runtime_body",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 960,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 590000000,
+      "reported_seconds": "0.59",
+      "start_line": 955,
+      "target": "tests/context_document_baseline_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "context_document_stack_storage_and_controls_have_no_live_capabilities",
+          "verdict": "ok"
+        },
+        {
+          "name": "context_document_stack_models_keep_complete_baseline_and_candidate_bodies",
+          "verdict": "ok"
+        },
+        {
+          "name": "context_document_stack_exactly_restores_both_old_files_and_rejects_live_predicate_drift",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 968,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 850000000,
+      "reported_seconds": "0.85",
+      "start_line": 963,
+      "target": "tests/context_document_stack_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "cost_readers_cannot_broaden_sources_change_counts_or_relax_original_limits",
+          "verdict": "ok"
+        },
+        {
+          "name": "cost_reader_parser_inputs_validate_current_runtime_and_pinned_helper_first",
+          "verdict": "ok"
+        },
+        {
+          "name": "cost_readers_preserve_every_original_assertion_and_limit",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 976,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 400000000,
+      "reported_seconds": "0.40",
+      "start_line": 971,
+      "target": "tests/cost_phase_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "coverage_plan_runs_default_before_additive_tiers_and_reports_once",
+          "verdict": "ok"
+        },
+        {
+          "name": "coverage_plan_rejects_a_required_tier_skip_or_second_clean",
+          "verdict": "ok"
+        },
+        {
+          "name": "coverage_floor_matches_post_064_measured_baseline_without_decreasing_88",
+          "verdict": "ok"
+        },
+        {
+          "name": "loadgen_exclusion_requires_a_non_published_development_harness",
+          "verdict": "ok"
+        },
+        {
+          "name": "measured_coverage_is_checked_by_the_ratchet_with_an_actionable_error",
+          "verdict": "ok"
+        },
+        {
+          "name": "windows_report_selects_only_workspace_objects_and_accepts_hashed_names",
+          "verdict": "ok"
+        },
+        {
+          "name": "coverage_contract_rejects_floor_below_88_or_mismatched_measured_baseline",
+          "verdict": "ok"
+        },
+        {
+          "name": "windows_report_uses_short_coverage_paths_and_response_safe_arguments",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 8,
+      "end_line": 989,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 8,
+      "reported_ns": 30000000,
+      "reported_seconds": "0.03",
+      "start_line": 979,
+      "target": "tests/coverage_ratchet.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "main_retains_old_full_body_gate_and_all_twelve_current_reads_reach_source",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "stale_partial_duplicate_and_unrelated_current_source_edits_refuse",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "successful_addition_validation_does_not_cache_body_or_index_observations",
+          "verdict": "ok"
+        },
+        {
+          "name": "twelve_current_sources_reconstruct_exact_independent_predecessors",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "audit_changes_only_three_input_joins_and_preserves_every_original_predicate",
+          "verdict": "ok"
+        },
+        {
+          "name": "unknown_paths_are_not_approved_or_transformed_and_legacy_routes_stay_intact",
+          "verdict": "ok"
+        },
+        {
+          "name": "all_fourteen_additions_require_independent_bodies_and_exact_index_entries",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 7,
+      "end_line": 1034,
+      "failed": 3,
+      "ignored": 0,
+      "passed": 4,
+      "reported_ns": 2460000000,
+      "reported_seconds": "2.46",
+      "start_line": 992,
+      "target": "tests/current_frontier_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "current_tree_input_frontier_is_fully_accounted_without_path_exclusions",
+          "verdict": "FAILED"
+        }
+      ],
+      "declared": 1,
+      "end_line": 1065,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 0,
+      "reported_ns": 43460000000,
+      "reported_seconds": "43.46",
+      "start_line": 1037,
+      "target": "tests/current_tree_input_audit_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "runtime_contract_reader_changes_only_the_current_history_input",
+          "verdict": "ok"
+        },
+        {
+          "name": "current_tree_reader_retains_entire_prior_gate_and_unknown_source_assertions",
+          "verdict": "ok"
+        },
+        {
+          "name": "all_nine_current_inputs_are_exact_declared_patches_not_assertion_waivers",
+          "verdict": "ok"
+        },
+        {
+          "name": "all_eighty_one_declared_sources_require_exact_bytes_index_and_regular_files",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 4,
+      "end_line": 1074,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 4,
+      "reported_ns": 17840000000,
+      "reported_seconds": "17.84",
+      "start_line": 1068,
+      "target": "tests/current_tree_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "custody_observer_adapter_refuses_missing_duplicate_and_preserves_unrelated_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "custody_observation_hooks_reconstruct_all_preceding_469_bodies",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 1081,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 54130000000,
+      "reported_seconds": "54.13",
+      "start_line": 1077,
+      "target": "tests/custody_preparation_cost_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "custody_reader_preserves_entire_old_test_except_exact_gateway_io",
+          "verdict": "ok"
+        },
+        {
+          "name": "custody_launcher_view_requires_exact_reviewed_current_bytes",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 1088,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 230000000,
+      "reported_seconds": "0.23",
+      "start_line": 1084,
+      "target": "tests/custody_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "demo_wasm_pack_output_is_gitignored",
+          "verdict": "ok"
+        },
+        {
+          "name": "demo_static_files_are_wired_to_real_wasm_snapshot",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 1095,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 210000000,
+      "reported_seconds": "0.21",
+      "start_line": 1091,
+      "target": "tests/demo_static.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "determinism_digest_ignores_ephemeral_metadata_but_detects_logical_schedule_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "determinism_sweep_matches_normalized_digests_across_repeated_and_serial_parallel_runs",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 1102,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 0,
+      "reported_seconds": "0.00",
+      "start_line": 1098,
+      "target": "tests/determinism_sweep.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "actual_consuming_fixture_preserves_all_446_preceding_sources_and_formats",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "consuming_held_join_preserves_all_443_old_sources_and_formats",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "held_build_source_allowlist_requires_all_old_files_and_exactly_one_named_addition",
+          "verdict": "ok"
+        },
+        {
+          "name": "held_trust_adapter_refuses_missing_duplicate_extra_and_unrelated_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "actual_consuming_adapter_refuses_missing_duplicate_hook_and_unrelated_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "consuming_held_join_exact_adapter_rejects_missing_duplicate_extra_and_body_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "held_trust_preserves_all_442_preceding_sources_and_production_inputs",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "held_build_adapter_rejects_missing_duplicate_and_unrelated_old_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "immutable_fixture_adapter_refuses_missing_duplicate_and_unrelated_test_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "immutable_fixture_changes_only_old_input_helper_not_any_old_assertion",
+          "verdict": "ok"
+        },
+        {
+          "name": "immutable_fixture_is_exact_worker_blob_and_checkout_keeps_raw_lf",
+          "verdict": "ok"
+        },
+        {
+          "name": "immutable_fixture_preserves_all_437_runtime_sources_and_production_inputs",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "namespace_fixture_is_test_only_private_mount_and_not_manager_authority",
+          "verdict": "ok"
+        },
+        {
+          "name": "launcher_preserves_all_438_preceding_sources_and_exact_old_formats",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "role_binding_preserves_all_441_preceding_runtime_sources_and_inputs",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "role_binding_adapter_refuses_missing_duplicate_and_unrelated_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "launcher_adapter_refuses_missing_duplicate_and_unrelated_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "role_files_adapter_refuses_missing_duplicate_and_unrelated_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "role_files_preserve_all_440_previous_runtime_sources_and_inputs",
+          "verdict": "FAILED"
+        },
+        {
+          "name": "namespace_adapter_refuses_missing_duplicate_and_unrelated_drift",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 20,
+      "end_line": 1174,
+      "failed": 7,
+      "ignored": 0,
+      "passed": 13,
+      "reported_ns": 1930000000,
+      "reported_seconds": "1.93",
+      "start_line": 1105,
+      "target": "tests/diagnostic_artifact_fixture_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "direct_output_cost_child",
+          "verdict": "ok"
+        },
+        {
+          "name": "pipe_fixture_child",
+          "verdict": "ok"
+        },
+        {
+          "name": "fixed_protocol_and_independent_body",
+          "verdict": "ok"
+        },
+        {
+          "name": "pipe_spawn_failure_is_not_replaced_or_retried",
+          "verdict": "ok"
+        },
+        {
+          "name": "independent_fixture_oracle_rejects_payload_status_and_footer_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "pipe_semantics_empty_binary_nonzero_and_large_streams",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 6,
+      "end_line": 1185,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 6,
+      "reported_ns": 260000000,
+      "reported_seconds": "0.26",
+      "start_line": 1177,
+      "target": "tests/direct_output_cost_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "consistent_manifest_has_no_problems",
+          "verdict": "ok"
+        },
+        {
+          "name": "accepts_valid_redis_compat_conformance_manifest",
+          "verdict": "ok"
+        },
+        {
+          "name": "accepts_real_proptest_macro_tests_as_manifest_references",
+          "verdict": "ok"
+        },
+        {
+          "name": "detects_dangling_in_prose_plan_links",
+          "verdict": "ok"
+        },
+        {
+          "name": "detects_duplicate_adr_numbers_old_scheme_and_missing_index_entries",
+          "verdict": "ok"
+        },
+        {
+          "name": "detects_duplicate_version_missing_file_bad_status_and_dangling_dep",
+          "verdict": "ok"
+        },
+        {
+          "name": "detects_shipped_043_without_networked_control_plane_sentinel",
+          "verdict": "ok"
+        },
+        {
+          "name": "detects_release_work_item_drift_across_manifest_plan_and_index",
+          "verdict": "ok"
+        },
+        {
+          "name": "detects_shipped_release_with_false_networked_control_plane_sentinel",
+          "verdict": "ok"
+        },
+        {
+          "name": "detects_shipped_release_without_release_notes",
+          "verdict": "ok"
+        },
+        {
+          "name": "rejects_commented_or_ungated_redis_multinode_sentinels",
+          "verdict": "ok"
+        },
+        {
+          "name": "rejects_dangling_tests_missing_debt_ids_and_duplicate_case_ids",
+          "verdict": "ok"
+        },
+        {
+          "name": "rejects_redis_compat_deployment_scope_without_multinode_sentinel",
+          "verdict": "ok"
+        },
+        {
+          "name": "rejects_redis_compat_docs_examples_without_gate_labels",
+          "verdict": "ok"
+        },
+        {
+          "name": "rejects_redis_compat_manifest_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "release_work_items_match_plan_headings_and_index_marker",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 16,
+      "end_line": 1206,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 16,
+      "reported_ns": 110000000,
+      "reported_seconds": "0.11",
+      "start_line": 1188,
+      "target": "tests/doc_check.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "document_scratch_reference_and_prototype_preserve_complete_sender_and_pidfd_checks",
+          "verdict": "ok"
+        },
+        {
+          "name": "legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scratch_shapes",
+          "verdict": "ok"
+        },
+        {
+          "name": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 1214,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 58520000000,
+      "reported_seconds": "58.52",
+      "start_line": 1209,
+      "target": "tests/document_scratch_cost_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "scratch_reader_preserves_every_original_assertion_and_both_old_counts",
+          "verdict": "ok"
+        },
+        {
+          "name": "scratch_five_reader_inputs_differ_only_by_known_io_not_old_assertions",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 1221,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 870000000,
+      "reported_seconds": "0.87",
+      "start_line": 1217,
+      "target": "tests/document_scratch_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "evidence_child_helper",
+          "verdict": "ok"
+        },
+        {
+          "name": "evidence_executor_drains_large_stdout_and_stderr_without_truncation",
+          "verdict": "ok"
+        },
+        {
+          "name": "evidence_executor_does_not_leak_outer_provenance_into_gate_process",
+          "verdict": "ok"
+        },
+        {
+          "name": "evidence_executor_rejects_shells_path_traversal_and_artifacts_outside_target",
+          "verdict": "ok"
+        },
+        {
+          "name": "evidence_executor_rejects_a_stale_declared_artifact",
+          "verdict": "ok"
+        },
+        {
+          "name": "evidence_executor_runs_a_registered_fast_suite_without_shell_indirection",
+          "verdict": "ok"
+        },
+        {
+          "name": "evidence_executor_propagates_child_exit_and_captures_output",
+          "verdict": "ok"
+        },
+        {
+          "name": "evidence_executor_bounds_inherited_pipe_capture_after_parent_exit",
+          "verdict": "ok"
+        },
+        {
+          "name": "evidence_provenance_requires_valid_shas_and_the_tested_checkout",
+          "verdict": "ok"
+        },
+        {
+          "name": "evidence_registry_baseline_can_execute_a_later_release",
+          "verdict": "ok"
+        },
+        {
+          "name": "evidence_registry_digest_is_stable_across_lf_and_crlf_checkouts",
+          "verdict": "ok"
+        },
+        {
+          "name": "windows_nested_cargo_uses_an_unlocked_deterministic_target_dir",
+          "verdict": "ok"
+        },
+        {
+          "name": "evidence_executor_terminates_live_three_generation_tree",
+          "verdict": "ok"
+        },
+        {
+          "name": "evidence_executor_writes_atomic_receipts_for_success_failure_and_timeout",
+          "verdict": "ok"
+        },
+        {
+          "name": "evidence_executor_waits_for_descendants_without_inherited_pipes",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 15,
+      "end_line": 1241,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 15,
+      "reported_ns": 10280000000,
+      "reported_seconds": "10.28",
+      "start_line": 1224,
+      "target": "tests/evidence_run.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "fast_suite_budget_rejects_an_unreviewed_runtime_regression",
+          "verdict": "ok"
+        },
+        {
+          "name": "fast_suite_check_rejects_invented_baseline_and_aggregate_budget_overrun",
+          "verdict": "ok"
+        },
+        {
+          "name": "fast_suite_registry_baseline_covers_the_next_release_but_not_an_older_one",
+          "verdict": "ok"
+        },
+        {
+          "name": "fast_suite_check_rejects_slow_receipt_without_reclassifying_the_suite",
+          "verdict": "ok"
+        },
+        {
+          "name": "fast_suite_registry_has_pinned_nextest_and_bounded_unmeasured_baselines",
+          "verdict": "ok"
+        },
+        {
+          "name": "nextest_serializes_trybuild_harnesses_with_a_bounded_compile_timeout",
+          "verdict": "ok"
+        },
+        {
+          "name": "fast_suite_registry_rejects_missing_timeout_budget_or_command",
+          "verdict": "ok"
+        },
+        {
+          "name": "fast_suite_reviewed_ceiling_diagnostic_is_exact",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 8,
+      "end_line": 1254,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 8,
+      "reported_ns": 30000000,
+      "reported_seconds": "0.03",
+      "start_line": 1244,
+      "target": "tests/fast_suite.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "fresh_status_reconstructs_all_changed_old_bodies_and_hooks",
+          "verdict": "ok"
+        },
+        {
+          "name": "fresh_status_adapter_refuses_missing_duplicate_and_other_validation_drift",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 1261,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 1000000000,
+      "reported_seconds": "1.00",
+      "start_line": 1257,
+      "target": "tests/fresh_kernel_cost_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "fresh_status_reader_changes_only_admission_input_before_original_normalizers",
+          "verdict": "ok"
+        },
+        {
+          "name": "fresh_status_admission_requires_exact_source_and_helper_before_old_input",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 1268,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 230000000,
+      "reported_seconds": "0.23",
+      "start_line": 1264,
+      "target": "tests/fresh_status_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "redis_multinode_gate_cannot_drift_to_the_generic_daemon_target",
+          "verdict": "ok"
+        },
+        {
+          "name": "registry_rejects_missing_command_ci_tier_owner_or_timeout",
+          "verdict": "ok"
+        },
+        {
+          "name": "registry_rejects_stale_entries_that_no_longer_resolve_to_a_test",
+          "verdict": "ok"
+        },
+        {
+          "name": "registry_accepts_only_a_complete_set_of_environment_gate_shards",
+          "verdict": "ok"
+        },
+        {
+          "name": "wildcard_registration_does_not_hide_a_new_ignored_test",
+          "verdict": "ok"
+        },
+        {
+          "name": "gated_test_registry_covers_every_ignored_cfg_and_env_gated_test",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 6,
+      "end_line": 1279,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 6,
+      "reported_ns": 32620000000,
+      "reported_seconds": "32.62",
+      "start_line": 1271,
+      "target": "tests/gated_tests.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "get_response_owner_full_d3_terminal_rejection_disables_only_candidate",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 1,
+      "end_line": 1285,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "reported_ns": 30000000,
+      "reported_seconds": "0.03",
+      "start_line": 1282,
+      "target": "tests/get_owner_terminal_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "only_exact_diagnostic_argv_can_run_git",
+          "verdict": "ok"
+        },
+        {
+          "name": "reference_cpu_child",
+          "verdict": "ok"
+        },
+        {
+          "name": "accounted_cpu_child",
+          "verdict": "ok"
+        },
+        {
+          "name": "independent_body_and_fixed_command_are_not_response_pins",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 4,
+      "end_line": 1294,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 4,
+      "reported_ns": 30000000,
+      "reported_seconds": "0.03",
+      "start_line": 1288,
+      "target": "tests/git_descendant_cpu_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "activation_ingress_has_no_clock_descriptor_manager_or_unknown_environment_cleanup",
+          "verdict": "ok"
+        },
+        {
+          "name": "activation_ingress_compatibility_registration_preserves_every_old_format_byte",
+          "verdict": "ok"
+        },
+        {
+          "name": "activation_ingress_only_two_exact_hooks_change_the_binary_entry",
+          "verdict": "ok"
+        },
+        {
+          "name": "activation_ingress_is_explicit_and_keeps_the_complete_old_kernel",
+          "verdict": "FAILED"
+        }
+      ],
+      "declared": 4,
+      "end_line": 1316,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 460000000,
+      "reported_seconds": "0.46",
+      "start_line": 1297,
+      "target": "tests/held_activation_ingress_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "memfd_probe_has_no_retry_copy_fallback_or_automatic_promotion",
+          "verdict": "ok"
+        },
+        {
+          "name": "rejected_bind_alias_does_not_install_unproved_runtime_or_change_old_bytes",
+          "verdict": "FAILED"
+        }
+      ],
+      "declared": 2,
+      "end_line": 1337,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 1,
+      "reported_ns": 510000000,
+      "reported_seconds": "0.51",
+      "start_line": 1319,
+      "target": "tests/held_bind_alias_refusal_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "census_standalone_panic_api_signatures_do_not_add_source_reads",
+          "verdict": "ok"
+        },
+        {
+          "name": "complete_role_census_is_inside_the_same_original_material_inventory",
+          "verdict": "ok"
+        },
+        {
+          "name": "complete_role_census_uses_owned_contributions_before_the_existing_closing_owner_check",
+          "verdict": "ok"
+        },
+        {
+          "name": "complete_role_census_keeps_prior_owner_and_provider_bodies_exact_after_additive_hooks",
+          "verdict": "FAILED"
+        }
+      ],
+      "declared": 4,
+      "end_line": 1382,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 700000000,
+      "reported_seconds": "0.70",
+      "start_line": 1340,
+      "target": "tests/held_complete_role_census_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "held_material_inventory_requires_fresh_original_owner_and_deadline_after_census",
+          "verdict": "ok"
+        },
+        {
+          "name": "held_material_closed_api_contains_no_transport_mapping_fork_exec_or_serialization",
+          "verdict": "ok"
+        },
+        {
+          "name": "held_material_only_two_exact_hooks_restore_complete_projected_owner_and_bundle_bodies",
+          "verdict": "ok"
+        },
+        {
+          "name": "held_material_keeps_original_frames_retirement_launcher_format_and_qualification_frozen",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 4,
+      "end_line": 1391,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 4,
+      "reported_ns": 3000000000,
+      "reported_seconds": "3.00",
+      "start_line": 1385,
+      "target": "tests/held_material_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "held_material_live_adapter_restores_exact_previous_bodies_and_rejects_hook_drift",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 1,
+      "end_line": 1397,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "reported_ns": 230000000,
+      "reported_seconds": "0.23",
+      "start_line": 1394,
+      "target": "tests/held_material_live_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "held_material_roles_are_private_and_share_the_full_frame_inventory",
+          "verdict": "ok"
+        },
+        {
+          "name": "held_material_roles_leaf_has_no_new_live_query_effect_or_transport",
+          "verdict": "ok"
+        },
+        {
+          "name": "held_material_roles_only_add_values_and_leave_complete_frame_and_retirement_unchanged",
+          "verdict": "FAILED"
+        }
+      ],
+      "declared": 3,
+      "end_line": 1419,
+      "failed": 1,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 600000000,
+      "reported_seconds": "0.60",
+      "start_line": 1400,
+      "target": "tests/held_material_roles_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "projection_prefix_adapter_refuses_missing_duplicate_and_unrelated_guard_drift",
+          "verdict": "ok"
+        },
+        {
+          "name": "projection_reference_is_the_complete_frozen_decoder_not_a_relaxed_model",
+          "verdict": "ok"
+        },
+        {
+          "name": "held_preparation_observer_adapter_cannot_hide_missing_duplicate_or_changed_assertion",
+          "verdict": "ok"
+        },
+        {
+          "name": "held_preparation_and_prefix_reconstruct_all_old_runtime_and_fixture_assertions",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 4,
+      "end_line": 1429,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 4,
+      "reported_ns": 100040000000,
+      "reported_seconds": "100.04",
+      "start_line": 1422,
+      "target": "tests/held_preparation_cost_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "held_unit_projection_has_no_runnable_spec_transport_or_descriptor_export",
+          "verdict": "ok"
+        },
+        {
+          "name": "held_unit_projection_only_four_exact_additive_hooks_restore_prior_sources",
+          "verdict": "ok"
+        },
+        {
+          "name": "held_unit_projection_preserves_all_other_admission_transport_and_fixture_bytes",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 1437,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 3870000000,
+      "reported_seconds": "3.87",
+      "start_line": 1432,
+      "target": "tests/held_unit_projection_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "invalid_reference_or_missing_identity_never_accepts_the_stream",
+          "verdict": "ok"
+        },
+        {
+          "name": "every_truncated_prefix_and_extra_suffix_refuse",
+          "verdict": "ok"
+        },
+        {
+          "name": "missing_and_duplicate_records_keep_original_order",
+          "verdict": "ok"
+        },
+        {
+          "name": "modified_bytes_cannot_create_their_own_pin_or_publish_a_valid_prefix",
+          "verdict": "ok"
+        },
+        {
+          "name": "independent_threads_and_observations_cannot_share_stale_records",
+          "verdict": "ok"
+        },
+        {
+          "name": "size_record_count_and_header_budgets_refuse",
+          "verdict": "ok"
+        },
+        {
+          "name": "wrong_oid_type_count_and_noncanonical_headers_refuse",
+          "verdict": "ok"
+        },
+        {
+          "name": "short_missing_requires_explicit_syntax_and_never_expands_or_changes_old_missing",
+          "verdict": "ok"
+        },
+        {
+          "name": "every_kind_empty_binary_and_large_bytes_match_the_independent_reference",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 9,
+      "end_line": 1451,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 9,
+      "reported_ns": 50000000,
+      "reported_seconds": "0.05",
+      "start_line": 1440,
+      "target": "tests/historical_blob_batch_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "caller_child_fixture",
+          "verdict": "ok"
+        },
+        {
+          "name": "census_contract_child_fixture",
+          "verdict": "ok"
+        },
+        {
+          "name": "census_error_contract_preserves_status_before_utf8_and_successful_stderr",
+          "verdict": "ok"
+        },
+        {
+          "name": "census_panic_schedule_preserves_each_guard_message_and_short_circuit",
+          "verdict": "ok"
+        },
+        {
+          "name": "census_schedule_keeps_each_conditional_read_and_first_failure",
+          "verdict": "ok"
+        },
+        {
+          "name": "census_reference_and_deadline_refuse_before_any_command",
+          "verdict": "ok"
+        },
+        {
+          "name": "shadow_cannot_use_an_unbound_missing_reference",
+          "verdict": "ok"
+        },
+        {
+          "name": "static_census_reference_keeps_exact_revision_and_path_allowlist",
+          "verdict": "ok"
+        },
+        {
+          "name": "census_panic_facade_preserves_payloads_and_keeps_new_refusals_explicit",
+          "verdict": "ok"
+        },
+        {
+          "name": "real_census_caller_shadow_preserves_the_logging_counterexample_before_integration",
+          "verdict": "ok"
+        },
+        {
+          "name": "census_inherited_environment_and_error_compatibility_profiles",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 11,
+      "end_line": 1467,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 11,
+      "reported_ns": 13680000000,
+      "reported_seconds": "13.68",
+      "start_line": 1454,
+      "target": "tests/historical_blob_caller_074.rs"
+    }
+  ],
+  "unstarted_targets": [
+    "tests/historical_blob_fault_074.rs",
+    "tests/historical_blob_transport_074.rs",
+    "tests/historical_input_view_074.rs",
+    "tests/historical_source_cache_074.rs",
+    "tests/history_status_readers_074.rs",
+    "tests/long_run_campaign_074.rs",
+    "tests/management_center_072.rs",
+    "tests/management_compat_072.rs",
+    "tests/material_lock_fixture_074.rs",
+    "tests/memory_baseline_071.rs",
+    "tests/memory_campaign_admission_071.rs",
+    "tests/memory_compat_071.rs",
+    "tests/memory_contracts_071.rs",
+    "tests/memory_decision_071.rs",
+    "tests/memory_host_profile_071.rs",
+    "tests/memory_ownership_071.rs",
+    "tests/memory_profile_071.rs",
+    "tests/memory_regression_071.rs",
+    "tests/memory_statistics_071.rs",
+    "tests/migration_conformance_069.rs",
+    "tests/miri_check.rs",
+    "tests/mutants.rs",
+    "tests/owned_case_074.rs",
+    "tests/package_diagnostics_074.rs",
+    "tests/perf_attestation_0671.rs",
+    "tests/perf_bootstrap_0671.rs",
+    "tests/perf_budget_067.rs",
+    "tests/perf_ci_instruction.rs",
+    "tests/perf_exploratory_harness.rs",
+    "tests/perf_exploratory_reports.rs",
+    "tests/perf_full_dress_0671.rs",
+    "tests/perf_host_tuning.rs",
+    "tests/perf_local_orchestration_0671.rs",
+    "tests/perf_prebuild_067.rs",
+    "tests/perf_qualification_0671.rs",
+    "tests/perf_reference_0671.rs",
+    "tests/perf_runner_0671.rs",
+    "tests/performance_contract_067.rs",
+    "tests/performance_contract_073.rs",
+    "tests/performance_contract_074.rs",
+    "tests/performance_local_073.rs",
+    "tests/pid_path_cost_074.rs",
+    "tests/pid_path_reader_074.rs",
+    "tests/pidfd_info_path_074.rs",
+    "tests/proc_document_baseline_074.rs",
+    "tests/projection_groups_074.rs",
+    "tests/quarantine.rs",
+    "tests/raft_spec_check.rs",
+    "tests/release_evidence.rs",
+    "tests/release_governance.rs",
+    "tests/release_governance_071.rs",
+    "tests/remaining_preparation_cost_074.rs",
+    "tests/remaining_readers_074.rs",
+    "tests/role_census_reader_074.rs",
+    "tests/roots_lock_view_074.rs",
+    "tests/sample_boot_baseline_074.rs",
+    "tests/sample_boot_inline_074.rs",
+    "tests/security_input_view_074.rs",
+    "tests/source_successor_view_074.rs",
+    "tests/starting_effects_cost_074.rs",
+    "tests/status_field_scan_074.rs",
+    "tests/trust_component_baseline_074.rs",
+    "tests/trust_component_stack_074.rs",
+    "tests/tsan_check.rs",
+    "tests/validation_leaf_reader_074.rs",
+    "tests/validation_leaf_requests_074.rs",
+    "tests/validation_round_cost_074.rs"
+  ]
+}

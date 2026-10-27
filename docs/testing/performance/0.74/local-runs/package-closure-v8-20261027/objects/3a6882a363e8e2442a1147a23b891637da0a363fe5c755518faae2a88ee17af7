@@ -1,0 +1,2313 @@
+{
+  "environment": {
+    "external_cargo_configuration_absent": true,
+    "fixture_overrides_absent": true,
+    "git_effect_config_active": false,
+    "git_effect_config_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "negative_fixture_executable_absent": true,
+    "target_and_protoc_scratch_not_reparse": true,
+    "unreviewed_build_overrides_absent": true
+  },
+  "head": "0a6f8c8e6d6467777d519bd6799800bf694142f3",
+  "source_review": {
+    "added_sources": [
+      "crates/xtask/tests/roots_lock_view_074.rs",
+      "tools/roots-lock-view-074/contract.rs"
+    ],
+    "auxiliary": {
+      ".cargo/config.toml": "90f023744f969c176d98d811145b883b411da0fe8a294e930a0f965456ac49a3",
+      "Cargo.lock": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5",
+      "Cargo.toml": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8",
+      "crates/hydracache-redis-compat/Cargo.toml": "b188f9eeef837b115841f8bba5a5cab12bc37f5681657766e5d07e6b056d9379",
+      "crates/xtask/Cargo.toml": "0b00525d41119bdb1215b1fb658ac66fa1bcd0d99428e9903cf1bb8ee8f4e0b5",
+      "crates/xtask/tests/support/original_service_gate.txt": "f16badb4ce2044d91d3d20f1f8471216f990d754294d6ab7a4344632922012cf",
+      "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+      "docs/COMPAT.md": "c4c236af9b4ba357885f36c791f5dcb6369fe7124a85b73d0c537b304c87d6b5",
+      "docs/testing/performance/0.74/local-runs/inventory544-provenance-20261026/objects/fec2195d38bd7784e9c584704b90d5851f5a5c228a900513aa11cf91b42fad8f": "fec2195d38bd7784e9c584704b90d5851f5a5c228a900513aa11cf91b42fad8f",
+      "docs/testing/performance/0.74/local-runs/role-census-inventory-20261024/objects/cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0": "cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0",
+      "docs/testing/performance/0.74/local-runs/transport-package-20261025/objects/5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+      "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+      "scripts/ci/public_api_compat_071.py": "e6c093f732df392cfb7eda4aa6f274d8b7fc425146e08e66e2b67f82255efcb9",
+      "scripts/ci/run-with-heartbeat.py": "cedf938f80b3697efa219e5e8566d5d4f869cc2769dc7de6a176efb6e3af7afb",
+      "scripts/ci/watchdog_linux_group.py": "e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691",
+      "scripts/ci/watchdog_windows_job.py": "8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1",
+      "scripts/perf/memory-providers/provider_common.py": "d04439d35c0a3c5cbd112dc0a06cb02c381e24a4b3d5eea501339383d73ad4df",
+      "scripts/perf/memory-providers/system.py": "582ccf04b5e9883a24b1636302b53972bd2d89ff49cdc86cb1ada85aa42f67a7",
+      "scripts/perf/memory-providers/test_provider_contract.py": "0badc7d752fc38a78604443551388a5770d8ff715ab69ce54efa54cee6bb5ee1",
+      "scripts/perf/render-exploratory-report.py": "ee39a9533a712f845fe14099ecf476fe2231270b6bbb611bab43aa02cb899354",
+      "scripts/perf/sync-ci-instruction-lock.py": "8286bf431ef987f218f73f2863116ee63feb88d202c95e3017da1e90b1bbd026",
+      "tools/authority-reader-phase-074/main-rules.json": "9373e36370e3893316a983fb159debba29afbbf4095c86f8f71d4384c80cc4f5",
+      "tools/authority-runtime-074/filesystem.rs": "4555af85ed9304f4f19687619e6dc5ec5a73f55a3159a1cd53c36909df0ed0c4",
+      "tools/bootstrap-doc-reader-074/rules.json": "f780c166ff6e708eb2b09013075e414426bad8ae443f537a5ad0a08dcebfb3ce",
+      "tools/current-frontier-074/rules.json": "4ef20240b953381c2e4dbfe7892b0a9205dbdefba3012e89a113030372d0d389",
+      "tools/guard-path-comparison-074/fixed-slice-before.txt": "5bf7b3618f2cf80143a28c8bf56e368faa59d8d8d8517771e3998feab51888ec",
+      "tools/historical-blob-batch-074/caller_integration.py": "3ef9fdbec1c5969d460edadd41238c8d9eb2f3f7a72eb36f1f327a7d9df911ec",
+      "tools/historical-blob-batch-074/caller_pins.py": "f5c8ccaf9dcff9b32309ece12806af510fd022ee6bf2530ff439fa9db5831857",
+      "tools/historical-blob-batch-074/census_cost.py": "d953065d5b5617efa5c854b25d4491a223a0b1866c229d268876f261624a80cc",
+      "tools/historical-blob-batch-074/collision.py": "29d3b9bb0dcd23d47cdf79052336e2da8daf4f4244903ff8df4b7e713f03b706",
+      "tools/historical-blob-batch-074/module_context_v5.py": "c4bbc2d6b69e416ac3fcb30a1a64fb3bb54473b70977a1875ff90ca264b0cd44",
+      "tools/historical-blob-batch-074/oracle.py": "1e360e21f79f1ecec1b7305fe1b914cd471d63f42686d1badc7548c9e8d1e90d",
+      "tools/historical-blob-batch-074/package_effects_review.py": "2930cba469aec96c9f6846aedfeb8d94f91b1fecf81a123c15e025f272d6028a",
+      "tools/historical-blob-batch-074/package_effects_review_v2.py": "9e590fb92e218f67e39b2d8b0dd3ef49a98e1e0bd7f38473edb23bfcab374a23",
+      "tools/historical-blob-batch-074/package_effects_review_v3.py": "b82ade2053bea6532efe4483c4dc51d5cc4f9aeb02cebee1b5a7fff4fc5ac0b3",
+      "tools/historical-blob-batch-074/package_effects_review_v4.py": "bdd999e6a33b6daadcd233c6073c69507e864e845f5fae1bfe0e61ac9959d50b",
+      "tools/historical-blob-batch-074/package_effects_review_v5.py": "46a02302218d99e8fbf00c9d1ffad5d9c1b9b79dd56dc0641dea86f3a75ab805",
+      "tools/historical-blob-batch-074/package_replay_audit.py": "65e4706d425507c5d93c8633bc1e543cb74497bb523b692f7c023db317298106",
+      "tools/historical-blob-batch-074/package_replay_v2.py": "c0bae2f0d8b1f7b90d61aa5da39ef8bcb7187ac2b7268fbc57a5cc78b083611f",
+      "tools/historical-blob-batch-074/reader.py": "71207da9f35a2b3458092e761c9a86ce9c47d07b8e99db3743bd430c2bd57470",
+      "tools/historical-blob-batch-074/syntax_audit.py": "a1b8045abbee202569ed50fc5df43ad9f633524883a71d590cca6ab0ea547b5e",
+      "tools/history-status-readers-074/rules.json": "188763c292af6f6f603414ace264926009c59d7795cea1047084867609c77023",
+      "tools/long-run-supervisor-074/src/archive.rs": "733cb99bff1768b5d97111857a507293f0f345ff808d20f225e2f2f324c00957",
+      "tools/long-run-supervisor-074/src/artifact.rs": "b13806efd66a695fdc5fb5b6bfb2ae38cb6b32ca70df6272709655d8ec65e7da",
+      "tools/long-run-supervisor-074/src/diagnostic_authority_registry.rs": "1e936fe855eedad6d0e5dacbd76d534a45cc8df11cd30f06f8e2ed77258bc53e",
+      "tools/long-run-supervisor-074/src/diagnostic_builder.rs": "7cc438ed0d76a4896abea77c4070c8a017730e7ef8d82b3e40259629e1ec259a",
+      "tools/long-run-supervisor-074/src/sealed_permissions.rs": "72a89f8651bba1df518abf2d84a18835ef4aeba268a55c45b75e12a0b25f77ec",
+      "tools/remaining-readers-074/rules.json": "b8803a5f12460fa2278ffef033dc0738c4dc925a65a661f701ea09ae9bb6883e",
+      "tools/roots-lock-view-074/.gitattributes": "560b146a47d770e5037b322e115de067a24ea3fca2ffce60155446cbdc2023af",
+      "tools/roots-lock-view-074/rules.json": "d7ec7bf6240b74130719ed8be061f744c783710ecb5486c1de2ad86492544ba5",
+      "tools/security-input-view-074/rules.json": "279a9a8c88039fd2224618c0f406d0d4c48eb3135c76560c1981b615c3dd9bc2",
+      "tools/source-successor-view-074/diagnostic-additions.txt": "18d06dbd21744e236d90bc7004fb4fad531ea8c8342d5c8a917e0fe7e8627160",
+      "tools/source-successor-view-074/rules.json": "61d3e1941cdae497600592a49af0487e4cf545573ba3f091add173110b560cda",
+      "tools/xtask-package-attribution-074/pipe-execution-protocol.toml": "1607a3738191f7598a96ce1787864f161f0a71891d993bc4d2f898efb25540d3"
+    },
+    "changed_sources": [
+      "crates/xtask/tests/security_input_view_074.rs",
+      "tools/source-successor-view-074/contract.rs"
+    ],
+    "constructors": [
+      {
+        "detail": "call:path:platform_program",
+        "kind": "command-constructor",
+        "scope": "execute_command",
+        "source": "crates/xtask/src/canary_sweep.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_identity",
+        "source": "crates/xtask/src/canary_sweep.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_identity",
+        "source": "crates/xtask/src/canary_sweep.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "run_checked",
+        "source": "crates/xtask/src/client_package.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "env_or_git",
+        "source": "crates/xtask/src/client_plane_ci.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "run_checked",
+        "source": "crates/xtask/src/client_plane_compat.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "run_git",
+        "source": "crates/xtask/src/client_plane_compat.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "require_git_ancestor",
+        "source": "crates/xtask/src/client_plane_compat.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "require_git_ancestor",
+        "source": "crates/xtask/src/client_plane_compat.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_output",
+        "source": "crates/xtask/src/client_plane_compat.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "check_at_root",
+        "source": "crates/xtask/src/client_plane_fault.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "run_checked",
+        "source": "crates/xtask/src/client_plane_generation.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "run_checked",
+        "source": "crates/xtask/src/client_plane_java.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "generate_to",
+        "source": "crates/xtask/src/client_plane_python.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "generate_to",
+        "source": "crates/xtask/src/client_plane_python.rs"
+      },
+      {
+        "detail": "call:path:python_program",
+        "kind": "command-constructor",
+        "scope": "detect_python_runtime",
+        "source": "crates/xtask/src/client_plane_python.rs"
+      },
+      {
+        "detail": "call:path:python_program",
+        "kind": "command-constructor",
+        "scope": "prepare_offline_venv",
+        "source": "crates/xtask/src/client_plane_python.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "prepare_offline_venv",
+        "source": "crates/xtask/src/client_plane_python.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "prepare_offline_venv",
+        "source": "crates/xtask/src/client_plane_python.rs"
+      },
+      {
+        "detail": "path:python",
+        "kind": "command-constructor",
+        "scope": "run_python_tests",
+        "source": "crates/xtask/src/client_plane_python.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "run_checked",
+        "source": "crates/xtask/src/client_plane_rust.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "run_checked",
+        "source": "crates/xtask/src/client_plane_spike.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "preflight_check",
+        "source": "crates/xtask/src/compat_check.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_output",
+        "source": "crates/xtask/src/compat_check.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "execute_measurement",
+        "source": "crates/xtask/src/coverage_ratchet.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "windows_response_file_report",
+        "source": "crates/xtask/src/coverage_ratchet.rs"
+      },
+      {
+        "detail": "path:llvm_cov",
+        "kind": "command-constructor",
+        "scope": "windows_response_file_report",
+        "source": "crates/xtask/src/coverage_ratchet.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "workspace_target_names",
+        "source": "crates/xtask/src/coverage_ratchet.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "command_text",
+        "source": "crates/xtask/src/coverage_ratchet.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "execute",
+        "source": "crates/xtask/src/determinism_sweep.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_identity",
+        "source": "crates/xtask/src/determinism_sweep.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_identity",
+        "source": "crates/xtask/src/determinism_sweep.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "execute_command",
+        "source": "crates/xtask/src/evidence_run.rs"
+      },
+      {
+        "detail": "literal:kill",
+        "kind": "command-constructor",
+        "scope": "terminate_process_tree",
+        "source": "crates/xtask/src/evidence_run.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "command_output",
+        "source": "crates/xtask/src/evidence_run.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "command_output_in",
+        "source": "crates/xtask/src/evidence_run.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "cargo_tree",
+        "source": "crates/xtask/src/feature_leak.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "cargo_metadata",
+        "source": "crates/xtask/src/gated_tests.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "probe_output",
+        "source": "crates/xtask/src/host_attestation.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "command_output",
+        "source": "crates/xtask/src/management_center.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_text",
+        "source": "crates/xtask/src/memory_baseline.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_success",
+        "source": "crates/xtask/src/memory_baseline.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_head",
+        "source": "crates/xtask/src/memory_campaign.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "command_text",
+        "source": "crates/xtask/src/memory_contracts.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "command_optional",
+        "source": "crates/xtask/src/memory_contracts.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "command_text",
+        "source": "crates/xtask/src/memory_ownership.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "run_borrowed",
+        "source": "crates/xtask/src/migration_conformance.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "run_borrowed",
+        "source": "crates/xtask/src/migration_conformance.rs"
+      },
+      {
+        "detail": "path:maven",
+        "kind": "command-constructor",
+        "scope": "run_borrowed",
+        "source": "crates/xtask/src/migration_conformance.rs"
+      },
+      {
+        "detail": "path:maven",
+        "kind": "command-constructor",
+        "scope": "run_borrowed",
+        "source": "crates/xtask/src/migration_conformance.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "run_legacy",
+        "source": "crates/xtask/src/migration_conformance.rs"
+      },
+      {
+        "detail": "path:server_exe",
+        "kind": "command-constructor",
+        "scope": "run_legacy",
+        "source": "crates/xtask/src/migration_conformance.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "run_postgres",
+        "source": "crates/xtask/src/migration_conformance.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "validate_git_tags",
+        "source": "crates/xtask/src/migration_conformance.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "run_legacy_consumer",
+        "source": "crates/xtask/src/migration_conformance.rs"
+      },
+      {
+        "detail": "literal:curl",
+        "kind": "command-constructor",
+        "scope": "fetch_pinned_source",
+        "source": "crates/xtask/src/migration_conformance.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "cargo_miri",
+        "source": "crates/xtask/src/miri_check.rs"
+      },
+      {
+        "detail": "literal:rustup",
+        "kind": "command-constructor",
+        "scope": "toolchain_available",
+        "source": "crates/xtask/src/miri_check.rs"
+      },
+      {
+        "detail": "literal:rustup",
+        "kind": "command-constructor",
+        "scope": "toolchain_available",
+        "source": "crates/xtask/src/miri_check.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_commit",
+        "source": "crates/xtask/src/miri_check.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "run_cargo_mutants",
+        "source": "crates/xtask/src/mutants.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "run_cargo_mutants",
+        "source": "crates/xtask/src/mutants.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "impl::run_command",
+        "source": "crates/xtask/src/perf.rs"
+      },
+      {
+        "detail": "path:findmnt_path",
+        "kind": "command-constructor",
+        "scope": "validate_prebuild_publication_directory",
+        "source": "crates/xtask/src/perf.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "validate_checkout_receipt",
+        "source": "crates/xtask/src/perf_budget.rs"
+      },
+      {
+        "detail": "literal:rustc",
+        "kind": "command-constructor",
+        "scope": "validate_checkout_receipt",
+        "source": "crates/xtask/src/perf_budget.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "observe_context",
+        "source": "crates/xtask/src/perf_qualification.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_text",
+        "source": "crates/xtask/src/perf_qualification.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_head",
+        "source": "crates/xtask/src/perf_reference.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/src/performance_contract.rs"
+      },
+      {
+        "detail": "literal:sysctl",
+        "kind": "command-constructor",
+        "scope": "observed_cpu_model",
+        "source": "crates/xtask/src/performance_local.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "command_text",
+        "source": "crates/xtask/src/performance_local.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "run",
+        "source": "crates/xtask/src/performance_overhead.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/src/performance_overhead.rs"
+      },
+      {
+        "detail": "literal:java",
+        "kind": "command-constructor",
+        "scope": "run_tlc",
+        "source": "crates/xtask/src/raft_spec_check.rs"
+      },
+      {
+        "detail": "literal:java",
+        "kind": "command-constructor",
+        "scope": "run_tlc",
+        "source": "crates/xtask/src/raft_spec_check.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_commit",
+        "source": "crates/xtask/src/raft_spec_check.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_is_ancestor",
+        "source": "crates/xtask/src/release_evidence.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_ref_exists",
+        "source": "crates/xtask/src/release_evidence.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "command_output",
+        "source": "crates/xtask/src/release_evidence.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "cargo_tsan",
+        "source": "crates/xtask/src/tsan_check.rs"
+      },
+      {
+        "detail": "literal:rustup",
+        "kind": "command-constructor",
+        "scope": "toolchain_available",
+        "source": "crates/xtask/src/tsan_check.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_commit",
+        "source": "crates/xtask/src/tsan_check.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "run",
+        "source": "crates/xtask/src/verify.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "run_format_gate",
+        "source": "crates/xtask/src/verify.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "run_format_gate",
+        "source": "crates/xtask/src/verify.rs"
+      },
+      {
+        "detail": "literal:cargo",
+        "kind": "command-constructor",
+        "scope": "run_format_gate",
+        "source": "crates/xtask/src/verify.rs"
+      },
+      {
+        "detail": "literal:npm",
+        "kind": "command-constructor",
+        "scope": "run_console_gate",
+        "source": "crates/xtask/src/verify.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "command_available",
+        "source": "crates/xtask/src/verify.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/artifact_inventory_phase_544_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "inventory_reader_preserves_every_old_assertion_and_comparison_count",
+        "source": "crates/xtask/tests/artifact_inventory_reader_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "inventory_projection_requires_all_current_source_files_before_old_list",
+        "source": "crates/xtask/tests/artifact_inventory_reader_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "authority_context_restores_preceding_sources_without_changing_key_encoder",
+        "source": "crates/xtask/tests/authority_context_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "authority_hex_restores_preceding_bodies_and_rejects_unknown_encoder",
+        "source": "crates/xtask/tests/authority_key_hex_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/authority_rust_history_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "frozen",
+        "source": "crates/xtask/tests/authority_storage_source_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "baseline",
+        "source": "crates/xtask/tests/bootstrap_build_owner_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "boundary_audit_preserves_entire_runtime_and_frozen_qualification",
+        "source": "crates/xtask/tests/bootstrap_child_boundary_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "baseline",
+        "source": "crates/xtask/tests/bootstrap_child_census_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "baseline",
+        "source": "crates/xtask/tests/bootstrap_child_reader_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "baseline",
+        "source": "crates/xtask/tests/bootstrap_current_image_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "runtime::frozen",
+        "source": "crates/xtask/tests/bootstrap_doc_reader_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "bootstrap_selection_compatibility_is_exactly_additive_and_mutations_refuse",
+        "source": "crates/xtask/tests/bootstrap_enrollment_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "independent_bootstrap_selection_has_only_one_additive_parent_hook",
+        "source": "crates/xtask/tests/bootstrap_enrollment_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "baseline",
+        "source": "crates/xtask/tests/bootstrap_entry_binding_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "baseline",
+        "source": "crates/xtask/tests/bootstrap_image_census_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "bootstrap_image_census_exports_no_fd_mapping_transport_or_new_clock",
+        "source": "crates/xtask/tests/bootstrap_image_census_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "bootstrap_original_service_keeps_old_fixture_and_production_frames_exact",
+        "source": "crates/xtask/tests/bootstrap_installed_origin_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "bootstrap_held_entry_additions_preserve_exact_old_modes_and_role_checks",
+        "source": "crates/xtask/tests/bootstrap_installed_origin_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed",
+        "source": "crates/xtask/tests/bootstrap_installed_origin_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "bootstrap_held_delivery_exact_additions_leave_old_frames_and_cli_closed",
+        "source": "crates/xtask/tests/bootstrap_installed_origin_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "baseline",
+        "source": "crates/xtask/tests/bootstrap_installed_origin_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "installed_baseline",
+        "source": "crates/xtask/tests/bootstrap_installed_origin_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "bootstrap_installed_material_only_three_hooks_keep_whole_old_owner_and_kernel",
+        "source": "crates/xtask/tests/bootstrap_installed_origin_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "bootstrap_installed_material_additive_compat_keeps_schema_and_qualification",
+        "source": "crates/xtask/tests/bootstrap_installed_origin_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "macro-command-constructor",
+        "scope": "bootstrap_installed_material_additive_compat_keeps_schema_and_qualification::macro:assert_eq",
+        "source": "crates/xtask/tests/bootstrap_installed_origin_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "bootstrap_installed_material_additive_compat_keeps_schema_and_qualification::macro:assert_eq",
+        "source": "crates/xtask/tests/bootstrap_installed_origin_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "child_baseline",
+        "source": "crates/xtask/tests/bootstrap_installed_origin_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "bootstrap_sandbox_only_four_exact_additions_preserve_old_frames_and_deadlines",
+        "source": "crates/xtask/tests/bootstrap_installed_origin_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "profiled_capture_keeps_output_and_early_refusals",
+        "source": "crates/xtask/tests/census_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "profiled_capture_keeps_output_and_early_refusals",
+        "source": "crates/xtask/tests/census_cost_074.rs"
+      },
+      {
+        "detail": "literal:must-not-spawn",
+        "kind": "macro-command-constructor",
+        "scope": "profiled_capture_keeps_output_and_early_refusals::macro:assert_eq",
+        "source": "crates/xtask/tests/census_cost_074.rs"
+      },
+      {
+        "detail": "literal:must-not-spawn",
+        "kind": "command-constructor",
+        "scope": "profiled_capture_keeps_output_and_early_refusals::macro:assert_eq",
+        "source": "crates/xtask/tests/census_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "windows::run_transport",
+        "source": "crates/xtask/tests/census_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "windows::run",
+        "source": "crates/xtask/tests/census_cost_074.rs"
+      },
+      {
+        "detail": "call:path:python",
+        "kind": "command-constructor",
+        "scope": "run_watchdog",
+        "source": "crates/xtask/tests/ci_reliability_071.rs"
+      },
+      {
+        "detail": "macro:env(\"CARGO_BIN_EXE_xtask\")",
+        "kind": "command-constructor",
+        "scope": "admission",
+        "source": "crates/xtask/tests/client_plane_ci.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/current_tree_input_audit_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/custody_preparation_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/diagnostic_artifact_fixture_074.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "fixture",
+        "source": "crates/xtask/tests/direct_output_cost_074.rs"
+      },
+      {
+        "detail": "path:missing",
+        "kind": "command-constructor",
+        "scope": "pipe_spawn_failure_is_not_replaced_or_retried",
+        "source": "crates/xtask/tests/direct_output_cost_074.rs"
+      },
+      {
+        "detail": "path:missing",
+        "kind": "command-constructor",
+        "scope": "pipe_spawn_failure_is_not_replaced_or_retried",
+        "source": "crates/xtask/tests/direct_output_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "run",
+        "source": "crates/xtask/tests/direct_output_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/document_scratch_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies",
+        "source": "crates/xtask/tests/document_scratch_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "document_scratch_adoption_is_the_frozen_helper_and_reconstructs_all_473_old_bodies",
+        "source": "crates/xtask/tests/document_scratch_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "legacy_source_views_preserve_every_old_assertion_and_only_restore_known_scratch_shapes",
+        "source": "crates/xtask/tests/document_scratch_cost_074.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "evidence_child_helper",
+        "source": "crates/xtask/tests/evidence_run.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "evidence_child_helper",
+        "source": "crates/xtask/tests/evidence_run.rs"
+      },
+      {
+        "detail": "path:program",
+        "kind": "command-constructor",
+        "scope": "run",
+        "source": "crates/xtask/tests/evidence_run.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "old",
+        "source": "crates/xtask/tests/fresh_kernel_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "child",
+        "source": "crates/xtask/tests/git_descendant_cpu_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "baseline",
+        "source": "crates/xtask/tests/held_activation_ingress_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "activation_ingress_compatibility_registration_preserves_every_old_format_byte",
+        "source": "crates/xtask/tests/held_activation_ingress_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "rejected_bind_alias_does_not_install_unproved_runtime_or_change_old_bytes",
+        "source": "crates/xtask/tests/held_bind_alias_refusal_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "baseline",
+        "source": "crates/xtask/tests/held_complete_role_census_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "baseline",
+        "source": "crates/xtask/tests/held_material_roles_074.rs"
+      },
+      {
+        "detail": "conditional-expression",
+        "kind": "command-constructor",
+        "scope": "real_census_caller_shadow_preserves_the_logging_counterexample_before_integration",
+        "source": "crates/xtask/tests/historical_blob_caller_074.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "real_census_caller_shadow_preserves_the_logging_counterexample_before_integration",
+        "source": "crates/xtask/tests/historical_blob_caller_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "census_panic_facade_preserves_payloads_and_keeps_new_refusals_explicit",
+        "source": "crates/xtask/tests/historical_blob_caller_074.rs"
+      },
+      {
+        "detail": "conditional-expression",
+        "kind": "command-constructor",
+        "scope": "census_inherited_environment_and_error_compatibility_profiles",
+        "source": "crates/xtask/tests/historical_blob_caller_074.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "census_inherited_environment_and_error_compatibility_profiles",
+        "source": "crates/xtask/tests/historical_blob_caller_074.rs"
+      },
+      {
+        "detail": "path:python",
+        "kind": "command-constructor",
+        "scope": "stale_pins_refs_config_and_fallback_aba_refuse_before_caller_admission",
+        "source": "crates/xtask/tests/historical_blob_fault_074.rs"
+      },
+      {
+        "detail": "path:python",
+        "kind": "command-constructor",
+        "scope": "stale_pins_refs_config_and_fallback_aba_refuse_before_caller_admission",
+        "source": "crates/xtask/tests/historical_blob_fault_074.rs"
+      },
+      {
+        "detail": "conditional-expression",
+        "kind": "command-constructor",
+        "scope": "real_git_python_and_native_outputs_match_in_six_isolated_cases",
+        "source": "crates/xtask/tests/historical_blob_transport_074.rs"
+      },
+      {
+        "detail": "computed-expression",
+        "kind": "command-constructor",
+        "scope": "child",
+        "source": "crates/xtask/tests/historical_blob_transport_074.rs"
+      },
+      {
+        "detail": "literal:nonexistent-074-native-executable",
+        "kind": "macro-command-constructor",
+        "scope": "direct_nonzero_exit_stdin_and_missing_executable_keep_explicit_results::macro:assert",
+        "source": "crates/xtask/tests/historical_blob_transport_074.rs"
+      },
+      {
+        "detail": "literal:nonexistent-074-native-executable",
+        "kind": "macro-command-constructor",
+        "scope": "direct_nonzero_exit_stdin_and_missing_executable_keep_explicit_results::macro:assert::macro:matches",
+        "source": "crates/xtask/tests/historical_blob_transport_074.rs"
+      },
+      {
+        "detail": "literal:must-not-spawn",
+        "kind": "macro-command-constructor",
+        "scope": "direct_nonzero_exit_stdin_and_missing_executable_keep_explicit_results::macro:assert_eq",
+        "source": "crates/xtask/tests/historical_blob_transport_074.rs"
+      },
+      {
+        "detail": "literal:must-not-spawn",
+        "kind": "command-constructor",
+        "scope": "direct_nonzero_exit_stdin_and_missing_executable_keep_explicit_results::macro:assert_eq",
+        "source": "crates/xtask/tests/historical_blob_transport_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "historical_input_list_covers_all_changed_old_files_except_the_existing_exact_authority_gate",
+        "source": "crates/xtask/tests/historical_input_view_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "read",
+        "source": "crates/xtask/tests/historical_source_cache_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "old",
+        "source": "crates/xtask/tests/historical_source_cache_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "original",
+        "source": "crates/xtask/tests/material_lock_fixture_074.rs"
+      },
+      {
+        "detail": "literal:python",
+        "kind": "command-constructor",
+        "scope": "public_api_gate_covers_every_publishable_package_and_blocks_release",
+        "source": "crates/xtask/tests/memory_compat_071.rs"
+      },
+      {
+        "detail": "literal:python",
+        "kind": "command-constructor",
+        "scope": "provider_fixture_proves_ordering_classification_and_redaction",
+        "source": "crates/xtask/tests/memory_profile_071.rs"
+      },
+      {
+        "detail": "path:python",
+        "kind": "command-constructor",
+        "scope": "instruction_lock_sync_handles_a_workspace_version_boundary_without_registry_drift",
+        "source": "crates/xtask/tests/perf_ci_instruction.rs"
+      },
+      {
+        "detail": "path:python",
+        "kind": "command-constructor",
+        "scope": "indicative_renderer_emits_a_sealed_negative_claim_receipt",
+        "source": "crates/xtask/tests/perf_exploratory_harness.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "diagnostic_oidc_keeps_configured_origin_separate_from_enrollment_replay_and_start",
+        "source": "crates/xtask/tests/performance_contract_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "local_diagnostic_artifact_verification_keeps_execution_and_build_claims_closed",
+        "source": "crates/xtask/tests/performance_contract_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "old",
+        "source": "crates/xtask/tests/pid_path_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "cli_reports_release_wide_ship_blocker_for_both_aliases_and_modes",
+        "source": "crates/xtask/tests/release_evidence.rs"
+      },
+      {
+        "detail": "macro:env(\"CARGO_BIN_EXE_xtask\")",
+        "kind": "command-constructor",
+        "scope": "cli_reports_release_wide_ship_blocker_for_both_aliases_and_modes",
+        "source": "crates/xtask/tests/release_evidence.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "explicit_flip_sentinel_policy_can_advance_without_an_unrelated_dynamic_registry",
+        "source": "crates/xtask/tests/release_evidence.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "bounded_projection_recovers_all_473_preceding_bodies_and_frozen_parsers",
+        "source": "crates/xtask/tests/remaining_preparation_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "remaining_preparation_marks_restore_exact_preceding_bodies_and_reject_drift",
+        "source": "crates/xtask/tests/remaining_preparation_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "census_reader_preserves_every_original_assertion_and_only_adapts_one_provider",
+        "source": "crates/xtask/tests/role_census_reader_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "starting_cost_marks_restore_exact_effects_checks_and_order",
+        "source": "crates/xtask/tests/starting_effects_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git_index",
+        "source": "crates/xtask/tests/support/artifact_inventory_input.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "frozen_bytes",
+        "source": "crates/xtask/tests/support/authority_history_io.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "impl::output",
+        "source": "crates/xtask/tests/support/authority_history_io.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "frozen",
+        "source": "crates/xtask/tests/support/census_provider_input_legacy.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "require_addition",
+        "source": "crates/xtask/tests/support/current_tree_input.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "frozen",
+        "source": "crates/xtask/tests/support/performance_contract_074_barred_custody.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "old",
+        "source": "crates/xtask/tests/support/performance_contract_074_boot_buffer.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "boot_buffer_exact_substitution_preserves_all_other_old_runtime_sources",
+        "source": "crates/xtask/tests/support/performance_contract_074_boot_buffer.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_boot_comparison.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_cgroup_root_enrollment.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_cgroup_root_transport.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "campaign_claim_construction_preserves_admission_markers_and_successful_owner",
+        "source": "crates/xtask/tests/support/performance_contract_074_claim_construction.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_closing_validation.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "collector_causal_requires_original_post_ack_challenge_and_no_admission_renewal",
+        "source": "crates/xtask/tests/support/performance_contract_074_collector_causal.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "historical",
+        "source": "crates/xtask/tests/support/performance_contract_074_collector_intent.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "collector_notice_tests_preserve_the_entire_ordinary_kernel_and_join",
+        "source": "crates/xtask/tests/support/performance_contract_074_collector_notices.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "collector_progress_requires_fresh_original_receiver_without_start_or_renewal",
+        "source": "crates/xtask/tests/support/performance_contract_074_collector_progress.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "collector_reserved_requires_original_owned_publication_not_recovered_start",
+        "source": "crates/xtask/tests/support/performance_contract_074_collector_reserved.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "consent_budget_is_additive_and_keeps_original_runtime_and_deadlines",
+        "source": "crates/xtask/tests/support/performance_contract_074_consent_budget.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "frozen",
+        "source": "crates/xtask/tests/support/performance_contract_074_custody_join.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "custody_loss_preserves_the_entire_ordinary_pending_implementation",
+        "source": "crates/xtask/tests/support/performance_contract_074_custody_loss.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "dispatch_exchange_keeps_original_owners_manager_and_kernels_frozen",
+        "source": "crates/xtask/tests/support/performance_contract_074_dispatch_exchange.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "enrollment_frame_preserves_all_preexisting_original_code",
+        "source": "crates/xtask/tests/support/performance_contract_074_enrollment_frame.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "old",
+        "source": "crates/xtask/tests/support/performance_contract_074_fence_custody.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "frozen",
+        "source": "crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "fixed_grouped_process_matrix_preserves_runtime_and_exact_owned_harness",
+        "source": "crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "autonomous_guardian_is_private_and_preserves_original_admission",
+        "source": "crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "autonomous_guardian_is_private_and_preserves_original_admission",
+        "source": "crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_fixed_leaf_path.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_gnu_preparation.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_held_placement.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "kernel_refusal_test_instrumentation_preserves_every_non_test_guard",
+        "source": "crates/xtask/tests/support/performance_contract_074_kernel_refusal.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "old",
+        "source": "crates/xtask/tests/support/performance_contract_074_kernel_walk.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "kernel_walk_preserves_all_old_rust_sources_after_exact_test_only_removal",
+        "source": "crates/xtask/tests/support/performance_contract_074_kernel_walk.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "old",
+        "source": "crates/xtask/tests/support/performance_contract_074_live_walk.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "live_walk_spans_preserve_every_old_rust_body_after_exact_test_only_removal",
+        "source": "crates/xtask/tests/support/performance_contract_074_live_walk.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "manager_channel_preserves_old_authority_versions_workloads_and_sender_boundaries",
+        "source": "crates/xtask/tests/support/performance_contract_074_manager_channel.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "old",
+        "source": "crates/xtask/tests/support/performance_contract_074_negotiated_dispatch.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "negotiated_dispatch_preserves_all_old_runtime_and_test_bodies",
+        "source": "crates/xtask/tests/support/performance_contract_074_negotiated_dispatch.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "frozen",
+        "source": "crates/xtask/tests/support/performance_contract_074_original_barrier.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "frozen",
+        "source": "crates/xtask/tests/support/performance_contract_074_original_descriptors.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "original_manager_join_preserves_every_original_predicate_and_execution_boundary",
+        "source": "crates/xtask/tests/support/performance_contract_074_original_manager_join.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "original_manager_join_preserves_every_original_predicate_and_execution_boundary",
+        "source": "crates/xtask/tests/support/performance_contract_074_original_manager_join.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "original_grouped_message_preserves_old_manager_frame_message_exchange_and_custody",
+        "source": "crates/xtask/tests/support/performance_contract_074_original_manager_message.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_original_pending_watchdog.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "original_pipes_preserve_publisher_deadlines_and_private_kernel_ownership",
+        "source": "crates/xtask/tests/support/performance_contract_074_original_pipes.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_original_reply_binding.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_original_root_join.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "original_start_consent_keeps_historical_guards_and_has_no_execution_conversion",
+        "source": "crates/xtask/tests/support/performance_contract_074_original_start_consent.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_original_watchdog_context.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "output_join_preserves_original_guards_and_effect_closing_checks",
+        "source": "crates/xtask/tests/support/performance_contract_074_output_join.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_owned_placement.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_owned_root_manager.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "original_pipe_transport_preserves_material_and_legacy_transport",
+        "source": "crates/xtask/tests/support/performance_contract_074_pipe_transport.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_placement_preparation.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_placement_stage_cost.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "old",
+        "source": "crates/xtask/tests/support/performance_contract_074_plain_worker.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "plain_worker_preserves_all_old_runtime_and_test_sources_exactly",
+        "source": "crates/xtask/tests/support/performance_contract_074_plain_worker.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_prearmed.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "preconsent_frame_preserves_frozen_body_all_lower_guards_and_original_windows",
+        "source": "crates/xtask/tests/support/performance_contract_074_preconsent_frame.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "old",
+        "source": "crates/xtask/tests/support/performance_contract_074_preparation_budget.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "preparation_budget_preserves_all_existing_rust_sources_and_registered_frame",
+        "source": "crates/xtask/tests/support/performance_contract_074_preparation_budget.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_redundant.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "dispatch_reply_flag_exception_is_exactly_one_original_predicate",
+        "source": "crates/xtask/tests/support/performance_contract_074_reply_flags.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "old",
+        "source": "crates/xtask/tests/support/performance_contract_074_reply_state.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "reply_state_refactor_preserves_every_old_runtime_and_test_body",
+        "source": "crates/xtask/tests/support/performance_contract_074_reply_state.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_root_creator.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_root_guardian.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_root_retirement.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "rejected_original_alarm_stays_test_only_with_exact_original_guards",
+        "source": "crates/xtask/tests/support/performance_contract_074_safety_alarm.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "validation_leaf_attribution_keeps_all_runtime_and_observation_points_exact",
+        "source": "crates/xtask/tests/support/performance_contract_074_safety_alarm.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "component_cost_controls_leave_all_original_validator_bodies_exact",
+        "source": "crates/xtask/tests/support/performance_contract_074_safety_alarm.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "grouped_preparation_candidate_is_test_only_and_preserves_all_runtime_guards",
+        "source": "crates/xtask/tests/support/performance_contract_074_safety_alarm.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "grouped_process_loss_preserves_original_candidate_and_owned_crash_harness",
+        "source": "crates/xtask/tests/support/performance_contract_074_safety_alarm.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "grouped_process_loss_preserves_original_candidate_and_owned_crash_harness",
+        "source": "crates/xtask/tests/support/performance_contract_074_safety_alarm.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "short_fence_owned_unlock_preserves_original_admission_and_test_assertions",
+        "source": "crates/xtask/tests/support/performance_contract_074_short_fence.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "start_consent_is_data_only_and_preserves_all_original_runtime_and_static_guards",
+        "source": "crates/xtask/tests/support/performance_contract_074_start_consent.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "original_start_material_preserves_output_runtime_and_closed_execution",
+        "source": "crates/xtask/tests/support/performance_contract_074_start_material.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "original_start_material_preserves_output_runtime_and_closed_execution",
+        "source": "crates/xtask/tests/support/performance_contract_074_start_material.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "original_start_material_preserves_output_runtime_and_closed_execution",
+        "source": "crates/xtask/tests/support/performance_contract_074_start_material.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "collector_starting_publication_preserves_every_original_predicate_and_deadline",
+        "source": "crates/xtask/tests/support/performance_contract_074_starting_publication.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "collector_starting_record_preserves_original_runtime_and_two_file_storage",
+        "source": "crates/xtask/tests/support/performance_contract_074_starting_record.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/support/performance_contract_074_two_phase_launch.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "validation_cost_exact_test_only_hooks_preserve_all_original_predicates",
+        "source": "crates/xtask/tests/support/performance_contract_074_validation_cost.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "validation_frame_preserves_original_guards_and_frozen_workload",
+        "source": "crates/xtask/tests/support/performance_contract_074_validation_frame.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "worker_proof_reuse_is_one_owned_substitution_with_full_reference_and_live_guards",
+        "source": "crates/xtask/tests/support/performance_contract_074_worker_proof.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "validation_leaf_requests_only_add_exact_test_hook_and_registered_manual_gate",
+        "source": "crates/xtask/tests/validation_leaf_requests_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "crates/xtask/tests/validation_round_cost_074.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "load_frozen",
+        "source": "tools/authority-runtime-074/gate.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "previous",
+        "source": "tools/authority-runtime-074/history_reader.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "require",
+        "source": "tools/current-frontier-074/additions.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "read",
+        "source": "tools/historical-blob-batch-074/census_caller.rs"
+      },
+      {
+        "detail": "literal:git",
+        "kind": "command-constructor",
+        "scope": "git",
+        "source": "tools/historical-blob-batch-074/transport.rs"
+      }
+    ],
+    "delta_review": {
+      "dependency_graph": "Exactly the operator-approved two 1.0.10 public catalogs plus three dev-only representation/shim test edges and the qualified legacy parent reference. RESP floors are exact =1.0.10; runtime Rust, other versions/features, MSRV and deny policy are unchanged. Separate roots audit/Windows/MSRV/GNU/RESP/server evidence remains required, not inferred from this review.",
+      "entry": "One pure roots call precedes the existing diagnostic/security chain. Existing rule bodies, fresh IO helpers, conditional read order and live validation frequency remain unchanged. Rustfmt orders declarations, not observations.",
+      "existing_tests": "The seven existing security tests still execute every assertion. Their raw reader validates each fresh current body through the new roots boundary before the unchanged security view. The exact entry-body oracle admits only the reviewed import/call insertion; no archived Rust is executed.",
+      "inherited": "370 complete Rust source/AST rows and 50 prior auxiliary bodies are identical to V7. Three new inert/build inputs are explicitly pinned. Existing diagnostic children stay default-off; the heartbeat and both companions retain exact bytes and inherited scope.",
+      "new_target": "Seven ordinary tests: fixed read-only historical Git through the inherited helpers, direct fresh source reads, bounded inverse/mutation controls and a fixed-seed 24-case in-memory byte mutation corpus. No manager, worker, privileged fixture, shell, clock, service or server operation.",
+      "roots_view": "One exact Cargo.lock path: complete current SHA before six fixed inverse edits, complete accepted pre-roots SHA after. No filesystem, Git, clock, environment or process APIs. Only immutable compiled rules are cached. Stale pre-roots input refuses; no fallback admission.",
+      "scope": "Default Windows --lib --tests, 148 targets, four threads, 780 seconds including compilation. No ignored/filter/diagnostic opt-in, compiler expansion, performance claim, GNU/all-feature admission, original execution, server operation or qualification."
+    },
+    "formal_whole_program_proof": false,
+    "inherited_review": {
+      "delta_review": {
+        "diagnostic_view": "Whole-document diagnostic compatibility predecessor reverses exactly the reviewed 2395-byte insertion. Fragment is inert include_str data. Existing five-path rules and fresh observation behavior remain unchanged.",
+        "git_cpu_target": "Two diagnostic children require exact single-thread child argv; default four-thread unfiltered package returns before CPU/Git capture. Ordinary cases inspect bounded vectors and a fixed include. Existing pipe_capture remains unchanged.",
+        "heartbeat": "Windows still selects the unchanged WindowsJob companion. New LinuxGroup import is inert on Windows; prctl/pidfd operations occur only in the POSIX constructor/methods. Linux subreaper cleanup has separate focused evidence, not default-Windows or production all-writer authority. Both fresh five-second cleanup checks and original origin remain.",
+        "inherited": "364 complete Rust source/AST rows and 42 prior auxiliary bodies are identical. Complete inherited manual reviews remain in the sealed V6 gate; they are not recomputed by the old lexical scanner. Two ordinary auto-discovered test targets are added.",
+        "pipe_semantics": "Self-only synthetic child flushes exact streams and exits before the libtest footer. Independent one-MiB-per-stream oracle rejects altered bytes/status/footer; raw captures are not normalized. Existing six self-child calls, empty/nonzero/large cases and absent-executable controls remain. No Git cohort is enabled.",
+        "scope": "Default Windows --lib --tests, four threads, 780 seconds including compilation. No ignored/filter/diagnostic opt-in, macro expansion, GNU/all-feature admission, performance claim, original execution, server operation or qualification.",
+        "security_graph": "Previously accepted three locked TLS/WebPKI/Tokio updates and two minimum versions; MSRV 1.88 and roots unchanged. Dependency build/test behavior still requires the new package result. No security-policy or product-nonregression pass follows from source review.",
+        "security_view": "Whole current-file hash, exact inverse byte edits and whole predecessor hash for four allowlisted source-test inputs. Cached data are immutable compiled rules only. Root lock observation now uses the existing fresh IO facade. Historical terminal rejection text is data, never executable. New seven tests use fixed historical Git, source/mutation/parse controls and expected caught panics; no worker or manager action."
+      },
+      "inherited_review": {
+        "delta_review": {
+          "history": "One exact current-input facade successor retains the old 9/81 rules, fixed Git command, full current-file comparisons and conditional IO. The unchanged runtime/history/cache code reads pinned historical text; no executable is revived.",
+          "limits": "The package outer wrapper is unchanged and still uses its historical cleanup, not this new Job. POSIX leader-exit behavior is unchanged and outside this Windows review. Cooperative CI containment is not hostile-writer retirement or production lifecycle authority.",
+          "new_target": "Four ordinary source/mutation controls; direct filesystem reads, fixed read-only historical Git through unchanged helpers, caught expected panics and source AST inspection. Descriptor is inert include_str JSON, not executable input. No service or worker release is invoked.",
+          "scope": "Manual default-Windows --lib --tests review, four threads, 780 seconds including compilation, no filter/ignored or diagnostic opt-in. Not compiler expansion, a sandbox, GNU/all-feature admission, a performance comparison or production authorization.",
+          "status": "The complete expected reader gains its fixed kernel successor and reverse whole-body check. This adds one historical expected-input lookup through the existing cache, not a removed fresh observation or a performance win.",
+          "unchanged": "362 complete Rust source/AST rows and 41 old auxiliary inputs remain identical to v5. The default catalog adds exactly one ordinary target. Existing protoc, temp Git repositories, self/Python children and scratch operations retain the inherited review.",
+          "windows_ci": "The existing twelve CI cases still launch cooperative Python fixtures. Heartbeat now imports the fixed Job companion: private noninheritable kill-on-close Job, atomic suspended job-list CreateProcessW, explicit bounded standard handles, retained original process/thread handles, membership check and one ResumeThread. Cleanup terminates only that Job and original child handle; root success requires active count zero. Both fresh five-second cleanup deadline checks remain. No taskkill, PID reacquisition, breakaway, service/clock/host operation or extra target is introduced by this companion."
+        },
+        "inherited_delta_review": {
+          "authority": "Five exact producer-to-predecessor text projections, separate current fixture entry, retired-main test text and fixed whole-caller constructors. Existing frozen Git-object reads/cache; historical text is never compiled or executed.",
+          "bootstrap": "Two selected document reads use one physical observation and an exact pinned predecessor before old full assertions. Other paths/IO errors unchanged. No bootstrap, manager, transport or child entry is invoked.",
+          "frontier": "Same protected input selection, original 9/81 gate plus twelve fixed source transitions and fourteen exact index/body additions. Current-root observations remain fresh; expected historical bodies may use existing cache. No runtime permission follows.",
+          "inventory": "544 current entries and original 530/446 projections. New producer data is inert JSON. Git ls-tree/ls-files/show and physical source reads only; original metadata/index/body guards remain. No writes to source or supervisor.",
+          "remaining": "Fresh-kernel and activation source tests retain their condition/read order and every old assertion. A seven-file exact caller-version join precedes unchanged old predicates; unknown/stale/partial bodies refuse.",
+          "scope": "Default Windows --lib --tests, no filter/ignored, four threads, original 780-second bound including compilation. Manual entry-point review plus complete pinned syntax/module inventory is not macro expansion, a sandbox, GNU/all-feature clearance or production admission.",
+          "six_new_targets": "Finite source/model/mutation controls. Added Git constructors use explicit read-only show/ls-tree/ls-files arguments. Only current_frontier writes/removes a supplied relative file inside its own tempfile root; no external directory is accepted.",
+          "unchanged_effects": "All 323 other AST/source rows and 29 prior auxiliary pins are identical to v4. Existing inherited self-child/protoc/temp-repository/Python controls remain in the prior review. No new measurement/host/clock/service/execution entry is enabled."
+        },
+        "inherited_repair_review": {
+          "clearance": "Bounded manual syntax/entry-point review only, not a sandbox, compiler-expansion theorem, Linux/all-feature test clearance, package pass, live original delivery, retirement or qualification admission.",
+          "diagnostic_target": "Sixteen relocated tests, no duplicated original authority tests. Thirteen bodies unchanged, one module-alias-only, two require observers/path candidate not installed. Source/pure-model/protocol controls only; opt-in cost/fixture entries return without inherited HC074_* inputs. Same original namespace/document module chain, no duplicate exported macros.",
+          "old_sources": "All 334 original AST rows and raw source hashes are identical to the independent v1 packet. Artifact helper, authority context, fixed-slice predicate and gate are restored, not normalized through new admission exceptions.",
+          "standalone_candidate": "Borrowed comparison exists only in the isolated contract/probe. Ordinary mutation controls require its rejection by the restored installed gate. No product path or skipped observation.",
+          "unchanged_additions": "The eight previously reviewed added Rust sources retain their exact v2 bytes. Pipe semantic cases retain self-only children and missing-executable controls. No allocation/timing cohort enabled."
+        },
+        "inherited_review": {
+          "cleanup": "Evidence Windows job/heartbeat/canary cleanup owns synthetic child handles/trees. Protoc scratch replacement is confined to repository target. Modelled service/cgroup/clock commands are source strings, not operations.",
+          "dependency_api_slices": "Supervisor packet/archive build/verify/sealed permissions operate only on supplied temp fixtures; builder load_policy/decode_key and authority constants are pure byte verification. Linux-only local_context/local_files/intent_journal refs are cfg-disabled on Windows. Loadgen profile/budget/overload and fault-proxy calls are data/model validation, not live runners.",
+          "library": "Unit roots inspect fixtures/validators, not CLI run dispatch. Python generation invokes only vendored protoc into target/hc2-python-generation. Registry/evidence/canary executors use self-only synthetic commands; probe/measurement/venv/Maven/curl/verify CLI routes are not invoked.",
+          "macro_review": "Standard assertion/format operands parsed; remaining macro token constructors are Git reads or negative missing/must-not-spawn controls. Quoted source is data. No include! implementation edge remains.",
+          "test_processes": "Git historical reads; owned synthetic Git refs/config repositories; self-only child modes; Python oracle/collision/caller pins; heartbeat child controls; report/normalization/lock-sync scripts; two exact xtask admission/report modes on scratch receipts."
+        },
+        "reviewed_ast_sha256": "2552f3a6d96786433ea27b111a3f9f3b7274e82446634d68ca7d49090e24aa54",
+        "source_effect_review_complete": true
+      },
+      "reviewed_ast_sha256": "95441e92c2072e08c34e73b4dcfe59d66ae7fe6728b014d54f3c7c15dc4be8f7",
+      "source_effect_review_complete": true
+    },
+    "linux_or_all_features_cleared": false,
+    "original_execution_or_product_or_qualification_admission": false,
+    "package_dispatched": false,
+    "package_pass": false,
+    "previous_ast_sha256": "95441e92c2072e08c34e73b4dcfe59d66ae7fe6728b014d54f3c7c15dc4be8f7",
+    "reviewed_ast_sha256": "68339f045870a9a106058c2e12c6403ac32bab4ee9ee220c12aceddf82528c81",
+    "schema": "hc074-package-effect-review-v8",
+    "source_effect_review_complete": true,
+    "sources": {
+      "crates/xtask/src/bench_budget.rs": "037c4ebfaf17da39bdb75bef681d5e1a1c6bcc3ef5b5bf3b81bb0b838f5487ce",
+      "crates/xtask/src/canary_check.rs": "32a8ccbe6820026094dfe92711933c6008ca02d5a7dec1fb36cdb101c4c4e245",
+      "crates/xtask/src/canary_sweep.rs": "dbe780be06de90b93c864c377eb67d75c9050f5c6dfe577ab70a9660248b4bd6",
+      "crates/xtask/src/ci_admission.rs": "c94458899e44a01059fa161a5fb9b457437bf2b2d694178db66bdc35bafd709e",
+      "crates/xtask/src/ci_topology.rs": "b2bfcf8d6be890965e367e0461cee995f94746caac15d9c69b65f756f6e5cdfc",
+      "crates/xtask/src/client_conformance.rs": "88664e75e0d0b376f3ba75188f14ca1d1290d3b840b03ab0697e473ef91a6039",
+      "crates/xtask/src/client_package.rs": "5e3548498872291dc7a805e79bb9c1a66088699a70358bf423302872a19d330e",
+      "crates/xtask/src/client_plane_bakeoff.rs": "65f91a07c4ffe248e69fdfd9a903aae222b9c4c07c9b20d150f42874e7c02fb4",
+      "crates/xtask/src/client_plane_ci.rs": "2d0cb796be542cf5c5256ce7e2b74312e6240ad1b4dd43ba6aa71935913afdf6",
+      "crates/xtask/src/client_plane_compat.rs": "dd733b4605ac3d7cb5b48533c9e72987be1a4c4d3555ca059a93cd3cc4280f31",
+      "crates/xtask/src/client_plane_fault.rs": "3d7c4d11062e789749cc73da73996f039a026870d73ff7632ac5d67eafe2b4b6",
+      "crates/xtask/src/client_plane_generation.rs": "d47e64168d0c9a937544db3948a1dec715d590b5627591078a2d58a9f69a98cb",
+      "crates/xtask/src/client_plane_java.rs": "3590f60bc5be9001f95707b613d1bdb6f230778fab281b1b8dc53db137e6a8ec",
+      "crates/xtask/src/client_plane_python.rs": "164516904068958b4a89a8fa9bcd986e966b83a27fb093b41478d9328f918853",
+      "crates/xtask/src/client_plane_rust.rs": "7617b39174ba7e4839760929759b1ba0d9bfb0a68a8b0817046fc5171ca97925",
+      "crates/xtask/src/client_plane_spike.rs": "1a22a334a8fc2a015cb10301dc13bf750bd2f8988b98ae6ea49035b6f3ced140",
+      "crates/xtask/src/client_schema.rs": "8128af2acfa0be0295bfb6762848822fbfe672bb327ac87a3ad9e377672ba9fe",
+      "crates/xtask/src/compat_check.rs": "a7208cb033a51d34d9b05b90258a5d7748ef693064833cc6990e584745d2cd85",
+      "crates/xtask/src/coverage_ratchet.rs": "147efa1b750d5f5ecfbe4ec6b6115e863524c2b7691705404a98c7723375e737",
+      "crates/xtask/src/determinism_sweep.rs": "6563927aa81323f29bd4a9f12a1cec62e86a1fd700656b4aba6c0f926b7342b3",
+      "crates/xtask/src/doc_check.rs": "83d2f2cc22508669c9c5cd8024ede7c3975a5889460892f24d48eb4f19dbda0d",
+      "crates/xtask/src/durable_inspect.rs": "f17c500c9b730adeade1875b2e071b50f3c7463e51f5e6a55720df3f61131857",
+      "crates/xtask/src/evidence_run.rs": "7fe0166119f0099bd05be3939ade563992b6c84964aa4aaabf3f32022bdaaf22",
+      "crates/xtask/src/evidence_run/windows_job.rs": "d5c5463f3b77e8c6e39bc9c47f7f217c2bb2ffe3c3ae3d2fe0e6071a5dfb33e9",
+      "crates/xtask/src/fast_suite.rs": "11849d6ee9ea71ea1f1f8d3d2a557573f62ab29d71b96a82aa001c34c05e53b2",
+      "crates/xtask/src/feature_leak.rs": "f0264b376901aa886da5df851040a79b84e80f1ea06082c0f21e0ea4cc80d50f",
+      "crates/xtask/src/gated_tests.rs": "18e1ac7ecc134fb19627fe338d839cc2d2ad8f16b073a94a53d2ca40d3d21c0e",
+      "crates/xtask/src/host_attestation.rs": "9b70a00fd8c0440ac92cc73b652f257da5a2e73f4d633277283b07e2ddbd3019",
+      "crates/xtask/src/lib.rs": "27e15b43137cf5b36139446d343f0aa242272bae1c0ea36081deb7ff71138efc",
+      "crates/xtask/src/long_run_campaign.rs": "5e0c0897b163b73f1f2f79a38d3f6058790b997a8a1dd884e79189ec5de0b9e4",
+      "crates/xtask/src/main.rs": "95f70dfa53430ad17adb8ae28163675eb83d636303f715751b675da5535a6d82",
+      "crates/xtask/src/management_center.rs": "e7ac7e7636a93a608f47fb08d9caf861c589c42c705753818414d5c2eca815dd",
+      "crates/xtask/src/memory_baseline.rs": "73ecaf554d35184fe7dd7c46d2e6cb3710b2818ff8ef02128e65c2bc5a1d870c",
+      "crates/xtask/src/memory_campaign.rs": "34a7d3669d83275fad21d43df915c606c457c8c03daea40f9e7f62c3909f6316",
+      "crates/xtask/src/memory_contracts.rs": "567ed6af90a369bcb91bbb07519d36e240e926a14e9d6a435552b835adb7416c",
+      "crates/xtask/src/memory_ownership.rs": "6a6566cff2cd6198364ef0fc5ca90efd580432072f124114a9354ecef03175f5",
+      "crates/xtask/src/memory_statistics.rs": "d827b8067267683b7382b5274f744f2624d21218207c889ba32f1fd19d95bbfb",
+      "crates/xtask/src/migration_conformance.rs": "188536ef1d5b785b101d8c7cb58a1a152a3ef8cce9155a69c800e2eacdfbf75c",
+      "crates/xtask/src/miri_check.rs": "3742f39d78c78a1b6e6cc9e035eba9b2003565b4922df80825369de4198476ef",
+      "crates/xtask/src/mutants.rs": "117ccd32e6ecd60d398b01cc208232bf587f183193f48f9773cd3db63e3b2fbe",
+      "crates/xtask/src/perf.rs": "63218eaa9c6adf1aaffb88940659300164254b8d885ce484fe104fde7a595db6",
+      "crates/xtask/src/perf_bootstrap.rs": "2eca0bac33ce18c33197dba830729ab121a9e4ed24ea506d065c8239f29acd01",
+      "crates/xtask/src/perf_budget.rs": "51bf1881c52b343ecffb313c444327e57f811724dae22858ffd1e320c1e645c6",
+      "crates/xtask/src/perf_full_dress.rs": "4019ce6bc5138e4f1788e18aa531bfcb74477e988ee5bd6e4e11f099cdfdf811",
+      "crates/xtask/src/perf_qualification.rs": "327ac931d8b2aa7d8a3590ae90e2cecb24991edad9836fd7cc788c62cd75f947",
+      "crates/xtask/src/perf_reference.rs": "0a967ded28008e2b063622f3f8e5590b6240411b152008d853232a211cd66711",
+      "crates/xtask/src/performance_contract.rs": "d227c9663312ea49df7e80bdf1e670261582433ecb58e9ce2ecdc47a3e806420",
+      "crates/xtask/src/performance_contract_074.rs": "1d0d5d46037774871ab014bf67cb435b7a67cf6826f38c57ce077d68d82d0206",
+      "crates/xtask/src/performance_local.rs": "d24f8e781a44d0f52f375d0bc83059518fb7a12cc975cc686b8c874d8f050231",
+      "crates/xtask/src/performance_overhead.rs": "4fa1e895d432b6e3b98f5d414d3df3cc607cd41006c793c56353b0f7d2a3739c",
+      "crates/xtask/src/quarantine.rs": "eedd06028713ba2a848776fb7b58a518a80cbb5dc78ca114de98bf8b03e693c9",
+      "crates/xtask/src/raft_spec_check.rs": "871518a1d57a1b749ce95245ac08dedd1ab2dc531dcc8e5c05d79c3f5b11db24",
+      "crates/xtask/src/release_evidence.rs": "270c2566cd5c076783aaf3304af07e21b434324239268108de31e29e6d181cc5",
+      "crates/xtask/src/release_governance.rs": "5c0fa8c1b768c7ded28add3f4ec0d9666914639249eb6ae4550c80b2814e60e5",
+      "crates/xtask/src/tsan_check.rs": "3c8174f8421a255a29a3d2dff5bdb953ee294f477ba462542dcd3f2146b515f5",
+      "crates/xtask/src/verify.rs": "8275b2093464899319bb5de2246ec8893e872ebf67e91d1bb4e2d65ca3a41918",
+      "crates/xtask/tests/allocation_copy_071.rs": "ad8e813053944554d4b4daac14377ca530b0f2cf6d28e161b04bc19d25bbc92b",
+      "crates/xtask/tests/allocation_retention_070.rs": "64d163bd29789303cf957341af1b887d97aa0b69b7abcb87823bd32eb85f44ce",
+      "crates/xtask/tests/allocator_matrix_071.rs": "80202b7a7a8f37e8c1aa527595b70c68f5dd792d3588e3f17513d91a94fef8d1",
+      "crates/xtask/tests/artifact_inventory_phase_544_074.rs": "83b801e8f21b5d20ef1d92649450f364438ea9a7259d37b14e7cc2ace04b4344",
+      "crates/xtask/tests/artifact_inventory_reader_074.rs": "42b8a38942c40b66d5df580afb1a001802c0a7a235347bb9c458679f130909c6",
+      "crates/xtask/tests/authority_breakdown_074.rs": "2ad1c786d0a65efc7b13b6484de5df1b5deb364a8d219c756684ad7baad6fd39",
+      "crates/xtask/tests/authority_context_074.rs": "7370e1191e9bdc51977abe59b241dc7904e5048b597ca9bc36c5d08d751dedc5",
+      "crates/xtask/tests/authority_cpu_074.rs": "4ae9a323b46e930a854be8590ab1008c8c7afd614ed7d82c435f3a5febe9d8ef",
+      "crates/xtask/tests/authority_expected_name_074.rs": "40c9584f5d86f26f3f6d6f1dfe0bffc10f7c561e5814dc59c227b95dfaca3839",
+      "crates/xtask/tests/authority_fd_path_074.rs": "e7124bf719108742fe3c963bdb5860e73030f03b99e5814f527f8338bdd26c8e",
+      "crates/xtask/tests/authority_hex_reader_074.rs": "8583b415df7c3f88881918b9d7a9528ca66e212f52e27159e4b3e09eb106ae84",
+      "crates/xtask/tests/authority_inventory_074.rs": "31ad34b63d961b587823f144e5fa438e1bd4383e66319e9c5479911301386096",
+      "crates/xtask/tests/authority_key_hex_074.rs": "e6099a84dae2a372c728245d4437c899b52d5e3235bc349e0725596951ccfb29",
+      "crates/xtask/tests/authority_leaf_cpu_074.rs": "98eda69c881deb82eec129b67c9e60b437ca9538fdd3f76fa1d148671b5d157f",
+      "crates/xtask/tests/authority_leaf_name_074.rs": "9adfa0697b6479af0b965d508195434ca0d1b523ace0c816fb9e16c11ecbf4d3",
+      "crates/xtask/tests/authority_name_capacity_074.rs": "d9a6de49cf11eae9cecb65eeaa9c6ab15da5f7f1ed0df10f1f97d8b9c8c08fb8",
+      "crates/xtask/tests/authority_open_name_074.rs": "4335605e698ceb16fe68468e48a95590f77a838be0421b477921d58aae6193a9",
+      "crates/xtask/tests/authority_operator_order_074.rs": "36c433c16c97ba484fd5df93c4bd4a4e3b3884bc436d04b967a4c5430504fbf4",
+      "crates/xtask/tests/authority_owned_journal_074.rs": "f57127bdcc7c9488ed6a6c6955d8cfa3bdc6131b39f229a94c2ce0f00951dc3b",
+      "crates/xtask/tests/authority_owners_074.rs": "d19e6730c3b91ef34894906ff1767281ae278aceebff39abdeca70a0de8b54cc",
+      "crates/xtask/tests/authority_read_baseline_074.rs": "b006894092b3e34fb882dc4dbf3b750c0823682b1615fd1fd6644b0216b0a091",
+      "crates/xtask/tests/authority_reader_phase_074.rs": "04b3d1c95ec0a5ecfedf89a880e01c9a4a9cd843bdbf5118ce8fcb2f1da248f4",
+      "crates/xtask/tests/authority_runtime_074.rs": "fab409c900b1e3188d9ea5e4aaa40a2a33dde2c656dcf8e8b37dc522f82ebc60",
+      "crates/xtask/tests/authority_rust_history_074.rs": "9333de6f4dff9c470eadff2a97dc3434ae8a760e51ec7de2b6256903ccef07e1",
+      "crates/xtask/tests/authority_scratch_reuse_074.rs": "27bc45fbaa465fba55f3d006ee1debf774ac73d91e641fd51023842eb7e2185c",
+      "crates/xtask/tests/authority_storage_source_074.rs": "c96e64cf98bfcbbeb91611b84763754924cde4d11ded091f365799154f0c0a5b",
+      "crates/xtask/tests/bench_budget.rs": "e524068de42847f9e543abec5e0a3cf708e46b1aa17ac7f6d432e2e61518abc4",
+      "crates/xtask/tests/boot_operations_074.rs": "fc9055e9d4696aadf9c869e7ccdc56ce4c4cb608a91ff194cfec951e9728499b",
+      "crates/xtask/tests/bootstrap_build_owner_074.rs": "61b2a36945b470de67c57da90c2a85169c88fd1c626fad5b076f38353e2046bc",
+      "crates/xtask/tests/bootstrap_child_boundary_074.rs": "2fdb8eccff508532bb30173ea5b1cd8cb7fb12b1c52a3f9b2ba61626e6c7a739",
+      "crates/xtask/tests/bootstrap_child_census_074.rs": "74ab14264aece844010f5ccdc82c99b06c07be3b3fcafc3d7285d438cd08f204",
+      "crates/xtask/tests/bootstrap_child_reader_074.rs": "88a89f705032085c50906c7e06f60411c1cdd91f029ef140ebe42157465f8523",
+      "crates/xtask/tests/bootstrap_current_image_074.rs": "435cc579ba5fdd856dae104835e5c298232fd4dbdb03a88b39ee812646b625e3",
+      "crates/xtask/tests/bootstrap_doc_reader_074.rs": "586e748182ddc5ad701b85da3d35b55483e43e037dbea346036ccad47aff7aa3",
+      "crates/xtask/tests/bootstrap_enrollment_074.rs": "0fc78fc37c7c98d45cf878ffac6a4dcbac2601ec0f92563e9430c9b051a6fb9a",
+      "crates/xtask/tests/bootstrap_entry_binding_074.rs": "d1e1018fa96cc863e72610a38d8e67a91ea50e75a55e77c4ae11369ff2423140",
+      "crates/xtask/tests/bootstrap_image_census_074.rs": "d1a654883f3ad9d906c79dbc1a13637816e5cd7c5354c536329e7603cd7b2953",
+      "crates/xtask/tests/bootstrap_installed_origin_074.rs": "1913c9a0dc47701b999b8077ac55fc302b4c9264d21c48f79a530c385224d21d",
+      "crates/xtask/tests/canary_check.rs": "9b3ff2ae4331c78978dfa07bf9b08a4b479eebcfcd57d3d45c17ff6627f6318e",
+      "crates/xtask/tests/cancellation_safety.rs": "c77a577d961a5844e6446c7173d407d57e88d896ece377477de90e3ae2967abb",
+      "crates/xtask/tests/census_cost_074.rs": "6f7362107e8ad1eabd526388586ecb7b1e5d74d83b8a7b343d9099df2ab54346",
+      "crates/xtask/tests/ci_reliability_071.rs": "139ccba78844ab057e6b8a30a0c2082413e78b566cbed87d1a1c19d4321e2dd0",
+      "crates/xtask/tests/client_plane_ci.rs": "2b54b3481e0e24d0988059d10ca403a33e352f522ad1742c2f23cadb109b7224",
+      "crates/xtask/tests/client_release_068.rs": "cf97af9029c33edc6e0f9e49955ae427e55b32cb5c002ecbc10fb7689837b9c7",
+      "crates/xtask/tests/collector_peer_baseline_074.rs": "f5e71f9c9dc81bbd3fb89f93bd9941cf739c2373e516843514f585818d8cea24",
+      "crates/xtask/tests/collector_peer_capacity_074.rs": "7223e09138b0126467a0055c446cf19b30d874e2c352a8e7c9ca0fe9b8b81379",
+      "crates/xtask/tests/context_document_baseline_074.rs": "bcf3df1e0601974db1f3f3504c2a7b14ad4caf67a8ed2b8098645965ab90af31",
+      "crates/xtask/tests/context_document_stack_074.rs": "be9e4b34180b5272cd65a93bfd015306dd8be842862fee2a1cba700b313c25e0",
+      "crates/xtask/tests/cost_phase_reader_074.rs": "feb429fc9af511d1c26bf114378cf0896ea0ac62fec0de2e0d8f19d3f9f5041c",
+      "crates/xtask/tests/coverage_ratchet.rs": "99589c239866e20189e55c719223d9fea1fa56c9223bf879cf80f50d33cd5a34",
+      "crates/xtask/tests/current_frontier_074.rs": "62b2b19f1c71cd9d3328e63aac6c300cdf85f80204047bb4ffac5c02a8a3c784",
+      "crates/xtask/tests/current_tree_input_audit_074.rs": "99f97a36d1bc3e974dda573da731875f1d7af511dceb30aa7c6e2bcc101418cb",
+      "crates/xtask/tests/current_tree_reader_074.rs": "8354282f75a1cff07b5bdad8c5ecf50e4fb50d24e26a6d5a53935d4f8669b89d",
+      "crates/xtask/tests/custody_preparation_cost_074.rs": "71a81eccf4595f2d99fcfe51cbe731c50097014ac32fb37bac89444cc6d0c3cb",
+      "crates/xtask/tests/custody_reader_074.rs": "ce7dd421e3acfdd79f62a3d3caca38670b42eabf3712bdd81811422cdf7fe9a1",
+      "crates/xtask/tests/demo_static.rs": "523c94ff4f5f84009b91c696ada570334b7a21a4a487e0b710215e08ddefe506",
+      "crates/xtask/tests/determinism_sweep.rs": "63303d586aa84bbe77b6e4fe5073f6cd5f2102f7965f4307f53f89d8b2995400",
+      "crates/xtask/tests/diagnostic_artifact_fixture_074.rs": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+      "crates/xtask/tests/direct_output_cost_074.rs": "17ece7e0fb740aca1a0626a087427b24e0126a793361099eecbb67f15ea0cd1e",
+      "crates/xtask/tests/doc_check.rs": "5430bd4a60b8dac57bb53e7ac3ce652d28d09b65582419cfc3cbe1ea642307aa",
+      "crates/xtask/tests/document_scratch_cost_074.rs": "3f221c36780e053481009987b27bda38f69385d55ef778364882030ef856248c",
+      "crates/xtask/tests/document_scratch_reader_074.rs": "d5307f1ed3aff36d9257c183c77ac0ab5a856a09cb4c7c99e649ccbfb94bce79",
+      "crates/xtask/tests/evidence_run.rs": "4ca309b854146459fe384d58b050d039fc8058f52c90e631715a5422b06a0e34",
+      "crates/xtask/tests/fast_suite.rs": "5c310eab0201efc1e3446946df0f8b6f54b6c8974c48c6772aade01d84d741aa",
+      "crates/xtask/tests/fresh_kernel_cost_074.rs": "5d96ab2d3de23744fcc8970efcf8fd6add4a62bb7af8eec3deccb649a095667b",
+      "crates/xtask/tests/fresh_status_reader_074.rs": "257eb0bd04c5bc20b0b37625f33c45a6dc6b56e95b7c8b3d71851f07b3ae88a9",
+      "crates/xtask/tests/gated_tests.rs": "1f05d72c6ac7ca78ea7179dff4cf1ef72871f5d806617895c8608717e709ca1c",
+      "crates/xtask/tests/get_owner_terminal_074.rs": "b825d466e1b14dd50c00ba520e21aa1fa42835a38fbe4112713603bc1d534d19",
+      "crates/xtask/tests/git_descendant_cpu_074.rs": "b9e775a0a63662b364f544c01de58ca9b1f90b521e7d2100440976e276da2624",
+      "crates/xtask/tests/held_activation_ingress_074.rs": "e895b3f0fe09678d39201840124742a18ce2aea98045006c1dd3fe90c9a53541",
+      "crates/xtask/tests/held_bind_alias_refusal_074.rs": "34cf73ac411bfc0f052981021db3cb6ade88a4af807228936af55cb77bc1e517",
+      "crates/xtask/tests/held_complete_role_census_074.rs": "afee11f16f157f7ef9cbc254950fd0b853c8ee7ef553a92981b0fbf823a302a9",
+      "crates/xtask/tests/held_material_074.rs": "9b698fac07fb430c5ec9d015edb7620d15f3bc38f36b0a07bcabbec7929f0e25",
+      "crates/xtask/tests/held_material_live_074.rs": "e1006e3be18068155619749464f50d461b6d2e3a0b35c633d21a59493a742494",
+      "crates/xtask/tests/held_material_roles_074.rs": "dfb789b3c9a3ab9403812846d5a5729b59ad641b94db567f2aea38c271e491c0",
+      "crates/xtask/tests/held_preparation_cost_074.rs": "2567678853fb35be818ff18c3387fcb9d488b3cc2fa661902e952e9b80692af5",
+      "crates/xtask/tests/held_unit_projection_074.rs": "5e59da1d1b782e7cd008051ab07b00f140efa05447bd8b99be5de7f85248e5ab",
+      "crates/xtask/tests/historical_blob_batch_074.rs": "01c4c8504c74aa00e22fa02348e78e9fffe75668a04a56f126de5e2751c390b2",
+      "crates/xtask/tests/historical_blob_caller_074.rs": "a356543355cfb69bfe01143dbf8531b056281383a2375bf2f71b46f81c3e2ce8",
+      "crates/xtask/tests/historical_blob_fault_074.rs": "a8f509605a36b48c87e06e00695ebb7863af13bc8d26129bad119ead40322ee2",
+      "crates/xtask/tests/historical_blob_transport_074.rs": "df7c69dff0814806426cb9a775a4945bd0c5262bd334cb924eddec041a8627b9",
+      "crates/xtask/tests/historical_input_view_074.rs": "4d5b7bc62cccc129367f6b6f86a5013588b933a6c25c58697112ebf79510b420",
+      "crates/xtask/tests/historical_source_cache_074.rs": "cf9fa46495834f306cc79d018a13651e13538f586035177246179e0e3bd1297a",
+      "crates/xtask/tests/history_status_readers_074.rs": "0c4b01d77f9808e3170cb7703231a4c380bab5c6db439afa7ce6b0b9aeea9e03",
+      "crates/xtask/tests/long_run_campaign_074.rs": "b1764838adb1579d6cf8da0d0990d2c0b08dbeaf1ec58eccd352c23c5540e3d7",
+      "crates/xtask/tests/management_center_072.rs": "3cc94c0a27c429bffee215b35aa4b908c860d2388202cc5ef36bb2e80340ac33",
+      "crates/xtask/tests/management_compat_072.rs": "c5dab38288328757ebcd3064fd8a38b1cb1a7279785a617de4295f9f4775e2ed",
+      "crates/xtask/tests/material_lock_fixture_074.rs": "41f71639f41cadc771ad2a141ff3ed6b5a2443d344dff929f2d3a04553703a6e",
+      "crates/xtask/tests/memory_baseline_071.rs": "8fef91cbf09acb80577587d6ecd0c0667617e48789bb29a9b3188d2f845f89cf",
+      "crates/xtask/tests/memory_campaign_admission_071.rs": "883bc1ed810fbb0b09602583b24264598621be77ad7a9e70326d1e0ee1cd24b6",
+      "crates/xtask/tests/memory_compat_071.rs": "bad6709e70411838071d801a257eaf4c3b5a80a71960f5cd42b8331f37fe1337",
+      "crates/xtask/tests/memory_contracts_071.rs": "98b7d4ed6933837ffda01b3e216c62d9689776c18eb04c01e391d58e5511d540",
+      "crates/xtask/tests/memory_decision_071.rs": "e6b9af7f3b4ee2c2ef62b117db85b67da0368922b9baa3d6927d9e35a05bab78",
+      "crates/xtask/tests/memory_host_profile_071.rs": "0c3c6c21490314387a069d51739e1d5b7c93ad917ae5248c79bf3ef3a1e8aca3",
+      "crates/xtask/tests/memory_ownership_071.rs": "d9ec47d4fc163e183bdf83cfd578e168d68fea46cee4e599d15dd25156a70ea5",
+      "crates/xtask/tests/memory_profile_071.rs": "f8943b0f122fe24d6476246d563bb8792a9429d3d652afa35f7dd3bf98c5254a",
+      "crates/xtask/tests/memory_regression_071.rs": "3ab230aa8ba4b73707b0c5c73326b968844e7c1be24b65e7f29ccf283ad7af05",
+      "crates/xtask/tests/memory_statistics_071.rs": "8ee814d4978f6de23182ff5f4006beb848e1cdf02c7f9d72670a3a2472e0e5c8",
+      "crates/xtask/tests/migration_conformance_069.rs": "4ca4376a75f27393507de4d89957c87ea4e8b15c7e2a21e5bdae41d77d3c39d4",
+      "crates/xtask/tests/miri_check.rs": "03fc88efc984850df094bff397b3b21cdcd7d4affb2aede1b904bd76c0599641",
+      "crates/xtask/tests/mutants.rs": "73468bba1ca5c2b6c55e3020cf2da7b21ada828240bc5699d78e0344474559b3",
+      "crates/xtask/tests/owned_case_074.rs": "6161ee41edfbe03b2390a33fc0d7783ec3509f98a52a1f013a914f467e650120",
+      "crates/xtask/tests/package_diagnostics_074.rs": "6b7c8ee178d4e849feaa20d543813564a14dfa2e378cab663f52082b454f87ff",
+      "crates/xtask/tests/perf_attestation_0671.rs": "04a816ae0ec28a2f0185814390681b63af8f788d0975579d28294cebcc162ddb",
+      "crates/xtask/tests/perf_bootstrap_0671.rs": "9e12d3dff6ccb92329bbb5e64e809f9b41d322ca53f58f40ca2f31aabc0f51dd",
+      "crates/xtask/tests/perf_budget_067.rs": "da6af8e3dc3d8e53e239a4da1790eb087aeb57dae36d25769eaeffb71e96e6bf",
+      "crates/xtask/tests/perf_ci_instruction.rs": "9770779a87592e17d60f0e9faaa55cbf820a3f5d524e7acffe1fc51792490e1d",
+      "crates/xtask/tests/perf_exploratory_harness.rs": "0eb3dee2d86245f282f02ab15dd27e7e7ac9c63c9f3f84f46c1ede8560fef9c9",
+      "crates/xtask/tests/perf_exploratory_reports.rs": "1cd3fd588550321775dada952459a47ea4a7d70c16fbd31cef1f119151c41397",
+      "crates/xtask/tests/perf_full_dress_0671.rs": "ac086d1382a9683b60184a8bf0b98267e08748950abfd7dec757595c35e8d5d0",
+      "crates/xtask/tests/perf_host_tuning.rs": "3c21ddbdeea6e5c0d281e70501e99c11790f726ebf74393661648c702fd6c61c",
+      "crates/xtask/tests/perf_local_orchestration_0671.rs": "339b792a2ad1c64bd09c7fcc864d4a986fec036a4aed4c8686c348528b6ac37c",
+      "crates/xtask/tests/perf_prebuild_067.rs": "6fbe4ada51dcd669287c1088f9638461df1d7c4815f2831bdd7b6acccadf5812",
+      "crates/xtask/tests/perf_qualification_0671.rs": "81c5f292084c73ddbfe067d8be3d18af62cc2ef24fd2bbcb448a44ac95e8e519",
+      "crates/xtask/tests/perf_reference_0671.rs": "c09714b16654d974bb9eb247a54730babd90feed6ab128c1db7b4530d2a945b9",
+      "crates/xtask/tests/perf_runner_0671.rs": "44e05cef5cb2584c95930169d74729fcb440f0429c4c6f022199006951dd2d36",
+      "crates/xtask/tests/performance_contract_067.rs": "c2401d8c3c1231b1abbf8e3c5f59b20f156a628017a878d9c90332638846cc58",
+      "crates/xtask/tests/performance_contract_073.rs": "08fed23c274aa925d8f5fe16dc243b7a4103ff2f254fc18c28a93b156c633fe8",
+      "crates/xtask/tests/performance_contract_074.rs": "0565355c592d59d49a7c2a1b1631f10711ff5d6101e42cf50925261a6e4bed6c",
+      "crates/xtask/tests/performance_local_073.rs": "cbc5c6c4bcb3e4617ca4e0b10da2125b30b6beb729d7418a648c15f4a5f110ac",
+      "crates/xtask/tests/pid_path_cost_074.rs": "1bfc08e9169bfedbfb08c4fcc9d74525ababc380818b5664ef0f06448b1acffd",
+      "crates/xtask/tests/pid_path_reader_074.rs": "95e25ceabd235cf335e39318afaee5aee5f6c0f7ffe70b7c02dcb6615d9961ec",
+      "crates/xtask/tests/pidfd_info_path_074.rs": "19481fa285a2d886e2b74d8ffea1c93ed16d1c5bb06978a5968c54886b724124",
+      "crates/xtask/tests/proc_document_baseline_074.rs": "45d8af0a90dd8054163e956accb1fcee0532b3ab65d081e1c832b334b3bf2035",
+      "crates/xtask/tests/projection_groups_074.rs": "855956f0bbf1a46c094d7fe4ebae632aa613f72257ad2dfea6798e3bc037c47e",
+      "crates/xtask/tests/quarantine.rs": "bd6cfb1c4b781b277a5ffc2e0fe6d6d2bc4ba4fbbd2ed9dfa0e3de5caf0be004",
+      "crates/xtask/tests/raft_spec_check.rs": "bc16bd25b31dff69465ad87892b52bfb1785e58111bed6c32c497d8b4d35f8f0",
+      "crates/xtask/tests/release_evidence.rs": "2d26d9a8c64cb3aa88a4d52ebe7b013ff5e6ad3349303428ce78e321e8de300c",
+      "crates/xtask/tests/release_governance.rs": "e70593335000f36f563751a1bac2e525bf005acfa6cfb430804f7c674a5e5b23",
+      "crates/xtask/tests/release_governance_071.rs": "9f0a7ec8d88539038a3bc187de475a9093415b84d538d6679f9c99a2aabf486f",
+      "crates/xtask/tests/remaining_preparation_cost_074.rs": "364638656cc7382df97a0ddb9f1540c3fcf62d29bee00a2c89fe43369494179f",
+      "crates/xtask/tests/remaining_readers_074.rs": "c18d2549236de288609abd7d001b080f50f7de802f54da78f10471eaf8ff6428",
+      "crates/xtask/tests/role_census_reader_074.rs": "ca4d941865dce310bfffb097304ab4ad2d27eb494a930217529d05b4a8fa4994",
+      "crates/xtask/tests/roots_lock_view_074.rs": "4f7cf4dd250d916214df1f601a18ffc3fd2c9291fea78db05919ff83e490fc53",
+      "crates/xtask/tests/sample_boot_baseline_074.rs": "971d6aa66e4baff3c73cca4f3e10e2d8e5f3dd242435005147c21a5371adea40",
+      "crates/xtask/tests/sample_boot_inline_074.rs": "cfcbf9b20ba2c6408fc9a7e12e055c029759af5ed1c863a52a82f6421b54b9f3",
+      "crates/xtask/tests/security_input_view_074.rs": "3949cb1c59b0226f284c30fb7925798334db1611116387938606aa19c1004486",
+      "crates/xtask/tests/source_successor_view_074.rs": "3e1ff0e727d676ea84879282e251c46358acdb8f30c8ee14b9ffe39371097ff3",
+      "crates/xtask/tests/starting_effects_cost_074.rs": "acca1d951cd7e4fff92a09a5bfaa69eaa7f496c7e931a60e24bf8e01f0396eaf",
+      "crates/xtask/tests/status_field_scan_074.rs": "86279193401db2e26161833d6d039e054322a4a7808b9224d92deeb46c2a5b95",
+      "crates/xtask/tests/support/artifact_inventory_input.rs": "050bec3b7dcdc169ceedbb4a6933c6f52c6f5d39aea4c241180380cbf8327605",
+      "crates/xtask/tests/support/artifact_inventory_phase_544.rs": "592a3e359201323501f87301bce55e385c516527097db4220ea517dfc0318df9",
+      "crates/xtask/tests/support/authority_breakdown_guard.rs": "5b94c70acee6ca77b184d6c7f44f21ebb8b3fdc462d87e53a5b25e906f4fc49a",
+      "crates/xtask/tests/support/authority_context_guard.rs": "95bac9a9428c084922a4d51e6454268b0aad3ac8b7db7399d36460fb65ef33be",
+      "crates/xtask/tests/support/authority_cpu_guard.rs": "d02d94c60ea4caff6cf79d20825a920c2e54e32c225ecd0ad66bad6ae16ec318",
+      "crates/xtask/tests/support/authority_expected_name_guard.rs": "5a29d5aa6f6b9c78f2709c79badf1fe8c7556b6e785544ab09b5eea0050c1285",
+      "crates/xtask/tests/support/authority_fd_path_guard.rs": "b7411255123b213837426eb56bdaba4afe80aab27615416d7538b78beceb9706",
+      "crates/xtask/tests/support/authority_hex_guard.rs": "683741191e50c3760cd523714babed160279a8117c79b7ea79a512d77315f890",
+      "crates/xtask/tests/support/authority_history_io.rs": "3a31e59c10654618036d6980f3e14cb3a19db72843331d1d74eefffc3fc6698c",
+      "crates/xtask/tests/support/authority_inventory_guard.rs": "a8088c1b58770f958607bc62f4828940716962e258204848a33b1b85a9ebd631",
+      "crates/xtask/tests/support/authority_leaf_cpu_guard.rs": "3787f8d47cd58767dc144c2f2c4d7dfda76b95252a6b77d640f539cdf10ce914",
+      "crates/xtask/tests/support/authority_leaf_name_guard.rs": "e8b8695ff3934be2fc8be248efd9b0378e30a3cf4462319e42641b34857f8c8f",
+      "crates/xtask/tests/support/authority_name_capacity_guard.rs": "ffd4637b7236d7b0497d160df6388490e850a6b6a75ce85a295bf877fca3b75f",
+      "crates/xtask/tests/support/authority_open_name_guard.rs": "5eb0e0f3b73d2e71011552e36c4157fee461075b584fa8487fb8416738179e9c",
+      "crates/xtask/tests/support/authority_owners_guard.rs": "3fdebc8a98fb3b522700876dd55b34f427298c8856c196182eff4d48eadf5e34",
+      "crates/xtask/tests/support/boot_operations_guard.rs": "7f5d5f70ca9289105ec4bd46baf86990b13a879f3b5b55331cb30dcc08560904",
+      "crates/xtask/tests/support/bootstrap_build_guard.rs": "bf94998b4ce92c03c0c0b1b4659e780ef9fbc7379e757ff8e38aee6e80424eee",
+      "crates/xtask/tests/support/bootstrap_child_guard.rs": "b92cd35fe5d5fa1fbdfa31589e68cfc86650a799276b207566ca82392edf2198",
+      "crates/xtask/tests/support/bootstrap_current_image_guard.rs": "aa3fce235ce0c6f193d8e5dcc810579226549a973e0c4f86498f22acb3576696",
+      "crates/xtask/tests/support/bootstrap_enrollment_guard.rs": "b51071c48b38511cf72b28a67a41239603554751fe29b91e41d9f6eb56eb43ca",
+      "crates/xtask/tests/support/bootstrap_entry_guard.rs": "1e2116bb9c413f732fcfac3061f8b096d1ad71f81d4f9b97506a2abfe406337b",
+      "crates/xtask/tests/support/bootstrap_held_delivery_guard.rs": "2ff3b2243065ef0446dc10d912b281a2d40f9e1061ff01481e8a4db719b2d4b7",
+      "crates/xtask/tests/support/bootstrap_held_entry_guard.rs": "726c36a998b6676d96aa5feb353edfd0940c672d1f7ccb70aa58089a74c3b67d",
+      "crates/xtask/tests/support/bootstrap_image_guard.rs": "81d992243efafec9343c43bd20b63e2ab1bfdb16e61b1f760f24946b36b36ea8",
+      "crates/xtask/tests/support/bootstrap_installed_child_guard.rs": "fab42db9458a56953a663d10d521a94e0b4a81dd4c144a475ee4f70b97711874",
+      "crates/xtask/tests/support/bootstrap_installed_entry_guard.rs": "f4ffd798cec72d4af9fee8d10e0c38f1bd69fb91bec6f0c3d8095b382df54176",
+      "crates/xtask/tests/support/bootstrap_installed_guard.rs": "bbd2fc413f6caa51cef2a6cadcf7344e0351c2c88c168fd50383b55f9e7aa891",
+      "crates/xtask/tests/support/bootstrap_installed_material_guard.rs": "aa1618dfe7679ea386cee7d42c4cb033541a235f1c1d1e1166bfa4e35927898d",
+      "crates/xtask/tests/support/bootstrap_roles_guard.rs": "00e8c66bc00cba9fb6b6406a57dac38667dcfa3cf42a1188237b7d08fce377d2",
+      "crates/xtask/tests/support/bootstrap_sandbox_guard.rs": "4d08f476aadab96df88fd9358c619fad3688797cca09c7ee06e44ca540a2e443",
+      "crates/xtask/tests/support/census_provider_input.rs": "f55546b7f9892b38f97ad45918d1f6978975528cfd352ae98043e25970dbd12b",
+      "crates/xtask/tests/support/census_provider_input_legacy.rs": "89cdefcca5a8994e51d7a083918f68da6ae2254f36396b8765461d6da55367e2",
+      "crates/xtask/tests/support/collector_peer_baseline_guard.rs": "470b1ac65de0ed52847153c3cd0fc0ce4493bc1e097cb0357d5774bdc8209911",
+      "crates/xtask/tests/support/collector_peer_capacity_guard.rs": "be66c122ce1ba80485d2513bfe22109c40189690cd4cc05877346c024d19f42e",
+      "crates/xtask/tests/support/consuming_held_join_guard.rs": "ce111d49c56012d63f3a4bdab1f0038ec58622f1da5dc1201cbb2f7d3b0f1a6e",
+      "crates/xtask/tests/support/consuming_held_live_guard.rs": "ea335423fdb01856c723e9fd41f412d04545bd261d09cc83dd2fabad41e2193d",
+      "crates/xtask/tests/support/context_document_baseline_guard.rs": "4165e37c1c7a6e103eea0f2b22ad0bc3183f5df7adab506a4836298404dea525",
+      "crates/xtask/tests/support/context_document_stack_guard.rs": "14947afccca76aeb3bf19f511af9c5ce236991cd2daaeacca600f6258174dc23",
+      "crates/xtask/tests/support/current_tree_input.rs": "78bb32368f8bb2fb235ec53052a12d908df7c27db152441881334ccdf64ec935",
+      "crates/xtask/tests/support/custody_cost_guard.rs": "9db6f7ae30301f8040b21f485574eaa8ec72202046c3c305b51fcfad6e0882ec",
+      "crates/xtask/tests/support/document_scratch_guard.rs": "ffbe6713982d35bbb2d2e665f17e160ee1a57165a2fc788d6f5bb97c3de3261d",
+      "crates/xtask/tests/support/document_scratch_inputs.rs": "753e0400c824468f76666b40e3326af2d605bf1d81af8dd1c382a0a5770da1e6",
+      "crates/xtask/tests/support/fixed_slice_namespace_guard.rs": "ab7dce399180d762ce5bbacd738d163fa4121be5bfa24be54bb92bd0f0904ae7",
+      "crates/xtask/tests/support/fresh_status_guard.rs": "3b98eaed3badcb3cda57930e45cae7fcaf2e2bad56a0f6729547050346b4949d",
+      "crates/xtask/tests/support/held_build_guard.rs": "4158a303c636b58a167b76104f0a491634a4a45838022a932ca111b2a48f50fb",
+      "crates/xtask/tests/support/held_launcher_guard.rs": "28869049ded6d7fcdccb7f91f816f2e4445cd3a605e5e382dcc893ebf84e43fb",
+      "crates/xtask/tests/support/held_material_guard.rs": "b9ea61cba448b47c70e99a2cfc087e3b4258bd427b36226d943be3a75ec0b896",
+      "crates/xtask/tests/support/held_material_live_guard.rs": "03fe0fceeb389a6bfc82565141cd9926e1fb4a5162213f23df1691f84d5f32fa",
+      "crates/xtask/tests/support/held_role_binding_guard.rs": "a58afe7f809b01be6ff20511a60fba71cf7d3127fa7b424d54dc8c9bb0b6a4a9",
+      "crates/xtask/tests/support/held_role_census_guard.rs": "abecf9f3dd8271bad784fdf33c7f42f60e1f8a8eb00215d91b29e0694e390247",
+      "crates/xtask/tests/support/held_role_files_guard.rs": "6e866c7d58fe8c40fccd15f58c47f5682299e25af560817adced13bf7de5c053",
+      "crates/xtask/tests/support/held_runtime_trust_guard.rs": "bfe6355747ee3d2e95c8d0ee7e51af70830564c633ed2ef075f53d5690844f90",
+      "crates/xtask/tests/support/held_unit_projection_guard.rs": "df4e3b49148ded249e31cbfc796bc50a58cfaf885acb7799b149d00a6701bbd6",
+      "crates/xtask/tests/support/performance_contract_074_barred_collector.rs": "02f4b1fd12b035c811d03aa82f801c7036c25d39e6b0fd9054d9e28288249399",
+      "crates/xtask/tests/support/performance_contract_074_barred_custody.rs": "a05759fd7e64ebecbe94f51ae7b82a8d9e07e922b74bc1edb5404f71c6e80626",
+      "crates/xtask/tests/support/performance_contract_074_boot_buffer.rs": "c7d8cb15637a31db3010a7a9e13eaeca2e3cc5a674bbac2d102df485fd117ed6",
+      "crates/xtask/tests/support/performance_contract_074_boot_comparison.rs": "075b98d22a5d488575c7a43bed22774b0efd52c1a2f1c31179ce25152ba6c309",
+      "crates/xtask/tests/support/performance_contract_074_cgroup_root_enrollment.rs": "e0dca28956b4b188af2cc3bcb67c2bb07d94ca520835df571fb31708370746ae",
+      "crates/xtask/tests/support/performance_contract_074_cgroup_root_transport.rs": "2ce247d866824b6ebdf752ae19a5f79c016c6d416b88eb7567c2a972aed231ba",
+      "crates/xtask/tests/support/performance_contract_074_claim_construction.rs": "e4a7db3309c3fa19d2985e66407870899c367fefd6974e9b9a0c71a7291b8d37",
+      "crates/xtask/tests/support/performance_contract_074_closing_validation.rs": "280426cf9a526f4df611b0331e7308a4b74684fba86140f2e272886fb8e85bc6",
+      "crates/xtask/tests/support/performance_contract_074_collector_causal.rs": "91de7da6660ac8faca3a8b5364e7e5d56120c0d2e7a25d219b6bffffc64c66ee",
+      "crates/xtask/tests/support/performance_contract_074_collector_intent.rs": "552f2122cbca189b79c3c233698b10fcd0ab59c8ddf59b8b87d4e939da673507",
+      "crates/xtask/tests/support/performance_contract_074_collector_notices.rs": "de3b1f050464603e5b6773074e3645e653f387da5e329f1816eea54c3306ee21",
+      "crates/xtask/tests/support/performance_contract_074_collector_progress.rs": "777d11650918952748b3e9a369372b9504ee8d3eef6f1055cbeb15abddc7c6c9",
+      "crates/xtask/tests/support/performance_contract_074_collector_reserved.rs": "1348461fd3c4ab6376da26f93fe3e336621d9ae39620fd6966e1365d8d2727c8",
+      "crates/xtask/tests/support/performance_contract_074_consent_budget.rs": "ae051bc9fc631d6f1ac9f2869d4b73430e9e7d8701cb2c857e9efadd4efc289e",
+      "crates/xtask/tests/support/performance_contract_074_custody_join.rs": "5aa412bb1a789afe8614b3d379fb3fbef6e9438a7f6a981b277b5460d053611d",
+      "crates/xtask/tests/support/performance_contract_074_custody_loss.rs": "7766dc70d876853ec0222bc000344bb1210981c5cba3d5bc7b61a44c269852e3",
+      "crates/xtask/tests/support/performance_contract_074_dispatch_exchange.rs": "f67637b9a524a3422eed9f7ab18f36c1225c82bd427271967527fcfa7c5402c8",
+      "crates/xtask/tests/support/performance_contract_074_enrollment_frame.rs": "c193eaf66fff6ea47d127bbd0d6e6f13cdacdf2f4b9244a58707851c6959884f",
+      "crates/xtask/tests/support/performance_contract_074_fence_custody.rs": "226b8d481852582e8bd7de4ad6f3de9210354d2141115db303c09145c6e9afed",
+      "crates/xtask/tests/support/performance_contract_074_fixed_grouped.rs": "c9a360a42751035643fbb72ff1fc73e9549889734a0636b86ba72a05fee8f74a",
+      "crates/xtask/tests/support/performance_contract_074_fixed_leaf_path.rs": "2168b7b2dd32660ae6feb8f012a729f541ef9c7f8309e55865af2f147ebb506c",
+      "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs": "5bf7b3618f2cf80143a28c8bf56e368faa59d8d8d8517771e3998feab51888ec",
+      "crates/xtask/tests/support/performance_contract_074_gnu_preparation.rs": "662c05c69fd2dba1c21284cc300a5eca6cfc31a11a677acdbbb076c281fd0d25",
+      "crates/xtask/tests/support/performance_contract_074_held_placement.rs": "e38db289161def76316d7e499344d0d9190b25875822fd74f34718a1d596ee90",
+      "crates/xtask/tests/support/performance_contract_074_kernel_refusal.rs": "550c107afc16c2aeda215a308c339efa3f41ab6e6a0748b28b3a3cb48dbcd9a2",
+      "crates/xtask/tests/support/performance_contract_074_kernel_walk.rs": "2e28bbf60a0874814101643fd792b9f5d998600b709eede3fd6c629f3259930c",
+      "crates/xtask/tests/support/performance_contract_074_live_walk.rs": "c5d521a9480f522cf8df8e4652a1a826aab1c939d3006f6ce661324eb4c1e44c",
+      "crates/xtask/tests/support/performance_contract_074_manager_channel.rs": "1c1723ed216168dfa058fb3e4defffef40a4a785619d21a6eeb8d0ab97735e14",
+      "crates/xtask/tests/support/performance_contract_074_negotiated_dispatch.rs": "bd4aead2d4068e32ecbf00c49d5d25aaf8d3da632f827b9e370a84245b56c87a",
+      "crates/xtask/tests/support/performance_contract_074_original_barrier.rs": "02bddff20ad693cec3800fe24ed1d903613c2f542a767c8efaacd871e5c187cc",
+      "crates/xtask/tests/support/performance_contract_074_original_collector.rs": "a3a2cb78336dc71c2ea00ff3b3d02a7002484361bfea59bbe72030a32f4aa8d3",
+      "crates/xtask/tests/support/performance_contract_074_original_descriptors.rs": "82b8e524a7c03af4690cc042481ce744e46508b7982d7a170c5196b31a99c3a3",
+      "crates/xtask/tests/support/performance_contract_074_original_manager_join.rs": "20bfabe7aae572c57800353553b2404c185018a70b126e9c06eb0f23331b4585",
+      "crates/xtask/tests/support/performance_contract_074_original_manager_message.rs": "ed0c199daef310dfff17f167df94e474e64ffca8192f700fadae0b001507fcaf",
+      "crates/xtask/tests/support/performance_contract_074_original_pending_watchdog.rs": "72a264412f6f8f01a72f7c7224e3c2f9200d4b051fe5477e2cf52be5b8a7fc32",
+      "crates/xtask/tests/support/performance_contract_074_original_pipes.rs": "993091c191ff795b310e131908512967aea9e25b3c438ec81613015301dd1a85",
+      "crates/xtask/tests/support/performance_contract_074_original_reply_binding.rs": "1fedbb955520d8f21f37b7af24e8ce81cd47ccb3b74f87e87f4e42ab80970558",
+      "crates/xtask/tests/support/performance_contract_074_original_root_join.rs": "a755e5d6776ace9f09b59e0a6020fb5be3378647a9d0e3395b524ed3fa293b16",
+      "crates/xtask/tests/support/performance_contract_074_original_start_consent.rs": "fb5509d5073b79b201c3bdfe4f7248aa60e40cfdd6320e4d0553549983577f48",
+      "crates/xtask/tests/support/performance_contract_074_original_watchdog_context.rs": "b86f14b9745b5b4e028e0266b8773cfb3727fda086d5c9404b5399f578fa8fe3",
+      "crates/xtask/tests/support/performance_contract_074_output_join.rs": "ca206101550aceed82f724be904f91769d88ffc32989df3f63320f2f4207f117",
+      "crates/xtask/tests/support/performance_contract_074_owned_placement.rs": "1cd5fd3248a2b071d1b684e7c270c6fc1928a6edb5ed4eeca180d35c394b9721",
+      "crates/xtask/tests/support/performance_contract_074_owned_root_manager.rs": "81e4f8080d24b5578ab0765ee2d9fdb125c8d7c0c309ba1ece6eda9c92b8c8b3",
+      "crates/xtask/tests/support/performance_contract_074_pipe_transport.rs": "ddb2fefdcf729e08885dc5fa7652b7af7627b59cbedc364f5d4baff3347fe6a5",
+      "crates/xtask/tests/support/performance_contract_074_placement_preparation.rs": "d297df34a3cfe255f7730197456d27d7d2e4f61c0ef191a7dc1d9296710840c5",
+      "crates/xtask/tests/support/performance_contract_074_placement_stage_cost.rs": "57fed0c13bb5bc2854b6a0b2d20f22dd0b42e2e4ae25002ca602786c28d87977",
+      "crates/xtask/tests/support/performance_contract_074_plain_worker.rs": "05878cd64931d011b64a9eb86c4ae28228cc6a6bc1801d714b5c516d5e2a729d",
+      "crates/xtask/tests/support/performance_contract_074_prearmed.rs": "38354591964bfd8be941471ff6285587693f04791a2591f118cd60e70bbd9439",
+      "crates/xtask/tests/support/performance_contract_074_preconsent_frame.rs": "69bd261d2131f19fb2ecfdf16c4559ffef98603a999b82ad12006f301ec2d92e",
+      "crates/xtask/tests/support/performance_contract_074_preparation_budget.rs": "98bd96a34a69b1537829e4799235eab438a59bab1ee950ee20a365992d128e61",
+      "crates/xtask/tests/support/performance_contract_074_redundant.rs": "ded98e9c28f56ed68568c2e0a81df132a8da2a29cb3c7fb9cc1a3f39bcdbf7f5",
+      "crates/xtask/tests/support/performance_contract_074_reply_flags.rs": "086e28af21d0803eba29a735c5b31fcaaa213cdfaf5df54aea383d2793877ead",
+      "crates/xtask/tests/support/performance_contract_074_reply_state.rs": "c57c24361afb56491098757c539b01064d7fe966900b1381b0e0ca2d8f0f7c71",
+      "crates/xtask/tests/support/performance_contract_074_root_creator.rs": "914a06109c422255605b3dca3892ad8aef30c39afe5b8cc45b316cdccba5c6c7",
+      "crates/xtask/tests/support/performance_contract_074_root_guardian.rs": "14f8d1f9d4cd674cc7eec02fad0193e2253869104188b0d8c17cb4135e5ab262",
+      "crates/xtask/tests/support/performance_contract_074_root_retirement.rs": "eeb4fa274e491a26218b1072f1af5698094ab787fe6f584a1568a73177cbf405",
+      "crates/xtask/tests/support/performance_contract_074_safety_alarm.rs": "88ea2da4c305a22cce4f5b5eff54f92534026164ab03586010e1c99695b7097a",
+      "crates/xtask/tests/support/performance_contract_074_short_fence.rs": "e99335bf743cd263207189d18408ce7122d215e7aa84a1060dbe9338dcbf9f9a",
+      "crates/xtask/tests/support/performance_contract_074_start_consent.rs": "6798261e33805a9c45586dfb85e81c2602e836d1e883d98755ddce7ed723f8e0",
+      "crates/xtask/tests/support/performance_contract_074_start_material.rs": "f85653cb51b9b396f25b2ce6d0e0b0d2db0a7dfe04f18b607dfd13e04301424e",
+      "crates/xtask/tests/support/performance_contract_074_starting_publication.rs": "84e2a445199fff172477caf03924f2cf9ff201633cf210be23bacb1171a85db4",
+      "crates/xtask/tests/support/performance_contract_074_starting_record.rs": "84f39189e804a6f81c34f27977bd1891d98542da7a22da5458f1a6523dd07de2",
+      "crates/xtask/tests/support/performance_contract_074_two_phase_launch.rs": "52595986bbf7887708f7c17c644b401b1d9a645355f26890b728b64c99bdd67a",
+      "crates/xtask/tests/support/performance_contract_074_validation_cost.rs": "1137e5a4309ce981b14515464857e96b7bc353090154c43a294a0c7aadc42a1a",
+      "crates/xtask/tests/support/performance_contract_074_validation_frame.rs": "6eb00a74bef4c65498030912f38352e397d95284d8fb7106dfb74e74745bb4da",
+      "crates/xtask/tests/support/performance_contract_074_worker_proof.rs": "6a8f3167e3066cea77542e075432c12f635d918c20a11f9b5b2d81914df59f7a",
+      "crates/xtask/tests/support/pid_path_guard.rs": "350c4602ad92893bf07a29ee3d054e08456e0f852bd61ac53aee8d1014a70497",
+      "crates/xtask/tests/support/pidfd_info_path_guard.rs": "516a6688e1f1db86a836a798c72044d5189844d6292f0e35eaf81074f0e64d89",
+      "crates/xtask/tests/support/projection_groups_guard.rs": "0180137ac68cb0d74be95121ab0f366637d61e6924ef40906be6ea65f890b7e8",
+      "crates/xtask/tests/support/projection_prefix_guard.rs": "8ac781a0a877adeddec17585219482b90da9bc47f904105e0f09c8c49312a7f2",
+      "crates/xtask/tests/support/remaining_preparation_guard.rs": "dde531610ab4981ecec66d8d01610c50115fb670c694c3f2a83e9eafb5c704ec",
+      "crates/xtask/tests/support/trust_component_baseline_guard.rs": "f1283862c0f947a9da98191e833acf0298213779b741b88a22b8f0d2f0993cd9",
+      "crates/xtask/tests/support/trust_component_stack_guard.rs": "13b0f0ffe11b68e56f3a827680e3f3df23f9cbf47d135a23b8cd96b957dbdd95",
+      "crates/xtask/tests/trust_component_baseline_074.rs": "cb615389b04e3ac6bf8f024fa6c1af84130a9ee319b16a97020138606079f8bc",
+      "crates/xtask/tests/trust_component_stack_074.rs": "6dd82c0bfc1c9aee304499eb12641757fe350bc39eb4e7277c0339c5f805e92d",
+      "crates/xtask/tests/tsan_check.rs": "3a3ff6005ef801cd7d77fe5902700cf9273a5f2bb2434419d78bf2e1a292b187",
+      "crates/xtask/tests/validation_leaf_reader_074.rs": "c8aa41e7c247fae594602c71a9f6964a392f77c59b3934a644be944f94a0c511",
+      "crates/xtask/tests/validation_leaf_requests_074.rs": "f12aacc76267643688f3438f027ba7d709c95223df6dd59637f5798a63587149",
+      "crates/xtask/tests/validation_round_cost_074.rs": "d956a82518f3b29ceff42224d15635c1da3bb1545807abeba8fdc068301a75b7",
+      "tools/authority-reader-phase-074/contract.rs": "78ccbfc0bef5349cb324343472bc9d1cf3ea041c2cf365ae8fc748fe1ee94fc7",
+      "tools/authority-reader-phase-074/main.rs": "3deda541166414b4cce7cfe9102f6777052f7b310b08a44ef081cbcadaea53eb",
+      "tools/authority-runtime-074/cost_reader.rs": "2602e6099e2e323570ac25ac83f5cefbf08141f7a6f10c9892fdf1c48c2f7d84",
+      "tools/authority-runtime-074/gate.rs": "6eb0e78bc5b8cb4f7324747c3d0b78b0113c6a58ac9af2c1871d9fbf267b1363",
+      "tools/authority-runtime-074/history_reader.rs": "3803936eb6944c949d9f5c04b1626eac9b61d570a3770e4c93413c2d235d5f08",
+      "tools/authority-runtime-074/io.rs": "9d24652cdabe794b1d2be458c3b71880a98530045c3a17f2577a4573bb718202",
+      "tools/authority-runtime-074/performance.rs": "04a02636d2513454c26b086031f9beeb3cac010132ed56621c078765adf90850",
+      "tools/authority-rust-history-074/contract.rs": "5161c9679c4a75b42305c852487390983ff4af400a9a35f4e541b387417b29f7",
+      "tools/authority-storage-source-074/contract.rs": "aefcd4f6a9ed0acc1e072225ea3ed4dda82d2d1ccda0ba4f22ca74459efa64c2",
+      "tools/bootstrap-doc-reader-074/contract.rs": "38ed33f48332bbefc4e153433d40cde7730c007b4efacbecd632a032baf15ced",
+      "tools/bootstrap-doc-reader-074/installed_io.rs": "9aac3ff31b2778264d66325fe7d8c3b5659d5957e9c4c2be880a7799dbfa2472",
+      "tools/bootstrap-doc-reader-074/io.rs": "c3200aab126abfcf059fe6c79509938aeb860bf0eefbb664e2a1d6a4b2a45821",
+      "tools/bootstrap-doc-reader-074/proof.rs": "736f70ea64ec11ea82dfac8e505468a4f429c0c2ff6b067b5059547181689947",
+      "tools/bootstrap-doc-reader-074/read.rs": "1cffd334559b2e2a265d0bbafda3853b116f200cc6e2bdf5cf80c6d2af37e3ba",
+      "tools/bootstrap-doc-reader-074/reader.rs": "ec21e788a65b921f0b6b4707c9e4919390ed9247a8b152d22862c6dbe9577f6c",
+      "tools/current-frontier-074/additions.rs": "8fdb366c6bade0767a7bdd3b4b9570dcb8e6af036d156836d23c828a4699b9cc",
+      "tools/current-frontier-074/contract.rs": "d214be91c11ec2f93f76ca20ea29deb697dbaffaac4aceddfcc62131c5b2caae",
+      "tools/current-frontier-074/reader.rs": "3fc4f7da5124b18a418c69d4a8e7e2af855e085c9409d4ceaa3a1e590117870f",
+      "tools/guard-path-comparison-074/contract.rs": "b24e9938aa5af4c9f45f1a542d21aac22da6adb168465df490d48c8c32d084c5",
+      "tools/historical-blob-batch-074/census_caller.rs": "8019c0b741a21a58eea1e19564f4ebd27e1926403c363ec724741841f92c8df5",
+      "tools/historical-blob-batch-074/census_reference.rs": "bda5ea1b318109501e796434064b37c5dbb652fb867db6a3b9f9bf6dd0b0b0dc",
+      "tools/historical-blob-batch-074/decoder.rs": "7287fac38513dd2a8a77acb3537c57ae7e2870b24ec0ff591a57bcb62273ad1e",
+      "tools/historical-blob-batch-074/effect_syntax.rs": "679fe49a097f85fc4b73d56426749f743f09ec7ad379ed3e9e86a6ba3d5c277a",
+      "tools/historical-blob-batch-074/mod.rs": "a0235938d083f908dcf378c92407982875fd7aef2e19fc01641af1ebedbbcb94",
+      "tools/historical-blob-batch-074/transport.rs": "4c17249c6c4d30c025ebf60ccbb5410877e48ab253185583bb07decff717b688",
+      "tools/historical-blob-batch-074/transport_profile.rs": "909b2e32ec79b48753d7e9d6fa92157319297843d90416e5474248f11ad31606",
+      "tools/historical-input-view-074/contract.rs": "8c09a9e9e694fb939ffef27cc27b73ace09323f56d85dd8944f145971c056a92",
+      "tools/historical-source-cache-074/cache.rs": "7251f5f89a479461582608e4a7b5a6593d8c37a95808342ab6a57c1ecc0fc3ed",
+      "tools/historical-source-cache-074/library.rs": "69cc04200b0f3d42ea526f5b92708b725b78f81619c1d54158e2ad9fd0ecfdfb",
+      "tools/history-status-readers-074/contract.rs": "a2e58267a81350b967036fc42a5a521d3cc2843ec98fb9e026ccac4eb3d714d0",
+      "tools/history-status-readers-074/inputs.rs": "6588950833aa4ed0b73178ec0021bc94a5c338508b70f4b3017c0f700c1f9f06",
+      "tools/material-lock-fixture-074/contract.rs": "9003527a95736011c1e9eb4c4bd02310ac3c3a61b21f6aa0484278317a2f6e5f",
+      "tools/normalization-attribution-074/history_probe.rs": "7ca89559130b3b8271f59c39f039ad7622ea2cecf1a2bc0e31472c9e4eba0dc1",
+      "tools/normalization-attribution-074/probe.rs": "10681270967fb942e56944ac95bdf5a86d4891d63d0a69104c3ef2b1e4c30ec7",
+      "tools/owned-case-074/contract.rs": "55e7d11cbdabe73f17310338f9b6290277b2ea4de0003b12dcdfb0875e404758",
+      "tools/remaining-readers-074/contract.rs": "23c985301e96e572c815f50a71397c1eeb9791f6d684b70d7dc08ce25d938a8c",
+      "tools/remaining-readers-074/inputs.rs": "96651cff002a24f192526b4a619376a6229bb45ee5d1e791640c47ef94b42c88",
+      "tools/roots-lock-view-074/contract.rs": "376c77730d946c98028a1860fc42ac4b2b32adc92e71d76431644ccc45f97d0a",
+      "tools/security-input-view-074/contract.rs": "ae4138993c239ff11032ef333c1cb40c487badd9ea65ea4d1a40b99423071b4c",
+      "tools/source-successor-view-074/contract.rs": "c836ea22544a49d7eec577868f230bcc3152a7f4906c33ffa0fc0e681d768e7c",
+      "tools/source-successor-view-074/diagnostic.rs": "71e7926afafdb181aa65cb614a9eb0ec21f18c1e43a3d70f77208418cb8b9fee",
+      "tools/status-field-gate-074/contract.rs": "175366f05b7e8c37eaf246a968faff54415b358fa4f4bac31370ff8f302b0ece",
+      "tools/xtask-package-attribution-074/helper_contract.rs": "b3a6c8bdac36154f51fa1e26cea24f44a93ae9f02d2ff1f528518b739ee06a13",
+      "tools/xtask-package-attribution-074/helper_model.rs": "137db5f7bfb7fc6146b8ace70143fec8a1515f97eda0d49fb00e543ba83c5907",
+      "tools/xtask-package-attribution-074/helper_trace.rs": "91aff09249e6d8caa8df4bd49769015006f2701b9396167ba7775106d38ef029",
+      "tools/xtask-package-attribution-074/pipe_capture.rs": "7b81ec42ec234dc6bb3d98fc551ea4e7dbc40d986a18d14cfb8d639c1a7587d3"
+    },
+    "targets": [
+      "unittests src/lib.rs",
+      "unittests src/main.rs",
+      "tests/allocation_copy_071.rs",
+      "tests/allocation_retention_070.rs",
+      "tests/allocator_matrix_071.rs",
+      "tests/artifact_inventory_phase_544_074.rs",
+      "tests/artifact_inventory_reader_074.rs",
+      "tests/authority_breakdown_074.rs",
+      "tests/authority_context_074.rs",
+      "tests/authority_cpu_074.rs",
+      "tests/authority_expected_name_074.rs",
+      "tests/authority_fd_path_074.rs",
+      "tests/authority_hex_reader_074.rs",
+      "tests/authority_inventory_074.rs",
+      "tests/authority_key_hex_074.rs",
+      "tests/authority_leaf_cpu_074.rs",
+      "tests/authority_leaf_name_074.rs",
+      "tests/authority_name_capacity_074.rs",
+      "tests/authority_open_name_074.rs",
+      "tests/authority_operator_order_074.rs",
+      "tests/authority_owned_journal_074.rs",
+      "tests/authority_owners_074.rs",
+      "tests/authority_read_baseline_074.rs",
+      "tests/authority_reader_phase_074.rs",
+      "tests/authority_runtime_074.rs",
+      "tests/authority_rust_history_074.rs",
+      "tests/authority_scratch_reuse_074.rs",
+      "tests/authority_storage_source_074.rs",
+      "tests/bench_budget.rs",
+      "tests/boot_operations_074.rs",
+      "tests/bootstrap_build_owner_074.rs",
+      "tests/bootstrap_child_boundary_074.rs",
+      "tests/bootstrap_child_census_074.rs",
+      "tests/bootstrap_child_reader_074.rs",
+      "tests/bootstrap_current_image_074.rs",
+      "tests/bootstrap_doc_reader_074.rs",
+      "tests/bootstrap_enrollment_074.rs",
+      "tests/bootstrap_entry_binding_074.rs",
+      "tests/bootstrap_image_census_074.rs",
+      "tests/bootstrap_installed_origin_074.rs",
+      "tests/canary_check.rs",
+      "tests/cancellation_safety.rs",
+      "tests/census_cost_074.rs",
+      "tests/ci_reliability_071.rs",
+      "tests/client_plane_ci.rs",
+      "tests/client_release_068.rs",
+      "tests/collector_peer_baseline_074.rs",
+      "tests/collector_peer_capacity_074.rs",
+      "tests/context_document_baseline_074.rs",
+      "tests/context_document_stack_074.rs",
+      "tests/cost_phase_reader_074.rs",
+      "tests/coverage_ratchet.rs",
+      "tests/current_frontier_074.rs",
+      "tests/current_tree_input_audit_074.rs",
+      "tests/current_tree_reader_074.rs",
+      "tests/custody_preparation_cost_074.rs",
+      "tests/custody_reader_074.rs",
+      "tests/demo_static.rs",
+      "tests/determinism_sweep.rs",
+      "tests/diagnostic_artifact_fixture_074.rs",
+      "tests/direct_output_cost_074.rs",
+      "tests/doc_check.rs",
+      "tests/document_scratch_cost_074.rs",
+      "tests/document_scratch_reader_074.rs",
+      "tests/evidence_run.rs",
+      "tests/fast_suite.rs",
+      "tests/fresh_kernel_cost_074.rs",
+      "tests/fresh_status_reader_074.rs",
+      "tests/gated_tests.rs",
+      "tests/get_owner_terminal_074.rs",
+      "tests/git_descendant_cpu_074.rs",
+      "tests/held_activation_ingress_074.rs",
+      "tests/held_bind_alias_refusal_074.rs",
+      "tests/held_complete_role_census_074.rs",
+      "tests/held_material_074.rs",
+      "tests/held_material_live_074.rs",
+      "tests/held_material_roles_074.rs",
+      "tests/held_preparation_cost_074.rs",
+      "tests/held_unit_projection_074.rs",
+      "tests/historical_blob_batch_074.rs",
+      "tests/historical_blob_caller_074.rs",
+      "tests/historical_blob_fault_074.rs",
+      "tests/historical_blob_transport_074.rs",
+      "tests/historical_input_view_074.rs",
+      "tests/historical_source_cache_074.rs",
+      "tests/history_status_readers_074.rs",
+      "tests/long_run_campaign_074.rs",
+      "tests/management_center_072.rs",
+      "tests/management_compat_072.rs",
+      "tests/material_lock_fixture_074.rs",
+      "tests/memory_baseline_071.rs",
+      "tests/memory_campaign_admission_071.rs",
+      "tests/memory_compat_071.rs",
+      "tests/memory_contracts_071.rs",
+      "tests/memory_decision_071.rs",
+      "tests/memory_host_profile_071.rs",
+      "tests/memory_ownership_071.rs",
+      "tests/memory_profile_071.rs",
+      "tests/memory_regression_071.rs",
+      "tests/memory_statistics_071.rs",
+      "tests/migration_conformance_069.rs",
+      "tests/miri_check.rs",
+      "tests/mutants.rs",
+      "tests/owned_case_074.rs",
+      "tests/package_diagnostics_074.rs",
+      "tests/perf_attestation_0671.rs",
+      "tests/perf_bootstrap_0671.rs",
+      "tests/perf_budget_067.rs",
+      "tests/perf_ci_instruction.rs",
+      "tests/perf_exploratory_harness.rs",
+      "tests/perf_exploratory_reports.rs",
+      "tests/perf_full_dress_0671.rs",
+      "tests/perf_host_tuning.rs",
+      "tests/perf_local_orchestration_0671.rs",
+      "tests/perf_prebuild_067.rs",
+      "tests/perf_qualification_0671.rs",
+      "tests/perf_reference_0671.rs",
+      "tests/perf_runner_0671.rs",
+      "tests/performance_contract_067.rs",
+      "tests/performance_contract_073.rs",
+      "tests/performance_contract_074.rs",
+      "tests/performance_local_073.rs",
+      "tests/pid_path_cost_074.rs",
+      "tests/pid_path_reader_074.rs",
+      "tests/pidfd_info_path_074.rs",
+      "tests/proc_document_baseline_074.rs",
+      "tests/projection_groups_074.rs",
+      "tests/quarantine.rs",
+      "tests/raft_spec_check.rs",
+      "tests/release_evidence.rs",
+      "tests/release_governance.rs",
+      "tests/release_governance_071.rs",
+      "tests/remaining_preparation_cost_074.rs",
+      "tests/remaining_readers_074.rs",
+      "tests/role_census_reader_074.rs",
+      "tests/roots_lock_view_074.rs",
+      "tests/sample_boot_baseline_074.rs",
+      "tests/sample_boot_inline_074.rs",
+      "tests/security_input_view_074.rs",
+      "tests/source_successor_view_074.rs",
+      "tests/starting_effects_cost_074.rs",
+      "tests/status_field_scan_074.rs",
+      "tests/trust_component_baseline_074.rs",
+      "tests/trust_component_stack_074.rs",
+      "tests/tsan_check.rs",
+      "tests/validation_leaf_reader_074.rs",
+      "tests/validation_leaf_requests_074.rs",
+      "tests/validation_round_cost_074.rs"
+    ]
+  }
+}

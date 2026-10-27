@@ -469,6 +469,16 @@ infers a package pass. The [report](../../docs/testing/performance/0.74/roots-lo
 separates the immutable first defects and earlier package refusals from current
 source/effect clearance, focused passes and the eventual entire-package result.
 
+The first actual V8 result is now retained: unchanged 780-second timeout,
+81/148 targets completed, 456 passing/36 failing cases and 67 targets unstarted.
+No unchanged full retry or suffix join is authorized by the receipt. The
+read-only `package_result_v8.py` checks the exact 55-member execution packet and
+recomputes accounting with the SHA-pinned current transcript parser. It never
+imports archived Python or dispatches tests. Exit zero confirms integrity of a
+**red, incomplete** package receipt, not package/release admission. Six offline
+tamper controls preserve that distinction. See the report for the concrete
+historical composition boundaries before any changed-source full gate.
+
 ## Repaired scope v3 without a dispatcher
 
 `package_effects_review_v3.py SYNTAX_JSON` requires the separately reviewed

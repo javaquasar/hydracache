@@ -1,0 +1,59 @@
+"""Append-only archive of post-result read-only review and local checks."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = ROOT / 'target/roots-lock-view-20261027'
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/package-v8-offline-review-20261027'
+members, objects = {}, {}
+
+
+def add(name, raw):
+    assert name not in members
+    digest = hashlib.sha256(raw).hexdigest()
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+phases = ('result-controls-first', 'result-verify-first', 'doc-final', 'contract-final',
+          'format-final', 'format-scoped-final', 'cleanup-pid-first', 'cleanup-pid-corrected',
+          'triage-first')
+for phase in phases:
+    intent = json.loads((BASE / phase / 'intent.json').read_bytes())
+    result = json.loads((BASE / phase / 'result.json').read_bytes())
+    assert result['source_unchanged'] and result['commit_unchanged']
+    assert intent['source_commit'] == '0a6f8c8e6d6467777d519bd6799800bf694142f3'
+    for path in sorted((BASE / phase).rglob('*')):
+        if path.is_file():
+            add('checks/' + phase + '/' + path.relative_to(BASE / phase).as_posix(), path.read_bytes())
+for name in (
+    'tools/historical-blob-batch-074/package_result_v8.py',
+    'tools/historical-blob-batch-074/test_package_result_v8.py',
+    'docs/testing/performance/0.74/roots-lock-view-package-v8-result-20261027.md',
+    'docs/testing/performance/0.74/release-closure-execution-plan-20261026.md',
+    'docs/articles/007-optimization-starts-with-measurement.md',
+    'tools/historical-blob-batch-074/README.md',
+    'target/run-roots-lock-view-20261027.py',
+    'target/review-package-v8-20261027.py',
+    'target/seal-package-v8-offline-20261027.py'):
+    add('capture/' + name, (ROOT / name).read_bytes())
+manifest = ROOT / 'docs/testing/performance/0.74/qualification-manifest.toml'
+assert hashlib.sha256(manifest.read_bytes()).hexdigest() == '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
+OUT.mkdir(exist_ok=False)
+with (OUT / '.gitattributes').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+(OUT / 'objects').mkdir()
+for digest, raw in objects.items():
+    with (OUT / 'objects' / digest).open('xb') as stream:
+        stream.write(raw)
+index = dict(schema='hc074-package-v8-offline-review-evidence-v1', members=members,
+    source_commit='0a6f8c8e6d6467777d519bd6799800bf694142f3',
+    package_index_sha256='ad41027076d5cc20e52267976e05b507bd9b25e35fc0e71b08adc280be062432',
+    phases=list(phases), package_pass=False, receipt_controls=6,
+    archived_code_executed=False, package_rerun=False, measurements=False,
+    services=False, clocks=False, server=False, release_admitted=False)
+with (OUT / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, sort_keys=True, indent=2)
+    stream.write('\n')
+print(json.dumps(dict(members=len(members), index_sha256=hashlib.sha256((OUT / 'index.json').read_bytes()).hexdigest())))
