@@ -2,6 +2,8 @@
 #[path = "../../crates/xtask/tests/support/current_tree_input.rs"]
 pub mod old;
 pub(crate) use old::*;
+#[path = "../package-frontier-inputs-074/contract.rs"]
+pub mod closure;
 #[path = "contract.rs"]
 pub mod phase;
 
@@ -13,6 +15,9 @@ pub(crate) fn accepts_patch(path: &str, raw: &str) -> bool {
     old::accepts_patch(path, raw)
 }
 pub(crate) fn read(path: &str) -> String {
+    if closure::known(path) {
+        return closure::project(path, old::read(path));
+    }
     if path != phase::FRESH {
         return old::read(path);
     }

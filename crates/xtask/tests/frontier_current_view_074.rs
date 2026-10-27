@@ -1,4 +1,6 @@
 //! New current edges/addition retain the complete older protected frontier.
+#[path = "../../../tools/package-frontier-inputs-074/proof.rs"]
+mod closure_proof;
 #[path = "../../../tools/remaining-readers-074/inputs.rs"]
 mod current_inputs;
 #[path = "../../../tools/current-frontier-074/reader.rs"]
@@ -15,9 +17,10 @@ use frontier::{alarm_addition as alarm, contract, current};
 const STEP: &str = "dcb53f184fedbcce700a55c50996e876731dea6d";
 const TERMINAL: &str = "a67a5299ab335424e9b11330dc06bd749ea9b859";
 fn raw(path: &str) -> String {
-    std::fs::read_to_string(runtime::root().join(path))
+    let raw = std::fs::read_to_string(runtime::root().join(path))
         .unwrap()
-        .replace("\r\n", "\n")
+        .replace("\r\n", "\n");
+    closure_proof::source_previous(path, raw)
 }
 fn index() -> String {
     let out = std::process::Command::new("git")
