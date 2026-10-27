@@ -39,7 +39,7 @@ def load_job(root=prepare.ROOT):
     return module
 
 
-def _owned(group, argv, cwd, capacity, *, bound, now=time.monotonic, pause=time.sleep):
+def _owned(group, argv, cwd, capacity, *, bound, deadline=None, now=time.monotonic, pause=time.sleep):
     """Fixture-tested mechanism only; fixed gate dispatch still needs independent review.
 
     Its single-threaded worker must inherit already-separated stdout/stderr from
@@ -49,7 +49,11 @@ def _owned(group, argv, cwd, capacity, *, bound, now=time.monotonic, pause=time.
     if not math.isfinite(bound) or bound <= 0:
         raise ValueError('finite positive private envelope bound')
     started = now()
-    deadline = started + bound
+    if deadline is None:
+        deadline = started + bound
+    else:
+        prepare.require(math.isfinite(deadline) and deadline <= started+bound,
+                        'absolute deadline may not extend the original bound')
     child, code, reason = None, None, 'runner-loss'
     errors = []
     retired = False

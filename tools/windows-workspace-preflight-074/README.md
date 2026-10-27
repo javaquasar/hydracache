@@ -1,7 +1,8 @@
 # Windows/workspace preparation and read-only storage attribution
 
-These tools do not run Cargo, a package/workspace gate, WSL, a VM, a service,
-the original-owner path or a server. They do not stop foreign processes, change
+The original storage/preparation tools do not run Cargo. The separately guarded
+`dispatch.py --execute` connects only the fixed local Cargo commands below.
+No tool runs WSL, a VM, service, original-owner path or server. They do not stop foreign processes, change
 settings, resize pagefiles, compact disks or delete build/evidence files.
 
 `storage.py <new-output-directory>` records Windows volume, pagefile/CIM memory
@@ -68,7 +69,47 @@ The existing six-case native CI Job cohort separately checks creator loss before
 resume and during a live descendant, setup/unsupported-Job refusal and stdio/CWD.
 No service, original-owner product path, WSL or server fixture is involved.
 
-Connecting a fixed Cargo dispatcher still requires clean source/environment,
-the exact controlled worker/envelope bytes, current capacity and complete target
-accounting. The old timeouts are not retried, and these controls do not admit a
-whole-package/workspace run or turn `launch_ready` true.
+The separate fixed dispatcher below requires clean source/environment, the exact
+controlled worker/envelope bytes, current capacity and complete target accounting.
+The old timeouts are not retried, and prototype controls alone are not admission.
+
+## Fixed Cargo dispatcher
+
+`dispatch.py <absolute-new-output> --mode package|workspace` defaults to preflight
+only. `--execute` is the only execution switch; there is no free-form command,
+filter, deadline, thread or retry option. The existing preparation-only API and
+its old false admission flags remain unchanged.
+
+Execution requires the exact complete green `controls-final` receipt, clean
+original branch, fresh source/module and original environment checks, all workspace
+manifests, Git HEAD/refs/effective-config digests and actual toolchain/executable
+identity. Configuration/environment values are hashed, not published. A complete
+matching postflight is required. The original capacity prerequisites remain.
+
+The coordinator writes exclusive separate stdout/stderr before preflight and
+passes a SHA-bound request to `worker.py`. Helper bodies are verified before
+imports. Startup/frame validation consumes the SAME absolute 780/4800-second
+budget, never an added execution window. `_owned` accepts only an absolute
+deadline that cannot extend its original bound; its old default behavior stays
+unchanged. Retirement remains five seconds. Parent fallback uses only its original
+worker handle; lost/missing retirement receipts fail closed, never declare success.
+
+A nonblocking worker-owned Windows file lock prevents concurrent runner-owned
+Cargo commands without stopping any external process. A per-input/mode exclusive
+claim is retained even after failure/cancellation: another output label is not a
+retry mechanism. Output directories and existing receipts are never overwritten.
+
+Package accounting uses the unchanged SHA-pinned strict 156-target parser.
+Compiler/runner/resource refusals additionally retain partial counts and unstarted
+targets, but can never pass. Workspace accounting lists all 21 original verify
+stages, Cargo test/doctest targets and complete/partial case summaries. Original
+nightly ignored cases and the original Node/npm absence rule remain visible.
+Rustdoc can print multiple groups per Cargo target; those groups are all counted
+without inventing a case-to-target mapping. Whole-workspace default discovery
+authority is its fixed Cargo argv and pinned manifests, not a fabricated static
+feature-resolution catalog. Missing stages/summaries or unknown framing refuse.
+
+The full gate result additionally requires natural successful exit, empty original
+Job, successful bounded cleanup and byte-exact source/ref/config/environment
+postflight. Parser errors retain raw streams and an explicit unassessed accounting
+record. No partial suffix, GNU result or metadata verifier substitutes for a gate.
