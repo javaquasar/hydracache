@@ -53,9 +53,14 @@ def workspace(stdout, stderr, receipt):
     p.require(terminal <= 1, 'duplicate verify terminal marker')
     blocks = rust_blocks(stdout)
     scheduled = []
+    outer_launches=[]
     for line in stderr.splitlines():
         text = line.strip()
         if text.startswith('Running '):
+            if text.replace('\\','/')=='Running `target/debug/xtask.exe verify`':
+                p.require(not outer_launches and not scheduled,'duplicate/late outer verify entry')
+                outer_launches.append(text)
+                continue
             name, separator, _ = text[8:].partition(' (')
             p.require(separator, 'unrecognized Cargo target')
             scheduled.append(dict(kind='test', name=name.replace('\\','/')))
@@ -72,7 +77,7 @@ def workspace(stdout, stderr, receipt):
     covered=(len(blocks)>=len(scheduled)) if doctests else one_to_one
     complete = len(labels) == len(STAGES) and terminal == 1 and covered and all(r['complete'] for r in blocks)
     if good:
-        p.require(complete and blocks and not any(r['failed'] for r in blocks), 'zero exit lacks complete verify accounting')
+        p.require(complete and blocks and len(outer_launches)==1 and not any(r['failed'] for r in blocks), 'zero exit lacks complete verify accounting')
         console = [line for line in stdout.splitlines() if line.startswith('management console: SKIP ')]
         p.require(len(console) <= 1 and all(line in ('management console: SKIP (node not found)',
             'management console: SKIP (npm not found)') for line in console), 'unapproved console skip')
@@ -85,6 +90,7 @@ def workspace(stdout, stderr, receipt):
         stages=[dict(name=name, state='complete' if i < completed_stages else
             ('incomplete-or-failed' if i < len(labels) else 'unstarted')) for i,name in enumerate(STAGES)],
         scheduled_targets=scheduled, targets=blocks, unsummarized_targets=scheduled[len(blocks):],
+        outer_verify_launches=outer_launches,
         case_to_target_assignment='ordered-one-to-one' if one_to_one else 'not-asserted-rustdoc-grouping',
         passed=sum(r['passed'] for r in done), failed=sum(r['failed'] for r in done),
         ignored=sum(r['ignored'] for r in done), ignored_policy='original workspace default/nightly tier unchanged',

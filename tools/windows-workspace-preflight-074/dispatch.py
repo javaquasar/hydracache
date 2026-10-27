@@ -13,7 +13,7 @@ import custody
 import owned
 import prepare as p
 
-CONTROL=p.ROOT/'target/windows-fixed-cargo-20261027/controls-final'
+CONTROL=p.ROOT/'target/windows-fixed-cargo-20261027/controls-workspace-final'
 
 
 def controls(root=p.ROOT):

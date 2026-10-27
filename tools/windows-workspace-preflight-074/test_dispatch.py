@@ -20,6 +20,7 @@ from test_owned import Group
 CATALOG=['unittests src/lib.rs']
 OUT='running 1 test\ntest alpha ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n'
 ERR='    Finished `test` profile [unoptimized] target(s) in 0.01s\n     Running unittests src/lib.rs (target/debug/deps/lib-test.exe)\n'
+OUTER='     Running `target\\debug\\xtask.exe verify`\n'
 
 
 def receipt(mode='package',code=0,kind='success'):
@@ -53,13 +54,15 @@ class Accounting(unittest.TestCase):
     def test_workspace_complete_stages_and_tests_are_separate_from_package(self):
         text='\n'.join('== '+s+' ==' for s in a.STAGES)+'\n'+OUT
         text+='-- console npm deps\n-- console static check\n-- console playwright\nverify: all gates passed\n'
-        value=a.account('workspace',text,ERR,receipt('workspace'),CATALOG)
+        value=a.account('workspace',text,OUTER+ERR,receipt('workspace'),CATALOG)
         self.assertTrue(value['workspace_pass'])
         self.assertEqual(len(value['stages']),21)
         self.assertTrue(all(row['state']=='complete' for row in value['stages']))
         for bad in (text.replace('== format ==','== unknown =='),text.replace('verify: all gates passed\n',''),
                     text.replace('-- console playwright\n',''),text+OUT):
-            with self.assertRaises(ValueError):a.account('workspace',bad,ERR,receipt('workspace'),CATALOG)
+            with self.assertRaises(ValueError):a.account('workspace',bad,OUTER+ERR,receipt('workspace'),CATALOG)
+        for bad in (ERR,OUTER+OUTER+ERR,OUTER.replace('verify','other-command')+ERR):
+            with self.assertRaises(ValueError):a.account('workspace',text,bad,receipt('workspace'),CATALOG)
 
     def test_workspace_failure_prefix_and_original_node_skip_not_reinterpreted(self):
         value=a.account('workspace','== doc-check ==\n', '',receipt('workspace',1,'test-failure'),[])
@@ -68,13 +71,13 @@ class Accounting(unittest.TestCase):
         self.assertEqual(value['stages'][1]['state'],'unstarted')
         text='\n'.join('== '+s+' ==' for s in a.STAGES)+'\n'+OUT
         text+='management console: SKIP (node not found)\nverify: all gates passed\n'
-        self.assertTrue(a.account('workspace',text,ERR,receipt('workspace'),[])['workspace_pass'])
-        with self.assertRaises(ValueError):a.account('workspace',text.replace('node not found','disabled'),ERR,receipt('workspace'),[])
+        self.assertTrue(a.account('workspace',text,OUTER+ERR,receipt('workspace'),[])['workspace_pass'])
+        with self.assertRaises(ValueError):a.account('workspace',text.replace('node not found','disabled'),OUTER+ERR,receipt('workspace'),[])
 
     def test_rustdoc_multigroup_counts_without_invented_target_attribution(self):
         text='\n'.join('== '+s+' ==' for s in a.STAGES)+'\n'+OUT*2
         text+='management console: SKIP (npm not found)\nverify: all gates passed\n'
-        result=a.account('workspace',text,'   Doc-tests synthetic\n',receipt('workspace'),[])
+        result=a.account('workspace',text,OUTER+'   Doc-tests synthetic\n',receipt('workspace'),[])
         self.assertEqual(result['passed'],2)
         self.assertEqual(result['case_to_target_assignment'],'not-asserted-rustdoc-grouping')
         self.assertFalse(any('target' in row for row in result['targets']))
@@ -84,6 +87,23 @@ class Accounting(unittest.TestCase):
         text=OUT.replace('alpha','src/lib.rs - Example (line 3) - compile fail')
         self.assertEqual(a.rust_blocks(text)[0]['cases'][0]['name'],'src/lib.rs - Example (line 3) - compile fail')
         with self.assertRaises(ValueError):a.rust_blocks(OUT.replace('0 filtered','1 filtered'))
+
+    def test_exact_old_milestone_log_is_data_not_a_replayed_or_promoted_gate(self):
+        folder=p.ROOT/'docs/testing/performance/0.74/local-runs/local-milestone-20261024'
+        raw=(folder/'index.json').read_bytes()
+        self.assertEqual(p.sha(raw),'77fbc293a2f9dc4c10cea302375af693f9331fea422b4b10e39350d3aa785e8a')
+        index=json.loads(raw)
+        values=[]
+        for name in ('stdout.log','stderr.log'):
+            row=index['files']['observation/full-verify-first/'+name]
+            blob=(folder/'objects'/row['sha256']).read_bytes()
+            self.assertEqual((p.sha(blob),len(blob)),(row['sha256'],row['bytes']))
+            values.append(blob.decode())
+        result=a.account('workspace',*values,receipt('workspace',1,'test-failure'),[])
+        self.assertFalse(result['workspace_pass'])
+        self.assertEqual(len(result['outer_verify_launches']),1)
+        self.assertEqual(result['stages'][11]['state'],'incomplete-or-failed')
+        self.assertEqual(result['stages'][12]['state'],'unstarted')
 
 
 class Dispatcher(unittest.TestCase):
@@ -119,7 +139,7 @@ class Dispatcher(unittest.TestCase):
                 if mode=='package':assert kwargs['env']['CARGO_BUILD_JOBS']=='2'
                 assert request['specification']['bound_seconds']==(780 if mode=='package' else 4800)
                 text=OUT if mode=='package' else '\n'.join('== '+s+' ==' for s in a.STAGES)+'\n'+OUT+'management console: SKIP (node not found)\nverify: all gates passed\n'
-                kwargs['stdout'].write(text.encode());kwargs['stderr'].write(ERR.encode())
+                kwargs['stdout'].write(text.encode());kwargs['stderr'].write(((OUTER if mode=='workspace' else '')+ERR).encode())
                 p.write(self.out,'controller.json',dict(mode=mode,request_sha256='0'*64 if drift else argv[-2],
                     specification=request['specification'],execution=receipt(mode),original_job_sha256=owned.JOB_SHA,worker_pid=42))
             def poll(self):return self.returncode
