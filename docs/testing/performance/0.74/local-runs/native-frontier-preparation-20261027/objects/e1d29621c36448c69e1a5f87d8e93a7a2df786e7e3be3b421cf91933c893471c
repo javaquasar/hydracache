@@ -1,0 +1,31 @@
+{
+  "blob_bytes": 2140731448,
+  "bundle_retained_locally_not_in_packet": true,
+  "byte_mode_and_history_transfer_only": true,
+  "case_threads": 4,
+  "clocks": false,
+  "expensive_or_product_workload": false,
+  "files": 53842,
+  "first_results_retained": true,
+  "linux_frontier_complete": false,
+  "live_checks_changed": false,
+  "native_checkout_complete": true,
+  "native_format_complete": true,
+  "original_format_bound_seconds": 120,
+  "original_gnu_bound_seconds": 900,
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "package_bound_seconds": 780,
+  "package_pass": false,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "refs": 404,
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "setup_bound_seconds": 600,
+  "source": "636feb166b273b5c3d6fc0b93c4fccf57560cf03",
+  "symbolic_ref_topology_or_source_configuration_mirrored": false
+}

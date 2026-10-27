@@ -1,0 +1,9 @@
+{
+  "cargo_config_exact": true,
+  "effect_review": "cargo fmt --all performs local metadata/source/rustfmt checks, no build or libtest; offline-only child env, same 120-second bound; no clocks/services/workload. Existing full format timeout remains separate.",
+  "full_tree_observed": true,
+  "overrides_absent": true,
+  "request_bound": true,
+  "shadow_config_absent": true,
+  "source_exact": true
+}

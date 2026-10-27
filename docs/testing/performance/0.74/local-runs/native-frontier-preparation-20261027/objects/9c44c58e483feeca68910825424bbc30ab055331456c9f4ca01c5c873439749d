@@ -1,0 +1,15 @@
+{
+  "all_file_bytes_and_modes_exact": true,
+  "blob_bytes": 2140731448,
+  "files": 53842,
+  "independent_object_database": true,
+  "linux_frontier_complete": false,
+  "package_pass": false,
+  "refs": 404,
+  "release_admitted": false,
+  "repo": "/home/artur/.cache/hydracache-074-frontier-native/636feb166b273b5c3d6fc0b93c4fccf57560cf03/repo",
+  "request_sha256": "44aaf01ea277b78a0ac3b2a77e382e61ac92ffebe0c4ba12a615eee5efd0e3e4",
+  "source": "636feb166b273b5c3d6fc0b93c4fccf57560cf03",
+  "source_tree_unchanged": true,
+  "tests_dispatched": false
+}

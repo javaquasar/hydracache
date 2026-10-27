@@ -1,0 +1,22 @@
+{
+  "attempt_id": "local",
+  "classification": "success",
+  "command": [
+    "/usr/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/native-frontier-074",
+    "-p",
+    "test_contract.py",
+    "-v"
+  ],
+  "detail": "child exited with code 0",
+  "elapsed_seconds": 0.237,
+  "exit_code": 0,
+  "finished_at": "2026-10-27T03:04:29.305777Z",
+  "log_file": "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/native-contract-gnu-20261027.log",
+  "schema_version": 1,
+  "started_at": "2026-10-27T03:04:29.069047Z"
+}

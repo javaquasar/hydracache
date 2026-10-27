@@ -1,0 +1,13 @@
+{
+  "blob_bytes": 2140731448,
+  "bundle_bytes": 229408242,
+  "bundle_sha256": "502abdb4bf01b164f40db1d650cfc6cabc6d766a15cae74506ea47a40fd4c01c",
+  "checkout_created": false,
+  "export": true,
+  "files": 53842,
+  "package_pass": false,
+  "refs": 404,
+  "release_admitted": false,
+  "request_sha256": "44aaf01ea277b78a0ac3b2a77e382e61ac92ffebe0c4ba12a615eee5efd0e3e4",
+  "source": "636feb166b273b5c3d6fc0b93c4fccf57560cf03"
+}

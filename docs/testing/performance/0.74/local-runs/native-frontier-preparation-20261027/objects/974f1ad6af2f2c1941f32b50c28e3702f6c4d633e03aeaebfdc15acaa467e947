@@ -1,0 +1,78 @@
+"""Separate native-format validation, not the GNU frontier or full package."""
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+SOURCE = '636feb166b273b5c3d6fc0b93c4fccf57560cf03'
+ROOT = Path('/home/artur/.cache/hydracache-074-frontier-native') / SOURCE / 'repo'
+CONTROL = Path('/mnt/c/Workspace/prj/jq/cashe/hydracache-074')
+OUT = CONTROL / 'target/native-format-exact-config-20261027'
+REQUEST = CONTROL / 'target/native-frontier-20261027' / SOURCE / 'request.json'
+REQUEST_SHA = '44aaf01ea277b78a0ac3b2a77e382e61ac92ffebe0c4ba12a615eee5efd0e3e4'
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+def write(name, value):
+    with (OUT / name).open('x', encoding='utf-8', newline='\n') as stream:
+        json.dump(value, stream, sort_keys=True, indent=2)
+        stream.write('\n')
+OUT.mkdir(exist_ok=False)
+argv = ['/home/artur/.cargo/bin/cargo', '+1.94.0', 'fmt', '--all', '--', '--check']
+write('intent.json', dict(argv=argv, source=SOURCE, request_sha256=REQUEST_SHA, root=str(ROOT),
+    launcher_sha256=sha(Path(__file__).read_bytes()),
+    timeout_seconds=120, package_dispatched=False, retry=False, server=False, services=False,
+    clocks=False, release_admitted=False))
+try:
+    pins = {'contract.py': '9d52e631d36031bed12a71c46109222b2b9e1bd1d53bd5de74dbd560ed92e49d',
+            'native.py': '8badd8357fd491b01e65c3c118421cdd8f41eb952909678c97f78ac2bffe3769'}
+    for name, digest in pins.items():
+        assert sha((CONTROL / 'tools/native-frontier-074' / name).read_bytes()) == digest
+    sys.path.insert(0, str(CONTROL / 'tools/native-frontier-074'))
+    import contract as c
+    import native
+    raw = REQUEST.read_bytes()
+    assert sha(raw) == REQUEST_SHA
+    request = c.request(c.decode(raw))
+    assert request['source'] == SOURCE
+    receipt = c.decode((ROOT.parent / 'result.json').read_bytes())
+    assert receipt['source'] == SOURCE and receipt['all_file_bytes_and_modes_exact']
+    assert receipt['independent_object_database'] and not receipt['tests_dispatched']
+    assert native.git(ROOT, 'rev-parse', 'HEAD').decode().strip() == SOURCE
+    # Do not hide build/test overrides or shadow Cargo configuration.
+    blocked = [k for k in os.environ if k.startswith(('CARGO_', 'RUST_', 'RUSTFLAGS', 'HC074_', 'GIT_', 'LD_'))
+               and not (k == 'GIT_PAGER' and os.environ[k] == 'cat')]
+    assert not blocked, 'inherited overrides: ' + ','.join(blocked)
+    candidates = [p / '.cargo' / name for p in (ROOT, *ROOT.parents) for name in ('config', 'config.toml')]
+    candidates += [Path('/home/artur/.cargo') / name for name in ('config', 'config.toml')]
+    assert not any(p.exists() for p in candidates if p != ROOT / '.cargo/config.toml'), 'shadow Cargo config'
+    # Exact SOURCE blob, not the Windows worktree's CRLF representation.
+    assert sha((ROOT / '.cargo/config.toml').read_bytes()) == 'db18cd83f159c3152bcab6c10bbaac35be479c67a24b48c0f508bd1c7eca7a34'
+    assert sha((CONTROL / '.cargo/config.toml').read_bytes()) == '90f023744f969c176d98d811145b883b411da0fe8a294e930a0f965456ac49a3'
+    def space():
+        import shutil
+        assert shutil.disk_usage('/mnt/c').free >= c.FLOOR and shutil.disk_usage(ROOT).free >= c.FLOOR
+    native.validate_files(ROOT, request['tree'], space)
+    write('preflight.json', dict(source_exact=True, full_tree_observed=True, request_bound=True,
+        overrides_absent=True, cargo_config_exact=True, shadow_config_absent=True,
+        effect_review='cargo fmt --all performs local metadata/source/rustfmt checks, no build or libtest; offline-only child env, same 120-second bound; no clocks/services/workload. Existing full format timeout remains separate.'))
+    # Existing pinned CI subreaper contains the formatter and metadata children.
+    heartbeat = CONTROL / 'scripts/ci/run-with-heartbeat.py'
+    assert sha(heartbeat.read_bytes()) == 'cedf938f80b3697efa219e5e8566d5d4f869cc2769dc7de6a176efb6e3af7afb'
+    for name, digest in [('watchdog_linux_group.py', 'e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691'),
+        ('watchdog_windows_job.py', '8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1')]:
+        assert sha((heartbeat.parent / name).read_bytes()) == digest
+    command = ['/usr/bin/python3', str(heartbeat), '--timeout-seconds', '120', '--heartbeat-seconds', '30',
+        '--status-json', str(OUT / 'heartbeat.json'), '--log-file', str(OUT / 'format.log'), '--cwd', str(ROOT), '--', *argv]
+    with (OUT / 'stdout.log').open('xb') as stdout, (OUT / 'stderr.log').open('xb') as stderr:
+        result = subprocess.run(command, cwd=ROOT, env=dict(os.environ, RUSTUP_AUTO_INSTALL='0', CARGO_NET_OFFLINE='true'),
+            stdout=stdout, stderr=stderr, check=False)
+    native.validate_files(ROOT, request['tree'], space)
+    write('result.json', dict(exit=result.returncode, source_unchanged=True, full_tree_postflight=True,
+        package_pass=False, linux_frontier_complete=False, release_admitted=False))
+    print(json.dumps(dict(exit=result.returncode, source_unchanged=True, package_pass=False)))
+    raise SystemExit(result.returncode)
+except Exception as error:
+    write('refusal.json', dict(type=type(error).__name__, reason=str(error), package_pass=False, release_admitted=False))
+    raise

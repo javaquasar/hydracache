@@ -1,0 +1,11 @@
+test_offline_independent_complete_checkout_and_reuse_refusal (test_native.Native.test_offline_independent_complete_checkout_and_reuse_refusal) ... /tmp/hc074-native-fixture-az66muy9/owned-native/f7185b994866df2ea68a4b2a91c00308716e4869/history.bundle is okay
+From /tmp/hc074-native-fixture-az66muy9/owned-native/f7185b994866df2ea68a4b2a91c00308716e4869/history.bundle
+ * [new branch]      main       -> main
+HEAD is now at f7185b9 owned data only
+ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.179s
+
+OK
+{"all_file_bytes_and_modes_exact": true, "blob_bytes": 3004, "files": 3, "independent_object_database": true, "linux_frontier_complete": false, "package_pass": false, "refs": 1, "release_admitted": false, "repo": "/tmp/hc074-native-fixture-az66muy9/owned-native/f7185b994866df2ea68a4b2a91c00308716e4869/repo", "request_sha256": "d3f6e1a927ef66b4f257de2ab809d89c265f7d6a03e811e7fb7d45fbec832ccb", "source": "f7185b994866df2ea68a4b2a91c00308716e4869", "source_tree_unchanged": true, "tests_dispatched": false}

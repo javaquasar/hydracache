@@ -1,0 +1,2 @@
+watchdog heartbeat attempt=local elapsed=0.0s remaining=120.0s pid=123704
+watchdog result classification=success elapsed=6.8s receipt=/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/native-format-exact-config-20261027/heartbeat.json

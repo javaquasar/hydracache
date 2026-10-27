@@ -1,0 +1,3 @@
+watchdog heartbeat attempt=local elapsed=0.1s remaining=599.9s pid=123613
+watchdog heartbeat attempt=local elapsed=30.1s remaining=569.9s pid=123613
+watchdog result classification=success elapsed=36.5s receipt=target/native-context-launch-20261027/heartbeat.json

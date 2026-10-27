@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "/home/artur/.cargo/bin/cargo",
+    "+1.94.0",
+    "fmt",
+    "--all",
+    "--",
+    "--check"
+  ],
+  "clocks": false,
+  "package_dispatched": false,
+  "release_admitted": false,
+  "request_sha256": "44aaf01ea277b78a0ac3b2a77e382e61ac92ffebe0c4ba12a615eee5efd0e3e4",
+  "retry": false,
+  "root": "/home/artur/.cache/hydracache-074-frontier-native/636feb166b273b5c3d6fc0b93c4fccf57560cf03/repo",
+  "server": false,
+  "services": false,
+  "source": "636feb166b273b5c3d6fc0b93c4fccf57560cf03",
+  "timeout_seconds": 120
+}

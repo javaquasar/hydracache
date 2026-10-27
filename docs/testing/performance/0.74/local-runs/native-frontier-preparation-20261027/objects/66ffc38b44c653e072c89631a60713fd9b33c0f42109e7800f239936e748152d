@@ -1,0 +1,44 @@
+"""One SHA-pinned setup under existing CI custody; never dispatch a test."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+ROOT = Path(__file__).resolve().parent.parent
+SOURCE = '636feb166b273b5c3d6fc0b93c4fccf57560cf03'
+REQUEST_SHA = '44aaf01ea277b78a0ac3b2a77e382e61ac92ffebe0c4ba12a615eee5efd0e3e4'
+PINS = {
+    'tools/native-frontier-074/contract.py': '9d52e631d36031bed12a71c46109222b2b9e1bd1d53bd5de74dbd560ed92e49d',
+    'tools/native-frontier-074/prepare.py': '18d58d02b38c5d9f8ea450e71e7ecbaac440ba05519171a9248e204ee799980e',
+    'tools/native-frontier-074/native.py': '8badd8357fd491b01e65c3c118421cdd8f41eb952909678c97f78ac2bffe3769',
+    'scripts/ci/run-with-heartbeat.py': 'cedf938f80b3697efa219e5e8566d5d4f869cc2769dc7de6a176efb6e3af7afb',
+    'scripts/ci/watchdog_linux_group.py': 'e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691',
+    'scripts/ci/watchdog_windows_job.py': '8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1',
+}
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip() == SOURCE
+assert not subprocess.check_output(['git', '--no-optional-locks', 'status', '--porcelain', '--untracked-files=all'], cwd=ROOT)
+assert {p: sha((ROOT / p).read_bytes()) for p in PINS} == PINS
+REQUEST = 'target/native-frontier-20261027/' + SOURCE + '/request.json'
+assert sha((ROOT / REQUEST).read_bytes()) == REQUEST_SHA
+OUT = ROOT / 'target/native-context-launch-20261027'
+OUT.mkdir(exist_ok=False)
+argv = ['wsl.exe', '-d', 'Ubuntu', '-u', 'artur', '--cd',
+    '/mnt/c/Workspace/prj/jq/cashe/hydracache-074', '--exec', '/usr/bin/python3',
+    'scripts/ci/run-with-heartbeat.py', '--timeout-seconds', '600', '--heartbeat-seconds', '30',
+    '--status-json', 'target/native-context-launch-20261027/heartbeat.json',
+    '--log-file', 'target/native-context-launch-20261027/native.log', '--', '/usr/bin/python3',
+    'tools/native-frontier-074/native.py', '--request', REQUEST, '--request-sha256', REQUEST_SHA]
+def write(name, value):
+    with (OUT / name).open('x', encoding='utf-8', newline='\n') as stream:
+        json.dump(value, stream, sort_keys=True, indent=2)
+        stream.write('\n')
+write('intent.json', dict(argv=argv, source=SOURCE, source_pins=PINS, request_sha256=REQUEST_SHA,
+    setup_bound_seconds=600, tests_dispatched=False, automatic_retry=False,
+    services=False, clocks=False, server=False, release_admitted=False))
+with (OUT / 'stdout.log').open('xb') as stdout, (OUT / 'stderr.log').open('xb') as stderr:
+    process = subprocess.run(argv, cwd=ROOT, stdout=stdout, stderr=stderr, check=False)
+assert {p: sha((ROOT / p).read_bytes()) for p in PINS} == PINS
+write('result.json', dict(exit=process.returncode, sources_unchanged=True, tests_dispatched=False,
+    release_admitted=False))
+print(json.dumps(dict(exit=process.returncode, tests_dispatched=False, release_admitted=False)))
+raise SystemExit(process.returncode)

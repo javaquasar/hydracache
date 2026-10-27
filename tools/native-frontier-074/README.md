@@ -48,3 +48,11 @@ dispatcher is provided. A native source/environment effect review and explicit
 separate attempt still precede GNU frontier or workspace formatting. Keep the
 original 900-second/four-thread GNU and 780-second/four-thread/full-package
 contracts; do not join old suffixes or reinterpret old refusals.
+
+The [first complete preparation and format result](../../docs/testing/performance/0.74/native-frontier-preparation-result-20261027.md)
+retains all transfer metadata and first outcomes. The native source is a separate
+detached copy, not a mirror of source Git configuration/reflogs/symbolic-ref
+topology. The 404 bindings are resolved ref/object IDs; file modes mean Git
+executable identities, not production UID/GID or account enrollment. The full
+native format-check passes after a separately retained LF/CRLF preflight refusal.
+GNU frontier and full package admission remain closed.

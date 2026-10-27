@@ -1,0 +1,19 @@
+{
+  "attempt_id": "local",
+  "classification": "success",
+  "command": [
+    "/usr/bin/python3",
+    "tools/native-frontier-074/native.py",
+    "--request",
+    "target/native-frontier-20261027/636feb166b273b5c3d6fc0b93c4fccf57560cf03/request.json",
+    "--request-sha256",
+    "44aaf01ea277b78a0ac3b2a77e382e61ac92ffebe0c4ba12a615eee5efd0e3e4"
+  ],
+  "detail": "child exited with code 0",
+  "elapsed_seconds": 36.52,
+  "exit_code": 0,
+  "finished_at": "2026-10-27T02:56:59.124219Z",
+  "log_file": "target/native-context-launch-20261027/native.log",
+  "schema_version": 1,
+  "started_at": "2026-10-27T02:56:19.023109Z"
+}

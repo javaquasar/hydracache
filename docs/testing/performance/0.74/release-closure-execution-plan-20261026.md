@@ -165,6 +165,17 @@ Windows refuses on command length before a verdict, and one separate GNU check
 reaches its 120-second diagnostic bound. Both first outcomes are retained without
 retry or source edits. This does not change the package's original time limit.
 
+The [offline native Linux continuation](native-frontier-preparation-result-20261027.md)
+now prepares an independent ext4 checkout of exact source `636feb166b2`: all
+53,842 tracked files and 404 resolved ref/object IDs are checked, without path
+pruning, borrowed objects, network or source configuration copying. The first
+actual full native workspace format-check passes under the unchanged 120-second
+diagnostic bound after a separately retained LF/CRLF preflight refusal. Nine
+portable controls pass on both platforms and one owned Linux Git fixture passes.
+No GNU frontier or package is dispatched. Review that exact native environment
+and GNU effect scope next, then allow one distinct 900-second/four-thread native
+frontier attempt. Earlier timeouts and the complete package contract remain exact.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

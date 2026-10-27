@@ -1,0 +1,2 @@
+watchdog heartbeat attempt=local elapsed=0.0s remaining=60.0s pid=123570
+watchdog result classification=success elapsed=1.2s receipt=target/native-fixture-heartbeat-20261027.json

@@ -21440,3 +21440,20 @@ Workspace-wide formatting also remains distinct from the focused tooling gate:
 Windows refuses its command length before a verdict, while one GNU check reaches
 its separate 120-second diagnostic bound without changing source. Scoped xtask
 formatting passes, but cannot stand in for either missing complete verdict.
+
+The [native Linux preparation](../testing/performance/0.74/native-frontier-preparation-result-20261027.md)
+addresses the filesystem boundary without narrowing the census. A complete
+offline bundle supplies an independent ext4 checkout: 53,842 tracked files,
+their exact Git blob/executable identities and 404 resolved ref/object IDs.
+Physical backing capacity is reserved alongside Linux free space; failed or
+already-used directories cannot become an implicit continuation. Nine portable
+controls and an owned tiny Git integration verify the transfer and refusal paths.
+
+The first native format preflight exposes a representation error in its own
+config comparison: LF on Linux is compared to Windows CRLF. Both complete forms
+are then pinned independently to the original source, with the first refusal
+retained. The first actually dispatched full native format-check passes inside
+the unchanged 120-second bound, and fresh full-tree postflight shows no edits.
+That closes a formatting result, not a speedup estimate or the GNU frontier.
+The next GNU attempt still needs exact native environment/effect review, while
+the old package and timeout receipts keep their original identities and verdicts.

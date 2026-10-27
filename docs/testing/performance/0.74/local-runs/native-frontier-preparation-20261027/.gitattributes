@@ -1,0 +1,2 @@
+objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+index.json -text

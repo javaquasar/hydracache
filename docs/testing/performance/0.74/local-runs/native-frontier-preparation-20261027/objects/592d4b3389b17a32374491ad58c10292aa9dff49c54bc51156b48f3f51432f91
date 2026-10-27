@@ -1,0 +1,22 @@
+{
+  "attempt_id": "local",
+  "classification": "success",
+  "command": [
+    "/usr/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/native-frontier-074",
+    "-p",
+    "test_native.py",
+    "-v"
+  ],
+  "detail": "child exited with code 0",
+  "elapsed_seconds": 1.214,
+  "exit_code": 0,
+  "finished_at": "2026-10-27T02:49:36.973902Z",
+  "log_file": "target/native-fixture-heartbeat-20261027.log",
+  "schema_version": 1,
+  "started_at": "2026-10-27T02:49:35.759369Z"
+}

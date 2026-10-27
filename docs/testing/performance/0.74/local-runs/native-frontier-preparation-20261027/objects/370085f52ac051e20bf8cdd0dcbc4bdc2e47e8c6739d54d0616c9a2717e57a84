@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/native-format-once-20261027.py", line 49, in <module>
+    assert sha((ROOT / '.cargo/config.toml').read_bytes()) == sha((CONTROL / '.cargo/config.toml').read_bytes())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

@@ -1,0 +1,2 @@
+watchdog heartbeat attempt=local elapsed=0.0s remaining=60.0s pid=123765
+watchdog result classification=success elapsed=0.2s receipt=/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/native-contract-gnu-20261027.json

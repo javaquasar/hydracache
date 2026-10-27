@@ -1,0 +1,85 @@
+"""Retain full transfer manifests and checks, without executing archived code."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+ROOT = Path(__file__).resolve().parent.parent
+SOURCE = '636feb166b273b5c3d6fc0b93c4fccf57560cf03'
+BASE = ROOT / 'target/roots-lock-view-20261027'
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/native-frontier-preparation-20261027'
+members, objects, phases = {}, {}, {}
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+def doc(name, value): add(name, (json.dumps(value, sort_keys=True, indent=2) + '\n').encode())
+for folder in sorted(BASE.glob('native-*')):
+    if not folder.is_dir(): continue
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    assert result['source_unchanged'] and result['commit_unchanged'] and not result['outer_refusal']
+    assert result['source_contract'] and not result['release_admitted']
+    expected = 1 if folder.name == 'native-format-once' else 0
+    assert result['exit'] == expected, (folder.name, result['exit'])
+    assert intent['disk_floor_bytes'] == 4*1024**3
+    assert not any(intent[k] for k in ('server', 'services', 'clocks', 'qualification', 'product_load'))
+    phases[folder.name] = dict(exit=result['exit'], source_commit=intent['source_commit'])
+    for path in sorted(folder.rglob('*')):
+        if path.is_file(): add('checks/' + folder.name + '/' + path.relative_to(folder).as_posix(), path.read_bytes())
+for relative in ('native-context-launch-20261027', 'native-format-once-20261027', 'native-format-exact-config-20261027'):
+    for path in sorted((ROOT / 'target' / relative).rglob('*')):
+        if path.is_file(): add('capture/' + relative + '/' + path.relative_to(ROOT / 'target' / relative).as_posix(), path.read_bytes())
+for name in ('native-fixture-heartbeat-20261027.json', 'native-fixture-heartbeat-20261027.log',
+             'native-contract-gnu-20261027.json', 'native-contract-gnu-20261027.log'):
+    add('capture/' + name, (ROOT / 'target' / name).read_bytes())
+capsule = ROOT / 'target/native-frontier-20261027' / SOURCE
+for name in ('intent.json', 'request.json', 'result.json'):
+    add('export/' + name, (capsule / name).read_bytes())
+value = json.loads((capsule / 'request.json').read_bytes())
+assert sha((capsule / 'request.json').read_bytes()) == '44aaf01ea277b78a0ac3b2a77e382e61ac92ffebe0c4ba12a615eee5efd0e3e4'
+assert sha((capsule / 'history.bundle').read_bytes()) == value['bundle_sha256']
+native = Path(r'\\wsl.localhost\Ubuntu\home\artur\.cache\hydracache-074-frontier-native') / SOURCE
+assert sha((native / 'history.bundle').read_bytes()) == value['bundle_sha256']
+for name in ('intent.json', 'result.json'):
+    add('native/' + name, (native / name).read_bytes())
+receipt = json.loads((native / 'result.json').read_bytes())
+assert receipt['all_file_bytes_and_modes_exact'] and receipt['independent_object_database']
+assert receipt['source'] == SOURCE and receipt['files'] == len(value['tree']) == 53842
+assert len(value['refs']) == 404 and not receipt['tests_dispatched']
+format_result = json.loads((ROOT / 'target/native-format-exact-config-20261027/result.json').read_bytes())
+assert format_result['exit'] == 0 and format_result['full_tree_postflight'] and format_result['source_unchanged']
+for path in ('tools/native-frontier-074/contract.py', 'tools/native-frontier-074/native.py',
+    'tools/native-frontier-074/prepare.py', 'tools/native-frontier-074/test_contract.py',
+    'tools/native-frontier-074/test_native.py', 'tools/native-frontier-074/README.md',
+    'docs/testing/performance/0.74/native-frontier-preparation-result-20261027.md',
+    'target/launch-native-context-20261027.py', 'target/native-format-once-20261027.py',
+    'target/seal-native-preparation-20261027.py'):
+    add('review/current/' + path, (ROOT / path).read_bytes())
+old = subprocess.check_output(['git', 'cat-file', 'blob', '5b4f1663a104d2b5ad2d0eeb4ff64f0e0a42065e'], cwd=ROOT)
+add('review/first-format-launcher.py', old)
+doc('review/first-source-witness.json', dict(blob='5b4f1663a104d2b5ad2d0eeb4ff64f0e0a42065e',
+    observed_after_refusal=True, preexecution_digest_binding=False,
+    early_portable_untracked_sources_preexecution_binding=False))
+doc('review/scope.json', dict(source=SOURCE, files=53842, refs=404, blob_bytes=2140731448,
+    native_checkout_complete=True, native_format_complete=True, original_format_bound_seconds=120,
+    setup_bound_seconds=600, original_gnu_bound_seconds=900, package_bound_seconds=780, case_threads=4,
+    qualification_sha256='11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+    original_windows=[300,60,10], byte_mode_and_history_transfer_only=True,
+    symbolic_ref_topology_or_source_configuration_mirrored=False,
+    first_results_retained=True, live_checks_changed=False, server=False, services=False, clocks=False,
+    expensive_or_product_workload=False, linux_frontier_complete=False, package_pass=False, release_admitted=False,
+    bundle_retained_locally_not_in_packet=True))
+OUT.mkdir(exist_ok=False)
+(OUT / 'objects').mkdir()
+with (OUT / '.gitattributes').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+for digest, raw in objects.items():
+    with (OUT / 'objects' / digest).open('xb') as stream: stream.write(raw)
+with (OUT / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(dict(schema='hc074-native-frontier-preparation-evidence-v1', source=SOURCE, members=members,
+        phases=phases, package_pass=False, archived_code_executed=False, release_admitted=False), stream, sort_keys=True, indent=2)
+    stream.write('\n')
+print(json.dumps(dict(members=len(members), objects=len(objects), bytes=sum(map(len, objects.values())),
+    index_sha256=sha((OUT / 'index.json').read_bytes()))))
