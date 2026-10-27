@@ -1,0 +1,14 @@
+{
+  "changed_source_review_v9": true,
+  "clocks": false,
+  "native_frontier_index_sha256": "be69c7c5e73cec2a0fb6d94da4faceebbcfe25a5532771f50db35f3aba9241fd",
+  "native_frontier_source": "636feb166b273b5c3d6fc0b93c4fccf57560cf03",
+  "old_v6_v7_v8_reinterpreted": false,
+  "old_wrappers_exact": true,
+  "performance_measurement": false,
+  "product_load": false,
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_commit": "0c60d80d097b15f7d4bf59203d4455eb8d537441"
+}

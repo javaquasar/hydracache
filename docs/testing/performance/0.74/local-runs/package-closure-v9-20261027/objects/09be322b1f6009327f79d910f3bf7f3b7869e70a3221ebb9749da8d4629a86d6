@@ -1,0 +1,36 @@
+"""Assess first V9 data with the unchanged byte-pinned transcript parser."""
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import subprocess
+import sys
+ROOT = Path(__file__).resolve().parent.parent
+COORD = ROOT / 'target/reviewed-package-v9-20261027/full-first'
+RUN = ROOT / 'target/source-continuation-20261024/package-v9-full-first'
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+def read(path): return json.loads(path.read_bytes())
+gate = read(COORD / 'gate.json')
+intent, result = read(RUN / 'intent.json'), read(RUN / 'result.json')
+assert gate['head'] == intent['head'] == '0c60d80d097b15f7d4bf59203d4455eb8d537441'
+assert result['source_unchanged'] and result['head_unchanged'] and result['source_after'] == intent['source']
+assert intent['bound_seconds'] == 780 and intent['retry'] is False
+assert intent['argv'] == ['cargo', '+1.94.0', 'test', '--offline', '--locked', '--no-fail-fast',
+    '-p', 'xtask', '--lib', '--tests', '--', '--test-threads=4']
+path = ROOT / 'tools/xtask-package-attribution-074/review.py'
+assert sha(path.read_bytes()) == '0229d4067fffd0d0b5acee7d864efc64aadfb201de1ea3f17944a2f8dddf3c4d'
+spec = importlib.util.spec_from_file_location('checked_current_transcript_parser_v9', path)
+parser = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(parser)
+accounting = parser.parse_transcript((RUN / 'stdout.log').read_text(encoding='utf-8'), (RUN / 'stderr.log').read_text(encoding='utf-8'),
+    gate['targets'], result['exit'], result['outer_refusal'], 780)
+sys.path.insert(0, str(ROOT / 'tools/historical-blob-batch-074'))
+import package_replay_v9 as replay
+review = replay.load_review(ROOT)
+post = dict(head=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
+    source_review=review.source_review(ROOT, replay.load_document(ROOT)),
+    environment=review.environment_preflight(ROOT), wrappers=replay.checked_wrappers(ROOT))
+assert post['head'] == gate['head']
+assert post['source_review'] == {k:v for k,v in gate.items() if k not in ('head', 'environment')}
+assert post['environment'] == gate['environment']
+print(json.dumps(dict(accounting=accounting, postflight=post, release_admitted=False), sort_keys=True, indent=2))

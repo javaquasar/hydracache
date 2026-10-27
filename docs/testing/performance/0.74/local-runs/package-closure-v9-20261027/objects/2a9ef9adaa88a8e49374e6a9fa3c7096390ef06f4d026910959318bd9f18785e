@@ -1,0 +1,13 @@
+test_default_and_exclusive_destination (test_package_replay_v9.ReplayV9.test_default_and_exclusive_destination) ... ok
+test_dirty_input_never_dispatches (test_package_replay_v9.ReplayV9.test_dirty_input_never_dispatches) ... ok
+test_each_wrapper_is_checked (test_package_replay_v9.ReplayV9.test_each_wrapper_is_checked) ... ok
+test_fixed_review_and_syntax_load (test_package_replay_v9.ReplayV9.test_fixed_review_and_syntax_load) ... ok
+test_invalid_label_before_output_and_unknown_cli_before_dispatch (test_package_replay_v9.ReplayV9.test_invalid_label_before_output_and_unknown_cli_before_dispatch) ... ok
+test_one_original_argv_and_restored_interpreter_arguments (test_package_replay_v9.ReplayV9.test_one_original_argv_and_restored_interpreter_arguments) ... ok
+test_preflight_refusals_never_dispatch (test_package_replay_v9.ReplayV9.test_preflight_refusals_never_dispatch) ... ok
+test_review_bytes_are_checked_before_import (test_package_replay_v9.ReplayV9.test_review_bytes_are_checked_before_import) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.275s
+
+OK

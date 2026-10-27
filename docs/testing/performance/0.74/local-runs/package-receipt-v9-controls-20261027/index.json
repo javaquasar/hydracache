@@ -1,0 +1,65 @@
+{
+  "archived_code_executed": false,
+  "controls_passed": 6,
+  "members": {
+    "capture/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "capture/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "capture/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "capture/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "capture/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "capture/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "capture/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "capture/intent.json": {
+      "bytes": 359485,
+      "sha256": "68ddda8b7aaa7b230deca0443b8cbaf4e8b9c83733d4e6427386c81cd8d491a2"
+    },
+    "capture/process.json": {
+      "bytes": 14,
+      "sha256": "7337acab09c95f182ec3ab0336b80fb0b0f37f93293c2e929c0b36019569daad"
+    },
+    "capture/result.json": {
+      "bytes": 359222,
+      "sha256": "032e5d17372e929f532878961c85205448498819479925195fc6cc2db99c60d5"
+    },
+    "capture/stderr.log": {
+      "bytes": 1011,
+      "sha256": "0d7b26f1a8a1c944683160491387272a9e1615db4d966482d99a131c9bb109f4"
+    },
+    "capture/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "sources/tools/historical-blob-batch-074/package_result_v9.py": {
+      "bytes": 4817,
+      "sha256": "486f15992f460b916ca86f58979e8da5007b2c06998df0adeac0f17ee0ab7254"
+    },
+    "sources/tools/historical-blob-batch-074/test_package_result_v9.py": {
+      "bytes": 3253,
+      "sha256": "0cd1953d221b04c52b7b68dd04f62e18c978f543dc87fc7b90ab006a55bc8425"
+    }
+  },
+  "package_pass": false,
+  "release_admitted": false,
+  "schema": "hc074-package-receipt-v9-controls-v1"
+}
