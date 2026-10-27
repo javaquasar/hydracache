@@ -1,0 +1,14 @@
+{
+  "complete_tree_and_refs_exact": true,
+  "config_sha256": "252bf249a0ada7296a65c459df81ec7be0f82ed4d3b84bb6b0cb2d4f59e2ce02",
+  "files": 55107,
+  "package_pass": false,
+  "physical_free": 30726369280,
+  "previous_receipts_unchanged": true,
+  "refs": 404,
+  "release_admitted": false,
+  "request_sha256": "1c9511271180a322b0a76b72f27486c96f40e78a888faec9c4ee3fc4ae66fcdb",
+  "source": "1502b1eb6ffe186b417f7aaf76ea0180cd14ba2f",
+  "tests_dispatched": false
+}
+

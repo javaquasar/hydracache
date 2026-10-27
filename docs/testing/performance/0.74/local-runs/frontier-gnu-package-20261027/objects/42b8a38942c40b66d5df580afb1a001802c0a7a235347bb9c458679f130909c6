@@ -1,0 +1,131 @@
+//! A known source snapshot is not runtime admission; old body assertions remain.
+#[path = "support/artifact_inventory_input.rs"]
+mod inventory;
+
+const BASE: &str = "f6ec596cad38c71fe912e40b2a7c67a84dbd664f";
+const FILE: &str = "crates/xtask/tests/diagnostic_artifact_fixture_074.rs";
+
+#[test]
+fn inventory_reader_preserves_every_old_assertion_and_comparison_count() {
+    let output = std::process::Command::new("git")
+        .arg("--no-replace-objects")
+        .args(["show", &format!("{BASE}:{FILE}")])
+        .current_dir(inventory::root())
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    let old = String::from_utf8(output.stdout)
+        .unwrap()
+        .replace("\r\n", "\n");
+    let hook = "#[path = \"support/fixed_slice_namespace_guard.rs\"]\nmod namespace;\n";
+    let imports = "#[path = \"support/artifact_inventory_input.rs\"]\nmod inventory;\n";
+    let after = "#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\n";
+    let read = "    std::fs::read_to_string(root().join(path))";
+    let result = "    String::from_utf8(output.stdout).unwrap().replace('\\r', \"\")\n}";
+    for token in [hook, read, result] {
+        assert_eq!(old.matches(token).count(), 1);
+    }
+    let expected = old.replacen(hook, &format!("{imports}{hook}{after}"), 1)
+        .replacen(read, "    runtime_io::read_to_string(root().join(path))", 1)
+        .replacen(result, "    let raw = String::from_utf8(output.stdout).unwrap().replace('\\r', \"\");\n    if args == [\"ls-files\", \"--\", inventory::SCOPE] {\n        inventory::project(&raw).expect(\"current inventory refused before historical phase\")\n    } else {\n        raw\n    }\n}", 1);
+    let current = std::fs::read_to_string(inventory::root().join(FILE))
+        .unwrap()
+        .replace("\r\n", "\n");
+    assert_eq!(expected, current);
+}
+
+#[test]
+fn inventory_projection_requires_all_current_source_files_before_old_list() {
+    let projected = inventory::project(inventory::current()).unwrap();
+    assert_eq!(projected.lines().count(), 446);
+    let output = std::process::Command::new("git")
+        .arg("--no-replace-objects")
+        .args([
+            "ls-tree",
+            "-r",
+            "--name-only",
+            "6c6e47ee5dd3504d0be064b28af5a3e3ac087c9e",
+            "--",
+            inventory::SCOPE,
+        ])
+        .current_dir(inventory::root())
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    assert_eq!(projected, String::from_utf8(output.stdout).unwrap());
+}
+
+#[test]
+fn inventory_projection_rejects_every_missing_duplicate_unknown_and_reordered_path() {
+    let good = inventory::current();
+    let observed = |path: &str| Ok(inventory::entries()[path].digest.clone());
+    assert!(inventory::project_with(good, observed).is_ok());
+    for path in inventory::entries().keys() {
+        for bad in [
+            good.replacen(&format!("{path}\n"), "", 1),
+            format!("{good}{path}\n"),
+        ] {
+            let mut called = false;
+            assert!(inventory::project_with(&bad, |_| {
+                called = true;
+                Err("must not inspect")
+            })
+            .is_err());
+            assert!(!called);
+        }
+    }
+    for bad in [
+        String::new(),
+        format!("{good}{}/unknown.rs\n", inventory::SCOPE),
+        format!("{good}../escape.rs\n"),
+        good.lines().rev().map(|name| format!("{name}\n")).collect(),
+    ] {
+        assert!(inventory::project_with(&bad, observed).is_err());
+    }
+}
+
+#[test]
+fn inventory_projection_rejects_each_changed_old_or_new_body_and_read_failure() {
+    for changed in inventory::entries().keys() {
+        assert!(inventory::project_with(inventory::current(), |path| {
+            if path == changed {
+                Ok("wrong digest".into())
+            } else {
+                Ok(inventory::entries()[path].digest.clone())
+            }
+        })
+        .is_err());
+        assert!(inventory::project_with(inventory::current(), |path| {
+            if path == changed {
+                Err("read failure")
+            } else {
+                Ok(inventory::entries()[path].digest.clone())
+            }
+        })
+        .is_err());
+    }
+}
+
+#[test]
+fn inventory_index_requires_exact_mode_blob_stage_and_path_for_every_entry() {
+    let raw = inventory::expected_index();
+    assert!(inventory::index_matches(&raw));
+    for (path, entry) in inventory::entries() {
+        let line = format!("{} {} 0\t{path}\n", entry.mode, entry.blob);
+        for bad in [
+            raw.replacen(&line, &format!("100755 {} 0\t{path}\n", entry.blob), 1),
+            raw.replacen(&line, &format!("100644 {} 1\t{path}\n", entry.blob), 1),
+            raw.replacen(&line, &format!("100644 {} 0\t{path}\n", "0".repeat(40)), 1),
+            raw.replacen(&line, "", 1),
+            format!("{raw}{line}"),
+        ] {
+            assert_ne!(bad, raw);
+            assert!(!inventory::index_matches(&bad));
+        }
+    }
+    assert!(!inventory::index_matches(&format!(
+        "{raw}100644 {} 0\t{}/unknown.rs\n",
+        "0".repeat(40),
+        inventory::SCOPE
+    )));
+}

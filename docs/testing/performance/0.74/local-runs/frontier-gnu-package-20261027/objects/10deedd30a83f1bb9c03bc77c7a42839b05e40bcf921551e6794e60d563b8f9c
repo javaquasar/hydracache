@@ -1,0 +1,6 @@
+/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/native-frontier-20261027/1502b1eb6ffe186b417f7aaf76ea0180cd14ba2f/history.bundle is okay
+From /mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/native-frontier-20261027/1502b1eb6ffe186b417f7aaf76ea0180cd14ba2f/history.bundle
+   fe4b3a0f9..c88a8af7c  origin/feat/0.74-resp-native-throughput -> origin/feat/0.74-resp-native-throughput
+   fe4b3a0f9..1502b1eb6  feat/0.74-resp-native-throughput -> feat/0.74-resp-native-throughput
+Previous HEAD position was fe4b3a0f9 docs: retain PID stage witnesses and focused closure results
+HEAD is now at 1502b1eb6 test: bind four repaired inputs to the original package frontier

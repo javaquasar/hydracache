@@ -270,6 +270,22 @@ bodies with their named predecessors under the unchanged observation/fallback
 order, test the global consumers, and review a distinct candidate before another
 full command. No unchanged retry or source-path exclusion is admitted.
 
+The subsequent [exact four-input GNU closure](frontier-gnu-package-result-20261027.md)
+binds the four refused bodies to their independent producers after the original
+complete read. Old global audit bodies, 9/81 rules and physical checks remain
+unchanged. Final Windows/MSRV focused cohorts each pass 13 cases; the separate
+GNU cohort passes 67 cases in 16 targets. Fresh review covers 394 Rust bodies,
+58 auxiliary inputs and 156 targets. The distinct full GNU command completes
+all 156 targets with 1,347 passes, zero failures/ignored cases and complete
+source/ref/environment postflight plus ECHILD retirement. GNU check/strict Clippy
+and targeted formatting also pass. First source-oracle and archive-oracle
+refusals remain evidence; no unchanged full retry or joined verdict is used.
+This closes that GNU attempt only. Required Windows/full-workspace, security,
+original-execution and release gates remain open. Physical free space later
+returns to roughly 5 GiB amid system memory pressure; preserve the original floor
+and preflight real capacity before any new large build. No server or new
+performance hypothesis is admitted by this result.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

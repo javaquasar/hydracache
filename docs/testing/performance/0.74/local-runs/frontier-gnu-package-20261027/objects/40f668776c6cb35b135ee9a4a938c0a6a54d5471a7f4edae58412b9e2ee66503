@@ -1,0 +1,138 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+warning: function `known_addition` is never used
+  --> crates\xtask\tests\..\..\..\tools\remaining-readers-074\..\..\crates\xtask\tests\support\current_tree_input.rs:84:15
+   |
+84 | pub(crate) fn known_addition(path: &str) -> bool {
+   |               ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `accepts_addition` is never used
+  --> crates\xtask\tests\..\..\..\tools\remaining-readers-074\..\..\crates\xtask\tests\support\current_tree_input.rs:87:15
+   |
+87 | pub(crate) fn accepts_addition(path: &str, raw: &str) -> bool {
+   |               ^^^^^^^^^^^^^^^^
+
+warning: function `addition_index_matches` is never used
+  --> crates\xtask\tests\..\..\..\tools\remaining-readers-074\..\..\crates\xtask\tests\support\current_tree_input.rs:97:15
+   |
+97 | pub(crate) fn addition_index_matches(path: &str, raw: &str) -> bool {
+   |               ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `require_addition` is never used
+   --> crates\xtask\tests\..\..\..\tools\remaining-readers-074\..\..\crates\xtask\tests\support\current_tree_input.rs:107:15
+    |
+107 | pub(crate) fn require_addition(path: &str) {
+    |               ^^^^^^^^^^^^^^^^
+
+warning: function `known_addition` is never used
+ --> crates\xtask\tests\..\..\..\tools\current-frontier-074\reader.rs:6:8
+  |
+6 | pub fn known_addition(path: &str) -> bool {
+  |        ^^^^^^^^^^^^^^
+
+warning: function `require_addition` is never used
+  --> crates\xtask\tests\..\..\..\tools\current-frontier-074\reader.rs:11:8
+   |
+11 | pub fn require_addition(path: &str) {
+   |        ^^^^^^^^^^^^^^^^
+
+warning: constant `REVISION` is never used
+ --> crates\xtask\tests\..\..\..\tools\current-frontier-074\additions.rs:4:11
+  |
+4 | pub const REVISION: &str = "958b3135a15c00b9f6aad41522cef9d1f6608d3a";
+  |           ^^^^^^^^
+
+warning: function `rows` is never used
+ --> crates\xtask\tests\..\..\..\tools\current-frontier-074\additions.rs:5:8
+  |
+5 | pub fn rows() -> &'static serde_json::Map<String, serde_json::Value> {
+  |        ^^^^
+
+warning: function `known` is never used
+  --> crates\xtask\tests\..\..\..\tools\current-frontier-074\additions.rs:19:8
+   |
+19 | pub fn known(path: &str) -> bool {
+   |        ^^^^^
+
+warning: function `accepts` is never used
+  --> crates\xtask\tests\..\..\..\tools\current-frontier-074\additions.rs:22:8
+   |
+22 | pub fn accepts(path: &str, raw: &str) -> bool {
+   |        ^^^^^^^
+
+warning: function `index_matches` is never used
+  --> crates\xtask\tests\..\..\..\tools\current-frontier-074\additions.rs:31:8
+   |
+31 | pub fn index_matches(path: &str, index: &str) -> bool {
+   |        ^^^^^^^^^^^^^
+
+warning: function `require_with` is never used
+  --> crates\xtask\tests\..\..\..\tools\current-frontier-074\additions.rs:42:8
+   |
+42 | pub fn require_with(root: &Path, path: &str, observe_index: impl FnOnce() -> String) {
+   |        ^^^^^^^^^^^^
+
+warning: function `require` is never used
+  --> crates\xtask\tests\..\..\..\tools\current-frontier-074\additions.rs:61:8
+   |
+61 | pub fn require(path: &str) {
+   |        ^^^^^^^
+
+warning: constant `PATH` is never used
+ --> crates\xtask\tests\..\..\..\tools\current-frontier-074\alarm_addition.rs:5:11
+  |
+5 | pub const PATH: &str = "tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs";
+  |           ^^^^
+
+warning: constant `PRODUCER` is never used
+ --> crates\xtask\tests\..\..\..\tools\current-frontier-074\alarm_addition.rs:6:11
+  |
+6 | pub const PRODUCER: &str = "2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d";
+  |           ^^^^^^^^
+
+warning: function `row` is never used
+ --> crates\xtask\tests\..\..\..\tools\current-frontier-074\alarm_addition.rs:8:4
+  |
+8 | fn row() -> &'static serde_json::Value {
+  |    ^^^
+
+warning: function `known` is never used
+  --> crates\xtask\tests\..\..\..\tools\current-frontier-074\alarm_addition.rs:28:8
+   |
+28 | pub fn known(path: &str) -> bool {
+   |        ^^^^^
+
+warning: function `accepts` is never used
+  --> crates\xtask\tests\..\..\..\tools\current-frontier-074\alarm_addition.rs:32:8
+   |
+32 | pub fn accepts(path: &str, raw: &str) -> bool {
+   |        ^^^^^^^
+
+warning: function `index_matches` is never used
+  --> crates\xtask\tests\..\..\..\tools\current-frontier-074\alarm_addition.rs:42:8
+   |
+42 | pub fn index_matches(path: &str, raw: &str) -> bool {
+   |        ^^^^^^^^^^^^^
+
+warning: function `require_with` is never used
+  --> crates\xtask\tests\..\..\..\tools\current-frontier-074\alarm_addition.rs:52:8
+   |
+52 | pub fn require_with(root: &Path, path: &str, observe_index: impl FnOnce() -> String) {
+   |        ^^^^^^^^^^^^
+
+warning: function `require` is never used
+  --> crates\xtask\tests\..\..\..\tools\current-frontier-074\alarm_addition.rs:72:8
+   |
+72 | pub fn require(path: &str) {
+   |        ^^^^^^^
+
+warning: `xtask` (test "package_frontier_inputs_074") generated 21 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 19.28s
+     Running tests\authority_rust_history_074.rs (target\debug\deps\authority_rust_history_074-aed2135a4a4dcb53.exe)
+     Running tests\current_tree_input_audit_074.rs (target\debug\deps\current_tree_input_audit_074-cd19873f92652053.exe)
+     Running tests\frontier_current_view_074.rs (target\debug\deps\frontier_current_view_074-1b4dc86b4f781bb8.exe)
+     Running tests\package_frontier_inputs_074.rs (target\debug\deps\package_frontier_inputs_074-58dc58c3e5e1cafe.exe)
+error: test failed, to rerun pass `-p xtask --test package_frontier_inputs_074`
+error: 1 target failed:
+    `-p xtask --test package_frontier_inputs_074`

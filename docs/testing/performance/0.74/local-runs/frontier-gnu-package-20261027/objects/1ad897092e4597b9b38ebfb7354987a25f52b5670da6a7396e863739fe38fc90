@@ -1,0 +1,17 @@
+{
+  "record_type": "manual-transcription-of-first-tool-result",
+  "operation": "python target/seal-frontier-gate-20261027.py",
+  "exit": 1,
+  "exception": "AssertionError",
+  "location": "line 36: expected recorded first Cargo failure exit 1",
+  "actual_recorded_cargo_exit": 101,
+  "wrapper_process_exit": 1,
+  "reason": "The archive oracle confused Cargo's retained exit 101 with its outer wrapper exit 1.",
+  "sealer_sha256": "3e781a8b4aa860f5af60711e22384e0b39288a9963df001e02d2f7a0f3c41ad1",
+  "archive_members_written": 0,
+  "archive_objects_written": 0,
+  "empty_initial_output_moved_here_without_deletion": true,
+  "full_command_repeated": false,
+  "test_results_changed": false,
+  "release_admitted": false
+}

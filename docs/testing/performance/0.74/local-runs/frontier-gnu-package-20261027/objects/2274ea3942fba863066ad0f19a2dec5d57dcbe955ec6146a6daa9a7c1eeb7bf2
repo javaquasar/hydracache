@@ -1,0 +1,107 @@
+//! Exact test-input composition only. No current observation, IO or live gate is cached.
+use serde::Deserialize;
+use sha2::{Digest, Sha256};
+
+const SOURCE: &str = "46648903c0eb7ce88d438008fa6465a96cc3c414";
+const DATA: &[u8] = include_bytes!("rules.json");
+const DATA_SHA: &str = "5e591676f92de283fd9e0d2dd7048c5ff3943406cd71a6fc1474090cbf6edff3";
+const KEYS: [(&str, &str); 6] = [
+    ("cache", "tools/authority-runtime-074/gate.rs"),
+    ("cache", "tools/historical-input-view-074/contract.rs"),
+    (
+        "remaining",
+        "crates/xtask/tests/held_activation_ingress_074.rs",
+    ),
+    ("remaining", "crates/xtask/tests/current_frontier_074.rs"),
+    (
+        "census",
+        "crates/xtask/tests/held_complete_role_census_074.rs",
+    ),
+    ("leaf", "docs/testing/gated-test-registry.toml"),
+];
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct Rules {
+    schema: String,
+    source: String,
+    pub(crate) rows: Vec<Row>,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct Row {
+    pub(crate) consumer: String,
+    pub(crate) path: String,
+    pub(crate) current_revision: String,
+    pub(crate) previous_revision: String,
+    current_sha256: String,
+    previous_sha256: String,
+    patches: Vec<Patch>,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Patch {
+    offset: usize,
+    current: String,
+    previous: String,
+}
+pub(crate) fn digest(raw: &[u8]) -> String {
+    Sha256::digest(raw)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+pub(crate) fn rules() -> &'static Rules {
+    static RULES: std::sync::OnceLock<Rules> = std::sync::OnceLock::new();
+    RULES.get_or_init(|| {
+        assert_eq!(digest(DATA), DATA_SHA, "exact reviewed test-input rules");
+        let rules: Rules = serde_json::from_slice(DATA).unwrap();
+        assert_eq!(rules.schema, "hc074-package-closure-inputs-v1");
+        assert_eq!(rules.source, SOURCE);
+        assert!(rules
+            .rows
+            .iter()
+            .map(|r| (r.consumer.as_str(), r.path.as_str()))
+            .eq(KEYS));
+        for row in &rules.rows {
+            assert_eq!(row.current_revision, SOURCE);
+            assert!(
+                row.previous_revision.len() == 40
+                    && row.previous_revision.bytes().all(|b| b.is_ascii_hexdigit())
+            );
+            assert!(!row.patches.is_empty());
+        }
+        rules
+    })
+}
+pub(crate) fn project(consumer: &str, path: &str, raw: String) -> String {
+    assert!(["cache", "remaining", "census", "leaf"].contains(&consumer));
+    let Some(row) = rules()
+        .rows
+        .iter()
+        .find(|r| r.consumer == consumer && r.path == path)
+    else {
+        return raw;
+    };
+    // Same explicit CRLF-to-LF representation as the original readers, not whitespace folding.
+    let mut raw = raw.replace("\r\n", "\n");
+    assert_eq!(
+        digest(raw.as_bytes()),
+        row.current_sha256,
+        "unreviewed current test input: {path}"
+    );
+    let mut limit = raw.len();
+    for patch in row.patches.iter().rev() {
+        let end = patch.offset.checked_add(patch.current.len()).unwrap();
+        assert!(end <= limit, "ordered nonoverlapping exact inverse edits");
+        assert_eq!(raw.get(patch.offset..end), Some(patch.current.as_str()));
+        raw.replace_range(patch.offset..end, &patch.previous);
+        limit = patch.offset;
+    }
+    assert_eq!(
+        digest(raw.as_bytes()),
+        row.previous_sha256,
+        "complete named test predecessor: {path}"
+    );
+    raw
+}

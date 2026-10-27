@@ -1,0 +1,31 @@
+{
+  "argv": [
+    "/home/artur/.cargo/bin/cargo",
+    "+1.94.0",
+    "check",
+    "--offline",
+    "--locked",
+    "--target-dir",
+    "/home/artur/.cache/hydracache-074-194-check",
+    "-p",
+    "xtask",
+    "--all-targets"
+  ],
+  "bound_seconds": 780,
+  "clocks": false,
+  "floor_bytes": 4294967296,
+  "helpers": {
+    "tools/package-frontier-gate-074/inputs.json": "f4931bed92a446c07171c40baa566ac8c66f08374487ef931ad3276855391656",
+    "tools/package-frontier-gate-074/review.py": "97f17d0b0fe7453197eb3e61770db95ea9e055fe3d0e260c091043701c101c4c",
+    "tools/package-frontier-gate-074/runner.py": "c9aad8da42de3d5f49917b94cb84557998ea2d1b46a33e31419bc042d23f4bc0",
+    "tools/package-frontier-gate-074/test_runner.py": "d0f9ab089619a4d4beb36bdf809a15cace391e955930a84db3b1878717115241"
+  },
+  "mode": "check",
+  "product_load": false,
+  "qualification": false,
+  "retry": false,
+  "server": false,
+  "services": false,
+  "source": "1502b1eb6ffe186b417f7aaf76ea0180cd14ba2f",
+  "test_threads": 4
+}

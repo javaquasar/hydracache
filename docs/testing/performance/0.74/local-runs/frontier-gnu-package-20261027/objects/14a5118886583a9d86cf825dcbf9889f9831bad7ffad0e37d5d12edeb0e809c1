@@ -1,0 +1,580 @@
+{
+  "complete": true,
+  "completed_targets": 16,
+  "exit": 0,
+  "expected_targets": 16,
+  "failed": 0,
+  "ignored": 0,
+  "incomplete_target": null,
+  "individual_failed": 0,
+  "individual_passed": 67,
+  "nominal_budget_minus_completed_spans_ns": 758940000000,
+  "outer_bound_seconds": 780,
+  "outer_refusal": null,
+  "package_pass": true,
+  "passed": 67,
+  "ranking": [
+    {
+      "reported_ns": 7200000000,
+      "reported_seconds": "7.20",
+      "target": "tests/authority_rust_history_074.rs"
+    },
+    {
+      "reported_ns": 5750000000,
+      "reported_seconds": "5.75",
+      "target": "tests/current_tree_input_audit_074.rs"
+    },
+    {
+      "reported_ns": 2400000000,
+      "reported_seconds": "2.40",
+      "target": "tests/frontier_current_view_074.rs"
+    },
+    {
+      "reported_ns": 1600000000,
+      "reported_seconds": "1.60",
+      "target": "tests/remaining_readers_074.rs"
+    },
+    {
+      "reported_ns": 660000000,
+      "reported_seconds": "0.66",
+      "target": "tests/memory_profile_071.rs"
+    },
+    {
+      "reported_ns": 640000000,
+      "reported_seconds": "0.64",
+      "target": "tests/package_closure_inputs_074.rs"
+    },
+    {
+      "reported_ns": 600000000,
+      "reported_seconds": "0.60",
+      "target": "tests/memory_compat_071.rs"
+    },
+    {
+      "reported_ns": 540000000,
+      "reported_seconds": "0.54",
+      "target": "tests/historical_source_cache_074.rs"
+    },
+    {
+      "reported_ns": 450000000,
+      "reported_seconds": "0.45",
+      "target": "tests/pid_path_cost_074.rs"
+    },
+    {
+      "reported_ns": 270000000,
+      "reported_seconds": "0.27",
+      "target": "tests/fresh_kernel_cost_074.rs"
+    },
+    {
+      "reported_ns": 240000000,
+      "reported_seconds": "0.24",
+      "target": "tests/role_census_reader_074.rs"
+    },
+    {
+      "reported_ns": 210000000,
+      "reported_seconds": "0.21",
+      "target": "tests/fresh_status_reader_074.rs"
+    },
+    {
+      "reported_ns": 200000000,
+      "reported_seconds": "0.20",
+      "target": "tests/pid_path_reader_074.rs"
+    },
+    {
+      "reported_ns": 120000000,
+      "reported_seconds": "0.12",
+      "target": "tests/validation_leaf_reader_074.rs"
+    },
+    {
+      "reported_ns": 90000000,
+      "reported_seconds": "0.09",
+      "target": "tests/package_frontier_inputs_074.rs"
+    },
+    {
+      "reported_ns": 90000000,
+      "reported_seconds": "0.09",
+      "target": "tests/pid_stage_join_074.rs"
+    }
+  ],
+  "reported_build_span_ns": 20960000000,
+  "reported_completed_target_spans_ns": 21060000000,
+  "scheduled_targets": 16,
+  "targets": [
+    {
+      "cases": [
+        {
+          "name": "diff_translation_adds_only_fixed_rhs_and_retains_all_paths_and_flags",
+          "verdict": "ok"
+        },
+        {
+          "name": "archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation",
+          "verdict": "ok"
+        },
+        {
+          "name": "historical_reads_are_fixed_and_never_fall_back_to_current_artifacts",
+          "verdict": "ok"
+        },
+        {
+          "name": "every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion",
+          "verdict": "ok"
+        },
+        {
+          "name": "all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions",
+          "verdict": "ok"
+        },
+        {
+          "name": "qualification_raw_identity_and_previous_candidate_guard_remain_independent",
+          "verdict": "ok"
+        },
+        {
+          "name": "unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files",
+          "verdict": "ok"
+        },
+        {
+          "name": "unsupported_commands_revisions_scopes_and_cwd_refuse_before_execution",
+          "verdict": "ok"
+        },
+        {
+          "name": "guard_assertion_test_and_io_mutations_cannot_hide_behind_history",
+          "verdict": "ok"
+        },
+        {
+          "name": "independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 10,
+      "end_line": 14,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 10,
+      "reported_ns": 7200000000,
+      "reported_seconds": "7.20",
+      "start_line": 2,
+      "target": "tests/authority_rust_history_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "current_tree_input_frontier_is_fully_accounted_without_path_exclusions",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 1,
+      "end_line": 20,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "reported_ns": 5750000000,
+      "reported_seconds": "5.75",
+      "start_line": 17,
+      "target": "tests/current_tree_input_audit_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "fresh_status_reconstructs_all_changed_old_bodies_and_hooks",
+          "verdict": "ok"
+        },
+        {
+          "name": "fresh_status_adapter_refuses_missing_duplicate_and_other_validation_drift",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 27,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 270000000,
+      "reported_seconds": "0.27",
+      "start_line": 23,
+      "target": "tests/fresh_kernel_cost_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "fresh_status_reader_changes_only_admission_input_before_original_normalizers",
+          "verdict": "ok"
+        },
+        {
+          "name": "fresh_status_admission_requires_exact_source_and_helper_before_old_input",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 34,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 210000000,
+      "reported_seconds": "0.21",
+      "start_line": 30,
+      "target": "tests/fresh_status_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "alarm_index_mode_blob_stage_path_missing_and_duplicate_changes_refuse",
+          "verdict": "ok"
+        },
+        {
+          "name": "alarm_checks_observe_every_body_index_and_nonregular_failure_afresh",
+          "verdict": "ok"
+        },
+        {
+          "name": "alarm_symlink_refuses_before_index_observation",
+          "verdict": "ok"
+        },
+        {
+          "name": "old_rules_protected_selection_physical_prefixes_and_assertions_are_preserved",
+          "verdict": "ok"
+        },
+        {
+          "name": "stale_partial_duplicate_wrong_and_unknown_current_inputs_cannot_gain_approval",
+          "verdict": "ok"
+        },
+        {
+          "name": "approved_current_edges_match_fixed_producers_and_unchanged_twelve_rules",
+          "verdict": "ok"
+        },
+        {
+          "name": "the_one_new_alarm_source_requires_the_independent_producer_and_index",
+          "verdict": "ok"
+        },
+        {
+          "name": "successful_current_projection_never_caches_later_observations",
+          "verdict": "ok"
+        },
+        {
+          "name": "live_frontier_reader_keeps_the_old_phase_and_the_fresh_main_gate",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 9,
+      "end_line": 48,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 9,
+      "reported_ns": 2400000000,
+      "reported_seconds": "2.40",
+      "start_line": 37,
+      "target": "tests/frontier_current_view_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "controls::tests::loader_can_read_another_key_without_holding_the_index_lock",
+          "verdict": "ok"
+        },
+        {
+          "name": "controls::tests::revisions_paths_and_cache_instances_do_not_share_entries",
+          "verdict": "ok"
+        },
+        {
+          "name": "controls::tests::failed_loader_never_publishes_partial_data_or_poisons_other_keys",
+          "verdict": "ok"
+        },
+        {
+          "name": "controls::tests::concurrent_same_key_runs_one_complete_loader",
+          "verdict": "ok"
+        },
+        {
+          "name": "controls::tests::same_immutable_key_loads_once_and_returned_strings_are_independent",
+          "verdict": "ok"
+        },
+        {
+          "name": "immutable_source_cache_changes_only_the_historical_loader_not_current_validation",
+          "verdict": "ok"
+        },
+        {
+          "name": "reviewed_inputs_delegate_only_their_exact_frozen_lookup",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 7,
+      "end_line": 60,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 7,
+      "reported_ns": 540000000,
+      "reported_seconds": "0.54",
+      "start_line": 51,
+      "target": "tests/historical_source_cache_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "fixture_python::fixture_python_selection_is_explicit_for_both_platforms",
+          "verdict": "ok"
+        },
+        {
+          "name": "m10_executes_real_binary_compatibility_before_the_long_row",
+          "verdict": "ok"
+        },
+        {
+          "name": "missing_rollback_and_wire_generation_are_rejected",
+          "verdict": "ok"
+        },
+        {
+          "name": "checked_in_upgrade_rollback_and_mixed_version_matrix_is_valid",
+          "verdict": "ok"
+        },
+        {
+          "name": "primary_rust_gate_uses_the_reviewed_release_toolchain",
+          "verdict": "ok"
+        },
+        {
+          "name": "public_api_gate_covers_every_publishable_package_and_blocks_release",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 6,
+      "end_line": 71,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 6,
+      "reported_ns": 600000000,
+      "reported_seconds": "0.60",
+      "start_line": 63,
+      "target": "tests/memory_compat_071.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "fixture_python::fixture_python_selection_is_explicit_for_both_platforms",
+          "verdict": "ok"
+        },
+        {
+          "name": "every_admitted_allocator_has_the_complete_provider_protocol",
+          "verdict": "ok"
+        },
+        {
+          "name": "loadgen_declares_the_exact_phase_order_and_epoch_fields",
+          "verdict": "ok"
+        },
+        {
+          "name": "host_fingerprint_excludes_volatile_admission_observations",
+          "verdict": "ok"
+        },
+        {
+          "name": "profile_output_is_excluded_from_production_sizing",
+          "verdict": "ok"
+        },
+        {
+          "name": "provider_fixture_proves_ordering_classification_and_redaction",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 6,
+      "end_line": 82,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 6,
+      "reported_ns": 660000000,
+      "reported_seconds": "0.66",
+      "start_line": 74,
+      "target": "tests/memory_profile_071.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "every_original_case_and_assertion_token_stays_exact",
+          "verdict": "ok"
+        },
+        {
+          "name": "exact_current_and_previous_producers_bind_all_six_inverse_rows",
+          "verdict": "ok"
+        },
+        {
+          "name": "fresh_complete_body_is_required_for_each_call_and_seeded_mutants_refuse",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 90,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 640000000,
+      "reported_seconds": "0.64",
+      "start_line": 85,
+      "target": "tests/package_closure_inputs_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "reader_adds_only_a_pure_join_after_the_original_complete_read",
+          "verdict": "ok"
+        },
+        {
+          "name": "stale_missing_partial_appended_cross_path_and_seeded_mutations_refuse_freshly",
+          "verdict": "ok"
+        },
+        {
+          "name": "four_complete_current_bodies_and_predecessors_match_independent_git_producers",
+          "verdict": "ok"
+        },
+        {
+          "name": "unrelated_and_noncanonical_paths_keep_original_bytes_and_fallback",
+          "verdict": "ok"
+        },
+        {
+          "name": "original_global_guards_rules_observation_primitive_and_live_sources_stay_exact",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 5,
+      "end_line": 100,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 5,
+      "reported_ns": 90000000,
+      "reported_seconds": "0.09",
+      "start_line": 93,
+      "target": "tests/package_frontier_inputs_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "pid_path_adopted_formatter_is_exactly_the_measured_frozen_prototype",
+          "verdict": "ok"
+        },
+        {
+          "name": "pid_path_reconstructs_every_changed_old_body_and_test_hook",
+          "verdict": "ok"
+        },
+        {
+          "name": "pid_path_adapter_refuses_missing_duplicate_and_unrelated_live_drift",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 108,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 450000000,
+      "reported_seconds": "0.45",
+      "start_line": 103,
+      "target": "tests/pid_path_cost_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "pid_path_reader_preserves_all_old_assertions_and_normalizer_order",
+          "verdict": "ok"
+        },
+        {
+          "name": "pid_path_admission_view_requires_the_exact_current_candidate",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 115,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 200000000,
+      "reported_seconds": "0.20",
+      "start_line": 111,
+      "target": "tests/pid_path_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "old_pid_body_and_both_readers_remain_exact_and_fresh_status_explicitly_uses_legacy",
+          "verdict": "ok"
+        },
+        {
+          "name": "exact_join_refuses_missing_duplicate_stale_and_seeded_drift_without_hiding_bytes",
+          "verdict": "ok"
+        },
+        {
+          "name": "original_conditional_reader_and_custody_stages_are_bound_to_named_producers",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 3,
+      "end_line": 123,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 3,
+      "reported_ns": 90000000,
+      "reported_seconds": "0.09",
+      "start_line": 118,
+      "target": "tests/pid_stage_join_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "stale_partial_duplicate_and_unrelated_caller_edits_refuse_after_success",
+          "verdict": "ok"
+        },
+        {
+          "name": "selected_kernel_and_compat_join_use_independent_producers_without_extra_reads",
+          "verdict": "ok"
+        },
+        {
+          "name": "seven_exact_caller_constructions_preserve_all_eighteen_cases_and_assertions",
+          "verdict": "ok"
+        },
+        {
+          "name": "immutable_nine_eighty_one_gate_still_refuses_new_caller_without_explicit_join",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 4,
+      "end_line": 132,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 4,
+      "reported_ns": 1600000000,
+      "reported_seconds": "1.60",
+      "start_line": 126,
+      "target": "tests/remaining_readers_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "census_reader_preserves_every_original_assertion_and_only_adapts_one_provider",
+          "verdict": "ok"
+        },
+        {
+          "name": "census_provider_requires_complete_known_fixture_delta_and_pinned_helper",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 139,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 240000000,
+      "reported_seconds": "0.24",
+      "start_line": 135,
+      "target": "tests/role_census_reader_074.rs"
+    },
+    {
+      "cases": [
+        {
+          "name": "leaf_reader_preserves_entire_original_test_and_exact_registry_selection",
+          "verdict": "ok"
+        },
+        {
+          "name": "leaf_registry_input_checks_current_bytes_before_returning_predecessor",
+          "verdict": "ok"
+        }
+      ],
+      "declared": 2,
+      "end_line": 146,
+      "failed": 0,
+      "ignored": 0,
+      "passed": 2,
+      "reported_ns": 120000000,
+      "reported_seconds": "0.12",
+      "start_line": 142,
+      "target": "tests/validation_leaf_reader_074.rs"
+    }
+  ],
+  "unstarted_targets": []
+}

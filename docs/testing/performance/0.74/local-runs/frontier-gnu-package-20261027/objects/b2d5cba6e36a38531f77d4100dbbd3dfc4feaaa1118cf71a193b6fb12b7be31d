@@ -1,0 +1,44 @@
+"""Read every retained member as data; never execute archived code."""
+import hashlib
+import json
+from pathlib import Path
+import re
+import sys
+
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/frontier-gnu-package-20261027'
+expected=sys.argv[1]
+assert re.fullmatch('[0-9a-f]{64}',expected)
+raw=(OUT/'index.json').read_bytes()
+assert hashlib.sha256(raw).hexdigest()==expected
+index=json.loads(raw)
+assert index['schema']=='hc074-local-evidence-collection-v1'
+assert index['complete'] and not index['archived_code_executed']
+assert not index['package_pass'] and not index['release_admitted']
+for name,row in index['members'].items():
+    assert re.fullmatch('[0-9a-f]{64}',row['sha256'])
+    value=(OUT/'objects'/row['sha256']).read_bytes()
+    assert len(value)==row['bytes'] and hashlib.sha256(value).hexdigest()==row['sha256'],name
+def member(name):
+    row=index['members'][name]
+    return json.loads((OUT/'objects'/row['sha256']).read_bytes())
+scope=member('analysis/scope.json')
+assert scope['source']=='1502b1eb6ffe186b417f7aaf76ea0180cd14ba2f'
+assert scope['review_sources']==394 and scope['auxiliary']==58 and scope['targets']==156
+assert scope['original_windows_seconds']==[300,60,10]
+assert (scope['package_bound_seconds'],scope['threads'],scope['floor_bytes'])==(780,4,4*1024**3)
+for key in ('whole_platform_package_closed','production_cessation_proved','server','services','clocks','product_load','qualification','release_admitted'):
+    assert not scope[key],key
+focused=member('attempt/focused/accounting.json')
+assert focused['complete'] and (focused['expected_targets'],focused['completed_targets'],focused['passed'],focused['failed'],focused['ignored'])==(16,16,67,0,0)
+full=member('attempt/full/accounting.json')
+receipt=member('attempt/full/controller.json')
+assert full['expected_targets']==156 and receipt['bound_seconds']==780
+assert receipt['retired'] and receipt['cleanup_seconds']==5 and not receipt['cleanup_errors']
+assert full['package_pass']==index['gnu_package_pass']==scope['gnu_package_pass']
+for label in ('frontier-inputs-windows','frontier-inputs-windows-corrected'):
+    assert member('first-and-windows/'+label+'/result.json')['exit']==101
+print(dict(index_sha256=expected,members=len(index['members']),all_objects_exact=True,
+    gnu_package_pass=full['package_pass'],full_completed=full['completed_targets'],
+    passed=full['passed'],failed=full['failed'],ignored=full['ignored'],
+    package_pass=False,release_admitted=False,archived_code_executed=False))

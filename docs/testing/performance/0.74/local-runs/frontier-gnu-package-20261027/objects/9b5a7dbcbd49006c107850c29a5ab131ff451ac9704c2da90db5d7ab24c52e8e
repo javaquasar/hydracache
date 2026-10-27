@@ -1,0 +1,25 @@
+{
+  "before_pagefile_size_available": false,
+  "capacity_reservation": false,
+  "causal_attribution_proved": false,
+  "cim_free_physical_kib": 860196,
+  "cim_free_virtual_kib": 8465524,
+  "cim_pagefile_allocated_mib": 76832,
+  "cim_pagefile_peak_mib": 25110,
+  "cim_pagefile_used_mib": 22663,
+  "full_command_capacity": {
+    "hard_quota": false,
+    "low_native_free_bytes": 877340119040,
+    "low_physical_free_bytes": 29822119936,
+    "sampled_floor_bytes": 4294967296
+  },
+  "kind": "manual-transcription-of-separate-read-only-tool-readings-not-a-benchmark",
+  "outer_full_free_after": 6112288768,
+  "pagefile_logical_bytes": 103079215104,
+  "pagefile_or_vm_or_service_or_clock_configuration_changed": false,
+  "product_memory_claim": false,
+  "same_instant": false,
+  "subsequent_windows_free_bytes": 5559787520,
+  "unrelated_processes_stopped": false,
+  "unrelated_qemu_ansible_observed": true
+}

@@ -1,0 +1,72 @@
+"""Advance only the verified independent local package checkout; retain first receipts."""
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+
+CONTROL=Path('/mnt/c/Workspace/prj/jq/cashe/hydracache-074')
+SOURCE='1502b1eb6ffe186b417f7aaf76ea0180cd14ba2f'
+OLD='fe4b3a0f9060615185895337181780a6f3f55439'
+ROOT=Path('/home/artur/.cache/hydracache-074-frontier-native/636feb166b273b5c3d6fc0b93c4fccf57560cf03/repo')
+OUT=CONTROL/'target/gnu-frontier-local-20261027/native-refresh'
+OUT.mkdir(exist_ok=False)
+def sha(raw): return hashlib.sha256(raw).hexdigest()
+def require(ok, why):
+    if not ok: raise ValueError(why)
+def write(name,value):
+    with (OUT/name).open('x',encoding='utf-8',newline='\n') as stream:
+        json.dump(value,stream,indent=2,sort_keys=True); stream.write('\n')
+def space():
+    require(shutil.disk_usage('/mnt/c').free>=4*1024**3,'physical floor')
+    require(shutil.disk_usage(ROOT).free>=4*1024**3,'native floor')
+write('intent.json',dict(source=SOURCE,previous_source=OLD,repo=str(ROOT),
+    reused_package_checkout=True,qualification_checkout=False,services=False,clocks=False,server=False))
+try:
+    require(sys.platform.startswith('linux') and os.geteuid()==1000,'local nonroot context')
+    sys.path.insert(0,str(CONTROL/'tools/native-frontier-074'))
+    for name,digest in [('native.py','8badd8357fd491b01e65c3c118421cdd8f41eb952909678c97f78ac2bffe3769'),('contract.py','13a92353314ab7b6b3f443f4d8244b823e38f390a35885edd050bbb73a5c2353')]:
+        require(sha((CONTROL/'tools/native-frontier-074'/name).read_bytes())==digest,'helper drift')
+    import native as n
+    import contract as c
+    require(ROOT.resolve()==ROOT and (ROOT/'.git').is_dir(),'independent root')
+    require(not (ROOT/'.git/commondir').exists() and not (ROOT/'.git/objects/info/alternates').exists(),'borrowed database')
+    builders=[]
+    for proc in Path('/proc').iterdir():
+        try:
+            if proc.name.isdigit() and (proc/'comm').read_text().strip() in ('cargo','rustc'): builders.append(proc.name)
+        except FileNotFoundError: pass
+    require(not builders,'active local builders')
+    old_raw=(CONTROL/'target/native-frontier-20261027'/OLD/'request.json').read_bytes()
+    require(sha(old_raw)=='8b7cb4fea8fa4e6f5c61d1905cf852ba7219913b168e1c32ba229c01d3125383','old request drift')
+    prior=c.request(c.decode(old_raw))
+    request_path=CONTROL/'target/native-frontier-20261027'/SOURCE/'request.json'
+    raw=request_path.read_bytes()
+    require(sha(raw)=='1c9511271180a322b0a76b72f27486c96f40e78a888faec9c4ee3fc4ae66fcdb','request drift')
+    request=c.request(c.decode(raw))
+    require(request['source']==SOURCE,'source differs')
+    require(n.git(ROOT,'rev-parse','HEAD').decode().strip()==OLD,'old HEAD drift')
+    require(c.refs(n.git(ROOT,'for-each-ref','--format=%(objectname) %(refname)'))==prior['refs'],'old refs drift')
+    n.validate_files(ROOT,prior['tree'],space)
+    require(set(prior['refs'])<=set(request['refs']),'new request deletes old refs')
+    config=subprocess.check_output(['/usr/bin/git','config','--includes','--show-origin','--list'],cwd=ROOT,timeout=10)
+    bundle=request_path.parent/'history.bundle'
+    blob=bundle.read_bytes()
+    require(len(blob)==request['bundle_bytes'] and sha(blob)==request['bundle_sha256'],'bundle drift')
+    write('before.json',dict(head=OLD,request_sha256=sha(old_raw),files=len(prior['tree']),refs=prior['refs'],config_sha256=sha(config),physical_free=shutil.disk_usage('/mnt/c').free))
+    n.git(ROOT,'bundle','verify',str(bundle))
+    n.git(ROOT,'-c','protocol.file.allow=always','fetch','--no-tags','--no-write-fetch-head',str(bundle),'+refs/*:refs/*')
+    n.git(ROOT,'checkout','--detach',SOURCE)
+    n.validate_files(ROOT,request['tree'],space)
+    require(c.refs(n.git(ROOT,'for-each-ref','--format=%(objectname) %(refname)'))==request['refs'],'current refs drift')
+    require(subprocess.check_output(['/usr/bin/git','config','--includes','--show-origin','--list'],cwd=ROOT,timeout=10)==config,'config drift')
+    write('result.json',dict(source=SOURCE,request_sha256=sha(raw),files=len(request['tree']),refs=len(request['refs']),
+        complete_tree_and_refs_exact=True,config_sha256=sha(config),physical_free=shutil.disk_usage('/mnt/c').free,
+        previous_receipts_unchanged=True,tests_dispatched=False,package_pass=False,release_admitted=False))
+    print((OUT/'result.json').read_text())
+except BaseException as error:
+    write('refusal.json',dict(type=type(error).__name__,reason=str(error),package_pass=False))
+    raise

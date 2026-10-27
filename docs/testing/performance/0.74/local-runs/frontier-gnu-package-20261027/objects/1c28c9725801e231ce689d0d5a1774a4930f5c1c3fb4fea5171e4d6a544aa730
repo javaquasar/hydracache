@@ -1,0 +1,10 @@
+{
+  "clocks": false,
+  "previous_source": "fe4b3a0f9060615185895337181780a6f3f55439",
+  "qualification_checkout": false,
+  "repo": "/home/artur/.cache/hydracache-074-frontier-native/636feb166b273b5c3d6fc0b93c4fccf57560cf03/repo",
+  "reused_package_checkout": true,
+  "server": false,
+  "services": false,
+  "source": "1502b1eb6ffe186b417f7aaf76ea0180cd14ba2f"
+}

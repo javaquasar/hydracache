@@ -21625,3 +21625,43 @@ Fresh source/effect review establishes which code may be tested; execution must
 still establish every independent preservation contract. Neither one replaces
 the other, and successful CI cleanup does not turn a red result into release
 readiness or production all-writer proof.
+
+### Closing the four-input boundary without changing the old observations
+
+The [next exact-source continuation](../testing/performance/0.74/frontier-gnu-package-result-20261027.md)
+joins precisely those four inputs. Each current file must equal its independently
+named producer before exact inverse edits recover the whole old body. The
+remaining-reader calls its old reader first: physical observation, canonical
+path checks, current runtime gate and fallback order remain intact. Only the
+returned source text is projected. The current Python selector and PID code
+remain what the compiler actually executes. Unknown paths and unrelated bytes
+receive no approval, and no fresh observation is cached.
+
+The distinction from the earlier PID stage join matters. That join preserves
+the semantics of a consumer operating on an intermediate runtime source stage.
+The new join instead serves a global whole-file source assertion. Complete
+current and predecessor hashes are appropriate at this boundary; neither one
+permits removing a live predicate or reducing its observation frequency.
+
+Independent new oracles catch two mistakes in their own expectations: rustfmt
+sorts the added module declarations. Those first candidates and refusals stay
+in evidence. After correcting only the oracles and separating unused proof-only
+functions without lint exceptions, Windows and MSRV focused cohorts each pass
+13 cases. Fresh GNU source closure covers 394 Rust bodies, 58 auxiliary inputs
+and 156 targets, including the unchanged old global audits.
+
+The separately admitted GNU focused cohort passes 67 cases. The subsequent full
+command then completes every one of its 156 targets: 1,347 passing cases, no
+failures, no ignored cases and no missing suffix, under the original 780-second,
+four-thread contract. Complete source/ref/environment postflight, kernel ECHILD,
+check and strict Clippy also pass. The earlier complete red command remains red;
+its passing prefixes are not merged into this result. A first archive-oracle
+refusal, caused by confusing Cargo exit 101 with outer wrapper exit 1, is also
+retained rather than rewriting the original failed receipts.
+
+This is package-validation progress, not a new throughput or allocation win.
+The all-platform/workspace, security and original-execution boundaries still
+exist. A concurrent capacity drop and system paging pressure likewise cannot
+be labelled product retention without a controlled owner attribution. The
+archive separates the successful GNU package verdict from release admission,
+and the remaining thin disk headroom does not authorize a cold build or campaign.

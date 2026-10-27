@@ -1,0 +1,202 @@
+//! Four exact changed inputs; unchanged global audits still decide admission.
+#[path = "../../../tools/remaining-readers-074/inputs.rs"]
+mod current_inputs;
+#[path = "../../../tools/current-frontier-074/reader.rs"]
+mod frontier;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
+use current_inputs::closure as inputs;
+#[path = "../../../tools/package-frontier-inputs-074/proof.rs"]
+mod proof;
+const BASE: &str = "c88a8af7c57531a522310665343acd2c0ddc4782";
+const PREVIOUS: &str = "33c54b0cda8c330b115009cdf092ad002077cedf";
+
+fn raw(path: &str) -> String {
+    std::fs::read_to_string(runtime::root().join(path))
+        .unwrap()
+        .replace("\r\n", "\n")
+}
+
+#[test]
+fn four_complete_current_bodies_and_predecessors_match_independent_git_producers() {
+    for (path, producer, _, _) in inputs::ROWS {
+        let current = raw(path);
+        assert_eq!(current, runtime::frozen(producer, path));
+        let previous = runtime::frozen(PREVIOUS, path);
+        assert_ne!(current, previous);
+        assert_eq!(inputs::project(path, current.clone()), previous);
+        assert_eq!(
+            inputs::project(path, current.replace('\n', "\r\n")),
+            previous
+        );
+        assert_eq!(current_inputs::read(path), previous);
+        assert_eq!(frontier::read(path), previous);
+    }
+}
+
+#[test]
+fn stale_missing_partial_appended_cross_path_and_seeded_mutations_refuse_freshly() {
+    let mut seed = 0x074f_2026_1027_u64;
+    for (path, _, _, _) in inputs::ROWS {
+        let current = raw(path);
+        let previous = runtime::frozen(PREVIOUS, path);
+        for bad in [
+            String::new(),
+            previous.clone(),
+            current[..current.len() - 1].to_owned(),
+            format!("{current}\n// unrelated"),
+        ] {
+            assert!(std::panic::catch_unwind(|| inputs::project(path, bad)).is_err());
+        }
+        for (other, _, _, _) in inputs::ROWS {
+            if path != other {
+                assert!(std::panic::catch_unwind(|| inputs::project(path, raw(other))).is_err());
+            }
+        }
+        for _ in 0..32 {
+            seed ^= seed << 13;
+            seed ^= seed >> 7;
+            seed ^= seed << 17;
+            let mut bytes = current.as_bytes().to_vec();
+            let mut at = (seed % bytes.len() as u64) as usize;
+            while !bytes[at].is_ascii_alphabetic() {
+                at = (at + 1) % bytes.len();
+            }
+            bytes[at] ^= 0x20;
+            let bad = String::from_utf8(bytes).unwrap();
+            assert!(std::panic::catch_unwind(|| inputs::project(path, bad)).is_err());
+        }
+        assert_eq!(inputs::project(path, current), previous);
+    }
+}
+
+#[test]
+fn unrelated_and_noncanonical_paths_keep_original_bytes_and_fallback() {
+    for path in [
+        "unrelated.rs",
+        "../crates/xtask/tests/memory_compat_071.rs",
+        "crates//xtask/tests/memory_profile_071.rs",
+        "./crates/xtask/tests/support/pid_path_guard.rs",
+    ] {
+        assert!(!inputs::known(path));
+        assert!(!frontier::known_addition(path));
+        assert_eq!(
+            inputs::project(path, "unchanged\r\n".into()),
+            "unchanged\r\n"
+        );
+        assert_eq!(
+            proof::source_previous(path, "unchanged\r\n".into()),
+            "unchanged\r\n"
+        );
+    }
+    for path in [
+        "Cargo.toml",
+        "Cargo.lock",
+        "crates/xtask/tests/support/current_tree_input.rs",
+    ] {
+        assert_eq!(current_inputs::read(path), current_inputs::old::read(path));
+    }
+    let path = current_inputs::additions().keys().next().unwrap();
+    assert!(frontier::known_addition(path));
+    frontier::require_addition(path);
+}
+
+#[test]
+fn reader_adds_only_a_pure_join_after_the_original_complete_read() {
+    let old = runtime::frozen(BASE, proof::READER);
+    let expected = old
+        .replacen(
+            "pub(crate) use old::*;\n",
+            &format!("pub(crate) use old::*;\n{}", proof::IMPORT),
+            1,
+        )
+        .replacen(
+            "pub(crate) fn read(path: &str) -> String {\n",
+            &format!(
+                "pub(crate) fn read(path: &str) -> String {{\n{}",
+                proof::BRANCH
+            ),
+            1,
+        );
+    let actual = raw(proof::READER);
+    assert_eq!(actual, expected);
+    assert_eq!(proof::source_previous(proof::READER, actual.clone()), old);
+    for bad in [
+        old.clone(),
+        actual.replace(proof::BRANCH, ""),
+        actual.replace(proof::IMPORT, ""),
+        actual.replace(
+            proof::BRANCH,
+            &format!("{}{}", proof::BRANCH, proof::BRANCH),
+        ),
+        actual.replacen("old::read(path)", "String::new()", 1),
+        actual.replacen("if path != phase::FRESH", "if true", 1),
+        format!("{actual}\n// unrelated"),
+    ] {
+        assert!(std::panic::catch_unwind(|| proof::source_previous(proof::READER, bad)).is_err());
+    }
+    assert_eq!(proof::source_previous(proof::READER, actual), old);
+}
+
+fn assertions(text: &str) -> Vec<String> {
+    use syn::visit::Visit;
+    #[derive(Default)]
+    struct Visitor(Vec<String>);
+    impl<'ast> Visit<'ast> for Visitor {
+        fn visit_macro(&mut self, value: &'ast syn::Macro) {
+            if value.path.segments.last().is_some_and(|p| {
+                matches!(
+                    p.ident.to_string().as_str(),
+                    "assert" | "assert_eq" | "assert_ne"
+                )
+            }) {
+                self.0.push(format!(
+                    "{} {}",
+                    value.path.segments.last().unwrap().ident,
+                    value.tokens
+                ));
+            }
+            syn::visit::visit_macro(self, value);
+        }
+    }
+    let mut visitor = Visitor::default();
+    visitor.visit_file(&syn::parse_file(text).unwrap());
+    visitor.0
+}
+
+#[test]
+fn original_global_guards_rules_observation_primitive_and_live_sources_stay_exact() {
+    for path in [
+        "crates/xtask/tests/authority_rust_history_074.rs",
+        "crates/xtask/tests/current_tree_input_audit_074.rs",
+        "crates/xtask/tests/support/current_tree_input.rs",
+        "crates/xtask/tests/support/current_tree_input_rules_074.json",
+        "tools/authority-runtime-074/gate.rs",
+        "tools/authority-runtime-074/io.rs",
+        "tools/source-successor-view-074/contract.rs",
+        "tools/current-frontier-074/reader.rs",
+        "tools/history-status-readers-074/inputs.rs",
+        "tools/current-frontier-074/contract.rs",
+        "tools/current-frontier-074/rules.json",
+        "tools/remaining-readers-074/contract.rs",
+        "tools/remaining-readers-074/rules.json",
+        "Cargo.toml",
+        "Cargo.lock",
+        "docs/testing/performance/0.74/qualification-manifest.toml",
+    ] {
+        assert_eq!(raw(path), runtime::frozen(BASE, path), "unchanged {path}");
+    }
+    assert_eq!(current_inputs::patches().len(), 9);
+    assert_eq!(current_inputs::additions().len(), 81);
+    let path = "crates/xtask/tests/frontier_current_view_074.rs";
+    let old = runtime::frozen(BASE, path);
+    let expected = old.replacen("#[path = \"../../../tools/remaining-readers-074/inputs.rs\"]", "#[path = \"../../../tools/package-frontier-inputs-074/proof.rs\"]\nmod closure_proof;\n#[path = \"../../../tools/remaining-readers-074/inputs.rs\"]", 1)
+        .replacen("    std::fs::read_to_string(runtime::root().join(path))\n        .unwrap()\n        .replace(\"\\r\\n\", \"\\n\")\n", "    let raw = std::fs::read_to_string(runtime::root().join(path))\n        .unwrap()\n        .replace(\"\\r\\n\", \"\\n\");\n    closure_proof::source_previous(path, raw)\n", 1);
+    assert_ne!(old, expected);
+    assert_eq!(raw(path), expected);
+    assert_eq!(assertions(&raw(path)), assertions(&old));
+}

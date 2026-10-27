@@ -1,0 +1,58 @@
+
+running 10 tests
+test diff_translation_adds_only_fixed_rhs_and_retains_all_paths_and_flags ... ok
+test archived_success_does_not_admit_a_current_candidate_or_unrelated_mutation ... ok
+test historical_reads_are_fixed_and_never_fall_back_to_current_artifacts ... ok
+test every_allowed_replacement_is_an_actual_io_call_not_a_literal_or_assertion ... ok
+test all_thirty_guards_preserve_complete_assertions_under_exact_io_substitutions ... ok
+test unsafe_names_outside_paths_and_missing_inputs_do_not_open_current_files ... ok
+test unsupported_commands_revisions_scopes_and_cwd_refuse_before_execution ... ok
+test qualification_raw_identity_and_previous_candidate_guard_remain_independent ... ok
+test guard_assertion_test_and_io_mutations_cannot_hide_behind_history ... ok
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift has been running for over 60 seconds
+test independent_current_tree_gate_refuses_unapproved_source_and_runtime_drift ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 82.22s
+
+
+running 1 test
+test current_tree_input_frontier_is_fully_accounted_without_path_exclusions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 54.06s
+
+
+running 8 tests
+test alarm_index_mode_blob_stage_path_missing_and_duplicate_changes_refuse ... ok
+test alarm_checks_observe_every_body_index_and_nonregular_failure_afresh ... ok
+test stale_partial_duplicate_wrong_and_unknown_current_inputs_cannot_gain_approval ... ok
+test approved_current_edges_match_fixed_producers_and_unchanged_twelve_rules ... ok
+test successful_current_projection_never_caches_later_observations ... ok
+test the_one_new_alarm_source_requires_the_independent_producer_and_index ... ok
+test old_rules_protected_selection_physical_prefixes_and_assertions_are_preserved ... ok
+test live_frontier_reader_keeps_the_old_phase_and_the_fresh_main_gate ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.89s
+
+
+running 5 tests
+test reader_adds_only_a_pure_join_after_the_original_complete_read ... FAILED
+test unrelated_and_noncanonical_paths_keep_original_bytes_and_fallback ... ok
+test stale_missing_partial_appended_cross_path_and_seeded_mutations_refuse_freshly ... ok
+test four_complete_current_bodies_and_predecessors_match_independent_git_producers ... ok
+test original_global_guards_rules_observation_primitive_and_live_sources_stay_exact ... ok
+
+failures:
+
+---- reader_adds_only_a_pure_join_after_the_original_complete_read stdout ----
+
+thread 'reader_adds_only_a_pure_join_after_the_original_complete_read' (19048) panicked at crates\xtask\tests\package_frontier_inputs_074.rs:118:5:
+assertion `left == right` failed
+  left: "//! A narrow reader successor; every legacy implementation and ledger stays unchanged.\n#[path = \"../../crates/xtask/tests/support/current_tree_input.rs\"]\npub mod old;\npub(crate) use old::*;\n#[path = \"../package-frontier-inputs-074/contract.rs\"]\npub mod closure;\n#[path = \"contract.rs\"]\npub mod phase;\n\npub(crate) fn accepts_patch(path: &str, raw: &str) -> bool {\n    if path == phase::FRESH {\n        return phase::previous(path, raw)\n            .is_some_and(|previous| old::accepts_patch(path, &previous));\n    }\n    old::accepts_patch(path, raw)\n}\npub(crate) fn read(path: &str) -> String {\n    if closure::known(path) {\n        return closure::project(path, old::read(path));\n    }\n    if path != phase::FRESH {\n        return old::read(path);\n    }\n    // Exactly the old patch branch's read and check order; no fallback or new IO.\n    let raw = std::fs::read_to_string(crate::runtime::root().join(path)).unwrap();\n    assert!(\n        accepts_patch(path, &raw),\n        \"original fresh-kernel input gate after exact caller successor\"\n    );\n    crate::runtime::frozen(SOURCE, path)\n}\n"
+ right: "//! A narrow reader successor; every legacy implementation and ledger stays unchanged.\n#[path = \"../../crates/xtask/tests/support/current_tree_input.rs\"]\npub mod old;\npub(crate) use old::*;\n#[path = \"contract.rs\"]\npub mod phase;\n#[path = \"../package-frontier-inputs-074/contract.rs\"]\npub mod closure;\n\npub(crate) fn accepts_patch(path: &str, raw: &str) -> bool {\n    if path == phase::FRESH {\n        return phase::previous(path, raw)\n            .is_some_and(|previous| old::accepts_patch(path, &previous));\n    }\n    old::accepts_patch(path, raw)\n}\npub(crate) fn read(path: &str) -> String {\n    if closure::known(path) {\n        return closure::project(path, old::read(path));\n    }\n    if path != phase::FRESH {\n        return old::read(path);\n    }\n    // Exactly the old patch branch's read and check order; no fallback or new IO.\n    let raw = std::fs::read_to_string(crate::runtime::root().join(path)).unwrap();\n    assert!(\n        accepts_patch(path, &raw),\n        \"original fresh-kernel input gate after exact caller successor\"\n    );\n    crate::runtime::frozen(SOURCE, path)\n}\n"
+
+
+failures:
+    reader_adds_only_a_pure_join_after_the_original_complete_read
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.30s
+
