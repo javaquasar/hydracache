@@ -21516,3 +21516,23 @@ review. Ten pure controls pass on both platforms and real environment preflight
 passes. No full package result follows yet: a bounded coordinator, stream
 accounting and fresh build-capacity check still precede execution. The Windows
 timeout, original deadlines and all live predicates keep their original meaning.
+
+The [full GNU controller continuation](../testing/performance/0.74/native-full-package-controller-result-20261027.md)
+then exposes two different failure classes before tests begin. A strengthened
+test initially treats changing log-file access time as descriptor identity;
+its correction retains stable device/inode/mode identity instead. A mistakenly
+continued shell chain starts the prototype despite that failed test, so dispatch
+is subsequently guarded by an exact green control receipt and current source
+hashes inside the coordinator itself. The first failure and cancelled compilation
+remain evidence rather than disappearing behind the repaired controls.
+
+Nine Linux controls and six portable Windows controls then pass, including real
+synthetic descendant retirement. The accepted full command starts compilation
+but stops on the unchanged physical disk floor. Its CI owner establishes kernel
+ECHILD before the outer guard interrupts postflight; the missing final package
+receipt remains missing. No test target starts. An earlier free-space snapshot
+was not a compilation reservation, and a sampled floor is not a hard allocation
+quota. Capacity planning therefore becomes a prerequisite for the next distinct
+attempt, not grounds to relax the gate or retry until green. These findings improve
+the test controller, not HydraCache throughput, production writer retirement or
+release readiness. All live checks, original deadlines and first outcomes remain.

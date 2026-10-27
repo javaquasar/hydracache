@@ -1,0 +1,11 @@
+{
+  "bound_seconds": 780,
+  "classification": "resource-floor",
+  "cleanup_errors": [
+    "CapacityError: original physical/native 4 GiB floor"
+  ],
+  "cleanup_seconds": 5,
+  "exit": 125,
+  "observed_cargo_exit": null,
+  "retired": true
+}

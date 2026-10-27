@@ -1,0 +1,9 @@
+{
+  "bound_seconds": 780,
+  "classification": "cancelled",
+  "cleanup_errors": [],
+  "cleanup_seconds": 5,
+  "exit": 125,
+  "observed_cargo_exit": null,
+  "retired": true
+}

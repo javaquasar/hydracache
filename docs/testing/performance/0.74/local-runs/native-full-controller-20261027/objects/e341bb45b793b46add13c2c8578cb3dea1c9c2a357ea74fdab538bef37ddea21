@@ -1,0 +1,27 @@
+test_real_floor_refusal_retires_original_child (test_gnu_package.NativeFixtures.test_real_floor_refusal_retires_original_child) ... ok
+test_real_separate_streams_and_owned_exit (test_gnu_package.NativeFixtures.test_real_separate_streams_and_owned_exit) ... ok
+test_real_timeout_retires_detached_grandchild (test_gnu_package.NativeFixtures.test_real_timeout_retires_detached_grandchild) ... ok
+test_cleanup_error_overrides_zero_child_exit (test_gnu_package.PureControls.test_cleanup_error_overrides_zero_child_exit) ... ok
+test_default_and_unknown_cli_never_dispatch (test_gnu_package.PureControls.test_default_and_unknown_cli_never_dispatch) ... ok
+test_spawn_failure_restores_descriptors_and_environment (test_gnu_package.PureControls.test_spawn_failure_restores_descriptors_and_environment) ... FAIL
+test_success_and_failure_require_retirement (test_gnu_package.PureControls.test_success_and_failure_require_retirement) ... ok
+test_timeout_and_floor_do_not_become_success (test_gnu_package.PureControls.test_timeout_and_floor_do_not_become_success) ... ok
+
+======================================================================
+FAIL: test_spawn_failure_restores_descriptors_and_environment (test_gnu_package.PureControls.test_spawn_failure_restores_descriptors_and_environment)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/package-closure-offline-074/test_gnu_package.py", line 81, in test_spawn_failure_restores_descriptors_and_environment
+    self.assertEqual([os.fstat(1), os.fstat(2)], original)
+AssertionError: Lists differ: [os.s[258 chars]st_atime=1793084157, st_mtime=1793084157, st_ctime=1793084157)] != [os.s[258 chars]st_atime=1793084156, st_mtime=1793084157, st_ctime=1793084157)]
+
+First differing element 1:
+os.st[93 chars] st_atime=1793084157, st_mtime=1793084157, st_ctime=1793084157)
+os.st[93 chars] st_atime=1793084156, st_mtime=1793084157, st_ctime=1793084157)
+
+Diff is 744 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 8 tests in 1.746s
+
+FAILED (failures=1)

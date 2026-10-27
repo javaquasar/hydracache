@@ -1,0 +1,24 @@
+{
+  "bound_seconds": 780,
+  "child_environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_INCREMENTAL": "0",
+    "RUSTUP_AUTO_INSTALL": "0"
+  },
+  "clocks": false,
+  "floor_bytes": 4294967296,
+  "group_sha256": "e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691",
+  "helpers": {
+    "analysis.py": "dd53d98e0b299e892a0ccd3597335409a3c3e476db08dd2317706918e1092474",
+    "gnu_review.py": "816c467195b4d58ee1e25cd530258b15241023cf61bbea56ac284bf80b21c1c4"
+  },
+  "launcher_sha256": "38955077bb8fbada425d1571f8d8fe8146969c9649820728c51e6525093d630b",
+  "parser_sha256": "0229d4067fffd0d0b5acee7d864efc64aadfb201de1ea3f17944a2f8dddf3c4d",
+  "product_load": false,
+  "qualification": false,
+  "release_admitted": false,
+  "retry": false,
+  "server": false,
+  "services": false,
+  "test_threads": 4
+}

@@ -210,6 +210,27 @@ the distinct bounded GNU coordinator and preflight build capacity, retaining
 780 seconds including compilation, four threads, physical floor, original owned
 cleanup and separate streams. V9 and all required platform gates remain open.
 
+The [bounded full GNU coordinator](native-full-package-controller-result-20261027.md)
+now retains separate Cargo streams, the fixed 780-second/four-thread contract,
+unchanged CI pidfd/ECHILD retirement and a mandatory source-bound green-control
+gate. Its accepted controls pass nine Linux cases and six Windows cases with
+three platform skips. The first descriptor-oracle failure, Windows portability
+error and mistakenly dispatched prototype compilation are retained. That
+prototype is cancelled with kernel retirement and complete native postflight;
+the later changed controller stops compilation on the physical resource floor.
+Neither attempt starts a test target. The latter records inner retirement but
+the outer disk guard interrupts postflight: its missing final result is not a
+pass. All original Windows/full-package obligations remain open.
+
+Physical free space is now below the original 4 GiB floor. Do not build or test
+until sufficient backing-volume and native-filesystem capacity, including
+compilation reserve beyond the floor, is restored. Scoped removal of the verified
+unused 2.64 GiB Windows incremental cache was blocked before execution; nothing
+was deleted. Retain both consumed output directories and the 127-member packet.
+After capacity repair, separately admit a distinct attempt with exact current
+controls; do not lower the floor, extend the bound, replay unchanged Windows V9
+or combine partial commands. No server, service or clock operation is added.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

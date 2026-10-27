@@ -27,3 +27,22 @@ separately bounded coordinator with exact source/request/helper identities,
 independent Cargo streams, original 780-second/four-thread command and owned
 cleanup plus the physical 4 GiB floor. Do not replay unchanged V9 or reinterpret
 its timeout as a pass.
+
+## Bounded full GNU coordinator
+
+The separate `gnu_package.py` implements that coordinator, not a new route in
+`gnu_review.py`. Default invocation only prints the fixed contract; `--execute`
+requires the exact green Linux control receipt bound to all four current source
+bodies. It retains 780 seconds including compilation, four test threads, no
+filter/retry, a sampled physical 4 GiB floor, separate exclusive Cargo streams
+and the unchanged Linux CI pidfd/subreaper primitive with five-second retirement
+and kernel ECHILD. This is CI containment, not production all-writer authority.
+
+Both fixed attempt output directories are consumed. Do not invoke `--execute`
+again or overwrite them. The [controller result](../../docs/testing/performance/0.74/native-full-package-controller-result-20261027.md)
+retains a cancelled prototype compilation and a later resource-floor refusal;
+neither starts a test target. Accepted controls pass nine cases on Linux and six
+on Windows, with three Linux-only skips on Windows. Earlier control defects and
+their exact source witnesses remain in the evidence. Restore physical build
+capacity before admitting any distinct attempt; do not lower the floor, extend
+the bound or infer a package pass from cleanup success.
