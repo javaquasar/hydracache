@@ -1,0 +1,199 @@
+{
+  "members": {
+    "closure-final-doc-check/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "closure-final-doc-check/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "closure-final-doc-check/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "closure-final-doc-check/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "closure-final-doc-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "closure-final-doc-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "closure-final-doc-check/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "closure-final-doc-check/intent.json": {
+      "bytes": 359350,
+      "sha256": "b333c013ede8ba94bd5ae5db3435b2a5688eb4d70df7d57253041f3f2b5bc15a"
+    },
+    "closure-final-doc-check/process.json": {
+      "bytes": 14,
+      "sha256": "d06f784ee730768b3baa74c9a6184c6388344afecc64798f36fe3a83d07e9f19"
+    },
+    "closure-final-doc-check/result.json": {
+      "bytes": 359222,
+      "sha256": "a746003e5b59152e5aa070166c27b3679bc9aa36ac67a513b0b5cee6bb214f9b"
+    },
+    "closure-final-doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "closure-final-doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "closure-final-performance-contract/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "closure-final-performance-contract/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "closure-final-performance-contract/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "closure-final-performance-contract/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "closure-final-performance-contract/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "closure-final-performance-contract/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "closure-final-performance-contract/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "closure-final-performance-contract/intent.json": {
+      "bytes": 359398,
+      "sha256": "0c4b072b293ccc979c3ec1cac601cd3058ebeafcadd7c15de0ea9cfe934b48b2"
+    },
+    "closure-final-performance-contract/process.json": {
+      "bytes": 14,
+      "sha256": "9fe4805697dd347644e7b4ef76dcf8f3e1219164dacce1d6744e5ecd897f3e64"
+    },
+    "closure-final-performance-contract/result.json": {
+      "bytes": 359222,
+      "sha256": "cf1a351b870172178d4b2d93eda8d9048b2ded1c81cfde62c2d5403ac9e8a221"
+    },
+    "closure-final-performance-contract/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "closure-final-performance-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "closure-final-python-syntax/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "closure-final-python-syntax/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "closure-final-python-syntax/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "closure-final-python-syntax/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "closure-final-python-syntax/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "closure-final-python-syntax/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "closure-final-python-syntax/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "closure-final-python-syntax/intent.json": {
+      "bytes": 359821,
+      "sha256": "e7ac4d32f0e9627537edd39e27b1b74f5433c746f4f1c625c7d5804a54abaa80"
+    },
+    "closure-final-python-syntax/process.json": {
+      "bytes": 14,
+      "sha256": "54e8573ffdcf788a8f3c61375415863d68b18b841f65c77765c5ba144f21c9dc"
+    },
+    "closure-final-python-syntax/result.json": {
+      "bytes": 359222,
+      "sha256": "ccace6033a16819fddb655baf83eace1ead43ac240102e3274a7ed0f7b9cf413"
+    },
+    "closure-final-python-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "closure-final-python-syntax/stdout.log": {
+      "bytes": 46,
+      "sha256": "81d0c04abdce30cf09d5913a72fb535304d1bb3815ef1b22e38c22c4d41c28ca"
+    },
+    "closure-v8-preservation-controls/inputs/Cargo.lock": {
+      "bytes": 175404,
+      "sha256": "e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5"
+    },
+    "closure-v8-preservation-controls/inputs/Cargo.toml": {
+      "bytes": 7117,
+      "sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8"
+    },
+    "closure-v8-preservation-controls/inputs/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "closure-v8-preservation-controls/inputs/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "closure-v8-preservation-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs": {
+      "bytes": 7746,
+      "sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+    },
+    "closure-v8-preservation-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "bytes": 9384,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "closure-v8-preservation-controls/inputs/tools/long-run-supervisor-074/src/diagnostic_manager_channel_kernel.rs": {
+      "bytes": 11659,
+      "sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c"
+    },
+    "closure-v8-preservation-controls/intent.json": {
+      "bytes": 359485,
+      "sha256": "15b6aac2c338a95525360c264874139e974e2b7e851575006b272eacb8f8cffa"
+    },
+    "closure-v8-preservation-controls/process.json": {
+      "bytes": 14,
+      "sha256": "8358384d59958d023595409a101d6e93b8b33928b318bfa2b966a5d9a9d890ab"
+    },
+    "closure-v8-preservation-controls/result.json": {
+      "bytes": 359222,
+      "sha256": "3b32a16c032b8f50b663bfee076531240797f5fdaee66ea43cad8dbe8ccbb6ce"
+    },
+    "closure-v8-preservation-controls/stderr.log": {
+      "bytes": 1011,
+      "sha256": "c33e0db30eaf1760d3e0888ee678b89b985ddf648173b02db18ee37a670d0dc5"
+    },
+    "closure-v8-preservation-controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "package_pass": false,
+  "release_admitted": false,
+  "schema": "hc074-closure-final-local-checks-v1"
+}

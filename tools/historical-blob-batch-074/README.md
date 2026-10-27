@@ -494,7 +494,7 @@ includes one unfiltered four-thread 321-case contract target inside the unchange
 No full package is repeated or declared green, no measured candidate is accepted,
 and no Linux/live/qualification admission follows from v3.
 
-## Current preservation repair scope v9 without a dispatcher
+## Current preservation repair scope v9
 
 `package_effects_review_v9.py SYNTAX_JSON` checks a separately fixed 386-source,
 26,627-site inventory, 56 auxiliary bodies and 153 default Windows targets. It
@@ -508,6 +508,19 @@ module-context resolver and inherited environment review are independently pinne
 Eleven refusal controls use a fixed data fixture and explicitly substitute the
 module callback, never executing archived Python. The real current-tree review
 separately checks module closure and environment. The first incorrect text-policy
-pin refusal is retained. There is no V9 dispatcher, enlarged limit or joined old
-suffix. Full package and GNU frontier results remain open. See the
+pin refusal is retained. That initial review has no dispatcher, enlarged limit
+or joined old suffix. See the
 [review and Linux boundary](../../docs/testing/performance/0.74/package-review-v9-result-20261027.md).
+
+The subsequent `package_replay_v9.py` preserves the original V8 coordinator
+effects/wrappers and changes only fixed V9 review identities/destinations. Eight
+controls and fresh preflight pass before its one full default-Windows attempt.
+That attempt times out at 780 seconds: 80/153 complete targets, 488 passes/no
+failures, one incomplete target and 72 unstarted. It remains red/incomplete.
+The separate native GNU five-target cohort is complete, not a package substitute.
+
+`package_result_v9.py` checks the immutable execution packet and strict original
+parser as data, with six tamper controls. Exit zero confirms receipt integrity,
+not `package_pass`. No archived code, unchanged retry or joined suffix executes.
+The [first full result](../../docs/testing/performance/0.74/package-closure-v9-result-20261027.md)
+records the cost frontier, cleanup warnings and remaining complete-package gate.

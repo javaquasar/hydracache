@@ -186,6 +186,18 @@ predicates remain exact. This closes the separate GNU frontier, not V8 or the
 whole package. Next finish current full-package coordinator review and one
 distinct full command under its original 780-second/four-thread contract.
 
+The [first full V9 package attempt](package-closure-v9-result-20261027.md)
+now retains that unchanged contract and times out: 80/153 complete targets,
+488 passes/no failures, one incomplete held-preparation target and 72 unstarted.
+It is red/incomplete, not a retry of V8 or a complete pass inferred from zero
+printed failures. Full source/effect/environment/wrapper postflight passes.
+Cleanup warnings and the subsequent empty matching-process snapshot remain
+evidence, not production cessation proof. Six data-only tamper controls protect
+the fixed result. Next analyze retained preservation cost paths offline and
+separately review any complete native GNU package scope before a distinct
+command. Do not rerun unchanged V9, join a suffix, extend the bound or waive
+required platform coverage. Security/original-execution/host admission stay open.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

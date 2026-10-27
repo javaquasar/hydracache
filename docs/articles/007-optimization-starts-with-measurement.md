@@ -21478,3 +21478,20 @@ attempt was incomplete. It does not quantify a storage speedup: the watchdog's
 experiment. The old timeout remains intact, and the next full package still
 requires its own complete command and original 780-second bound. No live check,
 deadline, product workload or server service is changed.
+
+The [first full V9 package command](../testing/performance/0.74/package-closure-v9-result-20261027.md)
+demonstrates the difference between repaired assertions and complete coverage.
+It prints no failures, but the unchanged 780-second limit stops it after 80 of
+153 complete targets. Those summaries contain 488 passes; three additional
+passes belong to an incomplete four-case held-preparation target. Seventy-two
+targets never start. Adding partial verdicts or the separate GNU cohort cannot
+make this command complete.
+
+The retained libtest spans locate the next offline analysis: diagnostic-artifact
+alone reports 178.44 seconds, and several whole-source preservation targets each
+report more than 50 seconds. Those spans do not isolate CPU, Git transport or
+filesystem cost. The next step is attribution of the saved paths and separate
+full GNU scope review, not fewer fresh checks, a larger deadline or another
+unchanged run. Strict data-only verification preserves the red receipt alongside
+its exact source/environment postflight and cleanup warnings. This tooling work
+adds no product speedup claim and grants no original-execution or host admission.
