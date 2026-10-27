@@ -1,0 +1,14 @@
+from pathlib import Path
+import hashlib,json,subprocess
+root=Path(__file__).resolve().parent.parent
+base=root/'target/windows-fixed-cargo-20261027'
+result=json.loads((base/'controls-final/result.json').read_bytes())
+assert result['exit']==0 and result['source_unchanged'] and result['head_unchanged']
+names=subprocess.check_output(['git','diff','--cached','--name-only'],cwd=root).decode().splitlines()
+assert len(names)==7 and all(name.startswith('tools/windows-workspace-preflight-074/') for name in names)
+for name in names:
+    blob=subprocess.check_output(['git','show',':'+name],cwd=root)
+    assert blob==(root/name).read_bytes()
+    assert hashlib.sha256(blob).hexdigest()==result['source_after'][name]
+with (base/'staged-code-verified.json').open('x',encoding='utf-8') as stream:json.dump(dict(exact_staged_blobs=7,complete_controls_pass=True),stream)
+print('seven exact staged blobs match the complete green dispatcher controls')

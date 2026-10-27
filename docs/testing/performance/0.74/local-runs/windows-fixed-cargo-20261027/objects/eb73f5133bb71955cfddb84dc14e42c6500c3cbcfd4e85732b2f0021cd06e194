@@ -1,0 +1,18 @@
+== doc-check ==
+doc-check: OK
+== management-center-check 0.72 ==
+management-center-check: OK
+== performance-contract-check 0.73 ==
+performance-contract-check: OK (local screening only)
+== release feature leak ==
+release feature leak: OK
+== format ==
+== clippy workspace ==
+== clippy ==
+== clippy hydracache common ==
+== clippy hydracache system allocator ==
+== clippy hydracache mimalloc ==
+== dependency bans ==
+bans ok
+== dependency policy ==
+advisories FAILED, bans ok, licenses ok, sources ok

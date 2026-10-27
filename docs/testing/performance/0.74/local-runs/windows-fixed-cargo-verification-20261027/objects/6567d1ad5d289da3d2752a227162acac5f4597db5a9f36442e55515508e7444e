@@ -1,0 +1,27 @@
+from pathlib import Path
+import hashlib,json,subprocess,sys
+root=Path(__file__).resolve().parent.parent
+folder=root/'target/windows-fixed-cargo-20261027/packet-verification'
+folder.mkdir(exist_ok=False)
+script=root/'target/verify-fixed-cargo-packet-20261027.py'
+with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+    result=subprocess.run([sys.executable,'-B',str(script)],cwd=root,stdout=stdout,stderr=stderr,timeout=60,check=False)
+assert result.returncode==0
+out=root/'docs/testing/performance/0.74/local-runs/windows-fixed-cargo-verification-20261027'
+(out/'objects').mkdir(parents=True,exist_ok=False)
+values={'verification/source.py':script.read_bytes(),'verification/stdout.log':(folder/'stdout.log').read_bytes(),
+        'verification/stderr.log':(folder/'stderr.log').read_bytes(),
+        'verification/result.json':(json.dumps(dict(exit=0,archived_code_executed=False,workload_replayed=False))+'\n').encode(),
+        'seal/source.py':Path(__file__).read_bytes()}
+members={}
+for name,raw in values.items():
+    digest=hashlib.sha256(raw).hexdigest()
+    with (out/'objects'/digest).open('xb') as stream:stream.write(raw)
+    members[name]=dict(sha256=digest,bytes=len(raw))
+raw=(json.dumps(dict(schema='hc074-local-evidence-collection-v1',members=members,
+    parent_index_sha256='f5b09e77da3bf55cd6b14f1a898b40ce74b1f267117e0ab6508778c33f650afa',
+    packet_integrity_pass=True,archived_code_executed=False,workspace_pass=False,release_admitted=False),indent=2,sort_keys=True)+'\n').encode()
+with (out/'index.json').open('xb') as stream:stream.write(raw)
+with (out/'.gitattributes').open('x',encoding='utf-8',newline='\n') as stream:
+    stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+print(json.dumps(dict(index_sha256=hashlib.sha256(raw).hexdigest(),members=5,objects=5,verification_only=True)))

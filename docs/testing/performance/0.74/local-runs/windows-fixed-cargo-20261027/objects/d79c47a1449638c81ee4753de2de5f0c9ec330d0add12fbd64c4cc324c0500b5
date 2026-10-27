@@ -1,0 +1,13 @@
+from pathlib import Path
+import hashlib,json,subprocess
+root=Path(__file__).resolve().parent.parent
+base=root/'target/windows-fixed-cargo-20261027'
+result=json.loads((base/'controls-workspace-final/result.json').read_bytes())
+assert result['exit']==0 and result['source_unchanged'] and result['head_unchanged']
+names=subprocess.check_output(['git','diff','--cached','--name-only'],cwd=root).decode().splitlines()
+assert names==['tools/windows-workspace-preflight-074/accounting.py','tools/windows-workspace-preflight-074/dispatch.py','tools/windows-workspace-preflight-074/test_dispatch.py']
+for name in names:
+    blob=subprocess.check_output(['git','show',':'+name],cwd=root)
+    assert blob==(root/name).read_bytes() and hashlib.sha256(blob).hexdigest()==result['source_after'][name]
+with (base/'staged-workspace-parser-verified.json').open('x',encoding='utf-8') as stream:json.dump(dict(exact_staged_blobs=3,complete_controls_pass=True),stream)
+print('three exact staged blobs; package parser and Cargo commands unchanged')

@@ -1,0 +1,32 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "tools/windows-workspace-preflight-074/dispatch.py",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\windows-fixed-cargo-20261027\\workspace",
+    "--mode",
+    "workspace",
+    "--execute"
+  ],
+  "head": "2fe613bf866f31c1800addb10790d350656b1790",
+  "retry": false,
+  "source": {
+    "scripts/ci/watchdog_windows_job.py": "8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1",
+    "tools/windows-workspace-preflight-074/.gitattributes": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+    "tools/windows-workspace-preflight-074/README.md": "d576985cc1aee9daec2ee5abb870a4b4358aea80c8ea718f52d2c745a9fa5412",
+    "tools/windows-workspace-preflight-074/accounting.py": "c1e52f61698cbf94e0f40b3bd27d421ae58a9686f3a40bf773feacc235745281",
+    "tools/windows-workspace-preflight-074/custody.py": "90af77bd1f80d6017ce36cd7c607de818bd43d6eb6265dba1952129404fc5a80",
+    "tools/windows-workspace-preflight-074/dispatch.py": "e791a9285f63821f36395ab7665e1ba24e846b65959291db6c79ae6440695a05",
+    "tools/windows-workspace-preflight-074/metadata.py": "9dbf4ce5277c1de56ab48d71ab24045f1b50d93c095c99cecd589d63a8b2b4cf",
+    "tools/windows-workspace-preflight-074/owned.py": "e7c5a3c0c4fea90f39772512c4ad96c60693fc0b482092a608dcf039e151eade",
+    "tools/windows-workspace-preflight-074/prepare.py": "564d69cfebeb996042aa34ae3cf26a18dc129a0f1e464576b3aebaf3cbdf06a6",
+    "tools/windows-workspace-preflight-074/storage.py": "aedfad1efcaae5197c15f6ecb551d88f9aaf5c89e87825e7378ef880c7a097e3",
+    "tools/windows-workspace-preflight-074/test_dispatch.py": "7816e84796485334d9cd475bb3a52f2b31c5db4d657cea49094e486d4514cc4d",
+    "tools/windows-workspace-preflight-074/test_owned.py": "03a9e10cb43f9f542d123ceb3e43e6a9a3c47f3973d1451006fac387115efa59",
+    "tools/windows-workspace-preflight-074/test_prepare.py": "ef290a89a2b64aa65c5a27de9029b551c30f825ef732857898c0874f8719e110",
+    "tools/windows-workspace-preflight-074/worker.py": "742be2f4b0be7b7598901d592402b18e6358105abe65af2188690758159abdf7",
+    "tools/xtask-package-attribution-074/review.py": "0229d4067fffd0d0b5acee7d864efc64aadfb201de1ea3f17944a2f8dddf3c4d"
+  },
+  "utc": "2026-10-27T20:08:01.765029+00:00",
+  "wrapper_not_a_gate_budget": true
+}

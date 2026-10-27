@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\windows-workspace-preflight-074\worker.py", line 75, in <module>
+    raise SystemExit(run(out,sys.argv[2],sys.argv[3]))
+                     ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\windows-workspace-preflight-074\worker.py", line 33, in run
+    raise ValueError('original parent request bytes drift')
+ValueError: original parent request bytes drift

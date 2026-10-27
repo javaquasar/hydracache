@@ -1,0 +1,44 @@
+from pathlib import Path
+from datetime import datetime,timezone
+import hashlib,json,subprocess,sys,time
+root=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(root/'tools/windows-workspace-preflight-074'))
+import custody
+base=root/'target/windows-fixed-cargo-20261027'
+label=sys.argv[1]
+commands={
+    'controls-first':[sys.executable,'-B','-m','unittest','discover','-s','tools/windows-workspace-preflight-074','-p','test_*.py','-v'],
+    'controls-final':[sys.executable,'-B','-m','unittest','discover','-s','tools/windows-workspace-preflight-074','-p','test_*.py','-v'],
+    'controls-workspace-final':[sys.executable,'-B','-m','unittest','discover','-s','tools/windows-workspace-preflight-074','-p','test_*.py','-v'],
+    'frame-diagnostic':[sys.executable,'-B','-c',"import sys;sys.path.insert(0,'tools/windows-workspace-preflight-074');import custody,json;print(json.dumps(custody.frame(clean=False),sort_keys=True))"],
+    'preflight-package':[sys.executable,'-B','tools/windows-workspace-preflight-074/dispatch.py',str(base/'preflight-package'),'--mode','package'],
+    'package':[sys.executable,'-B','tools/windows-workspace-preflight-074/dispatch.py',str(base/'package'),'--mode','package','--execute'],
+    'workspace':[sys.executable,'-B','tools/windows-workspace-preflight-074/dispatch.py',str(base/'workspace'),'--mode','workspace','--execute'],
+    'doc-check':[str(root/'target/debug/xtask.exe'),'doc-check'],
+}
+out=base/label if label.startswith('controls-') else base/(label+'-capture')
+out.mkdir(parents=True,exist_ok=False)
+def write(name,value):
+    with (out/name).open('x',encoding='utf-8',newline='\n') as stream:
+        json.dump(value,stream,indent=2,sort_keys=True);stream.write('\n')
+def head():return subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,timeout=10).decode().strip()
+source=custody.helpers(root)
+before=head()
+write('intent.json',dict(argv=commands[label],source=source,head=before,utc=datetime.now(timezone.utc).isoformat(),
+    retry=False,wrapper_not_a_gate_budget=True))
+(out/'source').mkdir()
+for name,digest in source.items():
+    blob=(root/name).read_bytes()
+    with (out/'source'/Path(name).name).open('xb') as stream:stream.write(blob)
+with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+    try:
+        if label=='doc-check':assert hashlib.sha256((root/'target/debug/xtask.exe').read_bytes()).hexdigest()=='80a24427ad0e6ae4259952472061324eda32a405d4146941fae24c9554f7e8c6'
+        # Fixed commands own their 780/4800 budget; no outer extension of Cargo.
+        result=subprocess.run(commands[label],cwd=root,stdout=stdout,stderr=stderr,stdin=subprocess.DEVNULL,
+            timeout=5100 if label=='workspace' else 1080 if label=='package' else 180,check=False)
+        after=custody.helpers(root)
+        write('result.json',dict(exit=result.returncode,source_unchanged=source==after,head_unchanged=before==head(),source_after=after))
+        print(json.dumps(dict(label=label,exit=result.returncode,source_unchanged=source==after)))
+    except BaseException as error:
+        write('refusal.json',dict(type=type(error).__name__,reason=str(error)))
+        raise

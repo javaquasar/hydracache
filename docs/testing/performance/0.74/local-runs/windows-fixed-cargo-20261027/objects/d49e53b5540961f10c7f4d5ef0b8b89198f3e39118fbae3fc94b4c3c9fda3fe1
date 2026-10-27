@@ -1,0 +1,26 @@
+from pathlib import Path
+import hashlib,json,subprocess,sys
+root=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(root/'tools/windows-workspace-preflight-074'))
+import custody
+base=root/'target/windows-fixed-cargo-20261027'
+out=base/'doc-check-current'
+out.mkdir(exist_ok=False)
+def write(name,value):
+    with (out/name).open('x',encoding='utf-8') as stream:json.dump(value,stream,indent=2,sort_keys=True)
+controller=json.loads((base/'workspace/controller.json').read_bytes())
+assert controller['execution']['retired'] and not controller['execution']['errors']
+before=custody.frame()
+exe=root/'target/debug/xtask.exe'
+digest=hashlib.sha256(exe.read_bytes()).hexdigest()
+assert digest=='4192683eed9dfa7aa5d95b06cb1cc5fe8a00824c548d228fcbc7974fb5d401fe'
+write('intent.json',dict(binary_sha256=digest,argv=[str(exe),'doc-check'],
+    binary_observed_after_original_cargo_verify=True,source_head=before['head'],source=before['helpers']))
+with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+    result=subprocess.run([str(exe),'doc-check'],cwd=root,stdout=stdout,stderr=stderr,timeout=180,check=False)
+after=custody.frame()
+custody.equivalent(before,after)
+assert hashlib.sha256(exe.read_bytes()).hexdigest()==digest
+write('result.json',dict(exit=result.returncode,source_frame_unchanged=True,binary_unchanged=True,
+    full_workspace_pass=False,release_admitted=False))
+print(json.dumps(dict(doc_check_exit=result.returncode,source_frame_unchanged=True)))

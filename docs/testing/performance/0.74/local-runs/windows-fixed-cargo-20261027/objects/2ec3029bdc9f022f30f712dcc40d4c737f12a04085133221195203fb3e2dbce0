@@ -1,0 +1,32 @@
+"""Read-only CRLF-aware successor; retain the first metadata-parser refusal."""
+from pathlib import Path
+import hashlib,json,re,subprocess,tomllib
+root=Path(__file__).resolve().parent.parent
+base=root/'target/windows-fixed-cargo-20261027'
+out=base/'security-postflight-reviewed'
+out.mkdir(exist_ok=False)
+raw=(base/'workspace/stderr.log').read_bytes()
+ids=re.findall(r'ID: (RUSTSEC-\d{4}-\d+)',raw.decode())
+assert len(ids)==len(set(ids))==11
+db=Path('C:/Users/ArturBuzov/.cargo/advisory-dbs/advisory-db-3157b0e258782691')
+def git(*args):return subprocess.check_output(['git','-C',str(db),*args],timeout=20)
+head=git('rev-parse','HEAD').decode().strip()
+assert not git('status','--porcelain')
+paths=[p.decode() for p in git('ls-files','-z','--','crates').split(b'\0') if p]
+records={}
+for identity in ids:
+    matches=[p for p in paths if p.endswith('/'+identity+'.md')]
+    assert len(matches)==1
+    content=(db/matches[0]).read_bytes()
+    header=content.decode().replace('\r\n','\n').split('```toml\n',1)[1].split('```',1)[0]
+    value=tomllib.loads(header)
+    assert value['advisory']['id']==identity
+    with (out/(identity+'.md')).open('xb') as stream:stream.write(content)
+    records[identity]=dict(package=value['advisory']['package'],informational=value['advisory'].get('informational'),
+        versions=value.get('versions',{}),sha256=hashlib.sha256(content).hexdigest(),path=matches[0])
+assert head==git('rev-parse','HEAD').decode().strip() and not git('status','--porcelain')
+with (out/'result.json').open('x',encoding='utf-8') as stream:
+    json.dump(dict(advisories=records,postflight_database_commit=head,postflight_clean=True,
+        preflight_database_pin_recorded=False,gate_stderr_sha256=hashlib.sha256(raw).hexdigest(),
+        dependency_changes=False,policy_exceptions_added=False,workload_replayed=False),stream,indent=2,sort_keys=True)
+print(json.dumps(dict(advisories=len(records),postflight_database_commit=head,dependencies_changed=False)))

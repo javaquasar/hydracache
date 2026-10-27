@@ -1,0 +1,8 @@
+{
+  "kind": "manual-transcription-of-tool-response-not-a-raw-process-log",
+  "script": "target/workspace-parser-regression-20261027.py",
+  "reason": "KeyError: members; the original 20261024 packet uses files rather than the later members schema",
+  "empty_first_output_retained": true,
+  "workload_replayed": false,
+  "original_packet_changed": false
+}

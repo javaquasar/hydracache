@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\windows-workspace-preflight-074\\worker.py",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\windows-fixed-cargo-20261027\\workspace",
+    "bea4a8d95ab26f1b5f78cd70c3e53186d224550a47740eafc2183d93e32a770c",
+    "workspace"
+  ],
+  "cleanup_seconds": 5,
+  "deadline": 20619.6484067,
+  "pid": 28716,
+  "request_sha256": "bea4a8d95ab26f1b5f78cd70c3e53186d224550a47740eafc2183d93e32a770c"
+}

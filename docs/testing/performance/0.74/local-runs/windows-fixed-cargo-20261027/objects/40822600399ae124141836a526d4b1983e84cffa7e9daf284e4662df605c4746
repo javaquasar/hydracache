@@ -1,0 +1,137 @@
+{
+  "advisories": {
+    "RUSTSEC-2024-0449": {
+      "informational": "unmaintained",
+      "package": "unsafe-libyaml",
+      "path": "crates/unsafe-libyaml/RUSTSEC-2024-0449.md",
+      "sha256": "feeebbf53cf12f85f8151c2696eb59f169cfa0c6fee1b51d9e15d97eadeee013",
+      "versions": {
+        "patched": [],
+        "unaffected": []
+      }
+    },
+    "RUSTSEC-2026-0367": {
+      "informational": null,
+      "package": "zip",
+      "path": "crates/zip/RUSTSEC-2026-0367.md",
+      "sha256": "e8d6a08897b7dd1c480a39268ec507b2de25e68a174a22d3fd1d6260ed6cbd28",
+      "versions": {
+        "patched": [
+          ">= 9.0.0"
+        ]
+      }
+    },
+    "RUSTSEC-2026-0368": {
+      "informational": null,
+      "package": "zip",
+      "path": "crates/zip/RUSTSEC-2026-0368.md",
+      "sha256": "aae3a3a2a2de7cfb5cfa22953da214b8bda1a362d108a79134de309984a5cc65",
+      "versions": {
+        "patched": [
+          ">= 9.0.0"
+        ]
+      }
+    },
+    "RUSTSEC-2026-0369": {
+      "informational": null,
+      "package": "zip",
+      "path": "crates/zip/RUSTSEC-2026-0369.md",
+      "sha256": "d2c9b29a5090f8c4381a3fff241ba1366816ff25eb801acce34790d2feb32590",
+      "versions": {
+        "patched": [
+          ">= 9.0.0"
+        ]
+      }
+    },
+    "RUSTSEC-2026-0370": {
+      "informational": "unmaintained",
+      "package": "zvariant",
+      "path": "crates/zvariant/RUSTSEC-2026-0370.md",
+      "sha256": "e2d28a7c6546f8849adc936e9f2afc1685e43b3b44446ffb3f4340a4e0df958e",
+      "versions": {
+        "patched": []
+      }
+    },
+    "RUSTSEC-2026-0371": {
+      "informational": "unmaintained",
+      "package": "zbus_names",
+      "path": "crates/zbus_names/RUSTSEC-2026-0371.md",
+      "sha256": "a8e9e77c6fd773c1d667a5f4bf3192cbf2e652e126d58dc48513fe917490b876",
+      "versions": {
+        "patched": []
+      }
+    },
+    "RUSTSEC-2026-0372": {
+      "informational": "unmaintained",
+      "package": "zvariant_derive",
+      "path": "crates/zvariant_derive/RUSTSEC-2026-0372.md",
+      "sha256": "7d80f8b43712630b7704a8cc9e8b945fd28e2086e353a61e86a6d6ba14077bf3",
+      "versions": {
+        "patched": []
+      }
+    },
+    "RUSTSEC-2026-0391": {
+      "informational": null,
+      "package": "zstd",
+      "path": "crates/zstd/RUSTSEC-2026-0391.md",
+      "sha256": "346689d47d5ec6dd7d0023b89920a085f0e6dd3c9be8512842116afcffecf7b9",
+      "versions": {
+        "patched": [
+          ">= 0.14.3"
+        ],
+        "unaffected": [
+          "< 0.13.2"
+        ]
+      }
+    },
+    "RUSTSEC-2026-0398": {
+      "informational": null,
+      "package": "zstd-safe",
+      "path": "crates/zstd-safe/RUSTSEC-2026-0398.md",
+      "sha256": "c4c8d9fb4cd439f9e4a4137f1a442f9dac8a3971113e1e6986ae14c51e4e4d54",
+      "versions": {
+        "patched": [
+          ">= 8.2.0"
+        ],
+        "unaffected": [
+          "< 7.2.2"
+        ]
+      }
+    },
+    "RUSTSEC-2026-0403": {
+      "informational": null,
+      "package": "zstd-safe",
+      "path": "crates/zstd-safe/RUSTSEC-2026-0403.md",
+      "sha256": "2ca96f9d38c2239337823a8527ee5565046a1aee6c204d2dd417c9e1a8c437fb",
+      "versions": {
+        "patched": [
+          ">= 8.2.0"
+        ],
+        "unaffected": [
+          "< 4.0.0"
+        ]
+      }
+    },
+    "RUSTSEC-2026-0410": {
+      "informational": null,
+      "package": "zstd-sys",
+      "path": "crates/zstd-sys/RUSTSEC-2026-0410.md",
+      "sha256": "b90ae92e90c7bb205c401df27a8674fc8fae982f85270c4b1d32655704c3baab",
+      "versions": {
+        "patched": [
+          ">= 2.1.2"
+        ],
+        "unaffected": [
+          "< 2.0.9"
+        ]
+      }
+    }
+  },
+  "dependency_changes": false,
+  "gate_stderr_sha256": "177ea56dcf9e89d4b56cda3601485e95d75a4fa610c2d81bfd5864d3e16bffde",
+  "policy_exceptions_added": false,
+  "postflight_clean": true,
+  "postflight_database_commit": "99670cfc0bc574433034b75876a4b791ccaa2efb",
+  "preflight_database_pin_recorded": false,
+  "workload_replayed": false
+}

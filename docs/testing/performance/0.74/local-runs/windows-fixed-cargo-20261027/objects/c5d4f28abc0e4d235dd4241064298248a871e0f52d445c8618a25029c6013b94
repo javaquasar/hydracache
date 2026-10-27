@@ -1,0 +1,96 @@
+"""Retain distinct actual gates and all preceding controls/refusals as inert data."""
+from pathlib import Path
+import hashlib,json,subprocess,tempfile
+root=Path(__file__).resolve().parent.parent
+base=root/'target/windows-fixed-cargo-20261027'
+out=root/'docs/testing/performance/0.74/local-runs/windows-fixed-cargo-20261027'
+assert not out.exists()
+def read(name):return json.loads((base/name).read_bytes())
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+for phase,n in [('controls-first',38),('controls-final',41),('controls-workspace-final',42)]:
+    result=read(phase+'/result.json')
+    assert result['exit']==0 and result['source_unchanged'] and result['head_unchanged']
+    assert ('Ran '+str(n)+' tests').encode() in (base/phase/'stderr.log').read_bytes()
+for phase in ('frame-diagnostic','preflight-package','package','workspace'):
+    result=read(phase+'-capture/result.json')
+    assert result['exit']==(1 if phase=='workspace' else 0)
+    assert result['source_unchanged'] and result['head_unchanged']
+sources={'package':'f62436aa6271793e157272b2a02957576b84c92e',
+         'workspace':'2fe613bf866f31c1800addb10790d350656b1790'}
+for mode,head in sources.items():
+    before=read(mode+'/frame-before.json');after=read(mode+'/frame-after.json')
+    assert before==after and before['head']==head
+    result=read(mode+'/result.json');controller=read(mode+'/controller.json')
+    assert result['source_refs_configuration_environment_unchanged'] and not result['release_admitted']
+    execution=controller['execution']
+    assert execution['retired'] and not execution['errors'] and execution['cleanup_seconds']==5
+    assert execution['bound_seconds']==(780 if mode=='package' else 4800)
+    assert execution['exit']==(0 if mode=='package' else 1)
+    assert controller['request_sha256']==sha((base/mode/'request.json').read_bytes())
+    assert len(before['targets'])==156 and len(before['workspace_members'])==36
+package=read('package/accounting.json')
+assert package['complete'] and package['package_pass']
+assert (package['expected_targets'],package['scheduled_targets'],package['completed_targets'],package['passed'],package['failed'],package['ignored'])==(156,156,156,1351,0,0)
+workspace=read('workspace/accounting.json')
+assert not workspace['complete'] and not workspace['workspace_pass']
+assert len(workspace['stages'])==21
+assert sum(row['state']=='complete' for row in workspace['stages'])==11
+assert workspace['stages'][11]==dict(name='dependency policy',state='incomplete-or-failed')
+assert sum(row['state']=='unstarted' for row in workspace['stages'])==9
+assert len(workspace['outer_verify_launches'])==1 and not workspace['targets']
+security=read('security-postflight-reviewed/result.json')
+assert len(security['advisories'])==11 and security['postflight_clean']
+assert security['postflight_database_commit']=='99670cfc0bc574433034b75876a4b791ccaa2efb'
+assert not security['preflight_database_pin_recorded'] and not security['dependency_changes']
+assert read('workspace-parser-baseline-reviewed/result.json')['expected_refusal_observed']
+assert not list((base/'workspace-parser-baseline').iterdir())
+assert not list((base/'security-postflight').iterdir())
+assert read('doc-check-current/result.json')['exit']==0
+assert read('doc-check-current/result.json')['source_frame_unchanged']
+assert sha((root/'Cargo.lock').read_bytes())=='e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5'
+assert sha((root/'docs/testing/performance/0.74/qualification-manifest.toml').read_bytes())=='11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
+(out/'objects').mkdir(parents=True)
+members={}
+def add(name,path):
+    assert path.is_file() and not path.is_symlink() and not path.is_junction()
+    raw=path.read_bytes();digest=sha(raw);obj=out/'objects'/digest
+    if obj.exists():assert obj.read_bytes()==raw
+    else:
+        with obj.open('xb') as stream:stream.write(raw)
+    assert name not in members
+    members[name]=dict(sha256=digest,bytes=len(raw))
+for path in sorted(base.rglob('*')):
+    if path.is_file():add('capture/'+path.relative_to(base).as_posix(),path)
+for path in sorted((root/'tools/windows-workspace-preflight-074').iterdir()):
+    if path.is_file():add('source/current/'+path.name,path)
+for phase in ('controls-first','controls-final','controls-workspace-final'):
+    count=0
+    for line in (base/phase/'stdout.log').read_text().splitlines():
+        if line.startswith('retained-fixture '):
+            folder=Path(line.removeprefix('retained-fixture ')).resolve(strict=True)
+            assert folder.is_relative_to(Path(tempfile.gettempdir()).resolve()) and folder.name.startswith('hc074-owned-envelope-')
+        elif line.startswith('retained-dispatch-fixture '):
+            folder=Path(line.removeprefix('retained-dispatch-fixture ')).resolve(strict=True)
+            assert folder.is_relative_to(root/'target') and folder.name.startswith('worker-request-fault-')
+        else:raise ValueError('unknown fixture output')
+        for path in folder.iterdir():
+            if path.is_file():add('fixture/'+phase+'/'+str(count)+'/'+path.name,path)
+        count+=1
+    assert count==(3 if phase=='controls-first' else 4)
+for name in ('record-fixed-cargo-20261027.py','verify-fixed-cargo-stage-20261027.py',
+    'verify-workspace-account-stage-20261027.py','workspace-parser-regression-20261027.py',
+    'workspace-parser-regression-fixed-20261027.py','capture-fixed-cargo-security-20261027.py',
+    'capture-fixed-cargo-security-lf-20261027.py','check-fixed-cargo-docs-20261027.py','seal-fixed-cargo-20261027.py'):
+    add('helper/'+name,root/'target'/name)
+index=dict(schema='hc074-local-evidence-collection-v1',members=members,
+    actual_sources=sources,archived_code_executed=False,
+    windows_package_pass=True,workspace_pass=False,release_admitted=False,
+    package_targets=156,package_cases_passed=1351,workspace_stages_completed=11,
+    workspace_failed_stage='dependency policy',workspace_stages_unstarted=9,security_advisories=11,
+    source_frames_unchanged=True,original_jobs_retired=True,retries=False,server=False)
+raw=(json.dumps(index,indent=2,sort_keys=True)+'\n').encode()
+with (out/'index.json').open('xb') as stream:stream.write(raw)
+with (out/'.gitattributes').open('x',encoding='utf-8',newline='\n') as stream:
+    stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+print(json.dumps(dict(index_sha256=sha(raw),members=len(members),objects=len(list((out/'objects').iterdir())),
+    windows_package_pass=True,workspace_pass=False,release_admitted=False)))

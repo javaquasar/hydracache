@@ -1,0 +1,9 @@
+{
+  "kind": "manual-transcription-of-tool-response-not-a-raw-process-log",
+  "script": "target/capture-fixed-cargo-security-20261027.py",
+  "reason": "IndexError at split('```toml\\n',1)[1]: the clean Windows advisory database contains CRLF bytes",
+  "first_empty_output_retained": true,
+  "correction": "Normalize line endings only in the in-memory TOML header parser; retain original advisory bytes and hashes unchanged in a separate output",
+  "gate_rerun": false,
+  "database_or_dependencies_changed": false
+}

@@ -1,0 +1,22 @@
+{
+  "exit": 0,
+  "head_unchanged": true,
+  "source_after": {
+    "scripts/ci/watchdog_windows_job.py": "8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1",
+    "tools/windows-workspace-preflight-074/.gitattributes": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+    "tools/windows-workspace-preflight-074/README.md": "78dfcddcc753ada3e8feff06ea5c9d5f27564ef28ae4a80f074aafc4cc3bed1e",
+    "tools/windows-workspace-preflight-074/accounting.py": "b08e6f12e50a75a4248834cc1ae1d14b89fbbc3222f71072977a446c373d7bfe",
+    "tools/windows-workspace-preflight-074/custody.py": "1b3b11a50767d9a3dd65ce952493af80f6ae3f3165dab8d6b4213c469ad83b02",
+    "tools/windows-workspace-preflight-074/dispatch.py": "34c373f551884406f43cb00fecf460bd36ac223ae225217c5e691d01d4c1e1c6",
+    "tools/windows-workspace-preflight-074/metadata.py": "9dbf4ce5277c1de56ab48d71ab24045f1b50d93c095c99cecd589d63a8b2b4cf",
+    "tools/windows-workspace-preflight-074/owned.py": "e7c5a3c0c4fea90f39772512c4ad96c60693fc0b482092a608dcf039e151eade",
+    "tools/windows-workspace-preflight-074/prepare.py": "564d69cfebeb996042aa34ae3cf26a18dc129a0f1e464576b3aebaf3cbdf06a6",
+    "tools/windows-workspace-preflight-074/storage.py": "aedfad1efcaae5197c15f6ecb551d88f9aaf5c89e87825e7378ef880c7a097e3",
+    "tools/windows-workspace-preflight-074/test_dispatch.py": "5b58dd8105701e2d8e0957b655672b664f51e110acb0341acf724145c4a9eaa8",
+    "tools/windows-workspace-preflight-074/test_owned.py": "03a9e10cb43f9f542d123ceb3e43e6a9a3c47f3973d1451006fac387115efa59",
+    "tools/windows-workspace-preflight-074/test_prepare.py": "ef290a89a2b64aa65c5a27de9029b551c30f825ef732857898c0874f8719e110",
+    "tools/windows-workspace-preflight-074/worker.py": "742be2f4b0be7b7598901d592402b18e6358105abe65af2188690758159abdf7",
+    "tools/xtask-package-attribution-074/review.py": "0229d4067fffd0d0b5acee7d864efc64aadfb201de1ea3f17944a2f8dddf3c4d"
+  },
+  "source_unchanged": true
+}

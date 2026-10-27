@@ -317,6 +317,23 @@ gate is dispatched. Next bind/review the fixed worker and full target accounting
 restored capacity and synthetic Job retirement do not admit product execution,
 waive security or change 780/4800-second, 16/4-GiB or 300/60/10 contracts.
 
+The subsequent [fixed Windows Cargo execution](windows-fixed-cargo-result-20261027.md)
+connects the original Job to both exact commands, with SHA-bound worker input,
+fresh full existing source/environment guards, ref/configuration custody,
+consumed input claims and complete postflight/accounting. One actual package
+command completes all 156 targets with 1,351 passes and zero failures/ignored
+cases under the original 780-second/four-thread contract. The separately tested
+workspace accounting recognizes only the exact outer Cargo verify entry after
+a retained offline regression; 42 local controls pass. The actual full workspace
+entry naturally stops at dependency policy after 11 completed stages, leaving
+nine stages unstarted. Original Job retirement and frame postflight pass for both
+commands. The current refusal has 11 advisories, including four new zstd-family
+entries; the clean advisory DB is recorded only in postflight, not represented
+as a preflight pin. Lock, policy, MSRV, qualification identity and live checks
+stay exact. First loader/CRLF parser refusals and prior red commands remain
+evidence; no command retry or joined suffix is used. Next review and repair the
+security dependency frontier before another changed-input full milestone.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

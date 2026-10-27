@@ -1,0 +1,30 @@
+{
+  "archived_code_executed": false,
+  "members": {
+    "seal/source.py": {
+      "bytes": 1906,
+      "sha256": "6567d1ad5d289da3d2752a227162acac5f4597db5a9f36442e55515508e7444e"
+    },
+    "verification/result.json": {
+      "bytes": 73,
+      "sha256": "f413c2e87735d6319e2c92df40192102379530774e9b0413f2ded5c1b11fa927"
+    },
+    "verification/source.py": {
+      "bytes": 2486,
+      "sha256": "16450fbaa806a422c3f91e0411ff5198b3504107ca86267dec50d857fb2f7d60"
+    },
+    "verification/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "verification/stdout.log": {
+      "bytes": 238,
+      "sha256": "25339add76a1b1b5b767963599fce1cb8f92b2993ba2ca88aaebbcab3f05d8e0"
+    }
+  },
+  "packet_integrity_pass": true,
+  "parent_index_sha256": "f5b09e77da3bf55cd6b14f1a898b40ce74b1f267117e0ab6508778c33f650afa",
+  "release_admitted": false,
+  "schema": "hc074-local-evidence-collection-v1",
+  "workspace_pass": false
+}

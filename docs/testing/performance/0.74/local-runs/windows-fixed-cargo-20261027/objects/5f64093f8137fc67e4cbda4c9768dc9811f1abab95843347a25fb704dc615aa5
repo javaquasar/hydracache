@@ -1,0 +1,16 @@
+{
+  "expected_refusal_observed": true,
+  "reason": "unrecognized Cargo target",
+  "no_workload_replay": true,
+  "old_index_sha256": "77fbc293a2f9dc4c10cea302375af693f9331fea422b4b10e39350d3aa785e8a",
+  "members": {
+    "stdout.log": {
+      "bytes": 497,
+      "sha256": "eb73f5133bb71955cfddb84dc14e42c6500c3cbcfd4e85732b2f0021cd06e194"
+    },
+    "stderr.log": {
+      "bytes": 1104969,
+      "sha256": "6501fbd660009452b45c447fe52bc3c7eff0a65b65ed073176c11e5df0abbbaf"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{"classification": "resource-floor", "exit": 125, "observed_child_exit": null, "retired": true, "errors": ["CapacityError: synthetic floor"], "bound_seconds": 3, "cleanup_seconds": 5, "capacity_poll_seconds": 5, "production_writer_authority": false}

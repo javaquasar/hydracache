@@ -21714,3 +21714,28 @@ environment preflight now satisfies the original capacity prerequisite, yet the
 full Windows package and workspace commands are still not dispatched. Preserving
 that distinction prevents a successful harness test from becoming an unsupported
 release or production all-writer claim.
+
+The [fixed Windows Cargo integration](../testing/performance/0.74/windows-fixed-cargo-result-20261027.md)
+then crosses a real boundary: the exact package command runs inside the original
+Job and completes all 156 targets with 1,351 passes. The separate original
+workspace entry also runs, preserving its budget, but stops at dependency policy.
+Eleven prior stages complete and nine remain unstarted; a green standalone
+package cannot fill that suffix. Source/ref/configuration/environment frames
+match and Job retirement succeeds for both actual commands. This establishes
+execution/accounting behavior, not a throughput or allocation win.
+
+The accounting repair itself illustrates why a test fixture is not the whole
+transport contract. Synthetic Rust summaries initially omitted Cargo's outer
+`xtask.exe verify` launch line. Reading the retained old log as inert data exposed
+the missing distinction before the actual workspace attempt. The successor
+recognizes only the exact outer entry and keeps duplicate/wrong/missing-entry
+refusals; 42 controls pass. First packet-schema and CRLF metadata-parser errors
+remain archived rather than becoming reasons to replay a full command.
+
+The fresh policy result is also not the old seven-advisory story: unchanged
+Cargo.lock now meets 11 reported advisories, including four for zstd-family
+packages. The clean database is observed in postflight only; without a preflight
+pin we do not pretend to know its exact state at every lookup. Nothing is waived
+for a green result: security review/compatible repairs and separate migration
+gates come next. Dispatcher completion, package success and release/server
+admission stay distinct.
