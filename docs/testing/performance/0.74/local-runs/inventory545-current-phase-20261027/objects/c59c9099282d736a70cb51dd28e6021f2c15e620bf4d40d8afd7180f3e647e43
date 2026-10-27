@@ -1,0 +1,36 @@
+
+running 9 tests
+test every_544_name_is_required_before_any_body_observation ... ok
+test extension_changes_exactly_three_old_entries_and_adds_fourteen ... ok
+test every_late_body_or_read_error_blocks_both_predecessor_projections ... ok
+test phase_chain_observes_every_current_body_before_releasing_old_names ... ok
+test successful_projection_never_caches_a_current_observation ... ok
+test current_mode_blob_and_stage_are_pinned_to_independent_producer_tree ... ok
+test the_frozen_530_phase_is_not_accepted_as_the_live_544_phase ... ok
+test physical_checks_and_all_five_original_tests_are_byte_preserved ... ok
+test current_phase_requires_all_544_sources_before_446_projection ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.45s
+
+
+running 7 tests
+test alarm_test_index_requires_original_mode_blob_stage_and_exact_presence ... ok
+test changed_and_added_source_are_freshly_observed_on_each_projection ... ok
+test inverse_phase_rejects_missing_extra_and_changed_reviewed_metadata ... ok
+test stale_544_names_and_index_refuse_before_observing_any_body ... ok
+test old_544_descriptor_and_every_physical_check_remain_byte_identical ... ok
+test all_545_modes_blobs_and_canonical_bodies_match_independent_tokio_producer ... ok
+test physical_current_inventory_reaches_446_only_after_every_545_check ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 21.36s
+
+
+running 5 tests
+test inventory_projection_rejects_every_missing_duplicate_unknown_and_reordered_path ... ok
+test inventory_projection_rejects_each_changed_old_or_new_body_and_read_failure ... ok
+test inventory_index_requires_exact_mode_blob_stage_and_path_for_every_entry ... ok
+test inventory_reader_preserves_every_old_assertion_and_comparison_count ... ok
+test inventory_projection_requires_all_current_source_files_before_old_list ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.57s
+

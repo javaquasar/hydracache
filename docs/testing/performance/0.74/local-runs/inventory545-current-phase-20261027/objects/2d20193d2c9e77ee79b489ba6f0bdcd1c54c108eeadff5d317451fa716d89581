@@ -1,0 +1,5 @@
+   Compiling xtask v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.64s
+     Running tests/artifact_inventory_phase_544_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/artifact_inventory_phase_544_074-82a8281252bf5529)
+     Running tests/artifact_inventory_phase_545_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/artifact_inventory_phase_545_074-3001a22887f4cbdf)
+     Running tests/artifact_inventory_reader_074.rs (/home/artur/.cache/hydracache-074-194-check/debug/deps/artifact_inventory_reader_074-60dad1c59600a18b)

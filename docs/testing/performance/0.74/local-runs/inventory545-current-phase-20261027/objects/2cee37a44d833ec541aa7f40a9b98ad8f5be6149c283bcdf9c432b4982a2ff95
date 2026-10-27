@@ -1,0 +1,84 @@
+[
+  {
+    "cases": [
+      {
+        "name": "every_544_name_is_required_before_any_body_observation",
+        "verdict": "ok"
+      },
+      {
+        "name": "current_mode_blob_and_stage_are_pinned_to_independent_producer_tree",
+        "verdict": "ok"
+      },
+      {
+        "name": "extension_changes_exactly_three_old_entries_and_adds_fourteen",
+        "verdict": "ok"
+      },
+      {
+        "name": "current_phase_requires_all_544_sources_before_446_projection",
+        "verdict": "FAILED"
+      },
+      {
+        "name": "successful_projection_never_caches_a_current_observation",
+        "verdict": "ok"
+      },
+      {
+        "name": "the_frozen_530_phase_is_not_accepted_as_the_live_544_phase",
+        "verdict": "ok"
+      },
+      {
+        "name": "phase_chain_observes_every_current_body_before_releasing_old_names",
+        "verdict": "ok"
+      },
+      {
+        "name": "physical_checks_and_all_five_original_tests_are_byte_preserved",
+        "verdict": "ok"
+      },
+      {
+        "name": "every_late_body_or_read_error_blocks_both_predecessor_projections",
+        "verdict": "ok"
+      }
+    ],
+    "declared": 9,
+    "end_line": 174,
+    "failed": 1,
+    "ignored": 0,
+    "passed": 8,
+    "reported_ns": 320000000,
+    "reported_seconds": "0.32",
+    "start_line": 151,
+    "target": "tests/artifact_inventory_phase_544_074.rs"
+  },
+  {
+    "cases": [
+      {
+        "name": "inventory_projection_rejects_every_missing_duplicate_unknown_and_reordered_path",
+        "verdict": "ok"
+      },
+      {
+        "name": "inventory_projection_requires_all_current_source_files_before_old_list",
+        "verdict": "FAILED"
+      },
+      {
+        "name": "inventory_projection_rejects_each_changed_old_or_new_body_and_read_failure",
+        "verdict": "ok"
+      },
+      {
+        "name": "inventory_reader_preserves_every_old_assertion_and_comparison_count",
+        "verdict": "ok"
+      },
+      {
+        "name": "inventory_index_requires_exact_mode_blob_stage_and_path_for_every_entry",
+        "verdict": "ok"
+      }
+    ],
+    "declared": 5,
+    "end_line": 196,
+    "failed": 1,
+    "ignored": 0,
+    "passed": 4,
+    "reported_ns": 830000000,
+    "reported_seconds": "0.83",
+    "start_line": 177,
+    "target": "tests/artifact_inventory_reader_074.rs"
+  }
+]

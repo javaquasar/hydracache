@@ -92,6 +92,16 @@ are unchanged. Next repair exact historical composition and independently
 review each source delta; no unchanged V8 retry, suffix completion, enlarged
 limit or removed check. The existing focused passes do not close package 1/2.
 
+The [exact 545-file inventory continuation](inventory545-current-phase-result-20261027.md)
+now accounts for the approved Tokio manager-alarm repair and its one added test
+source. All physical checks, the 530/544 descriptors and original reader tests
+remain byte-identical; every current body must pass before old names are released.
+The 21-case inventory cohort passes on Windows/MSRV/GNU, along with scoped check
+and strict Clippy. This closes the identified inventory mismatch in focused
+validation, not the old red V8 or a complete package verdict. Next repair the
+terminal/authority view and the other retained exact-source boundaries before
+reviewing another changed-source full command.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

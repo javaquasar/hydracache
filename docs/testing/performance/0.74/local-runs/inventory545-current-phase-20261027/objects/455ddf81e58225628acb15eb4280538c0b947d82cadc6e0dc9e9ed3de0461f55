@@ -1,0 +1,132 @@
+"""Retain the fixed inventory step and its first refusals; execute no archive."""
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parent.parent
+BASE = ROOT / 'target/roots-lock-view-20261027'
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/inventory545-current-phase-20261027'
+SOURCE_PARENT = '4021d25bfc1c21a1287a97b051f65bcac45f07c6'
+IMPLEMENTATION = '17edd6b83fd2960e9c4351d5f0c880dc9d44bbdc'
+members, objects = {}, {}
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def add(name, raw):
+    assert name not in members
+    digest = sha(raw)
+    members[name] = dict(sha256=digest, bytes=len(raw))
+    objects[digest] = raw
+
+
+def document(name, value):
+    add(name, (json.dumps(value, sort_keys=True, indent=2) + '\n').encode())
+
+
+def git(*args):
+    return subprocess.check_output(['git', '--no-replace-objects', *args], cwd=ROOT, timeout=10)
+
+
+assert git('rev-parse', 'HEAD').decode().strip() == IMPLEMENTATION
+phases = ['baseline-first', 'focused-first', 'focused-corrected', 'focused-final',
+          'producer-first', 'check-first', 'clippy-first', 'msrv-first', 'gnu-first',
+          'format-first', 'doc-first', 'contract-first']
+for phase in phases:
+    folder = BASE / ('inventory545-' + phase)
+    intent = json.loads((folder / 'intent.json').read_bytes())
+    result = json.loads((folder / 'result.json').read_bytes())
+    assert intent['source_commit'] == SOURCE_PARENT
+    assert intent['disk_floor_bytes'] == 4 * 1024**3
+    assert not any(intent[key] for key in ('qualification', 'server', 'services', 'clocks', 'product_load'))
+    assert result['source_unchanged'] and result['commit_unchanged'] and not result['release_admitted']
+    assert result['source_after'] == intent['source']
+    assert result['exit'] == (101 if phase in ('baseline-first', 'focused-first') else 0)
+    for path in sorted(folder.rglob('*')):
+        if path.is_file():
+            add('checks/' + phase + '/' + path.relative_to(folder).as_posix(), path.read_bytes())
+    if phase in ('focused-final', 'msrv-first', 'gnu-first'):
+        text = (folder / 'stdout.log').read_text(encoding='utf-8')
+        assert sorted(re.findall(r'^test result: ok\. (\d+) passed; 0 failed; 0 ignored;', text, re.M)) == ['5', '7', '9']
+
+test_path = 'crates/xtask/tests/artifact_inventory_phase_545_074.rs'
+for phase, blob in [('baseline-first', 'fc8015b71a95f97b1a171f6c30b643611ed84870'),
+                    ('focused-first', '0b6a3ecf3eb5a62c72b904a4b4af1dc0a79cca00')]:
+    raw = git('cat-file', 'blob', blob)
+    intent = json.loads((BASE / ('inventory545-' + phase) / 'intent.json').read_bytes())
+    assert sha(raw) == intent['source'][test_path]
+    add('first-sources/' + phase + '.rs', raw)
+
+scope = ['crates/xtask/tests/artifact_inventory_phase_544_074.rs', test_path,
+         'crates/xtask/tests/support/artifact_inventory_input.rs',
+         'crates/xtask/tests/support/artifact_inventory_phase_545.rs',
+         'tools/inventory-545-view-074/rules.json',
+         'tools/inventory-545-view-074/.gitattributes',
+         'tools/inventory-545-view-074/generate.py',
+         'tools/inventory-545-view-074/README.md']
+reviewed = {}
+for name in scope:
+    raw = (ROOT / name).read_bytes()
+    add('review/current/' + name, raw)
+    reviewed[name] = sha(raw)
+    if name.endswith('.rs'):
+        for phase in ('focused-final', 'check-first', 'clippy-first', 'msrv-first', 'gnu-first'):
+            intent = json.loads((BASE / ('inventory545-' + phase) / 'intent.json').read_bytes())
+            assert intent['source'][name] == sha(raw)
+
+physical = 'crates/xtask/tests/support/artifact_inventory_input.rs'
+marker = 'pub(crate) fn root() -> PathBuf {'
+old = git('show', f'2b83dff9d7445aa8a14890b51ae5d4b276b048f7:{physical}').decode().replace('\r\n', '\n')
+current = (ROOT / physical).read_text(encoding='utf-8').replace('\r\n', '\n')
+assert old.split(marker, 1)[1] == current.split(marker, 1)[1]
+for name, revision in [
+    ('crates/xtask/tests/support/artifact_inventory_phase_544.rs', '77ccbe7d57203d1c5f263a4046aee0b81e06357e'),
+    ('crates/xtask/tests/artifact_inventory_reader_074.rs', '2b83dff9d7445aa8a14890b51ae5d4b276b048f7')]:
+    assert git('show', f'{revision}:{name}').decode().replace('\r\n', '\n') == (ROOT / name).read_text(encoding='utf-8').replace('\r\n', '\n')
+protected = ['Cargo.toml', 'Cargo.lock', 'docs/COMPAT.md',
+             'docs/testing/performance/0.74/qualification-manifest.toml',
+             'tools/long-run-supervisor-074/src']
+assert git('diff', '--name-only', SOURCE_PARENT, '--', *protected) == b''
+manifest = sha((ROOT / protected[3]).read_bytes())
+assert manifest == '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
+document('review/scope.json', dict(source_parent=SOURCE_PARENT, implementation=IMPLEMENTATION,
+    reviewed_raw_sha256=reviewed, rust_bodies=4, scope='inventory preservation only',
+    physical_tail_preserved=True, reader_tests_and_544_module_preserved=True,
+    runtime_and_qualification_unchanged=True, qualification_sha256=manifest,
+    original_windows=[300, 60, 10], complete_package_review=False, package_rerun=False,
+    server=False, clocks=False, services=False, archived_code_executed=False, release_admitted=False))
+
+v8 = ROOT / 'docs/testing/performance/0.74/local-runs/package-closure-v8-20261027'
+raw = (v8 / 'index.json').read_bytes()
+assert sha(raw) == 'ad41027076d5cc20e52267976e05b507bd9b25e35fc0e71b08adc280be062432'
+index = json.loads(raw)
+row = index['members']['derived/accounting.json']
+raw = (v8 / 'objects' / row['sha256']).read_bytes()
+assert sha(raw) == row['sha256'] and len(raw) == row['bytes']
+targets = [row for row in json.loads(raw)['targets'] if row['target'] in (
+    'tests/artifact_inventory_phase_544_074.rs', 'tests/artifact_inventory_reader_074.rs')]
+assert len(targets) == 2 and all(row['failed'] == 1 for row in targets)
+document('baseline/v8-inventory-failures.json', targets)
+for name in ('docs/testing/performance/0.74/inventory545-current-phase-result-20261027.md',
+             'target/run-roots-lock-view-20261027.py', 'target/seal-inventory545-20261027.py'):
+    add('capture/' + name, (ROOT / name).read_bytes())
+
+OUT.mkdir(exist_ok=False)
+with (OUT / '.gitattributes').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+(OUT / 'objects').mkdir()
+for digest, raw in objects.items():
+    with (OUT / 'objects' / digest).open('xb') as stream:
+        stream.write(raw)
+index = dict(schema='hc074-inventory545-current-phase-evidence-v1', members=members,
+    source_parent=SOURCE_PARENT, implementation=IMPLEMENTATION, phases=phases,
+    first_sources_match_preexecution_digests=True, focused_cases_per_environment=21,
+    package_pass=False, qualification=False, server=False, release_admitted=False)
+with (OUT / 'index.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(index, stream, sort_keys=True, indent=2)
+    stream.write('\n')
+print(json.dumps(dict(members=len(members), objects=len(objects), index_sha256=sha((OUT / 'index.json').read_bytes()))))

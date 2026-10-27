@@ -1,0 +1,5 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.16s
+     Running tests\artifact_inventory_phase_544_074.rs (target\debug\deps\artifact_inventory_phase_544_074-c6b94f2a422238ee.exe)
+     Running tests\artifact_inventory_phase_545_074.rs (target\debug\deps\artifact_inventory_phase_545_074-8ce8553e01a3b5bb.exe)
+error: test failed, to rerun pass `-p xtask --test artifact_inventory_phase_545_074`

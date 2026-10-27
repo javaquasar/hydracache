@@ -1,0 +1,5 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.21s
+     Running tests\artifact_inventory_phase_544_074.rs (target/security-patch-msrv188\debug\deps\artifact_inventory_phase_544_074-190239e1bc2ac3a0.exe)
+     Running tests\artifact_inventory_phase_545_074.rs (target/security-patch-msrv188\debug\deps\artifact_inventory_phase_545_074-a527c7d2179397e3.exe)
+     Running tests\artifact_inventory_reader_074.rs (target/security-patch-msrv188\debug\deps\artifact_inventory_reader_074-a3762c35bfe30b1e.exe)

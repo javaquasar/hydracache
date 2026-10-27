@@ -1,0 +1,60 @@
+
+running 6 tests
+test all_545_modes_blobs_and_canonical_bodies_match_independent_tokio_producer ... FAILED
+test alarm_test_index_requires_original_mode_blob_stage_and_exact_presence ... FAILED
+test changed_and_added_source_are_freshly_observed_on_each_projection ... FAILED
+test physical_current_inventory_reaches_446_only_after_every_545_check ... FAILED
+test old_544_descriptor_and_every_physical_check_remain_byte_identical ... FAILED
+test stale_544_names_and_index_refuse_before_observing_any_body ... FAILED
+
+failures:
+
+---- all_545_modes_blobs_and_canonical_bodies_match_independent_tokio_producer stdout ----
+
+thread 'all_545_modes_blobs_and_canonical_bodies_match_independent_tokio_producer' (47772) panicked at crates\xtask\tests\artifact_inventory_phase_545_074.rs:44:5:
+assertion `left == right` failed
+  left: 544
+ right: 545
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- alarm_test_index_requires_original_mode_blob_stage_and_exact_presence stdout ----
+
+thread 'alarm_test_index_requires_original_mode_blob_stage_and_exact_presence' (47088) panicked at crates\xtask\tests\artifact_inventory_phase_545_074.rs:108:36:
+no entry found for key
+
+---- changed_and_added_source_are_freshly_observed_on_each_projection stdout ----
+
+thread 'changed_and_added_source_are_freshly_observed_on_each_projection' (43660) panicked at crates\xtask\tests\artifact_inventory_phase_545_074.rs:89:9:
+assertion `left == right` failed
+  left: 544
+ right: 545
+
+---- physical_current_inventory_reaches_446_only_after_every_545_check stdout ----
+
+thread 'physical_current_inventory_reaches_446_only_after_every_545_check' (49984) panicked at crates\xtask\tests\artifact_inventory_phase_545_074.rs:67:5:
+assertion `left == right` failed
+  left: 544
+ right: 545
+
+---- old_544_descriptor_and_every_physical_check_remain_byte_identical stdout ----
+
+thread 'old_544_descriptor_and_every_physical_check_remain_byte_identical' (26288) panicked at crates\xtask\tests\artifact_inventory_phase_545_074.rs:21:5:
+fatal: path 'crates/xtask/tests/support/artifact_inventory_phase_544.rs' exists on disk, but not in '2b83dff9d7445aa8a14890b51ae5d4b276b048f7'
+
+
+---- stale_544_names_and_index_refuse_before_observing_any_body stdout ----
+
+thread 'stale_544_names_and_index_refuse_before_observing_any_body' (1368) panicked at crates\xtask\tests\artifact_inventory_phase_545_074.rs:76:5:
+assertion failed: !inventory::index_matches(&old)
+
+
+failures:
+    alarm_test_index_requires_original_mode_blob_stage_and_exact_presence
+    all_545_modes_blobs_and_canonical_bodies_match_independent_tokio_producer
+    changed_and_added_source_are_freshly_observed_on_each_projection
+    old_544_descriptor_and_every_physical_check_remain_byte_identical
+    physical_current_inventory_reaches_446_only_after_every_545_check
+    stale_544_names_and_index_refuse_before_observing_any_body
+
+test result: FAILED. 0 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+

@@ -1,0 +1,37 @@
+
+running 9 tests
+test every_544_name_is_required_before_any_body_observation ... ok
+test current_mode_blob_and_stage_are_pinned_to_independent_producer_tree ... ok
+test extension_changes_exactly_three_old_entries_and_adds_fourteen ... ok
+test phase_chain_observes_every_current_body_before_releasing_old_names ... ok
+test successful_projection_never_caches_a_current_observation ... ok
+test the_frozen_530_phase_is_not_accepted_as_the_live_544_phase ... ok
+test current_phase_requires_all_544_sources_before_446_projection ... ok
+test physical_checks_and_all_five_original_tests_are_byte_preserved ... ok
+test every_late_body_or_read_error_blocks_both_predecessor_projections ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+
+
+running 6 tests
+test alarm_test_index_requires_original_mode_blob_stage_and_exact_presence ... ok
+test changed_and_added_source_are_freshly_observed_on_each_projection ... ok
+test stale_544_names_and_index_refuse_before_observing_any_body ... ok
+test old_544_descriptor_and_every_physical_check_remain_byte_identical ... ok
+test all_545_modes_blobs_and_canonical_bodies_match_independent_tokio_producer ... FAILED
+test physical_current_inventory_reaches_446_only_after_every_545_check ... ok
+
+failures:
+
+---- all_545_modes_blobs_and_canonical_bodies_match_independent_tokio_producer stdout ----
+
+thread 'all_545_modes_blobs_and_canonical_bodies_match_independent_tokio_producer' (15836) panicked at crates\xtask\tests\artifact_inventory_phase_545_074.rs:61:9:
+assertion failed: entry.header().entry_type().is_file()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    all_545_modes_blobs_and_canonical_bodies_match_independent_tokio_producer
+
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+

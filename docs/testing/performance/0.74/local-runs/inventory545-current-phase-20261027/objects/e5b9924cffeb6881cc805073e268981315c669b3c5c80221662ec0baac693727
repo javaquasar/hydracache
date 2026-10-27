@@ -1,0 +1,32 @@
+{
+  "archived_code_executed": false,
+  "clocks": false,
+  "complete_package_review": false,
+  "implementation": "17edd6b83fd2960e9c4351d5f0c880dc9d44bbdc",
+  "original_windows": [
+    300,
+    60,
+    10
+  ],
+  "package_rerun": false,
+  "physical_tail_preserved": true,
+  "qualification_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+  "reader_tests_and_544_module_preserved": true,
+  "release_admitted": false,
+  "reviewed_raw_sha256": {
+    "crates/xtask/tests/artifact_inventory_phase_544_074.rs": "1bd57a4fdfefe059a79e63cdc30bf1978b29427d14542829ed2d46189b7d77b5",
+    "crates/xtask/tests/artifact_inventory_phase_545_074.rs": "2244639876e1edd2ab45404ee6387d8e535d4eba234b4a42dbe566a98ee88786",
+    "crates/xtask/tests/support/artifact_inventory_input.rs": "603a6efe10142c1caee01e93535613e62e556f8c685be947a451e7dee589792c",
+    "crates/xtask/tests/support/artifact_inventory_phase_545.rs": "5a4cab8f27392fe4f64823754719cc5a0649f0ab49ddc83bf99dd592ef3d0c4c",
+    "tools/inventory-545-view-074/.gitattributes": "560b146a47d770e5037b322e115de067a24ea3fca2ffce60155446cbdc2023af",
+    "tools/inventory-545-view-074/README.md": "a3f55615779cfdc26788abb83b34f922d9fb9523bf192f4b08e6238dc131c71f",
+    "tools/inventory-545-view-074/generate.py": "afb74661793b1039e377f30868cae4c5896084c64a65921371ec78206ac79b16",
+    "tools/inventory-545-view-074/rules.json": "1f41899edf172c4ae0a29f17a5fd8a1cee0fd8bf1047c5da5c4ea94b1dca962b"
+  },
+  "runtime_and_qualification_unchanged": true,
+  "rust_bodies": 4,
+  "scope": "inventory preservation only",
+  "server": false,
+  "services": false,
+  "source_parent": "4021d25bfc1c21a1287a97b051f65bcac45f07c6"
+}

@@ -21269,3 +21269,21 @@ The next work is reviewed composition at the identified boundaries, not replacin
 old assertions, skipping costly targets or increasing the budget. Printed target
 spans identify where to inspect saved data; they are not a new CPU or throughput
 claim and do not authorize another measurement hypothesis.
+
+The [inventory continuation](../testing/performance/0.74/inventory545-current-phase-result-20261027.md)
+identifies a concrete cause for two of those failures. The approved Tokio repair
+adds an alarm-test source and changes manager channel ownership, while the
+preservation census still describes the preceding 544 files. An independently
+pinned 545-file phase validates that exact source delta before releasing names
+through the unchanged 544/530/446 phases. The old physical IO checks and reader
+tests remain byte-identical; simply accepting the live index would have removed
+the independent check rather than repairing compatibility.
+
+The complete focused inventory cohort has 21 passing cases on Windows, MSRV and
+GNU/Linux. It also preserves the first two oracle defects: an incorrect descriptor
+producer reference and Git archive's exact PAX commit header. The latter is
+accepted only as one fixed metadata record, never as a missing source entry.
+This is confirmed test-source compatibility, not a performance improvement.
+The old full-package timeout and failures retain their original verdicts;
+terminal/authority and the other historical-view boundaries still require
+their own reviewed changes.
