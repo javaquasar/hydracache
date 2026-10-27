@@ -1,6 +1,9 @@
 //! Exact uncached PID formatter and call substitutions, no validator exclusions.
 #[path = "custody_cost_guard.rs"]
 pub(crate) mod custody_cost;
+#[allow(dead_code)]
+#[path = "pid_stage_join.rs"]
+pub(crate) mod stage_join;
 pub(crate) const ORIGIN: &str = "tools/long-run-supervisor-074/src/diagnostic_kernel_origin.rs";
 pub(crate) const ADMISSION: &str =
     "tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs";
@@ -53,8 +56,17 @@ pub(crate) const CHANGES: [(&str, &str, &str); 5] = [
     (ADMISSION,"let directory = origin.child(credentials.pid, true)?;","let directory = origin.child(&credentials.pid.to_string(), true)?;"),
     (ADMISSION,"let directory = origin.child(self.credentials.pid, true)?;","let directory = origin.child(&self.credentials.pid.to_string(), true)?;"),
 ];
+#[allow(dead_code)]
 pub(crate) fn normalize(path: &str, raw: &str) -> String {
-    let mut raw = custody_cost::normalize(path, raw);
+    let raw = custody_cost::normalize(path, raw);
+    finish(path, stage_join::project(path, raw))
+}
+// Fresh-status and its successors already enter the named earlier origin stage.
+#[allow(dead_code)]
+pub(crate) fn normalize_legacy(path: &str, raw: &str) -> String {
+    finish(path, custody_cost::normalize(path, raw))
+}
+fn finish(path: &str, mut raw: String) -> String {
     for (file, exact, old) in HOOKS
         .into_iter()
         .map(|(f, s)| (f, s, ""))

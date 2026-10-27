@@ -11,7 +11,7 @@ pub(crate) const CHANGES: [(&str, &str, &str); 3] = [
     ("tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs", "let named = origin::fixed_child(&self.directory, c\"status\", false)?;", "let named = origin::child(&self.directory, \"status\", false)?;"),
 ];
 pub(crate) fn normalize(path: &str, raw: &str) -> String {
-    let mut raw = pid_path::normalize(path, raw);
+    let mut raw = pid_path::normalize_legacy(path, raw);
     for (file, exact) in HOOKS {
         if path == file {
             assert_eq!(
