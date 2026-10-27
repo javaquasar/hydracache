@@ -51,8 +51,10 @@ fn git(args: &[&str]) -> String {
 
 #[test]
 fn current_phase_requires_all_544_sources_before_446_projection() {
-    assert_eq!(inventory::current().lines().count(), 544);
-    assert_eq!(inventory::entries().len(), 544);
+    let frozen = inventory::phase_545::predecessor_entries(inventory::entries());
+    assert_eq!(frozen.len(), 544);
+    assert_eq!(inventory::current().lines().count(), 545);
+    assert_eq!(inventory::entries().len(), 545);
     let projected = inventory::project(inventory::current()).unwrap();
     assert_eq!(projected.lines().count(), 446);
 }
@@ -72,7 +74,10 @@ fn phase_chain_observes_every_current_body_before_releasing_old_names() {
             .map(str::to_owned)
             .collect::<Vec<_>>()
     );
-    assert_eq!(observed.len(), 544);
+    assert_eq!(observed.len(), 545);
+    for name in inventory::phase_545::predecessor_entries(inventory::entries()).keys() {
+        assert_eq!(observed.iter().filter(|path| *path == name).count(), 1);
+    }
     assert_eq!(projected, old_names());
     let prior = inventory::project_with(inventory::current(), |name| {
         Ok(inventory::entries()[name].digest.clone())
@@ -98,14 +103,14 @@ fn successful_projection_never_caches_a_current_observation() {
         Ok(inventory::entries()[name].digest.clone())
     })
     .unwrap();
-    assert_eq!(first, 544);
+    assert_eq!(first, 545);
     let mut next = 0;
     inventory::project_with(inventory::current(), |name| {
         next += 1;
         Ok(inventory::entries()[name].digest.clone())
     })
     .unwrap();
-    assert_eq!(next, 544);
+    assert_eq!(next, 545);
     let mut failure_observed = 0;
     assert!(inventory::project_with(inventory::current(), |_| {
         failure_observed += 1;
@@ -222,7 +227,12 @@ fn current_mode_blob_and_stage_are_pinned_to_independent_producer_tree() {
         expected.push_str(&format!("{} {} 0\t{name}\n", fields[0], fields[2]));
     }
     assert_eq!(expected.lines().count(), 544);
-    assert_eq!(inventory::expected_index(), expected);
+    let frozen = inventory::phase_545::predecessor_entries(inventory::entries());
+    let actual: String = frozen
+        .iter()
+        .map(|(name, row)| format!("{} {} 0\t{name}\n", row.mode, row.blob))
+        .collect();
+    assert_eq!(actual, expected);
 }
 
 #[test]
@@ -243,7 +253,8 @@ fn extension_changes_exactly_three_old_entries_and_adds_fourteen() {
     .map(|name| format!("{}/{name}", inventory::SCOPE));
     let mut changed = Vec::new();
     let mut added = 0;
-    for (name, current) in inventory::entries() {
+    let frozen = inventory::phase_545::predecessor_entries(inventory::entries());
+    for (name, current) in &frozen {
         if let Some(prior) = old_entries.get(name) {
             if prior["blob"].as_str().unwrap() != current.blob {
                 changed.push(name.clone());
@@ -275,7 +286,7 @@ fn extension_changes_exactly_three_old_entries_and_adds_fourteen() {
     assert_eq!(
         old_entries
             .keys()
-            .filter(|name| inventory::entries().contains_key(*name))
+            .filter(|name| frozen.contains_key(*name))
             .count(),
         530
     );

@@ -5,10 +5,13 @@ use std::path::{Path, PathBuf};
 
 #[path = "artifact_inventory_phase_544.rs"]
 mod phase_544;
+#[path = "artifact_inventory_phase_545.rs"]
+pub(crate) mod phase_545;
 
 pub(crate) const SCOPE: &str = "tools/long-run-supervisor-074/src";
 const LEDGER: &[u8] = include_bytes!("../../../../docs/testing/performance/0.74/local-runs/role-census-inventory-20261024/objects/cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0");
 const DIGEST: &str = "cfd5e7f1c153f5214dd71da196dfdbac2d1c05806fa14865605e9ce0776bc9c0";
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Entry {
     pub(crate) mode: String,
     pub(crate) blob: String,
@@ -76,9 +79,12 @@ fn ledger() -> &'static Inventory {
         let entries = phase_544::extend(entries);
         let current: String = entries.keys().map(|name| format!("{name}\n")).collect();
         assert_eq!(phase_544::predecessor_names(&current), phase530);
+        let entries = phase_545::extend(entries);
+        let live: String = entries.keys().map(|name| format!("{name}\n")).collect();
+        assert_eq!(phase_545::predecessor_names(&live), current);
         Inventory {
             entries,
-            current,
+            current: live,
             phase530,
             previous,
         }
@@ -112,7 +118,9 @@ pub(crate) fn project_phase530_with(
             return Err("current source bytes drift");
         }
     }
-    Ok(phase_544::predecessor_names(names))
+    Ok(phase_544::predecessor_names(&phase_545::predecessor_names(
+        names,
+    )))
 }
 pub(crate) fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
