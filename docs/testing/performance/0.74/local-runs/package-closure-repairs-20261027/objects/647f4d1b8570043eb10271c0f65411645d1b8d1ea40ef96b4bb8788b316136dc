@@ -1,0 +1,49 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+error[E0277]: the trait bound `Array<u8, UInt<UInt<UInt<UInt<..., ...>, ...>, ...>, ...>>: LowerHex` is not satisfied
+  --> crates\xtask\tests\..\..\..\tools\package-closure-inputs-074\contract.rs:61:21
+   |
+61 |     format!("{:x}", Sha256::digest(raw))
+   |              ----   ^^^^^^^^^^^^^^^^^^^ the trait `LowerHex` is not implemented for `Array<u8, UInt<UInt<UInt<UInt<UInt<..., ...>, ...>, ...>, ...>, ...>>`
+   |              |
+   |              required by this formatting parameter
+   |
+   = help: the following other types implement trait `LowerHex`:
+             &T
+             &mut T
+             IdentFragmentAdapter<T>
+             Saturating<T>
+             Wrapping<T>
+             i128
+             i16
+             i32
+           and 10 others
+   = note: the full name for the type has been written to 'C:\Workspace\prj\jq\cashe\hydracache-074\target\debug\deps\pid_path_cost_074-9cd86608a5ecc5f9.long-type-13253323703940375437.txt'
+   = note: consider using `--verbose` to print the full type name to the console
+   = note: this error originates in the macro `$crate::__export::format_args` which comes from the expansion of the macro `format` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `Array<u8, UInt<UInt<UInt<UInt<..., ...>, ...>, ...>, ...>>: LowerHex` is not satisfied
+  --> crates\xtask\tests\..\..\..\tools\package-closure-inputs-074\contract.rs:61:21
+   |
+61 |     format!("{:x}", Sha256::digest(raw))
+   |              ----   ^^^^^^^^^^^^^^^^^^^ the trait `LowerHex` is not implemented for `Array<u8, UInt<UInt<UInt<UInt<UInt<..., ...>, ...>, ...>, ...>, ...>>`
+   |              |
+   |              required by this formatting parameter
+   |
+   = help: the following other types implement trait `LowerHex`:
+             &T
+             &mut T
+             IdentFragmentAdapter<T>
+             Saturating<T>
+             Wrapping<T>
+             i128
+             i16
+             i32
+           and 10 others
+   = note: the full name for the type has been written to 'C:\Workspace\prj\jq\cashe\hydracache-074\target\debug\deps\package_closure_inputs_074-9e21ebe05bf97dd8.long-type-17747394734989728389.txt'
+   = note: consider using `--verbose` to print the full type name to the console
+   = note: this error originates in the macro `$crate::__export::format_args` which comes from the expansion of the macro `format` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `xtask` (test "package_closure_inputs_074") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `xtask` (test "pid_path_cost_074") due to 1 previous error

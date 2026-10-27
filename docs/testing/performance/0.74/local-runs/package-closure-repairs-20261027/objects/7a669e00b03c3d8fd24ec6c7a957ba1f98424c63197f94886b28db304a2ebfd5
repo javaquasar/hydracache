@@ -1,0 +1,7 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.00s
+     Running tests\historical_source_cache_074.rs (target\debug\deps\historical_source_cache_074-f3d58766fe894dcc.exe)
+     Running tests\package_closure_inputs_074.rs (target\debug\deps\package_closure_inputs_074-9e21ebe05bf97dd8.exe)
+     Running tests\remaining_readers_074.rs (target\debug\deps\remaining_readers_074-0d83a871dff85d09.exe)
+     Running tests\role_census_reader_074.rs (target\debug\deps\role_census_reader_074-9e43509eb2457541.exe)
+     Running tests\validation_leaf_reader_074.rs (target\debug\deps\validation_leaf_reader_074-ce3c503f1907ea1e.exe)

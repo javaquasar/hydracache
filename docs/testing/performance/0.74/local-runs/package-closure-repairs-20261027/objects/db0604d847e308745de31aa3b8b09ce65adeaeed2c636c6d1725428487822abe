@@ -1,0 +1,65 @@
+
+running 7 tests
+test controls::tests::loader_can_read_another_key_without_holding_the_index_lock ... ok
+test controls::tests::revisions_paths_and_cache_instances_do_not_share_entries ... ok
+test controls::tests::failed_loader_never_publishes_partial_data_or_poisons_other_keys ... ok
+test controls::tests::same_immutable_key_loads_once_and_returned_strings_are_independent ... ok
+test controls::tests::concurrent_same_key_runs_one_complete_loader ... ok
+test reviewed_inputs_delegate_only_their_exact_frozen_lookup ... ok
+test immutable_source_cache_changes_only_the_historical_loader_not_current_validation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+
+
+running 6 tests
+test fixture_python::fixture_python_selection_is_explicit_for_both_platforms ... ok
+test m10_executes_real_binary_compatibility_before_the_long_row ... ok
+test primary_rust_gate_uses_the_reviewed_release_toolchain ... ok
+test missing_rollback_and_wire_generation_are_rejected ... ok
+test checked_in_upgrade_rollback_and_mixed_version_matrix_is_valid ... ok
+test public_api_gate_covers_every_publishable_package_and_blocks_release ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.95s
+
+
+running 6 tests
+test fixture_python::fixture_python_selection_is_explicit_for_both_platforms ... ok
+test host_fingerprint_excludes_volatile_admission_observations ... ok
+test loadgen_declares_the_exact_phase_order_and_epoch_fields ... ok
+test profile_output_is_excluded_from_production_sizing ... ok
+test every_admitted_allocator_has_the_complete_provider_protocol ... ok
+test provider_fixture_proves_ordering_classification_and_redaction ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+
+
+running 3 tests
+test every_original_case_and_assertion_token_stays_exact ... ok
+test exact_current_and_previous_producers_bind_all_six_inverse_rows ... ok
+test fresh_complete_body_is_required_for_each_call_and_seeded_mutants_refuse ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.63s
+
+
+running 4 tests
+test selected_kernel_and_compat_join_use_independent_producers_without_extra_reads ... ok
+test stale_partial_duplicate_and_unrelated_caller_edits_refuse_after_success ... ok
+test seven_exact_caller_constructions_preserve_all_eighteen_cases_and_assertions ... ok
+test immutable_nine_eighty_one_gate_still_refuses_new_caller_without_explicit_join ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 25.94s
+
+
+running 2 tests
+test census_reader_preserves_every_original_assertion_and_only_adapts_one_provider ... ok
+test census_provider_requires_complete_known_fixture_delta_and_pinned_helper ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.53s
+
+
+running 2 tests
+test leaf_reader_preserves_entire_original_test_and_exact_registry_selection ... ok
+test leaf_registry_input_checks_current_bytes_before_returning_predecessor ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+

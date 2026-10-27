@@ -1,0 +1,119 @@
+{
+  "additional_script_witnesses_match_git_but_not_early_before_maps": [
+    "scripts/perf/memory-providers/test_provider_contract.py",
+    "scripts/perf/memory-providers/system.py",
+    "scripts/perf/memory-providers/provider_common.py"
+  ],
+  "clocks": false,
+  "complete_package_rerun": false,
+  "composed_final_source_witnesses_exact": true,
+  "exact_inverse_rows": 6,
+  "first_windows_python_helper_not_in_old_untracked_source_map": true,
+  "gnu_validation_complete": false,
+  "original_case_and_assertion_tokens_preserved": true,
+  "outcomes": [
+    {
+      "completed_summaries": 2,
+      "exit": 0,
+      "failed": 0,
+      "passed": 12,
+      "phase": "fixture-python-windows-first"
+    },
+    {
+      "completed_summaries": 0,
+      "exit": 0,
+      "failed": 0,
+      "passed": 0,
+      "phase": "fixture-python-check-first"
+    },
+    {
+      "completed_summaries": 0,
+      "exit": 0,
+      "failed": 0,
+      "passed": 0,
+      "phase": "fixture-python-clippy-first"
+    },
+    {
+      "completed_summaries": 0,
+      "exit": 1,
+      "failed": 0,
+      "passed": 0,
+      "phase": "fixture-python-format-first"
+    },
+    {
+      "completed_summaries": 0,
+      "exit": 0,
+      "failed": 0,
+      "passed": 0,
+      "phase": "fixture-python-format-targeted-first"
+    },
+    {
+      "completed_summaries": 0,
+      "exit": 101,
+      "failed": 0,
+      "passed": 0,
+      "phase": "package-closure-inputs-windows-first"
+    },
+    {
+      "completed_summaries": 6,
+      "exit": 101,
+      "failed": 3,
+      "passed": 18,
+      "phase": "package-closure-inputs-windows-digest-fixed"
+    },
+    {
+      "completed_summaries": 5,
+      "exit": 0,
+      "failed": 0,
+      "passed": 18,
+      "phase": "package-closure-six-inputs-windows-first"
+    },
+    {
+      "completed_summaries": 0,
+      "exit": 0,
+      "failed": 0,
+      "passed": 0,
+      "phase": "package-closure-six-inputs-check"
+    },
+    {
+      "completed_summaries": 0,
+      "exit": 0,
+      "failed": 0,
+      "passed": 0,
+      "phase": "package-closure-six-inputs-clippy"
+    },
+    {
+      "completed_summaries": 0,
+      "exit": 0,
+      "failed": 0,
+      "passed": 0,
+      "phase": "package-closure-six-inputs-format"
+    },
+    {
+      "completed_summaries": 7,
+      "exit": 0,
+      "failed": 0,
+      "passed": 30,
+      "phase": "package-closure-repairs-composed-windows"
+    },
+    {
+      "completed_summaries": 7,
+      "exit": 0,
+      "failed": 0,
+      "passed": 30,
+      "phase": "package-closure-repairs-composed-msrv"
+    }
+  ],
+  "package_pass": false,
+  "pid_candidate_rejected_and_only_its_edits_reverted": true,
+  "pid_test_source_unchanged": true,
+  "product_load": false,
+  "python_commit": "c14fa94916dbb5412e4d489b2234910b799e12a2",
+  "qualification": false,
+  "release_admitted": false,
+  "rules_sha256": "5e591676f92de283fd9e0d2dd7048c5ff3943406cd71a6fc1474090cbf6edff3",
+  "schema": "hc074-focused-package-repairs-v1",
+  "server": false,
+  "services": false,
+  "six_input_commit": "9ea585b6cc494a79bf3ddbebe9bb634fb0137eae"
+}

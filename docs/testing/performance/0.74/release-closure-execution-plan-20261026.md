@@ -243,6 +243,20 @@ whole-body composition, repair with focused refusal controls, then review a new
 source closure before any distinct full command. Do not repeat the consumed
 candidate, weaken pins/assertions, join pass sets or replace Windows coverage.
 
+The [focused repair continuation](package-closure-repairs-result-20261027.md)
+installs deterministic fixture interpreter selection and six exact test-input
+compositions. Separate Windows 1.94 and MSRV 1.88 composed commands each pass
+30 cases in seven targets. Independent producer, seeded mutation and assertion-
+preservation controls pass; check/strict Clippy and targeted formatting pass.
+The first Windows workspace-format error 206, digest compile refusal and rejected
+PID candidate remain in evidence. PID's source edits/three rows are reverted:
+its admission input already follows a verified runtime reader, and changing the
+PID caller correctly trips the immutable old source guard. That join still needs
+an isolated repair. GNU validation and fresh complete source/script/environment
+closure remain prerequisites to another full command; do not call these focused
+passes package coverage or reuse the old fixed 153-target review. Preserve the
+source-map limitations and distinguish caught panics from the terminal refusal.
+
 ## 3 Resolve security dependencies without weakening MSRV
 
 The operator explicitly authorized compatible security updates on 2026-10-26,

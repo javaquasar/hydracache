@@ -1,0 +1,4 @@
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 27s
+     Running tests\memory_compat_071.rs (target\debug\deps\memory_compat_071-02c4893712f4aecd.exe)
+     Running tests\memory_profile_071.rs (target\debug\deps\memory_profile_071-834a7f9825207aa1.exe)

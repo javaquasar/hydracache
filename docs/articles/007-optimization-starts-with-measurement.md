@@ -21553,3 +21553,21 @@ preserve semantics. The next repair must account for each complete delta while
 retaining pins, read order, original assertions and mutation controls. Neither
 installing an interpreter alias mid-run nor loosening a historical comparison
 would make the retained command pass. No performance hypothesis is reopened.
+
+The [focused repair](../testing/performance/0.74/package-closure-repairs-result-20261027.md)
+then makes interpreter selection explicit and composes six source inputs with
+independently named producers. A fresh whole-body check precedes exact inverse
+edits, and a second digest checks the complete predecessor. New controls prove
+the source bindings, reject stale and seeded-mutated inputs and retain every
+original test name and assertion token. Separate Windows and MSRV commands each
+pass thirty cases across seven targets. These are verification repairs, not a
+cache hot-path optimization or a GNU/full-package pass.
+
+The rejected PID variant shows why matching a path alone is insufficient. Its
+conditional reader has already transformed one verified input before the new
+adapter runs, so a raw-body pin refuses that intermediate stage. Editing the
+caller also trips an older whole-source guard. The candidate is retained and
+only its edits are reverted; neither check is weakened to accommodate it. The
+next composition must account for those stages explicitly. Reading the terminal
+uncaught panic also matters: an earlier panic in a negative control can be
+expected and caught, and must not be mistaken for the actual cause of failure.

@@ -1,0 +1,10 @@
+   Compiling hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3m 42s
+     Running tests\historical_source_cache_074.rs (target\debug\deps\historical_source_cache_074-30c9058d8e56d5eb.exe)
+     Running tests\memory_compat_071.rs (target\debug\deps\memory_compat_071-8686cf30b2dcd225.exe)
+     Running tests\memory_profile_071.rs (target\debug\deps\memory_profile_071-13d0c91fb1d1840a.exe)
+     Running tests\package_closure_inputs_074.rs (target\debug\deps\package_closure_inputs_074-969750399caf0c3a.exe)
+     Running tests\remaining_readers_074.rs (target\debug\deps\remaining_readers_074-b95739ae1e736e6e.exe)
+     Running tests\role_census_reader_074.rs (target\debug\deps\role_census_reader_074-84f022ca7d65590d.exe)
+     Running tests\validation_leaf_reader_074.rs (target\debug\deps\validation_leaf_reader_074-ff4df87548db8e92.exe)
