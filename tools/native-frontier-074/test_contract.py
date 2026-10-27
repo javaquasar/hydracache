@@ -27,7 +27,7 @@ class Contract(unittest.TestCase):
         self.assertEqual(c.blob_digest(b'test\n'), '9daeafb9864cf43055ae93beb0afd6c7d144bfa4')
 
     def test_unsafe_alias_duplicate_and_nonregular_tree_refuse(self):
-        for name in ('', '../outside', '/absolute', './alias', 'a//b', 'a/../b', '.git/config',
+        for name in ('', '.', '../outside', '/absolute', './alias', 'a//b', 'a/../b', '.git/config',
                      'a/.GIT/config', 'C:/escape', 'a\\b', 'bad\npath'):
             self.assertFalse(c.safe_path(name), name)
         good = b'100644 blob ' + b'b' * 40 + b' 3\towned.txt\0'

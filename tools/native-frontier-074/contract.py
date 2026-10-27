@@ -37,7 +37,7 @@ def safe_path(name):
     if not isinstance(name, str):
         return False
     path = PurePosixPath(name)
-    return (isinstance(name, str) and bool(name) and not path.is_absolute()
+    return (bool(name) and bool(path.parts) and not path.is_absolute()
             and path.as_posix() == name and '\\' not in name and ':' not in name
             and not any(part in ('.', '..') or part.lower() == '.git' for part in path.parts)
             and not any(ord(c) < 32 or ord(c) == 127 for c in name))
