@@ -59,3 +59,9 @@ drop remained but that candidate does not compile. Preserve the failed input.
 A separate used-api-fixed/native-a5 context corrects only that initializer and
 strengthens the lifetime control to require both constructor spellings. No old
 source or receipt is overwritten and no unchanged command is repeated.
+
+The longer used-api-fixed Windows path refuses during inert copy of two retained
+raw evidence members (WinError 3); no freeze or native command is created for it.
+Its partial directory is kept. The same constructor repair is prepared in a
+shorter exclusive fixed/native-a6 context, without system long-path settings,
+source deletion or changes to any test/runtime bound.

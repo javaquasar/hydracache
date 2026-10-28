@@ -7,9 +7,9 @@ import shutil
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-BASE = ROOT / 'target/dbus-legacy-integration-20261028/used-api-fixed'
+BASE = ROOT / 'target/dbus-legacy-integration-20261028/fixed'
 PREVIOUS = ROOT / 'target/dbus-original-delivery-20261028/unit-api-owned'
-NATIVE = '/home/artur/.cache/hydracache-074-dbus-legacy-integration/20261028-a5'
+NATIVE = '/home/artur/.cache/hydracache-074-dbus-legacy-integration/20261028-a6'
 PKG = 'tools/long-run-supervisor-074'
 NAMES = ('diagnostic_manager.rs', 'diagnostic_loaded.rs', 'systemd_unit.rs')
 PROJECTOR_SHA = '29fe1f3ad3dcd16175c4d2c52ede4ef44e02617a3198e6deadcc2c16eb325d3b'
