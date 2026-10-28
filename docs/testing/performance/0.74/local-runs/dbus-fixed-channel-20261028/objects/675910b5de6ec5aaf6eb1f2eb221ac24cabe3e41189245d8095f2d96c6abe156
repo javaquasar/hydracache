@@ -1,0 +1,44 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling serde_core v1.0.229
+   Compiling libc v0.2.191
+   Compiling syn v3.0.9
+   Compiling serde v1.0.229
+   Compiling syn v2.0.119
+   Compiling serde_derive v1.0.229
+   Compiling getrandom v0.4.3
+   Compiling cfg-if v1.0.5
+   Compiling rustix v1.1.6
+   Compiling winnow v1.0.4
+   Compiling zmij v1.0.23
+   Compiling pin-project-lite v0.2.17
+   Compiling linux-raw-sys v0.12.1
+   Compiling bitflags v2.13.2
+   Compiling futures-core v0.3.34
+   Compiling zbus_utils v6.0.0 (/home/artur/.cache/hydracache-074-dbus-fixed-channel/20261028-a2/fd/zbus_utils)
+   Compiling tokio-macros v2.7.0
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.4
+   Compiling serde_json v1.0.150
+   Compiling thiserror v2.0.18
+   Compiling futures-io v0.3.34
+   Compiling zruntime v0.2.0
+   Compiling tokio v1.53.3
+   Compiling zbus_macros v6.1.0 (/home/artur/.cache/hydracache-074-dbus-fixed-channel/20261028-a2/fd/zbus_macros)
+   Compiling ordered-stream v0.2.0
+   Compiling uuid v1.23.4
+   Compiling zcheapstr v1.1.0
+   Compiling thiserror-impl v2.0.18
+   Compiling async-trait v0.1.92
+   Compiling serde_repr v0.1.21
+   Compiling hex v0.4.3
+   Compiling itoa v1.0.18
+   Compiling once_cell v1.21.4
+   Compiling memchr v2.8.3
+   Compiling endi v1.1.1
+   Compiling fastrand v2.5.0
+   Compiling tempfile v3.27.0
+   Compiling zbus v6.1.0 (/home/artur/.cache/hydracache-074-dbus-fixed-channel/20261028-a2/fd/zbus)
+   Compiling dbus-probe-074 v0.0.0 (/home/artur/.cache/hydracache-074-dbus-fixed-channel/20261028-a2/fd/probe)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.89s

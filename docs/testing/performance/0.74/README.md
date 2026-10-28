@@ -7385,3 +7385,14 @@ All first 68/10 fixture refusals and the layout-sensitive control refusal remain
 Eight corrected inert controls and Rust formatting pass. No root caller/graph or
 original live frame is changed; full module/source/effect/product and authenticated
 execution/all-writer/recovery gates remain open.
+
+The [fixed read-only channel continuation](dbus-fixed-channel-result-20261028.md)
+compiles the real channel/kernel/sandbox source slice and passes 95/95 parent cases,
+check and strict Clippy on GNU Rust 1.94/1.88. Original kernel/alarm bodies and
+inspect/revalidate/bound remain exact; the checked Tokio→std transfer preserves FD
+number, flags and aliases. First missing select/AuthMechanism E0433 errors remain.
+The probe adds product's tokio-macros 2.7.0 archive under its existing syn 2.0.119:
+63 identities/59 archives. Eight inert controls and formatting pass. Host entrypoints
+have compile coverage only; receiver/original_join/held routes and two manual host
+tests are explicitly unqualified. No root graph, host, original-start or release
+admission follows; full caller/source/effect/product gates remain open.

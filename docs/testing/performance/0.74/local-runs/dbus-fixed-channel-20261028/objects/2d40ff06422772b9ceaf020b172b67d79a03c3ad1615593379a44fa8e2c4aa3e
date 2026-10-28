@@ -1,0 +1,282 @@
+//! Exact legacy helpers, not authenticated original-start or host authority.
+use crate::bridge::Proxy;
+use serde::{Serialize,Deserialize};
+use thiserror::Error;
+use std::time::{Duration,Instant};
+use zbus::{OwnedObjectPath,Variant as Value};
+const SYSTEMD_DESTINATION: &str = "org.freedesktop.systemd1";
+const SYSTEMD_MANAGER_PATH: &str = "/org/freedesktop/systemd1";
+const SYSTEMD_MANAGER_INTERFACE: &str = "org.freedesktop.systemd1.Manager";
+const SYSTEMD_UNIT_INTERFACE: &str = "org.freedesktop.systemd1.Unit";
+const SYSTEMD_SERVICE_INTERFACE: &str = "org.freedesktop.systemd1.Service";
+const UNIT_PREFIX: &str = "hydracache-performance-074-";
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExecCommand {
+    pub path: String,
+    pub argv: Vec<String>,
+    pub ignore_failure: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum UnitProperty {
+    Text(String),
+    Boolean(bool),
+    Unsigned(u64),
+    Bytes(Vec<u8>),
+    Strings(Vec<String>),
+    Commands(Vec<ExecCommand>),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TransientUnitSpec {
+    pub unit_name: String,
+    pub properties: Vec<(&'static str, UnitProperty)>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitSnapshot {
+    pub unit_name: String,
+    pub active_state: String,
+    pub sub_state: String,
+    pub main_pid: u32,
+    pub control_group: String,
+    pub result: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UnitMismatch {
+    UnitName,
+    ActiveState,
+    SubState,
+    MainPid,
+    ControlGroup,
+    Result,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AttachableUnitState {
+    Live,
+    Terminal,
+}
+
+#[derive(Debug, Error)]
+pub enum UnitError {
+    #[error("systemd unit name is outside the fixed HydraCache 0.74 namespace")]
+    UnitName,
+    #[error("systemd D-Bus inspection failed: {0}")]
+    Dbus(#[from] zbus::Error),
+    #[error("transient systemd unit policy or campaign path is invalid")]
+    Policy,
+    #[error("transient systemd unit policy serialization failed: {0}")]
+    Json(#[from] serde_json::Error),
+    #[error("systemd unit identity differs: {0:?}")]
+    Mismatch(Vec<UnitMismatch>),
+    #[error("systemd unit did not stop within the frozen diagnostic grace")]
+    StopTimeout,
+}
+
+
+pub fn start_transient_unit(spec: &TransientUnitSpec) -> Result<OwnedObjectPath, UnitError> {
+    validate_unit_name(&spec.unit_name)?;
+    let connection = Connection::system()?;
+    let manager = Proxy::new(
+        &connection,
+        SYSTEMD_DESTINATION,
+        SYSTEMD_MANAGER_PATH,
+        SYSTEMD_MANAGER_INTERFACE,
+    )?;
+    let properties = dbus_properties(spec);
+    let auxiliary: Vec<(&str, Vec<(&str, Value<'_>)>)> = Vec::new();
+    Ok(manager.call(
+        "StartTransientUnit",
+        &(spec.unit_name.as_str(), "fail", properties, auxiliary),
+    )?)
+}
+
+pub fn inspect_unit(unit_name: &str) -> Result<UnitSnapshot, UnitError> {
+    validate_unit_name(unit_name)?;
+    inspect_loaded_unit(unit_name)
+}
+
+pub fn inspect_unit_optional(unit_name: &str) -> Result<Option<UnitSnapshot>, UnitError> {
+    validate_unit_name(unit_name)?;
+    match inspect_loaded_unit(unit_name) {
+        Ok(snapshot) => Ok(Some(snapshot)),
+        Err(UnitError::Dbus(zbus::Error::MethodError(name, _, _)))
+            if name.as_str() == "org.freedesktop.systemd1.NoSuchUnit" =>
+        {
+            Ok(None)
+        }
+        Err(error) => Err(error),
+    }
+}
+
+pub fn stop_unit_and_wait(unit_name: &str, timeout_seconds: u64) -> Result<(), UnitError> {
+    validate_unit_name(unit_name)?;
+    if timeout_seconds == 0 || timeout_seconds > 300 {
+        return Err(UnitError::Policy);
+    }
+    let connection = Connection::system()?;
+    let manager = Proxy::new(
+        &connection,
+        SYSTEMD_DESTINATION,
+        SYSTEMD_MANAGER_PATH,
+        SYSTEMD_MANAGER_INTERFACE,
+    )?;
+    let _: OwnedObjectPath = manager.call("StopUnit", &(unit_name, "replace"))?;
+    let deadline = Instant::now() + Duration::from_secs(timeout_seconds);
+    loop {
+        match inspect_loaded_unit(unit_name) {
+            Ok(snapshot)
+                if snapshot.active_state == "inactive"
+                    && snapshot.sub_state == "dead"
+                    && snapshot.main_pid == 0 =>
+            {
+                return Ok(())
+            }
+            Err(UnitError::Dbus(zbus::Error::MethodError(name, _, _)))
+                if name.as_str() == "org.freedesktop.systemd1.NoSuchUnit" =>
+            {
+                return Ok(())
+            }
+            Ok(_) => {}
+            Err(error) => return Err(error),
+        }
+        if Instant::now() >= deadline {
+            return Err(UnitError::StopTimeout);
+        }
+        std::thread::sleep(Duration::from_millis(100));
+    }
+}
+
+/// Clear the failed state of an already-empty transient unit and wait until
+/// systemd releases it. This is deliberately separate from `stop_unit_and_wait`:
+/// stopping a failed transient unit does not necessarily change `failed/failed`,
+/// so treating StopUnit as retirement can spin until the timeout.
+pub fn reset_failed_unit_and_wait(unit_name: &str, timeout_seconds: u64) -> Result<(), UnitError> {
+    validate_unit_name(unit_name)?;
+    if timeout_seconds == 0 || timeout_seconds > 300 {
+        return Err(UnitError::Policy);
+    }
+    let snapshot = inspect_loaded_unit(unit_name)?;
+    if snapshot.active_state != "failed"
+        || snapshot.sub_state != "failed"
+        || snapshot.main_pid != 0
+        || !snapshot.control_group.is_empty()
+    {
+        return Err(UnitError::Policy);
+    }
+    let connection = Connection::system()?;
+    let manager = Proxy::new(
+        &connection,
+        SYSTEMD_DESTINATION,
+        SYSTEMD_MANAGER_PATH,
+        SYSTEMD_MANAGER_INTERFACE,
+    )?;
+    let _: () = manager.call("ResetFailedUnit", &(unit_name,))?;
+    let deadline = Instant::now() + Duration::from_secs(timeout_seconds);
+    loop {
+        match inspect_loaded_unit(unit_name) {
+            Err(UnitError::Dbus(zbus::Error::MethodError(name, _, _)))
+                if name.as_str() == "org.freedesktop.systemd1.NoSuchUnit" =>
+            {
+                return Ok(())
+            }
+            Ok(snapshot)
+                if snapshot.active_state == "inactive"
+                    && snapshot.sub_state == "dead"
+                    && snapshot.main_pid == 0
+                    && snapshot.control_group.is_empty() =>
+            {
+                return Ok(())
+            }
+            Ok(_) => {}
+            Err(error) => return Err(error),
+        }
+        if Instant::now() >= deadline {
+            return Err(UnitError::StopTimeout);
+        }
+        std::thread::sleep(Duration::from_millis(100));
+    }
+}
+
+
+fn inspect_loaded_unit(unit_name: &str) -> Result<UnitSnapshot, UnitError> {
+    let connection = Connection::system()?;
+    let manager = Proxy::new(
+        &connection,
+        SYSTEMD_DESTINATION,
+        SYSTEMD_MANAGER_PATH,
+        SYSTEMD_MANAGER_INTERFACE,
+    )?;
+    let path: OwnedObjectPath = manager.call("GetUnit", &(unit_name,))?;
+    let unit = Proxy::new(
+        &connection,
+        SYSTEMD_DESTINATION,
+        path.as_str(),
+        SYSTEMD_UNIT_INTERFACE,
+    )?;
+    let service = Proxy::new(
+        &connection,
+        SYSTEMD_DESTINATION,
+        path.as_str(),
+        SYSTEMD_SERVICE_INTERFACE,
+    )?;
+    Ok(UnitSnapshot {
+        unit_name: unit_name.to_owned(),
+        active_state: unit.get_property("ActiveState")?,
+        sub_state: unit.get_property("SubState")?,
+        main_pid: service.get_property("MainPID")?,
+        control_group: service.get_property("ControlGroup")?,
+        result: service.get_property("Result")?,
+    })
+}
+
+fn dbus_properties(spec: &TransientUnitSpec) -> Vec<(&str, Value<'_>)> {
+    spec.properties
+        .iter()
+        .map(|(name, property)| {
+            let value = match property {
+                UnitProperty::Text(value) => Value::from(value),
+                UnitProperty::Boolean(value) => Value::from(*value),
+                UnitProperty::Unsigned(value) => Value::from(*value),
+                UnitProperty::Bytes(value) => Value::from(value),
+                UnitProperty::Strings(value) => Value::from(value),
+                UnitProperty::Commands(commands) => Value::from(
+                    commands
+                        .iter()
+                        .map(|command| {
+                            (
+                                command.path.as_str(),
+                                command.argv.iter().map(String::as_str).collect::<Vec<_>>(),
+                                command.ignore_failure,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ),
+            };
+            (*name, value)
+        })
+        .collect()
+}
+
+
+fn validate_unit_name(value: &str) -> Result<(), UnitError> {
+    if value.starts_with(UNIT_PREFIX)
+        && value.ends_with(".service")
+        && value.len() > UNIT_PREFIX.len() + ".service".len()
+        && value.len() <= 255
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.' | b'@'))
+    {
+        Ok(())
+    } else {
+        Err(UnitError::UnitName)
+    }
+}
+
+#[path="/home/artur/.cache/hydracache-074-dbus-fixed-channel/20261028-a2/assets/tools/dbus-legacy-calls-074/fixture.rs"]
+mod fixture;
+use fixture::Connection;

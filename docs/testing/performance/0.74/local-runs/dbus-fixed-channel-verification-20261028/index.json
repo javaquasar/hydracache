@@ -1,0 +1,101 @@
+{
+  "adapter_cases": 2,
+  "archive_code_executed_in_verification": false,
+  "doc_check": true,
+  "members": {
+    "capture/doc-check/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/doc-check/intent.json": {
+      "bytes": 850850,
+      "sha256": "c40e6c3a94c1e4f11ecee495e081e468e7a425587d72e99ccb0c0e4bf9abe02c"
+    },
+    "capture/doc-check/producer.py": {
+      "bytes": 3086,
+      "sha256": "5233e2e3a4484d1f917ac281d7566f39606425bd761659652bc37a6d46e9977a"
+    },
+    "capture/doc-check/result.json": {
+      "bytes": 73,
+      "sha256": "d4c3c1448535744b4f257eb1a411089bec35038ec813a67a4de5cf4fb98085d1"
+    },
+    "capture/doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "capture/verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/verify/intent.json": {
+      "bytes": 477001,
+      "sha256": "d9f547ae369ce69b2cc8752aa8334c0cfd9c59d97b5fd2a471c1051a1ab3c9cb"
+    },
+    "capture/verify/producer.py": {
+      "bytes": 3086,
+      "sha256": "5233e2e3a4484d1f917ac281d7566f39606425bd761659652bc37a6d46e9977a"
+    },
+    "capture/verify/result.json": {
+      "bytes": 73,
+      "sha256": "d4c3c1448535744b4f257eb1a411089bec35038ec813a67a4de5cf4fb98085d1"
+    },
+    "capture/verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/verify/stdout.log": {
+      "bytes": 310,
+      "sha256": "008ba646014d4b175a895baba2d11f09b881a607a026c03c50f4f2e5b7aa7157"
+    },
+    "source/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1510758,
+      "sha256": "a7790a2b775e1d413ae790440cb468d94dd6e6c5eca0f7dc46363c817a948ccb"
+    },
+    "source/docs/testing/performance/0.74/README.md": {
+      "bytes": 503579,
+      "sha256": "25248aacc921c321527dcb54d5054dd7cd7725d759461fd70e1ae6bd56313aa8"
+    },
+    "source/docs/testing/performance/0.74/dbus-fixed-channel-result-20261028.md": {
+      "bytes": 7309,
+      "sha256": "0fa0534be99c92e7c0145375d88ec6fe94309c8d15f4cfa001515abd90e03087"
+    },
+    "source/docs/testing/performance/0.74/dbus-legacy-calls-result-20261028.md": {
+      "bytes": 7591,
+      "sha256": "d5cb1ea8556e3811121c956ec367a7b21ff764ae6cb6802628048b93ce2f644a"
+    },
+    "source/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 40317,
+      "sha256": "268082220870caa5c52a48a18fa338ef2fbc0d023485d80aad37200df6cad2a8"
+    },
+    "source/docs/testing/performance/0.74/remaining-security-feasibility-20261028.md": {
+      "bytes": 11775,
+      "sha256": "656bc713cc0567c3cf5b1da89a6dcf63fe29a845c4e9efcc2e992125ef91c54c"
+    },
+    "source/target/dbus-fixed-step-20261028.py": {
+      "bytes": 3086,
+      "sha256": "5233e2e3a4484d1f917ac281d7566f39606425bd761659652bc37a6d46e9977a"
+    },
+    "source/target/retain-dbus-fixed-20261028.py": {
+      "bytes": 4200,
+      "sha256": "0f810088010ca437ecae5ff3fd68d8bb5867f577e46c43bbc4d8fb970cd721e6"
+    },
+    "source/target/verify-dbus-fixed-20261028.py": {
+      "bytes": 3868,
+      "sha256": "6459772133bfa0ca225e3849b28cc4111cf84cf7ebb2254944a6774b238bb39d"
+    }
+  },
+  "native_passes_per_compiler": 95,
+  "original_additional_cases": 15,
+  "package_identities": 63,
+  "primary_index_sha256": "5f757928da182fd26ccb70f727d07ea0c57092f067bf8280ab9d11c649cedb13",
+  "registry_archives": 59,
+  "registry_qualified": false,
+  "release_admitted": false,
+  "root_adopted": false,
+  "schema": "hc074-fixed-channel-verification-v1",
+  "source_head_observation": "2549ef0178cd44f3bc2fae7b4841d7c62b9fdb8c"
+}

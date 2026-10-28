@@ -111,3 +111,9 @@ shipping/consumer and remaining target/feature gates, a compatible Chitchat path
 (the costly preview stays declined), root graph adoption and full product gates
 remain open. Original all-writer retirement, durable completion/cells 2–4,
 SIGKILL/lost-ACK and reconnection/host admission remain separate release blockers.
+
+The subsequent [fixed-channel source gate](dbus-fixed-channel-result-20261028.md)
+retains all 78 cases and adds fifteen original kernel/channel/alarm/sandbox tests
+plus two adapter controls, reaching 95 passes on each GNU compiler with check/strict
+Clippy. Read-only core entrypoints compile; no host connection is opened. The full
+receiver/original-owner join and held delivery remain explicitly outside that slice.

@@ -1,0 +1,1 @@
+{"passed": true, "members_verified": 1412, "objects_verified": 456, "native_passes_per_compiler": 95, "original_additional_cases": 15, "adapter_cases": 2, "package_identities": 63, "registry_archives": 59, "first_compile_refusal_retained": true, "host_tests_executed": false, "archived_code_executed": false}

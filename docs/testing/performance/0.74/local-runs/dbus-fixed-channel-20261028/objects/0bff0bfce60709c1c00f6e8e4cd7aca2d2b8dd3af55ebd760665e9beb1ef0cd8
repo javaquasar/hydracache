@@ -1,0 +1,52 @@
+{
+  "cksum": "385a6cb71ab9ab790c5fe8d67f1645e6c450a7ce006a33de03daa956cf70a496",
+  "deps": [
+    {
+      "default_features": true,
+      "features": [],
+      "kind": "normal",
+      "name": "proc-macro2",
+      "optional": false,
+      "req": "^1.0.60",
+      "target": null
+    },
+    {
+      "default_features": true,
+      "features": [],
+      "kind": "normal",
+      "name": "quote",
+      "optional": false,
+      "req": "^1",
+      "target": null
+    },
+    {
+      "default_features": true,
+      "features": [
+        "full"
+      ],
+      "kind": "normal",
+      "name": "syn",
+      "optional": false,
+      "req": "^2.0",
+      "target": null
+    },
+    {
+      "default_features": true,
+      "features": [
+        "full",
+        "test-util"
+      ],
+      "kind": "dev",
+      "name": "tokio",
+      "optional": false,
+      "req": "^1.0.0",
+      "target": null
+    }
+  ],
+  "features": {},
+  "name": "tokio-macros",
+  "pubtime": "2026-04-03T07:38:45Z",
+  "rust_version": "1.71",
+  "vers": "2.7.0",
+  "yanked": false
+}

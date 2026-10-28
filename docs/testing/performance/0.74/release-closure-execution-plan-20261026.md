@@ -525,6 +525,18 @@ preconditions, no retry and original timeout loops. A pinned 18-file direct-use
 census does not close AST/module/transitive resolution. Full manager/kernel/held
 caller migration, source/effect and product gates remain unqualified.
 
+The [fixed read-only channel source gate](dbus-fixed-channel-result-20261028.md)
+now compiles the original core, complete kernel predicates and sandbox observation
+slice with checked stream ownership transfer, queue 16 and EXTERNAL unchanged.
+All 95 parent cases, check and strict Clippy pass on GNU Rust 1.94/1.88; eight inert
+controls and formatting pass. A new fixture-only macro node matches product's
+2.7.0 archive while using existing syn 2.0.119; all other lock rows remain exact.
+The first two E0433 compile refusals remain. Real kernel/pidfd/alarm leaves execute,
+but open_fixed/revalidate/observe_sandbox host entrypoints are compile-only.
+ReceiverPin/original_join/held routes and two manual host tests remain outside
+this no-bus slice. Full original context/module/source/effect and product gates
+are not replaced by this pass.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

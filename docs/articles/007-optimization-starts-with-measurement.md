@@ -22319,3 +22319,41 @@ Clippy. В 24 сценариях проверены шесть форм свой
 consumer и product gates. Прекращение записи всех writers и lifecycle/reconnect
 не следуют из успешного legacy ответа. Источники и первые результаты собраны в
 [отчёте legacy helpers](../testing/performance/0.74/dbus-legacy-calls-result-20261028.md).
+
+### 0.74: fixed-channel source и реальные kernel/alarm leaves
+
+После legacy helpers проверен отдельный read-only FixedManagerChannel source-slice.
+В него входят исходные open/inspect/revalidate, query/owner, PathPins/KernelPins,
+Operation и sandbox observation. ReceiverPin/original_join/held delivery исключены
+явно: вместо полного owner/kernel frame не добавлялась успешная заглушка. Сам
+system bus не открывался. Entrypoints имеют compile-покрытие, а не healthy-host verdict.
+
+У zbus 6 изменились тип UnixStream на входе builder, очередь на NonZeroUsize и путь
+AuthMechanism. Адаптация потребляет Tokio stream через проверенный into_std,
+оставляет очередь 16 и EXTERNAL. Первый bounded compile сохранил два E0433: старый
+путь AuthMechanism и отключённый в probe Tokio macros. Исправление добавляет тот
+же tokio-macros 2.7.0 archive/checksum, что уже используется продуктом, и сохраняет
+исходный biased select. Fixture использует существующий syn 2.0.119, тогда как
+product row ссылается на 2.0.118: совпадение архива не объявляется равенством графов.
+Остальные lock rows не менялись; probe теперь содержит 63 identities/59 archives.
+
+Оба GNU-компилятора дали 95/95, check и строгий Clippy. Сохранились все 78 прежних
+кейсов; добавлены 15 исходных channel/kernel/alarm/sandbox tests и два adapter controls.
+Реальные leaves проверяют procfs boot, socket credentials и SO_PEERPIDFD, ownership/
+permissions/path replacement, неизменный BOOTTIME deadline и FD aliases. Один
+собственный sleep завершается SIGKILL через удерживаемый pidfd; это не полная
+lifecycle crash matrix. Четыре исходных alarm tests используют изолированные
+однотестовые children и прежний пятисекундный budget.
+
+Transfer-control подтверждает сохранение номера FD, CLOEXEC и status flags,
+двусторонние данные и работоспособность удерживаемого alias после drop нового
+владельца. EOF наступает после последнего владельца. inspect/revalidate и весь
+alarm/bound-код совпадают побайтно; kernel body отличается только исключённым
+receiver module route. Проверки и исходные сроки не переписывались ради зелёного gate.
+
+Восемь inert-контролей и форматирование проходят. Первые ошибки сохранены; root
+зависимости, live predicates и qualification identity прежние. До полного допуска
+остаются receiver/original-owner closure, held delivery, source/effect/target и
+shipping consumer review, product gates и отдельный retirement/reconnect proof.
+Методика и ограничения приведены в
+[отчёте fixed channel](../testing/performance/0.74/dbus-fixed-channel-result-20261028.md).

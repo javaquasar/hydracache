@@ -1,0 +1,32 @@
+{
+  "diagnostic_manager_alarm_tests.rs": {
+    "builder_unwraps_removed": 0,
+    "original_sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc",
+    "projected_sha256": "a60ac17ff7b5404d21d3e6283ec11dcb323a179676cf465f3b7acd425ed43ccc"
+  },
+  "diagnostic_manager_channel.rs": {
+    "builder_unwraps_removed": 0,
+    "original_sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d",
+    "projected_sha256": "3fbef96f08f2c8173571a07e04fd24446445e556e370540da613521a7b0cfa95"
+  },
+  "diagnostic_manager_channel_kernel.rs": {
+    "builder_unwraps_removed": 0,
+    "original_sha256": "2eefec1c52c06d42e88e4b7ddfdaa70593ecbedc83a6c8b95fc1037a8726164c",
+    "projected_sha256": "2338c37f05d309aa62a837fe0515c0dd2a583cf51c25c85ed5ac9db6dcb90266"
+  },
+  "diagnostic_manager_channel_kernel_tests.rs": {
+    "builder_unwraps_removed": 0,
+    "original_sha256": "6ed19516345e555b556817a2727b4c5d30ce10dc73c59ab8b78f91375001cd66",
+    "projected_sha256": "6ed19516345e555b556817a2727b4c5d30ce10dc73c59ab8b78f91375001cd66"
+  },
+  "diagnostic_manager_channel_tests.rs": {
+    "builder_unwraps_removed": 10,
+    "original_sha256": "3d6567947ff6073ea76f95bbf8916a91f3d7d6560a22ad51686208d1259cb3f6",
+    "projected_sha256": "182273e0d4af75eb70de2c208619c8dfab379e0d19c1882d701b568bd78b1784"
+  },
+  "diagnostic_manager_sandbox_query.rs": {
+    "builder_unwraps_removed": 7,
+    "original_sha256": "f8f52fa47e09d9b7ee977c3595cf2269ed80228a0df24bb566d300a50a2612ba",
+    "projected_sha256": "4d56b5db4df7be243591f251938d6b5a48808249356f6eec17843b994a62bef3"
+  }
+}

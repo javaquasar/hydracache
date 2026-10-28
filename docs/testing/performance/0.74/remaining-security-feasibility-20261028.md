@@ -177,3 +177,11 @@ passes 78 cases plus check/strict Clippy on GNU Rust 1.88/1.94, preserving eight
 original helper bodies and all 67 earlier identities. Invalid fixture reply-sender
 construction, its diagnostic and partial-repair failures remain. This advances
 caller compatibility without root integration or a full module/source/effect proof.
+
+The [fixed-channel source continuation](dbus-fixed-channel-result-20261028.md)
+passes 95 parent tests plus check/strict Clippy on GNU Rust 1.88/1.94. It preserves
+original kernel/alarm bodies and source-check order while adapting stream ownership,
+queue type and auth namespace. The original biased select requires fixture macros;
+product's same tokio-macros 2.7.0 archive expands the probe to 63 identities/59
+archives, with existing syn 2.0.119. First compile refusals remain. This is neither
+a fresh dependency-policy verdict nor live manager/receiver/original-owner coverage.

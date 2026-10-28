@@ -1,0 +1,71 @@
+"""Inert exact body/graph audit; no archived executable is run."""
+from pathlib import Path
+import importlib.util,json,re,subprocess,tomllib
+ROOT=Path(__file__).resolve().parent.parent;BASE=ROOT/'target/dbus-fixed-channel-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/dbus-fixed-channel-20261028'
+spec=importlib.util.spec_from_file_location('hc074_fixed_seal',ROOT/'tools/dbus-fixed-channel-074/run.py');r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
+sha=r.sha;read=lambda p:json.loads(p.read_bytes())
+first=read(BASE/'session/fd-194-build/result.json');assert first['exit']==101 and first['source_unchanged']
+messages=[json.loads(v) for v in (BASE/'session/fd-194-build/stdout.log').read_bytes().splitlines()]
+errors=[m['message'] for m in messages if m.get('reason')=='compiler-message' and m['message']['level']=='error'];assert len(errors)==2 and all(v['code']['code']=='E0433' for v in errors)
+final=BASE/'api-fixed';review=read(final/'prepare/result.json');assert r.files(final/'input')==review['files']
+native=read(final/'session/native-result.json');assert native['passed'] and native['source_unchanged'] and native['boot_unchanged'] and len(native['phases'])==10
+for compiler in ('194','188'):
+ test=read(final/f'session/fd-{compiler}-test/result.json');listing=read(final/f'session/fd-{compiler}-list/result.json')
+ assert test['exit']==0 and test['artifact']==listing['artifact'] and len(listing['inventory'])==95
+ assert test['accounting']['selected']==test['accounting']['passed']==95 and test['accounting']['failed']==test['accounting']['filtered']==0
+ assert sum(n.startswith('fixed_channel::') for n in listing['inventory'])==17
+ raw=(final/f'session/fd-{compiler}-test/stdout.log').read_bytes()
+ assert raw.count(b'HC074_FIXED_HANDOFF:same_fd=true:flags_equal=true:alias_survives=true:eof_after_last_owner=true')==1
+ rows=re.findall(rb'^test (.+?) \.\.\. (ok|FAILED)$',raw,re.M);assert len(rows)==95 and sorted(n.decode() for n,s in rows)==listing['inventory'] and all(s==b'ok' for n,s in rows)
+ for action in ('build','list','test','check','clippy'):
+  assert read(final/f'session/fd-{compiler}-{action}/result.json')['exit']==0
+  e=read(final/f'session/fd-{compiler}-{action}/execution.json');assert e['retired'] and not e['errors']
+for name in r.NAMES:
+ original=(r.SOURCE/name).read_bytes();projected,_,excluded=r.project(name,original)
+ assert projected==(final/'input/assets/tools/dbus-fixed-channel-074'/name).read_bytes()
+ if name in ('diagnostic_manager_channel_kernel_tests.rs','diagnostic_manager_alarm_tests.rs'):assert projected==original
+ if name=='diagnostic_manager_channel_kernel.rs':assert projected==original.replace(b'#[path = "diagnostic_manager_receiver_pin.rs"]\npub(super) mod receiver;\n',b'',1)
+ if excluded:assert excluded==(final/'prepare/manual-host-tests-not-executed.rs').read_bytes() and excluded.count(b'#[ignore =')==2
+core=(final/'input/assets/tools/dbus-fixed-channel-074/diagnostic_manager_channel.rs').read_bytes();original=(r.SOURCE/'diagnostic_manager_channel.rs').read_bytes()
+for marker,end in ((b'    fn inspect(&self)',b'// Private ownership boundary;'),(b'// Private ownership boundary;',b'#[cfg(test)]\n#[path = "diagnostic_manager_channel_tests.rs"]')):
+ assert core[core.index(marker):core.index(end)]==original[original.index(marker):original.index(end)]
+old=tomllib.loads((BASE/'input/fd/Cargo.lock').read_text(encoding='utf8'))['package'];new=tomllib.loads((final/'input/fd/Cargo.lock').read_text(encoding='utf8'))['package']
+assert len(old)==62 and len(new)==63 and len(review['registry'])==59
+assert [n for n in new if n['name'] not in ('tokio','tokio-macros')]==[n for n in old if n['name']!='tokio']
+macro=next(n for n in new if n['name']=='tokio-macros');product=tomllib.loads((ROOT/'Cargo.lock').read_text(encoding='utf8'))['package'];root_macro=next(n for n in product if n['name']=='tokio-macros')
+assert macro['version']==root_macro['version']=='2.7.0' and macro['checksum']==root_macro['checksum']
+assert macro['dependencies']==['proc-macro2','quote','syn 2.0.119'] and 'syn 2.0.118' in root_macro['dependencies']
+checks=ROOT/'target/dbus-fixed-final-20261028'
+for mode in ('controls','format'):assert read(checks/mode/'result.json')['exit']==0
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members;members[name]=dict(sha256=digest,bytes=len(raw))
+for label,folder in (('first',BASE),('final',final)):
+ for area in ('input','prepare','session'):
+  for path in sorted((folder/area).rglob('*')):
+   if path.is_file() and '__pycache__' not in path.parts:add('capture/'+label+'/'+path.relative_to(folder).as_posix(),path)
+for path in sorted((ROOT/'target/dbus-fixed-macros-20261028').rglob('*')):
+ if path.is_file():add('capture/macro-review/'+path.relative_to(ROOT/'target/dbus-fixed-macros-20261028').as_posix(),path)
+for mode in ('controls','format'):
+ for path in sorted((checks/mode).iterdir()):
+  if path.is_file():add('capture/final-checks/'+mode+'/'+path.name,path)
+for path in sorted((ROOT/'tools/dbus-fixed-channel-074').glob('*')):
+ if path.is_file():add('source/'+path.relative_to(ROOT).as_posix(),path)
+for name in r.NAMES:add('source/tools/long-run-supervisor-074/src/'+name,r.SOURCE/name)
+for name in ('Cargo.toml','Cargo.lock','deny.toml','docs/testing/performance/0.74/qualification-manifest.toml','tools/long-run-supervisor-074/Cargo.toml','tools/dbus-linux-074/native.py','tools/dbus-linux-074/run.py','tools/dbus-source-package-074/run.py','tools/dbus-fragments-074/run.py','tools/dbus-reply-state-074/run.py','tools/windows-workspace-preflight-074/owned.py','tools/windows-workspace-preflight-074/prepare.py','scripts/ci/watchdog_linux_group.py','scripts/ci/watchdog_windows_job.py','target/dbus-fixed-step-20261028.py','target/seal-dbus-fixed-20261028.py'):
+ add('source/'+name,ROOT/name)
+add('predecessor/index.json',ROOT/'docs/testing/performance/0.74/local-runs/dbus-legacy-calls-20261028/index.json')
+index=dict(schema='hc074-fixed-readonly-channel-v1',members=members,native_passes_per_compiler=95,predecessor_cases=78,original_additional_cases=15,adapter_cases=2,inert_controls=8,
+ package_identities=63,registry_archives=59,one_fixture_macro_node_added='tokio-macros 2.7.0',macro_archive_same_as_product=True,fixture_syn2='2.0.119',product_macro_syn2='2.0.118',
+ kernel_body_equal_except_omitted_receiver_module=True,inspect_revalidate_and_bound_bodies_equal=True,first_compile_errors=['E0433:tokio::select','E0433:zbus::AuthMechanism'],
+ no_live_host_context_test=True,manual_host_tests_preserved_not_run=2,receiver_original_join_held_delivery_included=False,
+ root_changed=False,system_bus=False,services=False,server=False,clocks_changed=False,original_execution_admitted=False,product_gate_replayed=False,performance_claim=False,release_admitted=False,
+ source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip())
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

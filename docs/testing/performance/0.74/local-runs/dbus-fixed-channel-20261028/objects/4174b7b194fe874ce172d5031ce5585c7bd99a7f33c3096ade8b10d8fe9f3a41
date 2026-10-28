@@ -1,0 +1,13 @@
+test_all_original_sources_and_projection_are_whole_pinned (test_controls.Controls.test_all_original_sources_and_projection_are_whole_pinned) ... ok
+test_complete_95_case_catalog_and_test_only_registration (test_controls.Controls.test_complete_95_case_catalog_and_test_only_registration) ... ok
+test_exact_two_second_origin_bound_and_sandbox_observations (test_controls.Controls.test_exact_two_second_origin_bound_and_sandbox_observations) ... ok
+test_fixed_dispatch (test_controls.Controls.test_fixed_dispatch) ... ok
+test_host_and_original_join_boundaries_are_explicit_not_stubbed (test_controls.Controls.test_host_and_original_join_boundaries_are_explicit_not_stubbed) ... ok
+test_kernel_predicates_bodies_and_original_alarm_tests_unchanged (test_controls.Controls.test_kernel_predicates_bodies_and_original_alarm_tests_unchanged) ... ok
+test_same_native_owner_and_fixed_msrv_command (test_controls.Controls.test_same_native_owner_and_fixed_msrv_command) ... ok
+test_source_dependency_and_product_custody (test_controls.Controls.test_source_dependency_and_product_custody) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.238s
+
+OK

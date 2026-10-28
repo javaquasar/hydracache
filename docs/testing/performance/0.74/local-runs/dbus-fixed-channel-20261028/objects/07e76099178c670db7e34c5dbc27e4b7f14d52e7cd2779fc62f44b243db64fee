@@ -1,0 +1,4 @@
+[source.crates-io]
+replace-with = "hc074-locked"
+[source.hc074-locked]
+directory = "/home/artur/.cache/hydracache-074-dbus-fixed-channel/20261028-a1/vendor"

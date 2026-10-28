@@ -1,0 +1,377 @@
+//! Retained root-selected route, atomic peer pidfd and kernel namespace context.
+use super::{io, ChannelError, Result};
+use std::ffi::CString;
+use std::fs::{File, OpenOptions};
+use std::io::Read;
+use std::mem::{size_of, zeroed};
+use std::os::fd::{AsRawFd, FromRawFd, RawFd};
+use std::os::unix::ffi::OsStrExt;
+use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+use std::path::Path;
+
+
+pub(super) fn clock() -> Result<u64> {
+    let mut time: libc::timespec = unsafe { zeroed() };
+    if unsafe { libc::clock_gettime(libc::CLOCK_BOOTTIME, &mut time) } != 0 {
+        return Err(ChannelError::Io);
+    }
+    if time.tv_sec < 0 || !(0..1_000_000_000).contains(&time.tv_nsec) {
+        return Err(ChannelError::Context);
+    }
+    (time.tv_sec as u64)
+        .checked_mul(1_000_000_000)
+        .and_then(|v| v.checked_add(time.tv_nsec as u64))
+        .ok_or(ChannelError::Context)
+}
+pub(super) fn boot() -> Result<String> {
+    let file = io(OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK)
+        .open("/proc/sys/kernel/random/boot_id"))?;
+    filesystem(&file, libc::PROC_SUPER_MAGIC as _)?;
+    let mut raw = Vec::new();
+    io(file.take(38).read_to_end(&mut raw))?;
+    if raw.len() != 37
+        || raw[36] != b'\n'
+        || raw[..36].iter().enumerate().any(|(i, b)| {
+            if [8, 13, 18, 23].contains(&i) {
+                *b != b'-'
+            } else {
+                !b.is_ascii_digit() && !(b'a'..=b'f').contains(b)
+            }
+        })
+    {
+        return Err(ChannelError::Context);
+    }
+    String::from_utf8(raw[..36].to_vec()).map_err(|_| ChannelError::Context)
+}
+fn filesystem(file: &File, magic: libc::c_long) -> Result<()> {
+    let mut stat: libc::statfs = unsafe { zeroed() };
+    if unsafe { libc::fstatfs(file.as_raw_fd(), &mut stat) } != 0 {
+        return Err(ChannelError::Io);
+    }
+    if stat.f_type != magic {
+        return Err(ChannelError::Context);
+    }
+    Ok(())
+}
+fn open_at(parent: RawFd, name: &[u8], flags: i32) -> Result<File> {
+    let name = CString::new(name).map_err(|_| ChannelError::Context)?;
+    let fd = unsafe { libc::openat(parent, name.as_ptr(), flags | libc::O_CLOEXEC) };
+    if fd < 0 {
+        return Err(ChannelError::Io);
+    }
+    Ok(unsafe { File::from_raw_fd(fd) })
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct Stamp {
+    dev: u64,
+    ino: u64,
+    uid: u32,
+    gid: u32,
+    mode: u32,
+}
+fn stamp(file: &File) -> Result<Stamp> {
+    let m = io(file.metadata())?;
+    if unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFD) } != libc::FD_CLOEXEC {
+        return Err(ChannelError::Context);
+    }
+    Ok(Stamp {
+        dev: m.dev(),
+        ino: m.ino(),
+        uid: m.uid(),
+        gid: m.gid(),
+        mode: m.mode(),
+    })
+}
+fn trusted(s: Stamp, uid: u32, socket: bool) -> bool {
+    s.uid == uid
+        && if socket {
+            s.mode & libc::S_IFMT == libc::S_IFSOCK
+        } else {
+            s.mode & libc::S_IFMT == libc::S_IFDIR && s.mode & 0o022 == 0
+        }
+}
+pub(super) struct PathPins {
+    files: Vec<File>,
+    stamps: Vec<Stamp>,
+}
+impl PathPins {
+    fn walk(root: &Path, uid: u32) -> Result<Self> {
+        let first = open_at(
+            libc::AT_FDCWD,
+            root.as_os_str().as_bytes(),
+            libc::O_PATH | libc::O_DIRECTORY | libc::O_NOFOLLOW,
+        )?;
+        let mut files = vec![first];
+        for name in [b"run".as_slice(), b"dbus", b"system_bus_socket"] {
+            let fd = files.last().ok_or(ChannelError::Context)?.as_raw_fd();
+            files.push(open_at(fd, name, libc::O_PATH | libc::O_NOFOLLOW)?);
+        }
+        let stamps = files.iter().map(stamp).collect::<Result<Vec<_>>>()?;
+        if stamps
+            .iter()
+            .enumerate()
+            .any(|(i, s)| !trusted(*s, uid, i == 3))
+        {
+            return Err(ChannelError::Context);
+        }
+        Ok(Self { files, stamps })
+    }
+    pub(super) fn fixed() -> Result<Self> {
+        Self::walk(Path::new("/"), 0)
+    }
+    pub(super) fn inspect(&self) -> Result<()> {
+        if self.files.iter().map(stamp).collect::<Result<Vec<_>>>()? != self.stamps
+            || Self::fixed()?.stamps != self.stamps
+        {
+            return Err(ChannelError::Changed);
+        }
+        Ok(())
+    }
+}
+fn option(fd: RawFd, name: i32) -> Result<i32> {
+    let mut value = 0i32;
+    let mut len = size_of::<i32>() as libc::socklen_t;
+    if unsafe {
+        libc::getsockopt(
+            fd,
+            libc::SOL_SOCKET,
+            name,
+            (&mut value as *mut i32).cast(),
+            &mut len,
+        )
+    } != 0
+    {
+        return Err(ChannelError::Io);
+    }
+    if len as usize != size_of::<i32>() {
+        return Err(ChannelError::Context);
+    }
+    Ok(value)
+}
+fn credentials(fd: RawFd) -> Result<[i64; 3]> {
+    let mut c: libc::ucred = unsafe { zeroed() };
+    let mut len = size_of::<libc::ucred>() as libc::socklen_t;
+    if unsafe {
+        libc::getsockopt(
+            fd,
+            libc::SOL_SOCKET,
+            libc::SO_PEERCRED,
+            (&mut c as *mut libc::ucred).cast(),
+            &mut len,
+        )
+    } != 0
+    {
+        return Err(ChannelError::Io);
+    }
+    if len as usize != size_of::<libc::ucred>() || c.pid <= 0 {
+        return Err(ChannelError::Context);
+    }
+    Ok([i64::from(c.pid), i64::from(c.uid), i64::from(c.gid)])
+}
+fn live(file: &File) -> Result<()> {
+    let mut p = libc::pollfd {
+        fd: file.as_raw_fd(),
+        events: libc::POLLIN,
+        revents: 0,
+    };
+    if unsafe { libc::poll(&mut p, 1, 0) } != 0 || p.revents != 0 {
+        return Err(ChannelError::Changed);
+    }
+    Ok(())
+}
+fn peer_pidfd(fd: RawFd) -> Result<File> {
+    let mut value = -1i32;
+    let mut len = size_of::<i32>() as libc::socklen_t;
+    if unsafe {
+        libc::getsockopt(
+            fd,
+            libc::SOL_SOCKET,
+            libc::SO_PEERPIDFD,
+            (&mut value as *mut i32).cast(),
+            &mut len,
+        )
+    } != 0
+    {
+        return Err(ChannelError::Io);
+    }
+    if value < 0 {
+        return Err(ChannelError::Context);
+    }
+    // Take ownership before validating the returned ancillary shape.
+    let pin = unsafe { File::from_raw_fd(value) };
+    if len as usize != size_of::<i32>() {
+        return Err(ChannelError::Context);
+    }
+    stamp(&pin)?;
+    Ok(pin)
+}
+fn namespace(proc: &File, pid: &str, kind: &str, expected: i32) -> Result<File> {
+    let task = open_at(
+        proc.as_raw_fd(),
+        pid.as_bytes(),
+        libc::O_PATH
+            | libc::O_DIRECTORY
+            | if pid == "thread-self" {
+                0
+            } else {
+                libc::O_NOFOLLOW
+            },
+    )?;
+    filesystem(&task, libc::PROC_SUPER_MAGIC as _)?;
+    let ns = open_at(
+        task.as_raw_fd(),
+        b"ns",
+        libc::O_PATH | libc::O_DIRECTORY | libc::O_NOFOLLOW,
+    )?;
+    let file = open_at(ns.as_raw_fd(), kind.as_bytes(), libc::O_RDONLY)?;
+    filesystem(&file, libc::NSFS_MAGIC as _)?;
+    if unsafe { libc::ioctl(file.as_raw_fd(), libc::NS_GET_NSTYPE) } != expected {
+        return Err(ChannelError::Context);
+    }
+    Ok(file)
+}
+fn namespace_files(peer: i32) -> Result<Vec<File>> {
+    let proc = open_at(
+        libc::AT_FDCWD,
+        b"/proc",
+        libc::O_PATH | libc::O_DIRECTORY | libc::O_NOFOLLOW,
+    )?;
+    filesystem(&proc, libc::PROC_SUPER_MAGIC as _)?;
+    let mut result = Vec::new();
+    for (kind, flag) in [("pid", libc::CLONE_NEWPID), ("user", libc::CLONE_NEWUSER)] {
+        let local = namespace(&proc, "thread-self", kind, flag)?;
+        for pid in [peer.to_string(), "1".into()] {
+            let remote = namespace(&proc, &pid, kind, flag)?;
+            if stamp(&remote)? != stamp(&local)? {
+                return Err(ChannelError::Context);
+            }
+            result.push(remote);
+        }
+        result.push(local);
+    }
+    result.push(namespace(
+        &proc,
+        "thread-self",
+        "time",
+        libc::CLONE_NEWTIME,
+    )?);
+    Ok(result)
+}
+fn namespaces(peer: i32) -> Result<Vec<File>> {
+    namespace_files(peer).map_err(|_| ChannelError::Namespace)
+}
+pub(super) struct KernelPins {
+    socket: File,
+    peer: File,
+    init: File,
+    creds: [i64; 3],
+    namespaces: Vec<File>,
+}
+impl KernelPins {
+    pub(super) fn capture(stream: &impl AsRawFd) -> Result<Self> {
+        let fd = unsafe { libc::fcntl(stream.as_raw_fd(), libc::F_DUPFD_CLOEXEC, 3) };
+        if fd < 0 {
+            return Err(ChannelError::Io);
+        }
+        let socket = unsafe { File::from_raw_fd(fd) };
+        if option(fd, libc::SO_DOMAIN)? != libc::AF_UNIX
+            || option(fd, libc::SO_TYPE)? != libc::SOCK_STREAM
+        {
+            return Err(ChannelError::Context);
+        }
+        let creds = credentials(fd)?;
+        // Atomic kernel pin, not pidfd_open on a reusable observed peer PID.
+        let peer = peer_pidfd(fd)?;
+        live(&peer)?;
+        let init_fd = unsafe { libc::syscall(libc::SYS_pidfd_open, 1, 0) };
+        if init_fd < 0 {
+            return Err(ChannelError::Io);
+        }
+        let init = unsafe { File::from_raw_fd(init_fd as RawFd) };
+        live(&init)?;
+        let namespaces = namespaces(creds[0] as i32)?;
+        live(&peer)?;
+        live(&init)?;
+        let pins = Self {
+            socket,
+            peer,
+            init,
+            creds,
+            namespaces,
+        };
+        pins.inspect()?;
+        Ok(pins)
+    }
+    pub(super) fn inspect(&self) -> Result<()> {
+        live(&self.peer)?;
+        live(&self.init)?;
+        let fd = self.socket.as_raw_fd();
+        let mut poll = libc::pollfd {
+            fd,
+            events: libc::POLLRDHUP,
+            revents: 0,
+        };
+        if unsafe { libc::poll(&mut poll, 1, 0) } != 0
+            || poll.revents != 0
+            || credentials(fd)? != self.creds
+        {
+            return Err(ChannelError::Changed);
+        }
+        for file in [&self.socket, &self.peer, &self.init] {
+            stamp(file)?;
+        }
+        let current = namespaces(self.creds[0] as i32)?;
+        if current.iter().map(stamp).collect::<Result<Vec<_>>>()?
+            != self
+                .namespaces
+                .iter()
+                .map(stamp)
+                .collect::<Result<Vec<_>>>()?
+        {
+            return Err(ChannelError::Changed);
+        }
+        live(&self.peer)?;
+        live(&self.init)
+    }
+}
+
+#[cfg(test)]
+#[path = "diagnostic_manager_channel_kernel_tests.rs"]
+mod tests;
+pub(super) struct Operation {
+    pub(super) file: File,
+    pub(super) deadline: u64,
+}
+impl Operation {
+    pub(super) fn new() -> Result<Self> {
+        let deadline = clock()?
+            .checked_add(2_000_000_000)
+            .ok_or(ChannelError::Context)?;
+        let fd = unsafe {
+            libc::timerfd_create(libc::CLOCK_BOOTTIME, libc::TFD_CLOEXEC | libc::TFD_NONBLOCK)
+        };
+        if fd < 0 {
+            return Err(ChannelError::Io);
+        }
+        let file = unsafe { File::from_raw_fd(fd) };
+        let spec = libc::itimerspec {
+            it_interval: libc::timespec {
+                tv_sec: 0,
+                tv_nsec: 0,
+            },
+            it_value: libc::timespec {
+                tv_sec: (deadline / 1_000_000_000) as _,
+                tv_nsec: (deadline % 1_000_000_000) as _,
+            },
+        };
+        if unsafe {
+            libc::timerfd_settime(fd, libc::TFD_TIMER_ABSTIME, &spec, std::ptr::null_mut())
+        } != 0
+        {
+            return Err(ChannelError::Io);
+        }
+        Ok(Self { file, deadline })
+    }
+}

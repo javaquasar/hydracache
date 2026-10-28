@@ -1,0 +1,37 @@
+"""Independent inert fixed-channel source/graph/accounting audit."""
+from pathlib import Path
+import hashlib,importlib.util,json,re,tomllib
+ROOT=Path(__file__).resolve().parent.parent;P=ROOT/'docs/testing/performance/0.74/local-runs/dbus-fixed-channel-20261028'
+sha=lambda b:hashlib.sha256(b).hexdigest()
+raw=(P/'index.json').read_bytes();assert sha(raw)=='5f757928da182fd26ccb70f727d07ea0c57092f067bf8280ab9d11c649cedb13'
+index=json.loads(raw);members=index['members'];assert len(members)==1412
+for row in members.values():
+ body=(P/'objects'/row['sha256']).read_bytes();assert sha(body)==row['sha256'] and len(body)==row['bytes']
+def get(n):return (P/'objects'/members[n]['sha256']).read_bytes()
+spec=importlib.util.spec_from_file_location('hc074_owned_fixed_verifier',ROOT/'tools/dbus-fixed-channel-074/run.py');r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
+assert sha((ROOT/'tools/dbus-fixed-channel-074/run.py').read_bytes())==sha(get('source/tools/dbus-fixed-channel-074/run.py'))
+for name in r.NAMES:
+ original=get('source/tools/long-run-supervisor-074/src/'+name);adapted,count,excluded=r.project(name,original)
+ assert adapted==get('capture/final/input/assets/tools/dbus-fixed-channel-074/'+name)
+ if excluded:assert excluded.count(b'#[ignore =')==2 and excluded==get('capture/final/prepare/manual-host-tests-not-executed.rs')
+ for name2 in ('diagnostic_manager_channel_kernel_tests.rs','diagnostic_manager_alarm_tests.rs'):
+  if name==name2:assert original==adapted
+first=json.loads(get('capture/first/session/fd-194-build/result.json'));assert first['exit']==101 and first['source_unchanged']
+messages=[json.loads(v) for v in get('capture/first/session/fd-194-build/stdout.log').splitlines()]
+errors=[v['message'] for v in messages if v.get('reason')=='compiler-message' and v['message']['level']=='error'];assert len(errors)==2 and all(v['code']['code']=='E0433' for v in errors)
+for compiler in ('194','188'):
+ test=json.loads(get(f'capture/final/session/fd-{compiler}-test/result.json'));listing=json.loads(get(f'capture/final/session/fd-{compiler}-list/result.json'))
+ assert test['exit']==0 and test['artifact']==listing['artifact'] and len(listing['inventory'])==95
+ assert test['accounting']['passed']==test['accounting']['selected']==95 and test['accounting']['failed']==test['accounting']['filtered']==0
+ raw=get(f'capture/final/session/fd-{compiler}-test/stdout.log');rows=re.findall(rb'^test (.+?) \.\.\. (ok|FAILED)$',raw,re.M)
+ assert len(rows)==95 and sorted(n.decode() for n,s in rows)==listing['inventory'] and all(s==b'ok' for n,s in rows)
+ assert raw.count(b'HC074_FIXED_HANDOFF:same_fd=true:flags_equal=true:alias_survives=true:eof_after_last_owner=true')==1
+ for action in ('build','list','test','check','clippy'):
+  assert json.loads(get(f'capture/final/session/fd-{compiler}-{action}/result.json'))['exit']==0
+  e=json.loads(get(f'capture/final/session/fd-{compiler}-{action}/execution.json'));assert e['retired'] and not e['errors']
+old=tomllib.loads(get('capture/first/input/fd/Cargo.lock').decode())['package'];new=tomllib.loads(get('capture/final/input/fd/Cargo.lock').decode())['package']
+assert len(old)==62 and len(new)==63
+assert [n for n in new if n['name'] not in ('tokio','tokio-macros')]==[n for n in old if n['name']!='tokio']
+macro=next(n for n in new if n['name']=='tokio-macros');assert macro['checksum']==sha(get('capture/final/input/archives/tokio-macros-2.7.0.crate'))
+assert json.loads(get('capture/final/prepare/tokio-macros-sparse-row.json'))['cksum']==macro['checksum']
+print(json.dumps(dict(passed=True,members_verified=1412,objects_verified=len(list((P/'objects').iterdir())),native_passes_per_compiler=95,original_additional_cases=15,adapter_cases=2,package_identities=63,registry_archives=59,first_compile_refusal_retained=True,host_tests_executed=False,archived_code_executed=False)))

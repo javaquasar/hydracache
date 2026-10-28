@@ -1,0 +1,38 @@
+#[test]
+#[ignore = "manual local nonroot fixed manager namespace-access refusal; no mutation"]
+fn manager_channel_nonroot_fixed_context_refusal() {
+    assert_eq!(
+        std::env::var("HC074_LOCAL_MANAGER_READONLY").as_deref(),
+        Ok("1")
+    );
+    assert_ne!(unsafe { libc::geteuid() }, 0);
+    assert_eq!(
+        FixedManagerChannel::open_fixed().unwrap_err(),
+        ChannelError::Namespace
+    );
+    println!(
+        "HC074-MANAGER-CHANNEL nonroot=true namespace_refused=true original_join=false start=false"
+    );
+}
+#[test]
+#[ignore = "manual local root read-only fixed manager context; no mutation"]
+fn manager_channel_root_fixed_context() {
+    assert_eq!(
+        std::env::var("HC074_LOCAL_MANAGER_READONLY").as_deref(),
+        Ok("1")
+    );
+    assert_eq!(unsafe { libc::geteuid() }, 0);
+    let mut channel = FixedManagerChannel::open_fixed().unwrap();
+    channel.revalidate().unwrap();
+    channel.inspect().unwrap();
+    let debug = format!("{channel:?}");
+    assert!(!debug.contains(&channel.manager));
+    assert!(!debug.contains(&channel.guid));
+    channel
+        .runtime
+        .block_on(channel.connection.clone().close())
+        .unwrap();
+    assert!(channel.revalidate().is_err());
+    assert_eq!(channel.revalidate(), Err(ChannelError::Refused));
+    println!("HC074-MANAGER-CHANNEL root_read_only=true same_connection=true manager_pid=1 closed_sticky=true original_join=false start=false");
+}
