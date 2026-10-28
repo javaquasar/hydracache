@@ -605,12 +605,17 @@ impl ReferenceCollectionMap {
     pub(crate) fn service_snapshot_cost(
         &self,
         prefix: &[u8],
+        exact: Option<&[u8]>,
         include_value: bool,
         now: u64,
     ) -> (usize, usize) {
         self.entries
             .iter()
-            .filter(|(key, value)| key.starts_with(prefix) && is_live(value, now))
+            .filter(|(key, value)| {
+                key.starts_with(prefix)
+                    && exact.is_none_or(|exact| key.as_slice() == exact)
+                    && is_live(value, now)
+            })
             .fold((0usize, 0usize), |(count, bytes), (key, value)| {
                 (
                     count.saturating_add(1),
@@ -622,15 +627,35 @@ impl ReferenceCollectionMap {
             })
     }
 
+    pub(crate) fn service_snapshot_value_exceeds(
+        &self,
+        prefix: &[u8],
+        exact: Option<&[u8]>,
+        now: u64,
+        maximum: usize,
+    ) -> bool {
+        self.entries.iter().any(|(key, value)| {
+            key.starts_with(prefix)
+                && exact.is_none_or(|exact| key.as_slice() == exact)
+                && is_live(value, now)
+                && value.value.len() > maximum
+        })
+    }
+
     pub(crate) fn service_filtered_snapshot(
         &self,
         prefix: &[u8],
+        exact: Option<&[u8]>,
         include_value: bool,
         now: u64,
     ) -> Vec<(Vec<u8>, EntryView)> {
         self.entries
             .iter()
-            .filter(|(key, value)| key.starts_with(prefix) && is_live(value, now))
+            .filter(|(key, value)| {
+                key.starts_with(prefix)
+                    && exact.is_none_or(|exact| key.as_slice() == exact)
+                    && is_live(value, now)
+            })
             .map(|(key, value)| {
                 (
                     key.clone(),

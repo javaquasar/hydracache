@@ -140,6 +140,57 @@ Scheduled/default-branch execution and remote matrix results remain separate fro
 the workflow contract.
 On Windows, nested tooling tests build in `target/imap-075/tooling` to avoid replacing the running `xtask.exe`.
 
+The integrated runtime additionally connects `new_clustered` namespace registries to the
+actual proxy/owner/replica services. Held admission permits bind tenant, affected partitions
+and keys; authenticated request, replica-apply and ACK contexts are checked against configured
+member credentials, generations, trust epochs, replay identity and original deadlines.
+This uses the existing member identity/authorization interfaces in a test channel and makes
+no mTLS or real-daemon authentication claim. Forged ingress is refused before admission;
+an invalid replica or ACK cannot prove a mutation that an owner may already have applied.
+
+Typed cluster subscriptions own real per-owner listener registrations. Partition cut vectors,
+generation changes, explicit gaps and bounded repair describe continuity; no global event
+order is implied. Prefix and optional exact-key filters, including binary and empty keys,
+share the local Rust/Java contract. Coordinator streams keep their own bounded buffers and
+release registrations on close, auth failure and namespace fencing.
+
+Online transfers keep the source serving while bounded snapshot chunks and ordered actual
+decision images reach staging. Each delta is a full bounded runtime state image, not command
+re-execution or a byte-efficient delta format. Checksum/order/resume and source/staging stamp
+equality fence final cutover. Pending roots or exhausted capture bounds require backpressure
+or explicit restart; a confirmed source write is never silently dropped.
+
+Data, safety and repair lanes have separate permits/bytes and per-lane tenant fairness.
+Multi-partition commands reserve every affected partition and key before dispatch. Replica
+credits stay owned until actual work completes. Runtime readiness/drain observations derive
+from actual owner reachability, backup proofs, transfers and retained owners; production
+capability remains disabled even when the test runtime reports ready.
+
+The actual-cluster campaign stages apply, replication, ACK and client response by retrying the
+same retained identity through deterministic transport gates. It checks real service receipts,
+proved replica snapshots, bulk ordering/version stability, expiry after promotion and an
+independent real-time history oracle. Search-budget exhaustion is distinct from a proved
+violation; negative observation canaries and the bounded shrinker test the checker itself.
+These are logical schedules, not process-kill, real-network or durable-restart qualification.
+Failures retain bounded original/minimized schedules, seed, source identity when available and
+explicit local/fixture scope under `target/imap-075/cluster-failures`; prior attempts are never
+overwritten. Replay a retained schedule with `imap-cluster-chaos --release 0.75 --seed <seed>
+--schedule <workspace-relative-json>`.
+
+```powershell
+cargo xtask imap-cluster-chaos --release 0.75 --seed 117 --rounds 3
+cargo xtask imap-semantic-audit --release 0.75
+cargo test -p hydracache-fuzz --test imap_cluster_075 --locked
+```
+
+The dedicated `fuzz_imap_cluster_075` target runs a retained hostile corpus in normal tests
+and bounded mutation fuzzing in the existing scheduled fuzz job. Corpus/artifact retention,
+input/time limits and failure propagation are guarded. Scheduled execution is distinct from
+local corpus replay. CI receipt v2 executes this campaign for each disjoint seed and retains
+the local Rust/Java differential. The provisional method ledger and actual-owner Java semantic
+adapter are described in `docs/integrations/imap-compatibility-0.75.md`; borrowed expectations
+are adapted source-pinned cases, not an execution claim for the official Hazelcast product.
+
 The comparison contract validates identical backup, persistence, TLS, TTL, previous-value, retry
 and listener semantics, paired-run floors, balanced order and retention of negative results.
 Unresolved product digests block readiness. S2 also requires a proved backup and qualified real

@@ -65,6 +65,20 @@ API-only/cold-repopulation dry-run, without a production import endpoint or SDK 
 `cargo xtask imap-capability-audit --release 0.75` for code/contract/SDK drift checks and
 `cargo xtask imap-migration-dry-run --release 0.75` for the checked-in migration corpus.
 
+`UnifiedIMapServiceSemanticAdapter` connects the common semantic SPI directly to an injected
+service and its real listener queue, without another value/outcome/event store. Seeded manifests
+run against the independent oracle; eight retained source-pinned IMap expectations run through
+the same owner. The `listener_gap` manifest control marks that real queue at a paused producer
+boundary and reports an unknown-scope empty-key GAP. Preserve cannot insert an absent entry, and
+TTL-update operations require Eternal or a positive ExpireAfter directive.
+
+The provisional [method compatibility ledger](../../docs/integrations/imap-compatibility-0.75.md)
+separates core operations, seven typed helper families and existing SDK projections. Java
+reflection/DTO tests and the Rust/Java process differential cover nonempty binary prefix AND
+optional exact-key listener filters. The old Java exact-key constructor remains available.
+`cargo xtask imap-semantic-audit --release 0.75` checks ledger/source evidence; it is a bounded
+shape guard, not a full ABI check, generated SDK or production qualification.
+
 ## Blocked by 0.74
 
 Real HydraCache/Hazelcast adapters and every timed run are **blocked-by-0.74**. They must not be

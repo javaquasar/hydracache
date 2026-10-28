@@ -18,7 +18,7 @@ fn receipts(mode: &str) -> Vec<CiReceipt> {
         .into_iter()
         .map(|lane| CiReceipt {
             release: "0.75".into(),
-            receipt_version: 1,
+            receipt_version: 2,
             scope: "local_ci".into(),
             mode: mode.into(),
             source_sha: "a".repeat(40),
@@ -35,6 +35,8 @@ fn receipts(mode: &str) -> Vec<CiReceipt> {
                 "imap-comparison-check".into(),
                 "imap-release-admission".into(),
                 "imap-tooling-tests".into(),
+                "imap-semantic-audit".into(),
+                "imap-cluster-chaos".into(),
             ],
             completed: true,
             passed: true,
@@ -205,6 +207,12 @@ fn windows_tooling_uses_an_isolated_child_target_without_changing_linux_argument
                 "imap_qualification_075",
                 "--test",
                 "imap_ci_075",
+                "--test",
+                "imap_semantic_audit075",
+                "--test",
+                "imap_cluster_campaign_075",
+                "--test",
+                "imap_cluster_fuzz_policy075",
                 "--locked",
             ]
         );

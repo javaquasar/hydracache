@@ -80,6 +80,10 @@ pub struct TrustEpochWindow {
 }
 
 impl TrustEpochWindow {
+    pub const fn current_epoch(&self) -> u64 {
+        self.current
+    }
+
     pub fn new(current: u64, overlap_ticks: u64) -> Result<Self, SecurityError> {
         if current == 0 {
             return Err(SecurityError::InvalidBound("trust_epoch"));

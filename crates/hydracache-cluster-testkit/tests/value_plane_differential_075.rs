@@ -6,11 +6,65 @@ use hydracache_cluster_testkit::value_plane_differential_075::{
 };
 
 #[test]
+fn binary_prefix_exact_empty_key_and_resync_use_actual_listener_queues() {
+    use hydracache_cluster_testkit::value_plane_differential_075::listener_filter_trace;
+    let trace = listener_filter_trace();
+    let observations = execute_rust(&trace).unwrap();
+    let index = |key: &[u8]| {
+        trace
+            .steps
+            .iter()
+            .position(|step| step.operation == "set" && step.key == key)
+            .unwrap()
+    };
+    let empty = &observations[index(&[])];
+    assert!(empty.contains("20002/added//"));
+    assert!(!empty.contains("20000/added/"));
+    assert!(!empty.contains("20001/added/"));
+    let root = &observations[index(&[0, 255])];
+    assert!(root.contains("20000/added/00ff/"));
+    assert!(!root.contains("20001/added/"));
+    let exact = &observations[index(&[0, 255, 1])];
+    assert!(exact.contains("20000/added/00ff01/"));
+    assert!(exact.contains("20001/added/00ff01/"));
+    assert!(!exact.contains("20003/added/"));
+    let resync = trace
+        .steps
+        .iter()
+        .enumerate()
+        .filter(|(_, step)| step.operation == "resync_listener")
+        .map(|(index, _)| &observations[index])
+        .collect::<Vec<_>>();
+    assert!(resync[0].starts_with("resynced|~|"));
+    assert!(resync[0].contains("/00ff01/present/"));
+    assert!(!resync[1].contains("/00ff02/present/"));
+    assert_eq!(resync[3].split('|').nth(4), Some("0"));
+    assert_eq!(resync[3].split('|').nth(6), Some("[]"));
+    let clear = trace
+        .steps
+        .iter()
+        .position(|step| step.operation == "clear_detailed")
+        .unwrap();
+    for id in [20000, 20001, 20002, 20003] {
+        assert!(observations[clear].contains(&format!("{id}/cleared//")));
+    }
+}
+
+#[test]
 fn trace_generation_roundtrips_and_covers_every_contract_operation() {
     let trace = generated_trace(117, 128).unwrap();
     assert_eq!(ApiTrace::parse(&trace.encode()).unwrap(), trace);
     assert_eq!(generated_trace(117, 128).unwrap(), trace);
     assert_ne!(generated_trace(118, 128).unwrap(), trace);
+    let observer = trace
+        .steps
+        .iter()
+        .find(|step| step.operation == "entry_listener")
+        .unwrap();
+    assert!(
+        observer.key.is_empty() && observer.expected.is_none(),
+        "coverage observer must include every entry key; expected is now an optional exact filter"
+    );
     let contract: serde_json::Value = serde_json::from_str(include_str!(
         "../../../docs/testing/imap/0.75/operation-contract.json"
     ))

@@ -9,5 +9,6 @@ public enum ErrorClass {
   UNSUPPORTED,
   PARTIAL,
   DUPLICATE_KEY,
+  INVALID_ARGUMENT,
   INTERNAL
 }

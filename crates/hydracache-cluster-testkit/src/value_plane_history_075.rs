@@ -135,6 +135,8 @@ pub struct HistoryOracleReport {
     pub witness: Option<Vec<u64>>,
     pub explored_states: usize,
     pub violation: Option<String>,
+    /// True only when a required search transition was refused by the budget.
+    pub budget_exhausted: bool,
 }
 
 impl HistoryOracleReport {
@@ -187,6 +189,7 @@ impl ValuePlaneHistoryOracle {
             witness,
             explored_states: search.explored,
             violation,
+            budget_exhausted: search.bound_exhausted,
         }
     }
 }

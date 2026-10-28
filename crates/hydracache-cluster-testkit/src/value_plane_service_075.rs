@@ -270,6 +270,7 @@ pub struct ServiceListenerOptions {
     pub max_value_bytes: usize,
     pub queue_capacity: usize,
     pub key_prefix: Vec<u8>,
+    pub exact_key: Option<Vec<u8>>,
     pub kinds: BTreeSet<String>,
 }
 
@@ -280,6 +281,7 @@ impl Default for ServiceListenerOptions {
             max_value_bytes: 4 * 1_024 * 1_024,
             queue_capacity: 1_024,
             key_prefix: Vec::new(),
+            exact_key: None,
             kinds: BTreeSet::new(),
         }
     }
@@ -824,8 +826,29 @@ fn validate(state: &ServiceState, command: &ServiceCommand) -> Result<(), MapSer
     }
     let bounds = state.map.service_bounds();
     check_bound("key_bytes", bounds.max_key_bytes, command.key.len())?;
-    for value in [&command.value, &command.expected].into_iter().flatten() {
+    if command.operation == "entry_listener" {
+        if command.limit == 0
+            || command.limit > 1_024
+            || (command.listener_id != 0 && state.listeners.contains_key(&command.listener_id))
+        {
+            return Err(MapServiceError::InvalidArgument);
+        }
+        let id = if command.listener_id == 0 {
+            state.next_listener
+        } else {
+            command.listener_id
+        };
+        id.checked_add(1).ok_or(MapServiceError::Capacity)?;
+    }
+    if let Some(value) = &command.value {
         check_bound("value_bytes", bounds.max_value_bytes, value.len())?;
+    }
+    if let Some(expected) = &command.expected {
+        if command.operation == "entry_listener" {
+            check_bound("key_bytes", bounds.max_key_bytes, expected.len())?;
+        } else {
+            check_bound("value_bytes", bounds.max_value_bytes, expected.len())?;
+        }
     }
     let count = command.keys.len().max(command.entries.len());
     check_bound("request_entries", 256, count)?;
@@ -898,6 +921,11 @@ fn validate(state: &ServiceState, command: &ServiceCommand) -> Result<(), MapSer
         return Err(MapServiceError::InvalidArgument);
     }
     if matches!(command.ttl, ServiceTtl::ExpireAfter(0)) {
+        return Err(MapServiceError::InvalidArgument);
+    }
+    if matches!(command.operation.as_str(), "set_ttl" | "set_ttl_if_version")
+        && command.ttl == ServiceTtl::Preserve
+    {
         return Err(MapServiceError::InvalidArgument);
     }
     if let Some(identity) = &command.identity {
@@ -1187,6 +1215,7 @@ fn dispatch(
                 max_value_bytes: state.map.service_bounds().max_value_bytes,
                 queue_capacity: command.limit,
                 key_prefix: command.key.clone(),
+                exact_key: command.expected.clone(),
                 kinds: BTreeSet::new(),
             };
             let id = register(state, options, command.listener_id)?;
@@ -1722,6 +1751,10 @@ fn register(
         || options.queue_capacity > 1_024
         || options.max_value_bytes > bounds.max_value_bytes
         || options.key_prefix.len() > bounds.max_key_bytes
+        || options
+            .exact_key
+            .as_ref()
+            .is_some_and(|key| key.len() > bounds.max_key_bytes)
     {
         return Err(MapServiceError::InvalidArgument);
     }
@@ -1741,7 +1774,8 @@ fn register(
         state.limits.listener_bytes,
         lifecycle::listener_bytes(state)
             .saturating_add(128)
-            .saturating_add(options.key_prefix.len()),
+            .saturating_add(options.key_prefix.len())
+            .saturating_add(options.exact_key.as_ref().map_or(0, Vec::len)),
     )?;
     let id = if requested == 0 {
         state.next_listener
@@ -1804,8 +1838,15 @@ fn publish_at(
     let mut queued_bytes = lifecycle::listener_bytes(state);
     let stream_maximum = lifecycle::stream_reservation(state);
     for listener in state.listeners.values_mut() {
+        let global = matches!(kind, "cleared" | "destroyed");
         if listener.gap
-            || (!key.is_empty() && !key.starts_with(&listener.options.key_prefix))
+            || (!global
+                && (!key.starts_with(&listener.options.key_prefix)
+                    || listener
+                        .options
+                        .exact_key
+                        .as_ref()
+                        .is_some_and(|exact| exact != &key)))
             || (!listener.options.kinds.is_empty() && !listener.options.kinds.contains(kind))
         {
             continue;

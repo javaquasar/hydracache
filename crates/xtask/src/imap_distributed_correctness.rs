@@ -56,6 +56,16 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "--test",
             "value_plane_service_cluster_075",
             "--test",
+            "value_plane_cluster_admission_075",
+            "--test",
+            "value_plane_cluster_chaos_075",
+            "--test",
+            "value_plane_cluster_runtime_075",
+            "--test",
+            "value_plane_cluster_subscriptions_075",
+            "--test",
+            "value_plane_online_transfer_075",
+            "--test",
             "value_plane_service_registry_075",
             "--test",
             "value_plane_service_lifecycle_075",
@@ -100,6 +110,18 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         return Err(format!("IMap capability drift: {capability_problems:?}").into());
     }
     crate::imap_migration_dry_run::check_at_root(&root, RELEASE)?;
+    let semantic_problems = crate::imap_semantic_audit075::check_at_root(&root, RELEASE)?;
+    if !semantic_problems.is_empty() {
+        return Err(format!("IMap semantic compatibility drift: {semantic_problems:?}").into());
+    }
+    println!(
+        "actual cluster campaign: {}",
+        crate::imap_cluster_campaign_075::check_at_root(&root, 117, 3)?
+    );
+    let fuzz_problems = crate::imap_cluster_fuzz_policy075::check_at_root(&root)?;
+    if !fuzz_problems.is_empty() {
+        return Err(format!("cluster fuzz policy drift: {fuzz_problems:?}").into());
+    }
     crate::imap_ci_075::check_workflow(&root)?;
     let comparison_blockers = crate::imap_qualification_075::check_comparison_at_root(&root)?;
     let admission = crate::imap_qualification_075::check_release_at_root(&root, None)?;

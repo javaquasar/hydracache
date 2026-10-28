@@ -733,3 +733,41 @@ fn release_preparation_canaries_cannot_promote_models_or_weaken_integrated_owner
         );
     }
 }
+
+#[test]
+fn cluster_integration_requires_actual_paths_bounded_lanes_and_independent_proofs() {
+    for field in [
+        "registry",
+        "authentication",
+        "listeners",
+        "transfer",
+        "admission",
+        "history",
+        "health",
+        "semantics",
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |contract| {
+            contract["api_extensions"]["cluster_integration"]["properties"][field] =
+                serde_json::json!("pretend_local_model_is_production")
+        });
+        assert!(
+            problems(&temp)
+                .iter()
+                .any(|problem| problem.starts_with("IMap cluster integration")),
+            "{field}"
+        );
+    }
+    for (field, value) in [
+        ("scope", serde_json::json!("production")),
+        ("test_ids", serde_json::json!([])),
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |contract| {
+            contract["api_extensions"]["cluster_integration"][field] = value
+        });
+        assert!(problems(&temp)
+            .iter()
+            .any(|problem| problem.starts_with("IMap cluster integration")));
+    }
+}

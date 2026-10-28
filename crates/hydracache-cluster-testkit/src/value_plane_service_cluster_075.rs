@@ -10,6 +10,18 @@ use crate::value_plane_service_075::*;
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::fmt;
+use std::sync::Arc;
+use std::task::Waker;
+
+#[path = "value_plane_service_cluster_subscriptions_075.rs"]
+mod subscriptions;
+pub use subscriptions::*;
+#[path = "value_plane_service_cluster_transfer_075.rs"]
+mod transfer;
+pub use transfer::*;
+#[path = "value_plane_service_cluster_runtime_hooks_075.rs"]
+mod runtime_hooks;
+pub use runtime_hooks::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ServiceOperationScope {
@@ -186,6 +198,16 @@ pub enum ServiceClusterError {
     StaleOwner,
     ProxyHopLimit,
     ReplicaNotProved,
+    Authorization(&'static str),
+    TransferBackpressure,
+    TransferState,
+    UnknownSubscription,
+    UnknownTransfer,
+    ConflictingChunk,
+    ChunkOutOfRange,
+    MissingChunks,
+    DeltaOutOfOrder,
+    ConflictingDelta,
     TransportTimeout,
     Transport(LoopbackError),
     Model(MapServiceError),
@@ -215,7 +237,7 @@ pub struct ServicePartitionAssignment {
     pub backup: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ServiceClusterExecution {
     pub result: ServiceResult,
     pub replayed: bool,
@@ -233,6 +255,7 @@ pub struct ServiceClusterTrace {
 
 struct ServiceNode {
     live: bool,
+    generation: u64,
     data: Vec<UnifiedIMapService>,
     journal: Vec<UnifiedIMapService>,
 }
@@ -255,6 +278,9 @@ pub struct ServiceClusterHarness {
     trace: VecDeque<ServiceClusterTrace>,
     dropped_trace_events: u64,
     max_response_bytes: usize,
+    collection: CollectionBounds,
+    service_limits: ServiceLimits,
+    runtime: runtime_hooks::ClusterRuntimeState,
 }
 
 impl ServiceClusterHarness {
@@ -296,6 +322,7 @@ impl ServiceClusterHarness {
                 (*id).to_string(),
                 ServiceNode {
                     live: true,
+                    generation: 1,
                     data,
                     journal,
                 },
@@ -333,6 +360,9 @@ impl ServiceClusterHarness {
             trace: VecDeque::new(),
             dropped_trace_events: 0,
             max_response_bytes: collection.max_response_bytes,
+            collection,
+            service_limits: limits,
+            runtime: runtime_hooks::ClusterRuntimeState::default(),
         })
     }
 
@@ -377,6 +407,7 @@ impl ServiceClusterHarness {
             .get_mut(node)
             .ok_or(ServiceClusterError::UnknownNode)?
             .live = live;
+        self.signal_subscriptions();
         Ok(())
     }
 
@@ -456,6 +487,23 @@ impl ServiceClusterHarness {
         command: ServiceCommand,
         call: ServiceClusterCall,
     ) -> Result<ServiceClusterExecution, ServiceClusterError> {
+        self.ensure_namespace()?;
+        if self.runtime.draining.contains(entry_node) {
+            return Err(ServiceClusterError::NodeUnavailable);
+        }
+        self.preflight_transfer_call(&command)?;
+        let result = self.execute_inner(entry_node, command, call);
+        self.capture_online_changes();
+        self.signal_subscriptions();
+        result
+    }
+
+    fn execute_inner(
+        &mut self,
+        entry_node: &str,
+        command: ServiceCommand,
+        call: ServiceClusterCall,
+    ) -> Result<ServiceClusterExecution, ServiceClusterError> {
         self.require_live(entry_node)?;
         self.service(entry_node, 0, false)?
             .validate_request(&command)?;
@@ -492,12 +540,22 @@ impl ServiceClusterHarness {
         let coordinator = self.coordinator_for(&identity);
         let coordinator_route = self.route(entry_node, coordinator, &call)?;
         let journal = self.service(&coordinator_route.owner, coordinator, true)?;
+        let root_payload = command.test_transport_payload(self.bounds.max_frame_bytes)?;
+        self.authorize_message(
+            ServiceMessageKind::Request,
+            entry_node,
+            &coordinator_route.owner,
+            coordinator,
+            None,
+            &root_payload,
+        )?;
         let digest = request_digest(&command);
         let recovered = journal.recover_external_operation(&identity, digest)?;
         if let ServiceRecovery::Completed(result) = recovered {
             let proved = self
                 .replicate(coordinator, true, call.faults.coordinator)
-                .unwrap_or(false);
+                .unwrap_or(false)
+                && groups.iter().all(|(p, _, _)| self.backup_proved(*p));
             return self.finish(
                 execution(
                     *result,
@@ -594,12 +652,20 @@ impl ServiceClusterHarness {
                 .get(&p)
                 .copied()
                 .unwrap_or(call.faults.data);
-            let deliveries = self.transmit(
+            let group_payload = group.test_transport_payload(self.bounds.max_frame_bytes)?;
+            let authorized = self.authorize_message(
+                ServiceMessageKind::Request,
+                entry_node,
+                &route.owner,
                 p,
-                "owner_request",
-                group.test_transport_payload(self.bounds.max_frame_bytes)?,
-                faults.request,
+                None,
+                &group_payload,
             );
+            if let Err(error) = authorized {
+                failure = Some(error);
+                continue;
+            }
+            let deliveries = self.transmit(p, "owner_request", group_payload, faults.request);
             let deliveries = match deliveries {
                 Ok(n) if n > 0 => n,
                 Ok(_) => {
@@ -740,7 +806,10 @@ impl ServiceClusterHarness {
         };
         assignment.backup_data = None;
         assignment.backup_journal = None;
-        Ok(assignment.route.clone())
+        let promoted = assignment.route.clone();
+        self.capture_online_changes();
+        self.refresh_subscriptions();
+        Ok(promoted)
     }
 
     pub fn repair_backup(
@@ -778,6 +847,9 @@ impl ServiceClusterHarness {
         faults: ServiceLinkFaults,
     ) -> Result<ServicePartitionAssignment, ServiceClusterError> {
         self.require_live(target)?;
+        if self.has_active_transfer(partition) {
+            return Err(ServiceClusterError::TransferBackpressure);
+        }
         let old = self
             .assignments
             .get(partition as usize)
@@ -800,13 +872,16 @@ impl ServiceClusterHarness {
             let source = self.service(&old.owner, partition, journal)?;
             let image = source.export_replica_image()?;
             let expected = image.stamp();
-            if self.transmit(
+            let payload = image.transport_payload(self.bounds.max_frame_bytes)?;
+            self.authorize_message(
+                ServiceMessageKind::ReplicaApply,
+                &old.owner,
+                target,
                 partition,
-                "transfer",
-                image.transport_payload(self.bounds.max_frame_bytes)?,
-                faults.replica,
-            )? == 0
-            {
+                Some(expected),
+                &payload,
+            )?;
+            if self.transmit(partition, "transfer", payload, faults.replica)? == 0 {
                 return Err(ServiceClusterError::TransportTimeout);
             }
             let installed = self
@@ -815,6 +890,14 @@ impl ServiceClusterHarness {
             if installed != expected {
                 return Err(ServiceClusterError::ReplicaNotProved);
             }
+            self.authorize_message(
+                ServiceMessageKind::Ack,
+                target,
+                &old.owner,
+                partition,
+                Some(expected),
+                &expected.digest,
+            )?;
             if self.transmit(
                 partition,
                 "transfer_ack",
@@ -838,10 +921,22 @@ impl ServiceClusterHarness {
         };
         assignment.backup_data = Some(assignment.required_data);
         assignment.backup_journal = Some(assignment.required_journal);
-        Ok(assignment.route.clone())
+        let moved = assignment.route.clone();
+        self.refresh_subscriptions();
+        Ok(moved)
     }
 
     pub fn retire_outcomes(
+        &mut self,
+        client: &str,
+        through: u64,
+    ) -> Result<(), ServiceClusterError> {
+        let result = self.retire_outcomes_inner(client, through);
+        self.capture_online_changes();
+        result
+    }
+
+    fn retire_outcomes_inner(
         &mut self,
         client: &str,
         through: u64,
@@ -893,6 +988,24 @@ impl ServiceClusterHarness {
         entry: &str,
         command: ServiceCommand,
     ) -> Result<ServiceClusterExecution, ServiceClusterError> {
+        let partition = command
+            .identity
+            .as_ref()
+            .filter(|_| command.operation == "query_operation_outcome")
+            .map_or(0, |id| self.coordinator_for(id));
+        let target = if command.operation == "query_operation_outcome" {
+            self.assignments[partition as usize].route.owner.as_str()
+        } else {
+            entry
+        };
+        self.authorize_message(
+            ServiceMessageKind::Request,
+            entry,
+            target,
+            partition,
+            None,
+            &command.test_transport_payload(self.bounds.max_frame_bytes)?,
+        )?;
         if command.operation == "query_operation_outcome" {
             let id = command
                 .identity
@@ -1006,13 +1119,16 @@ impl ServiceClusterHarness {
                 .get(&p)
                 .copied()
                 .unwrap_or(call.faults.data);
-            if self.transmit(
+            let payload = group.test_transport_payload(self.bounds.max_frame_bytes)?;
+            self.authorize_message(
+                ServiceMessageKind::Request,
+                entry,
+                &route.owner,
                 p,
-                "read_request",
-                group.test_transport_payload(self.bounds.max_frame_bytes)?,
-                faults.request,
-            )? == 0
-            {
+                None,
+                &payload,
+            )?;
+            if self.transmit(p, "read_request", payload, faults.request)? == 0 {
                 return Err(ServiceClusterError::TransportTimeout);
             }
             let owner = self.service(&route.owner, p, false)?;
@@ -1143,6 +1259,15 @@ impl ServiceClusterHarness {
         let source = self.service(&route.owner, p, journal)?;
         let image = source.export_replica_image()?;
         let stamp = image.stamp();
+        let payload = image.transport_payload(self.bounds.max_frame_bytes)?;
+        self.authorize_message(
+            ServiceMessageKind::ReplicaApply,
+            &route.owner,
+            &route.backup,
+            p,
+            Some(stamp),
+            &payload,
+        )?;
         if self.transmit(
             p,
             if journal {
@@ -1150,7 +1275,7 @@ impl ServiceClusterHarness {
             } else {
                 "data_replica"
             },
-            image.transport_payload(self.bounds.max_frame_bytes)?,
+            payload,
             faults.replica,
         )? == 0
         {
@@ -1163,12 +1288,23 @@ impl ServiceClusterHarness {
         {
             return Err(ServiceClusterError::ReplicaNotProved);
         }
-        if journal {
-            self.assignments[p as usize].backup_journal = Some(stamp);
-        } else {
-            self.assignments[p as usize].backup_data = Some(stamp);
+        self.authorize_message(
+            ServiceMessageKind::Ack,
+            &route.backup,
+            &route.owner,
+            p,
+            Some(stamp),
+            &stamp.digest,
+        )?;
+        let acknowledged = self.transmit(p, "replica_ack", stamp.digest.to_vec(), faults.ack)? > 0;
+        if acknowledged {
+            if journal {
+                self.assignments[p as usize].backup_journal = Some(stamp);
+            } else {
+                self.assignments[p as usize].backup_data = Some(stamp);
+            }
         }
-        Ok(self.transmit(p, "replica_ack", stamp.digest.to_vec(), faults.ack)? > 0)
+        Ok(acknowledged)
     }
 
     fn transmit(

@@ -62,6 +62,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         Some("imap-ci-check") => xtask::imap_ci_075::run_check(args.collect())?,
         Some("imap-ci-run") => xtask::imap_ci_075::run_lane(args.collect())?,
+        Some("imap-cluster-chaos") => xtask::imap_cluster_campaign_075::run(args.collect())?,
+        Some("imap-semantic-audit") => xtask::imap_semantic_audit075::run(args.collect())?,
         Some("imap-distributed-correctness") => {
             xtask::imap_distributed_correctness::run(args.collect())?
         }
@@ -169,6 +171,8 @@ fn print_usage() {
          cargo xtask imap-release-admission --release 0.75 [--manifest <path>] [--require-ship]\n  \
          cargo xtask imap-ci-check --release 0.75 [--mode pr|nightly] [--receipts <dir>]\n  \
          cargo xtask imap-ci-run --release 0.75 --rust <version> --java <major> --shard <index> --output <path>\n  \
+         cargo xtask imap-cluster-chaos --release 0.75 [--seed <u64>] [--rounds <1..6>|--schedule <path>]  # execute/replay bounded actual-service histories\n  \
+         cargo xtask imap-semantic-audit --release 0.75  # check provisional signatures, typed helpers and shared-owner semantic adapters\n  \
          cargo xtask imap-distributed-correctness --release 0.75 [--evidence <new-dir>]  # run every locally available distributed simulator/security/key proof and optionally emit receipts\n  \
          cargo xtask imap-value-plane-model --release 0.75 [--seed <u64>] [--max-depth <n>] [--max-states <n>] [--output <path>]  # explore the bounded authority model and emit an exact-source receipt\n  \
          cargo xtask imap-foundation-evidence-check --release 0.75 [--receipt <path>|--receipts <dir>]  # validate schemas, one receipt, or a complete exact-source evidence set\n  \

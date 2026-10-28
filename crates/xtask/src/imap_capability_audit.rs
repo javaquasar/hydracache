@@ -265,7 +265,7 @@ fn check_clean(s: &AuditSources<'_>) -> Result<Vec<String>, Box<dyn Error>> {
     Ok(problems)
 }
 
-fn clean(source: &str) -> Result<String, Box<dyn Error>> {
+pub(crate) fn clean(source: &str) -> Result<String, Box<dyn Error>> {
     let mut output = String::new();
     let mut chars = source.chars().peekable();
     let mut inside = false;

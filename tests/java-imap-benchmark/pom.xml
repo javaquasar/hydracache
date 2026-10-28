@@ -82,6 +82,7 @@
                     <include>io.hydracache.imap.semantic.IMapTraceRunner*</include>
                     <include>io.hydracache.imap.semantic.IMapConcurrentRunner*</include>
                     <include>io.hydracache.imap.semantic.IMapMigrationDryRun*</include>
+                    <include>io.hydracache.imap.semantic.UnifiedIMapServiceSemanticAdapter*</include>
                   </includes>
                   <limits>
                     <limit>

@@ -50,6 +50,18 @@ public final class InMemorySemanticAdapter implements MapSemanticAdapter {
     if (!capabilities.contains(step.operation())) {
       return OperationOutcome.error(ErrorClass.UNSUPPORTED, "operation not declared by adapter");
     }
+    if (step.operation() == Operation.SET_TTL && step.ttl().kind() == TtlDirective.Kind.PRESERVE) return OperationOutcome.error(ErrorClass.INVALID_ARGUMENT, "set TTL requires explicit expiry");
+    if (Set.of(Operation.PUT_ALL, Operation.GET_ALL, Operation.REMOVE_ALL).contains(step.operation())) {
+      var keys = step.operation() == Operation.PUT_ALL ? step.entries().stream().map(ScenarioEntry::key).toList() : step.keys();
+      if (new HashSet<>(keys).size() != keys.size()) return OperationOutcome.error(ErrorClass.DUPLICATE_KEY, "duplicate key rejected before mutation");
+    }
+    if (step.ttl().kind() == TtlDirective.Kind.PRESERVE
+        && Set.of(Operation.PUT, Operation.PUT_IF_ABSENT, Operation.GET_AND_PUT, Operation.PUT_ALL).contains(step.operation())) {
+      for (var entry : step.entries()) {
+        var current = values.get(entry.key());
+        if (current == null || (current.expiresAt() != null && current.expiresAt() <= logicalTick)) return OperationOutcome.error(ErrorClass.INVALID_ARGUMENT, "preserve requires existing entry");
+      }
+    }
     return switch (step.operation()) {
       case GET -> get(step.key());
       case CONTAINS_KEY -> containsKey(step.key());
@@ -147,7 +159,7 @@ public final class InMemorySemanticAdapter implements MapSemanticAdapter {
   }
 
   private OperationOutcome listenerGap(BytesValue key) {
-    events.add(new MapEvent(MapEvent.Kind.GAP, key, Optional.empty(), logicalTick));
+    events.add(new MapEvent(MapEvent.Kind.GAP, BytesValue.copyOf(new byte[0]), Optional.empty(), logicalTick));
     return OperationOutcome.advanced();
   }
 

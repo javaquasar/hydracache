@@ -64,10 +64,18 @@ Runtime checkpoint objects have no serialization or persisted format.
 The 0.75 migration corpus uses `fixture_version = 1` for bounded development
 staging/dry-run readers only. Runtime replica images preserve logical incarnation
 within the test cluster and have no persisted reader or production transport
-schema. CI receipts use `receipt_version = 1` with explicit `local_ci` scope;
+schema. CI receipts use `receipt_version = 2` with explicit `local_ci` scope;
 comparison/release manifests use provisional `contract_version = 1` and reject
 unknown fields/versions. None is a production HC/1/HC/2 allocation or an import
 endpoint, and local receipts cannot authorize a release.
+
+The cluster schedule/fuzz corpus is a bounded development JSON fixture (`version = 1`,
+64 KiB, at most 256 steps). Text operation/stage names allocate no production wire
+numbers. Unknown versions/fields and unsupported transitions fail explicitly. CI
+receipt v2 requires actual-cluster history and semantic-audit execution in addition to
+the v1 proof inventory; old receipts cannot satisfy the new gate. Runtime authenticated
+envelopes, online-transfer manifests, chunks and decision-image deltas are in-process
+test types, with no production transport decoder or persisted reader compatibility.
 
 ## Upgrade Rules
 

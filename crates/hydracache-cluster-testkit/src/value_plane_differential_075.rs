@@ -179,6 +179,7 @@ pub fn generated_trace(seed: u64, random_steps: usize) -> Result<ApiTrace, Diffe
     }
     let mut steps = coverage_steps();
     steps.extend(lifecycle_steps());
+    steps.extend(listener_filter_trace().steps);
     if random_steps > MAX_TRACE_STEPS.saturating_sub(steps.len() + 4) {
         return fail("generated trace seed or step budget exceeded");
     }
@@ -309,6 +310,7 @@ fn coverage_steps() -> Vec<TraceStep> {
         if operation == "entry_listener" {
             step.identity = 1;
             step.detail = "values".into();
+            step.expected = None;
         }
         if operation == "remove_entry_listener" {
             step.identity = 1;
@@ -474,6 +476,59 @@ fn lifecycle_steps() -> Vec<TraceStep> {
     reset.now = 1;
     steps.push(reset);
     steps
+}
+
+/// Operation-specific listener prefix/exact fixtures use the existing development trace fields.
+pub fn listener_filter_trace() -> ApiTrace {
+    let mut steps = Vec::new();
+    let mut reset = TraceStep::point("reset_limits", b"", None);
+    reset.detail = "67108864".into();
+    reset.extra = "64".into();
+    steps.push(reset.clone());
+    for (id, prefix, exact) in [
+        (20000, vec![0, 255], None),
+        (20001, vec![0, 255], Some(vec![0, 255, 1])),
+        (20002, vec![], Some(vec![])),
+        (20003, vec![0, 254], Some(vec![0, 255, 1])),
+    ] {
+        let mut listener = TraceStep::point("entry_listener", &prefix, None);
+        listener.identity = id;
+        listener.expected = exact;
+        listener.detail = "values".into();
+        steps.push(listener);
+    }
+    for (index, key) in [
+        vec![],
+        vec![0],
+        vec![0, 254],
+        vec![0, 255],
+        vec![0, 255, 1],
+        vec![0, 255, 2],
+    ]
+    .iter()
+    .enumerate()
+    {
+        let mut write = TraceStep::point("set", key, Some(b"v"));
+        write.identity = 21000 + index as u64;
+        steps.push(write);
+    }
+    for id in [20000, 20001, 20002, 20003] {
+        let mut snapshot = TraceStep::point("resync_listener", b"", None);
+        snapshot.identity = id;
+        snapshot.detail = "8".into();
+        snapshot.extra = "1024".into();
+        steps.push(snapshot);
+    }
+    let mut clear = TraceStep::point("clear_detailed", b"", None);
+    clear.identity = 21006;
+    steps.push(clear);
+    for id in [20000, 20001, 20002, 20003] {
+        let mut remove = TraceStep::point("remove_entry_listener", b"", None);
+        remove.identity = id;
+        steps.push(remove);
+    }
+    steps.push(reset);
+    ApiTrace { seed: 117, steps }
 }
 
 pub fn execute_rust(trace: &ApiTrace) -> Result<Vec<String>, DifferentialError> {

@@ -12,13 +12,15 @@ use std::process::Command;
 pub const RUST_VERSIONS: [&str; 2] = ["1.88.0", "1.94.0"];
 pub const JAVA_VERSIONS: [u32; 2] = [17, 21];
 const WORKFLOW: &str = ".github/workflows/imap-075.yml";
-const COMMANDS: [&str; 6] = [
+const COMMANDS: [&str; 8] = [
     "imap-distributed-correctness",
     "imap-capability-audit",
     "imap-migration-dry-run",
     "imap-comparison-check",
     "imap-release-admission",
     "imap-tooling-tests",
+    "imap-semantic-audit",
+    "imap-cluster-chaos",
 ];
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -107,6 +109,7 @@ pub fn run_lane(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     crate::imap_migration_dry_run::run(vec!["--release".into(), "0.75".into()])?;
     crate::imap_qualification_075::comparison_run(vec!["--release".into(), "0.75".into()])?;
     crate::imap_qualification_075::release_run(vec!["--release".into(), "0.75".into()])?;
+    crate::imap_semantic_audit075::run(vec!["--release".into(), "0.75".into()])?;
     let tooling = tooling_command(&root, cfg!(windows)).status()?;
     if !tooling.success() {
         return Err("IMap tooling canaries failed".into());
@@ -114,13 +117,17 @@ pub fn run_lane(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let seeds = seeds_for(lane.shard)?;
     for seed in &seeds {
         crate::imap_api_differential::check_actual_at_root(&root, *seed, 128)?;
+        println!(
+            "{}",
+            crate::imap_cluster_campaign_075::check_at_root(&root, *seed, 3)?
+        );
     }
     if source_state(&root)? != before {
         return Err("source changed during CI lane execution".into());
     }
     let receipt = CiReceipt {
         release: "0.75".into(),
-        receipt_version: 1,
+        receipt_version: 2,
         scope: "local_ci".into(),
         mode: options.mode,
         source_sha: before,
@@ -163,6 +170,12 @@ pub fn tooling_command(root: &Path, windows: bool) -> Command {
             "imap_qualification_075",
             "--test",
             "imap_ci_075",
+            "--test",
+            "imap_semantic_audit075",
+            "--test",
+            "imap_cluster_campaign_075",
+            "--test",
+            "imap_cluster_fuzz_policy075",
             "--locked",
         ])
         .current_dir(root);
@@ -229,6 +242,18 @@ pub fn check_workflow(root: &Path) -> Result<(), Box<dyn Error>> {
     let bytes = read_relative(root, WORKFLOW, MAX_ARTIFACT_BYTES)?;
     let value: serde_yaml::Value = serde_yaml::from_slice(&bytes)?;
     let jobs = &value["jobs"];
+    let actual_jobs = jobs
+        .as_mapping()
+        .ok_or("IMap jobs mapping required")?
+        .keys()
+        .filter_map(serde_yaml::Value::as_str)
+        .collect::<BTreeSet<_>>();
+    if actual_jobs != BTreeSet::from(["plan", "qualification", "complete"])
+        || jobs["plan"]["timeout-minutes"].as_u64() != Some(5)
+        || jobs["complete"]["timeout-minutes"].as_u64() != Some(30)
+    {
+        return Err("IMap CI must retain exactly its three bounded jobs".into());
+    }
     if !value["on"].is_mapping()
         || jobs["plan"]["outputs"]["matrix"].is_null()
         || jobs["qualification"]["strategy"]["fail-fast"] != serde_yaml::Value::Bool(false)
@@ -246,7 +271,9 @@ pub fn check_workflow(root: &Path) -> Result<(), Box<dyn Error>> {
             .as_sequence()
             .ok_or("CI job requires steps")?;
         for step in steps {
-            if step["continue-on-error"] == serde_yaml::Value::Bool(true) {
+            if !step["continue-on-error"].is_null()
+                && step["continue-on-error"] != serde_yaml::Value::Bool(false)
+            {
                 return Err("IMap CI cannot ignore failed steps".into());
             }
             if let Some(action) = step["uses"].as_str() {
@@ -254,10 +281,44 @@ pub fn check_workflow(root: &Path) -> Result<(), Box<dyn Error>> {
                 if !hex(revision, 40) {
                     return Err("IMap CI actions require immutable commit pins".into());
                 }
+                let expected = match name {
+                    "actions/checkout" => "fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09",
+                    "actions/setup-java" => "cf277c60eb25467037889841efdb72551f06f6c3",
+                    "actions/upload-artifact" => "b7c566a772e6b6bfb58ed0dc250532a479d7789f",
+                    "actions/download-artifact" => "37930b1c2abaa49bbe596cd826c3c89aef350131",
+                    _ => return Err("IMap CI action is outside its registered set".into()),
+                };
+                if revision != expected {
+                    return Err("IMap CI action differs from its registered immutable pin".into());
+                }
                 if name == "actions/upload-artifact" {
                     artifact_count += 1;
                     if step["if"].as_str() != Some("always()") {
                         return Err("failure artifacts must upload on failure".into());
+                    }
+                    let with = &step["with"];
+                    let artifact_name =
+                        with["name"].as_str().ok_or("IMap artifact name required")?;
+                    if artifact_name.starts_with("imap075-diagnostics-")
+                        && !with["path"]
+                            .as_str()
+                            .is_some_and(|path| path.contains("target/imap-075/cluster-failures/"))
+                    {
+                        return Err("IMap cluster counterexamples must retain original and minimized failure artifacts".into());
+                    }
+                    if with["retention-days"].as_u64() != Some(14)
+                        || ![
+                            "matrix.rust",
+                            "matrix.java",
+                            "matrix.shard",
+                            "github.sha",
+                            "github.run_id",
+                            "github.run_attempt",
+                        ]
+                        .iter()
+                        .all(|part| artifact_name.contains(part))
+                    {
+                        return Err("IMap artifacts must retain bounded retention and complete lane/source/run identity".into());
                     }
                 }
             }
@@ -266,6 +327,12 @@ pub fn check_workflow(root: &Path) -> Result<(), Box<dyn Error>> {
                 run_text.push('\n');
             }
         }
+    }
+    let plan = jobs["plan"]["steps"]
+        .as_sequence()
+        .ok_or("IMap plan steps required")?;
+    if !plan.iter().any(|step| step["run"].as_str().is_some_and(|run| run.lines().any(|line| line.trim() == "lanes = [{'rust': r, 'java': j, 'shard': s} for r in ['1.88.0', '1.94.0'] for j in [17, 21] for s in (range(4) if mode == 'nightly' else range(1))]"))) {
+        return Err("IMap CI matrix must retain its exact bounded Rust/JVM/shard product".into());
     }
     for required in [
         "1.88.0",
@@ -315,7 +382,7 @@ pub fn validate_receipts(
     for receipt in receipts {
         if !seen.insert(receipt.lane.clone())
             || receipt.release != "0.75"
-            || receipt.receipt_version != 1
+            || receipt.receipt_version != 2
             || receipt.scope != "local_ci"
             || receipt.mode != mode
             || receipt.source_sha != source
@@ -463,7 +530,7 @@ pub fn write_receipt(
         .write_all(&bytes)?;
     Ok(())
 }
-fn source_state(root: &Path) -> Result<String, Box<dyn Error>> {
+pub(crate) fn source_state(root: &Path) -> Result<String, Box<dyn Error>> {
     let output = Command::new("git")
         .args(["rev-parse", "HEAD"])
         .current_dir(root)

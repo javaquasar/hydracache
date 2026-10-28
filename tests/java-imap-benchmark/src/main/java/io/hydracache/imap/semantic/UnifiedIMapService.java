@@ -29,11 +29,13 @@ public final class UnifiedIMapService {
     }
   }
   public record Item(int index, BytesValue key, String kind, Optional<BytesValue> value,
-      OptionalLong version, OptionalLong remainingTtl) {}
+      OptionalLong version, OptionalLong remainingTtl) {
+    public Item { Objects.requireNonNull(key); Objects.requireNonNull(kind); Objects.requireNonNull(value); Objects.requireNonNull(version); Objects.requireNonNull(remainingTtl); }
+  }
   public record Result(String kind, Optional<BytesValue> value, OptionalLong version,
       OptionalLong remainingTtl, List<Item> items, long number, boolean flag,
       Optional<VersionToken> token, Optional<BoundedIMapApi.Cursor> cursor) {
-    public Result { items = List.copyOf(items); }
+    public Result { Objects.requireNonNull(kind); Objects.requireNonNull(value); Objects.requireNonNull(version); Objects.requireNonNull(remainingTtl); Objects.requireNonNull(token); Objects.requireNonNull(cursor); items = List.copyOf(items); }
     public Result(String kind, Optional<BytesValue> value, OptionalLong version,
         OptionalLong remainingTtl, List<Item> items, long number, boolean flag,
         Optional<VersionToken> token) {
@@ -48,8 +50,13 @@ public final class UnifiedIMapService {
   public record Event(String kind, BytesValue key, Optional<BytesValue> oldValue,
       Optional<BytesValue> value, long version, long watermark) {}
   public record ListenerOptions(boolean includeValue, int maxValueBytes, int queueCapacity,
-      Optional<BytesValue> exactKey, Set<String> kinds) {
+      BytesValue keyPrefix, Optional<BytesValue> exactKey, Set<String> kinds) {
+    public ListenerOptions(boolean includeValue, int maxValueBytes, int queueCapacity,
+        Optional<BytesValue> exactKey, Set<String> kinds) {
+      this(includeValue, maxValueBytes, queueCapacity, EMPTY, exactKey, kinds);
+    }
     public ListenerOptions {
+      keyPrefix = Objects.requireNonNull(keyPrefix, "keyPrefix");
       exactKey = Objects.requireNonNull(exactKey, "exactKey");
       kinds = Set.copyOf(kinds);
       if (maxValueBytes < 0 || queueCapacity <= 0) invalid("invalid listener options");
@@ -60,7 +67,7 @@ public final class UnifiedIMapService {
       return new ListenerOptions(false, 0, capacity, Optional.empty(), Set.of());
     }
   }
-  public record OperationStatus(String kind, Optional<Result> result) {}
+  public record OperationStatus(String kind, Optional<Result> result) { public OperationStatus { Objects.requireNonNull(kind); Objects.requireNonNull(result); } }
   /** Logical retained payload bounds, not an estimate of JVM RSS. */
   public record BudgetLimits(long values, long outcomes, long pending, long listeners,
       long streams, long resync, int maxClients, int maxBatch, int expiryWork, long queryBytes) {
@@ -308,6 +315,7 @@ public final class UnifiedIMapService {
     return new ResourceUsage(map.serviceValueOwnerBytes(), map.serviceOutcomeOwnerBytes(),
         map.servicePendingOwnerBytes(), listenerBytes(), streamBytes, resyncBytes);
   }
+  BoundedIMapApi.Bounds semanticBounds() { return bounds; }
   /** Each entry has its own conditional decision; this receipt is not a transaction. */
   public Result versionBulk(VersionAction action, List<VersionInput> input,
       BoundedIMapApi.MutationIdentity identity, long time, long deadline, boolean loseResponse) {
@@ -411,7 +419,7 @@ public final class UnifiedIMapService {
       checkTime(time);
       var entries = new ArrayList<ResyncEntry>(); long bytes = 0;
       for (var entry : map.liveEntries(time)) {
-        if (state.options.exactKey().isPresent() && !state.options.exactKey().orElseThrow().equals(entry.key())) continue;
+        if (!matches(state.options, entry.key())) continue;
         bytes += 32L + entry.key().size() + (state.options.includeValue() ? entry.value().size() : 0);
         entries.add(new ResyncEntry(entry.key(), state.options.includeValue() ? Optional.of(entry.value()) : Optional.empty(),
             entry.version(), entry.expiresAt() == null ? OptionalLong.empty() : OptionalLong.of(entry.expiresAt() - time)));
@@ -491,11 +499,13 @@ public final class UnifiedIMapService {
   public synchronized ListenerHandle registerListener(long id, ListenerOptions options) {
     if (map.isDestroyed()) throw domain(IMapDomainException.Kind.MAP_DESTROYED, "map is destroyed");
     if (id <= 0 || listeners.containsKey(id)) invalid("invalid listener registration");
+    if (options.keyPrefix().size() > bounds.maxKeyBytes()
+        || options.exactKey().map(BytesValue::size).orElse(0) > bounds.maxKeyBytes()) throw domain(IMapDomainException.Kind.INVALID_ARGUMENT, "listener filter bound");
     if (listeners.size() >= bounds.maxEntries() || options.queueCapacity() > bounds.maxPageItems()
         || options.maxValueBytes() > bounds.maxResponseBytes()) {
       throw domain(IMapDomainException.Kind.CAPACITY, "listener capacity");
     }
-    budget(listenerBytes() + 128 + options.exactKey().map(BytesValue::size).orElse(0), limits.listeners());
+    budget(listenerBytes() + 128 + options.keyPrefix().size() + options.exactKey().map(BytesValue::size).orElse(0), limits.listeners());
     listeners.put(id, new ListenerState(options));
     return new ListenerHandle(id);
   }
@@ -522,6 +532,17 @@ public final class UnifiedIMapService {
     ListenerState state = listeners.get(id);
     if (state == null) throw domain(IMapDomainException.Kind.UNKNOWN_LISTENER, "unknown listener");
     state.queue.clear(); state.gap = false; state.deliveryEpoch++;
+  }
+  /** Package-local fault seam for the development semantic manifest, using the real queue. */
+  void signalListenerGap(long id) {
+    synchronized (this) {
+      ListenerState state = listeners.get(id);
+      if (state == null) throw domain(IMapDomainException.Kind.UNKNOWN_LISTENER, "unknown listener");
+      watermark++; state.queue.clear(); state.gap = true;
+      state.queue.add(new Event("gap", EMPTY, Optional.empty(), Optional.empty(), map.revision(), watermark));
+      pendingWake.add(state.wake);
+    }
+    wakeListeners();
   }
 
   public final class ListenerHandle implements AutoCloseable {
@@ -661,7 +682,7 @@ public final class UnifiedIMapService {
       }
       case "entry_listener" -> {
         registerListener(c.listenerId, new ListenerOptions(c.includeValue, bounds.maxValueBytes(),
-            c.limit, Optional.empty(), Set.of()));
+            c.limit, c.key, c.expected, Set.of()));
         yield numbered("listener_added", c.listenerId, true);
       }
       case "remove_entry_listener" -> {
@@ -767,6 +788,7 @@ public final class UnifiedIMapService {
   private void validate(DomainCommand c) { validate(c, false); }
   private void validate(DomainCommand c, boolean stateful) {
     Objects.requireNonNull(c.key); Objects.requireNonNull(c.ttl);
+    if (Set.of("set_ttl", "set_ttl_if_version").contains(c.operation) && c.ttl.kind() == TtlDirective.Kind.PRESERVE) throw domain(IMapDomainException.Kind.INVALID_ARGUMENT, "set TTL requires explicit expiry");
     if (c.key.size() > bounds.maxKeyBytes()) throw domain(IMapDomainException.Kind.KEY_TOO_LARGE, "key bound");
     for (var value : List.of(c.value, c.expected)) {
       if (value.isPresent() && value.orElseThrow().size() > bounds.maxValueBytes()) {
@@ -901,8 +923,7 @@ public final class UnifiedIMapService {
       Optional<BytesValue> value, long version) {
     watermark++;
     for (var state : listeners.values()) {
-      if (state.gap || state.terminal || (state.options.exactKey().isPresent()
-          && !state.options.exactKey().orElseThrow().equals(key))
+      if (state.gap || state.terminal || (!Set.of("cleared", "destroyed").contains(kind) && !matches(state.options, key))
           || (!state.options.kinds().isEmpty() && !state.options.kinds().contains(kind))) continue;
       int bytes = oldValue.map(BytesValue::size).orElse(0) + value.map(BytesValue::size).orElse(0);
       Event event = new Event(kind, key, state.options.includeValue() ? oldValue : Optional.empty(),
@@ -980,8 +1001,14 @@ public final class UnifiedIMapService {
         + event.oldValue().map(BytesValue::size).orElse(0) + event.value().map(BytesValue::size).orElse(0);
   }
   private long listenerBytes() {
-    return listeners.values().stream().mapToLong(state -> 128L + state.options.exactKey().map(BytesValue::size).orElse(0)
+    return listeners.values().stream().mapToLong(state -> 128L + state.options.keyPrefix().size() + state.options.exactKey().map(BytesValue::size).orElse(0)
         + state.queue.stream().mapToLong(UnifiedIMapService::eventBytes).sum()).sum();
+  }
+  private static boolean matches(ListenerOptions options, BytesValue key) {
+    byte[] prefix = options.keyPrefix().copy(), bytes = key.copy();
+    if (prefix.length > bytes.length) return false;
+    for (int index = 0; index < prefix.length; index++) if (prefix[index] != bytes[index]) return false;
+    return options.exactKey().isEmpty() || options.exactKey().orElseThrow().equals(key);
   }
   private static void budget(long actual, long limit) {
     if (actual > limit) throw domain(IMapDomainException.Kind.AGGREGATE_BYTE_BUDGET, "aggregate_byte_budget");

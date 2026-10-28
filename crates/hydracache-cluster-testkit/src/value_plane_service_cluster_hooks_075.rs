@@ -24,6 +24,9 @@ pub struct ServiceReplicaImage {
 }
 
 impl ServiceReplicaImage {
+    pub fn owned_payload_bytes(&self) -> usize {
+        self.lease.bytes
+    }
     pub const fn stamp(&self) -> ReplicaStamp {
         self.stamp
     }
@@ -54,6 +57,21 @@ impl ServiceReplicaImage {
 struct BoundedDebug {
     bytes: Vec<u8>,
     maximum: usize,
+}
+
+struct CountingDebug {
+    bytes: usize,
+    maximum: usize,
+}
+impl fmt::Write for CountingDebug {
+    fn write_str(&mut self, value: &str) -> fmt::Result {
+        let next = self.bytes.checked_add(value.len()).ok_or(fmt::Error)?;
+        if next > self.maximum {
+            return Err(fmt::Error);
+        }
+        self.bytes = next;
+        Ok(())
+    }
 }
 impl fmt::Write for BoundedDebug {
     fn write_str(&mut self, value: &str) -> fmt::Result {
@@ -186,6 +204,12 @@ fn result_bytes(result: &ServiceResult) -> usize {
 }
 
 impl ServiceCommand {
+    pub fn test_transport_size(&self, maximum: usize) -> Result<usize, MapServiceError> {
+        let mut writer = CountingDebug { bytes: 0, maximum };
+        fmt::Write::write_fmt(&mut writer, format_args!("{self:?}"))
+            .map_err(|_| MapServiceError::ResourceBudget("transport_payload"))?;
+        Ok(writer.bytes)
+    }
     pub fn test_transport_payload(&self, maximum: usize) -> Result<Vec<u8>, MapServiceError> {
         let mut writer = BoundedDebug {
             bytes: Vec::new(),
@@ -234,6 +258,114 @@ impl ServiceResult {
 }
 
 impl UnifiedIMapService {
+    pub fn replica_transport_size(&self, maximum: usize) -> Result<usize, MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
+        let mut writer = CountingDebug { bytes: 0, maximum };
+        fmt::Write::write_fmt(
+            &mut writer,
+            format_args!(
+                "{}:{}:{}:{}:{:?}",
+                u64::MAX,
+                state.namespace_generation,
+                u64::MAX,
+                u64::MAX,
+                state.map
+            ),
+        )
+        .map_err(|_| MapServiceError::ResourceBudget("transport_payload"))?;
+        Ok(writer.bytes)
+    }
+
+    pub fn preflight_replica_image(&self) -> Result<usize, MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
+        if state.map.service_pending_count() != 0 {
+            return Err(MapServiceError::ActiveOwners);
+        }
+        if state.resync_leases >= state.map.service_bounds().max_entries {
+            return Err(MapServiceError::Capacity);
+        }
+        let used = lifecycle::usage(&state);
+        let bytes = used
+            .values
+            .checked_add(used.outcomes)
+            .and_then(|n| n.checked_add(256))
+            .ok_or(MapServiceError::Capacity)?;
+        budget(
+            "resync",
+            state.limits.resync_bytes,
+            state
+                .resync_bytes
+                .checked_add(bytes)
+                .ok_or(MapServiceError::Capacity)?,
+        )?;
+        Ok(bytes)
+    }
+    pub fn listener_watermark(&self, id: u64) -> Result<(u64, u64), MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
+        if !state.listeners.contains_key(&id) {
+            return Err(MapServiceError::UnknownListener);
+        }
+        Ok((state.map.service_map_id(), state.watermark))
+    }
+
+    pub fn preflight_listener_resync(
+        &self,
+        id: u64,
+        now: u64,
+        maximum_items: usize,
+        maximum_bytes: usize,
+    ) -> Result<(usize, usize), MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
+        if state.map.is_destroyed() {
+            return Err(CollectionError::MapDestroyed.into());
+        }
+        if now < state.now {
+            return Err(MapServiceError::ClockRegressed);
+        }
+        let listener = state
+            .listeners
+            .get(&id)
+            .ok_or(MapServiceError::UnknownListener)?;
+        if listener.options.include_value
+            && state.map.service_snapshot_value_exceeds(
+                &listener.options.key_prefix,
+                listener.options.exact_key.as_deref(),
+                now,
+                listener.options.max_value_bytes,
+            )
+        {
+            return Err(MapServiceError::ResourceBudget("resync_value_bytes"));
+        }
+        listener
+            .delivery_epoch
+            .checked_add(1)
+            .ok_or(MapServiceError::Capacity)?;
+        if state.resync_leases >= state.map.service_bounds().max_entries {
+            return Err(MapServiceError::Capacity);
+        }
+        let cost = state.map.service_snapshot_cost(
+            &listener.options.key_prefix,
+            listener.options.exact_key.as_deref(),
+            listener.options.include_value,
+            now,
+        );
+        budget("resync_items", maximum_items, cost.0)?;
+        budget("resync", maximum_bytes, cost.1)?;
+        budget(
+            "resync",
+            state.limits.resync_bytes,
+            state
+                .resync_bytes
+                .checked_add(cost.1)
+                .ok_or(MapServiceError::Capacity)?,
+        )?;
+        Ok(cost)
+    }
+
     pub fn validate_request(&self, command: &ServiceCommand) -> Result<(), MapServiceError> {
         let state = self.state.lock().expect("local IMap state poisoned");
         require_namespace(&state)?;
@@ -319,6 +451,9 @@ impl UnifiedIMapService {
     pub fn export_replica_image(&self) -> Result<ServiceReplicaImage, MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
         require_namespace(&state)?;
+        if state.resync_leases >= state.map.service_bounds().max_entries {
+            return Err(MapServiceError::Capacity);
+        }
         if state.map.service_pending_count() != 0 {
             return Err(MapServiceError::ActiveOwners);
         }
@@ -522,6 +657,13 @@ impl UnifiedIMapService {
     }
 
     pub fn fence_namespace(&self) -> Result<(), MapServiceError> {
+        for wake in self.fence_namespace_deferred() {
+            wake.wake();
+        }
+        Ok(())
+    }
+
+    pub fn fence_namespace_deferred(&self) -> Vec<Waker> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
         state.namespace_fenced = true;
         let wakes = state
@@ -529,26 +671,48 @@ impl UnifiedIMapService {
             .values_mut()
             .filter_map(|listener| listener.waker.take())
             .collect::<Vec<_>>();
-        drop(state);
-        for wake in wakes {
-            wake.wake();
-        }
-        Ok(())
+        wakes
     }
 
     /// Auth/trust clocks can make a parked listener ready with an error. Its owner calls
     /// this after releasing registry locks so the consumer can recheck its guard.
     pub fn wake_listener_waiters(&self) {
+        for wake in self.wake_listener_waiters_deferred() {
+            wake.wake();
+        }
+    }
+
+    pub fn wake_listener_waiters_deferred(&self) -> Vec<Waker> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
         let wakes = state
             .listeners
             .values_mut()
             .filter_map(|listener| listener.waker.take())
             .collect::<Vec<_>>();
-        drop(state);
-        for wake in wakes {
-            wake.wake();
+        wakes
+    }
+
+    pub fn cancel_admitted_identity(
+        &self,
+        identity: &MutationIdentity,
+    ) -> Result<bool, MapServiceError> {
+        let mut state = self.state.lock().expect("local IMap state poisoned");
+        if !matches!(
+            state.map.service_lookup(identity, None)?,
+            ServiceRetainedOutcome::Pending
+        ) {
+            return Ok(false);
         }
+        if state.namespace_fenced {
+            state.map.service_abort(identity);
+        } else {
+            require_replication_capacity(&state)?;
+            state.map.service_complete(
+                identity,
+                ServiceResult::new("outcome_unknown").retained_json(),
+            );
+        }
+        Ok(true)
     }
 
     pub fn reclaim_namespace_step(
@@ -633,7 +797,10 @@ impl UnifiedIMapService {
             }
         }
         if command.operation == "entry_listener" {
-            growth = growth.saturating_add(128).saturating_add(command.key.len());
+            growth = growth
+                .saturating_add(128)
+                .saturating_add(command.key.len())
+                .saturating_add(command.expected.as_ref().map_or(0, Vec::len));
         }
         let mutation = mutating(&command.operation);
         let expiry = state.map.service_expiry_pending(command.now);
@@ -693,6 +860,65 @@ impl UnifiedIMapService {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn zero_payload_snapshot_leases_and_negotiated_value_bounds_are_finite() {
+        let service = UnifiedIMapService::new(
+            CollectionBounds {
+                max_entries: 1,
+                ..CollectionBounds::default()
+            },
+            1,
+        )
+        .unwrap();
+        let listener = service
+            .register_listener(ServiceListenerOptions::default())
+            .unwrap();
+        let snapshot = service.resync_listener(listener.id(), 0, 1, 1).unwrap();
+        assert_eq!(service.namespace_owners().resync_leases, 1);
+        assert_eq!(service.resource_usage().resync, 0);
+        assert_eq!(
+            service.resync_listener(listener.id(), 0, 1, 1).unwrap_err(),
+            MapServiceError::Capacity
+        );
+        assert_eq!(
+            service.export_replica_image().unwrap_err(),
+            MapServiceError::Capacity
+        );
+        drop(snapshot);
+        let image = service.export_replica_image().unwrap();
+        assert_eq!(
+            service.export_replica_image().unwrap_err(),
+            MapServiceError::Capacity
+        );
+        drop(image);
+        assert_eq!(service.namespace_owners().resync_leases, 0);
+        let service = UnifiedIMapService::new(CollectionBounds::default(), 1).unwrap();
+        let mut command = ServiceCommand::point("put", b"a");
+        command.value = Some(b"large".to_vec());
+        command.identity = Some(MutationIdentity::new("resync-bound", 1));
+        service.execute(command).unwrap();
+        let listener = service
+            .register_listener(ServiceListenerOptions {
+                include_value: true,
+                max_value_bytes: 1,
+                ..ServiceListenerOptions::default()
+            })
+            .unwrap();
+        assert_eq!(
+            service
+                .preflight_listener_resync(listener.id(), 0, 1, 1_024)
+                .unwrap_err(),
+            MapServiceError::ResourceBudget("resync_value_bytes")
+        );
+        assert_eq!(
+            service
+                .resync_listener(listener.id(), 0, 1, 1_024)
+                .unwrap_err(),
+            MapServiceError::ResourceBudget("resync_value_bytes")
+        );
+        assert_eq!(service.namespace_owners().resync_leases, 0);
+    }
 
     #[test]
     fn waiter_notifications_release_the_mutex_and_preserve_domain_state() {

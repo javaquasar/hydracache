@@ -164,7 +164,8 @@ pub(super) fn listener_bytes(state: &ServiceState) -> usize {
     state.listeners.values().fold(0usize, |sum, listener| {
         listener.queue.iter().fold(
             sum.saturating_add(128)
-                .saturating_add(listener.options.key_prefix.len()),
+                .saturating_add(listener.options.key_prefix.len())
+                .saturating_add(listener.options.exact_key.as_ref().map_or(0, Vec::len)),
             |sum, event| sum.saturating_add(event_bytes(event)),
         )
     })
@@ -524,6 +525,9 @@ impl UnifiedIMapService {
     ) -> Result<ListenerSnapshot, MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
         require_namespace(&state)?;
+        if state.resync_leases >= state.map.service_bounds().max_entries {
+            return Err(MapServiceError::Capacity);
+        }
         if state.map.is_destroyed() {
             return Err(CollectionError::MapDestroyed.into());
         }
@@ -540,6 +544,16 @@ impl UnifiedIMapService {
             .ok_or(MapServiceError::UnknownListener)?
             .options
             .clone();
+        if options.include_value
+            && state.map.service_snapshot_value_exceeds(
+                &options.key_prefix,
+                options.exact_key.as_deref(),
+                now,
+                options.max_value_bytes,
+            )
+        {
+            return Err(MapServiceError::ResourceBudget("resync_value_bytes"));
+        }
         let next_epoch = state.listeners[&id]
             .delivery_epoch
             .checked_add(1)
@@ -548,10 +562,12 @@ impl UnifiedIMapService {
             return Err(MapServiceError::ClockRegressed);
         }
         // Check size before advancing expiry or clearing a sticky gap.
-        let (count, bytes) =
-            state
-                .map
-                .service_snapshot_cost(&options.key_prefix, options.include_value, now);
+        let (count, bytes) = state.map.service_snapshot_cost(
+            &options.key_prefix,
+            options.exact_key.as_deref(),
+            options.include_value,
+            now,
+        );
         budget("resync_items", max_items, count)?;
         budget("resync", max_bytes, bytes)?;
         budget(
@@ -562,7 +578,12 @@ impl UnifiedIMapService {
         advance(&mut state, now)?;
         let entries = state
             .map
-            .service_filtered_snapshot(&options.key_prefix, options.include_value, now)
+            .service_filtered_snapshot(
+                &options.key_prefix,
+                options.exact_key.as_deref(),
+                options.include_value,
+                now,
+            )
             .into_iter()
             .map(|(key, view)| ServiceEntry {
                 key,

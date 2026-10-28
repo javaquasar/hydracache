@@ -77,7 +77,15 @@
       "imap_ci_matrix",
       "migration_dry_run",
       "comparison_policy_validation",
-      "release_admission_validation"
+      "release_admission_validation",
+      "cluster_registry_backend",
+      "authenticated_member_invocation",
+      "cluster_subscription_coordinator",
+      "runtime_online_transfer",
+      "cluster_partition_admission",
+      "actual_cluster_history_chaos",
+      "cluster_health_and_drain",
+      "unified_semantic_compatibility"
     ],
     "deferred": [
       "production_backend_and_partition_ownership",

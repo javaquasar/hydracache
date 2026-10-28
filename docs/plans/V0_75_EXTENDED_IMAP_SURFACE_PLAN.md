@@ -220,6 +220,14 @@ evidence.
 
 ### Provisional safe-foundation progress
 
+The next integration tranche joins authenticated registry/admission to the actual test cluster,
+adds member-envelope guards, per-partition subscriptions and online snapshot/decision-image
+transfer, separates data/safety/repair resource lanes, and derives runtime readiness/drain from
+real owners. Actual-cluster staged histories, counterexample shrinking and a hostile/fuzz corpus
+extend the independent proofs. Rust/Java prefix/exact filters, typed preconditions and the common
+Java semantic SPI now use the actual unified owner. These remain local/runtime foundations;
+none closes the production D4-D16 gates or supplies process/network/durable qualification.
+
 As of 2026-10-28, branch `feat/0.75-distributed-imap-foundation` contains only work that is
 independent of the unfinished 0.74 production shape:
 

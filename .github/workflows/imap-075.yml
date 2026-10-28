@@ -19,6 +19,7 @@ concurrency:
 jobs:
   plan:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
       mode: ${{ steps.matrix.outputs.mode }}
@@ -62,19 +63,20 @@ jobs:
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         if: always()
         with:
-          name: imap075-receipt-${{ matrix.rust }}-${{ matrix.java }}-${{ matrix.shard }}
+          name: imap075-receipt-${{ matrix.rust }}-${{ matrix.java }}-${{ matrix.shard }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 14
           if-no-files-found: warn
           path: target/imap-075/ci/ci-receipt-*.json
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         if: always()
         with:
-          name: imap075-diagnostics-${{ matrix.rust }}-${{ matrix.java }}-${{ matrix.shard }}
+          name: imap075-diagnostics-${{ matrix.rust }}-${{ matrix.java }}-${{ matrix.shard }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 14
           if-no-files-found: error
           path: |
             target/imap-075/ci/
             target/imap-075/differential-failures/
+            target/imap-075/cluster-failures/
             tests/java-imap-benchmark/target/surefire-reports/
             tests/java-imap-benchmark/target/site/jacoco/
   complete:

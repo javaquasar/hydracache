@@ -158,6 +158,15 @@ struct ApiExtensions {
     local_service: LocalServiceContract,
     local_lifecycle: LocalLifecycleContract,
     release_preparation: ReleasePreparationContract,
+    cluster_integration: ClusterIntegrationContract,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ClusterIntegrationContract {
+    scope: String,
+    properties: BTreeMap<String, String>,
+    test_ids: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -680,6 +689,14 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         "migration_dry_run",
         "comparison_policy_validation",
         "release_admission_validation",
+        "cluster_registry_backend",
+        "authenticated_member_invocation",
+        "cluster_subscription_coordinator",
+        "runtime_online_transfer",
+        "cluster_partition_admission",
+        "actual_cluster_history_chaos",
+        "cluster_health_and_drain",
+        "unified_semantic_compatibility",
     ] {
         if !implemented.contains(required) {
             problems.push(format!(
@@ -784,6 +801,14 @@ fn validate_test_registry(
         operations
             .api_extensions
             .release_preparation
+            .test_ids
+            .iter()
+            .map(String::as_str),
+    );
+    claimed.extend(
+        operations
+            .api_extensions
+            .cluster_integration
             .test_ids
             .iter()
             .map(String::as_str),
@@ -1065,7 +1090,72 @@ fn validate_operations(
     validate_local_service(&contract.api_extensions.local_service, problems);
     validate_local_lifecycle(&contract.api_extensions.local_lifecycle, problems);
     validate_release_preparation(&contract.api_extensions.release_preparation, problems);
+    validate_cluster_integration(&contract.api_extensions.cluster_integration, problems);
     operation_ids
+}
+
+fn validate_cluster_integration(contract: &ClusterIntegrationContract, problems: &mut Vec<String>) {
+    let expected = [
+        (
+            "registry",
+            "same_authenticated_registry_to_cluster_owner_path",
+        ),
+        (
+            "authentication",
+            "validated_request_replica_and_ack_binding",
+        ),
+        (
+            "listeners",
+            "actual_owner_queues_partition_cut_vectors_and_gap_before_continuation",
+        ),
+        (
+            "transfer",
+            "bounded_runtime_snapshot_and_decision_image_deltas",
+        ),
+        (
+            "admission",
+            "bounded_tenant_partition_key_and_three_lane_permits",
+        ),
+        (
+            "history",
+            "actual_service_stages_checked_by_independent_history_oracle",
+        ),
+        ("health", "actual_owner_proof_transfer_and_drain_readiness"),
+        (
+            "semantics",
+            "actual_unified_owner_adapter_and_explicit_signature_divergences",
+        ),
+    ]
+    .into_iter()
+    .map(|(key, value)| (key.to_owned(), value.to_owned()))
+    .collect::<BTreeMap<_, _>>();
+    if contract.scope != "testkit_actual_owners" || contract.properties != expected {
+        problems.push(
+            "IMap cluster integration must retain every actual-owner boundary and local scope"
+                .into(),
+        );
+    }
+    let expected = [
+        "imap075::integrated_registry::owners",
+        "imap075::member_envelope::binding",
+        "imap075::cluster_subscription::progress",
+        "imap075::online_transfer::decisions",
+        "imap075::partition_admission::lanes",
+        "imap075::actual_cluster_history::oracle",
+        "imap075::runtime_health::drain",
+        "imap075::semantic_compatibility::owner",
+    ]
+    .into_iter()
+    .collect::<BTreeSet<_>>();
+    let actual = contract
+        .test_ids
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    if actual != expected || actual.len() != contract.test_ids.len() {
+        problems
+            .push("IMap cluster integration must name all eight unique executable proofs".into());
+    }
 }
 
 fn validate_release_preparation(contract: &ReleasePreparationContract, problems: &mut Vec<String>) {

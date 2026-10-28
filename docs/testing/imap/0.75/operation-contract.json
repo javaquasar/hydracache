@@ -17,6 +17,20 @@
       {"id":"cursor_iterator_adapters","cancellation":"stop_fetching_and_release_buffer","test_ids":["imap075::iterator_rust::lazy_stale_cursor","imap075::iterator_java::lazy_stale_cursor"]}
     ],
     "unsupported_families": ["remote_entry_processor","remote_predicate","remote_interceptor","distributed_transaction","unbounded_scan"],
+    "cluster_integration": {
+      "scope":"testkit_actual_owners",
+      "properties": {
+        "registry":"same_authenticated_registry_to_cluster_owner_path",
+        "authentication":"validated_request_replica_and_ack_binding",
+        "listeners":"actual_owner_queues_partition_cut_vectors_and_gap_before_continuation",
+        "transfer":"bounded_runtime_snapshot_and_decision_image_deltas",
+        "admission":"bounded_tenant_partition_key_and_three_lane_permits",
+        "history":"actual_service_stages_checked_by_independent_history_oracle",
+        "health":"actual_owner_proof_transfer_and_drain_readiness",
+        "semantics":"actual_unified_owner_adapter_and_explicit_signature_divergences"
+      },
+      "test_ids":["imap075::integrated_registry::owners","imap075::member_envelope::binding","imap075::cluster_subscription::progress","imap075::online_transfer::decisions","imap075::partition_admission::lanes","imap075::actual_cluster_history::oracle","imap075::runtime_health::drain","imap075::semantic_compatibility::owner"]
+    },
     "release_preparation": {
       "cluster_value_owner": "actual_unified_imap_service",
       "replication": "owner_decision_and_receipt_without_command_reexecution",
