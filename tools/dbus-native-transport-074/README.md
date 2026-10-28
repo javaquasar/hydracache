@@ -91,6 +91,10 @@ explicit nondefault native fixture factory and modified-backport provenance.
 The recipe's selected_features remain the production selection; the private
 consumer additionally selects hc074-unix-fixture in its separate test manifest.
 Four source/negative/export controls pass. The export is unsigned and unpublished.
+Readable unified diffs are retained as exact data: their blank context lines
+contain the required leading space. Local attributes disable Git's diff-of-diff
+whitespace interpretation for these artifacts; source checks and hashed recipe/
+archive verification stay strict. No diff body or original source is normalized.
 
 `consumer_prepare.py prepare` creates consumer2/native-a7 from the actual exported
 archives, excluding the predecessor's loose fd/source tree. Only two cfg-test
