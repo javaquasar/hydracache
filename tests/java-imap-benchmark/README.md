@@ -21,6 +21,23 @@ The module currently provides:
 - a covered `BoundedIMapApi` reference for exact local `size`/`isEmpty`, bounded resumable value
   lookup, revision-fenced paged collection views, clear-versus-evict receipts, and terminal destroy
   behavior.
+- point extensions for defaults, byte-exact entry checks, void set and value/version/TTL entry
+  views; identity-retaining timed put/remove; bounded explicit replacements; and listener removal;
+- an async reference facade returning `CompletionStage` with injectable execution, logical
+  deadlines and phase-aware cancellation; lazy revision-fenced page iterators; and a capability
+  descriptor whose production capability remains disabled.
+
+The added API is exercised directly by `ExtendedIMapApiTest` and `AsyncIMapFacadeTest`. These
+reference helpers are distinct from the retained `imap-semantic-v1` manifest grammar: the manifest
+does not silently accept every method name on the helper. Explicit bulk replacements return
+request-order item receipts and are still not distributed transactions. No callback or Java
+function is executed on a member.
+
+`replaceAllDetailed` preserves each existing entry's expiry. It admits at most 256 explicit
+replacements under aggregate request/response byte bounds; the identity-retaining variant returns
+the same receipt on replay and rejects conflicting identities or exhausted retained-outcome
+capacity. Descriptor operation names denote planned surface semantics, while production capability
+remains disabled.
 
 ## Blocked by 0.74
 

@@ -25,7 +25,7 @@ final class BoundedIMapApiTest {
     assertFalse(first.complete());
     assertEquals(2, first.items().size());
     var second = map.scan(
-        BoundedIMapApi.Projection.ENTRIES, first.nextCursor(), 2, 0);
+        BoundedIMapApi.Projection.KEYS, first.nextCursor(), 2, 0);
     assertTrue(second.complete());
     assertEquals(1, second.items().size());
     var values = map.scan(BoundedIMapApi.Projection.VALUES, Optional.empty(), 2, 0);
@@ -33,8 +33,9 @@ final class BoundedIMapApiTest {
 
     var incomplete = map.containsValue(bytes("ff"), Optional.empty(), 2, 0);
     assertEquals(BoundedIMapApi.Match.INCOMPLETE, incomplete.match());
+    var matching = map.containsValue(bytes("33"), Optional.empty(), 2, 0);
     assertEquals(BoundedIMapApi.Match.PRESENT,
-        map.containsValue(bytes("33"), incomplete.nextCursor(), 2, 0).match());
+        map.containsValue(bytes("33"), matching.nextCursor(), 2, 0).match());
     assertEquals(BoundedIMapApi.Match.ABSENT,
         map.containsValue(bytes("ff"), incomplete.nextCursor(), 2, 0).match());
 

@@ -67,3 +67,25 @@ fn subscription_bounds_duplicates_and_stale_generations_fail_loud() {
         Err(SubscriptionError::StaleGeneration)
     );
 }
+
+#[test]
+fn listener_removal_releases_every_owner() {
+    let mut hub = FilteredSubscriptionHub::new(1, 4).unwrap();
+    hub.subscribe(1, filter(b"", &[]), [(0, 1, 0), (1, 1, 0)])
+        .unwrap();
+    hub.publish(event(0, 1, 1, b"a")).unwrap();
+    hub.publish(event(1, 1, 1, b"b")).unwrap();
+    assert_eq!(hub.retained_owners(), (1, 2, 2));
+    let receipt = hub.remove_entry_listener(1);
+    assert!(receipt.removed);
+    assert_eq!(receipt.released_events, 2);
+    assert_eq!(receipt.released_partition_cursors, 2);
+    assert_eq!(hub.retained_owners(), (0, 0, 0));
+    assert_eq!(hub.publish(event(0, 1, 2, b"c")), Ok(0));
+    let repeated = hub.remove_entry_listener(1);
+    assert!(!repeated.removed);
+    assert_eq!(repeated.released_events, 0);
+    assert_eq!(repeated.released_partition_cursors, 0);
+    hub.subscribe(2, filter(b"", &[]), [(0, 1, 2)]).unwrap();
+    assert_eq!(hub.retained_owners(), (1, 1, 0));
+}

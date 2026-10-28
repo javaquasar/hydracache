@@ -46,7 +46,14 @@
       "extended_component_receipts",
       "exact_resource_cleanup_ledger",
       "test_only_loopback_fault_transport",
-      "bounded_collection_and_lifecycle_api"
+      "bounded_collection_and_lifecycle_api",
+      "extended_point_and_timed_api",
+      "explicit_replacement_api",
+      "listener_removal_api",
+      "rust_async_facade",
+      "java_async_facade",
+      "cursor_iterator_adapters",
+      "capability_descriptor"
     ],
     "deferred": [
       "production_backend_and_partition_ownership",

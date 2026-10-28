@@ -56,6 +56,13 @@ pub enum SubscriptionError {
     InvalidRepair,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ListenerRemovalReceipt {
+    pub removed: bool,
+    pub released_events: usize,
+    pub released_partition_cursors: usize,
+}
+
 impl fmt::Display for SubscriptionError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(formatter, "{self:?}")
@@ -144,6 +151,36 @@ impl FilteredSubscriptionHub {
             .remove(&id)
             .map(|subscriber| subscriber.backlog.len())
             .ok_or(SubscriptionError::UnknownSubscription)
+    }
+
+    /// Missing IDs return an explicit no-op, making repeated listener removal safe.
+    pub fn remove_entry_listener(&mut self, id: u64) -> ListenerRemovalReceipt {
+        match self.subscribers.remove(&id) {
+            Some(subscriber) => ListenerRemovalReceipt {
+                removed: true,
+                released_events: subscriber.backlog.len(),
+                released_partition_cursors: subscriber.cursors.len(),
+            },
+            None => ListenerRemovalReceipt {
+                removed: false,
+                released_events: 0,
+                released_partition_cursors: 0,
+            },
+        }
+    }
+
+    pub fn retained_owners(&self) -> (usize, usize, usize) {
+        (
+            self.subscribers.len(),
+            self.subscribers
+                .values()
+                .map(|subscriber| subscriber.cursors.len())
+                .sum(),
+            self.subscribers
+                .values()
+                .map(|subscriber| subscriber.backlog.len())
+                .sum(),
+        )
     }
 
     pub fn publish(&mut self, event: FilteredEvent) -> Result<usize, SubscriptionError> {

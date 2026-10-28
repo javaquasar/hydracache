@@ -144,11 +144,7 @@ fn canary_missing_surface_cell_fails_closed() {
 
 #[test]
 fn collection_surface_matrix_is_explicit_and_fail_closed() {
-    let contract: Value = serde_json::from_slice(
-        &fs::read(root().join("docs/testing/imap/0.75/surface-equivalence.json")).unwrap(),
-    )
-    .unwrap();
-    let operations = [
+    assert_surface_matrix(&[
         "size",
         "is_empty",
         "contains_value_bounded",
@@ -159,14 +155,36 @@ fn collection_surface_matrix_is_explicit_and_fail_closed() {
         "key_set_page",
         "values_page",
         "entry_set_page",
-    ];
+    ]);
+}
+
+#[test]
+fn extended_surface_matrix_is_explicit_and_fail_closed() {
+    assert_surface_matrix(&[
+        "get_or_default",
+        "contains_entry",
+        "set",
+        "get_entry_view",
+        "try_put",
+        "try_remove",
+        "replace_all_detailed",
+        "remove_entry_listener",
+        "capability_descriptor",
+    ]);
+}
+
+fn assert_surface_matrix(operations: &[&str]) {
+    let contract: Value = serde_json::from_slice(
+        &fs::read(root().join("docs/testing/imap/0.75/surface-equivalence.json")).unwrap(),
+    )
+    .unwrap();
     for surface in contract["surfaces"].as_array().unwrap() {
         let id = surface["id"].as_str().unwrap();
         let cells = surface["cells"].as_array().unwrap();
         for operation in operations {
             let matches = cells
                 .iter()
-                .filter(|cell| cell["operation"] == operation)
+                .filter(|cell| cell["operation"] == *operation)
                 .collect::<Vec<_>>();
             assert_eq!(matches.len(), 1, "{id}:{operation}");
             let cell = matches[0];
@@ -195,6 +213,197 @@ fn canary_missing_mutation_stage_fails_closed() {
     assert!(problems(&temp)
         .iter()
         .any(|problem| problem.contains("mutation stages missing required id")));
+}
+
+#[test]
+fn canary_timed_api_requires_all_certainties_and_retained_identity() {
+    let temp = fixture();
+    edit(&temp.path().join("operation-contract.json"), |value| {
+        value["api_extensions"]["deadline_outcomes"] =
+            serde_json::json!(["applied", "not_applied"]);
+        for operation in value["operations"].as_array_mut().unwrap() {
+            if operation["id"] == "try_put" {
+                operation["retry_class"] = Value::String("new_identity_allowed".into());
+            }
+        }
+    });
+    let errors = problems(&temp);
+    assert!(errors.iter().any(|problem| problem
+        .contains("deadline certainty outcomes missing required id outcome_unknown")));
+    assert!(errors
+        .iter()
+        .any(|problem| problem.contains("timed operation try_put must retain certainty")));
+}
+
+#[test]
+fn canary_replacement_callbacks_and_unbounded_work_are_rejected() {
+    let temp = fixture();
+    edit(&temp.path().join("operation-contract.json"), |value| {
+        value["api_extensions"]["replacement_mode"] = Value::String("remote_callback".into());
+        for operation in value["operations"].as_array_mut().unwrap() {
+            if operation["id"] == "replace_all_detailed" {
+                operation["bound_ids"] = serde_json::json!(["response_bytes"]);
+                operation["ttl_policy"] = serde_json::json!(["eternal", "expire_after"]);
+                operation["errors"] = serde_json::json!(["invalid_argument"]);
+                operation["retry_class"] = serde_json::json!("new_identity_allowed");
+            }
+        }
+    });
+    let errors = problems(&temp);
+    assert!(errors
+        .iter()
+        .any(|problem| problem.contains("replacement mode must be explicit_bounded_entries")));
+    assert!(errors
+        .iter()
+        .any(|problem| problem
+            .contains("replace_all_detailed must bound explicit replacement entries")));
+    assert!(errors
+        .iter()
+        .any(|problem| problem.contains("replace_all_detailed must preserve existing expiry")));
+    assert!(errors.iter().any(|problem| problem.contains(
+        "replace_all_detailed must expose retained-identity conflict and capacity errors"
+    )));
+    assert!(errors.iter().any(|problem| problem.contains(
+        "replace_all_detailed must retry the unchanged request with the retained identity"
+    )));
+}
+
+#[test]
+fn canary_bulk_replacement_requires_each_aggregate_and_replay_bound() {
+    for missing in [
+        "request_entries",
+        "request_bytes",
+        "response_bytes",
+        "dedup_entries_per_tenant",
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |value| {
+            let operation = value["operations"]
+                .as_array_mut()
+                .unwrap()
+                .iter_mut()
+                .find(|operation| operation["id"] == "replace_all_detailed")
+                .unwrap();
+            operation["bound_ids"]
+                .as_array_mut()
+                .unwrap()
+                .retain(|bound| bound != missing);
+        });
+        assert!(problems(&temp).iter().any(|problem| problem.contains(
+            "replace_all_detailed must bound explicit replacement entries, bytes and retained outcomes"
+        )), "missing {missing}");
+    }
+}
+
+#[test]
+fn canary_async_capabilities_cannot_enable_production_or_hide_cancellation() {
+    let temp = fixture();
+    edit(&temp.path().join("operation-contract.json"), |value| {
+        value["api_extensions"]["production_enabled"] = Value::Bool(true);
+        value["api_extensions"]["interface_features"][0]["cancellation"] =
+            Value::String("always_not_applied".into());
+        value["api_extensions"]["interface_features"][1]["test_ids"] = serde_json::json!([]);
+        value["api_extensions"]["unsupported_families"] = serde_json::json!([]);
+    });
+    let errors = problems(&temp);
+    assert!(errors
+        .iter()
+        .any(|problem| problem.contains("production capability must remain disabled")));
+    assert!(errors
+        .iter()
+        .any(|problem| problem.contains("unsafe cancellation semantics")));
+    assert!(errors
+        .iter()
+        .any(|problem| problem.contains("java_async_facade has a missing test id")));
+    assert!(errors
+        .iter()
+        .any(|problem| problem
+            .contains("API unsupported families missing required id unbounded_scan")));
+}
+
+#[test]
+fn canary_entry_view_and_interface_metadata_are_required() {
+    let temp = fixture();
+    edit(&temp.path().join("operation-contract.json"), |value| {
+        value["api_extensions"]["entry_view_fields"] =
+            serde_json::json!(["value", "version", "last_access_timestamp"]);
+        value["api_extensions"]["interface_features"] = serde_json::json!([]);
+    });
+    let errors = problems(&temp);
+    assert!(errors
+        .iter()
+        .any(|problem| problem.contains("entry view must contain only")));
+    assert!(errors
+        .iter()
+        .any(|problem| problem
+            .contains("API interface features missing required id rust_async_facade")));
+
+    edit(&temp.path().join("operation-contract.json"), |value| {
+        value.as_object_mut().unwrap().remove("api_extensions");
+    });
+    assert!(xtask::imap_contract::check_contract_dir(temp.path()).is_err());
+}
+
+#[test]
+fn canary_extension_identity_clock_and_duplicate_features_are_rejected() {
+    for (field, wrong, expected) in [
+        ("deadline_clock", "wall_clock", "deadline clock"),
+        ("mutation_identity", "optional", "timed mutation identity"),
+        (
+            "retry_after_admission",
+            "new_identity_allowed",
+            "retry after admission",
+        ),
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |value| {
+            value["api_extensions"][field] = Value::String(wrong.into());
+        });
+        assert!(problems(&temp)
+            .iter()
+            .any(|problem| problem.contains(expected)));
+    }
+    let temp = fixture();
+    edit(&temp.path().join("operation-contract.json"), |value| {
+        let duplicate = value["api_extensions"]["interface_features"][0].clone();
+        value["api_extensions"]["interface_features"]
+            .as_array_mut()
+            .unwrap()
+            .push(duplicate);
+        value["api_extensions"]["interface_features"][2]["cancellation"] =
+            Value::String("silently_restart".into());
+    });
+    let errors = problems(&temp);
+    assert!(errors
+        .iter()
+        .any(|problem| problem.contains("duplicate API interface feature rust_async_facade")));
+    assert!(errors
+        .iter()
+        .any(|problem| problem
+            .contains("cursor_iterator_adapters has unsafe cancellation semantics")));
+}
+
+#[test]
+fn canary_timed_remove_cannot_drop_unknown_outcomes_or_dedup_bound() {
+    for field in ["outcomes", "bound_ids"] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |value| {
+            let operation = value["operations"]
+                .as_array_mut()
+                .unwrap()
+                .iter_mut()
+                .find(|operation| operation["id"] == "try_remove")
+                .unwrap();
+            operation[field] = if field == "outcomes" {
+                serde_json::json!(["applied", "not_applied"])
+            } else {
+                serde_json::json!(["key_bytes", "request_bytes"])
+            };
+        });
+        assert!(problems(&temp)
+            .iter()
+            .any(|problem| problem.contains("timed operation try_remove must retain certainty")));
+    }
 }
 
 #[test]

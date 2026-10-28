@@ -37,7 +37,16 @@
         {"operation":"evict_all_detailed","disposition":"unsupported","unsupported_error":"ERR unsupported detailed collection mutation","test_id":"imap075::collection_surface::resp_evict_all_unsupported"},
         {"operation":"key_set_page","disposition":"unsupported","unsupported_error":"ERR unsupported bounded map collection operation","test_id":"imap075::collection_surface::resp_key_set_page_unsupported"},
         {"operation":"values_page","disposition":"unsupported","unsupported_error":"ERR unsupported bounded map collection operation","test_id":"imap075::collection_surface::resp_values_page_unsupported"},
-        {"operation":"entry_set_page","disposition":"unsupported","unsupported_error":"ERR unsupported bounded map collection operation","test_id":"imap075::collection_surface::resp_entry_set_page_unsupported"}
+        {"operation":"entry_set_page","disposition":"unsupported","unsupported_error":"ERR unsupported bounded map collection operation","test_id":"imap075::collection_surface::resp_entry_set_page_unsupported"},
+        {"operation":"get_or_default","disposition":"unsupported","unsupported_error":"ERR unsupported extended map API","test_id":"imap075::extension_surface::resp_get_or_default_unsupported"},
+        {"operation":"contains_entry","disposition":"unsupported","unsupported_error":"ERR unsupported extended map API","test_id":"imap075::extension_surface::resp_contains_entry_unsupported"},
+        {"operation":"set","disposition":"unsupported","unsupported_error":"ERR unsupported extended map API","test_id":"imap075::extension_surface::resp_set_unsupported"},
+        {"operation":"get_entry_view","disposition":"unsupported","unsupported_error":"ERR unsupported extended map API","test_id":"imap075::extension_surface::resp_get_entry_view_unsupported"},
+        {"operation":"try_put","disposition":"unsupported","unsupported_error":"ERR unsupported extended map API","test_id":"imap075::extension_surface::resp_try_put_unsupported"},
+        {"operation":"try_remove","disposition":"unsupported","unsupported_error":"ERR unsupported extended map API","test_id":"imap075::extension_surface::resp_try_remove_unsupported"},
+        {"operation":"replace_all_detailed","disposition":"unsupported","unsupported_error":"ERR unsupported extended map API","test_id":"imap075::extension_surface::resp_replace_all_detailed_unsupported"},
+        {"operation":"remove_entry_listener","disposition":"unsupported","unsupported_error":"ERR unsupported extended map API","test_id":"imap075::extension_surface::resp_remove_entry_listener_unsupported"},
+        {"operation":"capability_descriptor","disposition":"unsupported","unsupported_error":"ERR unsupported extended map API","test_id":"imap075::extension_surface::resp_capability_descriptor_unsupported"}
       ]
     },
     {
@@ -74,7 +83,16 @@
         {"operation":"evict_all_detailed","disposition":"unsupported","unsupported_error":"unsupported_operation","test_id":"imap075::collection_surface::hc1_evict_all_unsupported"},
         {"operation":"key_set_page","disposition":"unsupported","unsupported_error":"unsupported_operation","test_id":"imap075::collection_surface::hc1_key_set_page_unsupported"},
         {"operation":"values_page","disposition":"unsupported","unsupported_error":"unsupported_operation","test_id":"imap075::collection_surface::hc1_values_page_unsupported"},
-        {"operation":"entry_set_page","disposition":"unsupported","unsupported_error":"unsupported_operation","test_id":"imap075::collection_surface::hc1_entry_set_page_unsupported"}
+        {"operation":"entry_set_page","disposition":"unsupported","unsupported_error":"unsupported_operation","test_id":"imap075::collection_surface::hc1_entry_set_page_unsupported"},
+        {"operation":"get_or_default","disposition":"unsupported","unsupported_error":"unsupported_operation","test_id":"imap075::extension_surface::hc1_get_or_default_unsupported"},
+        {"operation":"contains_entry","disposition":"unsupported","unsupported_error":"unsupported_operation","test_id":"imap075::extension_surface::hc1_contains_entry_unsupported"},
+        {"operation":"set","disposition":"unsupported","unsupported_error":"unsupported_operation","test_id":"imap075::extension_surface::hc1_set_unsupported"},
+        {"operation":"get_entry_view","disposition":"unsupported","unsupported_error":"unsupported_operation","test_id":"imap075::extension_surface::hc1_get_entry_view_unsupported"},
+        {"operation":"try_put","disposition":"unsupported","unsupported_error":"unsupported_operation","test_id":"imap075::extension_surface::hc1_try_put_unsupported"},
+        {"operation":"try_remove","disposition":"unsupported","unsupported_error":"unsupported_operation","test_id":"imap075::extension_surface::hc1_try_remove_unsupported"},
+        {"operation":"replace_all_detailed","disposition":"unsupported","unsupported_error":"unsupported_operation","test_id":"imap075::extension_surface::hc1_replace_all_detailed_unsupported"},
+        {"operation":"remove_entry_listener","disposition":"unsupported","unsupported_error":"unsupported_operation","test_id":"imap075::extension_surface::hc1_remove_entry_listener_unsupported"},
+        {"operation":"capability_descriptor","disposition":"unsupported","unsupported_error":"unsupported_operation","test_id":"imap075::extension_surface::hc1_capability_descriptor_unsupported"}
       ]
     },
     {
@@ -111,7 +129,16 @@
         {"operation":"evict_all_detailed","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::hc2_rust_evict_all"},
         {"operation":"key_set_page","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::hc2_rust_key_set_page"},
         {"operation":"values_page","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::hc2_rust_values_page"},
-        {"operation":"entry_set_page","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::hc2_rust_entry_set_page"}
+        {"operation":"entry_set_page","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::hc2_rust_entry_set_page"},
+        {"operation":"get_or_default","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_rust_get_or_default"},
+        {"operation":"contains_entry","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_rust_contains_entry"},
+        {"operation":"set","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_rust_set"},
+        {"operation":"get_entry_view","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_rust_get_entry_view"},
+        {"operation":"try_put","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_rust_try_put"},
+        {"operation":"try_remove","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_rust_try_remove"},
+        {"operation":"replace_all_detailed","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_rust_replace_all_detailed"},
+        {"operation":"remove_entry_listener","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_rust_remove_entry_listener"},
+        {"operation":"capability_descriptor","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_rust_capability_descriptor"}
       ]
     },
     {
@@ -148,7 +175,16 @@
         {"operation":"evict_all_detailed","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::hc2_java_evict_all"},
         {"operation":"key_set_page","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::hc2_java_key_set_page"},
         {"operation":"values_page","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::hc2_java_values_page"},
-        {"operation":"entry_set_page","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::hc2_java_entry_set_page"}
+        {"operation":"entry_set_page","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::hc2_java_entry_set_page"},
+        {"operation":"get_or_default","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_java_get_or_default"},
+        {"operation":"contains_entry","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_java_contains_entry"},
+        {"operation":"set","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_java_set"},
+        {"operation":"get_entry_view","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_java_get_entry_view"},
+        {"operation":"try_put","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_java_try_put"},
+        {"operation":"try_remove","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_java_try_remove"},
+        {"operation":"replace_all_detailed","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_java_replace_all_detailed"},
+        {"operation":"remove_entry_listener","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_java_remove_entry_listener"},
+        {"operation":"capability_descriptor","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::hc2_java_capability_descriptor"}
       ]
     },
     {
@@ -185,7 +221,16 @@
         {"operation":"evict_all_detailed","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::facade_evict_all"},
         {"operation":"key_set_page","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::facade_key_set_page"},
         {"operation":"values_page","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::facade_values_page"},
-        {"operation":"entry_set_page","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::facade_entry_set_page"}
+        {"operation":"entry_set_page","disposition":"enabled","unsupported_error":null,"test_id":"imap075::collection_surface::facade_entry_set_page"},
+        {"operation":"get_or_default","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::facade_get_or_default"},
+        {"operation":"contains_entry","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::facade_contains_entry"},
+        {"operation":"set","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::facade_set"},
+        {"operation":"get_entry_view","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::facade_get_entry_view"},
+        {"operation":"try_put","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::facade_try_put"},
+        {"operation":"try_remove","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::facade_try_remove"},
+        {"operation":"replace_all_detailed","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::facade_replace_all_detailed"},
+        {"operation":"remove_entry_listener","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::facade_remove_entry_listener"},
+        {"operation":"capability_descriptor","disposition":"enabled","unsupported_error":null,"test_id":"imap075::extension_surface::facade_capability_descriptor"}
       ]
     }
   ]

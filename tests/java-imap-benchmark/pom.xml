@@ -73,6 +73,8 @@
                   <element>CLASS</element>
                   <includes>
                     <include>io.hydracache.imap.semantic.BoundedIMapApi*</include>
+                    <include>io.hydracache.imap.semantic.AsyncIMapFacade*</include>
+                    <include>io.hydracache.imap.semantic.IMapCapabilityDescriptor*</include>
                   </includes>
                   <limits>
                     <limit>

@@ -192,6 +192,12 @@ frozen policy; it never blocks a mutation.
 - A composite benchmark score, universal “faster than Hazelcast” claim, or comparison that gives
   one product weaker replication, persistence, TLS, listener, Near Cache, or correctness work.
 
+The provisional local reference API may model bounded collection views, clear/destroy and their
+convenience adapters while production admission remains deferred. A reference operation in
+`operation-contract.json` or an enabled cell in the provisional surface matrix describes its
+planned projection; it is not evidence of a production endpoint or release capability. Collection
+production work still requires the separate threat/cost model and W0 decision described above.
+
 ## Work-item sequence
 
 ```text
@@ -242,6 +248,9 @@ independent of the unfinished 0.74 production shape:
 - a bounded collection/lifecycle API model for size/empty checks, resumable contains-value scans,
   clear/destroy/eviction and revision-fenced paged key/value/entry views, mirrored by a covered Java
   reference without allocating production cursor or protocol identity;
+- twelve local API extensions: read defaults, entry equality, void set, bounded entry views,
+  identity-aware deadline put/remove, explicit bounded replacements, listener removal, Rust and
+  Java asynchronous facades, lazy cursor iterators and programmatic capability descriptors;
 - a bounded Rust/Java reference canonical-key codec and checked-in UTF-8/empty-key golden vectors;
   the production wire identity and partition hash deliberately remain unassigned.
 

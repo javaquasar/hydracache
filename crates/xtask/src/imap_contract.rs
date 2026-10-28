@@ -19,7 +19,7 @@ const MUTATION_STAGES: [&str; 10] = [
     "responded",
     "outcome_unknown",
 ];
-const REQUIRED_OPERATIONS: [&str; 26] = [
+const REQUIRED_OPERATIONS: [&str; 35] = [
     "get",
     "put",
     "delete",
@@ -46,6 +46,15 @@ const REQUIRED_OPERATIONS: [&str; 26] = [
     "key_set_page",
     "values_page",
     "entry_set_page",
+    "get_or_default",
+    "contains_entry",
+    "set",
+    "get_entry_view",
+    "try_put",
+    "try_remove",
+    "replace_all_detailed",
+    "remove_entry_listener",
+    "capability_descriptor",
 ];
 const FAILURE_SCENARIOS: [&str; 9] = [
     "ready_owner",
@@ -126,6 +135,29 @@ struct OperationContract {
     errors: Vec<ErrorContract>,
     ttl_directives: Vec<TtlContract>,
     operations: Vec<Operation>,
+    api_extensions: ApiExtensions,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ApiExtensions {
+    deadline_outcomes: Vec<String>,
+    deadline_clock: String,
+    mutation_identity: String,
+    retry_after_admission: String,
+    replacement_mode: String,
+    entry_view_fields: Vec<String>,
+    production_enabled: bool,
+    interface_features: Vec<InterfaceFeature>,
+    unsupported_families: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct InterfaceFeature {
+    id: String,
+    cancellation: String,
+    test_ids: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -555,6 +587,13 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         "exact_resource_cleanup_ledger",
         "test_only_loopback_fault_transport",
         "bounded_collection_and_lifecycle_api",
+        "extended_point_and_timed_api",
+        "explicit_replacement_api",
+        "listener_removal_api",
+        "rust_async_facade",
+        "java_async_facade",
+        "cursor_iterator_adapters",
+        "capability_descriptor",
     ] {
         if !implemented.contains(required) {
             problems.push(format!(
@@ -628,6 +667,13 @@ fn validate_test_registry(
     claimed.extend(
         operations
             .operations
+            .iter()
+            .flat_map(|item| item.test_ids.iter().map(String::as_str)),
+    );
+    claimed.extend(
+        operations
+            .api_extensions
+            .interface_features
             .iter()
             .flat_map(|item| item.test_ids.iter().map(String::as_str)),
     );
@@ -790,6 +836,12 @@ fn validate_operations(
         "cleared",
         "evicted",
         "destroyed",
+        "applied",
+        "not_applied",
+        "outcome_unknown",
+        "entry_view",
+        "listener_removed",
+        "capabilities",
     ];
     let outcomes: BTreeSet<_> = contract.result_outcomes.iter().cloned().collect();
     require_exact_ids("result outcomes", &outcomes, required_outcomes, problems);
@@ -883,7 +935,160 @@ fn validate_operations(
         }
     }
     require_exact_ids("operations", &operation_ids, REQUIRED_OPERATIONS, problems);
+    validate_api_extensions(contract, problems);
     operation_ids
+}
+
+fn validate_api_extensions(contract: &OperationContract, problems: &mut Vec<String>) {
+    let extension = &contract.api_extensions;
+    let outcomes = extension.deadline_outcomes.iter().cloned().collect();
+    require_exact_ids(
+        "deadline certainty outcomes",
+        &outcomes,
+        ["applied", "not_applied", "outcome_unknown"],
+        problems,
+    );
+    for (label, actual, expected) in [
+        (
+            "deadline clock",
+            extension.deadline_clock.as_str(),
+            "logical_time",
+        ),
+        (
+            "timed mutation identity",
+            extension.mutation_identity.as_str(),
+            "required_for_timed_mutations",
+        ),
+        (
+            "retry after admission",
+            extension.retry_after_admission.as_str(),
+            "same_retained_identity_only",
+        ),
+        (
+            "replacement mode",
+            extension.replacement_mode.as_str(),
+            "explicit_bounded_entries",
+        ),
+    ] {
+        if actual != expected {
+            problems.push(format!("API extension {label} must be {expected}"));
+        }
+    }
+    if extension.production_enabled {
+        problems.push("API extension production capability must remain disabled".into());
+    }
+    let fields = extension
+        .entry_view_fields
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    if fields != BTreeSet::from(["value", "version", "remaining_ttl"]) {
+        problems.push("entry view must contain only value, version and remaining_ttl".into());
+    }
+    let mut features = BTreeSet::new();
+    for feature in &extension.interface_features {
+        if !features.insert(feature.id.clone()) {
+            problems.push(format!("duplicate API interface feature {}", feature.id));
+        }
+        let expected = if feature.id == "cursor_iterator_adapters" {
+            "stop_fetching_and_release_buffer"
+        } else {
+            "before_admission_not_applied_after_admission_outcome_unknown"
+        };
+        if feature.cancellation != expected {
+            problems.push(format!(
+                "API interface feature {} has unsafe cancellation semantics",
+                feature.id
+            ));
+        }
+        if feature.test_ids.is_empty() || feature.test_ids.iter().any(|id| id.trim().is_empty()) {
+            problems.push(format!(
+                "API interface feature {} has a missing test id",
+                feature.id
+            ));
+        }
+    }
+    require_exact_ids(
+        "API interface features",
+        &features,
+        [
+            "rust_async_facade",
+            "java_async_facade",
+            "cursor_iterator_adapters",
+        ],
+        problems,
+    );
+    let unsupported = extension.unsupported_families.iter().cloned().collect();
+    require_exact_ids(
+        "API unsupported families",
+        &unsupported,
+        [
+            "remote_entry_processor",
+            "remote_predicate",
+            "remote_interceptor",
+            "distributed_transaction",
+            "unbounded_scan",
+        ],
+        problems,
+    );
+    for operation in contract
+        .operations
+        .iter()
+        .filter(|operation| matches!(operation.id.as_str(), "try_put" | "try_remove"))
+    {
+        if operation.retry_class != "same_retained_identity_only"
+            || !["applied", "not_applied", "outcome_unknown"]
+                .iter()
+                .all(|outcome| operation.outcomes.iter().any(|actual| actual == outcome))
+            || !operation
+                .bound_ids
+                .iter()
+                .any(|bound| bound == "dedup_entries_per_tenant")
+        {
+            problems.push(format!(
+                "timed operation {} must retain certainty, identity and dedup bounds",
+                operation.id
+            ));
+        }
+    }
+    if let Some(operation) = contract
+        .operations
+        .iter()
+        .find(|operation| operation.id == "replace_all_detailed")
+    {
+        if ![
+            "request_entries",
+            "request_bytes",
+            "response_bytes",
+            "dedup_entries_per_tenant",
+        ]
+        .iter()
+        .all(|required| operation.bound_ids.iter().any(|bound| bound == required))
+        {
+            problems.push("replace_all_detailed must bound explicit replacement entries, bytes and retained outcomes".into());
+        }
+        if operation.ttl_policy != ["preserve"] {
+            problems.push("replace_all_detailed must preserve existing expiry".into());
+        }
+        if ![
+            "mutation_identity_conflict",
+            "idempotency_capacity_exhausted",
+        ]
+        .iter()
+        .all(|required| operation.errors.iter().any(|error| error == required))
+        {
+            problems.push(
+                "replace_all_detailed must expose retained-identity conflict and capacity errors"
+                    .into(),
+            );
+        }
+        if operation.retry_class != "same_retained_identity_only" {
+            problems.push(
+                "replace_all_detailed must retry the unchanged request with the retained identity"
+                    .into(),
+            );
+        }
+    }
 }
 
 fn validate_surfaces(

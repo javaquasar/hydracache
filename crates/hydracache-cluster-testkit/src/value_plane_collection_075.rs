@@ -2,8 +2,15 @@
 //!
 //! The model deliberately owns no production cursor, wire, durable, or partition identity.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::fmt;
+use std::sync::atomic::{AtomicU64, Ordering};
+
+use sha2::{Digest, Sha256};
+
+use crate::value_plane_model_075::MutationIdentity;
+
+static NEXT_MAP_ID: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CollectionBounds {
@@ -64,6 +71,8 @@ pub struct ScanItem {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ScanCursor {
+    map_id: u64,
+    purpose: [u8; 32],
     revision: u64,
     offset: usize,
 }
@@ -107,10 +116,143 @@ pub struct RemovalReceipt {
     pub revision: u64,
 }
 
+/// One atomic observation of a live entry; TTL is relative to the supplied logical time.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EntryView {
+    pub value: Vec<u8>,
+    pub version: u64,
+    pub remaining_ttl: Option<u64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TimedMutationOptions {
+    pub now: u64,
+    pub deadline: u64,
+    pub cancelled: bool,
+    /// Deterministic response-loss checkpoint after application; retries retain their identity.
+    pub lose_response: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TimedRejection {
+    Deadline,
+    Cancelled,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TimedMutationOutcome {
+    Applied { changed: bool, version: Option<u64> },
+    NotApplied(TimedRejection),
+    OutcomeUnknown,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReplacementEntry {
+    pub key: Vec<u8>,
+    pub value: Vec<u8>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReplacementReceipt {
+    pub input_index: usize,
+    pub key: Vec<u8>,
+    pub replaced: bool,
+    pub version: Option<u64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum PointCommand {
+    Put {
+        key: Vec<u8>,
+        value: Vec<u8>,
+        expires_at: Option<u64>,
+    },
+    Remove {
+        key: Vec<u8>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum RetainedCommand {
+    Point(PointCommand),
+    ReplaceAll(Vec<ReplacementEntry>),
+}
+
+#[derive(Debug, Clone)]
+enum RetainedOutcome {
+    Point(TimedMutationOutcome),
+    Replacements(Vec<ReplacementReceipt>),
+}
+
+/// Pulls at most one bounded page at a time, including revision validation for buffered items.
+#[derive(Debug)]
+pub struct CollectionCursorIterator {
+    projection: ScanProjection,
+    page_items: usize,
+    map_id: u64,
+    revision: u64,
+    cursor: Option<ScanCursor>,
+    buffered: VecDeque<ScanItem>,
+    complete: bool,
+    failed: bool,
+}
+
+impl CollectionCursorIterator {
+    pub fn next(
+        &mut self,
+        map: &mut ReferenceCollectionMap,
+        now: u64,
+    ) -> Option<Result<ScanItem, CollectionError>> {
+        if self.failed {
+            return None;
+        }
+        let result = self.next_item(map, now);
+        match result {
+            Ok(item) => item.map(Ok),
+            Err(error) => {
+                self.failed = true;
+                self.buffered.clear();
+                Some(Err(error))
+            }
+        }
+    }
+
+    fn next_item(
+        &mut self,
+        map: &mut ReferenceCollectionMap,
+        now: u64,
+    ) -> Result<Option<ScanItem>, CollectionError> {
+        map.require_active()?;
+        map.purge_expired(now)?;
+        if self.map_id != map.map_id {
+            return Err(CollectionError::CursorMismatch);
+        }
+        if self.revision != map.revision {
+            return Err(CollectionError::CursorStale {
+                cursor_revision: self.revision,
+                current_revision: map.revision,
+            });
+        }
+        if self.buffered.is_empty() && !self.complete {
+            let page = map.scan(self.projection, self.cursor, self.page_items, now)?;
+            self.cursor = page.next_cursor;
+            self.complete = page.complete;
+            self.buffered = page.items.into();
+        }
+        Ok(self.buffered.pop_front())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CollectionError {
     InvalidBound(&'static str),
     InvalidExpiry,
+    InvalidMutationIdentity,
+    MutationIdentityConflict,
+    DuplicateKey,
+    CursorMismatch,
+    VersionExhausted,
+    MapIdentityExhausted,
     BoundExceeded {
         bound: &'static str,
         limit: usize,
@@ -135,14 +277,17 @@ impl std::error::Error for CollectionError {}
 struct StoredValue {
     value: Vec<u8>,
     expires_at: Option<u64>,
+    version: u64,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct ReferenceCollectionMap {
     bounds: CollectionBounds,
     entries: BTreeMap<Vec<u8>, StoredValue>,
     revision: u64,
     destroyed: bool,
+    map_id: u64,
+    retained: BTreeMap<MutationIdentity, (RetainedCommand, RetainedOutcome)>,
 }
 
 impl ReferenceCollectionMap {
@@ -152,6 +297,8 @@ impl ReferenceCollectionMap {
             entries: BTreeMap::new(),
             revision: 1,
             destroyed: false,
+            map_id: allocate_map_id(&NEXT_MAP_ID)?,
+            retained: BTreeMap::new(),
         })
     }
 
@@ -161,6 +308,10 @@ impl ReferenceCollectionMap {
 
     pub const fn is_destroyed(&self) -> bool {
         self.destroyed
+    }
+
+    pub fn retained_mutation_count(&self) -> usize {
+        self.retained.len()
     }
 
     pub fn put(
@@ -176,22 +327,428 @@ impl ReferenceCollectionMap {
         if expires_at.is_some_and(|deadline| deadline <= now) {
             return Err(CollectionError::InvalidExpiry);
         }
-        self.purge_expired(now);
-        if !self.entries.contains_key(&key) {
+        let live_entries = self.live_count(now);
+        let key_is_live = self
+            .entries
+            .get(&key)
+            .is_some_and(|stored| is_live(stored, now));
+        self.check_bound(
+            "entries",
+            self.bounds.max_entries,
+            live_entries + usize::from(!key_is_live),
+        )?;
+        self.reserve_revisions(u64::from(self.has_expired(now)) + 1)?;
+        self.purge_expired(now)?;
+        self.bump_revision()?;
+        self.entries.insert(
+            key,
+            StoredValue {
+                value,
+                expires_at,
+                version: self.revision,
+            },
+        );
+        Ok(())
+    }
+
+    pub fn get_or_default(
+        &mut self,
+        key: &[u8],
+        default: &[u8],
+        now: u64,
+    ) -> Result<Vec<u8>, CollectionError> {
+        self.check_bound("value_bytes", self.bounds.max_value_bytes, default.len())?;
+        match self.get_entry_view(key, now)? {
+            Some(view) => Ok(view.value),
+            None => {
+                self.check_bound(
+                    "response_bytes",
+                    self.bounds.max_response_bytes,
+                    default.len(),
+                )?;
+                Ok(default.to_vec())
+            }
+        }
+    }
+
+    pub fn contains_entry(
+        &mut self,
+        key: &[u8],
+        value: &[u8],
+        now: u64,
+    ) -> Result<bool, CollectionError> {
+        self.require_active()?;
+        self.check_bound("key_bytes", self.bounds.max_key_bytes, key.len())?;
+        self.check_bound("value_bytes", self.bounds.max_value_bytes, value.len())?;
+        self.purge_expired(now)?;
+        Ok(self
+            .entries
+            .get(key)
+            .is_some_and(|stored| stored.value == value))
+    }
+
+    pub fn set(
+        &mut self,
+        key: Vec<u8>,
+        value: Vec<u8>,
+        expires_at: Option<u64>,
+        now: u64,
+    ) -> Result<(), CollectionError> {
+        self.put(key, value, expires_at, now)
+    }
+
+    pub fn get_entry_view(
+        &mut self,
+        key: &[u8],
+        now: u64,
+    ) -> Result<Option<EntryView>, CollectionError> {
+        self.require_active()?;
+        self.check_bound("key_bytes", self.bounds.max_key_bytes, key.len())?;
+        self.purge_expired(now)?;
+        if let Some(stored) = self.entries.get(key) {
             self.check_bound(
-                "entries",
-                self.bounds.max_entries,
-                self.entries.len().saturating_add(1),
+                "response_bytes",
+                self.bounds.max_response_bytes,
+                stored.value.len(),
             )?;
         }
-        self.entries.insert(key, StoredValue { value, expires_at });
-        self.bump_revision();
+        Ok(self.entries.get(key).map(|stored| EntryView {
+            value: stored.value.clone(),
+            version: stored.version,
+            remaining_ttl: stored.expires_at.map(|deadline| deadline - now),
+        }))
+    }
+
+    pub fn try_put(
+        &mut self,
+        identity: MutationIdentity,
+        key: Vec<u8>,
+        value: Vec<u8>,
+        expires_at: Option<u64>,
+        options: TimedMutationOptions,
+    ) -> Result<TimedMutationOutcome, CollectionError> {
+        let command = PointCommand::Put {
+            key,
+            value,
+            expires_at,
+        };
+        self.execute_timed(identity, command, options)
+    }
+
+    pub fn try_remove(
+        &mut self,
+        identity: MutationIdentity,
+        key: &[u8],
+        options: TimedMutationOptions,
+    ) -> Result<TimedMutationOutcome, CollectionError> {
+        self.require_active()?;
+        self.check_bound("key_bytes", self.bounds.max_key_bytes, key.len())?;
+        self.execute_timed(
+            identity,
+            PointCommand::Remove { key: key.to_vec() },
+            options,
+        )
+    }
+
+    /// Recover a retained point result without dispatching new work or consulting a deadline.
+    pub fn recover_timed_put(
+        &self,
+        identity: &MutationIdentity,
+        key: &[u8],
+        value: &[u8],
+        expires_at: Option<u64>,
+    ) -> Result<Option<TimedMutationOutcome>, CollectionError> {
+        self.require_active()?;
+        self.validate_mutation_identity(identity)?;
+        self.check_bound("key_bytes", self.bounds.max_key_bytes, key.len())?;
+        self.check_bound("value_bytes", self.bounds.max_value_bytes, value.len())?;
+        match self.retained.get(identity) {
+            None => Ok(None),
+            Some((
+                RetainedCommand::Point(PointCommand::Put {
+                    key: retained_key,
+                    value: retained_value,
+                    expires_at: retained_expiry,
+                }),
+                RetainedOutcome::Point(outcome),
+            )) if retained_key == key
+                && retained_value == value
+                && retained_expiry == &expires_at =>
+            {
+                Ok(Some(outcome.clone()))
+            }
+            _ => Err(CollectionError::MutationIdentityConflict),
+        }
+    }
+
+    pub fn recover_timed_remove(
+        &self,
+        identity: &MutationIdentity,
+        key: &[u8],
+    ) -> Result<Option<TimedMutationOutcome>, CollectionError> {
+        self.require_active()?;
+        self.validate_mutation_identity(identity)?;
+        self.check_bound("key_bytes", self.bounds.max_key_bytes, key.len())?;
+        match self.retained.get(identity) {
+            None => Ok(None),
+            Some((
+                RetainedCommand::Point(PointCommand::Remove { key: retained_key }),
+                RetainedOutcome::Point(outcome),
+            )) if retained_key == key => Ok(Some(outcome.clone())),
+            _ => Err(CollectionError::MutationIdentityConflict),
+        }
+    }
+
+    pub fn recover_replacements(
+        &self,
+        identity: &MutationIdentity,
+        replacements: &[ReplacementEntry],
+    ) -> Result<Option<Vec<ReplacementReceipt>>, CollectionError> {
+        self.require_active()?;
+        self.validate_mutation_identity(identity)?;
+        self.validate_replacements(replacements)?;
+        match self.retained.get(identity) {
+            None => Ok(None),
+            Some((
+                RetainedCommand::ReplaceAll(retained_entries),
+                RetainedOutcome::Replacements(receipts),
+            )) if retained_entries == replacements => Ok(Some(receipts.clone())),
+            _ => Err(CollectionError::MutationIdentityConflict),
+        }
+    }
+
+    fn execute_timed(
+        &mut self,
+        identity: MutationIdentity,
+        command: PointCommand,
+        options: TimedMutationOptions,
+    ) -> Result<TimedMutationOutcome, CollectionError> {
+        self.require_active()?;
+        self.validate_mutation_identity(&identity)?;
+        match &command {
+            PointCommand::Put { key, value, .. } => {
+                self.check_bound("key_bytes", self.bounds.max_key_bytes, key.len())?;
+                self.check_bound("value_bytes", self.bounds.max_value_bytes, value.len())?;
+            }
+            PointCommand::Remove { key } => {
+                self.check_bound("key_bytes", self.bounds.max_key_bytes, key.len())?;
+            }
+        }
+        let proposed_command = RetainedCommand::Point(command.clone());
+        if let Some((retained_command, outcome)) = self.retained.get(&identity) {
+            return match outcome {
+                RetainedOutcome::Point(outcome) if retained_command == &proposed_command => {
+                    Ok(outcome.clone())
+                }
+                _ => Err(CollectionError::MutationIdentityConflict),
+            };
+        }
+        if options.cancelled {
+            return Ok(TimedMutationOutcome::NotApplied(TimedRejection::Cancelled));
+        }
+        if options.now >= options.deadline {
+            return Ok(TimedMutationOutcome::NotApplied(TimedRejection::Deadline));
+        }
+        self.check_bound(
+            "retained_mutations",
+            self.bounds.max_entries,
+            self.retained.len().saturating_add(1),
+        )?;
+        let outcome = match &command {
+            PointCommand::Put {
+                key,
+                value,
+                expires_at,
+            } => {
+                self.put(key.clone(), value.clone(), *expires_at, options.now)?;
+                TimedMutationOutcome::Applied {
+                    changed: true,
+                    version: Some(self.revision),
+                }
+            }
+            PointCommand::Remove { key } => {
+                let changed = self.evict(key, options.now)?;
+                TimedMutationOutcome::Applied {
+                    changed,
+                    version: changed.then_some(self.revision),
+                }
+            }
+        };
+        self.retained.insert(
+            identity,
+            (proposed_command, RetainedOutcome::Point(outcome.clone())),
+        );
+        Ok(if options.lose_response {
+            TimedMutationOutcome::OutcomeUnknown
+        } else {
+            outcome
+        })
+    }
+
+    pub fn replace_all_detailed_idempotent(
+        &mut self,
+        identity: MutationIdentity,
+        replacements: &[ReplacementEntry],
+        now: u64,
+    ) -> Result<Vec<ReplacementReceipt>, CollectionError> {
+        self.require_active()?;
+        self.validate_mutation_identity(&identity)?;
+        self.validate_replacements(replacements)?;
+        let command = RetainedCommand::ReplaceAll(replacements.to_vec());
+        if let Some((retained_command, outcome)) = self.retained.get(&identity) {
+            return match outcome {
+                RetainedOutcome::Replacements(receipts) if retained_command == &command => {
+                    Ok(receipts.clone())
+                }
+                _ => Err(CollectionError::MutationIdentityConflict),
+            };
+        }
+        self.check_bound(
+            "retained_mutations",
+            self.bounds.max_entries,
+            self.retained.len().saturating_add(1),
+        )?;
+        let receipts = self.replace_all_detailed(replacements, now)?;
+        self.retained.insert(
+            identity,
+            (command, RetainedOutcome::Replacements(receipts.clone())),
+        );
+        Ok(receipts)
+    }
+
+    fn validate_mutation_identity(
+        &self,
+        identity: &MutationIdentity,
+    ) -> Result<(), CollectionError> {
+        if identity.client.trim().is_empty() || identity.sequence == 0 {
+            return Err(CollectionError::InvalidMutationIdentity);
+        }
+        self.check_bound("client_identity_bytes", 128, identity.client.len())
+    }
+
+    /// Explicit-key nontransactional replacement; this local model preflights all inputs.
+    pub fn replace_all_detailed(
+        &mut self,
+        replacements: &[ReplacementEntry],
+        now: u64,
+    ) -> Result<Vec<ReplacementReceipt>, CollectionError> {
+        self.require_active()?;
+        self.validate_replacements(replacements)?;
+        let replacements_live = replacements
+            .iter()
+            .filter(|replacement| {
+                self.entries
+                    .get(&replacement.key)
+                    .is_some_and(|stored| is_live(stored, now))
+            })
+            .count();
+        self.reserve_revisions(u64::from(self.has_expired(now)) + replacements_live as u64)?;
+        self.purge_expired(now)?;
+        let mut receipts = Vec::with_capacity(replacements.len());
+        for (input_index, replacement) in replacements.iter().enumerate() {
+            let expiry = self
+                .entries
+                .get(&replacement.key)
+                .map(|stored| stored.expires_at);
+            let version = if let Some(expires_at) = expiry {
+                self.put(
+                    replacement.key.clone(),
+                    replacement.value.clone(),
+                    expires_at,
+                    now,
+                )?;
+                Some(self.revision)
+            } else {
+                None
+            };
+            receipts.push(ReplacementReceipt {
+                input_index,
+                key: replacement.key.clone(),
+                replaced: version.is_some(),
+                version,
+            });
+        }
+        Ok(receipts)
+    }
+
+    fn validate_replacements(
+        &self,
+        replacements: &[ReplacementEntry],
+    ) -> Result<(), CollectionError> {
+        if replacements.is_empty() {
+            return Err(CollectionError::BoundExceeded {
+                bound: "bulk_mutation_items",
+                limit: self.bounds.max_bulk_mutation_items.min(256),
+                actual: 0,
+            });
+        }
+        self.check_bound(
+            "bulk_mutation_items",
+            self.bounds.max_bulk_mutation_items.min(256),
+            replacements.len(),
+        )?;
+        let mut seen = BTreeSet::new();
+        let mut response_bytes = 0_usize;
+        let mut request_bytes = 0_usize;
+        for replacement in replacements {
+            self.check_bound(
+                "key_bytes",
+                self.bounds.max_key_bytes,
+                replacement.key.len(),
+            )?;
+            self.check_bound(
+                "value_bytes",
+                self.bounds.max_value_bytes,
+                replacement.value.len(),
+            )?;
+            if !seen.insert(&replacement.key) {
+                return Err(CollectionError::DuplicateKey);
+            }
+            // Conservative domain accounting; no protocol or durable envelope is assigned.
+            request_bytes = request_bytes
+                .saturating_add(8)
+                .saturating_add(replacement.key.len())
+                .saturating_add(replacement.value.len());
+            self.check_bound("request_bytes", 8 * 1_024 * 1_024, request_bytes)?;
+            response_bytes = response_bytes
+                .saturating_add(17)
+                .saturating_add(replacement.key.len());
+            self.check_bound(
+                "response_bytes",
+                self.bounds.max_response_bytes,
+                response_bytes,
+            )?;
+        }
         Ok(())
+    }
+
+    pub fn iterator(
+        &mut self,
+        projection: ScanProjection,
+        page_items: usize,
+        now: u64,
+    ) -> Result<CollectionCursorIterator, CollectionError> {
+        self.require_active()?;
+        if page_items == 0 {
+            return Err(CollectionError::InvalidBound("page_items"));
+        }
+        self.check_bound("page_items", self.bounds.max_page_items, page_items)?;
+        self.purge_expired(now)?;
+        Ok(CollectionCursorIterator {
+            projection,
+            page_items,
+            map_id: self.map_id,
+            revision: self.revision,
+            cursor: None,
+            buffered: VecDeque::new(),
+            complete: false,
+            failed: false,
+        })
     }
 
     pub fn size(&mut self, now: u64) -> Result<usize, CollectionError> {
         self.require_active()?;
-        self.purge_expired(now);
+        self.purge_expired(now)?;
         Ok(self.entries.len())
     }
 
@@ -216,8 +773,9 @@ impl ReferenceCollectionMap {
             });
         }
         self.check_bound("scan_items", self.bounds.max_scan_items, scan_budget)?;
-        self.purge_expired(now);
-        let offset = self.cursor_offset(cursor)?;
+        self.purge_expired(now)?;
+        let purpose = search_purpose(value);
+        let offset = self.cursor_offset(cursor, purpose)?;
         for stored in self.entries.values().skip(offset).take(scan_budget) {
             if stored.value == value {
                 return Ok(BoundedMatch::Present);
@@ -228,6 +786,8 @@ impl ReferenceCollectionMap {
             Ok(BoundedMatch::Absent)
         } else {
             Ok(BoundedMatch::Incomplete(ScanCursor {
+                map_id: self.map_id,
+                purpose,
                 revision: self.revision,
                 offset: next_offset,
             }))
@@ -250,8 +810,9 @@ impl ReferenceCollectionMap {
             });
         }
         self.check_bound("page_items", self.bounds.max_page_items, page_items)?;
-        self.purge_expired(now);
-        let offset = self.cursor_offset(cursor)?;
+        self.purge_expired(now)?;
+        let purpose = projection_purpose(projection);
+        let offset = self.cursor_offset(cursor, purpose)?;
         let mut items = Vec::with_capacity(page_items.min(self.entries.len()));
         let mut response_bytes = 0_usize;
         let mut consumed = 0_usize;
@@ -288,6 +849,8 @@ impl ReferenceCollectionMap {
         Ok(ScanPage {
             items,
             next_cursor: (!complete).then_some(ScanCursor {
+                map_id: self.map_id,
+                purpose,
                 revision: self.revision,
                 offset: next_offset,
             }),
@@ -299,10 +862,15 @@ impl ReferenceCollectionMap {
     pub fn evict(&mut self, key: &[u8], now: u64) -> Result<bool, CollectionError> {
         self.require_active()?;
         self.check_bound("key_bytes", self.bounds.max_key_bytes, key.len())?;
-        self.purge_expired(now);
-        let removed = self.entries.remove(key).is_some();
+        let removed = self
+            .entries
+            .get(key)
+            .is_some_and(|stored| is_live(stored, now));
+        self.reserve_revisions(u64::from(self.has_expired(now)) + u64::from(removed))?;
+        self.purge_expired(now)?;
         if removed {
-            self.bump_revision();
+            self.bump_revision()?;
+            self.entries.remove(key);
         }
         Ok(removed)
     }
@@ -316,12 +884,21 @@ impl ReferenceCollectionMap {
     }
 
     pub fn destroy(&mut self, now: u64) -> Result<RemovalReceipt, CollectionError> {
-        let receipt = self.remove_all(RemovalCause::Destroy, now)?;
+        self.require_active()?;
+        let removed = self.live_count(now);
+        self.check_bound(
+            "bulk_mutation_items",
+            self.bounds.max_bulk_mutation_items,
+            removed,
+        )?;
+        self.bump_revision()?;
+        self.entries.clear();
+        self.retained.clear();
         self.destroyed = true;
-        self.bump_revision();
         Ok(RemovalReceipt {
+            cause: RemovalCause::Destroy,
+            removed,
             revision: self.revision,
-            ..receipt
         })
     }
 
@@ -331,16 +908,17 @@ impl ReferenceCollectionMap {
         now: u64,
     ) -> Result<RemovalReceipt, CollectionError> {
         self.require_active()?;
-        self.purge_expired(now);
+        let removed = self.live_count(now);
         self.check_bound(
             "bulk_mutation_items",
             self.bounds.max_bulk_mutation_items,
-            self.entries.len(),
+            removed,
         )?;
-        let removed = self.entries.len();
+        self.reserve_revisions(u64::from(self.has_expired(now)) + u64::from(removed > 0))?;
+        self.purge_expired(now)?;
         if removed > 0 {
+            self.bump_revision()?;
             self.entries.clear();
-            self.bump_revision();
         }
         Ok(RemovalReceipt {
             cause,
@@ -349,10 +927,17 @@ impl ReferenceCollectionMap {
         })
     }
 
-    fn cursor_offset(&self, cursor: Option<ScanCursor>) -> Result<usize, CollectionError> {
+    fn cursor_offset(
+        &self,
+        cursor: Option<ScanCursor>,
+        purpose: [u8; 32],
+    ) -> Result<usize, CollectionError> {
         let Some(cursor) = cursor else {
             return Ok(0);
         };
+        if cursor.map_id != self.map_id || cursor.purpose != purpose {
+            return Err(CollectionError::CursorMismatch);
+        }
         if cursor.revision != self.revision {
             return Err(CollectionError::CursorStale {
                 cursor_revision: cursor.revision,
@@ -362,13 +947,30 @@ impl ReferenceCollectionMap {
         Ok(cursor.offset.min(self.entries.len()))
     }
 
-    fn purge_expired(&mut self, now: u64) {
-        let before = self.entries.len();
-        self.entries
-            .retain(|_, stored| stored.expires_at.is_none_or(|deadline| deadline > now));
-        if self.entries.len() != before {
-            self.bump_revision();
+    fn purge_expired(&mut self, now: u64) -> Result<(), CollectionError> {
+        if self.has_expired(now) {
+            self.bump_revision()?;
+            self.entries.retain(|_, stored| is_live(stored, now));
         }
+        Ok(())
+    }
+
+    fn live_count(&self, now: u64) -> usize {
+        self.entries
+            .values()
+            .filter(|stored| is_live(stored, now))
+            .count()
+    }
+
+    fn has_expired(&self, now: u64) -> bool {
+        self.entries.values().any(|stored| !is_live(stored, now))
+    }
+
+    fn reserve_revisions(&self, count: u64) -> Result<(), CollectionError> {
+        self.revision
+            .checked_add(count)
+            .map(|_| ())
+            .ok_or(CollectionError::VersionExhausted)
     }
 
     fn require_active(&self) -> Result<(), CollectionError> {
@@ -396,7 +998,136 @@ impl ReferenceCollectionMap {
         }
     }
 
-    fn bump_revision(&mut self) {
-        self.revision = self.revision.saturating_add(1);
+    fn bump_revision(&mut self) -> Result<(), CollectionError> {
+        self.revision = self
+            .revision
+            .checked_add(1)
+            .ok_or(CollectionError::VersionExhausted)?;
+        Ok(())
+    }
+}
+
+fn is_live(stored: &StoredValue, now: u64) -> bool {
+    stored.expires_at.is_none_or(|deadline| deadline > now)
+}
+
+fn allocate_map_id(counter: &AtomicU64) -> Result<u64, CollectionError> {
+    counter
+        .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
+            current.checked_add(1)
+        })
+        .map_err(|_| CollectionError::MapIdentityExhausted)
+}
+
+fn projection_purpose(projection: ScanProjection) -> [u8; 32] {
+    let tag = match projection {
+        ScanProjection::Keys => 1,
+        ScanProjection::Values => 2,
+        ScanProjection::Entries => 3,
+    };
+    Sha256::digest([tag]).into()
+}
+
+fn search_purpose(value: &[u8]) -> [u8; 32] {
+    let mut digest = Sha256::new();
+    digest.update([4]);
+    digest.update(value);
+    digest.finalize().into()
+}
+
+#[cfg(test)]
+mod counter_exhaustion_tests {
+    use super::*;
+
+    #[test]
+    fn exposed_versions_never_saturate_or_partially_mutate() {
+        let mut map = ReferenceCollectionMap::new(CollectionBounds::default()).unwrap();
+        map.set(b"a".to_vec(), b"old".to_vec(), None, 0).unwrap();
+        map.revision = u64::MAX;
+        let before = map.entries.clone();
+        assert_eq!(
+            map.set(b"a".to_vec(), b"new".to_vec(), None, 0),
+            Err(CollectionError::VersionExhausted)
+        );
+        assert_eq!(map.evict(b"a", 0), Err(CollectionError::VersionExhausted));
+        assert_eq!(map.clear(0), Err(CollectionError::VersionExhausted));
+        assert_eq!(map.evict_all(0), Err(CollectionError::VersionExhausted));
+        assert_eq!(map.destroy(0), Err(CollectionError::VersionExhausted));
+        assert_eq!(map.entries, before);
+        assert!(!map.is_destroyed());
+        assert_eq!(map.evict(b"absent", 0), Ok(false));
+
+        let mut expiring = ReferenceCollectionMap::new(CollectionBounds::default()).unwrap();
+        expiring
+            .set(b"a".to_vec(), b"old".to_vec(), Some(1), 0)
+            .unwrap();
+        expiring.revision = u64::MAX;
+        let before = expiring.entries.clone();
+        assert_eq!(expiring.size(1), Err(CollectionError::VersionExhausted));
+        assert_eq!(expiring.entries, before);
+    }
+
+    #[test]
+    fn expiry_plus_mutation_and_multi_replacement_reserve_all_versions_first() {
+        let mut map = ReferenceCollectionMap::new(CollectionBounds::default()).unwrap();
+        map.set(b"a".to_vec(), b"live".to_vec(), None, 0).unwrap();
+        map.set(b"b".to_vec(), b"expires".to_vec(), Some(1), 0)
+            .unwrap();
+        map.revision = u64::MAX - 1;
+        let before = map.entries.clone();
+        assert_eq!(
+            map.set(b"a".to_vec(), b"new".to_vec(), None, 1),
+            Err(CollectionError::VersionExhausted)
+        );
+        assert_eq!(map.evict(b"a", 1), Err(CollectionError::VersionExhausted));
+        assert_eq!(map.clear(1), Err(CollectionError::VersionExhausted));
+        let replacements = [ReplacementEntry {
+            key: b"a".to_vec(),
+            value: b"new".to_vec(),
+        }];
+        assert_eq!(
+            map.replace_all_detailed(&replacements, 1),
+            Err(CollectionError::VersionExhausted)
+        );
+        assert_eq!(map.entries, before);
+        assert_eq!(map.revision, u64::MAX - 1);
+
+        let mut multiple = ReferenceCollectionMap::new(CollectionBounds::default()).unwrap();
+        multiple
+            .set(b"a".to_vec(), b"one".to_vec(), None, 0)
+            .unwrap();
+        multiple
+            .set(b"b".to_vec(), b"two".to_vec(), None, 0)
+            .unwrap();
+        multiple.revision = u64::MAX - 1;
+        let before = multiple.entries.clone();
+        let replacements = [
+            ReplacementEntry {
+                key: b"a".to_vec(),
+                value: b"new".to_vec(),
+            },
+            ReplacementEntry {
+                key: b"b".to_vec(),
+                value: b"new".to_vec(),
+            },
+        ];
+        assert_eq!(
+            multiple.replace_all_detailed(&replacements, 0),
+            Err(CollectionError::VersionExhausted)
+        );
+        assert_eq!(multiple.entries, before);
+    }
+
+    #[test]
+    fn cursor_instance_identity_never_wraps() {
+        let counter = AtomicU64::new(1);
+        assert_eq!(allocate_map_id(&counter), Ok(1));
+        assert_eq!(counter.load(Ordering::Relaxed), 2);
+        counter.store(u64::MAX, Ordering::Relaxed);
+        assert_eq!(
+            allocate_map_id(&counter),
+            Err(CollectionError::MapIdentityExhausted)
+        );
+        assert_eq!(counter.load(Ordering::Relaxed), u64::MAX);
     }
 }

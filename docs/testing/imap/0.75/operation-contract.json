@@ -2,7 +2,22 @@
   "release": "0.75",
   "contract_version": 1,
   "status": "provisional",
-  "result_outcomes": ["inserted","replaced","removed","present","absent","mismatch","expired_before_operation","counted","empty","non_empty","partial","page","cleared","evicted","destroyed"],
+  "result_outcomes": ["inserted","replaced","removed","present","absent","mismatch","expired_before_operation","counted","empty","non_empty","partial","page","cleared","evicted","destroyed","applied","not_applied","outcome_unknown","entry_view","listener_removed","capabilities"],
+  "api_extensions": {
+    "deadline_outcomes": ["applied","not_applied","outcome_unknown"],
+    "deadline_clock": "logical_time",
+    "mutation_identity": "required_for_timed_mutations",
+    "retry_after_admission": "same_retained_identity_only",
+    "replacement_mode": "explicit_bounded_entries",
+    "entry_view_fields": ["value","version","remaining_ttl"],
+    "production_enabled": false,
+    "interface_features": [
+      {"id":"rust_async_facade","cancellation":"before_admission_not_applied_after_admission_outcome_unknown","test_ids":["imap075::async_rust::identity_deadline_cancellation"]},
+      {"id":"java_async_facade","cancellation":"before_admission_not_applied_after_admission_outcome_unknown","test_ids":["imap075::async_java::identity_deadline_cancellation"]},
+      {"id":"cursor_iterator_adapters","cancellation":"stop_fetching_and_release_buffer","test_ids":["imap075::iterator_rust::lazy_stale_cursor","imap075::iterator_java::lazy_stale_cursor"]}
+    ],
+    "unsupported_families": ["remote_entry_processor","remote_predicate","remote_interceptor","distributed_transaction","unbounded_scan"]
+  },
   "errors": [
     {"id":"invalid_argument","retry_class":"never","certainty":"not_applied","test_id":"imap075::errors::invalid_argument"},
     {"id":"unsupported_operation","retry_class":"never","certainty":"not_applied","test_id":"imap075::errors::unsupported_operation"},
@@ -17,7 +32,8 @@
     {"id":"listener_gap","retry_class":"repair_then_resubscribe","certainty":"gap_visible","test_id":"imap075::errors::listener_gap"},
     {"id":"repair_required","retry_class":"repair_then_retry_read","certainty":"not_authoritative","test_id":"imap075::errors::repair_required"},
     {"id":"scan_cursor_stale","retry_class":"restart_scan_from_first_page","certainty":"no_mutation","test_id":"imap075::collection_error::scan_cursor_stale"},
-    {"id":"map_destroyed","retry_class":"never_with_destroyed_generation","certainty":"terminal_generation","test_id":"imap075::collection_error::map_destroyed"}
+    {"id":"map_destroyed","retry_class":"never_with_destroyed_generation","certainty":"terminal_generation","test_id":"imap075::collection_error::map_destroyed"},
+    {"id":"mutation_identity_conflict","retry_class":"never_with_conflicting_identity","certainty":"not_applied","test_id":"imap075::timed_api::identity_conflict"}
   ],
   "ttl_directives": [
     {"id":"preserve","zero_duration_allowed":false,"semantics":"retain the current live expiry; inserting an absent key is rejected","test_id":"imap075::ttl::preserve"},
@@ -50,6 +66,15 @@
     {"id":"evict_all_detailed","disposition":"supported_with_documented_divergence","outcomes":["evicted","absent","partial"],"errors":["invalid_argument","request_too_large","not_ready","stale_topology","outcome_unknown","map_destroyed"],"ttl_policy":[],"retry_class":"per_partition_same_identity_only","bound_ids":["bulk_mutation_entries","request_bytes","response_bytes","dedup_entries_per_tenant"],"test_ids":["imap075::collection_operation::evict_all_detailed"]},
     {"id":"key_set_page","disposition":"supported_with_documented_divergence","outcomes":["page","partial"],"errors":["invalid_argument","response_too_large","not_ready","stale_topology","repair_required","scan_cursor_stale","map_destroyed"],"ttl_policy":[],"retry_class":"resume_same_snapshot_or_restart","bound_ids":["scan_page_items","scan_entries_per_request","response_bytes","key_bytes"],"test_ids":["imap075::collection_operation::key_set_page"]},
     {"id":"values_page","disposition":"supported_with_documented_divergence","outcomes":["page","partial"],"errors":["invalid_argument","response_too_large","not_ready","stale_topology","repair_required","scan_cursor_stale","map_destroyed"],"ttl_policy":[],"retry_class":"resume_same_snapshot_or_restart","bound_ids":["scan_page_items","scan_entries_per_request","response_bytes","value_bytes"],"test_ids":["imap075::collection_operation::values_page"]},
-    {"id":"entry_set_page","disposition":"supported_with_documented_divergence","outcomes":["page","partial"],"errors":["invalid_argument","response_too_large","not_ready","stale_topology","repair_required","scan_cursor_stale","map_destroyed"],"ttl_policy":[],"retry_class":"resume_same_snapshot_or_restart","bound_ids":["scan_page_items","scan_entries_per_request","response_bytes","key_bytes","value_bytes"],"test_ids":["imap075::collection_operation::entry_set_page"]}
+    {"id":"entry_set_page","disposition":"supported_with_documented_divergence","outcomes":["page","partial"],"errors":["invalid_argument","response_too_large","not_ready","stale_topology","repair_required","scan_cursor_stale","map_destroyed"],"ttl_policy":[],"retry_class":"resume_same_snapshot_or_restart","bound_ids":["scan_page_items","scan_entries_per_request","response_bytes","key_bytes","value_bytes"],"test_ids":["imap075::collection_operation::entry_set_page"]},
+    {"id":"get_or_default","disposition":"supported","outcomes":["present","absent","expired_before_operation"],"errors":["invalid_argument","key_too_large","value_too_large","response_too_large","not_ready","stale_topology","map_destroyed"],"ttl_policy":[],"retry_class":"safe_read","bound_ids":["key_bytes","value_bytes","response_bytes"],"test_ids":["imap075::point_api::get_or_default"]},
+    {"id":"contains_entry","disposition":"supported","outcomes":["present","absent","mismatch","expired_before_operation"],"errors":["invalid_argument","key_too_large","value_too_large","not_ready","stale_topology","map_destroyed"],"ttl_policy":[],"retry_class":"safe_read","bound_ids":["key_bytes","value_bytes","response_bytes"],"test_ids":["imap075::point_api::contains_entry"]},
+    {"id":"set","disposition":"supported","outcomes":["applied"],"errors":["invalid_argument","key_too_large","value_too_large","not_ready","stale_topology","outcome_unknown","map_destroyed"],"ttl_policy":["eternal","expire_after"],"retry_class":"same_identity_only_after_admission","bound_ids":["key_bytes","value_bytes","request_bytes","dedup_entries_per_tenant"],"test_ids":["imap075::point_api::set"]},
+    {"id":"get_entry_view","disposition":"supported_with_documented_divergence","outcomes":["entry_view","absent","expired_before_operation"],"errors":["invalid_argument","key_too_large","response_too_large","not_ready","stale_topology","map_destroyed"],"ttl_policy":[],"retry_class":"safe_read","bound_ids":["key_bytes","response_bytes"],"test_ids":["imap075::point_api::get_entry_view"]},
+    {"id":"try_put","disposition":"supported_with_documented_divergence","outcomes":["applied","not_applied","outcome_unknown"],"errors":["invalid_argument","key_too_large","value_too_large","not_ready","stale_topology","mutation_identity_conflict","idempotency_capacity_exhausted","map_destroyed"],"ttl_policy":["eternal","expire_after"],"retry_class":"same_retained_identity_only","bound_ids":["key_bytes","value_bytes","request_bytes","dedup_entries_per_tenant"],"test_ids":["imap075::timed_api::try_put"]},
+    {"id":"try_remove","disposition":"supported_with_documented_divergence","outcomes":["applied","not_applied","outcome_unknown"],"errors":["invalid_argument","key_too_large","not_ready","stale_topology","mutation_identity_conflict","idempotency_capacity_exhausted","map_destroyed"],"ttl_policy":[],"retry_class":"same_retained_identity_only","bound_ids":["key_bytes","request_bytes","dedup_entries_per_tenant"],"test_ids":["imap075::timed_api::try_remove"]},
+    {"id":"replace_all_detailed","disposition":"supported_with_documented_divergence","outcomes":["replaced","absent","partial","expired_before_operation"],"errors":["invalid_argument","request_too_large","response_too_large","key_too_large","value_too_large","not_ready","stale_topology","outcome_unknown","mutation_identity_conflict","idempotency_capacity_exhausted","map_destroyed"],"ttl_policy":["preserve"],"retry_class":"same_retained_identity_only","bound_ids":["request_entries","request_bytes","response_bytes","key_bytes","value_bytes","dedup_entries_per_tenant"],"test_ids":["imap075::replacement_api::explicit_bounded_entries"]},
+    {"id":"remove_entry_listener","disposition":"supported_with_documented_divergence","outcomes":["listener_removed","absent"],"errors":["invalid_argument","not_ready","stale_topology","map_destroyed"],"ttl_policy":[],"retry_class":"same_registration_generation_only","bound_ids":["listener_queue_events","response_bytes"],"test_ids":["imap075::listener_removal::resource_cleanup"]},
+    {"id":"capability_descriptor","disposition":"supported_with_documented_divergence","outcomes":["capabilities"],"errors":["invalid_argument","unsupported_operation"],"ttl_policy":[],"retry_class":"safe_local_read","bound_ids":["response_bytes"],"test_ids":["imap075::capability_api::contract_and_bounds"]}
   ]
 }
