@@ -13,7 +13,7 @@ import custody
 import owned
 import prepare as p
 
-CONTROL=p.ROOT/'target/security-review-20261028/controls'
+CONTROL=p.ROOT/'target/swagger-security-20261028/runner-controls'
 
 
 def controls(root=p.ROOT):

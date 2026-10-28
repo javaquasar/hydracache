@@ -123,3 +123,16 @@ does not establish dependency-policy success or a new historical package pass.
 Execution now requires the separate complete security-successor controls receipt
 at `target/security-review-20261028/controls`; old green controls cannot authorize
 new helper bodies. No deadline, capacity or live-check frequency changes.
+
+The subsequent [Swagger migration](../../docs/testing/performance/0.74/swagger-security-result-20261028.md)
+uses `swagger_inputs.py` and SHA-pinned `swagger-inputs.json`. Complete current
+lock/manifest bytes reconstruct the complete preceding pair; the preceding sys
+inverse still runs. Only those two inherited auxiliary digests change. The
+original sys tests now use its immutable packet input, keeping that versioned API
+and all its refusal assertions intact. Current-input tests separately check both
+whole predecessors, ordering, schema drift, catalog mutation and build overrides.
+The original inherited LF normalization applies to both CRLF manifests; no
+deadline or live check is replaced. Current execution requires the complete
+`target/swagger-security-20261028/runner-controls` receipt for these exact helpers.
+Inherited `SWAGGER_UI_*` overrides refuse before Cargo because they are outside
+the reviewed registry-vendored asset path. The older receipts stay historical.

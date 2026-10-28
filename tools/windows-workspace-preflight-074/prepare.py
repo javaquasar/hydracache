@@ -11,6 +11,7 @@ import sys
 import tomllib
 
 import security_lock
+import swagger_inputs
 
 from storage import now, write
 
@@ -122,7 +123,7 @@ def source_review(root):
     raw = checked(root, PACKET + '/objects/' + row['sha256'], row['sha256'])
     require(len(raw) == row['bytes'], 'syntax member size')
     review = load(root / 'tools/package-frontier-gate-074/review.py', 'hc074_prepared_source_review')
-    data = security_lock.reviewed_inputs(root, review.inputs())
+    data = swagger_inputs.reviewed_inputs(root, review.inputs())
     context = review.load(root / 'tools/historical-blob-batch-074/module_context_v5.py',
                           'hc074_prepared_context', review.CONTEXT_SHA)
     result = review.source_review(root, data, json.loads(raw), context)
@@ -131,6 +132,10 @@ def source_review(root):
     result['security_lock_successor'] = dict(previous_sha256=security_lock.PREVIOUS,
         current_sha256=security_lock.CURRENT, advisory='RUSTSEC-2026-0410',
         dependency_source_review='docs/testing/performance/0.74/security-review-20261028.md',
+        historical_execution_receipts_unchanged=True)
+    result['swagger_successor'] = dict(current={k: v[0] for k, v in swagger_inputs.BODIES.items()},
+        rules_sha256=swagger_inputs.RULES_SHA,
+        dependency_source_review='docs/testing/performance/0.74/swagger-security-result-20261028.md',
         historical_execution_receipts_unchanged=True)
     return result
 
