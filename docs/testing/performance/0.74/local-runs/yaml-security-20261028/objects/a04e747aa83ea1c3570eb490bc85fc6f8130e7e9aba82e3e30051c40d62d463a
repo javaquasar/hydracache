@@ -1,0 +1,15 @@
+{
+  "id": "fixture/duplicate-key",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": "fixture/duplicate-key",
+    "location": {
+      "column": 1,
+      "index": 0,
+      "line": 1
+    },
+    "message": "duplicate entry with key \"jobs\"",
+    "parsed": false
+  }
+}

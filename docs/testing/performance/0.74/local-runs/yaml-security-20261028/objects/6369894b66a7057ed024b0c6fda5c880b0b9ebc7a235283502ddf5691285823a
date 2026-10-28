@@ -1,0 +1,45 @@
+
+running 12 tests
+test default_manual_dispatch_runs_core_ci_jobs ... ok
+test diagnostic_builder_is_manual_protected_and_sha_bound ... ok
+test rust_canaries_install_locked_console_dependencies_first ... ok
+test topology_rejects_install_step_without_a_bounded_timeout ... ok
+test topology_rejects_missing_timeout_and_duplicate_branch_tag_execution ... ok
+test topology_rejects_two_crate_publishers ... ok
+test topology_rejects_mixed_artifact_identity ... ok
+test checked_in_topology_is_closed_and_valid ... ok
+test live_builder_inventory_preserves_the_frozen_memory_input ... ok
+test watchdog_classifies_missing_provisioning_tool ... ok
+test watchdog_classifies_silent_success_and_product_failure ... ok
+test watchdog_times_out_and_kills_descendant_processes ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.58s
+
+
+running 23 tests
+test canary_release_0671_governance_accepts_a_missing_stage_gate ... ok
+test canary_release_governance_accepts_a_missing_mandatory_gate ... ok
+test crates_io_probe_identifies_itself_and_retries_transient_responses ... ok
+test post_publish_consumer_tracks_the_current_public_api ... ok
+test publish_order_keeps_workspace_dev_and_build_dependencies ... ok
+test canary_release_governance_accepts_a_missing_deferred_performance_gate ... ok
+test release_0671_core_suite_reuses_one_validated_context_for_w4b_and_w5c ... ok
+test release_066_registered_heavy_gates_are_mandatory_and_fail_closed ... ok
+test release_0671_governance_contract_is_fail_closed ... ok
+test release_067_deferred_performance_gates_remain_registered_and_fail_closed ... ok
+test release_ci_pins_the_reviewed_toolchain_and_scopes_redis_repairs_to_an_exact_sha ... ok
+test release_compatibility_jobs_fetch_the_baseline_tag_and_ancestry ... ok
+test release_069_receipt_and_admission_commands_are_fail_closed ... ok
+test performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency ... ok
+test ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands ... ok
+test release_governance_check_accepts_release_069_independent_evidence_wiring ... ok
+test release_governance_check_accepts_current_structural_meta_gates ... ok
+test release_governance_rejects_coverage_receipts_bound_to_an_older_release ... ok
+test release_governance_requires_complete_072_dynamic_canary_wiring ... ok
+test release_governance_check_rejects_an_unwired_or_missing_meta_gate ... ok
+test runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts ... ok
+test release_governance_check_accepts_the_explicit_0_66_fast_wiring ... ok
+test release_governance_check_accepts_the_explicit_0_70_fast_wiring ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 31.78s
+

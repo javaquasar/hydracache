@@ -1,0 +1,122 @@
+{
+  "id": "fixture/multiline",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": "fixture/multiline",
+    "parsed": true,
+    "roundtrip": {
+      "ok": true,
+      "tree": {
+        "rendered": {
+          "ok": true,
+          "text": "run: |\n  echo \"${{ github.ref }}\"\n  echo finished\nfolded: alpha beta\n"
+        },
+        "shape": {
+          "entries": [
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "run\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "run"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "|\n  echo \"${{ github.ref }}\"\n  echo finished\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "echo \"${{ github.ref }}\"\necho finished\n"
+                }
+              }
+            ],
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "folded\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "folded"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "alpha beta\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "alpha beta"
+                }
+              }
+            ]
+          ],
+          "kind": "mapping"
+        }
+      }
+    },
+    "tree": {
+      "rendered": {
+        "ok": true,
+        "text": "run: |\n  echo \"${{ github.ref }}\"\n  echo finished\nfolded: alpha beta\n"
+      },
+      "shape": {
+        "entries": [
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "run\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "run"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "|\n  echo \"${{ github.ref }}\"\n  echo finished\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "echo \"${{ github.ref }}\"\necho finished\n"
+              }
+            }
+          ],
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "folded\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "folded"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "alpha beta\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "alpha beta"
+              }
+            }
+          ]
+        ],
+        "kind": "mapping"
+      }
+    }
+  }
+}

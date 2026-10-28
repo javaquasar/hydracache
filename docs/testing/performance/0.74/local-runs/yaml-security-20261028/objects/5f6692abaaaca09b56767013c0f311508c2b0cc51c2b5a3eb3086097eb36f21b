@@ -1,0 +1,56 @@
+"""Primary metadata/source review before any parser or dependency mutation."""
+from pathlib import Path
+from datetime import datetime,timezone
+import hashlib,io,json,subprocess,tarfile,urllib.request
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'target/yaml-security-20261028/upstream'
+OUT.mkdir(parents=True,exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(OUT/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n')
+protected=('Cargo.toml','Cargo.lock','deny.toml','crates/xtask/Cargo.toml',
+ 'crates/xtask/src/ci_topology.rs','crates/xtask/src/release_governance.rs',
+ 'docs/testing/performance/0.74/qualification-manifest.toml')
+before={n:dict(raw_sha256=sha((b:=(ROOT/n).read_bytes())),lf_sha256=sha(b.replace(b'\r\n',b'\n'))) for n in protected}
+write('intent.json',dict(utc=datetime.now(timezone.utc).isoformat(),source=before,
+ head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ source_sha256=sha(Path(__file__).read_bytes()),source_code_executed=False))
+records={}
+with (OUT/'stdout.log').open('x',encoding='utf-8') as stdout,(OUT/'stderr.log').open('x',encoding='utf-8') as stderr:
+ try:
+  for name,exact in (('yaml_serde','0.10.7'),('libyaml-rs',None)):
+   url='https://index.crates.io/'+name[:2]+'/'+name[2:4]+'/'+name
+   with urllib.request.urlopen(url,timeout=40) as response:
+    index=response.read();headers=dict(response.headers)
+   (OUT/(name+'.index')).write_bytes(index)
+   rows=[json.loads(line) for line in index.splitlines()]
+   if exact is None:
+    eligible=[r for r in rows if r['vers'].startswith('0.3.') and not r['yanked'] and '-' not in r['vers']]
+    row=max(eligible,key=lambda r:tuple(map(int,r['vers'].split('.'))))
+   else:row=next(r for r in rows if r['vers']==exact)
+   assert not row['yanked']
+   version=row.get('rust_version')
+   assert version is not None and tuple((list(map(int,version.split('.')))+[0,0])[:3]) <= (1,88,0)
+   version=row['vers'];archive_url='https://static.crates.io/crates/'+name+'/'+name+'-'+version+'.crate'
+   with urllib.request.urlopen(archive_url,timeout=40) as response:raw=response.read()
+   assert sha(raw)==row['cksum']
+   folder=OUT/(name+'-'+version);folder.mkdir()
+   (folder/'source.crate').write_bytes(raw)
+   members={}
+   with tarfile.open(fileobj=io.BytesIO(raw),mode='r:gz') as archive:
+    for item in archive.getmembers():
+     if not item.isfile():continue
+     relative=Path(item.name).relative_to(name+'-'+version)
+     assert '..' not in relative.parts and item.size <= 16*1024**2
+     body=archive.extractfile(item).read()
+     target=folder/'review-source'/relative;target.parent.mkdir(parents=True,exist_ok=True)
+     target.write_bytes(body)
+     members[relative.as_posix()]=dict(bytes=len(body),sha256=sha(body))
+   records[name]=dict(metadata=row,index_url=url,index_sha256=sha(index),headers=headers,
+    archive_url=archive_url,archive_sha256=sha(raw),members=members)
+   stdout.write(json.dumps(dict(name=name,version=version,rust_version=row['rust_version'],
+    dependencies=[dict(name=d['name'],req=d['req'],kind=d['kind']) for d in row['deps']]))+'\n');stdout.flush()
+  assert before=={n:dict(raw_sha256=sha((b:=(ROOT/n).read_bytes())),lf_sha256=sha(b.replace(b'\r\n',b'\n'))) for n in protected}
+  write('result.json',dict(packages=records,source_unchanged=True,source_code_executed=False))
+ except BaseException as error:
+  write('refusal.json',dict(type=type(error).__name__,reason=str(error)));raise
+print((OUT/'stdout.log').read_text())

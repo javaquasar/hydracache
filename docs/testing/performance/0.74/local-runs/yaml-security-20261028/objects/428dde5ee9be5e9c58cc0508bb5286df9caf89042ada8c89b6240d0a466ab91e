@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\windows-workspace-preflight-074\\worker.py",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\yaml-security-20261028\\workspace",
+    "4a9ef48bb3091ad9ed6f45a11e5bd4d01448522d7b9e9321495d21262a80079d",
+    "workspace"
+  ],
+  "cleanup_seconds": 5,
+  "deadline": 39179.4883076,
+  "pid": 4440,
+  "request_sha256": "4a9ef48bb3091ad9ed6f45a11e5bd4d01448522d7b9e9321495d21262a80079d"
+}

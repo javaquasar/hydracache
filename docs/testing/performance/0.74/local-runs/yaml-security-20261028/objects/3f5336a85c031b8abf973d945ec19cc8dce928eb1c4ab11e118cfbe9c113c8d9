@@ -1,0 +1,10 @@
+{
+  "corpus_code_sha256": "be39e0a78d28c7490d0f4b83e606e4ffd687b610a9de4721dc4044df0f749c6f",
+  "deny_exclusions_added": false,
+  "head": "6faa544c9493b4dfdb87fc31ba3fb78456a9455f",
+  "product_lock_sha256": "00efd4a2cafeb5e82d757cc4855e440c627211c1544c22dcbf8c875f85337cd8",
+  "product_manifest_sha256": "0b00525d41119bdb1215b1fb658ac66fa1bcd0d99428e9903cf1bb8ee8f4e0b5",
+  "review_only": true,
+  "source_sha256": "27d992ece030f4de4552d57f4ade0b4f519dbeb6020f4b81fc6385190a7a7a05",
+  "workspace_members_changed": false
+}

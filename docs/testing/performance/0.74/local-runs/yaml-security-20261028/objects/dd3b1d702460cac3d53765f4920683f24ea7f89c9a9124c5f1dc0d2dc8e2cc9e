@@ -1,0 +1,15 @@
+{
+  "id": "fixture/truncated-flow",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": "fixture/truncated-flow",
+    "location": {
+      "column": 1,
+      "index": 16,
+      "line": 2
+    },
+    "message": "did not find expected ',' or ']' at line 2 column 1, while parsing a flow sequence at line 1 column 7",
+    "parsed": false
+  }
+}

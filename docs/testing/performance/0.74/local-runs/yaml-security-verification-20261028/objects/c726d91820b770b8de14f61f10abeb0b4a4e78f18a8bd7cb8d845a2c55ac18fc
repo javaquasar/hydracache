@@ -1,0 +1,6 @@
+{
+  "expected_index_sha256": "1e12021d3dcb7632e95f7cc10a17244178f3a1905af17ce8740eda1267bffcb0",
+  "gate_replayed": false,
+  "read_only": true,
+  "source_sha256": "c23fc1eccb216d1f137d7588f5c2234c32615746c74328845f6ba3b8c1d686c3"
+}

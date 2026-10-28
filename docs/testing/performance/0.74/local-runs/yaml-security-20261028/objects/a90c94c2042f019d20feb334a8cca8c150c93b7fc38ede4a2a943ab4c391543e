@@ -1,0 +1,63 @@
+"""Exact two-node migration, effective edges, source effects and MSRV review."""
+from pathlib import Path
+import hashlib,json,tomllib
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/yaml-security-20261028'
+out=BASE/'graph-review';out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def graph(raw):
+ rows=tomllib.loads(raw.decode('utf-8'))['package']
+ result={r['name']+'@'+r['version']:r for r in rows}
+ assert len(result)==len(rows)
+ return result
+old=(BASE/'resolve-root/before-Cargo.lock').read_bytes()
+new=(ROOT/'Cargo.lock').read_bytes()
+assert sha(old)=='00efd4a2cafeb5e82d757cc4855e440c627211c1544c22dcbf8c875f85337cd8'
+a,b=graph(old),graph(new)
+removed=sorted(a.keys()-b.keys());added=sorted(b.keys()-a.keys())
+assert removed==['serde_yaml@0.9.34+deprecated','unsafe-libyaml@0.2.11']
+assert added==['libyaml-rs@0.3.0','yaml_serde@0.10.7']
+def edge(identity,inventory):
+ parts=identity.split()
+ matches=[r for r in inventory.values() if r['name']==parts[0] and (len(parts)==1 or r['version']==parts[1])]
+ assert len(matches)==1
+ r=matches[0];return (r['name'],r['version'],r.get('source'))
+changed={}
+for key in a.keys()&b.keys():
+ assert {k:v for k,v in a[key].items() if k!='dependencies'}=={k:v for k,v in b[key].items() if k!='dependencies'},key
+ left={edge(d,a) for d in a[key].get('dependencies',[])}
+ right={edge(d,b) for d in b[key].get('dependencies',[])}
+ if left!=right:changed[key]=dict(removed=sorted(left-right),added=sorted(right-left))
+assert list(changed)==['xtask@0.73.0']
+assert [r[:2] for r in changed['xtask@0.73.0']['removed']]==[('serde_yaml','0.9.34+deprecated')]
+assert [r[:2] for r in changed['xtask@0.73.0']['added']]==[('yaml_serde','0.10.7')]
+reviewed={}
+for key in added:
+ row=b[key];name=row['name'];version=row['version']
+ index=(BASE/'upstream'/(name+'.index')).read_bytes()
+ metadata=next(r for r in map(json.loads,index.splitlines()) if r['vers']==version)
+ assert metadata['cksum']==row['checksum'] and not metadata['yanked']
+ msrv=tuple(map(int,metadata['rust_version'].split('.')))
+ assert msrv[:2]<=(1,88)
+ folder=BASE/'upstream'/(name+'-'+version)/'review-source'
+ manifest=tomllib.loads((folder/'Cargo.toml').read_text(encoding='utf-8'))
+ assert manifest['package']['build'] is False and not (folder/'build.rs').exists()
+ cache=Path('C:/Users/ArturBuzov/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f')/(name+'-'+version+'.crate')
+ assert sha(cache.read_bytes())==row['checksum']
+ reviewed[key]=dict(metadata=metadata,checksum=row['checksum'],build_script=False)
+metadata=json.loads((BASE/'resolve-root/stdout.log').read_bytes())
+parser=next(p for p in metadata['packages'] if p['name']=='yaml_serde')
+node=next(n for n in metadata['resolve']['nodes'] if n['id']==parser['id'])
+assert set(node['features'])=={'default','std'}
+consumers={n:sha((ROOT/n).read_bytes()) for n in ('crates/xtask/src/ci_topology.rs','crates/xtask/src/release_governance.rs')}
+baseline=json.loads((BASE/'baseline-callers/intent.json').read_bytes())['source']
+assert all(baseline[n]==v for n,v in consumers.items())
+assert sha((ROOT/'deny.toml').read_bytes())=='16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930'
+review=dict(removed=removed,added=added,existing_effective_edge_delta=changed,new_packages=reviewed,
+ parser_features=node['features'],consumers_unchanged=consumers,old_lock_sha256=sha(old),new_lock_sha256=sha(new),
+ source_review=dict(low_level_parser_scanner_emitter_unchanged=True,unsafe_code_remains=True,
+  std_io_reexports=True,no_std_fnv_not_enabled=True,error_source_chain_change='Io/FromUtf8 now expose immediate error; from_str consumers do not construct these variants',
+  parsing_value_serialization_and_diagnostics='102 exact inert cases; no differences',new_build_scripts=False,
+  clock_service_server_product_effects=False),release_admitted=False)
+(out/'result.json').write_text(json.dumps(review,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+print(json.dumps(dict(added=added,removed=removed,existing_edge_owners=list(changed),current_lock_sha256=sha(new))))

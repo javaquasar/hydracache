@@ -1,0 +1,16 @@
+test_decision_and_declared_expectation_are_not_relaxed (test_compare.Comparison.test_decision_and_declared_expectation_are_not_relaxed) ... ok
+test_diagnostic_drift_is_retained_and_requires_review (test_compare.Comparison.test_diagnostic_drift_is_retained_and_requires_review) ... ok
+test_equal_success_and_refusal (test_compare.Comparison.test_equal_success_and_refusal) ... ok
+test_missing_unknown_duplicate_and_reordered_cases_refuse (test_compare.Comparison.test_missing_unknown_duplicate_and_reordered_cases_refuse) ... ok
+test_process_crash_and_timeout_refuse (test_compare.Comparison.test_process_crash_and_timeout_refuse) ... ok
+test_unknown_response_fields_and_nonboolean_decision_refuse (test_compare.Comparison.test_unknown_response_fields_and_nonboolean_decision_refuse) ... ok
+test_values_order_and_serialization_are_exact (test_compare.Comparison.test_values_order_and_serialization_are_exact) ... ok
+test_bad_raw_output_and_stderr_refuse (test_recording.Recording.test_bad_raw_output_and_stderr_refuse) ... ok
+test_exit_timeout_order_and_identity_are_not_inferred (test_recording.Recording.test_exit_timeout_order_and_identity_are_not_inferred) ... ok
+test_partial_record_recovers_only_preserved_native_response (test_recording.Recording.test_partial_record_recovers_only_preserved_native_response) ... ok
+test_utf8_exclusive_writer_preserves_unicode (test_recording.Recording.test_utf8_exclusive_writer_preserves_unicode) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.007s
+
+OK

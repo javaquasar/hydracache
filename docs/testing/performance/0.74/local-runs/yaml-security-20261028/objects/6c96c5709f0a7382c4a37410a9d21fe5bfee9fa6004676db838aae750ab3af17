@@ -1,0 +1,12 @@
+{
+  "mode": "candidate",
+  "start_ordinal": 55,
+  "total_cases": 102,
+  "corpus_sha256": "6e0ca0eb52841f74600a386923898f3da07b770ce7699ca853ed3618a324c78c",
+  "binary_sha256": "dc02680befc2fa247be128b807dbc625b3d8aaa4bbff285c292d231bd6fa9569",
+  "recovery_sha256": "460b7db22865c987a5da9e37ea532a7f0b39513cb6ed2b374690082b29c0561b",
+  "per_case_bound_seconds": 5,
+  "replayed": false,
+  "release_admitted": false,
+  "continuous_cohort": false
+}

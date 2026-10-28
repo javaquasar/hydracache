@@ -1,0 +1,47 @@
+"""Only unstarted independent cases; never repeats a recovered native process."""
+from pathlib import Path
+import hashlib,json,subprocess,sys
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/yaml-security-20261028'
+sys.path.insert(0,str(ROOT/'tools/yaml-parser-review-074'))
+import recording
+mode=sys.argv[1];assert mode in ('baseline','candidate')
+out=BASE/('semantics-'+mode+'-continuation');out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):recording.write_record(out/name,value)
+write('invocation.json',dict(mode=mode,source_sha256=sha(Path(__file__).read_bytes()),retry=False))
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+recovered_raw=(BASE/'record-recovery'/(mode+'.json')).read_bytes()
+recovered=json.loads(recovered_raw)
+corpus=(BASE/'preparation/cases.jsonl').read_bytes()
+assert sha(corpus)==recovered['corpus_sha256']
+cases=list(map(json.loads,corpus.splitlines()))
+start=recovered['next_unstarted_ordinal']
+assert start==len(recovered['cases']) and [r['id'] for r in recovered['cases']]==[c['id'] for c in cases[:start]]
+for item in recovered['provenance']:
+ assert all(sha(Path(n).read_bytes())==v for n,v in item['files'].items())
+binary=BASE/'targets'/mode/'debug/hc074-yaml-probe.exe'
+assert sha(binary.read_bytes())==recovered['binary_sha256']
+write('intent.json',dict(mode=mode,start_ordinal=start,total_cases=len(cases),corpus_sha256=sha(corpus),
+ binary_sha256=recovered['binary_sha256'],recovery_sha256=sha(recovered_raw),per_case_bound_seconds=5,
+ replayed=False,release_admitted=False,continuous_cohort=False))
+rows=[]
+for i in range(start,len(cases)):
+ case=cases[i];folder=out/f'{i:04d}';folder.mkdir()
+ request=json.dumps(dict(id=case['id'],text=case['text']),ensure_ascii=False).encode('utf-8')
+ process=subprocess.Popen([str(binary)],cwd=ROOT,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+ timeout=False
+ try:stdout,stderr=process.communicate(request,timeout=5)
+ except subprocess.TimeoutExpired:
+  timeout=True;process.kill();stdout,stderr=process.communicate(timeout=5)
+ (folder/'stdout.log').write_bytes(stdout);(folder/'stderr.log').write_bytes(stderr)
+ row=dict(id=case['id'],exit=process.returncode,timeout=timeout)
+ if not timeout and process.returncode==0:
+  try:row['value']=json.loads(stdout)
+  except (ValueError,UnicodeError) as error:row['decode_error']=str(error)
+ recording.write_record(folder/'result.json',row);rows.append(row)
+assert sha(binary.read_bytes())==recovered['binary_sha256'] and sha((BASE/'preparation/cases.jsonl').read_bytes())==sha(corpus)
+write('result.json',dict(cases=rows,first_ordinal=start,binary_and_corpus_unchanged=True,replayed=False,release_admitted=False))
+failed=sum(r['exit']!=0 or r['timeout'] or 'value' not in r for r in rows)
+print(json.dumps(dict(mode=mode,new_cases=len(rows),process_failures=failed)))
+raise SystemExit(int(failed!=0))

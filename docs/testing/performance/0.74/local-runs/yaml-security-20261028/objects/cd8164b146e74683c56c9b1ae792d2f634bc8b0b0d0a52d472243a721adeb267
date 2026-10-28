@@ -1,0 +1,12 @@
+{
+  "mode": "baseline",
+  "start_ordinal": 55,
+  "total_cases": 102,
+  "corpus_sha256": "6e0ca0eb52841f74600a386923898f3da07b770ce7699ca853ed3618a324c78c",
+  "binary_sha256": "f8a709a730ec69611b5f3c5c9ede5606b7f4e3deb3e378a9ffa7faf630501438",
+  "recovery_sha256": "7ff53f7abdc0ebab0b460eaec8d8cb8da2c77aca768b5049ad4219afa2771a83",
+  "per_case_bound_seconds": 5,
+  "replayed": false,
+  "release_admitted": false,
+  "continuous_cohort": false
+}

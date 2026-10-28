@@ -1,0 +1,206 @@
+{
+  "id": "fixture/keys-and-scalars",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": "fixture/keys-and-scalars",
+    "parsed": true,
+    "roundtrip": {
+      "ok": true,
+      "tree": {
+        "rendered": {
+          "ok": true,
+          "text": "on: true\nyes: no\nnull: null\ntrue: false\n"
+        },
+        "shape": {
+          "entries": [
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "on\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "on"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "true\n"
+                },
+                "shape": {
+                  "kind": "bool",
+                  "value": true
+                }
+              }
+            ],
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "yes\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "yes"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "no\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "no"
+                }
+              }
+            ],
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "null\n"
+                },
+                "shape": {
+                  "kind": "null"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "null\n"
+                },
+                "shape": {
+                  "kind": "null"
+                }
+              }
+            ],
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "true\n"
+                },
+                "shape": {
+                  "kind": "bool",
+                  "value": true
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "false\n"
+                },
+                "shape": {
+                  "kind": "bool",
+                  "value": false
+                }
+              }
+            ]
+          ],
+          "kind": "mapping"
+        }
+      }
+    },
+    "tree": {
+      "rendered": {
+        "ok": true,
+        "text": "on: true\nyes: no\nnull: null\ntrue: false\n"
+      },
+      "shape": {
+        "entries": [
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "on\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "on"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "true\n"
+              },
+              "shape": {
+                "kind": "bool",
+                "value": true
+              }
+            }
+          ],
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "yes\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "yes"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "no\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "no"
+              }
+            }
+          ],
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "null\n"
+              },
+              "shape": {
+                "kind": "null"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "null\n"
+              },
+              "shape": {
+                "kind": "null"
+              }
+            }
+          ],
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "true\n"
+              },
+              "shape": {
+                "kind": "bool",
+                "value": true
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "false\n"
+              },
+              "shape": {
+                "kind": "bool",
+                "value": false
+              }
+            }
+          ]
+        ],
+        "kind": "mapping"
+      }
+    }
+  }
+}

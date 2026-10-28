@@ -1,0 +1,2806 @@
+{
+  "id": ".github/workflows/observer-semantics-074.yml",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": ".github/workflows/observer-semantics-074.yml",
+    "parsed": true,
+    "roundtrip": {
+      "ok": true,
+      "tree": {
+        "rendered": {
+          "ok": true,
+          "text": "name: Observer Semantics 0.74\non:\n  push:\n    branches:\n    - feat/0.74-resp-native-throughput\n    paths:\n    - .github/workflows/observer-semantics-074.yml\n    - tools/get-owner-scheduled-controls-074/**\n    - tools/resp-scratch-screen-074/src/memory.rs\n    - crates/hydracache-server/src/redis_tcp.rs\n    - crates/hydracache-server/src/config.rs\n    - crates/hydracache-server/src/bootstrap.rs\n    - crates/hydracache-redis-compat/src/**\n  workflow_dispatch: null\npermissions:\n  contents: read\nconcurrency:\n  group: observer-semantics-074-${{ github.sha }}\n  cancel-in-progress: false\njobs:\n  semantic:\n    name: Exact-SHA default and get-owner semantic controls (not qualification)\n    runs-on: ubuntu-24.04\n    timeout-minutes: 40\n    env:\n      CARGO_BUILD_JOBS: 2\n      CARGO_INCREMENTAL: 0\n      CARGO_PROFILE_DEV_DEBUG: 0\n      CARGO_PROFILE_TEST_DEBUG: 0\n    steps:\n    - name: Check out exact event source\n      uses: actions/checkout@v5\n      with:\n        ref: ${{ github.sha }}\n        persist-credentials: false\n    - name: Install reviewed toolchain\n      uses: dtolnay/rust-toolchain@1.94.0\n      with:\n        components: rustfmt, clippy\n    - name: Record exact non-promotable source and toolchain\n      shell: bash\n      run: |\n        set -euo pipefail\n        test \"$(git rev-parse HEAD)\" = \"$GITHUB_SHA\"\n        test -z \"$(git status --porcelain)\"\n        mkdir -p target/observer-semantics-074\n        printf 'source_commit=%s\\nrun_id=%s\\nattempt=%s\\npromotable=false\\nqualification=false\\n' \"$GITHUB_SHA\" \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" > target/observer-semantics-074/identity.txt\n        rustc -Vv > target/observer-semantics-074/rustc.txt\n        sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt\n    - name: Format and strict lint (no numerical executable invocation)\n      shell: bash\n      run: |\n        set -euo pipefail\n        cargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check\n        cargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log\n        cargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log\n    - name: Default semantic tests with allocation-counter unit tests only\n      shell: bash\n      run: |\n        set -euo pipefail\n        cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log\n    - name: Get-owner semantic tests (not native numerical nonregression)\n      shell: bash\n      run: |\n        set -euo pipefail\n        cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log\n        test -z \"$(git status --porcelain)\"\n    - name: Unprofiled executable entry-point correctness (one offer, not a cohort)\n      shell: bash\n      run: |\n        set -euo pipefail\n        cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log\n        cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log\n        test -z \"$(git status --porcelain)\"\n    - name: Retain immutable attempt logs even on failure\n      if: always()\n      uses: actions/upload-artifact@v6\n      with:\n        name: observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}\n        path: target/observer-semantics-074/**\n        if-no-files-found: error\n        retention-days: 30\n"
+        },
+        "shape": {
+          "entries": [
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "name\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "name"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "Observer Semantics 0.74\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "Observer Semantics 0.74"
+                }
+              }
+            ],
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "on\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "on"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "push:\n  branches:\n  - feat/0.74-resp-native-throughput\n  paths:\n  - .github/workflows/observer-semantics-074.yml\n  - tools/get-owner-scheduled-controls-074/**\n  - tools/resp-scratch-screen-074/src/memory.rs\n  - crates/hydracache-server/src/redis_tcp.rs\n  - crates/hydracache-server/src/config.rs\n  - crates/hydracache-server/src/bootstrap.rs\n  - crates/hydracache-redis-compat/src/**\nworkflow_dispatch: null\n"
+                },
+                "shape": {
+                  "entries": [
+                    [
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "push\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "push"
+                        }
+                      },
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "branches:\n- feat/0.74-resp-native-throughput\npaths:\n- .github/workflows/observer-semantics-074.yml\n- tools/get-owner-scheduled-controls-074/**\n- tools/resp-scratch-screen-074/src/memory.rs\n- crates/hydracache-server/src/redis_tcp.rs\n- crates/hydracache-server/src/config.rs\n- crates/hydracache-server/src/bootstrap.rs\n- crates/hydracache-redis-compat/src/**\n"
+                        },
+                        "shape": {
+                          "entries": [
+                            [
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "branches\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "branches"
+                                }
+                              },
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "- feat/0.74-resp-native-throughput\n"
+                                },
+                                "shape": {
+                                  "items": [
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "feat/0.74-resp-native-throughput\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": "feat/0.74-resp-native-throughput"
+                                      }
+                                    }
+                                  ],
+                                  "kind": "sequence"
+                                }
+                              }
+                            ],
+                            [
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "paths\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "paths"
+                                }
+                              },
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "- .github/workflows/observer-semantics-074.yml\n- tools/get-owner-scheduled-controls-074/**\n- tools/resp-scratch-screen-074/src/memory.rs\n- crates/hydracache-server/src/redis_tcp.rs\n- crates/hydracache-server/src/config.rs\n- crates/hydracache-server/src/bootstrap.rs\n- crates/hydracache-redis-compat/src/**\n"
+                                },
+                                "shape": {
+                                  "items": [
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": ".github/workflows/observer-semantics-074.yml\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": ".github/workflows/observer-semantics-074.yml"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "tools/get-owner-scheduled-controls-074/**\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": "tools/get-owner-scheduled-controls-074/**"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "tools/resp-scratch-screen-074/src/memory.rs\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": "tools/resp-scratch-screen-074/src/memory.rs"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "crates/hydracache-server/src/redis_tcp.rs\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": "crates/hydracache-server/src/redis_tcp.rs"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "crates/hydracache-server/src/config.rs\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": "crates/hydracache-server/src/config.rs"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "crates/hydracache-server/src/bootstrap.rs\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": "crates/hydracache-server/src/bootstrap.rs"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "crates/hydracache-redis-compat/src/**\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": "crates/hydracache-redis-compat/src/**"
+                                      }
+                                    }
+                                  ],
+                                  "kind": "sequence"
+                                }
+                              }
+                            ]
+                          ],
+                          "kind": "mapping"
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "workflow_dispatch\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "workflow_dispatch"
+                        }
+                      },
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "null\n"
+                        },
+                        "shape": {
+                          "kind": "null"
+                        }
+                      }
+                    ]
+                  ],
+                  "kind": "mapping"
+                }
+              }
+            ],
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "permissions\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "permissions"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "contents: read\n"
+                },
+                "shape": {
+                  "entries": [
+                    [
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "contents\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "contents"
+                        }
+                      },
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "read\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "read"
+                        }
+                      }
+                    ]
+                  ],
+                  "kind": "mapping"
+                }
+              }
+            ],
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "concurrency\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "concurrency"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "group: observer-semantics-074-${{ github.sha }}\ncancel-in-progress: false\n"
+                },
+                "shape": {
+                  "entries": [
+                    [
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "group\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "group"
+                        }
+                      },
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "observer-semantics-074-${{ github.sha }}\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "observer-semantics-074-${{ github.sha }}"
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "cancel-in-progress\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "cancel-in-progress"
+                        }
+                      },
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "false\n"
+                        },
+                        "shape": {
+                          "kind": "bool",
+                          "value": false
+                        }
+                      }
+                    ]
+                  ],
+                  "kind": "mapping"
+                }
+              }
+            ],
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "jobs\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "jobs"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "semantic:\n  name: Exact-SHA default and get-owner semantic controls (not qualification)\n  runs-on: ubuntu-24.04\n  timeout-minutes: 40\n  env:\n    CARGO_BUILD_JOBS: 2\n    CARGO_INCREMENTAL: 0\n    CARGO_PROFILE_DEV_DEBUG: 0\n    CARGO_PROFILE_TEST_DEBUG: 0\n  steps:\n  - name: Check out exact event source\n    uses: actions/checkout@v5\n    with:\n      ref: ${{ github.sha }}\n      persist-credentials: false\n  - name: Install reviewed toolchain\n    uses: dtolnay/rust-toolchain@1.94.0\n    with:\n      components: rustfmt, clippy\n  - name: Record exact non-promotable source and toolchain\n    shell: bash\n    run: |\n      set -euo pipefail\n      test \"$(git rev-parse HEAD)\" = \"$GITHUB_SHA\"\n      test -z \"$(git status --porcelain)\"\n      mkdir -p target/observer-semantics-074\n      printf 'source_commit=%s\\nrun_id=%s\\nattempt=%s\\npromotable=false\\nqualification=false\\n' \"$GITHUB_SHA\" \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" > target/observer-semantics-074/identity.txt\n      rustc -Vv > target/observer-semantics-074/rustc.txt\n      sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt\n  - name: Format and strict lint (no numerical executable invocation)\n    shell: bash\n    run: |\n      set -euo pipefail\n      cargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check\n      cargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log\n      cargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log\n  - name: Default semantic tests with allocation-counter unit tests only\n    shell: bash\n    run: |\n      set -euo pipefail\n      cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log\n  - name: Get-owner semantic tests (not native numerical nonregression)\n    shell: bash\n    run: |\n      set -euo pipefail\n      cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log\n      test -z \"$(git status --porcelain)\"\n  - name: Unprofiled executable entry-point correctness (one offer, not a cohort)\n    shell: bash\n    run: |\n      set -euo pipefail\n      cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log\n      cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log\n      test -z \"$(git status --porcelain)\"\n  - name: Retain immutable attempt logs even on failure\n    if: always()\n    uses: actions/upload-artifact@v6\n    with:\n      name: observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}\n      path: target/observer-semantics-074/**\n      if-no-files-found: error\n      retention-days: 30\n"
+                },
+                "shape": {
+                  "entries": [
+                    [
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "semantic\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "semantic"
+                        }
+                      },
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "name: Exact-SHA default and get-owner semantic controls (not qualification)\nruns-on: ubuntu-24.04\ntimeout-minutes: 40\nenv:\n  CARGO_BUILD_JOBS: 2\n  CARGO_INCREMENTAL: 0\n  CARGO_PROFILE_DEV_DEBUG: 0\n  CARGO_PROFILE_TEST_DEBUG: 0\nsteps:\n- name: Check out exact event source\n  uses: actions/checkout@v5\n  with:\n    ref: ${{ github.sha }}\n    persist-credentials: false\n- name: Install reviewed toolchain\n  uses: dtolnay/rust-toolchain@1.94.0\n  with:\n    components: rustfmt, clippy\n- name: Record exact non-promotable source and toolchain\n  shell: bash\n  run: |\n    set -euo pipefail\n    test \"$(git rev-parse HEAD)\" = \"$GITHUB_SHA\"\n    test -z \"$(git status --porcelain)\"\n    mkdir -p target/observer-semantics-074\n    printf 'source_commit=%s\\nrun_id=%s\\nattempt=%s\\npromotable=false\\nqualification=false\\n' \"$GITHUB_SHA\" \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" > target/observer-semantics-074/identity.txt\n    rustc -Vv > target/observer-semantics-074/rustc.txt\n    sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt\n- name: Format and strict lint (no numerical executable invocation)\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check\n    cargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log\n    cargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log\n- name: Default semantic tests with allocation-counter unit tests only\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log\n- name: Get-owner semantic tests (not native numerical nonregression)\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log\n    test -z \"$(git status --porcelain)\"\n- name: Unprofiled executable entry-point correctness (one offer, not a cohort)\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log\n    test -z \"$(git status --porcelain)\"\n- name: Retain immutable attempt logs even on failure\n  if: always()\n  uses: actions/upload-artifact@v6\n  with:\n    name: observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}\n    path: target/observer-semantics-074/**\n    if-no-files-found: error\n    retention-days: 30\n"
+                        },
+                        "shape": {
+                          "entries": [
+                            [
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "name\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "name"
+                                }
+                              },
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "Exact-SHA default and get-owner semantic controls (not qualification)\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "Exact-SHA default and get-owner semantic controls (not qualification)"
+                                }
+                              }
+                            ],
+                            [
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "runs-on\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "runs-on"
+                                }
+                              },
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "ubuntu-24.04\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "ubuntu-24.04"
+                                }
+                              }
+                            ],
+                            [
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "timeout-minutes\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "timeout-minutes"
+                                }
+                              },
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "40\n"
+                                },
+                                "shape": {
+                                  "display": "40",
+                                  "f64_bits": "4044000000000000",
+                                  "i64": "40",
+                                  "kind": "number",
+                                  "u64": "40"
+                                }
+                              }
+                            ],
+                            [
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "env\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "env"
+                                }
+                              },
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "CARGO_BUILD_JOBS: 2\nCARGO_INCREMENTAL: 0\nCARGO_PROFILE_DEV_DEBUG: 0\nCARGO_PROFILE_TEST_DEBUG: 0\n"
+                                },
+                                "shape": {
+                                  "entries": [
+                                    [
+                                      {
+                                        "rendered": {
+                                          "ok": true,
+                                          "text": "CARGO_BUILD_JOBS\n"
+                                        },
+                                        "shape": {
+                                          "kind": "string",
+                                          "value": "CARGO_BUILD_JOBS"
+                                        }
+                                      },
+                                      {
+                                        "rendered": {
+                                          "ok": true,
+                                          "text": "2\n"
+                                        },
+                                        "shape": {
+                                          "display": "2",
+                                          "f64_bits": "4000000000000000",
+                                          "i64": "2",
+                                          "kind": "number",
+                                          "u64": "2"
+                                        }
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "rendered": {
+                                          "ok": true,
+                                          "text": "CARGO_INCREMENTAL\n"
+                                        },
+                                        "shape": {
+                                          "kind": "string",
+                                          "value": "CARGO_INCREMENTAL"
+                                        }
+                                      },
+                                      {
+                                        "rendered": {
+                                          "ok": true,
+                                          "text": "0\n"
+                                        },
+                                        "shape": {
+                                          "display": "0",
+                                          "f64_bits": "0000000000000000",
+                                          "i64": "0",
+                                          "kind": "number",
+                                          "u64": "0"
+                                        }
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "rendered": {
+                                          "ok": true,
+                                          "text": "CARGO_PROFILE_DEV_DEBUG\n"
+                                        },
+                                        "shape": {
+                                          "kind": "string",
+                                          "value": "CARGO_PROFILE_DEV_DEBUG"
+                                        }
+                                      },
+                                      {
+                                        "rendered": {
+                                          "ok": true,
+                                          "text": "0\n"
+                                        },
+                                        "shape": {
+                                          "display": "0",
+                                          "f64_bits": "0000000000000000",
+                                          "i64": "0",
+                                          "kind": "number",
+                                          "u64": "0"
+                                        }
+                                      }
+                                    ],
+                                    [
+                                      {
+                                        "rendered": {
+                                          "ok": true,
+                                          "text": "CARGO_PROFILE_TEST_DEBUG\n"
+                                        },
+                                        "shape": {
+                                          "kind": "string",
+                                          "value": "CARGO_PROFILE_TEST_DEBUG"
+                                        }
+                                      },
+                                      {
+                                        "rendered": {
+                                          "ok": true,
+                                          "text": "0\n"
+                                        },
+                                        "shape": {
+                                          "display": "0",
+                                          "f64_bits": "0000000000000000",
+                                          "i64": "0",
+                                          "kind": "number",
+                                          "u64": "0"
+                                        }
+                                      }
+                                    ]
+                                  ],
+                                  "kind": "mapping"
+                                }
+                              }
+                            ],
+                            [
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "steps\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "steps"
+                                }
+                              },
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "- name: Check out exact event source\n  uses: actions/checkout@v5\n  with:\n    ref: ${{ github.sha }}\n    persist-credentials: false\n- name: Install reviewed toolchain\n  uses: dtolnay/rust-toolchain@1.94.0\n  with:\n    components: rustfmt, clippy\n- name: Record exact non-promotable source and toolchain\n  shell: bash\n  run: |\n    set -euo pipefail\n    test \"$(git rev-parse HEAD)\" = \"$GITHUB_SHA\"\n    test -z \"$(git status --porcelain)\"\n    mkdir -p target/observer-semantics-074\n    printf 'source_commit=%s\\nrun_id=%s\\nattempt=%s\\npromotable=false\\nqualification=false\\n' \"$GITHUB_SHA\" \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" > target/observer-semantics-074/identity.txt\n    rustc -Vv > target/observer-semantics-074/rustc.txt\n    sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt\n- name: Format and strict lint (no numerical executable invocation)\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check\n    cargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log\n    cargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log\n- name: Default semantic tests with allocation-counter unit tests only\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log\n- name: Get-owner semantic tests (not native numerical nonregression)\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log\n    test -z \"$(git status --porcelain)\"\n- name: Unprofiled executable entry-point correctness (one offer, not a cohort)\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log\n    test -z \"$(git status --porcelain)\"\n- name: Retain immutable attempt logs even on failure\n  if: always()\n  uses: actions/upload-artifact@v6\n  with:\n    name: observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}\n    path: target/observer-semantics-074/**\n    if-no-files-found: error\n    retention-days: 30\n"
+                                },
+                                "shape": {
+                                  "items": [
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Check out exact event source\nuses: actions/checkout@v5\nwith:\n  ref: ${{ github.sha }}\n  persist-credentials: false\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Check out exact event source\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Check out exact event source"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "uses\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "uses"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "actions/checkout@v5\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "actions/checkout@v5"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "with\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "with"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "ref: ${{ github.sha }}\npersist-credentials: false\n"
+                                              },
+                                              "shape": {
+                                                "entries": [
+                                                  [
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "ref\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "ref"
+                                                      }
+                                                    },
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "${{ github.sha }}\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "${{ github.sha }}"
+                                                      }
+                                                    }
+                                                  ],
+                                                  [
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "persist-credentials\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "persist-credentials"
+                                                      }
+                                                    },
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "false\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "bool",
+                                                        "value": false
+                                                      }
+                                                    }
+                                                  ]
+                                                ],
+                                                "kind": "mapping"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Install reviewed toolchain\nuses: dtolnay/rust-toolchain@1.94.0\nwith:\n  components: rustfmt, clippy\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Install reviewed toolchain\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Install reviewed toolchain"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "uses\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "uses"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "dtolnay/rust-toolchain@1.94.0\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "dtolnay/rust-toolchain@1.94.0"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "with\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "with"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "components: rustfmt, clippy\n"
+                                              },
+                                              "shape": {
+                                                "entries": [
+                                                  [
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "components\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "components"
+                                                      }
+                                                    },
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "rustfmt, clippy\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "rustfmt, clippy"
+                                                      }
+                                                    }
+                                                  ]
+                                                ],
+                                                "kind": "mapping"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Record exact non-promotable source and toolchain\nshell: bash\nrun: |\n  set -euo pipefail\n  test \"$(git rev-parse HEAD)\" = \"$GITHUB_SHA\"\n  test -z \"$(git status --porcelain)\"\n  mkdir -p target/observer-semantics-074\n  printf 'source_commit=%s\\nrun_id=%s\\nattempt=%s\\npromotable=false\\nqualification=false\\n' \"$GITHUB_SHA\" \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" > target/observer-semantics-074/identity.txt\n  rustc -Vv > target/observer-semantics-074/rustc.txt\n  sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Record exact non-promotable source and toolchain\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Record exact non-promotable source and toolchain"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "shell\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "shell"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "bash\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "bash"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "run\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "run"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "|\n  set -euo pipefail\n  test \"$(git rev-parse HEAD)\" = \"$GITHUB_SHA\"\n  test -z \"$(git status --porcelain)\"\n  mkdir -p target/observer-semantics-074\n  printf 'source_commit=%s\\nrun_id=%s\\nattempt=%s\\npromotable=false\\nqualification=false\\n' \"$GITHUB_SHA\" \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" > target/observer-semantics-074/identity.txt\n  rustc -Vv > target/observer-semantics-074/rustc.txt\n  sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "set -euo pipefail\ntest \"$(git rev-parse HEAD)\" = \"$GITHUB_SHA\"\ntest -z \"$(git status --porcelain)\"\nmkdir -p target/observer-semantics-074\nprintf 'source_commit=%s\\nrun_id=%s\\nattempt=%s\\npromotable=false\\nqualification=false\\n' \"$GITHUB_SHA\" \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" > target/observer-semantics-074/identity.txt\nrustc -Vv > target/observer-semantics-074/rustc.txt\nsha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt\n"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Format and strict lint (no numerical executable invocation)\nshell: bash\nrun: |\n  set -euo pipefail\n  cargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check\n  cargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log\n  cargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Format and strict lint (no numerical executable invocation)\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Format and strict lint (no numerical executable invocation)"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "shell\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "shell"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "bash\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "bash"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "run\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "run"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "|\n  set -euo pipefail\n  cargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check\n  cargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log\n  cargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "set -euo pipefail\ncargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check\ncargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log\ncargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log\n"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Default semantic tests with allocation-counter unit tests only\nshell: bash\nrun: |\n  set -euo pipefail\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Default semantic tests with allocation-counter unit tests only\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Default semantic tests with allocation-counter unit tests only"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "shell\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "shell"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "bash\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "bash"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "run\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "run"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "|\n  set -euo pipefail\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "set -euo pipefail\ncargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log\n"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Get-owner semantic tests (not native numerical nonregression)\nshell: bash\nrun: |\n  set -euo pipefail\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log\n  test -z \"$(git status --porcelain)\"\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Get-owner semantic tests (not native numerical nonregression)\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Get-owner semantic tests (not native numerical nonregression)"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "shell\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "shell"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "bash\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "bash"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "run\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "run"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "|\n  set -euo pipefail\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log\n  test -z \"$(git status --porcelain)\"\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "set -euo pipefail\ncargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log\ntest -z \"$(git status --porcelain)\"\n"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Unprofiled executable entry-point correctness (one offer, not a cohort)\nshell: bash\nrun: |\n  set -euo pipefail\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log\n  test -z \"$(git status --porcelain)\"\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Unprofiled executable entry-point correctness (one offer, not a cohort)\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Unprofiled executable entry-point correctness (one offer, not a cohort)"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "shell\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "shell"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "bash\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "bash"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "run\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "run"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "|\n  set -euo pipefail\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log\n  test -z \"$(git status --porcelain)\"\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "set -euo pipefail\ncargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log\ncargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log\ntest -z \"$(git status --porcelain)\"\n"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Retain immutable attempt logs even on failure\nif: always()\nuses: actions/upload-artifact@v6\nwith:\n  name: observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}\n  path: target/observer-semantics-074/**\n  if-no-files-found: error\n  retention-days: 30\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Retain immutable attempt logs even on failure\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Retain immutable attempt logs even on failure"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "if\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "if"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "always()\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "always()"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "uses\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "uses"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "actions/upload-artifact@v6\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "actions/upload-artifact@v6"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "with\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "with"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name: observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}\npath: target/observer-semantics-074/**\nif-no-files-found: error\nretention-days: 30\n"
+                                              },
+                                              "shape": {
+                                                "entries": [
+                                                  [
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "name\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "name"
+                                                      }
+                                                    },
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+                                                      }
+                                                    }
+                                                  ],
+                                                  [
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "path\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "path"
+                                                      }
+                                                    },
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "target/observer-semantics-074/**\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "target/observer-semantics-074/**"
+                                                      }
+                                                    }
+                                                  ],
+                                                  [
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "if-no-files-found\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "if-no-files-found"
+                                                      }
+                                                    },
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "error\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "error"
+                                                      }
+                                                    }
+                                                  ],
+                                                  [
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "retention-days\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "retention-days"
+                                                      }
+                                                    },
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "30\n"
+                                                      },
+                                                      "shape": {
+                                                        "display": "30",
+                                                        "f64_bits": "403e000000000000",
+                                                        "i64": "30",
+                                                        "kind": "number",
+                                                        "u64": "30"
+                                                      }
+                                                    }
+                                                  ]
+                                                ],
+                                                "kind": "mapping"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    }
+                                  ],
+                                  "kind": "sequence"
+                                }
+                              }
+                            ]
+                          ],
+                          "kind": "mapping"
+                        }
+                      }
+                    ]
+                  ],
+                  "kind": "mapping"
+                }
+              }
+            ]
+          ],
+          "kind": "mapping"
+        }
+      }
+    },
+    "tree": {
+      "rendered": {
+        "ok": true,
+        "text": "name: Observer Semantics 0.74\non:\n  push:\n    branches:\n    - feat/0.74-resp-native-throughput\n    paths:\n    - .github/workflows/observer-semantics-074.yml\n    - tools/get-owner-scheduled-controls-074/**\n    - tools/resp-scratch-screen-074/src/memory.rs\n    - crates/hydracache-server/src/redis_tcp.rs\n    - crates/hydracache-server/src/config.rs\n    - crates/hydracache-server/src/bootstrap.rs\n    - crates/hydracache-redis-compat/src/**\n  workflow_dispatch: null\npermissions:\n  contents: read\nconcurrency:\n  group: observer-semantics-074-${{ github.sha }}\n  cancel-in-progress: false\njobs:\n  semantic:\n    name: Exact-SHA default and get-owner semantic controls (not qualification)\n    runs-on: ubuntu-24.04\n    timeout-minutes: 40\n    env:\n      CARGO_BUILD_JOBS: 2\n      CARGO_INCREMENTAL: 0\n      CARGO_PROFILE_DEV_DEBUG: 0\n      CARGO_PROFILE_TEST_DEBUG: 0\n    steps:\n    - name: Check out exact event source\n      uses: actions/checkout@v5\n      with:\n        ref: ${{ github.sha }}\n        persist-credentials: false\n    - name: Install reviewed toolchain\n      uses: dtolnay/rust-toolchain@1.94.0\n      with:\n        components: rustfmt, clippy\n    - name: Record exact non-promotable source and toolchain\n      shell: bash\n      run: |\n        set -euo pipefail\n        test \"$(git rev-parse HEAD)\" = \"$GITHUB_SHA\"\n        test -z \"$(git status --porcelain)\"\n        mkdir -p target/observer-semantics-074\n        printf 'source_commit=%s\\nrun_id=%s\\nattempt=%s\\npromotable=false\\nqualification=false\\n' \"$GITHUB_SHA\" \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" > target/observer-semantics-074/identity.txt\n        rustc -Vv > target/observer-semantics-074/rustc.txt\n        sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt\n    - name: Format and strict lint (no numerical executable invocation)\n      shell: bash\n      run: |\n        set -euo pipefail\n        cargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check\n        cargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log\n        cargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log\n    - name: Default semantic tests with allocation-counter unit tests only\n      shell: bash\n      run: |\n        set -euo pipefail\n        cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log\n    - name: Get-owner semantic tests (not native numerical nonregression)\n      shell: bash\n      run: |\n        set -euo pipefail\n        cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log\n        test -z \"$(git status --porcelain)\"\n    - name: Unprofiled executable entry-point correctness (one offer, not a cohort)\n      shell: bash\n      run: |\n        set -euo pipefail\n        cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log\n        cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log\n        test -z \"$(git status --porcelain)\"\n    - name: Retain immutable attempt logs even on failure\n      if: always()\n      uses: actions/upload-artifact@v6\n      with:\n        name: observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}\n        path: target/observer-semantics-074/**\n        if-no-files-found: error\n        retention-days: 30\n"
+      },
+      "shape": {
+        "entries": [
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "name\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "name"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "Observer Semantics 0.74\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "Observer Semantics 0.74"
+              }
+            }
+          ],
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "on\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "on"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "push:\n  branches:\n  - feat/0.74-resp-native-throughput\n  paths:\n  - .github/workflows/observer-semantics-074.yml\n  - tools/get-owner-scheduled-controls-074/**\n  - tools/resp-scratch-screen-074/src/memory.rs\n  - crates/hydracache-server/src/redis_tcp.rs\n  - crates/hydracache-server/src/config.rs\n  - crates/hydracache-server/src/bootstrap.rs\n  - crates/hydracache-redis-compat/src/**\nworkflow_dispatch: null\n"
+              },
+              "shape": {
+                "entries": [
+                  [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "push\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "push"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "branches:\n- feat/0.74-resp-native-throughput\npaths:\n- .github/workflows/observer-semantics-074.yml\n- tools/get-owner-scheduled-controls-074/**\n- tools/resp-scratch-screen-074/src/memory.rs\n- crates/hydracache-server/src/redis_tcp.rs\n- crates/hydracache-server/src/config.rs\n- crates/hydracache-server/src/bootstrap.rs\n- crates/hydracache-redis-compat/src/**\n"
+                      },
+                      "shape": {
+                        "entries": [
+                          [
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "branches\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "branches"
+                              }
+                            },
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "- feat/0.74-resp-native-throughput\n"
+                              },
+                              "shape": {
+                                "items": [
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "feat/0.74-resp-native-throughput\n"
+                                    },
+                                    "shape": {
+                                      "kind": "string",
+                                      "value": "feat/0.74-resp-native-throughput"
+                                    }
+                                  }
+                                ],
+                                "kind": "sequence"
+                              }
+                            }
+                          ],
+                          [
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "paths\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "paths"
+                              }
+                            },
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "- .github/workflows/observer-semantics-074.yml\n- tools/get-owner-scheduled-controls-074/**\n- tools/resp-scratch-screen-074/src/memory.rs\n- crates/hydracache-server/src/redis_tcp.rs\n- crates/hydracache-server/src/config.rs\n- crates/hydracache-server/src/bootstrap.rs\n- crates/hydracache-redis-compat/src/**\n"
+                              },
+                              "shape": {
+                                "items": [
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": ".github/workflows/observer-semantics-074.yml\n"
+                                    },
+                                    "shape": {
+                                      "kind": "string",
+                                      "value": ".github/workflows/observer-semantics-074.yml"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "tools/get-owner-scheduled-controls-074/**\n"
+                                    },
+                                    "shape": {
+                                      "kind": "string",
+                                      "value": "tools/get-owner-scheduled-controls-074/**"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "tools/resp-scratch-screen-074/src/memory.rs\n"
+                                    },
+                                    "shape": {
+                                      "kind": "string",
+                                      "value": "tools/resp-scratch-screen-074/src/memory.rs"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "crates/hydracache-server/src/redis_tcp.rs\n"
+                                    },
+                                    "shape": {
+                                      "kind": "string",
+                                      "value": "crates/hydracache-server/src/redis_tcp.rs"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "crates/hydracache-server/src/config.rs\n"
+                                    },
+                                    "shape": {
+                                      "kind": "string",
+                                      "value": "crates/hydracache-server/src/config.rs"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "crates/hydracache-server/src/bootstrap.rs\n"
+                                    },
+                                    "shape": {
+                                      "kind": "string",
+                                      "value": "crates/hydracache-server/src/bootstrap.rs"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "crates/hydracache-redis-compat/src/**\n"
+                                    },
+                                    "shape": {
+                                      "kind": "string",
+                                      "value": "crates/hydracache-redis-compat/src/**"
+                                    }
+                                  }
+                                ],
+                                "kind": "sequence"
+                              }
+                            }
+                          ]
+                        ],
+                        "kind": "mapping"
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "workflow_dispatch\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "workflow_dispatch"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "null\n"
+                      },
+                      "shape": {
+                        "kind": "null"
+                      }
+                    }
+                  ]
+                ],
+                "kind": "mapping"
+              }
+            }
+          ],
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "permissions\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "permissions"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "contents: read\n"
+              },
+              "shape": {
+                "entries": [
+                  [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "contents\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "contents"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "read\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "read"
+                      }
+                    }
+                  ]
+                ],
+                "kind": "mapping"
+              }
+            }
+          ],
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "concurrency\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "concurrency"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "group: observer-semantics-074-${{ github.sha }}\ncancel-in-progress: false\n"
+              },
+              "shape": {
+                "entries": [
+                  [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "group\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "group"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "observer-semantics-074-${{ github.sha }}\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "observer-semantics-074-${{ github.sha }}"
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "cancel-in-progress\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "cancel-in-progress"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "false\n"
+                      },
+                      "shape": {
+                        "kind": "bool",
+                        "value": false
+                      }
+                    }
+                  ]
+                ],
+                "kind": "mapping"
+              }
+            }
+          ],
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "jobs\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "jobs"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "semantic:\n  name: Exact-SHA default and get-owner semantic controls (not qualification)\n  runs-on: ubuntu-24.04\n  timeout-minutes: 40\n  env:\n    CARGO_BUILD_JOBS: 2\n    CARGO_INCREMENTAL: 0\n    CARGO_PROFILE_DEV_DEBUG: 0\n    CARGO_PROFILE_TEST_DEBUG: 0\n  steps:\n  - name: Check out exact event source\n    uses: actions/checkout@v5\n    with:\n      ref: ${{ github.sha }}\n      persist-credentials: false\n  - name: Install reviewed toolchain\n    uses: dtolnay/rust-toolchain@1.94.0\n    with:\n      components: rustfmt, clippy\n  - name: Record exact non-promotable source and toolchain\n    shell: bash\n    run: |\n      set -euo pipefail\n      test \"$(git rev-parse HEAD)\" = \"$GITHUB_SHA\"\n      test -z \"$(git status --porcelain)\"\n      mkdir -p target/observer-semantics-074\n      printf 'source_commit=%s\\nrun_id=%s\\nattempt=%s\\npromotable=false\\nqualification=false\\n' \"$GITHUB_SHA\" \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" > target/observer-semantics-074/identity.txt\n      rustc -Vv > target/observer-semantics-074/rustc.txt\n      sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt\n  - name: Format and strict lint (no numerical executable invocation)\n    shell: bash\n    run: |\n      set -euo pipefail\n      cargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check\n      cargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log\n      cargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log\n  - name: Default semantic tests with allocation-counter unit tests only\n    shell: bash\n    run: |\n      set -euo pipefail\n      cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log\n  - name: Get-owner semantic tests (not native numerical nonregression)\n    shell: bash\n    run: |\n      set -euo pipefail\n      cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log\n      test -z \"$(git status --porcelain)\"\n  - name: Unprofiled executable entry-point correctness (one offer, not a cohort)\n    shell: bash\n    run: |\n      set -euo pipefail\n      cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log\n      cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log\n      test -z \"$(git status --porcelain)\"\n  - name: Retain immutable attempt logs even on failure\n    if: always()\n    uses: actions/upload-artifact@v6\n    with:\n      name: observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}\n      path: target/observer-semantics-074/**\n      if-no-files-found: error\n      retention-days: 30\n"
+              },
+              "shape": {
+                "entries": [
+                  [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "semantic\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "semantic"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "name: Exact-SHA default and get-owner semantic controls (not qualification)\nruns-on: ubuntu-24.04\ntimeout-minutes: 40\nenv:\n  CARGO_BUILD_JOBS: 2\n  CARGO_INCREMENTAL: 0\n  CARGO_PROFILE_DEV_DEBUG: 0\n  CARGO_PROFILE_TEST_DEBUG: 0\nsteps:\n- name: Check out exact event source\n  uses: actions/checkout@v5\n  with:\n    ref: ${{ github.sha }}\n    persist-credentials: false\n- name: Install reviewed toolchain\n  uses: dtolnay/rust-toolchain@1.94.0\n  with:\n    components: rustfmt, clippy\n- name: Record exact non-promotable source and toolchain\n  shell: bash\n  run: |\n    set -euo pipefail\n    test \"$(git rev-parse HEAD)\" = \"$GITHUB_SHA\"\n    test -z \"$(git status --porcelain)\"\n    mkdir -p target/observer-semantics-074\n    printf 'source_commit=%s\\nrun_id=%s\\nattempt=%s\\npromotable=false\\nqualification=false\\n' \"$GITHUB_SHA\" \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" > target/observer-semantics-074/identity.txt\n    rustc -Vv > target/observer-semantics-074/rustc.txt\n    sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt\n- name: Format and strict lint (no numerical executable invocation)\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check\n    cargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log\n    cargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log\n- name: Default semantic tests with allocation-counter unit tests only\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log\n- name: Get-owner semantic tests (not native numerical nonregression)\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log\n    test -z \"$(git status --porcelain)\"\n- name: Unprofiled executable entry-point correctness (one offer, not a cohort)\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log\n    test -z \"$(git status --porcelain)\"\n- name: Retain immutable attempt logs even on failure\n  if: always()\n  uses: actions/upload-artifact@v6\n  with:\n    name: observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}\n    path: target/observer-semantics-074/**\n    if-no-files-found: error\n    retention-days: 30\n"
+                      },
+                      "shape": {
+                        "entries": [
+                          [
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "name\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "name"
+                              }
+                            },
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "Exact-SHA default and get-owner semantic controls (not qualification)\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "Exact-SHA default and get-owner semantic controls (not qualification)"
+                              }
+                            }
+                          ],
+                          [
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "runs-on\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "runs-on"
+                              }
+                            },
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "ubuntu-24.04\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "ubuntu-24.04"
+                              }
+                            }
+                          ],
+                          [
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "timeout-minutes\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "timeout-minutes"
+                              }
+                            },
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "40\n"
+                              },
+                              "shape": {
+                                "display": "40",
+                                "f64_bits": "4044000000000000",
+                                "i64": "40",
+                                "kind": "number",
+                                "u64": "40"
+                              }
+                            }
+                          ],
+                          [
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "env\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "env"
+                              }
+                            },
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "CARGO_BUILD_JOBS: 2\nCARGO_INCREMENTAL: 0\nCARGO_PROFILE_DEV_DEBUG: 0\nCARGO_PROFILE_TEST_DEBUG: 0\n"
+                              },
+                              "shape": {
+                                "entries": [
+                                  [
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "CARGO_BUILD_JOBS\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": "CARGO_BUILD_JOBS"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "2\n"
+                                      },
+                                      "shape": {
+                                        "display": "2",
+                                        "f64_bits": "4000000000000000",
+                                        "i64": "2",
+                                        "kind": "number",
+                                        "u64": "2"
+                                      }
+                                    }
+                                  ],
+                                  [
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "CARGO_INCREMENTAL\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": "CARGO_INCREMENTAL"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "0\n"
+                                      },
+                                      "shape": {
+                                        "display": "0",
+                                        "f64_bits": "0000000000000000",
+                                        "i64": "0",
+                                        "kind": "number",
+                                        "u64": "0"
+                                      }
+                                    }
+                                  ],
+                                  [
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "CARGO_PROFILE_DEV_DEBUG\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": "CARGO_PROFILE_DEV_DEBUG"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "0\n"
+                                      },
+                                      "shape": {
+                                        "display": "0",
+                                        "f64_bits": "0000000000000000",
+                                        "i64": "0",
+                                        "kind": "number",
+                                        "u64": "0"
+                                      }
+                                    }
+                                  ],
+                                  [
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "CARGO_PROFILE_TEST_DEBUG\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": "CARGO_PROFILE_TEST_DEBUG"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "0\n"
+                                      },
+                                      "shape": {
+                                        "display": "0",
+                                        "f64_bits": "0000000000000000",
+                                        "i64": "0",
+                                        "kind": "number",
+                                        "u64": "0"
+                                      }
+                                    }
+                                  ]
+                                ],
+                                "kind": "mapping"
+                              }
+                            }
+                          ],
+                          [
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "steps\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "steps"
+                              }
+                            },
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "- name: Check out exact event source\n  uses: actions/checkout@v5\n  with:\n    ref: ${{ github.sha }}\n    persist-credentials: false\n- name: Install reviewed toolchain\n  uses: dtolnay/rust-toolchain@1.94.0\n  with:\n    components: rustfmt, clippy\n- name: Record exact non-promotable source and toolchain\n  shell: bash\n  run: |\n    set -euo pipefail\n    test \"$(git rev-parse HEAD)\" = \"$GITHUB_SHA\"\n    test -z \"$(git status --porcelain)\"\n    mkdir -p target/observer-semantics-074\n    printf 'source_commit=%s\\nrun_id=%s\\nattempt=%s\\npromotable=false\\nqualification=false\\n' \"$GITHUB_SHA\" \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" > target/observer-semantics-074/identity.txt\n    rustc -Vv > target/observer-semantics-074/rustc.txt\n    sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt\n- name: Format and strict lint (no numerical executable invocation)\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check\n    cargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log\n    cargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log\n- name: Default semantic tests with allocation-counter unit tests only\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log\n- name: Get-owner semantic tests (not native numerical nonregression)\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log\n    test -z \"$(git status --porcelain)\"\n- name: Unprofiled executable entry-point correctness (one offer, not a cohort)\n  shell: bash\n  run: |\n    set -euo pipefail\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log\n    cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log\n    test -z \"$(git status --porcelain)\"\n- name: Retain immutable attempt logs even on failure\n  if: always()\n  uses: actions/upload-artifact@v6\n  with:\n    name: observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}\n    path: target/observer-semantics-074/**\n    if-no-files-found: error\n    retention-days: 30\n"
+                              },
+                              "shape": {
+                                "items": [
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Check out exact event source\nuses: actions/checkout@v5\nwith:\n  ref: ${{ github.sha }}\n  persist-credentials: false\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Check out exact event source\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Check out exact event source"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "uses\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "uses"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "actions/checkout@v5\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "actions/checkout@v5"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "with\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "with"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "ref: ${{ github.sha }}\npersist-credentials: false\n"
+                                            },
+                                            "shape": {
+                                              "entries": [
+                                                [
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "ref\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "ref"
+                                                    }
+                                                  },
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "${{ github.sha }}\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "${{ github.sha }}"
+                                                    }
+                                                  }
+                                                ],
+                                                [
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "persist-credentials\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "persist-credentials"
+                                                    }
+                                                  },
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "false\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "bool",
+                                                      "value": false
+                                                    }
+                                                  }
+                                                ]
+                                              ],
+                                              "kind": "mapping"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Install reviewed toolchain\nuses: dtolnay/rust-toolchain@1.94.0\nwith:\n  components: rustfmt, clippy\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Install reviewed toolchain\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Install reviewed toolchain"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "uses\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "uses"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "dtolnay/rust-toolchain@1.94.0\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "dtolnay/rust-toolchain@1.94.0"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "with\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "with"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "components: rustfmt, clippy\n"
+                                            },
+                                            "shape": {
+                                              "entries": [
+                                                [
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "components\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "components"
+                                                    }
+                                                  },
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "rustfmt, clippy\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "rustfmt, clippy"
+                                                    }
+                                                  }
+                                                ]
+                                              ],
+                                              "kind": "mapping"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Record exact non-promotable source and toolchain\nshell: bash\nrun: |\n  set -euo pipefail\n  test \"$(git rev-parse HEAD)\" = \"$GITHUB_SHA\"\n  test -z \"$(git status --porcelain)\"\n  mkdir -p target/observer-semantics-074\n  printf 'source_commit=%s\\nrun_id=%s\\nattempt=%s\\npromotable=false\\nqualification=false\\n' \"$GITHUB_SHA\" \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" > target/observer-semantics-074/identity.txt\n  rustc -Vv > target/observer-semantics-074/rustc.txt\n  sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Record exact non-promotable source and toolchain\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Record exact non-promotable source and toolchain"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "shell\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "shell"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "bash\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "bash"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "run\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "run"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "|\n  set -euo pipefail\n  test \"$(git rev-parse HEAD)\" = \"$GITHUB_SHA\"\n  test -z \"$(git status --porcelain)\"\n  mkdir -p target/observer-semantics-074\n  printf 'source_commit=%s\\nrun_id=%s\\nattempt=%s\\npromotable=false\\nqualification=false\\n' \"$GITHUB_SHA\" \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" > target/observer-semantics-074/identity.txt\n  rustc -Vv > target/observer-semantics-074/rustc.txt\n  sha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "set -euo pipefail\ntest \"$(git rev-parse HEAD)\" = \"$GITHUB_SHA\"\ntest -z \"$(git status --porcelain)\"\nmkdir -p target/observer-semantics-074\nprintf 'source_commit=%s\\nrun_id=%s\\nattempt=%s\\npromotable=false\\nqualification=false\\n' \"$GITHUB_SHA\" \"$GITHUB_RUN_ID\" \"$GITHUB_RUN_ATTEMPT\" > target/observer-semantics-074/identity.txt\nrustc -Vv > target/observer-semantics-074/rustc.txt\nsha256sum Cargo.lock tools/get-owner-scheduled-controls-074/Cargo.lock docs/testing/performance/0.74/qualification-manifest.toml > target/observer-semantics-074/locks.txt\n"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Format and strict lint (no numerical executable invocation)\nshell: bash\nrun: |\n  set -euo pipefail\n  cargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check\n  cargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log\n  cargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Format and strict lint (no numerical executable invocation)\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Format and strict lint (no numerical executable invocation)"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "shell\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "shell"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "bash\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "bash"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "run\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "run"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "|\n  set -euo pipefail\n  cargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check\n  cargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log\n  cargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "set -euo pipefail\ncargo fmt --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --check\ncargo check --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked 2>&1 | tee target/observer-semantics-074/check.log\ncargo clippy --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- -D warnings 2>&1 | tee target/observer-semantics-074/clippy.log\n"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Default semantic tests with allocation-counter unit tests only\nshell: bash\nrun: |\n  set -euo pipefail\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Default semantic tests with allocation-counter unit tests only\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Default semantic tests with allocation-counter unit tests only"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "shell\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "shell"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "bash\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "bash"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "run\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "run"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "|\n  set -euo pipefail\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "set -euo pipefail\ncargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --features allocation-diagnostics --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/default.log\n"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Get-owner semantic tests (not native numerical nonregression)\nshell: bash\nrun: |\n  set -euo pipefail\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log\n  test -z \"$(git status --porcelain)\"\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Get-owner semantic tests (not native numerical nonregression)\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Get-owner semantic tests (not native numerical nonregression)"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "shell\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "shell"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "bash\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "bash"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "run\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "run"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "|\n  set -euo pipefail\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log\n  test -z \"$(git status --porcelain)\"\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "set -euo pipefail\ncargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --all-targets --all-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/get-owner.log\ntest -z \"$(git status --porcelain)\"\n"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Unprofiled executable entry-point correctness (one offer, not a cohort)\nshell: bash\nrun: |\n  set -euo pipefail\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log\n  test -z \"$(git status --porcelain)\"\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Unprofiled executable entry-point correctness (one offer, not a cohort)\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Unprofiled executable entry-point correctness (one offer, not a cohort)"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "shell\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "shell"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "bash\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "bash"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "run\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "run"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "|\n  set -euo pipefail\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log\n  cargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log\n  test -z \"$(git status --porcelain)\"\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "set -euo pipefail\ncargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-default.log\ncargo test --manifest-path tools/get-owner-scheduled-controls-074/Cargo.toml --test timing_cli --no-default-features --features get-owner --locked -- --test-threads=1 2>&1 | tee target/observer-semantics-074/timing-cli-get-owner.log\ntest -z \"$(git status --porcelain)\"\n"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Retain immutable attempt logs even on failure\nif: always()\nuses: actions/upload-artifact@v6\nwith:\n  name: observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}\n  path: target/observer-semantics-074/**\n  if-no-files-found: error\n  retention-days: 30\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Retain immutable attempt logs even on failure\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Retain immutable attempt logs even on failure"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "if\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "if"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "always()\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "always()"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "uses\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "uses"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "actions/upload-artifact@v6\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "actions/upload-artifact@v6"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "with\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "with"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name: observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}\npath: target/observer-semantics-074/**\nif-no-files-found: error\nretention-days: 30\n"
+                                            },
+                                            "shape": {
+                                              "entries": [
+                                                [
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "name\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "name"
+                                                    }
+                                                  },
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "observer-semantics-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+                                                    }
+                                                  }
+                                                ],
+                                                [
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "path\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "path"
+                                                    }
+                                                  },
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "target/observer-semantics-074/**\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "target/observer-semantics-074/**"
+                                                    }
+                                                  }
+                                                ],
+                                                [
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "if-no-files-found\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "if-no-files-found"
+                                                    }
+                                                  },
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "error\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "error"
+                                                    }
+                                                  }
+                                                ],
+                                                [
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "retention-days\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "retention-days"
+                                                    }
+                                                  },
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "30\n"
+                                                    },
+                                                    "shape": {
+                                                      "display": "30",
+                                                      "f64_bits": "403e000000000000",
+                                                      "i64": "30",
+                                                      "kind": "number",
+                                                      "u64": "30"
+                                                    }
+                                                  }
+                                                ]
+                                              ],
+                                              "kind": "mapping"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  }
+                                ],
+                                "kind": "sequence"
+                              }
+                            }
+                          ]
+                        ],
+                        "kind": "mapping"
+                      }
+                    }
+                  ]
+                ],
+                "kind": "mapping"
+              }
+            }
+          ]
+        ],
+        "kind": "mapping"
+      }
+    }
+  }
+}

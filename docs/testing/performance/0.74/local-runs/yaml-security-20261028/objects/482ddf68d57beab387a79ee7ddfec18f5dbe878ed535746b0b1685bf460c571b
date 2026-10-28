@@ -1,0 +1,7 @@
+    Updating crates.io index
+     Locking 2 packages to latest compatible versions
+      Adding libyaml-rs v0.3.0
+      Adding yaml_serde v0.10.7
+ Downloading crates ...
+  Downloaded libyaml-rs v0.3.0
+  Downloaded yaml_serde v0.10.7

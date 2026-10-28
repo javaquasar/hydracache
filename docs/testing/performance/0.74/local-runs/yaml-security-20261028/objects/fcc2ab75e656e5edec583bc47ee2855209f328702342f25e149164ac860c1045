@@ -1,0 +1,37 @@
+"""Preserve reviewed old archives and exact text deltas; never execute source."""
+from pathlib import Path
+import difflib,hashlib,io,json,tarfile,tomllib
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/yaml-security-20261028'
+OUT=BASE/'source-delta'
+OUT.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+rows=tomllib.loads((ROOT/'Cargo.lock').read_text())['package']
+records={}
+for old,new,version in (('serde_yaml','yaml_serde','0.10.7'),('unsafe-libyaml','libyaml-rs','0.3.0')):
+ metadata=next(r for r in rows if r['name']==old)
+ path=Path('C:/Users/ArturBuzov/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f')/(old+'-'+metadata['version']+'.crate')
+ raw=path.read_bytes();assert sha(raw)==metadata['checksum']
+ (OUT/(old+'-'+metadata['version']+'.crate')).write_bytes(raw)
+ oldfiles={}
+ with tarfile.open(fileobj=io.BytesIO(raw),mode='r:gz') as archive:
+  for item in archive.getmembers():
+   if item.isfile():
+    name=Path(item.name).relative_to(old+'-'+metadata['version']).as_posix()
+    oldfiles[name]=archive.extractfile(item).read()
+ folder=BASE/'upstream'/(new+'-'+version)/'review-source'
+ newfiles={p.relative_to(folder).as_posix():p.read_bytes() for p in folder.rglob('*') if p.is_file()}
+ changed={n:('added' if n not in oldfiles else 'removed' if n not in newfiles else 'changed')
+  for n in sorted(oldfiles.keys()|newfiles.keys()) if oldfiles.get(n)!=newfiles.get(n)}
+ diff=[]
+ for name in changed:
+  if name.startswith('src/') and name.endswith('.rs'):
+   before=oldfiles.get(name,b'').decode('utf-8');after=newfiles.get(name,b'').decode('utf-8')
+   diff.extend(difflib.unified_diff(before.splitlines(True),after.splitlines(True),fromfile=old+'/'+name,tofile=new+'/'+name))
+ (OUT/(old+'-to-'+new+'.diff')).write_text(''.join(diff),encoding='utf-8',newline='\n')
+ records[old]=dict(previous_package=old,previous_version=metadata['version'],previous_checksum=metadata['checksum'],
+  successor_package=new,successor_version=version,changed=changed,
+  old_source_members={k:sha(v) for k,v in oldfiles.items() if k.startswith('src/')},
+  new_source_members={k:sha(v) for k,v in newfiles.items() if k.startswith('src/')})
+with (OUT/'result.json').open('x') as stream:json.dump(dict(pairs=records,archived_code_executed=False),stream,indent=2,sort_keys=True)
+print(json.dumps({k:dict(changed_members=len(v['changed']),source_changes=sum(n.startswith('src/') for n in v['changed'])) for k,v in records.items()}))

@@ -1,0 +1,15 @@
+{
+  "id": "fixture/duplicate-nested-key",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": "fixture/duplicate-nested-key",
+    "location": {
+      "column": 7,
+      "index": 6,
+      "line": 1
+    },
+    "message": "jobs: duplicate entry with key \"test\" at line 1 column 7",
+    "parsed": false
+  }
+}

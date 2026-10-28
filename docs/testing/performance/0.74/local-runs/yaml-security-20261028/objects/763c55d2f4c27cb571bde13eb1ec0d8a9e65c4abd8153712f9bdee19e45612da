@@ -1,0 +1,1 @@
+{"id":"fixture/duplicate-key","location":{"column":1,"index":0,"line":1},"message":"duplicate entry with key \"jobs\"","parsed":false}

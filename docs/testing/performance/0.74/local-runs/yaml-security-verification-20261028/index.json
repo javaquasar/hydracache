@@ -1,0 +1,93 @@
+{
+  "archived_code_executed": false,
+  "doc_check_pass": true,
+  "gate_replayed": false,
+  "members": {
+    "doc-check/before-Cargo.lock": {
+      "bytes": 175565,
+      "sha256": "9efeffabd8726a961a84d23b7a8e5f2ce74e0e313698f064eed603ea79062a7c"
+    },
+    "doc-check/before-deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "doc-check/before-xtask-Cargo.toml": {
+      "bytes": 1239,
+      "sha256": "5f29059c1f8dcc7b925876565090e8133697fcffc76499f01c0fbeffb3356d50"
+    },
+    "doc-check/document-inputs.json": {
+      "bytes": 782,
+      "sha256": "90eded96cf5a7d2f056885b2a61e0b18ba738693609beb9e724901e46fab4315"
+    },
+    "doc-check/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "doc-check/intent.json": {
+      "bytes": 384659,
+      "sha256": "f82504c687834348abf61f97fc7fe0c15e7efff2f33113445ba8452044b7d11a"
+    },
+    "doc-check/launcher.py": {
+      "bytes": 6942,
+      "sha256": "7d9534c12f886bfb57d1464bcab7798f99e4e7aca3cfddb5a02a5e59b2305145"
+    },
+    "doc-check/result.json": {
+      "bytes": 384446,
+      "sha256": "4d149e9351471ea8615f8e1ec05fc24b0be22a4f2f0162f196122e91525f2e5c"
+    },
+    "doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "document/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1492639,
+      "sha256": "0d7846be8e0d532aa84fd99d24088a54f68392059f961bd86be047b6a491bbc8"
+    },
+    "document/docs/testing/performance/0.74/README.md": {
+      "bytes": 495397,
+      "sha256": "4b8da810310486da2c1cc8edbed5fba8b39877d611b8c92af1ce168872c25da0"
+    },
+    "document/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 30154,
+      "sha256": "879ea85de811ea51b212c3735b724ea87a6a988aaa105fc140c2f042ef25a44f"
+    },
+    "document/docs/testing/performance/0.74/security-review-20261028.md": {
+      "bytes": 12360,
+      "sha256": "4b011b0ac85d8d6464fa086a1a32c3775e58a849939271af0ad78998822bca8d"
+    },
+    "document/docs/testing/performance/0.74/yaml-security-result-20261028.md": {
+      "bytes": 8198,
+      "sha256": "ddd7d587f8861c06a4e44ec513ce265571361af09ef9adb8e984fd4c4e525f0e"
+    },
+    "producer/retain-yaml-verification-20261028.py": {
+      "bytes": 2061,
+      "sha256": "8d93bd04349b9b9e1d48744bb1f71a6a43529473dfc1dc6b2caac3d1ccb6f550"
+    },
+    "producer/verify-yaml-packet-20261028.py": {
+      "bytes": 3584,
+      "sha256": "c23fc1eccb216d1f137d7588f5c2234c32615746c74328845f6ba3b8c1d686c3"
+    },
+    "verification/intent.json": {
+      "bytes": 238,
+      "sha256": "c726d91820b770b8de14f61f10abeb0b4a4e78f18a8bd7cb8d845a2c55ac18fc"
+    },
+    "verification/producer.py": {
+      "bytes": 3584,
+      "sha256": "c23fc1eccb216d1f137d7588f5c2234c32615746c74328845f6ba3b8c1d686c3"
+    },
+    "verification/result.json": {
+      "bytes": 371,
+      "sha256": "3ca88417cb78167297b828a45f84f536ef3157c4f7b6d3f8e9f735d1eaafc9db"
+    }
+  },
+  "parent_index_sha256": "1e12021d3dcb7632e95f7cc10a17244178f3a1905af17ce8740eda1267bffcb0",
+  "parent_members_verified": 928,
+  "parent_objects_verified": 382,
+  "release_admitted": false,
+  "schema": "hc074-yaml-security-verification-v1",
+  "workspace_pass": false
+}

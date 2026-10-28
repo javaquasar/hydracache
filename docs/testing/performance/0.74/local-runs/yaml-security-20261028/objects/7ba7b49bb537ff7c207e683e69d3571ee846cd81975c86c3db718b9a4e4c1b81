@@ -1,0 +1,14 @@
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling zmij v1.0.21
+   Compiling hashbrown v0.17.1
+   Compiling itoa v1.0.18
+   Compiling serde_json v1.0.150
+   Compiling equivalent v1.0.2
+   Compiling indexmap v2.14.0
+   Compiling unsafe-libyaml v0.2.11
+   Compiling memchr v2.8.2
+   Compiling ryu v1.0.23
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling hc074-yaml-probe v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\yaml-security-20261028\fixtures\baseline)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.13s

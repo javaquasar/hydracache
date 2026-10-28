@@ -1,0 +1,15 @@
+{
+  "id": "fixture/unterminated-quote",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": "fixture/unterminated-quote",
+    "location": {
+      "column": 1,
+      "index": 19,
+      "line": 2
+    },
+    "message": "found unexpected end of stream at line 2 column 1, while scanning a quoted scalar at line 1 column 8",
+    "parsed": false
+  }
+}

@@ -1,0 +1,485 @@
+{
+  "packages": {
+    "libyaml-rs": {
+      "archive_sha256": "2e126dda6f34391ab7b444f9922055facc83c07a910da3eb16f1e4d9c45dc777",
+      "archive_url": "https://static.crates.io/crates/libyaml-rs/libyaml-rs-0.3.0.crate",
+      "headers": {
+        "Accept-Ranges": "bytes",
+        "Age": "15",
+        "Cache-Control": "public,max-age=600",
+        "Connection": "close",
+        "Content-Length": "329",
+        "Content-Type": "text/plain",
+        "Date": "Wed, 28 Oct 2026 00:37:59 GMT",
+        "ETag": "\"2099357dbf81804c9015c027e4d652d7\"",
+        "Last-Modified": "Wed, 11 Mar 2026 18:39:40 GMT",
+        "Server": "AmazonS3",
+        "Via": "1.1 varnish",
+        "X-Cache": "HIT",
+        "X-Cache-Hits": "1",
+        "X-Served-By": "cache-bgy-lime1210051-BGY",
+        "X-Timer": "S1793147879.040683,VS0,VE0",
+        "x-amz-id-2": "0+HN2+HDzCX3vyVHhbOt/1FNKuPqpD4wydAMwBKWqRkjv7xwshhWAH45zspAF3tDt/CEvgHbLaTey2MvA9+iBjfocNdpau97",
+        "x-amz-request-id": "37R1CA5YWA1B3FFA",
+        "x-amz-server-side-encryption": "AES256",
+        "x-amz-version-id": "lgK2pCArNP3yJrjArhpfC.tcDq7UWFMM"
+      },
+      "index_sha256": "f83de2671421e6d4f5edd69af8bded27ad35f51de523d79a1c7147c2af470346",
+      "index_url": "https://index.crates.io/li/by/libyaml-rs",
+      "members": {
+        ".cargo_vcs_info.json": {
+          "bytes": 94,
+          "sha256": "50dc512c49ffb78d7e3e4d31ca75696e7aa5cb0fbe7b3f392722de1100fb18a1"
+        },
+        ".github/FUNDING.yml": {
+          "bytes": 16,
+          "sha256": "b017158736b3c9751a2d21edfce7fe61c8954e2fced8da8dd3013c2f3e295bd9"
+        },
+        ".github/workflows/ci.yml": {
+          "bytes": 2680,
+          "sha256": "631c558a30138e0e65c3c6c567cd0afd592b237b2f4a6d221e88bf0fe73972ac"
+        },
+        ".gitignore": {
+          "bytes": 44,
+          "sha256": "9b9020aa38b31b31d51854e60a21b1c4cdedbfd9c572ab3ba7747a23bababdf5"
+        },
+        "Cargo.lock": {
+          "bytes": 812,
+          "sha256": "7cf52a654bd466f2f457f8a097058a7dbac33882ad9fcb9dafb9045c6d91a020"
+        },
+        "Cargo.toml": {
+          "bytes": 1648,
+          "sha256": "bee0c18ede4d0b8bf7b038ce3c4871029c32d88ce43c24693a8f781fda28ddc7"
+        },
+        "Cargo.toml.orig": {
+          "bytes": 677,
+          "sha256": "1474fc1952cb83bf0967727d79ae5a2df84abc8ffc796a32ba9e4287fdf9f3cd"
+        },
+        "LICENSE-MIT": {
+          "bytes": 1023,
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3"
+        },
+        "Makefile": {
+          "bytes": 1295,
+          "sha256": "b94c42cc7a24ea7b64930a8c82a2f88b49921fcd69072be67690d937bfdfb840"
+        },
+        "README.md": {
+          "bytes": 1332,
+          "sha256": "9a78a5654690be5def635af7f13b9b07f7450c4dc39275b562574630b727135c"
+        },
+        "src/api.rs": {
+          "bytes": 54418,
+          "sha256": "85b2fd0cf09ec7560e0a58215a05af3f44a4403bcf0c1eb91603ec149d67dfc0"
+        },
+        "src/bin/cstr/mod.rs": {
+          "bytes": 1351,
+          "sha256": "ea7d6c8c1376c7cae56afc2ed365d16e5aabe6a0dda06e01954b90bb7ba8d038"
+        },
+        "src/bin/run-emitter-test-suite.rs": {
+          "bytes": 10728,
+          "sha256": "6d250c47ad89747f6a89a230f059d5d7a367613a37dc344925d85e243f44933a"
+        },
+        "src/bin/run-parser-test-suite.rs": {
+          "bytes": 7880,
+          "sha256": "22d43d07f1ab3cbd25b4899e796d963c39dd38f9711830f2d0e410303c4047f0"
+        },
+        "src/dumper.rs": {
+          "bytes": 16306,
+          "sha256": "984cbb2187095856bac9d0ec3612634d69db76a16800e02e873a89d6f9dbcc2e"
+        },
+        "src/emitter.rs": {
+          "bytes": 76959,
+          "sha256": "e2e5741bad8714f1772f83c77d7bf9b793763808aedc19cf6afd6b50983ac8da"
+        },
+        "src/lib.rs": {
+          "bytes": 10786,
+          "sha256": "9f988c8397039b7abbf4685f8457731a37e40e144dda86940e2b2b3778ca1ec2"
+        },
+        "src/loader.rs": {
+          "bytes": 20367,
+          "sha256": "a4b1def1986adace844b499bedd568bdf3ec0bbeceab02e42808d848d89a4115"
+        },
+        "src/macros.rs": {
+          "bytes": 15319,
+          "sha256": "fb383fe61179b9bdbc77da57539b8211d7b7bc6775b6d7ce7d0d75249f63508a"
+        },
+        "src/ops.rs": {
+          "bytes": 2905,
+          "sha256": "9716b7e16a430e7b45f3196e9659fa369fcda4e5117e18d2595f8ea75ce2340d"
+        },
+        "src/parser.rs": {
+          "bytes": 54737,
+          "sha256": "27125c0a61b3df054b726a574ed883954ba8afbb91680dd371f4faff0dddd4b7"
+        },
+        "src/reader.rs": {
+          "bytes": 19750,
+          "sha256": "3cff2f6aea01188f2d8ea8c6b210c5831b4316fed16ed96b0f3d79da048fb297"
+        },
+        "src/scanner.rs": {
+          "bytes": 107053,
+          "sha256": "e6c5301c9c4a83d266ec0477e0f7e2522cee6038413b9bd3f50049b5e0491ff4"
+        },
+        "src/success.rs": {
+          "bytes": 438,
+          "sha256": "f1fe294ed595c7c5cf82cc113e6debbe970129878794ab1f1a5aab77e08f99f4"
+        },
+        "src/writer.rs": {
+          "bytes": 5431,
+          "sha256": "9ce5f7fcaeaae73bcde9a7d8022dfbace4e8eb1867461d6b8af1f42688494dcb"
+        },
+        "src/yaml.rs": {
+          "bytes": 39534,
+          "sha256": "fd8d05d2a23611e071833a9ddf71fcbc8b8cbff038fb326790e4ffa001083227"
+        },
+        "tests/bin/mod.rs": {
+          "bytes": 1155,
+          "sha256": "8b159a2bcfc7c59e18f1e2378959797384cca307b6a2b6940af79e26b27ea988"
+        },
+        "tests/ignorelist/libyaml-emitter": {
+          "bytes": 3154,
+          "sha256": "3cdaa69d21c87bb3988536cf95747547793a5875e374cfe91c0b12fb2eaf2c15"
+        },
+        "tests/ignorelist/libyaml-parser": {
+          "bytes": 1522,
+          "sha256": "60cf936e4e2acfd34ad397fab1c004c79f5bce7778eba2c5e89f1cf2478f6008"
+        },
+        "tests/ignorelist/libyaml-parser-error": {
+          "bytes": 489,
+          "sha256": "e57811f1660f02e7a58dd9394d0121b8ba8b8e3ba0553b906b82536bcdb80edf"
+        },
+        "tests/test_emitter.rs": {
+          "bytes": 956,
+          "sha256": "5b32979d717e5f774b71c28da73d56cabc464ebd8af8b15d5b30e0a046fb7781"
+        },
+        "tests/test_parser.rs": {
+          "bytes": 841,
+          "sha256": "06d0a34e40876065427cb71de513a50a97414c01511f5b0cc42804c8ccb65553"
+        },
+        "tests/test_parser_error.rs": {
+          "bytes": 790,
+          "sha256": "29de6441ccf0a52f7227381d66a445dfe22c4b694d32350e1df7fcdb2eeb8e80"
+        },
+        "util/release": {
+          "bytes": 3125,
+          "sha256": "1100103f981286a4bbd50e68e3570b39a4dbcc00fba094bbd828b5b684bbbddc"
+        }
+      },
+      "metadata": {
+        "cksum": "2e126dda6f34391ab7b444f9922055facc83c07a910da3eb16f1e4d9c45dc777",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "pretty_assertions",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "libyaml-rs",
+        "pubtime": "2026-03-11T18:39:38Z",
+        "rust_version": "1.60",
+        "vers": "0.3.0",
+        "yanked": false
+      }
+    },
+    "yaml_serde": {
+      "archive_sha256": "33b729a08a9a6be689bbad3e2bf8015926db54b6622cc89c3a5f7dc174b9e918",
+      "archive_url": "https://static.crates.io/crates/yaml_serde/yaml_serde-0.10.7.crate",
+      "headers": {
+        "Accept-Ranges": "bytes",
+        "Age": "16",
+        "Cache-Control": "public,max-age=600",
+        "Connection": "close",
+        "Content-Length": "8213",
+        "Content-Type": "text/plain",
+        "Date": "Wed, 28 Oct 2026 00:37:58 GMT",
+        "ETag": "\"426e3d0b2b5eba6f2e6ccd156f9beb2d\"",
+        "Last-Modified": "Tue, 18 Aug 2026 16:56:53 GMT",
+        "Server": "AmazonS3",
+        "Via": "1.1 varnish",
+        "X-Cache": "HIT",
+        "X-Cache-Hits": "1",
+        "X-Served-By": "cache-bgy-lime1210031-BGY",
+        "X-Timer": "S1793147879.702374,VS0,VE0",
+        "x-amz-id-2": "0VTCAtfSOtPE0Hd/Rf6+pcqCrsyxP2R3uwoqPbM1Dqkh7qixjPfYt0zN9eFiAawKso4+U1n2fv4=",
+        "x-amz-request-id": "264TCB7YG51KD9YF",
+        "x-amz-server-side-encryption": "AES256",
+        "x-amz-version-id": "daLAqKzttFtIUN9far5f6btiB6vMAUAQ"
+      },
+      "index_sha256": "8e5ee93dd00ec18a00a36a9a1da274172e02a5ec9802698f18d2b65df50b7cbe",
+      "index_url": "https://index.crates.io/ya/ml/yaml_serde",
+      "members": {
+        ".cargo_vcs_info.json": {
+          "bytes": 94,
+          "sha256": "c84e8214e8987b209d60a8c600fa54b76f44be178dd88cc08ac406dd5228f25a"
+        },
+        ".github/FUNDING.yml": {
+          "bytes": 51,
+          "sha256": "879d330bee445facbbf6e0cd612c0a2735904f1f4897d38d594e93c2ab5cf39f"
+        },
+        ".github/dependabot.yaml": {
+          "bytes": 181,
+          "sha256": "0e09afded0dd7c10f4be81f78067977e1878ef4eae8418b9bbbb53eb7e2ae7ec"
+        },
+        ".github/workflows/ci.yml": {
+          "bytes": 3476,
+          "sha256": "a78d4bf3161e06c9d3421f79ce6fc021189a4a0c503e8b046299e7876add04a4"
+        },
+        ".gitignore": {
+          "bytes": 39,
+          "sha256": "8c80a61e61ec8d1ec1bafcbe59ab1748733e7a31e2b0dfa6202865dc9d19f30d"
+        },
+        "CLAUDE.md": {
+          "bytes": 3021,
+          "sha256": "349be06f5a9f6e5f87a91a19ecbfd9263c64089dd0f0e80ec3183956e511ad81"
+        },
+        "Cargo.lock": {
+          "bytes": 3694,
+          "sha256": "b942194cbb48380db824e6b5136a156354f12a898b48200beeac0cd2f1960c00"
+        },
+        "Cargo.toml": {
+          "bytes": 1969,
+          "sha256": "4ab1e05f6a929749d819fd6f94ff3241a6d20112fab9aab0ae2e6cd4ef5fcab3"
+        },
+        "Cargo.toml.orig": {
+          "bytes": 927,
+          "sha256": "7949f56f27a127b9f0f4e64bf5a67a168e531f733ee4de4cdd2e311d81d1c325"
+        },
+        "LICENSE-APACHE": {
+          "bytes": 9723,
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+        },
+        "LICENSE-MIT": {
+          "bytes": 1023,
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3"
+        },
+        "Makefile": {
+          "bytes": 1423,
+          "sha256": "f9d7efe708cfe397e2cfeb45ef6c18ee85ae77b22b4d23bc849d41574a79b86a"
+        },
+        "README.md": {
+          "bytes": 5027,
+          "sha256": "1ecd826e285e1415324f7ebafae719b99403844e950ed4720fe11532e7c982ea"
+        },
+        "src/de.rs": {
+          "bytes": 58043,
+          "sha256": "3ef49e502e47924a6b5a961d30227565f5f2e6bef63d22eca8e18c5b7855e87c"
+        },
+        "src/error.rs": {
+          "bytes": 8876,
+          "sha256": "fe9a7d8abc0d1cadda7007b1f5c7bb91aee55c49bd1ef1c496c22b82ec30ca78"
+        },
+        "src/io.rs": {
+          "bytes": 2335,
+          "sha256": "024df2ff8a623de3d4e978fe7af1229810ec72966d6a17210b4807b92dc6c1fc"
+        },
+        "src/lib.rs": {
+          "bytes": 6869,
+          "sha256": "88699d43792296beb292807f4596fbbe8934752a9147ea6da3b8138c207c126f"
+        },
+        "src/libyaml/cstr.rs": {
+          "bytes": 3834,
+          "sha256": "5af4f0ed67c450c3dc9c0b9103729c7f7727f6bf3c7567b2fb574c4dd68ae495"
+        },
+        "src/libyaml/emitter.rs": {
+          "bytes": 7460,
+          "sha256": "58e4f621fa157804424cfc53a021478e54d8055c620f906e8bc532b6f26c77bb"
+        },
+        "src/libyaml/error.rs": {
+          "bytes": 5564,
+          "sha256": "7858b9cc0ebc45662637fca4fa33d08f19e344628c3bd510e0588da85fae7a4d"
+        },
+        "src/libyaml/mod.rs": {
+          "bytes": 106,
+          "sha256": "a163ac16fc849a93e864beb794000487c4a1f40618060ed8f43f5f05178c0348"
+        },
+        "src/libyaml/parser.rs": {
+          "bytes": 6485,
+          "sha256": "040be15d48b9fa1d92e574fad5a4b5872166e1025535c8f488d81536d44be282"
+        },
+        "src/libyaml/tag.rs": {
+          "bytes": 947,
+          "sha256": "ebc5339b5c60d94f4320ba2adce50b111197aa778621bfba1c7a03de0f5ab482"
+        },
+        "src/libyaml/util.rs": {
+          "bytes": 1206,
+          "sha256": "b19c4bbb07a257d3fe8017464e34edd2be07286fb9ed3b037dd9b2447a18f2fe"
+        },
+        "src/loader.rs": {
+          "bytes": 4515,
+          "sha256": "e196bdad4dd9e6625bef99ddeb12eb11d580a0030d67be4011ac55cb445bbad6"
+        },
+        "src/mapping.rs": {
+          "bytes": 27585,
+          "sha256": "65d44776530eaa57356bc46171c91d8721741a3b60fe7a89a235b1dc649c9b0d"
+        },
+        "src/number.rs": {
+          "bytes": 15659,
+          "sha256": "682738e1c62f814cb899f639655ac312cca2a74abd903389236d9a408b9b8c61"
+        },
+        "src/path.rs": {
+          "bytes": 1204,
+          "sha256": "df13c9afec30c82943b344e3c6f7d84f50663ddb7d0d0e9ea9bb84b14c1308cf"
+        },
+        "src/ser.rs": {
+          "bytes": 18992,
+          "sha256": "dde0e2864403682cd0b53a10ff468c39b70b6f37d08f045ad87457e8019c7fd5"
+        },
+        "src/value/de.rs": {
+          "bytes": 32598,
+          "sha256": "d4d4cb28e7db24f2bbf50383bcaef5a60a1bc6d4242758b8a1f1d3162aaca5bb"
+        },
+        "src/value/debug.rs": {
+          "bytes": 1834,
+          "sha256": "6f9b64f01739ef416aafafb36798c81d543453ecde3e7a935beddb141db45070"
+        },
+        "src/value/from.rs": {
+          "bytes": 3940,
+          "sha256": "4c06cdb28526356a1e635f258548aead155c3ea5ea35148fead487c74392d291"
+        },
+        "src/value/index.rs": {
+          "bytes": 10116,
+          "sha256": "b22896ed52f0f12de1e24c55f2861db2b14317cf5e0229ebcf59e09ea14949e5"
+        },
+        "src/value/mod.rs": {
+          "bytes": 21953,
+          "sha256": "62d2a7a65324e600217690fc21cc8d77e6cab2160494fd9198d392ed6d0f93b5"
+        },
+        "src/value/partial_eq.rs": {
+          "bytes": 2203,
+          "sha256": "35c71e17d57fcd773166798a5109d72391ff65bfe529cc4f2f929aa2ec7cfcd0"
+        },
+        "src/value/ser.rs": {
+          "bytes": 25129,
+          "sha256": "3fb77b9312e145f0fd8fac359ee88731217a8f564cad87b4cf75e616fe207432"
+        },
+        "src/value/tagged.rs": {
+          "bytes": 12880,
+          "sha256": "d8de3bd7c87188cb479467e4c671830f732d7dc026e963a7455fa31258dfcaad"
+        },
+        "src/with.rs": {
+          "bytes": 60861,
+          "sha256": "eebe9f126e79716dfaab7e8a4e5b16e255a259b05ff5525eda05362d76ad147d"
+        },
+        "tests/test_de.rs": {
+          "bytes": 18811,
+          "sha256": "7181272744b353b48dc91af8235aadf8291affcb6d45f1b9896c1ce2c2c33dd1"
+        },
+        "tests/test_error.rs": {
+          "bytes": 13247,
+          "sha256": "a6bfa0590bc25a7dd1a8ef4d05edebb73330180e887181c5efeb0df4d1834fbd"
+        },
+        "tests/test_serde.rs": {
+          "bytes": 11952,
+          "sha256": "4bd379c3d77c06e34c6752faf2d88cbd44ae3b11728b75e01895d994abcd476b"
+        },
+        "tests/test_value.rs": {
+          "bytes": 3801,
+          "sha256": "487ca577c289d7351468822cf5fd8bc428be3ad5f7968820eb5a2f3e1d3a8b44"
+        },
+        "util/release": {
+          "bytes": 3125,
+          "sha256": "da01d2c4357931d63ccecb960fe588c9541bc5b4089565f8801a2d658d42fcd3"
+        }
+      },
+      "metadata": {
+        "cksum": "33b729a08a9a6be689bbad3e2bf8015926db54b6622cc89c3a5f7dc174b9e918",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "anyhow",
+            "optional": false,
+            "req": "^1.0.79",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "indexmap",
+            "optional": false,
+            "req": "^2.2.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "indoc",
+            "optional": false,
+            "req": "^2.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "itoa",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "libyaml-rs",
+            "optional": false,
+            "req": "^0.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "ryu",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "alloc"
+            ],
+            "kind": "normal",
+            "name": "serde",
+            "optional": false,
+            "req": "^1.0.195",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_derive",
+            "optional": false,
+            "req": "^1.0.195",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "std"
+          ],
+          "std": [
+            "serde/std",
+            "indexmap/std"
+          ]
+        },
+        "name": "yaml_serde",
+        "pubtime": "2026-08-18T16:56:51Z",
+        "rust_version": "1.82",
+        "vers": "0.10.7",
+        "yanked": false
+      }
+    }
+  },
+  "source_code_executed": false,
+  "source_unchanged": true
+}

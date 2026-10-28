@@ -1,0 +1,33 @@
+from pathlib import Path
+import hashlib,json,sys
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/yaml-security-20261028'
+sys.path.insert(0,str(ROOT/'tools/yaml-parser-review-074'))
+import compare,recording
+out=BASE/'comparison';out.mkdir(exist_ok=False)
+corpus=(BASE/'preparation/cases.jsonl').read_bytes()
+assert hashlib.sha256(corpus).hexdigest()=='6e0ca0eb52841f74600a386923898f3da07b770ce7699ca853ed3618a324c78c'
+cases=list(map(json.loads,corpus.splitlines()))
+records={};provenance={}
+for mode in ('baseline','candidate'):
+ first=json.loads((BASE/'record-recovery'/(mode+'.json')).read_bytes())
+ continuation=BASE/('semantics-'+mode+'-continuation')
+ intent=json.loads((continuation/'intent.json').read_bytes())
+ last=json.loads((continuation/'result.json').read_bytes())
+ assert intent['recovery_sha256']==hashlib.sha256((BASE/'record-recovery'/(mode+'.json')).read_bytes()).hexdigest()
+ assert intent['binary_sha256']==first['binary_sha256'] and intent['corpus_sha256']==first['corpus_sha256']
+ assert last['first_ordinal']==first['next_unstarted_ordinal']==len(first['cases'])
+ assert last['binary_and_corpus_unchanged'] and not last['replayed']
+ for item in first['provenance']:
+  assert all(hashlib.sha256(Path(n).read_bytes()).hexdigest()==v for n,v in item['files'].items())
+ rows=first['cases']+last['cases']
+ assert [r['id'] for r in rows]==[c['id'] for c in cases]
+ assert set(r['id'] for r in first['cases']).isdisjoint(r['id'] for r in last['cases'])
+ records[mode]=rows
+ provenance[mode]=dict(recovered_native_cases=len(first['cases']),new_native_cases=len(last['cases']),
+  native_case_executions=len(rows),recorder_invocations=2,continuous_successful_invocation=False)
+result=compare.compare(cases,records['baseline'],records['candidate'])
+result.update(provenance=provenance,corpus_sha256=hashlib.sha256(corpus).hexdigest(),recorder_failures_preserved=True)
+recording.write_record(out/'result.json',result)
+print(json.dumps(result))
+raise SystemExit(int(not result['semantic_contract_pass'] or result['diagnostic_review_required']))

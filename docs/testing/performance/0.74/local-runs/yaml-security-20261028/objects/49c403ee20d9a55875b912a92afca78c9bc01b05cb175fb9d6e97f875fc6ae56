@@ -1,0 +1,172 @@
+{
+  "added": [
+    "libyaml-rs@0.3.0",
+    "yaml_serde@0.10.7"
+  ],
+  "consumers_unchanged": {
+    "crates/xtask/src/ci_topology.rs": "b2bfcf8d6be890965e367e0461cee995f94746caac15d9c69b65f756f6e5cdfc",
+    "crates/xtask/src/release_governance.rs": "5c0fa8c1b768c7ded28add3f4ec0d9666914639249eb6ae4550c80b2814e60e5"
+  },
+  "existing_effective_edge_delta": {
+    "xtask@0.73.0": {
+      "added": [
+        [
+          "yaml_serde",
+          "0.10.7",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "removed": [
+        [
+          "serde_yaml",
+          "0.9.34+deprecated",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    }
+  },
+  "new_lock_sha256": "9efeffabd8726a961a84d23b7a8e5f2ce74e0e313698f064eed603ea79062a7c",
+  "new_packages": {
+    "libyaml-rs@0.3.0": {
+      "build_script": false,
+      "checksum": "2e126dda6f34391ab7b444f9922055facc83c07a910da3eb16f1e4d9c45dc777",
+      "metadata": {
+        "cksum": "2e126dda6f34391ab7b444f9922055facc83c07a910da3eb16f1e4d9c45dc777",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "pretty_assertions",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          }
+        ],
+        "features": {},
+        "name": "libyaml-rs",
+        "pubtime": "2026-03-11T18:39:38Z",
+        "rust_version": "1.60",
+        "vers": "0.3.0",
+        "yanked": false
+      }
+    },
+    "yaml_serde@0.10.7": {
+      "build_script": false,
+      "checksum": "33b729a08a9a6be689bbad3e2bf8015926db54b6622cc89c3a5f7dc174b9e918",
+      "metadata": {
+        "cksum": "33b729a08a9a6be689bbad3e2bf8015926db54b6622cc89c3a5f7dc174b9e918",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "anyhow",
+            "optional": false,
+            "req": "^1.0.79",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "indexmap",
+            "optional": false,
+            "req": "^2.2.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "indoc",
+            "optional": false,
+            "req": "^2.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "itoa",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "libyaml-rs",
+            "optional": false,
+            "req": "^0.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "ryu",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "alloc"
+            ],
+            "kind": "normal",
+            "name": "serde",
+            "optional": false,
+            "req": "^1.0.195",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_derive",
+            "optional": false,
+            "req": "^1.0.195",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [
+            "std"
+          ],
+          "std": [
+            "serde/std",
+            "indexmap/std"
+          ]
+        },
+        "name": "yaml_serde",
+        "pubtime": "2026-08-18T16:56:51Z",
+        "rust_version": "1.82",
+        "vers": "0.10.7",
+        "yanked": false
+      }
+    }
+  },
+  "old_lock_sha256": "00efd4a2cafeb5e82d757cc4855e440c627211c1544c22dcbf8c875f85337cd8",
+  "parser_features": [
+    "default",
+    "std"
+  ],
+  "release_admitted": false,
+  "removed": [
+    "serde_yaml@0.9.34+deprecated",
+    "unsafe-libyaml@0.2.11"
+  ],
+  "source_review": {
+    "clock_service_server_product_effects": false,
+    "error_source_chain_change": "Io/FromUtf8 now expose immediate error; from_str consumers do not construct these variants",
+    "low_level_parser_scanner_emitter_unchanged": true,
+    "new_build_scripts": false,
+    "no_std_fnv_not_enabled": true,
+    "parsing_value_serialization_and_diagnostics": "102 exact inert cases; no differences",
+    "std_io_reexports": true,
+    "unsafe_code_remains": true
+  }
+}

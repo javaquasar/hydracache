@@ -1,0 +1,12 @@
+test_decision_and_declared_expectation_are_not_relaxed (test_compare.Comparison.test_decision_and_declared_expectation_are_not_relaxed) ... ok
+test_diagnostic_drift_is_retained_and_requires_review (test_compare.Comparison.test_diagnostic_drift_is_retained_and_requires_review) ... ok
+test_equal_success_and_refusal (test_compare.Comparison.test_equal_success_and_refusal) ... ok
+test_missing_unknown_duplicate_and_reordered_cases_refuse (test_compare.Comparison.test_missing_unknown_duplicate_and_reordered_cases_refuse) ... ok
+test_process_crash_and_timeout_refuse (test_compare.Comparison.test_process_crash_and_timeout_refuse) ... ok
+test_unknown_response_fields_and_nonboolean_decision_refuse (test_compare.Comparison.test_unknown_response_fields_and_nonboolean_decision_refuse) ... ok
+test_values_order_and_serialization_are_exact (test_compare.Comparison.test_values_order_and_serialization_are_exact) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.002s
+
+OK

@@ -1,0 +1,30 @@
+{
+  "id": "fixture/empty",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": "fixture/empty",
+    "parsed": true,
+    "roundtrip": {
+      "ok": true,
+      "tree": {
+        "rendered": {
+          "ok": true,
+          "text": "null\n"
+        },
+        "shape": {
+          "kind": "null"
+        }
+      }
+    },
+    "tree": {
+      "rendered": {
+        "ok": true,
+        "text": "null\n"
+      },
+      "shape": {
+        "kind": "null"
+      }
+    }
+  }
+}

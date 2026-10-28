@@ -1,0 +1,36 @@
+{
+  "head": "6faa544c9493b4dfdb87fc31ba3fb78456a9455f",
+  "source": {
+    "Cargo.lock": {
+      "lf_sha256": "00efd4a2cafeb5e82d757cc4855e440c627211c1544c22dcbf8c875f85337cd8",
+      "raw_sha256": "00efd4a2cafeb5e82d757cc4855e440c627211c1544c22dcbf8c875f85337cd8"
+    },
+    "Cargo.toml": {
+      "lf_sha256": "fd57accedc5029f0024c45e72f3c3ef66501d670eaa8776cf293553ff8d5a1ad",
+      "raw_sha256": "a494481b85fa84fd07e19a447c6d5fe7a49aa12557e0c0befc86fdea390d3bf2"
+    },
+    "crates/xtask/Cargo.toml": {
+      "lf_sha256": "9e1b7d0249dc246e2d50bff92b14540c08f379eb98448cb80e13ed325d5c039b",
+      "raw_sha256": "0b00525d41119bdb1215b1fb658ac66fa1bcd0d99428e9903cf1bb8ee8f4e0b5"
+    },
+    "crates/xtask/src/ci_topology.rs": {
+      "lf_sha256": "f07e832c76972db7b9ca1121ccb06229d6556be0da7671f45c7722498232ecea",
+      "raw_sha256": "b2bfcf8d6be890965e367e0461cee995f94746caac15d9c69b65f756f6e5cdfc"
+    },
+    "crates/xtask/src/release_governance.rs": {
+      "lf_sha256": "4e7d5b7a600741e708427227ca4930264c8a1eb0fb539c958c8f335375847ff4",
+      "raw_sha256": "5c0fa8c1b768c7ded28add3f4ec0d9666914639249eb6ae4550c80b2814e60e5"
+    },
+    "deny.toml": {
+      "lf_sha256": "07f195fbffecbb1aaad5ec2ec6e0c11d4020e42a837256ba6a57f675d033bd3b",
+      "raw_sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "docs/testing/performance/0.74/qualification-manifest.toml": {
+      "lf_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+      "raw_sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    }
+  },
+  "source_code_executed": false,
+  "source_sha256": "5f6692abaaaca09b56767013c0f311508c2b0cc51c2b5a3eb3086097eb36f21b",
+  "utc": "2026-10-28T00:37:58.435474+00:00"
+}

@@ -1,0 +1,73 @@
+"""Append-only local source steps; original full package/workspace bounds remain separate."""
+from pathlib import Path
+import json,os,shutil,subprocess,sys
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/yaml-security-20261028'
+sys.path.insert(0,str(ROOT/'tools/windows-workspace-preflight-074'))
+import owned
+import prepare as p
+def project(mode):return str(BASE/'fixtures'/mode/'Cargo.toml')
+def target(mode):return str(BASE/'targets'/mode)
+commands={
+ 'format':['rustfmt','+1.94.0','--edition','2021',str(ROOT/'tools/yaml-parser-review-074/probe.rs')],
+ 'controls':[sys.executable,'-B','-m','unittest','discover','-s','tools/yaml-parser-review-074','-p','test_*.py','-v'],
+ 'baseline-callers':['cargo','+1.94.0','test','--offline','--locked','-p','xtask','--test','ci_reliability_071','--test','release_governance','--','--test-threads=4'],
+ 'resolve-baseline':['cargo','+1.94.0','metadata','--offline','--manifest-path',project('baseline'),'--format-version=1'],
+ 'resolve-candidate':['cargo','+1.94.0','metadata','--manifest-path',project('candidate'),'--format-version=1'],
+ 'build-baseline':['cargo','+1.94.0','build','--offline','--locked','--manifest-path',project('baseline'),'--target-dir',target('baseline')],
+ 'build-candidate':['cargo','+1.94.0','build','--offline','--locked','--manifest-path',project('candidate'),'--target-dir',target('candidate')],
+ 'probe-baseline':[sys.executable,'-B',str(ROOT/'target/yaml-run-probe-20261028.py'),'baseline'],
+ 'probe-candidate':[sys.executable,'-B',str(ROOT/'target/yaml-run-probe-20261028.py'),'candidate'],
+ 'check':['cargo','+1.94.0','check','--offline','--locked','-p','xtask','--all-targets'],
+ 'clippy':['cargo','+1.94.0','clippy','--offline','--locked','-p','xtask','--all-targets','--all-features','--','-D','warnings'],
+ 'msrv':['cargo','+1.88.0','check','--offline','--locked','-p','xtask','--all-targets'],
+ 'resolve-root':['cargo','update','-p','serde_yaml'],
+ 'fetch-root':['cargo','fetch','--locked'],
+ 'candidate-callers':['cargo','+1.94.0','test','--offline','--locked','-p','xtask','--test','ci_reliability_071','--test','release_governance','--','--test-threads=4'],
+}
+def snapshot():
+ names=[n.decode() for n in subprocess.check_output(['git','ls-files','-z','--cached','--others','--exclude-standard','--',
+  'Cargo.toml','Cargo.lock','deny.toml','.cargo','crates','tools','scripts'],cwd=ROOT).split(b'\0') if n]
+ return {n:p.sha((ROOT/n).read_bytes()) for n in sorted(set(names))}
+label=sys.argv[1];argv=commands[label];out=BASE/label
+if len(sys.argv)>2:
+ assert sys.argv[2:]==['--worker']
+ def capacity():
+  if shutil.disk_usage(ROOT).free<p.FLOOR:raise owned.CapacityError('original 4 GiB floor')
+ result=owned._owned(owned.load_job().WindowsJob(),argv,str(ROOT),capacity,bound=1200)
+ p.write(out,'execution.json',result)
+ raise SystemExit(result['exit'])
+out.mkdir(exist_ok=False)
+before=snapshot();head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+fixture_inputs=None
+if label.startswith('build-'):
+ mode=label.removeprefix('build-')
+ reviewed=json.loads((BASE/'fixture-review/result.json').read_bytes())['fixtures'][mode]
+ fixture_inputs={str(BASE/'fixtures'/mode/'Cargo.toml'):reviewed['manifest_sha256'],
+  str(BASE/'fixtures'/mode/'Cargo.lock'):reviewed['lock_sha256'],
+  str(ROOT/'tools/yaml-parser-review-074/probe.rs'):reviewed['probe_source_sha256']}
+ p.require(all(p.sha(Path(n).read_bytes())==v for n,v in fixture_inputs.items()),'reviewed fixture inputs before build')
+p.write(out,'intent.json',dict(argv=argv,source=before,head=head,source_sha256=p.sha(Path(__file__).read_bytes()),
+ bound_seconds=1200,review_only=True,retry=False,server=False,services=False,clocks=False))
+(out/'launcher.py').write_bytes(Path(__file__).read_bytes())
+for name in ('Cargo.lock','crates/xtask/Cargo.toml','deny.toml'):
+ (out/('before-'+Path(name).name if name!='crates/xtask/Cargo.toml' else 'before-xtask-Cargo.toml')).write_bytes((ROOT/name).read_bytes())
+with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+ process=subprocess.Popen([sys.executable,'-B',str(Path(__file__)),label,'--worker'],cwd=ROOT,stdin=subprocess.DEVNULL,
+  stdout=stdout,stderr=stderr,env=dict(os.environ,CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2'))
+ try:code=process.wait(timeout=1210)
+ except subprocess.TimeoutExpired:
+  process.kill();process.wait(timeout=5);p.write(out,'refusal.json',dict(reason='original worker lost'));raise
+after=snapshot()
+result=dict(exit=code,source_unchanged=before==after,source_after=after,
+ changed=[n for n in before.keys()|after.keys() if before.get(n)!=after.get(n)],
+ head_unchanged=head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),release_admitted=False)
+if fixture_inputs is not None:
+ result['fixture_inputs']=fixture_inputs
+ result['fixture_inputs_unchanged']=all(p.sha(Path(n).read_bytes())==v for n,v in fixture_inputs.items())
+if label.startswith('build-') and code==0:
+ mode=label.removeprefix('build-');binary=BASE/'targets'/mode/'debug/hc074-yaml-probe.exe'
+ result['binary_sha256']=p.sha(binary.read_bytes())
+p.write(out,'result.json',result)
+print(json.dumps(dict(label=label,exit=code,source_unchanged=before==after)))
+raise SystemExit(code)

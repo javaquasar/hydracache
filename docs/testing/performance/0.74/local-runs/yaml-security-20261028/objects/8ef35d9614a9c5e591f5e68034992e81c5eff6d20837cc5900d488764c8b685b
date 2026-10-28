@@ -1,0 +1,17 @@
+[package]
+name = "hc074-yaml-probe"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.88"
+publish = false
+
+[workspace]
+resolver = "2"
+
+[[bin]]
+name = "hc074-yaml-probe"
+path = "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\yaml-parser-review-074\\probe.rs"
+
+[dependencies]
+parser = { package = "yaml_serde", version = "=0.10.7" }
+serde_json = "=1.0.150"

@@ -21,6 +21,11 @@ byte-exact. The source candidate contains one semver-compatible lock update.
 Major dependency migrations that also change parser, D-Bus or web-asset behavior
 are separately identified; their availability is not a compatibility result.
 
+The later [YAML successor](yaml-security-result-20261028.md) closes 2024-0449
+after exact corpus, consumer, MSRV and full milestone checks. Together with the
+separate Swagger migration it leaves six D-Bus/Zstd findings. The table below
+retains the original eleven-finding review's graph and decisions.
+
 ## Findings and decisions
 
 | Advisory | Actual path / exposure reviewed | Remediation and decision |

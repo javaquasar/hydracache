@@ -1,0 +1,10 @@
+{
+  "documents": {
+    "docs/articles/007-optimization-starts-with-measurement.md": "0d7846be8e0d532aa84fd99d24088a54f68392059f961bd86be047b6a491bbc8",
+    "docs/testing/performance/0.74/README.md": "4b8da810310486da2c1cc8edbed5fba8b39877d611b8c92af1ce168872c25da0",
+    "docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": "879ea85de811ea51b212c3735b724ea87a6a988aaa105fc140c2f042ef25a44f",
+    "docs/testing/performance/0.74/security-review-20261028.md": "4b011b0ac85d8d6464fa086a1a32c3775e58a849939271af0ad78998822bca8d",
+    "docs/testing/performance/0.74/yaml-security-result-20261028.md": "ddd7d587f8861c06a4e44ec513ce265571361af09ef9adb8e984fd4c4e525f0e"
+  },
+  "executable_sha256": "b7a6cc3e1dc61bb610c0e7948aa692fe74123f7a9957c5850883d6822cf3c8ce"
+}

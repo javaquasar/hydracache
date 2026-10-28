@@ -1,0 +1,38 @@
+"""Review ignored probe locks before compiling either parser."""
+from pathlib import Path
+import hashlib,json,tomllib
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/yaml-security-20261028'
+OUT=BASE/'fixture-review'
+OUT.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def graph(path):return {r['name']+'@'+r['version']:r for r in tomllib.loads(path.read_text())['package']}
+root=graph(ROOT/'Cargo.lock')
+upstream=json.loads((BASE/'upstream/result.json').read_bytes())['packages']
+prepared=json.loads((BASE/'preparation/result.json').read_bytes())
+result={}
+for mode in ('baseline','candidate'):
+ folder=BASE/'fixtures'/mode
+ entries=graph(folder/'Cargo.lock')
+ new=[]
+ for key,row in entries.items():
+  if row['name']=='hc074-yaml-probe':continue
+  if key in root:
+   assert row.get('source')==root[key].get('source') and row.get('checksum')==root[key].get('checksum'),key
+  else:
+   assert mode=='candidate' and row['name'] in upstream,key
+   published=upstream[row['name']]['metadata']
+   assert (row['version'],row['checksum'])==(published['vers'],published['cksum'])
+   assert not published['yanked']
+   new.append(key)
+  archive=Path('C:/Users/ArturBuzov/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f')/(row['name']+'-'+row['version']+'.crate')
+  assert sha(archive.read_bytes())==row['checksum'],key
+ if mode=='candidate':assert sorted(new)==['libyaml-rs@0.3.0','yaml_serde@0.10.7']
+ else:assert not new
+ assert sha((folder/'Cargo.toml').read_bytes())==prepared['fixtures'][mode]['manifest_sha256']
+ result[mode]=dict(manifest_sha256=sha((folder/'Cargo.toml').read_bytes()),
+  lock_sha256=sha((folder/'Cargo.lock').read_bytes()),packages=entries,new_packages=new,
+  probe_source_sha256=sha((ROOT/'tools/yaml-parser-review-074/probe.rs').read_bytes()))
+ assert result[mode]['probe_source_sha256']==prepared['probe_source_sha256']
+with (OUT/'result.json').open('x') as stream:json.dump(dict(fixtures=result,no_product_dependency_change=True),stream,indent=2,sort_keys=True)
+print(json.dumps({mode:dict(packages=len(row['packages']),new_packages=row['new_packages']) for mode,row in result.items()}))

@@ -1,0 +1,2671 @@
+--- serde_yaml/src/de.rs
++++ yaml_serde/src/de.rs
+@@ -4,18 +4,21 @@
+ use crate::libyaml::tag::Tag;
+ use crate::loader::{Document, Loader};
+ use crate::path::Path;
++#[cfg(feature = "std")]
++use alloc::boxed::Box;
++use alloc::sync::Arc;
++use alloc::{format, vec::Vec};
++use core::fmt;
++use core::mem;
++use core::num::ParseIntError;
++use core::str;
+ use serde::de::value::StrDeserializer;
+-use serde::de::{
+-    self, Deserialize, DeserializeOwned, DeserializeSeed, Expected, IgnoredAny, Unexpected, Visitor,
+-};
+-use std::fmt;
+-use std::io;
+-use std::mem;
+-use std::num::ParseIntError;
+-use std::str;
+-use std::sync::Arc;
+-
+-type Result<T, E = Error> = std::result::Result<T, E>;
++use serde::de::{self, Deserialize, DeserializeSeed, Expected, IgnoredAny, Unexpected, Visitor};
++
++#[cfg(feature = "std")]
++use serde::de::DeserializeOwned;
++
++type Result<T, E = Error> = core::result::Result<T, E>;
+ 
+ /// A structure that deserializes YAML into Rust values.
+ ///
+@@ -26,11 +29,11 @@
+ /// ```
+ /// use anyhow::Result;
+ /// use serde::Deserialize;
+-/// use serde_yaml::Value;
++/// use yaml_serde::Value;
+ ///
+ /// fn main() -> Result<()> {
+ ///     let input = "k: 107\n";
+-///     let de = serde_yaml::Deserializer::from_str(input);
++///     let de = yaml_serde::Deserializer::from_str(input);
+ ///     let value = Value::deserialize(de)?;
+ ///     println!("{:?}", value);
+ ///     Ok(())
+@@ -42,12 +45,12 @@
+ /// ```
+ /// use anyhow::Result;
+ /// use serde::Deserialize;
+-/// use serde_yaml::Value;
++/// use yaml_serde::Value;
+ ///
+ /// fn main() -> Result<()> {
+ ///     let input = "---\nk: 107\n...\n---\nj: 106\n";
+ ///
+-///     for document in serde_yaml::Deserializer::from_str(input) {
++///     for document in yaml_serde::Deserializer::from_str(input) {
+ ///         let value = Value::deserialize(document)?;
+ ///         println!("{:?}", value);
+ ///     }
+@@ -62,7 +65,8 @@
+ pub(crate) enum Progress<'de> {
+     Str(&'de str),
+     Slice(&'de [u8]),
+-    Read(Box<dyn io::Read + 'de>),
++    #[cfg(feature = "std")]
++    Read(Box<dyn crate::io::Read + 'de>),
+     Iterable(Loader<'de>),
+     Document(Document<'de>),
+     Fail(Arc<ErrorImpl>),
+@@ -86,9 +90,10 @@
+     /// Reader-based deserializers do not support deserializing borrowed types
+     /// like `&str`, since the `std::io::Read` trait has no non-copying methods
+     /// -- everything it does involves copying bytes out of the data source.
++    #[cfg(feature = "std")]
+     pub fn from_reader<R>(rdr: R) -> Self
+     where
+-        R: io::Read + 'de,
++        R: crate::io::Read + 'de,
+     {
+         let progress = Progress::Read(Box::new(rdr));
+         Deserializer { progress }
+@@ -121,9 +126,8 @@
+         }
+ 
+         let mut loader = Loader::new(self.progress)?;
+-        let document = match loader.next_document() {
+-            Some(document) => document,
+-            None => return Err(error::new(ErrorImpl::EndOfStream)),
++        let Some(document) = loader.next_document() else {
++            return Err(error::new(ErrorImpl::EndOfStream));
+         };
+         let t = f(&mut DeserializerFromEvents {
+             document: &document,
+@@ -144,7 +148,7 @@
+     }
+ }
+ 
+-impl<'de> Iterator for Deserializer<'de> {
++impl Iterator for Deserializer<'_> {
+     type Item = Self;
+ 
+     fn next(&mut self) -> Option<Self> {
+@@ -651,7 +655,7 @@
+     len: usize,
+ }
+ 
+-impl<'de, 'document, 'seq> de::SeqAccess<'de> for SeqAccess<'de, 'document, 'seq> {
++impl<'de> de::SeqAccess<'de> for SeqAccess<'de, '_, '_> {
+     type Error = Error;
+ 
+     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>>
+@@ -689,7 +693,7 @@
+     key: Option<&'document [u8]>,
+ }
+ 
+-impl<'de, 'document, 'map> de::MapAccess<'de> for MapAccess<'de, 'document, 'map> {
++impl<'de> de::MapAccess<'de> for MapAccess<'de, '_, '_> {
+     type Error = Error;
+ 
+     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>>
+@@ -745,7 +749,7 @@
+     tag: &'document str,
+ }
+ 
+-impl<'de, 'document, 'variant> de::EnumAccess<'de> for EnumAccess<'de, 'document, 'variant> {
++impl<'de, 'variant> de::EnumAccess<'de> for EnumAccess<'de, '_, 'variant> {
+     type Error = Error;
+     type Variant = DeserializerFromEvents<'de, 'variant>;
+ 
+@@ -770,7 +774,7 @@
+     }
+ }
+ 
+-impl<'de, 'document> de::VariantAccess<'de> for DeserializerFromEvents<'de, 'document> {
++impl<'de> de::VariantAccess<'de> for DeserializerFromEvents<'de, '_> {
+     type Error = Error;
+ 
+     fn unit_variant(mut self) -> Result<()> {
+@@ -803,7 +807,7 @@
+     de: &'variant mut DeserializerFromEvents<'de, 'document>,
+ }
+ 
+-impl<'de, 'document, 'variant> de::EnumAccess<'de> for UnitVariantAccess<'de, 'document, 'variant> {
++impl<'de> de::EnumAccess<'de> for UnitVariantAccess<'de, '_, '_> {
+     type Error = Error;
+     type Variant = Self;
+ 
+@@ -815,9 +819,7 @@
+     }
+ }
+ 
+-impl<'de, 'document, 'variant> de::VariantAccess<'de>
+-    for UnitVariantAccess<'de, 'document, 'variant>
+-{
++impl<'de> de::VariantAccess<'de> for UnitVariantAccess<'de, '_, '_> {
+     type Error = Error;
+ 
+     fn unit_variant(self) -> Result<()> {
+@@ -859,14 +861,11 @@
+ where
+     V: Visitor<'de>,
+ {
+-    let v = match str::from_utf8(&scalar.value) {
+-        Ok(v) => v,
+-        Err(_) => {
+-            return Err(de::Error::invalid_type(
+-                Unexpected::Bytes(&scalar.value),
+-                &visitor,
+-            ))
+-        }
++    let Ok(v) = str::from_utf8(&scalar.value) else {
++        return Err(de::Error::invalid_type(
++            Unexpected::Bytes(&scalar.value),
++            &visitor,
++        ));
+     };
+     if let (Some(tag), false) = (&scalar.tag, tagged_already) {
+         if tag == Tag::BOOL {
+@@ -1165,7 +1164,7 @@
+         exp: &'a dyn Expected,
+     }
+ 
+-    impl<'de, 'a> Visitor<'de> for InvalidType<'a> {
++    impl Visitor<'_> for InvalidType<'_> {
+         type Value = Void;
+ 
+         fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+@@ -1190,8 +1189,8 @@
+     }
+ }
+ 
+-fn parse_tag(libyaml_tag: &Option<Tag>) -> Option<&str> {
+-    let mut bytes: &[u8] = libyaml_tag.as_ref()?;
++fn parse_tag(libyaml_tag: Option<&Tag>) -> Option<&str> {
++    let mut bytes: &[u8] = libyaml_tag?;
+     if let (b'!', rest) = bytes.split_first()? {
+         if !rest.is_empty() {
+             bytes = rest;
+@@ -1202,7 +1201,7 @@
+     }
+ }
+ 
+-impl<'de, 'document> de::Deserializer<'de> for &mut DeserializerFromEvents<'de, 'document> {
++impl<'de> de::Deserializer<'de> for &mut DeserializerFromEvents<'de, '_> {
+     type Error = Error;
+ 
+     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value>
+@@ -1211,7 +1210,7 @@
+     {
+         let tagged_already = self.current_enum.is_some();
+         let (next, mark) = self.next_event_mark()?;
+-        fn enum_tag(tag: &Option<Tag>, tagged_already: bool) -> Option<&str> {
++        fn enum_tag(tag: Option<&Tag>, tagged_already: bool) -> Option<&str> {
+             if tagged_already {
+                 return None;
+             }
+@@ -1221,7 +1220,7 @@
+             match next {
+                 Event::Alias(mut pos) => break self.jump(&mut pos)?.deserialize_any(visitor),
+                 Event::Scalar(scalar) => {
+-                    if let Some(tag) = enum_tag(&scalar.tag, tagged_already) {
++                    if let Some(tag) = enum_tag(scalar.tag.as_ref(), tagged_already) {
+                         *self.pos -= 1;
+                         break visitor.visit_enum(EnumAccess {
+                             de: self,
+@@ -1232,7 +1231,7 @@
+                     break visit_scalar(visitor, scalar, tagged_already);
+                 }
+                 Event::SequenceStart(sequence) => {
+-                    if let Some(tag) = enum_tag(&sequence.tag, tagged_already) {
++                    if let Some(tag) = enum_tag(sequence.tag.as_ref(), tagged_already) {
+                         *self.pos -= 1;
+                         break visitor.visit_enum(EnumAccess {
+                             de: self,
+@@ -1243,7 +1242,7 @@
+                     break self.visit_sequence(visitor, mark);
+                 }
+                 Event::MappingStart(mapping) => {
+-                    if let Some(tag) = enum_tag(&mapping.tag, tagged_already) {
++                    if let Some(tag) = enum_tag(mapping.tag.as_ref(), tagged_already) {
+                         *self.pos -= 1;
+                         break visitor.visit_enum(EnumAccess {
+                             de: self,
+@@ -1739,7 +1738,7 @@
+                         .deserialize_enum(name, variants, visitor)
+                 }
+                 Event::Scalar(scalar) => {
+-                    if let Some(tag) = parse_tag(&scalar.tag) {
++                    if let Some(tag) = parse_tag(scalar.tag.as_ref()) {
+                         return visitor.visit_enum(EnumAccess {
+                             de: self,
+                             name: Some(name),
+@@ -1749,7 +1748,7 @@
+                     visitor.visit_enum(UnitVariantAccess { de: self })
+                 }
+                 Event::MappingStart(mapping) => {
+-                    if let Some(tag) = parse_tag(&mapping.tag) {
++                    if let Some(tag) = parse_tag(mapping.tag.as_ref()) {
+                         return visitor.visit_enum(EnumAccess {
+                             de: self,
+                             name: Some(name),
+@@ -1761,7 +1760,7 @@
+                     Err(error::fix_mark(err, mark, self.path))
+                 }
+                 Event::SequenceStart(sequence) => {
+-                    if let Some(tag) = parse_tag(&sequence.tag) {
++                    if let Some(tag) = parse_tag(sequence.tag.as_ref()) {
+                         return visitor.visit_enum(EnumAccess {
+                             de: self,
+                             name: Some(name),
+@@ -1821,9 +1820,10 @@
+ /// is wrong with the data, for example required struct fields are missing from
+ /// the YAML map or some number is too big to fit in the expected primitive
+ /// type.
++#[cfg(feature = "std")]
+ pub fn from_reader<R, T>(rdr: R) -> Result<T>
+ where
+-    R: io::Read,
++    R: crate::io::Read,
+     T: DeserializeOwned,
+ {
+     T::deserialize(Deserializer::from_reader(rdr))
+--- serde_yaml/src/error.rs
++++ yaml_serde/src/error.rs
+@@ -1,17 +1,18 @@
++use crate::io;
+ use crate::libyaml::{emitter, error as libyaml};
+ use crate::path::Path;
++use alloc::boxed::Box;
++use alloc::string::{String, ToString};
++use alloc::sync::Arc;
++use core::error::Error as StdError;
++use core::fmt::{self, Debug, Display};
++use core::result;
+ use serde::{de, ser};
+-use std::error::Error as StdError;
+-use std::fmt::{self, Debug, Display};
+-use std::io;
+-use std::result;
+-use std::string;
+-use std::sync::Arc;
+ 
+ /// An error that happened serializing or deserializing YAML data.
+ pub struct Error(Box<ErrorImpl>);
+ 
+-/// Alias for a `Result` with the error type `serde_yaml::Error`.
++/// Alias for a `Result` with the error type `yaml_serde::Error`.
+ pub type Result<T> = result::Result<T, Error>;
+ 
+ #[derive(Debug)]
+@@ -20,7 +21,7 @@
+ 
+     Libyaml(libyaml::Error),
+     Io(io::Error),
+-    FromUtf8(string::FromUtf8Error),
++    FromUtf8(alloc::string::FromUtf8Error),
+ 
+     EndOfStream,
+     MoreThanOneDocument,
+@@ -89,10 +90,10 @@
+     /// # Examples
+     ///
+     /// ```
+-    /// # use serde_yaml::{Value, Error};
++    /// # use yaml_serde::{Value, Error};
+     /// #
+     /// // The `@` character as the first character makes this invalid yaml
+-    /// let invalid_yaml: Result<Value, Error> = serde_yaml::from_str("@invalid_yaml");
++    /// let invalid_yaml: Result<Value, Error> = yaml_serde::from_str("@invalid_yaml");
+     ///
+     /// let location = invalid_yaml.unwrap_err().location().unwrap();
+     ///
+@@ -186,8 +187,8 @@
+ 
+     fn source(&self) -> Option<&(dyn StdError + 'static)> {
+         match self {
+-            ErrorImpl::Io(err) => err.source(),
+-            ErrorImpl::FromUtf8(err) => err.source(),
++            ErrorImpl::Io(err) => Some(err),
++            ErrorImpl::FromUtf8(err) => Some(err),
+             ErrorImpl::Shared(err) => err.source(),
+             _ => None,
+         }
+@@ -268,7 +269,7 @@
+             _ => {
+                 f.write_str("Error(")?;
+                 struct MessageNoMark<'a>(&'a ErrorImpl);
+-                impl<'a> Display for MessageNoMark<'a> {
++                impl Display for MessageNoMark<'_> {
+                     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                         self.0.message_no_mark(f)
+                     }
+--- serde_yaml/src/io.rs
++++ yaml_serde/src/io.rs
+@@ -0,0 +1,98 @@
++//! I/O traits abstracted over std and no_std.
++//!
++//! In std mode, re-exports from `std::io`.
++//! In no_std mode, provides a minimal `Write` trait and error type.
++//!
++//! This follows the same pattern as `serde_json`:
++//! <https://github.com/serde-rs/json/blob/master/src/io/mod.rs>
++
++#[cfg(feature = "std")]
++pub use std::io::{Error, Read, Result, Write};
++
++#[cfg(feature = "std")]
++pub(crate) fn sink() -> std::io::Sink {
++    std::io::sink()
++}
++
++#[cfg(not(feature = "std"))]
++pub use self::nostd::{Error, Result, Write};
++
++#[cfg(not(feature = "std"))]
++pub(crate) use self::nostd::sink;
++
++#[cfg(not(feature = "std"))]
++mod nostd {
++    use alloc::vec::Vec;
++    use core::fmt;
++
++    /// Result type returned by [`Write`]'s methods in no_std mode.
++    pub type Result<T> = core::result::Result<T, Error>;
++
++    /// I/O error type for no_std mode.
++    pub struct Error;
++
++    impl fmt::Display for Error {
++        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
++            f.write_str("I/O error")
++        }
++    }
++
++    impl fmt::Debug for Error {
++        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
++            f.write_str("io::Error")
++        }
++    }
++
++    impl core::error::Error for Error {}
++
++    /// Minimal `Write` trait for no_std environments.
++    pub trait Write {
++        /// Write all bytes from `buf` into the writer.
++        fn write_all(&mut self, buf: &[u8]) -> Result<()>;
++        /// Flush buffered data.
++        fn flush(&mut self) -> Result<()>;
++    }
++
++    impl<W: Write + ?Sized> Write for &mut W {
++        #[inline]
++        fn write_all(&mut self, buf: &[u8]) -> Result<()> {
++            (**self).write_all(buf)
++        }
++
++        #[inline]
++        fn flush(&mut self) -> Result<()> {
++            (**self).flush()
++        }
++    }
++
++    pub fn sink() -> Sink {
++        Sink
++    }
++
++    pub struct Sink;
++
++    impl Write for Sink {
++        #[inline]
++        fn write_all(&mut self, _buf: &[u8]) -> Result<()> {
++            Ok(())
++        }
++
++        #[inline]
++        fn flush(&mut self) -> Result<()> {
++            Ok(())
++        }
++    }
++
++    impl Write for Vec<u8> {
++        #[inline]
++        fn write_all(&mut self, buf: &[u8]) -> Result<()> {
++            self.extend_from_slice(buf);
++            Ok(())
++        }
++
++        #[inline]
++        fn flush(&mut self) -> Result<()> {
++            Ok(())
++        }
++    }
++}
+--- serde_yaml/src/lib.rs
++++ yaml_serde/src/lib.rs
+@@ -1,4 +1,4 @@
+-//! [![github]](https://github.com/dtolnay/serde-yaml)&ensp;[![crates-io]](https://crates.io/crates/serde-yaml)&ensp;[![docs-rs]](https://docs.rs/serde-yaml)
++//! [![github]](https://github.com/yaml/yaml-serde)&ensp;[![crates-io]](https://crates.io/crates/yaml_serde)&ensp;[![docs-rs]](https://docs.rs/yaml_serde)
+ //!
+ //! [github]: https://img.shields.io/badge/github-8da0cb?style=for-the-badge&labelColor=555555&logo=github
+ //! [crates-io]: https://img.shields.io/badge/crates.io-fc8d62?style=for-the-badge&labelColor=555555&logo=rust
+@@ -7,7 +7,11 @@
+ //! <br>
+ //!
+ //! Rust library for using the [Serde] serialization framework with data in
+-//! [YAML] file format. _(This project is no longer maintained.)_
++//! [YAML] file format.
++//!
++//! This is the actively maintained fork of
++//! [serde-yaml](https://github.com/dtolnay/serde-yaml), published as `yaml_serde`
++//! by the official [YAML organization](https://github.com/yaml).
+ //!
+ //! [Serde]: https://github.com/serde-rs/serde
+ //! [YAML]: https://yaml.org/
+@@ -17,18 +21,18 @@
+ //! ```
+ //! use std::collections::BTreeMap;
+ //!
+-//! fn main() -> Result<(), serde_yaml::Error> {
++//! fn main() -> Result<(), yaml_serde::Error> {
+ //!     // You have some type.
+ //!     let mut map = BTreeMap::new();
+ //!     map.insert("x".to_string(), 1.0);
+ //!     map.insert("y".to_string(), 2.0);
+ //!
+ //!     // Serialize it to a YAML string.
+-//!     let yaml = serde_yaml::to_string(&map)?;
++//!     let yaml = yaml_serde::to_string(&map)?;
+ //!     assert_eq!(yaml, "x: 1.0\ny: 2.0\n");
+ //!
+ //!     // Deserialize it back to a Rust type.
+-//!     let deserialized_map: BTreeMap<String, f64> = serde_yaml::from_str(&yaml)?;
++//!     let deserialized_map: BTreeMap<String, f64> = yaml_serde::from_str(&yaml)?;
+ //!     assert_eq!(map, deserialized_map);
+ //!     Ok(())
+ //! }
+@@ -51,13 +55,13 @@
+ //!     y: f64,
+ //! }
+ //!
+-//! fn main() -> Result<(), serde_yaml::Error> {
++//! fn main() -> Result<(), yaml_serde::Error> {
+ //!     let point = Point { x: 1.0, y: 2.0 };
+ //!
+-//!     let yaml = serde_yaml::to_string(&point)?;
++//!     let yaml = yaml_serde::to_string(&point)?;
+ //!     assert_eq!(yaml, "x: 1.0\ny: 2.0\n");
+ //!
+-//!     let deserialized_point: Point = serde_yaml::from_str(&yaml)?;
++//!     let deserialized_point: Point = yaml_serde::from_str(&yaml)?;
+ //!     assert_eq!(point, deserialized_point);
+ //!     Ok(())
+ //! }
+@@ -77,13 +81,13 @@
+ //!     Struct { x: f64, y: f64 },
+ //! }
+ //!
+-//! fn main() -> Result<(), serde_yaml::Error> {
++//! fn main() -> Result<(), yaml_serde::Error> {
+ //!     let yaml = "
+ //!         - !Newtype 1
+ //!         - !Tuple [0, 0, 0]
+ //!         - !Struct {x: 1.0, y: 2.0}
+ //!     ";
+-//!     let values: Vec<Enum> = serde_yaml::from_str(yaml).unwrap();
++//!     let values: Vec<Enum> = yaml_serde::from_str(yaml).unwrap();
+ //!     assert_eq!(values[0], Enum::Newtype(1));
+ //!     assert_eq!(values[1], Enum::Tuple(0, 0, 0));
+ //!     assert_eq!(values[2], Enum::Struct { x: 1.0, y: 2.0 });
+@@ -98,7 +102,7 @@
+ //!           x: 1.0
+ //!           y: 2.0
+ //!     ";
+-//!     let values: Vec<Enum> = serde_yaml::from_str(yaml).unwrap();
++//!     let values: Vec<Enum> = yaml_serde::from_str(yaml).unwrap();
+ //!     assert_eq!(values[0], Enum::Tuple(0, 0, 0));
+ //!     assert_eq!(values[1], Enum::Struct { x: 1.0, y: 2.0 });
+ //!
+@@ -107,15 +111,32 @@
+ //!         - Unit  # serialization produces this one
+ //!         - !Unit
+ //!     ";
+-//!     let values: Vec<Enum> = serde_yaml::from_str(yaml).unwrap();
++//!     let values: Vec<Enum> = yaml_serde::from_str(yaml).unwrap();
+ //!     assert_eq!(values[0], Enum::Unit);
+ //!     assert_eq!(values[1], Enum::Unit);
+ //!
+ //!     Ok(())
+ //! }
+ //! ```
+-
+-#![doc(html_root_url = "https://docs.rs/serde_yaml/0.9.34+deprecated")]
++//!
++//! # no_std support
++//!
++//! This crate is `no_std` and only requires a global allocator. The default
++//! `std` feature enables integration with `std::io`; disable it to build for
++//! targets without `std`:
++//!
++//! ```toml
++//! [dependencies]
++//! yaml_serde = { version = "0.10", default-features = false }
++//! ```
++//!
++//! Without the `std` feature, [`from_reader`] is unavailable, since it depends
++//! on `std::io::Read`. [`to_writer`] remains available and accepts any writer
++//! implementing the minimal [`io::Write`] trait, which this crate implements for
++//! `Vec<u8>`.
++
++#![no_std]
++#![doc(html_root_url = "https://docs.rs/yaml_serde/0.10.7")]
+ #![deny(missing_docs, unsafe_op_in_unsafe_fn)]
+ // Suppressed clippy_pedantic lints
+ #![allow(
+@@ -160,7 +181,14 @@
+     clippy::must_use_candidate,
+ )]
+ 
+-pub use crate::de::{from_reader, from_slice, from_str, Deserializer};
++#[cfg(feature = "std")]
++extern crate std;
++
++extern crate alloc;
++
++#[cfg(feature = "std")]
++pub use crate::de::from_reader;
++pub use crate::de::{from_slice, from_str, Deserializer};
+ pub use crate::error::{Error, Location, Result};
+ pub use crate::ser::{to_string, to_writer, Serializer};
+ #[doc(inline)]
+@@ -171,6 +199,7 @@
+ 
+ mod de;
+ mod error;
++pub mod io;
+ mod libyaml;
+ mod loader;
+ pub mod mapping;
+@@ -182,10 +211,11 @@
+ 
+ // Prevent downstream code from implementing the Index trait.
+ mod private {
++    use alloc::string::String;
+     pub trait Sealed {}
+     impl Sealed for usize {}
+     impl Sealed for str {}
+     impl Sealed for String {}
+     impl Sealed for crate::Value {}
+-    impl<'a, T> Sealed for &'a T where T: ?Sized + Sealed {}
++    impl<T> Sealed for &T where T: ?Sized + Sealed {}
+ }
+--- serde_yaml/src/libyaml/cstr.rs
++++ yaml_serde/src/libyaml/cstr.rs
+@@ -1,8 +1,8 @@
+-use std::fmt::{self, Debug, Display, Write as _};
+-use std::marker::PhantomData;
+-use std::ptr::NonNull;
+-use std::slice;
+-use std::str;
++use core::fmt::{self, Debug, Display, Write as _};
++use core::marker::PhantomData;
++use core::ptr::NonNull;
++use core::slice;
++use core::str;
+ 
+ #[derive(Copy, Clone)]
+ pub(crate) struct CStr<'a> {
+@@ -10,8 +10,8 @@
+     marker: PhantomData<&'a [u8]>,
+ }
+ 
+-unsafe impl<'a> Send for CStr<'a> {}
+-unsafe impl<'a> Sync for CStr<'a> {}
++unsafe impl Send for CStr<'_> {}
++unsafe impl Sync for CStr<'_> {}
+ 
+ impl<'a> CStr<'a> {
+     pub fn from_bytes_with_nul(bytes: &'static [u8]) -> Self {
+@@ -44,7 +44,7 @@
+     }
+ }
+ 
+-impl<'a> Display for CStr<'a> {
++impl Display for CStr<'_> {
+     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+         let ptr = self.ptr.as_ptr();
+         let len = self.len();
+@@ -53,7 +53,7 @@
+     }
+ }
+ 
+-impl<'a> Debug for CStr<'a> {
++impl Debug for CStr<'_> {
+     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+         let ptr = self.ptr.as_ptr();
+         let len = self.len();
+--- serde_yaml/src/libyaml/emitter.rs
++++ yaml_serde/src/libyaml/emitter.rs
+@@ -1,11 +1,13 @@
++use crate::io;
+ use crate::libyaml;
+ use crate::libyaml::util::Owned;
+-use std::ffi::c_void;
+-use std::io;
+-use std::mem::{self, MaybeUninit};
+-use std::ptr::{self, addr_of_mut};
+-use std::slice;
+-use unsafe_libyaml as sys;
++use alloc::boxed::Box;
++use alloc::string::String;
++use core::ffi::c_void;
++use core::mem::{self, MaybeUninit};
++use core::ptr::{self, addr_of_mut};
++use core::slice;
++use libyaml_rs as sys;
+ 
+ #[derive(Debug)]
+ pub(crate) enum Error {
+@@ -181,7 +183,7 @@
+     }
+ 
+     pub fn into_inner(self) -> Box<dyn io::Write + 'a> {
+-        let sink = Box::new(io::sink());
++        let sink: Box<dyn io::Write> = Box::new(io::sink());
+         unsafe { mem::replace(&mut (*self.pin.ptr).write, sink) }
+     }
+ 
+@@ -190,7 +192,7 @@
+         if let Some(write_error) = emitter.write_error.take() {
+             Error::Io(write_error)
+         } else {
+-            Error::Libyaml(unsafe { libyaml::Error::emit_error(&emitter.sys) })
++            Error::Libyaml(unsafe { libyaml::Error::emit_error(&raw const emitter.sys) })
+         }
+     }
+ }
+@@ -210,8 +212,8 @@
+     }
+ }
+ 
+-impl<'a> Drop for EmitterPinned<'a> {
++impl Drop for EmitterPinned<'_> {
+     fn drop(&mut self) {
+-        unsafe { sys::yaml_emitter_delete(&mut self.sys) }
+-    }
+-}
++        unsafe { sys::yaml_emitter_delete(&raw mut self.sys) }
++    }
++}
+--- serde_yaml/src/libyaml/error.rs
++++ yaml_serde/src/libyaml/error.rs
+@@ -1,10 +1,10 @@
+ use crate::libyaml::cstr::CStr;
+-use std::fmt::{self, Debug, Display};
+-use std::mem::MaybeUninit;
+-use std::ptr::NonNull;
+-use unsafe_libyaml as sys;
++use core::fmt::{self, Debug, Display};
++use core::mem::MaybeUninit;
++use core::ptr::NonNull;
++use libyaml_rs as sys;
+ 
+-pub(crate) type Result<T> = std::result::Result<T, Error>;
++pub(crate) type Result<T> = core::result::Result<T, Error>;
+ 
+ pub(crate) struct Error {
+     kind: sys::yaml_error_type_t,
+@@ -18,29 +18,29 @@
+ impl Error {
+     pub unsafe fn parse_error(parser: *const sys::yaml_parser_t) -> Self {
+         Error {
+-            kind: unsafe { (*parser).error },
+-            problem: match NonNull::new(unsafe { (*parser).problem as *mut _ }) {
++            kind: unsafe { (&(*parser)).error },
++            problem: match NonNull::new(unsafe { (&(*parser)).problem.cast_mut() }) {
+                 Some(problem) => unsafe { CStr::from_ptr(problem) },
+                 None => CStr::from_bytes_with_nul(b"libyaml parser failed but there is no error\0"),
+             },
+-            problem_offset: unsafe { (*parser).problem_offset },
++            problem_offset: unsafe { (&(*parser)).problem_offset },
+             problem_mark: Mark {
+-                sys: unsafe { (*parser).problem_mark },
++                sys: unsafe { (&(*parser)).problem_mark },
+             },
+-            context: match NonNull::new(unsafe { (*parser).context as *mut _ }) {
++            context: match NonNull::new(unsafe { (&(*parser)).context.cast_mut() }) {
+                 Some(context) => Some(unsafe { CStr::from_ptr(context) }),
+                 None => None,
+             },
+             context_mark: Mark {
+-                sys: unsafe { (*parser).context_mark },
++                sys: unsafe { (&(*parser)).context_mark },
+             },
+         }
+     }
+ 
+     pub unsafe fn emit_error(emitter: *const sys::yaml_emitter_t) -> Self {
+         Error {
+-            kind: unsafe { (*emitter).error },
+-            problem: match NonNull::new(unsafe { (*emitter).problem as *mut _ }) {
++            kind: unsafe { (&(*emitter)).error },
++            problem: match NonNull::new(unsafe { (&(*emitter)).problem.cast_mut() }) {
+                 Some(problem) => unsafe { CStr::from_ptr(problem) },
+                 None => {
+                     CStr::from_bytes_with_nul(b"libyaml emitter failed but there is no error\0")
+--- serde_yaml/src/libyaml/parser.rs
++++ yaml_serde/src/libyaml/parser.rs
+@@ -2,12 +2,13 @@
+ use crate::libyaml::error::{Error, Mark, Result};
+ use crate::libyaml::tag::Tag;
+ use crate::libyaml::util::Owned;
+-use std::borrow::Cow;
+-use std::fmt::{self, Debug};
+-use std::mem::MaybeUninit;
+-use std::ptr::{addr_of_mut, NonNull};
+-use std::slice;
+-use unsafe_libyaml as sys;
++use alloc::borrow::Cow;
++use alloc::boxed::Box;
++use core::fmt::{self, Debug};
++use core::mem::MaybeUninit;
++use core::ptr::{addr_of_mut, NonNull};
++use core::slice;
++use libyaml_rs as sys;
+ 
+ pub(crate) struct Parser<'input> {
+     pin: Owned<ParserPinned<'input>>,
+@@ -84,7 +85,7 @@
+         let mut event = MaybeUninit::<sys::yaml_event_t>::uninit();
+         unsafe {
+             let parser = addr_of_mut!((*self.pin.ptr).sys);
+-            if (*parser).error != sys::YAML_NO_ERROR {
++            if (&(*parser)).error != sys::YAML_NO_ERROR {
+                 return Err(Error::parse_error(parser));
+             }
+             let event = event.as_mut_ptr();
+@@ -160,7 +161,7 @@
+     Some(Tag(Box::from(cstr.to_bytes())))
+ }
+ 
+-impl<'input> Debug for Scalar<'input> {
++impl Debug for Scalar<'_> {
+     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+         let Scalar {
+             anchor,
+@@ -172,7 +173,7 @@
+ 
+         struct LossySlice<'a>(&'a [u8]);
+ 
+-        impl<'a> Debug for LossySlice<'a> {
++        impl Debug for LossySlice<'_> {
+             fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                 cstr::debug_lossy(self.0, formatter)
+             }
+@@ -194,8 +195,8 @@
+     }
+ }
+ 
+-impl<'input> Drop for ParserPinned<'input> {
++impl Drop for ParserPinned<'_> {
+     fn drop(&mut self) {
+-        unsafe { sys::yaml_parser_delete(&mut self.sys) }
+-    }
+-}
++        unsafe { sys::yaml_parser_delete(&raw mut self.sys) }
++    }
++}
+--- serde_yaml/src/libyaml/tag.rs
++++ yaml_serde/src/libyaml/tag.rs
+@@ -1,6 +1,7 @@
+ use crate::libyaml::cstr;
+-use std::fmt::{self, Debug};
+-use std::ops::Deref;
++use alloc::boxed::Box;
++use core::fmt::{self, Debug};
++use core::ops::Deref;
+ 
+ #[derive(Ord, PartialOrd, Eq, PartialEq)]
+ pub(crate) struct Tag(pub(in crate::libyaml) Box<[u8]>);
+--- serde_yaml/src/libyaml/util.rs
++++ yaml_serde/src/libyaml/util.rs
+@@ -1,7 +1,8 @@
+-use std::marker::PhantomData;
+-use std::mem::{self, MaybeUninit};
+-use std::ops::Deref;
+-use std::ptr::{addr_of, NonNull};
++use alloc::boxed::Box;
++use core::marker::PhantomData;
++use core::mem::{self, MaybeUninit};
++use core::ops::Deref;
++use core::ptr::{addr_of, NonNull};
+ 
+ pub(crate) struct Owned<T, Init = T> {
+     ptr: NonNull<T>,
+@@ -13,7 +14,7 @@
+         // FIXME: use Box::new_uninit when stable
+         let boxed = Box::new(MaybeUninit::<T>::uninit());
+         Owned {
+-            ptr: unsafe { NonNull::new_unchecked(Box::into_raw(boxed)) },
++            ptr: NonNull::from(Box::leak(boxed)),
+             marker: PhantomData,
+         }
+     }
+--- serde_yaml/src/loader.rs
++++ yaml_serde/src/loader.rs
+@@ -2,9 +2,10 @@
+ use crate::error::{self, Error, ErrorImpl, Result};
+ use crate::libyaml::error::Mark;
+ use crate::libyaml::parser::{Event as YamlEvent, Parser};
+-use std::borrow::Cow;
+-use std::collections::BTreeMap;
+-use std::sync::Arc;
++use alloc::borrow::Cow;
++use alloc::collections::BTreeMap;
++use alloc::sync::Arc;
++use alloc::vec::Vec;
+ 
+ pub(crate) struct Loader<'input> {
+     parser: Option<Parser<'input>>,
+@@ -23,6 +24,7 @@
+         let input = match progress {
+             Progress::Str(s) => Cow::Borrowed(s.as_bytes()),
+             Progress::Slice(bytes) => Cow::Borrowed(bytes),
++            #[cfg(feature = "std")]
+             Progress::Read(mut rdr) => {
+                 let mut buffer = Vec::new();
+                 if let Err(io_error) = rdr.read_to_end(&mut buffer) {
+@@ -41,9 +43,8 @@
+     }
+ 
+     pub fn next_document(&mut self) -> Option<Document<'input>> {
+-        let parser = match &mut self.parser {
+-            Some(parser) => parser,
+-            None => return None,
++        let Some(parser) = &mut self.parser else {
++            return None;
+         };
+ 
+         let first = self.document_count == 0;
+--- serde_yaml/src/mapping.rs
++++ yaml_serde/src/mapping.rs
+@@ -1,18 +1,75 @@
+ //! A YAML mapping and its iterator types.
+ 
+ use crate::{private, Value};
++use alloc::string::String;
++use alloc::vec::Vec;
++use core::cmp::Ordering;
++use core::fmt::{self, Display};
++use core::hash::{Hash, Hasher};
++use core::mem;
+ use indexmap::IndexMap;
+ use serde::{Deserialize, Deserializer, Serialize};
+-use std::cmp::Ordering;
+-use std::collections::hash_map::DefaultHasher;
+-use std::fmt::{self, Display};
+-use std::hash::{Hash, Hasher};
+-use std::mem;
+-
+-/// A YAML mapping in which the keys and values are both `serde_yaml::Value`.
++
++#[cfg(not(feature = "std"))]
++mod fnv {
++    use core::hash::{BuildHasher, Hasher};
++
++    const OFFSET_BASIS: u64 = 0xcbf2_9ce4_8422_2325;
++    const PRIME: u64 = 0x0100_0000_01b3;
++
++    /// FNV-1a, used in place of `std`'s `DefaultHasher` in no_std builds.
++    pub struct FnvHasher(u64);
++
++    impl Default for FnvHasher {
++        fn default() -> Self {
++            FnvHasher(OFFSET_BASIS)
++        }
++    }
++
++    impl Hasher for FnvHasher {
++        fn finish(&self) -> u64 {
++            self.0
++        }
++
++        fn write(&mut self, bytes: &[u8]) {
++            for &b in bytes {
++                self.0 ^= u64::from(b);
++                self.0 = self.0.wrapping_mul(PRIME);
++            }
++        }
++    }
++
++    #[derive(Clone, Default)]
++    pub struct FnvBuildHasher;
++
++    impl FnvBuildHasher {
++        pub const fn new() -> Self {
++            FnvBuildHasher
++        }
++    }
++
++    impl BuildHasher for FnvBuildHasher {
++        type Hasher = FnvHasher;
++        fn build_hasher(&self) -> FnvHasher {
++            FnvHasher::default()
++        }
++    }
++}
++
++// The hasher used for `Mapping`'s IndexMap, and the one used to hash individual
++// entries in the order-independent `Hash` impl below.
++#[cfg(feature = "std")]
++use std::collections::hash_map::{DefaultHasher as EntryHasher, RandomState as MapHasher};
++
++#[cfg(not(feature = "std"))]
++use self::fnv::{FnvBuildHasher as MapHasher, FnvHasher as EntryHasher};
++
++type MapImpl = IndexMap<Value, Value, MapHasher>;
++
++/// A YAML mapping in which the keys and values are both `yaml_serde::Value`.
+ #[derive(Clone, Default, Eq, PartialEq)]
+ pub struct Mapping {
+-    map: IndexMap<Value, Value>,
++    map: MapImpl,
+ }
+ 
+ impl Mapping {
+@@ -26,7 +83,7 @@
+     #[inline]
+     pub fn with_capacity(capacity: usize) -> Self {
+         Mapping {
+-            map: IndexMap::with_capacity(capacity),
++            map: IndexMap::with_capacity_and_hasher(capacity, MapHasher::new()),
+         }
+     }
+ 
+@@ -78,7 +135,7 @@
+     /// Gets the given key's corresponding entry in the map for insertion and/or
+     /// in-place manipulation.
+     #[inline]
+-    pub fn entry(&mut self, k: Value) -> Entry {
++    pub fn entry(&mut self, k: Value) -> Entry<'_> {
+         match self.map.entry(k) {
+             indexmap::map::Entry::Occupied(occupied) => Entry::Occupied(OccupiedEntry { occupied }),
+             indexmap::map::Entry::Vacant(vacant) => Entry::Vacant(VacantEntry { vacant }),
+@@ -185,7 +242,7 @@
+     /// Returns a double-ended iterator visiting all key-value pairs in order of
+     /// insertion. Iterator element type is `(&'a Value, &'a Value)`.
+     #[inline]
+-    pub fn iter(&self) -> Iter {
++    pub fn iter(&self) -> Iter<'_> {
+         Iter {
+             iter: self.map.iter(),
+         }
+@@ -194,14 +251,14 @@
+     /// Returns a double-ended iterator visiting all key-value pairs in order of
+     /// insertion. Iterator element type is `(&'a Value, &'a mut ValuE)`.
+     #[inline]
+-    pub fn iter_mut(&mut self) -> IterMut {
++    pub fn iter_mut(&mut self) -> IterMut<'_> {
+         IterMut {
+             iter: self.map.iter_mut(),
+         }
+     }
+ 
+     /// Return an iterator over the keys of the map.
+-    pub fn keys(&self) -> Keys {
++    pub fn keys(&self) -> Keys<'_> {
+         Keys {
+             iter: self.map.keys(),
+         }
+@@ -215,14 +272,14 @@
+     }
+ 
+     /// Return an iterator over the values of the map.
+-    pub fn values(&self) -> Values {
++    pub fn values(&self) -> Values<'_> {
+         Values {
+             iter: self.map.values(),
+         }
+     }
+ 
+     /// Return an iterator over mutable references to the values of the map.
+-    pub fn values_mut(&mut self) -> ValuesMut {
++    pub fn values_mut(&mut self) -> ValuesMut<'_> {
+         ValuesMut {
+             iter: self.map.values_mut(),
+         }
+@@ -236,11 +293,11 @@
+     }
+ }
+ 
+-/// A type that can be used to index into a `serde_yaml::Mapping`. See the
++/// A type that can be used to index into a `yaml_serde::Mapping`. See the
+ /// methods `get`, `get_mut`, `contains_key`, and `remove` of `Value`.
+ ///
+ /// This trait is sealed and cannot be implemented for types outside of
+-/// `serde_yaml`.
++/// `yaml_serde`.
+ pub trait Index: private::Sealed {
+     #[doc(hidden)]
+     fn is_key_into(&self, v: &Mapping) -> bool;
+@@ -266,7 +323,7 @@
+ 
+ struct HashLikeValue<'a>(&'a str);
+ 
+-impl<'a> indexmap::Equivalent<Value> for HashLikeValue<'a> {
++impl indexmap::Equivalent<Value> for HashLikeValue<'_> {
+     fn equivalent(&self, key: &Value) -> bool {
+         match key {
+             Value::String(string) => self.0 == string,
+@@ -276,7 +333,7 @@
+ }
+ 
+ // NOTE: This impl must be consistent with Value's Hash impl.
+-impl<'a> Hash for HashLikeValue<'a> {
++impl Hash for HashLikeValue<'_> {
+     fn hash<H: Hasher>(&self, state: &mut H) {
+         const STRING: Value = Value::String(String::new());
+         mem::discriminant(&STRING).hash(state);
+@@ -389,7 +446,7 @@
+         // Hash the kv pairs in a way that is not sensitive to their order.
+         let mut xor = 0;
+         for (k, v) in self {
+-            let mut hasher = DefaultHasher::new();
++            let mut hasher = EntryHasher::default();
+             k.hash(&mut hasher);
+             v.hash(&mut hasher);
+             xor ^= hasher.finish();
+@@ -451,20 +508,16 @@
+             let mut other = other.into_iter();
+ 
+             loop {
+-                let x = match this.next() {
+-                    None => {
+-                        if other.next().is_none() {
+-                            return Ordering::Equal;
+-                        } else {
+-                            return Ordering::Less;
+-                        }
++                let Some(x) = this.next() else {
++                    if other.next().is_none() {
++                        return Ordering::Equal;
++                    } else {
++                        return Ordering::Less;
+                     }
+-                    Some(val) => val,
+                 };
+ 
+-                let y = match other.next() {
+-                    None => return Ordering::Greater,
+-                    Some(val) => val,
++                let Some(y) = other.next() else {
++                    return Ordering::Greater;
+                 };
+ 
+                 match cmp(x, y) {
+@@ -484,7 +537,7 @@
+     }
+ }
+ 
+-impl<I> std::ops::Index<I> for Mapping
++impl<I> core::ops::Index<I> for Mapping
+ where
+     I: Index,
+ {
+@@ -497,7 +550,7 @@
+     }
+ }
+ 
+-impl<I> std::ops::IndexMut<I> for Mapping
++impl<I> core::ops::IndexMut<I> for Mapping
+ where
+     I: Index,
+ {
+@@ -547,7 +600,7 @@
+     }
+ }
+ 
+-/// Iterator over `&serde_yaml::Mapping`.
++/// Iterator over `&yaml_serde::Mapping`.
+ pub struct Iter<'a> {
+     iter: indexmap::map::Iter<'a, Value, Value>,
+ }
+@@ -565,7 +618,7 @@
+     }
+ }
+ 
+-/// Iterator over `&mut serde_yaml::Mapping`.
++/// Iterator over `&mut yaml_serde::Mapping`.
+ pub struct IterMut<'a> {
+     iter: indexmap::map::IterMut<'a, Value, Value>,
+ }
+@@ -583,7 +636,7 @@
+     }
+ }
+ 
+-/// Iterator over `serde_yaml::Mapping` by value.
++/// Iterator over `yaml_serde::Mapping` by value.
+ pub struct IntoIter {
+     iter: indexmap::map::IntoIter<Value, Value>,
+ }
+@@ -601,35 +654,35 @@
+     }
+ }
+ 
+-/// Iterator of the keys of a `&serde_yaml::Mapping`.
++/// Iterator of the keys of a `&yaml_serde::Mapping`.
+ pub struct Keys<'a> {
+     iter: indexmap::map::Keys<'a, Value, Value>,
+ }
+ 
+ delegate_iterator!((Keys<'a>) => &'a Value);
+ 
+-/// Iterator of the keys of a `serde_yaml::Mapping`.
++/// Iterator of the keys of a `yaml_serde::Mapping`.
+ pub struct IntoKeys {
+     iter: indexmap::map::IntoKeys<Value, Value>,
+ }
+ 
+ delegate_iterator!((IntoKeys) => Value);
+ 
+-/// Iterator of the values of a `&serde_yaml::Mapping`.
++/// Iterator of the values of a `&yaml_serde::Mapping`.
+ pub struct Values<'a> {
+     iter: indexmap::map::Values<'a, Value, Value>,
+ }
+ 
+ delegate_iterator!((Values<'a>) => &'a Value);
+ 
+-/// Iterator of the values of a `&mut serde_yaml::Mapping`.
++/// Iterator of the values of a `&mut yaml_serde::Mapping`.
+ pub struct ValuesMut<'a> {
+     iter: indexmap::map::ValuesMut<'a, Value, Value>,
+ }
+ 
+ delegate_iterator!((ValuesMut<'a>) => &'a mut Value);
+ 
+-/// Iterator of the values of a `serde_yaml::Mapping`.
++/// Iterator of the values of a `yaml_serde::Mapping`.
+ pub struct IntoValues {
+     iter: indexmap::map::IntoValues<Value, Value>,
+ }
+@@ -835,7 +888,7 @@
+     entry: OccupiedEntry<'a>,
+ }
+ 
+-impl<'a> Display for DuplicateKeyError<'a> {
++impl Display for DuplicateKeyError<'_> {
+     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+         formatter.write_str("duplicate entry ")?;
+         match self.entry.key() {
+--- serde_yaml/src/number.rs
++++ yaml_serde/src/number.rs
+@@ -1,11 +1,11 @@
+ use crate::de;
+ use crate::error::{self, Error, ErrorImpl};
++use core::cmp::Ordering;
++use core::fmt::{self, Display};
++use core::hash::{Hash, Hasher};
++use core::str::FromStr;
+ use serde::de::{Unexpected, Visitor};
+ use serde::{forward_to_deserialize_any, Deserialize, Deserializer, Serialize, Serializer};
+-use std::cmp::Ordering;
+-use std::fmt::{self, Display};
+-use std::hash::{Hash, Hasher};
+-use std::str::FromStr;
+ 
+ /// Represents a YAML number, whether integer or floating point.
+ #[derive(Clone, PartialEq, PartialOrd)]
+@@ -33,9 +33,9 @@
+     /// return the integer value.
+     ///
+     /// ```
+-    /// # fn main() -> serde_yaml::Result<()> {
++    /// # fn main() -> yaml_serde::Result<()> {
+     /// let big = i64::MAX as u64 + 10;
+-    /// let v: serde_yaml::Value = serde_yaml::from_str(r#"
++    /// let v: yaml_serde::Value = yaml_serde::from_str(r#"
+     /// a: 64
+     /// b: 9223372036854775817
+     /// c: 256.0
+@@ -55,7 +55,7 @@
+     #[allow(clippy::cast_sign_loss)]
+     pub fn is_i64(&self) -> bool {
+         match self.n {
+-            N::PosInt(v) => v <= i64::max_value() as u64,
++            N::PosInt(v) => v <= i64::MAX as u64,
+             N::NegInt(_) => true,
+             N::Float(_) => false,
+         }
+@@ -67,8 +67,8 @@
+     /// return the integer value.
+     ///
+     /// ```
+-    /// # fn main() -> serde_yaml::Result<()> {
+-    /// let v: serde_yaml::Value = serde_yaml::from_str(r#"
++    /// # fn main() -> yaml_serde::Result<()> {
++    /// let v: yaml_serde::Value = yaml_serde::from_str(r#"
+     /// a: 64
+     /// b: -64
+     /// c: 256.0
+@@ -101,8 +101,8 @@
+     /// `is_u64` return false but this is not a guarantee in the future.
+     ///
+     /// ```
+-    /// # fn main() -> serde_yaml::Result<()> {
+-    /// let v: serde_yaml::Value = serde_yaml::from_str(r#"
++    /// # fn main() -> yaml_serde::Result<()> {
++    /// let v: yaml_serde::Value = yaml_serde::from_str(r#"
+     /// a: 256.0
+     /// b: 64
+     /// c: -64
+@@ -128,9 +128,9 @@
+     /// None otherwise.
+     ///
+     /// ```
+-    /// # fn main() -> serde_yaml::Result<()> {
++    /// # fn main() -> yaml_serde::Result<()> {
+     /// let big = i64::MAX as u64 + 10;
+-    /// let v: serde_yaml::Value = serde_yaml::from_str(r#"
++    /// let v: yaml_serde::Value = yaml_serde::from_str(r#"
+     /// a: 64
+     /// b: 9223372036854775817
+     /// c: 256.0
+@@ -146,7 +146,7 @@
+     pub fn as_i64(&self) -> Option<i64> {
+         match self.n {
+             N::PosInt(n) => {
+-                if n <= i64::max_value() as u64 {
++                if n <= i64::MAX as u64 {
+                     Some(n as i64)
+                 } else {
+                     None
+@@ -161,8 +161,8 @@
+     /// None otherwise.
+     ///
+     /// ```
+-    /// # fn main() -> serde_yaml::Result<()> {
+-    /// let v: serde_yaml::Value = serde_yaml::from_str(r#"
++    /// # fn main() -> yaml_serde::Result<()> {
++    /// let v: yaml_serde::Value = yaml_serde::from_str(r#"
+     /// a: 64
+     /// b: -64
+     /// c: 256.0
+@@ -185,8 +185,8 @@
+     /// Represents the number as f64 if possible. Returns None otherwise.
+     ///
+     /// ```
+-    /// # fn main() -> serde_yaml::Result<()> {
+-    /// let v: serde_yaml::Value = serde_yaml::from_str(r#"
++    /// # fn main() -> yaml_serde::Result<()> {
++    /// let v: yaml_serde::Value = yaml_serde::from_str(r#"
+     /// a: 256.0
+     /// b: 64
+     /// c: -64
+@@ -200,14 +200,14 @@
+     /// ```
+     ///
+     /// ```
+-    /// # fn main() -> serde_yaml::Result<()> {
+-    /// let v: serde_yaml::Value = serde_yaml::from_str(".inf")?;
++    /// # fn main() -> yaml_serde::Result<()> {
++    /// let v: yaml_serde::Value = yaml_serde::from_str(".inf")?;
+     /// assert_eq!(v.as_f64(), Some(f64::INFINITY));
+     ///
+-    /// let v: serde_yaml::Value = serde_yaml::from_str("-.inf")?;
++    /// let v: yaml_serde::Value = yaml_serde::from_str("-.inf")?;
+     /// assert_eq!(v.as_f64(), Some(f64::NEG_INFINITY));
+     ///
+-    /// let v: serde_yaml::Value = serde_yaml::from_str(".nan")?;
++    /// let v: yaml_serde::Value = yaml_serde::from_str(".nan")?;
+     /// assert!(v.as_f64().unwrap().is_nan());
+     /// # Ok(())
+     /// # }
+@@ -224,7 +224,7 @@
+     /// Returns true if this value is NaN and false otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::Number;
++    /// # use yaml_serde::Number;
+     /// #
+     /// assert!(!Number::from(256.0).is_nan());
+     ///
+@@ -248,7 +248,7 @@
+     /// false otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::Number;
++    /// # use yaml_serde::Number;
+     /// #
+     /// assert!(!Number::from(256.0).is_infinite());
+     ///
+@@ -271,7 +271,7 @@
+     /// Returns true if this number is neither infinite nor NaN.
+     ///
+     /// ```
+-    /// # use serde_yaml::Number;
++    /// # use yaml_serde::Number;
+     /// #
+     /// assert!(Number::from(256.0).is_finite());
+     ///
+@@ -409,7 +409,7 @@
+ 
+ struct NumberVisitor;
+ 
+-impl<'de> Visitor<'de> for NumberVisitor {
++impl Visitor<'_> for NumberVisitor {
+     type Value = Number;
+ 
+     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+@@ -464,7 +464,7 @@
+     }
+ }
+ 
+-impl<'de, 'a> Deserializer<'de> for &'a Number {
++impl<'de> Deserializer<'de> for &Number {
+     type Error = Error;
+ 
+     #[inline]
+@@ -552,7 +552,7 @@
+     }
+ }
+ 
+-pub(crate) fn unexpected(number: &Number) -> Unexpected {
++pub(crate) fn unexpected(number: &Number) -> Unexpected<'_> {
+     match number.n {
+         N::PosInt(u) => Unexpected::Unsigned(u),
+         N::NegInt(i) => Unexpected::Signed(i),
+--- serde_yaml/src/path.rs
++++ yaml_serde/src/path.rs
+@@ -1,4 +1,4 @@
+-use std::fmt::{self, Display};
++use core::fmt::{self, Display};
+ 
+ /// Path to the current value in the input, like `dependencies.serde.typo1`.
+ #[derive(Copy, Clone)]
+@@ -10,11 +10,11 @@
+     Unknown { parent: &'a Path<'a> },
+ }
+ 
+-impl<'a> Display for Path<'a> {
++impl Display for Path<'_> {
+     fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+         struct Parent<'a>(&'a Path<'a>);
+ 
+-        impl<'a> Display for Parent<'a> {
++        impl Display for Parent<'_> {
+             fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+                 match self.0 {
+                     Path::Root => Ok(()),
+--- serde_yaml/src/ser.rs
++++ yaml_serde/src/ser.rs
+@@ -3,19 +3,23 @@
+ //! This module provides YAML serialization with the type `Serializer`.
+ 
+ use crate::error::{self, Error, ErrorImpl};
++use crate::io;
+ use crate::libyaml;
+ use crate::libyaml::emitter::{Emitter, Event, Mapping, Scalar, ScalarStyle, Sequence};
+ use crate::value::tagged::{self, MaybeTag};
++use alloc::borrow::ToOwned;
++use alloc::boxed::Box;
++use alloc::string::{String, ToString};
++use alloc::vec::Vec;
++use core::fmt::{self, Display};
++use core::marker::PhantomData;
++use core::mem;
++use core::num;
++use core::str;
+ use serde::de::Visitor;
+ use serde::ser::{self, Serializer as _};
+-use std::fmt::{self, Display};
+-use std::io;
+-use std::marker::PhantomData;
+-use std::mem;
+-use std::num;
+-use std::str;
+-
+-type Result<T, E = Error> = std::result::Result<T, E>;
++
++type Result<T, E = Error> = core::result::Result<T, E>;
+ 
+ /// A structure for serializing Rust values into YAML.
+ ///
+@@ -28,7 +32,7 @@
+ ///
+ /// fn main() -> Result<()> {
+ ///     let mut buffer = Vec::new();
+-///     let mut ser = serde_yaml::Serializer::new(&mut buffer);
++///     let mut ser = yaml_serde::Serializer::new(&mut buffer);
+ ///
+ ///     let mut object = BTreeMap::new();
+ ///     object.insert("k", 107);
+@@ -166,7 +170,7 @@
+     }
+ }
+ 
+-impl<'a, W> ser::Serializer for &'a mut Serializer<W>
++impl<W> ser::Serializer for &mut Serializer<W>
+ where
+     W: io::Write,
+ {
+@@ -308,7 +312,7 @@
+     fn serialize_str(self, value: &str) -> Result<()> {
+         struct InferScalarStyle;
+ 
+-        impl<'de> Visitor<'de> for InferScalarStyle {
++        impl Visitor<'_> for InferScalarStyle {
+             type Value = ScalarStyle;
+ 
+             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+@@ -523,7 +527,7 @@
+     }
+ }
+ 
+-impl<'a, W> ser::SerializeSeq for &'a mut Serializer<W>
++impl<W> ser::SerializeSeq for &mut Serializer<W>
+ where
+     W: io::Write,
+ {
+@@ -542,7 +546,7 @@
+     }
+ }
+ 
+-impl<'a, W> ser::SerializeTuple for &'a mut Serializer<W>
++impl<W> ser::SerializeTuple for &mut Serializer<W>
+ where
+     W: io::Write,
+ {
+@@ -561,7 +565,7 @@
+     }
+ }
+ 
+-impl<'a, W> ser::SerializeTupleStruct for &'a mut Serializer<W>
++impl<W> ser::SerializeTupleStruct for &mut Serializer<W>
+ where
+     W: io::Write,
+ {
+@@ -580,7 +584,7 @@
+     }
+ }
+ 
+-impl<'a, W> ser::SerializeTupleVariant for &'a mut Serializer<W>
++impl<W> ser::SerializeTupleVariant for &mut Serializer<W>
+ where
+     W: io::Write,
+ {
+@@ -599,7 +603,7 @@
+     }
+ }
+ 
+-impl<'a, W> ser::SerializeMap for &'a mut Serializer<W>
++impl<W> ser::SerializeMap for &mut Serializer<W>
+ where
+     W: io::Write,
+ {
+@@ -647,7 +651,7 @@
+     }
+ }
+ 
+-impl<'a, W> ser::SerializeStruct for &'a mut Serializer<W>
++impl<W> ser::SerializeStruct for &mut Serializer<W>
+ where
+     W: io::Write,
+ {
+@@ -667,7 +671,7 @@
+     }
+ }
+ 
+-impl<'a, W> ser::SerializeStructVariant for &'a mut Serializer<W>
++impl<W> ser::SerializeStructVariant for &mut Serializer<W>
+ where
+     W: io::Write,
+ {
+--- serde_yaml/src/value/de.rs
++++ yaml_serde/src/value/de.rs
+@@ -1,15 +1,19 @@
+ use crate::value::tagged::{self, TagStringVisitor};
+ use crate::value::TaggedValue;
+ use crate::{number, Error, Mapping, Sequence, Value};
++use alloc::borrow::ToOwned;
++use alloc::boxed::Box;
++use alloc::string::String;
++use alloc::vec;
++use alloc::vec::Vec;
++use core::fmt;
++use core::slice;
+ use serde::de::value::{BorrowedStrDeserializer, StrDeserializer};
+ use serde::de::{
+     self, Deserialize, DeserializeSeed, Deserializer, EnumAccess, Error as _, Expected, MapAccess,
+     SeqAccess, Unexpected, VariantAccess, Visitor,
+ };
+ use serde::forward_to_deserialize_any;
+-use std::fmt;
+-use std::slice;
+-use std::vec;
+ 
+ impl<'de> Deserialize<'de> for Value {
+     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+@@ -492,7 +496,7 @@
+     value: Option<Value>,
+ }
+ 
+-impl<'a, 'de> EnumAccess<'de> for EnumDeserializer<'a> {
++impl<'de> EnumAccess<'de> for EnumDeserializer<'_> {
+     type Error = Error;
+     type Variant = VariantDeserializer;
+ 
+@@ -1228,7 +1232,7 @@
+     }
+ 
+     #[cold]
+-    pub(crate) fn unexpected(&self) -> Unexpected {
++    pub(crate) fn unexpected(&self) -> Unexpected<'_> {
+         match self {
+             Value::Null => Unexpected::Unit,
+             Value::Bool(b) => Unexpected::Bool(*b),
+--- serde_yaml/src/value/debug.rs
++++ yaml_serde/src/value/debug.rs
+@@ -1,6 +1,6 @@
+ use crate::mapping::Mapping;
+ use crate::value::{Number, Value};
+-use std::fmt::{self, Debug, Display};
++use core::fmt::{self, Debug, Display};
+ 
+ impl Debug for Value {
+     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+@@ -21,7 +21,7 @@
+ 
+ struct DisplayNumber<'a>(&'a Number);
+ 
+-impl<'a> Debug for DisplayNumber<'a> {
++impl Debug for DisplayNumber<'_> {
+     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+         Display::fmt(self.0, formatter)
+     }
+--- serde_yaml/src/value/from.rs
++++ yaml_serde/src/value/from.rs
+@@ -1,4 +1,6 @@
+ use crate::{Mapping, Value};
++use alloc::string::{String, ToString};
++use alloc::vec::Vec;
+ 
+ // Implement a bunch of conversion to make it easier to create YAML values
+ // on the fly.
+@@ -27,7 +29,7 @@
+     /// # Examples
+     ///
+     /// ```
+-    /// use serde_yaml::Value;
++    /// use yaml_serde::Value;
+     ///
+     /// let b = false;
+     /// let x: Value = b.into();
+@@ -43,7 +45,7 @@
+     /// # Examples
+     ///
+     /// ```
+-    /// use serde_yaml::Value;
++    /// use yaml_serde::Value;
+     ///
+     /// let s: String = "lorem".to_string();
+     /// let x: Value = s.into();
+@@ -53,13 +55,13 @@
+     }
+ }
+ 
+-impl<'a> From<&'a str> for Value {
++impl From<&str> for Value {
+     /// Convert string slice to `Value`
+     ///
+     /// # Examples
+     ///
+     /// ```
+-    /// use serde_yaml::Value;
++    /// use yaml_serde::Value;
+     ///
+     /// let s: &str = "lorem";
+     /// let x: Value = s.into();
+@@ -69,7 +71,7 @@
+     }
+ }
+ 
+-use std::borrow::Cow;
++use alloc::borrow::Cow;
+ 
+ impl<'a> From<Cow<'a, str>> for Value {
+     /// Convert copy-on-write string to `Value`
+@@ -77,7 +79,7 @@
+     /// # Examples
+     ///
+     /// ```
+-    /// use serde_yaml::Value;
++    /// use yaml_serde::Value;
+     /// use std::borrow::Cow;
+     ///
+     /// let s: Cow<str> = Cow::Borrowed("lorem");
+@@ -85,7 +87,7 @@
+     /// ```
+     ///
+     /// ```
+-    /// use serde_yaml::Value;
++    /// use yaml_serde::Value;
+     /// use std::borrow::Cow;
+     ///
+     /// let s: Cow<str> = Cow::Owned("lorem".to_string());
+@@ -102,7 +104,7 @@
+     /// # Examples
+     ///
+     /// ```
+-    /// use serde_yaml::{Mapping, Value};
++    /// use yaml_serde::{Mapping, Value};
+     ///
+     /// let mut m = Mapping::new();
+     /// m.insert("Lorem".into(), "ipsum".into());
+@@ -119,7 +121,7 @@
+     /// # Examples
+     ///
+     /// ```
+-    /// use serde_yaml::Value;
++    /// use yaml_serde::Value;
+     ///
+     /// let v = vec!["lorem", "ipsum", "dolor"];
+     /// let x: Value = v.into();
+@@ -135,7 +137,7 @@
+     /// # Examples
+     ///
+     /// ```
+-    /// use serde_yaml::Value;
++    /// use yaml_serde::Value;
+     ///
+     /// let v: &[&str] = &["lorem", "ipsum", "dolor"];
+     /// let x: Value = v.into();
+@@ -151,14 +153,14 @@
+     /// # Examples
+     ///
+     /// ```
+-    /// use serde_yaml::Value;
++    /// use yaml_serde::Value;
+     ///
+     /// let v = std::iter::repeat(42).take(5);
+     /// let x: Value = v.collect();
+     /// ```
+     ///
+     /// ```
+-    /// use serde_yaml::Value;
++    /// use yaml_serde::Value;
+     ///
+     /// let v: Vec<_> = vec!["lorem", "ipsum", "dolor"];
+     /// let x: Value = v.into_iter().collect();
+@@ -166,7 +168,7 @@
+     ///
+     /// ```
+     /// use std::iter::FromIterator;
+-    /// use serde_yaml::Value;
++    /// use yaml_serde::Value;
+     ///
+     /// let x: Value = Value::from_iter(vec!["lorem", "ipsum", "dolor"]);
+     /// ```
+--- serde_yaml/src/value/index.rs
++++ yaml_serde/src/value/index.rs
+@@ -1,13 +1,15 @@
+ use crate::mapping::Entry;
+ use crate::{mapping, private, Mapping, Value};
+-use std::fmt::{self, Debug};
+-use std::ops;
+-
+-/// A type that can be used to index into a `serde_yaml::Value`. See the `get`
++use alloc::borrow::ToOwned;
++use alloc::string::String;
++use core::fmt::{self, Debug};
++use core::ops;
++
++/// A type that can be used to index into a `yaml_serde::Value`. See the `get`
+ /// and `get_mut` methods of `Value`.
+ ///
+ /// This trait is sealed and cannot be implemented for types outside of
+-/// `serde_yaml`.
++/// `yaml_serde`.
+ pub trait Index: private::Sealed {
+     /// Return None if the key is not already in the sequence or object.
+     #[doc(hidden)]
+@@ -29,14 +31,14 @@
+     fn index_into<'v>(&self, v: &'v Value) -> Option<&'v Value> {
+         match v.untag_ref() {
+             Value::Sequence(vec) => vec.get(*self),
+-            Value::Mapping(vec) => vec.get(&Value::Number((*self).into())),
++            Value::Mapping(vec) => vec.get(Value::Number((*self).into())),
+             _ => None,
+         }
+     }
+     fn index_into_mut<'v>(&self, v: &'v mut Value) -> Option<&'v mut Value> {
+         match v.untag_mut() {
+             Value::Sequence(vec) => vec.get_mut(*self),
+-            Value::Mapping(vec) => vec.get_mut(&Value::Number((*self).into())),
++            Value::Mapping(vec) => vec.get_mut(Value::Number((*self).into())),
+             _ => None,
+         }
+     }
+@@ -145,7 +147,7 @@
+     }
+ }
+ 
+-impl<'a, T> Index for &'a T
++impl<T> Index for &T
+ where
+     T: ?Sized + Index,
+ {
+@@ -163,7 +165,7 @@
+ /// Used in panic messages.
+ struct Type<'a>(&'a Value);
+ 
+-impl<'a> fmt::Display for Type<'a> {
++impl fmt::Display for Type<'_> {
+     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+         match self.0 {
+             Value::Null => formatter.write_str("null"),
+@@ -202,7 +204,7 @@
+ {
+     type Output = Value;
+ 
+-    /// Index into a `serde_yaml::Value` using the syntax `value[0]` or
++    /// Index into a `yaml_serde::Value` using the syntax `value[0]` or
+     /// `value["k"]`.
+     ///
+     /// Returns `Value::Null` if the type of `self` does not match the type of
+@@ -216,16 +218,16 @@
+     /// # Examples
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
++    /// # use yaml_serde::Value;
+     /// #
+-    /// # fn main() -> serde_yaml::Result<()> {
+-    /// let data: serde_yaml::Value = serde_yaml::from_str(r#"{ x: { y: [z, zz] } }"#)?;
+-    ///
+-    /// assert_eq!(data["x"]["y"], serde_yaml::from_str::<Value>(r#"["z", "zz"]"#).unwrap());
+-    /// assert_eq!(data["x"]["y"][0], serde_yaml::from_str::<Value>(r#""z""#).unwrap());
+-    ///
+-    /// assert_eq!(data["a"], serde_yaml::from_str::<Value>(r#"null"#).unwrap()); // returns null for undefined values
+-    /// assert_eq!(data["a"]["b"], serde_yaml::from_str::<Value>(r#"null"#).unwrap()); // does not panic
++    /// # fn main() -> yaml_serde::Result<()> {
++    /// let data: yaml_serde::Value = yaml_serde::from_str(r#"{ x: { y: [z, zz] } }"#)?;
++    ///
++    /// assert_eq!(data["x"]["y"], yaml_serde::from_str::<Value>(r#"["z", "zz"]"#).unwrap());
++    /// assert_eq!(data["x"]["y"][0], yaml_serde::from_str::<Value>(r#""z""#).unwrap());
++    ///
++    /// assert_eq!(data["a"], yaml_serde::from_str::<Value>(r#"null"#).unwrap()); // returns null for undefined values
++    /// assert_eq!(data["a"]["b"], yaml_serde::from_str::<Value>(r#"null"#).unwrap()); // does not panic
+     /// # Ok(())
+     /// # }
+     /// ```
+@@ -239,7 +241,7 @@
+ where
+     I: Index,
+ {
+-    /// Write into a `serde_yaml::Value` using the syntax `value[0] = ...` or
++    /// Write into a `yaml_serde::Value` using the syntax `value[0] = ...` or
+     /// `value["k"] = ...`.
+     ///
+     /// If the index is a number, the value must be a sequence of length bigger
+@@ -254,20 +256,20 @@
+     /// # Examples
+     ///
+     /// ```
+-    /// # fn main() -> serde_yaml::Result<()> {
+-    /// let mut data: serde_yaml::Value = serde_yaml::from_str(r#"{x: 0}"#)?;
++    /// # fn main() -> yaml_serde::Result<()> {
++    /// let mut data: yaml_serde::Value = yaml_serde::from_str(r#"{x: 0}"#)?;
+     ///
+     /// // replace an existing key
+-    /// data["x"] = serde_yaml::from_str(r#"1"#)?;
++    /// data["x"] = yaml_serde::from_str(r#"1"#)?;
+     ///
+     /// // insert a new key
+-    /// data["y"] = serde_yaml::from_str(r#"[false, false, false]"#)?;
++    /// data["y"] = yaml_serde::from_str(r#"[false, false, false]"#)?;
+     ///
+     /// // replace a value in a sequence
+-    /// data["y"][0] = serde_yaml::from_str(r#"true"#)?;
++    /// data["y"][0] = yaml_serde::from_str(r#"true"#)?;
+     ///
+     /// // inserted a deeply nested key
+-    /// data["a"]["b"]["c"]["d"] = serde_yaml::from_str(r#"true"#)?;
++    /// data["a"]["b"]["c"]["d"] = yaml_serde::from_str(r#"true"#)?;
+     ///
+     /// println!("{:?}", data);
+     /// # Ok(())
+--- serde_yaml/src/value/mod.rs
++++ yaml_serde/src/value/mod.rs
+@@ -9,10 +9,13 @@
+ pub(crate) mod tagged;
+ 
+ use crate::error::{self, Error, ErrorImpl};
++use alloc::boxed::Box;
++use alloc::string::String;
++use alloc::vec::Vec;
++use core::hash::{Hash, Hasher};
++use core::mem;
+ use serde::de::{Deserialize, DeserializeOwned, IntoDeserializer};
+ use serde::Serialize;
+-use std::hash::{Hash, Hasher};
+-use std::mem;
+ 
+ pub use self::index::Index;
+ pub use self::ser::Serializer;
+@@ -33,10 +36,10 @@
+     /// Represents a YAML string.
+     String(String),
+     /// Represents a YAML sequence in which the elements are
+-    /// `serde_yaml::Value`.
++    /// `yaml_serde::Value`.
+     Sequence(Sequence),
+     /// Represents a YAML mapping in which the keys and values are both
+-    /// `serde_yaml::Value`.
++    /// `yaml_serde::Value`.
+     Mapping(Mapping),
+     /// A representation of YAML's `!Tag` syntax, used for enums.
+     Tagged(Box<TaggedValue>),
+@@ -51,7 +54,7 @@
+ /// ```
+ /// # use serde_derive::Deserialize;
+ /// use serde::Deserialize;
+-/// use serde_yaml::Value;
++/// use yaml_serde::Value;
+ ///
+ /// #[derive(Deserialize)]
+ /// struct Settings {
+@@ -60,9 +63,9 @@
+ ///     extras: Value,
+ /// }
+ ///
+-/// # fn try_main() -> Result<(), serde_yaml::Error> {
++/// # fn try_main() -> Result<(), yaml_serde::Error> {
+ /// let data = r#" { "level": 42 } "#;
+-/// let s: Settings = serde_yaml::from_str(data)?;
++/// let s: Settings = yaml_serde::from_str(data)?;
+ ///
+ /// assert_eq!(s.level, 42);
+ /// assert_eq!(s.extras, Value::Null);
+@@ -78,18 +81,18 @@
+     }
+ }
+ 
+-/// A YAML sequence in which the elements are `serde_yaml::Value`.
++/// A YAML sequence in which the elements are `yaml_serde::Value`.
+ pub type Sequence = Vec<Value>;
+ 
+-/// Convert a `T` into `serde_yaml::Value` which is an enum that can represent
++/// Convert a `T` into `yaml_serde::Value` which is an enum that can represent
+ /// any valid YAML data.
+ ///
+ /// This conversion can fail if `T`'s implementation of `Serialize` decides to
+ /// return an error.
+ ///
+ /// ```
+-/// # use serde_yaml::Value;
+-/// let val = serde_yaml::to_value("s").unwrap();
++/// # use yaml_serde::Value;
++/// let val = yaml_serde::to_value("s").unwrap();
+ /// assert_eq!(val, Value::String("s".to_owned()));
+ /// ```
+ pub fn to_value<T>(value: T) -> Result<Value, Error>
+@@ -99,7 +102,7 @@
+     value.serialize(Serializer)
+ }
+ 
+-/// Interpret a `serde_yaml::Value` as an instance of type `T`.
++/// Interpret a `yaml_serde::Value` as an instance of type `T`.
+ ///
+ /// This conversion can fail if the structure of the Value does not match the
+ /// structure expected by `T`, for example if `T` is a struct type but the Value
+@@ -110,9 +113,9 @@
+ /// type.
+ ///
+ /// ```
+-/// # use serde_yaml::Value;
++/// # use yaml_serde::Value;
+ /// let val = Value::String("foo".to_owned());
+-/// let s: String = serde_yaml::from_value(val).unwrap();
++/// let s: String = yaml_serde::from_value(val).unwrap();
+ /// assert_eq!("foo", s);
+ /// ```
+ pub fn from_value<T>(value: Value) -> Result<T, Error>
+@@ -133,14 +136,14 @@
+     /// or the given index is not within the bounds of the sequence.
+     ///
+     /// ```
+-    /// # fn main() -> serde_yaml::Result<()> {
+-    /// use serde_yaml::Value;
+-    ///
+-    /// let object: Value = serde_yaml::from_str(r#"{ A: 65, B: 66, C: 67 }"#)?;
++    /// # fn main() -> yaml_serde::Result<()> {
++    /// use yaml_serde::Value;
++    ///
++    /// let object: Value = yaml_serde::from_str(r#"{ A: 65, B: 66, C: 67 }"#)?;
+     /// let x = object.get("A").unwrap();
+     /// assert_eq!(x, 65);
+     ///
+-    /// let sequence: Value = serde_yaml::from_str(r#"[ "A", "B", "C" ]"#)?;
++    /// let sequence: Value = yaml_serde::from_str(r#"[ "A", "B", "C" ]"#)?;
+     /// let x = sequence.get(2).unwrap();
+     /// assert_eq!(x, &Value::String("C".into()));
+     ///
+@@ -154,10 +157,10 @@
+     /// `None`.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
++    /// # use yaml_serde::Value;
+     /// #
+-    /// # fn main() -> serde_yaml::Result<()> {
+-    /// let object: Value = serde_yaml::from_str(r#"
++    /// # fn main() -> yaml_serde::Result<()> {
++    /// let object: Value = yaml_serde::from_str(r#"
+     /// A: [a, á, à]
+     /// B: [b, b́]
+     /// C: [c, ć, ć̣, ḉ]
+@@ -195,14 +198,14 @@
+     /// to return `Some(())`.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("null").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("null").unwrap();
+     /// assert!(v.is_null());
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("false").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("false").unwrap();
+     /// assert!(!v.is_null());
+     /// ```
+     pub fn is_null(&self) -> bool {
+@@ -216,14 +219,14 @@
+     /// If the `Value` is a Null, returns (). Returns None otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("null").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("null").unwrap();
+     /// assert_eq!(v.as_null(), Some(()));
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("false").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("false").unwrap();
+     /// assert_eq!(v.as_null(), None);
+     /// ```
+     pub fn as_null(&self) -> Option<()> {
+@@ -239,14 +242,14 @@
+     /// guaranteed to return the boolean value.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("true").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("true").unwrap();
+     /// assert!(v.is_bool());
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("42").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("42").unwrap();
+     /// assert!(!v.is_bool());
+     /// ```
+     pub fn is_bool(&self) -> bool {
+@@ -257,14 +260,14 @@
+     /// otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("true").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("true").unwrap();
+     /// assert_eq!(v.as_bool(), Some(true));
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("42").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("42").unwrap();
+     /// assert_eq!(v.as_bool(), None);
+     /// ```
+     pub fn as_bool(&self) -> Option<bool> {
+@@ -277,14 +280,14 @@
+     /// Returns true if the `Value` is a Number. Returns false otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("5").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("5").unwrap();
+     /// assert!(v.is_number());
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("true").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("true").unwrap();
+     /// assert!(!v.is_number());
+     /// ```
+     pub fn is_number(&self) -> bool {
+@@ -301,14 +304,14 @@
+     /// return the integer value.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("1337").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("1337").unwrap();
+     /// assert!(v.is_i64());
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("null").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("null").unwrap();
+     /// assert!(!v.is_i64());
+     /// ```
+     pub fn is_i64(&self) -> bool {
+@@ -319,14 +322,14 @@
+     /// None otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("1337").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("1337").unwrap();
+     /// assert_eq!(v.as_i64(), Some(1337));
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("false").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("false").unwrap();
+     /// assert_eq!(v.as_i64(), None);
+     /// ```
+     pub fn as_i64(&self) -> Option<i64> {
+@@ -343,14 +346,14 @@
+     /// return the integer value.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("1337").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("1337").unwrap();
+     /// assert!(v.is_u64());
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("null").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("null").unwrap();
+     /// assert!(!v.is_u64());
+     /// ```
+     pub fn is_u64(&self) -> bool {
+@@ -361,14 +364,14 @@
+     /// None otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("1337").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("1337").unwrap();
+     /// assert_eq!(v.as_u64(), Some(1337));
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("false").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("false").unwrap();
+     /// assert_eq!(v.as_u64(), None);
+     /// ```
+     pub fn as_u64(&self) -> Option<u64> {
+@@ -387,14 +390,14 @@
+     /// `is_u64` return false but this is not a guarantee in the future.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("256.01").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("256.01").unwrap();
+     /// assert!(v.is_f64());
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("true").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("true").unwrap();
+     /// assert!(!v.is_f64());
+     /// ```
+     pub fn is_f64(&self) -> bool {
+@@ -408,14 +411,14 @@
+     /// None otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("13.37").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("13.37").unwrap();
+     /// assert_eq!(v.as_f64(), Some(13.37));
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("false").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("false").unwrap();
+     /// assert_eq!(v.as_f64(), None);
+     /// ```
+     pub fn as_f64(&self) -> Option<f64> {
+@@ -431,14 +434,14 @@
+     /// to return the string slice.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("'lorem ipsum'").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("'lorem ipsum'").unwrap();
+     /// assert!(v.is_string());
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("42").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("42").unwrap();
+     /// assert!(!v.is_string());
+     /// ```
+     pub fn is_string(&self) -> bool {
+@@ -449,14 +452,14 @@
+     /// otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("'lorem ipsum'").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("'lorem ipsum'").unwrap();
+     /// assert_eq!(v.as_str(), Some("lorem ipsum"));
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("false").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("false").unwrap();
+     /// assert_eq!(v.as_str(), None);
+     /// ```
+     pub fn as_str(&self) -> Option<&str> {
+@@ -469,14 +472,14 @@
+     /// Returns true if the `Value` is a sequence. Returns false otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("[1, 2, 3]").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("[1, 2, 3]").unwrap();
+     /// assert!(v.is_sequence());
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("true").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("true").unwrap();
+     /// assert!(!v.is_sequence());
+     /// ```
+     pub fn is_sequence(&self) -> bool {
+@@ -487,14 +490,14 @@
+     /// Returns None otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::{Value, Number};
+-    /// let v: Value = serde_yaml::from_str("[1, 2]").unwrap();
++    /// # use yaml_serde::{Value, Number};
++    /// let v: Value = yaml_serde::from_str("[1, 2]").unwrap();
+     /// assert_eq!(v.as_sequence(), Some(&vec![Value::Number(Number::from(1)), Value::Number(Number::from(2))]));
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("false").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("false").unwrap();
+     /// assert_eq!(v.as_sequence(), None);
+     /// ```
+     pub fn as_sequence(&self) -> Option<&Sequence> {
+@@ -508,16 +511,16 @@
+     /// possible. Returns None otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::{Value, Number};
+-    /// let mut v: Value = serde_yaml::from_str("[1]").unwrap();
++    /// # use yaml_serde::{Value, Number};
++    /// let mut v: Value = yaml_serde::from_str("[1]").unwrap();
+     /// let s = v.as_sequence_mut().unwrap();
+     /// s.push(Value::Number(Number::from(2)));
+     /// assert_eq!(s, &vec![Value::Number(Number::from(1)), Value::Number(Number::from(2))]);
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let mut v: Value = serde_yaml::from_str("false").unwrap();
++    /// # use yaml_serde::Value;
++    /// let mut v: Value = yaml_serde::from_str("false").unwrap();
+     /// assert_eq!(v.as_sequence_mut(), None);
+     /// ```
+     pub fn as_sequence_mut(&mut self) -> Option<&mut Sequence> {
+@@ -530,14 +533,14 @@
+     /// Returns true if the `Value` is a mapping. Returns false otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("a: 42").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("a: 42").unwrap();
+     /// assert!(v.is_mapping());
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("true").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("true").unwrap();
+     /// assert!(!v.is_mapping());
+     /// ```
+     pub fn is_mapping(&self) -> bool {
+@@ -548,8 +551,8 @@
+     /// Returns None otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::{Value, Mapping, Number};
+-    /// let v: Value = serde_yaml::from_str("a: 42").unwrap();
++    /// # use yaml_serde::{Value, Mapping, Number};
++    /// let v: Value = yaml_serde::from_str("a: 42").unwrap();
+     ///
+     /// let mut expected = Mapping::new();
+     /// expected.insert(Value::String("a".into()),Value::Number(Number::from(42)));
+@@ -558,8 +561,8 @@
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
+-    /// let v: Value = serde_yaml::from_str("false").unwrap();
++    /// # use yaml_serde::Value;
++    /// let v: Value = yaml_serde::from_str("false").unwrap();
+     /// assert_eq!(v.as_mapping(), None);
+     /// ```
+     pub fn as_mapping(&self) -> Option<&Mapping> {
+@@ -573,8 +576,8 @@
+     /// Returns None otherwise.
+     ///
+     /// ```
+-    /// # use serde_yaml::{Value, Mapping, Number};
+-    /// let mut v: Value = serde_yaml::from_str("a: 42").unwrap();
++    /// # use yaml_serde::{Value, Mapping, Number};
++    /// let mut v: Value = yaml_serde::from_str("a: 42").unwrap();
+     /// let m = v.as_mapping_mut().unwrap();
+     /// m.insert(Value::String("b".into()), Value::Number(Number::from(21)));
+     ///
+@@ -586,8 +589,8 @@
+     /// ```
+     ///
+     /// ```
+-    /// # use serde_yaml::{Value, Mapping};
+-    /// let mut v: Value = serde_yaml::from_str("false").unwrap();
++    /// # use yaml_serde::{Value, Mapping};
++    /// let mut v: Value = yaml_serde::from_str("false").unwrap();
+     /// assert_eq!(v.as_mapping_mut(), None);
+     /// ```
+     pub fn as_mapping_mut(&mut self) -> Option<&mut Mapping> {
+@@ -603,7 +606,7 @@
+     /// <https://yaml.org/type/merge.html>.
+     ///
+     /// ```
+-    /// use serde_yaml::Value;
++    /// use yaml_serde::Value;
+     ///
+     /// let config = "\
+     /// tasks:
+@@ -617,7 +620,7 @@
+     ///     args: start
+     /// ";
+     ///
+-    /// let mut value: Value = serde_yaml::from_str(config).unwrap();
++    /// let mut value: Value = yaml_serde::from_str(config).unwrap();
+     /// value.apply_merge().unwrap();
+     ///
+     /// assert_eq!(value["tasks"]["start"]["command"], "webpack");
+@@ -689,7 +692,7 @@
+     }
+ }
+ 
+-impl<'de> IntoDeserializer<'de, Error> for Value {
++impl IntoDeserializer<'_, Error> for Value {
+     type Deserializer = Self;
+ 
+     fn into_deserializer(self) -> Self::Deserializer {
+--- serde_yaml/src/value/partial_eq.rs
++++ yaml_serde/src/value/partial_eq.rs
+@@ -1,4 +1,5 @@
+ use crate::Value;
++use alloc::string::String;
+ 
+ impl PartialEq<str> for Value {
+     /// Compare `str` with YAML value
+@@ -6,25 +7,25 @@
+     /// # Examples
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
++    /// # use yaml_serde::Value;
+     /// assert!(Value::String("lorem".into()) == *"lorem");
+     /// ```
+     fn eq(&self, other: &str) -> bool {
+-        self.as_str().map_or(false, |s| s == other)
++        self.as_str() == Some(other)
+     }
+ }
+ 
+-impl<'a> PartialEq<&'a str> for Value {
++impl PartialEq<&str> for Value {
+     /// Compare `&str` with YAML value
+     ///
+     /// # Examples
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
++    /// # use yaml_serde::Value;
+     /// assert!(Value::String("lorem".into()) == "lorem");
+     /// ```
+     fn eq(&self, other: &&str) -> bool {
+-        self.as_str().map_or(false, |s| s == *other)
++        self.as_str() == Some(*other)
+     }
+ }
+ 
+@@ -34,11 +35,11 @@
+     /// # Examples
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
++    /// # use yaml_serde::Value;
+     /// assert!(Value::String("lorem".into()) == "lorem".to_string());
+     /// ```
+     fn eq(&self, other: &String) -> bool {
+-        self.as_str().map_or(false, |s| s == other)
++        self.as_str().is_some_and(|s| s == other)
+     }
+ }
+ 
+@@ -48,11 +49,11 @@
+     /// # Examples
+     ///
+     /// ```
+-    /// # use serde_yaml::Value;
++    /// # use yaml_serde::Value;
+     /// assert!(Value::Bool(true) == true);
+     /// ```
+     fn eq(&self, other: &bool) -> bool {
+-        self.as_bool().map_or(false, |b| b == *other)
++        self.as_bool() == Some(*other)
+     }
+ }
+ 
+--- serde_yaml/src/value/ser.rs
++++ yaml_serde/src/value/ser.rs
+@@ -1,11 +1,14 @@
+ use crate::error::{self, Error, ErrorImpl};
+ use crate::value::tagged::{self, MaybeTag};
+ use crate::value::{to_value, Mapping, Number, Sequence, Tag, TaggedValue, Value};
++use alloc::borrow::ToOwned;
++use alloc::boxed::Box;
++use alloc::string::ToString;
++use core::fmt::Display;
++use core::mem;
+ use serde::ser::{self, Serialize};
+-use std::fmt::Display;
+-use std::mem;
+-
+-type Result<T, E = Error> = std::result::Result<T, E>;
++
++type Result<T, E = Error> = core::result::Result<T, E>;
+ 
+ impl Serialize for Value {
+     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+@@ -33,22 +36,22 @@
+ 
+ /// Serializer whose output is a `Value`.
+ ///
+-/// This is the serializer that backs [`serde_yaml::to_value`][crate::to_value].
+-/// Unlike the main serde_yaml serializer which goes from some serializable
++/// This is the serializer that backs [`yaml_serde::to_value`][crate::to_value].
++/// Unlike the main yaml_serde serializer which goes from some serializable
+ /// value of type `T` to YAML text, this one goes from `T` to
+-/// `serde_yaml::Value`.
++/// `yaml_serde::Value`.
+ ///
+ /// The `to_value` function is implementable as:
+ ///
+ /// ```
+ /// use serde::Serialize;
+-/// use serde_yaml::{Error, Value};
++/// use yaml_serde::{Error, Value};
+ ///
+ /// pub fn to_value<T>(input: T) -> Result<Value, Error>
+ /// where
+ ///     T: Serialize,
+ /// {
+-///     input.serialize(serde_yaml::value::Serializer)
++///     input.serialize(yaml_serde::value::Serializer)
+ /// }
+ /// ```
+ pub struct Serializer;
+--- serde_yaml/src/value/tagged.rs
++++ yaml_serde/src/value/tagged.rs
+@@ -1,16 +1,18 @@
+ use crate::value::de::{MapDeserializer, MapRefDeserializer, SeqDeserializer, SeqRefDeserializer};
+ use crate::value::Value;
+ use crate::Error;
++use alloc::borrow::ToOwned;
++use alloc::string::String;
++use core::cmp::Ordering;
++use core::fmt::{self, Debug, Display};
++use core::hash::{Hash, Hasher};
++use core::mem;
+ use serde::de::value::{BorrowedStrDeserializer, StrDeserializer};
+ use serde::de::{
+     Deserialize, DeserializeSeed, Deserializer, EnumAccess, Error as _, VariantAccess, Visitor,
+ };
+ use serde::forward_to_deserialize_any;
+ use serde::ser::{Serialize, SerializeMap, Serializer};
+-use std::cmp::Ordering;
+-use std::fmt::{self, Debug, Display};
+-use std::hash::{Hash, Hasher};
+-use std::mem;
+ 
+ /// A representation of YAML's `!Tag` syntax, used for enums.
+ ///
+@@ -24,7 +26,7 @@
+ /// A `Tag` + `Value` representing a tagged YAML scalar, sequence, or mapping.
+ ///
+ /// ```
+-/// use serde_yaml::value::TaggedValue;
++/// use yaml_serde::value::TaggedValue;
+ /// use std::collections::BTreeMap;
+ ///
+ /// let yaml = "
+@@ -37,7 +39,7 @@
+ ///       k: v
+ /// ";
+ ///
+-/// let data: BTreeMap<String, TaggedValue> = serde_yaml::from_str(yaml).unwrap();
++/// let data: BTreeMap<String, TaggedValue> = yaml_serde::from_str(yaml).unwrap();
+ /// assert!(data["scalar"].tag == "Thing");
+ /// assert!(data["sequence_flow"].tag == "Thing");
+ /// assert!(data["sequence_block"].tag == "Thing");
+@@ -62,7 +64,7 @@
+     /// have to be. The following are equivalent:
+     ///
+     /// ```
+-    /// use serde_yaml::value::Tag;
++    /// use yaml_serde::value::Tag;
+     ///
+     /// assert_eq!(Tag::new("!Thing"), Tag::new("Thing"));
+     ///
+@@ -178,7 +180,7 @@
+     {
+         struct SerializeTag<'a>(&'a Tag);
+ 
+-        impl<'a> Serialize for SerializeTag<'a> {
++        impl Serialize for SerializeTag<'_> {
+             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+             where
+                 S: Serializer,
+@@ -382,7 +384,7 @@
+ 
+ pub(crate) struct TagStringVisitor;
+ 
+-impl<'de> Visitor<'de> for TagStringVisitor {
++impl Visitor<'_> for TagStringVisitor {
+     type Value = Tag;
+ 
+     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+--- serde_yaml/src/with.rs
++++ yaml_serde/src/with.rs
+@@ -19,13 +19,13 @@
+ ///
+ /// #[derive(Serialize, Deserialize, PartialEq, Debug)]
+ /// struct Struct {
+-///     #[serde(with = "serde_yaml::with::singleton_map")]
++///     #[serde(with = "yaml_serde::with::singleton_map")]
+ ///     w: Enum,
+-///     #[serde(with = "serde_yaml::with::singleton_map")]
++///     #[serde(with = "yaml_serde::with::singleton_map")]
+ ///     x: Enum,
+-///     #[serde(with = "serde_yaml::with::singleton_map")]
++///     #[serde(with = "yaml_serde::with::singleton_map")]
+ ///     y: Enum,
+-///     #[serde(with = "serde_yaml::with::singleton_map")]
++///     #[serde(with = "yaml_serde::with::singleton_map")]
+ ///     z: Enum,
+ /// }
+ ///
+@@ -37,10 +37,10 @@
+ ///         z: Enum::Struct { value: 1 },
+ ///     };
+ ///
+-///     let yaml = serde_yaml::to_string(&object).unwrap();
++///     let yaml = yaml_serde::to_string(&object).unwrap();
+ ///     print!("{}", yaml);
+ ///
+-///     let deserialized: Struct = serde_yaml::from_str(&yaml).unwrap();
++///     let deserialized: Struct = yaml_serde::from_str(&yaml).unwrap();
+ ///     assert_eq!(object, deserialized);
+ /// }
+ /// ```
+@@ -74,6 +74,9 @@
+ /// ```
+ pub mod singleton_map {
+     use crate::value::{Mapping, Sequence, Value};
++    use alloc::borrow::ToOwned;
++    use alloc::string::String;
++    use core::fmt::{self, Display};
+     use serde::de::{
+         self, Deserialize, DeserializeSeed, Deserializer, EnumAccess, IgnoredAny, MapAccess,
+         Unexpected, VariantAccess, Visitor,
+@@ -81,7 +84,6 @@
+     use serde::ser::{
+         self, Serialize, SerializeMap, SerializeStructVariant, SerializeTupleVariant, Serializer,
+     };
+-    use std::fmt::{self, Display};
+ 
+     #[allow(missing_docs)]
+     pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
+@@ -858,7 +860,7 @@
+ /// struct Outer {
+ ///     tagged_style: Inner,
+ ///
+-///     #[serde(with = "serde_yaml::with::singleton_map_recursive")]
++///     #[serde(with = "yaml_serde::with::singleton_map_recursive")]
+ ///     singleton_map_style: Inner,
+ /// }
+ ///
+@@ -874,10 +876,10 @@
+ ///         },
+ ///     };
+ ///
+-///     let yaml = serde_yaml::to_string(&object).unwrap();
++///     let yaml = yaml_serde::to_string(&object).unwrap();
+ ///     print!("{}", yaml);
+ ///
+-///     let deserialized: Outer = serde_yaml::from_str(&yaml).unwrap();
++///     let deserialized: Outer = yaml_serde::from_str(&yaml).unwrap();
+ ///     assert_eq!(object, deserialized);
+ /// }
+ /// ```
+@@ -923,17 +925,21 @@
+ ///     };
+ ///
+ ///     let mut buf = Vec::new();
+-///     let mut serializer = serde_yaml::Serializer::new(&mut buf);
+-///     serde_yaml::with::singleton_map_recursive::serialize(&object, &mut serializer).unwrap();
++///     let mut serializer = yaml_serde::Serializer::new(&mut buf);
++///     yaml_serde::with::singleton_map_recursive::serialize(&object, &mut serializer).unwrap();
+ ///     io::stdout().write_all(&buf).unwrap();
+ ///
+-///     let deserializer = serde_yaml::Deserializer::from_slice(&buf);
+-///     let deserialized: Inner = serde_yaml::with::singleton_map_recursive::deserialize(deserializer).unwrap();
++///     let deserializer = yaml_serde::Deserializer::from_slice(&buf);
++///     let deserialized: Inner = yaml_serde::with::singleton_map_recursive::deserialize(deserializer).unwrap();
+ ///     assert_eq!(object, deserialized);
+ /// }
+ /// ```
+ pub mod singleton_map_recursive {
+     use crate::value::{Mapping, Sequence, Value};
++    use alloc::borrow::ToOwned;
++    use alloc::string::String;
++    use alloc::vec::Vec;
++    use core::fmt::{self, Display};
+     use serde::de::{
+         self, Deserialize, DeserializeSeed, Deserializer, EnumAccess, IgnoredAny, MapAccess,
+         SeqAccess, Unexpected, VariantAccess, Visitor,
+@@ -942,7 +948,6 @@
+         self, Serialize, SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant,
+         SerializeTuple, SerializeTupleStruct, SerializeTupleVariant, Serializer,
+     };
+-    use std::fmt::{self, Display};
+ 
+     #[allow(missing_docs)]
+     pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>

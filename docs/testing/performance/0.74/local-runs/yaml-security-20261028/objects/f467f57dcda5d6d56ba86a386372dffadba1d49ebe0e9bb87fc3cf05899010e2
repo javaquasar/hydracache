@@ -1,0 +1,10 @@
+{
+  "cargo": "C:\\Users\\ArturBuzov\\.cargo\\bin\\cargo.EXE",
+  "cargo-deny": "C:\\Users\\ArturBuzov\\.cargo\\bin\\cargo-deny.EXE",
+  "git": "C:\\Program Files\\Git\\cmd\\git.EXE",
+  "node": "C:\\Program Files\\nodejs\\node.EXE",
+  "npm": "C:\\Program Files\\nodejs\\npm.CMD",
+  "python": "C:\\Python313\\python.EXE",
+  "python3": "C:\\Users\\ArturBuzov\\AppData\\Local\\Microsoft\\WindowsApps\\python3.EXE",
+  "rustc": "C:\\Users\\ArturBuzov\\.cargo\\bin\\rustc.EXE"
+}

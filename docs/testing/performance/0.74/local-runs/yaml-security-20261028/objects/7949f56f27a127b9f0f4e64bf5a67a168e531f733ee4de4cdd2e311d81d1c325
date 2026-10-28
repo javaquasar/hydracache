@@ -1,0 +1,35 @@
+[package]
+name = "yaml_serde"
+version = "0.10.7"
+authors = ["YAML Organization <noreply@yaml.org>"]
+categories = ["encoding", "parser-implementations"]
+description = "serde_yaml maintained by The YAML Organization"
+documentation = "https://docs.rs/yaml_serde/"
+edition = "2021"
+keywords = ["yaml", "serde", "data", "serialization"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/yaml/yaml-serde"
+rust-version = "1.82"
+
+[features]
+default = ["std"]
+std = ["serde/std", "indexmap/std"]
+
+[dependencies]
+indexmap = { version = "2.2.1", default-features = false }
+itoa = "1.0"
+ryu = "1.0"
+serde = { version = "1.0.195", default-features = false, features = ["alloc"] }
+libyaml-rs = "0.3"
+
+[dev-dependencies]
+anyhow = "1.0.79"
+indoc = "2.0"
+serde_derive = "1.0.195"
+
+[lib]
+doc-scrape-examples = false
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+rustdoc-args = ["--generate-link-to-definition"]

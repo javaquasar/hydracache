@@ -1,0 +1,15 @@
+{
+  "id": "fixture/undefined-alias",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": "fixture/undefined-alias",
+    "location": {
+      "column": 7,
+      "index": 6,
+      "line": 1
+    },
+    "message": "unknown anchor at line 1 column 7",
+    "parsed": false
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "archived_code_executed": false,
+  "cases_per_parser": 102,
+  "executed_case_retries": 0,
+  "gate_replayed": false,
+  "index_sha256": "1e12021d3dcb7632e95f7cc10a17244178f3a1905af17ce8740eda1267bffcb0",
+  "members": 928,
+  "objects": 382,
+  "raw_native_records_verified": true,
+  "release_admitted": false,
+  "verified": true,
+  "workspace_pass": false
+}

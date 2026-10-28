@@ -370,6 +370,17 @@ Linux/browser, production or server admission follows. Next address YAML and the
 remaining D-Bus/chitchat compression frontiers, extend exact historical Rust input
 views for the final graph, and rerun complete package/workspace and native gates.
 
+The subsequent [YAML migration](yaml-security-result-20261028.md) removes the
+unmaintained unsafe-libyaml branch through a reviewed maintained successor,
+without changing actual policy consumers. All 102 inert cases per parser agree;
+35 consumer cases, check/Clippy/MSRV and 66 exact-source controls pass. First
+recording failures and raw statuses remain retained, with no executed-case
+retry. The full milestone on `c9eec2b3b871ad7b7178cee66b844a696b7fef69`
+completes eleven stages, then refuses six D-Bus/Zstd findings; nine stages stay
+unstarted. Next resolve those MSRV-preserving migration/backport boundaries,
+extend historical Rust views for the final graph and complete package/GNU gates.
+Original execution, retirement/recovery and server admission remain open.
+
 The [earlier public trust-roots candidate](roots-security-result-20261026.md)
 retains its pre-approval narrow-delta refusal and pre-Tokio results. The operator
 has now approved the complete upstream 1.0.10 catalog conditional on exact key/

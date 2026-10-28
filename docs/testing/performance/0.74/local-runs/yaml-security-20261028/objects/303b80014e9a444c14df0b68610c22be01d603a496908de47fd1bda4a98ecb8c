@@ -1,0 +1,9 @@
+{
+  "gate_dispatched": true,
+  "gate_pass": false,
+  "mode": "workspace",
+  "package_pass": false,
+  "release_admitted": false,
+  "source_refs_configuration_environment_unchanged": true,
+  "workspace_pass": false
+}

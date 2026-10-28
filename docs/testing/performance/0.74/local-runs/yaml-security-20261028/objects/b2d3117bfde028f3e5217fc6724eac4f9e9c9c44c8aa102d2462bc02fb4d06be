@@ -1,0 +1,15 @@
+{
+  "id": "fixture/two-tags",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": "fixture/two-tags",
+    "location": {
+      "column": 15,
+      "index": 14,
+      "line": 1
+    },
+    "message": "did not find expected key at line 1 column 15, while parsing a block mapping",
+    "parsed": false
+  }
+}

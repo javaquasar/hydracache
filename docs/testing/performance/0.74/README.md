@@ -1,5 +1,16 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [isolated YAML migration](yaml-security-result-20261028.md) replaces only
+xtask's archived parser dependency with the reviewed maintained successor.
+All 102 inert inputs per parser agree, including serialization and diagnostics;
+35 actual consumer cases, check/Clippy/MSRV and 66 runner controls pass. First
+cp1252 recording failures remain immutable: 55 preserved native records are
+recovered and only 47 unstarted cases are continued per parser, without retries.
+The full workspace command on `c9eec2b3b871ad7b7178cee66b844a696b7fef69`
+completes eleven stages and refuses six remaining D-Bus/Zstd findings; nine
+stages remain unstarted. Rust 1.88, deny policy, live checks and budgets hold.
+Complete package, GNU, original execution and release/server gates remain open.
+
 The [isolated Swagger/ZIP migration](swagger-security-result-20261028.md)
 updates the UI to the exact registry-vendored 5.32.6 input and ZIP 9.0.0, while
 preserving utoipa 5 generation, cached typed document ownership and the existing

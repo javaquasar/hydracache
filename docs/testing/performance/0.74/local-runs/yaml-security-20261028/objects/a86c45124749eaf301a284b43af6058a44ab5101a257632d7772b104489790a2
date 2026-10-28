@@ -1,0 +1,6 @@
+   Compiling hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+   Compiling hydracache-long-run-supervisor-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074)
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 22s
+     Running tests\ci_reliability_071.rs (target\debug\deps\ci_reliability_071-a36308f06e686ef9.exe)
+     Running tests\release_governance.rs (target\debug\deps\release_governance-8416fb2a2c17ab75.exe)

@@ -1,0 +1,45 @@
+"""Run each frozen case once in a separate original process, no workflow execution."""
+from pathlib import Path
+import hashlib,json,subprocess,sys
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/yaml-security-20261028'
+mode=sys.argv[1]
+assert mode in ('baseline','candidate')
+OUT=BASE/('semantics-'+mode)
+OUT.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(OUT/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n')
+prepared=json.loads((BASE/'preparation/result.json').read_bytes())
+raw=(BASE/'preparation/cases.jsonl').read_bytes()
+assert sha(raw)==prepared['corpus_sha256']
+assert prepared['per_case_bound_seconds']==5 and not prepared['retry']
+binary=BASE/'targets'/mode/'debug/hc074-yaml-probe.exe'
+build=json.loads((BASE/('build-'+mode)/'result.json').read_bytes())
+assert build['exit']==0 and build['source_unchanged'] and build['head_unchanged']
+assert build['binary_sha256']==sha(binary.read_bytes())
+write('intent.json',dict(mode=mode,source_sha256=sha(Path(__file__).read_bytes()),
+ binary_sha256=build['binary_sha256'],corpus_sha256=sha(raw),per_case_bound_seconds=5,
+ retry=False,product_workload=False,archived_code_executed=False))
+results=[]
+for index,case in enumerate(map(json.loads,raw.splitlines())):
+ folder=OUT/f'{index:04d}';folder.mkdir()
+ request=json.dumps(dict(id=case['id'],text=case['text']),ensure_ascii=False).encode()
+ process=subprocess.Popen([str(binary)],cwd=ROOT,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+ timeout=False
+ try:stdout,stderr=process.communicate(request,timeout=5)
+ except subprocess.TimeoutExpired:
+  # Exact original handle; reviewed probe creates no descendants. The outer
+  # unchanged Windows Job also contains all children and owns retirement.
+  timeout=True;process.kill();stdout,stderr=process.communicate(timeout=5)
+ (folder/'stdout.log').write_bytes(stdout);(folder/'stderr.log').write_bytes(stderr)
+ row=dict(id=case['id'],exit=process.returncode,timeout=timeout)
+ if not timeout and process.returncode==0:
+  try:row['value']=json.loads(stdout)
+  except (ValueError,UnicodeError) as error:row['decode_error']=str(error)
+ with (folder/'result.json').open('x') as stream:json.dump(row,stream,indent=2,ensure_ascii=False)
+ results.append(row)
+assert sha(binary.read_bytes())==build['binary_sha256'] and sha((BASE/'preparation/cases.jsonl').read_bytes())==prepared['corpus_sha256']
+write('result.json',dict(cases=results,binary_and_corpus_unchanged=True,replayed=False,release_admitted=False))
+failed=sum(r['exit']!=0 or r['timeout'] or 'value' not in r for r in results)
+print(json.dumps(dict(mode=mode,cases=len(results),process_failures=failed)))
+raise SystemExit(int(failed!=0))

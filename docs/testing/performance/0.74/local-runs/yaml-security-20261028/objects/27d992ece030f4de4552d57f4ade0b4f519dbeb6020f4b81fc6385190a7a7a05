@@ -1,0 +1,43 @@
+"""Freeze corpus and generate only ignored, nonshipping semantic probe projects."""
+from pathlib import Path
+import hashlib,importlib.util,json,subprocess,tomllib
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/yaml-security-20261028'
+OUT=BASE/'preparation'
+OUT.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(OUT/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n')
+code=ROOT/'tools/yaml-parser-review-074/corpus.py'
+spec=importlib.util.spec_from_file_location('hc074_yaml_fixed_corpus',code)
+corpus=importlib.util.module_from_spec(spec);spec.loader.exec_module(corpus)
+lock=(ROOT/'Cargo.lock').read_bytes()
+manifest=(ROOT/'crates/xtask/Cargo.toml').read_bytes()
+write('intent.json',dict(head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ source_sha256=sha(Path(__file__).read_bytes()),corpus_code_sha256=sha(code.read_bytes()),
+ product_lock_sha256=sha(lock),product_manifest_sha256=sha(manifest),
+ review_only=True,workspace_members_changed=False,deny_exclusions_added=False))
+rows=corpus.cases(ROOT)
+raw=b''.join((json.dumps(r,ensure_ascii=False,sort_keys=True)+'\n').encode() for r in rows)
+(OUT/'cases.jsonl').write_bytes(raw)
+packages=tomllib.loads(lock.decode())['package']
+json_version=next(p['version'] for p in packages if p['name']=='serde_json')
+parser_version=next(p['version'] for p in packages if p['name']=='serde_yaml')
+assert parser_version=='0.9.34+deprecated'
+fixtures={}
+for mode,package,version in (('baseline','serde_yaml','0.9.34'),('candidate','yaml_serde','0.10.7')):
+ folder=BASE/'fixtures'/mode;folder.mkdir(parents=True,exist_ok=False)
+ text='[package]\nname = "hc074-yaml-probe"\nversion = "0.0.0"\nedition = "2021"\nrust-version = "1.88"\npublish = false\n\n[workspace]\nresolver = "2"\n\n[[bin]]\nname = "hc074-yaml-probe"\npath = '+json.dumps(str(ROOT/'tools/yaml-parser-review-074/probe.rs'))+'\n\n[dependencies]\nparser = { package = '+json.dumps(package)+', version = "='+version+'" }\nserde_json = "='+json_version+'"\n'
+ (folder/'Cargo.toml').write_text(text,encoding='utf-8',newline='\n')
+ # Keep the current transitive versions as the resolver seed; metadata may prune
+ # unrelated packages/add the private root and is reviewed before any build.
+ (folder/'Cargo.lock').write_bytes(lock)
+ fixtures[mode]=dict(manifest_sha256=sha((folder/'Cargo.toml').read_bytes()),
+  lock_seed_sha256=sha(lock),parser_package=package,parser_version=version)
+assert lock==(ROOT/'Cargo.lock').read_bytes() and manifest==(ROOT/'crates/xtask/Cargo.toml').read_bytes()
+result=dict(corpus_sha256=sha(raw),cases=len(rows),seed=corpus.SEED,
+ real_workflows=sum(r['id'].startswith('.github/') for r in rows),
+ per_case_bound_seconds=5,outer_bound_seconds=1200,retry=False,fixtures=fixtures,
+ probe_source_sha256=sha((ROOT/'tools/yaml-parser-review-074/probe.rs').read_bytes()),
+ product_inputs_unchanged=True,release_admitted=False)
+write('result.json',result)
+print(json.dumps({k:v for k,v in result.items() if k!='fixtures'}))

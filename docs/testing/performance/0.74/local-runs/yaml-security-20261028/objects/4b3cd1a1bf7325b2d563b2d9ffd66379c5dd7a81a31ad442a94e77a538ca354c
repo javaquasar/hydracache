@@ -1,0 +1,1 @@
+{"id":"fixture/invalid-escape","location":{"column":9,"index":8,"line":1},"message":"found unknown escape character at line 1 column 9, while parsing a quoted scalar at line 1 column 8","parsed":false}

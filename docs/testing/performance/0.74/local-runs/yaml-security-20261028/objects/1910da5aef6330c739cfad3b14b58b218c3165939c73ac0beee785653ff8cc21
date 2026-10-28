@@ -1,0 +1,44 @@
+"""Inert recovery, preserving failed invocations and every original byte."""
+from pathlib import Path
+import hashlib,json,sys
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/yaml-security-20261028'
+sys.path.insert(0,str(ROOT/'tools/yaml-parser-review-074'))
+import recording
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+out=BASE/'record-recovery';out.mkdir(exist_ok=False)
+current=(ROOT/'target/yaml-run-probe-20261028.py').read_bytes()
+original=current.replace(b" and build['fixture_inputs_unchanged']",b'')
+assert sha(original)=='4ed346ce60afea1605be02882013bf1424676cb892f6fe533921a8541228285b'
+(out/'original-producer-reconstructed.py').write_bytes(original)
+(out/'producer-after-build-guard.py').write_bytes(current)
+corpus=(BASE/'preparation/cases.jsonl').read_bytes()
+assert sha(corpus)=='6e0ca0eb52841f74600a386923898f3da07b770ce7699ca853ed3618a324c78c'
+cases=list(map(json.loads,corpus.splitlines()))
+summary={}
+for mode in ('baseline','candidate'):
+ old=BASE/('semantics-'+mode)
+ intent=json.loads((old/'intent.json').read_bytes())
+ assert intent['source_sha256']==sha(original) and intent['corpus_sha256']==sha(corpus)
+ assert intent['per_case_bound_seconds']==5 and intent['retry'] is False
+ assert sha((BASE/'targets'/mode/'debug/hc074-yaml-probe.exe').read_bytes())==intent['binary_sha256']
+ failed=json.loads((BASE/('probe-'+mode)/'result.json').read_bytes())
+ assert failed['exit']==1 and failed['source_unchanged'] and failed['head_unchanged']
+ error=(BASE/('probe-'+mode)/'stderr.log').read_bytes()
+ assert b'UnicodeEncodeError' in error and b'cp1252' in error
+ dirs=sorted(p for p in old.iterdir() if p.is_dir())
+ assert [p.name for p in dirs]==[f'{i:04d}' for i in range(len(dirs))]
+ assert 0<len(dirs)<len(cases) and not (old/'result.json').exists()
+ rows=[];provenance=[]
+ for i,folder in enumerate(dirs):
+  assert {p.name for p in folder.iterdir()}=={'stdout.log','stderr.log','result.json'}
+  raw={p.name:p.read_bytes() for p in folder.iterdir()}
+  rows.append(recording.recover(cases[i]['id'],raw['result.json'],raw['stdout.log'],raw['stderr.log']))
+  provenance.append(dict(ordinal=i,id=cases[i]['id'],files={str(folder/n):sha(v) for n,v in raw.items()}))
+ result=dict(mode=mode,original_failed_invocation=True,replayed=False,
+  corpus_sha256=sha(corpus),binary_sha256=intent['binary_sha256'],cases=rows,provenance=provenance,
+  next_unstarted_ordinal=len(rows),total_cases=len(cases),original_source_sha256=sha(original))
+ recording.write_record(out/(mode+'.json'),result)
+ summary[mode]=dict(recovered=len(rows),unstarted=len(cases)-len(rows))
+recording.write_record(out/'summary.json',summary)
+print(json.dumps(summary))

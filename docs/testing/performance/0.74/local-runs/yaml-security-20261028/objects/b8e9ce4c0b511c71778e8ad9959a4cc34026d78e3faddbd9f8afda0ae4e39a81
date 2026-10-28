@@ -1,0 +1,218 @@
+{
+  "id": "fixture/tagged",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": "fixture/tagged",
+    "parsed": true,
+    "roundtrip": {
+      "ok": true,
+      "tree": {
+        "rendered": {
+          "ok": true,
+          "text": "items:\n- !Thing\n  x: 1\n- 'true'\n- 12\n"
+        },
+        "shape": {
+          "entries": [
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "items\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "items"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "- !Thing\n  x: 1\n- 'true'\n- 12\n"
+                },
+                "shape": {
+                  "items": [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "!Thing\nx: 1\n"
+                      },
+                      "shape": {
+                        "kind": "tagged",
+                        "tag": "!Thing",
+                        "value": {
+                          "rendered": {
+                            "ok": true,
+                            "text": "x: 1\n"
+                          },
+                          "shape": {
+                            "entries": [
+                              [
+                                {
+                                  "rendered": {
+                                    "ok": true,
+                                    "text": "x\n"
+                                  },
+                                  "shape": {
+                                    "kind": "string",
+                                    "value": "x"
+                                  }
+                                },
+                                {
+                                  "rendered": {
+                                    "ok": true,
+                                    "text": "1\n"
+                                  },
+                                  "shape": {
+                                    "display": "1",
+                                    "f64_bits": "3ff0000000000000",
+                                    "i64": "1",
+                                    "kind": "number",
+                                    "u64": "1"
+                                  }
+                                }
+                              ]
+                            ],
+                            "kind": "mapping"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "'true'\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "true"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "12\n"
+                      },
+                      "shape": {
+                        "display": "12",
+                        "f64_bits": "4028000000000000",
+                        "i64": "12",
+                        "kind": "number",
+                        "u64": "12"
+                      }
+                    }
+                  ],
+                  "kind": "sequence"
+                }
+              }
+            ]
+          ],
+          "kind": "mapping"
+        }
+      }
+    },
+    "tree": {
+      "rendered": {
+        "ok": true,
+        "text": "items:\n- !Thing\n  x: 1\n- 'true'\n- 12\n"
+      },
+      "shape": {
+        "entries": [
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "items\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "items"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "- !Thing\n  x: 1\n- 'true'\n- 12\n"
+              },
+              "shape": {
+                "items": [
+                  {
+                    "rendered": {
+                      "ok": true,
+                      "text": "!Thing\nx: 1\n"
+                    },
+                    "shape": {
+                      "kind": "tagged",
+                      "tag": "!Thing",
+                      "value": {
+                        "rendered": {
+                          "ok": true,
+                          "text": "x: 1\n"
+                        },
+                        "shape": {
+                          "entries": [
+                            [
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "x\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "x"
+                                }
+                              },
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "1\n"
+                                },
+                                "shape": {
+                                  "display": "1",
+                                  "f64_bits": "3ff0000000000000",
+                                  "i64": "1",
+                                  "kind": "number",
+                                  "u64": "1"
+                                }
+                              }
+                            ]
+                          ],
+                          "kind": "mapping"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "rendered": {
+                      "ok": true,
+                      "text": "'true'\n"
+                    },
+                    "shape": {
+                      "kind": "string",
+                      "value": "true"
+                    }
+                  },
+                  {
+                    "rendered": {
+                      "ok": true,
+                      "text": "12\n"
+                    },
+                    "shape": {
+                      "display": "12",
+                      "f64_bits": "4028000000000000",
+                      "i64": "12",
+                      "kind": "number",
+                      "u64": "12"
+                    }
+                  }
+                ],
+                "kind": "sequence"
+              }
+            }
+          ]
+        ],
+        "kind": "mapping"
+      }
+    }
+  }
+}

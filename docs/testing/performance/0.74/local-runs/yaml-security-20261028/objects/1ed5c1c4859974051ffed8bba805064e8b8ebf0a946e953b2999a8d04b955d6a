@@ -1,0 +1,10 @@
+{
+  "archived_code_executed": false,
+  "binary_sha256": "dc02680befc2fa247be128b807dbc625b3d8aaa4bbff285c292d231bd6fa9569",
+  "corpus_sha256": "6e0ca0eb52841f74600a386923898f3da07b770ce7699ca853ed3618a324c78c",
+  "mode": "candidate",
+  "per_case_bound_seconds": 5,
+  "product_workload": false,
+  "retry": false,
+  "source_sha256": "4ed346ce60afea1605be02882013bf1424676cb892f6fe533921a8541228285b"
+}

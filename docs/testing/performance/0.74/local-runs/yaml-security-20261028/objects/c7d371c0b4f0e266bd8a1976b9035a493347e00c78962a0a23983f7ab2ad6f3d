@@ -1,0 +1,2858 @@
+{
+  "id": ".github/workflows/demo.yml",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": ".github/workflows/demo.yml",
+    "parsed": true,
+    "roundtrip": {
+      "ok": true,
+      "tree": {
+        "rendered": {
+          "ok": true,
+          "text": "name: Simulator Demo\non:\n  workflow_dispatch: null\n  schedule:\n  - cron: 17 4 * * *\n  push:\n    branches:\n    - main\npermissions:\n  contents: read\nconcurrency:\n  group: simulator-demo-${{ github.sha }}\n  cancel-in-progress: false\njobs:\n  build:\n    name: Build and smoke demo\n    runs-on: ubuntu-latest\n    timeout-minutes: 30\n    steps:\n    - name: Checkout\n      uses: actions/checkout@v5\n    - name: Install Rust\n      uses: dtolnay/rust-toolchain@stable\n      with:\n        targets: wasm32-unknown-unknown\n    - name: Cache Rust dependencies\n      uses: Swatinem/rust-cache@v2\n      with:\n        prefix-key: v1-rust-no-target\n        cache-targets: false\n        shared-key: simulator-demo\n    - name: Install wasm-pack\n      uses: taiki-e/install-action@wasm-pack\n    - name: Install Node\n      uses: actions/setup-node@v5\n      with:\n        node-version: 22\n    - name: Build WASM crate\n      run: cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked\n    - name: Build browser package\n      timeout-minutes: 10\n      run: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked\n    - name: Install demo dependencies\n      timeout-minutes: 10\n      run: npm --prefix demo ci\n    - name: Check static demo package\n      run: npm --prefix demo run build\n    - name: Install Playwright browsers\n      timeout-minutes: 10\n      run: |\n        npx --prefix demo playwright install --with-deps chromium\n    - name: Run headless smoke\n      env:\n        HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/\n      run: npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js\n    - name: Keep demo artifact local to this workflow\n      if: github.ref == 'refs/heads/main'\n      run: |\n        echo \"The public GitHub Pages root is owned by .github/workflows/docs-site.yml.\"\n        echo \"This workflow builds and smokes the simulator demo but does not deploy Pages.\"\n"
+        },
+        "shape": {
+          "entries": [
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "name\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "name"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "Simulator Demo\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "Simulator Demo"
+                }
+              }
+            ],
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "on\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "on"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "workflow_dispatch: null\nschedule:\n- cron: 17 4 * * *\npush:\n  branches:\n  - main\n"
+                },
+                "shape": {
+                  "entries": [
+                    [
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "workflow_dispatch\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "workflow_dispatch"
+                        }
+                      },
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "null\n"
+                        },
+                        "shape": {
+                          "kind": "null"
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "schedule\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "schedule"
+                        }
+                      },
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "- cron: 17 4 * * *\n"
+                        },
+                        "shape": {
+                          "items": [
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "cron: 17 4 * * *\n"
+                              },
+                              "shape": {
+                                "entries": [
+                                  [
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "cron\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": "cron"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "17 4 * * *\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": "17 4 * * *"
+                                      }
+                                    }
+                                  ]
+                                ],
+                                "kind": "mapping"
+                              }
+                            }
+                          ],
+                          "kind": "sequence"
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "push\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "push"
+                        }
+                      },
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "branches:\n- main\n"
+                        },
+                        "shape": {
+                          "entries": [
+                            [
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "branches\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "branches"
+                                }
+                              },
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "- main\n"
+                                },
+                                "shape": {
+                                  "items": [
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "main\n"
+                                      },
+                                      "shape": {
+                                        "kind": "string",
+                                        "value": "main"
+                                      }
+                                    }
+                                  ],
+                                  "kind": "sequence"
+                                }
+                              }
+                            ]
+                          ],
+                          "kind": "mapping"
+                        }
+                      }
+                    ]
+                  ],
+                  "kind": "mapping"
+                }
+              }
+            ],
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "permissions\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "permissions"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "contents: read\n"
+                },
+                "shape": {
+                  "entries": [
+                    [
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "contents\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "contents"
+                        }
+                      },
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "read\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "read"
+                        }
+                      }
+                    ]
+                  ],
+                  "kind": "mapping"
+                }
+              }
+            ],
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "concurrency\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "concurrency"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "group: simulator-demo-${{ github.sha }}\ncancel-in-progress: false\n"
+                },
+                "shape": {
+                  "entries": [
+                    [
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "group\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "group"
+                        }
+                      },
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "simulator-demo-${{ github.sha }}\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "simulator-demo-${{ github.sha }}"
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "cancel-in-progress\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "cancel-in-progress"
+                        }
+                      },
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "false\n"
+                        },
+                        "shape": {
+                          "kind": "bool",
+                          "value": false
+                        }
+                      }
+                    ]
+                  ],
+                  "kind": "mapping"
+                }
+              }
+            ],
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "jobs\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "jobs"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "build:\n  name: Build and smoke demo\n  runs-on: ubuntu-latest\n  timeout-minutes: 30\n  steps:\n  - name: Checkout\n    uses: actions/checkout@v5\n  - name: Install Rust\n    uses: dtolnay/rust-toolchain@stable\n    with:\n      targets: wasm32-unknown-unknown\n  - name: Cache Rust dependencies\n    uses: Swatinem/rust-cache@v2\n    with:\n      prefix-key: v1-rust-no-target\n      cache-targets: false\n      shared-key: simulator-demo\n  - name: Install wasm-pack\n    uses: taiki-e/install-action@wasm-pack\n  - name: Install Node\n    uses: actions/setup-node@v5\n    with:\n      node-version: 22\n  - name: Build WASM crate\n    run: cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked\n  - name: Build browser package\n    timeout-minutes: 10\n    run: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked\n  - name: Install demo dependencies\n    timeout-minutes: 10\n    run: npm --prefix demo ci\n  - name: Check static demo package\n    run: npm --prefix demo run build\n  - name: Install Playwright browsers\n    timeout-minutes: 10\n    run: |\n      npx --prefix demo playwright install --with-deps chromium\n  - name: Run headless smoke\n    env:\n      HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/\n    run: npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js\n  - name: Keep demo artifact local to this workflow\n    if: github.ref == 'refs/heads/main'\n    run: |\n      echo \"The public GitHub Pages root is owned by .github/workflows/docs-site.yml.\"\n      echo \"This workflow builds and smokes the simulator demo but does not deploy Pages.\"\n"
+                },
+                "shape": {
+                  "entries": [
+                    [
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "build\n"
+                        },
+                        "shape": {
+                          "kind": "string",
+                          "value": "build"
+                        }
+                      },
+                      {
+                        "rendered": {
+                          "ok": true,
+                          "text": "name: Build and smoke demo\nruns-on: ubuntu-latest\ntimeout-minutes: 30\nsteps:\n- name: Checkout\n  uses: actions/checkout@v5\n- name: Install Rust\n  uses: dtolnay/rust-toolchain@stable\n  with:\n    targets: wasm32-unknown-unknown\n- name: Cache Rust dependencies\n  uses: Swatinem/rust-cache@v2\n  with:\n    prefix-key: v1-rust-no-target\n    cache-targets: false\n    shared-key: simulator-demo\n- name: Install wasm-pack\n  uses: taiki-e/install-action@wasm-pack\n- name: Install Node\n  uses: actions/setup-node@v5\n  with:\n    node-version: 22\n- name: Build WASM crate\n  run: cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked\n- name: Build browser package\n  timeout-minutes: 10\n  run: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked\n- name: Install demo dependencies\n  timeout-minutes: 10\n  run: npm --prefix demo ci\n- name: Check static demo package\n  run: npm --prefix demo run build\n- name: Install Playwright browsers\n  timeout-minutes: 10\n  run: |\n    npx --prefix demo playwright install --with-deps chromium\n- name: Run headless smoke\n  env:\n    HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/\n  run: npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js\n- name: Keep demo artifact local to this workflow\n  if: github.ref == 'refs/heads/main'\n  run: |\n    echo \"The public GitHub Pages root is owned by .github/workflows/docs-site.yml.\"\n    echo \"This workflow builds and smokes the simulator demo but does not deploy Pages.\"\n"
+                        },
+                        "shape": {
+                          "entries": [
+                            [
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "name\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "name"
+                                }
+                              },
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "Build and smoke demo\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "Build and smoke demo"
+                                }
+                              }
+                            ],
+                            [
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "runs-on\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "runs-on"
+                                }
+                              },
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "ubuntu-latest\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "ubuntu-latest"
+                                }
+                              }
+                            ],
+                            [
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "timeout-minutes\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "timeout-minutes"
+                                }
+                              },
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "30\n"
+                                },
+                                "shape": {
+                                  "display": "30",
+                                  "f64_bits": "403e000000000000",
+                                  "i64": "30",
+                                  "kind": "number",
+                                  "u64": "30"
+                                }
+                              }
+                            ],
+                            [
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "steps\n"
+                                },
+                                "shape": {
+                                  "kind": "string",
+                                  "value": "steps"
+                                }
+                              },
+                              {
+                                "rendered": {
+                                  "ok": true,
+                                  "text": "- name: Checkout\n  uses: actions/checkout@v5\n- name: Install Rust\n  uses: dtolnay/rust-toolchain@stable\n  with:\n    targets: wasm32-unknown-unknown\n- name: Cache Rust dependencies\n  uses: Swatinem/rust-cache@v2\n  with:\n    prefix-key: v1-rust-no-target\n    cache-targets: false\n    shared-key: simulator-demo\n- name: Install wasm-pack\n  uses: taiki-e/install-action@wasm-pack\n- name: Install Node\n  uses: actions/setup-node@v5\n  with:\n    node-version: 22\n- name: Build WASM crate\n  run: cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked\n- name: Build browser package\n  timeout-minutes: 10\n  run: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked\n- name: Install demo dependencies\n  timeout-minutes: 10\n  run: npm --prefix demo ci\n- name: Check static demo package\n  run: npm --prefix demo run build\n- name: Install Playwright browsers\n  timeout-minutes: 10\n  run: |\n    npx --prefix demo playwright install --with-deps chromium\n- name: Run headless smoke\n  env:\n    HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/\n  run: npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js\n- name: Keep demo artifact local to this workflow\n  if: github.ref == 'refs/heads/main'\n  run: |\n    echo \"The public GitHub Pages root is owned by .github/workflows/docs-site.yml.\"\n    echo \"This workflow builds and smokes the simulator demo but does not deploy Pages.\"\n"
+                                },
+                                "shape": {
+                                  "items": [
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Checkout\nuses: actions/checkout@v5\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Checkout\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Checkout"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "uses\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "uses"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "actions/checkout@v5\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "actions/checkout@v5"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Install Rust\nuses: dtolnay/rust-toolchain@stable\nwith:\n  targets: wasm32-unknown-unknown\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Install Rust\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Install Rust"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "uses\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "uses"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "dtolnay/rust-toolchain@stable\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "dtolnay/rust-toolchain@stable"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "with\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "with"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "targets: wasm32-unknown-unknown\n"
+                                              },
+                                              "shape": {
+                                                "entries": [
+                                                  [
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "targets\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "targets"
+                                                      }
+                                                    },
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "wasm32-unknown-unknown\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "wasm32-unknown-unknown"
+                                                      }
+                                                    }
+                                                  ]
+                                                ],
+                                                "kind": "mapping"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Cache Rust dependencies\nuses: Swatinem/rust-cache@v2\nwith:\n  prefix-key: v1-rust-no-target\n  cache-targets: false\n  shared-key: simulator-demo\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Cache Rust dependencies\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Cache Rust dependencies"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "uses\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "uses"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Swatinem/rust-cache@v2\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Swatinem/rust-cache@v2"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "with\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "with"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "prefix-key: v1-rust-no-target\ncache-targets: false\nshared-key: simulator-demo\n"
+                                              },
+                                              "shape": {
+                                                "entries": [
+                                                  [
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "prefix-key\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "prefix-key"
+                                                      }
+                                                    },
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "v1-rust-no-target\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "v1-rust-no-target"
+                                                      }
+                                                    }
+                                                  ],
+                                                  [
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "cache-targets\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "cache-targets"
+                                                      }
+                                                    },
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "false\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "bool",
+                                                        "value": false
+                                                      }
+                                                    }
+                                                  ],
+                                                  [
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "shared-key\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "shared-key"
+                                                      }
+                                                    },
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "simulator-demo\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "simulator-demo"
+                                                      }
+                                                    }
+                                                  ]
+                                                ],
+                                                "kind": "mapping"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Install wasm-pack\nuses: taiki-e/install-action@wasm-pack\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Install wasm-pack\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Install wasm-pack"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "uses\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "uses"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "taiki-e/install-action@wasm-pack\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "taiki-e/install-action@wasm-pack"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Install Node\nuses: actions/setup-node@v5\nwith:\n  node-version: 22\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Install Node\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Install Node"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "uses\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "uses"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "actions/setup-node@v5\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "actions/setup-node@v5"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "with\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "with"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "node-version: 22\n"
+                                              },
+                                              "shape": {
+                                                "entries": [
+                                                  [
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "node-version\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "node-version"
+                                                      }
+                                                    },
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "22\n"
+                                                      },
+                                                      "shape": {
+                                                        "display": "22",
+                                                        "f64_bits": "4036000000000000",
+                                                        "i64": "22",
+                                                        "kind": "number",
+                                                        "u64": "22"
+                                                      }
+                                                    }
+                                                  ]
+                                                ],
+                                                "kind": "mapping"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Build WASM crate\nrun: cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Build WASM crate\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Build WASM crate"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "run\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "run"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Build browser package\ntimeout-minutes: 10\nrun: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Build browser package\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Build browser package"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "timeout-minutes\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "timeout-minutes"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "10\n"
+                                              },
+                                              "shape": {
+                                                "display": "10",
+                                                "f64_bits": "4024000000000000",
+                                                "i64": "10",
+                                                "kind": "number",
+                                                "u64": "10"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "run\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "run"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Install demo dependencies\ntimeout-minutes: 10\nrun: npm --prefix demo ci\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Install demo dependencies\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Install demo dependencies"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "timeout-minutes\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "timeout-minutes"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "10\n"
+                                              },
+                                              "shape": {
+                                                "display": "10",
+                                                "f64_bits": "4024000000000000",
+                                                "i64": "10",
+                                                "kind": "number",
+                                                "u64": "10"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "run\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "run"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "npm --prefix demo ci\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "npm --prefix demo ci"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Check static demo package\nrun: npm --prefix demo run build\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Check static demo package\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Check static demo package"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "run\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "run"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "npm --prefix demo run build\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "npm --prefix demo run build"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Install Playwright browsers\ntimeout-minutes: 10\nrun: |\n  npx --prefix demo playwright install --with-deps chromium\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Install Playwright browsers\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Install Playwright browsers"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "timeout-minutes\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "timeout-minutes"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "10\n"
+                                              },
+                                              "shape": {
+                                                "display": "10",
+                                                "f64_bits": "4024000000000000",
+                                                "i64": "10",
+                                                "kind": "number",
+                                                "u64": "10"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "run\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "run"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "|\n  npx --prefix demo playwright install --with-deps chromium\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "npx --prefix demo playwright install --with-deps chromium\n"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Run headless smoke\nenv:\n  HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/\nrun: npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Run headless smoke\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Run headless smoke"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "env\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "env"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/\n"
+                                              },
+                                              "shape": {
+                                                "entries": [
+                                                  [
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "HYDRACACHE_DEMO_URL\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "HYDRACACHE_DEMO_URL"
+                                                      }
+                                                    },
+                                                    {
+                                                      "rendered": {
+                                                        "ok": true,
+                                                        "text": "http://127.0.0.1:5173/demo/\n"
+                                                      },
+                                                      "shape": {
+                                                        "kind": "string",
+                                                        "value": "http://127.0.0.1:5173/demo/"
+                                                      }
+                                                    }
+                                                  ]
+                                                ],
+                                                "kind": "mapping"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "run\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "run"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    },
+                                    {
+                                      "rendered": {
+                                        "ok": true,
+                                        "text": "name: Keep demo artifact local to this workflow\nif: github.ref == 'refs/heads/main'\nrun: |\n  echo \"The public GitHub Pages root is owned by .github/workflows/docs-site.yml.\"\n  echo \"This workflow builds and smokes the simulator demo but does not deploy Pages.\"\n"
+                                      },
+                                      "shape": {
+                                        "entries": [
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "name\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "name"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "Keep demo artifact local to this workflow\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "Keep demo artifact local to this workflow"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "if\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "if"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "github.ref == 'refs/heads/main'\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "github.ref == 'refs/heads/main'"
+                                              }
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "run\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "run"
+                                              }
+                                            },
+                                            {
+                                              "rendered": {
+                                                "ok": true,
+                                                "text": "|\n  echo \"The public GitHub Pages root is owned by .github/workflows/docs-site.yml.\"\n  echo \"This workflow builds and smokes the simulator demo but does not deploy Pages.\"\n"
+                                              },
+                                              "shape": {
+                                                "kind": "string",
+                                                "value": "echo \"The public GitHub Pages root is owned by .github/workflows/docs-site.yml.\"\necho \"This workflow builds and smokes the simulator demo but does not deploy Pages.\"\n"
+                                              }
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "mapping"
+                                      }
+                                    }
+                                  ],
+                                  "kind": "sequence"
+                                }
+                              }
+                            ]
+                          ],
+                          "kind": "mapping"
+                        }
+                      }
+                    ]
+                  ],
+                  "kind": "mapping"
+                }
+              }
+            ]
+          ],
+          "kind": "mapping"
+        }
+      }
+    },
+    "tree": {
+      "rendered": {
+        "ok": true,
+        "text": "name: Simulator Demo\non:\n  workflow_dispatch: null\n  schedule:\n  - cron: 17 4 * * *\n  push:\n    branches:\n    - main\npermissions:\n  contents: read\nconcurrency:\n  group: simulator-demo-${{ github.sha }}\n  cancel-in-progress: false\njobs:\n  build:\n    name: Build and smoke demo\n    runs-on: ubuntu-latest\n    timeout-minutes: 30\n    steps:\n    - name: Checkout\n      uses: actions/checkout@v5\n    - name: Install Rust\n      uses: dtolnay/rust-toolchain@stable\n      with:\n        targets: wasm32-unknown-unknown\n    - name: Cache Rust dependencies\n      uses: Swatinem/rust-cache@v2\n      with:\n        prefix-key: v1-rust-no-target\n        cache-targets: false\n        shared-key: simulator-demo\n    - name: Install wasm-pack\n      uses: taiki-e/install-action@wasm-pack\n    - name: Install Node\n      uses: actions/setup-node@v5\n      with:\n        node-version: 22\n    - name: Build WASM crate\n      run: cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked\n    - name: Build browser package\n      timeout-minutes: 10\n      run: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked\n    - name: Install demo dependencies\n      timeout-minutes: 10\n      run: npm --prefix demo ci\n    - name: Check static demo package\n      run: npm --prefix demo run build\n    - name: Install Playwright browsers\n      timeout-minutes: 10\n      run: |\n        npx --prefix demo playwright install --with-deps chromium\n    - name: Run headless smoke\n      env:\n        HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/\n      run: npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js\n    - name: Keep demo artifact local to this workflow\n      if: github.ref == 'refs/heads/main'\n      run: |\n        echo \"The public GitHub Pages root is owned by .github/workflows/docs-site.yml.\"\n        echo \"This workflow builds and smokes the simulator demo but does not deploy Pages.\"\n"
+      },
+      "shape": {
+        "entries": [
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "name\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "name"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "Simulator Demo\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "Simulator Demo"
+              }
+            }
+          ],
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "on\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "on"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "workflow_dispatch: null\nschedule:\n- cron: 17 4 * * *\npush:\n  branches:\n  - main\n"
+              },
+              "shape": {
+                "entries": [
+                  [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "workflow_dispatch\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "workflow_dispatch"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "null\n"
+                      },
+                      "shape": {
+                        "kind": "null"
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "schedule\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "schedule"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "- cron: 17 4 * * *\n"
+                      },
+                      "shape": {
+                        "items": [
+                          {
+                            "rendered": {
+                              "ok": true,
+                              "text": "cron: 17 4 * * *\n"
+                            },
+                            "shape": {
+                              "entries": [
+                                [
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "cron\n"
+                                    },
+                                    "shape": {
+                                      "kind": "string",
+                                      "value": "cron"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "17 4 * * *\n"
+                                    },
+                                    "shape": {
+                                      "kind": "string",
+                                      "value": "17 4 * * *"
+                                    }
+                                  }
+                                ]
+                              ],
+                              "kind": "mapping"
+                            }
+                          }
+                        ],
+                        "kind": "sequence"
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "push\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "push"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "branches:\n- main\n"
+                      },
+                      "shape": {
+                        "entries": [
+                          [
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "branches\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "branches"
+                              }
+                            },
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "- main\n"
+                              },
+                              "shape": {
+                                "items": [
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "main\n"
+                                    },
+                                    "shape": {
+                                      "kind": "string",
+                                      "value": "main"
+                                    }
+                                  }
+                                ],
+                                "kind": "sequence"
+                              }
+                            }
+                          ]
+                        ],
+                        "kind": "mapping"
+                      }
+                    }
+                  ]
+                ],
+                "kind": "mapping"
+              }
+            }
+          ],
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "permissions\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "permissions"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "contents: read\n"
+              },
+              "shape": {
+                "entries": [
+                  [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "contents\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "contents"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "read\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "read"
+                      }
+                    }
+                  ]
+                ],
+                "kind": "mapping"
+              }
+            }
+          ],
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "concurrency\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "concurrency"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "group: simulator-demo-${{ github.sha }}\ncancel-in-progress: false\n"
+              },
+              "shape": {
+                "entries": [
+                  [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "group\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "group"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "simulator-demo-${{ github.sha }}\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "simulator-demo-${{ github.sha }}"
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "cancel-in-progress\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "cancel-in-progress"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "false\n"
+                      },
+                      "shape": {
+                        "kind": "bool",
+                        "value": false
+                      }
+                    }
+                  ]
+                ],
+                "kind": "mapping"
+              }
+            }
+          ],
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "jobs\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "jobs"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "build:\n  name: Build and smoke demo\n  runs-on: ubuntu-latest\n  timeout-minutes: 30\n  steps:\n  - name: Checkout\n    uses: actions/checkout@v5\n  - name: Install Rust\n    uses: dtolnay/rust-toolchain@stable\n    with:\n      targets: wasm32-unknown-unknown\n  - name: Cache Rust dependencies\n    uses: Swatinem/rust-cache@v2\n    with:\n      prefix-key: v1-rust-no-target\n      cache-targets: false\n      shared-key: simulator-demo\n  - name: Install wasm-pack\n    uses: taiki-e/install-action@wasm-pack\n  - name: Install Node\n    uses: actions/setup-node@v5\n    with:\n      node-version: 22\n  - name: Build WASM crate\n    run: cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked\n  - name: Build browser package\n    timeout-minutes: 10\n    run: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked\n  - name: Install demo dependencies\n    timeout-minutes: 10\n    run: npm --prefix demo ci\n  - name: Check static demo package\n    run: npm --prefix demo run build\n  - name: Install Playwright browsers\n    timeout-minutes: 10\n    run: |\n      npx --prefix demo playwright install --with-deps chromium\n  - name: Run headless smoke\n    env:\n      HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/\n    run: npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js\n  - name: Keep demo artifact local to this workflow\n    if: github.ref == 'refs/heads/main'\n    run: |\n      echo \"The public GitHub Pages root is owned by .github/workflows/docs-site.yml.\"\n      echo \"This workflow builds and smokes the simulator demo but does not deploy Pages.\"\n"
+              },
+              "shape": {
+                "entries": [
+                  [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "build\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "build"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "name: Build and smoke demo\nruns-on: ubuntu-latest\ntimeout-minutes: 30\nsteps:\n- name: Checkout\n  uses: actions/checkout@v5\n- name: Install Rust\n  uses: dtolnay/rust-toolchain@stable\n  with:\n    targets: wasm32-unknown-unknown\n- name: Cache Rust dependencies\n  uses: Swatinem/rust-cache@v2\n  with:\n    prefix-key: v1-rust-no-target\n    cache-targets: false\n    shared-key: simulator-demo\n- name: Install wasm-pack\n  uses: taiki-e/install-action@wasm-pack\n- name: Install Node\n  uses: actions/setup-node@v5\n  with:\n    node-version: 22\n- name: Build WASM crate\n  run: cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked\n- name: Build browser package\n  timeout-minutes: 10\n  run: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked\n- name: Install demo dependencies\n  timeout-minutes: 10\n  run: npm --prefix demo ci\n- name: Check static demo package\n  run: npm --prefix demo run build\n- name: Install Playwright browsers\n  timeout-minutes: 10\n  run: |\n    npx --prefix demo playwright install --with-deps chromium\n- name: Run headless smoke\n  env:\n    HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/\n  run: npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js\n- name: Keep demo artifact local to this workflow\n  if: github.ref == 'refs/heads/main'\n  run: |\n    echo \"The public GitHub Pages root is owned by .github/workflows/docs-site.yml.\"\n    echo \"This workflow builds and smokes the simulator demo but does not deploy Pages.\"\n"
+                      },
+                      "shape": {
+                        "entries": [
+                          [
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "name\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "name"
+                              }
+                            },
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "Build and smoke demo\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "Build and smoke demo"
+                              }
+                            }
+                          ],
+                          [
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "runs-on\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "runs-on"
+                              }
+                            },
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "ubuntu-latest\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "ubuntu-latest"
+                              }
+                            }
+                          ],
+                          [
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "timeout-minutes\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "timeout-minutes"
+                              }
+                            },
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "30\n"
+                              },
+                              "shape": {
+                                "display": "30",
+                                "f64_bits": "403e000000000000",
+                                "i64": "30",
+                                "kind": "number",
+                                "u64": "30"
+                              }
+                            }
+                          ],
+                          [
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "steps\n"
+                              },
+                              "shape": {
+                                "kind": "string",
+                                "value": "steps"
+                              }
+                            },
+                            {
+                              "rendered": {
+                                "ok": true,
+                                "text": "- name: Checkout\n  uses: actions/checkout@v5\n- name: Install Rust\n  uses: dtolnay/rust-toolchain@stable\n  with:\n    targets: wasm32-unknown-unknown\n- name: Cache Rust dependencies\n  uses: Swatinem/rust-cache@v2\n  with:\n    prefix-key: v1-rust-no-target\n    cache-targets: false\n    shared-key: simulator-demo\n- name: Install wasm-pack\n  uses: taiki-e/install-action@wasm-pack\n- name: Install Node\n  uses: actions/setup-node@v5\n  with:\n    node-version: 22\n- name: Build WASM crate\n  run: cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked\n- name: Build browser package\n  timeout-minutes: 10\n  run: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked\n- name: Install demo dependencies\n  timeout-minutes: 10\n  run: npm --prefix demo ci\n- name: Check static demo package\n  run: npm --prefix demo run build\n- name: Install Playwright browsers\n  timeout-minutes: 10\n  run: |\n    npx --prefix demo playwright install --with-deps chromium\n- name: Run headless smoke\n  env:\n    HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/\n  run: npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js\n- name: Keep demo artifact local to this workflow\n  if: github.ref == 'refs/heads/main'\n  run: |\n    echo \"The public GitHub Pages root is owned by .github/workflows/docs-site.yml.\"\n    echo \"This workflow builds and smokes the simulator demo but does not deploy Pages.\"\n"
+                              },
+                              "shape": {
+                                "items": [
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Checkout\nuses: actions/checkout@v5\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Checkout\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Checkout"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "uses\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "uses"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "actions/checkout@v5\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "actions/checkout@v5"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Install Rust\nuses: dtolnay/rust-toolchain@stable\nwith:\n  targets: wasm32-unknown-unknown\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Install Rust\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Install Rust"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "uses\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "uses"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "dtolnay/rust-toolchain@stable\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "dtolnay/rust-toolchain@stable"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "with\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "with"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "targets: wasm32-unknown-unknown\n"
+                                            },
+                                            "shape": {
+                                              "entries": [
+                                                [
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "targets\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "targets"
+                                                    }
+                                                  },
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "wasm32-unknown-unknown\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "wasm32-unknown-unknown"
+                                                    }
+                                                  }
+                                                ]
+                                              ],
+                                              "kind": "mapping"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Cache Rust dependencies\nuses: Swatinem/rust-cache@v2\nwith:\n  prefix-key: v1-rust-no-target\n  cache-targets: false\n  shared-key: simulator-demo\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Cache Rust dependencies\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Cache Rust dependencies"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "uses\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "uses"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Swatinem/rust-cache@v2\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Swatinem/rust-cache@v2"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "with\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "with"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "prefix-key: v1-rust-no-target\ncache-targets: false\nshared-key: simulator-demo\n"
+                                            },
+                                            "shape": {
+                                              "entries": [
+                                                [
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "prefix-key\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "prefix-key"
+                                                    }
+                                                  },
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "v1-rust-no-target\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "v1-rust-no-target"
+                                                    }
+                                                  }
+                                                ],
+                                                [
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "cache-targets\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "cache-targets"
+                                                    }
+                                                  },
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "false\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "bool",
+                                                      "value": false
+                                                    }
+                                                  }
+                                                ],
+                                                [
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "shared-key\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "shared-key"
+                                                    }
+                                                  },
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "simulator-demo\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "simulator-demo"
+                                                    }
+                                                  }
+                                                ]
+                                              ],
+                                              "kind": "mapping"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Install wasm-pack\nuses: taiki-e/install-action@wasm-pack\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Install wasm-pack\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Install wasm-pack"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "uses\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "uses"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "taiki-e/install-action@wasm-pack\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "taiki-e/install-action@wasm-pack"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Install Node\nuses: actions/setup-node@v5\nwith:\n  node-version: 22\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Install Node\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Install Node"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "uses\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "uses"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "actions/setup-node@v5\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "actions/setup-node@v5"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "with\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "with"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "node-version: 22\n"
+                                            },
+                                            "shape": {
+                                              "entries": [
+                                                [
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "node-version\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "node-version"
+                                                    }
+                                                  },
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "22\n"
+                                                    },
+                                                    "shape": {
+                                                      "display": "22",
+                                                      "f64_bits": "4036000000000000",
+                                                      "i64": "22",
+                                                      "kind": "number",
+                                                      "u64": "22"
+                                                    }
+                                                  }
+                                                ]
+                                              ],
+                                              "kind": "mapping"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Build WASM crate\nrun: cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Build WASM crate\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Build WASM crate"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "run\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "run"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Build browser package\ntimeout-minutes: 10\nrun: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Build browser package\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Build browser package"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "timeout-minutes\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "timeout-minutes"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "10\n"
+                                            },
+                                            "shape": {
+                                              "display": "10",
+                                              "f64_bits": "4024000000000000",
+                                              "i64": "10",
+                                              "kind": "number",
+                                              "u64": "10"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "run\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "run"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Install demo dependencies\ntimeout-minutes: 10\nrun: npm --prefix demo ci\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Install demo dependencies\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Install demo dependencies"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "timeout-minutes\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "timeout-minutes"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "10\n"
+                                            },
+                                            "shape": {
+                                              "display": "10",
+                                              "f64_bits": "4024000000000000",
+                                              "i64": "10",
+                                              "kind": "number",
+                                              "u64": "10"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "run\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "run"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "npm --prefix demo ci\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "npm --prefix demo ci"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Check static demo package\nrun: npm --prefix demo run build\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Check static demo package\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Check static demo package"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "run\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "run"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "npm --prefix demo run build\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "npm --prefix demo run build"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Install Playwright browsers\ntimeout-minutes: 10\nrun: |\n  npx --prefix demo playwright install --with-deps chromium\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Install Playwright browsers\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Install Playwright browsers"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "timeout-minutes\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "timeout-minutes"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "10\n"
+                                            },
+                                            "shape": {
+                                              "display": "10",
+                                              "f64_bits": "4024000000000000",
+                                              "i64": "10",
+                                              "kind": "number",
+                                              "u64": "10"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "run\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "run"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "|\n  npx --prefix demo playwright install --with-deps chromium\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "npx --prefix demo playwright install --with-deps chromium\n"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Run headless smoke\nenv:\n  HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/\nrun: npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Run headless smoke\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Run headless smoke"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "env\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "env"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/\n"
+                                            },
+                                            "shape": {
+                                              "entries": [
+                                                [
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "HYDRACACHE_DEMO_URL\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "HYDRACACHE_DEMO_URL"
+                                                    }
+                                                  },
+                                                  {
+                                                    "rendered": {
+                                                      "ok": true,
+                                                      "text": "http://127.0.0.1:5173/demo/\n"
+                                                    },
+                                                    "shape": {
+                                                      "kind": "string",
+                                                      "value": "http://127.0.0.1:5173/demo/"
+                                                    }
+                                                  }
+                                                ]
+                                              ],
+                                              "kind": "mapping"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "run\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "run"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  },
+                                  {
+                                    "rendered": {
+                                      "ok": true,
+                                      "text": "name: Keep demo artifact local to this workflow\nif: github.ref == 'refs/heads/main'\nrun: |\n  echo \"The public GitHub Pages root is owned by .github/workflows/docs-site.yml.\"\n  echo \"This workflow builds and smokes the simulator demo but does not deploy Pages.\"\n"
+                                    },
+                                    "shape": {
+                                      "entries": [
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "name\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "name"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "Keep demo artifact local to this workflow\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "Keep demo artifact local to this workflow"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "if\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "if"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "github.ref == 'refs/heads/main'\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "github.ref == 'refs/heads/main'"
+                                            }
+                                          }
+                                        ],
+                                        [
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "run\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "run"
+                                            }
+                                          },
+                                          {
+                                            "rendered": {
+                                              "ok": true,
+                                              "text": "|\n  echo \"The public GitHub Pages root is owned by .github/workflows/docs-site.yml.\"\n  echo \"This workflow builds and smokes the simulator demo but does not deploy Pages.\"\n"
+                                            },
+                                            "shape": {
+                                              "kind": "string",
+                                              "value": "echo \"The public GitHub Pages root is owned by .github/workflows/docs-site.yml.\"\necho \"This workflow builds and smokes the simulator demo but does not deploy Pages.\"\n"
+                                            }
+                                          }
+                                        ]
+                                      ],
+                                      "kind": "mapping"
+                                    }
+                                  }
+                                ],
+                                "kind": "sequence"
+                              }
+                            }
+                          ]
+                        ],
+                        "kind": "mapping"
+                      }
+                    }
+                  ]
+                ],
+                "kind": "mapping"
+              }
+            }
+          ]
+        ],
+        "kind": "mapping"
+      }
+    }
+  }
+}

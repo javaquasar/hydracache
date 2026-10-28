@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\target\yaml-run-probe-20261028.py", line 39, in <module>
+    with (folder/'result.json').open('x') as stream:json.dump(row,stream,indent=2,ensure_ascii=False)
+                                                    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\json\__init__.py", line 180, in dump
+    fp.write(chunk)
+    ~~~~~~~~^^^^^^^
+  File "C:\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f600' in position 45: character maps to <undefined>

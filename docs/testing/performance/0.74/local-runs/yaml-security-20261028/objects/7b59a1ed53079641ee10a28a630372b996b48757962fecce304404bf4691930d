@@ -1,0 +1,7 @@
+   Compiling libyaml-rs v0.3.0
+   Compiling hydracache-loadgen v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-loadgen)
+   Compiling yaml_serde v0.10.7
+   Compiling xtask v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\xtask)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 16s
+     Running tests\ci_reliability_071.rs (target\debug\deps\ci_reliability_071-7d280a6807a390d7.exe)
+     Running tests\release_governance.rs (target\debug\deps\release_governance-cf173090acb2b3d8.exe)

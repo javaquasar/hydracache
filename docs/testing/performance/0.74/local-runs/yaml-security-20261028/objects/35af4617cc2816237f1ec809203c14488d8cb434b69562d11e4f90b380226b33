@@ -1,0 +1,268 @@
+{
+  "id": "fixture/numeric-boundaries",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": "fixture/numeric-boundaries",
+    "parsed": true,
+    "roundtrip": {
+      "ok": true,
+      "tree": {
+        "rendered": {
+          "ok": true,
+          "text": "- 0\n- 0\n- -0.0\n- 18446744073709551615\n- -9223372036854775808\n- 1.25\n- .nan\n- .inf\n- -.inf\n"
+        },
+        "shape": {
+          "items": [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "0\n"
+              },
+              "shape": {
+                "display": "0",
+                "f64_bits": "0000000000000000",
+                "i64": "0",
+                "kind": "number",
+                "u64": "0"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "0\n"
+              },
+              "shape": {
+                "display": "0",
+                "f64_bits": "0000000000000000",
+                "i64": "0",
+                "kind": "number",
+                "u64": "0"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "-0.0\n"
+              },
+              "shape": {
+                "display": "-0.0",
+                "f64_bits": "8000000000000000",
+                "i64": null,
+                "kind": "number",
+                "u64": null
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "18446744073709551615\n"
+              },
+              "shape": {
+                "display": "18446744073709551615",
+                "f64_bits": "43f0000000000000",
+                "i64": null,
+                "kind": "number",
+                "u64": "18446744073709551615"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "-9223372036854775808\n"
+              },
+              "shape": {
+                "display": "-9223372036854775808",
+                "f64_bits": "c3e0000000000000",
+                "i64": "-9223372036854775808",
+                "kind": "number",
+                "u64": null
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "1.25\n"
+              },
+              "shape": {
+                "display": "1.25",
+                "f64_bits": "3ff4000000000000",
+                "i64": null,
+                "kind": "number",
+                "u64": null
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": ".nan\n"
+              },
+              "shape": {
+                "display": ".nan",
+                "f64_bits": "7ff8000000000000",
+                "i64": null,
+                "kind": "number",
+                "u64": null
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": ".inf\n"
+              },
+              "shape": {
+                "display": ".inf",
+                "f64_bits": "7ff0000000000000",
+                "i64": null,
+                "kind": "number",
+                "u64": null
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "-.inf\n"
+              },
+              "shape": {
+                "display": "-.inf",
+                "f64_bits": "fff0000000000000",
+                "i64": null,
+                "kind": "number",
+                "u64": null
+              }
+            }
+          ],
+          "kind": "sequence"
+        }
+      }
+    },
+    "tree": {
+      "rendered": {
+        "ok": true,
+        "text": "- 0\n- 0\n- -0.0\n- 18446744073709551615\n- -9223372036854775808\n- 1.25\n- .nan\n- .inf\n- -.inf\n"
+      },
+      "shape": {
+        "items": [
+          {
+            "rendered": {
+              "ok": true,
+              "text": "0\n"
+            },
+            "shape": {
+              "display": "0",
+              "f64_bits": "0000000000000000",
+              "i64": "0",
+              "kind": "number",
+              "u64": "0"
+            }
+          },
+          {
+            "rendered": {
+              "ok": true,
+              "text": "0\n"
+            },
+            "shape": {
+              "display": "0",
+              "f64_bits": "0000000000000000",
+              "i64": "0",
+              "kind": "number",
+              "u64": "0"
+            }
+          },
+          {
+            "rendered": {
+              "ok": true,
+              "text": "-0.0\n"
+            },
+            "shape": {
+              "display": "-0.0",
+              "f64_bits": "8000000000000000",
+              "i64": null,
+              "kind": "number",
+              "u64": null
+            }
+          },
+          {
+            "rendered": {
+              "ok": true,
+              "text": "18446744073709551615\n"
+            },
+            "shape": {
+              "display": "18446744073709551615",
+              "f64_bits": "43f0000000000000",
+              "i64": null,
+              "kind": "number",
+              "u64": "18446744073709551615"
+            }
+          },
+          {
+            "rendered": {
+              "ok": true,
+              "text": "-9223372036854775808\n"
+            },
+            "shape": {
+              "display": "-9223372036854775808",
+              "f64_bits": "c3e0000000000000",
+              "i64": "-9223372036854775808",
+              "kind": "number",
+              "u64": null
+            }
+          },
+          {
+            "rendered": {
+              "ok": true,
+              "text": "1.25\n"
+            },
+            "shape": {
+              "display": "1.25",
+              "f64_bits": "3ff4000000000000",
+              "i64": null,
+              "kind": "number",
+              "u64": null
+            }
+          },
+          {
+            "rendered": {
+              "ok": true,
+              "text": ".nan\n"
+            },
+            "shape": {
+              "display": ".nan",
+              "f64_bits": "7ff8000000000000",
+              "i64": null,
+              "kind": "number",
+              "u64": null
+            }
+          },
+          {
+            "rendered": {
+              "ok": true,
+              "text": ".inf\n"
+            },
+            "shape": {
+              "display": ".inf",
+              "f64_bits": "7ff0000000000000",
+              "i64": null,
+              "kind": "number",
+              "u64": null
+            }
+          },
+          {
+            "rendered": {
+              "ok": true,
+              "text": "-.inf\n"
+            },
+            "shape": {
+              "display": "-.inf",
+              "f64_bits": "fff0000000000000",
+              "i64": null,
+              "kind": "number",
+              "u64": null
+            }
+          }
+        ],
+        "kind": "sequence"
+      }
+    }
+  }
+}

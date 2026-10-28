@@ -1,0 +1,76 @@
+{
+  "id": "fixture/null-keys",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": "fixture/null-keys",
+    "parsed": true,
+    "roundtrip": {
+      "ok": true,
+      "tree": {
+        "rendered": {
+          "ok": true,
+          "text": "null: value\n"
+        },
+        "shape": {
+          "entries": [
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "null\n"
+                },
+                "shape": {
+                  "kind": "null"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "value\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "value"
+                }
+              }
+            ]
+          ],
+          "kind": "mapping"
+        }
+      }
+    },
+    "tree": {
+      "rendered": {
+        "ok": true,
+        "text": "null: value\n"
+      },
+      "shape": {
+        "entries": [
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "null\n"
+              },
+              "shape": {
+                "kind": "null"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "value\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "value"
+              }
+            }
+          ]
+        ],
+        "kind": "mapping"
+      }
+    }
+  }
+}

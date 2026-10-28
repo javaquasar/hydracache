@@ -1,0 +1,206 @@
+{
+  "id": "fixture/alias",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": "fixture/alias",
+    "parsed": true,
+    "roundtrip": {
+      "ok": true,
+      "tree": {
+        "rendered": {
+          "ok": true,
+          "text": "a:\n- one\n- two\nb:\n- one\n- two\n"
+        },
+        "shape": {
+          "entries": [
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "a\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "a"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "- one\n- two\n"
+                },
+                "shape": {
+                  "items": [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "one\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "one"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "two\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "two"
+                      }
+                    }
+                  ],
+                  "kind": "sequence"
+                }
+              }
+            ],
+            [
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "b\n"
+                },
+                "shape": {
+                  "kind": "string",
+                  "value": "b"
+                }
+              },
+              {
+                "rendered": {
+                  "ok": true,
+                  "text": "- one\n- two\n"
+                },
+                "shape": {
+                  "items": [
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "one\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "one"
+                      }
+                    },
+                    {
+                      "rendered": {
+                        "ok": true,
+                        "text": "two\n"
+                      },
+                      "shape": {
+                        "kind": "string",
+                        "value": "two"
+                      }
+                    }
+                  ],
+                  "kind": "sequence"
+                }
+              }
+            ]
+          ],
+          "kind": "mapping"
+        }
+      }
+    },
+    "tree": {
+      "rendered": {
+        "ok": true,
+        "text": "a:\n- one\n- two\nb:\n- one\n- two\n"
+      },
+      "shape": {
+        "entries": [
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "a\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "a"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "- one\n- two\n"
+              },
+              "shape": {
+                "items": [
+                  {
+                    "rendered": {
+                      "ok": true,
+                      "text": "one\n"
+                    },
+                    "shape": {
+                      "kind": "string",
+                      "value": "one"
+                    }
+                  },
+                  {
+                    "rendered": {
+                      "ok": true,
+                      "text": "two\n"
+                    },
+                    "shape": {
+                      "kind": "string",
+                      "value": "two"
+                    }
+                  }
+                ],
+                "kind": "sequence"
+              }
+            }
+          ],
+          [
+            {
+              "rendered": {
+                "ok": true,
+                "text": "b\n"
+              },
+              "shape": {
+                "kind": "string",
+                "value": "b"
+              }
+            },
+            {
+              "rendered": {
+                "ok": true,
+                "text": "- one\n- two\n"
+              },
+              "shape": {
+                "items": [
+                  {
+                    "rendered": {
+                      "ok": true,
+                      "text": "one\n"
+                    },
+                    "shape": {
+                      "kind": "string",
+                      "value": "one"
+                    }
+                  },
+                  {
+                    "rendered": {
+                      "ok": true,
+                      "text": "two\n"
+                    },
+                    "shape": {
+                      "kind": "string",
+                      "value": "two"
+                    }
+                  }
+                ],
+                "kind": "sequence"
+              }
+            }
+          ]
+        ],
+        "kind": "mapping"
+      }
+    }
+  }
+}

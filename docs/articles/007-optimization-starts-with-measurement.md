@@ -21800,3 +21800,49 @@ findings; nine stages are unstarted. Three ZIP IDs disappear, while YAML, D-Bus
 and chitchat/Zstd remain genuine blockers. Complete package/historical-input,
 Linux/browser and release/server gates remain open. All original budgets and
 live checks hold, and no old green package receipt is relabeled for this graph.
+
+The [YAML dependency migration](../testing/performance/0.74/yaml-security-result-20261028.md)
+addresses a different question: can the tooling leave an unmaintained parser
+without changing what CI topology and release governance accept? The selected
+YAML Organization successor keeps the Serde Value interface and supports Rust
+1.88. Its default/std configuration retains standard I/O and randomized mapping
+hashing. Both new archives have reviewed checksums and no build scripts; the
+production cache code and actual policy consumer bodies do not change. The
+low-level parser core is still unsafe C2Rust. Maintenance succession removes an
+unmaintained finding; it does not prove arbitrary YAML memory-safe.
+
+The baseline is fixed before the graph changes. Two isolated builds of the same
+probe inspect every typed value, mapping order, tag, numeric accessor, subtree
+serialization and roundtrip. The 102-input corpus includes all 25 workflows,
+malformed YAML, aliases, duplicate keys, Unicode, numeric edges, nesting limits
+and seeded generated cases. All 89 successful parses and 13 refusals agree,
+including exact diagnostics and serialization. The real 35 CI/governance tests
+also pass before and after. This tests the policy dependency's actual observable
+behavior rather than treating source compatibility as semantic equivalence.
+
+The first experiment also exposes a measurement-tool defect. Windows cp1252
+cannot save the emoji in case 54, although each native parser has already
+finished successfully and its raw stdout and recorded status prefix survive.
+Both failed recorder commands stay failed. A tested inert decoder recovers the
+55 preserved records, and a new UTF-8 recorder starts only the 47 unstarted
+cases. Complete coverage proves that no executed case is repeated. These are
+explicitly two recorder invocations over independent case processes, never a
+successful continuous run or a joined performance qualification. Preserving the
+first failure prevents a publisher bug from turning into an unsupported green
+experiment or an unnecessary retry of already observed behavior.
+
+Review still finds an upstream difference outside those caller APIs: I/O error
+source chains now expose the immediate error. Current policy consumers use
+from_str, and their refusal diagnostics remain exact. Documenting this boundary
+is more useful than claiming all upstream behavior identical. The lock review
+then proves that only the two parser nodes and xtask's corresponding edge move;
+no unrelated dependency or policy predicate changes. Exact whole-input inverse
+proofs keep the prior Swagger/sys source checks, with 66 passing runner controls.
+
+Check, strict Clippy and Rust 1.88 pass. The full new workspace command completes
+eleven stages, then refuses six remaining D-Bus/Zstd findings; nine stages are
+still unstarted. The YAML advisory disappears, but no complete package, GNU,
+original execution or server admission follows. Raw first results, exact
+candidate source, source diffs and full milestone accounting remain in the
+repository. No latency, allocation or throughput improvement is claimed by this
+security and compatibility work.

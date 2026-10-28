@@ -1,0 +1,82 @@
+"""Retain raw independent cases, recorder failures, reviewed inputs and full gate."""
+from pathlib import Path
+import hashlib,json,re,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/yaml-security-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/yaml-security-20261028'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def read(name):return json.loads((BASE/name).read_bytes())
+for step in ('baseline-callers','build-baseline','build-candidate','controls','recovery-controls','recovery',
+             'probe-baseline-continuation','probe-candidate-continuation','compare',
+             'candidate-callers','check','clippy','msrv','runner-controls','source-review'):
+ result=read(step+'/result.json');execution=read(step+'/execution.json')
+ assert result['exit']==0 and result['source_unchanged'] and result['head_unchanged'],step
+ assert execution['retired'] and not execution['errors'],step
+for mode in ('baseline','candidate'):
+ assert read('probe-'+mode+'/result.json')['exit']==1
+ assert b'UnicodeEncodeError' in (BASE/('probe-'+mode)/'stderr.log').read_bytes()
+ assert read('record-recovery/'+mode+'.json')['next_unstarted_ordinal']==55
+ assert read('semantics-'+mode+'-continuation/result.json')['first_ordinal']==55
+assert b'Ran 66 tests' in (BASE/'runner-controls/stderr.log').read_bytes()
+semantic=read('comparison/result.json')
+assert semantic['cases']==102 and semantic['semantic_contract_pass'] and not semantic['diagnostic_differences']
+before=read('workspace/frame-before.json');after=read('workspace/frame-after.json')
+assert before==after
+execution=read('workspace/controller.json')['execution']
+assert execution['exit']==1 and execution['classification']=='test-failure'
+assert execution['retired'] and not execution['errors']
+assert (execution['bound_seconds'],execution['cleanup_seconds'],execution['capacity_poll_seconds'])==(4800,5,5)
+assert read('workspace/result.json')['source_refs_configuration_environment_unchanged']
+ledger=read('workspace/accounting.json')
+assert [r['state'] for r in ledger['stages']]==['complete']*11+['incomplete-or-failed']+['unstarted']*9
+advisories=sorted(set(re.findall(r'RUSTSEC-\d{4}-\d{4}',(BASE/'workspace/stderr.log').read_text(encoding='utf-8'))))
+assert advisories==['RUSTSEC-2026-0370','RUSTSEC-2026-0371','RUSTSEC-2026-0372',
+                    'RUSTSEC-2026-0391','RUSTSEC-2026-0398','RUSTSEC-2026-0403'],advisories
+assert sha((ROOT/'deny.toml').read_bytes())=='16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930'
+assert sha((ROOT/'docs/testing/performance/0.74/qualification-manifest.toml').read_bytes())=='11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members
+ members[name]=dict(sha256=digest,bytes=len(raw))
+for top in sorted(BASE.iterdir()):
+ if top.name=='targets':continue
+ for path in ([top] if top.is_file() else sorted(top.rglob('*'))):
+  if not path.is_file() or path.suffix=='.exe':continue
+  rel=path.relative_to(BASE).as_posix()
+  if '/review-source/' in rel:
+   tail=rel.split('/review-source/',1)[1]
+   if tail not in ('Cargo.toml','Cargo.toml.orig','README.md','src/lib.rs'):continue
+  add('capture/'+rel,path)
+for path in sorted((ROOT/'target').glob('*yaml*20261028.py')):
+ add('producer/'+path.name,path)
+for folder in ('tools/windows-workspace-preflight-074','tools/yaml-parser-review-074'):
+ for path in sorted((ROOT/folder).iterdir()):
+  if path.is_file():add('source/current/'+path.relative_to(ROOT).as_posix(),path)
+for name in ('Cargo.toml','Cargo.lock','crates/xtask/Cargo.toml','deny.toml',
+             'crates/xtask/src/ci_topology.rs','crates/xtask/src/release_governance.rs',
+             'crates/xtask/src/verify.rs','scripts/ci/watchdog_windows_job.py',
+             'docs/testing/performance/0.74/qualification-manifest.toml'):
+ add('source/current/'+name,ROOT/name)
+spec=read('workspace/request.json')['specification']
+identity=sha(json.dumps(dict(sources=before['sources'],specification=spec,versions=before['versions'],environment=before['environment']),sort_keys=True).encode())
+claim=ROOT/'target/windows-fixed-cargo-20261027/claims'/(identity+'-workspace.json')
+assert json.loads(claim.read_bytes())['output']==str(BASE/'workspace')
+add('capture/workspace/execution-claim.json',claim)
+db=Path('C:/Users/ArturBuzov/.cargo/advisory-dbs/advisory-db-3157b0e258782691')
+db_observation=dict(head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=db).decode().strip(),
+ clean=not subprocess.check_output(['git','status','--porcelain'],cwd=db),postflight_only=True,per_lookup_pin=False)
+index=dict(schema='hc074-yaml-security-review-v1',members=members,source_commit=before['head'],
+ semantic_cases_per_parser=102,recovered_cases_per_parser=55,new_cases_per_parser=47,
+ semantic_differences=0,diagnostic_differences=0,recorder_failures_preserved=True,case_retries=False,
+ successful_continuous_recorder_invocation=False,runner_controls=66,msrv='1.88',
+ removed=['RUSTSEC-2024-0449'],remaining=advisories,advisory_database=db_observation,
+ workspace_pass=False,package_pass=False,release_admitted=False,archived_code_executed_by_sealer=False,
+ server=False,services=False,clocks=False,performance_claim=False)
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf-8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf-8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),
+ index_sha256=sha((OUT/'index.json').read_bytes()),source_commit=before['head'],remaining=advisories)))

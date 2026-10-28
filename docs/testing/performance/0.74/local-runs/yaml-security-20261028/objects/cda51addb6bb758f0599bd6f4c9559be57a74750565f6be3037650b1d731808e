@@ -1,0 +1,324 @@
+{
+  "fixtures": {
+    "baseline": {
+      "lock_sha256": "e8932502ecd18eff177ce9a68c07a2c04d196193feb9fffbc7e962a7fca48ef3",
+      "manifest_sha256": "81165ac64eb4f105e306b5fff8962a03bdf1ac055c356a76b1f703d1cc02ff69",
+      "new_packages": [],
+      "packages": {
+        "equivalent@1.0.2": {
+          "checksum": "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f",
+          "name": "equivalent",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.2"
+        },
+        "hashbrown@0.17.1": {
+          "checksum": "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a",
+          "name": "hashbrown",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "0.17.1"
+        },
+        "hc074-yaml-probe@0.0.0": {
+          "dependencies": [
+            "serde_json",
+            "serde_yaml"
+          ],
+          "name": "hc074-yaml-probe",
+          "version": "0.0.0"
+        },
+        "indexmap@2.14.0": {
+          "checksum": "d466e9454f08e4a911e14806c24e16fba1b4c121d1ea474396f396069cf949d9",
+          "dependencies": [
+            "equivalent",
+            "hashbrown"
+          ],
+          "name": "indexmap",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "2.14.0"
+        },
+        "itoa@1.0.18": {
+          "checksum": "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682",
+          "name": "itoa",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.18"
+        },
+        "memchr@2.8.2": {
+          "checksum": "88904434abc2901f197fe8cc55f0445e7ded921dba5911dad2e2b39b48e663c4",
+          "name": "memchr",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "2.8.2"
+        },
+        "proc-macro2@1.0.106": {
+          "checksum": "8fd00f0bb2e90d81d1044c2b32617f68fcb9fa3bb7640c23e9c748e53fb30934",
+          "dependencies": [
+            "unicode-ident"
+          ],
+          "name": "proc-macro2",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.106"
+        },
+        "quote@1.0.46": {
+          "checksum": "dfbc457d0c7a0759a614551b11a6409e5951f6c7537be1f1b7682b9ae9230368",
+          "dependencies": [
+            "proc-macro2"
+          ],
+          "name": "quote",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.46"
+        },
+        "ryu@1.0.23": {
+          "checksum": "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f",
+          "name": "ryu",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.23"
+        },
+        "serde@1.0.228": {
+          "checksum": "9a8e94ea7f378bd32cbbd37198a4a91436180c5bb472411e48b5ec2e2124ae9e",
+          "dependencies": [
+            "serde_core"
+          ],
+          "name": "serde",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.228"
+        },
+        "serde_core@1.0.228": {
+          "checksum": "41d385c7d4ca58e59fc732af25c3983b67ac852c1a25000afe1175de458b67ad",
+          "dependencies": [
+            "serde_derive"
+          ],
+          "name": "serde_core",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.228"
+        },
+        "serde_derive@1.0.228": {
+          "checksum": "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79",
+          "dependencies": [
+            "proc-macro2",
+            "quote",
+            "syn"
+          ],
+          "name": "serde_derive",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.228"
+        },
+        "serde_json@1.0.150": {
+          "checksum": "e8014e44b4736ed0538adeecded0fce2a272f22dc9578a7eb6b2d9993c74cfb9",
+          "dependencies": [
+            "itoa",
+            "memchr",
+            "serde",
+            "serde_core",
+            "zmij"
+          ],
+          "name": "serde_json",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.150"
+        },
+        "serde_yaml@0.9.34+deprecated": {
+          "checksum": "6a8b1a1a2ebf674015cc02edccce75287f1a0130d394307b36743c2f5d504b47",
+          "dependencies": [
+            "indexmap",
+            "itoa",
+            "ryu",
+            "serde",
+            "unsafe-libyaml"
+          ],
+          "name": "serde_yaml",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "0.9.34+deprecated"
+        },
+        "syn@2.0.118": {
+          "checksum": "1b9ae57f904213ebb649ce6895b8a66c66f0203b9319718f69a5612a065b1422",
+          "dependencies": [
+            "proc-macro2",
+            "quote",
+            "unicode-ident"
+          ],
+          "name": "syn",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "2.0.118"
+        },
+        "unicode-ident@1.0.24": {
+          "checksum": "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75",
+          "name": "unicode-ident",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.24"
+        },
+        "unsafe-libyaml@0.2.11": {
+          "checksum": "673aac59facbab8a9007c7f6108d11f63b603f7cabff99fabf650fea5c32b861",
+          "name": "unsafe-libyaml",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "0.2.11"
+        },
+        "zmij@1.0.21": {
+          "checksum": "b8848ee67ecc8aedbaf3e4122217aff892639231befc6a1b58d29fff4c2cabaa",
+          "name": "zmij",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.21"
+        }
+      },
+      "probe_source_sha256": "d6d55ac0e213fdf61386cbe447ea1518564dddb7dd61d7c714d0114f581daffb"
+    },
+    "candidate": {
+      "lock_sha256": "799ef57914ed820fd95d45a9a60846450a542d2734229443860f952127087142",
+      "manifest_sha256": "8ef35d9614a9c5e591f5e68034992e81c5eff6d20837cc5900d488764c8b685b",
+      "new_packages": [
+        "libyaml-rs@0.3.0",
+        "yaml_serde@0.10.7"
+      ],
+      "packages": {
+        "equivalent@1.0.2": {
+          "checksum": "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f",
+          "name": "equivalent",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.2"
+        },
+        "hashbrown@0.17.1": {
+          "checksum": "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a",
+          "name": "hashbrown",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "0.17.1"
+        },
+        "hc074-yaml-probe@0.0.0": {
+          "dependencies": [
+            "serde_json",
+            "yaml_serde"
+          ],
+          "name": "hc074-yaml-probe",
+          "version": "0.0.0"
+        },
+        "indexmap@2.14.0": {
+          "checksum": "d466e9454f08e4a911e14806c24e16fba1b4c121d1ea474396f396069cf949d9",
+          "dependencies": [
+            "equivalent",
+            "hashbrown"
+          ],
+          "name": "indexmap",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "2.14.0"
+        },
+        "itoa@1.0.18": {
+          "checksum": "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682",
+          "name": "itoa",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.18"
+        },
+        "libyaml-rs@0.3.0": {
+          "checksum": "2e126dda6f34391ab7b444f9922055facc83c07a910da3eb16f1e4d9c45dc777",
+          "name": "libyaml-rs",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "0.3.0"
+        },
+        "memchr@2.8.2": {
+          "checksum": "88904434abc2901f197fe8cc55f0445e7ded921dba5911dad2e2b39b48e663c4",
+          "name": "memchr",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "2.8.2"
+        },
+        "proc-macro2@1.0.106": {
+          "checksum": "8fd00f0bb2e90d81d1044c2b32617f68fcb9fa3bb7640c23e9c748e53fb30934",
+          "dependencies": [
+            "unicode-ident"
+          ],
+          "name": "proc-macro2",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.106"
+        },
+        "quote@1.0.46": {
+          "checksum": "dfbc457d0c7a0759a614551b11a6409e5951f6c7537be1f1b7682b9ae9230368",
+          "dependencies": [
+            "proc-macro2"
+          ],
+          "name": "quote",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.46"
+        },
+        "ryu@1.0.23": {
+          "checksum": "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f",
+          "name": "ryu",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.23"
+        },
+        "serde@1.0.228": {
+          "checksum": "9a8e94ea7f378bd32cbbd37198a4a91436180c5bb472411e48b5ec2e2124ae9e",
+          "dependencies": [
+            "serde_core"
+          ],
+          "name": "serde",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.228"
+        },
+        "serde_core@1.0.228": {
+          "checksum": "41d385c7d4ca58e59fc732af25c3983b67ac852c1a25000afe1175de458b67ad",
+          "dependencies": [
+            "serde_derive"
+          ],
+          "name": "serde_core",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.228"
+        },
+        "serde_derive@1.0.228": {
+          "checksum": "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79",
+          "dependencies": [
+            "proc-macro2",
+            "quote",
+            "syn"
+          ],
+          "name": "serde_derive",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.228"
+        },
+        "serde_json@1.0.150": {
+          "checksum": "e8014e44b4736ed0538adeecded0fce2a272f22dc9578a7eb6b2d9993c74cfb9",
+          "dependencies": [
+            "itoa",
+            "memchr",
+            "serde",
+            "serde_core",
+            "zmij"
+          ],
+          "name": "serde_json",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.150"
+        },
+        "syn@2.0.118": {
+          "checksum": "1b9ae57f904213ebb649ce6895b8a66c66f0203b9319718f69a5612a065b1422",
+          "dependencies": [
+            "proc-macro2",
+            "quote",
+            "unicode-ident"
+          ],
+          "name": "syn",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "2.0.118"
+        },
+        "unicode-ident@1.0.24": {
+          "checksum": "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75",
+          "name": "unicode-ident",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.24"
+        },
+        "yaml_serde@0.10.7": {
+          "checksum": "33b729a08a9a6be689bbad3e2bf8015926db54b6622cc89c3a5f7dc174b9e918",
+          "dependencies": [
+            "indexmap",
+            "itoa",
+            "libyaml-rs",
+            "ryu",
+            "serde"
+          ],
+          "name": "yaml_serde",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "0.10.7"
+        },
+        "zmij@1.0.21": {
+          "checksum": "b8848ee67ecc8aedbaf3e4122217aff892639231befc6a1b58d29fff4c2cabaa",
+          "name": "zmij",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "version": "1.0.21"
+        }
+      },
+      "probe_source_sha256": "d6d55ac0e213fdf61386cbe447ea1518564dddb7dd61d7c714d0114f581daffb"
+    }
+  },
+  "no_product_dependency_change": true
+}

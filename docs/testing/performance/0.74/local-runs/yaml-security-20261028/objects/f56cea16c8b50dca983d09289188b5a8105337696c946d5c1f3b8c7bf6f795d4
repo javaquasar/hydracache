@@ -1,0 +1,26 @@
+{
+  "cases": 102,
+  "corpus_sha256": "6e0ca0eb52841f74600a386923898f3da07b770ce7699ca853ed3618a324c78c",
+  "fixtures": {
+    "baseline": {
+      "lock_seed_sha256": "00efd4a2cafeb5e82d757cc4855e440c627211c1544c22dcbf8c875f85337cd8",
+      "manifest_sha256": "81165ac64eb4f105e306b5fff8962a03bdf1ac055c356a76b1f703d1cc02ff69",
+      "parser_package": "serde_yaml",
+      "parser_version": "0.9.34"
+    },
+    "candidate": {
+      "lock_seed_sha256": "00efd4a2cafeb5e82d757cc4855e440c627211c1544c22dcbf8c875f85337cd8",
+      "manifest_sha256": "8ef35d9614a9c5e591f5e68034992e81c5eff6d20837cc5900d488764c8b685b",
+      "parser_package": "yaml_serde",
+      "parser_version": "0.10.7"
+    }
+  },
+  "outer_bound_seconds": 1200,
+  "per_case_bound_seconds": 5,
+  "probe_source_sha256": "d6d55ac0e213fdf61386cbe447ea1518564dddb7dd61d7c714d0114f581daffb",
+  "product_inputs_unchanged": true,
+  "real_workflows": 25,
+  "release_admitted": false,
+  "retry": false,
+  "seed": 7606312
+}

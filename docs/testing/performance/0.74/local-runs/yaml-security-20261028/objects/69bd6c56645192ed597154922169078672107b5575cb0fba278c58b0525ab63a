@@ -1,0 +1,15 @@
+{
+  "id": "fixture/duplicate-alias-key",
+  "exit": 0,
+  "timeout": false,
+  "value": {
+    "id": "fixture/duplicate-alias-key",
+    "location": {
+      "column": 1,
+      "index": 0,
+      "line": 1
+    },
+    "message": "duplicate entry with key \"x\"",
+    "parsed": false
+  }
+}

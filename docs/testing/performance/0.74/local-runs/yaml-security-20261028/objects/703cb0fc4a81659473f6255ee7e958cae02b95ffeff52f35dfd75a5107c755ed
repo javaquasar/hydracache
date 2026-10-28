@@ -1,0 +1,10 @@
+{
+  "baseline": {
+    "recovered": 55,
+    "unstarted": 47
+  },
+  "candidate": {
+    "recovered": 55,
+    "unstarted": 47
+  }
+}
