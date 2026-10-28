@@ -1,0 +1,53 @@
+"""Inert controls: projection preserves predicates and exact corpus authority."""
+import unittest,json,re,tomllib
+from pathlib import Path
+from unittest.mock import patch
+import run,native
+
+class Controls(unittest.TestCase):
+ def test_exact_execution_projection_only_two_spelling_changes(self):
+  name=run.NAMES[0];raw=(run.SOURCE/name).read_bytes();actual,count=run.project(name,raw)
+  expected=raw.replace(b'zbus::zvariant::',b'zbus::wire::').replace(b'zbus::message::Flags::NoReplyExpected as u8',b'zbus::message::Flags::NO_REPLY_EXPECTED.bits()')
+  self.assertEqual(actual,expected);self.assertEqual(count,0)
+  for mutated in (raw+b'\n',raw.replace(b'Phase::Refused',b'Phase::Prepared',1)):
+   with self.assertRaises(ValueError):run.project(name,mutated)
+ def test_builder_unwrap_projection_is_call_scoped_and_string_aware(self):
+  source=b'''fn t() { let a = Message::method_call("(", "Get").unwrap().sender(":1.2").unwrap().build(&()).unwrap(); let b = state.arm().unwrap(); }'''
+  with patch.dict(run.PINS,fixture=run.sha(source)):
+   result,count=run.project('fixture',source)
+  self.assertEqual(count,2);self.assertIn(b'.build(&()).unwrap()',result);self.assertIn(b'state.arm().unwrap()',result)
+ def test_corpus_has_no_assertion_deletions(self):
+  for name in run.NAMES[1:]:
+   original=(run.SOURCE/name).read_bytes();projected,_=run.project(name,original)
+   for marker in (b'#[test]',b'assert!',b'assert_eq!',b'assert_ne!',b'0..512',b'0..32',b'0x0740_e518'):
+    self.assertEqual(original.count(marker),projected.count(marker),(name,marker))
+ def test_no_transport_routes_or_fake_live_validation(self):
+  text=(run.BASE/'input/assets/tools/dbus-reply-state-074/diagnostic_dispatch_exchange_tests.rs').read_text(encoding='utf8')
+  self.assertNotIn('mod socket_tests;',text);self.assertNotIn('mod negotiated_tests;',text)
+  for name in ('reply_flags_tests','reply_state_tests','original_reply_tests'):self.assertIn('mod '+name+';',text)
+ def test_exact_native_context_and_unchanged_owner(self):
+  owner=native.configured(run.ROOT,2)
+  self.assertEqual(owner.BASE,run.BASE);self.assertEqual(owner.NATIVE.as_posix(),run.NATIVE)
+  self.assertEqual(owner.prepared(),run.BASE/'prepare/result.json')
+  self.assertEqual(owner.session.__globals__['__file__'],str(Path(native.__file__)))
+  argv,env,artifact,target,folder,action=owner.command('fd-188-clippy',{})
+  self.assertIn('--offline',argv);self.assertIn('--locked',argv);self.assertIn('-D',argv)
+  self.assertIn('/1.88.0-',argv[0].replace('\\','/'));self.assertEqual(env['CARGO_INCREMENTAL'],'0')
+ def test_complete_catalog_and_dependency_nodes(self):
+  review=json.loads((run.BASE/'prepare/result.json').read_bytes())
+  self.assertEqual(len(review['baseline'])+len(review['extras']),67)
+  self.assertEqual(len(set(review['baseline']+review['extras'])),67)
+  self.assertEqual(review['source_pins'],run.PINS)
+  nodes=tomllib.loads((run.BASE/'input/fd/Cargo.lock').read_text(encoding='utf8'))['package']
+  self.assertEqual(len(nodes),62)
+  self.assertEqual([n['version'] for n in nodes if n['name']=='libc'],['0.2.191'])
+  self.assertEqual([n['version'] for n in nodes if n['name']=='tempfile'],['3.27.0'])
+ def test_input_and_product_hashes_still_match(self):
+  review=json.loads((run.BASE/'prepare/result.json').read_bytes())
+  self.assertEqual(run.files(run.BASE/'input'),review['files'])
+  self.assertEqual(run.fragment.prior.parent.old.root_inputs(),review['root_inputs'])
+ def test_only_fixed_dispatch(self):
+  self.assertEqual(run.native_command(4)[-1],'session')
+  with self.assertRaises(ValueError):run.native_command(3)
+
+if __name__=='__main__':unittest.main()
