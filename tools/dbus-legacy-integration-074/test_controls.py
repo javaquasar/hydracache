@@ -20,6 +20,7 @@ class Controls(unittest.TestCase):
             self.assertNotIn(b'zbus::blocking', current)
             self.assertNotIn(b'use zbus::wire::OwnedValue;', current)
             self.assertNotIn(b'::{OwnedObjectPath, Value};', current)
+            self.assertNotIn(b'        use zbus::wire::Variant as Value;', current)
 
     def test_stale_whole_body_cannot_be_projected(self):
         for name in p.NAMES:

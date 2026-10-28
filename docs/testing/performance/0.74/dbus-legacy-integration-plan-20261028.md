@@ -75,3 +75,14 @@ and runs strict test-cfg/all-feature Clippy. It preserves original predicates,
 timeouts and envelope and never selects ignored real-bus/privileged cases. Three
 offline catalog/accounting controls pass. A real verdict remains required; this
 still cannot remove old zbus 5 from its explicitly retained dev/test graph.
+
+That first full test-image build finds two E0659 import ambiguities in manager/
+loaded tests: the super glob exposes the local zbus 6 alias beside the retained
+external zbus 5 test crate. No test executes. Preserve that first cfg-test result,
+retirement and source/boot postflight. A new tests/native-a7 candidate qualifies
+exactly those two function-local imports as zbus6; production bodies stay equal
+to fixed. Recheck the changed source and then the same complete 64-case gate.
+Old a2/a3/a4 build caches (about 1.0 GB logical) are removed after owned retirement
+and no observed consumer; all source/log/receipt trees and current a6 images stay.
+Windows physical free space is unchanged by this WSL cache deletion; no VHD
+compaction, system settings, service or clock change is performed.

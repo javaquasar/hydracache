@@ -14,7 +14,7 @@ spec.loader.exec_module(u)
 def fixture():
     before = ROOT / 'target/dbus-original-delivery-20261028/unit-api-owned/runtime/fd-194-list/result.json'
     catalog = json.loads(before.read_bytes())['inventory']
-    source = ROOT / 'target/dbus-legacy-integration-20261028/fixed/input/fd/tools/long-run-supervisor-074/src'
+    source = ROOT / 'target/dbus-legacy-integration-20261028/tests/input/fd/tools/long-run-supervisor-074/src'
     selected = u.select(catalog, source)
     return catalog, source, selected
 

@@ -4,7 +4,7 @@ import hashlib
 import json
 
 root = Path(__file__).resolve().parents[2]
-base = root / 'target/dbus-legacy-integration-20261028/fixed'
+base = root / 'target/dbus-legacy-integration-20261028/tests'
 pins = json.loads((base / 'units-inputs.json').read_bytes())
 for name, digest in pins['files'].items():
     if hashlib.sha256((root / name).read_bytes()).hexdigest() != digest:

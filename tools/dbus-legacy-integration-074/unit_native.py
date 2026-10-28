@@ -10,8 +10,8 @@ import sys
 import time
 
 ROOT = Path('/mnt/c/Workspace/prj/jq/cashe/hydracache-074')
-BASE = ROOT / 'target/dbus-legacy-integration-20261028/fixed'
-NATIVE = Path('/home/artur/.cache/hydracache-074-dbus-legacy-integration/20261028-a6')
+BASE = ROOT / 'target/dbus-legacy-integration-20261028/tests'
+NATIVE = Path('/home/artur/.cache/hydracache-074-dbus-legacy-integration/20261028-a7')
 OUT = BASE / 'units'
 FILES = ('diagnostic_held_delivery_wire_tests.rs', 'diagnostic_original_manager_message_units.rs',
          'diagnostic_original_pipe_transport_tests.rs', 'diagnostic_dispatch_exchange_tests.rs',
