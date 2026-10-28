@@ -1,0 +1,12 @@
+{
+  "archived_code_executed": false,
+  "byte_verification_only": true,
+  "exit": 0,
+  "final_native_passes": 28,
+  "first_refusals_preserved": true,
+  "inputs_unchanged": true,
+  "members_verified": 1566,
+  "native_selected_passes": 69,
+  "objects_verified": 398,
+  "release_admitted": false
+}

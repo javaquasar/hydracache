@@ -1,0 +1,57 @@
+
+running 14 tests
+test caller_checks::tests::checked_call_preserves_success_signature_and_sender ... ok
+test caller_checks::tests::method_error_keeps_original_sender ... ok
+test caller_checks::tests::no_reply_preserves_method_timeout_refusal ... ok
+test caller_checks::tests::proxy_clone_keeps_connection_after_original_drop ... ok
+test caller_checks::tests::setters_fail_immediately_in_original_order ... ok
+test constructor_review::nested_constructor_panics_before_bad_arguments ... ok
+test match_rule_review::argument_and_path_format_roundtrip ... ok
+test runtime_review::background_progress_between_entries ... ok
+test runtime_review::invalid_address_refuses_before_build ... ok
+test runtime_review::nested_entry_does_not_poll_future ... ok
+test tests::derive_and_wire_roundtrip ... ok
+test tests::invalid_names_and_builder_refuse ... ok
+test tests::reply_serial_sender_and_signature ... ok
+test tests::runtime_timeout_and_nested_entry ... ok
+
+successes:
+
+---- constructor_review::nested_constructor_panics_before_bad_arguments stdout ----
+
+thread 'constructor_review::nested_constructor_panics_before_bad_arguments' panicked at C:\Users\ArturBuzov\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.3\src\runtime\scheduler\multi_thread\mod.rs:91:9:
+Cannot start a runtime from within a runtime. This happens because a function (like `block_on`) attempted to block the current thread while the thread is being used to drive asynchronous tasks.
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- runtime_review::background_progress_between_entries stdout ----
+HC074_RUNTIME_PROGRESS:{"outside_entry":true,"joined":74,"timeout_ms":250}
+
+---- runtime_review::nested_entry_does_not_poll_future stdout ----
+
+thread 'runtime_review::nested_entry_does_not_poll_future' panicked at C:\Users\ArturBuzov\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.3\src\runtime\scheduler\multi_thread\mod.rs:91:9:
+Cannot start a runtime from within a runtime. This happens because a function (like `block_on`) attempted to block the current thread while the thread is being used to drive asynchronous tasks.
+
+---- tests::runtime_timeout_and_nested_entry stdout ----
+
+thread 'tests::runtime_timeout_and_nested_entry' panicked at C:\Users\ArturBuzov\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.3\src\runtime\scheduler\multi_thread\mod.rs:91:9:
+Cannot start a runtime from within a runtime. This happens because a function (like `block_on`) attempted to block the current thread while the thread is being used to drive asynchronous tasks.
+
+
+successes:
+    caller_checks::tests::checked_call_preserves_success_signature_and_sender
+    caller_checks::tests::method_error_keeps_original_sender
+    caller_checks::tests::no_reply_preserves_method_timeout_refusal
+    caller_checks::tests::proxy_clone_keeps_connection_after_original_drop
+    caller_checks::tests::setters_fail_immediately_in_original_order
+    constructor_review::nested_constructor_panics_before_bad_arguments
+    match_rule_review::argument_and_path_format_roundtrip
+    runtime_review::background_progress_between_entries
+    runtime_review::invalid_address_refuses_before_build
+    runtime_review::nested_entry_does_not_poll_future
+    tests::derive_and_wire_roundtrip
+    tests::invalid_names_and_builder_refuse
+    tests::reply_serial_sender_and_signature
+    tests::runtime_timeout_and_nested_entry
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+

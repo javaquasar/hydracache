@@ -1,0 +1,22 @@
+
+running 1 test
+test constructor_review::nested_constructor_panics_before_bad_arguments ... FAILED
+
+successes:
+
+successes:
+
+failures:
+
+---- constructor_review::nested_constructor_panics_before_bad_arguments stdout ----
+
+thread 'constructor_review::nested_constructor_panics_before_bad_arguments' (35172) panicked at C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-runtime-bridge-074\constructor_test.rs:30:5:
+nested entry was bypassed by early argument refusal
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    constructor_review::nested_constructor_panics_before_bad_arguments
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.00s
+

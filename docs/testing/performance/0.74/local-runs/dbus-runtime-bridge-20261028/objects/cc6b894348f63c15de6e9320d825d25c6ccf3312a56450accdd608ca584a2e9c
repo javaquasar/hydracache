@@ -1,0 +1,59 @@
+"""Inert composition/graph/receipt audit, not a replay of native tests."""
+from pathlib import Path
+import hashlib,json,tomllib
+ROOT=Path(__file__).resolve().parent.parent;BASE=ROOT/'target/dbus-runtime-20261028'
+OUT=BASE/'audit';OUT.mkdir(exist_ok=False)
+sha=lambda b:hashlib.sha256(b).hexdigest()
+(OUT/'producer.py').write_bytes(Path(__file__).read_bytes())
+def files(folder):return {p.relative_to(folder).as_posix():sha(p.read_bytes()) for p in sorted(folder.rglob('*')) if p.is_file()}
+def result(n):return json.loads((BASE/n/'result.json').read_bytes())
+variants={v:BASE/'fixtures'/v for v in ('C','M','B','R','S')}
+for v,folder in variants.items():
+ expected=result('resolve-C-194')['fixture_after'] if v=='C' else result('prepare-'+v)['files']
+ assert files(folder)==expected
+ assert (folder/'Cargo.lock').read_bytes()==(variants['C']/'Cargo.lock').read_bytes()
+diff=[n for n in files(variants['C']) if files(variants['C'])[n]!=files(variants['M'])[n]]
+assert diff==['probe/Cargo.toml']
+assert (variants['C']/'probe/Cargo.toml').read_bytes().replace(b'"tokio", "proxy", "p2p"',b'"tokio-multithread", "proxy", "p2p"')==(variants['M']/'probe/Cargo.toml').read_bytes()
+source=(ROOT/'tools/long-run-supervisor-074/src/diagnostic_manager.rs').read_bytes()
+assert sha(source)=='7950deead36bcc6514f1c2f73be3cbce126a6e7a3bff3d1a55d11eac0be674db'
+s=source.decode()
+original=s[s.index('fn unique_owner('):s.index('\n#[derive(Debug, Clone, Copy',s.index('fn unique_owner('))]
+original+=s[s.index("fn proxy<'a>("):s.index('fn manager_owner(')]
+original+=s[s.index('#[derive(Debug, PartialEq, Eq)]\nenum ReplyError'):s.index('fn boot_matches(')]
+projected=(variants['S']/'probe/src/caller_checks.rs').read_text(encoding='utf-8')
+prefix='use serde::Serialize;\nuse crate::bridge::{Connection, Proxy};\n'
+assert projected.startswith(prefix)
+held=projected[len(prefix):projected.index('\n#[cfg(test)]')]
+inverse=held.replace('crate::bridge::ProxyBuilder','zbus::blocking::proxy::Builder').replace('zbus::wire','zbus::zvariant')
+assert inverse==original
+before=tomllib.loads((ROOT/'target/dbus-backport-20261028/fixtures/F3/Cargo.lock').read_text())['package']
+after=tomllib.loads((variants['S']/'Cargo.lock').read_text())['package']
+key=lambda row:(row['name'],row['version'],row.get('source'),row.get('checksum'))
+assert {key(r) for r in before}=={key(r) for r in after}
+changes=[dict(name=a['name'],before=a.get('dependencies',[]),after=b.get('dependencies',[])) for a,b in zip(before,after) if a!=b]
+assert {v['name'] for v in changes}=={'dbus-probe-074','uuid'}
+steps={};passed=0;images={}
+negative={'progress-C-194','regress-B-194','clippy-R-188','clippy-R-194'}
+for folder in sorted(BASE.iterdir()):
+ if not (folder/'execution.json').is_file():continue
+ execution=json.loads((folder/'execution.json').read_bytes());row=result(folder.name)
+ assert execution['retired'] and not execution['errors'] and row['unchanged']
+ assert row['exit']==execution['exit']==(101 if folder.name in negative else 0)
+ if 'accounting' in row:passed+=row['accounting']['passed']
+ if row.get('artifact'):
+  a=row['artifact'];assert sha(Path(a['path']).read_bytes())==a['sha256'];images[a['path']]=a['sha256']
+ steps[folder.name]=dict(exit=row['exit'],native_accounting=row.get('accounting'),source_head=json.loads((folder/'intent.json').read_bytes())['head'])
+assert passed==69 and len(images)==7
+for label,expected in [('progress-C-194',False),('test-M-194',True),('test-R-188',True),('test-R-194',True),('test-S-188',True),('test-S-194',True)]:
+ raw=(BASE/label/'stdout.log').read_bytes()
+ values=[json.loads(n.split(b':',1)[1]) for n in raw.splitlines() if n.startswith(b'HC074_RUNTIME_PROGRESS:')]
+ assert values==[dict(outside_entry=expected,joined=74,timeout_ms=250)]
+value=dict(schema='hc074-dbus-runtime-composition-v1',source_head_before_archive=steps['test-S-194']['source_head'],
+ selected_native_passes=69,final_native_passes={'188':14,'194':14},retained_first_refusals=sorted(negative),
+ images=images,steps=steps,caller_inverse_projection_equal=True,source_pin=sha(source),
+ root_caller_changed=False,registry_identities_equal_to_previous_msrv_fixture=True,graph_edge_changes=changes,
+ current_vs_multi_only_manifest_feature=True,real_manager_or_unix_fd_qualified=False,
+ product_integration=False,release_admitted=False,inert_audit_executed_archived_source=False)
+(OUT/'result.json').write_text(json.dumps(value,indent=2,sort_keys=True)+'\n',encoding='utf-8',newline='\n')
+print(json.dumps(dict(native_selected_passes=passed,images=len(images),caller_inverse_projection_equal=True,graph_edge_changes=changes)))

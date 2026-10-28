@@ -1,0 +1,576 @@
+{
+  "caller_inverse_projection_equal": true,
+  "current_vs_multi_only_manifest_feature": true,
+  "final_native_passes": {
+    "188": 14,
+    "194": 14
+  },
+  "graph_edge_changes": [
+    {
+      "after": [
+        "serde",
+        "tokio",
+        "uuid",
+        "zbus",
+        "zruntime"
+      ],
+      "before": [
+        "serde",
+        "tokio",
+        "zbus",
+        "zruntime"
+      ],
+      "name": "dbus-probe-074"
+    },
+    {
+      "after": [
+        "getrandom",
+        "js-sys",
+        "serde_core",
+        "wasm-bindgen"
+      ],
+      "before": [
+        "js-sys",
+        "serde_core",
+        "wasm-bindgen"
+      ],
+      "name": "uuid"
+    }
+  ],
+  "images": {
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-runtime-20261028\\targets\\B\\194\\641107fc9dbf3b1057105a1715995eb0f9d8fd4b05ee9d8ede364b33748e1722\\debug\\deps\\dbus_probe_074-8a3c9de136f41e1f.exe": "1d1646c0db698b0fb5ef27a6209ea2b28d9fcccccc4b8fb439130acbf4689a43",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-runtime-20261028\\targets\\C\\194\\78778f57453c6b9c7980543f4a2a11c65e332123572d88f024318f7d0af215c5\\debug\\deps\\dbus_probe_074-60d168b9318e9871.exe": "84d78219ffe86847580bc8f0d304d6f2560797bd8c4fef4588f8eda0356f9f65",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-runtime-20261028\\targets\\M\\194\\d0dc3cc53be86531249e4e6b05be22032985cb7f4ad1506869cdb67be1a8f258\\debug\\deps\\dbus_probe_074-8a3c9de136f41e1f.exe": "49cede4d7801894be7d41c8b2a035ff97e927b9ff5d7e8bff09ab66c284bc0f1",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-runtime-20261028\\targets\\R\\188\\41323d7f27cd1c0fe2fa4714313bc9c316ee41c7437a735ffe315b86138abb36\\debug\\deps\\dbus_probe_074-caa1c158ccd1e6c9.exe": "159629c51327330938c7c0b7a61497d5b7d4315f481157f3bc286b0dada736c7",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-runtime-20261028\\targets\\R\\194\\e30ba2fb85c6adf887c640e11a81dec2a529e226e825a55ae729da077b358aa6\\debug\\deps\\dbus_probe_074-8a3c9de136f41e1f.exe": "8dec5f6154c4dfec02c13e5582b0d97986e4e5b59bf1e6e5ca3beb158a70cce1",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-runtime-20261028\\targets\\S\\188\\45a76aca103e364e0fe48ac766a8e2feae406d390edba0e54b0dcb9928a1ed6c\\debug\\deps\\dbus_probe_074-caa1c158ccd1e6c9.exe": "e321d85781ab26b2b7083f1bd60301e559c864b224e91e73deb7ad3b21812c0d",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-runtime-20261028\\targets\\S\\194\\5102fa5e8cb9daf66c1486be704f3ccd7fd7d39452a8fec1c2e4715daf4a5da9\\debug\\deps\\dbus_probe_074-8a3c9de136f41e1f.exe": "91fac9669f9b515951b73354710af7869254cc6382ca23fe4a1c7f6aa990884b"
+  },
+  "inert_audit_executed_archived_source": false,
+  "product_integration": false,
+  "real_manager_or_unix_fd_qualified": false,
+  "registry_identities_equal_to_previous_msrv_fixture": true,
+  "release_admitted": false,
+  "retained_first_refusals": [
+    "clippy-R-188",
+    "clippy-R-194",
+    "progress-C-194",
+    "regress-B-194"
+  ],
+  "root_caller_changed": false,
+  "schema": "hc074-dbus-runtime-composition-v1",
+  "selected_native_passes": 69,
+  "source_head_before_archive": "752314f68b3cc2ce2e18225dfeccc7073c93ed06",
+  "source_pin": "7950deead36bcc6514f1c2f73be3cbce126a6e7a3bff3d1a55d11eac0be674db",
+  "steps": {
+    "build-B-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "build-C-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "build-M-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "build-R-188": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "build-R-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "build-S-188": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "build-S-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "check-R-188": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "check-R-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "check-S-188": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "check-S-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "clippy-R-188": {
+      "exit": 101,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "clippy-R-194": {
+      "exit": 101,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "clippy-S-188": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "clippy-S-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "list-B-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "list-C-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "list-M-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "list-R-188": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "list-R-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "list-S-188": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "list-S-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "policy-S-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "progress-C-194": {
+      "exit": 101,
+      "native_accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "runtime_review::background_progress_between_entries",
+            "FAILED"
+          ]
+        ],
+        "failed": 1,
+        "filtered": 12,
+        "passed": 0,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": false
+      },
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "regress-B-194": {
+      "exit": 101,
+      "native_accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "constructor_review::nested_constructor_panics_before_bad_arguments",
+            "FAILED"
+          ]
+        ],
+        "failed": 1,
+        "filtered": 13,
+        "passed": 0,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": false
+      },
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "resolve-C-194": {
+      "exit": 0,
+      "native_accounting": null,
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "test-M-194": {
+      "exit": 0,
+      "native_accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "caller_checks::tests::checked_call_preserves_success_signature_and_sender",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::method_error_keeps_original_sender",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::no_reply_preserves_method_timeout_refusal",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::proxy_clone_keeps_connection_after_original_drop",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::setters_fail_immediately_in_original_order",
+            "ok"
+          ],
+          [
+            "match_rule_review::argument_and_path_format_roundtrip",
+            "ok"
+          ],
+          [
+            "runtime_review::background_progress_between_entries",
+            "ok"
+          ],
+          [
+            "runtime_review::invalid_address_refuses_before_build",
+            "ok"
+          ],
+          [
+            "runtime_review::nested_entry_does_not_poll_future",
+            "ok"
+          ],
+          [
+            "tests::derive_and_wire_roundtrip",
+            "ok"
+          ],
+          [
+            "tests::invalid_names_and_builder_refuse",
+            "ok"
+          ],
+          [
+            "tests::reply_serial_sender_and_signature",
+            "ok"
+          ],
+          [
+            "tests::runtime_timeout_and_nested_entry",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 0,
+        "passed": 13,
+        "release_admitted": false,
+        "selected": 13,
+        "test_pass": true
+      },
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "test-R-188": {
+      "exit": 0,
+      "native_accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "caller_checks::tests::checked_call_preserves_success_signature_and_sender",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::method_error_keeps_original_sender",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::no_reply_preserves_method_timeout_refusal",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::proxy_clone_keeps_connection_after_original_drop",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::setters_fail_immediately_in_original_order",
+            "ok"
+          ],
+          [
+            "constructor_review::nested_constructor_panics_before_bad_arguments",
+            "ok"
+          ],
+          [
+            "match_rule_review::argument_and_path_format_roundtrip",
+            "ok"
+          ],
+          [
+            "runtime_review::background_progress_between_entries",
+            "ok"
+          ],
+          [
+            "runtime_review::invalid_address_refuses_before_build",
+            "ok"
+          ],
+          [
+            "runtime_review::nested_entry_does_not_poll_future",
+            "ok"
+          ],
+          [
+            "tests::derive_and_wire_roundtrip",
+            "ok"
+          ],
+          [
+            "tests::invalid_names_and_builder_refuse",
+            "ok"
+          ],
+          [
+            "tests::reply_serial_sender_and_signature",
+            "ok"
+          ],
+          [
+            "tests::runtime_timeout_and_nested_entry",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 0,
+        "passed": 14,
+        "release_admitted": false,
+        "selected": 14,
+        "test_pass": true
+      },
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "test-R-194": {
+      "exit": 0,
+      "native_accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "caller_checks::tests::checked_call_preserves_success_signature_and_sender",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::method_error_keeps_original_sender",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::no_reply_preserves_method_timeout_refusal",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::proxy_clone_keeps_connection_after_original_drop",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::setters_fail_immediately_in_original_order",
+            "ok"
+          ],
+          [
+            "constructor_review::nested_constructor_panics_before_bad_arguments",
+            "ok"
+          ],
+          [
+            "match_rule_review::argument_and_path_format_roundtrip",
+            "ok"
+          ],
+          [
+            "runtime_review::background_progress_between_entries",
+            "ok"
+          ],
+          [
+            "runtime_review::invalid_address_refuses_before_build",
+            "ok"
+          ],
+          [
+            "runtime_review::nested_entry_does_not_poll_future",
+            "ok"
+          ],
+          [
+            "tests::derive_and_wire_roundtrip",
+            "ok"
+          ],
+          [
+            "tests::invalid_names_and_builder_refuse",
+            "ok"
+          ],
+          [
+            "tests::reply_serial_sender_and_signature",
+            "ok"
+          ],
+          [
+            "tests::runtime_timeout_and_nested_entry",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 0,
+        "passed": 14,
+        "release_admitted": false,
+        "selected": 14,
+        "test_pass": true
+      },
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "test-S-188": {
+      "exit": 0,
+      "native_accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "caller_checks::tests::checked_call_preserves_success_signature_and_sender",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::method_error_keeps_original_sender",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::no_reply_preserves_method_timeout_refusal",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::proxy_clone_keeps_connection_after_original_drop",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::setters_fail_immediately_in_original_order",
+            "ok"
+          ],
+          [
+            "constructor_review::nested_constructor_panics_before_bad_arguments",
+            "ok"
+          ],
+          [
+            "match_rule_review::argument_and_path_format_roundtrip",
+            "ok"
+          ],
+          [
+            "runtime_review::background_progress_between_entries",
+            "ok"
+          ],
+          [
+            "runtime_review::invalid_address_refuses_before_build",
+            "ok"
+          ],
+          [
+            "runtime_review::nested_entry_does_not_poll_future",
+            "ok"
+          ],
+          [
+            "tests::derive_and_wire_roundtrip",
+            "ok"
+          ],
+          [
+            "tests::invalid_names_and_builder_refuse",
+            "ok"
+          ],
+          [
+            "tests::reply_serial_sender_and_signature",
+            "ok"
+          ],
+          [
+            "tests::runtime_timeout_and_nested_entry",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 0,
+        "passed": 14,
+        "release_admitted": false,
+        "selected": 14,
+        "test_pass": true
+      },
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    },
+    "test-S-194": {
+      "exit": 0,
+      "native_accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "caller_checks::tests::checked_call_preserves_success_signature_and_sender",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::method_error_keeps_original_sender",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::no_reply_preserves_method_timeout_refusal",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::proxy_clone_keeps_connection_after_original_drop",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::setters_fail_immediately_in_original_order",
+            "ok"
+          ],
+          [
+            "constructor_review::nested_constructor_panics_before_bad_arguments",
+            "ok"
+          ],
+          [
+            "match_rule_review::argument_and_path_format_roundtrip",
+            "ok"
+          ],
+          [
+            "runtime_review::background_progress_between_entries",
+            "ok"
+          ],
+          [
+            "runtime_review::invalid_address_refuses_before_build",
+            "ok"
+          ],
+          [
+            "runtime_review::nested_entry_does_not_poll_future",
+            "ok"
+          ],
+          [
+            "tests::derive_and_wire_roundtrip",
+            "ok"
+          ],
+          [
+            "tests::invalid_names_and_builder_refuse",
+            "ok"
+          ],
+          [
+            "tests::reply_serial_sender_and_signature",
+            "ok"
+          ],
+          [
+            "tests::runtime_timeout_and_nested_entry",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 0,
+        "passed": 14,
+        "release_admitted": false,
+        "selected": 14,
+        "test_pass": true
+      },
+      "source_head": "752314f68b3cc2ce2e18225dfeccc7073c93ed06"
+    }
+  }
+}

@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [local D-Bus runtime/caller shadow](dbus-runtime-bridge-result-20261028.md)
+now retains a real outside-entry progress refusal and a constructor-order
+regression, then passes 14 controls, check and strict Clippy on 1.88/1.94 with
+the selected multi-thread runtime and compatible wrapper. Synthetic calls test
+sender/signature/error/clone/timeout semantics with original caller bodies.
+No real bus, root dependency or supervisor source changes; property/full caller,
+GNU/Unix FD, distribution and complete product gates remain open.
+
 The [D-Bus MSRV source preparation](dbus-msrv-backport-result-20261028.md)
 now fixes two actual Rust 1.88 MatchRule temporary-lifetime errors after retaining
 the declaration/UUID refusals. The final local tokio+proxy candidate passes five

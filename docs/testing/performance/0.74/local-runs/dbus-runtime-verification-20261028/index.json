@@ -1,0 +1,129 @@
+{
+  "archived_code_executed": false,
+  "doc_check": true,
+  "formatting": true,
+  "members": {
+    "capture/controls/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/controls/intent.json": {
+      "bytes": 397137,
+      "sha256": "30c0a903b6a4144accb691127f3afd8bb0495f8f1fdc4410fc960e31a186856f"
+    },
+    "capture/controls/producer.py": {
+      "bytes": 5614,
+      "sha256": "90e7d841d8ec5ee6864a78098ee4b4472b4f45ad8687abee268c40afc6a3fb5b"
+    },
+    "capture/controls/result.json": {
+      "bytes": 73,
+      "sha256": "d4c3c1448535744b4f257eb1a411089bec35038ec813a67a4de5cf4fb98085d1"
+    },
+    "capture/controls/stderr.log": {
+      "bytes": 410,
+      "sha256": "4f67c21aa131e1c7ffac47e0357e7e29a6fe2ec8a02254e6e55129d0362567dd"
+    },
+    "capture/controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/doc-check/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/doc-check/intent.json": {
+      "bytes": 397151,
+      "sha256": "f065687994021c003860cfee7920583b9990ae162b2deda239a293387dd9c1e6"
+    },
+    "capture/doc-check/producer.py": {
+      "bytes": 5614,
+      "sha256": "90e7d841d8ec5ee6864a78098ee4b4472b4f45ad8687abee268c40afc6a3fb5b"
+    },
+    "capture/doc-check/result.json": {
+      "bytes": 73,
+      "sha256": "d4c3c1448535744b4f257eb1a411089bec35038ec813a67a4de5cf4fb98085d1"
+    },
+    "capture/doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "capture/format/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/format/intent.json": {
+      "bytes": 397424,
+      "sha256": "aa9411af61d9790eeed052b0bcbf23dd51270ede3e5eebe554e415eb67babc5f"
+    },
+    "capture/format/producer.py": {
+      "bytes": 5614,
+      "sha256": "90e7d841d8ec5ee6864a78098ee4b4472b4f45ad8687abee268c40afc6a3fb5b"
+    },
+    "capture/format/result.json": {
+      "bytes": 73,
+      "sha256": "d4c3c1448535744b4f257eb1a411089bec35038ec813a67a4de5cf4fb98085d1"
+    },
+    "capture/format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/verify/intent.json": {
+      "bytes": 396962,
+      "sha256": "112a22391802f4b4d67f842eaffe26cd1ef90f08986ef0e8f7ac7ab6f9618aa4"
+    },
+    "capture/verify/producer.py": {
+      "bytes": 5614,
+      "sha256": "90e7d841d8ec5ee6864a78098ee4b4472b4f45ad8687abee268c40afc6a3fb5b"
+    },
+    "capture/verify/result.json": {
+      "bytes": 294,
+      "sha256": "d084bae714d1a0538f3bb1b5699271d1fe3e091ed9282765031854ec45bc68ee"
+    },
+    "capture/verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/verify/stdout.log": {
+      "bytes": 219,
+      "sha256": "879ee7cfdf0561e10fef97cad7278905a56e7020090679c96b3b9a030a5ea870"
+    },
+    "source/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1506205,
+      "sha256": "f64a0d373d42b3180e2245be7fd5ad5dbe0e6a97bad20227d346df0381214966"
+    },
+    "source/docs/testing/performance/0.74/README.md": {
+      "bytes": 498270,
+      "sha256": "5468dbff10ef3139c6b1018556d7937d7de7fa7ca33c6c90f446d1b65da7dcc9"
+    },
+    "source/docs/testing/performance/0.74/dbus-runtime-bridge-result-20261028.md": {
+      "bytes": 7349,
+      "sha256": "ca69854a0f91b8c63575d7b434e243acd93d886a9fbcae95b9ae5c99e0ad1992"
+    },
+    "source/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 33901,
+      "sha256": "d8521b533fe5bcb741d5738ca6864c21040959c0af19ad1243e917eeed9f623c"
+    },
+    "source/target/dbus-runtime-final-20261028.py": {
+      "bytes": 5614,
+      "sha256": "90e7d841d8ec5ee6864a78098ee4b4472b4f45ad8687abee268c40afc6a3fb5b"
+    },
+    "source/target/dbus-runtime-retain-20261028.py": {
+      "bytes": 3592,
+      "sha256": "adbebde8988837d03dc77df4d937c80b351953b5e47a74192d17dbf24388afd6"
+    }
+  },
+  "primary_index_sha256": "59b7f69b3ee958f2a467af97d1cd80ed0d7f35194e33d9fbb58ed001602e1cda",
+  "product_gate_replayed": false,
+  "python_catalog_controls_passed": 3,
+  "release_admitted": false,
+  "schema": "hc074-runtime-shadow-verification-v1",
+  "source_head_observation": "ca80336db566b3f86d472e1e77269acb5fd433fe"
+}

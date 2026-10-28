@@ -22012,3 +22012,32 @@ work must prove progress and retained connection/reply/FD ownership under the
 existing windows, then pass GNU, consumer/distribution and full product gates.
 This source backport narrows a security blocker; it is not a performance win or
 a completed original-delivery/recovery gate.
+
+The [runtime/caller continuation](../testing/performance/0.74/dbus-runtime-bridge-result-20261028.md)
+then tests the suspected progress difference directly. A task receives a release
+signal outside every block_on call. The current-thread control fails its existing
+250-ms method window, but reentry joins the task before asserting, so the result
+does not depend on leaving work behind. Changing only the upstream runtime
+feature to tokio-multithread makes the same contract pass and matches the old
+blocking wrapper's process-lifetime runtime type. This is a functional progress
+control, not a latency or throughput improvement experiment.
+
+A narrow local wrapper holds the same connection across Proxy clones and returns
+the unmodified reply/error. Complete selected original sender/signature/error
+helpers are copied under an independent source pin; reversing one Builder path
+and three wire aliases recovers those bodies exactly. Synthetic in-process calls
+exercise success, foreign sender, wrong body type, NoSuchUnit origin, retained
+connection clones and a peer that receives a request but withholds its reply.
+No system bus or real manager is contacted, and no claim of kernel authentication
+or descriptor transfer is attached to these messages.
+
+The first wrapper still gets a less obvious order wrong: Proxy::new rejects bad
+arguments before entering a nested runtime, whereas the old blocking source
+enters first and panics. A separate failing regression precedes the constructor
+repair. The final fourteen cases pass on both compilers; strict Clippy first
+rejects three test-setup JoinHandle returns from async blocks. An explicit runtime
+Handle/spawn setup fixes that harness without suppressing a lint, changing the
+bridge or expanding the original window. Final checks and scoped dependency
+policy pass. All first negatives remain in evidence, the original supervisor and
+dependency graph remain unchanged, and real property/caller/GNU/FD/fault and
+publication gates are still required before integration or server admission.

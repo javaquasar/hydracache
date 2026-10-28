@@ -1,0 +1,15 @@
+caller_checks::tests::checked_call_preserves_success_signature_and_sender: test
+caller_checks::tests::method_error_keeps_original_sender: test
+caller_checks::tests::no_reply_preserves_method_timeout_refusal: test
+caller_checks::tests::proxy_clone_keeps_connection_after_original_drop: test
+caller_checks::tests::setters_fail_immediately_in_original_order: test
+match_rule_review::argument_and_path_format_roundtrip: test
+runtime_review::background_progress_between_entries: test
+runtime_review::invalid_address_refuses_before_build: test
+runtime_review::nested_entry_does_not_poll_future: test
+tests::derive_and_wire_roundtrip: test
+tests::invalid_names_and_builder_refuse: test
+tests::reply_serial_sender_and_signature: test
+tests::runtime_timeout_and_nested_entry: test
+
+13 tests, 0 benchmarks

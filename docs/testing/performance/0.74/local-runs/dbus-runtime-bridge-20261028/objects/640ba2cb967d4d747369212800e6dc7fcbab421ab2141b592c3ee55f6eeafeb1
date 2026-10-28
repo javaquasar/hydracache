@@ -1,0 +1,48 @@
+from pathlib import Path
+import hashlib,json,subprocess
+ROOT=Path(__file__).resolve().parent.parent;BASE=ROOT/'target/dbus-runtime-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/dbus-runtime-bridge-20261028'
+sha=lambda b:hashlib.sha256(b).hexdigest()
+audit=json.loads((BASE/'audit/result.json').read_bytes())
+assert audit['selected_native_passes']==69 and audit['caller_inverse_projection_equal'] and len(audit['images'])==7
+for label in ('test-S-188','test-S-194','check-S-188','check-S-194','clippy-S-188','clippy-S-194','policy-S-194'):
+ result=json.loads((BASE/label/'result.json').read_bytes());assert result['exit']==0 and result['unchanged']
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members;members[name]=dict(sha256=digest,bytes=len(raw))
+for top in sorted(BASE.iterdir()):
+ if top.name=='targets':continue
+ for path in ([top] if top.is_file() else sorted(top.rglob('*'))):
+  if path.is_file():add('capture/'+path.relative_to(BASE).as_posix(),path)
+for path in sorted((ROOT/'tools/dbus-runtime-bridge-074').rglob('*')):
+ if path.is_file() and '__pycache__' not in path.parts:add('source/'+path.relative_to(ROOT).as_posix(),path)
+for name in ('tools/dbus-msrv-backport-074/run.py','tools/dbus-msrv-backport-074/probe.rs','tools/dbus-msrv-backport-074/match_rule_tests.rs',
+ 'tools/chitchat-mtu-review-074/accounting.py','tools/windows-workspace-preflight-074/owned.py',
+ 'tools/windows-workspace-preflight-074/prepare.py','scripts/ci/watchdog_windows_job.py',
+ 'tools/long-run-supervisor-074/src/diagnostic_manager.rs','Cargo.toml','Cargo.lock','deny.toml',
+ 'tools/long-run-supervisor-074/Cargo.toml','docs/testing/performance/0.74/qualification-manifest.toml'):
+ add('source/'+name,ROOT/name)
+for name in ('target/audit-dbus-runtime-20261028.py','target/seal-dbus-runtime-20261028.py'):
+ add('producer/'+Path(name).name,ROOT/name)
+prior=ROOT/'docs/testing/performance/0.74/local-runs/dbus-msrv-backport-20261028/index.json'
+assert sha(prior.read_bytes())=='ab5c211321f2557437f0c93c0bf2e99b82f8dd417a68e95f84590fb8a45c109e'
+add('predecessor/index.json',prior)
+db=Path('C:/Users/ArturBuzov/.cargo/advisory-dbs/advisory-db-3157b0e258782691')
+head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=db).decode().strip()
+assert not subprocess.check_output(['git','status','--porcelain'],cwd=db)
+index=dict(schema='hc074-local-dbus-runtime-bridge-v1',members=members,
+ source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ predecessor_index_sha256=sha(prior.read_bytes()),selected_native_passes=69,final_native_passes={'rust_188':14,'rust_194':14},
+ first_refusals_preserved=audit['retained_first_refusals'],caller_inverse_projection_equal=True,
+ current_vs_multi_only_manifest_feature=True,advisory_db_postflight=dict(head=head,clean=True,per_lookup_seal=False),
+ live_checks_or_deadlines_changed=False,source_sealer_executed_archived_code=False,
+ actual_caller_or_root_dependencies_changed=False,system_bus_or_manager_contacted=False,
+ os_auth_or_unix_fd_qualified=False,server=False,services=False,clocks=False,
+ performance_claim=False,product_gate_replayed=False,release_admitted=False)
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf-8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf-8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

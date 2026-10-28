@@ -1,0 +1,78 @@
+    Checking dbus-probe-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\dbus-runtime-20261028\fixtures\R\probe)
+error: an async construct yields a type which is itself awaitable
+  --> C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-runtime-bridge-074\runtime_tests.rs:16:9
+   |
+15 |        let task = zbus::block_on(async {
+   |  ______________________________________-
+16 | |/         tokio::spawn(async move {
+17 | ||             receive.await.unwrap();
+18 | ||             done.send(74u32).unwrap();
+19 | ||             74u32
+20 | ||         })
+   | ||__________^ awaitable value not awaited
+21 | |      });
+   | |______- outer async construct
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#async_yields_async
+   = note: `#[deny(clippy::async_yields_async)]` on by default
+help: consider awaiting this value
+   |
+20 |         tokio::spawn(async move {
+...
+23 |             74u32
+24 ~         }).await
+   |
+
+error: an async construct yields a type which is itself awaitable
+  --> C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-runtime-bridge-074\caller_tests.rs:40:9
+   |
+38 |        zbus::block_on(async move {
+   |  ________________________________-
+39 | |          let mut stream = zbus::MessageStream::from(&connection);
+40 | |/         tokio::spawn(async move {
+41 | ||             for answer in answers {
+42 | ||                 let request =
+43 | ||                     tokio::time::timeout(METHOD, poll_fn(|cx| Pin::new(&mut stream).poll_next(cx)))
+...  ||
+77 | ||             zbus::AsyncDrop::async_drop(stream).await;
+78 | ||         })
+   | ||__________^ awaitable value not awaited
+79 | |      })
+   | |______- outer async construct
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#async_yields_async
+help: consider awaiting this value
+   |
+78 |         tokio::spawn(async move {
+...
+115|             zbus::AsyncDrop::async_drop(stream).await;
+116~         }).await
+   |
+
+error: an async construct yields a type which is itself awaitable
+   --> C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-runtime-bridge-074\caller_tests.rs:193:9
+    |
+191 |        let task = zbus::block_on(async move {
+    |  ___________________________________________-
+192 | |          let mut stream = zbus::MessageStream::from(&connection);
+193 | |/         tokio::spawn(async move {
+194 | ||             let request =
+195 | ||                 tokio::time::timeout(METHOD, poll_fn(|cx| Pin::new(&mut stream).poll_next(cx)))
+196 | ||                     .await
+...   ||
+203 | ||             zbus::AsyncDrop::async_drop(stream).await;
+204 | ||         })
+    | ||__________^ awaitable value not awaited
+205 | |      });
+    | |______- outer async construct
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#async_yields_async
+help: consider awaiting this value
+    |
+204 |         tokio::spawn(async move {
+...
+214 |             zbus::AsyncDrop::async_drop(stream).await;
+215 ~         }).await
+    |
+
+error: could not compile `dbus-probe-074` (lib test) due to 3 previous errors

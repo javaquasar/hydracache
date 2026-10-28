@@ -1,0 +1,83 @@
+use serde::Serialize;
+use crate::bridge::{Connection, Proxy};
+fn unique_owner(value: &str) -> bool {
+    let Some(value) = value.strip_prefix(':') else {
+        return false;
+    };
+    value.len() <= 64
+        && value.split('.').count() == 2
+        && value
+            .split('.')
+            .all(|v| !v.is_empty() && v.bytes().all(|b| b.is_ascii_digit()))
+}
+fn proxy<'a>(
+    connection: &Connection,
+    owner: &'a str,
+    path: &'a str,
+    interface: &'a str,
+) -> Result<Proxy<'a>, String> {
+    crate::bridge::ProxyBuilder::new(connection)
+        .destination(owner)
+        .map_err(|_| "proxy destination")?
+        .path(path)
+        .map_err(|_| "proxy path")?
+        .interface(interface)
+        .map_err(|_| "proxy interface")?
+        .cache_properties(zbus::proxy::CacheProperties::No)
+        .build()
+        .map_err(|_| "manager proxy".into())
+}
+#[derive(Debug, PartialEq, Eq)]
+enum ReplyError {
+    NoSuchUnit,
+    Refused,
+}
+fn sender_matches(sender: Option<&str>, expected: &str) -> bool {
+    sender == Some(expected) && (unique_owner(expected) || expected == "org.freedesktop.DBus")
+}
+fn classify_error(name: &str, sender: Option<&str>, owner: &str) -> ReplyError {
+    if sender_matches(sender, owner) && name == "org.freedesktop.systemd1.NoSuchUnit" {
+        ReplyError::NoSuchUnit
+    } else {
+        ReplyError::Refused
+    }
+}
+fn decode_reply<R: for<'de> zbus::wire::DynamicDeserialize<'de>>(
+    message: &zbus::Message,
+    owner: &str,
+) -> Result<R, ReplyError> {
+    if !sender_matches(message.header().sender().map(|v| v.as_str()), owner) {
+        return Err(ReplyError::Refused);
+    }
+    message
+        .body()
+        .deserialize()
+        .map_err(|_| ReplyError::Refused)
+}
+fn checked_call<B, R>(
+    proxy: &Proxy<'_>,
+    owner: &str,
+    method: &str,
+    body: &B,
+) -> Result<R, ReplyError>
+where
+    B: Serialize + zbus::wire::DynamicType,
+    R: for<'de> zbus::wire::DynamicDeserialize<'de>,
+{
+    let message = match proxy.call_method(method, body) {
+        Ok(message) => message,
+        Err(zbus::Error::MethodError(name, _, message)) => {
+            return Err(classify_error(
+                name.as_str(),
+                message.header().sender().map(|v| v.as_str()),
+                owner,
+            ));
+        }
+        Err(_) => return Err(ReplyError::Refused),
+    };
+    decode_reply(&message, owner)
+}
+
+#[cfg(test)]
+#[path = "C:/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-runtime-bridge-074/caller_tests.rs"]
+mod tests;

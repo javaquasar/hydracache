@@ -1,0 +1,8 @@
+test_fixed_thirteen (test_catalog.CatalogControls.test_fixed_thirteen) ... ok
+test_only_declared_constructor_addition (test_catalog.CatalogControls.test_only_declared_constructor_addition) ... ok
+test_zero_and_wrong_summary_refuse (test_catalog.CatalogControls.test_zero_and_wrong_summary_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.000s
+
+OK

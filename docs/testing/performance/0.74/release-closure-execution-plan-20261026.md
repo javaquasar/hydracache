@@ -438,6 +438,16 @@ consumer/distribution/full product gates remain open. A simple block_on swap is
 not accepted: the old Tokio runtime was multi-threaded and the selected new one
 is current-thread. Live frames, check frequency and all original limits remain.
 
+The [local runtime/blocking shadow](dbus-runtime-bridge-result-20261028.md)
+now demonstrates the current-thread progress failure and restores progress with
+one upstream multi-thread feature change. A separate constructor-order regression
+rejects the first wrapper; final S preserves nested-entry priority and passes 14
+tests, check and strict Clippy on both 1.88 and 1.94 plus scoped dependency policy.
+Whole selected original sender/error helpers survive inverse projection exactly.
+Synthetic channels do not qualify kernel credentials, Unix FD or original delivery.
+Root graph/callers and live limits stay unchanged. Property/manager-owner/full
+caller, GNU/FD/fault, source/effect/distribution and complete product gates remain.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

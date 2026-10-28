@@ -1,0 +1,140 @@
+"""Local shadow only; fixed commands, original ownership/budgets and first results."""
+from pathlib import Path
+import json,os,re,shutil,subprocess,sys,tomllib
+ROOT=Path(__file__).resolve().parents[2]
+BASE=ROOT/'target/dbus-runtime-20261028'
+sys.path.insert(0,str(ROOT/'tools/windows-workspace-preflight-074'))
+import prepare as p
+old=p.load(ROOT/'tools/dbus-msrv-backport-074/run.py','msrv_base')
+sha,files,write,snapshot,owned=old.sha,old.files,old.write,old.snapshot,old.owned
+OWNER='tools/long-run-supervisor-074/src/diagnostic_manager.rs'
+OWNER_SHA='7950deead36bcc6514f1c2f73be3cbce126a6e7a3bff3d1a55d11eac0be674db'
+EXTRAS=['runtime_review::'+n for n in ('background_progress_between_entries','nested_entry_does_not_poll_future','invalid_address_refuses_before_build')]+['caller_checks::tests::'+n for n in ('setters_fail_immediately_in_original_order','checked_call_preserves_success_signature_and_sender','method_error_keeps_original_sender','proxy_clone_keeps_connection_after_original_drop','no_reply_preserves_method_timeout_refusal')]
+
+def prepare(variant):
+ out=BASE/('prepare-'+variant);out.mkdir(parents=True,exist_ok=False)
+ (out/'producer.py').write_bytes(Path(__file__).read_bytes())
+ dest=BASE/'fixtures'/variant;dest.parent.mkdir(exist_ok=True)
+ if variant=='C':
+  review=json.loads((old.BASE/'prepare-F3/result.json').read_bytes())
+  p.require(files(old.BASE/'fixtures/F3')==review['files'],'exact prior MSRV source')
+  p.require(old.root_inputs()==review['root_inputs'],'unchanged root dependencies/policy/qualification')
+  shutil.copytree(old.BASE/'fixtures/F3',dest)
+  manifest=dest/'probe/Cargo.toml';raw=manifest.read_text(encoding='utf-8')
+  before='features = ["tokio", "proxy"]';after='features = ["tokio", "proxy", "p2p"]'
+  p.require(raw.count(before)==1,'exact original selected features')
+  raw=raw.replace(before,after,1)+'\nuuid = "=1.23.4"\n'
+  manifest.write_text(raw,encoding='utf-8',newline='\n')
+  source=(ROOT/OWNER).read_bytes();p.require(sha(source)==OWNER_SHA,'independent original caller pin')
+  body=source.decode();unique=body[body.index('fn unique_owner('):body.index('\n#[derive(Debug, Clone, Copy',body.index('fn unique_owner('))]
+  proxy=body[body.index("fn proxy<'a>("):body.index('fn manager_owner(')]
+  calls=body[body.index('#[derive(Debug, PartialEq, Eq)]\nenum ReplyError'):body.index('fn boot_matches(')]
+  p.require(proxy.count('zbus::blocking::proxy::Builder')==1 and calls.count('zbus::zvariant')==3,'closed two spelling projections')
+  projected='use serde::Serialize;\nuse crate::bridge::{Connection, Proxy};\n'+unique+proxy.replace('zbus::blocking::proxy::Builder','crate::bridge::ProxyBuilder')+calls.replace('zbus::zvariant','zbus::wire')
+  projected+='\n#[cfg(test)]\n#[path = '+json.dumps((ROOT/'tools/dbus-runtime-bridge-074/caller_tests.rs').as_posix())+']\nmod tests;\n'
+  (dest/'probe/src/caller_checks.rs').write_text(projected,encoding='utf-8',newline='\n')
+  (out/'original-manager.rs').write_bytes(source)
+  with (dest/'probe/src/lib.rs').open('ab') as stream:
+   for name,file,test in [('bridge','bridge.rs',False),('runtime_review','runtime_tests.rs',True)]:
+    stream.write(('\n'+('#[cfg(test)]\n' if test else '')+'#[path = '+json.dumps((ROOT/'tools/dbus-runtime-bridge-074'/file).as_posix())+']\n'+('' if test else 'pub ')+'mod '+name+';\n').encode())
+   stream.write(b'\n#[cfg(test)]\nmod caller_checks;\n')
+ else:
+  previous=json.loads((BASE/'progress-C-194/result.json').read_bytes())
+  p.require(previous['exit']==101 and previous['accounting']['failed']==1 and previous['unchanged'],'first retired baseline progress refusal')
+  p.require(b'"outside_entry":false,"joined":74,"timeout_ms":250' in (BASE/'progress-C-194/stdout.log').read_bytes(),'baseline completed cleanup, not a setup failure')
+  source=BASE/'fixtures/C';p.require(files(source)==json.loads((BASE/'resolve-C-194/result.json').read_bytes())['fixture_after'],'exact resolved current-thread control')
+  shutil.copytree(source,dest)
+  manifest=dest/'probe/Cargo.toml';raw=manifest.read_text(encoding='utf-8')
+  before='features = ["tokio", "proxy", "p2p"]';after='features = ["tokio-multithread", "proxy", "p2p"]'
+  p.require(raw.count(before)==1,'one runtime feature hypothesis')
+  manifest.write_text(raw.replace(before,after,1),encoding='utf-8',newline='\n')
+ overlays={}
+ for name in ('tools/dbus-msrv-backport-074/probe.rs','tools/dbus-msrv-backport-074/match_rule_tests.rs',
+  'tools/dbus-runtime-bridge-074/bridge.rs','tools/dbus-runtime-bridge-074/runtime_tests.rs','tools/dbus-runtime-bridge-074/caller_tests.rs'):
+  overlays[name]=sha((ROOT/name).read_bytes())
+ write(out,'result.json',dict(files=files(dest),root_inputs=old.root_inputs(),overlays=overlays,
+  caller_source_pin=OWNER_SHA,actual_caller_changed=False,release_admitted=False))
+ print('prepared '+variant)
+
+def inventory(raw,baseline):
+ lines=raw.decode().splitlines();names=[n[:-6] for n in lines if n.endswith(': test')]
+ p.require(len(baseline)==5 and len(set(names))==len(names)==13 and lines[-1]=='13 tests, 0 benchmarks','exact nonempty catalog')
+ p.require(sorted(names)==sorted(baseline+EXTRAS),'only eight declared additions')
+ return sorted(names)
+
+def run(label,worker):
+ match=re.fullmatch(r'(resolve|build|list|progress|test|check|clippy|policy)-(C|M)-(194|188)',label)
+ p.require(match is not None,'fixed step');action,variant,compiler=match.groups()
+ p.require(action!='resolve' or (variant,compiler)==('C','194'),'one fixed resolution')
+ folder=BASE/'fixtures'/variant;review=json.loads((BASE/('prepare-'+variant)/'result.json').read_bytes())
+ expected=review['files'] if variant=='M' or action=='resolve' else json.loads((BASE/'resolve-C-194/result.json').read_bytes())['fixture_after']
+ def guard():
+  p.require(old.root_inputs()==review['root_inputs'] and sha((ROOT/OWNER).read_bytes())==OWNER_SHA,'exact protected inputs and caller')
+  p.require(files(folder)==expected,'whole frozen source and lock')
+  p.require(all(sha((ROOT/n).read_bytes())==v for n,v in review['overlays'].items()),'held external sources')
+ identity=sha(json.dumps(dict(files=expected,overlays=review['overlays'],compiler=compiler),sort_keys=True).encode())
+ target=BASE/'targets'/variant/compiler/identity
+ cargo=['cargo','+1.94.0' if compiler=='194' else '+1.88.0']
+ common=['--offline','--locked','--manifest-path',str(folder/'Cargo.toml'),'--target-dir',str(target),'-p','dbus-probe-074']
+ artifact=None;selection=None
+ if action=='resolve':argv=cargo+['metadata','--offline','--manifest-path',str(folder/'Cargo.toml'),'--format-version','1']
+ elif action=='build':argv=cargo+['test',*common,'--lib','--no-run','--message-format=json']
+ elif action in ('check','clippy'):argv=cargo+[action,*common,'--all-targets','--all-features']+(['--','-D','warnings'] if action=='clippy' else [])
+ elif action=='policy':argv=cargo+['deny','--manifest-path',str(folder/'Cargo.toml'),'--offline','--locked','check','--config',str(ROOT/'deny.toml')]
+ else:
+  build=json.loads((BASE/f'build-{variant}-{compiler}/result.json').read_bytes());p.require(build['exit']==0 and build['unchanged'],'actual successful build')
+  artifact=build['artifact'];image=Path(artifact['path'])
+  p.require(image.resolve().is_relative_to(target) and not image.is_symlink() and not image.is_junction() and sha(image.read_bytes())==artifact['sha256'],'original image')
+  if action=='list':argv=[str(image),'--list']
+  else:
+   listing=json.loads((BASE/f'list-{variant}-{compiler}/result.json').read_bytes());p.require(listing['exit']==0 and listing['unchanged'] and listing['artifact']==artifact,'actual catalog')
+   selection='runtime_review::background_progress_between_entries' if action=='progress' else ''
+   argv=[str(image),*([selection,'--exact'] if action=='progress' else []),'--test-threads=1','--show-output']
+ out=BASE/label
+ if worker:
+  guard()
+  def capacity():
+   if shutil.disk_usage(ROOT).free<p.FLOOR:raise owned.CapacityError('original 4 GiB floor')
+  execution=owned._owned(owned.load_job().WindowsJob(),argv,str(ROOT),capacity,bound=1200)
+  write(out,'execution.json',execution);raise SystemExit(execution['exit'])
+ out.mkdir(exist_ok=False);(out/'launcher.py').write_bytes(Path(__file__).read_bytes())
+ with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+  try:
+   guard();before=snapshot();head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+   write(out,'intent.json',dict(argv=argv,head=head,source=before,variant=variant,compiler=compiler,artifact=artifact,
+    fixture_before=expected,bound=1200,floor=p.FLOOR,capacity_poll=5,retirement=5,retry=False,server=False,host_bus=False,services=False,clocks=False))
+   child=subprocess.Popen([sys.executable,'-B',str(Path(__file__)),label,'--worker'],cwd=ROOT,
+    stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,env=dict(os.environ,CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2'))
+   try:code=child.wait(timeout=1210)
+   except subprocess.TimeoutExpired:
+    child.kill();child.wait(timeout=5);raise ValueError('worker lost; no PID fallback')
+   after=files(folder)
+   if action=='resolve' and code==0:p.require(set(after)==set(expected) and all(after[n]==v for n,v in expected.items() if n!='Cargo.lock'),'only fixture lock may change')
+   else:guard()
+   execution=json.loads((out/'execution.json').read_bytes());unchanged=before==snapshot() and head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+   p.require(unchanged and execution['retired'] and not execution['errors'],'original source/head/retirement postflight')
+   result=dict(exit=code,unchanged=unchanged,fixture_after=after,artifact=artifact,release_admitted=False)
+   raw=(out/'stdout.log').read_bytes()
+   if action=='build' and code==0:
+    messages=[json.loads(n) for n in raw.splitlines()]
+    found=[m for m in messages if m.get('reason')=='compiler-artifact' and m['target']['name']=='dbus_probe_074' and m['target']['kind']==['lib'] and m['profile']['test'] and m.get('executable')]
+    p.require(len(found)==1 and [m['success'] for m in messages if m.get('reason')=='build-finished']==[True],'actual Cargo artifact')
+    image=Path(found[0]['executable']);p.require(image.resolve().is_relative_to(target) and Path(found[0]['target']['src_path']).resolve()==(folder/'probe/src/lib.rs').resolve(),'actual artifact source')
+    result['artifact']=dict(path=str(image),sha256=sha(image.read_bytes()),bytes=image.stat().st_size)
+   if artifact:p.require(sha(Path(artifact['path']).read_bytes())==artifact['sha256'],'image postflight')
+   if action=='list' and code==0:result['inventory']=inventory(raw,json.loads((old.BASE/'list-F3-194/result.json').read_bytes())['inventory'])
+   if selection is not None:
+    account=p.load(ROOT/'tools/chitchat-mtu-review-074/accounting.py','runtime_account')
+    result['accounting']=account.account(raw,listing['inventory'],selection,action=='progress')
+    p.require((code==0)==result['accounting']['test_pass'],'native accounting/exit agreement')
+   write(out,'result.json',result)
+  except BaseException as error:
+   write(out,'refusal.json',dict(type=type(error).__name__,reason=str(error),release_admitted=False));raise
+ print(json.dumps(dict(label=label,exit=code,unchanged=unchanged)))
+ raise SystemExit(code)
+
+if __name__=='__main__':
+ p.require(len(sys.argv) in (2,3) and (len(sys.argv)==2 or sys.argv[2]=='--worker'),'fixed invocation')
+ if sys.argv[1] in ('prepare-C','prepare-M'):
+  p.require(len(sys.argv)==2,'inert preparation');prepare(sys.argv[1][-1])
+ else:run(sys.argv[1],len(sys.argv)==3)

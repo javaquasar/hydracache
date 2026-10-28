@@ -1,0 +1,68 @@
+from pathlib import Path
+import json,os,re,shutil,subprocess,sys
+ROOT=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(ROOT/'tools/dbus-runtime-bridge-074'))
+import run as r
+BASE=ROOT/'target/dbus-runtime-final-20261028';mode=sys.argv[1];assert mode in ('verify','controls','format','doc-check')
+OUT=BASE/mode
+docs=('docs/testing/performance/0.74/dbus-runtime-bridge-result-20261028.md','docs/testing/performance/0.74/README.md',
+ 'docs/testing/performance/0.74/release-closure-execution-plan-20261026.md','docs/articles/007-optimization-starts-with-measurement.md')
+argv={'controls':[sys.executable,'-B','-m','unittest','discover','-s','tools/dbus-runtime-bridge-074','-p','test_catalog.py','-v'],
+ 'format':['rustfmt','+1.94.0','--edition','2024','--check',*[str(p.relative_to(ROOT)) for p in sorted((ROOT/'tools/dbus-runtime-bridge-074').glob('*.rs'))]],
+ 'doc-check':[str(ROOT/'target/debug/xtask.exe'),'doc-check']}.get(mode)
+if len(sys.argv)==3:
+ assert sys.argv[2]=='--worker' and argv
+ def capacity():
+  if shutil.disk_usage(ROOT).free<r.p.FLOOR:raise r.owned.CapacityError('original 4 GiB floor')
+ result=r.owned._owned(r.owned.load_job().WindowsJob(),argv,str(ROOT),capacity,bound=1200)
+ r.write(OUT,'execution.json',result);raise SystemExit(result['exit'])
+OUT.mkdir(parents=True,exist_ok=False);(OUT/'producer.py').write_bytes(Path(__file__).read_bytes())
+with (OUT/'stdout.log').open('xb') as stdout,(OUT/'stderr.log').open('xb') as stderr:
+ try:
+  before=dict(source=r.snapshot(),documents={n:r.sha((ROOT/n).read_bytes()) for n in docs},head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip())
+  if mode=='doc-check':before['executable_sha256']=r.sha(Path(argv[0]).read_bytes())
+  r.write(OUT,'intent.json',dict(argv=argv,inputs=before,bound=1200,floor=r.p.FLOOR,capacity_poll=5,retirement=5,retry=False))
+  if mode=='verify':
+   packet=ROOT/'docs/testing/performance/0.74/local-runs/dbus-runtime-bridge-20261028'
+   raw=(packet/'index.json').read_bytes();assert r.sha(raw)=='59b7f69b3ee958f2a467af97d1cd80ed0d7f35194e33d9fbb58ed001602e1cda'
+   index=json.loads(raw);members=index['members'];assert len(members)==1566
+   for row in members.values():
+    data=(packet/'objects'/row['sha256']).read_bytes();assert len(data)==row['bytes'] and r.sha(data)==row['sha256']
+   def get(n):return (packet/'objects'/members[n]['sha256']).read_bytes()
+   locks=[get('capture/fixtures/'+v+'/Cargo.lock') for v in ('C','M','B','R','S')];assert all(n==locks[0] for n in locks)
+   assert get('capture/fixtures/C/probe/Cargo.toml').replace(b'"tokio", "proxy", "p2p"',b'"tokio-multithread", "proxy", "p2p"')==get('capture/fixtures/M/probe/Cargo.toml')
+   passes=0
+   for label,count in [('test-M-194',13),('test-R-188',14),('test-R-194',14),('test-S-188',14),('test-S-194',14)]:
+    result=json.loads(get('capture/'+label+'/result.json'));a=result['accounting']
+    raw=get('capture/'+label+'/stdout.log').decode();rows=re.findall(r'^test (.+?) \.\.\. (ok|FAILED)$',raw,re.M)
+    assert len(rows)==count and len(set(n for n,_ in rows))==count and all(s=='ok' for _,s in rows)
+    assert result['exit']==0 and result['unchanged'] and a['passed']==a['selected']==count and a['failed']==a['filtered']==0
+    passes+=count
+   assert passes==69
+   for label in ('progress-C-194','regress-B-194','clippy-R-188','clippy-R-194'):
+    assert json.loads(get('capture/'+label+'/result.json'))['exit']==101
+   for label,expected in [('progress-C-194',False),('test-M-194',True),('test-S-188',True),('test-S-194',True)]:
+    values=[json.loads(line.split(b':',1)[1]) for line in get('capture/'+label+'/stdout.log').splitlines() if line.startswith(b'HC074_RUNTIME_PROGRESS:')]
+    assert values==[dict(outside_entry=expected,joined=74,timeout_ms=250)]
+   audit=json.loads(get('capture/audit/result.json'));assert audit['caller_inverse_projection_equal'] and len(audit['images'])==7
+   original=get('source/tools/long-run-supervisor-074/src/diagnostic_manager.rs');assert r.sha(original)==r.OWNER_SHA
+   projected=get('capture/fixtures/S/probe/src/caller_checks.rs').decode()
+   assert projected.count('crate::bridge::ProxyBuilder')==1 and projected.count('zbus::wire')==3
+   result=dict(exit=0,members_verified=1566,objects_verified=398,native_selected_passes=69,final_native_passes=28,
+    first_refusals_preserved=True,archived_code_executed=False,byte_verification_only=True)
+   stdout.write(json.dumps(result).encode()+b'\n')
+  else:
+   child=subprocess.Popen([sys.executable,'-B',str(Path(__file__)),mode,'--worker'],cwd=ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,
+    env=dict(os.environ,CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2'))
+   try:code=child.wait(timeout=1210)
+   except subprocess.TimeoutExpired:
+    child.kill();child.wait(timeout=5);raise ValueError('owned worker lost; no PID fallback')
+   execution=json.loads((OUT/'execution.json').read_bytes());assert execution['retired'] and not execution['errors'];result=dict(exit=code)
+  assert before['source']==r.snapshot() and all(r.sha((ROOT/n).read_bytes())==v for n,v in before['documents'].items())
+  assert before['head']==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+  if mode=='doc-check':assert before['executable_sha256']==r.sha(Path(argv[0]).read_bytes())
+  result.update(inputs_unchanged=True,release_admitted=False);r.write(OUT,'result.json',result)
+ except BaseException as error:
+  r.write(OUT,'refusal.json',dict(type=type(error).__name__,reason=str(error),release_admitted=False));raise
+print(json.dumps(dict(mode=mode,**result)))
+raise SystemExit(result['exit'])
