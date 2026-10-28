@@ -40,8 +40,9 @@ class Controls(unittest.TestCase):
         current = p.blocking_bridge(before)
         self.assertIn(b'_connection: Connection,\n    inner: Option<zbus::Proxy', current)
         self.assertIn(b'_connection: self.connection,', current)
-        self.assertEqual(before.count(b'connection: connection.clone(),'),
-                         current.count(b'connection: connection.clone(),'))
+        self.assertIn(b'Ok(Self {\n            _connection: connection.clone(),\n            inner: Some(proxy),', current)
+        self.assertNotIn(b'Ok(Self {\n            connection: connection.clone(),\n            inner: Some(proxy),', current)
+        self.assertEqual(before.count(b'connection.clone(),'), current.count(b'connection.clone(),'))
         drop = before.split(b"impl Drop for Proxy<'_> {", 1)[1].split(b'pub struct ProxyBuilder', 1)[0]
         self.assertIn(drop, current)
         for annotation in (b'allow(dead_code)', b'expect(dead_code)'):

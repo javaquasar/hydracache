@@ -52,3 +52,10 @@ three unused methods and names the still-retained ownership field _connection;
 the original clone, field order and in-runtime async-proxy Drop remain. Four
 inert controls now include that lifetime/drop preservation. Check/Clippy/MSRV
 must produce actual distinct verdicts; the two earlier refusals remain intact.
+
+The first used-api check refuses E0560: the direct Proxy constructor still used
+the old field spelling while ProxyBuilder used _connection. The original clone/
+drop remained but that candidate does not compile. Preserve the failed input.
+A separate used-api-fixed/native-a5 context corrects only that initializer and
+strengthens the lifetime control to require both constructor spellings. No old
+source or receipt is overwritten and no unchanged command is repeated.
