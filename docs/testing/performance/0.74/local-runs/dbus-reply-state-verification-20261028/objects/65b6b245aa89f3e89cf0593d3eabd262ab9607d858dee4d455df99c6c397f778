@@ -1,0 +1,13 @@
+test_builder_unwrap_projection_is_call_scoped_and_string_aware (test_controls.Controls.test_builder_unwrap_projection_is_call_scoped_and_string_aware) ... ok
+test_complete_catalog_and_dependency_nodes (test_controls.Controls.test_complete_catalog_and_dependency_nodes) ... ok
+test_corpus_has_no_assertion_deletions (test_controls.Controls.test_corpus_has_no_assertion_deletions) ... ok
+test_exact_execution_projection_only_two_spelling_changes (test_controls.Controls.test_exact_execution_projection_only_two_spelling_changes) ... ok
+test_exact_native_context_and_unchanged_owner (test_controls.Controls.test_exact_native_context_and_unchanged_owner) ... ok
+test_input_and_product_hashes_still_match (test_controls.Controls.test_input_and_product_hashes_still_match) ... ok
+test_no_transport_routes_or_fake_live_validation (test_controls.Controls.test_no_transport_routes_or_fake_live_validation) ... ok
+test_only_fixed_dispatch (test_controls.Controls.test_only_fixed_dispatch) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.097s
+
+OK

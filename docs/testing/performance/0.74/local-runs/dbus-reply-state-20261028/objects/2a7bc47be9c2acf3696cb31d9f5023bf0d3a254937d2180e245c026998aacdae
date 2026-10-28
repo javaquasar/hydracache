@@ -1,0 +1,70 @@
+"""Inert sealing of exact ReplyState sources and actual native results."""
+from pathlib import Path
+import hashlib,json,re,subprocess,tomllib
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/dbus-reply-state-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/dbus-reply-state-20261028'
+sha=lambda b:hashlib.sha256(b).hexdigest()
+read=lambda p:json.loads(p.read_bytes())
+first=read(BASE/'session/fd-194-build/result.json');assert first['exit']==101 and first['source_unchanged']
+messages=[json.loads(line) for line in (BASE/'session/fd-194-build/stdout.log').read_bytes().splitlines()]
+errors=[m['message'] for m in messages if m.get('reason')=='compiler-message' and m['message']['level']=='error' and m['message']['code']]
+assert len(errors)==1 and errors[0]['code']['code']=='E0432' and 'zbus::wire::Value' in errors[0]['message']
+fixed=BASE/'alias-fixed';native=read(fixed/'session/native-result.json')
+assert native['passed'] and native['source_unchanged'] and native['boot_unchanged'] and len(native['phases'])==10
+models=[]
+for compiler in ('194','188'):
+ listing=read(fixed/f'session/fd-{compiler}-list/result.json');test=read(fixed/f'session/fd-{compiler}-test/result.json')
+ assert listing['artifact']==test['artifact'] and len(listing['inventory'])==67
+ assert test['accounting']['passed']==test['accounting']['selected']==67 and test['accounting']['filtered']==test['accounting']['failed']==0 and test['exit']==0
+ raw=(fixed/f'session/fd-{compiler}-test/stdout.log').read_bytes();rows=re.findall(rb'^test (.+?) \.\.\. (ok|FAILED)$',raw,re.M)
+ assert len(rows)==67 and sorted(n.decode() for n,s in rows)==listing['inventory'] and all(s==b'ok' for _,s in rows)
+ line=[v.decode() for v in raw.splitlines() if v.startswith(b'HC074-REPLY-STATE ')];assert len(line)==1;models.append(line[0])
+ assert 'seed=0740e518 sequences=512 random_steps=16384' in line[0]
+ for action in ('build','list','test','check','clippy'):
+  result=read(fixed/f'session/fd-{compiler}-{action}/result.json');execution=read(fixed/f'session/fd-{compiler}-{action}/execution.json')
+  assert result['exit']==0 and execution['retired'] and not execution['errors']
+assert models[0]==models[1]
+parent=ROOT/'docs/testing/performance/0.74/local-runs/dbus-fragments-20261028'
+assert sha((parent/'index.json').read_bytes())=='ab86dca0ad6ed6f03fc295a47fe22bc20a14f4238b7b773f2b0823a437b09939'
+parent_index=read(parent/'index.json')
+def member(name):
+ row=parent_index['members'][name];raw=(parent/'objects'/row['sha256']).read_bytes();assert sha(raw)==row['sha256'];return raw
+for compiler in ('194','188'):
+ before=member(f'capture/fixed-io-safe/session/fd-{compiler}-test/stdout.log')
+ after=(fixed/f'session/fd-{compiler}-test/stdout.log').read_bytes()
+ for marker in (b'HC074_FLOW_TRACE:',b'HC074_READ_TRACE:',b'HC074_PEER_MISMATCH_TRACE:'):
+  traces=lambda raw:[json.loads(v.split(b':',1)[1]) for v in raw.splitlines() if v.startswith(marker)]
+  assert traces(before)==traces(after)
+old_lock=tomllib.loads(member('capture/fixed-io-safe/input/fd/Cargo.lock').decode())['package']
+new_lock=tomllib.loads((fixed/'input/fd/Cargo.lock').read_text(encoding='utf8'))['package']
+assert len(old_lock)==len(new_lock)==62
+assert [n for n in old_lock if n['name']!='dbus-probe-074']==[n for n in new_lock if n['name']!='dbus-probe-074']
+old_probe=next(n for n in old_lock if n['name']=='dbus-probe-074');new_probe=next(n for n in new_lock if n['name']=='dbus-probe-074')
+assert new_probe==dict(old_probe,dependencies=['libc','tempfile']+old_probe['dependencies'])
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members;members[name]=dict(sha256=digest,bytes=len(raw))
+for context,folder in (('first',BASE),('alias-fixed',fixed)):
+ for area in ('prepare','input','session'):
+  for path in sorted((folder/area).rglob('*')):
+   if path.is_file() and '__pycache__' not in path.parts:add('capture/'+context+'/'+path.relative_to(folder).as_posix(),path)
+for path in sorted((ROOT/'tools/dbus-reply-state-074').glob('*')):
+ if path.is_file():add('source/'+path.relative_to(ROOT).as_posix(),path)
+for name in ('diagnostic_dispatch_exchange.rs','diagnostic_dispatch_exchange_tests.rs','diagnostic_dispatch_reply_flags_tests.rs','diagnostic_dispatch_reply_state_tests.rs','diagnostic_original_reply_binding_tests.rs','protocol.rs'):
+ add('source/tools/long-run-supervisor-074/src/'+name,ROOT/'tools/long-run-supervisor-074/src'/name)
+for name in ('tools/dbus-fragments-074/run.py','tools/dbus-linux-074/native.py','tools/dbus-linux-074/run.py','tools/windows-workspace-preflight-074/owned.py','tools/windows-workspace-preflight-074/prepare.py','scripts/ci/watchdog_linux_group.py','scripts/ci/watchdog_windows_job.py','Cargo.lock','Cargo.toml','deny.toml','docs/testing/performance/0.74/qualification-manifest.toml','target/seal-dbus-reply-state-20261028.py','target/dbus-reply-first-observations-20261028.json'):
+ add('source/'+name,ROOT/name)
+add('predecessor/index.json',parent/'index.json')
+index=dict(schema='hc074-original-reply-state-v1',members=members,native_passes_per_compiler=67,original_cases=25,seeded_model=models[0],package_identities=62,registry_archives=58,
+ source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ original_logic_changes=['wire namespace','NoReplyExpected bitflags spelling'],original_assertions_preserved=True,
+ legacy_and_actual_caller_traces_equal=True,first_refusals_retained=True,root_graph_or_supervisor_changed=False,
+ server=False,services=False,clocks_changed=False,system_bus=False,original_admission=False,product_gate_replayed=False,performance_claim=False,release_admitted=False,archived_code_executed=False)
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

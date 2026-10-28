@@ -494,6 +494,17 @@ observer; the framing defaults are actual zbus code. This does not qualify the
 whole system-manager/original ReplyState path, non-Linux targets or all writers.
 Root adoption, remaining source/effect/distribution and full product gates remain.
 
+The [original ReplyState continuation](dbus-reply-state-result-20261028.md) now
+passes the selected 25 pinned original cases beside all 42 prior controls on both
+GNU Rust 1.88/1.94, with check/strict Clippy. The unchanged seeded model performs
+17,150 owning/borrowed comparisons per image. Live FD shape, poison/lost-ACK and
+hidden-alias negative controls remain. The first namespace-import build refusal
+is kept in its own context. This closes correlation compatibility only, without
+root graph adoption or original manager/execution authority. The user approved
+separate maintained backport-package preparation; publication, installation and
+server runs are not included. Remaining migration/source/effect/distribution,
+Chitchat wide-wire and full product gates stay required.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

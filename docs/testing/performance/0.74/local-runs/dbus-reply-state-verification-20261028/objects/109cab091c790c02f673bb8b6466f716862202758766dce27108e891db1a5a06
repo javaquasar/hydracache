@@ -1,0 +1,12 @@
+{
+  "archived_code_executed": false,
+  "byte_verification_only": true,
+  "exit": 0,
+  "index_sha256": "59d8018a968bf93e59073bf15791d17b861d3bdd7751821d45342c0df52c0072",
+  "inputs_unchanged": true,
+  "members_verified": 1344,
+  "model_checks_per_compiler": 17150,
+  "native_passes_per_compiler": 67,
+  "objects_verified": 427,
+  "release_admitted": false
+}

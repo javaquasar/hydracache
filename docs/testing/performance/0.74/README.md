@@ -7357,3 +7357,12 @@ not started or labeled passed. The raw packet has offline source/wire/retirement
 and estimator replay. The approved short maintenance ends with the exact stable
 supervisor restored (PID 377415, NRestarts=0), no installation or qualification.
 This closes GET-owner, not Release 0.74 or its production original-start gates.
+
+The [original ReplyState compatibility continuation](dbus-reply-state-result-20261028.md)
+passes 67/67 native cases plus check/strict Clippy on Rust 1.88 and 1.94: the 42
+prior cases and 25 pinned original correlation/ownership cases. Every selected
+assertion and the 512-sequence model remain, with 17,150 matching checks per image.
+The first wire::Value build refusal is retained; only fixture alias/builder API
+spellings change, with two spelling changes in the exact execution module.
+Root adoption, maintained package/source/effect/distribution and full product
+milestones remain open, as do authenticated execution/all-writer/recovery gates.

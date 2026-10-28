@@ -1,0 +1,11 @@
+{
+  "bound_seconds": 1200,
+  "capacity_poll_seconds": 5,
+  "classification": "test-failure",
+  "cleanup_seconds": 5,
+  "errors": [],
+  "exit": 1,
+  "observed_child_exit": 1,
+  "production_writer_authority": false,
+  "retired": true
+}

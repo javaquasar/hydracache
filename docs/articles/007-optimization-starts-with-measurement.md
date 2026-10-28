@@ -22214,3 +22214,41 @@ manager path. The child fault does not change parent/host limits or services.
 Root dependencies, original live validation frequency/windows and frozen
 qualification identity remain unchanged. Full authentication/ReplyState faults,
 distribution/root adoption, complete product gates and server admission remain.
+
+### 0.74: проверка исходного ReplyState в standalone zbus-backport
+
+После исправлений CLOEXEC и ancillary truncation мы проверили следующий риск
+миграции: сохранит ли zbus 6 прежние правила корреляции и владения ответом.
+Это проверка совместимости и безопасности, а не новая гипотеза ускорения.
+В отдельный Linux-кандидат перенесён целиком закреплённый исходный ReplyState:
+в исполняемой логике заменены только namespace wire и написание битового флага.
+Проверки, порядок, ветвления и отравление состояния сохранены. В fixture адаптирован
+builder API, откладывающий ошибки до build; конечные проверки не удалялись.
+
+Первый build дал E0432: простая замена namespace не учитывала переименование Value
+в Variant. Этот отказ сохранён до тестов. Отдельный кандидат использует alias
+Variant as Value и проходит 25 исходных тестов вместе с 42 предыдущими — 67/67
+на GNU Rust 1.94 и MSRV 1.88, с check и строгим Clippy. Новых package identities
+не добавлено: прямые fixture-зависимости libc/tempfile уже были в held lock.
+Продуктовый lock, supervisor, проверки и исходные сроки не менялись.
+
+Проверяли неправильные поля и флаги, размер и сигнатуру тела, реальные признаки
+pipe writers через fstat/fcntl, алиасы, изменение CLOEXEC, ранний/повторный ответ,
+потерю ACK и канонические job paths. Независимая модель сохранила seed 0740e518,
+512 последовательностей и 16 384 случайных шага: с фиксированными префиксами
+получено 17 150 совпавших проверок состояния на каждом компиляторе. Это численность
+покрытия; измерений ускорения здесь нет. Предыдущие caller traces не изменились.
+
+Особенно важен отрицательный контроль: скрытый клон Message удерживает writers
+после JobObserved и удаления основного владельца. Следовательно, совпавший ответ
+manager не доказывает прекращения записи и не разрешает освобождение fence.
+Borrowed ReplyState и подготовительный OriginalReplyState сами не удерживают FD.
+Эта граница сохраняется; fixture не подменяет полный original-owner validation frame.
+
+Пользователь согласовал подготовку сопровождаемых backport-пакетов Chitchat/Zstd
+и zbus под Rust 1.88. Публикация, установка и серверные запуски в этот шаг не входят.
+Подтверждён результат локального ReplyState gate. Остаются полный migration/source/
+effect/distribution review, принятие итогового dependency graph, package/workspace
+milestone и original execution/watchdog/completion/reconnect. Подробные ограничения,
+первый отказ и сырые результаты приведены в
+[отчёте ReplyState](../testing/performance/0.74/dbus-reply-state-result-20261028.md).

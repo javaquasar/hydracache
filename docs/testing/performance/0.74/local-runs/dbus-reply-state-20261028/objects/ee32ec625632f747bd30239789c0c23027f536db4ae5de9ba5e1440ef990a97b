@@ -1,0 +1,7 @@
+{
+ "kind": "operator-notes-from-tool-results-not-raw-streams",
+ "before_native_attempt_1": "The initial inert control suite passed 7 of 8; the failed assertion expected slash-separated toolchain path on Windows. It was corrected to normalize separators. No command under test changed.",
+ "before_native_attempt_2": "The first receipt-selector helper raised TypeError because a compiler summary message has code=null. That preflight stopped before output creation or any native launch. Subsequent controls/launch were incorrectly attempted by the shell and refused missing preparation; none executed native work. The selector now inspects coded error-level diagnostics only.",
+ "native_attempt_1": "Complete stdout/stderr/command/accounting and actual E0432 are retained separately. No tests executed.",
+ "no_unchanged_retry_to_pass": true
+}

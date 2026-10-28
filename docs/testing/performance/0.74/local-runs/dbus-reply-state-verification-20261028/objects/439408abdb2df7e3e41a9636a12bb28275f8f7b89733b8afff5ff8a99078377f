@@ -1,0 +1,11 @@
+Diff in \\?\C:\Workspace\prj\jq\cashe\hydracache-074\tools\long-run-supervisor-074\src\diagnostic_dispatch_reply_state_tests.rs:295:
+         coverage.iter().all(|count| *count > 0),
+         "seed={seed:x} coverage={coverage:?}"
+     );
+-    println!("HC074-REPLY-STATE seed={seed:08x} sequences=512 random_steps=16384 checks={} coverage={coverage:?}", coverage.iter().sum::<usize>());
++    println!(
++        "HC074-REPLY-STATE seed={seed:08x} sequences=512 random_steps=16384 checks={} coverage={coverage:?}",
++        coverage.iter().sum::<usize>()
++    );
+ }
+ 

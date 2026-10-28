@@ -1,0 +1,86 @@
+"""Exact original ReplyState source projection; no transport or authority substitutes."""
+from pathlib import Path
+import difflib, json, re, shutil, sys, tomllib, types
+ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT/'tools/windows-workspace-preflight-074'))
+import prepare as p
+fragment=p.load(ROOT/'tools/dbus-fragments-074/run.py','reply_fragment_parent')
+sha,files,write=fragment.sha,fragment.files,fragment.write
+BASE=ROOT/'target/dbus-reply-state-20261028'
+NATIVE='/home/artur/.cache/hydracache-074-dbus-reply-state/20261028-a1'
+SOURCE=ROOT/'tools/long-run-supervisor-074/src'
+NAMES=['diagnostic_dispatch_exchange.rs','diagnostic_dispatch_exchange_tests.rs','diagnostic_dispatch_reply_flags_tests.rs','diagnostic_dispatch_reply_state_tests.rs','diagnostic_original_reply_binding_tests.rs']
+# The first entry is execution logic. The others are the existing fixed corpus.
+PINS={'diagnostic_dispatch_exchange.rs': '3a10d18ef079e33da17e7e48dc28b34e43c11fcc315985bdc91f82d3bcd1ddbf', 'diagnostic_dispatch_exchange_tests.rs': '32668eb8d87dd62a71c9c677c16e9d1146bf447ff1a44144f33eaef7fa50470b', 'diagnostic_dispatch_reply_flags_tests.rs': '2a931adae40f43147c5ee7050354e62afc54c05120c18a730a01bbf69c84b7cc', 'diagnostic_dispatch_reply_state_tests.rs': 'd1d970db92b60c0c474932f55210b29c0eaf632d5ad15636763dfe8034a07116', 'diagnostic_original_reply_binding_tests.rs': '27a8fc475441f047efd28c5da0bb9f8d079c9ecf129cc09fe9c9975b5e849866'}
+FLAGS={'NoReplyExpected':'NO_REPLY_EXPECTED','NoAutoStart':'NO_AUTO_START','AllowInteractiveAuth':'ALLOW_INTERACTIVE_AUTH'}
+
+def project(name,raw):
+ p.require(sha(raw)==PINS[name],'original source pin '+name)
+ s=raw.decode();s=s.replace('zbus::zvariant::','zbus::wire::')
+ for old,new in FLAGS.items():s=s.replace('Flags::'+old,'Flags::'+new)
+ s=s.replace('zbus::message::Flags::NO_REPLY_EXPECTED as u8','zbus::message::Flags::NO_REPLY_EXPECTED.bits()')
+ if name.endswith('_exchange_tests.rs'):
+  for module in ('socket','negotiated'):
+   route=f'#[path = "diagnostic_dispatch_{"exchange_socket" if module=="socket" else "negotiated"}_tests.rs"]\nmod {module}_tests;\n'
+   p.require(s.count(route)==1,'excluded transport route');s=s.replace(route,'',1)
+ # Remove only eager builder-result unwraps. Tokenize strings atomically so
+ # parentheses inside paths/signatures cannot affect the matching call.
+ tokens=list(re.finditer(r'"(?:\\.|[^"\\])*"|[A-Za-z_][A-Za-z_0-9]*|[^\s]',s))
+ edits=[];setters={'method_call','method_return','error','destination','sender','interface','path','member','with_flags'}
+ for i,t in enumerate(tokens):
+  if t.group()!='unwrap' or i<2 or [x.group() for x in tokens[i-1:i+3]]!=['.','unwrap','(',')'] or tokens[i-2].group()!=')':continue
+  depth=1;j=i-3
+  while j>=0 and depth:
+   depth+=(tokens[j].group()==')')-(tokens[j].group()=='(');j-=1
+  if j>=0 and tokens[j].group() in setters:edits.append((tokens[i-1].start(),tokens[i+2].end()))
+ for a,b in reversed(edits):s=s[:a]+s[b:]
+ return s.encode(),len(edits)
+
+def prepare():
+ out=BASE/'prepare';out.mkdir(parents=True,exist_ok=False);(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+ parent=ROOT/'docs/testing/performance/0.74/local-runs/dbus-fragments-20261028'
+ raw=(parent/'index.json').read_bytes();p.require(sha(raw)=='ab86dca0ad6ed6f03fc295a47fe22bc20a14f4238b7b773f2b0823a437b09939','held fragment receipt')
+ index=json.loads(raw)
+ def get(n):
+  row=index['members'][n];b=(parent/'objects'/row['sha256']).read_bytes();p.require(sha(b)==row['sha256'] and len(b)==row['bytes'],'held member');return b
+ review=json.loads(get('capture/fixed-io-safe/prepare/result.json'));source=ROOT/'target/dbus-fragments-20261028/fixed-io-safe/input'
+ p.require(files(source)==review['files'],'exact complete predecessor input')
+ p.require(fragment.prior.parent.old.root_inputs()==review['root_inputs'],'unchanged product roots')
+ dest=BASE/'input';shutil.copytree(source,dest)
+ for path in dest.rglob('*'):
+  if path.is_file() and 'archives' not in path.relative_to(dest).parts:path.write_bytes(path.read_bytes().replace(review['native_root'].encode(),NATIVE.encode()))
+ assets=dest/'assets/tools/dbus-reply-state-074';assets.mkdir(parents=True)
+ changes={};extras=[]
+ for name in NAMES:
+  original=(SOURCE/name).read_bytes();body,count=project(name,original);(out/name).write_bytes(original);(assets/name).write_bytes(body)
+  changes[name]=dict(sha256=sha(original),builder_unwraps_removed=count,diff=''.join(difflib.unified_diff(original.decode().splitlines(True),body.decode().splitlines(True))))
+  if name!='diagnostic_dispatch_exchange.rs':
+   route={'diagnostic_dispatch_exchange_tests.rs':'','diagnostic_dispatch_reply_flags_tests.rs':'reply_flags_tests::','diagnostic_dispatch_reply_state_tests.rs':'reply_state_tests::','diagnostic_original_reply_binding_tests.rs':'original_reply_tests::'}[name]
+   extras+=['reply_state::tests::'+route+m for m in re.findall(r'#\[test\]\s*fn ([A-Za-z_0-9]+)',body.decode())]
+ for variant in ('baseline','fd'):
+  folder=dest/variant;manifest=folder/'probe/Cargo.toml';manifest.write_bytes(manifest.read_bytes()+b'\nlibc = "=0.2.191"\ntempfile = "=3.27.0"\n')
+  lock=folder/'Cargo.lock';before=lock.read_bytes();nodes=tomllib.loads(before.decode())['package']
+  p.require([(n['name'],n['version']) for n in nodes if n['name'] in ('libc','tempfile')]==[('libc','0.2.191'),('tempfile','3.27.0')],'exact existing dependencies')
+  a=before.index(b'name = "dbus-probe-074"');b=before.index(b'\n[[package]]',a)
+  after=before[:a]+before[a:b].replace(b'dependencies = [\n',b'dependencies = [\n "libc",\n "tempfile",\n',1)+before[b:]
+  p.require([n for n in nodes if n['name']!='dbus-probe-074']==[n for n in tomllib.loads(after.decode())['package'] if n['name']!='dbus-probe-074'],'only fixture edges')
+  lock.write_bytes(after)
+  with (folder/'probe/src/lib.rs').open('ab') as f:f.write(('\n#[cfg(test)]\nmod protocol { pub const MAX_PACKET_BYTES:usize=65_536; }\n#[cfg(test)]\n#[path='+json.dumps(NATIVE+'/assets/tools/dbus-reply-state-074/diagnostic_dispatch_exchange.rs')+']\nmod reply_state;\n').encode())
+ write(out,'projection.json',changes)
+ write(out,'result.json',dict(review,files=files(dest),native_root=NATIVE,extras=review['extras']+extras,attempt=5,reuse_passing_baseline=True,source_pins=PINS,release_admitted=False))
+ print(json.dumps(dict(prepared=True,original_tests=len(extras),total_tests=42+len(extras))))
+
+def native_command(attempt):
+ p.require(attempt==4,'single bounded candidate')
+ return ['wsl.exe','-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B','/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-reply-state-074/native.py','session']
+
+def launch(worker):
+ # Reuse the unchanged parent owner, floor, deadlines, accounting and postflight.
+ scope=dict(fragment.launch.__globals__,context=lambda attempt:(BASE,NATIVE),native_command=native_command,__file__=str(Path(__file__)))
+ types.FunctionType(fragment.launch.__code__,scope)(4,worker)
+
+if __name__=='__main__':
+ p.require(len(sys.argv) in (2,3) and (len(sys.argv)==2 or sys.argv[2]=='--worker'),'fixed dispatch')
+ if sys.argv[1]=='prepare':p.require(len(sys.argv)==2,'inert preparation');prepare()
+ elif sys.argv[1]=='session-io-safe':launch(len(sys.argv)==3)
+ else:raise ValueError('fixed command')

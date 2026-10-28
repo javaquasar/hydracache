@@ -1,0 +1,66 @@
+{
+  "boot_after": "9d244b96-fdea-4c2f-86bb-d9b6fca13822",
+  "boot_before": "9d244b96-fdea-4c2f-86bb-d9b6fca13822",
+  "boot_unchanged": true,
+  "clocks_after": {
+    "CLOCK_BOOTTIME": 131942547849,
+    "CLOCK_MONOTONIC": 131942547246,
+    "CLOCK_MONOTONIC_RAW": 131914338109,
+    "CLOCK_REALTIME": 1793171468785349221
+  },
+  "clocks_before": {
+    "CLOCK_BOOTTIME": 3520662941,
+    "CLOCK_MONOTONIC": 3520662315,
+    "CLOCK_MONOTONIC_RAW": 3431146425,
+    "CLOCK_REALTIME": 1793171340363463977
+  },
+  "clocks_changed": false,
+  "native_root": "/home/artur/.cache/hydracache-074-dbus-reply-state/20261028-a2",
+  "passed": true,
+  "phases": [
+    {
+      "exit": 0,
+      "label": "fd-194-build"
+    },
+    {
+      "exit": 0,
+      "label": "fd-194-list"
+    },
+    {
+      "exit": 0,
+      "label": "fd-194-test"
+    },
+    {
+      "exit": 0,
+      "label": "fd-194-check"
+    },
+    {
+      "exit": 0,
+      "label": "fd-194-clippy"
+    },
+    {
+      "exit": 0,
+      "label": "fd-188-build"
+    },
+    {
+      "exit": 0,
+      "label": "fd-188-list"
+    },
+    {
+      "exit": 0,
+      "label": "fd-188-test"
+    },
+    {
+      "exit": 0,
+      "label": "fd-188-check"
+    },
+    {
+      "exit": 0,
+      "label": "fd-188-clippy"
+    }
+  ],
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

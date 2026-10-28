@@ -112,11 +112,13 @@ boundary inventory, not a complete migration/module-closure proof. It shows why
 changing the version or suppressing rust-version would be insufficient. No
 manager channel, FD exchange, policy/enrollment, runtime or live frame is changed.
 
-## Proposed backport packages, pending scope decision
+## Backport-package preparation approved; adoption remains gated
 
 The compatible upstream-only route is exhausted for this graph under Rust 1.88.
 The following work introduces maintained dependency ownership and therefore
-requires an explicit scope decision before product integration:
+has now received explicit user approval for preparation, retaining Rust 1.88 and
+all gates. Publication, installation and server runs are excluded. The following
+steps remain prerequisites before product integration:
 
 1. Prepare a separate, reproducible Chitchat security backport from the exact
    reviewed 0.11.1 archive. Keep the Zstd requirement change isolated. Preserve
@@ -153,3 +155,10 @@ MSRV controls, inert analysis and D-Bus boundary review. Index SHA-256:
 `06c216b4efc54dcf6cab2cad8f2d2d342d20652d0bd14086b1f2ea8d5fabf541`.
 Native binaries/target trees are excluded; the packet does not invent historical
 per-launch image attestations. Raw streams and the zero-test refusal are kept.
+
+The [pinned original ReplyState gate](dbus-reply-state-result-20261028.md) is now
+complete within the standalone zbus candidate: 25 original cases plus 42 prior
+cases, check and strict Clippy on GNU Rust 1.88/1.94. The first import refusal
+remains. This advances item 3 without closing distribution/source/effect, complete
+caller migration or root package/workspace adoption. It grants no execution or
+server authority.
