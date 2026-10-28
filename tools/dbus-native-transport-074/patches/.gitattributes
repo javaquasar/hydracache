@@ -1,0 +1,3 @@
+objects/* -text -diff
+recipe.json -text
+*.diff -text

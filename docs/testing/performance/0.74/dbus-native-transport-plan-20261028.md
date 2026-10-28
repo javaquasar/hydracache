@@ -144,3 +144,30 @@ f2 context is separately frozen. Its fresh actual full test images precede a
 then strict test-cfg/all-feature Clippy. The prior r normal-library proof applies
 to the identical production source; image compilation is recorded separately.
 No system bus, service, real owner, server or product workload is involved.
+
+## Native source revision-2 reconstruction and consumer
+
+The separately pinned canonical recipe reconstructs the exact three native
+source archives from retained upstream bytes and 12 whole-preimage changes.
+All 266 source members equal the qualified f2 inventory. The native factory is
+explicitly nondefault and the zbus provenance records source revision 2;
+normalized/authoring manifests remain identical. Four inert controls verify
+determinism, exact member inventories, modified provenance, stale input/object/
+archive refusal and exclusive unsigned export. The production selected features
+stay exact; the private test consumer records its extra fixture feature separately.
+
+An archive-only consumer excludes predecessor fd/source before materialization.
+The only differing bytes afterwards are two explicit cfg-test formatting changes
+and two vendor-path relocations. Its first inert string-literal control mishandles
+Rust's escaped newline; source and an observed failure summary remain in the
+unexecuted first consumer context. A separate consumer2/native-a7 uses the corrected
+multiline-aware control. Three controls then pass, including exact source inventory
+and nested 65-case driver rendering; rustfmt passes both projected test files.
+No production behavior, test assertion, live count/order, origin or bound changes.
+
+Fresh actual full default images, the same paired 65 cases and strict all-feature
+test-cfg Clippy follow under the original owned envelopes. This is not a rerun of
+the consumed r/f2 runtime candidates: it proves the archive-only distribution
+path and separately formatted consumer. First failures remain. Root security/
+policy/adoption, complete package/workspace and original execution are still
+separate gates; no service/system bus/server/product or performance hypothesis.

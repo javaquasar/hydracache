@@ -82,3 +82,27 @@ Only those 65 identities are enabled, with exact 1,593-catalog / 1,528-filtered
 accounting and strict test-cfg/all-feature Clippy. The inherited normal-library
 proof is r's unchanged production source; fresh image builds are not relabeled
 as library-check runs. No system bus, original owner, service or server runs.
+
+Revision-2 source packaging uses `source_package.py rebuild-only`. Its pinned
+recipe reconstructs all three archives from retained upstream bytes and exact
+replacement objects, without prior target/native trees or embedded code execution.
+266 members match the actual qualified f2 source; 12 upstream changes include the
+explicit nondefault native fixture factory and modified-backport provenance.
+The recipe's selected_features remain the production selection; the private
+consumer additionally selects hc074-unix-fixture in its separate test manifest.
+Four source/negative/export controls pass. The export is unsigned and unpublished.
+
+`consumer_prepare.py prepare` creates consumer2/native-a7 from the actual exported
+archives, excluding the predecessor's loose fd/source tree. Only two cfg-test
+formatting projections and two vendor paths differ from f2; all archive members,
+production code/manifests/lock stay exact. Three controls verify string literals,
+guards, stale preimages, inventory and the unchanged 65-case owner. Rustfmt checks
+both formatted files. The first inert consumer control failed to recognize escaped
+newlines in a Rust XML string; its source/summary and inert consumer are retained.
+No compiler/test ran there. The fixed multiline-aware control is isolated in
+consumer2, with no runtime-assertion or deadline change.
+
+Commit the inputs before `consumer_build_run.py`, then create consumer2's exact
+units-inputs receipt before `consumer_unit_run.py`. The same owned full-image and
+65-case/all-feature strict-Clippy envelopes apply. This consumer gate is distinct
+from root adoption, registry qualification, original delivery and host admission.
