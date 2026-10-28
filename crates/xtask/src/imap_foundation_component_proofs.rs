@@ -254,6 +254,86 @@ pub fn java_seeded_scenario_fingerprint(
     if step_count == 0 || step_count > 10_000 {
         return Err("Java semantic step count is out of bounds".into());
     }
+    fn frame(digest: &mut Sha256, value: &[u8]) {
+        digest.update((value.len() as u32).to_be_bytes());
+        digest.update(value);
+    }
+    let mut digest = Sha256::new();
+    digest.update(b"HCSF075\0");
+    digest.update(2_u32.to_be_bytes());
+    digest.update(seed.to_be_bytes());
+    digest.update((step_count as u32).to_be_bytes());
+    let mut state = seed;
+    for index in 0..step_count {
+        state = java_xorshift(state);
+        let key = (state & 3) as u8;
+        let value = (((state >> 8) & 7) as u8) + 16;
+        let expected = (((state >> 16) & 7) as u8) + 16;
+        let choice = index % 9;
+        frame(&mut digest, format!("seed-{index}").as_bytes());
+        frame(
+            &mut digest,
+            [
+                "put",
+                "put_if_absent",
+                "replace",
+                "remove_if_value",
+                "get_and_put",
+                "set_ttl",
+                "advance",
+                "get_all",
+                "listener_gap",
+            ][choice]
+                .as_bytes(),
+        );
+        let keys = match choice {
+            3 | 5 | 8 => vec![key],
+            7 => vec![key, (((state >> 24) & 3) as u8) + 4],
+            _ => vec![],
+        };
+        digest.update((keys.len() as u32).to_be_bytes());
+        for key in keys {
+            frame(&mut digest, &[key]);
+        }
+        let entry = matches!(choice, 0..=2 | 4);
+        digest.update(u32::from(entry).to_be_bytes());
+        if entry {
+            frame(&mut digest, &[key]);
+            frame(&mut digest, &[value]);
+        }
+        let has_expected = matches!(choice, 2 | 3);
+        digest.update([u8::from(has_expected)]);
+        if has_expected {
+            frame(&mut digest, &[expected]);
+        }
+        let (ttl, ticks) = match choice {
+            0 => ("expire_after", 2_u64),
+            1 => ("eternal", 0),
+            5 => ("expire_after", 1),
+            _ => ("preserve", 0),
+        };
+        frame(&mut digest, ttl.as_bytes());
+        digest.update(ticks.to_be_bytes());
+        digest.update(u64::from(choice == 6).to_be_bytes());
+    }
+    Ok(format!(
+        "v2:{}",
+        digest
+            .finalize()
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>()
+    ))
+}
+
+/// Explicit legacy diagnostic only. It must not identify newly generated proof receipts.
+pub fn legacy_java_seeded_scenario_fingerprint_v1(
+    seed: u64,
+    step_count: usize,
+) -> Result<String, Box<dyn Error>> {
+    if step_count == 0 || step_count > 10_000 {
+        return Err("Java semantic step count is out of bounds".into());
+    }
     let mut digest = Sha256::new();
     digest.update(seed.to_be_bytes());
     let mut state = seed;

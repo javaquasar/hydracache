@@ -61,6 +61,22 @@ service execution. Seeded traces and schedules are local correctness fixtures;
 they allocate no HC/1, HC/2, production operation/error number or durable identity.
 Runtime checkpoint objects have no serialization or persisted format.
 
+Java semantic scenario fingerprints now use development identity `v2:<sha256>`.
+Version 2 hashes the `HCSF075\0` domain, version, seed, counts and length-prefixed
+UTF-8/byte fields, stable textual operation names, optional-value presence, TTL
+kind/ticks and logical advance. It rejects oversized inputs and malformed Unicode
+before hashing. Unprefixed v1 identities are read only by an explicit migration
+helper that also requires the original bounded scenario; they cannot identify new
+evidence. Rust and Java replay independent fixed vectors, including signed seed
+bit patterns. The bounded shrinker reports exhausted replay/work budgets and makes
+no unconditional minimality claim.
+
+The extended Java semantic grammar has runtime version 2 with bounded typed actions
+and explicit capabilities. It is a local reference fixture, not a new HC/1/HC/2
+decoder, SDK generation or persisted value format. Unknown versions fail before
+adapter execution. Version-token observations compare equality/freshness/instance
+scope rather than requiring identical language-local numeric IDs.
+
 The 0.75 migration corpus uses `fixture_version = 1` for bounded development
 staging/dry-run readers only. Runtime replica images preserve logical incarnation
 within the test cluster and have no persisted reader or production transport
@@ -74,7 +90,7 @@ The cluster schedule/fuzz corpus is a bounded development JSON fixture (`version
 numbers. Unknown versions/fields and unsupported transitions fail explicitly. CI
 receipt v2 requires actual-cluster history and semantic-audit execution in addition to
 the v1 proof inventory; old receipts cannot satisfy the new gate. Runtime authenticated
-envelopes, online-transfer manifests, chunks and decision-image deltas are in-process
+envelopes, online-transfer manifests, chunks and sparse owner-decision deltas are in-process
 test types, with no production transport decoder or persisted reader compatibility.
 
 ## Upgrade Rules

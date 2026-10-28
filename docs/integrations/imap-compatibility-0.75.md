@@ -119,6 +119,28 @@ relabel a production observation or silently turn an unsupported operation into 
 
 ## Executable evidence and remaining gates
 
+The bounded typed `ExtendedSemanticScenario` grammar (development version 2) complements the
+retained v1 manifests. `ExtendedMapSemanticAdapter` declares supported actions before execution;
+`UnifiedIMapExtendedSemanticAdapter` executes the real injected Unified owner and retains only
+token references and closeable handles. `ExtendedSemanticOracle` computes expected decisions in
+its own model without calling `UnifiedIMapService` or `BoundedIMapApi` for expected results.
+Observations compare values/TTL, token equality and freshness across ABA/restore, ordered mixed
+bulk receipts, retained Pending/Completed/Unknown results, retirement fences, listener cuts/events
+and resource-owner counts. Numeric version gaps and raw map IDs are deliberately not normalized
+into an identical cross-language ABI claim. This checker is sequential and supplements the
+separate actual-process concurrent and cluster history gates.
+
+The extended fixture bounds are 256 steps, 64 distinct keys/token labels, 1 KiB keys and 4 KiB
+values, with aggregate preflight and at most 32 bounded diagnostic differences. Future versions,
+unknown token labels and unsupported capabilities are rejected before executing the trace.
+Actual dropped-event, reordered-bulk, wrong-TTL/token/time/owner canaries must fail. Snapshot
+handles have explicit hold/close actions; an adapter restore requires them to be closed.
+
+Canonical semantic fingerprints use `v2:<sha256>`, including TTL, length framing, counts and
+optional-value presence. Legacy identities require explicit migration with the original bounded
+scenario; no silent reader fallback is allowed. See `docs/COMPAT.md` for the exact development
+identity scope. New typed async helpers and immutable request DTOs allocate no SDK operation IDs.
+
 `UnifiedIMapServiceSemanticAdapter` implements the existing common `MapSemanticAdapter` over one
 actual injected service. It has no second value, outcome or event owner. Its listener is released
 on close while the caller's service remains available. Seeded manifests run against the independent

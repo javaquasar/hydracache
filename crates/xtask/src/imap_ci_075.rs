@@ -176,6 +176,8 @@ pub fn tooling_command(root: &Path, windows: bool) -> Command {
             "imap_cluster_campaign_075",
             "--test",
             "imap_cluster_fuzz_policy075",
+            "--test",
+            "imap_foundation_generate_075",
             "--locked",
         ])
         .current_dir(root);

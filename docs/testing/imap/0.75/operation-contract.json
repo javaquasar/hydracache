@@ -17,13 +17,27 @@
       {"id":"cursor_iterator_adapters","cancellation":"stop_fetching_and_release_buffer","test_ids":["imap075::iterator_rust::lazy_stale_cursor","imap075::iterator_java::lazy_stale_cursor"]}
     ],
     "unsupported_families": ["remote_entry_processor","remote_predicate","remote_interceptor","distributed_transaction","unbounded_scan"],
+    "runtime_evolution": {
+      "scope":"local_testkit_and_java_reference",
+      "properties": {
+        "fingerprint":"versioned_framed_identity_includes_ttl_presence_and_bounded_shrink",
+        "request":"same_immutable_snapshot_for_validation_digest_and_dispatch",
+        "admission":"namespace_command_deadline_bound_attempt_with_exact_retry",
+        "policy":"immutable_scoped_grants_attenuate_and_revoke_queued_and_stream_access",
+        "replay":"bounded_window_with_irreversible_authenticated_retirement_floor",
+        "async":"actual_reserved_journal_and_typed_helper_owners_preserve_certainty",
+        "transfer":"sparse_owner_decisions_original_outcomes_fences_and_absolute_ttl",
+        "oracle":"independent_extended_model_checks_tokens_bulk_events_lifecycle_and_owners"
+      },
+      "test_ids":["imap075::fingerprint_java::canonical","imap075::fingerprint_rust::golden","imap075::request_snapshot::immutable","imap075::invocation_receipt::binding","imap075::operation_policy::attenuation","imap075::replay_window::fences","imap075::cluster_async::certainty","imap075::typed_async_rust::owners","imap075::typed_async_java::owners","imap075::sparse_transfer::decisions","imap075::semantic_v2::independence"]
+    },
     "cluster_integration": {
       "scope":"testkit_actual_owners",
       "properties": {
         "registry":"same_authenticated_registry_to_cluster_owner_path",
         "authentication":"validated_request_replica_and_ack_binding",
         "listeners":"actual_owner_queues_partition_cut_vectors_and_gap_before_continuation",
-        "transfer":"bounded_runtime_snapshot_and_decision_image_deltas",
+        "transfer":"bounded_runtime_snapshot_and_ordered_decision_deltas",
         "admission":"bounded_tenant_partition_key_and_three_lane_permits",
         "history":"actual_service_stages_checked_by_independent_history_oracle",
         "health":"actual_owner_proof_transfer_and_drain_readiness",

@@ -771,3 +771,56 @@ fn cluster_integration_requires_actual_paths_bounded_lanes_and_independent_proof
             .any(|problem| problem.starts_with("IMap cluster integration")));
     }
 }
+
+#[test]
+fn runtime_evolution_rejects_weakened_identity_policy_async_delta_and_oracle_contracts() {
+    for field in [
+        "fingerprint",
+        "request",
+        "admission",
+        "policy",
+        "replay",
+        "async",
+        "transfer",
+        "oracle",
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |contract| {
+            contract["api_extensions"]["runtime_evolution"]["properties"][field] =
+                serde_json::json!("unbounded_or_unproved");
+        });
+        assert!(
+            problems(&temp)
+                .iter()
+                .any(|problem| problem.starts_with("IMap runtime evolution")),
+            "{field}"
+        );
+    }
+    for (field, value) in [
+        ("scope", serde_json::json!("production")),
+        ("test_ids", serde_json::json!([])),
+        (
+            "test_ids",
+            serde_json::json!([
+                "imap075::fingerprint_java::canonical",
+                "imap075::fingerprint_java::canonical"
+            ]),
+        ),
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |contract| {
+            contract["api_extensions"]["runtime_evolution"][field] = value;
+        });
+        assert!(problems(&temp)
+            .iter()
+            .any(|problem| problem.starts_with("IMap runtime evolution")));
+    }
+    let temp = fixture();
+    edit(&temp.path().join("operation-contract.json"), |contract| {
+        contract["api_extensions"]
+            .as_object_mut()
+            .unwrap()
+            .remove("runtime_evolution");
+    });
+    assert!(xtask::imap_contract::check_contract_dir(temp.path()).is_err());
+}

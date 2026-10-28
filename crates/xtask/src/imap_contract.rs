@@ -159,6 +159,7 @@ struct ApiExtensions {
     local_lifecycle: LocalLifecycleContract,
     release_preparation: ReleasePreparationContract,
     cluster_integration: ClusterIntegrationContract,
+    runtime_evolution: ClusterIntegrationContract,
 }
 
 #[derive(Debug, Deserialize)]
@@ -814,6 +815,14 @@ fn validate_test_registry(
             .map(String::as_str),
     );
     claimed.extend(
+        operations
+            .api_extensions
+            .runtime_evolution
+            .test_ids
+            .iter()
+            .map(String::as_str),
+    );
+    claimed.extend(
         surfaces
             .surfaces
             .iter()
@@ -1091,7 +1100,76 @@ fn validate_operations(
     validate_local_lifecycle(&contract.api_extensions.local_lifecycle, problems);
     validate_release_preparation(&contract.api_extensions.release_preparation, problems);
     validate_cluster_integration(&contract.api_extensions.cluster_integration, problems);
+    validate_runtime_evolution(&contract.api_extensions.runtime_evolution, problems);
     operation_ids
+}
+
+fn validate_runtime_evolution(contract: &ClusterIntegrationContract, problems: &mut Vec<String>) {
+    let expected = [
+        (
+            "fingerprint",
+            "versioned_framed_identity_includes_ttl_presence_and_bounded_shrink",
+        ),
+        (
+            "request",
+            "same_immutable_snapshot_for_validation_digest_and_dispatch",
+        ),
+        (
+            "admission",
+            "namespace_command_deadline_bound_attempt_with_exact_retry",
+        ),
+        (
+            "policy",
+            "immutable_scoped_grants_attenuate_and_revoke_queued_and_stream_access",
+        ),
+        (
+            "replay",
+            "bounded_window_with_irreversible_authenticated_retirement_floor",
+        ),
+        (
+            "async",
+            "actual_reserved_journal_and_typed_helper_owners_preserve_certainty",
+        ),
+        (
+            "transfer",
+            "sparse_owner_decisions_original_outcomes_fences_and_absolute_ttl",
+        ),
+        (
+            "oracle",
+            "independent_extended_model_checks_tokens_bulk_events_lifecycle_and_owners",
+        ),
+    ]
+    .into_iter()
+    .map(|(key, value)| (key.to_owned(), value.to_owned()))
+    .collect::<BTreeMap<_, _>>();
+    let required = [
+        "imap075::fingerprint_java::canonical",
+        "imap075::fingerprint_rust::golden",
+        "imap075::request_snapshot::immutable",
+        "imap075::invocation_receipt::binding",
+        "imap075::operation_policy::attenuation",
+        "imap075::replay_window::fences",
+        "imap075::cluster_async::certainty",
+        "imap075::typed_async_rust::owners",
+        "imap075::typed_async_java::owners",
+        "imap075::sparse_transfer::decisions",
+        "imap075::semantic_v2::independence",
+    ]
+    .into_iter()
+    .collect::<BTreeSet<_>>();
+    let actual = contract
+        .test_ids
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    if contract.scope != "local_testkit_and_java_reference" || contract.properties != expected {
+        problems.push(
+            "IMap runtime evolution must preserve all eight bounded local-only contracts".into(),
+        );
+    }
+    if actual != required || actual.len() != contract.test_ids.len() {
+        problems.push("IMap runtime evolution requires distinct executable Java/Rust proofs for all eight items".into());
+    }
 }
 
 fn validate_cluster_integration(contract: &ClusterIntegrationContract, problems: &mut Vec<String>) {
@@ -1110,7 +1188,7 @@ fn validate_cluster_integration(contract: &ClusterIntegrationContract, problems:
         ),
         (
             "transfer",
-            "bounded_runtime_snapshot_and_decision_image_deltas",
+            "bounded_runtime_snapshot_and_ordered_decision_deltas",
         ),
         (
             "admission",

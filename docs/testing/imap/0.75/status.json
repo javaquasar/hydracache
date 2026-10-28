@@ -85,7 +85,15 @@
       "cluster_partition_admission",
       "actual_cluster_history_chaos",
       "cluster_health_and_drain",
-      "unified_semantic_compatibility"
+      "unified_semantic_compatibility",
+      "canonical_semantic_fingerprint_v2",
+      "immutable_java_requests",
+      "request_bound_admission_attempts",
+      "scoped_operation_grants",
+      "bounded_authenticated_replay_window",
+      "typed_local_and_cluster_async",
+      "sparse_runtime_replica_deltas",
+      "extended_independent_semantic_oracle"
     ],
     "deferred": [
       "production_backend_and_partition_ownership",

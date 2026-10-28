@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 use tempfile::tempdir;
 use xtask::imap_foundation_component_proofs::java_seeded_scenario_fingerprint;
+use xtask::imap_foundation_component_proofs::legacy_java_seeded_scenario_fingerprint_v1;
 use xtask::imap_foundation_component_proofs::{execute_component_proof, ComponentProofKind};
 use xtask::imap_foundation_evidence::{check_at_root, check_receipt_set_at_root};
 use xtask::imap_foundation_generate::generate_at_root;
@@ -112,8 +113,31 @@ fn tampered_component_receipt_fails_seed_replay() {
 #[test]
 fn rust_replays_the_java_seeded_scenario_golden() {
     assert_eq!(
-        java_seeded_scenario_fingerprint(117, 90).unwrap(),
+        legacy_java_seeded_scenario_fingerprint_v1(117, 90).unwrap(),
         "08cd0f692503e5105b115e71a62f165ebdc3ebb3aaf1376d06f0a5ca8e956bfe"
     );
     assert!(java_seeded_scenario_fingerprint(117, 0).is_err());
+    assert!(legacy_java_seeded_scenario_fingerprint_v1(117, 10_001).is_err());
+    let canonical = java_seeded_scenario_fingerprint(117, 90).unwrap();
+    assert_eq!(
+        canonical,
+        "v2:6b84b03698a794d6ce556af4a25f511b232cfae72266ef50f6d484f564b36b12"
+    );
+    assert_eq!(
+        java_seeded_scenario_fingerprint(0, 1).unwrap(),
+        "v2:92c54dd48339f566e25c789078d6de11b3f22e9db1627844ab5ae1bf975d571f"
+    );
+    assert_eq!(
+        java_seeded_scenario_fingerprint(u64::MAX, 18).unwrap(),
+        "v2:3d81c0420a91f8695c6fd5f27469c93754e41889d30b4a6d8ff532a6433b6b3c"
+    );
+    assert_ne!(
+        canonical,
+        java_seeded_scenario_fingerprint(118, 90).unwrap()
+    );
+    assert_ne!(
+        canonical,
+        java_seeded_scenario_fingerprint(117, 89).unwrap()
+    );
+    assert!(java_seeded_scenario_fingerprint(117, 10_001).is_err());
 }

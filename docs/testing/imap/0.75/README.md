@@ -154,11 +154,48 @@ order is implied. Prefix and optional exact-key filters, including binary and em
 share the local Rust/Java contract. Coordinator streams keep their own bounded buffers and
 release registrations on close, auth failure and namespace fencing.
 
-Online transfers keep the source serving while bounded snapshot chunks and ordered actual
-decision images reach staging. Each delta is a full bounded runtime state image, not command
-re-execution or a byte-efficient delta format. Checksum/order/resume and source/staging stamp
+Online transfers keep the source serving while bounded snapshot chunks and ordered sparse
+owner decisions reach staging. A bounded cursor retains key/record/receipt fingerprints and
+fences; deltas carry only changed stored records, deletes, original outcomes, retirement fences
+and authoritative TTL/version metadata. Borrowed preflight measures the sparse payload before
+cloning. Checksum/order/resume and source/staging stamp
 equality fence final cutover. Pending roots or exhausted capture bounds require backpressure
 or explicit restart; a confirmed source write is never silently dropped.
+
+The request-evolution tranche keeps one immutable Java `RequestSnapshot` from validation through
+digest/admission and execution; builders remain caller-thread-confined. Held cluster permits bind
+namespace generation, canonical request, original deadline and grant. Physical attempt leases
+retain credit even if their permit is dropped; overlapping or changed requests fail explicitly,
+while exact retries use the retained outcome.
+
+Optional strict namespace policy uses bounded immutable Read/Write/Listen/Admin grants, scoped
+keys and policy epochs. Attenuation cannot widen rights. Policy changes revoke queued and
+buffered access, including listener values, and wake outside dispatcher/registry locks. Legacy
+test contexts work only while strict policy mode is absent; no policy context falls back to them.
+Authenticated replay windows have bounded lanes and irreversible lower fences; old nonces cannot
+become fresh after memory retirement or trust rotation. Fixed health fields report replay usage.
+
+Cluster invocation futures expose real queue/reserved/dispatch checkpoints. Reservation writes
+and backs up the actual root journal before reporting Reserved. Cancellation before admission
+is NotApplied for a fresh identity; retained proved results take precedence on a cancelled retry.
+After possible owner decisions it preserves Unknown or a retained result backed
+by every required data/coordinator proof. Pending journal image ports retain reservation credit;
+ordinary data/checkpoint and online cutover paths still refuse uncompleted roots.
+
+Rust and Java typed async helpers cover version bulk, ordered outcome lookup, retirement,
+incremental expiry, listener snapshots and checkpoints. They share actual service ledgers and
+bounded ownership rather than another value map. Retried snapshots retain their original cut
+without clearing newer events; undelivered leases close on cancellation/drop. These are local
+helper types, not expanded production SDK operations.
+
+The common Java oracle additionally accepts bounded typed v2 scenarios. Its independent model
+checks token equality/freshness/instance scope, mixed per-item bulk outcomes, lost-response
+recovery, pending/cancelled roots, retirement, resync/restore, actual owner counts and event
+causality. The actual adapter keeps only real handles and token references. Corrupted result
+ordering, TTL, events, tokens, time and ownership must fail independent negative controls.
+These sequential local scenarios supplement the concurrent/cluster history checkers; they do
+not qualify production transport, global iteration or durable recovery. Fingerprint v2 and
+explicit legacy migration are registered in `docs/COMPAT.md`.
 
 Data, safety and repair lanes have separate permits/bytes and per-lane tenant fairness.
 Multi-partition commands reserve every affected partition and key before dispatch. Replica

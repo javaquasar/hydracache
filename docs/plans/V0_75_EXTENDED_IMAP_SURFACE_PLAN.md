@@ -220,6 +220,13 @@ evidence.
 
 ### Provisional safe-foundation progress
 
+The next request-evolution tranche adds framed semantic fingerprints and bounded shrinking,
+immutable Java requests, invocation-bound permits, scoped operation policy, fenced replay-window
+retirement, typed local/cluster async lifecycles, sparse decision deltas and an independent
+extended Java semantic oracle. Actual owner and journal state remain authoritative; all new
+proofs are local/reference scope. The operation contract maps these eight properties to eleven
+distinct Java/Rust test anchors; none closes W0 or activates the production backend.
+
 The next integration tranche joins authenticated registry/admission to the actual test cluster,
 adds member-envelope guards, per-partition subscriptions and online snapshot/decision-image
 transfer, separates data/safety/repair resource lanes, and derives runtime readiness/drain from
