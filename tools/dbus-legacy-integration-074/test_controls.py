@@ -35,6 +35,20 @@ class Controls(unittest.TestCase):
         tree = p.PREVIOUS / 'input/fd/tools/long-run-supervisor-074/Cargo.toml'
         self.assertIn('features = ["tokio-multithread", "proxy", "p2p"]', tree.read_text())
 
+    def test_narrow_bridge_keeps_connection_custody_and_drop_in_runtime(self):
+        before = (p.ROOT / 'tools/dbus-runtime-bridge-074/bridge_v2.rs').read_bytes()
+        current = p.blocking_bridge(before)
+        self.assertIn(b'_connection: Connection,\n    inner: Option<zbus::Proxy', current)
+        self.assertIn(b'_connection: self.connection,', current)
+        self.assertEqual(before.count(b'connection: connection.clone(),'),
+                         current.count(b'connection: connection.clone(),'))
+        drop = before.split(b"impl Drop for Proxy<'_> {", 1)[1].split(b'pub struct ProxyBuilder', 1)[0]
+        self.assertIn(drop, current)
+        for annotation in (b'allow(dead_code)', b'expect(dead_code)'):
+            self.assertNotIn(annotation, current)
+        with self.assertRaises(ValueError):
+            p.blocking_bridge(before + b'\n')
+
 
 if __name__ == '__main__':
     unittest.main()

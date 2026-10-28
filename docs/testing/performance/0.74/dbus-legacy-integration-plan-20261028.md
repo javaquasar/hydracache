@@ -44,3 +44,11 @@ MSRV/Clippy remain unstarted for that source. A distinct api-bound/native-a3
 context changes exactly those two import aliases, keeps every function/test and
 complete lock, and adds refusal controls. It does not repeat the consumed source
 or relabel its failed check.
+
+The api-bound check then succeeds, but strict Clippy refuses three unused private
+bridge API groups: from_async/close, the retained connection field and its getter.
+No lint is waived. The separate used-api/native-a4 candidate removes only those
+three unused methods and names the still-retained ownership field _connection;
+the original clone, field order and in-runtime async-proxy Drop remain. Four
+inert controls now include that lifetime/drop preservation. Check/Clippy/MSRV
+must produce actual distinct verdicts; the two earlier refusals remain intact.

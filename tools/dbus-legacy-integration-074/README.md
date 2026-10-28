@@ -26,3 +26,6 @@ server or product load is invoked. Outputs are exclusive; preserve first failure
 The owner-bound/a2 first check's two wire import errors remain intact. The
 current api-bound/a3 preparation changes those two aliases only; its actual
 GNU/MSRV results are separate from that first refused source.
+Its library check passed but strict Clippy refused unused private bridge methods/
+field exposure. Current used-api/a4 narrows only those unused methods, retains
+the cloned connection in the original field order and keeps runtime Drop exact.

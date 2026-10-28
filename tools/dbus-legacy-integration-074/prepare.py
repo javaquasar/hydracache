@@ -7,9 +7,9 @@ import shutil
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-BASE = ROOT / 'target/dbus-legacy-integration-20261028/api-bound'
+BASE = ROOT / 'target/dbus-legacy-integration-20261028/used-api'
 PREVIOUS = ROOT / 'target/dbus-original-delivery-20261028/unit-api-owned'
-NATIVE = '/home/artur/.cache/hydracache-074-dbus-legacy-integration/20261028-a3'
+NATIVE = '/home/artur/.cache/hydracache-074-dbus-legacy-integration/20261028-a4'
 PKG = 'tools/long-run-supervisor-074'
 NAMES = ('diagnostic_manager.rs', 'diagnostic_loaded.rs', 'systemd_unit.rs')
 PROJECTOR_SHA = '29fe1f3ad3dcd16175c4d2c52ede4ef44e02617a3198e6deadcc2c16eb325d3b'
@@ -80,6 +80,30 @@ def projection(name, raw):
     return text.encode()
 
 
+def blocking_bridge(raw):
+    need(sha(raw) == BRIDGE_SHA, 'qualified v2 blocking source before narrowing')
+    text = raw.decode()
+    # Only three unused, private wrapper entry points; no dummy call or lint waiver.
+    for old in (
+        '    pub fn from_async(connection: zbus::Connection) -> Self {\n        Self(connection)\n    }\n\n',
+        '    pub fn close(self) -> Result<()> {\n        zbus::block_on(self.0.close())\n    }\n',
+        '    pub fn connection(&self) -> &Connection {\n        &self.connection\n    }\n\n',
+    ):
+        need(text.count(old) == 1, 'one compiler-identified unused wrapper')
+        text = text.replace(old, '', 1)
+    for old, new in (
+        ('    connection: Connection,\n    inner: Option<zbus::Proxy',
+         '    _connection: Connection,\n    inner: Option<zbus::Proxy'),
+        ('        Ok(Proxy {\n            connection: self.connection,',
+         '        Ok(Proxy {\n            _connection: self.connection,'),
+    ):
+        need(text.count(old) == 1, 'retained original connection lifetime slot')
+        text = text.replace(old, new, 1)
+    lines = text.splitlines(True)
+    lines.insert(1, 'use zbus6 as zbus;\n')
+    return ''.join(lines).encode()
+
+
 def prepare():
     out = BASE / 'prepare'
     out.mkdir(parents=True, exist_ok=False)
@@ -102,9 +126,7 @@ def prepare():
     bridge = (ROOT / 'tools/dbus-runtime-bridge-074/bridge_v2.rs').read_bytes()
     need(sha(bridge) == BRIDGE_SHA,
          'previously qualified blocking bridge, not first prototype')
-    lines = bridge.decode().splitlines(True)
-    lines.insert(1, 'use zbus6 as zbus;\n')
-    (source / 'diagnostic_blocking_v6.rs').write_bytes(''.join(lines).encode())
+    (source / 'diagnostic_blocking_v6.rs').write_bytes(blocking_bridge(bridge))
     lib = source / 'lib.rs'
     need('diagnostic_blocking_v6' not in lib.read_text(), 'one new private bridge module')
     with lib.open('ab') as stream:
