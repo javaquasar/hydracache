@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [local Chitchat backport preparation](chitchat-backport-result-20261028.md)
+now preserves exact baseline admission/wire behavior across 239 supported cases
+while fixing the 37-stream bound contract and passing the original wide gate.
+It retains the stricter nine-case admission regression and the first preview's
+oversized panic as rejected intermediate inputs. Final S passes 63 selected
+Windows 1.94 tests, 36 MSRV tests, strict Clippy and standalone dependency policy
+after a separate LRU 0.18.2 repair. Four portable source patches and complete
+evidence remain local review material: cost attribution, GNU, product integration,
+publication identity, D-Bus and release/server gates remain open.
+
 The [remaining D-Bus/Zstd feasibility review](remaining-security-feasibility-20261028.md)
 retains the unchanged product graph and its last six-finding policy refusal.
 An isolated two-node Chitchat/Zstd candidate passes 25 original pure unit cases

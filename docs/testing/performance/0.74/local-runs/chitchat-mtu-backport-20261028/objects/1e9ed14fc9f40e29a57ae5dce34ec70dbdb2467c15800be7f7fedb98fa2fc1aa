@@ -1,0 +1,60 @@
+"""Source-only reviewed patch stack; no publication or product dependency adoption."""
+from pathlib import Path
+import difflib,hashlib,json
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-mtu-20261028'
+OLD=ROOT/'target/remaining-security-20261028'
+out=BASE/'portable';out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def read(name):return json.loads((BASE/name).read_bytes())
+assert read('policy-S-194/result.json')['exit']==0
+assert read('clippy-S-194/result.json')['exit']==0
+assert read('wide-S-188/result.json')['accounting']['test_pass']
+original=OLD/'upstream-first/chitchat-0.11.1/review-source'
+upstream=json.loads((OLD/'upstream-first/result.json').read_bytes())['packages']['chitchat']
+members={p.relative_to(original).as_posix():p.read_bytes() for p in original.rglob('*') if p.is_file()}
+assert {n:sha(v) for n,v in members.items()}=={n:r['sha256'] for n,r in upstream['members'].items()}
+canonical=dict(members)
+suffixes={'src/lib.rs':[('migration_review_074','tools/chitchat-zstd-review-074/fixture_tests.rs')],
+ 'src/serialize.rs':[('mtu_review','tools/chitchat-mtu-review-074/stream_tests.rs')],
+ 'src/delta.rs':[('mtu_review','tools/chitchat-mtu-review-074/delta_tests.rs'),('oversize_review','tools/chitchat-mtu-review-074/oversize_tests.rs')]}
+for name,rows in suffixes.items():
+ raw=(BASE/'fixtures/S'/name).read_bytes()
+ for module,path in reversed(rows):
+  suffix=('\n#[cfg(test)]\n#[path = '+json.dumps((ROOT/path).as_posix())+']\nmod '+module+';\n').encode()
+  assert raw.endswith(suffix);raw=raw[:-len(suffix)]
+ canonical[name]=raw
+manifest=members['Cargo.toml'].replace(b'[dependencies.zstd]\nversion = "0.13"',b'[dependencies.zstd]\nversion = "0.14.3"',1).replace(b'[dependencies.lru]\nversion = "0.17"',b'[dependencies.lru]\nversion = "=0.18.2"',1)
+footer=b'\n[dev-dependencies.serde_json]\nversion = "=1.0.150"\n\n[workspace]\nresolver = "2"\n'
+assert manifest.replace(b'resolver = "2"\n',b'',1)+footer==(BASE/'fixtures/S/Cargo.toml').read_bytes()
+canonical['Cargo.toml']=manifest
+canonical['Cargo.toml.orig']=members['Cargo.toml.orig'].replace(b'zstd = "0.13"',b'zstd = "0.14.3"',1).replace(b'lru = "0.17"',b'lru = "=0.18.2"',1)
+states=[];current=dict(members)
+for file,changes in (
+ ('01-bound-and-admission.patch',{'src/serialize.rs':canonical['src/serialize.rs']}),
+ ('02-lifetimes.patch',{n:canonical[n] for n in ('src/lib.rs','src/delta.rs')}),
+ ('03-zstd.patch',{n:current[n].replace(b'version = "0.13"',b'version = "0.14.3"',1) if n=='Cargo.toml' else current[n].replace(b'zstd = "0.13"',b'zstd = "0.14.3"',1) for n in ('Cargo.toml','Cargo.toml.orig')}),
+ ('04-lru.patch',{n:canonical[n] for n in ('Cargo.toml','Cargo.toml.orig')})):
+ before={n:sha(v) for n,v in current.items()};diff=[]
+ for name,value in changes.items():
+  assert current[name]!=value
+  diff.extend(difflib.unified_diff(current[name].decode().splitlines(True),value.decode().splitlines(True),fromfile='a/'+name,tofile='b/'+name))
+  current[name]=value
+ raw=''.join(diff).encode();(out/file).write_bytes(raw)
+ states.append(dict(file=file,sha256=sha(raw),before=before,after={n:sha(v) for n,v in current.items()}))
+assert current==canonical
+assert set(n for n in members if members[n]!=canonical[n])=={'Cargo.toml','Cargo.toml.orig','src/serialize.rs','src/lib.rs','src/delta.rs'}
+for name,raw in canonical.items():
+ if members[name]!=raw:
+  file=out/'review-source'/name;file.parent.mkdir(parents=True,exist_ok=True);file.write_bytes(raw)
+(out/'tested-fixture.lock').write_bytes((BASE/'fixtures/S/Cargo.lock').read_bytes())
+receipt=dict(schema='hc074-local-chitchat-source-patches-v1',upstream_name='chitchat',upstream_version='0.11.1',
+ upstream_archive_sha256=upstream['checksum'],patches=states,
+ compiler_body_equivalence_proved=True,authoring_manifest_dependencies_mirror_tested_normalized_manifest=True,
+ original_upstream_lock_is_data_only=True,tested_fixture_lock_sha256=sha((out/'tested-fixture.lock').read_bytes()),
+ final_source_members={n:sha(v) for n,v in canonical.items()},source_only=True,published=False,
+ performance_cost_attributed=False,gnu_qualified=False,product_adoption_admitted=False,release_admitted=False,
+ source_sha256=sha(Path(__file__).read_bytes()))
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+(out/'receipt.json').write_text(json.dumps(receipt,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+print(json.dumps(dict(patches=len(states),changed_members=5,upstream_checksum=upstream['checksum'],product_adopted=False)))

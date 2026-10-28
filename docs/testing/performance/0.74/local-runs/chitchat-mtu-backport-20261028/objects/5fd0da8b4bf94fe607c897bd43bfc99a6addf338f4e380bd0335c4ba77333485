@@ -1,0 +1,182 @@
+--- lru0.17
++++ lru0.18.2
+@@ -942,7 +942,7 @@
+     /// assert_eq!(Rc::strong_count(&key2), 2); // key2 was only cloned once even though we
+     ///                                         // queried it 2 times
+     /// ```
+-    pub fn get_or_insert_mut_ref<'a, Q, F>(&mut self, k: &'_ Q, f: F) -> &'a mut V
++    pub fn get_or_insert_mut_ref<'a, Q, F>(&'a mut self, k: &'_ Q, f: F) -> &'a mut V
+     where
+         K: Borrow<Q>,
+         Q: Hash + Eq + ?Sized + alloc::borrow::ToOwned<Owned = K>,
+@@ -1283,14 +1283,19 @@
+         match self.map.remove(KeyWrapper::from_ref(k)) {
+             None => None,
+             Some(old_node) => {
+-                let mut old_node = unsafe {
+-                    let mut old_node = *Box::from_raw(old_node.as_ptr());
++                let node_ptr: *mut LruEntry<K, V> = old_node.as_ptr();
++
++                // Detach the node from the linked list *before* freeing it and
++                // dropping the key. `ptr::drop_in_place` below runs the key's
++                // `Drop`, which may panic; if it does, unwinding must not leave
++                // dangling `prev`/`next` pointers in the list. Detaching first
++                // keeps the list consistent regardless of whether `Drop` panics.
++                self.detach(node_ptr);
++
++                let mut old_node = unsafe { *Box::from_raw(node_ptr) };
++                unsafe {
+                     ptr::drop_in_place(old_node.key.as_mut_ptr());
+-
+-                    old_node
+-                };
+-
+-                self.detach(&mut old_node);
++                }
+ 
+                 let LruEntry { key: _, val, .. } = old_node;
+                 unsafe { Some(val.assume_init()) }
+@@ -1473,6 +1478,51 @@
+         } else {
+             false
+         }
++    }
++
++    /// Finds the first entry (in most-recently-used to least-recently-used iteration order)
++    /// that matches the provided predicate and promotes it to the most recently used position.
++    ///
++    /// # Example
++    ///
++    /// ```
++    /// use lru::LruCache;
++    /// use std::num::NonZeroUsize;
++    ///
++    /// let mut cache = LruCache::new(NonZeroUsize::new(3).unwrap());
++    /// cache.put(1, "a");
++    /// cache.put(2, "b");
++    /// cache.put(3, "c");
++    ///
++    /// let found = cache.find_and_promote(|(_, value)| *value == "b");
++    /// assert_eq!(found, Some((&2, &"b")));
++    /// assert_eq!(cache.pop_lru(), Some((1, "a")));
++    /// assert_eq!(cache.pop_lru(), Some((3, "c")));
++    /// assert_eq!(cache.pop_lru(), Some((2, "b")));
++    /// ```
++    pub fn find_and_promote<F>(&mut self, mut predicate: F) -> Option<(&K, &V)>
++    where
++        F: FnMut((&K, &V)) -> bool,
++    {
++        let mut node = unsafe { (*self.head).next };
++
++        while !core::ptr::eq(node, self.tail) {
++            let matches = {
++                let key = unsafe { &*(*node).key.as_ptr() };
++                let val = unsafe { &*(*node).val.as_ptr() };
++                predicate((key, val))
++            };
++
++            if matches {
++                self.detach(node);
++                self.attach(node);
++                return Some(unsafe { (&*(*node).key.as_ptr(), &*(*node).val.as_ptr()) });
++            }
++
++            unsafe { node = (*node).next };
++        }
++
++        None
+     }
+ 
+     /// Returns the number of key-value pairs that are currently in the the cache.
+@@ -2973,6 +3023,51 @@
+     }
+ 
+     #[test]
++    fn test_find_and_promote() {
++        let mut cache = LruCache::new(NonZeroUsize::new(3).unwrap());
++        cache.put(1, "a");
++        cache.put(2, "b");
++        cache.put(3, "c");
++
++        let found = cache.find_and_promote(|(_, value)| *value == "b");
++        assert_eq!(found, Some((&2, &"b")));
++        assert_eq!(cache.pop_lru(), Some((1, "a")));
++        assert_eq!(cache.pop_lru(), Some((3, "c")));
++        assert_eq!(cache.pop_lru(), Some((2, "b")));
++        assert_eq!(cache.pop_lru(), None);
++    }
++
++    #[test]
++    fn test_find_and_promote_no_match() {
++        let mut cache = LruCache::new(NonZeroUsize::new(3).unwrap());
++        cache.put(1, "a");
++        cache.put(2, "b");
++        cache.put(3, "c");
++
++        let found = cache.find_and_promote(|(_, value)| *value == "d");
++        assert_eq!(found, None);
++        assert_eq!(cache.pop_lru(), Some((1, "a")));
++        assert_eq!(cache.pop_lru(), Some((2, "b")));
++        assert_eq!(cache.pop_lru(), Some((3, "c")));
++        assert_eq!(cache.pop_lru(), None);
++    }
++
++    #[test]
++    fn test_find_and_promote_multiple_matches_picks_first_in_mru_order() {
++        let mut cache = LruCache::new(NonZeroUsize::new(3).unwrap());
++        cache.put(1, "b");
++        cache.put(2, "b");
++        cache.put(3, "x");
++
++        let found = cache.find_and_promote(|(_, value)| *value == "b");
++        assert_eq!(found, Some((&2, &"b")));
++        assert_eq!(cache.pop_lru(), Some((1, "b")));
++        assert_eq!(cache.pop_lru(), Some((3, "x")));
++        assert_eq!(cache.pop_lru(), Some((2, "b")));
++        assert_eq!(cache.pop_lru(), None);
++    }
++
++    #[test]
+     fn test_promote_and_demote() {
+         let mut cache = LruCache::new(NonZeroUsize::new(5).unwrap());
+         for i in 0..5 {
+@@ -3085,6 +3180,39 @@
+         assert_eq!(cache.get(&1), Some(&20));
+         assert_eq!(cache.get(&2), Some(&40));
+         assert_eq!(cache.get(&3), Some(&60));
++    }
++
++    #[test]
++    fn test_pop_panicking_key_drop_keeps_list_consistent() {
++        use std::panic::{catch_unwind, AssertUnwindSafe};
++        use std::sync::atomic::{AtomicBool, Ordering};
++
++        static ARMED: AtomicBool = AtomicBool::new(false);
++
++        #[derive(PartialEq, Eq, Hash)]
++        struct PanicKey(u32);
++        impl Drop for PanicKey {
++            fn drop(&mut self) {
++                if ARMED.swap(false, Ordering::SeqCst) {
++                    panic!("PanicKey::drop");
++                }
++            }
++        }
++
++        let mut cache = LruCache::new(NonZeroUsize::new(4).unwrap());
++        cache.put(PanicKey(1), "a");
++        cache.put(PanicKey(2), "b");
++        cache.put(PanicKey(3), "c");
++
++        ARMED.store(true, Ordering::SeqCst);
++        let _ = catch_unwind(AssertUnwindSafe(|| {
++            cache.pop(&PanicKey(2));
++        }));
++
++        cache.put(PanicKey(4), "d");
++        cache.put(PanicKey(5), "e");
++        let _ = cache.get(&PanicKey(3));
++        for (_k, _v) in cache.iter() {}
+     }
+ }
+ 

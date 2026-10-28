@@ -1,0 +1,48 @@
+"""Inert final functional differential; additional preview cost stays unqualified."""
+from pathlib import Path
+import hashlib,json
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-mtu-20261028'
+out=BASE/'comparison-R2';out.mkdir(exist_ok=False)
+def read(name):return json.loads((BASE/name).read_bytes())
+def captured(action,variant,marker):
+ folder=BASE/f'{action}-{variant}-194';result=json.loads((folder/'result.json').read_bytes())
+ assert result['exit']==0 and result['accounting']['test_pass'] and result['source_unchanged'] and result['head_unchanged'] and result['fixture_inputs_unchanged']
+ lines=[l for l in (folder/'stdout.log').read_text(encoding='utf-8').splitlines() if l.startswith(marker)]
+ assert len(lines)==1
+ return json.loads(lines[0][len(marker):])
+old=captured('observe','B','HC074_STREAM_BOUNDS:');fixed=captured('observe','Z','HC074_STREAM_BOUNDS:');new=captured('observe','R2','HC074_STREAM_BOUNDS:')
+ids=[f'{t}/{n}/{k}' for t in (16,200,1000,65535) for n in (0,1,100) for k in range(3)]+['max-string']
+assert all(r['seed']==0x0741028 and [c['id'] for c in r['cases']]==ids for r in (old,fixed,new))
+for a,b,c in zip(old['cases'],fixed['cases'],new['cases']):
+ assert {k:v for k,v in a.items() if k not in ('bounds','bound_held')}=={k:v for k,v in c.items() if k not in ('bounds','bound_held')}
+ assert len(a['bounds'])==len(b['bounds'])==len(c['bounds'])
+ assert all(x<=z<=y for x,y,z in zip(a['bounds'],b['bounds'],c['bounds']))
+ assert c['bound_held'] is True and (not c['bounds'] or c['actual']<=c['bounds'][-1])
+before=captured('delta','B','HC074_SUPPORTED_DELTA:');after=captured('delta','R2','HC074_SUPPORTED_DELTA:')
+assert before['seed']==after['seed']==0x0741028 and len(before['cases'])==len(after['cases'])==239
+for a,b in zip(before['cases'],after['cases']):
+ assert {k:v for k,v in a.items() if k!='bound'}=={k:v for k,v in b.items() if k!='bound'}
+ assert b['bound']>=a['bound']
+ assert b['accepted']==(b['bound']<=b['mtu']) and b['actual']<=b['mtu']
+full=captured('wide','R2','HC074_ZSTD_SNAPSHOT:');prior=captured('wide','Z','HC074_ZSTD_SNAPSHOT:')
+assert len(full['cases'])==37 and full['seed']==0x0741028
+for actual,observed in zip(full['cases'],new['cases']):
+ assert actual=={k:v for k,v in observed.items() if k not in ('bounds','bound_held','actual')}|{'upperbounds':observed['bounds']}
+assert full['faults']==prior['faults'] and len(full['faults'])==7
+assert all(r['accepted'] is False for r in full['faults'])
+assert all(full[n]==dict(isolated=True,output=b'second job'.hex()) for n in ('encoder','decoder'))
+assert read('oversize-B2-194/result.json')['accounting']['test_pass']
+assert read('oversize-G-194/result.json')['accounting']['failed']==1
+assert read('oversize-R2-194/result.json')['accounting']['test_pass']
+for name,digest in read('preparation/R2/result.json')['root_inputs'].items():
+ assert hashlib.sha256((ROOT/name).read_bytes()).hexdigest()==digest
+result=dict(stream_cases=37,supported_operations=239,restored_prior_tightened_admissions=9,
+ actual_admission_and_wires_equal_baseline=True,all_stream_bounds_hold=True,
+ original_wide_gate_pass=True,malformed_controls=7,context_controls=2,
+ new_oversized_cases=3,prototype_oversize_failure_retained=True,
+ performance_cost_attributed=False,preview_also_possible_for_valid_large_rejected_operations=True,
+ product_dependencies_changed=False,product_adoption_admitted=False,release_admitted=False,performance_claim=False)
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+(out/'result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+print(json.dumps(result))

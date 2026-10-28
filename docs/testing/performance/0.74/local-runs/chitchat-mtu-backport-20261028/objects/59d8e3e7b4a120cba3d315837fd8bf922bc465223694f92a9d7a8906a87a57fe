@@ -1,0 +1,11 @@
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -54,7 +54,7 @@
+ version = "0.14"
+ 
+ [dependencies.lru]
+-version = "0.17"
++version = "=0.18.2"
+ 
+ [dependencies.rand]
+ version = "0.10"

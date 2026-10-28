@@ -1,0 +1,18 @@
+{
+  "actual_admission_and_wires_equal_baseline": true,
+  "all_stream_bounds_hold": true,
+  "context_controls": 2,
+  "malformed_controls": 7,
+  "new_oversized_cases": 3,
+  "original_wide_gate_pass": true,
+  "performance_claim": false,
+  "performance_cost_attributed": false,
+  "preview_also_possible_for_valid_large_rejected_operations": true,
+  "product_adoption_admitted": false,
+  "product_dependencies_changed": false,
+  "prototype_oversize_failure_retained": true,
+  "release_admitted": false,
+  "restored_prior_tightened_admissions": 9,
+  "stream_cases": 37,
+  "supported_operations": 239
+}

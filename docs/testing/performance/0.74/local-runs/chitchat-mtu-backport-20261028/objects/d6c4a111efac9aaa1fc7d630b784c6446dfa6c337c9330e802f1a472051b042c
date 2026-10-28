@@ -1,0 +1,30 @@
+import unittest
+
+import accounting as a
+
+
+class Accounting(unittest.TestCase):
+    def test_success_and_failure_are_both_complete_and_distinct(self):
+        for status, passed, failed, outcome in (('ok', 1, 0, 'ok'), ('FAILED', 0, 1, 'FAILED')):
+            text=f'test one ... {outcome}\ntest result: {status}. {passed} passed; {failed} failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s\n'
+            row=a.account(text.encode(), ['one','two'], 'one', True)
+            self.assertEqual(row['test_pass'], failed == 0)
+            self.assertTrue(row['complete'])
+
+    def test_zero_missing_duplicate_wrong_counts_and_ignored_refuse(self):
+        good=b'test one ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s\n'
+        for raw in (b'',good+good,good.replace(b'1 passed',b'0 passed'),good.replace(b'1 filtered',b'2 filtered'),
+                    good.replace(b'0 ignored',b'1 ignored'),good.replace(b'test one',b'test wrong')):
+            with self.assertRaises(ValueError):a.account(raw,['one','two'],'one',True)
+        with self.assertRaises(ValueError):a.account(good,['one','two'],'unknown',True)
+
+    def test_expected_panic_and_prefix_selection_preserve_names(self):
+        text=b'test group::one - should panic ... ok\ntest group::two ... ok\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n'
+        self.assertEqual(a.account(text,['group::one','group::two'],'group::',False)['passed'],2)
+
+    def test_inventory_requires_all_old_and_new_contracts(self):
+        names=['serialize::mtu_review::minimal_bound_contract','delta::mtu_review::supported_delta_operations','migration_review_074::snapshot']+[f'old::{i}' for i in range(102)]
+        raw=('\n'.join(n+': test' for n in names)+'\n\n105 tests, 0 benchmarks\n').encode()
+        self.assertEqual(a.inventory(raw),sorted(names))
+        for bad in (b'',raw+raw,raw.replace(b'105 tests',b'104 tests'),raw.replace(b'old::1: test',b'old::0: test')):
+            with self.assertRaises(ValueError):a.inventory(bad)

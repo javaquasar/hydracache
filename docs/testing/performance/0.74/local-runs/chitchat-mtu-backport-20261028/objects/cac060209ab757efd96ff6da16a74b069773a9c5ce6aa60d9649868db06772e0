@@ -1,0 +1,2439 @@
+{
+  "admission_and_wire_equal_baseline": true,
+  "context_controls": 2,
+  "cost_attributed": false,
+  "final_variant": "S",
+  "fixture_policy_pass": true,
+  "gnu_qualified": false,
+  "malformed_controls": 7,
+  "oversized_cases": 3,
+  "product_policy_replayed": false,
+  "published": false,
+  "release_admitted": false,
+  "root_dependencies_changed": false,
+  "rust_188_selected_passed": 36,
+  "rust_194_selected_passed": 63,
+  "steps": {
+    "bounds-L-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::all_stream_bounds_hold",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7071744,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\L\\194\\6c5cabf9f1455e4df27d41cfca12b737f1cdd1fddac49761eb63ff33f874c4e2\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "080224f9ec3e408289fd93d1f1c31350027992bdafe310448975a625f9035496"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "bounds-M-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::all_stream_bounds_hold",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7071744,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\M\\194\\7c5618dcc2faea4c5930ec7a5c76e5446991a27d2df3a3f30c8971e55e57c81b\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "f4385eed470bfad1caa85963f607ec0c178cdd4cf2b531cadd7f5850279a87a5"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "bounds-R2-188": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::all_stream_bounds_hold",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7329792,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\188\\745087d12fe6f90fb2fa93f71e0558dfa52a6f041b91b3d0e79ded1768356669\\debug\\deps\\chitchat-aa802e18d2395703.exe",
+        "sha256": "73b84cf408d102fca2affcd26bc7f4c0e69cb902829902d2ce3e0e4a9ac4c4c0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "bounds-R2-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::all_stream_bounds_hold",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\194\\2784e048fd5a50db7fa153e58333588fee4d38485df19c9f0675623f2044ff21\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "2db9ceec74f6dbbecdec05d2f3d51c126d44e8c5373d22b51764e83779653dbb"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "bounds-S-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::all_stream_bounds_hold",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\194\\4ac46af86cccbeaed07e8a046e9754693e9112248018112eda09152340fbc012\\debug\\deps\\chitchat-969c3b8d6ebf5529.exe",
+        "sha256": "c816a95608450ab1e75f7687a1e815c09fa35b9646be8fc3eeddeaf64c6ab9b0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "bounds-Z-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::all_stream_bounds_hold",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7075840,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\Z\\194\\a19c16d9578a199583a0e475d0267904ca000366c87daa4c7ac19b974ec7217c\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "bbffa40dcc5ff52541c23fecb182fa6f8805cb724eba52a19eeee38b94110b94"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "build-B-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7071232,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\B\\194\\ba57eb80a9512bb10f353e5ead9e0a0db128d7e65bcb23b701606894dddf7533\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "da5895d3160f29b02be494416c31ed655ac89de1c11878eeb96d6800473e42ae"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "build-B2-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7076352,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\B2\\194\\a6345b354401c2ce8add435bbce8bb3ed8c89dbcacdcfa8103976a6d1228647e\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "68a77a9d5ab2aa5418df6a1a6699d69a66e26ad7796935745ff62edc5f9d7367"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "build-G-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\G\\194\\56172438fd6c2f91793456bcaf8d0fd30eb3e8321e7a43f8cf562749f8649f79\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "6c1e07a0c781605de187a32f969fb1acf31ff9990aa091acef2690abdff454a2"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "build-L-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7071744,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\L\\194\\6c5cabf9f1455e4df27d41cfca12b737f1cdd1fddac49761eb63ff33f874c4e2\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "080224f9ec3e408289fd93d1f1c31350027992bdafe310448975a625f9035496"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "build-M-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7071744,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\M\\194\\7c5618dcc2faea4c5930ec7a5c76e5446991a27d2df3a3f30c8971e55e57c81b\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "f4385eed470bfad1caa85963f607ec0c178cdd4cf2b531cadd7f5850279a87a5"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "build-R-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7077888,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R\\194\\41275b6d5a7909190a74dbd26c70cba478a0e53c24ae56a4aee91f0e5b46eb6c\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "18b6fc842a15309f125a3efaa383a656332414421d956021977ed93de5aeda09"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "build-R2-188": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7329792,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\188\\745087d12fe6f90fb2fa93f71e0558dfa52a6f041b91b3d0e79ded1768356669\\debug\\deps\\chitchat-aa802e18d2395703.exe",
+        "sha256": "73b84cf408d102fca2affcd26bc7f4c0e69cb902829902d2ce3e0e4a9ac4c4c0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "build-R2-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\194\\2784e048fd5a50db7fa153e58333588fee4d38485df19c9f0675623f2044ff21\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "2db9ceec74f6dbbecdec05d2f3d51c126d44e8c5373d22b51764e83779653dbb"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "build-S-188": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7329792,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\188\\ab83cd11d94d74f3cf92848b1fa2e6029269b004bad9913caf5646daad4e4706\\debug\\deps\\chitchat-91c48c10af9b0974.exe",
+        "sha256": "72e502679ad844a1ec76a093eda58603c1c5862bdf523f6fb23dc72ad7d044ed"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "build-S-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\194\\4ac46af86cccbeaed07e8a046e9754693e9112248018112eda09152340fbc012\\debug\\deps\\chitchat-969c3b8d6ebf5529.exe",
+        "sha256": "c816a95608450ab1e75f7687a1e815c09fa35b9646be8fc3eeddeaf64c6ab9b0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "build-Z-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7075840,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\Z\\194\\a19c16d9578a199583a0e475d0267904ca000366c87daa4c7ac19b974ec7217c\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "bbffa40dcc5ff52541c23fecb182fa6f8805cb724eba52a19eeee38b94110b94"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "check-L-194": {
+      "accounting": null,
+      "artifact": null,
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "check-R2-194": {
+      "accounting": null,
+      "artifact": null,
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "check-S-194": {
+      "accounting": null,
+      "artifact": null,
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "check-Z-194": {
+      "accounting": null,
+      "artifact": null,
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "clippy-L-194": {
+      "accounting": null,
+      "artifact": null,
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "clippy-M-194": {
+      "accounting": null,
+      "artifact": null,
+      "exit": 101,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "clippy-R2-194": {
+      "accounting": null,
+      "artifact": null,
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "clippy-S-194": {
+      "accounting": null,
+      "artifact": null,
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "clippy-Z-194": {
+      "accounting": null,
+      "artifact": null,
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "controls": {
+      "accounting": null,
+      "artifact": null,
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "controls-final": {
+      "accounting": null,
+      "artifact": null,
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "delta-B-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::mtu_review::supported_delta_operations",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7071232,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\B\\194\\ba57eb80a9512bb10f353e5ead9e0a0db128d7e65bcb23b701606894dddf7533\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "da5895d3160f29b02be494416c31ed655ac89de1c11878eeb96d6800473e42ae"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "delta-L-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::mtu_review::supported_delta_operations",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7071744,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\L\\194\\6c5cabf9f1455e4df27d41cfca12b737f1cdd1fddac49761eb63ff33f874c4e2\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "080224f9ec3e408289fd93d1f1c31350027992bdafe310448975a625f9035496"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "delta-M-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::mtu_review::supported_delta_operations",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7071744,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\M\\194\\7c5618dcc2faea4c5930ec7a5c76e5446991a27d2df3a3f30c8971e55e57c81b\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "f4385eed470bfad1caa85963f607ec0c178cdd4cf2b531cadd7f5850279a87a5"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "delta-R2-188": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::mtu_review::supported_delta_operations",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7329792,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\188\\745087d12fe6f90fb2fa93f71e0558dfa52a6f041b91b3d0e79ded1768356669\\debug\\deps\\chitchat-aa802e18d2395703.exe",
+        "sha256": "73b84cf408d102fca2affcd26bc7f4c0e69cb902829902d2ce3e0e4a9ac4c4c0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "delta-R2-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::mtu_review::supported_delta_operations",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\194\\2784e048fd5a50db7fa153e58333588fee4d38485df19c9f0675623f2044ff21\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "2db9ceec74f6dbbecdec05d2f3d51c126d44e8c5373d22b51764e83779653dbb"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "delta-S-188": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::mtu_review::supported_delta_operations",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7329792,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\188\\ab83cd11d94d74f3cf92848b1fa2e6029269b004bad9913caf5646daad4e4706\\debug\\deps\\chitchat-91c48c10af9b0974.exe",
+        "sha256": "72e502679ad844a1ec76a093eda58603c1c5862bdf523f6fb23dc72ad7d044ed"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "delta-S-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::mtu_review::supported_delta_operations",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\194\\4ac46af86cccbeaed07e8a046e9754693e9112248018112eda09152340fbc012\\debug\\deps\\chitchat-969c3b8d6ebf5529.exe",
+        "sha256": "c816a95608450ab1e75f7687a1e815c09fa35b9646be8fc3eeddeaf64c6ab9b0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "delta-Z-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::mtu_review::supported_delta_operations",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7075840,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\Z\\194\\a19c16d9578a199583a0e475d0267904ca000366c87daa4c7ac19b974ec7217c\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "bbffa40dcc5ff52541c23fecb182fa6f8805cb724eba52a19eeee38b94110b94"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "delta_up-R2-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::tests::test_delta_op_tag",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_default",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_panic_if_add_after_exceed",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_exceed_mtu_on_add_kv",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_exceed_mtu_on_add_node",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_simple_foo",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_simple_node",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_simple_with_nodes_to_reset",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_with_set_max_version",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 97,
+        "passed": 9,
+        "release_admitted": false,
+        "selected": 9,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\194\\2784e048fd5a50db7fa153e58333588fee4d38485df19c9f0675623f2044ff21\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "2db9ceec74f6dbbecdec05d2f3d51c126d44e8c5373d22b51764e83779653dbb"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "delta_up-S-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::tests::test_delta_op_tag",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_default",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_exceed_mtu_on_add_kv",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_exceed_mtu_on_add_node",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_panic_if_add_after_exceed",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_with_set_max_version",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_simple_foo",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_simple_node",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_simple_with_nodes_to_reset",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 97,
+        "passed": 9,
+        "release_admitted": false,
+        "selected": 9,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\194\\4ac46af86cccbeaed07e8a046e9754693e9112248018112eda09152340fbc012\\debug\\deps\\chitchat-969c3b8d6ebf5529.exe",
+        "sha256": "c816a95608450ab1e75f7687a1e815c09fa35b9646be8fc3eeddeaf64c6ab9b0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "delta_up-Z-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::tests::test_delta_op_tag",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_default",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_exceed_mtu_on_add_node",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_exceed_mtu_on_add_kv",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_panic_if_add_after_exceed",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_simple_foo",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_simple_node",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_simple_with_nodes_to_reset",
+            "ok"
+          ],
+          [
+            "delta::tests::test_delta_serialization_with_set_max_version",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 96,
+        "passed": 9,
+        "release_admitted": false,
+        "selected": 9,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7075840,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\Z\\194\\a19c16d9578a199583a0e475d0267904ca000366c87daa4c7ac19b974ec7217c\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "bbffa40dcc5ff52541c23fecb182fa6f8805cb724eba52a19eeee38b94110b94"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "digest-R2-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "digest::tests::test_digest_serialization",
+            "ok"
+          ],
+          [
+            "digest::tests::test_node_digest_serialization",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 2,
+        "release_admitted": false,
+        "selected": 2,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\194\\2784e048fd5a50db7fa153e58333588fee4d38485df19c9f0675623f2044ff21\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "2db9ceec74f6dbbecdec05d2f3d51c126d44e8c5373d22b51764e83779653dbb"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "digest-S-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "digest::tests::test_node_digest_serialization",
+            "ok"
+          ],
+          [
+            "digest::tests::test_digest_serialization",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 2,
+        "release_admitted": false,
+        "selected": 2,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\194\\4ac46af86cccbeaed07e8a046e9754693e9112248018112eda09152340fbc012\\debug\\deps\\chitchat-969c3b8d6ebf5529.exe",
+        "sha256": "c816a95608450ab1e75f7687a1e815c09fa35b9646be8fc3eeddeaf64c6ab9b0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "digest-Z-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "digest::tests::test_node_digest_serialization",
+            "ok"
+          ],
+          [
+            "digest::tests::test_digest_serialization",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 103,
+        "passed": 2,
+        "release_admitted": false,
+        "selected": 2,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7075840,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\Z\\194\\a19c16d9578a199583a0e475d0267904ca000366c87daa4c7ac19b974ec7217c\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "bbffa40dcc5ff52541c23fecb182fa6f8805cb724eba52a19eeee38b94110b94"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "fetch-S-194": {
+      "accounting": null,
+      "artifact": null,
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "list-B-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7071232,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\B\\194\\ba57eb80a9512bb10f353e5ead9e0a0db128d7e65bcb23b701606894dddf7533\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "da5895d3160f29b02be494416c31ed655ac89de1c11878eeb96d6800473e42ae"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "list-B2-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7076352,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\B2\\194\\a6345b354401c2ce8add435bbce8bb3ed8c89dbcacdcfa8103976a6d1228647e\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "68a77a9d5ab2aa5418df6a1a6699d69a66e26ad7796935745ff62edc5f9d7367"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "list-G-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\G\\194\\56172438fd6c2f91793456bcaf8d0fd30eb3e8321e7a43f8cf562749f8649f79\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "6c1e07a0c781605de187a32f969fb1acf31ff9990aa091acef2690abdff454a2"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "list-L-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7071744,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\L\\194\\6c5cabf9f1455e4df27d41cfca12b737f1cdd1fddac49761eb63ff33f874c4e2\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "080224f9ec3e408289fd93d1f1c31350027992bdafe310448975a625f9035496"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "list-M-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7071744,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\M\\194\\7c5618dcc2faea4c5930ec7a5c76e5446991a27d2df3a3f30c8971e55e57c81b\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "f4385eed470bfad1caa85963f607ec0c178cdd4cf2b531cadd7f5850279a87a5"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "list-R2-188": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7329792,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\188\\745087d12fe6f90fb2fa93f71e0558dfa52a6f041b91b3d0e79ded1768356669\\debug\\deps\\chitchat-aa802e18d2395703.exe",
+        "sha256": "73b84cf408d102fca2affcd26bc7f4c0e69cb902829902d2ce3e0e4a9ac4c4c0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "list-R2-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\194\\2784e048fd5a50db7fa153e58333588fee4d38485df19c9f0675623f2044ff21\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "2db9ceec74f6dbbecdec05d2f3d51c126d44e8c5373d22b51764e83779653dbb"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "list-S-188": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7329792,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\188\\ab83cd11d94d74f3cf92848b1fa2e6029269b004bad9913caf5646daad4e4706\\debug\\deps\\chitchat-91c48c10af9b0974.exe",
+        "sha256": "72e502679ad844a1ec76a093eda58603c1c5862bdf523f6fb23dc72ad7d044ed"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "list-S-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\194\\4ac46af86cccbeaed07e8a046e9754693e9112248018112eda09152340fbc012\\debug\\deps\\chitchat-969c3b8d6ebf5529.exe",
+        "sha256": "c816a95608450ab1e75f7687a1e815c09fa35b9646be8fc3eeddeaf64c6ab9b0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "list-Z-194": {
+      "accounting": null,
+      "artifact": {
+        "bytes": 7075840,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\Z\\194\\a19c16d9578a199583a0e475d0267904ca000366c87daa4c7ac19b974ec7217c\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "bbffa40dcc5ff52541c23fecb182fa6f8805cb724eba52a19eeee38b94110b94"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "message-R2-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "message::tests::test_bad_cluster",
+            "ok"
+          ],
+          [
+            "message::tests::test_syn",
+            "ok"
+          ],
+          [
+            "message::tests::test_ack",
+            "ok"
+          ],
+          [
+            "message::tests::test_syn_ack",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 102,
+        "passed": 4,
+        "release_admitted": false,
+        "selected": 4,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\194\\2784e048fd5a50db7fa153e58333588fee4d38485df19c9f0675623f2044ff21\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "2db9ceec74f6dbbecdec05d2f3d51c126d44e8c5373d22b51764e83779653dbb"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "message-S-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "message::tests::test_ack",
+            "ok"
+          ],
+          [
+            "message::tests::test_bad_cluster",
+            "ok"
+          ],
+          [
+            "message::tests::test_syn",
+            "ok"
+          ],
+          [
+            "message::tests::test_syn_ack",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 102,
+        "passed": 4,
+        "release_admitted": false,
+        "selected": 4,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\194\\4ac46af86cccbeaed07e8a046e9754693e9112248018112eda09152340fbc012\\debug\\deps\\chitchat-969c3b8d6ebf5529.exe",
+        "sha256": "c816a95608450ab1e75f7687a1e815c09fa35b9646be8fc3eeddeaf64c6ab9b0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "message-Z-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "message::tests::test_bad_cluster",
+            "ok"
+          ],
+          [
+            "message::tests::test_syn",
+            "ok"
+          ],
+          [
+            "message::tests::test_ack",
+            "ok"
+          ],
+          [
+            "message::tests::test_syn_ack",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 101,
+        "passed": 4,
+        "release_admitted": false,
+        "selected": 4,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7075840,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\Z\\194\\a19c16d9578a199583a0e475d0267904ca000366c87daa4c7ac19b974ec7217c\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "bbffa40dcc5ff52541c23fecb182fa6f8805cb724eba52a19eeee38b94110b94"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "minimal-B-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::minimal_bound_contract",
+            "FAILED"
+          ]
+        ],
+        "failed": 1,
+        "filtered": 104,
+        "passed": 0,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": false
+      },
+      "artifact": {
+        "bytes": 7071232,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\B\\194\\ba57eb80a9512bb10f353e5ead9e0a0db128d7e65bcb23b701606894dddf7533\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "da5895d3160f29b02be494416c31ed655ac89de1c11878eeb96d6800473e42ae"
+      },
+      "exit": 101,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "minimal-L-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::minimal_bound_contract",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7071744,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\L\\194\\6c5cabf9f1455e4df27d41cfca12b737f1cdd1fddac49761eb63ff33f874c4e2\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "080224f9ec3e408289fd93d1f1c31350027992bdafe310448975a625f9035496"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "minimal-M-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::minimal_bound_contract",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7071744,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\M\\194\\7c5618dcc2faea4c5930ec7a5c76e5446991a27d2df3a3f30c8971e55e57c81b\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "f4385eed470bfad1caa85963f607ec0c178cdd4cf2b531cadd7f5850279a87a5"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "minimal-R2-188": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::minimal_bound_contract",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7329792,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\188\\745087d12fe6f90fb2fa93f71e0558dfa52a6f041b91b3d0e79ded1768356669\\debug\\deps\\chitchat-aa802e18d2395703.exe",
+        "sha256": "73b84cf408d102fca2affcd26bc7f4c0e69cb902829902d2ce3e0e4a9ac4c4c0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "minimal-R2-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::minimal_bound_contract",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\194\\2784e048fd5a50db7fa153e58333588fee4d38485df19c9f0675623f2044ff21\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "2db9ceec74f6dbbecdec05d2f3d51c126d44e8c5373d22b51764e83779653dbb"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "minimal-S-188": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::minimal_bound_contract",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7329792,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\188\\ab83cd11d94d74f3cf92848b1fa2e6029269b004bad9913caf5646daad4e4706\\debug\\deps\\chitchat-91c48c10af9b0974.exe",
+        "sha256": "72e502679ad844a1ec76a093eda58603c1c5862bdf523f6fb23dc72ad7d044ed"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "minimal-S-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::minimal_bound_contract",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\194\\4ac46af86cccbeaed07e8a046e9754693e9112248018112eda09152340fbc012\\debug\\deps\\chitchat-969c3b8d6ebf5529.exe",
+        "sha256": "c816a95608450ab1e75f7687a1e815c09fa35b9646be8fc3eeddeaf64c6ab9b0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "minimal-Z-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::minimal_bound_contract",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7075840,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\Z\\194\\a19c16d9578a199583a0e475d0267904ca000366c87daa4c7ac19b974ec7217c\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "bbffa40dcc5ff52541c23fecb182fa6f8805cb724eba52a19eeee38b94110b94"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "observe-B-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::observe_streams",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7071232,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\B\\194\\ba57eb80a9512bb10f353e5ead9e0a0db128d7e65bcb23b701606894dddf7533\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "da5895d3160f29b02be494416c31ed655ac89de1c11878eeb96d6800473e42ae"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "observe-L-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::observe_streams",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7071744,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\L\\194\\6c5cabf9f1455e4df27d41cfca12b737f1cdd1fddac49761eb63ff33f874c4e2\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "080224f9ec3e408289fd93d1f1c31350027992bdafe310448975a625f9035496"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "observe-M-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::observe_streams",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7071744,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\M\\194\\7c5618dcc2faea4c5930ec7a5c76e5446991a27d2df3a3f30c8971e55e57c81b\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "f4385eed470bfad1caa85963f607ec0c178cdd4cf2b531cadd7f5850279a87a5"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "observe-R2-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::observe_streams",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\194\\2784e048fd5a50db7fa153e58333588fee4d38485df19c9f0675623f2044ff21\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "2db9ceec74f6dbbecdec05d2f3d51c126d44e8c5373d22b51764e83779653dbb"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "observe-S-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::observe_streams",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\194\\4ac46af86cccbeaed07e8a046e9754693e9112248018112eda09152340fbc012\\debug\\deps\\chitchat-969c3b8d6ebf5529.exe",
+        "sha256": "c816a95608450ab1e75f7687a1e815c09fa35b9646be8fc3eeddeaf64c6ab9b0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "observe-Z-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::mtu_review::observe_streams",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7075840,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\Z\\194\\a19c16d9578a199583a0e475d0267904ca000366c87daa4c7ac19b974ec7217c\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "bbffa40dcc5ff52541c23fecb182fa6f8805cb724eba52a19eeee38b94110b94"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "oversize-B2-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::oversize_review::oversized_rejection_preserves_writer",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7076352,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\B2\\194\\a6345b354401c2ce8add435bbce8bb3ed8c89dbcacdcfa8103976a6d1228647e\\debug\\deps\\chitchat-5238fa7b8db783b0.exe",
+        "sha256": "68a77a9d5ab2aa5418df6a1a6699d69a66e26ad7796935745ff62edc5f9d7367"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "oversize-G-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::oversize_review::oversized_rejection_preserves_writer",
+            "FAILED"
+          ]
+        ],
+        "failed": 1,
+        "filtered": 105,
+        "passed": 0,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": false
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\G\\194\\56172438fd6c2f91793456bcaf8d0fd30eb3e8321e7a43f8cf562749f8649f79\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "6c1e07a0c781605de187a32f969fb1acf31ff9990aa091acef2690abdff454a2"
+      },
+      "exit": 101,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "oversize-R2-188": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::oversize_review::oversized_rejection_preserves_writer",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7329792,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\188\\745087d12fe6f90fb2fa93f71e0558dfa52a6f041b91b3d0e79ded1768356669\\debug\\deps\\chitchat-aa802e18d2395703.exe",
+        "sha256": "73b84cf408d102fca2affcd26bc7f4c0e69cb902829902d2ce3e0e4a9ac4c4c0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "oversize-R2-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::oversize_review::oversized_rejection_preserves_writer",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\194\\2784e048fd5a50db7fa153e58333588fee4d38485df19c9f0675623f2044ff21\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "2db9ceec74f6dbbecdec05d2f3d51c126d44e8c5373d22b51764e83779653dbb"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "oversize-S-188": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::oversize_review::oversized_rejection_preserves_writer",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7329792,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\188\\ab83cd11d94d74f3cf92848b1fa2e6029269b004bad9913caf5646daad4e4706\\debug\\deps\\chitchat-91c48c10af9b0974.exe",
+        "sha256": "72e502679ad844a1ec76a093eda58603c1c5862bdf523f6fb23dc72ad7d044ed"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "oversize-S-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "delta::oversize_review::oversized_rejection_preserves_writer",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\194\\4ac46af86cccbeaed07e8a046e9754693e9112248018112eda09152340fbc012\\debug\\deps\\chitchat-969c3b8d6ebf5529.exe",
+        "sha256": "c816a95608450ab1e75f7687a1e815c09fa35b9646be8fc3eeddeaf64c6ab9b0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "policy-R2-194": {
+      "accounting": null,
+      "artifact": null,
+      "exit": 1,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "policy-S-194": {
+      "accounting": null,
+      "artifact": null,
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "serialize-R2-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::tests::test_compressed_serialized_stream_len_when_there_are_no_compressed_blocks",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_empty",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_compressed_serialized_stream",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_bool",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_block_type",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_chitchat_id",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_heartbeat",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_ip",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_compressed_serialized_stream_with_random_data",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_proptest_compressed_stream",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 96,
+        "passed": 10,
+        "release_admitted": false,
+        "selected": 10,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\194\\2784e048fd5a50db7fa153e58333588fee4d38485df19c9f0675623f2044ff21\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "2db9ceec74f6dbbecdec05d2f3d51c126d44e8c5373d22b51764e83779653dbb"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "serialize-S-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::tests::test_compressed_serialized_stream_len_when_there_are_no_compressed_blocks",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_empty",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_compressed_serialized_stream",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_bool",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_block_type",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_chitchat_id",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_heartbeat",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_ip",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_compressed_serialized_stream_with_random_data",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_proptest_compressed_stream",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 96,
+        "passed": 10,
+        "release_admitted": false,
+        "selected": 10,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\194\\4ac46af86cccbeaed07e8a046e9754693e9112248018112eda09152340fbc012\\debug\\deps\\chitchat-969c3b8d6ebf5529.exe",
+        "sha256": "c816a95608450ab1e75f7687a1e815c09fa35b9646be8fc3eeddeaf64c6ab9b0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "serialize-Z-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "serialize::tests::test_compressed_serialized_stream_len_when_there_are_no_compressed_blocks",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_empty",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_compressed_serialized_stream",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_block_type",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_bool",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_heartbeat",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_chitchat_id",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_serialize_ip",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_compressed_serialized_stream_with_random_data",
+            "ok"
+          ],
+          [
+            "serialize::tests::test_proptest_compressed_stream",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 95,
+        "passed": 10,
+        "release_admitted": false,
+        "selected": 10,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7075840,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\Z\\194\\a19c16d9578a199583a0e475d0267904ca000366c87daa4c7ac19b974ec7217c\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "bbffa40dcc5ff52541c23fecb182fa6f8805cb724eba52a19eeee38b94110b94"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "state-R2-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "state::tests::test_apply_delta_reset_does_not_violate_monotonic_property",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_apply_delta_last_gc_equal_max_does_not_reset",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_apply_delta",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_depth_first_single_node",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_depth_first_chitchat",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_should_ignore_dead_nodes",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_missing_node",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_digest",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_delete_after_ttl",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_first_version_is_one",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_missing_node",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_gc_keys_marked_for_deletion",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_with_old_node_state_that_needs_reset",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_set",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_set_with_same_value_updates_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_delta_accepted_when_sender_gc_equals_receiver_max",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_set_and_mark_for_deletion",
+            "ok"
+          ],
+          [
+            "state::tests::test_iter_prefix",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_delta_different_last_gc_is_ok_if_below_max_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_delta_no_reset_if_older_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_delta_on_reset_fresher_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_delta_simple",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_same_value_different_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_set_delete",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_set_with_ttl",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_set_delete_after_ttl_set",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_skip_delta_from_the_future",
+            "ok"
+          ],
+          [
+            "state::tests::test_sorted_stale_nodes_empty",
+            "ok"
+          ],
+          [
+            "state::tests::test_sorted_stale_nodes_insert",
+            "ok"
+          ],
+          [
+            "state::tests::test_sorted_stale_nodes_into_iter",
+            "ok"
+          ],
+          [
+            "state::tests::test_sorted_stale_nodes_offer",
+            "ok"
+          ],
+          [
+            "state::tests::test_stale_node_iter_stale_key_values",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 74,
+        "passed": 32,
+        "release_admitted": false,
+        "selected": 32,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\194\\2784e048fd5a50db7fa153e58333588fee4d38485df19c9f0675623f2044ff21\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "2db9ceec74f6dbbecdec05d2f3d51c126d44e8c5373d22b51764e83779653dbb"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "state-S-188": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "state::tests::test_cluster_state_apply_delta_last_gc_equal_max_does_not_reset",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_apply_delta",
+            "ok"
+          ],
+          [
+            "state::tests::test_apply_delta_reset_does_not_violate_monotonic_property",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_depth_first_chitchat",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_depth_first_single_node",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_missing_node",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_should_ignore_dead_nodes",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_digest",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_delete_after_ttl",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_with_old_node_state_that_needs_reset",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_first_version_is_one",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_missing_node",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_gc_keys_marked_for_deletion",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_set",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_set_with_same_value_updates_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_set_and_mark_for_deletion",
+            "ok"
+          ],
+          [
+            "state::tests::test_delta_accepted_when_sender_gc_equals_receiver_max",
+            "ok"
+          ],
+          [
+            "state::tests::test_iter_prefix",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_delta_no_reset_if_older_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_delta_simple",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_delta_on_reset_fresher_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_delta_different_last_gc_is_ok_if_below_max_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_same_value_different_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_set_delete",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_set_delete_after_ttl_set",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_set_with_ttl",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_skip_delta_from_the_future",
+            "ok"
+          ],
+          [
+            "state::tests::test_sorted_stale_nodes_empty",
+            "ok"
+          ],
+          [
+            "state::tests::test_sorted_stale_nodes_insert",
+            "ok"
+          ],
+          [
+            "state::tests::test_sorted_stale_nodes_into_iter",
+            "ok"
+          ],
+          [
+            "state::tests::test_sorted_stale_nodes_offer",
+            "ok"
+          ],
+          [
+            "state::tests::test_stale_node_iter_stale_key_values",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 74,
+        "passed": 32,
+        "release_admitted": false,
+        "selected": 32,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7329792,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\188\\ab83cd11d94d74f3cf92848b1fa2e6029269b004bad9913caf5646daad4e4706\\debug\\deps\\chitchat-91c48c10af9b0974.exe",
+        "sha256": "72e502679ad844a1ec76a093eda58603c1c5862bdf523f6fb23dc72ad7d044ed"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "state-S-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "state::tests::test_apply_delta_reset_does_not_violate_monotonic_property",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_apply_delta",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_apply_delta_last_gc_equal_max_does_not_reset",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_missing_node",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_depth_first_single_node",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_depth_first_chitchat",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_should_ignore_dead_nodes",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_delta_with_old_node_state_that_needs_reset",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_delete_after_ttl",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_compute_digest",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_first_version_is_one",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_missing_node",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_gc_keys_marked_for_deletion",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_set_and_mark_for_deletion",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_set_with_same_value_updates_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_cluster_state_set",
+            "ok"
+          ],
+          [
+            "state::tests::test_delta_accepted_when_sender_gc_equals_receiver_max",
+            "ok"
+          ],
+          [
+            "state::tests::test_iter_prefix",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_delta_simple",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_delta_on_reset_fresher_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_delta_different_last_gc_is_ok_if_below_max_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_delta_no_reset_if_older_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_apply_same_value_different_version",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_set_delete",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_set_delete_after_ttl_set",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_set_with_ttl",
+            "ok"
+          ],
+          [
+            "state::tests::test_sorted_stale_nodes_empty",
+            "ok"
+          ],
+          [
+            "state::tests::test_node_skip_delta_from_the_future",
+            "ok"
+          ],
+          [
+            "state::tests::test_sorted_stale_nodes_insert",
+            "ok"
+          ],
+          [
+            "state::tests::test_sorted_stale_nodes_into_iter",
+            "ok"
+          ],
+          [
+            "state::tests::test_sorted_stale_nodes_offer",
+            "ok"
+          ],
+          [
+            "state::tests::test_stale_node_iter_stale_key_values",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 74,
+        "passed": 32,
+        "release_admitted": false,
+        "selected": 32,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\194\\4ac46af86cccbeaed07e8a046e9754693e9112248018112eda09152340fbc012\\debug\\deps\\chitchat-969c3b8d6ebf5529.exe",
+        "sha256": "c816a95608450ab1e75f7687a1e815c09fa35b9646be8fc3eeddeaf64c6ab9b0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "wide-R2-188": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "migration_review_074::snapshot",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7329792,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\188\\745087d12fe6f90fb2fa93f71e0558dfa52a6f041b91b3d0e79ded1768356669\\debug\\deps\\chitchat-aa802e18d2395703.exe",
+        "sha256": "73b84cf408d102fca2affcd26bc7f4c0e69cb902829902d2ce3e0e4a9ac4c4c0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "wide-R2-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "migration_review_074::snapshot",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\R2\\194\\2784e048fd5a50db7fa153e58333588fee4d38485df19c9f0675623f2044ff21\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "2db9ceec74f6dbbecdec05d2f3d51c126d44e8c5373d22b51764e83779653dbb"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "wide-S-188": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "migration_review_074::snapshot",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7329792,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\188\\ab83cd11d94d74f3cf92848b1fa2e6029269b004bad9913caf5646daad4e4706\\debug\\deps\\chitchat-91c48c10af9b0974.exe",
+        "sha256": "72e502679ad844a1ec76a093eda58603c1c5862bdf523f6fb23dc72ad7d044ed"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "wide-S-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "migration_review_074::snapshot",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 105,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7084032,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\S\\194\\4ac46af86cccbeaed07e8a046e9754693e9112248018112eda09152340fbc012\\debug\\deps\\chitchat-969c3b8d6ebf5529.exe",
+        "sha256": "c816a95608450ab1e75f7687a1e815c09fa35b9646be8fc3eeddeaf64c6ab9b0"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    },
+    "wide-Z-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "migration_review_074::snapshot",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 104,
+        "passed": 1,
+        "release_admitted": false,
+        "selected": 1,
+        "test_pass": true
+      },
+      "artifact": {
+        "bytes": 7075840,
+        "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-mtu-20261028\\targets\\Z\\194\\a19c16d9578a199583a0e475d0267904ca000366c87daa4c7ac19b974ec7217c\\debug\\deps\\chitchat-b66f3bb58beb435d.exe",
+        "sha256": "bbffa40dcc5ff52541c23fecb182fa6f8805cb724eba52a19eeee38b94110b94"
+      },
+      "exit": 0,
+      "retired": true,
+      "source_head": "eaec7e87eea1c9cec2303c0f90a6869eb53d8814",
+      "source_stable": true
+    }
+  },
+  "stream_cases": 37,
+  "supported_operations": 239,
+  "tool_source_versions": {
+    "tools/chitchat-mtu-review-074/.gitattributes": [
+      "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9"
+    ],
+    "tools/chitchat-mtu-review-074/README.md": [
+      "9030d325e44340262bdb9d4e2cb62d43c0ce6703241f45e722ea1ae1792fb5ea",
+      "d1d9a16a33a4a1544847742e8be9d6491ebb09ec6dd670b886e5bab2580e48d2"
+    ],
+    "tools/chitchat-mtu-review-074/accounting.py": [
+      "320983b1b71e28b53a6e1489dda789bfb174cd3e0563a01cb42aa6188276b9fa",
+      "65ddd7bcb7397b5185812e65bee30db68bde5feab37aa347af1cde6c86addd73"
+    ],
+    "tools/chitchat-mtu-review-074/delta_tests.rs": [
+      "5b6bba203adb1189f56b6dd9a4fda74d6f63f38c2b7d66b43c6e4358ab7489a7"
+    ],
+    "tools/chitchat-mtu-review-074/oversize_tests.rs": [
+      "a0d8964cf91beb623e631e7182fe53bbdb85a4eb0986b6dae4ccfdf55fe73b78"
+    ],
+    "tools/chitchat-mtu-review-074/stream_tests.rs": [
+      "5ce599c8d2ab3c484254ffc12f41866edf8aee014607a54269f428377dd9bc9d"
+    ],
+    "tools/chitchat-mtu-review-074/test_accounting.py": [
+      "d6c4a111efac9aaa1fc7d630b784c6446dfa6c337c9330e802f1a472051b042c",
+      "f733e36acae9daa6a3cd2357ccfc954820d7e304ea7316148f1ca43faa7601ac"
+    ]
+  },
+  "unique_build_image_paths": 11
+}

@@ -1,0 +1,16 @@
+{
+  "accepted_stream_bytes_equal": true,
+  "admission_behavior_unchanged": true,
+  "annotation_only_observations_equal": true,
+  "bounds_fixed": true,
+  "compression_only_observations_equal": false,
+  "parent": "M",
+  "performance_claim": false,
+  "product_adoption_admitted": false,
+  "release_admitted": false,
+  "root_dependencies_changed": false,
+  "stream_cases": 37,
+  "supported_operation_cases": 239,
+  "tighter_admission_cases": [],
+  "variant": "L"
+}

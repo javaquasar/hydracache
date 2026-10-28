@@ -21882,3 +21882,53 @@ for compatible upstream releases. Renaming old crates or excluding Linux would
 mask a boundary rather than resolve it. The main documentation retains this
 decision, the exact patch and all negative results; the product graph and its
 last six-finding policy refusal remain unchanged.
+
+The [local Chitchat backport work](../testing/performance/0.74/chitchat-backport-result-20261028.md)
+turns the earlier broad MTU failure into a minimal counterexample. A one-byte
+string at block threshold one produces thirteen bytes while the old method
+promises ten. Counting all block headers fixes that mathematical bound, but a
+supported-operation comparison catches a different regression: nine of 239
+admissions change even though their old compressed frames fit the requested MTU.
+For one case the estimate moves from 39,998 to 40,001 against a 40,000 limit,
+while the actual frame is only 33,316 bytes. A true conservative bound alone is
+therefore not sufficient evidence of preserved admission behavior.
+
+The candidates remain separate. Lifetime annotations repair strict Clippy;
+the Zstd requirement update repairs the original context controls. An owned
+preview then restores the old estimate when it already bounds the actual next
+frame, and increases it when more headers require that. Its first prototype
+introduces a panic on structurally oversized operations before the caller can
+reject them. The old baseline passes the new rejection/state-preservation test;
+the prototype fails; a separate corrected input restores safe rejection. Keeping
+that history distinguishes an upstream defect from a defect introduced during
+the repair. No old assertion or first failure is removed to create a green result.
+
+The final local source preserves admission and wire bytes on all 239 supported
+cases, holds every bound in the 37-stream matrix, and passes the unmodified
+malformed/context snapshot on Windows and Rust 1.88. Actual executable hashes
+and complete native test lists are bound before selecting tests, so a zero-test
+command cannot repeat the earlier false appearance of success. These are finite
+functional controls; they do not prove arbitrary interoperability or performance.
+
+An independent package policy check also exposes LRU's panic-safety advisory.
+Moving Chitchat to a workspace root changes the effective direct-dependency scope
+of informational unsound advisories. This shows why the old six-finding product
+ledger was not a universal transitive safety certificate. A separate minimum
+patched LRU update preserves the observed streams, admissions and state tests,
+then passes the same policy without new exceptions. The prior refusal stays in
+the packet. Product dependency adoption has not occurred.
+
+The backport is retained as portable source patches and a byte-bound review
+receipt. Independent in-memory replay reconstructs every source member from the
+original archive; this avoids losing the candidate when old build trees are
+cleaned. It does not turn that review receipt into a signed enrollment or a
+published dependency identity. Final local source has passing strict Clippy,
+dependency checks and selected MSRV tests, while GNU and actual HydraCache
+integration remain separate work.
+
+The preview also creates a cost question rather than a throughput win: it can
+allocate, copy and compress extra data on large-item paths, including some
+rejected requests. That cost has not been attributed. The next step must compare
+matched dependency graphs and supported semantics before adopting the source;
+functional compatibility cannot stand in for native non-regression. Original
+live checks, time origins and release budgets remain unchanged throughout.

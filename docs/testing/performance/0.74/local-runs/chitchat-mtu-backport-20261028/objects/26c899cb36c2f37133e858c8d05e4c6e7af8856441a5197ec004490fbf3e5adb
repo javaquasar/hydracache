@@ -1,0 +1,51 @@
+"""Independent exact in-memory patch replay; never executes archived source."""
+from pathlib import Path,PurePosixPath
+import hashlib,io,json,re,tarfile
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-mtu-20261028'
+out=BASE/'portable-verification';out.mkdir(exist_ok=False)
+folder=ROOT/'tools/chitchat-mtu-review-074/patches'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+receipt=json.loads((folder/'receipt.json').read_bytes())
+archive=(ROOT/'target/remaining-security-20261028/upstream-first/chitchat-0.11.1.crate').read_bytes()
+assert sha(archive)==receipt['upstream_archive_sha256']
+files={}
+with tarfile.open(fileobj=io.BytesIO(archive),mode='r:gz') as source:
+ for member in source:
+  path=PurePosixPath(member.name)
+  assert path.parts[0]=='chitchat-0.11.1' and '..' not in path.parts
+  assert member.isdir() or member.isfile()
+  if member.isfile():
+   assert member.size<=4*1024*1024
+   files['/'.join(path.parts[1:])]=source.extractfile(member).read()
+def replay(raw):
+ lines=raw.decode('utf-8').splitlines(keepends=True);i=0
+ while i<len(lines):
+  assert lines[i].startswith('--- a/');name=lines[i][6:].rstrip('\n');i+=1
+  assert lines[i]=='+++ b/'+name+'\n' and name in files;i+=1
+  original=files[name].decode('utf-8').splitlines(keepends=True);result=[];cursor=0
+  while i<len(lines) and lines[i].startswith('@@ '):
+   h=re.fullmatch(r'@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@.*\n',lines[i]);assert h;i+=1
+   old_start,old_count,new_start,new_count=h.groups()
+   start=int(old_start)-1;assert cursor<=start<=len(original)
+   result.extend(original[cursor:start]);cursor=start;assert len(result)==int(new_start)-1
+   consumed=written=0
+   while i<len(lines) and not lines[i].startswith(('@@ ','--- a/')):
+    line=lines[i];i+=1;kind=line[0];value=line[1:];assert kind in (' ','-','+')
+    if kind in (' ','-'):
+     assert cursor<len(original) and original[cursor]==value
+     cursor+=1;consumed+=1
+    if kind in (' ','+'):result.append(value);written+=1
+   assert consumed==int(old_count or 1) and written==int(new_count or 1)
+  result.extend(original[cursor:]);files[name]=''.join(result).encode()
+for patch in receipt['patches']:
+ assert {n:sha(v) for n,v in files.items()}==patch['before']
+ raw=(folder/patch['file']).read_bytes();assert sha(raw)==patch['sha256'];replay(raw)
+ assert {n:sha(v) for n,v in files.items()}==patch['after']
+assert {n:sha(v) for n,v in files.items()}==receipt['final_source_members']
+assert sha((folder/'tested-fixture.lock').read_bytes())==receipt['tested_fixture_lock_sha256']
+result=dict(verified=True,patches=4,source_members=len(files),archived_code_executed=False,
+ product_adopted=False,source_sha256=sha(Path(__file__).read_bytes()),receipt_sha256=sha((folder/'receipt.json').read_bytes()))
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+(out/'result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+print(json.dumps(result))

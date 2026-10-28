@@ -1,0 +1,77 @@
+{
+  "doc_check_pass": true,
+  "gate_replayed": false,
+  "members": {
+    "doc-check/document-inputs.json": {
+      "bytes": 653,
+      "sha256": "cbee65244ef4b619caef8077f7338c1f612fb26904943233b360e30866a52803"
+    },
+    "doc-check/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "doc-check/intent.json": {
+      "bytes": 387226,
+      "sha256": "5894516d0a978b9848dff8663b62bb936afec903157f08cb9f7bc2d6ad54bbdd"
+    },
+    "doc-check/launcher.py": {
+      "bytes": 9848,
+      "sha256": "ecd0f8239fd187a8b0ff71d8a318612de3675d2e2502adc40af22aaf889e51e0"
+    },
+    "doc-check/result.json": {
+      "bytes": 386943,
+      "sha256": "e5578685c9c2618eb6bf169f3c27d7d53f902fe6dd235bfe0750f879d420a8ea"
+    },
+    "doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "document/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1498561,
+      "sha256": "2ea2f9711f29b5d53877e24033c59a6fec7d67f39ab4898c6dce0570130dfc69"
+    },
+    "document/docs/testing/performance/0.74/README.md": {
+      "bytes": 496674,
+      "sha256": "a547a551550766a4032cb9dc0bae79a79f8b929f08194ff68bcc4425ce364e01"
+    },
+    "document/docs/testing/performance/0.74/chitchat-backport-result-20261028.md": {
+      "bytes": 8872,
+      "sha256": "f333e1e1744956ba5d01c451a53122c674370381404ce3eb1eb83bf7694a766f"
+    },
+    "document/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 31641,
+      "sha256": "d61a84ec08f4b05293f6fec952af0717d7a657cd069f17a963aba80645e57227"
+    },
+    "producer/retain-mtu-verification-20261028.py": {
+      "bytes": 2117,
+      "sha256": "6d907240cac21ea8bb7edd30fc2abcff937e82ece0b86d1e46d772248398c4fa"
+    },
+    "producer/verify-mtu-packet-20261028.py": {
+      "bytes": 3976,
+      "sha256": "b83899f4c1171670e59a819bcc4a6a49175c9c62762bf5d9dbf320b027925fbf"
+    },
+    "verification/intent.json": {
+      "bytes": 219,
+      "sha256": "38839ce9b297ccc473eb91269bdc180b2012a0dcd59fa1a60b3d905a77067164"
+    },
+    "verification/producer.py": {
+      "bytes": 3976,
+      "sha256": "b83899f4c1171670e59a819bcc4a6a49175c9c62762bf5d9dbf320b027925fbf"
+    },
+    "verification/result.json": {
+      "bytes": 465,
+      "sha256": "d148891d33825e5952588e260d06172aa9b700823f743058d832671eb0cd507e"
+    }
+  },
+  "native_or_archive_code_executed": false,
+  "parent_index_sha256": "d6fc98b961530fdc3b879018521500c80d65094e7f160263b7318fa8870d5dfe",
+  "parent_members_verified": 855,
+  "parent_objects_verified": 371,
+  "product_adopted": false,
+  "release_admitted": false,
+  "schema": "hc074-chitchat-backport-verification-v1"
+}

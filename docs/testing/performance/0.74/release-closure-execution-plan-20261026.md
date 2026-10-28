@@ -406,6 +406,17 @@ is separately maintained, distributable backports under Rust 1.88, including
 supported-MTU attribution and real zbus blocking/wire migration. Scope approval
 is required before adopting that dependency-maintenance responsibility.
 
+The subsequent [local Chitchat backport](chitchat-backport-result-20261028.md)
+prepares source-only patches after the operator's continuation. Separate bound,
+lifetime, Zstd, admission and LRU steps retain their original failures. Final
+functional controls preserve all 239 supported admission/wire cases and pass the
+original 37-stream/malformed/context snapshot. Standalone policy, check/Clippy
+and MSRV controls pass, but the preview's allocation/copy/CPU cost is unqualified.
+No root dependency is adopted. Next attribute that cost under matched semantics,
+then GNU/integration/distribution and D-Bus gates before the final complete
+package/workspace milestone. The newly exposed LRU advisory is tracked despite
+the original product policy's narrower unsound-advisory scope.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

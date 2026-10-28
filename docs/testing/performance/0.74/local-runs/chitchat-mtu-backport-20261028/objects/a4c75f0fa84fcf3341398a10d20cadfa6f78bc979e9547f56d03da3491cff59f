@@ -1,0 +1,13 @@
+
+running 2 tests
+test digest::tests::test_node_digest_serialization ... ok
+test digest::tests::test_digest_serialization ... ok
+
+successes:
+
+successes:
+    digest::tests::test_digest_serialization
+    digest::tests::test_node_digest_serialization
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 104 filtered out; finished in 0.00s
+

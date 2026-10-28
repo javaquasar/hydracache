@@ -1,0 +1,10 @@
+test_expected_panic_and_prefix_selection_preserve_names (test_accounting.Accounting.test_expected_panic_and_prefix_selection_preserve_names) ... ok
+test_extension_preserves_all_105_and_adds_only_named_regression (test_accounting.Accounting.test_extension_preserves_all_105_and_adds_only_named_regression) ... ok
+test_inventory_requires_all_old_and_new_contracts (test_accounting.Accounting.test_inventory_requires_all_old_and_new_contracts) ... ok
+test_success_and_failure_are_both_complete_and_distinct (test_accounting.Accounting.test_success_and_failure_are_both_complete_and_distinct) ... ok
+test_zero_missing_duplicate_wrong_counts_and_ignored_refuse (test_accounting.Accounting.test_zero_missing_duplicate_wrong_counts_and_ignored_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.003s
+
+OK

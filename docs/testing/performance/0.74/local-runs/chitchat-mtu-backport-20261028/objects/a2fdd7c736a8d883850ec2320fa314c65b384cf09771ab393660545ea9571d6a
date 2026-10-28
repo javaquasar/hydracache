@@ -1,0 +1,56 @@
+"""Retain local backport source, independent hypotheses and all first refusals."""
+from pathlib import Path
+import hashlib,json,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-mtu-20261028'
+OLD=ROOT/'target/remaining-security-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-mtu-backport-20261028'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+ledger=json.loads((BASE/'ledger-v2/result.json').read_bytes())
+assert ledger['fixture_policy_pass'] and ledger['rust_194_selected_passed']==63 and ledger['rust_188_selected_passed']==36
+assert json.loads((BASE/'portable-verification/result.json').read_bytes())['verified']
+checkout={}
+source_cache=Path('C:/Users/ArturBuzov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f')
+libraries=json.loads((OLD/'upstream-first/result.json').read_bytes())['packages']
+for name in ('zstd','zstd-safe'):
+ row=libraries[name];folder=source_cache/(name+'-'+row['version'])
+ assert all(sha((folder/n).read_bytes())==v['sha256'] for n,v in row['members'].items())
+ checkout[name]=dict(version=row['version'],all_primary_members_equal=True,postflight_only=True,per_lookup_seal=False)
+lru=json.loads((BASE/'lru-source/result.json').read_bytes());folder=source_cache/'lru-0.18.2'
+assert all(sha((folder/n).read_bytes())==v['sha256'] for n,v in lru['members'].items())
+checkout['lru']=dict(version='0.18.2',all_primary_members_equal=True,postflight_only=True,per_lookup_seal=False)
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members
+ members[name]=dict(sha256=digest,bytes=len(raw))
+for top in sorted(BASE.iterdir()):
+ if top.name=='targets':continue
+ for path in ([top] if top.is_file() else sorted(top.rglob('*'))):
+  if path.is_file() and path.suffix!='.exe':add('capture/'+path.relative_to(BASE).as_posix(),path)
+for pattern in ('mtu-*20261028.py','mtu-*20261028.json','seal-mtu-20261028.py'):
+ for path in sorted((ROOT/'target').glob(pattern)):add('producer/'+path.name,path)
+for path in sorted((ROOT/'tools/chitchat-mtu-review-074').rglob('*')):
+ if path.is_file() and '__pycache__' not in path.parts:add('source/current/'+path.relative_to(ROOT).as_posix(),path)
+for name in ('Cargo.toml','Cargo.lock','deny.toml','tools/long-run-supervisor-074/Cargo.toml',
+ 'docs/testing/performance/0.74/qualification-manifest.toml','tools/chitchat-zstd-review-074/fixture_tests.rs'):
+ add('source/current/'+name,ROOT/name)
+for name,version in (('chitchat','0.11.1'),('zstd','0.14.3'),('zstd-safe','8.2.0')):
+ add('registry/'+name+'-'+version+'.crate',OLD/'upstream-first'/(name+'-'+version+'.crate'))
+for name,version in (('zstd','0.13.3'),('zstd-safe','7.2.4'),('lru','0.17.0')):
+ add('registry/'+name+'-'+version+'.crate',Path('C:/Users/ArturBuzov/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f')/(name+'-'+version+'.crate'))
+index=dict(schema='hc074-local-chitchat-backport-v1',members=members,source_heads=sorted({r['source_head'] for r in ledger['steps'].values()}),
+ archive_commit_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ stream_cases=37,supported_operations=239,original_admission_and_wire_preserved=True,
+ first_failures_retained=True,strict_clippy_pass=True,fixture_policy_pass=True,
+ native_selected_passes={'rust_194':63,'rust_188':36},complete_catalogs={'original':105,'with_exact_oversize_addition':106},
+ checkout_postflight=checkout,cost_attributed=False,gnu_qualified=False,root_dependencies_changed=False,
+ product_gate_replayed=False,published=False,release_admitted=False,
+ live_checks_or_deadlines_changed=False,server=False,services=False,clocks=False,performance_claim=False,
+ sealer_executed_archived_code=False)
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf-8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf-8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

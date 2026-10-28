@@ -1,0 +1,12 @@
+{
+  "schema": "hc074-mtu-admission-preservation-proposal-v1",
+  "parent": "Z",
+  "candidate": "R",
+  "known_counterexamples": "comparison-M/result.json: nine supported operations rejected despite old frames fitting MTU",
+  "goal": "Preserve old admission and wire bytes when the actual next frame fits, while retaining a true upperbound",
+  "change": "For more than two pending blocks only, preview finish on an owned Clone and return max(previous estimate, actual preview length); common one/two-block calculation stays cheap",
+  "new_effects": "Additional local allocation/copy/compression on the rare preview branch; must be attributed before product adoption",
+  "checks_unchanged": "Original minimal/broad/supported-operation assertions, native inventories and all budgets; no new acceptance threshold",
+  "performance_claim": false,
+  "product_adoption_admitted": false
+}

@@ -1,0 +1,9 @@
+{
+  "documents": {
+    "docs/articles/007-optimization-starts-with-measurement.md": "2ea2f9711f29b5d53877e24033c59a6fec7d67f39ab4898c6dce0570130dfc69",
+    "docs/testing/performance/0.74/README.md": "a547a551550766a4032cb9dc0bae79a79f8b929f08194ff68bcc4425ce364e01",
+    "docs/testing/performance/0.74/chitchat-backport-result-20261028.md": "f333e1e1744956ba5d01c451a53122c674370381404ce3eb1eb83bf7694a766f",
+    "docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": "d61a84ec08f4b05293f6fec952af0717d7a657cd069f17a963aba80645e57227"
+  },
+  "executable_sha256": "b7a6cc3e1dc61bb610c0e7948aa692fe74123f7a9957c5850883d6822cf3c8ce"
+}

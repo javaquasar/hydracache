@@ -1,0 +1,56 @@
+"""Isolated admission-preservation candidate after the recorded stricter bound."""
+from pathlib import Path
+import difflib,hashlib,json,shutil
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-mtu-20261028'
+out=BASE/'preparation/R';out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def files(folder):return {p.relative_to(folder).as_posix():sha(p.read_bytes()) for p in sorted(folder.rglob('*')) if p.is_file()}
+prior=json.loads((BASE/'preparation/Z/result.json').read_bytes())
+assert json.loads((BASE/'comparison-Z/result.json').read_bytes())['original_wide_snapshot_pass']
+assert json.loads((BASE/'clippy-Z-194/result.json').read_bytes())['exit']==0
+assert len(json.loads((BASE/'comparison-M/result.json').read_bytes())['tighter_admission_cases'])==9
+source=BASE/'fixtures/Z';assert files(source)==prior['files']
+dest=BASE/'fixtures/R';shutil.copytree(source,dest)
+name='src/serialize.rs';before=(dest/name).read_text(encoding='utf-8')
+old='''            let num_blocks = (self.uncompressed_block.len() + new_item_serialized_len)
+                .div_ceil(self.block_threshold);
+            BLOCK_META_LEN * num_blocks
+                + self.output.len()
+                + self.uncompressed_block.len()
+                + new_item_serialized_len
+                + 1 // No more blocks tag.'''
+new='''            let previous_bound = BLOCK_META_LEN
+                + self.output.len()
+                + self.uncompressed_block.len()
+                + BLOCK_META_LEN
+                + new_item_serialized_len
+                + 1;
+            if self.uncompressed_block.len() + new_item_serialized_len
+                <= self.block_threshold * 2
+            {
+                previous_bound
+            } else {
+                assert!(self.block_threshold > 0, "positive block threshold");
+                // Internal Serializable implementations emit stable owned data.
+                // Keep old admission when its estimate already bounds the frame;
+                // otherwise account for every additional block. No original
+                // writer/builder state is changed by this local preview.
+                let mut preview = self.clone();
+                preview.append(item);
+                previous_bound.max(preview.finish().len())
+            }'''
+assert before.count(old)==1 and before.count('pub struct CompressedStreamWriter {')==1
+after=before.replace('pub struct CompressedStreamWriter {','#[derive(Clone)]\npub struct CompressedStreamWriter {',1).replace(old,new,1)
+(dest/name).write_text(after,encoding='utf-8',newline='\n')
+patch=''.join(difflib.unified_diff(before.splitlines(True),after.splitlines(True),fromfile='a/'+name,tofile='b/'+name))
+(out/'source.patch').write_text(patch,encoding='utf-8',newline='\n')
+proposal=ROOT/'target/mtu-preserving-proposal-20261028.json'
+(out/'proposal.json').write_bytes(proposal.read_bytes());(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+result=dict(prior,variant='R',parent='Z',files=files(dest),source_patch_sha256=sha((out/'source.patch').read_bytes()),targets={})
+for compiler in ('194','188'):
+ identity=sha(json.dumps(dict(files=result['files'],overlays=result['overlays'],compiler=compiler),sort_keys=True).encode())
+ result['targets'][compiler]=str(BASE/'targets/R'/compiler/identity)
+for name,digest in result['root_inputs'].items():assert sha((ROOT/name).read_bytes())==digest
+(out/'result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+print(json.dumps(dict(variant='R',parent='Z',hypothesis='preserve admission with a safe rare-branch bound',root_graph_changed=False)))

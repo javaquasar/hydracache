@@ -1,0 +1,15 @@
+{
+  "cost_qualified": false,
+  "first_refusals_preserved": true,
+  "fixture_policy_pass": true,
+  "gnu_qualified": false,
+  "index_sha256": "d6fc98b961530fdc3b879018521500c80d65094e7f160263b7318fa8870d5dfe",
+  "members": 855,
+  "native_or_archive_code_executed": false,
+  "objects": 371,
+  "product_gate_replayed": false,
+  "release_admitted": false,
+  "stream_bounds_hold": true,
+  "supported_admissions_and_wires_equal": true,
+  "verified": true
+}

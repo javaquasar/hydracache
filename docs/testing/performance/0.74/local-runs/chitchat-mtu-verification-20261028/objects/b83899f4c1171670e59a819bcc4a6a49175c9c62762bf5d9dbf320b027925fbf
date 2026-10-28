@@ -1,0 +1,50 @@
+"""Independent inert audit of raw evidence and final functional comparison."""
+from pathlib import Path
+import hashlib,json,re
+ROOT=Path(__file__).resolve().parent.parent
+PACKET=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-mtu-backport-20261028'
+out=ROOT/'target/chitchat-mtu-verification-20261028';out.mkdir(exist_ok=False)
+expected='d6fc98b961530fdc3b879018521500c80d65094e7f160263b7318fa8870d5dfe'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(out/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+write('intent.json',dict(expected_index_sha256=expected,source_sha256=sha(Path(__file__).read_bytes()),native_execution=False))
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+try:
+ raw=(PACKET/'index.json').read_bytes();assert sha(raw)==expected
+ index=json.loads(raw);members=index['members'];objects=set()
+ for name,row in members.items():
+  assert not Path(name).is_absolute() and '..' not in Path(name).parts
+  assert re.fullmatch('[0-9a-f]{64}',row['sha256'])
+  path=PACKET/'objects'/row['sha256'];assert path.is_file() and not path.is_symlink() and not path.is_junction()
+  data=path.read_bytes();assert len(data)==row['bytes'] and sha(data)==row['sha256'];objects.add(row['sha256'])
+ assert objects=={p.name for p in (PACKET/'objects').iterdir()}
+ def body(name):return (PACKET/'objects'/members[name]['sha256']).read_bytes()
+ def load(name):return json.loads(body('capture/'+name))
+ def observation(action,variant,marker):
+  label=f'{action}-{variant}-194';row=load(label+'/result.json')
+  assert row['exit']==0 and row['accounting']['test_pass'] and row['fixture_inputs_unchanged']
+  lines=[l for l in body('capture/'+label+'/stdout.log').decode().splitlines() if l.startswith(marker)];assert len(lines)==1
+  return json.loads(lines[0][len(marker):])
+ original=observation('delta','B','HC074_SUPPORTED_DELTA:');final=observation('delta','S','HC074_SUPPORTED_DELTA:')
+ assert len(original['cases'])==len(final['cases'])==239
+ for before,after in zip(original['cases'],final['cases']):
+  assert {k:v for k,v in before.items() if k!='bound'}=={k:v for k,v in after.items() if k!='bound'}
+  assert after['bound']>=before['bound'] and after['actual']<=after['mtu']
+ stream=observation('observe','S','HC074_STREAM_BOUNDS:');assert len(stream['cases'])==37 and all(r['bound_held'] for r in stream['cases'])
+ wide=observation('wide','S','HC074_ZSTD_SNAPSHOT:');assert len(wide['faults'])==7 and all(r['accepted'] is False for r in wide['faults'])
+ for name in ('encoder','decoder'):assert wide[name]==dict(isolated=True,output=b'second job'.hex())
+ ledger=load('ledger-v2/result.json');assert ledger['rust_194_selected_passed']==63 and ledger['rust_188_selected_passed']==36
+ for label,code in (('minimal-B-194',101),('clippy-M-194',101),('oversize-G-194',101),('policy-R2-194',1)):
+  assert ledger['steps'][label]['exit']==code
+ assert b'advisories ok, bans ok, licenses ok, sources ok' in body('capture/policy-S-194/stdout.log')
+ assert load('policy-S-194/advisory-db-before.json')==load('policy-S-194/advisory-db-after.json')
+ assert load('portable-verification/result.json')['verified']
+ for name in ('Cargo.toml','Cargo.lock','deny.toml','tools/long-run-supervisor-074/Cargo.toml','docs/testing/performance/0.74/qualification-manifest.toml'):
+  assert sha((ROOT/name).read_bytes())==members['source/current/'+name]['sha256']
+ write('result.json',dict(verified=True,members=len(members),objects=len(objects),index_sha256=expected,
+  supported_admissions_and_wires_equal=True,stream_bounds_hold=True,first_refusals_preserved=True,
+  fixture_policy_pass=True,native_or_archive_code_executed=False,product_gate_replayed=False,
+  cost_qualified=False,gnu_qualified=False,release_admitted=False))
+ print(json.dumps(dict(verified=True,members=len(members),objects=len(objects))))
+except BaseException as error:
+ write('refusal.json',dict(type=type(error).__name__,reason=str(error)));raise
