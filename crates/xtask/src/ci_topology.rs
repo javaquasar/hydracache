@@ -3,9 +3,12 @@ use serde_yaml::{Mapping, Value};
 use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-const DEFAULT_TOPOLOGY: &str = "docs/testing/memory/0.71/ci-topology.json";
+const FROZEN_TOPOLOGY: &str = "docs/testing/memory/0.71/ci-topology.json";
+const LIVE_TOPOLOGY: &str = "docs/testing/ci-topology.json";
+const IMAP_EXTENSION: &str = "docs/testing/imap/0.75/ci-topology-extension.json";
+const IMAP_WORKFLOW: &str = ".github/workflows/imap-075.yml";
 const JOB_CLASSES: [&str; 5] = [
     "core",
     "release-only",
@@ -85,7 +88,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 
     let root = root.unwrap_or(crate::doc_check::find_repo_root()?);
     let release = release.ok_or("ci-topology-check requires --release <release>")?;
-    let topology = topology.unwrap_or_else(|| root.join(DEFAULT_TOPOLOGY));
+    let topology = topology.unwrap_or_else(|| default_topology(&root));
     check_with_path(&root, &release, &topology)?;
     println!(
         "CI topology contract for release {release} is valid ({})",
@@ -102,14 +105,43 @@ fn take_value(args: &[String], index: &mut usize, flag: &str) -> Result<String, 
 }
 
 pub fn check(root: &Path, release: &str) -> Result<(), Box<dyn Error>> {
-    check_with_path(root, release, &root.join(DEFAULT_TOPOLOGY))
+    check_with_path(root, release, &default_topology(root))
+}
+
+fn default_topology(root: &Path) -> PathBuf {
+    // Newer branches maintain a live inventory separately from the frozen measurement input.
+    let live = root.join(LIVE_TOPOLOGY);
+    if live.exists() {
+        live
+    } else {
+        root.join(FROZEN_TOPOLOGY)
+    }
 }
 
 pub fn check_with_path(root: &Path, release: &str, path: &Path) -> Result<(), Box<dyn Error>> {
     let bytes = fs::read(path)
         .map_err(|error| format!("failed to read topology {}: {error}", path.display()))?;
-    let topology: CiTopology = serde_json::from_slice(&bytes)
+    let mut topology: CiTopology = serde_json::from_slice(&bytes)
         .map_err(|error| format!("invalid topology JSON {}: {error}", path.display()))?;
+    // Exactly one registered additive workflow. Unknown workflow paths still fail inventory
+    // equality below, and the 0.75 checker independently verifies its actual bounded matrix.
+    if root.join(IMAP_EXTENSION).exists() {
+        let extension: WorkflowContract = serde_json::from_slice(
+            &crate::imap_qualification_075::read_relative(root, IMAP_EXTENSION, 64 * 1024)?,
+        )?;
+        if extension.path != IMAP_WORKFLOW
+            || topology
+                .workflows
+                .iter()
+                .any(|entry| entry.path == extension.path)
+        {
+            return Err(
+                "IMap topology extension must register exactly its unique 0.75 workflow".into(),
+            );
+        }
+        crate::imap_ci_075::check_workflow(root)?;
+        topology.workflows.push(extension);
+    }
     let mut errors = Vec::new();
 
     if topology.schema_version != 1 {
