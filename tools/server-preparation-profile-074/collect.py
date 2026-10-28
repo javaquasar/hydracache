@@ -73,7 +73,7 @@ def retain():
         first_failed_phase=analysis['first_failed_phase'], postflight_passed=True,
         binaries_excluded=True, performance_improvement_proven=False))
     with (dest / '.gitattributes').open('x', encoding='ascii', newline='\n') as stream:
-        stream.write('objects/* -text\nindex.json -text\n')
+        stream.write('objects/* -text -diff\nindex.json -text\n')
     print(json.dumps(dict(members=len(rows), objects=len(list(objects.iterdir())),
                          index_sha256=run.sha(dest / 'index.json'))))
 

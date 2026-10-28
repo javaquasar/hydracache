@@ -1,2 +1,2 @@
-objects/* -text
+objects/* -text -diff
 index.json -text
