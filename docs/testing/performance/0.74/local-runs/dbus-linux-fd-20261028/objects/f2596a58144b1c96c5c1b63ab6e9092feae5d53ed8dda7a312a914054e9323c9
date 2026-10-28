@@ -1,0 +1,74 @@
+{
+  "boot_after": "bd78e81c-e7a8-4c4d-b4db-5b74aa524705",
+  "boot_before": "bd78e81c-e7a8-4c4d-b4db-5b74aa524705",
+  "boot_unchanged": true,
+  "clocks_after": {
+    "CLOCK_BOOTTIME": 116418317125,
+    "CLOCK_MONOTONIC": 116418315342,
+    "CLOCK_MONOTONIC_RAW": 116322908262,
+    "CLOCK_REALTIME": 1793165412227869580
+  },
+  "clocks_before": {
+    "CLOCK_BOOTTIME": 2750887171,
+    "CLOCK_MONOTONIC": 2750886273,
+    "CLOCK_MONOTONIC_RAW": 2671997281,
+    "CLOCK_REALTIME": 1793165298560440749
+  },
+  "clocks_changed": false,
+  "first_refusal": {
+    "reason": "first GNU phase refusal: fd-194-build",
+    "type": "ValueError"
+  },
+  "native_root": "/home/artur/.cache/hydracache-074-dbus-linux/20261028-a1",
+  "passed": false,
+  "phases": [
+    {
+      "exit": 0,
+      "label": "baseline-194-build"
+    },
+    {
+      "exit": 0,
+      "label": "baseline-194-list"
+    },
+    {
+      "exit": 0,
+      "label": "baseline-194-test"
+    },
+    {
+      "exit": 0,
+      "label": "baseline-194-check"
+    },
+    {
+      "exit": 0,
+      "label": "baseline-194-clippy"
+    },
+    {
+      "exit": 0,
+      "label": "baseline-188-build"
+    },
+    {
+      "exit": 0,
+      "label": "baseline-188-list"
+    },
+    {
+      "exit": 0,
+      "label": "baseline-188-test"
+    },
+    {
+      "exit": 0,
+      "label": "baseline-188-check"
+    },
+    {
+      "exit": 0,
+      "label": "baseline-188-clippy"
+    },
+    {
+      "exit": 101,
+      "label": "fd-194-build"
+    }
+  ],
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

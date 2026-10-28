@@ -1,0 +1,11 @@
+{
+  "stage": "inert-prepare",
+  "observation": "actual append-only byte guard refused",
+  "reason": "append-only independent lifetime oracle",
+  "capture_kind": "postflight byte assessment",
+  "first_candidate_sha256": "0c9cf29534229e66425cd35ed8063a039838dc1ad7f0d81357248ca44a503f3a",
+  "prior_crlf": 306,
+  "candidate_crlf": 0,
+  "normalized_prefix_equal": true,
+  "native_dispatched": false
+}

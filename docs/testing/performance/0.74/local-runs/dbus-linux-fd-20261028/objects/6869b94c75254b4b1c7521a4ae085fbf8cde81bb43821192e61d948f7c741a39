@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-linux-074/native.py", line 130, in <module>
+    if len(sys.argv)==2 and sys.argv[1]=='session':session()
+                                                   ^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-linux-074/native.py", line 123, in session
+    receipt['boot_unchanged']=receipt['boot_after']==boot;write(OUT,'native-result.json',receipt)
+                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-linux-074/native.py", line 12, in write
+    with (out/name).open('x',encoding='utf8',newline='\n') as f:f.write(json.dumps(value,indent=2,sort_keys=True)+'\n')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileExistsError: [Errno 17] File exists: '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/dbus-linux-20261028/session/native-result.json'

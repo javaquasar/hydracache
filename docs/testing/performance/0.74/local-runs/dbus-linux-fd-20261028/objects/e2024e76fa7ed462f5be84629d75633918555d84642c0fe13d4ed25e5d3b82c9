@@ -1,0 +1,145 @@
+{
+  "accounting": {
+    "complete": true,
+    "executed": [
+      [
+        "caller_checks::owner_properties::manager_identity_refuses_after_all_three_reads",
+        "ok"
+      ],
+      [
+        "caller_checks::owner_properties::manager_owner_valid_reads_in_original_order",
+        "ok"
+      ],
+      [
+        "caller_checks::owner_properties::manager_signature_and_error_refuse_without_later_reads",
+        "ok"
+      ],
+      [
+        "caller_checks::owner_properties::manager_wrong_sender_stops_at_original_read",
+        "ok"
+      ],
+      [
+        "caller_checks::owner_properties::property_received_but_unanswered_preserves_timeout",
+        "ok"
+      ],
+      [
+        "caller_checks::owner_properties::property_string_u32_and_no_cache_roundtrip",
+        "ok"
+      ],
+      [
+        "caller_checks::owner_properties::property_wrong_type_body_and_error_refuse",
+        "ok"
+      ],
+      [
+        "caller_checks::read_flows::legacy_lazy_getall_failure_is_not_a_snapshot",
+        "ok"
+      ],
+      [
+        "caller_checks::read_flows::legacy_optional_absence_and_namespace_refusal",
+        "ok"
+      ],
+      [
+        "caller_checks::read_flows::legacy_reader_uses_lazy_getall_snapshots",
+        "ok"
+      ],
+      [
+        "caller_checks::read_flows::loaded_missing_or_invalid_values_stop_first_pair",
+        "ok"
+      ],
+      [
+        "caller_checks::read_flows::loaded_settings_decode_and_use_unit_description",
+        "ok"
+      ],
+      [
+        "caller_checks::read_flows::peer_mismatch_closes_connection_and_refuses",
+        "ok"
+      ],
+      [
+        "caller_checks::read_flows::protocol_absence_and_foreign_error_keep_scope",
+        "ok"
+      ],
+      [
+        "caller_checks::read_flows::protocol_owner_change_refuses_after_reads",
+        "ok"
+      ],
+      [
+        "caller_checks::read_flows::protocol_present_reads_twice_then_owner",
+        "ok"
+      ],
+      [
+        "caller_checks::read_flows::protocol_unit_change_stops_before_owner_recheck",
+        "ok"
+      ],
+      [
+        "caller_checks::tests::checked_call_preserves_success_signature_and_sender",
+        "ok"
+      ],
+      [
+        "caller_checks::tests::method_error_keeps_original_sender",
+        "ok"
+      ],
+      [
+        "caller_checks::tests::no_reply_preserves_method_timeout_refusal",
+        "ok"
+      ],
+      [
+        "caller_checks::tests::proxy_clone_keeps_connection_after_original_drop",
+        "ok"
+      ],
+      [
+        "caller_checks::tests::setters_fail_immediately_in_original_order",
+        "ok"
+      ],
+      [
+        "constructor_review::nested_constructor_panics_before_bad_arguments",
+        "ok"
+      ],
+      [
+        "match_rule_review::argument_and_path_format_roundtrip",
+        "ok"
+      ],
+      [
+        "runtime_review::background_progress_between_entries",
+        "ok"
+      ],
+      [
+        "runtime_review::invalid_address_refuses_before_build",
+        "ok"
+      ],
+      [
+        "runtime_review::nested_entry_does_not_poll_future",
+        "ok"
+      ],
+      [
+        "tests::derive_and_wire_roundtrip",
+        "ok"
+      ],
+      [
+        "tests::invalid_names_and_builder_refuse",
+        "ok"
+      ],
+      [
+        "tests::reply_serial_sender_and_signature",
+        "ok"
+      ],
+      [
+        "tests::runtime_timeout_and_nested_entry",
+        "ok"
+      ]
+    ],
+    "failed": 0,
+    "filtered": 0,
+    "passed": 31,
+    "release_admitted": false,
+    "selected": 31,
+    "test_pass": true
+  },
+  "artifact": {
+    "bytes": 51137640,
+    "path": "/home/artur/.cache/hydracache-074-dbus-linux/20261028-a1/builds/baseline/188/debug/deps/dbus_probe_074-d3ea9799997814e1",
+    "sha256": "c0f48bddaa92b5c55d98029eebc904e8ec9bbbfdd74cc46d282d0544a51094ef"
+  },
+  "exit": 0,
+  "release_admitted": false,
+  "source_unchanged": true
+}

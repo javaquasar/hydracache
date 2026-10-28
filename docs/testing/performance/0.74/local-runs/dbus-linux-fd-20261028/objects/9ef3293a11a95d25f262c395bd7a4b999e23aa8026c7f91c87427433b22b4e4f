@@ -1,0 +1,521 @@
+use serde::Serialize;
+use crate::bridge::{Connection, Proxy};
+fn unique_owner(value: &str) -> bool {
+    let Some(value) = value.strip_prefix(':') else {
+        return false;
+    };
+    value.len() <= 64
+        && value.split('.').count() == 2
+        && value
+            .split('.')
+            .all(|v| !v.is_empty() && v.bytes().all(|b| b.is_ascii_digit()))
+}
+fn proxy<'a>(
+    connection: &Connection,
+    owner: &'a str,
+    path: &'a str,
+    interface: &'a str,
+) -> Result<Proxy<'a>, String> {
+    crate::bridge::ProxyBuilder::new(connection)
+        .destination(owner)
+        .map_err(|_| "proxy destination")?
+        .path(path)
+        .map_err(|_| "proxy path")?
+        .interface(interface)
+        .map_err(|_| "proxy interface")?
+        .cache_properties(zbus::proxy::CacheProperties::No)
+        .build()
+        .map_err(|_| "manager proxy".into())
+}
+#[derive(Debug, PartialEq, Eq)]
+enum ReplyError {
+    NoSuchUnit,
+    Refused,
+}
+fn sender_matches(sender: Option<&str>, expected: &str) -> bool {
+    sender == Some(expected) && (unique_owner(expected) || expected == "org.freedesktop.DBus")
+}
+fn classify_error(name: &str, sender: Option<&str>, owner: &str) -> ReplyError {
+    if sender_matches(sender, owner) && name == "org.freedesktop.systemd1.NoSuchUnit" {
+        ReplyError::NoSuchUnit
+    } else {
+        ReplyError::Refused
+    }
+}
+fn decode_reply<R: for<'de> zbus::wire::DynamicDeserialize<'de>>(
+    message: &zbus::Message,
+    owner: &str,
+) -> Result<R, ReplyError> {
+    if !sender_matches(message.header().sender().map(|v| v.as_str()), owner) {
+        return Err(ReplyError::Refused);
+    }
+    message
+        .body()
+        .deserialize()
+        .map_err(|_| ReplyError::Refused)
+}
+fn checked_call<B, R>(
+    proxy: &Proxy<'_>,
+    owner: &str,
+    method: &str,
+    body: &B,
+) -> Result<R, ReplyError>
+where
+    B: Serialize + zbus::wire::DynamicType,
+    R: for<'de> zbus::wire::DynamicDeserialize<'de>,
+{
+    let message = match proxy.call_method(method, body) {
+        Ok(message) => message,
+        Err(zbus::Error::MethodError(name, _, message)) => {
+            return Err(classify_error(
+                name.as_str(),
+                message.header().sender().map(|v| v.as_str()),
+                owner,
+            ));
+        }
+        Err(_) => return Err(ReplyError::Refused),
+    };
+    decode_reply(&message, owner)
+}
+
+const DESTINATION: &str = "org.freedesktop.systemd1";
+fn manager_owner(bus: &Proxy<'_>) -> Result<String, String> {
+    let owner: String = checked_call(bus, "org.freedesktop.DBus", "GetNameOwner", &(DESTINATION,))
+        .map_err(|_| "manager owner unavailable")?;
+    let uid: u32 = checked_call(
+        bus,
+        "org.freedesktop.DBus",
+        "GetConnectionUnixUser",
+        &(owner.as_str(),),
+    )
+    .map_err(|_| "manager user unavailable")?;
+    let pid: u32 = checked_call(
+        bus,
+        "org.freedesktop.DBus",
+        "GetConnectionUnixProcessID",
+        &(owner.as_str(),),
+    )
+    .map_err(|_| "manager pid unavailable")?;
+    if !unique_owner(&owner) || uid != 0 || pid != 1 {
+        return Err("foreign manager owner".into());
+    }
+    Ok(owner)
+}
+
+#[cfg(test)]
+#[path = "/home/artur/.cache/hydracache-074-dbus-linux/20261028-a3/assets/tools/dbus-runtime-bridge-074/caller_tests_v2.rs"]
+mod tests;
+
+#[cfg(test)]
+#[path = "/home/artur/.cache/hydracache-074-dbus-linux/20261028-a3/assets/tools/dbus-owner-properties-074/tests.rs"]
+mod owner_properties;
+
+use serde::Deserialize;
+use std::collections::{BTreeMap,HashMap};
+use zbus::{OwnedObjectPath,OwnedVariant as OwnedValue};
+use thiserror::Error;
+const MANAGER_PATH: &str = "/org/freedesktop/systemd1";
+const MANAGER_INTERFACE: &str = "org.freedesktop.systemd1.Manager";
+const UNIT_INTERFACE: &str = "org.freedesktop.systemd1.Unit";
+const SERVICE_INTERFACE: &str = "org.freedesktop.systemd1.Service";
+const SYSTEMD_DESTINATION: &str = "org.freedesktop.systemd1";
+const SYSTEMD_MANAGER_PATH: &str = "/org/freedesktop/systemd1";
+const SYSTEMD_MANAGER_INTERFACE: &str = "org.freedesktop.systemd1.Manager";
+const SYSTEMD_UNIT_INTERFACE: &str = "org.freedesktop.systemd1.Unit";
+const SYSTEMD_SERVICE_INTERFACE: &str = "org.freedesktop.systemd1.Service";
+const UNIT_PREFIX: &str = "hydracache-performance-074-";
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ObservedUnit {
+    pub unit_name: String,
+    pub object_path: String,
+    pub invocation_id: String,
+    pub active_state: String,
+    pub sub_state: String,
+    pub main_pid: u32,
+    pub control_group: String,
+    pub result: String,
+    pub transient: bool,
+}
+
+fn read_unit(
+    connection: &Connection,
+    owner: &str,
+    path: &str,
+    loaded: bool,
+) -> Result<(ObservedUnit, Option<LoadedSettings>), String> {
+    let properties = proxy(connection, owner, path, "org.freedesktop.DBus.Properties")?;
+    let mut unit: HashMap<String, OwnedValue> =
+        checked_call(&properties, owner, "GetAll", &(UNIT_INTERFACE,))
+            .map_err(|_| "unit properties")?;
+    let mut service: HashMap<String, OwnedValue> =
+        checked_call(&properties, owner, "GetAll", &(SERVICE_INTERFACE,))
+            .map_err(|_| "service properties")?;
+    if loaded {
+        // Description belongs to Unit; never guess from a Service fallback.
+        service.insert(
+            "Description".into(),
+            unit.remove("Description")
+                .ok_or("missing unit description")?,
+        );
+        let mut identity = HashMap::new();
+        for field in ["MainPID", "ControlGroup", "Result"] {
+            identity.insert(
+                field.into(),
+                service.remove(field).ok_or("missing service identity")?,
+            );
+        }
+        Ok((
+            decode_unit_properties(path, unit, identity)?,
+            Some(decode_settings(service)?),
+        ))
+    } else {
+        Ok((decode_unit_properties(path, unit, service)?, None))
+    }
+}
+fn decode_unit_properties(
+    path: &str,
+    mut unit: HashMap<String, OwnedValue>,
+    mut service: HashMap<String, OwnedValue>,
+) -> Result<ObservedUnit, String> {
+    let id: Vec<u8> = take(&mut unit, "InvocationID")?;
+    if id.len() != 16 {
+        return Err("unit invocation identity".into());
+    }
+    Ok(ObservedUnit {
+        unit_name: take(&mut unit, "Id")?,
+        object_path: path.into(),
+        invocation_id: id.iter().map(|v| format!("{v:02x}")).collect(),
+        active_state: take(&mut unit, "ActiveState")?,
+        sub_state: take(&mut unit, "SubState")?,
+        main_pid: take(&mut service, "MainPID")?,
+        control_group: take(&mut service, "ControlGroup")?,
+        result: take(&mut service, "Result")?,
+        transient: take(&mut unit, "Transient")?,
+    })
+}
+pub(crate) fn take<T: TryFrom<OwnedValue>>(
+    values: &mut HashMap<String, OwnedValue>,
+    name: &str,
+) -> Result<T, String> {
+    values
+        .remove(name)
+        .ok_or_else(|| "missing unit property".to_string())?
+        .try_into()
+        .map_err(|_| "unit property type".into())
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ConfiguredCommand {
+    path: String,
+    argv: Vec<String>,
+    flags: Vec<String>,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", content = "value", deny_unknown_fields)]
+enum Setting {
+    Text(String),
+    Boolean(bool),
+    Unsigned(u64),
+    Bytes(Vec<u8>),
+    Strings(Vec<String>),
+    Commands(Vec<ConfiguredCommand>),
+    EnvironmentFiles(Vec<(String, bool)>),
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub(crate) struct LoadedSettings(BTreeMap<String, Setting>);
+
+const TEXT: &[&str] = &[
+    "Description",
+    "User",
+    "Group",
+    "Type",
+    "Restart",
+    "KillMode",
+    "Slice",
+    "ProtectSystem",
+    "ProtectHome",
+    "WorkingDirectory",
+    "StandardInput",
+    "StandardOutput",
+    "StandardError",
+    "StandardOutputFileDescriptorName",
+    "StandardErrorFileDescriptorName",
+    "RootDirectory",
+    "RootImage",
+];
+const BOOL: &[&str] = &[
+    "RemainAfterExit",
+    "SendSIGKILL",
+    "Delegate",
+    "NoNewPrivileges",
+    "PrivateTmp",
+    "PrivateDevices",
+    "ProtectControlGroups",
+    "ProtectKernelTunables",
+    "ProtectKernelModules",
+    "ProtectKernelLogs",
+    "RestrictSUIDSGID",
+    "RestrictRealtime",
+    "LockPersonality",
+    "IOAccounting",
+    "DynamicUser",
+];
+const UINT: &[&str] = &[
+    "RuntimeMaxUSec",
+    "TimeoutStopUSec",
+    "MemoryMax",
+    "TasksMax",
+    "LimitNOFILE",
+    "LimitFSIZE",
+    "LimitNOFILESoft",
+    "LimitFSIZESoft",
+];
+const STRINGS: &[&str] = &[
+    "Environment",
+    "ReadWritePaths",
+    "PassEnvironment",
+    "UnsetEnvironment",
+];
+const COMMANDS: &[&str] = &[
+    "ExecStartEx",
+    "ExecConditionEx",
+    "ExecStartPreEx",
+    "ExecStartPostEx",
+    "ExecReloadEx",
+    "ExecStopEx",
+    "ExecStopPostEx",
+];
+// Exact systemd 255 Service GetAll extended-command signature a(sasasttttuii).
+type ExtendedCommand = (
+    String,
+    Vec<String>,
+    Vec<String>,
+    u64,
+    u64,
+    u64,
+    u64,
+    u32,
+    i32,
+    i32,
+);
+
+impl LoadedSettings {
+    fn validate(&self) -> Result<(), String> {
+        let expected_len =
+            TEXT.len() + BOOL.len() + UINT.len() + STRINGS.len() + COMMANDS.len() + 2;
+        if self.0.len() != expected_len {
+            return Err("loaded settings inventory".into());
+        }
+        for (name, value) in &self.0 {
+            let valid = match value {
+                Setting::Text(v) => TEXT.contains(&name.as_str()) && bounded(v),
+                Setting::Boolean(_) => BOOL.contains(&name.as_str()),
+                Setting::Unsigned(_) => UINT.contains(&name.as_str()),
+                Setting::Bytes(v) => name == "CPUAffinity" && v.len() <= 128,
+                Setting::Strings(v) => STRINGS.contains(&name.as_str()) && strings(v),
+                Setting::Commands(v) => {
+                    COMMANDS.contains(&name.as_str())
+                        && v.len() <= 8
+                        && v.iter()
+                            .all(|c| bounded(&c.path) && strings(&c.argv) && strings(&c.flags))
+                }
+                Setting::EnvironmentFiles(v) => {
+                    name == "EnvironmentFiles" && v.len() <= 8 && v.iter().all(|(p, _)| bounded(p))
+                }
+            };
+            if !valid {
+                return Err("loaded settings field or type".into());
+            }
+        }
+        Ok(())
+    }
+}
+fn bounded(v: &str) -> bool {
+    v.len() <= 1024 && !v.bytes().any(|b| b == 0 || b == b'\n' || b == b'\r')
+}
+fn strings(v: &[String]) -> bool {
+    v.len() <= 16 && v.iter().all(|s| bounded(s))
+}
+
+pub(crate) fn decode_settings(
+    mut properties: HashMap<String, OwnedValue>,
+) -> Result<LoadedSettings, String> {
+    use self::take;
+    let mut settings = BTreeMap::new();
+    for name in TEXT {
+        settings.insert((*name).into(), Setting::Text(take(&mut properties, name)?));
+    }
+    for name in BOOL {
+        settings.insert(
+            (*name).into(),
+            Setting::Boolean(take(&mut properties, name)?),
+        );
+    }
+    for name in UINT {
+        settings.insert(
+            (*name).into(),
+            Setting::Unsigned(take(&mut properties, name)?),
+        );
+    }
+    for name in STRINGS {
+        settings.insert(
+            (*name).into(),
+            Setting::Strings(take(&mut properties, name)?),
+        );
+    }
+    settings.insert(
+        "CPUAffinity".into(),
+        Setting::Bytes(take(&mut properties, "CPUAffinity")?),
+    );
+    settings.insert(
+        "EnvironmentFiles".into(),
+        Setting::EnvironmentFiles(take(&mut properties, "EnvironmentFiles")?),
+    );
+    for name in COMMANDS {
+        let commands: Vec<ExtendedCommand> = take(&mut properties, name)?;
+        settings.insert(
+            (*name).into(),
+            Setting::Commands(
+                commands
+                    .into_iter()
+                    .map(|c| ConfiguredCommand {
+                        path: c.0,
+                        argv: c.1,
+                        flags: c.2,
+                    })
+                    .collect(),
+            ),
+        );
+    }
+    let settings = LoadedSettings(settings);
+    settings.validate()?;
+    Ok(settings)
+}
+fn inspect_protocol(connection: Connection, name_input: &str, loaded: bool) -> Result<(String, Option<ObservedUnit>, Option<LoadedSettings>), String> {
+    let bus = proxy(
+        &connection,
+        "org.freedesktop.DBus",
+        "/org/freedesktop/DBus",
+        "org.freedesktop.DBus",
+    )?;
+    let owner = manager_owner(&bus)?;
+    let manager = proxy(&connection, &owner, MANAGER_PATH, MANAGER_INTERFACE)?;
+    let name = name_input.to_owned();
+    let path: Result<OwnedObjectPath, ReplyError> =
+        checked_call(&manager, &owner, "GetUnit", &(name.as_str(),));
+    let (unit, settings) = match path {
+        Ok(path) => {
+            let first = read_unit(&connection, &owner, path.as_str(), loaded)?;
+            if read_unit(&connection, &owner, path.as_str(), loaded)? != first {
+                return Err("unit observation changed".into());
+            }
+            (Some(first.0), first.1)
+        }
+        Err(ReplyError::NoSuchUnit) => (None, None),
+        Err(_) => return Err("unit inspection failed".into()),
+    };
+    if manager_owner(&bus)? != owner {
+        return Err("manager owner changed".into());
+    }
+    Ok((owner.clone(), unit, settings))
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitSnapshot {
+    pub unit_name: String,
+    pub active_state: String,
+    pub sub_state: String,
+    pub main_pid: u32,
+    pub control_group: String,
+    pub result: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UnitMismatch {
+    UnitName,
+    ActiveState,
+    SubState,
+    MainPid,
+    ControlGroup,
+    Result,
+}
+
+#[derive(Debug, Error)]
+pub enum UnitError {
+    #[error("systemd unit name is outside the fixed HydraCache 0.74 namespace")]
+    UnitName,
+    #[error("systemd D-Bus inspection failed: {0}")]
+    Dbus(#[from] zbus::Error),
+    #[error("transient systemd unit policy or campaign path is invalid")]
+    Policy,
+    #[error("transient systemd unit policy serialization failed: {0}")]
+    Json(#[from] serde_json::Error),
+    #[error("systemd unit identity differs: {0:?}")]
+    Mismatch(Vec<UnitMismatch>),
+    #[error("systemd unit did not stop within the frozen diagnostic grace")]
+    StopTimeout,
+}
+
+fn inspect_loaded_unit(connection_input: Connection, unit_name: &str) -> Result<UnitSnapshot, UnitError> {
+    let connection = connection_input;
+    let manager = Proxy::new(
+        &connection,
+        SYSTEMD_DESTINATION,
+        SYSTEMD_MANAGER_PATH,
+        SYSTEMD_MANAGER_INTERFACE,
+    )?;
+    let path: OwnedObjectPath = manager.call("GetUnit", &(unit_name,))?;
+    let unit = Proxy::new(
+        &connection,
+        SYSTEMD_DESTINATION,
+        path.as_str(),
+        SYSTEMD_UNIT_INTERFACE,
+    )?;
+    let service = Proxy::new(
+        &connection,
+        SYSTEMD_DESTINATION,
+        path.as_str(),
+        SYSTEMD_SERVICE_INTERFACE,
+    )?;
+    Ok(UnitSnapshot {
+        unit_name: unit_name.to_owned(),
+        active_state: unit.get_property("ActiveState")?,
+        sub_state: unit.get_property("SubState")?,
+        main_pid: service.get_property("MainPID")?,
+        control_group: service.get_property("ControlGroup")?,
+        result: service.get_property("Result")?,
+    })
+}
+
+pub fn inspect_unit_optional(connection_input: Connection, unit_name: &str) -> Result<Option<UnitSnapshot>, UnitError> {
+    validate_unit_name(unit_name)?;
+    match inspect_loaded_unit(connection_input, unit_name) {
+        Ok(snapshot) => Ok(Some(snapshot)),
+        Err(UnitError::Dbus(zbus::Error::MethodError(name, _, _)))
+            if name.as_str() == "org.freedesktop.systemd1.NoSuchUnit" =>
+        {
+            Ok(None)
+        }
+        Err(error) => Err(error),
+    }
+}
+
+fn validate_unit_name(value: &str) -> Result<(), UnitError> {
+    if value.starts_with(UNIT_PREFIX)
+        && value.ends_with(".service")
+        && value.len() > UNIT_PREFIX.len() + ".service".len()
+        && value.len() <= 255
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.' | b'@'))
+    {
+        Ok(())
+    } else {
+        Err(UnitError::UnitName)
+    }
+}
+
+#[cfg(test)]
+#[path = "/home/artur/.cache/hydracache-074-dbus-linux/20261028-a3/assets/tools/dbus-read-flows-074/tests_v3.rs"]
+mod read_flows;

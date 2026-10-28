@@ -1,0 +1,101 @@
+"""Inert source/trace verification and raw retention. Never executes archived code."""
+from pathlib import Path
+import hashlib,json,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/dbus-linux-fd-20261028'
+BASES={n:ROOT/('target/dbus-linux-20261028' if n==1 else f'target/dbus-linux-v{n}-20261028') for n in range(1,6)}
+sha=lambda b:hashlib.sha256(b).hexdigest()
+def read(n,name):return json.loads((BASES[n]/name).read_bytes())
+def traces(raw,marker):return [json.loads(v.split(b':',1)[1]) for v in raw.splitlines() if v.startswith(marker)]
+first=read(1,'session/native-result.json');need_first=[dict(label=f'baseline-{v}-{a}',exit=0) for v in ('194','188') for a in ('build','list','test','check','clippy')]+[dict(label='fd-194-build',exit=101)]
+assert not first['passed'] and first['source_unchanged'] and first['phases']==need_first
+second=read(2,'session/execution.json');assert second['exit']==1 and second['retired'] and not second['errors']
+assert read(2,'session/intent.json')['argv'][-1]=='session' and not (BASES[2]/'session/native-result.json').exists()
+assert b'FileExistsError' in (BASES[2]/'session/stderr.log').read_bytes()
+assert read(4,'prepare/postflight-assessment.json')['normalized_prefix_equal']
+failed=read(4,'session/fd-194-test/result.json')
+assert failed['exit']==101 and failed['accounting']['complete'] and failed['accounting']['passed']==37 and failed['accounting']['failed']==1
+assert [name for name,status in failed['accounting']['executed'] if status=='FAILED']==['unix_transport::received_fd_drops_before_live_connection_close']
+steps={}
+for n in BASES:
+ for path in sorted((BASES[n]/'session').glob('*/execution.json')):
+  record=json.loads(path.read_bytes());assert record['retired'] and not record['errors']
+  expected=101 if (n,path.parent.name) in ((1,'fd-194-build'),(4,'fd-194-test')) else 0
+  assert record['exit']==expected
+  steps[f'{n}/{path.parent.name}']=dict(exit=expected,classification=record['classification'])
+for n in (3,5):
+ record=read(n,'session/native-result.json');assert record['passed'] and record['boot_unchanged'] and record['source_unchanged']
+ assert len(record['phases'])==10 and all(row['exit']==0 for row in record['phases'])
+
+prior=ROOT/'docs/testing/performance/0.74/local-runs/dbus-read-flows-20261028'
+raw=(prior/'index.json').read_bytes();assert sha(raw)=='4be475b3f92e348e8ccde151356d73607e0b609ebcacf406c4e13fc586131fb2'
+index=json.loads(raw)
+def prior_get(name):
+ row=index['members'][name];raw=(prior/'objects'/row['sha256']).read_bytes();assert len(raw)==row['bytes'] and sha(raw)==row['sha256'];return raw
+canonical=prior_get('capture/v3/test-194/stdout.log')
+markers=(b'HC074_FLOW_TRACE:',b'HC074_READ_TRACE:',b'HC074_PEER_MISMATCH_TRACE:')
+canonical_traces=[traces(canonical,m) for m in markers]
+images=[];unix_markers=[]
+for n,variant,count in ((1,'baseline',31),(3,'fd',37),(4,'fd',38),(5,'fd',38)):
+ for compiler in (('194',) if n==4 else ('194','188')):
+  test=read(n,f'session/{variant}-{compiler}-test/result.json');listing=read(n,f'session/{variant}-{compiler}-list/result.json')
+  assert test['artifact']==listing['artifact'] and len(listing['inventory'])==count
+  assert test['accounting']['selected']==count and test['accounting']['filtered']==0
+  if n!=4:assert test['exit']==0 and test['accounting']['passed']==count and test['accounting']['failed']==0
+  raw=(BASES[n]/f'session/{variant}-{compiler}-test/stdout.log').read_bytes()
+  assert [traces(raw,m) for m in markers]==canonical_traces
+  images.append(dict(attempt=n,compiler=compiler,artifact=test['artifact'],passed=test['accounting']['passed'],failed=test['accounting']['failed']))
+  if n==5:
+   values=[v.decode() for v in raw.splitlines() if v.startswith(b'HC074_UNIX:')]
+   assert len(values)==7 and 'HC074_UNIX:decode-drop-before-close:requests=3:aliases=1' in values;unix_markers.append(values)
+assert unix_markers[0]==unix_markers[1]
+originals=json.loads(prior_get('capture/v3/prepare/result.json'))['files']
+prefix=ROOT.as_posix().encode()+b'/'
+before=(BASES[5]/'prepare/recvmsg-before.rs').read_bytes();after=(BASES[5]/'prepare/recvmsg-after.rs').read_bytes()
+assert sha(before)=='f8cc21f18420cae201ba3faa43ea1e29d0fbf45af00c4938dcf5159c82907c76'
+old=b'    let msg = recvmsg(fd, &mut iov, &mut ancillary, RecvFlags::empty())?;'
+new=b'    // Protect the raw message-owned SCM_RIGHTS descriptors, not only decoded clones.\n    #[cfg(target_os = "linux")]\n    let flags = RecvFlags::CMSG_CLOEXEC;\n    #[cfg(not(target_os = "linux"))]\n    let flags = RecvFlags::empty();\n    let msg = recvmsg(fd, &mut iov, &mut ancillary, flags)?;'
+assert before.count(old)==1 and after==before.replace(old,new,1)
+for n,base in BASES.items():
+ review=read(n,('prepare-corrected' if n==4 else 'prepare')+'/result.json')
+ actual={p.relative_to(base/'input').as_posix():sha(p.read_bytes()) for p in sorted((base/'input').rglob('*')) if p.is_file()}
+ assert actual==review['files']
+ for variant in ('baseline','fd'):
+  for name,digest in originals.items():
+   body=prior_get('capture/v3/fixture/'+name).replace(prefix,(review['native_root']+'/assets/').encode())
+   if name=='zbus/src/runtime/io/unix.rs' and n==5:body=body.replace(old,new,1)
+   if variant=='fd' and name=='probe/src/lib.rs':
+    route={1:'unix_tests.rs',2:'unix_tests_v2.rs',3:'unix_tests_v2.rs',4:'unix_tests_v3.rs',5:'unix_tests_v3.rs'}[n]
+    body+=('\n#[cfg(all(test,unix))]\n#[path = '+json.dumps(review['native_root']+'/assets/tools/dbus-linux-074/'+route)+']\nmod unix_transport;\n').encode()
+   assert (base/'input'/variant/name).read_bytes()==body
+ assert (base/'input/fd/Cargo.lock').read_bytes()==prior_get('capture/v3/fixture/Cargo.lock')
+
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members;members[name]=dict(sha256=digest,bytes=len(raw))
+for n,base in BASES.items():
+ for path in sorted(base.rglob('*')):
+  if path.is_file() and '__pycache__' not in path.parts:add(f'capture/attempt-{n}/'+path.relative_to(base).as_posix(),path)
+for path in sorted((ROOT/'tools/dbus-linux-074').rglob('*')):
+ if path.is_file() and '__pycache__' not in path.parts:add('source/'+path.relative_to(ROOT).as_posix(),path)
+for name in ('scripts/ci/watchdog_linux_group.py','scripts/ci/watchdog_windows_job.py','tools/windows-workspace-preflight-074/owned.py',
+ 'tools/windows-workspace-preflight-074/prepare.py','tools/chitchat-mtu-review-074/accounting.py','tools/dbus-read-flows-074/run.py',
+ 'tools/dbus-runtime-bridge-074/run.py','tools/dbus-owner-properties-074/run.py','tools/dbus-msrv-backport-074/run.py',
+ 'target/seal-dbus-linux-20261028.py','Cargo.lock','Cargo.toml','deny.toml','tools/long-run-supervisor-074/Cargo.toml',
+ 'docs/testing/performance/0.74/qualification-manifest.toml'):
+ add('source/'+name,ROOT/name)
+add('predecessor/index.json',prior/'index.json')
+result=dict(schema='hc074-gnu-private-fd-v1',members=members,steps=steps,images=images,
+ baseline_passes_per_compiler=31,decoded_fd_suite_passes_per_compiler=37,raw_cloexec_first_failure=dict(passed=37,failed=1),
+ fixed_fd_suite_passes_per_compiler=38,old_protocol_traces_equal=True,unix_markers_equal=True,fixture_lock_unchanged=True,
+ linux_leaf_preimage_sha256=sha(before),linux_leaf_postimage_sha256=sha(after),one_recvmsg_leaf_candidate=True,
+ first_outcomes_retained=True,source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ root_dependency_or_supervisor_changed=False,real_manager_or_system_bus=False,server=False,services=False,clocks_changed=False,
+ original_delivery_or_all_writer_authority=False,product_gate_replayed=False,performance_claim=False,release_admitted=False,archived_code_executed=False)
+(OUT/'index.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()),leaf_sha256=sha(after))))

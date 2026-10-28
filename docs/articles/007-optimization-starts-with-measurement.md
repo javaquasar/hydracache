@@ -22117,3 +22117,57 @@ check is stubbed to report success. No service, clock, server or root dependency
 changes occur, and test elapsed time is not a throughput or CPU improvement claim.
 The source revisions, first failures and analysis are retained before proceeding
 to GNU/FD/fault, distribution and complete product gates.
+
+The [GNU/Unix descriptor stage](../testing/performance/0.74/dbus-linux-fd-result-20261028.md)
+adds a useful counterexample to treating a green component suite as sufficient
+security evidence. First, the exact 31-case source baseline passes on GNU with
+both compiler versions. Offline locked vendor archives keep the dependency input
+separate from the platform change. Real private Unix socketpairs then exercise
+EXTERNAL authentication, kernel peer UID/PID, SCM_RIGHTS request/reply, inode and
+shared open-file position, descriptor cleanup and a 262144-byte payload. A peer
+can write one small fixture effect and close without acknowledging it; the call
+must fail without issuing the request again. This is not durable lifecycle or
+production exactly-once proof.
+
+The first new fixture calls an API behind the unselected bus-impl feature and
+fails to compile. Ordinary build with stream setup before the first user request
+repairs that fixture without widening features. A separate coordinator-selector
+mistake is refused before new Cargo/test execution, and fixed selector/context
+controls precede the next native attempt. All first records remain distinct.
+The resulting six new Unix controls pass: the combined suite is 37/37 on both
+Rust 1.94 and 1.88, with check and strict Clippy.
+
+Reviewing the observations exposes a gap. Those successful CLOEXEC assertions
+inspect descriptors *after OwnedFd decoding*. That path clones the descriptor;
+it does not inspect the original FD still owned by the received message. The
+wrong-type control also checks aliases after explicit connection close. Neither
+predicate establishes protection of the raw message descriptor or release while
+the connection remains alive. The tests are valid for their stated boundary,
+but that boundary is insufficient for dependency adoption.
+
+A seventh control holds the actual reply and checks the raw received descriptor
+before decoding. Later request/reply barriers establish reader progress without
+sleeping or retrying. After a wrong-type decode refusal, dropping the reply must
+leave only the original fixture descriptor, and another request must still work
+before either connection closes. The first extended run fails 37/38: the raw FD
+has no CLOEXEC bit. The previously checked decoded duplicates had masked the
+missing observation. A strict source-prefix guard also preserves an earlier LF/
+CRLF preparation refusal rather than silently normalizing its expected input.
+
+The source attribution is narrow: the pinned zbus receive function passes empty
+flags to recvmsg. A separate candidate uses CMSG_CLOEXEC in that syscall on Linux,
+protecting the received descriptors as described by the primary
+[Linux recvmsg contract](https://man7.org/linux/man-pages/man2/recvmsg.2.html).
+This changes one receive-path leaf; its inverse recovers the exact old function.
+Versions, features, the 1.88 minimum, ancillary/error handling and every original
+live check/window remain. Other operating systems keep the old branch and gain
+no invented qualification from the GNU result.
+
+The unchanged stronger test and complete 38-case suite pass on both compilers,
+with check and strict Clippy. The new proof concerns a raw message-owned FD,
+then its release after refusal while the connection still works. It does not
+measure allocations or throughput, prove forced fragmented I/O, revoke writers
+already holding aliases or bind a real system manager to an enrolled original
+owner. The implementation, weaker passing suites, first raw-FD failure and
+isolated repair are retained together. Root dependency integration, distribution
+review, complete product gates and original execution/recovery remain open.

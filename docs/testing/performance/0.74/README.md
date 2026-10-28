@@ -1,5 +1,14 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [GNU/private Unix FD continuation](dbus-linux-fd-result-20261028.md) now runs
+the 31-case source baseline on Rust 1.88/1.94, then real socketpair/SCM_RIGHTS
+controls. Initial decoded-only 37-case suites pass, but a stronger raw-message
+FD check fails 37/38 because CLOEXEC is missing. One pinned Linux recvmsg flag
+patch fixes that standalone candidate: 38/38, check and strict Clippy pass on
+both compilers with the stronger test unchanged. All first build, dispatch,
+byte-prefix and raw-FD refusals remain. Root dependencies/supervisor and live
+checks/windows stay exact; full product and original-execution admission remain open.
+
 The [selected read-flow continuation](dbus-read-flows-result-20261028.md) now covers
 before/after manager-owner checks across repeated Unit/Service GetAll reads, loaded
 settings decoding and the legacy lazy-cache reader. All 31 tests, check and strict

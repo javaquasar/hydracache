@@ -1,0 +1,18 @@
+{
+  "archived_code_executed": false,
+  "baseline_passes_per_compiler": 31,
+  "byte_verification_only": true,
+  "exit": 0,
+  "fixed_suite_passes_per_compiler": 38,
+  "gnu_images_accounted": 7,
+  "inputs_unchanged": true,
+  "leaf_inverse": true,
+  "members_verified": 3300,
+  "objects_verified": 517,
+  "old_protocol_traces_equal": true,
+  "raw_cloexec_failure_retained": true,
+  "registry_archives_verified": 58,
+  "registry_source_members_verified": 4117,
+  "release_admitted": false,
+  "unix_markers_equal": true
+}

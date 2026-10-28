@@ -1,0 +1,96 @@
+//! Pure wire/runtime controls: never open a bus or manager socket.
+#[cfg(test)]
+mod tests {
+    use serde::{Deserialize, Serialize};
+    use std::time::Duration;
+    use zbus::{
+        Message, Type,
+        wire::{self, LE, serialized::Context},
+    };
+
+    #[derive(Debug, PartialEq, Serialize, Deserialize, Type)]
+    struct Payload {
+        version: u32,
+        name: String,
+    }
+
+    #[test]
+    fn derive_and_wire_roundtrip() {
+        let original = Payload {
+            version: 74,
+            name: "fixed-074".into(),
+        };
+        let data = wire::to_bytes(Context::new(LE, 0), &original).unwrap();
+        let (decoded, consumed): (Payload, _) = data.deserialize().unwrap();
+        assert_eq!(decoded, original);
+        assert_eq!(consumed, data.bytes().len());
+    }
+
+    #[test]
+    fn invalid_names_and_builder_refuse() {
+        assert!(zbus::names::UniqueName::try_from(":1.74").is_ok());
+        assert!(zbus::names::UniqueName::try_from("org.example.Manager").is_err());
+        assert!(zbus::names::InterfaceName::try_from("missing_dot").is_err());
+        assert!(
+            Message::method_call("not/an/object/path", "GetUnit")
+                .build(&())
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn reply_serial_sender_and_signature() {
+        let request = Message::method_call("/org/freedesktop/systemd1", "GetUnit")
+            .interface("org.freedesktop.systemd1.Manager")
+            .destination(":1.1")
+            .sender(":1.74")
+            .build(&("fixture.service",))
+            .unwrap();
+        let response = Message::method_return(&request.header())
+            .sender(":1.1")
+            .build(&("/org/freedesktop/systemd1/unit/fixture",))
+            .unwrap();
+        assert_eq!(
+            response.header().reply_serial(),
+            Some(request.primary_header().serial_num())
+        );
+        assert_eq!(response.header().sender().unwrap().as_str(), ":1.1");
+        assert_eq!(response.header().destination().unwrap().as_str(), ":1.74");
+        assert!(response.body().deserialize::<u32>().is_err());
+        let body: String = response.body().deserialize().unwrap();
+        assert_eq!(body, "/org/freedesktop/systemd1/unit/fixture");
+    }
+
+    #[test]
+    fn runtime_timeout_and_nested_entry() {
+        let timed_out = zbus::block_on(async {
+            tokio::time::timeout(Duration::from_millis(250), std::future::pending::<()>()).await
+        });
+        assert!(timed_out.is_err());
+        assert_eq!(zbus::block_on(async { 74 }), 74);
+        let nested =
+            std::panic::catch_unwind(|| zbus::block_on(async { zbus::block_on(async { 74 }) }));
+        assert!(nested.is_err());
+    }
+}
+
+#[cfg(test)]
+#[path = "/home/artur/.cache/hydracache-074-dbus-linux/20261028-a4/assets/tools/dbus-msrv-backport-074/match_rule_tests.rs"]
+mod match_rule_review;
+
+#[path = "/home/artur/.cache/hydracache-074-dbus-linux/20261028-a4/assets/tools/dbus-runtime-bridge-074/bridge_v2.rs"]
+pub mod bridge;
+
+#[cfg(test)]
+#[path = "/home/artur/.cache/hydracache-074-dbus-linux/20261028-a4/assets/tools/dbus-runtime-bridge-074/runtime_tests_v2.rs"]
+mod runtime_review;
+
+#[cfg(test)]
+mod caller_checks;
+
+#[cfg(test)]
+#[path = "/home/artur/.cache/hydracache-074-dbus-linux/20261028-a4/assets/tools/dbus-runtime-bridge-074/constructor_test.rs"]
+mod constructor_review;
+
+#[cfg(test)]
+pub use caller_checks::{UnitSnapshot,UnitMismatch,UnitError};

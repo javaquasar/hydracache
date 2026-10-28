@@ -1,0 +1,67 @@
+import unittest
+import run
+import native
+
+
+class Controls(unittest.TestCase):
+    def setUp(self):
+        self.old = ['old::' + str(n) for n in range(31)]
+
+    @staticmethod
+    def raw(names):
+        return ('\n'.join(n + ': test' for n in names) + f'\n{len(names)} tests, 0 benchmarks\n').encode()
+
+    def test_baseline_and_fd_catalogs_are_exact(self):
+        for variant, names in [('baseline', self.old), ('fd', self.old + run.EXTRAS)]:
+            self.assertEqual(run.inventory(self.raw(names), self.old, variant), sorted(names))
+
+    def test_incomplete_foreign_duplicate_or_cross_variant_refuses(self):
+        names = self.old + run.EXTRAS
+        for changed in (names[:-1], names + ['foreign'], names[:-1] + ['foreign'], names[:-1] + [names[0]], self.old):
+            with self.assertRaises(ValueError):
+                run.inventory(self.raw(changed), self.old, 'fd')
+        with self.assertRaises(ValueError):
+            run.inventory(self.raw(names), self.old, 'baseline')
+
+    def test_invalid_baseline_variant_and_summary_refuse(self):
+        names = self.old + run.EXTRAS
+        for old, variant, raw in [(self.old[:-1] + [self.old[0]], 'fd', self.raw(names)),
+                                  (self.old, 'foreign', self.raw(names)),
+                                  (self.old, 'fd', self.raw(names).replace(b'37 tests', b'0 tests')),
+                                  (self.old, 'fd', b'0 tests, 0 benchmarks\n')]:
+            with self.assertRaises(ValueError):
+                run.inventory(raw, old, variant)
+
+    def test_every_dispatch_selector_reaches_its_matching_context(self):
+        for attempt in (1, 2, 3, 4):
+            argv = run.native_command(attempt)
+            self.assertEqual(argv[:10], ['wsl.exe', '-d', 'Ubuntu', '-u', 'artur', '--cd', '/', '--exec', '/usr/bin/python3', '-B'])
+            self.assertEqual(argv[10], '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-linux-074/native.py')
+            base, root, mode = native.context(argv[11])
+            self.assertEqual(mode, 'session')
+            suffix = '' if attempt == 1 else '-v' + str(attempt)
+            self.assertTrue(base.as_posix().endswith('/target/dbus-linux' + suffix + '-20261028'))
+            self.assertEqual(root.as_posix(), '/home/artur/.cache/hydracache-074-dbus-linux/20261028-a' + str(attempt))
+            worker = 'worker' + suffix
+            self.assertEqual(native.context(worker), (base, root, 'worker'))
+
+    def test_extended_lifetime_catalog_requires_the_new_identity(self):
+        names = self.old + run.EXTRAS + [run.EXTRA_DROP]
+        extras = run.EXTRAS + [run.EXTRA_DROP]
+        self.assertEqual(run.inventory(self.raw(names), self.old, 'fd', extras), sorted(names))
+        with self.assertRaises(ValueError):
+            run.inventory(self.raw(names[:-1]), self.old, 'fd', extras)
+        with self.assertRaises(ValueError):
+            run.inventory(self.raw(names), self.old, 'fd')
+
+    def test_unknown_dispatch_and_native_context_refuse(self):
+        for value in (0, 5, True, '3', None):
+            with self.assertRaises(ValueError):
+                run.native_command(value)
+        for value in ('session-v5', 'worker-v5', 'session/../../', '', 'prepare'):
+            with self.assertRaises(ValueError):
+                native.context(value)
+
+
+if __name__ == '__main__':
+    unittest.main()

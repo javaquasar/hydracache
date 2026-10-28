@@ -469,6 +469,19 @@ limits remain exact. This does not run scope/socket/boot/admission guards, quali
 PropertiesChanged/Unix FD, or replace a paired old/new full caller/product gate.
 GNU/FD/fault, distribution, remaining security and complete product gates remain open.
 
+The [GNU/Unix FD continuation](dbus-linux-fd-result-20261028.md) passes the pinned
+31-case source baseline on both compilers and records actual socketpair peer
+credentials, SCM_RIGHTS identity/shared offset, decoded CLOEXEC, large bodies,
+disconnect/lost-ACK and post-close cleanup. Initial 37-case suites pass, but a
+stronger raw-message FD oracle fails 37/38 before close: the pinned receive call
+uses empty flags. A separate Linux CMSG_CLOEXEC leaf candidate passes 38/38 plus
+check and strict Clippy on 1.88/1.94, with the exact stronger test unchanged.
+The raw failure and earlier fixture/dispatch/prefix refusals remain. This is a
+standalone security candidate, not a root graph update, performance win, full
+Unix fault/target proof or original all-writer admission. Forced partial I/O,
+ancillary truncation, actual ReplyState, remaining source/effect/distribution
+and complete product gates remain required before root integration.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

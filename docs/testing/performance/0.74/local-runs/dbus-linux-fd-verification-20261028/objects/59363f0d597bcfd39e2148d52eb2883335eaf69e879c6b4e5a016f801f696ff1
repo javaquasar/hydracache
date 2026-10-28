@@ -1,0 +1,86 @@
+from pathlib import Path
+import json,os,re,shutil,subprocess,sys
+ROOT=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(ROOT/'tools/dbus-linux-074'))
+import run as linux
+r=linux.prior
+BASE=ROOT/'target/dbus-linux-final-20261028';entry_mode=sys.argv[1];mode='verify' if entry_mode=='verify-corrected' else entry_mode;assert mode in ('verify','controls','format','doc-check')
+OUT=BASE/entry_mode
+docs=('docs/testing/performance/0.74/dbus-linux-fd-result-20261028.md','docs/testing/performance/0.74/README.md',
+ 'docs/testing/performance/0.74/release-closure-execution-plan-20261026.md','docs/articles/007-optimization-starts-with-measurement.md')
+argv={'controls':[sys.executable,'-B','-m','unittest','discover','-s','tools/dbus-linux-074','-p','test_controls.py','-v'],
+ 'format':['rustfmt','+1.94.0','--edition','2024','--check','tools/dbus-linux-074/unix_tests.rs','tools/dbus-linux-074/unix_tests_v2.rs','tools/dbus-linux-074/unix_tests_v3.rs','target/dbus-linux-v5-20261028/input/fd/zbus/src/runtime/io/unix.rs'],
+ 'doc-check':[str(ROOT/'target/debug/xtask.exe'),'doc-check']}.get(mode)
+if len(sys.argv)==3:
+ assert sys.argv[2]=='--worker' and argv
+ def capacity():
+  if shutil.disk_usage(ROOT).free<r.p.FLOOR:raise r.owned.CapacityError('original 4 GiB floor')
+ result=r.owned._owned(r.owned.load_job().WindowsJob(),argv,str(ROOT),capacity,bound=1200)
+ r.write(OUT,'execution.json',result);raise SystemExit(result['exit'])
+OUT.mkdir(parents=True,exist_ok=False);(OUT/'producer.py').write_bytes(Path(__file__).read_bytes())
+with (OUT/'stdout.log').open('xb') as stdout,(OUT/'stderr.log').open('xb') as stderr:
+ try:
+  before=dict(source=r.snapshot(),documents={n:r.sha((ROOT/n).read_bytes()) for n in docs},head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip())
+  if mode=='doc-check':before['executable_sha256']=r.sha(Path(argv[0]).read_bytes())
+  r.write(OUT,'intent.json',dict(argv=argv,inputs=before,bound=1200,floor=r.p.FLOOR,capacity_poll=5,retirement=5,retry=False))
+  if mode=='verify':
+   packet=ROOT/'docs/testing/performance/0.74/local-runs/dbus-linux-fd-20261028'
+   raw=(packet/'index.json').read_bytes();assert r.sha(raw)=='9de2f42856957da48aac3f87f1e8a1d00a6e7f2d259c2f36b978c0a06a4d5ce4'
+   index=json.loads(raw);members=index['members'];assert len(members)==3300
+   for row in members.values():
+    data=(packet/'objects'/row['sha256']).read_bytes();assert len(data)==row['bytes'] and r.sha(data)==row['sha256']
+   def get(name):return (packet/'objects'/members[name]['sha256']).read_bytes()
+   source_before=get('capture/attempt-5/prepare/recvmsg-before.rs');source_after=get('capture/attempt-5/prepare/recvmsg-after.rs')
+   assert r.sha(source_before)=='f8cc21f18420cae201ba3faa43ea1e29d0fbf45af00c4938dcf5159c82907c76'
+   assert r.sha(source_after)=='a486d9b0ab4d0d245f82da823d02a6fd750efe0e0f8dda6b1b5c078bca282151'
+   assert linux.patch_recvmsg(source_before)==source_after
+   old_traces=[];unix=[]
+   for attempt,variant,total in ((1,'baseline',31),(3,'fd',37),(4,'fd',38),(5,'fd',38)):
+    for compiler in (('194',) if attempt==4 else ('194','188')):
+     base=f'capture/attempt-{attempt}/session/{variant}-{compiler}'
+     test=json.loads(get(base+'-test/result.json'));listing=json.loads(get(base+'-list/result.json'))
+     assert test['artifact']==listing['artifact'] and len(listing['inventory'])==total
+     raw=get(base+'-test/stdout.log');rows=re.findall(r'^test (.+?) \.\.\. (ok|FAILED)$',raw.decode(),re.M)
+     assert sorted(n for n,status in rows)==listing['inventory']
+     assert test['accounting']['selected']==total and test['accounting']['filtered']==0
+     if attempt==4:
+      assert test['exit']==101 and test['accounting']['passed']==37 and test['accounting']['failed']==1
+      assert [n for n,status in rows if status=='FAILED']==[linux.EXTRA_DROP]
+     else:assert test['exit']==0 and test['accounting']['passed']==total and all(status=='ok' for n,status in rows)
+     old_traces.append([[json.loads(n.split(b':',1)[1]) for n in raw.splitlines() if n.startswith(marker)]
+      for marker in (b'HC074_FLOW_TRACE:',b'HC074_READ_TRACE:',b'HC074_PEER_MISMATCH_TRACE:')])
+     if attempt==5:
+      values=[n.decode() for n in raw.splitlines() if n.startswith(b'HC074_UNIX:')];assert len(values)==7
+      assert 'HC074_UNIX:decode-drop-before-close:requests=3:aliases=1' in values;unix.append(values)
+   assert all(value==old_traces[0] for value in old_traces) and unix[0]==unix[1]
+   import tarfile,io,hashlib
+   preparation=json.loads(get('capture/attempt-5/prepare/result.json'));vendor=json.loads(get('capture/attempt-5/session/vendor-receipt.json'));verified=0
+   for package in preparation['registry']:
+    archive=get('capture/attempt-5/input/archives/'+package['name']+'.crate');assert r.sha(archive)==package['sha256']
+    files={}
+    with tarfile.open(fileobj=io.BytesIO(archive),mode='r:gz') as tar:
+     for member in tar.getmembers():
+      assert member.name.startswith(package['name']+'/') and '..' not in Path(member.name).parts
+      if member.isdir():continue
+      assert member.isfile();files[member.name[len(package['name'])+1:]]=hashlib.sha256(tar.extractfile(member).read()).hexdigest()
+    assert files==vendor[package['name']];verified+=len(files)
+   assert len(preparation['registry'])==58
+   result=dict(exit=0,members_verified=3300,objects_verified=517,raw_cloexec_failure_retained=True,
+    baseline_passes_per_compiler=31,fixed_suite_passes_per_compiler=38,gnu_images_accounted=7,
+    registry_archives_verified=58,registry_source_members_verified=verified,leaf_inverse=True,
+    old_protocol_traces_equal=True,unix_markers_equal=True,archived_code_executed=False,byte_verification_only=True)
+   stdout.write(json.dumps(result).encode()+b'\n')
+  else:
+   child=subprocess.Popen([sys.executable,'-B',str(Path(__file__)),mode,'--worker'],cwd=ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,
+    env=dict(os.environ,CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2'))
+   try:code=child.wait(timeout=1210)
+   except subprocess.TimeoutExpired:
+    child.kill();child.wait(timeout=5);raise ValueError('owned worker lost; no PID fallback')
+   execution=json.loads((OUT/'execution.json').read_bytes());assert execution['retired'] and not execution['errors'];result=dict(exit=code)
+  assert before['source']==r.snapshot() and all(r.sha((ROOT/n).read_bytes())==v for n,v in before['documents'].items())
+  assert before['head']==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+  if mode=='doc-check':assert before['executable_sha256']==r.sha(Path(argv[0]).read_bytes())
+  result.update(inputs_unchanged=True,release_admitted=False);r.write(OUT,'result.json',result)
+ except BaseException as error:
+  r.write(OUT,'refusal.json',dict(type=type(error).__name__,reason=str(error),release_admitted=False));raise
+print(json.dumps(dict(mode=mode,**result)));raise SystemExit(result['exit'])

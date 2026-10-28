@@ -1,0 +1,32 @@
+{
+  "boot": "aa2e78d0-135f-40d2-b5cd-c9f3c4a2b274",
+  "clock_observation": {
+    "CLOCK_BOOTTIME": 6229383960,
+    "CLOCK_MONOTONIC": 6229383351,
+    "CLOCK_MONOTONIC_RAW": 6132250736,
+    "CLOCK_REALTIME": 1793164932341227588
+  },
+  "free_native": 876434083840,
+  "free_windows": 51639160832,
+  "gid": 1000,
+  "home": "/home/artur",
+  "platform": "linux",
+  "toolchains": {
+    "1.88.0": {
+      "cargo": "cargo 1.88.0 (873a06493 2025-05-10)",
+      "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)"
+    },
+    "1.94.0": {
+      "cargo": "cargo 1.94.0 (85eff7c80 2026-01-15)",
+      "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02)"
+    }
+  },
+  "uid": 1000,
+  "uname": [
+    "Linux",
+    "LT-TCH-12",
+    "6.6.87.2-microsoft-standard-WSL2",
+    "#1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025",
+    "x86_64"
+  ]
+}

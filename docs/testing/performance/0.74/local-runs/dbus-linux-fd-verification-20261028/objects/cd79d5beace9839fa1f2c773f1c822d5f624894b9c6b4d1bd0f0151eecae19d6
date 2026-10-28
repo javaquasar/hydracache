@@ -1,0 +1,12 @@
+test_baseline_and_fd_catalogs_are_exact (test_controls.Controls.test_baseline_and_fd_catalogs_are_exact) ... ok
+test_every_dispatch_selector_reaches_its_matching_context (test_controls.Controls.test_every_dispatch_selector_reaches_its_matching_context) ... ok
+test_exact_cloexec_leaf_and_inverse_source_guard (test_controls.Controls.test_exact_cloexec_leaf_and_inverse_source_guard) ... ok
+test_extended_lifetime_catalog_requires_the_new_identity (test_controls.Controls.test_extended_lifetime_catalog_requires_the_new_identity) ... ok
+test_incomplete_foreign_duplicate_or_cross_variant_refuses (test_controls.Controls.test_incomplete_foreign_duplicate_or_cross_variant_refuses) ... ok
+test_invalid_baseline_variant_and_summary_refuse (test_controls.Controls.test_invalid_baseline_variant_and_summary_refuse) ... ok
+test_unknown_dispatch_and_native_context_refuse (test_controls.Controls.test_unknown_dispatch_and_native_context_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.004s
+
+OK

@@ -1,0 +1,132 @@
+"""Nonroot private Linux process, offline sources; CI custody is not product authority."""
+from pathlib import Path
+import hashlib,importlib.util,json,os,shutil,subprocess,sys,tarfile,time
+CONTROL=Path('/mnt/c/Workspace/prj/jq/cashe/hydracache-074')
+BASE=CONTROL/'target/dbus-linux-20261028'
+NATIVE=Path('/home/artur/.cache/hydracache-074-dbus-linux/20261028-a1')
+OUT=BASE/'session'
+sha=lambda b:hashlib.sha256(b).hexdigest()
+def need(value,why):
+ if not value:raise ValueError(why)
+def write(out,name,value):
+ with (out/name).open('x',encoding='utf8',newline='\n') as f:f.write(json.dumps(value,indent=2,sort_keys=True)+'\n')
+def load(path,name):
+ spec=importlib.util.spec_from_file_location(name,path);module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
+def tree(folder):return {p.relative_to(folder).as_posix():sha(p.read_bytes()) for p in sorted(folder.rglob('*')) if p.is_file()}
+def clocks():return {n:time.clock_gettime_ns(getattr(time,n)) for n in ('CLOCK_REALTIME','CLOCK_MONOTONIC','CLOCK_MONOTONIC_RAW','CLOCK_BOOTTIME')}
+def capacity():
+ need(shutil.disk_usage('/mnt/c').free>=4*1024**3 and shutil.disk_usage(NATIVE).free>=4*1024**3,'original physical/native 4 GiB floors')
+def sources(review):
+ for name,digest in review['files'].items():need(sha((NATIVE/name).read_bytes())==digest,'native source drift: '+name)
+ for name,digest in review['helpers'].items():need(sha((CONTROL/name).read_bytes())==digest,'owned helper drift')
+ for name,digest in review['root_inputs'].items():need(sha((CONTROL/name).read_bytes())==digest,'protected root drift')
+
+def command(label,review):
+ parts=label.split('-');need(len(parts)==3 and parts[0] in ('baseline','fd') and parts[1] in ('194','188'),'fixed phase')
+ variant,compiler,action=parts;need(action in ('build','list','test','check','clippy'),'fixed command')
+ version='1.94.0' if compiler=='194' else '1.88.0'
+ toolchain=Path('/home/artur/.rustup/toolchains')/(version+'-x86_64-unknown-linux-gnu')/'bin'
+ folder=NATIVE/variant;target=NATIVE/'builds'/variant/compiler
+ common=['--offline','--locked','--manifest-path',str(folder/'Cargo.toml'),'--target-dir',str(target),'-p','dbus-probe-074']
+ cargo=str(toolchain/'cargo');artifact=None
+ if action=='build':argv=[cargo,'test',*common,'--lib','--no-run','--message-format=json']
+ elif action in ('check','clippy'):argv=[cargo,action,*common,'--all-targets','--all-features']+(['--','-D','warnings'] if action=='clippy' else [])
+ else:
+  previous=json.loads((OUT/f'{variant}-{compiler}-build/result.json').read_bytes());need(previous['exit']==0,'actual build')
+  artifact=previous['artifact'];image=Path(artifact['path']);need(image.resolve().is_relative_to(target) and sha(image.read_bytes())==artifact['sha256'],'held native image')
+  argv=[str(image)]+(['--list'] if action=='list' else ['--test-threads=1','--show-output'])
+  if action=='test':
+   listing=json.loads((OUT/f'{variant}-{compiler}-list/result.json').read_bytes());need(listing['exit']==0 and listing['artifact']==artifact,'held actual complete catalog')
+ env=dict(HOME='/home/artur',USER='artur',LOGNAME='artur',PATH=str(toolchain)+':/usr/local/bin:/usr/bin:/bin',LANG='C.UTF-8',
+  CARGO_HOME=str(NATIVE/'cargo-home'),CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2',HC074_FD_ROOT=str(NATIVE/'fd-fixtures'))
+ return argv,env,artifact,target,folder,action
+
+def worker(label,deadline):
+ review=json.loads((BASE/'prepare/result.json').read_bytes());sources(review);capacity()
+ sys.path.insert(0,str(CONTROL/'tools/windows-workspace-preflight-074'));import owned
+ group=load(CONTROL/'scripts/ci/watchdog_linux_group.py','hc074_dbus_owned_linux')
+ argv,env,artifact,target,folder,action=command(label,review)
+ # This is a dedicated disposable worker; no process-global environment is changed in a shared caller.
+ os.environ.clear();os.environ.update(env)
+ execution=owned._owned(group.LinuxGroup(),argv,str(folder),capacity,bound=1200,deadline=deadline)
+ write(OUT/label,'execution.json',execution);raise SystemExit(execution['exit'])
+
+def session():
+ os.umask(0o077)
+ receipt=dict(passed=False,server=False,services=False,clocks_changed=False,release_admitted=False,phases=[],clocks_before=clocks())
+ boot=Path('/proc/sys/kernel/random/boot_id').read_text().strip();receipt['boot_before']=boot
+ review=json.loads((BASE/'prepare/result.json').read_bytes());deadline=time.monotonic()+1100
+ try:
+  need(sys.platform=='linux' and os.getuid()==1000 and os.getgid()==1000,'nonroot local Linux')
+  need(review['native_root']==str(NATIVE),'fixed exclusive native root')
+  parent=NATIVE.parent
+  if not parent.exists():parent.mkdir(mode=0o700)
+  need(parent.resolve()==parent and parent.stat().st_uid==os.getuid() and not parent.stat().st_mode&0o077,'owned native parent')
+  NATIVE.mkdir(mode=0o700,exist_ok=False);capacity()
+  need(tree(BASE/'input')==review['files'],'exact prepared transfer')
+  for name in review['files']:
+   source=BASE/'input'/name;need(not source.is_symlink(),'regular input');dest=NATIVE/name;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(source.read_bytes())
+  (NATIVE/'fd-fixtures').mkdir(mode=0o700)
+  vendor={}
+  for item in review['registry']:
+   archive=NATIVE/'archives'/(item['name']+'.crate');need(sha(archive.read_bytes())==item['sha256'],'held registry archive')
+   directory=NATIVE/'vendor'/item['name'];directory.mkdir(parents=True);members={}
+   with tarfile.open(archive,'r:gz') as tar:
+    for entry in tar.getmembers():
+     need(entry.name.startswith(item['name']+'/') and '..' not in Path(entry.name).parts,'archive member scope')
+     if entry.isdir():continue
+     need(entry.isfile(),'regular archive member');rel=entry.name[len(item['name'])+1:];dest=directory/rel
+     dest.parent.mkdir(parents=True,exist_ok=True);raw=tar.extractfile(entry).read();dest.write_bytes(raw);members[rel]=sha(raw)
+   write(directory,'.cargo-checksum.json',dict(package=item['sha256'],files=members));vendor[item['name']]=members
+  write(OUT,'vendor-receipt.json',vendor);sources(review)
+  run=load(CONTROL/'tools/dbus-linux-074/run.py','hc074_gnu_catalog')
+  account=load(CONTROL/'tools/chitchat-mtu-review-074/accounting.py','hc074_gnu_account')
+  for variant in (('fd',) if review.get('reuse_passing_baseline') else ('baseline','fd')):
+   for compiler in ('194','188'):
+    for action in ('build','list','test','check','clippy'):
+     need(time.monotonic()<deadline,'original session origin exhausted');sources(review);capacity()
+     label=f'{variant}-{compiler}-{action}';out=OUT/label;out.mkdir(exist_ok=False)
+     argv,env,artifact,target,folder,_=command(label,review)
+     write(out,'intent.json',dict(argv=argv,environment=env,prepare_sha256=sha((BASE/'prepare/result.json').read_bytes()),
+      absolute_deadline=deadline,original_bound=1200,session_bound=1100,capacity_poll=5,retirement=5,artifact=artifact,retry=False))
+     with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+      child=subprocess.Popen(['/usr/bin/python3','-B',str(Path(__file__)),'worker-v2' if review.get('reuse_passing_baseline') else 'worker',label,str(deadline)],
+       stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,start_new_session=True)
+      code=child.wait(timeout=max(0,deadline-time.monotonic())+10)
+     execution=json.loads((out/'execution.json').read_bytes());need(execution['retired'] and not execution['errors'],'kernel-owned phase retirement')
+     sources(review);value=dict(exit=code,artifact=artifact,source_unchanged=True,release_admitted=False);raw=(out/'stdout.log').read_bytes()
+     if action=='build' and code==0:
+      messages=[json.loads(n) for n in raw.splitlines()]
+      found=[m for m in messages if m.get('reason')=='compiler-artifact' and m['target']['name']=='dbus_probe_074' and m['target']['kind']==['lib'] and m['profile']['test'] and m.get('executable')]
+      need(len(found)==1 and [m['success'] for m in messages if m.get('reason')=='build-finished']==[True],'actual GNU Cargo test artifact')
+      image=Path(found[0]['executable']);need(image.resolve().is_relative_to(target) and Path(found[0]['target']['src_path'])==folder/'probe/src/lib.rs','native image/source path')
+      value['artifact']=dict(path=str(image),bytes=image.stat().st_size,sha256=sha(image.read_bytes()))
+     if action=='list' and code==0:value['inventory']=run.inventory(raw,review['baseline'],variant)
+     if action=='test':
+      listing=json.loads((OUT/f'{variant}-{compiler}-list/result.json').read_bytes())
+      value['accounting']=account.account(raw,listing['inventory'],'',False)
+      need((code==0)==value['accounting']['test_pass'],'native complete exit/count agreement')
+     if artifact:need(sha(Path(artifact['path']).read_bytes())==artifact['sha256'],'native image postflight')
+     write(out,'result.json',value);receipt['phases'].append(dict(label=label,exit=code));print(json.dumps(dict(phase=label,exit=code)),flush=True)
+     need(code==0,'first GNU phase refusal: '+label)
+  need(not list((NATIVE/'fd-fixtures').iterdir()),'native fixture files remain')
+  for item in review['registry']:
+   directory=NATIVE/'vendor'/item['name'];actual=tree(directory);actual.pop('.cargo-checksum.json')
+   need(actual==vendor[item['name']],'vendor postflight')
+  receipt['passed']=True
+ except BaseException as error:
+  receipt['first_refusal']=dict(type=type(error).__name__,reason=str(error))
+ finally:
+  try:sources(review);receipt['source_unchanged']=True
+  except BaseException as error:receipt['source_unchanged']=False;receipt['source_refusal']=str(error);receipt['passed']=False
+  receipt.update(boot_after=Path('/proc/sys/kernel/random/boot_id').read_text().strip(),clocks_after=clocks(),native_root=str(NATIVE))
+  receipt['boot_unchanged']=receipt['boot_after']==boot;write(OUT,'native-result.json',receipt)
+ raise SystemExit(0 if receipt['passed'] and receipt['boot_unchanged'] else 1)
+
+if __name__=='__main__':
+ if len(sys.argv)>1 and sys.argv[1] in ('session-v2','worker-v2'):
+  BASE=CONTROL/'target/dbus-linux-v2-20261028';NATIVE=Path('/home/artur/.cache/hydracache-074-dbus-linux/20261028-a2');OUT=BASE/'session'
+  sys.argv[1]=sys.argv[1].removesuffix('-v2')
+ if len(sys.argv)==2 and sys.argv[1]=='session':session()
+ elif len(sys.argv)==4 and sys.argv[1]=='worker':worker(sys.argv[2],float(sys.argv[3]))
+ else:raise ValueError('fixed session/worker only')

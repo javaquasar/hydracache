@@ -1,0 +1,9 @@
+import json,os,pathlib,shutil,subprocess,sys,time
+out=pathlib.Path('/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/dbus-linux-20261028/preflight.json')
+value=dict(platform=sys.platform,uid=os.getuid(),gid=os.getgid(),uname=list(os.uname()),boot=pathlib.Path('/proc/sys/kernel/random/boot_id').read_text().strip(),free_native=shutil.disk_usage('/home/artur').free,free_windows=shutil.disk_usage('/mnt/c').free,home=str(pathlib.Path.home()),toolchains={})
+for version in ('1.94.0','1.88.0'):
+ base=pathlib.Path('/home/artur/.rustup/toolchains')/(version+'-x86_64-unknown-linux-gnu')/'bin'
+ value['toolchains'][version]={name:subprocess.check_output([str(base/name),'--version'],timeout=10).decode().strip() for name in ('cargo','rustc')}
+value['clock_observation']={name:time.clock_gettime_ns(getattr(time,name)) for name in ('CLOCK_REALTIME','CLOCK_MONOTONIC','CLOCK_MONOTONIC_RAW','CLOCK_BOOTTIME')}
+with out.open('x',encoding='utf8') as f:json.dump(value,f,indent=2,sort_keys=True)
+print(json.dumps(value))
