@@ -1,0 +1,92 @@
+impl LoadedSettings {
+    fn validate(&self) -> Result<(), String> {
+        let expected_len =
+            TEXT.len() + BOOL.len() + UINT.len() + STRINGS.len() + COMMANDS.len() + 2;
+        if self.0.len() != expected_len {
+            return Err("loaded settings inventory".into());
+        }
+        for (name, value) in &self.0 {
+            let valid = match value {
+                Setting::Text(v) => TEXT.contains(&name.as_str()) && bounded(v),
+                Setting::Boolean(_) => BOOL.contains(&name.as_str()),
+                Setting::Unsigned(_) => UINT.contains(&name.as_str()),
+                Setting::Bytes(v) => name == "CPUAffinity" && v.len() <= 128,
+                Setting::Strings(v) => STRINGS.contains(&name.as_str()) && strings(v),
+                Setting::Commands(v) => {
+                    COMMANDS.contains(&name.as_str())
+                        && v.len() <= 8
+                        && v.iter()
+                            .all(|c| bounded(&c.path) && strings(&c.argv) && strings(&c.flags))
+                }
+                Setting::EnvironmentFiles(v) => {
+                    name == "EnvironmentFiles" && v.len() <= 8 && v.iter().all(|(p, _)| bounded(p))
+                }
+            };
+            if !valid {
+                return Err("loaded settings field or type".into());
+            }
+        }
+        Ok(())
+    }
+}
+fn bounded(v: &str) -> bool {
+    v.len() <= 1024 && !v.bytes().any(|b| b == 0 || b == b'\n' || b == b'\r')
+}
+fn strings(v: &[String]) -> bool {
+    v.len() <= 16 && v.iter().all(|s| bounded(s))
+}
+
+pub(crate) fn decode_settings(
+    mut properties: HashMap<String, OwnedValue>,
+) -> Result<LoadedSettings, String> {
+    use crate::diagnostic_manager::take;
+    let mut settings = BTreeMap::new();
+    for name in TEXT {
+        settings.insert((*name).into(), Setting::Text(take(&mut properties, name)?));
+    }
+    for name in BOOL {
+        settings.insert(
+            (*name).into(),
+            Setting::Boolean(take(&mut properties, name)?),
+        );
+    }
+    for name in UINT {
+        settings.insert(
+            (*name).into(),
+            Setting::Unsigned(take(&mut properties, name)?),
+        );
+    }
+    for name in STRINGS {
+        settings.insert(
+            (*name).into(),
+            Setting::Strings(take(&mut properties, name)?),
+        );
+    }
+    settings.insert(
+        "CPUAffinity".into(),
+        Setting::Bytes(take(&mut properties, "CPUAffinity")?),
+    );
+    settings.insert(
+        "EnvironmentFiles".into(),
+        Setting::EnvironmentFiles(take(&mut properties, "EnvironmentFiles")?),
+    );
+    for name in COMMANDS {
+        let commands: Vec<ExtendedCommand> = take(&mut properties, name)?;
+        settings.insert(
+            (*name).into(),
+            Setting::Commands(
+                commands
+                    .into_iter()
+                    .map(|c| ConfiguredCommand {
+                        path: c.0,
+                        argv: c.1,
+                        flags: c.2,
+                    })
+                    .collect(),
+            ),
+        );
+    }
+    let settings = LoadedSettings(settings);
+    settings.validate()?;
+    Ok(settings)
+}

@@ -1,0 +1,7 @@
+     Locking 6 packages to latest compatible versions
+      Adding itoa v1.0.18
+      Adding serde_json v1.0.150 (available: v1.0.151)
+      Adding syn v2.0.119
+      Adding thiserror v2.0.18 (available: v2.0.21)
+      Adding thiserror-impl v2.0.18 (available: v2.0.21)
+      Adding zmij v1.0.23

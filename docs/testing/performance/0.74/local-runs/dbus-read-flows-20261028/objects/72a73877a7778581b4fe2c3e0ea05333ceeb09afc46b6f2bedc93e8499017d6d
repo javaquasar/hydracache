@@ -1,0 +1,21 @@
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ConfiguredCommand {
+    path: String,
+    argv: Vec<String>,
+    flags: Vec<String>,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", content = "value", deny_unknown_fields)]
+enum Setting {
+    Text(String),
+    Boolean(bool),
+    Unsigned(u64),
+    Bytes(Vec<u8>),
+    Strings(Vec<String>),
+    Commands(Vec<ConfiguredCommand>),
+    EnvironmentFiles(Vec<(String, bool)>),
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub(crate) struct LoadedSettings(BTreeMap<String, Setting>);
+

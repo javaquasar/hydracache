@@ -1,0 +1,16 @@
+#[derive(Debug, Error)]
+pub enum UnitError {
+    #[error("systemd unit name is outside the fixed HydraCache 0.74 namespace")]
+    UnitName,
+    #[error("systemd D-Bus inspection failed: {0}")]
+    Dbus(#[from] zbus::Error),
+    #[error("transient systemd unit policy or campaign path is invalid")]
+    Policy,
+    #[error("transient systemd unit policy serialization failed: {0}")]
+    Json(#[from] serde_json::Error),
+    #[error("systemd unit identity differs: {0:?}")]
+    Mismatch(Vec<UnitMismatch>),
+    #[error("systemd unit did not stop within the frozen diagnostic grace")]
+    StopTimeout,
+}
+

@@ -1,0 +1,78 @@
+from pathlib import Path
+import json,os,re,shutil,subprocess,sys
+ROOT=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(ROOT/'tools/dbus-read-flows-074'))
+import run as r
+BASE=ROOT/'target/dbus-read-final-20261028';mode=sys.argv[1];assert mode in ('verify','controls','format','doc-check')
+OUT=BASE/mode
+docs=('docs/testing/performance/0.74/dbus-read-flows-result-20261028.md','docs/testing/performance/0.74/README.md',
+ 'docs/testing/performance/0.74/release-closure-execution-plan-20261026.md','docs/articles/007-optimization-starts-with-measurement.md')
+argv={'controls':[sys.executable,'-B','-m','unittest','discover','-s','tools/dbus-read-flows-074','-p','test_catalog.py','-v'],
+ 'format':['rustfmt','+1.94.0','--edition','2024','--check','tools/dbus-read-flows-074/tests.rs','tools/dbus-read-flows-074/tests_v3.rs'],
+ 'doc-check':[str(ROOT/'target/debug/xtask.exe'),'doc-check']}.get(mode)
+if len(sys.argv)==3:
+ assert sys.argv[2]=='--worker' and argv
+ def capacity():
+  if shutil.disk_usage(ROOT).free<r.p.FLOOR:raise r.owned.CapacityError('original 4 GiB floor')
+ result=r.owned._owned(r.owned.load_job().WindowsJob(),argv,str(ROOT),capacity,bound=1200)
+ r.write(OUT,'execution.json',result);raise SystemExit(result['exit'])
+OUT.mkdir(parents=True,exist_ok=False);(OUT/'producer.py').write_bytes(Path(__file__).read_bytes())
+with (OUT/'stdout.log').open('xb') as stdout,(OUT/'stderr.log').open('xb') as stderr:
+ try:
+  before=dict(source=r.snapshot(),documents={n:r.sha((ROOT/n).read_bytes()) for n in docs},head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip())
+  if mode=='doc-check':before['executable_sha256']=r.sha(Path(argv[0]).read_bytes())
+  r.write(OUT,'intent.json',dict(argv=argv,inputs=before,bound=1200,floor=r.p.FLOOR,capacity_poll=5,retirement=5,retry=False))
+  if mode=='verify':
+   packet=ROOT/'docs/testing/performance/0.74/local-runs/dbus-read-flows-20261028'
+   raw=(packet/'index.json').read_bytes();assert r.sha(raw)=='PRIMARY_INDEX_SHA_PENDING'
+   index=json.loads(raw);members=index['members']
+   for row in members.values():
+    data=(packet/'objects'/row['sha256']).read_bytes();assert len(data)==row['bytes'] and r.sha(data)==row['sha256']
+   def get(n):return (packet/'objects'/members[n]['sha256']).read_bytes()
+   traces=[];old_traces=[];bad_traces=[]
+   for compiler in ('188','194'):
+    test=json.loads(get(f'capture/v3/test-{compiler}/result.json'));listing=json.loads(get(f'capture/v3/list-{compiler}/result.json'))
+    assert test['artifact']==listing['artifact'] and test['exit']==0 and test['unchanged']
+    raw=get(f'capture/v3/test-{compiler}/stdout.log');text=raw.decode()
+    rows=re.findall(r'^test (.+?) \.\.\. (ok|FAILED)$',text,re.M)
+    assert len(rows)==31 and sorted(n for n,_ in rows)==listing['inventory'] and all(s=='ok' for _,s in rows)
+    assert test['accounting']['passed']==test['accounting']['selected']==31 and test['accounting']['failed']==test['accounting']['filtered']==0
+    def values(marker):return [json.loads(line.split(b':',1)[1]) for line in raw.splitlines() if line.startswith(marker)]
+    flow=values(b'HC074_FLOW_TRACE:');old=values(b'HC074_READ_TRACE:');bad=values(b'HC074_PEER_MISMATCH_TRACE:')
+    assert len(flow)==16 and sum(map(len,flow))==97
+    assert len(old)==15 and sum(map(len,old))==31
+    assert len(bad)==1 and len(bad[0])==1
+    traces.append(flow);old_traces.append(old);bad_traces.append(bad)
+   assert traces[0]==traces[1] and old_traces[0]==old_traces[1] and bad_traces[0]==bad_traces[1]
+   first=json.loads(get('capture/first/build-194/result.json'));assert first['exit']==101 and first['unchanged']
+   timeout=json.loads(get('capture/v2/test-194/execution.json'));assert timeout['exit']==124 and timeout['retired'] and not timeout['errors'] and timeout['bound_seconds']==1200
+   audit=json.loads(get('capture/first/source-effect-audit.json'))
+   import tarfile,io,hashlib
+   for package in audit['added_primary_packages']:
+    name=package['name']+'-'+package['version'];archive=get('dependencies/archives/'+name+'.crate')
+    assert hashlib.sha256(archive).hexdigest()==package['archive_sha256']
+    actual={}
+    with tarfile.open(fileobj=io.BytesIO(archive),mode='r:gz') as tar:
+     for member in tar.getmembers():
+      assert member.name.startswith(name+'/') and '..' not in Path(member.name).parts
+      if member.isdir():continue
+      assert member.isfile();actual[member.name[len(name)+1:]]=hashlib.sha256(tar.extractfile(member).read()).hexdigest()
+    assert actual==package['source_members']
+   result=dict(exit=0,members_verified=len(members),native_selected_passes=62,
+    flow_scenarios_per_image=16,flow_requests_per_image=97,traces_equal=True,first_compile_and_timeout_retained=True,
+    primary_dependency_members_verified=347,archived_code_executed=False,byte_verification_only=True)
+   stdout.write(json.dumps(result).encode()+b'\n')
+  else:
+   child=subprocess.Popen([sys.executable,'-B',str(Path(__file__)),mode,'--worker'],cwd=ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,
+    env=dict(os.environ,CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2'))
+   try:code=child.wait(timeout=1210)
+   except subprocess.TimeoutExpired:
+    child.kill();child.wait(timeout=5);raise ValueError('owned worker lost; no PID fallback')
+   execution=json.loads((OUT/'execution.json').read_bytes());assert execution['retired'] and not execution['errors'];result=dict(exit=code)
+  assert before['source']==r.snapshot() and all(r.sha((ROOT/n).read_bytes())==v for n,v in before['documents'].items())
+  assert before['head']==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+  if mode=='doc-check':assert before['executable_sha256']==r.sha(Path(argv[0]).read_bytes())
+  result.update(inputs_unchanged=True,release_admitted=False);r.write(OUT,'result.json',result)
+ except BaseException as error:
+  r.write(OUT,'refusal.json',dict(type=type(error).__name__,reason=str(error),release_admitted=False));raise
+print(json.dumps(dict(mode=mode,**result)));raise SystemExit(result['exit'])

@@ -1,0 +1,45 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling serde_core v1.0.229
+   Compiling syn v3.0.9
+   Compiling serde v1.0.229
+   Compiling windows-link v0.2.1
+   Compiling windows-sys v0.61.2
+   Compiling serde_derive v1.0.229
+   Compiling getrandom v0.4.3
+   Compiling cfg-if v1.0.5
+   Compiling autocfg v1.5.1
+   Compiling memoffset v0.9.1
+   Compiling winnow v1.0.4
+   Compiling futures-core v0.3.34
+   Compiling pin-project-lite v0.2.17
+   Compiling once_cell v1.21.4
+   Compiling fastrand v2.5.0
+   Compiling zmij v1.0.23
+   Compiling tempfile v3.27.0
+   Compiling zbus_utils v6.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\dbus-read-flows-v3-20261028\fixture\zbus_utils)
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.4
+   Compiling syn v2.0.119
+   Compiling thiserror v2.0.18
+   Compiling futures-io v0.3.34
+   Compiling serde_json v1.0.150
+   Compiling zruntime v0.2.0
+   Compiling thiserror-impl v2.0.18
+   Compiling zbus_macros v6.1.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\dbus-read-flows-v3-20261028\fixture\zbus_macros)
+   Compiling tokio v1.53.3
+   Compiling uds_windows v1.2.1
+   Compiling ordered-stream v0.2.0
+   Compiling zcheapstr v1.1.0
+   Compiling uuid v1.23.4
+   Compiling serde_repr v0.1.21
+   Compiling async-trait v0.1.92
+   Compiling bitflags v2.13.2
+   Compiling memchr v2.8.3
+   Compiling endi v1.1.1
+   Compiling itoa v1.0.18
+   Compiling hex v0.4.3
+   Compiling zbus v6.1.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\dbus-read-flows-v3-20261028\fixture\zbus)
+   Compiling dbus-probe-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\dbus-read-flows-v3-20261028\fixture\probe)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 30.69s

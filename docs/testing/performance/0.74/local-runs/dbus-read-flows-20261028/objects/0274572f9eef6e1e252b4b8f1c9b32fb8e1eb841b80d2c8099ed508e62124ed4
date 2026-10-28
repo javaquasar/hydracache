@@ -1,0 +1,75 @@
+const TEXT: &[&str] = &[
+    "Description",
+    "User",
+    "Group",
+    "Type",
+    "Restart",
+    "KillMode",
+    "Slice",
+    "ProtectSystem",
+    "ProtectHome",
+    "WorkingDirectory",
+    "StandardInput",
+    "StandardOutput",
+    "StandardError",
+    "StandardOutputFileDescriptorName",
+    "StandardErrorFileDescriptorName",
+    "RootDirectory",
+    "RootImage",
+];
+const BOOL: &[&str] = &[
+    "RemainAfterExit",
+    "SendSIGKILL",
+    "Delegate",
+    "NoNewPrivileges",
+    "PrivateTmp",
+    "PrivateDevices",
+    "ProtectControlGroups",
+    "ProtectKernelTunables",
+    "ProtectKernelModules",
+    "ProtectKernelLogs",
+    "RestrictSUIDSGID",
+    "RestrictRealtime",
+    "LockPersonality",
+    "IOAccounting",
+    "DynamicUser",
+];
+const UINT: &[&str] = &[
+    "RuntimeMaxUSec",
+    "TimeoutStopUSec",
+    "MemoryMax",
+    "TasksMax",
+    "LimitNOFILE",
+    "LimitFSIZE",
+    "LimitNOFILESoft",
+    "LimitFSIZESoft",
+];
+const STRINGS: &[&str] = &[
+    "Environment",
+    "ReadWritePaths",
+    "PassEnvironment",
+    "UnsetEnvironment",
+];
+const COMMANDS: &[&str] = &[
+    "ExecStartEx",
+    "ExecConditionEx",
+    "ExecStartPreEx",
+    "ExecStartPostEx",
+    "ExecReloadEx",
+    "ExecStopEx",
+    "ExecStopPostEx",
+];
+// Exact systemd 255 Service GetAll extended-command signature a(sasasttttuii).
+type ExtendedCommand = (
+    String,
+    Vec<String>,
+    Vec<String>,
+    u64,
+    u64,
+    u64,
+    u64,
+    u32,
+    i32,
+    i32,
+);
+

@@ -1,0 +1,14 @@
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ObservedUnit {
+    pub unit_name: String,
+    pub object_path: String,
+    pub invocation_id: String,
+    pub active_state: String,
+    pub sub_state: String,
+    pub main_pid: u32,
+    pub control_group: String,
+    pub result: String,
+    pub transient: bool,
+}
+

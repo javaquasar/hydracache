@@ -1,0 +1,13 @@
+pub fn inspect_unit_optional(unit_name: &str) -> Result<Option<UnitSnapshot>, UnitError> {
+    validate_unit_name(unit_name)?;
+    match inspect_loaded_unit(unit_name) {
+        Ok(snapshot) => Ok(Some(snapshot)),
+        Err(UnitError::Dbus(zbus::Error::MethodError(name, _, _)))
+            if name.as_str() == "org.freedesktop.systemd1.NoSuchUnit" =>
+        {
+            Ok(None)
+        }
+        Err(error) => Err(error),
+    }
+}
+

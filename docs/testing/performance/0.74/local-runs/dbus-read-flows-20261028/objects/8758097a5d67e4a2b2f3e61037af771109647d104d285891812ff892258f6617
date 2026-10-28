@@ -1,0 +1,66 @@
+fn read_unit(
+    connection: &Connection,
+    owner: &str,
+    path: &str,
+    loaded: bool,
+) -> Result<(ObservedUnit, Option<LoadedSettings>), String> {
+    let properties = proxy(connection, owner, path, "org.freedesktop.DBus.Properties")?;
+    let mut unit: HashMap<String, OwnedValue> =
+        checked_call(&properties, owner, "GetAll", &(UNIT_INTERFACE,))
+            .map_err(|_| "unit properties")?;
+    let mut service: HashMap<String, OwnedValue> =
+        checked_call(&properties, owner, "GetAll", &(SERVICE_INTERFACE,))
+            .map_err(|_| "service properties")?;
+    if loaded {
+        // Description belongs to Unit; never guess from a Service fallback.
+        service.insert(
+            "Description".into(),
+            unit.remove("Description")
+                .ok_or("missing unit description")?,
+        );
+        let mut identity = HashMap::new();
+        for field in ["MainPID", "ControlGroup", "Result"] {
+            identity.insert(
+                field.into(),
+                service.remove(field).ok_or("missing service identity")?,
+            );
+        }
+        Ok((
+            decode_unit_properties(path, unit, identity)?,
+            Some(decode_settings(service)?),
+        ))
+    } else {
+        Ok((decode_unit_properties(path, unit, service)?, None))
+    }
+}
+fn decode_unit_properties(
+    path: &str,
+    mut unit: HashMap<String, OwnedValue>,
+    mut service: HashMap<String, OwnedValue>,
+) -> Result<ObservedUnit, String> {
+    let id: Vec<u8> = take(&mut unit, "InvocationID")?;
+    if id.len() != 16 {
+        return Err("unit invocation identity".into());
+    }
+    Ok(ObservedUnit {
+        unit_name: take(&mut unit, "Id")?,
+        object_path: path.into(),
+        invocation_id: id.iter().map(|v| format!("{v:02x}")).collect(),
+        active_state: take(&mut unit, "ActiveState")?,
+        sub_state: take(&mut unit, "SubState")?,
+        main_pid: take(&mut service, "MainPID")?,
+        control_group: take(&mut service, "ControlGroup")?,
+        result: take(&mut service, "Result")?,
+        transient: take(&mut unit, "Transient")?,
+    })
+}
+pub(crate) fn take<T: TryFrom<OwnedValue>>(
+    values: &mut HashMap<String, OwnedValue>,
+    name: &str,
+) -> Result<T, String> {
+    values
+        .remove(name)
+        .ok_or_else(|| "missing unit property".to_string())?
+        .try_into()
+        .map_err(|_| "unit property type".into())
+}

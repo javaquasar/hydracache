@@ -1,0 +1,21 @@
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitSnapshot {
+    pub unit_name: String,
+    pub active_state: String,
+    pub sub_state: String,
+    pub main_pid: u32,
+    pub control_group: String,
+    pub result: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UnitMismatch {
+    UnitName,
+    ActiveState,
+    SubState,
+    MainPid,
+    ControlGroup,
+    Result,
+}
+

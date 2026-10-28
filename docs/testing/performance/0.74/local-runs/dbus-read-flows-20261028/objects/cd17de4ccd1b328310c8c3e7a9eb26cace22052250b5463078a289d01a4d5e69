@@ -1,0 +1,97 @@
+"""Inert packet assembly; native commands are never replayed here."""
+from pathlib import Path
+import hashlib,json,re,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+FIRST=ROOT/'target/dbus-read-flows-20261028'
+V2=ROOT/'target/dbus-read-flows-v2-20261028'
+V3=ROOT/'target/dbus-read-flows-v3-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/dbus-read-flows-20261028'
+sha=lambda x:hashlib.sha256(x).hexdigest()
+first=json.loads((FIRST/'build-194/result.json').read_bytes())
+assert first['exit']==101 and first['unchanged']
+timeout=json.loads((V2/'test-194/execution.json').read_bytes())
+assert timeout['exit']==124 and timeout['classification']=='timeout' and timeout['retired'] and not timeout['errors']
+assert timeout['bound_seconds']==1200 and timeout['cleanup_seconds']==5
+assert json.loads((V2/'test-194/refusal.json').read_bytes())['reason']=='exact executed test identities'
+partial=(V2/'test-194/stdout.log').read_text()
+assert len(re.findall(r'^test .+? \.\.\. ok$',partial,re.M))==7 and 'test result:' not in partial
+steps={}
+for name,base in (('first',FIRST),('v2',V2),('v3',V3)):
+    for top in sorted(base.iterdir()):
+        if not (top/'execution.json').is_file():continue
+        result=json.loads((top/'execution.json').read_bytes())
+        assert result['retired'] and not result['errors']
+        expected=101 if name=='first' and top.name=='build-194' else 124 if name=='v2' and top.name=='test-194' else 0
+        assert result['exit']==expected
+        steps[name+'/'+top.name]=dict(exit=expected,classification=result['classification'])
+traces=[];old_traces=[];mismatch=[]
+for compiler in ('188','194'):
+    test=json.loads((V3/f'test-{compiler}/result.json').read_bytes())
+    listing=json.loads((V3/f'list-{compiler}/result.json').read_bytes())
+    assert test['exit']==0 and test['unchanged'] and test['artifact']==listing['artifact']
+    assert test['accounting']['passed']==test['accounting']['selected']==31
+    assert test['accounting']['failed']==test['accounting']['filtered']==0
+    image=test['artifact'];assert sha(Path(image['path']).read_bytes())==image['sha256']
+    raw=(V3/f'test-{compiler}/stdout.log').read_bytes()
+    def get(marker):return [json.loads(n.split(b':',1)[1]) for n in raw.splitlines() if n.startswith(marker)]
+    flow=get(b'HC074_FLOW_TRACE:');prior=get(b'HC074_READ_TRACE:');bad=get(b'HC074_PEER_MISMATCH_TRACE:')
+    assert len(flow)==16 and sum(map(len,flow))==97
+    assert len(prior)==15 and sum(map(len,prior))==31
+    assert len(bad)==1 and len(bad[0])==1 and raw.count(b'HC074_PEER_REFUSAL:true')==1
+    traces.append(flow);old_traces.append(prior);mismatch.append(bad)
+assert traces[0]==traces[1] and old_traces[0]==old_traces[1] and mismatch[0]==mismatch[1]
+review=json.loads((FIRST/'source-effect-audit.json').read_bytes())
+assert review['prior_effective_dependency_edges_equal'] and review['only_return_clone_in_v2']
+original=(V2/'fixture/probe/src/caller_checks.rs').read_bytes()
+v3=(V3/'fixture/probe/src/caller_checks.rs').read_bytes()
+old_path=(ROOT/'tools/dbus-read-flows-074/tests.rs').as_posix().encode()
+new_path=(ROOT/'tools/dbus-read-flows-074/tests_v3.rs').as_posix().encode()
+assert original.count(old_path)==1 and v3==original.replace(old_path,new_path,1)
+assert (V2/'fixture/Cargo.lock').read_bytes()==(V3/'fixture/Cargo.lock').read_bytes()
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+    assert path.is_file() and not path.is_symlink() and not path.is_junction()
+    raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+    if dest.exists():assert dest.read_bytes()==raw
+    else:dest.write_bytes(raw)
+    assert name not in members;members[name]=dict(sha256=digest,bytes=len(raw))
+for variant,base in (('first',FIRST),('v2',V2),('v3',V3)):
+    for top in sorted(base.iterdir()):
+        if top.name=='targets':continue
+        for path in ([top] if top.is_file() else sorted(top.rglob('*'))):
+            if path.is_file():add('capture/'+variant+'/'+path.relative_to(base).as_posix(),path)
+for path in sorted((ROOT/'tools/dbus-read-flows-074').rglob('*')):
+    if path.is_file() and '__pycache__' not in path.parts:add('source/'+path.relative_to(ROOT).as_posix(),path)
+prepare=json.loads((V3/'prepare/result.json').read_bytes())
+for n in prepare['overlays']:
+    if not n.startswith('tools/dbus-read-flows-074/'):add('source/'+n,ROOT/n)
+for n in ('tools/dbus-owner-properties-074/run.py','tools/dbus-runtime-bridge-074/run.py',
+          'tools/dbus-msrv-backport-074/run.py','tools/windows-workspace-preflight-074/owned.py',
+          'tools/windows-workspace-preflight-074/prepare.py','tools/chitchat-mtu-review-074/accounting.py',
+          'scripts/ci/watchdog_windows_job.py','Cargo.toml','Cargo.lock','deny.toml',
+          'tools/long-run-supervisor-074/Cargo.toml','docs/testing/performance/0.74/qualification-manifest.toml',
+          'target/dbus-read-audit-20261028.py','target/seal-dbus-read-flows-20261028.py'):
+    add('source/'+n,ROOT/n)
+for name in prepare['source_pins']:add('source/tools/long-run-supervisor-074/src/'+name,ROOT/'tools/long-run-supervisor-074/src'/name)
+cache=Path.home()/'.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f'
+for package in review['added_primary_packages']:
+    name=package['name']+'-'+package['version']+'.crate'
+    assert sha((cache/name).read_bytes())==package['archive_sha256']
+    add('dependencies/archives/'+name,cache/name)
+prior=ROOT/'docs/testing/performance/0.74/local-runs/dbus-owner-properties-20261028/index.json'
+assert sha(prior.read_bytes())=='6dcc7caeafe086771c60a717c27bfe3ab2091177c1866520fcc1edc25b846dfb'
+add('predecessor/index.json',prior)
+db=Path.home()/'.cargo/advisory-dbs/advisory-db-3157b0e258782691'
+dbhead=subprocess.check_output(['git','rev-parse','HEAD'],cwd=db).decode().strip()
+assert not subprocess.check_output(['git','status','--porcelain'],cwd=db)
+index=dict(schema='hc074-read-flows-v1',members=members,steps=steps,
+           source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+           native_passes={'rust_188':31,'rust_194':31},flow_scenarios_per_image=16,flow_requests_per_image=97,
+           prior_owner_scenarios_per_image=15,prior_owner_requests_per_image=31,peer_mismatch_requests_per_image=1,
+           traces_equal_between_compilers=True,first_compile_refusal_retained=True,first_native_timeout_retained=True,
+           root_caller_or_graph_changed=False,system_bus_or_manager_contacted=False,live_frame_qualified=False,
+           clocks=False,services=False,server=False,performance_claim=False,release_admitted=False,
+           advisory_db_postflight=dict(head=dbhead,clean=True,per_lookup_seal=False),archived_code_executed=False)
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

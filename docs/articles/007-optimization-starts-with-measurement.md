@@ -22067,3 +22067,53 @@ unit reader and before/after owner comparison across loaded-state observations
 are also distinct from this uncached getter/owner-function coverage. Source,
 traces and scope remain in the repository; complete read-caller, GNU/FD/fault,
 distribution and final product gates are still needed before root adoption.
+
+The [selected read-flow stage](../testing/performance/0.74/dbus-read-flows-result-20261028.md)
+then moves from individual helpers to the sequence in which they are used. The
+pinned protocol region reads the admitted owner, obtains the unit, reads Unit and
+Service twice, compares the observations, and reads the owner again. A replacement
+owner after otherwise consistent properties must refuse. A changed second unit
+observation must refuse before a later owner read. The scripted peer checks both
+the result and the exact truncated trace, so merely returning an error somewhere
+cannot satisfy the control. This tests the selected original source against the
+new runtime, rather than claiming all old/new API behavior is equivalent.
+
+Loaded settings exercise the actual decoder inventory, including command tuples,
+byte arrays and environment-file tuples. Description comes from Unit even when
+Service supplies a different value. Missing identity, missing description, missing
+property, a short invocation identifier, wrong property type and an oversized
+field each retain the original refusal. These are wire decoding and bounded-shape
+checks; they do not establish that a production policy accepts those settings.
+
+Two first failures also improve the diagnostic method. The first return adapter
+tries to move an owner still borrowed by a held Proxy, and Rust correctly rejects
+it. Returning the same cloned owner used by the original snapshot construction
+keeps the proxies alive through the selected checks. The next native run completes
+seven tests before the legacy lazy-cache fixture stalls. Its original 1200-second
+watchdog expires, its owned Job retires, and incomplete test identity accounting
+refuses the run. Neither failure is removed or replaced by a later green summary.
+
+The stalled fixture omitted the library's name-owner discovery preceding lazy
+GetAll initialization. Its peer panicked on that unexpected request, leaving the
+raw cache exchange unanswered. Fixing the peer's protocol is distinct from changing
+the supervisor: the original reader and its property order remain exact. The
+separate corrected revision answers the discovery request and closes its synthetic
+connection before propagating a peer assertion failure. A deliberately mismatched
+unit name proves that this diagnostic failure produces an error and failed peer
+join rather than a snapshot or another silent wait.
+
+The final catalog passes 31 tests on both Rust 1.88 and 1.94, with matching traces
+for sixteen new flow scenarios and 97 requests per image, plus the previous owner/
+property controls. Check, strict Clippy, scoped dependency policy, catalog controls
+and formatting pass. The new decoder/error types add dependencies only to the
+isolated probe: archive/source checksums, declared compiler minima, effective lock
+edges and build-script effects are recorded separately. A successful probe policy
+check does not turn the unchanged root product gate green.
+
+The real host boundary is still explicit. The projected region does not execute
+the original scope/socket/boot guards, worker admission, kernel authentication,
+Unix descriptor transfer, original delivery or all-writer retirement. No such
+check is stubbed to report success. No service, clock, server or root dependency
+changes occur, and test elapsed time is not a throughput or CPU improvement claim.
+The source revisions, first failures and analysis are retained before proceeding
+to GNU/FD/fault, distribution and complete product gates.

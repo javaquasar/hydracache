@@ -1,0 +1,25 @@
+    let bus = proxy(
+        &connection,
+        "org.freedesktop.DBus",
+        "/org/freedesktop/DBus",
+        "org.freedesktop.DBus",
+    )?;
+    let owner = manager_owner(&bus)?;
+    let manager = proxy(&connection, &owner, MANAGER_PATH, MANAGER_INTERFACE)?;
+    let name = scope.unit_name();
+    let path: Result<OwnedObjectPath, ReplyError> =
+        checked_call(&manager, &owner, "GetUnit", &(name.as_str(),));
+    let (unit, settings) = match path {
+        Ok(path) => {
+            let first = read_unit(&connection, &owner, path.as_str(), loaded)?;
+            if read_unit(&connection, &owner, path.as_str(), loaded)? != first {
+                return Err("unit observation changed".into());
+            }
+            (Some(first.0), first.1)
+        }
+        Err(ReplyError::NoSuchUnit) => (None, None),
+        Err(_) => return Err("unit inspection failed".into()),
+    };
+    if manager_owner(&bus)? != owner {
+        return Err("manager owner changed".into());
+    }

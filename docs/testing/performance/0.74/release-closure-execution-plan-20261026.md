@@ -457,6 +457,18 @@ live predicates and limits are unchanged. This closes neither real UID/PID/boot
 authority nor the full before/after owner/lazy-cache/loaded-state flow. Full
 read-caller, GNU/FD/fault, distribution and product/server gates remain open.
 
+The [selected read-flow continuation](dbus-read-flows-result-20261028.md) now executes
+the pinned D-Bus middle of inspect_in_worker, the complete selected loaded-settings
+decoder and injected-connection legacy reader. Before/after owner replacement,
+changed repeated observations, decoder refusals and lazy-cache initialization have
+exact request/error traces. After retained E0505 and peer-script timeout refusals,
+final v3 passes 31 tests/check/strict Clippy on both compilers and scoped policy.
+The peer now closes its synthetic connection on a script assertion failure, with a
+separate negative control. Root source/graph and all live observation frequency/
+limits remain exact. This does not run scope/socket/boot/admission guards, qualify
+PropertiesChanged/Unix FD, or replace a paired old/new full caller/product gate.
+GNU/FD/fault, distribution, remaining security and complete product gates remain open.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

@@ -1,0 +1,75 @@
+"""Inert source and primary-cache verification; no archived execution or host IO."""
+from pathlib import Path
+import hashlib, json, tarfile, io, tomllib
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/dbus-read-flows-20261028'
+sha=lambda raw:hashlib.sha256(raw).hexdigest()
+review=json.loads((BASE/'prepare/result.json').read_bytes())
+for name,digest in review['source_pins'].items():
+    assert sha((ROOT/'tools/long-run-supervisor-074/src'/name).read_bytes())==digest
+for name,digest in review['chunk_sha256'].items():
+    assert sha((BASE/'prepare'/(name+'.rs')).read_bytes())==digest
+old=ROOT/'target/dbus-owner-properties-20261028/fixture'
+first=BASE/'fixture'
+corrected=ROOT/'target/dbus-read-flows-v2-20261028/fixture'
+old_body=(old/'probe/src/caller_checks.rs').read_bytes()
+first_body=(first/'probe/src/caller_checks.rs').read_bytes()
+assert first_body.startswith(old_body)
+before=b'    Ok((owner, unit, settings))\n'
+after=b'    Ok((owner.clone(), unit, settings))\n'
+assert first_body.count(before)==1
+assert (corrected/'probe/src/caller_checks.rs').read_bytes()==first_body.replace(before,after,1)
+assert (first/'Cargo.lock').read_bytes()==(corrected/'Cargo.lock').read_bytes()
+
+def packages(folder):
+    return tomllib.loads((folder/'Cargo.lock').read_text())['package']
+def key(p):return p['name'],p['version'],p.get('source','')
+a={key(p):p for p in packages(old)};b={key(p):p for p in packages(first)}
+assert not a.keys()-b.keys()
+expected={('itoa','1.0.18'),('serde_json','1.0.150'),('syn','2.0.119'),
+          ('thiserror','2.0.18'),('thiserror-impl','2.0.18'),('zmij','1.0.23')}
+assert {(k[0],k[1]) for k in b.keys()-a.keys()}==expected
+def edges(p,graph):
+    result=[]
+    for spec in p.get('dependencies',[]):
+        fields=spec.split(' ')
+        candidates=[k for k in graph if k[0]==fields[0] and (len(fields)==1 or k[1]==fields[1])]
+        assert len(candidates)==1
+        result.append(candidates[0])
+    return sorted(result)
+changed=[]
+for k in a.keys()&b.keys():
+    for field in ('name','version','source','checksum'):
+        assert a[k].get(field)==b[k].get(field)
+    before_edges,after_edges=edges(a[k],a),edges(b[k],b)
+    if k[0]=='dbus-probe-074':
+        assert set(after_edges)-set(before_edges)=={k for k in b if k[0] in ('serde_json','thiserror')}
+        assert set(before_edges)<=set(after_edges)
+    else:assert before_edges==after_edges
+    if a[k]!=b[k]:changed.append(k)
+
+cache=Path.home()/'.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f'
+source=Path.home()/'.cargo/registry/src/index.crates.io-1949cf8c6b5b557f'
+out=[]
+for k in sorted(b.keys()-a.keys()):
+    name=f'{k[0]}-{k[1]}';archive=(cache/(name+'.crate')).read_bytes()
+    assert sha(archive)==b[k]['checksum'];members={}
+    with tarfile.open(fileobj=io.BytesIO(archive),mode='r:gz') as tar:
+        for member in tar.getmembers():
+            assert member.name.startswith(name+'/') and '..' not in Path(member.name).parts
+            if member.isdir():continue
+            assert member.isfile()
+            body=tar.extractfile(member).read();rel=member.name[len(name)+1:]
+            assert (source/name/rel).read_bytes()==body
+            members[rel]=sha(body)
+    package=tomllib.loads((source/name/'Cargo.toml').read_text())['package']
+    assert package['rust-version'] in ('1.68','1.71')
+    out.append(dict(name=k[0],version=k[1],archive_sha256=b[k]['checksum'],
+                    declared_minimum=package['rust-version'],source_members=members))
+result=dict(old_projection_is_exact_prefix=True,only_return_clone_in_v2=True,
+            prior_effective_dependency_edges_equal=True,changed_lock_rows=sorted(changed),
+            added_primary_packages=out,archived_code_executed=False,root_graph_modified=False)
+path=BASE/'source-effect-audit.json'
+with path.open('x',encoding='utf-8',newline='\n') as f:f.write(json.dumps(result,indent=2,sort_keys=True)+'\n')
+print(json.dumps(dict(added=len(out),primary_members=sum(len(v['source_members']) for v in out),
+                     original_effective_edges_preserved=True)))

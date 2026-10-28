@@ -1,0 +1,11 @@
+test_original_empty_or_false_summary_refuses (test_catalog.CatalogControls.test_original_empty_or_false_summary_refuses) ... ok
+test_original_thirty_identity_contract (test_catalog.CatalogControls.test_original_thirty_identity_contract) ... ok
+test_v3_duplicate_baseline_refuses (test_catalog.CatalogControls.test_v3_duplicate_baseline_refuses) ... ok
+test_v3_empty_false_summary_or_benchmark_refuses (test_catalog.CatalogControls.test_v3_empty_false_summary_or_benchmark_refuses) ... ok
+test_v3_exact_original_plus_peer_control (test_catalog.CatalogControls.test_v3_exact_original_plus_peer_control) ... ok
+test_v3_missing_foreign_duplicate_or_old_catalog_refuses (test_catalog.CatalogControls.test_v3_missing_foreign_duplicate_or_old_catalog_refuses) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.001s
+
+OK

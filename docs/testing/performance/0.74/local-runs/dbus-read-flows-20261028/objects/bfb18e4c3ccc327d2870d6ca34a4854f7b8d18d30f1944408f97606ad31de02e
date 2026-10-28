@@ -1,0 +1,44 @@
+   Compiling unicode-ident v1.0.27
+    Checking windows-link v0.2.1
+    Checking windows-sys v0.61.2
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling syn v3.0.9
+    Checking serde_core v1.0.229
+    Checking cfg-if v1.0.5
+    Checking getrandom v0.4.3
+   Compiling serde_derive v1.0.229
+    Checking pin-project-lite v0.2.17
+   Compiling winnow v1.0.4
+    Checking futures-core v0.3.34
+    Checking once_cell v1.21.4
+    Checking fastrand v2.5.0
+    Checking tempfile v3.27.0
+    Checking memoffset v0.9.1
+    Checking serde v1.0.229
+   Compiling zbus_utils v6.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\dbus-read-flows-v3-20261028\fixture\zbus_utils)
+    Checking mio v1.2.4
+    Checking socket2 v0.6.5
+   Compiling syn v2.0.119
+    Checking futures-io v0.3.34
+    Checking zruntime v0.2.0
+   Compiling zbus_macros v6.1.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\dbus-read-flows-v3-20261028\fixture\zbus_macros)
+   Compiling thiserror-impl v2.0.18
+    Checking tokio v1.53.3
+    Checking zcheapstr v1.1.0
+    Checking uds_windows v1.2.1
+    Checking zmij v1.0.23
+    Checking ordered-stream v0.2.0
+   Compiling async-trait v0.1.92
+   Compiling serde_repr v0.1.21
+    Checking uuid v1.23.4
+    Checking hex v0.4.3
+    Checking endi v1.1.1
+    Checking itoa v1.0.18
+    Checking bitflags v2.13.2
+    Checking memchr v2.8.3
+    Checking zbus v6.1.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\dbus-read-flows-v3-20261028\fixture\zbus)
+    Checking serde_json v1.0.150
+    Checking thiserror v2.0.18
+    Checking dbus-probe-074 v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\dbus-read-flows-v3-20261028\fixture\probe)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 16.76s

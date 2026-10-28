@@ -1,5 +1,14 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [selected read-flow continuation](dbus-read-flows-result-20261028.md) now covers
+before/after manager-owner checks across repeated Unit/Service GetAll reads, loaded
+settings decoding and the legacy lazy-cache reader. All 31 tests, check and strict
+Clippy pass on Rust 1.88/1.94, with passing scoped policy. Sixteen new scenarios assert
+97 requests per image; the first adapter build refusal and peer timeout are retained.
+The repaired peer has its own fail-closed negative control. Root graph/callers and
+live checks/windows stay exact. This remains a synthetic selected-region shadow;
+GNU/Unix FD, original delivery, full product gates and server admission stay open.
+
 The [owner/property continuation](dbus-owner-properties-result-20261028.md)
 now executes the unchanged original manager_owner function and actual property
 calls in a synthetic peer. Twenty-one tests, check and strict Clippy pass on
