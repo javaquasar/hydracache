@@ -1,0 +1,31 @@
+# Read-only fixed-channel source migration
+
+This standalone test slice compiles the complete original read-only channel,
+KernelPins/PathPins/Operation predicates and sandbox observation body. Original
+receiver/original_join/held_delivery module routes are explicitly excluded;
+no successful frame, kernel or original-owner stub is provided in their place.
+Two manual host tests remain archived outside this no-bus catalog. Their absence
+is not a passing host/context verdict. Production files/dependencies stay exact.
+
+The scope includes five original channel tests, four kernel tests, four alarm
+controls and two sandbox validators, plus two adapter controls. All 78 predecessor
+cases remain, for 95 declared parent cases. The original alarm helper also executes
+four isolated one-test children. Child/FD ownership and five-second case guards
+are copied unchanged. Only own temporary paths, socketpairs, timerfds and one
+owned/unreaped sleep child's pidfd signal are used; no system bus or service opens.
+
+The new API uses checked Tokio into_std ownership transfer, the same nonzero queue
+16 and AuthMechanism's new namespace. Tokio macros is already a product feature;
+the standalone probe adds its same locked tokio-macros 2.7.0 archive identity and
+uses its existing compatible syn 2.0.119 node. All other lock rows stay exact.
+This is 63 package identities/59 registry archives, not the prior 62/58 graph.
+The first incomplete API input's two actual E0433 errors remain immutable.
+
+Run.py pins the six complete original files and the source-package predecessor.
+Each fixed output is exclusive; do not erase a receipt to retry. The same pinned
+CI owner keeps offline/locked GNU 1.94/1.88 commands, full actual catalog/image
+accounting, original 1200/1100 origins, 4 GiB floors and five-second retirement.
+The two-second BOOTTIME Operation/select and 250-ms method window are unchanged.
+Root/live 300/60/10, package 780, workspace 4800, qualification and all live checks
+stay untouched. No original-start, all-writer, server, clock, service, product-load
+or release admission follows from this source slice.
