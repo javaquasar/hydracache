@@ -1,0 +1,252 @@
+"""Manual Linux pending-custody faults; executes only the supplied libtest image."""
+import argparse
+import array
+import ctypes
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import select
+import signal
+import socket
+import stat
+import struct
+import subprocess
+import tempfile
+import time
+
+PREFIX = ("diagnostic_worker_policy::trusted_input::controller_input::build_input::"
+          "oidc_input::tests::fence_preflight_tests::attempt_tests::collector_tests::"
+          "observed_reservation_tests::collector_reserved_tests::progress_tests::"
+          "start_consent_tests::validation_frame_tests::starting_tests::sink_tests::"
+          "start_material_tests::pipe_transport_tests::safety_alarm_tests::fixed_grouped_tests::"
+          "custody_tests::descriptor_plan_tests::barred_custody_tests::loss_tests::")
+SEED = 0x0740BF18
+
+
+def require(condition, reason):
+    if not condition:
+        raise RuntimeError(reason)
+
+
+def terminal(fd, timeout=0):
+    return bool(select.select([fd], [], [], timeout)[0])
+
+
+def snapshot(root):
+    result = {}
+    for path in [root, *sorted(root.rglob("*"))]:
+        info = path.lstat()
+        require(not path.is_symlink() and (path.is_dir() or path.is_file()), "fixture shape")
+        require(info.st_uid == os.getuid() and info.st_gid == os.getgid(), "fixture owner")
+        require(info.st_size <= 65536, "fixture size")
+        result[str(path.relative_to(root))] = (
+            info.st_dev, info.st_ino, info.st_mode, info.st_nlink, info.st_size,
+            info.st_mtime_ns, info.st_ctime_ns,
+            hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None)
+    return result
+
+
+def locked(path, expected):
+    fd = os.open(path, os.O_RDWR | os.O_CLOEXEC | os.O_NOFOLLOW)
+    try:
+        require(stat.S_ISREG(os.fstat(fd).st_mode), "not a lock file")
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            busy = False
+        except BlockingIOError:
+            busy = True
+        require(busy == expected, "unexpected original fence availability")
+    finally:
+        os.close(fd)
+
+
+def pidfd_pid(fd):
+    fields = dict(line.split(":", 1) for line in Path(f"/proc/self/fdinfo/{fd}").read_text().splitlines())
+    pid = int(fields["Pid"])
+    require(pid > 0, "received pidfd is terminal")
+    return pid
+
+
+def parent_pid(pid):
+    return int(next(line.split(":", 1)[1] for line in
+                    Path(f"/proc/{pid}/status").read_text().splitlines() if line.startswith("PPid:")))
+
+
+def wait_killed(fd):
+    require(terminal(fd, 10), "owned custodian failed to terminate")
+    status = os.waitid(os.P_PIDFD, fd, os.WEXITED)
+    require(status.si_code == os.CLD_KILLED and status.si_status == signal.SIGKILL, "not exact SIGKILL wait")
+
+
+def inherited(pid, lock):
+    targets = [os.readlink(path) for path in Path(f"/proc/{pid}/fd").iterdir()]
+    require(len(targets) == 3 and str(lock) in targets, "custodian inheritance differs")
+    require("anon_inode:[timerfd]" in targets and sum(p.startswith("socket:[") for p in targets) == 1,
+            "custodian holds unexpected descriptors")
+
+
+def command(binary):
+    return [str(binary), "--exact", PREFIX + "original_custody_owner_victim", "--ignored",
+            "--nocapture", "--test-threads=1"]
+
+
+def cleanup_adopted(binary):
+    # Failure-only cleanup: these are this driver's still-unreaped children,
+    # never PID discovery in production. Pin before signal/wait; no PID signal.
+    children = Path(f"/proc/self/task/{os.getpid()}/children").read_text().split()
+    for raw in children:
+        pid = int(raw)
+        require(parent_pid(pid) == os.getpid(), "cleanup child changed parent")
+        require(os.path.samefile(f"/proc/{pid}/exe", binary), "unexpected adopted executable")
+        fd = os.pidfd_open(pid)
+        try:
+            if not terminal(fd):
+                signal.pidfd_send_signal(fd, signal.SIGKILL)
+            wait_killed(fd)
+        finally:
+            os.close(fd)
+
+
+def run_case(binary, cut, repeat):
+    with tempfile.TemporaryDirectory(prefix="hc074-custody-loss-", dir="/tmp") as name, \
+            tempfile.TemporaryDirectory(prefix="hydracache-authority-", dir="/tmp") as authority:
+        root = Path(name)
+        for part in ["context", "origin"]:
+            (root / part).mkdir(mode=0o700)
+        env = os.environ.copy()
+        env.update(HC074_PRIVATE_CUSTODY_LOSS_ROOT=name, HC074_PRIVATE_CUSTODY_LOSS_CUT=cut,
+                   HC074_PRIVATE_CUSTODY_LOSS_AUTHORITY=authority, TMPDIR=str(root / "context"))
+        with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM | socket.SOCK_CLOEXEC) as peer, \
+                (root / "victim.log").open("wb") as log:
+            peer.setsockopt(socket.SOL_SOCKET, socket.SO_PASSCRED, 1)
+            peer.bind(str(root / "notice.sock"))
+            peer.settimeout(60)  # Harness fail-safe, never an authority deadline.
+            child = subprocess.Popen(command(binary), stdin=subprocess.PIPE, stdout=log, stderr=log, env=env)
+            owner = None
+            custody = None
+            received = []
+            try:
+                # Popen owns this exact unreaped child: its PID cannot be reused
+                # before wait, including an exit before this test-only pin.
+                owner = os.pidfd_open(child.pid)
+                raw, ancillary, flags, _ = peer.recvmsg(2048, socket.CMSG_SPACE(4) + socket.CMSG_SPACE(12),
+                                                       socket.MSG_CMSG_CLOEXEC)
+                credentials = []
+                for level, kind, data in ancillary:
+                    require(level == socket.SOL_SOCKET, "unexpected ancillary level")
+                    if kind == socket.SCM_RIGHTS:
+                        rights = array.array("i")
+                        rights.frombytes(data)
+                        received.extend(rights)
+                    elif kind == socket.SCM_CREDENTIALS:
+                        require(len(data) == 12, "credential length")
+                        credentials.append(struct.unpack("3i", data))
+                    else:
+                        raise RuntimeError("unexpected ancillary kind")
+                require(flags & ~socket.MSG_CMSG_CLOEXEC == 0 and len(received) == 1,
+                        "truncated or ambiguous pidfd packet")
+                require(credentials == [(child.pid, os.getuid(), os.getgid())], "sender credentials")
+                custody = received.pop()
+                require(not os.get_inheritable(custody), "received pidfd is inheritable")
+                packet = json.loads(raw)
+                require(set(packet) == {"schema", "owner", "cut", "deadline", "origins", "closing_authentication"},
+                        "packet fields")
+                require(packet["schema"] == "hc074-pending-owner-test-v1" and packet["owner"] == child.pid
+                        and packet["cut"] == cut, "packet binding")
+                require(packet["closing_authentication"] == (34 if cut == "after-frame" else 0), "frame cut")
+                require(len(packet["origins"]) == 6 and all(type(n) is int and n > 0 for n in packet["origins"]),
+                        "origin shape")
+                deadline = packet["deadline"]
+                require(type(deadline) is int and time.clock_gettime_ns(time.CLOCK_BOOTTIME) < deadline,
+                        "checkpoint already expired")
+                guardian = pidfd_pid(custody)
+                require(parent_pid(guardian) == child.pid, "not the fixture's direct child")
+                require(os.path.samefile(f"/proc/{guardian}/exe", binary), "guardian executable")
+                # Use the sole already-created lock, with no hard-coded repair.
+                campaigns = root / "origin/var/lib/hydracache-performance/campaigns"
+                locks = list(campaigns.iterdir())
+                require(len(locks) == 1 and locks[0].is_file(), "campaign directory differs")
+                lock = locks[0]
+                inherited(guardian, lock)
+                before = snapshot(root / "origin")
+                authority_before = snapshot(Path(authority))
+                locked(lock, True)
+                require(not terminal(owner) and not terminal(custody), "checkpoint process already terminal")
+                print("HC074-CUSTODY-LOSS-CHECKPOINT " + json.dumps(
+                    dict(packet, custodian=guardian, repeat=repeat), sort_keys=True), flush=True)
+                signal.pidfd_send_signal(owner, signal.SIGKILL)
+                require(child.wait(timeout=10) == -signal.SIGKILL, "owner not killed")
+                require(parent_pid(guardian) == os.getpid(), "custodian not adopted by fixture driver")
+                require(not terminal(custody), "custodian died with original owner")
+                inherited(guardian, lock)
+                locked(lock, True)
+                remaining = (deadline - time.clock_gettime_ns(time.CLOCK_BOOTTIME)) / 1e9
+                if remaining > 0:
+                    require(not terminal(custody, remaining), "custodian died before original bound")
+                require(time.clock_gettime_ns(time.CLOCK_BOOTTIME) >= deadline, "original bound not reached")
+                locked(lock, True)
+                require(snapshot(root / "origin") == before, "records changed after owner death")
+                require(snapshot(Path(authority)) == authority_before, "authority changed after owner death")
+                signal.pidfd_send_signal(custody, signal.SIGKILL)
+                wait_killed(custody)
+                locked(lock, False)
+                require(snapshot(root / "origin") == before, "records changed after custodian death")
+                env["HC074_PRIVATE_CUSTODY_LOSS_CUT"] = "inspect"
+                replay = subprocess.run(command(binary), env=env, capture_output=True, timeout=60, check=True)
+                require(b"HC074-CUSTODY-LOSS-REPLAY refused=true" in replay.stdout, "history admitted")
+                require(snapshot(root / "origin") == before, "replay changed records")
+                require(snapshot(Path(authority)) == authority_before, "authority changed after replay")
+                print(f"HC074-CUSTODY-LOSS-OWNER seed=0x{SEED:08x} repeat={repeat} cut={cut} "
+                      "owner_signal=9 custodian_signal=9 inherited=3 retained_past_original_bound=true "
+                      "unchanged=true replay_refused=true start=false", flush=True)
+            except BaseException:
+                log.flush()
+                print((root / "victim.log").read_text(errors="replace"), flush=True)
+                raise
+            finally:
+                if owner is not None:
+                    if child.returncode is None:
+                        if not terminal(owner):
+                            signal.pidfd_send_signal(owner, signal.SIGKILL)
+                        child.wait(timeout=10)
+                    os.close(owner)
+                if custody is not None:
+                    if not terminal(custody):
+                        signal.pidfd_send_signal(custody, signal.SIGKILL)
+                        wait_killed(custody)
+                    os.close(custody)
+                for fd in received:
+                    os.close(fd)
+                cleanup_adopted(binary)
+                child.stdin.close()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--binary", type=Path, required=True)
+    parser.add_argument("--repeats", type=int, choices=[1, 3], default=3)
+    args = parser.parse_args()
+    binary = args.binary.resolve(strict=True)
+    require(os.getuid() != 0 and os.geteuid() == os.getuid(), "nonroot only")
+    require(binary.is_file() and os.access(binary, os.X_OK), "libtest executable required")
+    libc = ctypes.CDLL(None, use_errno=True)
+    previous = ctypes.c_int()
+    require(libc.prctl(37, ctypes.byref(previous), 0, 0, 0) == 0, "get subreaper")
+    require(libc.prctl(36, 1, 0, 0, 0) == 0, "set subreaper")
+    try:
+        print(f"HC074-CUSTODY-LOSS-DRIVER binary_sha256={hashlib.sha256(binary.read_bytes()).hexdigest()}", flush=True)
+        for repeat in range(1, args.repeats + 1):
+            for cut in ["before-frame", "after-frame"]:
+                run_case(binary, cut, repeat)
+        print(f"HC074-CUSTODY-LOSS-DRIVER completed=true cases={2 * args.repeats} product=false", flush=True)
+    finally:
+        try:
+            cleanup_adopted(binary)
+        finally:
+            require(libc.prctl(36, previous.value, 0, 0, 0) == 0, "restore subreaper")
+
+
+if __name__ == "__main__":
+    main()

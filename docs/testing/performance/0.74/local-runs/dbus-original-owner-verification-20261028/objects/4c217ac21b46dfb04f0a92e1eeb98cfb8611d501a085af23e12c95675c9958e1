@@ -1,0 +1,77 @@
+"""Independent inert packet verification, without executing archived code/images."""
+from pathlib import Path
+import hashlib,json,tomllib
+ROOT=Path(__file__).resolve().parent.parent
+FOLDER=ROOT/'docs/testing/performance/0.74/local-runs/dbus-original-owner-20261028'
+sha=lambda b:hashlib.sha256(b).hexdigest()
+index=json.loads((FOLDER/'index.json').read_bytes());members=index['members'];seen=set()
+def get(name):
+    row=members[name];raw=(FOLDER/'objects'/row['sha256']).read_bytes()
+    assert len(raw)==row['bytes'] and sha(raw)==row['sha256'];return raw
+def read(name):return json.loads(get(name))
+for name,row in members.items():get(name);seen.add(row['sha256'])
+assert seen=={p.name for p in (FOLDER/'objects').iterdir()}
+assert index['inert_controls']==9 and index['original_rust_inventory']==545
+prepare=read('capture/first/prepare/result.json')
+for name,digest in prepare['original_sources'].items():
+    assert sha(get('capture/first/input/baseline/'+name))==digest==sha(get('capture/final/input/baseline/'+name))
+include_delta=[]
+for name,digest in prepare['include_sources'].items():
+    if sha(get('capture/final/input/baseline/'+name))!=digest:include_delta.append(name)
+assert include_delta==['Cargo.lock'] and len(prepare['include_sources'])==21
+for origin,phases in [('first',[('baseline-194-check',0),('baseline-194-clippy',0),('baseline-188-check',0),('baseline-188-clippy',0),('fd-194-check',0),('fd-194-clippy',101)]),('final',[(f'fd-{c}-{a}',0) for c in ('194','188') for a in ('check','clippy')])]:
+    native=read('capture/'+origin+'/session/native-result.json')
+    assert native['phases']==[dict(label=n,exit=e) for n,e in phases]
+    assert native['source_unchanged'] and native['boot_unchanged'] and not native['tests_executed']
+    assert native['passed']==(origin=='final')
+    for label,code in phases:
+        prefix='capture/'+origin+'/session/'+label+'/'
+        result=read(prefix+'result.json');e=read(prefix+'execution.json');intent=read(prefix+'intent.json')
+        assert result['exit']==code and not result['tests_executed'] and e['retired'] and not e['errors']
+        assert intent['bound']==1200 and intent['session_bound']==1100 and intent['floor']==4*1024**3 and intent['poll']==intent['retirement']==5
+        assert all(v in intent['argv'] for v in ('--offline','--locked','--lib','--all-features')) and '--all-targets' not in intent['argv']
+        assert intent['argv'][1] in ('check','clippy')
+        if intent['argv'][1]=='clippy':assert intent['argv'][-3:]==['--','-D','warnings']
+    e=read('capture/'+origin+'/session/execution.json');assert e['retired'] and not e['errors']
+original='tools/long-run-supervisor-074/src/'
+base='capture/first/input/baseline/'+original
+candidate='capture/final/input/fd/'+original
+assert get(candidate+'diagnostic_manager_receiver_pin_v6.rs')==get(base+'diagnostic_manager_receiver_pin.rs')
+assert get(candidate+'diagnostic_manager_channel_kernel_v6.rs')==get(base+'diagnostic_manager_channel_kernel.rs').replace(b'"diagnostic_manager_receiver_pin.rs"',b'"diagnostic_manager_receiver_pin_v6.rs"',1)
+frame=get(base+'diagnostic_original_enrollment_frame.rs')
+assert get(candidate+'diagnostic_original_enrollment_frame.rs')==frame+b'\n#[path = "diagnostic_manager_channel_v6.rs"]\nmod manager_channel_v6;\n'
+join=get(base+'diagnostic_original_manager_join.rs');projected=get(candidate+'diagnostic_original_manager_join_v6.rs');end=join.index(b'#[cfg(test)]\n#[test]')
+assert projected.startswith(join[:end].replace(b'bind_fixed_manager(',b'bind_fixed_manager_v6_compile_gate('))
+start=join.index(b'fn validation_round(');stop=join.index(b"impl<'join",start);assert join[start:stop]==projected[start:stop]
+for n in ('diagnostic_kernel_manager_binding.rs','diagnostic_kernel_admission.rs','diagnostic_manager_receiver_pin.rs'):
+    assert get(base+n)==get(candidate+n)
+first_implementation=read('capture/first/session/intent.json')['source']
+final_implementation=read('capture/final/session/intent.json')['source']
+for name in ('prepare.py','resolve.py','freeze.py','native.py','run.py'):
+    relative='tools/dbus-original-owner-074/'+name
+    assert sha(get('capture/first/first-implementation/'+name))==first_implementation[relative]
+    assert sha(get('source/'+relative))==final_implementation[relative]
+allowed={}
+product=tomllib.loads(get('source/Cargo.lock').decode())['package']
+parent_root=ROOT/'docs/testing/performance/0.74/local-runs/dbus-fixed-channel-20261028'
+parent=json.loads(get('predecessor/index.json'));assert (parent_root/'index.json').read_bytes()==get('predecessor/index.json')
+old_lock=parent['members']['capture/final/input/fd/Cargo.lock']['sha256']
+old_raw=(parent_root/'objects'/old_lock).read_bytes();assert sha(old_raw)==old_lock
+for node in product+tomllib.loads(old_raw.decode())['package']:
+    if 'checksum' in node:
+        key=(node['name'],node['version']);assert allowed.get(key) in (None,node['checksum']);allowed[key]=node['checksum']
+freeze=read('capture/final/prepare/result.json')
+assert len(freeze['registry'])==156
+for variant,total in [('baseline',152),('fd',156)]:
+    first=get('capture/first/input/'+variant+'/Cargo.lock');final=get('capture/final/input/'+variant+'/Cargo.lock');assert first==final
+    nodes=tomllib.loads(final.decode())['package'];assert len(nodes)==total and nodes==freeze['graphs'][variant]
+    for node in nodes:
+        if 'checksum' in node:assert allowed[(node['name'],node['version'])]==node['checksum']
+for row in freeze['registry']:
+    assert sha(get('capture/final/input/archives/'+row['name']+'.crate'))==row['sha256']
+assert read('capture/checks/controls/result.json')['exit']==1
+assert read('capture/checks/controls-fixed/result.json')['exit']==0
+assert b'Ran 9 tests' in get('capture/checks/controls-fixed/stderr.log')
+for name,digest in freeze['root_inputs'].items():assert sha((ROOT/name).read_bytes())==digest==sha(get('source/'+name))
+assert not any(index[n] for n in ('root_changed','tests_executed','live_owner_test','held_delivery_included','services','system_bus','server','clocks_changed','product_gate_replayed','performance_claim','release_admitted'))
+print(json.dumps(dict(verified=True,members=len(members),objects=len(seen),index_sha256=sha((FOLDER/'index.json').read_bytes()),no_archived_code_executed=True)))

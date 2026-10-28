@@ -1,0 +1,94 @@
+{
+  "doc_check": true,
+  "independent_inert_verification": true,
+  "members": {
+    "capture/doc-check/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/doc-check/intent.json": {
+      "bytes": 1050023,
+      "sha256": "bc12f8c4099c52e6adc20c03b08c2fd82f1950d55938f687a477c890964429b4"
+    },
+    "capture/doc-check/producer.py": {
+      "bytes": 3211,
+      "sha256": "fd39ea20cf3e961e84752fb1372dcc2407a716381c578b986b04d69ffc19ef9c"
+    },
+    "capture/doc-check/result.json": {
+      "bytes": 73,
+      "sha256": "d4c3c1448535744b4f257eb1a411089bec35038ec813a67a4de5cf4fb98085d1"
+    },
+    "capture/doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "capture/verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/verify/intent.json": {
+      "bytes": 676037,
+      "sha256": "f017d87c5705f4464b4eaf993c936005af58cc9a92db8eb9199f01a991480aa4"
+    },
+    "capture/verify/producer.py": {
+      "bytes": 3211,
+      "sha256": "fd39ea20cf3e961e84752fb1372dcc2407a716381c578b986b04d69ffc19ef9c"
+    },
+    "capture/verify/result.json": {
+      "bytes": 73,
+      "sha256": "d4c3c1448535744b4f257eb1a411089bec35038ec813a67a4de5cf4fb98085d1"
+    },
+    "capture/verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/verify/stdout.log": {
+      "bytes": 173,
+      "sha256": "4baffa54c39d02f56a9d641a0e49e68e60153562690003597f206c3f67640f89"
+    },
+    "documents/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1515316,
+      "sha256": "fb41352623329f8baceab181fc88c6c01605d851c638634102007f60d4246731"
+    },
+    "documents/docs/testing/performance/0.74/README.md": {
+      "bytes": 504103,
+      "sha256": "83991873ab873be746588dab04cdaef62d089ffbc6ca8f0e710bb5b28953770b"
+    },
+    "documents/docs/testing/performance/0.74/dbus-original-owner-result-20261028.md": {
+      "bytes": 6590,
+      "sha256": "b30fbcec64c5d4d6a6e3a010feb7619ec3e0eefab3474afef400110cba90e142"
+    },
+    "documents/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 40873,
+      "sha256": "955c14a8f82a86f057de77e336f8c999b6e26e81a2e6f0295341a4eca060f100"
+    },
+    "documents/docs/testing/performance/0.74/remaining-security-feasibility-20261028.md": {
+      "bytes": 12381,
+      "sha256": "4afe089bc4fa13b73119b71b6fb7317030351aee85d9672adcd62d6500a9b029"
+    },
+    "primary/index.json": {
+      "bytes": 802938,
+      "sha256": "d7e438078ad523e03ccd97ba9428bce4ce2be0685144af32731022ad193e2609"
+    },
+    "source/target/dbus-original-owner-step-20261028.py": {
+      "bytes": 3211,
+      "sha256": "fd39ea20cf3e961e84752fb1372dcc2407a716381c578b986b04d69ffc19ef9c"
+    },
+    "source/target/retain-dbus-original-owner-verification-20261028.py": {
+      "bytes": 2854,
+      "sha256": "5caf4d2d13996bd62cd250e28947cca57beef56483e0903aa772ad61cfe6e210"
+    },
+    "source/target/verify-dbus-original-owner-20261028.py": {
+      "bytes": 6290,
+      "sha256": "4c217ac21b46dfb04f0a92e1eeb98cfb8611d501a085af23e12c95675c9958e1"
+    }
+  },
+  "primary_index_sha256": "d7e438078ad523e03ccd97ba9428bce4ce2be0685144af32731022ad193e2609",
+  "release_admitted": false,
+  "root_changed": false,
+  "schema": "hc074-original-owner-verification-v1"
+}

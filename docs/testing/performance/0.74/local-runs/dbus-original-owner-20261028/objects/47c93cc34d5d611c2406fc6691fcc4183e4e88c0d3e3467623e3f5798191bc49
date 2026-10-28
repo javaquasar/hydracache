@@ -1,0 +1,273 @@
+//! Fixed read-only queries on the original connection, not original delivery.
+use super::*;
+use zbus6::{OwnedObjectPath, OwnedVariant as OwnedValue};
+const PATH: &str = "/org/freedesktop/systemd1";
+const UNIT: &str = "org.freedesktop.systemd1.Unit";
+const SERVICE: &str = "org.freedesktop.systemd1.Service";
+const PROPERTIES: &str = "org.freedesktop.DBus.Properties";
+type Managed = (u32, [u8; 16], String);
+
+fn shape(reply: &Message, manager: &str, client: &str, signature: &str) -> Result<()> {
+    let h = reply.header();
+    if reply.message_type() != zbus6::message::Type::MethodReturn
+        || reply.data().bytes().len() > crate::protocol::MAX_PACKET_BYTES
+        || reply.primary_header().flags().bits() & !(zbus6::message::Flags::NO_REPLY_EXPECTED.bits())
+            != 0
+        || h.sender().map(|v| v.as_str()) != Some(manager)
+        || h.destination().map(|v| v.as_str()) != Some(client)
+        || h.reply_serial().is_none()
+        || h.error_name().is_some()
+        || h.path().is_some()
+        || h.interface().is_some()
+        || h.member().is_some()
+        || !reply.data().fds().is_empty()
+        || h.unix_fds().unwrap_or(0) != 0
+        || reply.body().signature().to_string() != signature
+    {
+        return Err(ChannelError::Reply);
+    }
+    Ok(())
+}
+fn target(unit: &str, group: &str) -> Result<()> {
+    if unit.is_empty()
+        || unit.len() > 128
+        || !unit.starts_with("hydracache-diagnostic-074-")
+        || !unit.ends_with("-1.service")
+        || !unit
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'.'))
+        || !group.starts_with("/system.slice/system-hc074")
+        || group.len() > 320
+        || !group.ends_with(&format!(".slice/{unit}"))
+        || group.split('/').count() != 4
+        || !group
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'/' | b'-' | b'.'))
+    {
+        return Err(ChannelError::Context);
+    }
+    let digest = group
+        .strip_prefix("/system.slice/system-hc074")
+        .and_then(|v| v.strip_suffix(&format!(".slice/{unit}")))
+        .ok_or(ChannelError::Context)?;
+    if digest.len() != 64
+        || !digest
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    {
+        return Err(ChannelError::Context);
+    }
+    Ok(())
+}
+async fn property(
+    c: &FixedManagerChannel,
+    path: &str,
+    interface: &str,
+    name: &str,
+) -> Result<OwnedValue> {
+    // Only fixed internal callers choose a property. zbus correlates reply serials.
+    let reply = c
+        .connection
+        .call_method(
+            Some(c.manager.as_str()),
+            path,
+            Some(PROPERTIES),
+            "Get",
+            &(interface, name),
+        )
+        .await
+        .map_err(|_| ChannelError::Reply)?;
+    shape(&reply, &c.manager, &c.client, "v")?;
+    reply.body().deserialize().map_err(|_| ChannelError::Reply)
+}
+async fn read(c: &FixedManagerChannel, unit: &str, group: &str) -> Result<Managed> {
+    target(unit, group)?;
+    let reply = c
+        .connection
+        .call_method(
+            Some(c.manager.as_str()),
+            PATH,
+            Some("org.freedesktop.systemd1.Manager"),
+            "GetUnit",
+            &(unit,),
+        )
+        .await
+        .map_err(|_| ChannelError::Reply)?;
+    shape(&reply, &c.manager, &c.client, "o")?;
+    let path: OwnedObjectPath = reply
+        .body()
+        .deserialize()
+        .map_err(|_| ChannelError::Reply)?;
+    if !path.as_str().starts_with("/org/freedesktop/systemd1/unit/") || path.as_str().len() > 512 {
+        return Err(ChannelError::Reply);
+    }
+    macro_rules! get {
+        ($interface:expr,$name:expr,$ty:ty) => {
+            <$ty>::try_from(property(c, path.as_str(), $interface, $name).await?)
+                .map_err(|_| ChannelError::Reply)?
+        };
+    }
+    let id = get!(UNIT, "Id", String);
+    let invocation = get!(UNIT, "InvocationID", Vec<u8>);
+    let active = get!(UNIT, "ActiveState", String);
+    let sub = get!(UNIT, "SubState", String);
+    let transient = get!(UNIT, "Transient", bool);
+    let pid = get!(SERVICE, "MainPID", u32);
+    let executed = get!(SERVICE, "ExecMainPID", u32);
+    let actual_group = get!(SERVICE, "ControlGroup", String);
+    let result = get!(SERVICE, "Result", String);
+    validate(
+        unit,
+        group,
+        (
+            &id,
+            &invocation,
+            &active,
+            &sub,
+            transient,
+            pid,
+            executed,
+            &actual_group,
+            &result,
+        ),
+    )?;
+    Ok((
+        pid,
+        invocation.try_into().map_err(|_| ChannelError::Reply)?,
+        path.to_string(),
+    ))
+}
+type Values<'a> = (
+    &'a str,
+    &'a [u8],
+    &'a str,
+    &'a str,
+    bool,
+    u32,
+    u32,
+    &'a str,
+    &'a str,
+);
+fn validate(unit: &str, group: &str, v: Values<'_>) -> Result<()> {
+    if v.0 != unit
+        || v.1.len() != 16
+        || v.1.iter().all(|b| *b == 0)
+        || v.2 != "active"
+        || v.3 != "running"
+        || !v.4
+        || v.5 <= 1
+        || v.5 > i32::MAX as u32
+        || v.6 != v.5
+        || v.7 != group
+        || v.8 != "success"
+    {
+        return Err(ChannelError::Context);
+    }
+    Ok(())
+}
+impl FixedManagerChannel {
+    pub(super) fn observe_sandbox(
+        &mut self,
+        unit: &str,
+        group: &str,
+    ) -> std::result::Result<Managed, ()> {
+        let result = (|| {
+            self.revalidate()?;
+            let operation = Operation::new()?;
+            self.inspect()?;
+            let value = self
+                .runtime
+                .block_on(operation.bound(read(self, unit, group)))?;
+            self.inspect()?;
+            self.revalidate()?;
+            Ok(value)
+        })();
+        if result.is_err() {
+            self.refused = true;
+        }
+        result.map_err(|_: ChannelError| ())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn unit() -> &'static str {
+        "hydracache-diagnostic-074-local-1.service"
+    }
+    fn group() -> String {
+        format!(
+            "/system.slice/system-hc074{}.slice/{}",
+            "a".repeat(64),
+            unit()
+        )
+    }
+    #[test]
+    fn bootstrap_sandbox_manager_target_and_properties_are_exact() {
+        let group = group();
+        target(unit(), &group).unwrap();
+        let good = (
+            unit(),
+            [7; 16].as_slice(),
+            "active",
+            "running",
+            true,
+            74,
+            74,
+            group.as_str(),
+            "success",
+        );
+        validate(unit(), &group, good).unwrap();
+        for which in 0..9 {
+            let mut bad = good;
+            match which {
+                0 => bad.0 = "other",
+                1 => bad.1 = &[0; 16],
+                2 => bad.2 = "inactive",
+                3 => bad.3 = "dead",
+                4 => bad.4 = false,
+                5 => bad.5 = 1,
+                6 => bad.6 = 75,
+                7 => bad.7 = "/foreign",
+                _ => bad.8 = "failed",
+            }
+            assert!(validate(unit(), &group, bad).is_err());
+        }
+        for bad in [
+            "/system.slice/x",
+            "/system.slice/system-hc074a.slice/../x",
+            "relative",
+        ] {
+            assert!(target(unit(), bad).is_err());
+        }
+    }
+    #[test]
+    fn bootstrap_sandbox_manager_replies_cannot_change_sender_destination_or_type() {
+        let request = Message::method_call(PATH, "GetUnit")
+            
+            .sender(":1.74")
+            
+            .destination(":1.1")
+            
+            .build(&(unit(),))
+            .unwrap();
+        let good = Message::method_return(&request.header())
+            
+            .sender(":1.1")
+            
+            .build(&OwnedObjectPath::try_from("/org/freedesktop/systemd1/unit/held").unwrap())
+            .unwrap();
+        shape(&good, ":1.1", ":1.74", "o").unwrap();
+        assert!(shape(&good, ":1.2", ":1.74", "o").is_err());
+        assert!(shape(&good, ":1.1", ":1.75", "o").is_err());
+        assert!(shape(&good, ":1.1", ":1.74", "v").is_err());
+        assert!(shape(&request, ":1.1", ":1.74", "o").is_err());
+        let bad = Message::method_return(&request.header())
+            
+            .sender(":1.1")
+            
+            .build(&true)
+            .unwrap();
+        assert!(shape(&bad, ":1.1", ":1.74", "o").is_err());
+    }
+}

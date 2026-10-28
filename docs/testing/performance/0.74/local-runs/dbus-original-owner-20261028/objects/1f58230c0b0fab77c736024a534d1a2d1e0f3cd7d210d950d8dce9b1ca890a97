@@ -1,0 +1,44 @@
+test_canonical_source_packages_and_held_registry_only (test_controls.Controls.test_canonical_source_packages_and_held_registry_only) ... ok
+test_complete_original_source_and_literal_includes (test_controls.Controls.test_complete_original_source_and_literal_includes) ... FAIL
+test_exact_candidate_source_delta (test_controls.Controls.test_exact_candidate_source_delta) ... ok
+test_fixed_library_only_owned_commands (test_controls.Controls.test_fixed_library_only_owned_commands) ... ERROR
+test_join_preserves_every_original_validation_statement (test_controls.Controls.test_join_preserves_every_original_validation_statement) ... ok
+test_lint_correction_only_changes_module_identity_and_anchor (test_controls.Controls.test_lint_correction_only_changes_module_identity_and_anchor) ... ok
+test_original_fixed_deadlines_unchanged (test_controls.Controls.test_original_fixed_deadlines_unchanged) ... ok
+test_original_receiver_and_kernel_source_exact (test_controls.Controls.test_original_receiver_and_kernel_source_exact) ... ok
+test_root_inputs_and_no_admission (test_controls.Controls.test_root_inputs_and_no_admission) ... ok
+
+======================================================================
+ERROR: test_fixed_library_only_owned_commands (test_controls.Controls.test_fixed_library_only_owned_commands)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-original-owner-074\test_controls.py", line 121, in test_fixed_library_only_owned_commands
+    owner.command('fd-188-test', {})
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-original-owner-074\native.py", line 20, in command
+    argv,env,artifact,target,folder,action=original(label,review)
+                                           ~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-linux-074\native.py", line 35, in command
+    previous=json.loads((OUT/f'{variant}-{compiler}-build/result.json').read_bytes());need(previous['exit']==0,'actual build')
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Python313\Lib\pathlib\_abc.py", line 625, in read_bytes
+    with self.open(mode='rb') as f:
+         ~~~~~~~~~^^^^^^^^^^^
+  File "C:\Python313\Lib\pathlib\_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '\\mnt\\c\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-original-owner-20261028\\session\\fd-188-build\\result.json'
+
+======================================================================
+FAIL: test_complete_original_source_and_literal_includes (test_controls.Controls.test_complete_original_source_and_literal_includes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-original-owner-074\test_controls.py", line 25, in test_complete_original_source_and_literal_includes
+    self.assertEqual((ROOT / name).read_bytes(), (r.BASE / 'input/baseline' / name).read_bytes())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'# T[122 chars] = "adler2"\nversion = "2.0.1"\nsource = "regi[182802 chars]n]\n' != b'# T[122 chars] = "async-broadcast"\nversion = "0.7.2"\nsourc[37294 chars]n]\n'
+
+----------------------------------------------------------------------
+Ran 9 tests in 1.619s
+
+FAILED (failures=1, errors=1)

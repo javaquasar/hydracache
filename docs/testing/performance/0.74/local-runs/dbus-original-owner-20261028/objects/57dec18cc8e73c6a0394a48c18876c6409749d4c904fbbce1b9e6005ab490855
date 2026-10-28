@@ -1,0 +1,97 @@
+"""Inert complete library type-closure audit and raw content-addressed retention."""
+from pathlib import Path
+import hashlib, importlib.util, json, subprocess, tomllib
+ROOT = Path(__file__).resolve().parent.parent
+BASE = ROOT / 'target/dbus-original-owner-20261028'
+OUT = ROOT / 'docs/testing/performance/0.74/local-runs/dbus-original-owner-20261028'
+read = lambda p: json.loads(p.read_bytes())
+sha = lambda b: hashlib.sha256(b).hexdigest()
+spec = importlib.util.spec_from_file_location('hc074_owner_seal', ROOT / 'tools/dbus-original-owner-074/prepare.py')
+r = importlib.util.module_from_spec(spec); spec.loader.exec_module(r)
+first = read(BASE / 'session/native-result.json')
+assert not first['passed'] and first['source_unchanged'] and first['boot_unchanged']
+assert first['phases'] == [dict(label=v, exit=0) for v in ('baseline-194-check','baseline-194-clippy','baseline-188-check','baseline-188-clippy','fd-194-check')] + [dict(label='fd-194-clippy',exit=101)]
+errors = (BASE / 'session/fd-194-clippy/stderr.log').read_text(encoding='utf8')
+assert errors.count('\nerror: ') == 3 and 'clippy::duplicate_mod' in errors and 'clippy::type_complexity' in errors
+fixed = BASE / 'lint-fixed'
+review = read(fixed / 'prepare/result.json')
+assert r.files(BASE / 'input') == read(BASE / 'freeze/result.json')['files']
+assert r.files(fixed / 'input') == review['files']
+final = read(fixed / 'session/native-result.json')
+assert final['passed'] and final['source_unchanged'] and final['boot_unchanged']
+assert final['phases'] == [dict(label=f'fd-{v}-{a}', exit=0) for v in ('194','188') for a in ('check','clippy')]
+for origin, phases in ((BASE,first['phases']),(fixed,final['phases'])):
+    for phase in phases:
+        folder=origin/'session'/phase['label']; result=read(folder/'result.json'); execution=read(folder/'execution.json'); intent=read(folder/'intent.json')
+        assert result['exit']==phase['exit'] and result['source_unchanged'] and not result['tests_executed']
+        assert execution['retired'] and not execution['errors']
+        assert intent['floor']==4*1024**3 and intent['session_bound']==1100 and intent['bound']==1200 and intent['poll']==intent['retirement']==5
+        argv=intent['argv']; assert all(n in argv for n in ('--offline','--locked','--lib','--all-features')) and '--all-targets' not in argv
+        assert argv[1] in ('check','clippy') and 'hydracache-long-run-supervisor-074' in argv
+        if argv[1]=='clippy':assert argv[-3:]==['--','-D','warnings']
+    execution=read(origin/'session/execution.json'); assert execution['retired'] and not execution['errors']
+assert read(fixed/'session/result.json')['exit']==0
+before,after=r.files(BASE/'input'),r.files(fixed/'input')
+prefix='fd/'+r.PKG+'/src/'
+assert set(after)-set(before)=={prefix+'diagnostic_manager_receiver_pin_v6.rs'}
+assert {n for n in before if before[n]!=after[n]}=={prefix+'diagnostic_manager_channel_v6.rs',prefix+'diagnostic_manager_channel_kernel_v6.rs','baseline/.cargo/config.toml','fd/.cargo/config.toml'}
+assert (fixed/'input'/prefix/'diagnostic_manager_receiver_pin_v6.rs').read_bytes()==(r.fixed.SOURCE/'diagnostic_manager_receiver_pin.rs').read_bytes()
+assert (fixed/'input'/prefix/'diagnostic_manager_channel_kernel_v6.rs').read_bytes()==(r.fixed.SOURCE/'diagnostic_manager_channel_kernel.rs').read_bytes().replace(b'"diagnostic_manager_receiver_pin.rs"',b'"diagnostic_manager_receiver_pin_v6.rs"',1)
+original=(r.fixed.SOURCE/'diagnostic_original_manager_join.rs').read_bytes()
+projected=(fixed/'input'/prefix/'diagnostic_original_manager_join_v6.rs').read_bytes()
+end=original.index(b'#[cfg(test)]\n#[test]')
+assert projected.startswith(original[:end].replace(b'bind_fixed_manager(',b'bind_fixed_manager_v6_compile_gate('))
+start=original.index(b'fn validation_round('); stop=original.index(b"impl<'join", start)
+assert original[start:stop]==projected[start:stop]
+prepare=read(BASE/'prepare/result.json')
+assert sum(n.startswith(r.PKG+'/src/') and n.endswith('.rs') for n in prepare['original_sources'])==545
+for n,h in prepare['original_sources'].items():assert sha((ROOT/n).read_bytes())==h==sha((fixed/'input/baseline'/n).read_bytes())
+assert len(prepare['include_sources'])==21 and [n for n,h in prepare['include_sources'].items() if sha((fixed/'input/baseline'/n).read_bytes())!=h]==['Cargo.lock']
+assert r.fixed.prior.parent.parent.fragment.prior.parent.old.root_inputs()==review['root_inputs']
+checks=ROOT/'target/dbus-original-owner-checks-20261028'
+assert read(checks/'controls/result.json')['exit']==1 and read(checks/'controls-fixed/result.json')['exit']==0
+raw=(checks/'controls-fixed/stderr.log').read_text(encoding='utf8');assert 'Ran 9 tests' in raw and raw.rstrip().endswith('OK')
+allowed={}
+for path in (ROOT/'Cargo.lock',ROOT/'target/dbus-fixed-channel-20261028/api-fixed/input/fd/Cargo.lock'):
+    for node in tomllib.loads(path.read_text(encoding='utf8'))['package']:
+        if 'checksum' in node:
+            key=(node['name'],node['version']);assert allowed.get(key) in (None,node['checksum']);allowed[key]=node['checksum']
+for variant in ('baseline','fd'):
+    assert (BASE/'input'/variant/'Cargo.lock').read_bytes()==(fixed/'input'/variant/'Cargo.lock').read_bytes()
+    nodes=tomllib.loads((fixed/'input'/variant/'Cargo.lock').read_text(encoding='utf8'))['package']
+    assert nodes==review['graphs'][variant]
+    for n in nodes:
+        if 'checksum' in n:assert allowed[(n['name'],n['version'])]==n['checksum']
+for row in review['registry']:assert sha((fixed/'input/archives'/(row['name']+'.crate')).read_bytes())==row['sha256']
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+    assert path.is_file() and not path.is_symlink() and not path.is_junction()
+    raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+    if dest.exists():assert dest.read_bytes()==raw
+    else:dest.write_bytes(raw)
+    assert name not in members;members[name]=dict(sha256=digest,bytes=len(raw))
+for label,folder,areas in [('first',BASE,('input','prepare','candidate','resolve-baseline','resolve-fd','freeze','session','first-implementation')),('final',fixed,('input','prepare','session'))]:
+    for area in areas:
+        for path in sorted((folder/area).rglob('*')):
+            if path.is_file() and '__pycache__' not in path.parts:add('capture/'+label+'/'+path.relative_to(folder).as_posix(),path)
+for mode in ('controls','controls-fixed'):
+    for path in sorted((checks/mode).iterdir()):
+        if path.is_file():add('capture/checks/'+mode+'/'+path.name,path)
+for path in sorted((ROOT/'tools/dbus-original-owner-074').iterdir()):
+    if path.is_file():add('source/'+path.relative_to(ROOT).as_posix(),path)
+helper_names=set(review['helpers'])|set(review['root_inputs'])|{
+ 'tools/dbus-fixed-channel-074/run.py','tools/dbus-legacy-calls-074/run.py','tools/dbus-source-package-074/run.py','tools/dbus-reply-state-074/run.py','tools/dbus-fragments-074/run.py','tools/dbus-read-flows-074/run.py','tools/dbus-owner-properties-074/run.py','tools/dbus-runtime-bridge-074/run.py','tools/dbus-msrv-backport-074/run.py','tools/dbus-linux-074/native.py','tools/windows-workspace-preflight-074/prepare.py','target/dbus-original-owner-step-20261028.py','target/seal-dbus-original-owner-20261028.py'}
+for name in sorted(helper_names):
+    if (ROOT/name).is_file():add('source/'+name,ROOT/name)
+add('predecessor/index.json',ROOT/'docs/testing/performance/0.74/local-runs/dbus-fixed-channel-20261028/index.json')
+index=dict(schema='hc074-original-owner-type-closure-v1',members=members,
+ original_rust_inventory=545,original_include_inventory=21,byte_exact_include_assets=20,isolated_workspace_lock_intentionally_resolved=True,
+ graphs={k:len(v) for k,v in review['graphs'].items()},registry_archives=len(review['registry']),inert_controls=9,
+ baseline_checks=4,final_candidate_checks=4,first_lint_refusal_retained=True,first_control_refusal_retained=True,
+ actual_original_frame=True,actual_receiver_binding=True,validation_round_equal=True,kernel_equal_except_receiver_module_path=True,receiver_body_equal=True,
+ two_major_compile_fixture_only=True,root_changed=False,tests_executed=False,live_owner_test=False,held_delivery_included=False,
+ services=False,system_bus=False,server=False,clocks_changed=False,product_gate_replayed=False,performance_claim=False,release_admitted=False,
+ source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip())
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

@@ -1,0 +1,290 @@
+use super::*;
+use crate::diagnostic_lease::{DiagnosticIdentity, DiagnosticStage};
+use std::io::{Read, Write};
+
+#[test]
+fn original_pipe_message_rejects_envelope_body_names_and_missing_fd_table() {
+    let (spec, stdout, stderr) = fixture();
+    for kind in 0..11 {
+        let mut props: Vec<_> = spec
+            .properties
+            .iter()
+            .map(|(n, p)| (*n, value(p)))
+            .collect();
+        props.push((
+            if kind == 8 {
+                "StandardOutput"
+            } else {
+                "StandardOutputFileDescriptor"
+            },
+            Value::from(Fd::from(&stdout.writer)),
+        ));
+        props.push((
+            "StandardErrorFileDescriptor",
+            Value::from(Fd::from(&stderr.writer)),
+        ));
+        if kind == 9 {
+            props.pop();
+        }
+        if kind == 10 {
+            props[0].1 = Value::from("different");
+        }
+        let auxiliary: Vec<(&str, Vec<(&str, Value<'_>)>)> = if kind == 7 {
+            vec![("foreign.service", vec![])]
+        } else {
+            vec![]
+        };
+        let mut builder = Message::method_call(
+            if kind == 0 { "/wrong" } else { PATH },
+            if kind == 1 { "StopUnit" } else { METHOD },
+        )
+        .unwrap()
+        .destination(if kind == 2 {
+            "org.example.Wrong"
+        } else {
+            DESTINATION
+        })
+        .unwrap()
+        .interface(if kind == 3 {
+            "org.example.Wrong"
+        } else {
+            INTERFACE
+        })
+        .unwrap();
+        if kind == 4 {
+            builder = builder
+                .with_flags(zbus::message::Flags::NoReplyExpected)
+                .unwrap();
+        }
+        if kind == 5 {
+            builder = builder.sender(":1.74").unwrap();
+        }
+        let msg = builder
+            .build(&(
+                spec.unit_name.as_str(),
+                if kind == 6 { "replace" } else { "fail" },
+                props,
+                auxiliary,
+            ))
+            .unwrap();
+        assert!(
+            matches!(
+                inspect_message(&msg, &spec, &stdout.writer, &stderr.writer),
+                Err(OriginalPipeTransportError::Binding)
+            ),
+            "kind={kind}"
+        );
+    }
+    let msg = Message::method_call(PATH, METHOD)
+        .unwrap()
+        .destination(DESTINATION)
+        .unwrap()
+        .interface(INTERFACE)
+        .unwrap()
+        .build(&"malformed")
+        .unwrap();
+    assert!(inspect_message(&msg, &spec, &stdout.writer, &stderr.writer).is_err());
+    // Both FD entries present but the body has the wrong signature.
+    let msg = Message::method_call(PATH, METHOD)
+        .unwrap()
+        .destination(DESTINATION)
+        .unwrap()
+        .interface(INTERFACE)
+        .unwrap()
+        .build(&(Fd::from(&stdout.writer), Fd::from(&stderr.writer)))
+        .unwrap();
+    assert!(matches!(
+        inspect_message(&msg, &spec, &stdout.writer, &stderr.writer),
+        Err(OriginalPipeTransportError::Encoding(_))
+    ));
+}
+
+fn state() -> DiagnosticState {
+    DiagnosticState {
+        identity: DiagnosticIdentity {
+            lease_id: "a".repeat(64),
+            boot_id: "12345678-1234-1234-1234-123456789abc".into(),
+            binary_sha256: "b".repeat(64),
+            build_provenance_sha256: "c".repeat(64),
+        },
+        revision: 1,
+        stage: DiagnosticStage::Reserved,
+        completed_cells: 0,
+        reserved_monotonic_ns: 1_000_000_000,
+        last_observed_monotonic_ns: 1_000_000_000,
+        controller_monotonic_ns: 1_000_000_000,
+        cell_started_monotonic_ns: None,
+        cgroup_inode: None,
+        reason: None,
+        cleanup_confirmed: true,
+        promotable: false,
+        admission_allowed: false,
+    }
+}
+fn fixture() -> (
+    TransientUnitSpec,
+    super::super::super::super::Pair,
+    super::super::super::super::Pair,
+) {
+    let state = state();
+    let spec = worker(&state, &collector_unit_projection(&state).unwrap()).unwrap();
+    let mut stdout = super::super::super::super::Pair::open().unwrap();
+    let mut stderr = super::super::super::super::Pair::open().unwrap();
+    stdout.initialize().unwrap();
+    stderr.initialize().unwrap();
+    (spec, stdout, stderr)
+}
+#[test]
+fn original_pipe_message_preserves_all_signed_settings_and_ceiling() {
+    let state = state();
+    let projection = collector_unit_projection(&state).unwrap();
+    let spec = worker(&state, &projection).unwrap();
+    check_settings(&spec, &projection).unwrap();
+    assert_eq!(spec.properties.len(), 35);
+    assert!(spec
+        .properties
+        .contains(&("RuntimeMaxUSec", UnitProperty::Unsigned(60_000_000))));
+    assert!(spec
+        .properties
+        .contains(&("LimitFSIZE", UnitProperty::Unsigned(0))));
+    assert!(spec
+        .properties
+        .contains(&("ReadWritePaths", UnitProperty::Strings(vec![]))));
+    assert!(!spec
+        .properties
+        .iter()
+        .any(|(n, _)| n.contains("FileToAppend")));
+    let (spec, stdout, stderr) = fixture();
+    let msg = message(&spec, &stdout.writer, &stderr.writer).unwrap();
+    assert_eq!(msg.body().signature().to_string(), "(ssa(sv)a(sa(sv)))");
+    inspect_message(&msg, &spec, &stdout.writer, &stderr.writer).unwrap();
+}
+#[test]
+fn original_pipe_message_seeded_all_setting_values_names_and_order_refuse() {
+    let state = state();
+    let projection = collector_unit_projection(&state).unwrap();
+    let spec = worker(&state, &projection).unwrap();
+    let mut seed = 0x0740_fd17_u64;
+    for _ in 0..256 {
+        seed ^= seed << 13;
+        seed ^= seed >> 7;
+        seed ^= seed << 17;
+        let mut raw = projection.clone();
+        let i = seed as usize % raw.len();
+        raw[i] ^= 1;
+        assert!(matches!(
+            worker(&state, &raw),
+            Err(OriginalPipeTransportError::Binding)
+        ));
+    }
+    for i in 0..spec.properties.len() {
+        let mut altered = spec.clone();
+        altered.properties[i].1 = match &altered.properties[i].1 {
+            UnitProperty::Text(v) => UnitProperty::Text(format!("{v}x")),
+            UnitProperty::Boolean(v) => UnitProperty::Boolean(!v),
+            UnitProperty::Unsigned(v) => UnitProperty::Unsigned(v + 1),
+            UnitProperty::Bytes(v) => {
+                let mut v = v.clone();
+                v.push(0);
+                UnitProperty::Bytes(v)
+            }
+            UnitProperty::Strings(v) => {
+                let mut v = v.clone();
+                v.push("extra".into());
+                UnitProperty::Strings(v)
+            }
+            UnitProperty::Commands(v) => {
+                let mut v = v.clone();
+                v[0].ignore_failure = true;
+                UnitProperty::Commands(v)
+            }
+        };
+        assert!(matches!(
+            check_settings(&altered, &projection),
+            Err(OriginalPipeTransportError::Binding)
+        ));
+        let mut altered = spec.clone();
+        altered.properties[i].0 = "UnexpectedProperty";
+        assert!(check_settings(&altered, &projection).is_err());
+    }
+    let mut altered = spec.clone();
+    altered.properties.swap(0, 1);
+    assert!(check_settings(&altered, &projection).is_err());
+    altered = spec.clone();
+    altered.properties.pop();
+    assert!(check_settings(&altered, &projection).is_err());
+    altered = spec.clone();
+    altered.unit_name.push('x');
+    assert!(check_settings(&altered, &projection).is_err());
+    println!(
+        "HC074-PIPE-MESSAGE seed=0x0740fd17 projection_mutations=256 settings={} no_send=true",
+        spec.properties.len()
+    );
+}
+#[test]
+fn original_pipe_message_roundtrip_binary_streams_and_last_writer_eof() {
+    let (spec, mut stdout, mut stderr) = fixture();
+    let msg = message(&spec, &stdout.writer, &stderr.writer).unwrap();
+    let body = msg.body();
+    let (_, _, properties, _): Body<'_> = body.deserialize().unwrap();
+    for (index, bytes) in [b"out\0\xff\n".as_slice(), b"err\0\xfe\r\n".as_slice()]
+        .into_iter()
+        .enumerate()
+    {
+        let Value::Fd(fd) = &properties[spec.properties.len() + index].1 else {
+            panic!("not an FD")
+        };
+        let count = unsafe { libc::write(fd.as_raw_fd(), bytes.as_ptr().cast(), bytes.len()) };
+        assert_eq!(count, bytes.len() as isize);
+        let reader = if index == 0 {
+            &mut stdout.reader
+        } else {
+            &mut stderr.reader
+        };
+        let mut actual = vec![0; bytes.len()];
+        reader.read_exact(&mut actual).unwrap();
+        assert_eq!(actual, bytes);
+    }
+    drop(properties);
+    drop(body);
+    let super::super::super::super::Pair {
+        mut reader, writer, ..
+    } = stdout;
+    drop(writer);
+    let mut b = [0];
+    assert_eq!(
+        reader.read(&mut b).unwrap_err().kind(),
+        std::io::ErrorKind::WouldBlock
+    );
+    drop(msg);
+    assert_eq!(reader.read(&mut b).unwrap(), 0);
+    stderr.writer.write_all(b"still original").unwrap();
+    let mut b = [0; 14];
+    stderr.reader.read_exact(&mut b).unwrap();
+    assert_eq!(&b, b"still original");
+}
+#[test]
+fn original_pipe_message_refuses_swapped_foreign_and_read_end_descriptors() {
+    let (spec, stdout, stderr) = fixture();
+    for (a, b) in [
+        (&stderr.writer, &stdout.writer),
+        (&stdout.writer, &stdout.writer),
+        (&stdout.reader, &stderr.writer),
+    ] {
+        let msg = message(&spec, a, b).unwrap();
+        assert!(matches!(
+            inspect_message(&msg, &spec, &stdout.writer, &stderr.writer),
+            Err(OriginalPipeTransportError::Binding)
+        ));
+    }
+    let file = tempfile::tempfile().unwrap();
+    let msg = message(&spec, &file, &stderr.writer).unwrap();
+    assert!(inspect_message(&msg, &spec, &stdout.writer, &stderr.writer).is_err());
+    let msg = message(&spec, &stdout.writer, &stderr.writer).unwrap();
+    let mut changed = spec.clone();
+    changed.properties[0].1 = UnitProperty::Text("other".into());
+    assert!(inspect_message(&msg, &changed, &stdout.writer, &stderr.writer).is_err());
+    changed.unit_name.push('x');
+    assert!(inspect_message(&msg, &changed, &stdout.writer, &stderr.writer).is_err());
+    assert!(descriptor(&Value::from(1_u32), &stdout.writer).is_err());
+}

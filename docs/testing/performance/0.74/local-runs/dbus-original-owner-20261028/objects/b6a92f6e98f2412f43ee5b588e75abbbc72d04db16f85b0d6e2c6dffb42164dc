@@ -1,0 +1,33 @@
+# Full original-owner type closure, no fabricated context
+
+This is a temporary, unpublished two-major library-only compile fixture. It copies
+the complete current supervisor source and its literal include assets. Baseline
+remains byte-exact. A second module attaches the migrated fixed read-only zbus 6
+channel to actual KernelPacket/Origin/OriginalReceiverBinding and the actual ten-
+lifetime OriginalEnrollmentFrame. The existing zbus 5 path remains for unmigrated
+messages. Both majors in this diagnostic fixture are not a product design or a
+security/dependency acceptance. Root code, lock and qualification stay untouched.
+
+ReceiverPin's source and KernelPins's receiver route are restored unchanged.
+The new join keeps its original checks and consuming constructor; only the added
+fixture constructor name differs to coexist with the original inherent method.
+No fake frame, fake Origin, context trait stub, unchecked conversion, public
+constructor/getter or receiver claim is supplied. Unnamed constant function-item
+anchors retain private type-check reachability without invoking the functions.
+Original message-owner/held-delivery migration remains explicitly outside the
+second module. All original source/test files remain in the baseline tree.
+
+The commands are fixed exclusive preparations: prepare.py prepare, resolve.py
+resolve-baseline, prepare.py candidate, resolve.py resolve-fd, freeze.py, run.py.
+The resolver uses offline metadata and preserves all product inputs. Freeze accepts
+only checksum identities already present in the exact product or 95-case backport
+graphs and copies their held registry archives for native offline builds. No fetch,
+new registry release, service/bus/clock action, installation or product load occurs.
+
+The native gate runs only --lib check and strict Clippy, --all-features, on baseline
+and candidate under GNU Rust 1.94 and 1.88. It does not execute a test or create an
+OriginalEnrollmentFrame. The same pinned CI process owner retains original
+1200-second outer/1100-second inner absolute origins, 4 GiB floors and five-second
+capacity/retirement controls. No increase to live 300/60/10, package 780 or workspace
+4800 limits occurs. Compile-only closure never grants original-start, all-writer,
+reconnect, host or release admission.

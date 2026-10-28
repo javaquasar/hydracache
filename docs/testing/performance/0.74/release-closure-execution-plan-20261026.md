@@ -537,6 +537,14 @@ ReceiverPin/original_join/held routes and two manual host tests remain outside
 this no-bus slice. Full original context/module/source/effect and product gates
 are not replaced by this pass.
 
+The [original-owner type closure](dbus-original-owner-result-20261028.md) now
+checks the migrated zbus 6 fixed channel with the genuine ten-lifetime frame and
+KernelPacket/Origin receiver graph. Baseline/corrected library check and strict
+Clippy pass on GNU 1.94/1.88; nine inert controls pass, with first refusals retained.
+The temporary two-major fixture changes no root code or live validation cadence.
+It does not execute the join, migrate held/original delivery or close dependency/
+shipping, complete source/effect, package/workspace or host gates.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

@@ -185,3 +185,12 @@ queue type and auth namespace. The original biased select requires fixture macro
 product's same tokio-macros 2.7.0 archive expands the probe to 63 identities/59
 archives, with existing syn 2.0.119. First compile refusals remain. This is neither
 a fresh dependency-policy verdict nor live manager/receiver/original-owner coverage.
+
+The [original-owner type closure](dbus-original-owner-result-20261028.md) advances
+real-context caller compatibility: unchanged KernelPacket/Origin/ReceiverPin and
+actual OriginalEnrollmentFrame types compile with the added zbus 6 fixed channel.
+Baseline/corrected library check and strict Clippy pass on GNU 1.94/1.88, with nine
+inert controls and retained first lint/control refusals. There is no fake frame,
+lint exemption or validation/window change. This two-major, compile-only fixture
+keeps old messages on zbus 5; root adoption/security approval, held delivery and
+full product gates remain open.

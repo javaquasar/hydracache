@@ -1,0 +1,4 @@
+{
+  "reason": "complete library type-check gate",
+  "type": "ValueError"
+}

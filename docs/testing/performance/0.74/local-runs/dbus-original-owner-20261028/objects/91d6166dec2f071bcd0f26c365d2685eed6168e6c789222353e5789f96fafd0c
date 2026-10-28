@@ -1,0 +1,9 @@
+     Locking 8 packages to latest compatible versions
+    Updating bitflags v2.13.0 -> v2.13.2
+    Updating futures-core v0.3.32 -> v0.3.34
+    Updating futures-io v0.3.32 -> v0.3.34
+    Updating socket2 v0.6.4 -> v0.6.5
+      Adding zbus v6.1.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\dbus-original-owner-20261028\input\fd\source\zbus)
+      Adding zbus_macros v6.1.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\dbus-original-owner-20261028\input\fd\source\zbus_macros)
+      Adding zbus_utils v6.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\dbus-original-owner-20261028\input\fd\source\zbus_utils)
+      Adding zruntime v0.2.0

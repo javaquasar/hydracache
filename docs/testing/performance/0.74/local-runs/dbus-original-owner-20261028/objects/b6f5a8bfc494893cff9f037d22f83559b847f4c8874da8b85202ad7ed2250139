@@ -1,0 +1,43 @@
+{
+  "boot_after": "4eaf7578-ae13-468b-bdb4-baeaffee8a11",
+  "boot_before": "4eaf7578-ae13-468b-bdb4-baeaffee8a11",
+  "boot_unchanged": true,
+  "clocks_after": {
+    "CLOCK_BOOTTIME": 172565502297,
+    "CLOCK_MONOTONIC": 172565501680,
+    "CLOCK_MONOTONIC_RAW": 172591701625,
+    "CLOCK_REALTIME": 1793180938171349074
+  },
+  "clocks_before": {
+    "CLOCK_BOOTTIME": 3310758165,
+    "CLOCK_MONOTONIC": 3310757159,
+    "CLOCK_MONOTONIC_RAW": 3223582850,
+    "CLOCK_REALTIME": 1793180768916604052
+  },
+  "clocks_changed": false,
+  "library_only": true,
+  "passed": true,
+  "phases": [
+    {
+      "exit": 0,
+      "label": "fd-194-check"
+    },
+    {
+      "exit": 0,
+      "label": "fd-194-clippy"
+    },
+    {
+      "exit": 0,
+      "label": "fd-188-check"
+    },
+    {
+      "exit": 0,
+      "label": "fd-188-clippy"
+    }
+  ],
+  "root_changed": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true,
+  "tests_executed": false
+}

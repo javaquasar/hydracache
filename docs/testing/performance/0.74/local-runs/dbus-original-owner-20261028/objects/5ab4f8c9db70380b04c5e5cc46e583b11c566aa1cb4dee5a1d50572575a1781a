@@ -1,0 +1,34 @@
+[workspace]
+members = ["tools/long-run-supervisor-074"]
+exclude = ["source/zbus", "source/zbus_macros", "source/zbus_utils"]
+resolver = "2"
+
+[workspace.package]
+version = "0.73.0"
+edition = "2021"
+rust-version = "1.88"
+license = "Apache-2.0"
+authors = ["HydraCache Contributors"]
+repository = "https://github.com/javaquasar/hydracache"
+homepage = "https://github.com/javaquasar/hydracache"
+readme = "README.md"
+keywords = ["cache", "caching", "async", "runtime"]
+categories = ["caching", "asynchronous"]
+
+[workspace.dependencies]
+base64 = "0.22.1"
+ed25519-dalek = "2.2.0"
+fs2 = "0.4.3"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.11"
+thiserror = "2.0.18"
+tokio = { version = "1.53.3", features = ["io-util", "macros", "net", "rt-multi-thread", "sync", "time"] }
+toml = "1"
+
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(coverage)", "cfg(fuzzing)", "cfg(hydracache_loom)"] }
+
+[patch.crates-io]
+zbus_macros = { path = "source/zbus_macros" }
+zbus_utils = { path = "source/zbus_utils" }

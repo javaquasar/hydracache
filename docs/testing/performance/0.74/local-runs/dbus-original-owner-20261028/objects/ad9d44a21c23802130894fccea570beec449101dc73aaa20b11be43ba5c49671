@@ -1,0 +1,38 @@
+{
+  "absolute_deadline": 1102.818287376,
+  "argv": [
+    "/home/artur/.rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "clippy",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    "/home/artur/.cache/hydracache-074-dbus-original-owner/20261028-a1/baseline/Cargo.toml",
+    "--target-dir",
+    "/home/artur/.cache/hydracache-074-dbus-original-owner/20261028-a1/builds/baseline/188",
+    "-p",
+    "hydracache-long-run-supervisor-074",
+    "--lib",
+    "--all-features",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "bound": 1200,
+  "environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_HOME": "/home/artur/.cache/hydracache-074-dbus-original-owner/20261028-a1/cargo-home",
+    "CARGO_INCREMENTAL": "0",
+    "HC074_FD_ROOT": "/home/artur/.cache/hydracache-074-dbus-original-owner/20261028-a1/fd-fixtures",
+    "HOME": "/home/artur",
+    "LANG": "C.UTF-8",
+    "LOGNAME": "artur",
+    "PATH": "/home/artur/.rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin:/usr/local/bin:/usr/bin:/bin",
+    "USER": "artur"
+  },
+  "floor": 4294967296,
+  "library_only": true,
+  "poll": 5,
+  "retirement": 5,
+  "retry": false,
+  "session_bound": 1100
+}

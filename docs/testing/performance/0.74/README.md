@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [original-owner type closure](dbus-original-owner-result-20261028.md) now binds
+the migrated read-only channel to the real OriginalEnrollmentFrame and kernel
+receiver graph in a temporary two-major fixture. Baseline and corrected candidate
+pass library check/strict Clippy on GNU Rust 1.94/1.88; nine inert controls pass.
+First lint/control refusals remain, with no exemptions or predicate/window changes.
+This is compile compatibility only: held/original delivery, full product gates and
+server admission remain open.
+
 The [forced fragment/ancillary continuation](dbus-fragments-result-20261028.md)
 now proves actual bounded short reads/writes, one-time FD transmission, four EOF
 cuts and mid-write failure without flush/replay. A child-only RLIMIT_NOFILE fault

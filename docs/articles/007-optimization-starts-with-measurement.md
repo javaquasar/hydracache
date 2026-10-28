@@ -22357,3 +22357,46 @@ receiver module route. Проверки и исходные сроки не пе
 shipping consumer review, product gates и отдельный retirement/reconnect proof.
 Методика и ограничения приведены в
 [отчёте fixed channel](../testing/performance/0.74/dbus-fixed-channel-result-20261028.md).
+
+### 0.74: настоящий original owner в compile-gate миграции
+
+Следующая граница оказалась глубже transport API. ReceiverPin проверяет исходный
+KernelPacket/Origin, а OriginalManagerJoin потребляет OriginalEnrollmentFrame с
+десятью lifetime-параметрами и настоящей цепочкой custody. Успешная заглушка этого
+контекста проверила бы удобство тестового интерфейса, но не совместимость кода.
+Поэтому для отдельного compile-gate скопирована полная библиотека supervisor:
+545 исходных Rust-файлов и весь tracked package. Это число файлов в inventory,
+а не число выполненных файлов или тестов: команды проверяют только library cfg.
+
+Временный fixture оставляет старый zbus 5 для ещё не перенесённых сообщений и
+добавляет read-only channel на подготовленном zbus 6 рядом с настоящим frame.
+Это промежуточный способ проверить типы, не продуктовая схема двух transport.
+Новый consuming constructor получает другое имя для сосуществования с исходным;
+тело validation round и порядок всех observe/check/revalidate остаются прежними.
+ReceiverBinding по-прежнему удерживает реальный Origin, а не тестовое утверждение.
+Ни frame, ни manager channel при этих командах фактически не создаются.
+
+Первый кандидат прошёл check, но строгий Clippy отказал: один ReceiverPin-файл
+подключался дважды, а compile-only якорь имел слишком сложную сигнатуру. Обходить
+lint исключением не стали. Отдельный кандидат копирует исходные receiver bytes
+под другим именем и меняет только путь module route; kernel-предикаты побайтно
+сохранены. Якорь получил простую сигнатуру без изменения проверяемой функции.
+Baseline и исправленный кандидат прошли check и строгий Clippy на GNU Rust 1.94
+и MSRV 1.88. Первые исходники, отказ и четыре успешные baseline-команды сохранены.
+
+Девять offline-контролей проверяют source delta, настоящие типы, неизменность
+validation round, исходные окна и offline/locked команды. Первый запуск контролей
+тоже сохранён: проверка слишком широко потребовала неизменность Cargo.lock
+отдельного workspace, хотя resolver намеренно его пересоздаёт; отрицательный
+command-контроль обнаружил whitelist после чтения parent receipt. Исправления
+явно отличают workspace lock и отвергают недопустимую команду до этих чтений.
+Остальные 20 include-assets из 21 и все исходные Rust-файлы baseline неизменны.
+
+Полученный результат ограничен совместимостью типов. Он не означает реальную
+доставку original message, запуск child, прекращение записи writers или recovery.
+Root зависимости, qualification identity, частота live-наблюдений и исходные сроки
+не менялись; сервер и службы не затронуты, измерений производительности не было.
+Дальше нужен held/original delivery на том же owner, полный source/effect review,
+shipping/product gates и отдельное доказательство retirement/reconnect. Исходники,
+первые отказы и границы вывода собраны в
+[отчёте original-owner](../testing/performance/0.74/dbus-original-owner-result-20261028.md).

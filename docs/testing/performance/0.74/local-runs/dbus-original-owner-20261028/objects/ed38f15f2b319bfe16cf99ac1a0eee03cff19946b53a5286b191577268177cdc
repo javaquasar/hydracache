@@ -1,0 +1,14 @@
+test_canonical_source_packages_and_held_registry_only (test_controls.Controls.test_canonical_source_packages_and_held_registry_only) ... ok
+test_complete_original_source_and_literal_includes (test_controls.Controls.test_complete_original_source_and_literal_includes) ... ok
+test_exact_candidate_source_delta (test_controls.Controls.test_exact_candidate_source_delta) ... ok
+test_fixed_library_only_owned_commands (test_controls.Controls.test_fixed_library_only_owned_commands) ... ok
+test_join_preserves_every_original_validation_statement (test_controls.Controls.test_join_preserves_every_original_validation_statement) ... ok
+test_lint_correction_only_changes_module_identity_and_anchor (test_controls.Controls.test_lint_correction_only_changes_module_identity_and_anchor) ... ok
+test_original_fixed_deadlines_unchanged (test_controls.Controls.test_original_fixed_deadlines_unchanged) ... ok
+test_original_receiver_and_kernel_source_exact (test_controls.Controls.test_original_receiver_and_kernel_source_exact) ... ok
+test_root_inputs_and_no_admission (test_controls.Controls.test_root_inputs_and_no_admission) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 1.528s
+
+OK
