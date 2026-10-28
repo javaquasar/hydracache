@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [first real local manager baseline](original-manager-baseline-result-20261028.md)
+fails closed before held send: causal age 10,005,213,283 ns exceeds the unchanged
+10-second window. Fresh release builds pass; exactly one case fails, with zero
+send/readiness. Cleanup succeeds and pre/post snapshots agree; no unchanged retry,
+clock/service change or server workload occurs. First streams/facts are retained.
+Actual writer retirement and reconnect remain unproved.
+
 The [original held/message-owner/reply continuation](dbus-original-delivery-result-20261028.md)
 now keeps the genuine Message graph on zbus 6 in an isolated copy, with unchanged
 owner/receiver/watchdog sources and delivery/validation bodies. GNU 1.94/1.88 each

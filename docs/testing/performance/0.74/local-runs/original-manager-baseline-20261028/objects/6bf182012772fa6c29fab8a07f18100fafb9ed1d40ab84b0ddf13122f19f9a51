@@ -1,0 +1,12 @@
+{
+  "cleanup_is_not_autonomous_retirement": true,
+  "completion": false,
+  "exit": 101,
+  "original_release": false,
+  "original_send": false,
+  "readiness": false,
+  "reconnect_tested": false,
+  "release_admitted": false,
+  "retry": false,
+  "server": false
+}

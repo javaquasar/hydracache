@@ -22445,3 +22445,26 @@ original-start. Root code/graph, live-проверки, qualification identity �
 всех writers и reattach к той же попытке, затем оставшиеся release gates. Подробные
 исходники, границы вывода и accounting находятся в
 [отчёте held/message-owner/reply](../testing/performance/0.74/dbus-original-delivery-result-20261028.md).
+
+### 0.74: первый реальный manager baseline и отказ до отправки
+
+После отдельного разрешения на локальный WSL и временные diagnostic units выполнен
+один реальный original-owner baseline. Свежие GNU Rust 1.94 release libtest/bootstrap
+собраны из проверенного Message-графа; старые consumed lanes не запускались. Случай
+завершился на join_held_fixture до held send: causal age 10 005 213 283 нс превысил
+исходное окно 10 секунд. Boot ID совпадает, первый записанный отказ — expired.
+Среди 242 causal-наблюдений первый отказ не помечен обратным временем; это не
+доказательство глобальной стабильности часов и не готовая атрибуция CPU/I/O.
+
+Первый результат сохранён: 0 passed, 1 failed, 1 592 filtered; send/readiness нет.
+Cleanup успешен, preflight/postflight совпали. Ни cleanup, ни ранее прошедшие wire
+units не превращают этот отказ в доказательство доставки или all-writer retirement.
+Существующий fixture получает EOF после ручного service cleanup; этот пробел явно
+остаётся. Sticky custody барьерных holders также не выдаётся за законченный active
+retirement/recovery протокол. Сроки, частота проверок и qualification inputs прежние,
+службы/часы не перенастраивались, сервер и продуктовая нагрузка не затронуты.
+
+Следующий шаг — атрибуция подготовки без повторения этой lane ради зелёного исхода,
+затем реальная доставка и проверка cessation до cleanup и reconnect той же попытки.
+[Отчёт первого baseline](../testing/performance/0.74/original-manager-baseline-result-20261028.md)
+содержит исходные receipts, streams, факты отказа и границы вывода.

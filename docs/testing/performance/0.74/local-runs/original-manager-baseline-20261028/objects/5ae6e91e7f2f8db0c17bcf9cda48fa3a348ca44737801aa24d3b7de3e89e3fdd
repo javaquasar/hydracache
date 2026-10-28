@@ -1,0 +1,10 @@
+{
+  "artifact": {
+    "bytes": 28410032,
+    "path": "/home/artur/.cache/hydracache-074-dbus-original-delivery/20261028-a7/builds/fd/194-original-release/release/deps/hydracache_long_run_supervisor_074-d470ca3878c631e8",
+    "sha256": "d25675c71977c4dc48d4cbdf2973081f5d37189c4339e7de5465f571e2ad94c7"
+  },
+  "exit": 0,
+  "source_unchanged": true,
+  "tests_executed": false
+}
