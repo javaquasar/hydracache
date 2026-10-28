@@ -57,3 +57,28 @@ context, changing only vendor paths. It requires additional initial headroom;
 all existing runtime/CI bounds and floors stay unchanged. `capacity_run.py` and
 `capacity_unit_run.py` use the same original owners. No old receipt is deleted,
 no absent result is invented and the consumed c command is not rerun.
+
+The r context passes both compilers' library/check/strict-Clippy and all 64
+original selected tests. Its first private-bus matrix fails at bare-receiver:
+native zbus 6 sets FD_CLOEXEC, contrary to the old backend characterization.
+The unchanged writer guard correctly requires that flag; its expectation is
+never weakened. All later private-bus scenarios remain unobserved in that attempt.
+
+`fault_prepare.py prepare` creates f2/native-a5 with only cfg-test fault generation
+and two vendor-path relocations changed. The original nine scenarios/negative
+guards/bounds remain. Bare-receiver explicitly removes the received FD's flag,
+checks the original refusal and restores it before returning or resuming panic.
+Healthy scenarios use the actual native receiver; one added atomic-adapter case
+keeps the former adapter covered. The matrix's original 60-second total remains.
+The inert f/native-a4 preparation and its first driver-render refusal are retained;
+neither executed Cargo or a test. Four inert controls cover the f2 projection and
+render the exact coordinator without executing it.
+
+After committing the drivers, `fault_build_run.py` builds the actual two complete
+default test images, using the unchanged original owned envelope. Then an exact
+units-inputs receipt pins `fault_unit_native.py`/`fault_unit_run.py` before
+`fault_unit_run.py` selects all 64 original cases plus the one private matrix.
+Only those 65 identities are enabled, with exact 1,593-catalog / 1,528-filtered
+accounting and strict test-cfg/all-feature Clippy. The inherited normal-library
+proof is r's unchanged production source; fresh image builds are not relabeled
+as library-check runs. No system bus, original owner, service or server runs.

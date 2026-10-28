@@ -1,0 +1,114 @@
+"""Preserve the real first native refusal; fix only private-test fault generation."""
+from pathlib import Path
+import importlib.util
+import json
+import shutil
+import sys
+
+ROOT=Path(__file__).resolve().parents[2]
+spec=importlib.util.spec_from_file_location('native_transport_qualified_parent',Path(__file__).with_name('capacity_prepare.py'))
+parent=importlib.util.module_from_spec(spec)
+spec.loader.exec_module(parent)
+p,prior,fixed=parent.p,parent.prior,parent.fixed
+sha,files,write=parent.sha,parent.files,parent.write
+BASE=ROOT/'target/dbus-native-20261028/f2'
+NATIVE='/home/artur/.cache/hydracache-074-dbus-native/20261028-a5'
+PKG='tools/long-run-supervisor-074'
+TEST='src/diagnostic_dispatch_negotiated_tests.rs'
+
+
+def need(ok,why):
+    if not ok:raise ValueError(why)
+
+
+def replace(text,old,new):
+    need(text.count(old)==1,'one original test projection: '+old[:60])
+    return text.replace(old,new,1)
+
+
+def project(raw):
+    expected=json.loads((parent.BASE/'freeze/result.json').read_bytes())['files']['fd/'+PKG+'/'+TEST]
+    need(sha(raw)==expected,'whole actual refused native-test source')
+    text=raw.decode()
+    text=replace(text,'bus.connect(case != "no-capability", true).await',
+                 'bus.connect(case != "no-capability", case == "atomic-adapter").await')
+    text=replace(text,'bus.connect(true, case != "bare-receiver").await',
+                 'bus.connect(true, case == "atomic-adapter").await')
+    text=replace(text,'Some(bus.connect(true, true).await.0)',
+                 'Some(bus.connect(true, false).await.0)')
+    text=replace(text,'"healthy" | "fragmented" => {','"healthy" | "fragmented" | "atomic-adapter" => {')
+    text=replace(text,'                "healthy",\n                "fragmented",',
+                 '                "healthy",\n                "atomic-adapter",\n                "fragmented",')
+    opening='        for fd in received.data().fds() {\n'
+    end='        }\n        exchange.lose_reply();'
+    start=text.index(opening,text.index('    if case == "bare-receiver" {'))
+    stop=text.index(end,start)
+    original=text[start+len(opening):stop]
+    need(original.count('writer_shape(fd.as_raw_fd())')==1,'original negative writer guard once')
+    body=''.join('    '+line if line.strip() else line for line in original.splitlines(True))
+    updated=opening+'''            let original_flags = unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_GETFD) };
+            assert_eq!(original_flags, libc::FD_CLOEXEC);
+            assert_eq!(unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_SETFD, 0) }, 0);
+            let observed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+'''+body+'''            }));
+            assert_eq!(
+                unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_SETFD, original_flags) },
+                0
+            );
+            assert_eq!(unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_GETFD) }, original_flags);
+            if let Err(error) = observed {
+                std::panic::resume_unwind(error);
+            }
+'''
+    text=text[:start]+updated+text[stop:]
+    text=replace(text,'        }\n        exchange.lose_reply();\n        assert_eq!(exchange.arm(), Err(ExchangeError::AlreadyAttempted));\n        bounded(client.close()).await.unwrap();',
+        '        }\n        println!("HC074-NATIVE-FD-FAULT native_cloexec=true loss_injected=true guard_refused=true restored=true");\n        exchange.lose_reply();\n        assert_eq!(exchange.arm(), Err(ExchangeError::AlreadyAttempted));\n        bounded(client.close()).await.unwrap();')
+    return text.encode()
+
+
+def prepare():
+    out=BASE/'prepare'
+    out.mkdir(parents=True,exist_ok=False)
+    (out/'producer.py').write_bytes(Path(__file__).read_bytes())
+    review=json.loads((parent.BASE/'freeze/result.json').read_bytes())
+    need(files(parent.BASE/'input')==review['files'],'qualified first native source preserved')
+    old=json.loads((parent.BASE/'private-bus/native-result.json').read_bytes())
+    log=(parent.BASE/'private-bus/fd-194-test/stdout.log').read_bytes()
+    need(not old['passed'] and old['source_unchanged'] and old['boot_unchanged']
+         and b'left: 1\n right: 0' in log and b'1 failed;' in log,
+         'actual first bare-receiver flag characterization remains')
+    typed=json.loads((parent.BASE/'units/native-result.json').read_bytes())
+    need(typed['passed'] and typed['passes_per_compiler']==64,'qualified prior full images')
+    source=parent.BASE/'input/fd'/PKG/'src'
+    carrier=(source/'diagnostic_dispatch_exchange.rs').read_bytes()
+    need(b'#[cfg(test)]\n#[path = "diagnostic_dispatch_exchange_tests.rs"]\nmod tests;' in carrier,
+         'unchanged cfg-test carrier')
+    need((source/'diagnostic_dispatch_exchange_tests.rs').read_bytes().count(
+        b'#[path = "diagnostic_dispatch_negotiated_tests.rs"]')==1,'one original nested test route')
+    dest=BASE/'input'
+    shutil.copytree(parent.BASE/'input',dest)
+    path=dest/'fd'/PKG/TEST
+    path.write_bytes(project(path.read_bytes()))
+    for variant in ('baseline','fd'):
+        path=dest/variant/'.cargo/config.toml'
+        path.write_bytes(path.read_bytes().replace(review['native_root'].encode(),NATIVE.encode(),1))
+    changed={name for name,value in files(dest).items() if review['files'].get(name)!=value}
+    need(changed=={'fd/'+PKG+'/'+TEST,'baseline/.cargo/config.toml','fd/.cargo/config.toml'},
+         'cfg-test-only change; every production source/manifest/lock stays exact')
+    helpers=dict(review['helpers'])
+    for name in ('fault_prepare.py','fault_build_native.py','fault_build_run.py',
+                 'fault_unit_native.py','fault_unit_run.py','test_fault.py'):
+        key='tools/dbus-native-transport-074/'+name
+        helpers[key]=sha((ROOT/key).read_bytes())
+    value=dict(review,files=files(dest),helpers=helpers,native_root=NATIVE,
+        changed_only_cfg_test=True,original_nine_cases_preserved=True,scenario_count=10,
+        production_source_equal=True,root_changed=False,release_admitted=False)
+    (BASE/'freeze').mkdir()
+    write(BASE/'freeze','result.json',value)
+    write(out,'result.json',value)
+    print(json.dumps(dict(prepared=True,production_source_changed=False,cases=10)))
+
+
+if __name__=='__main__':
+    need(sys.argv[1:]==['prepare'],'fixed exclusive fault-source preparation')
+    prepare()

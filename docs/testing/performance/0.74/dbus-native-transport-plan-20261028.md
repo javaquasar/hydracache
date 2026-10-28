@@ -124,3 +124,23 @@ bare-receiver assumes the old non-CLOEXEC default, while actual zbus 6 uses
 CMSG_CLOEXEC. Do not loosen writer_shape or change expected flags to conceal a
 result. Keep the first runtime result; any follow-up fault-generation change
 must retain the original negative guard and also test actual native positive IO.
+
+That first matrix is consumed: exit 101, zero passed / one failed / 1,592
+filtered, source/boot unchanged and owned retirement successful. It stops at
+bare-receiver's old flag characterization (actual 1 versus expected 0), before
+any scenario completion record. Native zbus 6's CMSG_CLOEXEC is a stronger default,
+not a reason to relax writer_shape. The first result stays failed.
+
+A distinct test-only candidate explicitly injects loss of CLOEXEC into the owned
+received FD, executes the original negative assertions and restores the flag
+even before resuming an assertion panic. All nine scenarios and original bounds
+remain; healthy cases now use native read/credentials, while an additional
+atomic-adapter case retains that former adapter's coverage. No production source,
+manifest, lock, predicate, observation count or deadline changes. Four inert
+controls cover this projection, retained first refusal and exact coordinator.
+An initial f preparation stops at driver rendering before execution; the fixed
+f2 context is separately frozen. Its fresh actual full test images precede a
+65-case cohort on both compilers, including just this ignored private matrix,
+then strict test-cfg/all-feature Clippy. The prior r normal-library proof applies
+to the identical production source; image compilation is recorded separately.
+No system bus, service, real owner, server or product workload is involved.
