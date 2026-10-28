@@ -1,0 +1,147 @@
+"""Fixed offline GNU shadow continuation. No system bus, services or product adoption."""
+from pathlib import Path
+import hashlib,json,os,shutil,subprocess,sys,tomllib
+ROOT=Path(__file__).resolve().parents[2]
+BASE=ROOT/'target/dbus-linux-20261028'
+NATIVE='/home/artur/.cache/hydracache-074-dbus-linux/20261028-a1'
+FIRST_BASE=BASE
+CORRECTED=False
+ATTEMPT=1
+sys.path.insert(0,str(ROOT/'tools/windows-workspace-preflight-074'))
+import prepare as p
+prior=p.load(ROOT/'tools/dbus-read-flows-074/run.py','dbus_linux_prior')
+sha,write,files=prior.sha,prior.write,prior.files
+EXTRAS=['unix_transport::'+n for n in ('authenticated_unix_pair_reports_actual_peer',
+ 'descriptor_roundtrip_is_original_and_cloexec','large_body_and_descriptor_survive_roundtrip',
+ 'wrong_reply_type_drops_received_descriptor','disconnect_after_request_refuses','lost_ack_keeps_single_effect_without_replay')]
+PINS={'scripts/ci/watchdog_linux_group.py':'e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691',
+ 'tools/windows-workspace-preflight-074/owned.py':'e7c5a3c0c4fea90f39772512c4ad96c60693fc0b482092a608dcf039e151eade'}
+
+EXTRA_DROP='unix_transport::received_fd_drops_before_live_connection_close'
+
+def inventory(raw,baseline,variant,extras=EXTRAS):
+ names=[v[:-6] for v in raw.decode().splitlines() if v.endswith(': test')]
+ expected=baseline+(extras if variant=='fd' else [])
+ p.require(variant in ('baseline','fd') and len(baseline)==len(set(baseline))==31,'exact prior authority')
+ p.require(len(names)==len(set(names))==len(expected) and sorted(names)==sorted(expected),'complete GNU identities')
+ p.require(raw.decode().splitlines()[-1]==f'{len(expected)} tests, 0 benchmarks','exact GNU summary')
+ return sorted(names)
+
+RECVMSG_SHA='f8cc21f18420cae201ba3faa43ea1e29d0fbf45af00c4938dcf5159c82907c76'
+RECVMSG_BEFORE=b'    let msg = recvmsg(fd, &mut iov, &mut ancillary, RecvFlags::empty())?;'
+RECVMSG_AFTER=b'    // Protect the raw message-owned SCM_RIGHTS descriptors, not only decoded clones.\n    #[cfg(target_os = "linux")]\n    let flags = RecvFlags::CMSG_CLOEXEC;\n    #[cfg(not(target_os = "linux"))]\n    let flags = RecvFlags::empty();\n    let msg = recvmsg(fd, &mut iov, &mut ancillary, flags)?;'
+def patch_recvmsg(raw):
+ p.require(sha(raw)==RECVMSG_SHA and raw.count(RECVMSG_BEFORE)==1,'exact unpatched recvmsg source')
+ return raw.replace(RECVMSG_BEFORE,RECVMSG_AFTER,1)
+
+def prepared():return BASE/('prepare-corrected' if ATTEMPT==4 else 'prepare')/'result.json'
+
+def prepare():
+ BASE.mkdir(exist_ok=True)
+ out=prepared().parent;out.mkdir(exist_ok=False);(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+ packet=ROOT/'docs/testing/performance/0.74/local-runs/dbus-read-flows-20261028'
+ index_raw=(packet/'index.json').read_bytes()
+ p.require(sha(index_raw)=='4be475b3f92e348e8ccde151356d73607e0b609ebcacf406c4e13fc586131fb2','exact predecessor')
+ index=json.loads(index_raw)
+ def get(name):
+  row=index['members'][name];raw=(packet/'objects'/row['sha256']).read_bytes()
+  p.require(len(raw)==row['bytes'] and sha(raw)==row['sha256'],'held predecessor member');return raw
+ review=json.loads(get('capture/v3/prepare/result.json'));source=ROOT/'target/dbus-read-flows-v3-20261028/fixture'
+ p.require(files(source)==review['files'] and prior.parent.old.root_inputs()==review['root_inputs'],'held exact Windows source/root')
+ for name,digest in review['overlays'].items():p.require(sha((ROOT/name).read_bytes())==digest,'held external overlay')
+ prior.source_parts()
+ listing=json.loads(get('capture/v3/list-194/result.json'));p.require(len(listing['inventory'])==31,'held native catalog')
+ if CORRECTED:
+  native=json.loads((FIRST_BASE/'session/native-result.json').read_bytes())
+  p.require(not native['passed'] and native['source_unchanged'] and native['first_refusal']['reason']=='first GNU phase refusal: fd-194-build','first compile refusal held')
+  p.require(native['phases']==[dict(label=f'baseline-{compiler}-{action}',exit=0) for compiler in ('194','188') for action in ('build','list','test','check','clippy')]+[dict(label='fd-194-build',exit=101)],'complete passing baselines before failed FD build')
+  messages=[json.loads(n) for n in (FIRST_BASE/'session/fd-194-build/stdout.log').read_bytes().splitlines()]
+  errors=[m['message'] for m in messages if m.get('reason')=='compiler-message' and m['message']['level']=='error']
+  p.require(sorted(m['code']['code'] for m in errors)==['E0282','E0282','E0599'] and 'build_message_stream' in errors[0]['message'],'exact absent API and cascading inference failures')
+ if ATTEMPT>=4:
+  passed=json.loads((ROOT/'target/dbus-linux-v3-20261028/session/native-result.json').read_bytes())
+  p.require(passed['passed'] and passed['source_unchanged'] and passed['boot_unchanged'],'first complete Unix suite retained')
+  for compiler in ('194','188'):
+   original=json.loads((ROOT/f'target/dbus-linux-v3-20261028/session/fd-{compiler}-test/result.json').read_bytes())
+   p.require(original['exit']==0 and original['accounting']['passed']==37,'complete prior Unix suite on both compilers')
+  p.require((ROOT/'tools/dbus-linux-074/unix_tests_v3.rs').read_bytes().startswith((ROOT/'tools/dbus-linux-074/unix_tests_v2.rs').read_bytes()),'append-only independent lifetime oracle')
+ dest=BASE/'input';dest.mkdir();prefix=ROOT.as_posix().encode()+b'/'
+ for variant in ('baseline','fd'):
+  for name in review['files']:
+   raw=(source/name).read_bytes();raw=raw.replace(prefix,(NATIVE+'/assets/').encode())
+   path=dest/variant/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(raw)
+  if variant=='fd':
+   with (dest/variant/'probe/src/lib.rs').open('ab') as f:
+    f.write(('\n#[cfg(all(test,unix))]\n#[path = '+json.dumps(NATIVE+'/assets/tools/dbus-linux-074/'+({1:'unix_tests.rs',2:'unix_tests_v2.rs',3:'unix_tests_v2.rs',4:'unix_tests_v3.rs',5:'unix_tests_v3.rs'}[ATTEMPT]))+']\nmod unix_transport;\n').encode())
+ if ATTEMPT==5:
+  refusal=json.loads((ROOT/'target/dbus-linux-v4-20261028/session/fd-194-test/result.json').read_bytes())
+  p.require(refusal['exit']==101 and refusal['accounting']['complete'] and refusal['accounting']['passed']==37 and refusal['accounting']['failed']==1,'first full raw-FD refusal held')
+  p.require([n for n,status in refusal['accounting']['executed'] if status=='FAILED']==[EXTRA_DROP],'only raw lifetime CLOEXEC control failed')
+  for variant in ('baseline','fd'):
+   leaf=dest/variant/'zbus/src/runtime/io/unix.rs';before=leaf.read_bytes();after=patch_recvmsg(before);leaf.write_bytes(after)
+  (out/'recvmsg-before.rs').write_bytes(before);(out/'recvmsg-after.rs').write_bytes(after)
+ overlay='tools/dbus-linux-074/'+({1:'unix_tests.rs',2:'unix_tests_v2.rs',3:'unix_tests_v2.rs',4:'unix_tests_v3.rs',5:'unix_tests_v3.rs'}[ATTEMPT])
+ for name,digest in {**review['overlays'],overlay:sha((ROOT/overlay).read_bytes())}.items():
+  raw=(ROOT/name).read_bytes();p.require(sha(raw)==digest,'asset drift');path=dest/'assets'/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(raw)
+ cache=Path.home()/'.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f';registry=[]
+ for item in tomllib.loads((source/'Cargo.lock').read_text(encoding='utf8'))['package']:
+  if 'source' not in item:continue
+  p.require(item['source']=='registry+https://github.com/rust-lang/crates.io-index','only locked registry')
+  name=item['name']+'-'+item['version'];raw=(cache/(name+'.crate')).read_bytes()
+  p.require(sha(raw)==item['checksum'],'exact primary archive: '+name)
+  path=dest/'archives'/(name+'.crate');path.parent.mkdir(exist_ok=True);path.write_bytes(raw)
+  registry.append(dict(name=name,sha256=item['checksum'],bytes=len(raw)))
+ for name,digest in PINS.items():p.require(sha((ROOT/name).read_bytes())==digest,'owned helper pin')
+ (dest/'cargo-home').mkdir();(dest/'cargo-home/config.toml').write_text('[source.crates-io]\nreplace-with = "hc074-locked"\n[source.hc074-locked]\ndirectory = '+json.dumps(NATIVE+'/vendor')+'\n',encoding='utf8',newline='\n')
+ write(out,'result.json',dict(native_root=NATIVE,files=files(dest),registry=registry,baseline=listing['inventory'],
+  extras=EXTRAS+([EXTRA_DROP] if ATTEMPT>=4 else []),helpers=PINS,root_inputs=review['root_inputs'],source_pins=review['source_pins'],
+  attempt=ATTEMPT,source_head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+  predecessor_index_sha256=sha(index_raw),reuse_passing_baseline=CORRECTED,leaf_patch_applied=ATTEMPT==5,root_changed=False,release_admitted=False))
+ print(json.dumps(dict(prepared=True,registry_archives=len(registry),native_root=NATIVE)))
+
+def native_command(attempt):
+ p.require(type(attempt) is int and attempt in (1,2,3,4,5),'fixed native selector')
+ return ['wsl.exe','-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B',
+  '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-linux-074/native.py',
+  {1:'session',2:'session-v2',3:'session-v3',4:'session-v4',5:'session-v5'}[attempt]]
+
+def launch(worker):
+ out=BASE/'session';argv=native_command(ATTEMPT)
+ review=json.loads(prepared().read_bytes())
+ def guard():
+  p.require(files(BASE/'input')==review['files'] and prior.parent.old.root_inputs()==review['root_inputs'],'held input/root')
+  prior.source_parts()
+ if worker:
+  guard()
+  def capacity():
+   if shutil.disk_usage(ROOT).free<p.FLOOR:raise prior.owned.CapacityError('original 4 GiB floor')
+  value=prior.owned._owned(prior.owned.load_job().WindowsJob(),argv,str(ROOT),capacity,bound=1200)
+  write(out,'execution.json',value);raise SystemExit(value['exit'])
+ out.mkdir(exist_ok=False);(out/'launcher.py').write_bytes(Path(__file__).read_bytes())
+ with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+  try:
+   guard();before=prior.snapshot();head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+   write(out,'intent.json',dict(argv=argv,source=before,head=head,bound=1200,capacity_poll=5,retirement=5,
+    prepare_sha256=sha(prepared().read_bytes()),server=False,services=False,clocks=False,retry=False))
+   child=subprocess.Popen([sys.executable,'-B',str(Path(__file__)),{1:'session',2:'session-v2',3:'session-v3',4:'session-v4',5:'session-v5'}[ATTEMPT],'--worker'],cwd=ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr)
+   code=child.wait(timeout=1210);guard()
+   p.require(before==prior.snapshot() and head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),'source/head postflight')
+   execution=json.loads((out/'execution.json').read_bytes());p.require(execution['retired'] and not execution['errors'],'Windows owned cleanup')
+   native=json.loads((out/'native-result.json').read_bytes())
+   p.require(code==0 and native['passed'] and native['source_unchanged'] and native['boot_unchanged'],'complete GNU session')
+   write(out,'result.json',dict(exit=code,unchanged=True,native_pass=True,release_admitted=False))
+  except BaseException as error:
+   write(out,'refusal.json',dict(type=type(error).__name__,reason=str(error),release_admitted=False));raise
+ print(json.dumps(dict(session_exit=code,native_pass=True)))
+
+if __name__=='__main__':
+ p.require(len(sys.argv) in (2,3) and (len(sys.argv)==2 or sys.argv[2]=='--worker'),'fixed invocation')
+ label=sys.argv[1]
+ if label in ('prepare-v2','session-v2','prepare-v3','session-v3','prepare-v4','session-v4','prepare-v5','session-v5'):
+  ATTEMPT={'v2':2,'v3':3,'v4':4,'v5':5}[label.rsplit('-',1)[1]];CORRECTED=True
+  BASE=ROOT/{2:'target/dbus-linux-v2-20261028',3:'target/dbus-linux-v3-20261028',4:'target/dbus-linux-v4-20261028',5:'target/dbus-linux-v5-20261028'}[ATTEMPT]
+  NATIVE={2:'/home/artur/.cache/hydracache-074-dbus-linux/20261028-a2',3:'/home/artur/.cache/hydracache-074-dbus-linux/20261028-a3',4:'/home/artur/.cache/hydracache-074-dbus-linux/20261028-a4',5:'/home/artur/.cache/hydracache-074-dbus-linux/20261028-a5'}[ATTEMPT]
+  label=label.rsplit('-',1)[0]
+ if label=='prepare':p.require(len(sys.argv)==2,'inert prepare');prepare()
+ elif label=='session':launch(len(sys.argv)==3)
+ else:raise ValueError('fixed prepare/session only')
