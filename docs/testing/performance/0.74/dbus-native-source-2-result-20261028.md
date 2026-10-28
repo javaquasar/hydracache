@@ -27,7 +27,7 @@ names, stale preimages and changed objects/inventories/archive identities refuse
 | Archive | SHA-256 |
 | --- | --- |
 | zbus 6.1.0 local native source 2 | `f7b72098a9c8ae25801f71c0f4f3f9f0b3a6c4a826c031a3177ef424c4924c7f` |
-| zbus_macros 6.0.0 local source | `0485f3fa2b311beb0ba6e2ce5080c7ab9dfee515a70ebd151fb897fe61cdecfe` |
+| zbus_macros 6.1.0 local source | `0485f3fa2b311beb0ba6e2ce5080c7ab9dfee515a70ebd151fb897fe61cdecfe` |
 | zbus_utils 6.0.0 local source | `be51fb124bbc2da01473d4d56da44911ac3df321042867cfd5e869ee087c312c` |
 
 Compared with the previous reconstructed source, only four zbus members change:
