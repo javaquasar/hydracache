@@ -147,6 +147,6 @@ tower = { version = "0.5", features = ["util"] }
 trybuild = "1"
 proptest = "1"
 utoipa = "5"
-utoipa-swagger-ui = { version = "9", features = ["axum"] }
+utoipa-swagger-ui = { version = "10.0.2", default-features = false, features = ["axum", "vendored"] }
 wasm-bindgen = "0.2.122"
 wasm-bindgen-test = "0.3"
