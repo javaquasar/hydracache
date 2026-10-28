@@ -18,6 +18,8 @@ class Controls(unittest.TestCase):
                            b'"GetNameOwner"', b'METHOD_TIMEOUT', b'OPERATION_TIMEOUT'):
                 self.assertEqual(current.count(marker), original.count(marker), (name, marker))
             self.assertNotIn(b'zbus::blocking', current)
+            self.assertNotIn(b'use zbus::wire::OwnedValue;', current)
+            self.assertNotIn(b'::{OwnedObjectPath, Value};', current)
 
     def test_stale_whole_body_cannot_be_projected(self):
         for name in p.NAMES:

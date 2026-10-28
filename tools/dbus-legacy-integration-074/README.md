@@ -22,3 +22,7 @@ Run `prepare.py prepare`, then inert controls and `run.py` for the fixed GNU 1.9
 1.88 library check/strict Clippy command. Full test-image execution and production
 dependency/security adoption are separate gates. No manager, service, clock,
 server or product load is invoked. Outputs are exclusive; preserve first failures.
+
+The owner-bound/a2 first check's two wire import errors remain intact. The
+current api-bound/a3 preparation changes those two aliases only; its actual
+GNU/MSRV results are separate from that first refused source.

@@ -36,3 +36,11 @@ the first result of every command and never extend deadlines or retry unchanged
 input. Compilation does not execute a manager, bus, service, clock, server or
 product workload. Full unit execution and dependency-policy adoption follow
 separately after actual source compatibility, not from this plan alone.
+
+The first actual owner-bound GNU 1.94 check refuses two wire import spellings:
+single OwnedValue and grouped Value are now OwnedVariant/Variant. Original
+source/boot postflight and both CI retirement layers pass; no tests ran and
+MSRV/Clippy remain unstarted for that source. A distinct api-bound/native-a3
+context changes exactly those two import aliases, keeps every function/test and
+complete lock, and adds refusal controls. It does not repeat the consumed source
+or relabel its failed check.
