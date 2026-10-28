@@ -85,3 +85,24 @@ the same transport sources; only vendor paths relocate. Paired original library
 check/strict Clippy and the exact preserved 64-case/test-cfg gate follow under
 unchanged CI bounds. Native private-bus/FD/peer faults and source reconstruction
 remain subsequent gates. No numerical claim, MSRV change or deny exception.
+
+The first c compile envelope refuses at its original physical 4 GiB floor:
+exit 125, retired=true, CapacityError retained, no native verdict or compiler
+phase recorded. The inherited outer error label says retirement, but the raw
+receipt proves successful retirement and the actual resource refusal. Nothing
+is synthesized as a native result or replayed from the consumed output path.
+
+Cleanup initially aborts while another Windows compiler is active; read-only
+scope observations identify a 0.75 target. Its processes/files are untouched.
+Only after a fresh census finds no Cargo/rustc/rustdoc do we remove 6,135 obsolete
+0.74 .rlib/.rmeta files dated before 2026-10-27, totaling 15,034,771,967 logical
+bytes. Source/evidence/executables/current GNU images and 0.75 are preserved.
+Free space is 18,111,078,400 bytes at cleanup completion and later independently
+29,314,158,592 bytes; the extra change is not assigned to that deletion.
+
+A distinct r/native-a3 resource-repaired context preserves that first refusal and
+all code/lock inputs, relocating only two vendor paths. Two controls verify no
+other source change and no invented native verdict. Additional initial headroom
+of 16 GiB is required before dispatch; the existing running 4 GiB floor,
+1200/1100-second bounds, five-second polling/retirement and live limits stay exact.
+No VHD compaction, settings, clocks, service change or foreign-process stop.

@@ -49,3 +49,11 @@ accepted lock; `compile_run.py` uses the original paired GNU/MSRV library owner.
 The exact already-qualified 64-case unit coordinator is source-pinned and only
 relocated by `unit_native.py`/`unit_run.py`. Their additional units-inputs receipt
 is separate. All real compile/runtime/source/policy gates still need verdicts.
+
+The first c command consumes its output at the unchanged 4 GiB physical floor,
+with successful retirement and no native/compiler verdict. After scoped obsolete
+0.74 cache cleanup, `capacity_prepare.py prepare` creates the new r/native-a3
+context, changing only vendor paths. It requires additional initial headroom;
+all existing runtime/CI bounds and floors stay unchanged. `capacity_run.py` and
+`capacity_unit_run.py` use the same original owners. No old receipt is deleted,
+no absent result is invented and the consumed c command is not rerun.
