@@ -1,0 +1,26 @@
+{
+  "accounting": {
+    "complete": true,
+    "executed": [
+      [
+        "delta::mtu_review::supported_delta_operations",
+        "ok"
+      ]
+    ],
+    "failed": 0,
+    "filtered": 108,
+    "passed": 1,
+    "release_admitted": false,
+    "selected": 1,
+    "test_pass": true
+  },
+  "artifact": {
+    "bytes": 4286976,
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-preview-cost-20261028\\targets\\C0\\5dbda73be81b1d3d9fe84154f31507708f9f30e01a7174a2a4a7b9fb9b920951\\release\\deps\\chitchat-4dcd550cab6a178d.exe",
+    "sha256": "6681015aa6aaeb24133fdf95f2bc27feba77222dcd289134a74132fd8856569b"
+  },
+  "exit": 0,
+  "original_semantics_equal": true,
+  "release_admitted": false,
+  "unchanged": true
+}

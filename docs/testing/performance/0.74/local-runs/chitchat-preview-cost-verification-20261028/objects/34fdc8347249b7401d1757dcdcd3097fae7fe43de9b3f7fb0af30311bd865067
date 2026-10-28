@@ -1,0 +1,36 @@
+from pathlib import Path
+import hashlib,json,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-preview-cost-final-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-preview-cost-verification-20261028'
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir()
+sha=lambda raw:hashlib.sha256(raw).hexdigest()
+members={}
+def add(name,path):
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members
+ members[name]=dict(sha256=digest,bytes=len(raw))
+for mode in ('verify','controls','format','doc-check'):
+ result=json.loads((BASE/mode/'result.json').read_bytes())
+ assert result['exit']==0 and result['inputs_unchanged']
+ for path in sorted((BASE/mode).iterdir()):
+  if path.is_file():add('capture/'+path.relative_to(BASE).as_posix(),path)
+for name in ('docs/testing/performance/0.74/chitchat-preview-cost-result-20261028.md',
+ 'docs/testing/performance/0.74/chitchat-backport-result-20261028.md',
+ 'docs/testing/performance/0.74/README.md','docs/testing/performance/0.74/release-closure-execution-plan-20261026.md',
+ 'docs/articles/007-optimization-starts-with-measurement.md',
+ 'target/preview-final-checks-20261028.py','target/retain-preview-final-20261028.py'):
+ add('source/'+name,ROOT/name)
+index=dict(schema='hc074-preview-cost-verification-v1',members=members,
+ source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ primary_index_sha256='51b3a9de6e09754d617e4a036837b5ef1cbcb4dbbfa01c257a32b3252239a8ab',
+ byte_verifier_executed_archived_code=False,doc_check=True,python_controls_passed=4,
+ formatting=True,root_gate_replayed=False,release_admitted=False)
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf-8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf-8',newline='\n')
+for row in members.values():
+ raw=(OUT/'objects'/row['sha256']).read_bytes()
+ assert sha(raw)==row['sha256'] and len(raw)==row['bytes']
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

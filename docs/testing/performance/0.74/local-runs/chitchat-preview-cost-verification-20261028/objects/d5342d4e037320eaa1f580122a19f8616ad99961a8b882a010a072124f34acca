@@ -1,0 +1,12 @@
+{
+  "accepted_changes": 23,
+  "admission_and_wire_equal": true,
+  "allocation_changes": 71,
+  "archived_code_executed": false,
+  "byte_verification_only": true,
+  "exit": 0,
+  "inputs_unchanged": true,
+  "objects_verified": 90,
+  "rejected_changes": 48,
+  "release_admitted": false
+}

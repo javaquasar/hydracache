@@ -1,0 +1,85 @@
+from pathlib import Path
+import hashlib,json,os,shutil,subprocess,sys
+ROOT=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(ROOT/'tools/chitchat-preview-cost-074'))
+import run as r
+mode=sys.argv[1]
+assert mode in ('verify','controls','format','doc-check')
+BASE=ROOT/'target/chitchat-preview-cost-final-20261028'
+OUT=BASE/mode
+docs=('docs/testing/performance/0.74/chitchat-preview-cost-result-20261028.md',
+ 'docs/testing/performance/0.74/chitchat-backport-result-20261028.md',
+ 'docs/testing/performance/0.74/README.md','docs/testing/performance/0.74/release-closure-execution-plan-20261026.md',
+ 'docs/articles/007-optimization-starts-with-measurement.md')
+sha=r.sha
+argv={'controls':[sys.executable,'-B','-m','unittest','discover','-s','tools/chitchat-preview-cost-074','-p','test_review.py','-v'],
+ 'format':['rustfmt','+1.94.0','--edition','2024','--check','tools/chitchat-preview-cost-074/cost_tests.rs'],
+ 'doc-check':[str(ROOT/'target/debug/xtask.exe'),'doc-check']}.get(mode)
+if len(sys.argv)==3:
+ assert sys.argv[2]=='--worker' and argv
+ def capacity():
+  if shutil.disk_usage(ROOT).free<r.p.FLOOR:raise r.owned.CapacityError('original 4 GiB floor')
+ result=r.owned._owned(r.owned.load_job().WindowsJob(),argv,str(ROOT),capacity,bound=1200)
+ r.write(OUT,'execution.json',result);raise SystemExit(result['exit'])
+OUT.mkdir(parents=True,exist_ok=False)
+(OUT/'producer.py').write_bytes(Path(__file__).read_bytes())
+with (OUT/'stdout.log').open('xb') as stdout,(OUT/'stderr.log').open('xb') as stderr:
+ try:
+  before=dict(source=r.snapshot(),documents={n:sha((ROOT/n).read_bytes()) for n in docs},
+    head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip())
+  if mode=='doc-check':before['executable_sha256']=sha(Path(argv[0]).read_bytes())
+  r.write(OUT,'intent.json',dict(argv=argv,inputs=before,bound=1200,floor=r.p.FLOOR,capacity_poll=5,retirement=5,retry=False))
+  if mode=='verify':
+   packet=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-preview-cost-20261028'
+   raw=(packet/'index.json').read_bytes()
+   assert sha(raw)=='51b3a9de6e09754d617e4a036837b5ef1cbcb4dbbfa01c257a32b3252239a8ab'
+   index=json.loads(raw);members=index['members']
+   assert len(members)==162
+   for row in members.values():
+    path=packet/'objects'/row['sha256'];data=path.read_bytes()
+    assert len(data)==row['bytes'] and sha(data)==row['sha256']
+   def get(name):return (packet/'objects'/members[name]['sha256']).read_bytes()
+   def payload(raw,marker):
+    rows=[line[len(marker):] for line in raw.splitlines() if line.startswith(marker)]
+    assert len(rows)==1
+    return json.loads(rows[0])
+   observations=[]
+   for trial in range(1,5):
+    result=json.loads(get(f'capture/cohort-{trial}/result.json'))
+    assert result['exit']==0 and result['original_semantics_equal'] and result['accounting']['passed']==3
+    raw=get(f'capture/cohort-{trial}/stdout.log')
+    rows=payload(raw,b'HC074_PREVIEW_ALLOC:')['rows']
+    assert len(rows)==239 and len({(v['mtu'],v['value_len']) for v in rows})==239
+    assert all(v['records'][0]==v['records'][1] for v in rows)
+    assert all(q['bound_counts']['live']==q['complete_counts']['live']==0 for v in rows for q in v['records'])
+    observations.append(rows)
+   assert observations[0]==observations[3] and observations[1]==observations[2]
+   changed=[]
+   for a,b in zip(observations[0],observations[1]):
+    assert all(a[k]==b[k] for k in ('mtu','value_len','accepted','wire'))
+    if a['records']!=b['records']:changed.append(b)
+   assert len(changed)==71 and sum(v['accepted'] for v in changed)==23
+   assert sum(not v['accepted'] for v in changed)==48
+   result=dict(exit=0,objects_verified=len(set(v['sha256'] for v in members.values())),
+    admission_and_wire_equal=True,allocation_changes=71,accepted_changes=23,rejected_changes=48,
+    byte_verification_only=True,archived_code_executed=False)
+   stdout.write(json.dumps(result).encode()+b'\n')
+  else:
+   process=subprocess.Popen([sys.executable,'-B',str(Path(__file__)),mode,'--worker'],cwd=ROOT,
+    stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,env=dict(os.environ,CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2'))
+   try:code=process.wait(timeout=1210)
+   except subprocess.TimeoutExpired:
+    process.kill();process.wait(timeout=5);raise ValueError('worker lost; no PID fallback')
+   execution=json.loads((OUT/'execution.json').read_bytes())
+   assert execution['retired'] and not execution['errors']
+   result=dict(exit=code)
+  assert before['source']==r.snapshot()
+  assert all(sha((ROOT/n).read_bytes())==v for n,v in before['documents'].items())
+  assert before['head']==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+  if mode=='doc-check':assert before['executable_sha256']==sha(Path(argv[0]).read_bytes())
+  result.update(inputs_unchanged=True,release_admitted=False)
+  r.write(OUT,'result.json',result)
+ except BaseException as error:
+  r.write(OUT,'refusal.json',dict(type=type(error).__name__,reason=str(error),release_admitted=False));raise
+print(json.dumps(dict(mode=mode,**result)))
+raise SystemExit(result['exit'])

@@ -1,0 +1,13 @@
+--- S/src/serialize.rs
++++ C1/src/serialize.rs
+@@ -688,3 +688,10 @@
+ #[cfg(test)]
+ #[path = "C:/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-mtu-review-074/stream_tests.rs"]
+ mod mtu_review;
++
++#[cfg(test)]
++impl CompressedStreamWriter {
++    pub(crate) fn cost_inventory(&self) -> ([usize; 3], usize) {
++        ([self.output.len(), self.uncompressed_block.len(), self.compressed_block.len()], self.block_threshold)
++    }
++}

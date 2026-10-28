@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [first matched preview attribution](chitchat-preview-cost-result-20261028.md)
+finds additional Rust allocations on 71/239 cases (23 accepted, 48 rejected),
+with identical repeated allocation records and original admission/wire. The S
+source patches remain archived but are declined for integration. Coarse CPU
+samples and mixed wall results are retained without an improvement claim.
+Both optimized images pass exact native accounting, check and strict Clippy;
+root dependencies and all release/server gates remain unchanged.
+
 The [local Chitchat backport preparation](chitchat-backport-result-20261028.md)
 now preserves exact baseline admission/wire behavior across 239 supported cases
 while fixing the 37-stream bound contract and passing the original wide gate.

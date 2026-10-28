@@ -117,6 +117,13 @@ checkout equality for the three new libraries is observed in postflight only.
 
 ## Still required before adoption
 
+Subsequent [matched cost attribution](chitchat-preview-cost-result-20261028.md)
+now declines S integration: preview adds repeatable Rust allocation work in 71
+of 239 cases, including 48 rejected operations. The source-only patch stack and
+all prior green functional results remain archived; product adoption has not
+occurred. The paragraph below records the original unmeasured boundary at the
+time this preparation was completed, not the current allocation verdict.
+
 The preview adds allocation/copy/compression on large-item paths, including some
 operations ultimately rejected for MTU. Its CPU/allocation/retained-memory cost
 has not been attributed. Native non-regression cannot be inferred from functional

@@ -1,0 +1,44 @@
+--- S/src/serialize.rs
++++ C0/src/serialize.rs
+@@ -341,27 +341,9 @@
+         let new_block_needed =
+             self.uncompressed_block.len() + new_item_serialized_len > self.block_threshold;
+         if new_block_needed {
+-            let previous_bound = BLOCK_META_LEN
+-                + self.output.len()
+-                + self.uncompressed_block.len()
+-                + BLOCK_META_LEN
+-                + new_item_serialized_len
+-                + 1;
+-            if new_item_serialized_len > u16::MAX as usize
+-                || self.uncompressed_block.len() + new_item_serialized_len
+-                    <= self.block_threshold * 2
+-            {
+-                previous_bound
+-            } else {
+-                assert!(self.block_threshold > 0, "positive block threshold");
+-                // Internal Serializable implementations emit stable owned data.
+-                // Keep old admission when its estimate already bounds the frame;
+-                // otherwise account for every additional block. No original
+-                // writer/builder state is changed by this local preview.
+-                let mut preview = self.clone();
+-                preview.append(item);
+-                previous_bound.max(preview.finish().len())
+-            }
++            BLOCK_META_LEN + self.output.len() + self.uncompressed_block.len() + // current block
++                BLOCK_META_LEN + new_item_serialized_len // new block
++                + 1 // No more blocks tag.
+         } else {
+             BLOCK_META_LEN + self.output.len() + self.uncompressed_block.len() + new_item_serialized_len // current block
+                 + 1 // No more blocks tag.
+@@ -688,3 +670,10 @@
+ #[cfg(test)]
+ #[path = "C:/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-mtu-review-074/stream_tests.rs"]
+ mod mtu_review;
++
++#[cfg(test)]
++impl CompressedStreamWriter {
++    pub(crate) fn cost_inventory(&self) -> ([usize; 3], usize) {
++        ([self.output.len(), self.uncompressed_block.len(), self.compressed_block.len()], self.block_threshold)
++    }
++}

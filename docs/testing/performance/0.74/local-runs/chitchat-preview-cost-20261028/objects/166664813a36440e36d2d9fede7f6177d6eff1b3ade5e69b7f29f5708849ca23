@@ -1,0 +1,48 @@
+from pathlib import Path
+import hashlib,json,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-preview-cost-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-preview-cost-20261028'
+sha=lambda raw:hashlib.sha256(raw).hexdigest()
+analysis=json.loads((BASE/'analysis/result.json').read_bytes())
+assert analysis['allocation_changed_cases']==71 and analysis['preview_cases']==71
+assert analysis['original_semantics_preserved'] and analysis['allocation_records_repeat_exactly']
+for variant in ('C0','C1'):
+ for action in ('build','list','control','delta','check','clippy'):
+  folder=BASE/(action+'-'+variant)
+  result=json.loads((folder/'result.json').read_bytes())
+  execution=json.loads((folder/'execution.json').read_bytes())
+  assert result['exit']==0 and result['unchanged'] and execution['retired'] and not execution['errors']
+ artifact=json.loads((BASE/('build-'+variant)/'result.json').read_bytes())['artifact']
+ assert sha(Path(artifact['path']).read_bytes())==artifact['sha256']
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members
+ members[name]=dict(sha256=digest,bytes=len(raw))
+for top in sorted(BASE.iterdir()):
+ if top.name=='targets':continue
+ for path in ([top] if top.is_file() else sorted(top.rglob('*'))):
+  if path.is_file():add('capture/'+path.relative_to(BASE).as_posix(),path)
+for path in sorted((ROOT/'tools/chitchat-preview-cost-074').rglob('*')):
+ if path.is_file() and '__pycache__' not in path.parts:add('source/'+path.relative_to(ROOT).as_posix(),path)
+for name in ('target/analyze-preview-cost-20261028.py','target/seal-preview-cost-20261028.py',
+ 'tools/windows-workspace-preflight-074/owned.py','scripts/ci/watchdog_windows_job.py',
+ 'tools/chitchat-mtu-review-074/accounting.py','Cargo.lock','Cargo.toml','deny.toml',
+ 'docs/testing/performance/0.74/qualification-manifest.toml'):
+ add('source/'+name,ROOT/name)
+prior=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-mtu-backport-20261028/index.json'
+assert sha(prior.read_bytes())=='d6fc98b961530fdc3b879018521500c80d65094e7f160263b7318fa8870d5dfe'
+add('predecessor/index.json',prior)
+index=dict(schema='hc074-preview-cost-packet-v1',members=members,
+ source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ predecessor_index_sha256=sha(prior.read_bytes()),cohort_order=['C0','C1','C1','C0'],
+ first_results_preserved=True,root_dependencies_changed=False,server=False,services=False,clocks=False,
+ source_preview_integration_accepted=False,performance_claim=False,release_admitted=False,
+ native_retained_memory_qualified=False,clean_cpu_attributed=False,physical_copies_measured=False)
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf-8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf-8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

@@ -417,6 +417,16 @@ then GNU/integration/distribution and D-Bus gates before the final complete
 package/workspace milestone. The newly exposed LRU advisory is tracked despite
 the original product policy's narrower unsound-advisory scope.
 
+The [first matched preview attribution](chitchat-preview-cost-result-20261028.md)
+now declines S dependency integration. Identical S graphs with/without preview
+retain original admission/wire in all 239 cases, but preview adds Rust allocations
+in 71 cases, including 48 rejected operations. Repeated allocation records match
+exactly; first coarse CPU and mixed wall samples are retained without ratios or
+a performance claim. Both optimized images pass complete catalog/accounting,
+check and strict Clippy. Source patches remain archived; no product dependency
+was adopted or reverted. GNU/consumer/distribution, D-Bus and the actual final
+package/workspace gates remain open; no new optimization hypothesis is opened.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

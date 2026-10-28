@@ -21932,3 +21932,49 @@ rejected requests. That cost has not been attributed. The next step must compare
 matched dependency graphs and supported semantics before adopting the source;
 functional compatibility cannot stand in for native non-regression. Original
 live checks, time origins and release budgets remain unchanged throughout.
+
+The subsequent [preview cost experiment](../testing/performance/0.74/chitchat-preview-cost-result-20261028.md)
+answers that allocation question without mixing dependency upgrades into the
+comparison. Both optimized images use the same new Zstd/LRU graph. One restores
+only the original bound method as a counterfactual; the other retains preview.
+The counterfactual still has the known underestimate and cannot be accepted as
+a security repair. Original admission decisions and exact wire bytes agree on
+all 239 supported inputs before the fixed four-process C0,C1,C1,C0 cohort.
+
+Preview adds Rust allocation work in 71 cases, including 48 operations that
+ultimately reject on MTU. Two observations per case in each of two processes
+produce identical allocation records. A rejected 4 KiB value at MTU 100 changes
+the prediction from no allocation to 129 allocs and ten reallocs, with 29,041
+cumulative requested bytes. Whole-operation allocation count moves from 19 to
+148, even though its peak requested Rust memory stays unchanged at 66,055 bytes.
+The temporary compression/copy work occurs and is freed before a different
+phase reaches that peak. A stable end balance or peak alone would have concealed
+the added churn.
+
+The accepted large inputs also allocate more: a 65,447-byte value at MTU 65,507
+adds three allocs and six reallocs in prediction, requesting 308,620 bytes over
+its lifetime. The initial writer's cloned vector payload is only 38 bytes.
+Most work follows the clone: serializing the new operation, allocating/growing
+buffers, compressing blocks and draining the front. Source-derived vector sizes
+are not measured memcpy traffic; Rust allocator counts do not include Zstd's C
+allocator, RSS or retained native memory. Zero live requested bytes at region
+exit establishes only that the measured Rust allocations are balanced.
+
+The timing samples also show why a simple success narrative would be misleading.
+Rejected 4 KiB operations at MTU 100 take roughly 108–111 microseconds in the
+preview image versus 4.8 in the counterfactual, while the large accepted cases
+have shorter wall samples with preview in this cohort. Both observations are
+retained. Thread CPU values are quantized in 15.625 ms steps, despite the API's
+100 ns unit, and the disabled allocator counter still leaves TLS checks in both
+images. A small fixed-order instrumented cohort cannot establish clean CPU
+ratios or a throughput win on accepted input. No resampling is used to make the
+data easier to explain.
+
+The integration decision is therefore negative for this preview candidate:
+functional compatibility is preserved in the finite matrix, but reproducible
+allocation amplification and expensive rejected requests prevent its adoption.
+The portable source patches, all first failures, four raw runs and analysis stay
+in the repository; the product graph remains unchanged. This rejects the tested
+candidate, not the need to repair the bound or update vulnerable dependencies.
+The separate D-Bus repair, compatible dependency distribution, GNU/consumer and
+final package gates remain work to complete under the original release contract.
