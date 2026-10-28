@@ -177,3 +177,41 @@ fn cli_rejects_ambiguous_modes_and_false_lane_identity_before_running_work() {
         }
     }
 }
+
+#[test]
+fn windows_tooling_uses_an_isolated_child_target_without_changing_linux_arguments() {
+    let root = root();
+    let isolated = root.join("target/imap-075/tooling");
+    for windows in [false, true] {
+        let command = tooling_command(&root, windows);
+        assert_eq!(command.get_program(), "cargo");
+        assert_eq!(command.get_current_dir(), Some(root.as_path()));
+        assert_eq!(
+            command
+                .get_args()
+                .map(|arg| arg.to_str().unwrap())
+                .collect::<Vec<_>>(),
+            [
+                "test",
+                "-p",
+                "xtask",
+                "--test",
+                "imap_contract_075",
+                "--test",
+                "imap_capability_audit_075",
+                "--test",
+                "imap_migration_dry_run_075",
+                "--test",
+                "imap_qualification_075",
+                "--test",
+                "imap_ci_075",
+                "--locked",
+            ]
+        );
+        let child_target = command
+            .get_envs()
+            .find(|(name, _)| name == &"CARGO_TARGET_DIR")
+            .map(|(_, value)| value);
+        assert_eq!(child_target, windows.then_some(Some(isolated.as_os_str())));
+    }
+}

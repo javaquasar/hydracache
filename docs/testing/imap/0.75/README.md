@@ -138,6 +138,7 @@ proof/tooling execution with unchanged clean source. The aggregate gate rejects 
 mixed-source or undeclared lanes. Failure diagnostics are kept separately from matrix receipts.
 Scheduled/default-branch execution and remote matrix results remain separate from local tests of
 the workflow contract.
+On Windows, nested tooling tests build in `target/imap-075/tooling` to avoid replacing the running `xtask.exe`.
 
 The comparison contract validates identical backup, persistence, TLS, TTL, previous-value, retry
 and listener semantics, paired-run floors, balanced order and retention of negative results.

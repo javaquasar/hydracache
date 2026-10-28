@@ -107,25 +107,7 @@ pub fn run_lane(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     crate::imap_migration_dry_run::run(vec!["--release".into(), "0.75".into()])?;
     crate::imap_qualification_075::comparison_run(vec!["--release".into(), "0.75".into()])?;
     crate::imap_qualification_075::release_run(vec!["--release".into(), "0.75".into()])?;
-    let tooling = Command::new("cargo")
-        .args([
-            "test",
-            "-p",
-            "xtask",
-            "--test",
-            "imap_contract_075",
-            "--test",
-            "imap_capability_audit_075",
-            "--test",
-            "imap_migration_dry_run_075",
-            "--test",
-            "imap_qualification_075",
-            "--test",
-            "imap_ci_075",
-            "--locked",
-        ])
-        .current_dir(&root)
-        .status()?;
+    let tooling = tooling_command(&root, cfg!(windows)).status()?;
     if !tooling.success() {
         return Err("IMap tooling canaries failed".into());
     }
@@ -160,6 +142,34 @@ pub fn run_lane(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     )?;
     println!("imap-ci-run 0.75: OK (exact-source local receipt; not ship admission)");
     Ok(())
+}
+
+/// Build the tooling gate without replacing this process's executable on Windows.
+#[doc(hidden)]
+pub fn tooling_command(root: &Path, windows: bool) -> Command {
+    let mut command = Command::new("cargo");
+    command
+        .args([
+            "test",
+            "-p",
+            "xtask",
+            "--test",
+            "imap_contract_075",
+            "--test",
+            "imap_capability_audit_075",
+            "--test",
+            "imap_migration_dry_run_075",
+            "--test",
+            "imap_qualification_075",
+            "--test",
+            "imap_ci_075",
+            "--locked",
+        ])
+        .current_dir(root);
+    if windows {
+        command.env("CARGO_TARGET_DIR", root.join("target/imap-075/tooling"));
+    }
+    command
 }
 
 struct Options {
