@@ -1,0 +1,46 @@
+{
+  "expected_host": {
+    "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "clock_services": "MainPID=804\nId=systemd-timesyncd.service\nLoadState=loaded\nActiveState=active\n\nMainPID=0\nId=chrony.service\nLoadState=not-found\nActiveState=inactive\n\nMainPID=0\nId=ntp.service\nLoadState=not-found\nActiveState=inactive",
+    "host_mounts": "24 30 0:22 / /sys rw,nosuid,nodev,noexec,relatime shared:7 - sysfs sysfs rw\n25 30 0:23 / /proc rw,relatime shared:13 - proc proc rw\n26 30 0:5 / /dev rw,nosuid,relatime shared:2 - devtmpfs udev rw,size=32384328k,nr_inodes=8096082,mode=755,inode64\n27 26 0:24 / /dev/pts rw,nosuid,noexec,relatime shared:3 - devpts devpts rw,gid=5,mode=620,ptmxmode=000\n28 30 0:25 / /run rw,nosuid,nodev,noexec,relatime shared:5 - tmpfs tmpfs rw,size=6493212k,mode=755,inode64\n29 24 0:26 / /sys/firmware/efi/efivars rw,nosuid,nodev,noexec,relatime shared:8 - efivarfs efivarfs rw\n30 1 9:2 / / rw,relatime shared:1 - ext4 /dev/md2 rw\n31 24 0:6 / /sys/kernel/security rw,nosuid,nodev,noexec,relatime shared:9 - securityfs securityfs rw\n32 26 0:27 / /dev/shm rw,nosuid,nodev shared:4 - tmpfs tmpfs rw,inode64\n33 28 0:28 / /run/lock rw,nosuid,nodev,noexec,relatime shared:6 - tmpfs tmpfs rw,size=5120k,inode64\n34 24 0:29 / /sys/fs/cgroup rw,nosuid,nodev,noexec,relatime shared:10 - cgroup2 cgroup2 rw,nsdelegate,memory_recursiveprot\n35 24 0:30 / /sys/fs/pstore rw,nosuid,nodev,noexec,relatime shared:11 - pstore pstore rw\n36 24 0:31 / /sys/fs/bpf rw,nosuid,nodev,noexec,relatime shared:12 - bpf bpf rw,mode=700\n37 25 0:32 / /proc/sys/fs/binfmt_misc rw,relatime shared:14 - autofs systemd-1 rw,fd=32,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=1937\n38 26 0:20 / /dev/mqueue rw,nosuid,nodev,noexec,relatime shared:15 - mqueue mqueue rw\n39 24 0:7 / /sys/kernel/debug rw,nosuid,nodev,noexec,relatime shared:16 - debugfs debugfs rw\n40 24 0:12 / /sys/kernel/tracing rw,nosuid,nodev,noexec,relatime shared:17 - tracefs tracefs rw\n41 26 0:33 / /dev/hugepages rw,nosuid,nodev,relatime shared:18 - hugetlbfs hugetlbfs rw,pagesize=2M\n42 24 0:34 / /sys/fs/fuse/connections rw,nosuid,nodev,noexec,relatime shared:19 - fusectl fusectl rw\n43 24 0:21 / /sys/kernel/config rw,nosuid,nodev,noexec,relatime shared:20 - configfs configfs rw\n45 30 9:1 / /boot rw,relatime shared:30 - ext3 /dev/md1 rw\n47 45 259:2 / /boot/efi rw,relatime shared:46 - vfat /dev/nvme1n1p1 rw,fmask=0077,dmask=0077,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro\n49 37 0:35 / /proc/sys/fs/binfmt_misc rw,nosuid,nodev,noexec,relatime shared:48 - binfmt_misc binfmt_misc rw\n309 28 0:45 / /run/user/1001 rw,nosuid,nodev,relatime shared:185 - tmpfs tmpfs rw,size=6493212k,nr_inodes=1623303,mode=700,uid=1001,gid=1001,inode64\n54 28 0:47 / /run/user/1000 rw,nosuid,nodev,relatime shared:186 - tmpfs tmpfs rw,size=6493212k,nr_inodes=1623303,mode=700,uid=1000,gid=1000,inode64\n",
+    "host_namespaces": {
+      "mnt": "mnt:[4026531841]",
+      "user": "user:[4026531837]"
+    },
+    "kernel": "6.8.0-138-generic",
+    "manager": "systemd 255 (255.4-1ubuntu8.17)",
+    "protected": {
+      "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074": "f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62",
+      "/var/lib/hydracache-performance/provisioning-receipt-074.json": "b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525"
+    },
+    "supervisor": {
+      "ActiveState": "active",
+      "InvocationID": "4aeadf5db20f45688cd92408f3c42abf",
+      "MainPID": "377415",
+      "NRestarts": "0",
+      "SubState": "running"
+    }
+  },
+  "files": {
+    "bundle/Cargo.lock.observer": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+    "bundle/Cargo.lock.root": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+    "bundle/build-log.jsonl": "8a2a495348bd317f7a2092a622838fc489bdcf077f4a8269210b2b78381b3c58",
+    "bundle/build-receipt-v1.json": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7",
+    "bundle/direct.json": "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9",
+    "bundle/embedded.json": "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149",
+    "bundle/resp2.json": "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae",
+    "bundle/resp3.json": "b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7",
+    "bundle/timing-controls-074": "bda1c094f3de7c6d42ec45c757838c7a41a8ff1d63a025c661af84455169a101",
+    "group.py": "e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691",
+    "libtest": "d25675c71977c4dc48d4cbdf2973081f5d37189c4339e7de5465f571e2ad94c7",
+    "owned_function.py": "b4e2e304943cfa78f7ab8567b83bd1da83ab5958b3748cda79a50f76bb4f8996",
+    "remote.py": "07189e5090ee26b610d5da95df436aef42933f2ac993bd2701817e3799559e92",
+    "source/build-receipt.json": "0954658006a3b72ebfc17a3193c2939b9c6a8e5a1d1ff5e0fc1b2f1b734fd1f7",
+    "source/consuming_held_cost.rs": "0e9d2b46c47585047fd29767010ead5c732ee6ad1a386c612525a0e766bea08e",
+    "source/consuming_held_live.rs": "63e25a6eef90f127a92aad044b68c1137b921cd07d17578d55942d43d35d94d0",
+    "source/consuming_held_live_namespace.rs": "708cbe8ae79244158f6ffdfa536dae9e846d0198e2baddedb6d54201f215dcd5",
+    "source/held_original_service_live.rs": "e1a951731d4ba55aa7ac5c9b8a0f9699c5fc1763b2162d5899ef5f498a0103a1",
+    "source/owned-source.py": "e7c5a3c0c4fea90f39772512c4ad96c60693fc0b482092a608dcf039e151eade",
+    "source/source-freeze.json": "d214b8610972669825113cb03b6098e61d81804702d48eb22a55cc413a0af30f"
+  }
+}

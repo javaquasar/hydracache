@@ -1,0 +1,22 @@
+set -eu
+test "$(id -u):$(id -g)" = 0:0
+umask 077
+upload=/tmp/hc074-preparation-upload-20261028.n9CZ1r
+test ! -L "$upload"
+test "$(stat -c '%a:%u:%g' "$upload")" = 700:1000:1000
+test -f "$upload/payload.tar" && test ! -L "$upload/payload.tar"
+root=$(mktemp -d /tmp/hc074-preparation-root-20261028.XXXXXX)
+install -m 400 "$upload/payload.tar" "$root/payload.tar"
+cd "$root"
+printf '%s  payload.tar
+' 'b9826ee802fd2634a215688eebd6608eaa6ac01ee383824c7e76c88cc291899a' | sha256sum --check
+/usr/bin/python3 -c 'import tarfile; t=tarfile.open("payload.tar"); items=t.getmembers(); assert len(items)==21 and all(m.isfile() and not m.name.startswith("/") and ".." not in m.name.split("/") for m in items); t.extractall(".", members=items, filter="data")'
+find "$root" -type f -exec chmod 400 {} +
+chmod 500 "$root/libtest"
+printf '%s  remote.py
+' '07189e5090ee26b610d5da95df436aef42933f2ac993bd2701817e3799559e92' | sha256sum --check
+printf 'ROOT=%s
+' "$root"
+nohup /usr/bin/python3 -I "$root/remote.py" >"$root/live.stdout.log" 2>"$root/live.stderr.log" </dev/null &
+printf 'OWNER_PID=%s
+' "$!"

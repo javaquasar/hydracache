@@ -91,3 +91,10 @@ remote attempt or profile was created by that rejected action. This is an
 authorization boundary, not a failed runtime test. Do not bypass it or rerun the
 command without the requested explicit transfer consent. The packet is ready for
 review; prior measurements/refusals and the first offline TEMP failure remain.
+
+The operator subsequently explicitly approved transfer of this exact packet and
+one isolated run. That first dispatch completed on source
+`c293f190b6a52914bbde0f2c6b2e8f96b0af82a5`; the earlier automatic rejection remains
+historical, not a continuing authorization blocker. The actual command refuses
+at enrollment on causal expiry, with successful CI retirement and unchanged host
+postflight. See the [first result](server-preparation-profile-result-20261028.md).

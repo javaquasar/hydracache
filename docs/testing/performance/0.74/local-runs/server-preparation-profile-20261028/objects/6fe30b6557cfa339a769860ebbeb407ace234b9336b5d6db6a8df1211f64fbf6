@@ -1,0 +1,8 @@
+{
+  "cases": 5,
+  "passed": 3,
+  "errors": 2,
+  "reason": "sandbox TEMP PermissionError; control temporary scope moved to workspace target; no live or server test executed",
+  "first_source": "test_controls.first.py",
+  "live_retry": false
+}

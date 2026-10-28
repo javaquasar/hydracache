@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "scp",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ConnectTimeout=15",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\server-preparation-profile-20261028\\payload.tar",
+    "hydracache-ax42:/tmp/hc074-preparation-upload-20261028.n9CZ1r/payload.tar"
+  ],
+  "bound_seconds": 90,
+  "retry": false
+}

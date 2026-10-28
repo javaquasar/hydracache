@@ -4,8 +4,10 @@ The approved [bounded server preparation profile](server-preparation-profile-pla
 uses an exact existing release image and a private namespace/cgroup fixture that
 ends before original send. It retains original checks/windows and first results;
 no release install, supervisor stop, host service/clock change or product load.
-This different fixture composition cannot prove original-manager delivery or a
-comparative speedup. Execution results are recorded separately after collection.
+The [first server result](server-preparation-profile-result-20261028.md) refuses
+at enrollment on unchanged causal expiry. Outputs records 6,668.333 ms wall /
+6,581.329 ms parent CPU; nested spans overlap and no comparative gain is claimed.
+CI retirement and unchanged host postflight pass. No retry or original delivery.
 
 The [first real local manager baseline](original-manager-baseline-result-20261028.md)
 fails closed before held send: causal age 10,005,213,283 ns exceeds the unchanged

@@ -1,0 +1,12 @@
+{
+  "admission": false,
+  "original_send": false,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "product": false,
+  "retry": false,
+  "server": true
+}

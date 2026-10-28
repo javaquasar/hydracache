@@ -1,0 +1,16 @@
+{
+  "admission": false,
+  "all_production_writers_retired_proven": false,
+  "classification": "test-failure",
+  "clock_changes": false,
+  "errors": [],
+  "exclusive_host": false,
+  "exit": 101,
+  "original_send": false,
+  "postflight_passed": true,
+  "product": false,
+  "retired": true,
+  "retry": false,
+  "server": true,
+  "service_changes": false
+}
