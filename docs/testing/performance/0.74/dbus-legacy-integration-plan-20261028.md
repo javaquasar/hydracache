@@ -65,3 +65,13 @@ raw evidence members (WinError 3); no freeze or native command is created for it
 Its partial directory is kept. The same constructor repair is prepared in a
 shorter exclusive fixed/native-a6 context, without system long-path settings,
 source deletion or changes to any test/runtime bound.
+
+The final fixed source completes library check and strict all-feature Clippy on
+GNU Rust 1.94 and MSRV 1.88, with actual source/boot and CI-retirement postflight.
+No test execution is credited by those four passes. The next separately pinned
+unit driver builds actual full default images in that same native source context,
+requires both 1,593-case catalogs, executes exactly 64 source-bound original cases
+and runs strict test-cfg/all-feature Clippy. It preserves original predicates,
+timeouts and envelope and never selects ignored real-bus/privileged cases. Three
+offline catalog/accounting controls pass. A real verdict remains required; this
+still cannot remove old zbus 5 from its explicitly retained dev/test graph.

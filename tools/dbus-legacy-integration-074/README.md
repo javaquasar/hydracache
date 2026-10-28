@@ -29,3 +29,17 @@ GNU/MSRV results are separate from that first refused source.
 Its library check passed but strict Clippy refused unused private bridge methods/
 field exposure. Current used-api/a4 narrows only those unused methods, retains
 the cloned connection in the original field order and keeps runtime Drop exact.
+
+The final fixed/native-a6 candidate corrects both Proxy constructors and uses a
+251-character maximum Windows source path after retaining the longer path's
+inert-copy refusal. Its library check and strict Clippy pass on GNU 1.94/1.88.
+
+The separate `unit_run.py` gate uses the same native source/dependency cache,
+with additional exclusive `units-inputs.json` whole-driver pins. It builds actual
+default library test images, binds image/source hashes, requires the complete
+1,593-case catalogs and selects exactly 64 original cases: 14 manager, seven
+loaded, two unit and the prior 40 wire plus one DTO. It runs no ignored/system-bus
+or privileged fixture; the remaining 1,529 cases stay filtered. Strict test-cfg
+all-feature Clippy follows on each compiler. Three inert accounting controls
+refuse zero/missing/duplicate/foreign/ignored rows, wrong filtered totals/exit or
+missing catalog members. Actual phase results, not this preparation, decide it.
