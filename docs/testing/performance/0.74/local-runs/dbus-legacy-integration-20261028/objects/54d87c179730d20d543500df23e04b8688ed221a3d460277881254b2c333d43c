@@ -1,0 +1,14 @@
+{
+  "clocks_changed": false,
+  "files": {
+    "tools/dbus-legacy-integration-074/test_unit_gate.py": "1d55b09f4d31bb9f30cc03920effd0decd7384d8785ad4271060555bcc247e33",
+    "tools/dbus-legacy-integration-074/unit_native.py": "43909ba5bf1b10bba2316e08691798006cee1ee530dc87e600243a99aa3a1f59",
+    "tools/dbus-legacy-integration-074/unit_run.py": "8e5500690705005bf66a955cfad7f948ec522fdbc017b682a919e42f3a62b8f2"
+  },
+  "freeze_sha256": "43bcf790150bbf0e739dfec154870a9872ed3e1fb25dba3ebf11907fcff5b809",
+  "retry": false,
+  "selected": 64,
+  "server": false,
+  "services": false,
+  "total": 1593
+}

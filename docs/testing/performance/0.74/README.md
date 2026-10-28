@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [whole legacy caller join](dbus-legacy-integration-result-20261028.md) now
+passes paired GNU 1.94/1.88 check, strict library/test-cfg Clippy and 64 exact
+original cases per compiler. Full catalogs agree at 1,593, with 1,529 filtered.
+All first import/lint/constructor/path/cfg-test failures remain. Old zbus 5 is
+explicitly retained as a dev/test backend; root/security/full release gates stay
+open. No real manager start, server run or performance claim follows.
+
 The approved [bounded server preparation profile](server-preparation-profile-plan-20261028.md)
 uses an exact existing release image and a private namespace/cgroup fixture that
 ends before original send. It retains original checks/windows and first results;

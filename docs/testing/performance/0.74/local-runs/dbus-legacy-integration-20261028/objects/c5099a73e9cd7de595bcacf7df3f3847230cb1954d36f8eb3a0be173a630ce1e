@@ -1,0 +1,14 @@
+{
+  "diagnostic_loaded.rs": {
+    "after": "8b36dc25f5c3aa0be8bcd6d71fab29a5d29bb7deee484b428c19d101b918a97f",
+    "before": "dedbee622bc143a7177c7edb660d115338c14cb9e845a7c891bc086e0ae974eb"
+  },
+  "diagnostic_manager.rs": {
+    "after": "787948377f6ab5ca3ad464a74630f6654d8ddb775a0f5026bf0a902d01276f97",
+    "before": "7950deead36bcc6514f1c2f73be3cbce126a6e7a3bff3d1a55d11eac0be674db"
+  },
+  "systemd_unit.rs": {
+    "after": "33de7d61d69737a32264b0f9c328168c6dc5054d65e2508f97033806c9a3880f",
+    "before": "4b8f35e341b489f5928206b2df3f09525abb081b937e35cefd5c1ca1bad01cac"
+  }
+}

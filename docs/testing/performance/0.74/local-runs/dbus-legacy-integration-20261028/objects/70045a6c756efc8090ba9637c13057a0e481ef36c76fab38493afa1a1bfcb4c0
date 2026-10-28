@@ -1,0 +1,35 @@
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/home/artur/.cache/hydracache-074-dbus-legacy-integration/20261028-a3/fd/tools/long-run-supervisor-074)
+error: associated items `from_async` and `close` are never used
+  --> tools/long-run-supervisor-074/src/diagnostic_blocking_v6.rs:14:12
+   |
+13 | impl Connection {
+   | --------------- associated items in this implementation
+14 |     pub fn from_async(connection: zbus::Connection) -> Self {
+   |            ^^^^^^^^^^
+...
+26 |     pub fn close(self) -> Result<()> {
+   |            ^^^^^
+   |
+   = note: `-D dead-code` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[expect(dead_code)]` or `#[allow(dead_code)]`
+
+error: field `connection` is never read
+  --> tools/long-run-supervisor-074/src/diagnostic_blocking_v6.rs:51:5
+   |
+50 | pub struct Proxy<'a> {
+   |            ----- field in this struct
+51 |     connection: Connection,
+   |     ^^^^^^^^^^
+   |
+   = note: `Proxy` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+error: method `connection` is never used
+  --> tools/long-run-supervisor-074/src/diagnostic_blocking_v6.rs:76:12
+   |
+55 | impl<'a> Proxy<'a> {
+   | ------------------ method in this implementation
+...
+76 |     pub fn connection(&self) -> &Connection {
+   |            ^^^^^^^^^^
+
+error: could not compile `hydracache-long-run-supervisor-074` (lib) due to 3 previous errors

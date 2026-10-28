@@ -1,0 +1,120 @@
+   Compiling proc-macro2 v1.0.106
+   Compiling libc v0.2.186
+   Compiling quote v1.0.46
+   Compiling unicode-ident v1.0.24
+    Checking typenum v1.20.1
+   Compiling syn v2.0.118
+   Compiling serde_core v1.0.228
+    Checking cfg-if v1.0.4
+   Compiling jobserver v0.1.34
+   Compiling find-msvc-tools v0.1.9
+   Compiling shlex v2.0.1
+   Compiling cc v1.2.65
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling serde v1.0.228
+   Compiling serde_derive v1.0.228
+   Compiling pkg-config v0.3.33
+   Compiling zstd-sys v2.1.2+zstd.1.5.7
+   Compiling semver v1.0.28
+   Compiling rustix v1.1.4
+   Compiling rustc_version v0.4.1
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking hybrid-array v0.4.13
+    Checking bitflags v2.13.2
+    Checking winnow v1.0.3
+   Compiling getrandom v0.4.3
+    Checking linux-raw-sys v0.12.1
+    Checking digest v0.10.7
+   Compiling curve25519-dalek v4.1.3
+   Compiling syn v3.0.6
+   Compiling zstd-safe v7.2.4
+    Checking pin-project-lite v0.2.17
+    Checking futures-core v0.3.34
+    Checking cpufeatures v0.2.17
+   Compiling zmij v1.0.21
+   Compiling zbus_utils v6.0.0 (/home/artur/.cache/hydracache-074-dbus-legacy-integration/20261028-a3/fd/source/zbus_utils)
+    Checking block-buffer v0.12.1
+    Checking crypto-common v0.2.2
+   Compiling ring v0.17.14
+   Compiling curve25519-dalek-derive v0.1.1
+   Compiling tokio-macros v2.7.0
+    Checking socket2 v0.6.5
+    Checking mio v1.2.1
+   Compiling thiserror v2.0.18
+    Checking const-oid v0.10.2
+   Compiling serde_json v1.0.150
+    Checking subtle v2.6.1
+    Checking bytes v1.12.0
+    Checking zeroize v1.9.0
+    Checking signature v2.2.0
+    Checking futures-io v0.3.34
+    Checking zruntime v0.2.0
+    Checking tokio v1.53.3
+    Checking ed25519 v2.2.3
+    Checking digest v0.11.3
+    Checking uuid v1.23.4
+   Compiling zbus_macros v6.1.0 (/home/artur/.cache/hydracache-074-dbus-legacy-integration/20261028-a3/fd/source/zbus_macros)
+    Checking sha2 v0.10.9
+    Checking ordered-stream v0.2.0
+    Checking zcheapstr v1.1.0
+    Checking xattr v1.6.1
+    Checking toml_parser v1.1.2+spec-1.1.0
+    Checking toml_datetime v1.1.1+spec-1.1.0
+    Checking serde_spanned v1.1.1
+   Compiling async-trait v0.1.89
+   Compiling thiserror-impl v2.0.18
+   Compiling serde_repr v0.1.20
+    Checking getrandom v0.2.17
+    Checking filetime v0.2.29
+    Checking endi v1.1.1
+    Checking untrusted v0.9.0
+    Checking cpufeatures v0.3.0
+    Checking hex v0.4.3
+    Checking itoa v1.0.18
+    Checking memchr v2.8.2
+    Checking toml_writer v1.1.1+spec-1.1.0
+    Checking toml v1.1.2+spec-1.1.0
+    Checking zbus v6.1.0 (/home/artur/.cache/hydracache-074-dbus-legacy-integration/20261028-a3/fd/source/zbus)
+    Checking sha2 v0.11.0
+    Checking tar v0.4.46
+    Checking ed25519-dalek v2.2.0
+    Checking zstd v0.13.3
+    Checking fs2 v0.4.3
+    Checking base64 v0.22.1
+    Checking hydracache-long-run-supervisor-074 v0.0.0 (/home/artur/.cache/hydracache-074-dbus-legacy-integration/20261028-a3/fd/tools/long-run-supervisor-074)
+warning: associated items `from_async` and `close` are never used
+  --> tools/long-run-supervisor-074/src/diagnostic_blocking_v6.rs:14:12
+   |
+13 | impl Connection {
+   | --------------- associated items in this implementation
+14 |     pub fn from_async(connection: zbus::Connection) -> Self {
+   |            ^^^^^^^^^^
+...
+26 |     pub fn close(self) -> Result<()> {
+   |            ^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `connection` is never read
+  --> tools/long-run-supervisor-074/src/diagnostic_blocking_v6.rs:51:5
+   |
+50 | pub struct Proxy<'a> {
+   |            ----- field in this struct
+51 |     connection: Connection,
+   |     ^^^^^^^^^^
+   |
+   = note: `Proxy` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: method `connection` is never used
+  --> tools/long-run-supervisor-074/src/diagnostic_blocking_v6.rs:76:12
+   |
+55 | impl<'a> Proxy<'a> {
+   | ------------------ method in this implementation
+...
+76 |     pub fn connection(&self) -> &Connection {
+   |            ^^^^^^^^^^
+
+warning: `hydracache-long-run-supervisor-074` (lib) generated 3 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 35.06s

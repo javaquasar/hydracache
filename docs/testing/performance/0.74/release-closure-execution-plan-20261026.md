@@ -547,6 +547,17 @@ shipping, complete source/effect, package/workspace or host gates.
 
 ## 4 Finish original Linux execution and recovery
 
+The [whole remaining production caller join](dbus-legacy-integration-result-20261028.md)
+now uses the qualified zbus 6 blocking bridge in all three remaining legacy
+helpers inside an isolated full source copy. GNU 1.94/1.88 check and strict
+library/test-cfg Clippy pass; each actual full image executes 64 source-bound
+cases, with 1,529 of the complete 1,593-case catalog explicitly filtered. All
+first import, private API, constructor, Windows-path and cfg-test refusals remain.
+Connection custody/Drop, live frames and windows stay exact. The old zbus 5 edge
+is still an explicit dev/test backend, so final dependency policy/root adoption,
+transport/source/distribution and full product gates remain open. This adds no
+real original-owner delivery or production all-writer proof.
+
 The present original path ends at ReadyObserved. Before writing release data,
 bind worker release to the consumed original owner, actual manager/child/streams/
 executable/cgroup and all writer aliases under the complete live frame. Join the

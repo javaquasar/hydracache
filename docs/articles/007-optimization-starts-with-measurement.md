@@ -22515,3 +22515,28 @@ fsync не решает найденный основной расход и на
 контроля отказывают на неполных/повторных маркерах, переставленных rounds, обратных
 данных времени и изменённых guard-флагах. Новых запусков не было; подробности — в
 [разборе outputs/Starting](../testing/performance/0.74/server-preparation-outputs-analysis-20261028.md).
+
+### 0.74: security-миграция трёх полных callers и честный промежуточный gate
+
+После wire-совместимости объединены три оставшихся production helper-модуля:
+diagnostic_manager, diagnostic_loaded и systemd_unit теперь используют тот же
+zbus 6 Message-граф в отдельной полной копии исходников. Полные тела и исходные
+тесты сохраняются; blocking bridge удерживает исходный connection и прежний
+multi-thread runtime. Неиспользуемые private методы убраны, но connection lifetime,
+порядок Drop, проверки sender/error, cache selection и сроки не ослаблены.
+
+Первые import/lint/constructor/path/cfg-test отказы сохранены отдельно. Итоговый
+кандидат проходит check и строгий Clippy на GNU Rust 1.94 и MSRV 1.88, включая test
+cfg со всеми features. В настоящих library images одинаковый каталог 1 593 теста;
+на каждом компиляторе выполнены 64 исходных cases: 23 из трёх callers и прежние
+41 wire/credential control. Остальные 1 529 остаются filtered, а не пройденными.
+Это проверка интеграционной совместимости, без новых claims ускорения или реального
+original-start. Контур соблюдает прежние guards, сроки и CI-retirement.
+
+Граница остаётся явной: старый zbus 5 больше не normal dependency этих callers,
+но ещё нужен manual test transport и DTO и поэтому явно оставлен dev-dependency.
+Это не полный security fix и не зелёный workspace gate. Следующий шаг переносит
+реальный test transport с сохранением kernel peer/FD/error семантики; лишь затем
+можно завершать root dependency adoption и policy. Технические детали, первые
+отказы и точный accounting — в
+[отчёте интеграции legacy callers](../testing/performance/0.74/dbus-legacy-integration-result-20261028.md).

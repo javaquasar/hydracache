@@ -1,0 +1,35 @@
+{
+  "boot_after": "cb124527-2171-4419-8283-c9d80516d906",
+  "boot_before": "cb124527-2171-4419-8283-c9d80516d906",
+  "boot_unchanged": true,
+  "clocks_after": {
+    "CLOCK_BOOTTIME": 125592730730,
+    "CLOCK_MONOTONIC": 125592730236,
+    "CLOCK_MONOTONIC_RAW": 125503072336,
+    "CLOCK_REALTIME": 1793200343104347319
+  },
+  "clocks_before": {
+    "CLOCK_BOOTTIME": 3015513307,
+    "CLOCK_MONOTONIC": 3015512449,
+    "CLOCK_MONOTONIC_RAW": 2934699103,
+    "CLOCK_REALTIME": 1793200220527129072
+  },
+  "clocks_changed": false,
+  "first_refusal": {
+    "reason": "first actual library refusal: fd-194-check",
+    "type": "ValueError"
+  },
+  "library_only": true,
+  "passed": false,
+  "phases": [
+    {
+      "exit": 101,
+      "label": "fd-194-check"
+    }
+  ],
+  "root_changed": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true,
+  "tests_executed": false
+}
