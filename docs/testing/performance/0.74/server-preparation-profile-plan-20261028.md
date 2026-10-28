@@ -74,3 +74,20 @@ private preparation fixture is not original-service all-writer proof. A successf
 profile still leaves real delivery, cessation-before-cleanup, reconnect, lifecycle,
 full package/security and eventual server admission open. No new optimization
 candidate is admitted by the collection alone.
+
+## Dispatch status
+
+Prepared source commit: `c9994b1187a1f84985dfa2771956a44632ab0d33`.
+Five new controls, three existing analyzer controls, diff checks and doc-check
+pass. The prepared transfer contains 20 files / 56,184,126 bytes: release libtest,
+runner/CI containment, nine synthetic bundle inputs, four test fixture sources,
+source/build receipts and the unchanged envelope source. It contains no SSH key,
+production credential or production issuer material.
+
+Automatic approval review rejected the dispatch command before execution because
+it required explicit consent for egress of private project source/binary payload,
+beyond general approval of server diagnostics. No SSH/SCP dispatch, dispatch latch,
+remote attempt or profile was created by that rejected action. This is an
+authorization boundary, not a failed runtime test. Do not bypass it or rerun the
+command without the requested explicit transfer consent. The packet is ready for
+review; prior measurements/refusals and the first offline TEMP failure remain.
