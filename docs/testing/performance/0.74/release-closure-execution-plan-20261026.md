@@ -482,6 +482,18 @@ Unix fault/target proof or original all-writer admission. Forced partial I/O,
 ancillary truncation, actual ReplyState, remaining source/effect/distribution
 and complete product gates remain required before root integration.
 
+The [forced fragment/ancillary continuation](dbus-fragments-result-20261028.md)
+adds actual capped syscall framing, four descriptor-bearing EOF cuts and a
+mid-write shutdown with no FD replay/flush. An isolated child changes only its
+own soft file limit, observes real MSG_CTRUNC with FDS_MAX still 1024, restores
+that limit and exposes the first 41/42 leaf-boundary refusal. A separate receive
+guard rejects truncation and retires descriptors. After retained fixture-version
+and adapter-constructor lint refusals, the final source passes 42/42, check and
+strict Clippy on 1.88/1.94. The copied leaves have a reversible readonly flag
+observer; the framing defaults are actual zbus code. This does not qualify the
+whole system-manager/original ReplyState path, non-Linux targets or all writers.
+Root adoption, remaining source/effect/distribution and full product gates remain.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

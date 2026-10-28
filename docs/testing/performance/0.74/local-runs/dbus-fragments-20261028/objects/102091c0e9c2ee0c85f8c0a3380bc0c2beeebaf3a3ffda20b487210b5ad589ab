@@ -1,0 +1,71 @@
+#[cfg(unix)]
+fn fd_recvmsg(fd: BorrowedFd<'_>, buffer: &mut [u8]) -> RecvmsgResult {
+    use std::{io::IoSliceMut, mem::MaybeUninit};
+
+    let mut iov = [IoSliceMut::new(buffer)];
+    let mut cmsg_buffer = [MaybeUninit::uninit(); rustix::cmsg_space!(ScmRights(FDS_MAX))];
+    let mut ancillary = RecvAncillaryBuffer::new(&mut cmsg_buffer);
+
+    // Protect the raw message-owned SCM_RIGHTS descriptors, not only decoded clones.
+    #[cfg(target_os = "linux")]
+    let flags = RecvFlags::CMSG_CLOEXEC;
+    #[cfg(not(target_os = "linux"))]
+    let flags = RecvFlags::empty();
+    let msg = recvmsg(fd, &mut iov, &mut ancillary, flags)?;
+    if msg.bytes == 0 {
+        return Err(io::Error::new(
+            io::ErrorKind::BrokenPipe,
+            "failed to read from socket",
+        ));
+    }
+    let mut fds = vec![];
+    for msg in ancillary.drain() {
+        match msg {
+            RecvAncillaryMessage::ScmRights(iter) => {
+                fds.extend(iter);
+            }
+            #[cfg(any(target_os = "linux", target_os = "android"))]
+            RecvAncillaryMessage::ScmCredentials(_) => {
+                // On Linux, credentials might be received. This shouldn't normally happen
+                // in our use case since we don't request them, but ignore if present.
+                continue;
+            }
+            _ => {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "unexpected CMSG kind",
+                ));
+            }
+        }
+    }
+
+    Ok((msg.bytes, fds))
+}
+
+#[cfg(unix)]
+fn fd_sendmsg(fd: BorrowedFd<'_>, buffer: &[u8], fds: &[BorrowedFd<'_>]) -> io::Result<usize> {
+    use std::{io::IoSlice, mem::MaybeUninit};
+
+    let iov = [IoSlice::new(buffer)];
+    let mut cmsg_buffer = [MaybeUninit::uninit(); rustix::cmsg_space!(ScmRights(FDS_MAX))];
+    let mut ancillary = SendAncillaryBuffer::new(&mut cmsg_buffer);
+
+    if !fds.is_empty() && !ancillary.push(SendAncillaryMessage::ScmRights(fds)) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "too many file descriptors",
+        ));
+    }
+
+    let sent = sendmsg(fd, &iov, &mut ancillary, SEND_FLAGS)?;
+    if sent == 0 {
+        // can it really happen?
+        return Err(io::Error::new(
+            io::ErrorKind::WriteZero,
+            "failed to write to buffer",
+        ));
+    }
+
+    Ok(sent)
+}
+

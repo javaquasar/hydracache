@@ -1,0 +1,117 @@
+"""Offline fragment/resource-fault continuation of the exact GNU candidate."""
+from pathlib import Path
+import difflib,json,os,re,shutil,subprocess,sys,tomllib
+ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT/'tools/windows-workspace-preflight-074'))
+import prepare as p
+old=p.load(ROOT/'tools/dbus-linux-074/run.py','fragment_predecessor')
+prior=old.prior
+sha,files,write=old.sha,old.files,old.write
+BASE_ROOT=ROOT/'target/dbus-fragments-20261028'
+LEAF_SHA='a486d9b0ab4d0d245f82da823d02a6fd750efe0e0f8dda6b1b5c078bca282151'
+EXTRAS=['io_leaf::tests::'+n for n in ('forced_small_chunks_preserve_bytes_and_single_fd','cut_frames_refuse_and_release_received_fds',
+ 'midstream_write_failure_never_replays_fds_or_flushes','ctrunc_rejected_and_descriptors_retired')]
+
+def context(attempt):
+ p.require(type(attempt) is int and attempt in (1,2),'fixed attempt')
+ return BASE_ROOT/('baseline' if attempt==1 else 'fixed'),'/home/artur/.cache/hydracache-074-dbus-fragments/'+('20261028-b1' if attempt==1 else '20261028-b2')
+
+def reject_ctrunc(raw):
+ p.require(sha(raw)==LEAF_SHA,'exact CLOEXEC predecessor')
+ before=b'    if msg.bytes == 0 {'
+ after=b'    if msg.flags.contains(rustix::net::ReturnFlags::CTRUNC) {\n        return Err(io::Error::new(\n            io::ErrorKind::InvalidData,\n            "truncated ancillary data",\n        ));\n    }\n    if msg.bytes == 0 {'
+ p.require(raw.count(before)==1,'one recv boundary');return raw.replace(before,after,1)
+
+def projection(raw,native):
+ a=raw.index(b'#[cfg(unix)]\nfn fd_recvmsg(');b=raw.index(b'/// Everything about a peer')
+ body=raw[a:b];call=b'    let msg = recvmsg(fd, &mut iov, &mut ancillary, flags)?;'
+ observer=b'\n    OBSERVED_TRUNC.with(|v| v.set(msg.flags.contains(rustix::net::ReturnFlags::CTRUNC)));'
+ p.require(body.count(call)==1,'one actual recv observation');projected=body.replace(call,call+observer,1)
+ p.require(projected.replace(observer,b'',1)==body,'pure observer inverse')
+ header=b'''use std::{io,os::fd::{AsFd,BorrowedFd,OwnedFd}};
+use rustix::net::{RecvAncillaryBuffer,RecvAncillaryMessage,RecvFlags,SendAncillaryBuffer,SendAncillaryMessage,recvmsg,sendmsg};
+const FDS_MAX:usize=1024;
+const SEND_FLAGS:rustix::net::SendFlags=rustix::net::SendFlags::NOSIGNAL;
+type RecvmsgResult=io::Result<(usize,Vec<OwnedFd>)>;
+std::thread_local! { static OBSERVED_TRUNC:std::cell::Cell<bool>=const { std::cell::Cell::new(false) }; }
+'''
+ route='\n#[cfg(test)]\n#[path = '+json.dumps(native+'/assets/tools/dbus-fragments-074/tests.rs')+']\nmod tests;\n'
+ return header+projected+route.encode(),body
+
+def prepare(attempt):
+ base,native=context(attempt);out=base/'prepare';out.mkdir(parents=True,exist_ok=False);(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+ packet=ROOT/'docs/testing/performance/0.74/local-runs/dbus-linux-fd-20261028'
+ index_raw=(packet/'index.json').read_bytes();p.require(sha(index_raw)=='9de2f42856957da48aac3f87f1e8a1d00a6e7f2d259c2f36b978c0a06a4d5ce4','held GNU receipt')
+ index=json.loads(index_raw)
+ def get(name):
+  row=index['members'][name];raw=(packet/'objects'/row['sha256']).read_bytes();p.require(sha(raw)==row['sha256'] and len(raw)==row['bytes'],'held parent member');return raw
+ review=json.loads(get('capture/attempt-5/prepare/result.json'));source=ROOT/'target/dbus-linux-v5-20261028/input'
+ p.require(files(source)==review['files'] and prior.parent.old.root_inputs()==review['root_inputs'],'exact prior candidate/root')
+ if attempt==2:
+  failure=json.loads((BASE_ROOT/'baseline/session/fd-194-test/result.json').read_bytes())
+  p.require(failure['exit']==101 and failure['accounting']['complete'] and failure['accounting']['passed']==41 and failure['accounting']['failed']==1,'first complete fault baseline')
+  p.require([n for n,status in failure['accounting']['executed'] if status=='FAILED']==['io_leaf::tests::ctrunc_rejected_and_descriptors_retired'],'only truncation predicate failed')
+  raw=(BASE_ROOT/'baseline/session/fd-194-test/stdout.log').read_bytes()
+  child=[json.loads(line.split(b':',1)[1]) for line in raw.splitlines() if line.startswith(b'HC074_CTRUNC_CHILD_STDOUT:')]
+  p.require(len(child)==1 and 'kernel_flag=true:limit_restored=true:sent=8:' in child[0] and ':rejected=false:aliases=1:capacity=1024' in child[0],'actual restored kernel-truncation observation')
+ dest=base/'input';shutil.copytree(source,dest)
+ old_native=review['native_root'].encode()
+ for path in sorted(dest.rglob('*')):
+  if path.is_file() and 'archives' not in path.relative_to(dest).parts:path.write_bytes(path.read_bytes().replace(old_native,native.encode()))
+ before=(source/'fd/zbus/src/runtime/io/unix.rs').read_bytes();p.require(sha(before)==LEAF_SHA,'pinned complete receive source')
+ after=reject_ctrunc(before) if attempt==2 else before
+ (out/'recvmsg-before.rs').write_bytes(before);(out/'recvmsg-after.rs').write_bytes(after)
+ original_lock=(source/'fd/Cargo.lock').read_bytes()
+ for variant in ('baseline','fd'):
+  folder=dest/variant;leaf=folder/'zbus/src/runtime/io/unix.rs';leaf.write_bytes(after)
+  util=(folder/'zbus/src/utils.rs').read_bytes();p.require(b'pub(crate) const FDS_MAX: usize = 1024;' in util,'original ancillary capacity unchanged')
+  manifest=folder/'probe/Cargo.toml';manifest.write_bytes(manifest.read_bytes()+b'\nrustix = { version = "=1.1.4", default-features = false, features = ["net", "process", "std"] }\n')
+  lock=(folder/'Cargo.lock').read_bytes();a=lock.index(b'name = "dbus-probe-074"');b=lock.index(b'\n[[package]]',a)
+  chunk=lock[a:b];p.require(chunk.count(b'dependencies = [\n')==1,'exact probe lock node')
+  updated=lock[:a]+chunk.replace(b'dependencies = [\n',b'dependencies = [\n "rustix",\n',1)+lock[b:]
+  old_nodes=tomllib.loads(lock.decode())['package'];new_nodes=tomllib.loads(updated.decode())['package']
+  p.require(len(old_nodes)==len(new_nodes) and [n for n in new_nodes if n['name']!='dbus-probe-074']==[n for n in old_nodes if n['name']!='dbus-probe-074'],'only fixture direct dependency edge')
+  (folder/'Cargo.lock').write_bytes(updated)
+  projected,body=projection(after,native);(folder/'probe/src/io_leaf.rs').write_bytes(projected)
+  with (folder/'probe/src/lib.rs').open('ab') as f:f.write(b'\n#[cfg(all(test,target_os="linux"))]\nmod io_leaf;\n')
+ (out/'lock-before.toml').write_bytes(original_lock);(out/'lock-after.toml').write_bytes(updated);(out/'original-leaves.rs').write_bytes(body)
+ path=dest/'assets/tools/dbus-fragments-074/tests.rs';path.parent.mkdir(parents=True);path.write_bytes((ROOT/'tools/dbus-fragments-074/tests.rs').read_bytes())
+ write(out,'result.json',dict(review,files=files(dest),native_root=native,extras=review['extras']+EXTRAS,attempt=5,
+  predecessor_index_sha256=sha(index_raw),fragment_attempt=attempt,reuse_passing_baseline=True,
+  direct_probe_edge_added='rustix 1.1.4',only_receive_guard_candidate=attempt==2,root_changed=False,release_admitted=False))
+ print(json.dumps(dict(prepared=True,attempt=attempt,native_root=native,total_tests=42)))
+
+def native_command(attempt):
+ context(attempt)
+ return ['wsl.exe','-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B',
+  '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-fragments-074/'+('native.py' if attempt==1 else 'native_fixed.py'),'session']
+
+def launch(attempt,worker):
+ base,native=context(attempt);out=base/'session';review=json.loads((base/'prepare/result.json').read_bytes());argv=native_command(attempt)
+ def guard():
+  p.require(files(base/'input')==review['files'] and prior.parent.old.root_inputs()==review['root_inputs'],'source/root custody');prior.source_parts()
+ if worker:
+  guard()
+  def capacity():
+   if shutil.disk_usage(ROOT).free<p.FLOOR:raise prior.owned.CapacityError('original physical floor')
+  result=prior.owned._owned(prior.owned.load_job().WindowsJob(),argv,str(ROOT),capacity,bound=1200);write(out,'execution.json',result);raise SystemExit(result['exit'])
+ out.mkdir(exist_ok=False);(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+ with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+  try:
+   guard();before=prior.snapshot();head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+   write(out,'intent.json',dict(argv=argv,source=before,head=head,prepare_sha256=sha((base/'prepare/result.json').read_bytes()),bound=1200,floor=p.FLOOR,capacity_poll=5,retirement=5,retry=False,server=False,services=False,clocks=False))
+   child=subprocess.Popen([sys.executable,'-B',str(Path(__file__)),'session' if attempt==1 else 'session-fixed','--worker'],cwd=ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr)
+   code=child.wait(timeout=1210);guard()
+   p.require(before==prior.snapshot() and head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),'source/head postflight')
+   execution=json.loads((out/'execution.json').read_bytes());p.require(execution['retired'] and not execution['errors'],'owned Windows retirement')
+   result=json.loads((out/'native-result.json').read_bytes());p.require(code==0 and result['passed'] and result['source_unchanged'] and result['boot_unchanged'],'full local fragment gate')
+   write(out,'result.json',dict(exit=0,unchanged=True,release_admitted=False))
+  except BaseException as error:write(out,'refusal.json',dict(type=type(error).__name__,reason=str(error),release_admitted=False));raise
+ print(json.dumps(dict(attempt=attempt,exit=code)))
+
+if __name__=='__main__':
+ p.require(len(sys.argv) in (2,3) and (len(sys.argv)==2 or sys.argv[2]=='--worker'),'fixed dispatch')
+ label=sys.argv[1];p.require(label in ('prepare','prepare-fixed','session','session-fixed'),'fixed command')
+ attempt=2 if label.endswith('-fixed') else 1
+ if label.startswith('prepare'):p.require(len(sys.argv)==2,'inert prepare');prepare(attempt)
+ else:launch(attempt,len(sys.argv)==3)

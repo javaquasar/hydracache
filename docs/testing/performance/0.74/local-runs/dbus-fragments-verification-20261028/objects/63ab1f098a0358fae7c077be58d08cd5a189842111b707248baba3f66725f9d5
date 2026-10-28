@@ -1,0 +1,5 @@
+{
+  "reason": "byte indices must be integers or slices, not str",
+  "release_admitted": false,
+  "type": "TypeError"
+}

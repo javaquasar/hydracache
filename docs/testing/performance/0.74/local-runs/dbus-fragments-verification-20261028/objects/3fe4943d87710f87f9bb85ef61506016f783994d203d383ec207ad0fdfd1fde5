@@ -1,0 +1,41 @@
+from pathlib import Path
+import json,os,re,shutil,subprocess,sys
+ROOT=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(ROOT/'tools/dbus-fragments-074'))
+import run as linux
+r=linux.prior
+BASE=ROOT/'target/dbus-fragments-final-20261028';entry_mode=sys.argv[1];mode='verify' if entry_mode=='verify-corrected' else entry_mode;assert mode in ('verify','controls','format','doc-check')
+OUT=BASE/entry_mode
+docs=('docs/testing/performance/0.74/dbus-fragments-result-20261028.md','docs/testing/performance/0.74/README.md',
+ 'docs/testing/performance/0.74/release-closure-execution-plan-20261026.md','docs/articles/007-optimization-starts-with-measurement.md')
+argv={'controls':[sys.executable,'-B','-m','unittest','discover','-s','tools/dbus-fragments-074','-p','test_controls.py','-v'],
+ 'format':['rustfmt','+1.94.0','--edition','2024','--check','tools/dbus-fragments-074/tests.rs','tools/dbus-fragments-074/tests_io_safe.rs','target/dbus-fragments-20261028/fixed-io-safe/input/fd/zbus/src/runtime/io/unix.rs'],
+ 'doc-check':[str(ROOT/'target/debug/xtask.exe'),'doc-check']}.get(mode)
+if len(sys.argv)==3:
+ assert sys.argv[2]=='--worker' and argv
+ def capacity():
+  if shutil.disk_usage(ROOT).free<r.p.FLOOR:raise r.owned.CapacityError('original 4 GiB floor')
+ result=r.owned._owned(r.owned.load_job().WindowsJob(),argv,str(ROOT),capacity,bound=1200)
+ r.write(OUT,'execution.json',result);raise SystemExit(result['exit'])
+OUT.mkdir(parents=True,exist_ok=False);(OUT/'producer.py').write_bytes(Path(__file__).read_bytes())
+with (OUT/'stdout.log').open('xb') as stdout,(OUT/'stderr.log').open('xb') as stderr:
+ try:
+  before=dict(source=r.snapshot(),documents={n:r.sha((ROOT/n).read_bytes()) for n in docs},head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip())
+  if mode=='doc-check':before['executable_sha256']=r.sha(Path(argv[0]).read_bytes())
+  r.write(OUT,'intent.json',dict(argv=argv,inputs=before,bound=1200,floor=r.p.FLOOR,capacity_poll=5,retirement=5,retry=False))
+  if mode=='verify':
+   raise ValueError('packet verifier is prepared after sealing')
+  else:
+   child=subprocess.Popen([sys.executable,'-B',str(Path(__file__)),mode,'--worker'],cwd=ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,
+    env=dict(os.environ,CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2'))
+   try:code=child.wait(timeout=1210)
+   except subprocess.TimeoutExpired:
+    child.kill();child.wait(timeout=5);raise ValueError('owned worker lost; no PID fallback')
+   execution=json.loads((OUT/'execution.json').read_bytes());assert execution['retired'] and not execution['errors'];result=dict(exit=code)
+  assert before['source']==r.snapshot() and all(r.sha((ROOT/n).read_bytes())==v for n,v in before['documents'].items())
+  assert before['head']==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+  if mode=='doc-check':assert before['executable_sha256']==r.sha(Path(argv[0]).read_bytes())
+  result.update(inputs_unchanged=True,release_admitted=False);r.write(OUT,'result.json',result)
+ except BaseException as error:
+  r.write(OUT,'refusal.json',dict(type=type(error).__name__,reason=str(error),release_admitted=False));raise
+print(json.dumps(dict(mode=mode,**result)));raise SystemExit(result['exit'])

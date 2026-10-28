@@ -22171,3 +22171,46 @@ already holding aliases or bind a real system manager to an enrolled original
 owner. The implementation, weaker passing suites, first raw-FD failure and
 isolated repair are retained together. Root dependency integration, distribution
 review, complete product gates and original execution/recovery remain open.
+
+The [forced fragment/ancillary stage](../testing/performance/0.74/dbus-fragments-result-20261028.md)
+closes another observation gap: a large successful payload does not show which
+partial-I/O branches executed. New adapters cap the actual syscall buffers while
+running the library's unchanged public framing defaults. A 164-byte FD-bearing
+message is delivered with 1/1, 3/5 and 7/2 write/read caps. The trace requires the
+whole wire image, multiple positive calls, exactly one FD transfer on the first
+write and one final flush. Four exact prefix cuts and a write-side failure after
+three bytes require refusal and descriptor retirement, without replay or flush.
+These are functional trace counts rather than throughput measurements.
+
+Ancillary truncation needs a different fault. Shrinking the production receiver's
+1024-FD buffer would test a changed threshold. Instead an isolated child queues
+eight descriptors, lowers only its own soft file-descriptor limit, and restores
+it before assertions and reporting. The unchanged receiver then reports real
+kernel MSG_CTRUNC. The first fault baseline fails 41/42: one FD is returned as
+success despite truncation. A successful raw receive is not sufficient evidence
+that the complete capability set arrived. The finding is at an exactly pinned
+source-extracted syscall leaf, not demonstrated original system-manager admission.
+
+One separate candidate adds a CTRUNC refusal before exposing received descriptors.
+The existing ancillary owner closes the partial set on early error, checked by
+an inode-based census. The CLOEXEC fix, FD capacity and other receive/error paths
+stay exact. The mechanism and resource-limit behavior are supported by the
+primary [Linux Unix socket contract](https://man7.org/linux/man-pages/man7/unix.7.html).
+This strengthens error handling without claiming a performance improvement or
+revocation of capabilities held by other processes.
+
+The first guarded source passes all 42 cases on 1.94, but strict Clippy rejects
+five deprecated AsyncFd constructors in the adapter. The first wrong direct
+fixture version had already failed offline before test execution. Both negatives
+remain. The final adapter uses the required registration API for an owned,
+nonblocking socket, with a narrow safety proof and an inverse check for the five
+constructor replacements. It suppresses no warning and changes no test predicate
+or timeout. Final 42/42, check and strict Clippy pass on both 1.94 and 1.88; the
+same truncation oracle now exposes no partial descriptors and confirms cleanup.
+
+The record distinguishes actual framing defaults, exact syscall-leaf projection
+with a reversible observation hook, and the still-unqualified original owner/
+manager path. The child fault does not change parent/host limits or services.
+Root dependencies, original live validation frequency/windows and frozen
+qualification identity remain unchanged. Full authentication/ReplyState faults,
+distribution/root adoption, complete product gates and server admission remain.

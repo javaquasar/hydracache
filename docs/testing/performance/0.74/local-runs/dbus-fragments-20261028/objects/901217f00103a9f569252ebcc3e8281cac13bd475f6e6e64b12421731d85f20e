@@ -1,0 +1,97 @@
+"""Inert first-outcome/source/trace audit; never executes archived code."""
+from pathlib import Path
+import hashlib,json,subprocess,tomllib
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/dbus-fragments-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/dbus-fragments-20261028'
+sha=lambda b:hashlib.sha256(b).hexdigest()
+contexts=('baseline','baseline-corrected','fixed','fixed-io-safe')
+def get(context,path):return json.loads((BASE/context/path).read_bytes())
+first=get('baseline','session/fd-194-build/result.json');assert first['exit']==101 and first['source_unchanged']
+assert b'rustix = "=1.1.4"' in (BASE/'baseline/session/fd-194-build/stderr.log').read_bytes()
+baseline=get('baseline-corrected','session/fd-194-test/result.json');assert baseline['exit']==101 and baseline['accounting']['passed']==41 and baseline['accounting']['failed']==1
+assert [n for n,status in baseline['accounting']['executed'] if status=='FAILED']==['io_leaf::tests::ctrunc_rejected_and_descriptors_retired']
+assert get('fixed','session/fd-194-test/result.json')['accounting']['passed']==42
+assert get('fixed','session/fd-194-clippy/result.json')['exit']==101
+assert (BASE/'fixed/session/fd-194-clippy/stderr.log').read_bytes().count(b'use of deprecated associated function')==5
+steps={}
+for context in contexts:
+ for path in sorted((BASE/context/'session').glob('*/execution.json')):
+  value=json.loads(path.read_bytes());assert value['retired'] and not value['errors']
+  expected=101 if (context,path.parent.name) in (('baseline','fd-194-build'),('baseline-corrected','fd-194-test'),('fixed','fd-194-clippy')) else 0
+  assert value['exit']==expected;steps[context+'/'+path.parent.name]=dict(exit=expected,classification=value['classification'])
+final=get('fixed-io-safe','session/native-result.json');assert final['passed'] and final['source_unchanged'] and final['boot_unchanged']
+assert len(final['phases'])==10 and all(row['exit']==0 for row in final['phases'])
+prior=ROOT/'docs/testing/performance/0.74/local-runs/dbus-linux-fd-20261028'
+raw=(prior/'index.json').read_bytes();assert sha(raw)=='9de2f42856957da48aac3f87f1e8a1d00a6e7f2d259c2f36b978c0a06a4d5ce4';old=json.loads(raw)
+def prior_get(name):
+ row=old['members'][name];raw=(prior/'objects'/row['sha256']).read_bytes();assert sha(raw)==row['sha256'];return raw
+canonical=prior_get('capture/attempt-5/session/fd-194-test/stdout.log')
+def traces(raw):return [[json.loads(v.split(b':',1)[1]) for v in raw.splitlines() if v.startswith(marker)] for marker in
+ (b'HC074_FLOW_TRACE:',b'HC074_READ_TRACE:',b'HC074_PEER_MISMATCH_TRACE:')]
+images=[];child_records=[]
+for context,compilers in (('baseline-corrected',('194',)),('fixed',('194',)),('fixed-io-safe',('194','188'))):
+ for compiler in compilers:
+  value=get(context,f'session/fd-{compiler}-test/result.json');listing=get(context,f'session/fd-{compiler}-list/result.json')
+  assert value['artifact']==listing['artifact'] and len(listing['inventory'])==value['accounting']['selected']==42 and value['accounting']['filtered']==0
+  raw=(BASE/context/f'session/fd-{compiler}-test/stdout.log').read_bytes();assert traces(raw)==traces(canonical)
+  lines=[json.loads(v.split(b':',1)[1]) for v in raw.splitlines() if v.startswith(b'HC074_CTRUNC_CHILD_STDOUT:')];assert len(lines)==1
+  child=lines[0];assert 'kernel_flag=true:limit_restored=true:sent=8:' in child and ':aliases=1:capacity=1024' in child
+  if context=='baseline-corrected':assert ':rejected=false:' in child and '0 passed; 1 failed;' in child
+  else:assert ':rejected=true:' in child and '1 passed; 0 failed;' in child
+  assert '41 filtered out;' in child
+  fragments=[v.decode() for v in raw.splitlines() if v.startswith(b'HC074_FRAGMENT:')]
+  cuts=[v.decode() for v in raw.splitlines() if v.startswith(b'HC074_CUT:')]
+  assert len(fragments)==3 and len(cuts)==4 and b'HC074_WRITE_FAILURE:bytes=3:fd_sends=1:flushes=0:message=false' in raw
+  assert any('write_cap=1:read_cap=1:bytes=164:writes=164:reads=164:' in v for v in fragments)
+  images.append(dict(context=context,compiler=compiler,artifact=value['artifact'],passed=value['accounting']['passed'],failed=value['accounting']['failed']))
+  child_records.append(dict(context=context,compiler=compiler,stdout=child))
+for context in contexts:
+ review=get(context,'prepare/result.json');source=BASE/context/'input'
+ assert {p.relative_to(source).as_posix():sha(p.read_bytes()) for p in sorted(source.rglob('*')) if p.is_file()}==review['files']
+ before=(BASE/context/'prepare/recvmsg-before.rs').read_bytes();after=(BASE/context/'prepare/recvmsg-after.rs').read_bytes()
+ assert sha(before)=='a486d9b0ab4d0d245f82da823d02a6fd750efe0e0f8dda6b1b5c078bca282151'
+ if context in ('baseline','baseline-corrected'):assert after==before
+ else:
+  marker=b'    if msg.bytes == 0 {';start=after.index(b'    if msg.flags.contains(rustix::net::ReturnFlags::CTRUNC)');end=after.index(marker,start)
+  assert after[:start]+after[end:]==before
+ old_lock=tomllib.loads((BASE/context/'prepare/lock-before.toml').read_text(encoding='utf8'))['package']
+ new_lock=tomllib.loads((BASE/context/'prepare/lock-after.toml').read_text(encoding='utf8'))['package']
+ assert len(old_lock)==len(new_lock)==62
+ assert [p for p in old_lock if p['name']!='dbus-probe-074']==[p for p in new_lock if p['name']!='dbus-probe-074']
+ old_probe=next(p for p in old_lock if p['name']=='dbus-probe-074');new_probe=next(p for p in new_lock if p['name']=='dbus-probe-074')
+ assert new_probe==dict(old_probe,dependencies=['rustix']+old_probe['dependencies'])
+ body=(BASE/context/'prepare/original-leaves.rs').read_bytes();projected=(source/'fd/probe/src/io_leaf.rs').read_bytes()
+ observer=b'\n    OBSERVED_TRUNC.with(|v| v.set(msg.flags.contains(rustix::net::ReturnFlags::CTRUNC)));'
+ assert projected.count(observer)==1 and body in projected.replace(observer,b'',1) and b'const FDS_MAX:usize=1024;' in projected
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members;members[name]=dict(sha256=digest,bytes=len(raw))
+for context in contexts:
+ for path in sorted((BASE/context).rglob('*')):
+  if path.is_file() and '__pycache__' not in path.parts:add('capture/'+context+'/'+path.relative_to(BASE/context).as_posix(),path)
+for path in sorted((ROOT/'tools/dbus-fragments-074').rglob('*')):
+ if path.is_file() and '__pycache__' not in path.parts:add('source/'+path.relative_to(ROOT).as_posix(),path)
+for name in ('tools/dbus-linux-074/native.py','tools/dbus-linux-074/run.py','tools/dbus-read-flows-074/run.py','tools/dbus-owner-properties-074/run.py',
+ 'tools/dbus-runtime-bridge-074/run.py','tools/dbus-msrv-backport-074/run.py','tools/windows-workspace-preflight-074/owned.py',
+ 'tools/windows-workspace-preflight-074/prepare.py','tools/chitchat-mtu-review-074/accounting.py',
+ 'scripts/ci/watchdog_linux_group.py','scripts/ci/watchdog_windows_job.py','Cargo.lock','Cargo.toml','deny.toml',
+ 'tools/long-run-supervisor-074/Cargo.toml','docs/testing/performance/0.74/qualification-manifest.toml','target/seal-dbus-fragments-20261028.py'):
+ add('source/'+name,ROOT/name)
+add('predecessor/index.json',prior/'index.json')
+after=(BASE/'fixed-io-safe/prepare/recvmsg-after.rs').read_bytes()
+index=dict(schema='hc074-forced-fragments-v1',members=members,steps=steps,images=images,child_records=child_records,
+ first_fault_baseline=dict(passed=41,failed=1),final_passes_per_compiler=42,package_identities=62,registry_archives=58,
+ one_probe_edge_added='rustix 1.1.6',linux_cloexec_preimage_sha256='a486d9b0ab4d0d245f82da823d02a6fd750efe0e0f8dda6b1b5c078bca282151',
+ ctrunc_postimage_sha256=sha(after),source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ parent_protocol_traces_equal=True,readonly_observer_inverse=True,original_ancillary_capacity=1024,
+ child_soft_limit_only=True,first_refusals_retained=True,root_graph_or_supervisor_changed=False,
+ server=False,services=False,clocks_changed=False,system_bus=False,original_admission=False,
+ product_gate_replayed=False,performance_claim=False,release_admitted=False,archived_code_executed=False)
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()),leaf_sha256=sha(after))))

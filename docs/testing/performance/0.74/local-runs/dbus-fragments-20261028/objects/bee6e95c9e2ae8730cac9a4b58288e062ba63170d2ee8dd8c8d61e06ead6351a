@@ -1,0 +1,57 @@
+[package]
+name = "zbus_macros"
+# Keep version in sync with zbus crate
+version = "6.1.0"
+authors = [
+    "Marc-André Lureau <marcandre.lureau@redhat.com>",
+    "Zeeshan Ali Khan <zeeshanak@gnome.org>",
+]
+edition = { workspace = true }
+rust-version = { workspace = true }
+
+description = "proc-macros for zbus"
+repository = { workspace = true }
+keywords = ["D-Bus", "DBus", "IPC"]
+license = { workspace = true }
+categories = ["data-structures", "encoding", "parsing"]
+readme = "README.md"
+
+[features]
+default = ["comms", "proxy", "service"]
+# The D-Bus macro infrastructure and the `DBusError` derive (default). The wire-format derives
+# are always compiled.
+comms = ["syn/fold"]
+# The `proxy` macro and proxy generation from the `interface` macro (default).
+proxy = ["comms"]
+# The `interface` macro (default).
+service = ["comms"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2.workspace = true
+syn = { workspace = true, features = ["extra-traits", "full"] }
+quote.workspace = true
+
+zbus_utils = { path = "../zbus_utils", version = "6.0.0" }
+
+[dev-dependencies]
+zbus.workspace = true
+serde.workspace = true
+serde_repr.workspace = true
+futures-util.workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "x86_64-pc-windows-gnu",
+    "x86_64-apple-darwin",
+    "x86_64-unknown-freebsd",
+    "x86_64-unknown-netbsd",
+    "aarch64-linux-android",
+]
+
+[lints]
+workspace = true

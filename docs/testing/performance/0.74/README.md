@@ -1,5 +1,14 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [forced fragment/ancillary continuation](dbus-fragments-result-20261028.md)
+now proves actual bounded short reads/writes, one-time FD transmission, four EOF
+cuts and mid-write failure without flush/replay. A child-only RLIMIT_NOFILE fault
+sets real MSG_CTRUNC with the original 1024-FD buffer: the first baseline accepts
+one of eight FDs and fails 41/42. One pinned receive guard rejects that partial
+result; final 42/42, check and strict Clippy pass on Rust 1.88/1.94. First fixture
+pin and constructor-lint refusals remain. Root graph/live checks/windows stay
+exact; original delivery and full product/server admission remain open.
+
 The [GNU/private Unix FD continuation](dbus-linux-fd-result-20261028.md) now runs
 the 31-case source baseline on Rust 1.88/1.94, then real socketpair/SCM_RIGHTS
 controls. Initial decoded-only 37-case suites pass, but a stronger raw-message

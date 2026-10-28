@@ -1,0 +1,35 @@
+    Checking dbus-probe-074 v0.0.0 (/home/artur/.cache/hydracache-074-dbus-fragments/20261028-b3/fd/probe)
+error: use of deprecated associated function `tokio::io::unix::AsyncFd::<T>::new`: unsound due to lack of I/O safety; use `AsyncFd::register` instead (see https://github.com/tokio-rs/tokio/pull/8587)
+   --> /home/artur/.cache/hydracache-074-dbus-fragments/20261028-b3/assets/tools/dbus-fragments-074/tests.rs:155:34
+    |
+155 |                 socket: AsyncFd::new(a).unwrap(),
+    |                                  ^^^
+    |
+    = note: `-D deprecated` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(deprecated)]`
+
+error: use of deprecated associated function `tokio::io::unix::AsyncFd::<T>::new`: unsound due to lack of I/O safety; use `AsyncFd::register` instead (see https://github.com/tokio-rs/tokio/pull/8587)
+   --> /home/artur/.cache/hydracache-074-dbus-fragments/20261028-b3/assets/tools/dbus-fragments-074/tests.rs:162:34
+    |
+162 |                 socket: AsyncFd::new(b).unwrap(),
+    |                                  ^^^
+
+error: use of deprecated associated function `tokio::io::unix::AsyncFd::<T>::new`: unsound due to lack of I/O safety; use `AsyncFd::register` instead (see https://github.com/tokio-rs/tokio/pull/8587)
+   --> /home/artur/.cache/hydracache-074-dbus-fragments/20261028-b3/assets/tools/dbus-fragments-074/tests.rs:227:34
+    |
+227 |                 socket: AsyncFd::new(b).unwrap(),
+    |                                  ^^^
+
+error: use of deprecated associated function `tokio::io::unix::AsyncFd::<T>::new`: unsound due to lack of I/O safety; use `AsyncFd::register` instead (see https://github.com/tokio-rs/tokio/pull/8587)
+   --> /home/artur/.cache/hydracache-074-dbus-fragments/20261028-b3/assets/tools/dbus-fragments-074/tests.rs:254:30
+    |
+254 |             socket: AsyncFd::new(a).unwrap(),
+    |                              ^^^
+
+error: use of deprecated associated function `tokio::io::unix::AsyncFd::<T>::new`: unsound due to lack of I/O safety; use `AsyncFd::register` instead (see https://github.com/tokio-rs/tokio/pull/8587)
+   --> /home/artur/.cache/hydracache-074-dbus-fragments/20261028-b3/assets/tools/dbus-fragments-074/tests.rs:261:30
+    |
+261 |             socket: AsyncFd::new(b).unwrap(),
+    |                              ^^^
+
+error: could not compile `dbus-probe-074` (lib test) due to 5 previous errors

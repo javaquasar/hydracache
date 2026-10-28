@@ -1,0 +1,4 @@
+from pathlib import Path
+import native
+
+if __name__=='__main__':native.main(4,Path(__file__))

@@ -1,0 +1,50 @@
+{
+  "boot_after": "df3ee68e-b10e-4d65-b5a3-72d84fa838a3",
+  "boot_before": "df3ee68e-b10e-4d65-b5a3-72d84fa838a3",
+  "boot_unchanged": true,
+  "clocks_after": {
+    "CLOCK_BOOTTIME": 54968671408,
+    "CLOCK_MONOTONIC": 54968670409,
+    "CLOCK_MONOTONIC_RAW": 54856867414,
+    "CLOCK_REALTIME": 1793168868142820997
+  },
+  "clocks_before": {
+    "CLOCK_BOOTTIME": 2696024882,
+    "CLOCK_MONOTONIC": 2696024042,
+    "CLOCK_MONOTONIC_RAW": 2610371046,
+    "CLOCK_REALTIME": 1793168815870174998
+  },
+  "clocks_changed": false,
+  "first_refusal": {
+    "reason": "first GNU phase refusal: fd-194-clippy",
+    "type": "ValueError"
+  },
+  "native_root": "/home/artur/.cache/hydracache-074-dbus-fragments/20261028-b3",
+  "passed": false,
+  "phases": [
+    {
+      "exit": 0,
+      "label": "fd-194-build"
+    },
+    {
+      "exit": 0,
+      "label": "fd-194-list"
+    },
+    {
+      "exit": 0,
+      "label": "fd-194-test"
+    },
+    {
+      "exit": 0,
+      "label": "fd-194-check"
+    },
+    {
+      "exit": 101,
+      "label": "fd-194-clippy"
+    }
+  ],
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

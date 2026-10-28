@@ -1,0 +1,21 @@
+{
+  "archived_code_executed": false,
+  "byte_verification_only": true,
+  "child_records_verified": 4,
+  "eof_cuts_per_image": 4,
+  "exit": 0,
+  "final_native_passes_per_compiler": 42,
+  "first_fault_baseline": {
+    "failed": 1,
+    "passed": 41
+  },
+  "first_refusals_retained": true,
+  "forced_chunk_scenarios_per_image": 3,
+  "inputs_unchanged": true,
+  "members_verified": 2641,
+  "objects_verified": 473,
+  "original_capacity": 1024,
+  "previous_protocol_traces_equal": true,
+  "receive_leaf_inverse": true,
+  "release_admitted": false
+}

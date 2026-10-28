@@ -1,0 +1,11 @@
+test_both_contexts_bind_their_own_worker_entry_and_root (test_controls.Controls.test_both_contexts_bind_their_own_worker_entry_and_root) ... ok
+test_complete_42_catalog_rejects_incomplete_or_foreign (test_controls.Controls.test_complete_42_catalog_rejects_incomplete_or_foreign) ... ok
+test_direct_rustix_edge_matches_the_sealed_parent (test_controls.Controls.test_direct_rustix_edge_matches_the_sealed_parent) ... ok
+test_registration_adapter_changes_only_the_five_constructors (test_controls.Controls.test_registration_adapter_changes_only_the_five_constructors) ... ok
+test_truncation_patch_has_one_pinned_inverse (test_controls.Controls.test_truncation_patch_has_one_pinned_inverse) ... ok
+test_unknown_context_never_resolves (test_controls.Controls.test_unknown_context_never_resolves) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.023s
+
+OK

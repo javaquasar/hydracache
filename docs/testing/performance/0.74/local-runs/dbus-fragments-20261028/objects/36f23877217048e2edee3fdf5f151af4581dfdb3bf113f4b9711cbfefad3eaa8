@@ -1,0 +1,30 @@
+{
+  "absolute_deadline": 1102.638805085,
+  "argv": [
+    "/home/artur/.cache/hydracache-074-dbus-fragments/20261028-b2/builds/fd/194/debug/deps/dbus_probe_074-18e0e39cf301e872",
+    "--test-threads=1",
+    "--show-output"
+  ],
+  "artifact": {
+    "bytes": 60494952,
+    "path": "/home/artur/.cache/hydracache-074-dbus-fragments/20261028-b2/builds/fd/194/debug/deps/dbus_probe_074-18e0e39cf301e872",
+    "sha256": "5ef9f2d68a6c4b1b22be241679f0a92958d79b51425c7e609ea96f7662f0ccb0"
+  },
+  "capacity_poll": 5,
+  "environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_HOME": "/home/artur/.cache/hydracache-074-dbus-fragments/20261028-b2/cargo-home",
+    "CARGO_INCREMENTAL": "0",
+    "HC074_FD_ROOT": "/home/artur/.cache/hydracache-074-dbus-fragments/20261028-b2/fd-fixtures",
+    "HOME": "/home/artur",
+    "LANG": "C.UTF-8",
+    "LOGNAME": "artur",
+    "PATH": "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin:/usr/local/bin:/usr/bin:/bin",
+    "USER": "artur"
+  },
+  "original_bound": 1200,
+  "prepare_sha256": "9c5a6f83d095af46011ec1d0479de136863736e37b981d3df5404f2798dfe8ee",
+  "retirement": 5,
+  "retry": false,
+  "session_bound": 1100
+}

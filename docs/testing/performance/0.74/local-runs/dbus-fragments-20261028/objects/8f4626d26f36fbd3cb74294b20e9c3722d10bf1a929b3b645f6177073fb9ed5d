@@ -1,0 +1,6 @@
+error: failed to select a version for the requirement `rustix = "=1.1.4"`
+candidate versions found which didn't match: 1.1.6
+location searched: directory source `/home/artur/.cache/hydracache-074-dbus-fragments/20261028-b1/vendor` (which is replacing registry `crates-io`)
+required by package `dbus-probe-074 v0.0.0 (/home/artur/.cache/hydracache-074-dbus-fragments/20261028-b1/fd/probe)`
+perhaps a crate was updated and forgotten to be re-vendored?
+As a reminder, you're using offline mode (--offline) which can sometimes cause surprising resolution failures, if this error is too confusing you may wish to retry without `--offline`.
