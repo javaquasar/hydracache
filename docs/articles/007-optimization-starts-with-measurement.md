@@ -22540,3 +22540,35 @@ original-start. Контур соблюдает прежние guards, срок�
 можно завершать root dependency adoption и policy. Технические детали, первые
 отказы и точный accounting — в
 [отчёте интеграции legacy callers](../testing/performance/0.74/dbus-legacy-integration-result-20261028.md).
+
+### 0.74: native transport и сохранённый первый CLOEXEC-отказ
+
+Следующий security-кандидат убирает оставшийся zbus 5 test backend из отдельного
+графа и передаёт реальные Unix reads/writes и peer credentials backend zbus 6.
+Первый lock-review отказывается принимать исчезнувшее ребро Tokio→tracing.
+По исходным manifests отдельно доказана его причина: feature запрашивал старый
+zbus 5. Повторного Cargo-resolution нет; тот же lock проходит узкий source/effect
+review: 21 пакет удалён, новых пакетов и изменений сохранённых checksums нет.
+Root Cargo.lock пока не меняется — это не завершённая dependency adoption.
+
+После resource-refusal и отдельного восстановления места оба компилятора проходят
+64 прежних теста. Первый реальный private-bus прогон всё же падает: старый negative
+fixture ожидал полученный FD без CLOEXEC, а native zbus 6 безопасно выставляет флаг.
+Это пример, когда падающий тест выявляет устаревший способ внесения ошибки.
+Ослаблять writer guard нельзя. В отдельном test-only кандидате сначала проверяем
+native CLOEXEC, затем явно снимаем флаг с полученного дескриптора, проверяем прежний
+отказ и восстанавливаем флаг, в том числе перед повторной передачей panic.
+
+Положительные сценарии используют native receiver. Прежний atomic adapter также
+остаётся покрыт дополнительным десятым сценарием. GNU Rust 1.94 и MSRV 1.88
+проходят по 65 выбранных тестов и строгий Clippy; private matrix подтверждает
+partial writes, потерю ACK, чужого sender, неверный serial, disconnect и отказ
+без FD capability. Полный каталог содержит 1 593 теста; остальные 1 528 явно
+filtered. Все первые отказы, исходные сроки и live-проверки сохранены.
+
+Эти результаты подтверждают совместимость transport, а не ускорение продукта
+или завершение original-start. Форматирование сгенерированных тестов и новая
+воспроизводимая source-упаковка ещё требуют отдельного gate. Root security/policy,
+workspace, автономное прекращение записи, lifecycle и reconnect также открыты.
+Объектный evidence с точными accounting и границами — в
+[отчёте native transport](../testing/performance/0.74/dbus-native-transport-result-20261028.md).

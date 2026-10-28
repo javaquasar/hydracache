@@ -1,0 +1,14 @@
+{
+  "files": {
+    "tools/dbus-native-transport-074/private_native.py": "84a4e5b435fcf8a38813f3e385f783040378ca781b600ca85501c054da23ade5",
+    "tools/dbus-native-transport-074/private_run.py": "f6ab1792920e5ec8ebbebf342a4e9ba9f596582088c75113dbd8abf6a9348265",
+    "tools/dbus-native-transport-074/test_private.py": "89853ac681e3775a0b9a597134270f9ca0bc3626c02dadf8d6305b119cc9468f"
+  },
+  "freeze_sha256": "d8fb559e63fd2e1afb7f60067ef5be2cff08186315e81516ce0dac0b72906ff5",
+  "matrix_count": 1,
+  "retry": false,
+  "root": false,
+  "scenario_count": 9,
+  "server": false,
+  "system_bus": false
+}

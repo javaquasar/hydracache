@@ -1,0 +1,8 @@
+{
+  "files": {
+    "tools/dbus-native-transport-074/fault_unit_native.py": "50bad33c01d05244f2a92518ae71e85149237bcca81eda775192e81baa301768",
+    "tools/dbus-native-transport-074/fault_unit_run.py": "3cd3895c2cce760181b7f6b56a28fd049195dbe2d2d88cd3487227ce5628a6fa",
+    "tools/dbus-native-transport-074/test_fault.py": "bad57d513d5597d99c355fad8d73492a743db5068f52297db111a3027e03fca3"
+  },
+  "freeze_sha256": "b1dad37452d098e5578b70b253a09daf2503cb124540503e6cc2ea065967935d"
+}

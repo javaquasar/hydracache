@@ -1,0 +1,132 @@
+{
+  "admission": false,
+  "allowed_effects": [
+    "old root zbus 5 test dependency",
+    "source-proven Tokio optional tracing dependency"
+  ],
+  "new_cargo_run": false,
+  "new_packages": 135,
+  "no_new_packages": true,
+  "old_packages": 156,
+  "old_zbus_absent": true,
+  "original_strict_audit_refusal_preserved": true,
+  "passed": true,
+  "removed": [
+    {
+      "name": "async-broadcast",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.7.2"
+    },
+    {
+      "name": "async-recursion",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.2.0"
+    },
+    {
+      "name": "concurrent-queue",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "2.5.0"
+    },
+    {
+      "name": "crossbeam-utils",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.8.21"
+    },
+    {
+      "name": "enumflags2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.7.12"
+    },
+    {
+      "name": "enumflags2_derive",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.7.12"
+    },
+    {
+      "name": "event-listener",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "5.4.1"
+    },
+    {
+      "name": "event-listener-strategy",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.5.4"
+    },
+    {
+      "name": "futures-lite",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "2.6.1"
+    },
+    {
+      "name": "parking",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "2.2.1"
+    },
+    {
+      "name": "proc-macro-crate",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "3.5.0"
+    },
+    {
+      "name": "toml_edit",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.25.12+spec-1.1.0"
+    },
+    {
+      "name": "tracing",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.1.44"
+    },
+    {
+      "name": "tracing-attributes",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.1.31"
+    },
+    {
+      "name": "tracing-core",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.1.36"
+    },
+    {
+      "name": "zbus",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "5.19.0"
+    },
+    {
+      "name": "zbus_macros",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "5.19.0"
+    },
+    {
+      "name": "zbus_names",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "4.3.4"
+    },
+    {
+      "name": "zvariant",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "5.15.0"
+    },
+    {
+      "name": "zvariant_derive",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "5.15.0"
+    },
+    {
+      "name": "zvariant_utils",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "4.2.0"
+    }
+  ],
+  "resolved_lock_sha256": "224ea73b9d4b8d164d5a6a32f93a87870a5bbaac452de19c0ba7f2aea0343397",
+  "retained_checksums_unchanged": true,
+  "root_product_changed": false,
+  "source_manifests_sha256": {
+    "candidate_zbus6": "eab7ebb034bd6e97a25231e6114037a18fa18793adf85044b4378aa105206828",
+    "qualified_zbus6": "d2836489dcf6772e84e0fdbe124078ee6fd968e99a53d312f21f10c0bfe222af",
+    "tokio": "6e6a777fce6800a5ed2a0efb672d7751445556ee40d258157938ba4506b78c35",
+    "zbus5": "e7d3f2da900f6d134b59397e46885600ba9cd395e6249e388fc6e687d301b19e"
+  },
+  "source_unchanged": true,
+  "tests_executed": false
+}

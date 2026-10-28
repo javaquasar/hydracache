@@ -1,0 +1,12 @@
+{
+  "artifact": {
+    "bytes": 195749992,
+    "path": "/home/artur/.cache/hydracache-074-dbus-native/20261028-a5/builds/fd/194/debug/deps/hydracache_long_run_supervisor_074-f1c715c91ea0090c",
+    "sha256": "8490c1f9d8af54d6e384992e8d5761aefa872e20e6307c49337fb174be5956cd"
+  },
+  "exit": 0,
+  "library_only": true,
+  "release_admitted": false,
+  "source_unchanged": true,
+  "tests_executed": false
+}

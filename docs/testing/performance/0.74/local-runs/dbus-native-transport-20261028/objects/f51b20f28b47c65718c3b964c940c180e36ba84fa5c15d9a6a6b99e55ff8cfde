@@ -1,0 +1,11 @@
+{
+  "bound": 1200,
+  "initial_repaired_prerequisite": 17179869184,
+  "observed_windows_free": 25891422208,
+  "old_native_verdict_absent": true,
+  "poll": 5,
+  "retirement": 5,
+  "running_floor": 4294967296,
+  "session_bound": 1100,
+  "thresholds_changed": false
+}

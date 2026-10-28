@@ -547,6 +547,16 @@ shipping, complete source/effect, package/workspace or host gates.
 
 ## 4 Finish original Linux execution and recovery
 
+The [native transport gate](dbus-native-transport-result-20261028.md) subsequently
+removes the remaining old zbus test-backend edge from an isolated resolved graph.
+Both compilers pass all 65 selected cases, including ten private-bus fault
+scenarios, and strict library/test-cfg Clippy. First graph/resource/CLOEXEC
+refusals remain; the negative FD fault is explicitly injected without relaxing
+the writer guard. This supersedes the predecessor's dev-backend limitation for
+that candidate only. Generated formatting, source revision-2 reconstruction,
+policy/root adoption and full package/workspace gates remain open; root's old
+graph is unchanged. No real original-owner execution or server admission follows.
+
 The [whole remaining production caller join](dbus-legacy-integration-result-20261028.md)
 now uses the qualified zbus 6 blocking bridge in all three remaining legacy
 helpers inside an isolated full source copy. GNU 1.94/1.88 check and strict

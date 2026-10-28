@@ -1,0 +1,28 @@
+{
+  "absolute_deadline": 1118.3169494859999,
+  "argv": [
+    "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "generate-lockfile",
+    "--offline",
+    "--manifest-path",
+    "/home/artur/.cache/hydracache-074-dbus-native/20261028-a1/fd/Cargo.toml"
+  ],
+  "bound": 1200,
+  "environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_HOME": "/home/artur/.cache/hydracache-074-dbus-native/20261028-a1/cargo-home",
+    "CARGO_INCREMENTAL": "0",
+    "HC074_FD_ROOT": "/home/artur/.cache/hydracache-074-dbus-native/20261028-a1/fd-fixtures",
+    "HOME": "/home/artur",
+    "LANG": "C.UTF-8",
+    "LOGNAME": "artur",
+    "PATH": "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin:/usr/local/bin:/usr/bin:/bin",
+    "USER": "artur"
+  },
+  "floor": 4294967296,
+  "poll": 5,
+  "resolution_only": true,
+  "retirement": 5,
+  "retry": false,
+  "session_bound": 1100
+}

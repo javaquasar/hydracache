@@ -1,0 +1,13 @@
+{
+  "bound_seconds": 1200,
+  "capacity_poll_seconds": 5,
+  "classification": "resource-floor",
+  "cleanup_seconds": 5,
+  "errors": [
+    "CapacityError: original 4 GiB floor"
+  ],
+  "exit": 125,
+  "observed_child_exit": null,
+  "production_writer_authority": false,
+  "retired": true
+}

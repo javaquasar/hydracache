@@ -1,0 +1,11 @@
+{
+  "files": {
+    "tools/dbus-native-transport-074/capacity_unit_native.py": "206732c6df997fb91e214ea9484e18bab22a0db21904ddef8ccddb1f7d104f86",
+    "tools/dbus-native-transport-074/capacity_unit_run.py": "e8c03f5803ebbc568c26631a7c0c091b3ddae8295d8c57170d9d040a9c32fc66"
+  },
+  "freeze_sha256": "d8fb559e63fd2e1afb7f60067ef5be2cff08186315e81516ce0dac0b72906ff5",
+  "retry": false,
+  "selected": 64,
+  "server": false,
+  "total": 1593
+}

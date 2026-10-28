@@ -7441,3 +7441,15 @@ The probe adds product's tokio-macros 2.7.0 archive under its existing syn 2.0.1
 have compile coverage only; receiver/original_join/held routes and two manual host
 tests are explicitly unqualified. No root graph, host, original-start or release
 admission follows; full caller/source/effect/product gates remain open.
+
+The [native manual-transport continuation](dbus-native-transport-result-20261028.md)
+removes old zbus 5 from its isolated resolved graph: 21 packages disappear with
+no new packages/retained checksum changes. Both GNU 1.94/MSRV 1.88 pass 65 selected
+cases, including ten actual private-bus faults, and strict library/test-cfg Clippy.
+The first strict lock, capacity and CLOEXEC-characterization refusals remain.
+The test-only follow-up injects the old negative fault explicitly without weakening
+the writer guard. All original bounds and live checks stay exact. Seventeen inert
+producer plus three independent retention controls pass; 1,528 of the complete
+1,593-case catalogs remain filtered. Generated formatting, source revision-2
+reconstruction, root/security/policy/full product and original execution/recovery
+gates remain open. No service/system bus/server/product or numerical claim follows.

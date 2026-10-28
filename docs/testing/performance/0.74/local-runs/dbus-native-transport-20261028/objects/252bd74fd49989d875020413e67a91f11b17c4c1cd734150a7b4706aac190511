@@ -1,0 +1,31 @@
+{
+  "boot_after": "6a0e200b-e074-43c1-9744-dc626a1c383d",
+  "boot_before": "6a0e200b-e074-43c1-9744-dc626a1c383d",
+  "boot_unchanged": true,
+  "clocks_after": {
+    "CLOCK_BOOTTIME": 91856886781,
+    "CLOCK_MONOTONIC": 91856885535,
+    "CLOCK_MONOTONIC_RAW": 91951963537,
+    "CLOCK_REALTIME": 1793203584445010822
+  },
+  "clocks_before": {
+    "CLOCK_BOOTTIME": 18317056969,
+    "CLOCK_MONOTONIC": 18317055899,
+    "CLOCK_MONOTONIC_RAW": 17903589815,
+    "CLOCK_REALTIME": 1793203510488616314
+  },
+  "clocks_changed": false,
+  "first_refusal": {
+    "reason": "only old root dependency may disappear",
+    "type": "ValueError"
+  },
+  "passed": false,
+  "release_admitted": false,
+  "resolution_only": true,
+  "root_changed": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": false,
+  "source_unchanged_except_resolved_lock": true,
+  "tests_executed": false
+}

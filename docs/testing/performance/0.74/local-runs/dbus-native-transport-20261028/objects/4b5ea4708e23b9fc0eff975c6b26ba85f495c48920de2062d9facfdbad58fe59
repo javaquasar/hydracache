@@ -1,0 +1,6 @@
+{
+  "type": "AttributeError",
+  "reason": "module prepare has no attribute load; generic prepare import collides with the original Windows preparation module during nested loader initialization",
+  "native_run": false,
+  "original_resolver_untouched": true
+}

@@ -1,0 +1,40 @@
+{
+  "boot_after": "b04f0ed8-4831-438c-a7b6-0a886d00c00d",
+  "boot_before": "b04f0ed8-4831-438c-a7b6-0a886d00c00d",
+  "boot_unchanged": true,
+  "clocks_after": {
+    "CLOCK_BOOTTIME": 102742659032,
+    "CLOCK_MONOTONIC": 102742658563,
+    "CLOCK_MONOTONIC_RAW": 104063311793,
+    "CLOCK_REALTIME": 1793207764594661893
+  },
+  "clocks_before": {
+    "CLOCK_BOOTTIME": 98895364201,
+    "CLOCK_MONOTONIC": 98895363249,
+    "CLOCK_MONOTONIC_RAW": 100168201798,
+    "CLOCK_REALTIME": 1793207760747366222
+  },
+  "clocks_changed": false,
+  "first_refusal": {
+    "reason": "first actual private matrix refusal: fd-194-test",
+    "type": "ValueError"
+  },
+  "original_send": false,
+  "passed": false,
+  "phases": [
+    {
+      "exit": 0,
+      "label": "fd-194-list"
+    },
+    {
+      "exit": 101,
+      "label": "fd-194-test"
+    }
+  ],
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true,
+  "system_bus": false,
+  "tests_executed": true
+}
