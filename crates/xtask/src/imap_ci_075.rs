@@ -241,6 +241,27 @@ fn parse(args: &[String], run: bool) -> Result<Options, Box<dyn Error>> {
 pub fn check_workflow(root: &Path) -> Result<(), Box<dyn Error>> {
     let bytes = read_relative(root, WORKFLOW, MAX_ARTIFACT_BYTES)?;
     let value: serde_yaml::Value = serde_yaml::from_slice(&bytes)?;
+    let paths = value["on"]["pull_request"]["paths"]
+        .as_sequence()
+        .ok_or("IMap PR dependency paths required")?
+        .iter()
+        .filter_map(serde_yaml::Value::as_str)
+        .collect::<BTreeSet<_>>();
+    for dependency in [
+        "crates/**",
+        "sdks/java/**",
+        "tests/java-imap-benchmark/**",
+        "docs/testing/imap/**",
+        "fuzz/**",
+        ".github/workflows/ci.yml",
+        WORKFLOW,
+        "Cargo.toml",
+        "Cargo.lock",
+    ] {
+        if !paths.contains(dependency) {
+            return Err(format!("IMap CI must run for dependency changes: {dependency}").into());
+        }
+    }
     let jobs = &value["jobs"];
     let actual_jobs = jobs
         .as_mapping()

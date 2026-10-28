@@ -1,7 +1,7 @@
 name: IMap 0.75 local qualification
 on:
   pull_request:
-    paths: ['crates/**', 'sdks/java/**', 'tests/java-imap-benchmark/**', 'docs/testing/imap/**', '.github/workflows/imap-075.yml', 'Cargo.toml', 'Cargo.lock']
+    paths: ['crates/**', 'sdks/java/**', 'tests/java-imap-benchmark/**', 'docs/testing/imap/**', 'fuzz/**', '.github/workflows/ci.yml', '.github/workflows/imap-075.yml', 'Cargo.toml', 'Cargo.lock']
   schedule:
     - cron: '23 2 * * *'
   workflow_dispatch:

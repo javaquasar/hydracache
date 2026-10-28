@@ -115,6 +115,9 @@ fn incomplete_failed_mixed_source_or_weakened_lanes_never_complete_ci() {
 #[test]
 fn workflow_canaries_reject_unpinned_actions_ignored_failures_and_missing_completion() {
     for changed in [
+        WORKFLOW.replace("'fuzz/**', ", ""),
+        WORKFLOW.replace("'.github/workflows/ci.yml', ", ""),
+        WORKFLOW.replace("paths: [", "paths-ignore: ["),
         WORKFLOW.replace("fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09", "v5"),
         WORKFLOW.replace("fail-fast: false", "fail-fast: true"),
         WORKFLOW.replace("timeout-minutes: 45", "timeout-minutes: 999"),
