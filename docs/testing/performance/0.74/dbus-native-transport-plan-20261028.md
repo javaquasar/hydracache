@@ -106,3 +106,21 @@ other source change and no invented native verdict. Additional initial headroom
 of 16 GiB is required before dispatch; the existing running 4 GiB floor,
 1200/1100-second bounds, five-second polling/retirement and live limits stay exact.
 No VHD compaction, settings, clocks, service change or foreign-process stop.
+
+The repaired r source completes paired GNU 1.94/1.88 library check/strict Clippy,
+actual full default test images and strict test-cfg/all-feature Clippy. Both
+complete catalogs contain 1,593 identities; each exact original cohort passes
+64/64 with 1,529 filtered, no failures/ignored cases. Source/boot and owned
+retirement postflight pass. No system bus, private bus or real owner is executed
+by that cohort; the native backend's live IO still needs its own gate.
+
+The next single ignored matrix is the original nonroot private dbus-daemon case,
+selected by exact full identity from the same actual source/image/catalog. Its
+nine scenarios and 60-second matrix/three-second infrastructure/two-second method
+bounds stay unchanged, under the existing original CI envelope. Private daemon
+binary/source is recorded; no package or service is installed. Additional driver
+pins precede dispatch. A source audit predicts a characterization boundary:
+bare-receiver assumes the old non-CLOEXEC default, while actual zbus 6 uses
+CMSG_CLOEXEC. Do not loosen writer_shape or change expected flags to conceal a
+result. Keep the first runtime result; any follow-up fault-generation change
+must retain the original negative guard and also test actual native positive IO.
