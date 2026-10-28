@@ -1,5 +1,12 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The approved [bounded server preparation profile](server-preparation-profile-plan-20261028.md)
+uses an exact existing release image and a private namespace/cgroup fixture that
+ends before original send. It retains original checks/windows and first results;
+no release install, supervisor stop, host service/clock change or product load.
+This different fixture composition cannot prove original-manager delivery or a
+comparative speedup. Execution results are recorded separately after collection.
+
 The [first real local manager baseline](original-manager-baseline-result-20261028.md)
 fails closed before held send: causal age 10,005,213,283 ns exceeds the unchanged
 10-second window. Fresh release builds pass; exactly one case fails, with zero
