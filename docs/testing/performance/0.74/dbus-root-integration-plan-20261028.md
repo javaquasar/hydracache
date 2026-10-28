@@ -83,3 +83,40 @@ deps directory: 10,806 files / 23,464,641,867 logical bytes. Free space moves fr
 8,400,330,752 to 31,694,090,240 bytes at that deletion. Source/evidence/executables,
 other worktrees and processes are preserved; no settings, services or clocks change.
 An earlier independent free-space rise is not attributed to this cleanup.
+
+## First graph and bounded follow-up
+
+The first offline command passes with all 36 product workspace members, exactly
+the three reviewed local dependencies and no old zbus 5 or foreign registry.
+Root source/HEAD and all projected inputs except the intended copied lock remain
+exact; original Job retirement succeeds. Counts are separate: original lock 689,
+resolved lock 683, active default-feature metadata 678. Five optional allocator/
+fault records remain byte-for-byte in the lock, not counted as active or tested.
+
+Exact semantic review permits 14 removals and eight additions only. Four registry
+identities update: bitflags 2.13.0→2.13.2, futures-core/io 0.3.32→0.3.34, socket2
+0.6.4→0.6.5. Three local backport identities and registry zruntime 0.2.0 complete
+the additions. Every new node matches the qualified consumer's source/checksum/
+dependency selection; every retained checksum remains equal. Canonical edge
+updates affect 42 retained owners, including unqualified lock edge names; only
+the source-proven optional Tokio→tracing removal is additionally allowed.
+
+Capture nine exact upstream archives (four old/new pairs plus zruntime), verify
+current cached source members and declared floors against the actual metadata
+registry slot, and retain complete source diffs. The first generic cache lookup
+refuses duplicate identical futures-core archives across two slots; its source,
+partial capture and observed failure summary remain. A separate indexed capture
+uses the actual selected slot without another Cargo resolution.
+
+Fresh source review finds unchanged Rust bodies for futures-core/io; bitflags
+changes const generation/all(), and socket2 extends target cfg for NuttX,
+Emscripten and illumos. No new build script or declared MSRV increase is found.
+Linux/Windows active-branch compatibility is a source inference; root compilation
+and regression gates remain necessary, especially for shared macro consumers.
+
+Seal the reviewed first lock and exact review/helper receipts, then run a separate
+all-feature metadata phase with --locked --offline under the same original owner
+and bounds. Require all 683 lock identities and all 36 original members, with no
+source or lock mutation. This extends feature coverage rather than repeating the
+first resolution. Fifteen inert controls pass before this dispatch. No compiler,
+build script, test, service, server or product workload follows from metadata.

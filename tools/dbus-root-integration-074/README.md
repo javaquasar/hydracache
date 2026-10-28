@@ -46,3 +46,25 @@ source-versus-lock mutations, complete graph membership and preflight logs. The
 first LF-only marker control refuses the root's CRLF manifest before projection;
 its source and observed summary are retained. The correction preserves existing
 line endings and parsed original fields rather than normalizing root files.
+
+The first default-feature metadata phase passes. Distinguish its 678 active
+identities from the new lock's 683 records (689 before); five unchanged optional
+allocator/fault records are present only in the lock. `effects.py` checks the
+exact 14 removals/eight additions, unchanged retained checksums and canonical
+semantic edges. All eight new nodes match the qualified consumer selection;
+four common registry updates affect 42 retained edge owners. Primary archives
+and complete cached source inventories are checksum-verified; new declared floors
+remain at or below 1.88, with no build script addition. The upstream Rust diffs
+and a separate source review remain explicit, not a root compiler acceptance.
+
+The first offline source capture refuses two identical futures-core archives in
+different cache slots. Preserve that partial output; the separate indexed capture
+selects the actual metadata registry slot and verifies every current source member
+against its exact archive. Cargo is not rerun by this correction.
+
+After those reviews, `prepare_features.py` seals the already resolved lock in a
+distinct receipt. Commit the exact helpers, then `feature_run.py metadata` runs a
+separate all-feature phase with --offline --locked. It keeps the same original
+owner/bounds and now refuses any source or lock mutation. All 683 lock identities
+must appear in actual metadata, including the five optional nodes. Fifteen inert
+controls pass before dispatch. Neither phase runs compilation or product tests.
