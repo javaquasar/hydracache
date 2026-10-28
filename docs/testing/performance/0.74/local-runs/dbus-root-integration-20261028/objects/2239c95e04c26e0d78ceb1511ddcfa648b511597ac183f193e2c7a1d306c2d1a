@@ -1,0 +1,62 @@
+--- root/tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs
++++ candidate/tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs
+@@ -1,4 +1,5 @@
+ //! Borrowed state is reply data, never request custody or start authority.
++use zbus6 as zbus;
+ use super::*;
+ #[test]
+ fn dispatch_reply_state_requires_the_borrowed_preparation_api() {
+@@ -12,11 +13,11 @@
+     let [mut err, err_w] = pipe();
+     let request = request_kind([&out_w, &err_w], "ok");
+     let response = Message::method_return(&request.header())
+-        .unwrap()
++        
+         .sender(MANAGER)
+-        .unwrap()
++        
+         .destination(CLIENT)
+-        .unwrap()
++        
+         .build(&OwnedObjectPath::try_from("/org/freedesktop/systemd1/job/74").unwrap())
+         .unwrap();
+     let mut state = ReplyState::prepare(&request, MANAGER, CLIENT).unwrap();
+@@ -161,16 +162,16 @@
+             &held.request.header(),
+             "org.freedesktop.systemd1.UnitExists",
+         )
+-        .unwrap()
++        
+         .sender(MANAGER)
+-        .unwrap()
++        
+         .destination(CLIENT)
+-        .unwrap()
++        
+     } else {
+         zbus::message::Builder::from(good.header())
+     };
+     match action {
+-        3 => builder = builder.sender(":1.999").unwrap(),
++        3 => builder = builder.sender(":1.999"),
+         4 => {
+             builder =
+                 builder.reply_serial(NonZeroU32::new(held.serial.get().wrapping_add(1).max(1)))
+@@ -179,14 +180,14 @@
+             // The high-level builder rejects this bit on replies; construct the
+             // interoperable wire form through Header, as in the old flag corpus.
+             let mut header = good.header();
+-            let flags = header.primary().flags() | zbus::message::Flags::NoReplyExpected;
++            let flags = header.primary().flags() | zbus::message::Flags::NO_REPLY_EXPECTED;
+             header.primary_mut().set_flags(flags);
+             builder = zbus::message::Builder::from(header);
+         }
+         7 => {
+             builder = builder
+-                .with_flags(zbus::message::Flags::NoAutoStart)
+-                .unwrap()
++                .with_flags(zbus::message::Flags::NO_AUTO_START)
++                
+         }
+         _ => (),
+     }

@@ -1,0 +1,55 @@
+--- root/tools/long-run-supervisor-074/src/diagnostic_manager_sandbox_query.rs
++++ candidate/tools/long-run-supervisor-074/src/diagnostic_manager_sandbox_query.rs
+@@ -1,6 +1,7 @@
+ //! Fixed read-only queries on the original connection, not original delivery.
++use zbus6 as zbus;
+ use super::*;
+-use zbus::zvariant::{OwnedObjectPath, OwnedValue};
++use zbus::wire::{OwnedObjectPath, OwnedVariant as OwnedValue};
+ const PATH: &str = "/org/freedesktop/systemd1";
+ const UNIT: &str = "org.freedesktop.systemd1.Unit";
+ const SERVICE: &str = "org.freedesktop.systemd1.Service";
+@@ -11,7 +12,7 @@
+     let h = reply.header();
+     if reply.message_type() != zbus::message::Type::MethodReturn
+         || reply.data().bytes().len() > crate::protocol::MAX_PACKET_BYTES
+-        || reply.primary_header().flags().bits() & !(zbus::message::Flags::NoReplyExpected as u8)
++        || reply.primary_header().flags().bits() & !(zbus::message::Flags::NO_REPLY_EXPECTED.bits())
+             != 0
+         || h.sender().map(|v| v.as_str()) != Some(manager)
+         || h.destination().map(|v| v.as_str()) != Some(client)
+@@ -244,17 +245,17 @@
+     #[test]
+     fn bootstrap_sandbox_manager_replies_cannot_change_sender_destination_or_type() {
+         let request = Message::method_call(PATH, "GetUnit")
+-            .unwrap()
++            
+             .sender(":1.74")
+-            .unwrap()
++            
+             .destination(":1.1")
+-            .unwrap()
++            
+             .build(&(unit(),))
+             .unwrap();
+         let good = Message::method_return(&request.header())
+-            .unwrap()
++            
+             .sender(":1.1")
+-            .unwrap()
++            
+             .build(&OwnedObjectPath::try_from("/org/freedesktop/systemd1/unit/held").unwrap())
+             .unwrap();
+         shape(&good, ":1.1", ":1.74", "o").unwrap();
+@@ -263,9 +264,9 @@
+         assert!(shape(&good, ":1.1", ":1.74", "v").is_err());
+         assert!(shape(&request, ":1.1", ":1.74", "o").is_err());
+         let bad = Message::method_return(&request.header())
+-            .unwrap()
++            
+             .sender(":1.1")
+-            .unwrap()
++            
+             .build(&true)
+             .unwrap();
+         assert!(shape(&bad, ":1.1", ":1.74", "o").is_err());

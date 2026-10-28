@@ -1,0 +1,28 @@
+--- root/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs
++++ candidate/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs
+@@ -1,8 +1,9 @@
++use zbus6 as zbus;
+ use super::*;
+ use std::mem::{size_of, zeroed};
+ use std::os::fd::{OwnedFd, RawFd};
+ use std::os::unix::net::UnixDatagram;
+-use zbus::zvariant::serialized::Data;
++use zbus::wire::serialized::Data;
+ 
+ fn pair() -> [UnixDatagram; 2] {
+     let (a, b) = UnixDatagram::pair().unwrap();
+@@ -173,11 +174,11 @@
+         );
+     }
+     let response = Message::method_return(&received.header())
+-        .unwrap()
++        
+         .sender(MANAGER)
+-        .unwrap()
++        
+         .destination(CLIENT)
+-        .unwrap()
++        
+         .build(&OwnedObjectPath::try_from("/org/freedesktop/systemd1/job/74").unwrap())
+         .unwrap();
+     let response = transfer(&manager, &client, &response);

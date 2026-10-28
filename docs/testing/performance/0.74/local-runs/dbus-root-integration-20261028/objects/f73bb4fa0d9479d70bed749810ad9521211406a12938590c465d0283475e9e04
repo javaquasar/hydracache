@@ -1,0 +1,26 @@
+--- root/tools/long-run-supervisor-074/src/diagnostic_loaded.rs
++++ candidate/tools/long-run-supervisor-074/src/diagnostic_loaded.rs
+@@ -1,4 +1,5 @@
+ //! Read-only settings projection, never launch or cleanup authority.
++use zbus6 as zbus;
+ use crate::canonical_json;
+ use crate::diagnostic_lease::DiagnosticState;
+ use crate::diagnostic_manager::{ManagerScope, ManagerSnapshot};
+@@ -6,7 +7,7 @@
+ use crate::systemd_unit::{TransientUnitSpec, UnitProperty};
+ use serde::{Deserialize, Serialize};
+ use std::collections::{BTreeMap, HashMap};
+-use zbus::zvariant::OwnedValue;
++use zbus::wire::OwnedVariant as OwnedValue;
+ 
+ #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+ #[serde(deny_unknown_fields)]
+@@ -595,7 +596,7 @@
+     }
+     #[test]
+     fn loaded_dbus_projection_requires_exact_types_and_ignores_only_command_status() {
+-        use zbus::zvariant::Value;
++        use zbus6::wire::Variant as Value;
+         let (_, good) = fixture(0);
+         let expected = &good.settings.as_ref().unwrap().0;
+         let mut service: HashMap<String, OwnedValue> = expected

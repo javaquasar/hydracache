@@ -1,0 +1,15 @@
+{
+  "all_dependency_kinds_and_targets": true,
+  "common_registry_updates_still_require_root_gates": true,
+  "input_packet_sha256": "149698f228bba92ece4c5454db982977093899bfc8da6cf5e50c9405c2708ca9",
+  "metadata_sha256": "301d51b42d0ae2b2de4d2461d8bebcedfedc594a69a8a8979c5a08d0133092c6",
+  "no_published_private_override": true,
+  "publishable_roots": 23,
+  "published_vendor_intersections": [],
+  "registry_publication": false,
+  "release_admitted": false,
+  "root_adopted": false,
+  "transitive_reachable": 599,
+  "vendor_packages": 3,
+  "workspace_members": 36
+}

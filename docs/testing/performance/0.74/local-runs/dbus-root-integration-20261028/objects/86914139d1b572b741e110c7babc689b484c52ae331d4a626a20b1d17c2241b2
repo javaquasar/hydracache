@@ -1,0 +1,267 @@
+"""Exact isolated root-workspace projection, before dependency resolution/adoption."""
+from pathlib import Path
+import difflib
+import copy
+import hashlib
+import importlib.util
+import json
+import shutil
+import subprocess
+import sys
+import tomllib
+
+ROOT = Path(__file__).resolve().parents[2]
+BASE = ROOT / 'target/dbus-root-integration-20261028'
+PKG = 'tools/long-run-supervisor-074'
+VENDOR = 'third_party/hc074-dbus'
+PARENT = '2babe9897ec6bd30ecfcb264af372de14129bde23baab8b5b324cec0fd1cf952'
+PACKAGE_RECIPE = 'c3fe73bd7c470ca3f524c7dc3b84746ceb051fd43a8e5d64737879b66d648a5f'
+QUALIFIED = ROOT / 'target/dbus-native-source-2-20261028/consumer2'
+SOURCE_CODEC = ROOT / 'tools/dbus-native-transport-074/source_package.py'
+PROTECTED = {
+    'Cargo.toml': 'a494481b85fa84fd07e19a447c6d5fe7a49aa12557e0c0befc86fdea390d3bf2',
+    'Cargo.lock': '9efeffabd8726a961a84d23b7a8e5f2ce74e0e313698f064eed603ea79062a7c',
+    'deny.toml': '16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930',
+    PKG + '/Cargo.toml': 'f38fc2c3e40b71fbac2aa2c54ed545828177860bed060d4c43981af796fd73e1',
+    'docs/testing/performance/0.74/qualification-manifest.toml':
+        '11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+}
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+
+
+def need(ok, why):
+    if not ok:
+        raise ValueError(why)
+
+
+def write(folder, name, value):
+    with (folder / name).open('x', encoding='utf8', newline='\n') as out:
+        out.write(json.dumps(value, indent=2, sort_keys=True) + '\n')
+
+
+def inventory(folder):
+    result = {}
+    for path in folder.rglob('*'):
+        need(not path.is_symlink() and not path.is_junction(), 'regular source tree')
+        if path.is_file():
+            result[path.relative_to(folder).as_posix()] = sha(path.read_bytes())
+    return result
+
+
+def checked(name, digest):
+    path = ROOT / name
+    need(path.resolve().is_relative_to(ROOT.resolve()) and not path.is_symlink()
+         and not path.is_junction(), 'root source custody')
+    raw = path.read_bytes()
+    need(sha(raw) == digest, 'exact protected root source: ' + name)
+    return raw
+
+
+def held(name):
+    folder = ROOT / 'docs/testing/performance/0.74/local-runs/dbus-native-source-2-20261028'
+    raw = (folder / 'index.json').read_bytes()
+    need(sha(raw) == PARENT, 'whole actual qualified consumer evidence')
+    row = json.loads(raw)['files'][name]
+    raw = (folder / 'objects' / row['sha256']).read_bytes()
+    need(sha(raw) == row['sha256'] and len(raw) == row['bytes'], 'held qualified member')
+    return raw
+
+
+def source_package():
+    # Execute only this reviewed repository codec; archive members remain data.
+    freeze = json.loads(held('consumer2/freeze/result.json'))
+    need(sha(SOURCE_CODEC.read_bytes()) == freeze['helpers']['tools/dbus-native-transport-074/source_package.py'],
+         'exact reviewed repository codec, never an archived executable')
+    spec = importlib.util.spec_from_file_location('root_adoption_archive_codec', SOURCE_CODEC)
+    value = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(value)
+    need(value.RECIPE_SHA == PACKAGE_RECIPE, 'exact native source recipe')
+    return value
+
+
+def declarations(manifest):
+    for kind in ('dependencies', 'build-dependencies', 'dev-dependencies'):
+        yield kind, manifest.get(kind, {})
+    for target, values in manifest.get('target', {}).items():
+        for kind in ('dependencies', 'build-dependencies', 'dev-dependencies'):
+            yield target + '/' + kind, values.get(kind, {})
+
+
+def workspace_scope(root, manifests):
+    """Conservative closure: every target and normal/build/dev local edge."""
+    members = root['workspace']['members']
+    need(len(members) == len(set(members)) and set(manifests) == set(members), 'all exact workspace members')
+    names = {m['package']['name']: path for path, m in manifests.items()}
+    need(len(names) == len(members), 'unique member package names')
+    edges, published, direct = {}, [], []
+    for path, manifest in manifests.items():
+        name = manifest['package']['name']
+        if manifest['package'].get('publish', True) not in (False, []):
+            published.append(path)
+        edges[path] = set()
+        for context, dependencies in declarations(manifest):
+            for alias, spec in dependencies.items():
+                spec = {'version': spec} if isinstance(spec, str) else dict(spec)
+                if spec.get('workspace'):
+                    need(set(spec).issubset({'workspace', 'features', 'optional', 'default-features'}),
+                         'no ambiguous inherited path or package override')
+                    need(alias in root['workspace']['dependencies'], 'known inherited dependency')
+                    common = root['workspace']['dependencies'][alias]
+                    spec = {'version': common} if isinstance(common, str) else dict(common)
+                    owner = ROOT
+                else:
+                    owner = ROOT / path
+                package = spec.get('package', alias)
+                if package == 'zbus':
+                    direct.append(dict(member=path, context=context, alias=alias, specification=spec))
+                if 'path' not in spec:
+                    continue
+                resolved = (owner / spec['path']).resolve()
+                need(resolved.is_relative_to(ROOT.resolve()), 'local dependency stays inside workspace')
+                relative = resolved.relative_to(ROOT.resolve()).as_posix()
+                need(relative in manifests and manifests[relative]['package']['name'] == package,
+                     'complete exact local dependency closure')
+                edges[path].add(relative)
+    reachable = set(published)
+    todo = list(reachable)
+    while todo:
+        for child in edges[todo.pop()]:
+            if child not in reachable:
+                reachable.add(child)
+                todo.append(child)
+    need(manifests[PKG]['package'].get('publish') is False, 'supervisor remains unpublished')
+    need(PKG not in reachable, 'no publishable member depends on private supervisor')
+    need(len(direct) == 1 and direct[0]['member'] == PKG
+         and direct[0]['context'] == 'cfg(target_os = "linux")/dependencies'
+         and direct[0]['alias'] == 'zbus', 'one original unpublished Linux zbus caller')
+    return dict(members=members, publishable=sorted(published),
+        reachable_from_publishable=sorted(reachable),
+        local_edges={p: sorted(v) for p, v in sorted(edges.items())}, zbus_callers=direct,
+        only_unpublished_tool_uses_zbus=True, registry_consumer_qualified=False)
+
+
+def root_manifest(raw):
+    text = raw.decode()
+    need(text.count('[workspace]\n') == 1 and '[patch.' not in text, 'exact unpatched workspace')
+    text = text.replace('[workspace]\n', '[workspace]\n# Local dependencies are built through the unpublished supervisor.\n'
+        'exclude = ["' + VENDOR + '/zbus", "' + VENDOR + '/zbus_macros", "' + VENDOR + '/zbus_utils"]\n', 1)
+    text += '\n[patch.crates-io]\nzbus_macros = { path = "' + VENDOR + '/zbus_macros" }\n'
+    text += 'zbus_utils = { path = "' + VENDOR + '/zbus_utils" }\n'
+    before, after = tomllib.loads(raw.decode()), tomllib.loads(text)
+    need(after['workspace']['members'] == before['workspace']['members']
+         and after['workspace']['package'] == before['workspace']['package']
+         and after['workspace']['dependencies'] == before['workspace']['dependencies'],
+         'no product member, MSRV or existing workspace dependency changes')
+    return text.encode()
+
+
+def supervisor_manifest(raw):
+    text = raw.decode()
+    old = 'zbus = { version = "5.19.0", default-features = false, features = ["blocking-api", "tokio"] }'
+    need(text.count(old) == 1, 'whole original direct zbus specification')
+    new = 'zbus6 = { package = "zbus", version = "=6.1.0", path = "../../' + VENDOR + '/zbus", '
+    new += 'default-features = false, features = ["tokio-multithread", "proxy", "p2p"] }'
+    text = text.replace(old, new, 1)
+    text += '\n[target.\'cfg(target_os = "linux")\'.dev-dependencies.zbus6]\n'
+    text += 'package = "zbus"\nversion = "=6.1.0"\npath = "../../' + VENDOR + '/zbus"\n'
+    text += 'default-features = false\nfeatures = ["hc074-unix-fixture"]\n'
+    before, after = tomllib.loads(raw.decode()), tomllib.loads(text)
+    retained = copy.deepcopy(after)
+    before['target']['cfg(target_os = "linux")']['dependencies'].pop('zbus')
+    selected = retained['target']['cfg(target_os = "linux")']['dependencies'].pop('zbus6')
+    dev = retained['target']['cfg(target_os = "linux")'].pop('dev-dependencies')
+    need(selected == dict(package='zbus', version='=6.1.0', path='../../' + VENDOR + '/zbus',
+                          **{'default-features': False}, features=['tokio-multithread', 'proxy', 'p2p'])
+         and dev == {'zbus6': dict(package='zbus', version='=6.1.0', path='../../' + VENDOR + '/zbus',
+                                  **{'default-features': False}, features=['hc074-unix-fixture'])}
+         and retained == before, 'only direct Linux dependency/test feature changes')
+    return text.encode()
+
+
+def prepare():
+    out = BASE / 'prepare'
+    out.mkdir(parents=True, exist_ok=False)
+    (out / 'producer.py').write_bytes(Path(__file__).read_bytes())
+    root_raw = checked('Cargo.toml', PROTECTED['Cargo.toml'])
+    root = tomllib.loads(root_raw.decode())
+    for name, digest in PROTECTED.items():
+        checked(name, digest)
+    need(not subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=no'], cwd=ROOT).strip(),
+         'preserve any existing tracked user change before projection')
+    manifests = {n: tomllib.loads((ROOT / n / 'Cargo.toml').read_text()) for n in root['workspace']['members']}
+    scope = workspace_scope(root, manifests)
+    write(out, 'publication-scope.json', scope)
+    codec = source_package()
+    recipe, packages, final = codec.reviewed()
+    freeze_raw = held('consumer2/freeze/result.json')
+    need((QUALIFIED / 'freeze/result.json').read_bytes() == freeze_raw, 'whole qualified source freeze')
+    freeze = json.loads(freeze_raw)
+    for name, digest in freeze['files'].items():
+        need(sha((QUALIFIED / 'input' / name).read_bytes()) == digest, 'qualified consumer source custody')
+    selected = subprocess.check_output(['git', 'ls-files', '-z', '--', *root['workspace']['members']], cwd=ROOT)
+    paths = [p.decode() for p in selected.split(b'\0') if p]
+    need(len(paths) == len(set(paths)) and all('..' not in Path(p).parts for p in paths), 'exact tracked workspace source list')
+    dest = BASE / 'input/workspace'
+    dest.mkdir(parents=True)
+    original = {}
+    for name in ['Cargo.toml', 'Cargo.lock', 'deny.toml', '.cargo/config.toml', *paths]:
+        path = ROOT / name
+        need(path.resolve().is_relative_to(ROOT.resolve()) and not path.is_symlink()
+             and not path.is_junction(), 'regular workspace source')
+        raw = path.read_bytes()
+        original[name] = sha(raw)
+        output = dest / name
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_bytes(raw)
+    (dest / 'Cargo.toml').write_bytes(root_manifest(root_raw))
+    (dest / PKG / 'Cargo.toml').write_bytes(supervisor_manifest(checked(PKG + '/Cargo.toml', PROTECTED[PKG + '/Cargo.toml'])))
+    changes = []
+    for path in (QUALIFIED / 'input/fd' / PKG / 'src').glob('*.rs'):
+        name = PKG + '/src/' + path.name
+        raw = path.read_bytes()
+        current = dest / name
+        before = current.read_bytes() if current.exists() else None
+        if before == raw:
+            continue
+        if before is not None:
+            need(sha(before) == freeze['files'].get('baseline/' + name), 'whole original body preimage')
+        else:
+            need(path.name in ('diagnostic_blocking_v6.rs', 'diagnostic_negotiated_credentials_adapter.rs'),
+                 'only two qualified source additions')
+        current.write_bytes(raw)
+        changes.append(dict(path=name, before_sha256=sha(before) if before is not None else None, after_sha256=sha(raw)))
+    need(len(changes) == 22, 'exact qualified production/test migration set')
+    for crate, members in final.items():
+        prefix = crate + '-' + recipe['bases'][crate]['version']
+        need(codec.codec.unpack(packages[crate], prefix, True) == members, 'actual canonical archive source')
+        for name, raw in members.items():
+            need(sha(raw) == freeze['files']['fd/source/' + crate + '/' + name], 'archive source matches compiled candidate')
+            path = dest / VENDOR / crate / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(raw)
+    (BASE / 'review-diffs').mkdir()
+    for row in changes:
+        name = row['path']
+        old = (ROOT / name).read_text().splitlines(True) if row['before_sha256'] else []
+        new = (dest / name).read_text().splitlines(True)
+        (BASE / 'review-diffs' / (Path(name).name + '.diff')).write_text(
+            ''.join(difflib.unified_diff(old, new, fromfile='root/' + name, tofile='candidate/' + name)),
+            encoding='utf8', newline='\n')
+    for name, digest in original.items():
+        need(sha((ROOT / name).read_bytes()) == digest, 'root source unchanged by projection')
+    value = dict(schema_version=1, files=inventory(BASE / 'input'), root_files=original,
+        protected=PROTECTED, changes=changes, publication_scope=scope,
+        parent_index_sha256=PARENT, source_recipe_sha256=PACKAGE_RECIPE,
+        source_archive_sha256=recipe['source_archive_sha256'], root_changed=False,
+        lock_resolved=False, compiler_executed=False, root_adopted=False,
+        registry_publication=False, release_admitted=False, original_windows_seconds=[300, 60, 10])
+    (BASE / 'freeze').mkdir()
+    write(BASE / 'freeze', 'result.json', value)
+    write(out, 'result.json', value)
+    print(json.dumps(dict(prepared=True, members=len(manifests), publishable=len(scope['publishable']),
+        source_changes=len(changes), vendor_members=sum(map(len, final.values())), root_changed=False)))
+
+
+if __name__ == '__main__':
+    need(sys.argv[1:] == ['prepare'], 'fixed exclusive root projection only')
+    prepare()

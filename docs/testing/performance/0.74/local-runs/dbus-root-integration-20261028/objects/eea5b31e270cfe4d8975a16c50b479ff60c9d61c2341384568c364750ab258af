@@ -1,0 +1,68 @@
+--- root/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs
++++ candidate/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs
+@@ -1,3 +1,4 @@
++use zbus6 as zbus;
+ use super::*;
+ use crate::diagnostic_lease::{DiagnosticIdentity, DiagnosticStage};
+ use std::io::{Read, Write};
+@@ -38,26 +39,26 @@
+             if kind == 0 { "/wrong" } else { PATH },
+             if kind == 1 { "StopUnit" } else { METHOD },
+         )
+-        .unwrap()
++        
+         .destination(if kind == 2 {
+             "org.example.Wrong"
+         } else {
+             DESTINATION
+         })
+-        .unwrap()
++        
+         .interface(if kind == 3 {
+             "org.example.Wrong"
+         } else {
+             INTERFACE
+         })
+-        .unwrap();
++        ;
+         if kind == 4 {
+             builder = builder
+-                .with_flags(zbus::message::Flags::NoReplyExpected)
+-                .unwrap();
++                .with_flags(zbus::message::Flags::NO_REPLY_EXPECTED)
++                ;
+         }
+         if kind == 5 {
+-            builder = builder.sender(":1.74").unwrap();
++            builder = builder.sender(":1.74");
+         }
+         let msg = builder
+             .build(&(
+@@ -76,21 +77,21 @@
+         );
+     }
+     let msg = Message::method_call(PATH, METHOD)
+-        .unwrap()
++        
+         .destination(DESTINATION)
+-        .unwrap()
++        
+         .interface(INTERFACE)
+-        .unwrap()
++        
+         .build(&"malformed")
+         .unwrap();
+     assert!(inspect_message(&msg, &spec, &stdout.writer, &stderr.writer).is_err());
+     // Both FD entries present but the body has the wrong signature.
+     let msg = Message::method_call(PATH, METHOD)
+-        .unwrap()
++        
+         .destination(DESTINATION)
+-        .unwrap()
++        
+         .interface(INTERFACE)
+-        .unwrap()
++        
+         .build(&(Fd::from(&stdout.writer), Fd::from(&stderr.writer)))
+         .unwrap();
+     assert!(matches!(

@@ -1,0 +1,17 @@
+--- root/tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire_tests.rs
++++ candidate/tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire_tests.rs
+@@ -24,11 +24,11 @@
+ }
+ fn reply(r: &HeldRequest, manager: &str, client: &str, path: &str) -> Message {
+     Message::method_return(&r.message.header())
+-        .unwrap()
++        
+         .sender(manager)
+-        .unwrap()
++        
+         .destination(client)
+-        .unwrap()
++        
+         .build(&OwnedObjectPath::try_from(path).unwrap())
+         .unwrap()
+ }

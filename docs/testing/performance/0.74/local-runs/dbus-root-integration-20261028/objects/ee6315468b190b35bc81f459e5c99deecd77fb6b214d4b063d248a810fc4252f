@@ -1,0 +1,278 @@
+{
+  "local_edges": {
+    "crates/hydracache": [
+      "crates/hydracache-core",
+      "crates/hydracache-macros"
+    ],
+    "crates/hydracache-actuator-axum": [
+      "crates/hydracache",
+      "crates/hydracache-observability"
+    ],
+    "crates/hydracache-cache-sim": [],
+    "crates/hydracache-cdc-postgres": [
+      "crates/hydracache-db"
+    ],
+    "crates/hydracache-client": [
+      "crates/hydracache",
+      "crates/hydracache-client-protocol",
+      "crates/hydracache-client-transport-axum"
+    ],
+    "crates/hydracache-client-hc2": [
+      "crates/hydracache-client-plane-spike"
+    ],
+    "crates/hydracache-client-plane-spike": [],
+    "crates/hydracache-client-protocol": [],
+    "crates/hydracache-client-transport-axum": [
+      "crates/hydracache",
+      "crates/hydracache-client-protocol",
+      "crates/hydracache-cluster-testkit",
+      "crates/hydracache-observability"
+    ],
+    "crates/hydracache-cluster": [
+      "crates/hydracache",
+      "crates/hydracache-cluster-chitchat",
+      "crates/hydracache-cluster-raft"
+    ],
+    "crates/hydracache-cluster-chitchat": [
+      "crates/hydracache"
+    ],
+    "crates/hydracache-cluster-raft": [
+      "crates/hydracache",
+      "crates/hydracache-cluster-chitchat",
+      "crates/hydracache-cluster-testkit",
+      "crates/hydracache-cluster-transport-axum"
+    ],
+    "crates/hydracache-cluster-testkit": [
+      "crates/hydracache",
+      "crates/hydracache-client-protocol",
+      "crates/hydracache-cluster-raft"
+    ],
+    "crates/hydracache-cluster-transport-axum": [
+      "crates/hydracache",
+      "crates/hydracache-core"
+    ],
+    "crates/hydracache-core": [],
+    "crates/hydracache-db": [
+      "crates/hydracache",
+      "crates/hydracache-core",
+      "crates/hydracache-macros"
+    ],
+    "crates/hydracache-diesel": [
+      "crates/hydracache",
+      "crates/hydracache-core",
+      "crates/hydracache-db"
+    ],
+    "crates/hydracache-loadgen": [
+      "crates/hydracache",
+      "crates/hydracache-cache-sim",
+      "crates/hydracache-client-hc2",
+      "crates/hydracache-client-protocol",
+      "crates/hydracache-client-transport-axum",
+      "crates/hydracache-redis-compat"
+    ],
+    "crates/hydracache-macros": [],
+    "crates/hydracache-observability": [
+      "crates/hydracache",
+      "crates/hydracache-core"
+    ],
+    "crates/hydracache-operator": [],
+    "crates/hydracache-redis-compat": [
+      "crates/hydracache",
+      "crates/hydracache-client-protocol",
+      "crates/hydracache-client-transport-axum"
+    ],
+    "crates/hydracache-sandbox": [
+      "crates/hydracache",
+      "crates/hydracache-actuator-axum",
+      "crates/hydracache-cluster-chitchat",
+      "crates/hydracache-cluster-raft",
+      "crates/hydracache-cluster-transport-axum",
+      "crates/hydracache-diesel",
+      "crates/hydracache-observability",
+      "crates/hydracache-seaorm",
+      "crates/hydracache-sim",
+      "crates/hydracache-sqlx"
+    ],
+    "crates/hydracache-seaorm": [
+      "crates/hydracache",
+      "crates/hydracache-core",
+      "crates/hydracache-db"
+    ],
+    "crates/hydracache-server": [
+      "crates/hydracache",
+      "crates/hydracache-actuator-axum",
+      "crates/hydracache-client-hc2",
+      "crates/hydracache-client-protocol",
+      "crates/hydracache-client-transport-axum",
+      "crates/hydracache-cluster-chitchat",
+      "crates/hydracache-cluster-raft",
+      "crates/hydracache-cluster-testkit",
+      "crates/hydracache-cluster-transport-axum",
+      "crates/hydracache-observability",
+      "crates/hydracache-redis-compat",
+      "crates/hydracache-sim"
+    ],
+    "crates/hydracache-sim": [
+      "crates/hydracache",
+      "crates/hydracache-cluster-raft",
+      "crates/hydracache-cluster-testkit"
+    ],
+    "crates/hydracache-sim-wasm": [
+      "crates/hydracache-sim"
+    ],
+    "crates/hydracache-sql-lint": [],
+    "crates/hydracache-sqlx": [
+      "crates/hydracache",
+      "crates/hydracache-core",
+      "crates/hydracache-db"
+    ],
+    "crates/hydracache-transport-nats": [
+      "crates/hydracache"
+    ],
+    "crates/hydracache-transport-redis": [
+      "crates/hydracache"
+    ],
+    "crates/xtask": [
+      "crates/hydracache",
+      "crates/hydracache-client-plane-spike",
+      "crates/hydracache-loadgen",
+      "tools/long-run-supervisor-074"
+    ],
+    "fuzz": [
+      "crates/hydracache-client-hc2",
+      "crates/hydracache-client-plane-spike",
+      "crates/hydracache-client-protocol",
+      "crates/hydracache-cluster-raft",
+      "crates/hydracache-cluster-transport-axum",
+      "crates/hydracache-observability",
+      "crates/hydracache-redis-compat",
+      "crates/hydracache-server"
+    ],
+    "tests/post-publish-consumer": [
+      "crates/hydracache",
+      "crates/hydracache-actuator-axum",
+      "crates/hydracache-client-hc2",
+      "crates/hydracache-cluster",
+      "crates/hydracache-cluster-chitchat",
+      "crates/hydracache-cluster-raft",
+      "crates/hydracache-cluster-transport-axum",
+      "crates/hydracache-db",
+      "crates/hydracache-diesel",
+      "crates/hydracache-observability",
+      "crates/hydracache-seaorm",
+      "crates/hydracache-sqlx"
+    ],
+    "tools/long-run-supervisor-074": [],
+    "tools/performance-integrated-074": [
+      "tools/long-run-supervisor-074"
+    ]
+  },
+  "members": [
+    "crates/hydracache-cdc-postgres",
+    "crates/hydracache-cache-sim",
+    "crates/hydracache",
+    "crates/hydracache-actuator-axum",
+    "crates/hydracache-client",
+    "crates/hydracache-client-hc2",
+    "crates/hydracache-client-plane-spike",
+    "crates/hydracache-client-protocol",
+    "crates/hydracache-client-transport-axum",
+    "crates/hydracache-cluster",
+    "crates/hydracache-cluster-chitchat",
+    "crates/hydracache-cluster-raft",
+    "crates/hydracache-cluster-testkit",
+    "crates/hydracache-cluster-transport-axum",
+    "crates/hydracache-core",
+    "crates/hydracache-db",
+    "crates/hydracache-loadgen",
+    "crates/hydracache-diesel",
+    "crates/hydracache-macros",
+    "crates/hydracache-observability",
+    "crates/hydracache-operator",
+    "crates/hydracache-redis-compat",
+    "crates/hydracache-sandbox",
+    "crates/hydracache-seaorm",
+    "crates/hydracache-server",
+    "crates/hydracache-sim",
+    "crates/hydracache-sim-wasm",
+    "crates/hydracache-sql-lint",
+    "crates/hydracache-sqlx",
+    "crates/hydracache-transport-nats",
+    "crates/hydracache-transport-redis",
+    "crates/xtask",
+    "fuzz",
+    "tests/post-publish-consumer",
+    "tools/long-run-supervisor-074",
+    "tools/performance-integrated-074"
+  ],
+  "only_unpublished_tool_uses_zbus": true,
+  "publishable": [
+    "crates/hydracache",
+    "crates/hydracache-actuator-axum",
+    "crates/hydracache-cdc-postgres",
+    "crates/hydracache-client",
+    "crates/hydracache-client-hc2",
+    "crates/hydracache-client-protocol",
+    "crates/hydracache-client-transport-axum",
+    "crates/hydracache-cluster",
+    "crates/hydracache-cluster-chitchat",
+    "crates/hydracache-cluster-raft",
+    "crates/hydracache-cluster-transport-axum",
+    "crates/hydracache-core",
+    "crates/hydracache-db",
+    "crates/hydracache-diesel",
+    "crates/hydracache-macros",
+    "crates/hydracache-observability",
+    "crates/hydracache-redis-compat",
+    "crates/hydracache-seaorm",
+    "crates/hydracache-server",
+    "crates/hydracache-sql-lint",
+    "crates/hydracache-sqlx",
+    "crates/hydracache-transport-nats",
+    "crates/hydracache-transport-redis"
+  ],
+  "reachable_from_publishable": [
+    "crates/hydracache",
+    "crates/hydracache-actuator-axum",
+    "crates/hydracache-cdc-postgres",
+    "crates/hydracache-client",
+    "crates/hydracache-client-hc2",
+    "crates/hydracache-client-plane-spike",
+    "crates/hydracache-client-protocol",
+    "crates/hydracache-client-transport-axum",
+    "crates/hydracache-cluster",
+    "crates/hydracache-cluster-chitchat",
+    "crates/hydracache-cluster-raft",
+    "crates/hydracache-cluster-testkit",
+    "crates/hydracache-cluster-transport-axum",
+    "crates/hydracache-core",
+    "crates/hydracache-db",
+    "crates/hydracache-diesel",
+    "crates/hydracache-macros",
+    "crates/hydracache-observability",
+    "crates/hydracache-redis-compat",
+    "crates/hydracache-seaorm",
+    "crates/hydracache-server",
+    "crates/hydracache-sim",
+    "crates/hydracache-sql-lint",
+    "crates/hydracache-sqlx",
+    "crates/hydracache-transport-nats",
+    "crates/hydracache-transport-redis"
+  ],
+  "registry_consumer_qualified": false,
+  "zbus_callers": [
+    {
+      "alias": "zbus",
+      "context": "cfg(target_os = \"linux\")/dependencies",
+      "member": "tools/long-run-supervisor-074",
+      "specification": {
+        "default-features": false,
+        "features": [
+          "blocking-api",
+          "tokio"
+        ],
+        "version": "5.19.0"
+      }
+    }
+  ]
+}

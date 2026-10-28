@@ -1,0 +1,74 @@
+--- root/tools/long-run-supervisor-074/src/diagnostic_manager.rs
++++ candidate/tools/long-run-supervisor-074/src/diagnostic_manager.rs
+@@ -1,4 +1,5 @@
+ //! Bounded read-only manager observation. No unit mutation or cleanup authority.
++use zbus6 as zbus;
+ use crate::diagnostic_lease::{validate_identity, DiagnosticIdentity, SURFACES};
+ use crate::diagnostic_loaded::{decode_settings, InvocationGuard, LoadedSettings, LoadedSnapshot};
+ use crate::{canonical_json, is_hash};
+@@ -10,8 +11,8 @@
+ use std::os::unix::fs::{FileTypeExt, MetadataExt};
+ use std::process::{Child, Command, Stdio};
+ use std::time::{Duration, Instant};
+-use zbus::blocking::{connection::Builder, Connection, Proxy};
+-use zbus::zvariant::{OwnedObjectPath, OwnedValue};
++use crate::diagnostic_blocking_v6::{ConnectionBuilder as Builder, Connection, Proxy};
++use zbus::wire::{OwnedObjectPath, OwnedVariant as OwnedValue};
+ 
+ const REQUEST_BYTES: usize = 4096;
+ const OUTPUT_BYTES: usize = 65_536;
+@@ -605,7 +606,7 @@
+     path: &'a str,
+     interface: &'a str,
+ ) -> Result<Proxy<'a>, String> {
+-    zbus::blocking::proxy::Builder::new(connection)
++    crate::diagnostic_blocking_v6::ProxyBuilder::new(connection)
+         .destination(owner)
+         .map_err(|_| "proxy destination")?
+         .path(path)
+@@ -653,7 +654,7 @@
+         ReplyError::Refused
+     }
+ }
+-fn decode_reply<R: for<'de> zbus::zvariant::DynamicDeserialize<'de>>(
++fn decode_reply<R: for<'de> zbus::wire::DynamicDeserialize<'de>>(
+     message: &zbus::Message,
+     owner: &str,
+ ) -> Result<R, ReplyError> {
+@@ -672,8 +673,8 @@
+     body: &B,
+ ) -> Result<R, ReplyError>
+ where
+-    B: Serialize + zbus::zvariant::DynamicType,
+-    R: for<'de> zbus::zvariant::DynamicDeserialize<'de>,
++    B: Serialize + zbus::wire::DynamicType,
++    R: for<'de> zbus::wire::DynamicDeserialize<'de>,
+ {
+     let message = match proxy.call_method(method, body) {
+         Ok(message) => message,
+@@ -827,13 +828,13 @@
+     #[test]
+     fn reply_origin_and_error_name_are_checked_before_absence_or_body_decode() {
+         let method = zbus::Message::method_call("/org/freedesktop/systemd1", "GetUnit")
+-            .unwrap()
++            
+             .build(&("scope",))
+             .unwrap();
+         let reply = zbus::Message::method_return(&method.header())
+-            .unwrap()
++            
+             .sender(":1.9")
+-            .unwrap()
++            
+             .build(&7u32)
+             .unwrap();
+         assert_eq!(decode_reply::<u32>(&reply, ":1.9"), Ok(7));
+@@ -1167,7 +1168,7 @@
+     }
+     #[test]
+     fn full_unit_property_decode_uses_service_cgroup_and_exact_invocation() {
+-        use zbus::zvariant::Value;
++        use zbus6::wire::Variant as Value;
+         fn text(value: &str) -> OwnedValue {
+             OwnedValue::try_from(Value::from(value)).unwrap()
+         }

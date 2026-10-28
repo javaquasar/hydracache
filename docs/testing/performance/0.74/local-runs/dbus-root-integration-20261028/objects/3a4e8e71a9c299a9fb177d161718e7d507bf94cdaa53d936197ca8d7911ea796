@@ -1,0 +1,10 @@
+{
+  "Removed": 10806,
+  "LogicalBytes": 23464641867.0,
+  "FreeBefore": 8400330752,
+  "FreeAfter": 31694090240,
+  "Root": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps",
+  "NoCompilersAtPreflight": true,
+  "SourceEvidencePreserved": true,
+  "OtherWorktreesPreserved": true
+}

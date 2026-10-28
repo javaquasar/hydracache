@@ -1,0 +1,7 @@
+{
+  "kind": "observed-first-offline-summary-not-raw-log",
+  "passed": false,
+  "reason": "two byte-identical checksum-valid futures-core 0.3.34 archives in distinct registry cache slots",
+  "cargo_repeated": false,
+  "result_emitted": false
+}

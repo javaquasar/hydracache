@@ -22599,3 +22599,33 @@ private-bus fault-сценариев и строгий Clippy на GNU Rust 1.94
 Этот результат не добавляет claims ускорения продукта. Recipe, hash и первые
 результаты сохранены в
 [отчёте source revision 2](../testing/performance/0.74/dbus-native-source-2-result-20261028.md).
+
+### 0.74: как проверяли влияние backport на полный workspace
+
+Совместимость отдельного consumer позволила перейти к source/effect review всей
+workspace. В отдельной копии сохранены все 36 продуктовых members и исходные
+guard-проверки. Canonical source-архивы дают 266 vendor-файлов; проверенный перенос
+supervisor меняет 22 исходника. Рабочие root-файлы при этом остаются прежними.
+
+Offline resolver обнаружил четыре общих обновления — bitflags, futures-core/io
+и socket2. По нормализованным edges они затрагивают 42 владельца зависимостей,
+хотя многие строки lock сохраняют прежние неуточнённые имена. Проверили девять
+upstream-архивов, checksum и каждый текущий source member. Rust-тела futures
+совпадают, bitflags меняет генерацию констант, socket2 расширяет target cfg.
+Новых build scripts или повышения заявленного MSRV не найдено. Совпадение новых
+identities с ранее собранным GNU/MSRV consumer полезно, но root regression gates
+для общих зависимостей ещё необходимы.
+
+Accounting разделили явно: исходный lock содержит 689 записей, новый 683,
+default metadata graph — 678. Пять optional allocator/fault записей сохранены.
+Отдельная проверка --all-features --locked подтвердила все 683 identities без
+изменения lock. Это результаты разрешения зависимостей; Rust-тесты и workloads
+этими командами не выполнялись.
+
+Проверили и границу поставки. Все local, registry, target и normal/build/dev edges
+от 23 публикуемых members дают 599 достижимых identities. Среди них нет private
+supervisor и трёх local backport-пакетов. Поэтому для неопубликованного инструмента
+можно проверять vendored-путь, сохраняя отдельный registry-контракт публикуемых
+библиотек. Chitchat и общий security gate остаются самостоятельной задачей.
+Evidence, первые отказы и точный неприменённый changeset сохранены в
+[отчёте root review](../testing/performance/0.74/dbus-root-integration-result-20261028.md).

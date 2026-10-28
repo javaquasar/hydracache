@@ -1,0 +1,201 @@
+--- root/tools/long-run-supervisor-074/src/diagnostic_dispatch_negotiated_tests.rs
++++ candidate/tools/long-run-supervisor-074/src/diagnostic_dispatch_negotiated_tests.rs
+@@ -8,10 +8,10 @@
+ use std::process::{Child, Command, Stdio};
+ use std::sync::{Arc, Mutex};
+ use std::time::Duration;
+-use tokio::net::unix::{OwnedReadHalf, OwnedWriteHalf};
+ use zbus::connection::socket::{BoxedSplit, ReadHalf, Split, WriteHalf};
+ use zbus::export::{async_trait::async_trait, futures_core::Stream};
+ use zbus::{Connection, MatchRule, MessageStream};
++use zbus6 as zbus;
+ 
+ #[path = "diagnostic_dispatch_negotiated_recv_tests.rs"]
+ mod atomic_receive;
+@@ -34,12 +34,18 @@
+     target.extend_from_slice(&bytes[..count]);
+ }
+ #[derive(Debug)]
+-struct Reader(OwnedReadHalf, Arc<Mutex<Wire>>, bool, bool);
++struct Reader(
++    Box<dyn ReadHalf>,
++    Arc<Mutex<Wire>>,
++    bool,
++    bool,
++    tokio::net::UnixStream,
++);
+ #[async_trait]
+ impl ReadHalf for Reader {
+     async fn recvmsg(&mut self, bytes: &mut [u8]) -> io::Result<(usize, Vec<OwnedFd>)> {
+         let (count, fds) = if self.3 {
+-            let socket = self.0.as_ref();
++            let socket = &self.4;
+             loop {
+                 socket.readable().await?;
+                 match socket.try_io(tokio::io::Interest::READABLE, || {
+@@ -59,11 +65,11 @@
+         self.2
+     }
+     async fn peer_credentials(&mut self) -> io::Result<zbus::fdo::ConnectionCredentials> {
+-        ReadHalf::peer_credentials(&mut self.0).await
++        self.0.peer_credentials().await
+     }
+ }
+ #[derive(Debug)]
+-struct Writer(OwnedWriteHalf, Arc<Mutex<Wire>>, bool);
++struct Writer(Box<dyn WriteHalf>, Arc<Mutex<Wire>>, bool);
+ #[async_trait]
+ impl WriteHalf for Writer {
+     async fn sendmsg(&mut self, bytes: &[u8], fds: &[BorrowedFd<'_>]) -> io::Result<usize> {
+@@ -85,7 +91,7 @@
+         self.2
+     }
+     async fn peer_credentials(&mut self) -> io::Result<zbus::fdo::ConnectionCredentials> {
+-        WriteHalf::peer_credentials(&mut self.0).await
++        self.0.peer_credentials().await
+     }
+ }
+ struct PrivateBus {
+@@ -171,15 +177,19 @@
+         assert_eq!(peer.uid(), unsafe { libc::geteuid() });
+         assert_eq!(peer.gid(), unsafe { libc::getegid() });
+         let wire = Arc::new(Mutex::new(Wire::default()));
+-        let (read, write) = socket.into_split();
++        let socket = socket.into_std().unwrap();
++        let atomic_socket = tokio::net::UnixStream::from_std(socket.try_clone().unwrap()).unwrap();
++        let (read, write) = zbus::connection::socket::hc074_unix_fixture(socket)
++            .unwrap()
++            .take();
+         let socket: BoxedSplit = Split::new(
+-            Box::new(Reader(read, wire.clone(), capable, atomic)),
++            Box::new(Reader(read, wire.clone(), capable, atomic, atomic_socket)),
+             Box::new(Writer(write, wire.clone(), capable)),
+         );
+         let connection = bounded(
+             zbus::connection::Builder::socket(socket)
+-                .auth_mechanism(zbus::AuthMechanism::External)
+-                .max_queued(16)
++                .auth_mechanism(zbus::connection::AuthMechanism::External)
++                .max_queued(std::num::NonZeroUsize::new(16).unwrap())
+                 .method_timeout(Duration::from_secs(2))
+                 .build(),
+         )
+@@ -199,9 +209,9 @@
+ }
+ async fn messages(connection: &Connection, kind: Type) -> MessageStream {
+     bounded(MessageStream::for_match_rule(
+-        MatchRule::builder().msg_type(kind).build(),
++        MatchRule::builder().msg_type(kind).build().unwrap(),
+         connection,
+-        Some(8),
++        Some(std::num::NonZeroUsize::new(8).unwrap()),
+     ))
+     .await
+     .unwrap()
+@@ -231,11 +241,8 @@
+     let body = legacy.body();
+     let body: Body<'_> = body.deserialize().unwrap();
+     Message::method_call(PATH, METHOD)
+-        .unwrap()
+         .destination(manager)
+-        .unwrap()
+         .interface(INTERFACE)
+-        .unwrap()
+         .serial(legacy.primary_header().serial_num())
+         .build(&body)
+         .unwrap()
+@@ -260,8 +267,10 @@
+ }
+ async fn scenario(case: &str) {
+     let mut bus = PrivateBus::spawn();
+-    let (client, wire) = bus.connect(case != "no-capability", true).await;
+-    let (manager, _) = bus.connect(true, case != "bare-receiver").await;
++    let (client, wire) = bus
++        .connect(case != "no-capability", case == "atomic-adapter")
++        .await;
++    let (manager, _) = bus.connect(true, case == "atomic-adapter").await;
+     let manager_name = manager.unique_name().unwrap().to_string();
+     let client_name = client.unique_name().unwrap().to_string();
+     let mut incoming = messages(&manager, Type::MethodCall).await;
+@@ -316,13 +325,30 @@
+     assert_eq!(received.data().fds().len(), 2);
+     if case == "bare-receiver" {
+         for fd in received.data().fds() {
+-            assert_eq!(unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_GETFD) }, 0);
++            let original_flags = unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_GETFD) };
++            assert_eq!(original_flags, libc::FD_CLOEXEC);
++            assert_eq!(unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_SETFD, 0) }, 0);
++            let observed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++                assert_eq!(unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_GETFD) }, 0);
++                assert_eq!(
++                    unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_GETFL) },
++                    libc::O_WRONLY
++                );
++                assert_eq!(writer_shape(fd.as_raw_fd()), Err(ExchangeError::Request));
++            }));
+             assert_eq!(
+-                unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_GETFL) },
+-                libc::O_WRONLY
++                unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_SETFD, original_flags) },
++                0
+             );
+-            assert_eq!(writer_shape(fd.as_raw_fd()), Err(ExchangeError::Request));
+-        }
++            assert_eq!(
++                unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_GETFD) },
++                original_flags
++            );
++            if let Err(error) = observed {
++                std::panic::resume_unwind(error);
++            }
++        }
++        println!("HC074-NATIVE-FD-FAULT native_cloexec=true loss_injected=true guard_refused=true restored=true");
+         exchange.lose_reply();
+         assert_eq!(exchange.arm(), Err(ExchangeError::AlreadyAttempted));
+         bounded(client.close()).await.unwrap();
+@@ -362,9 +388,9 @@
+         exchange.lose_reply();
+     } else {
+         let mut builder = if case == "manager-error" {
+-            Message::error(&received.header(), "org.freedesktop.systemd1.UnitExists").unwrap()
+-        } else {
+-            Message::method_return(&received.header()).unwrap()
++            Message::error(&received.header(), "org.freedesktop.systemd1.UnitExists")
++        } else {
++            Message::method_return(&received.header())
+         };
+         if case == "wrong-serial" {
+             builder = builder.reply_serial(Some(
+@@ -383,7 +409,7 @@
+             exchange.lose_reply();
+         }
+         let foreign = if case == "foreign-sender" {
+-            Some(bus.connect(true, true).await.0)
++            Some(bus.connect(true, false).await.0)
+         } else {
+             None
+         };
+@@ -407,7 +433,7 @@
+         }
+         let observation = exchange.observe(&response);
+         match case {
+-            "healthy" | "fragmented" => {
++            "healthy" | "fragmented" | "atomic-adapter" => {
+                 assert_eq!(
+                     observation.unwrap().path.as_str(),
+                     "/org/freedesktop/systemd1/job/74"
+@@ -455,6 +481,7 @@
+             for case in [
+                 "bare-receiver",
+                 "healthy",
++                "atomic-adapter",
+                 "fragmented",
+                 "lost-ack",
+                 "foreign-sender",
+@@ -475,3 +502,6 @@
+ fn dispatch_negotiated_private_bus_fault_matrix() {
+     run_private_bus_matrix();
+ }
++
++#[path = "diagnostic_negotiated_credentials_adapter.rs"]
++mod credential_adapter;

@@ -1,0 +1,10 @@
+{
+  "metadata_only": true,
+  "packages": 678,
+  "passed": true,
+  "release_admitted": false,
+  "root_adopted": false,
+  "root_changed": false,
+  "source_unchanged_except_candidate_lock": true,
+  "workspace_members": 36
+}

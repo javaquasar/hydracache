@@ -565,6 +565,17 @@ Thirty inert/retention controls pass. Its first inert literal-parser refusal is
 retained. Root graph/security/adoption, final package/workspace and the original
 execution path remain open; unsigned source export is not publication/enrollment.
 
+The [root source/effect preparation](dbus-root-integration-result-20261028.md)
+subsequently passes complete default/all-feature metadata on an isolated workspace.
+All 36 product members remain; the 683-record reviewed lock includes five records
+inactive in the 678-identity default graph. Nine exact primary archives support
+review of four shared registry changes and 42 affected semantic edge owners.
+Actual all-kind/target registry traversal from 23 published roots reaches no private
+supervisor/vendor, supporting a vendored route for this unpublished tool. Eighteen
+controls pass; first CRLF/cache-origin refusals remain. The 291-operation exact
+changeset is still unapplied. Fresh root format/compiler/policy/package/workspace
+acceptance, remaining Chitchat security and original execution are not closed.
+
 The [whole remaining production caller join](dbus-legacy-integration-result-20261028.md)
 now uses the qualified zbus 6 blocking bridge in all three remaining legacy
 helpers inside an isolated full source copy. GNU 1.94/1.88 check and strict

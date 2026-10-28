@@ -1,0 +1,8 @@
+{
+  "kind": "observed-first-inert-control-summary-not-raw-log",
+  "passed": false,
+  "reason": "root manifest uses CRLF; LF-only workspace marker refused",
+  "case": "test_root_manifest_keeps_all_product_members_floor_and_existing_dependencies",
+  "root_projection_created": false,
+  "cargo_executed": false
+}

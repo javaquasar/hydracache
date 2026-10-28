@@ -68,3 +68,13 @@ separate all-feature phase with --offline --locked. It keeps the same original
 owner/bounds and now refuses any source or lock mutation. All 683 lock identities
 must appear in actual metadata, including the five optional nodes. Fifteen inert
 controls pass before dispatch. Neither phase runs compilation or product tests.
+
+Both phases now pass with successful owned/source/head postflight. The retained
+packet and exact unapplied 291-operation fileset are documented in
+docs/testing/performance/0.74/dbus-root-integration-result-20261028.md.
+`publication.py` additionally verifies the actual full-feature transitive graph,
+including registry edges: 23 published roots reach 599 identities and none of
+the private tool/vendor packages. Its derived JSON binds the held metadata/index.
+Three independent packet/fileset/publication controls bring the focused total to
+18. This evidence supports the next root-context compiler/format/policy step;
+no candidate operation is applied by these tools.

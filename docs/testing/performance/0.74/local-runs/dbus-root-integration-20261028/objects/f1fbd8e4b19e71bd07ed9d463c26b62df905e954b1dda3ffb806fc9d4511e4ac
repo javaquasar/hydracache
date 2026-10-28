@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+    "metadata",
+    "--offline",
+    "--format-version",
+    "1",
+    "--manifest-path",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-root-integration-20261028\\input\\workspace\\Cargo.toml"
+  ],
+  "bound": 1200,
+  "floor": 4294967296,
+  "metadata_only": true,
+  "poll": 5,
+  "retirement": 5,
+  "retry": false,
+  "session_bound": 1100,
+  "source": {
+    "head": "d397726b18b5b219f22999fd9c42d8dd79ddbd51",
+    "tracked": ""
+  }
+}

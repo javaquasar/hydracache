@@ -1,0 +1,11 @@
+--- before/README.md
++++ after/README.md
+@@ -28,7 +28,7 @@
+ 
+ ```toml
+ [dependencies]
+-bitflags = "2.13.0"
++bitflags = "2.13.2"
+ ```
+ 
+ and this to your source code:

@@ -1,0 +1,224 @@
+use super::*;
+use std::mem::{size_of, zeroed};
+use std::os::fd::{OwnedFd, RawFd};
+use std::os::unix::net::UnixDatagram;
+use zbus::zvariant::serialized::Data;
+
+fn pair() -> [UnixDatagram; 2] {
+    let (a, b) = UnixDatagram::pair().unwrap();
+    for socket in [&a, &b] {
+        let yes = 1i32;
+        assert_eq!(
+            unsafe {
+                libc::setsockopt(
+                    socket.as_raw_fd(),
+                    libc::SOL_SOCKET,
+                    libc::SO_PASSCRED,
+                    (&yes as *const i32).cast(),
+                    size_of::<i32>() as _,
+                )
+            },
+            0
+        );
+        // Harness-only receive fail-safe, unrelated to any admission clock.
+        socket
+            .set_read_timeout(Some(std::time::Duration::from_secs(2)))
+            .unwrap();
+    }
+    [a, b]
+}
+fn transfer(sender: &UnixDatagram, receiver: &UnixDatagram, expected: &Message) -> Message {
+    #[repr(C)]
+    struct Control([usize; 16]);
+    let data = expected.data();
+    let fds = data
+        .fds()
+        .iter()
+        .map(AsRawFd::as_raw_fd)
+        .collect::<Vec<_>>();
+    assert!(fds.len() == 2 || fds.is_empty());
+    let mut control = Control([0; 16]);
+    let mut iov = libc::iovec {
+        iov_base: data.bytes().as_ptr().cast_mut().cast(),
+        iov_len: data.bytes().len(),
+    };
+    let mut msg: libc::msghdr = unsafe { zeroed() };
+    msg.msg_iov = &mut iov;
+    msg.msg_iovlen = 1;
+    if !fds.is_empty() {
+        msg.msg_control = (&mut control as *mut Control).cast();
+        msg.msg_controllen =
+            unsafe { libc::CMSG_SPACE((fds.len() * size_of::<RawFd>()) as u32) } as usize;
+        unsafe {
+            let header = libc::CMSG_FIRSTHDR(&msg);
+            (*header).cmsg_level = libc::SOL_SOCKET;
+            (*header).cmsg_type = libc::SCM_RIGHTS;
+            (*header).cmsg_len = libc::CMSG_LEN((fds.len() * size_of::<RawFd>()) as u32) as usize;
+            std::ptr::copy_nonoverlapping(
+                fds.as_ptr(),
+                libc::CMSG_DATA(header).cast::<RawFd>(),
+                fds.len(),
+            );
+        }
+    }
+    assert_eq!(
+        unsafe { libc::sendmsg(sender.as_raw_fd(), &msg, libc::MSG_NOSIGNAL) },
+        data.bytes().len() as isize
+    );
+    let mut bytes = vec![0u8; crate::protocol::MAX_PACKET_BYTES];
+    let mut control = Control([0; 16]);
+    let mut iov = libc::iovec {
+        iov_base: bytes.as_mut_ptr().cast(),
+        iov_len: bytes.len(),
+    };
+    let mut msg: libc::msghdr = unsafe { zeroed() };
+    msg.msg_iov = &mut iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = (&mut control as *mut Control).cast();
+    msg.msg_controllen = size_of::<Control>();
+    let n = unsafe {
+        libc::recvmsg(
+            receiver.as_raw_fd(),
+            &mut msg,
+            libc::MSG_CMSG_CLOEXEC | libc::MSG_TRUNC,
+        )
+    };
+    let mut rights = Vec::<OwnedFd>::new();
+    let mut credentials = vec![];
+    let mut rights_headers = 0;
+    // Gather all installed rights before ancillary validation or assertions.
+    let mut header = unsafe { libc::CMSG_FIRSTHDR(&msg) };
+    while !header.is_null() {
+        unsafe {
+            if (*header).cmsg_level == libc::SOL_SOCKET && (*header).cmsg_type == libc::SCM_RIGHTS {
+                rights_headers += 1;
+                let count = ((*header).cmsg_len - libc::CMSG_LEN(0) as usize) / size_of::<RawFd>();
+                for index in 0..count {
+                    rights.push(OwnedFd::from_raw_fd(
+                        *libc::CMSG_DATA(header).cast::<RawFd>().add(index),
+                    ));
+                }
+            }
+            header = libc::CMSG_NXTHDR(&msg, header);
+        }
+    }
+    assert!(n >= 0);
+    assert_eq!(msg.msg_flags & (libc::MSG_TRUNC | libc::MSG_CTRUNC), 0);
+    let mut header = unsafe { libc::CMSG_FIRSTHDR(&msg) };
+    while !header.is_null() {
+        unsafe {
+            assert_eq!((*header).cmsg_level, libc::SOL_SOCKET);
+            match (*header).cmsg_type {
+                libc::SCM_CREDENTIALS => {
+                    assert_eq!(
+                        (*header).cmsg_len,
+                        libc::CMSG_LEN(size_of::<libc::ucred>() as u32) as usize
+                    );
+                    let credential =
+                        std::ptr::read_unaligned(libc::CMSG_DATA(header).cast::<libc::ucred>());
+                    credentials.push((credential.pid, credential.uid, credential.gid));
+                }
+                libc::SCM_RIGHTS => (),
+                other => panic!("unexpected ancillary {other}"),
+            }
+            header = libc::CMSG_NXTHDR(&msg, header);
+        }
+    }
+    assert_eq!(
+        credentials,
+        vec![(
+            unsafe { libc::getpid() },
+            unsafe { libc::geteuid() },
+            unsafe { libc::getegid() }
+        )]
+    );
+    assert_eq!(rights.len(), fds.len());
+    assert_eq!(rights_headers, usize::from(!fds.is_empty()));
+    for (fd, original) in rights.iter().zip(&fds) {
+        assert_eq!(
+            writer_shape(fd.as_raw_fd()).unwrap(),
+            writer_shape(*original).unwrap()
+        );
+    }
+    bytes.truncate(n as usize);
+    assert_eq!(bytes, data.bytes());
+    let transferred = Data::new_fds(bytes, data.context(), rights);
+    // SAFETY: bytes equal the complete known-valid zbus-built message above;
+    // all referenced FDs were received and bound to its original identities.
+    unsafe { Message::from_bytes(transferred) }.unwrap()
+}
+#[test]
+fn dispatch_real_rights_roundtrip_correlates_job_without_starting_a_process() {
+    let [client, manager] = pair();
+    let [mut out, out_w] = pipe();
+    let [mut err, err_w] = pipe();
+    let request = request_kind([&out_w, &err_w], "ok");
+    drop(out_w);
+    drop(err_w);
+    let mut exchange = DispatchExchange::prepare(request, MANAGER, CLIENT).unwrap();
+    exchange.arm().unwrap();
+    assert_eq!(exchange.phase, Phase::Uncertain);
+    let received = transfer(&client, &manager, &exchange.request);
+    assert_eq!(received.primary_header().serial_num(), exchange.serial);
+    assert_eq!(received.data().fds().len(), 2);
+    for (fd, bytes) in received
+        .data()
+        .fds()
+        .iter()
+        .zip([b"stdout".as_slice(), b"stderr".as_slice()])
+    {
+        assert_eq!(
+            unsafe { libc::write(fd.as_raw_fd(), bytes.as_ptr().cast(), bytes.len()) },
+            bytes.len() as isize
+        );
+    }
+    let response = Message::method_return(&received.header())
+        .unwrap()
+        .sender(MANAGER)
+        .unwrap()
+        .destination(CLIENT)
+        .unwrap()
+        .build(&OwnedObjectPath::try_from("/org/freedesktop/systemd1/job/74").unwrap())
+        .unwrap();
+    let response = transfer(&manager, &client, &response);
+    assert_eq!(
+        exchange.observe(&response).unwrap().path.as_str(),
+        "/org/freedesktop/systemd1/job/74"
+    );
+    let mut buffer = [0u8; 6];
+    out.read_exact(&mut buffer).unwrap();
+    assert_eq!(&buffer, b"stdout");
+    err.read_exact(&mut buffer).unwrap();
+    assert_eq!(&buffer, b"stderr");
+    drop(received);
+    drop(exchange);
+    assert_eq!(out.read(&mut [0u8; 1]).unwrap(), 0);
+    assert_eq!(err.read(&mut [0u8; 1]).unwrap(), 0);
+}
+
+#[path = "diagnostic_original_addressed_transfer_tests.rs"]
+mod original_addressed;
+#[test]
+fn dispatch_actual_delivery_with_lost_reply_preserves_writers_and_cannot_retry() {
+    let [client, manager] = pair();
+    let [mut out, out_w] = pipe();
+    let [mut err, err_w] = pipe();
+    let request = request_kind([&out_w, &err_w], "ok");
+    drop(out_w);
+    drop(err_w);
+    let mut exchange = DispatchExchange::prepare(request, MANAGER, CLIENT).unwrap();
+    exchange.arm().unwrap();
+    let received = transfer(&client, &manager, &exchange.request);
+    drop(received);
+    drop(manager);
+    exchange.lose_reply();
+    assert_eq!(exchange.phase, Phase::Uncertain);
+    assert_eq!(
+        out.read(&mut [0u8; 1]).unwrap_err().kind(),
+        std::io::ErrorKind::WouldBlock
+    );
+    assert_eq!(exchange.arm(), Err(ExchangeError::AlreadyAttempted));
+    drop(exchange);
+    assert_eq!(out.read(&mut [0u8; 1]).unwrap(), 0);
+    assert_eq!(err.read(&mut [0u8; 1]).unwrap(), 0);
+}

@@ -1,0 +1,96 @@
+{
+  "candidate_lock_sha256": "76d4ab3b38c1b259c0784e66dd620a5f61d45cde1760a9533c4d6c7db061b207",
+  "compiler_gate_complete": false,
+  "conclusions": {
+    "bitflags": "Const generation moves outside nested const; all() becomes a const value. No new syscall/build script; shared macro compilation/regression gates still required.",
+    "futures_core_io": "All Rust bodies byte-identical; package version/lock/VCS data changes only.",
+    "socket2": "Target cfg extensions for NuttX/Emscripten/illumos; Windows source unchanged and Linux active branch equivalence is a source inference, not fresh root runtime evidence.",
+    "zruntime": "Exact source/dependency selection already compiled in qualified GNU/MSRV candidate; root feature/consumer gates remain separate."
+  },
+  "diff_sha256": {
+    "diffs/bitflags/CHANGELOG.md.diff": "e67d7b0665d31525ca770026bd46f5f17d7119ebae23971a55e2aa0067196bf9",
+    "diffs/bitflags/Cargo.toml.diff": "c98c919a65bb0e3c8f6444523ee15ce318818be2e7ff4dfcd56ddbe44d127bb1",
+    "diffs/bitflags/README.md.diff": "e5b233bc6f76bc5790c159b512b90cc8976c7c8292cd3a0b7561386f730e911e",
+    "diffs/bitflags/src/lib.rs.diff": "c55dc12eb6ddb7cf33ccdea2bf6dce0170831fffeb6c7750c2c0f3377d98c0ec",
+    "diffs/bitflags/src/public.rs.diff": "5540f56fab2a38bb7bdcb8267a6f98e2902ac65e3359cfe8a3de06bd0b8447eb",
+    "diffs/bitflags/src/tests.rs.diff": "ea54fc275a3bb22788312675d79fc0dae0d290ac71ae318e84472fe120f9673f",
+    "diffs/bitflags/src/traits.rs.diff": "507768bcd3d78c6d9841da813baa747ec7e5a17fe276c66211f7751acbeeb841",
+    "diffs/futures-core/Cargo.toml.diff": "6b3bb4e6b05375da77d6257e03a3cf448221f9315ea122384152ec31bf493bc5",
+    "diffs/futures-io/Cargo.toml.diff": "d341befd3cb1e07fa31747009d665c960d3ce9f13213fa35bbac395cf5d45747",
+    "diffs/socket2/Cargo.toml.diff": "af19610debfcd1955392e71123a18161b8b33f3e3c085dacdad4291ab17f513d",
+    "diffs/socket2/src/lib.rs.diff": "a271847ecbce82aa88512acd42769816d1cd73266b9b81d34f82074db868648c",
+    "diffs/socket2/src/socket.rs.diff": "49cd981fbbb48fe6adda7c98d24482c70ab138ba1b0ed36b1a27f266f353afc3",
+    "diffs/socket2/src/sys/unix.rs.diff": "68799aab0f7956e5e828850fb4db45d58774d2702443f3028ebdd10d62e6bea4"
+  },
+  "kind": "Codex source review of exact captured upstream diffs",
+  "lock_effects_reviewed": true,
+  "performance_claim": false,
+  "primary": [
+    {
+      "build_script": false,
+      "name": "bitflags",
+      "rust_version": "1.56.0",
+      "sha256": "3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06",
+      "version": "2.13.2"
+    },
+    {
+      "build_script": false,
+      "name": "bitflags",
+      "rust_version": "1.56.0",
+      "sha256": "b4388bee8683e3d04af747c73422af53102d2bd24d9eadb6cbc100baef4b43f8",
+      "version": "2.13.0"
+    },
+    {
+      "build_script": false,
+      "name": "futures-core",
+      "rust_version": "1.36",
+      "sha256": "92d699e522242e69e3003b94ecc1f960f3a5e015aa7c5d7486e65ad01dd94f5e",
+      "version": "0.3.34"
+    },
+    {
+      "build_script": false,
+      "name": "futures-core",
+      "rust_version": "1.36",
+      "sha256": "7e3450815272ef58cec6d564423f6e755e25379b217b0bc688e295ba24df6b1d",
+      "version": "0.3.32"
+    },
+    {
+      "build_script": false,
+      "name": "futures-io",
+      "rust_version": "1.36",
+      "sha256": "53c0fa8157de1303bfffdaa1cc2a673bfffb60102f76b0ef4441659124373fed",
+      "version": "0.3.34"
+    },
+    {
+      "build_script": false,
+      "name": "futures-io",
+      "rust_version": "1.36",
+      "sha256": "cecba35d7ad927e23624b22ad55235f2239cfa44fd10428eecbeba6d6a717718",
+      "version": "0.3.32"
+    },
+    {
+      "build_script": false,
+      "name": "socket2",
+      "rust_version": "1.70",
+      "sha256": "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4",
+      "version": "0.6.5"
+    },
+    {
+      "build_script": false,
+      "name": "socket2",
+      "rust_version": "1.70",
+      "sha256": "52d1cfed4120b4d927bf7c0f86d2087a4a7d6027c906d9f9d525a80573b9be51",
+      "version": "0.6.4"
+    },
+    {
+      "build_script": false,
+      "name": "zruntime",
+      "rust_version": "1.88",
+      "sha256": "467fd80a2014d186319f14b81aef027aa466712f355c90158a0e6b39de60726d",
+      "version": "0.2.0"
+    }
+  ],
+  "root_adoption_admitted": false,
+  "structural_result_sha256": "1915c4895a676ed626242c06cb2e7d0dd360becafd427850d252f5626811e3e0",
+  "upstream_body_review_complete": true
+}

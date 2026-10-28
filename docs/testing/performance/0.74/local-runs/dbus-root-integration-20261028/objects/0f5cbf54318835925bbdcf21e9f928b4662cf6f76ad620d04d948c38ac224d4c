@@ -1,0 +1,9 @@
+--- root/tools/long-run-supervisor-074/src/lib.rs
++++ candidate/tools/long-run-supervisor-074/src/lib.rs
+@@ -619,3 +619,6 @@
+ fn sync_directory(_path: &Path) -> Result<(), ChainError> {
+     Ok(())
+ }
++
++#[cfg(target_os = "linux")]
++mod diagnostic_blocking_v6;

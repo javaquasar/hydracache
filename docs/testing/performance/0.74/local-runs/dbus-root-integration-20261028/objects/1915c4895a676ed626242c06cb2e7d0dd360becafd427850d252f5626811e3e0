@@ -1,0 +1,1764 @@
+{
+  "added": [
+    [
+      "bitflags",
+      "2.13.2",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "futures-core",
+      "0.3.34",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "futures-io",
+      "0.3.34",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "socket2",
+      "0.6.5",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "zbus",
+      "6.1.0",
+      null
+    ],
+    [
+      "zbus_macros",
+      "6.1.0",
+      null
+    ],
+    [
+      "zbus_utils",
+      "6.0.0",
+      null
+    ],
+    [
+      "zruntime",
+      "0.2.0",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ]
+  ],
+  "all_added_nodes_equal_qualified": true,
+  "changed_semantic_edge_owners": [
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "astral-tokio-tar",
+        "0.6.3",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "async-broadcast",
+        "0.7.2",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "async-stream",
+        "0.3.6",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "axum-core",
+        "0.5.6",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "bitflags",
+          "2.13.2",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ],
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "bollard",
+        "0.20.2",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "bitflags",
+          "2.13.0",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ],
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "combine",
+        "4.6.7",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "flume",
+        "0.11.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ],
+        [
+          "futures-io",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "futures",
+        "0.3.32",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ],
+        [
+          "futures-io",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "futures-channel",
+        "0.3.32",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "futures-executor",
+        "0.3.32",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "futures-intrusive",
+        "0.5.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ],
+        [
+          "futures-io",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "futures-util",
+        "0.3.32",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ],
+        [
+          "futures-io",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "gloo-timers",
+        "0.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "h2",
+        "0.4.19",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "http-body-util",
+        "0.1.3",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "zbus",
+          "6.1.0",
+          null
+        ]
+      ],
+      "owner": [
+        "hydracache-long-run-supervisor-074",
+        "0.0.0",
+        null
+      ],
+      "removed": [
+        [
+          "zbus",
+          "5.19.0",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "hyper",
+        "1.10.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "socket2",
+          "0.6.5",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "hyper-util",
+        "0.1.20",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "socket2",
+          "0.6.4",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "bitflags",
+          "2.13.2",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "libredox",
+        "0.1.18",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "bitflags",
+          "2.13.0",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "ordered-stream",
+        "0.2.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "bitflags",
+          "2.13.2",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "proptest",
+        "1.11.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "bitflags",
+          "2.13.0",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "bitflags",
+          "2.13.2",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "pulldown-cmark",
+        "0.13.4",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "bitflags",
+          "2.13.0",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "socket2",
+          "0.6.5",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "quinn",
+        "0.11.11",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "socket2",
+          "0.6.4",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "socket2",
+          "0.6.5",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "quinn-udp",
+        "0.5.15",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "socket2",
+          "0.6.4",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "socket2",
+          "0.6.5",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "redis",
+        "1.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "socket2",
+          "0.6.4",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "bitflags",
+          "2.13.2",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "redox_syscall",
+        "0.5.18",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "bitflags",
+          "2.13.0",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "bitflags",
+          "2.13.2",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "redox_syscall",
+        "0.9.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "bitflags",
+          "2.13.0",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "reqwest",
+        "0.13.4",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "bitflags",
+          "2.13.2",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "rustix",
+        "0.38.44",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "bitflags",
+          "2.13.0",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "bitflags",
+          "2.13.2",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "rustix",
+        "1.1.4",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "bitflags",
+          "2.13.0",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "bitflags",
+          "2.13.2",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "security-framework",
+        "3.7.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "bitflags",
+          "2.13.0",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ],
+        [
+          "futures-io",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "sqlx-core",
+        "0.8.6",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ],
+        [
+          "futures-io",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "bitflags",
+          "2.13.2",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ],
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "sqlx-postgres",
+        "0.8.6",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "bitflags",
+          "2.13.0",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ],
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "sqlx-sqlite",
+        "0.8.6",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "sync_wrapper",
+        "1.0.2",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "socket2",
+          "0.6.5",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "tokio",
+        "1.53.3",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "socket2",
+          "0.6.4",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ],
+        [
+          "tracing",
+          "0.1.44",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "tokio-stream",
+        "0.1.18",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "tokio-util",
+        "0.7.18",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "tokio-websockets",
+        "0.10.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "socket2",
+          "0.6.5",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "tonic",
+        "0.14.6",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "socket2",
+          "0.6.4",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "futures-core",
+          "0.3.34",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "tower",
+        "0.5.3",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "futures-core",
+          "0.3.32",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    {
+      "added": [
+        [
+          "bitflags",
+          "2.13.2",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "owner": [
+        "tower-http",
+        "0.6.11",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      "removed": [
+        [
+          "bitflags",
+          "2.13.0",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    }
+  ],
+  "compiler_gate_complete": false,
+  "default_metadata_packages": 678,
+  "lock_delta_reviewed": true,
+  "lock_only_default_feature_nodes": [
+    [
+      "fail",
+      "0.5.1",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "libmimalloc-sys",
+      "0.1.49",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "mimalloc",
+      "0.1.52",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "tikv-jemalloc-sys",
+      "0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "tikv-jemallocator",
+      "0.6.1",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ]
+  ],
+  "new_lock_packages": 683,
+  "old_lock_packages": 689,
+  "primary": [
+    {
+      "build_script": false,
+      "features": {
+        "example_generated": [],
+        "serde": [
+          "serde_core"
+        ],
+        "std": []
+      },
+      "member_sha256": {
+        ".cargo_vcs_info.json": "a747ede97b611a74546490982a8c9434e9de1e3a96827d9eccb5a78a1a1eaee0",
+        ".gitignore": "f38ea06faef7c83514a45e16a3bd7e3a4c497be09ec33057a7159a8cef954f93",
+        "CHANGELOG.md": "56f3b2d0256fbd617d6a9565175f062b9c36ecf220cdbb3575f3e1110a73b3f7",
+        "CODE_OF_CONDUCT.md": "42634d0f6d922f49857175af991802822f7f920487aefa2ee250a50d12251a66",
+        "CONTRIBUTING.md": "6c9f96eacb20af877ae2d16f024904f3038b93448a8488e9dbcac0df7f6439a5",
+        "Cargo.lock": "1efed2a96851d7ccc7c9f6a98b16312984c0bac843035a1733000879a45b16e8",
+        "Cargo.toml": "562e660adbb084de042fc9ecc5ac7ba32b5f565d53188823bab9159a027b2b44",
+        "Cargo.toml.orig": "5556d6c09fb1d46628bfddace388f99cc80cfb982149d70b2ee62760003b7f84",
+        "LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+        "LICENSE-MIT": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+        "README.md": "1d3819b03f783a3e311f6df7753d74a3329a6461591bbb9dbbf91a899c5eeaf6",
+        "SECURITY.md": "68704c8128fa2e776ed7cbda741fbf61ad52f998a96350ee7ee4dbf64c6573bc",
+        "benches/parse.rs": "f1390d62322c6880d65bd931e183d49b313f287879a6bfaa36b1cb1921090b51",
+        "examples/custom_bits_type.rs": "e53b32051adc5d97860e0b48c8f3a301a041d73b4939c0d7caa5f0cfcc0b9739",
+        "examples/custom_derive.rs": "730589695eb68dda21d0d9f69e90cbdbf9823b13d6f16c5f22b0083c00981813",
+        "examples/fmt.rs": "87ba37a1fb8528570c74ea26d8e8948e1179c3d867b928bea1080880258e0a99",
+        "examples/macro_free.rs": "69e7f284b53b5214d51228a686e87f127b52a3b74711e45537ebfa5583a180e5",
+        "examples/serde.rs": "dfc7cd50232c6763f7cd05b4089ef9408db9368ee42c3fd5c116ff424810a2b0",
+        "spec.md": "f0657642c7cf470e6d6e55362aaab224b3df0f22cb7796b109bb41687acea8b1",
+        "src/example_generated.rs": "b924402c6ae9ed1ed0d67bdc0d8de1c0c557e10b5945e27cf6eca89fd26b4675",
+        "src/external.rs": "635bd48b03252b2bf1a48f22325c10a03a024019f054e0cbb6a061453fdcb557",
+        "src/external/arbitrary.rs": "43908bb4fe0a076078dcb3fa70c654aaed8c7b38aa66574414165a82037def83",
+        "src/external/bytemuck.rs": "3afcef382122867040fddd5e4153d633d1ed5596fe5d7dfac66a8e61c2513df5",
+        "src/external/serde.rs": "0f7339036f41cd93f29b21b954bc1f0fd747762f7a4f20d4ebfc848b20584dc8",
+        "src/internal.rs": "645b13af0c7302258df61239073a4b8203d09f27b6c17f8a6f1f8c3e427f5334",
+        "src/iter.rs": "5865e1763858b9064bab98913b85ce7ce88a28ad8d688b80dbd2c5c394b2b757",
+        "src/lib.rs": "f8d141a1ba6b1996b33eb34669786ef389d4d5226edad46cec22a561588c324b",
+        "src/parser.rs": "4e788b29f5d0542c409a8b43c703bcb4a6c2a57c181cadd17f565f0abb39681e",
+        "src/public.rs": "1237676ca4687d8eb8364eb52b23c5f284f73f4d4113ee833fa3470c8b512be9",
+        "src/tests.rs": "98d87786aa2c3b851e9560d8a130c9e53b170fd98c22ea48ff7c9b624420526a",
+        "src/tests/all.rs": "e99a865cd4271a524c2fe95503e96d851b35990570aed6fb2e9dac7a14da31b6",
+        "src/tests/all_named.rs": "532cd2548a34aaa8ee1b283558f8910184fcaeb773ce33c806e21bd1896f2d4d",
+        "src/tests/bitflags_match.rs": "601ad186930908b681f24312132000518fc927ba569d394e5c4440462f037aec",
+        "src/tests/bits.rs": "3840c34b2ea5d1802404b9ce5bcc1d3fa6ccd8dfba2e29e6d07c605f817d90df",
+        "src/tests/clear.rs": "6976fcda2f3367c8219485d33bd5d754da6769770cf164c12baace010ad7686d",
+        "src/tests/complement.rs": "d0e6d4c3daf49e0a7438c9f1c1ac91fad1b37f258c03593f6cd6a695ee626f5e",
+        "src/tests/contains.rs": "58bb3cb8c86550e775d11134da1d4aca85c83f943ea454e3a5f222772c674a24",
+        "src/tests/difference.rs": "d0d2b96bb52658b8ac019210da74ca75a53e76622f668855142ea6e97c28cb0e",
+        "src/tests/empty.rs": "817d6e93ced7cb7576ff0e334aa1a44703f3f96871ff2c6bdcb8f207e6551f67",
+        "src/tests/eq.rs": "b816767680a029e9c163e37af074dd4e604c4a3e4936f829f0ca3774fd5f0e37",
+        "src/tests/extend.rs": "5fabb9fd0254c64da019149c24063fceff72da3eb4ad73b57c1cc4c04b008364",
+        "src/tests/flag_name.rs": "b9e84e45252e740a8c44e3555c7356c3a2982bb12ebdc38502996fda9848799c",
+        "src/tests/flags.rs": "2f48d3a25db1cf66fe98c9959abc70875deb9f7b38b2c278dc70c46e0d4ec277",
+        "src/tests/fmt.rs": "a2d4148491f3202f030f63633eee941b741e3be29a68cf376f008dbe5cb11e5c",
+        "src/tests/from_bits.rs": "d94c65b88bf89961d0cfc1b3152a7f1acc285bae160a1628438effda11b8e2c1",
+        "src/tests/from_bits_retain.rs": "980591dfaf91e940f42d9a1ce890f237514dd59d458fc264abcf9ceabbc40677",
+        "src/tests/from_bits_truncate.rs": "d3406b5e107ebb6449b98a59eee6cc5d84f947d4aaee1ee7e80dc7202de179f0",
+        "src/tests/from_name.rs": "f4a055d1f3c86decef70ef8f3020cef5c4e229718c20b3d59d5a3abc3a8b1298",
+        "src/tests/insert.rs": "3fab5da800a6fc0654dfb5f859f95da65a507eb9fda8695083c2712266dff0b9",
+        "src/tests/intersection.rs": "baf1454c9e4eba552264870a556ee0032d9f2bb8cac361833d571235e0b52221",
+        "src/tests/intersects.rs": "c55e36179fd8bc636f04ea9bbce346dcaafe57915d13f1df28c5b83117dbd08e",
+        "src/tests/is_all.rs": "b2f11faa7c954bd85c8fb39999e0c37d983cf7895152bc13c7ddde106aa33b6d",
+        "src/tests/is_empty.rs": "11f21323cdca7ff92dd89e09de667dba69e8dce88e2d3e27ea68ace91d15d070",
+        "src/tests/iter.rs": "db96736e94686f4c66c012b20e4059fc3e61205feda8b4f1ad7aa16615071c18",
+        "src/tests/iter_equal_names.rs": "33d122bd49c59b94bbacbd8bad74dd831241e429904470c3720958a4030a7184",
+        "src/tests/known_bits.rs": "37399438c7c89aae34bbf1917c636ea29b44383bf4aede46b62221a8b7d73cae",
+        "src/tests/parser.rs": "fa2fb8dedcf16601af609a5e21d9c5840c7f96a1e3a587f7f2ea3dc8387f7628",
+        "src/tests/remove.rs": "6e75f8508d2dc1a2cba89ef691f4387a665a4fd13853bb1dd0fd80c783b89947",
+        "src/tests/symmetric_difference.rs": "0a89f084f9de1dd5b1932fe72c3b10a3c93cbaa16832b3a31b6a85e3bbd3ba6e",
+        "src/tests/truncate.rs": "683430af4a0e47ec73c737a6908fac5d851bed7c41d47c73a642e96d966aa5ae",
+        "src/tests/union.rs": "88f398ee4600bb1e59bf6d02d1f6ff33f5f853eab5a6c700bd8a683c6ee4651a",
+        "src/tests/unknown.rs": "fa9e8ee461f176c0d892cde487fef0fe66df2aa5906aaef21b093102e590f5f5",
+        "src/tests/unknown_bits.rs": "4108713e5c4903112cca1d0b49ce1a6cc6d9764824138248e5396adb889a5b5f",
+        "src/traits.rs": "cbf7564b390cfb1919e59799269e244db49498a44c4df3207c713ffc64269749"
+      },
+      "name": "bitflags",
+      "rust_version": "1.56.0",
+      "sha256": "3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06",
+      "source_path": "C:\\Users\\ArturBuzov\\.cargo\\registry\\cache\\index.crates.io-1949cf8c6b5b557f\\bitflags-2.13.2.crate",
+      "version": "2.13.2"
+    },
+    {
+      "build_script": false,
+      "features": {
+        "example_generated": [],
+        "serde": [
+          "serde_core"
+        ],
+        "std": []
+      },
+      "member_sha256": {
+        ".cargo_vcs_info.json": "7c5fbb625e8563820332e422e962d20d333cbdc4713cc8708ffe1ef8d778128f",
+        ".gitignore": "f38ea06faef7c83514a45e16a3bd7e3a4c497be09ec33057a7159a8cef954f93",
+        "CHANGELOG.md": "3e8ff315f0c1615b7a54ac86d1645c8e7e722e7a083b17125ba4ca2bef8592f2",
+        "CODE_OF_CONDUCT.md": "42634d0f6d922f49857175af991802822f7f920487aefa2ee250a50d12251a66",
+        "CONTRIBUTING.md": "6c9f96eacb20af877ae2d16f024904f3038b93448a8488e9dbcac0df7f6439a5",
+        "Cargo.lock": "9f62e8a2ff5c7a2276df80e6ac4cc022a904816fa14590f3f275d4874124ac4d",
+        "Cargo.toml": "7fd26ca6a1546a98958b029f794a69e4f146d2d5ae387b784e6dda6111226a63",
+        "Cargo.toml.orig": "b7a45572b4c08b878579f022cc44783b463b4651695982c7e757c39e13f335f0",
+        "LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+        "LICENSE-MIT": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+        "README.md": "ee99b7fa8e03fe8839cd4de81b0bee6d5fc621d81121b90952807061aab7aefb",
+        "SECURITY.md": "68704c8128fa2e776ed7cbda741fbf61ad52f998a96350ee7ee4dbf64c6573bc",
+        "benches/parse.rs": "f1390d62322c6880d65bd931e183d49b313f287879a6bfaa36b1cb1921090b51",
+        "examples/custom_bits_type.rs": "e53b32051adc5d97860e0b48c8f3a301a041d73b4939c0d7caa5f0cfcc0b9739",
+        "examples/custom_derive.rs": "730589695eb68dda21d0d9f69e90cbdbf9823b13d6f16c5f22b0083c00981813",
+        "examples/fmt.rs": "87ba37a1fb8528570c74ea26d8e8948e1179c3d867b928bea1080880258e0a99",
+        "examples/macro_free.rs": "69e7f284b53b5214d51228a686e87f127b52a3b74711e45537ebfa5583a180e5",
+        "examples/serde.rs": "dfc7cd50232c6763f7cd05b4089ef9408db9368ee42c3fd5c116ff424810a2b0",
+        "spec.md": "f0657642c7cf470e6d6e55362aaab224b3df0f22cb7796b109bb41687acea8b1",
+        "src/example_generated.rs": "b924402c6ae9ed1ed0d67bdc0d8de1c0c557e10b5945e27cf6eca89fd26b4675",
+        "src/external.rs": "635bd48b03252b2bf1a48f22325c10a03a024019f054e0cbb6a061453fdcb557",
+        "src/external/arbitrary.rs": "43908bb4fe0a076078dcb3fa70c654aaed8c7b38aa66574414165a82037def83",
+        "src/external/bytemuck.rs": "3afcef382122867040fddd5e4153d633d1ed5596fe5d7dfac66a8e61c2513df5",
+        "src/external/serde.rs": "0f7339036f41cd93f29b21b954bc1f0fd747762f7a4f20d4ebfc848b20584dc8",
+        "src/internal.rs": "645b13af0c7302258df61239073a4b8203d09f27b6c17f8a6f1f8c3e427f5334",
+        "src/iter.rs": "5865e1763858b9064bab98913b85ce7ce88a28ad8d688b80dbd2c5c394b2b757",
+        "src/lib.rs": "d4c51a96b566ccdeb4db2b367952645c4828d026079cad18f743761386585639",
+        "src/parser.rs": "4e788b29f5d0542c409a8b43c703bcb4a6c2a57c181cadd17f565f0abb39681e",
+        "src/public.rs": "3ead0399297541b1d79d0167e1023da6068ba89c9ac44f13470f276a10881d56",
+        "src/tests.rs": "4850df3086d8a9d37095d918c07d250a7ef46bf9999f2f361605aa3495515379",
+        "src/tests/all.rs": "e99a865cd4271a524c2fe95503e96d851b35990570aed6fb2e9dac7a14da31b6",
+        "src/tests/all_named.rs": "532cd2548a34aaa8ee1b283558f8910184fcaeb773ce33c806e21bd1896f2d4d",
+        "src/tests/bitflags_match.rs": "601ad186930908b681f24312132000518fc927ba569d394e5c4440462f037aec",
+        "src/tests/bits.rs": "3840c34b2ea5d1802404b9ce5bcc1d3fa6ccd8dfba2e29e6d07c605f817d90df",
+        "src/tests/clear.rs": "6976fcda2f3367c8219485d33bd5d754da6769770cf164c12baace010ad7686d",
+        "src/tests/complement.rs": "d0e6d4c3daf49e0a7438c9f1c1ac91fad1b37f258c03593f6cd6a695ee626f5e",
+        "src/tests/contains.rs": "58bb3cb8c86550e775d11134da1d4aca85c83f943ea454e3a5f222772c674a24",
+        "src/tests/difference.rs": "d0d2b96bb52658b8ac019210da74ca75a53e76622f668855142ea6e97c28cb0e",
+        "src/tests/empty.rs": "817d6e93ced7cb7576ff0e334aa1a44703f3f96871ff2c6bdcb8f207e6551f67",
+        "src/tests/eq.rs": "b816767680a029e9c163e37af074dd4e604c4a3e4936f829f0ca3774fd5f0e37",
+        "src/tests/extend.rs": "5fabb9fd0254c64da019149c24063fceff72da3eb4ad73b57c1cc4c04b008364",
+        "src/tests/flag_name.rs": "b9e84e45252e740a8c44e3555c7356c3a2982bb12ebdc38502996fda9848799c",
+        "src/tests/flags.rs": "2f48d3a25db1cf66fe98c9959abc70875deb9f7b38b2c278dc70c46e0d4ec277",
+        "src/tests/fmt.rs": "a2d4148491f3202f030f63633eee941b741e3be29a68cf376f008dbe5cb11e5c",
+        "src/tests/from_bits.rs": "d94c65b88bf89961d0cfc1b3152a7f1acc285bae160a1628438effda11b8e2c1",
+        "src/tests/from_bits_retain.rs": "980591dfaf91e940f42d9a1ce890f237514dd59d458fc264abcf9ceabbc40677",
+        "src/tests/from_bits_truncate.rs": "d3406b5e107ebb6449b98a59eee6cc5d84f947d4aaee1ee7e80dc7202de179f0",
+        "src/tests/from_name.rs": "f4a055d1f3c86decef70ef8f3020cef5c4e229718c20b3d59d5a3abc3a8b1298",
+        "src/tests/insert.rs": "3fab5da800a6fc0654dfb5f859f95da65a507eb9fda8695083c2712266dff0b9",
+        "src/tests/intersection.rs": "baf1454c9e4eba552264870a556ee0032d9f2bb8cac361833d571235e0b52221",
+        "src/tests/intersects.rs": "c55e36179fd8bc636f04ea9bbce346dcaafe57915d13f1df28c5b83117dbd08e",
+        "src/tests/is_all.rs": "b2f11faa7c954bd85c8fb39999e0c37d983cf7895152bc13c7ddde106aa33b6d",
+        "src/tests/is_empty.rs": "11f21323cdca7ff92dd89e09de667dba69e8dce88e2d3e27ea68ace91d15d070",
+        "src/tests/iter.rs": "db96736e94686f4c66c012b20e4059fc3e61205feda8b4f1ad7aa16615071c18",
+        "src/tests/iter_equal_names.rs": "33d122bd49c59b94bbacbd8bad74dd831241e429904470c3720958a4030a7184",
+        "src/tests/known_bits.rs": "37399438c7c89aae34bbf1917c636ea29b44383bf4aede46b62221a8b7d73cae",
+        "src/tests/parser.rs": "fa2fb8dedcf16601af609a5e21d9c5840c7f96a1e3a587f7f2ea3dc8387f7628",
+        "src/tests/remove.rs": "6e75f8508d2dc1a2cba89ef691f4387a665a4fd13853bb1dd0fd80c783b89947",
+        "src/tests/symmetric_difference.rs": "0a89f084f9de1dd5b1932fe72c3b10a3c93cbaa16832b3a31b6a85e3bbd3ba6e",
+        "src/tests/truncate.rs": "683430af4a0e47ec73c737a6908fac5d851bed7c41d47c73a642e96d966aa5ae",
+        "src/tests/union.rs": "88f398ee4600bb1e59bf6d02d1f6ff33f5f853eab5a6c700bd8a683c6ee4651a",
+        "src/tests/unknown.rs": "fa9e8ee461f176c0d892cde487fef0fe66df2aa5906aaef21b093102e590f5f5",
+        "src/tests/unknown_bits.rs": "4108713e5c4903112cca1d0b49ce1a6cc6d9764824138248e5396adb889a5b5f",
+        "src/traits.rs": "154244d22577c4825ab573e9b251084555d6b4f45d7660d6967559c0dc6798e2"
+      },
+      "name": "bitflags",
+      "rust_version": "1.56.0",
+      "sha256": "b4388bee8683e3d04af747c73422af53102d2bd24d9eadb6cbc100baef4b43f8",
+      "source_path": "C:\\Users\\ArturBuzov\\.cargo\\registry\\cache\\index.crates.io-1949cf8c6b5b557f\\bitflags-2.13.0.crate",
+      "version": "2.13.0"
+    },
+    {
+      "build_script": false,
+      "features": {
+        "alloc": [],
+        "cfg-target-has-atomic": [],
+        "default": [
+          "std"
+        ],
+        "std": [
+          "alloc"
+        ],
+        "unstable": []
+      },
+      "member_sha256": {
+        ".cargo_vcs_info.json": "9e19550cc5c74b21e06edc8ac1935458e09de23b2dd45b1635c41075db33f951",
+        "Cargo.lock": "2d99d08db413bbac7697a71410aea129c4a5902896b115a4ec0547d20625dba2",
+        "Cargo.toml": "fa88cec6d0c527df4ff51ad034de09d3c552f6174ab8e4aa83cfaeacc36c4c7d",
+        "Cargo.toml.orig": "b862d981fc4ed113c5cc319643da53ff4ff2b6f30141b124c4e6cefba8283b5f",
+        "LICENSE-APACHE": "275c491d6d1160553c32fd6127061d7f9606c3ea25abfad6ca3f6ed088785427",
+        "LICENSE-MIT": "6652c868f35dfe5e8ef636810a4e576b9d663f3a17fb0f5613ad73583e1b88fd",
+        "README.md": "e8258273fed6f1796485777655118f2369fd3f000191e9d8cdbd10bf052946a9",
+        "src/future.rs": "bdbe034548271aef0c3dd8a6d087a5861e5920848c9e33a8949dbc40407c0ca7",
+        "src/lib.rs": "e545004177a7cd13257a3a562d2d44a5e0cff45687fc912b69e3d510fa397396",
+        "src/stream.rs": "11f0b4360287dd870c1b674db84f2452ddc38fbaf475cca27d374b65211af72d",
+        "src/task/__internal/atomic_waker.rs": "67d3e3177332e95696bc727420beadc1af44b5c96da78ac8f97f9f5bae4fb143",
+        "src/task/__internal/mod.rs": "1cc15fd61942a29ea558c5f4d5782e46adcfd914cab82be084a6882fa9afc122",
+        "src/task/mod.rs": "e213602a2fe5ae78ad5f1ca20e6d32dcbab17aba5b6b072fb927a72da99b4a11",
+        "src/task/poll.rs": "3732f2e489b107ef76ba0cd9b30efd197d445dcea67f2c65783a388893f310b6"
+      },
+      "name": "futures-core",
+      "rust_version": "1.36",
+      "sha256": "92d699e522242e69e3003b94ecc1f960f3a5e015aa7c5d7486e65ad01dd94f5e",
+      "source_path": "C:\\Users\\ArturBuzov\\.cargo\\registry\\cache\\index.crates.io-1949cf8c6b5b557f\\futures-core-0.3.34.crate",
+      "version": "0.3.34"
+    },
+    {
+      "build_script": false,
+      "features": {
+        "alloc": [],
+        "cfg-target-has-atomic": [],
+        "default": [
+          "std"
+        ],
+        "std": [
+          "alloc"
+        ],
+        "unstable": []
+      },
+      "member_sha256": {
+        ".cargo_vcs_info.json": "69b2d02e5db8288df704d7a276ef0bfb27017f5ba1657efddd33135076f82ba0",
+        "Cargo.lock": "fbeac5791a2d97ac81be504c9436354ec6f4d2fa43172945f9bbac1097d84faf",
+        "Cargo.toml": "8e1fc1b21e82013b3accf43c8fc1bcdddeb3d41c810110fb83a61558a49742c3",
+        "Cargo.toml.orig": "be1d2616172fb5ae584491a8cf34dd5e4f330a70a1056286cbde6bf4f358c9f8",
+        "LICENSE-APACHE": "275c491d6d1160553c32fd6127061d7f9606c3ea25abfad6ca3f6ed088785427",
+        "LICENSE-MIT": "6652c868f35dfe5e8ef636810a4e576b9d663f3a17fb0f5613ad73583e1b88fd",
+        "README.md": "e8258273fed6f1796485777655118f2369fd3f000191e9d8cdbd10bf052946a9",
+        "src/future.rs": "bdbe034548271aef0c3dd8a6d087a5861e5920848c9e33a8949dbc40407c0ca7",
+        "src/lib.rs": "e545004177a7cd13257a3a562d2d44a5e0cff45687fc912b69e3d510fa397396",
+        "src/stream.rs": "11f0b4360287dd870c1b674db84f2452ddc38fbaf475cca27d374b65211af72d",
+        "src/task/__internal/atomic_waker.rs": "67d3e3177332e95696bc727420beadc1af44b5c96da78ac8f97f9f5bae4fb143",
+        "src/task/__internal/mod.rs": "1cc15fd61942a29ea558c5f4d5782e46adcfd914cab82be084a6882fa9afc122",
+        "src/task/mod.rs": "e213602a2fe5ae78ad5f1ca20e6d32dcbab17aba5b6b072fb927a72da99b4a11",
+        "src/task/poll.rs": "3732f2e489b107ef76ba0cd9b30efd197d445dcea67f2c65783a388893f310b6"
+      },
+      "name": "futures-core",
+      "rust_version": "1.36",
+      "sha256": "7e3450815272ef58cec6d564423f6e755e25379b217b0bc688e295ba24df6b1d",
+      "source_path": "C:\\Users\\ArturBuzov\\.cargo\\registry\\cache\\index.crates.io-1949cf8c6b5b557f\\futures-core-0.3.32.crate",
+      "version": "0.3.32"
+    },
+    {
+      "build_script": false,
+      "features": {
+        "default": [
+          "std"
+        ],
+        "std": [],
+        "unstable": []
+      },
+      "member_sha256": {
+        ".cargo_vcs_info.json": "a2a4ccf17f8c2e2390c13b0c7b2613eedd80a075936d247d796d3c308f08479f",
+        "Cargo.lock": "96210bd93eff4687a25e58d0faf9653e6619a91c97272eb4ea02d533669ff8b6",
+        "Cargo.toml": "c42a07cdf88ac680f96f75df035d3193a449eec157d75b1c9e9024a05848654b",
+        "Cargo.toml.orig": "d19f422e7590ac41244b20763f9db4a8b0878813427dbfbd38a57ce1fce4d700",
+        "LICENSE-APACHE": "275c491d6d1160553c32fd6127061d7f9606c3ea25abfad6ca3f6ed088785427",
+        "LICENSE-MIT": "6652c868f35dfe5e8ef636810a4e576b9d663f3a17fb0f5613ad73583e1b88fd",
+        "README.md": "575430be5c47352d85f36b44dcc2c2851a6a19e2384593415c4af22c6654cee7",
+        "src/lib.rs": "ff0a57a4c0eea4b7677404cdca237729f0af9c5dfc9539d23583a71ac7e9cc42"
+      },
+      "name": "futures-io",
+      "rust_version": "1.36",
+      "sha256": "53c0fa8157de1303bfffdaa1cc2a673bfffb60102f76b0ef4441659124373fed",
+      "source_path": "C:\\Users\\ArturBuzov\\.cargo\\registry\\cache\\index.crates.io-1949cf8c6b5b557f\\futures-io-0.3.34.crate",
+      "version": "0.3.34"
+    },
+    {
+      "build_script": false,
+      "features": {
+        "default": [
+          "std"
+        ],
+        "std": [],
+        "unstable": []
+      },
+      "member_sha256": {
+        ".cargo_vcs_info.json": "214325c00ab5e42ed636dbc9f0bab92395a01dcd01240dc54d3c2460d3e49849",
+        "Cargo.lock": "effb2b02e6667d5fab0e2a8615748faca8856cbc5e49948e57fe23d3d46a4a5c",
+        "Cargo.toml": "25f7523cb891a7491bb35aa4787212209d2ee2b8845b6243b9e7c82e0d1ac6c9",
+        "Cargo.toml.orig": "74e47285baa89d734998ae95f56fd21c484fda6e5549780eff50f42ff1f103e5",
+        "LICENSE-APACHE": "275c491d6d1160553c32fd6127061d7f9606c3ea25abfad6ca3f6ed088785427",
+        "LICENSE-MIT": "6652c868f35dfe5e8ef636810a4e576b9d663f3a17fb0f5613ad73583e1b88fd",
+        "README.md": "575430be5c47352d85f36b44dcc2c2851a6a19e2384593415c4af22c6654cee7",
+        "src/lib.rs": "ff0a57a4c0eea4b7677404cdca237729f0af9c5dfc9539d23583a71ac7e9cc42"
+      },
+      "name": "futures-io",
+      "rust_version": "1.36",
+      "sha256": "cecba35d7ad927e23624b22ad55235f2239cfa44fd10428eecbeba6d6a717718",
+      "source_path": "C:\\Users\\ArturBuzov\\.cargo\\registry\\cache\\index.crates.io-1949cf8c6b5b557f\\futures-io-0.3.32.crate",
+      "version": "0.3.32"
+    },
+    {
+      "build_script": false,
+      "features": {
+        "all": []
+      },
+      "member_sha256": {
+        ".cargo_vcs_info.json": "1d8cd3d6789a633adb8a2ac1e8500b84225d8c75693dad6af62bfe9645fb5b30",
+        "Cargo.lock": "c3ba1850cffc357dc95bcd2293a8c720e5ff2129c48aa5588fd480c6fb44b311",
+        "Cargo.toml": "e66848b959431828ed8acf12d5232c586bb6fe044f55d6f14ab7705ea3fff7a4",
+        "Cargo.toml.orig": "eeac642f66f571028b6097c7837410f5a8a0db85420f63f2ed3f580faa6dadb5",
+        "LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+        "LICENSE-MIT": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+        "README.md": "444031b783070ac056bd95abc4b2f4a72fd98ab11270268d8ba4c4ca53dade68",
+        "src/lib.rs": "f3782bc62e5a17e25e8868c55a14fa1da89f564bd0db9ad234dff429094386e1",
+        "src/sockaddr.rs": "1eb260befdb62a53a1dc940a4c0863b1774ce7fa0daf3045154e42f6f477ecbd",
+        "src/socket.rs": "14d718fc14286e1a0c35d785d1ece2096c5af12188c248a7493851d0d87f824d",
+        "src/sockref.rs": "0dbb3de3b6fb457330c09b88ca2c3777a3d1b57a7a91946afac8f5f313e30aa4",
+        "src/sys/unix.rs": "5193fd8c91103f8c73c03c0237c2a493aba911a2995c3750ffb13b054f5c9433",
+        "src/sys/windows.rs": "ea941638399a4e3f7cf0ac2f21d5eaf44d62d26c760d97b1660ba653853101dd"
+      },
+      "name": "socket2",
+      "rust_version": "1.70",
+      "sha256": "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4",
+      "source_path": "C:\\Users\\ArturBuzov\\.cargo\\registry\\cache\\index.crates.io-1949cf8c6b5b557f\\socket2-0.6.5.crate",
+      "version": "0.6.5"
+    },
+    {
+      "build_script": false,
+      "features": {
+        "all": []
+      },
+      "member_sha256": {
+        ".cargo_vcs_info.json": "209fed37e0bc87186296721f3e0656353fbc7d9748d3953ab8a7cdfbce4ec559",
+        "Cargo.lock": "f7f0c33c5acb8a93a3bb329a832d06524baee9744d49030f90aa1d7af6915234",
+        "Cargo.toml": "7a7b65614c962c206ff7d5cad598fd0d3c92281a3e376de66a9aac91fc59ed40",
+        "Cargo.toml.orig": "e1a7276b527ac306f09f333254f13e70e034aace07105bec12407a2943f866b2",
+        "LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+        "LICENSE-MIT": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+        "README.md": "444031b783070ac056bd95abc4b2f4a72fd98ab11270268d8ba4c4ca53dade68",
+        "src/lib.rs": "205e2393c670e359817403267ed9de6a86823fb0199e9a5b84ffef5d9b920175",
+        "src/sockaddr.rs": "1eb260befdb62a53a1dc940a4c0863b1774ce7fa0daf3045154e42f6f477ecbd",
+        "src/socket.rs": "8fd41f5c6dcc8748e7f1aabb315504c1998869358cc8746a34ca681242f2794d",
+        "src/sockref.rs": "0dbb3de3b6fb457330c09b88ca2c3777a3d1b57a7a91946afac8f5f313e30aa4",
+        "src/sys/unix.rs": "611e20a8bfeedcf2876e162280744a83fe6c5ac328757d86d8a44b8d9b165602",
+        "src/sys/windows.rs": "ea941638399a4e3f7cf0ac2f21d5eaf44d62d26c760d97b1660ba653853101dd"
+      },
+      "name": "socket2",
+      "rust_version": "1.70",
+      "sha256": "52d1cfed4120b4d927bf7c0f86d2087a4a7d6027c906d9f9d525a80573b9be51",
+      "source_path": "C:\\Users\\ArturBuzov\\.cargo\\registry\\cache\\index.crates.io-1949cf8c6b5b557f\\socket2-0.6.4.crate",
+      "version": "0.6.4"
+    },
+    {
+      "build_script": false,
+      "features": {
+        "broadcast": [
+          "event",
+          "dep:futures-core"
+        ],
+        "default": [
+          "runtime",
+          "event",
+          "tracing"
+        ],
+        "event": [],
+        "fs": [
+          "dep:futures-io",
+          "dep:futures-core"
+        ],
+        "helper": [
+          "runtime"
+        ],
+        "lock": [
+          "event"
+        ],
+        "mpmc": [
+          "event",
+          "dep:futures-core"
+        ],
+        "process": [
+          "runtime",
+          "unblock",
+          "rustix?/process",
+          "windows-sys?/Win32_Foundation",
+          "windows-sys?/Win32_System_Threading"
+        ],
+        "runtime": [
+          "dep:rustix",
+          "dep:windows-sys",
+          "dep:futures-core",
+          "dep:futures-io"
+        ],
+        "tcp": [
+          "runtime",
+          "dep:socket2",
+          "rustix?/net"
+        ],
+        "tracing": [
+          "dep:tracing"
+        ],
+        "udp": [
+          "runtime"
+        ],
+        "unblock": [
+          "dep:futures-io",
+          "dep:futures-core"
+        ],
+        "unix": [
+          "runtime",
+          "dep:socket2",
+          "rustix?/net"
+        ]
+      },
+      "member_sha256": {
+        ".cargo_vcs_info.json": "f4410c6bd1fd1156aaa148bd59f844cc1efb0a923edd1b1a4e8d40a076fc2d05",
+        ".codespellrc": "5db3af36e2f3c61d05c543a51b87dfe024eafae0fb6faa3164908e859d1bee96",
+        ".commitlintrc.mjs": "6c6aecc7b1264601c08e7a29b1db7d458fe523112179834063773596c50549a0",
+        ".editorconfig": "2629901b63b9638f7f4697621b5b3bc9aa2078bdd82ed8bd8f32230e965a7c04",
+        ".githooks/pre-commit": "ee1e27b73482a643c3fa58d9dad8f032abe0b94c63ee892c731b43466e0ead68",
+        ".githooks/pre-push": "c1c76198909d2d80d94e6a4382616d622d2ab85845fee12525d7fa1b839a2fab",
+        ".githooks/util.sh": "eb1fab73bfa1a6ec0add3bf7198e88ed0e9f7394c09b934f1264c310d298680b",
+        ".github/FUNDING.yml": "897a4c1857e872f4d6229a87c1c6d66c2d62533c059c33e5897195e6cc4f7a9c",
+        ".github/pull_request_template.md": "c8687066d463353f75e21a0257e2990f1d3181e56a0296d7a59b5c8f0357a548",
+        ".github/renovate.json": "de45e025e249710854c10bcff0658024aee0e577a590201f1526d6dce30251cf",
+        ".github/workflows/bench.yml": "4f8b963831a8289fe51ed82b4c0017721c4f12b97313d38e83bbeace475ea104",
+        ".github/workflows/commitlint.yml": "60bca2296a32f784c93b77297572b73f5b153396ef7bf389411826a0ec44c752",
+        ".github/workflows/rust.yml": "8aaca2d44389c94850f1fd7317b0e504603f21c6ff3688e31db01b4d5af895ab",
+        ".gitignore": "ed994cef755adda315a06c635eca9c652254457186da8724a4422742b73909ec",
+        ".rustfmt.toml": "2550dec5c78b0e01b7ee0abd685fbcc3daf63b1900ee246b96ad06da13117ac6",
+        "AGENTS.md": "475afa2e82850cc82e2b07730a0fe452279c61439c699aa8e9e065aa0959c4fc",
+        "CHANGELOG.md": "19f75ca402abda06f41f8c317d353d53f0f45c831c797654f2f664075906458d",
+        "CLAUDE.md": "475afa2e82850cc82e2b07730a0fe452279c61439c699aa8e9e065aa0959c4fc",
+        "CONTRIBUTING.md": "0c35505085fe01be0d43815a0af5e678c7a5189e5b1a4d091f073e13018ad64f",
+        "Cargo.lock": "32a637442ef8a4db55e57be083c58b5a9400de6e1311de1bec4c7857850cc17b",
+        "Cargo.toml": "4d06dfd77b184273cb48b89ea54fffd1e22d75e5b238688309c857f53ee215f6",
+        "Cargo.toml.orig": "30de8a39ac63e8a5e0b786a8d2542f801d0b3ecd4eaf8d580b4f169f91a5e929",
+        "LICENSE": "ec2e030f7cd75edbe3e981d10b458a100a90a6c6056334538ab933f8db71654e",
+        "README.md": "3b2c351bbe242e6867411fd61c052b9916a58828caae6b79080986a613dc55bc",
+        "SECURITY.md": "209bc8e6e307cdaab2b85bb36d085d2c629a2f0e452e7c6e64d82294185bb8d3",
+        "benches/broadcast.rs": "34fb3d48d63f03446c526ffa57dc74738557c184c48a6ba1aab84377f4c0d668",
+        "benches/common/channel.rs": "4dc53c4ea9ea0080a4d8ef634ea39ce241a112ea54b1023789f1d23d7ad4b33f",
+        "benches/common/cpus.rs": "933ce82dbc6c10520b1a16b79259dc565757a7ad61028293279113307f1830e2",
+        "benches/common/crew.rs": "7c948b3452e343bf203e46643ae402d9f4ef6ac8da10daeb2c670ef34fbe59d8",
+        "benches/common/executor.rs": "ea4964ebcdc57ac6b2933c9d1838854e420831f9685e9e00d190cc656ef2c779",
+        "benches/common/rounds.rs": "b6b269bb4f0a803441feb625c8819f6dd668f7fca606398accaa656aad1b5f1e",
+        "benches/connection.rs": "fa44b635f0e3ea87adec52bac57add2b637057a7d8790e211b587c0d7c8444ef",
+        "benches/contention.rs": "ef202557c409935c9fd4bfaafaedb5986d291be18eb4756a7bc3497093e135c2",
+        "benches/event.rs": "1a4438c463f4ff9a532457c2b067b94072347a3f4cdb299f93defe8eefa431e9",
+        "benches/mpmc.rs": "c2f36973ae14a4afab765b0a8a9339b35b1e8fc347af3330275261eb8713e1f8",
+        "benches/runtime.rs": "6580fc973fd0adae243763a8f4b0561eecd2e82474522065b9131e4e3a5b4c0f",
+        "benches/spawn.rs": "69bcbff84e0ffdf042276e2776bf870d1e3cc772a8aff48163db9b2f70b0c602",
+        "benches/unblock.rs": "5e67f03adff2b36b7aa55aed2eb072aab50fd8308f11fb5300fda428a172515f",
+        "data/logo.png": "0aca94d193db5d0c8028b50f85f530d295b2ad9502c34dceba3650629b513102",
+        "data/logo.svg": "bdbb25a05815f03ab417b717929e312677282e1140de4442554bc23ddffdeab5",
+        "release-plz.toml": "ca78374225d396e2db87fd627db7dc801b63ab2c4767ae20cba4070c1308e6ef",
+        "src/async_io.rs": "b239145b5ff6cbcf69e3ec5153388101a2ec0a478ee3caa3dbd9d9ccd6f2cbe7",
+        "src/broadcast.rs": "c0d04452c490b32e2d0447169daa67e674e09263777af843b1d4d474d5df3751",
+        "src/coop.rs": "2a584eefb9d97074bdcbc6a8054b22b403e39f24c16b2dc2b282d88fb3a3d5d0",
+        "src/driver.rs": "8adf9e938adcff3017aeb7250da1ac7fef3dae3cb458b0102e940ef9ad8bfd35",
+        "src/event-only.md": "984f55d785b1b1a6bda74825b0877430d2b7bd5e8a8ad49dac63dc06fa65894c",
+        "src/event.rs": "d5ce31e4fe38aa2f902fcb7f226c583e29c4ff8f120c73e2d1ca98fea173c2e7",
+        "src/fs/dir.rs": "f5dbe785f4a9522f275ac0614ffefd493dba3bfee233145efea651a222a29194",
+        "src/fs/file.rs": "09af0afdc4dd9c6a2e6a94e25abda4f6d1525b30b0c9d8111657aa2d2e077972",
+        "src/fs/mod.rs": "7fc380743b1debbeba15e853999a320eed5fe1417cb01a3b1600a5e85b7cc17e",
+        "src/fs/options.rs": "46d4fc7ee2abde8ff94a2956cd50088c12360f575f5c6be20da55903b4317680",
+        "src/fs/unix.rs": "377fe497c201ba93c470f4a83db5a285c446e9681160e9234a4d47b4279aad72",
+        "src/fs/windows.rs": "0c7c53ca35404bdf8aa94b790aee25ca37b6f2fea95aaebd8f3a81bc46c6cdef",
+        "src/lib.rs": "2d3fc89ba90d62c1650a196458db2d9ba9ed01fcb601524c411919de1d234c99",
+        "src/lock/barrier.rs": "92880f0a70b06227a9c04ca2888aa59b2679b080b5350f97a127a715d62111ce",
+        "src/lock/mod.rs": "6faf1cd000ebdcf3118b2430d3e29e49b8a0d21bda15900c32033aa507800806",
+        "src/lock/mutex.rs": "b4e279755f27c65e4095632169207ee5612a26be59df3eda8eb2bb1cd547be56",
+        "src/lock/once_cell.rs": "5b33f4f92afc10211446eff79359a95d9e6dcb748f0c4dee14c8c36bcf8cf350",
+        "src/lock/rwlock.rs": "e7115852acbb0d31947e42f817bf9b00b0915935d165768a42a0cf73bb42cc18",
+        "src/lock/semaphore.rs": "fa69153da77d227bacec7f9e9f379211d6f4edc69f633c7bed873f100ff4a864",
+        "src/log.rs": "c668a34f03c0daf02b3221e83a4871171629b7f9cdb41e4b8ade9b25987e6c0c",
+        "src/mode.rs": "0dcb702f4e2ed75f1a9642b8499e6687ffe097b37eed9e510bd626ad83dcd386",
+        "src/mpmc.rs": "d7a3f817759bb75c0ec0e849d3ce295f5f3a200dae1d737f641970bb39afcd04",
+        "src/net/connect.rs": "98192f5797b95bd6ac28ddb80590982bee39650c35e4d0b9a595c7ba54c210dd",
+        "src/net/mod.rs": "743176a4b36a33dab84f73860f9a4df604264abdb41919db3f295c75f180bea5",
+        "src/net/tcp.rs": "d292049fcf64eb605816db4205d984bd8afa5c0b4c502849b0bc3d55381a7b7b",
+        "src/net/udp.rs": "ab4a188e53a769c0984460a19ff0ea47f4db27007bbd4b2f347ebdd3a56f9f9d",
+        "src/net/unix.rs": "013f7da444eb9e854869d77dca105b64862ba395162ceb80825c61990dee39b5",
+        "src/poll/epoll.rs": "e8149d78e19c563597317c9e1b30da2ac8be1535fb44252aac0acdb7dd53d2b1",
+        "src/poll/generic.rs": "3f2aae7c86c1d58437d0db1225eec11e0e8081c83cd24f2e2f84dd40cf82f728",
+        "src/poll/kqueue.rs": "ccdbcf7c075185d94f9c7d2ec47df1bd996ea83f135c5e6d19a713d3fc4bf713",
+        "src/poll/list.rs": "dbf8a5741d884538e3aa9bcd76c10dde289f48ee281e85c79fe3d6e67390e671",
+        "src/poll/mod.rs": "dedabdf2bb5e432cbe8032aaa7d33ca1a2ca83cdf61f5c07e9c7129f10a4cdee",
+        "src/poll/pipe.rs": "257bbdbf1426ead0cf296c102a70e8086992ebef3d65af04903fb1e41c889531",
+        "src/poll/select.rs": "3c03abe02089d968ccbcab9ddd54d9ffa3c2ad320a039c1e5e804c2dd45e4952",
+        "src/poll/windows.rs": "4da64eccd738645e4f14790d9378aa6a801e5916229949ae256132a3c9cf5ef8",
+        "src/process/exit/kqueue.rs": "f8aec02da08bbf60463fc9484d1314ba7107deb12c34f6d11777ca744fcb3af2",
+        "src/process/exit/mod.rs": "705ef2628634da71a7e36523dba308f782a71f15ac6e0574722acd2b1129c632",
+        "src/process/exit/pool.rs": "9b39a0c1a64900b689b01dd541ad5f3f7864cbf653498ba54abdde3e21615b73",
+        "src/process/mod.rs": "162c303e6eae439dac17d444a5a47ecdd16078ab67b9eac53c73c0bdb8696b7b",
+        "src/process/stdio.rs": "ddf96967c8e1054f92081590d18ce495250d66c847c6cd4abc6f0b2144f962a8",
+        "src/reactor.rs": "bc07e77f65b4ea3509abe0886c60a566e89271b0762d14957cc8a6892939671c",
+        "src/runtime.rs": "9b6db72bd8606d66ef5596a4e92396ab295fb3834eb98cc174f72f1f3148239b",
+        "src/scheduler.rs": "24be9fc93c7eec33b78f4f734742983663828d292eeac5446b431c4c0ab2fc84",
+        "src/tests/async_io.rs": "030c3d1fa75fd9f383baeb74b5120c5b4856eb8f1130f3cc4b329de98170cb10",
+        "src/tests/broadcast.rs": "b93bc07a162aef64cc6b9cb99c4f8e7995c4ef254d11e2760c290a769bdad082",
+        "src/tests/coop.rs": "f6cadd3f3776af59d2d4c0615234e3f95c09391695fc81af5de6e53295be26fd",
+        "src/tests/core.rs": "0c0d09da0420a17c4092f3947d401a710e9d8a76975d56f8effbfb9a3eacabbf",
+        "src/tests/event.rs": "31e9d3cbd083402ebfb16956d4921aa9a391f7406330d4dd4346b02b71a9184c",
+        "src/tests/fs.rs": "20910b728c89e161ca5a7e1e380f5755e5441741fe473502bea56ffc53f2aa7c",
+        "src/tests/helper.rs": "b9b802acaed7a9e61b06f6fbe9d46cfaabb5eace98485f600777ae4b8b208ca5",
+        "src/tests/lock/barrier.rs": "affa1dd9b519c7197e55f7fcd243b7b3dda15f7e17a16507a02d905f3d5779b1",
+        "src/tests/lock/mod.rs": "513078841bef6b6bb5bf4f6fe9335e6b95bd564b6e25f620dcfe9546902d88a6",
+        "src/tests/lock/once_cell.rs": "4fcde913f10cf8c0b560e4b3c6e7feec5418d3bc50ca65d7188a2087227c83a5",
+        "src/tests/lock/semaphore.rs": "2a6a888b3814ea52b09b6b2253cd8a7a0f45960a33e51c8214ca6a299b51bccd",
+        "src/tests/mod.rs": "b09bdc1de24fc161636adc238ed94bee222585feb3f13b45202369903b7ca0a3",
+        "src/tests/mpmc.rs": "b6ecb6d156245d1a0aaa3b8c835e21540dc5d3b5fdda613f6c23b4644ff648c3",
+        "src/tests/net/mod.rs": "65d703808591b404eab4488f1efc9fe6a9e566dbeff9acf56c483b5ee36e8b87",
+        "src/tests/net/tcp.rs": "7152807a683aa98ab1f103bb8a61f5b00a07736bc362fffa53ca585a47872203",
+        "src/tests/net/udp.rs": "f90805a5f94be084f983e4b538f146dee75560d9365adaef29eefe72c6d826bd",
+        "src/tests/net/unix.rs": "a5f5e08a408d874c62862e4b8266c5abae5777bd557dd5a38fd8e3ca74673348",
+        "src/tests/process.rs": "57cc99f280d53d5c28f6aa20ab041731511e386807c93a846160d9d4ecf4e375",
+        "src/tests/unblock/io.rs": "6855315555dc45a4d57ab906c39b9bc3fbf906adf58019f69ce13b9fb7bd6ad5",
+        "src/tests/unblock/mod.rs": "2db51b40b944faeeaefabcfb84d7288fee30e75873b5f7c39333b7a089e9ba87",
+        "src/tests/unblock/pool.rs": "216c430edd003edbdb36aabb99ab1836105cdb66fa8368d8bdb73efd28ea63f8",
+        "src/time.rs": "49e325c85737cad03426116443c407c39d937de10e177c5fd5a935ee7be400ed",
+        "src/unblock/io.rs": "13cf9d2e00414f495bc9677d764cc45c7d9ac4afb5d51cf75be8c65651975052",
+        "src/unblock/mod.rs": "8b44951c31bcd70858cd78eefad1be3ae4b2c6e506dd7e3a8858d665a54a641e",
+        "src/unblock/pool.rs": "b48af051ab918833fa0292e612756606cf01fa5b192ccc969af778238b8fefdb",
+        "tests/process.rs": "11b09c32668aa3306d2347430af5eb0029c094aab22097ce7d03de9c97e73514"
+      },
+      "name": "zruntime",
+      "rust_version": "1.88",
+      "sha256": "467fd80a2014d186319f14b81aef027aa466712f355c90158a0e6b39de60726d",
+      "source_path": "C:\\Users\\ArturBuzov\\.cargo\\registry\\cache\\index.crates.io-1949cf8c6b5b557f\\zruntime-0.2.0.crate",
+      "version": "0.2.0"
+    }
+  ],
+  "release_admitted": false,
+  "removed": [
+    [
+      "async-recursion",
+      "1.2.0",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "bitflags",
+      "2.13.0",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "enumflags2",
+      "0.7.12",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "enumflags2_derive",
+      "0.7.12",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "futures-core",
+      "0.3.32",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "futures-io",
+      "0.3.32",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "futures-lite",
+      "2.6.1",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "socket2",
+      "0.6.4",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "zbus",
+      "5.19.0",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "zbus_macros",
+      "5.19.0",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "zbus_names",
+      "4.3.4",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "zvariant",
+      "5.15.0",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "zvariant_derive",
+      "5.15.0",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "zvariant_utils",
+      "4.2.0",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ]
+  ],
+  "retained_checksums_unchanged": true,
+  "root_adopted": false,
+  "root_changed": false,
+  "source_archives_executed": false,
+  "source_diffs": [
+    {
+      "after": "2.13.2",
+      "before": "2.13.0",
+      "changed": [
+        {
+          "after_sha256": "a747ede97b611a74546490982a8c9434e9de1e3a96827d9eccb5a78a1a1eaee0",
+          "before_sha256": "7c5fbb625e8563820332e422e962d20d333cbdc4713cc8708ffe1ef8d778128f",
+          "path": ".cargo_vcs_info.json"
+        },
+        {
+          "after_sha256": "56f3b2d0256fbd617d6a9565175f062b9c36ecf220cdbb3575f3e1110a73b3f7",
+          "before_sha256": "3e8ff315f0c1615b7a54ac86d1645c8e7e722e7a083b17125ba4ca2bef8592f2",
+          "path": "CHANGELOG.md"
+        },
+        {
+          "after_sha256": "1efed2a96851d7ccc7c9f6a98b16312984c0bac843035a1733000879a45b16e8",
+          "before_sha256": "9f62e8a2ff5c7a2276df80e6ac4cc022a904816fa14590f3f275d4874124ac4d",
+          "path": "Cargo.lock"
+        },
+        {
+          "after_sha256": "562e660adbb084de042fc9ecc5ac7ba32b5f565d53188823bab9159a027b2b44",
+          "before_sha256": "7fd26ca6a1546a98958b029f794a69e4f146d2d5ae387b784e6dda6111226a63",
+          "path": "Cargo.toml"
+        },
+        {
+          "after_sha256": "5556d6c09fb1d46628bfddace388f99cc80cfb982149d70b2ee62760003b7f84",
+          "before_sha256": "b7a45572b4c08b878579f022cc44783b463b4651695982c7e757c39e13f335f0",
+          "path": "Cargo.toml.orig"
+        },
+        {
+          "after_sha256": "1d3819b03f783a3e311f6df7753d74a3329a6461591bbb9dbbf91a899c5eeaf6",
+          "before_sha256": "ee99b7fa8e03fe8839cd4de81b0bee6d5fc621d81121b90952807061aab7aefb",
+          "path": "README.md"
+        },
+        {
+          "after_sha256": "f8d141a1ba6b1996b33eb34669786ef389d4d5226edad46cec22a561588c324b",
+          "before_sha256": "d4c51a96b566ccdeb4db2b367952645c4828d026079cad18f743761386585639",
+          "path": "src/lib.rs"
+        },
+        {
+          "after_sha256": "1237676ca4687d8eb8364eb52b23c5f284f73f4d4113ee833fa3470c8b512be9",
+          "before_sha256": "3ead0399297541b1d79d0167e1023da6068ba89c9ac44f13470f276a10881d56",
+          "path": "src/public.rs"
+        },
+        {
+          "after_sha256": "98d87786aa2c3b851e9560d8a130c9e53b170fd98c22ea48ff7c9b624420526a",
+          "before_sha256": "4850df3086d8a9d37095d918c07d250a7ef46bf9999f2f361605aa3495515379",
+          "path": "src/tests.rs"
+        },
+        {
+          "after_sha256": "cbf7564b390cfb1919e59799269e244db49498a44c4df3207c713ffc64269749",
+          "before_sha256": "154244d22577c4825ab573e9b251084555d6b4f45d7660d6967559c0dc6798e2",
+          "path": "src/traits.rs"
+        }
+      ],
+      "name": "bitflags"
+    },
+    {
+      "after": "0.3.34",
+      "before": "0.3.32",
+      "changed": [
+        {
+          "after_sha256": "9e19550cc5c74b21e06edc8ac1935458e09de23b2dd45b1635c41075db33f951",
+          "before_sha256": "69b2d02e5db8288df704d7a276ef0bfb27017f5ba1657efddd33135076f82ba0",
+          "path": ".cargo_vcs_info.json"
+        },
+        {
+          "after_sha256": "2d99d08db413bbac7697a71410aea129c4a5902896b115a4ec0547d20625dba2",
+          "before_sha256": "fbeac5791a2d97ac81be504c9436354ec6f4d2fa43172945f9bbac1097d84faf",
+          "path": "Cargo.lock"
+        },
+        {
+          "after_sha256": "fa88cec6d0c527df4ff51ad034de09d3c552f6174ab8e4aa83cfaeacc36c4c7d",
+          "before_sha256": "8e1fc1b21e82013b3accf43c8fc1bcdddeb3d41c810110fb83a61558a49742c3",
+          "path": "Cargo.toml"
+        },
+        {
+          "after_sha256": "b862d981fc4ed113c5cc319643da53ff4ff2b6f30141b124c4e6cefba8283b5f",
+          "before_sha256": "be1d2616172fb5ae584491a8cf34dd5e4f330a70a1056286cbde6bf4f358c9f8",
+          "path": "Cargo.toml.orig"
+        }
+      ],
+      "name": "futures-core"
+    },
+    {
+      "after": "0.3.34",
+      "before": "0.3.32",
+      "changed": [
+        {
+          "after_sha256": "a2a4ccf17f8c2e2390c13b0c7b2613eedd80a075936d247d796d3c308f08479f",
+          "before_sha256": "214325c00ab5e42ed636dbc9f0bab92395a01dcd01240dc54d3c2460d3e49849",
+          "path": ".cargo_vcs_info.json"
+        },
+        {
+          "after_sha256": "96210bd93eff4687a25e58d0faf9653e6619a91c97272eb4ea02d533669ff8b6",
+          "before_sha256": "effb2b02e6667d5fab0e2a8615748faca8856cbc5e49948e57fe23d3d46a4a5c",
+          "path": "Cargo.lock"
+        },
+        {
+          "after_sha256": "c42a07cdf88ac680f96f75df035d3193a449eec157d75b1c9e9024a05848654b",
+          "before_sha256": "25f7523cb891a7491bb35aa4787212209d2ee2b8845b6243b9e7c82e0d1ac6c9",
+          "path": "Cargo.toml"
+        },
+        {
+          "after_sha256": "d19f422e7590ac41244b20763f9db4a8b0878813427dbfbd38a57ce1fce4d700",
+          "before_sha256": "74e47285baa89d734998ae95f56fd21c484fda6e5549780eff50f42ff1f103e5",
+          "path": "Cargo.toml.orig"
+        }
+      ],
+      "name": "futures-io"
+    },
+    {
+      "after": "0.6.5",
+      "before": "0.6.4",
+      "changed": [
+        {
+          "after_sha256": "1d8cd3d6789a633adb8a2ac1e8500b84225d8c75693dad6af62bfe9645fb5b30",
+          "before_sha256": "209fed37e0bc87186296721f3e0656353fbc7d9748d3953ab8a7cdfbce4ec559",
+          "path": ".cargo_vcs_info.json"
+        },
+        {
+          "after_sha256": "c3ba1850cffc357dc95bcd2293a8c720e5ff2129c48aa5588fd480c6fb44b311",
+          "before_sha256": "f7f0c33c5acb8a93a3bb329a832d06524baee9744d49030f90aa1d7af6915234",
+          "path": "Cargo.lock"
+        },
+        {
+          "after_sha256": "e66848b959431828ed8acf12d5232c586bb6fe044f55d6f14ab7705ea3fff7a4",
+          "before_sha256": "7a7b65614c962c206ff7d5cad598fd0d3c92281a3e376de66a9aac91fc59ed40",
+          "path": "Cargo.toml"
+        },
+        {
+          "after_sha256": "eeac642f66f571028b6097c7837410f5a8a0db85420f63f2ed3f580faa6dadb5",
+          "before_sha256": "e1a7276b527ac306f09f333254f13e70e034aace07105bec12407a2943f866b2",
+          "path": "Cargo.toml.orig"
+        },
+        {
+          "after_sha256": "f3782bc62e5a17e25e8868c55a14fa1da89f564bd0db9ad234dff429094386e1",
+          "before_sha256": "205e2393c670e359817403267ed9de6a86823fb0199e9a5b84ffef5d9b920175",
+          "path": "src/lib.rs"
+        },
+        {
+          "after_sha256": "14d718fc14286e1a0c35d785d1ece2096c5af12188c248a7493851d0d87f824d",
+          "before_sha256": "8fd41f5c6dcc8748e7f1aabb315504c1998869358cc8746a34ca681242f2794d",
+          "path": "src/socket.rs"
+        },
+        {
+          "after_sha256": "5193fd8c91103f8c73c03c0237c2a493aba911a2995c3750ffb13b054f5c9433",
+          "before_sha256": "611e20a8bfeedcf2876e162280744a83fe6c5ac328757d86d8a44b8d9b165602",
+          "path": "src/sys/unix.rs"
+        }
+      ],
+      "name": "socket2"
+    }
+  ],
+  "upstream_body_review_complete": false
+}

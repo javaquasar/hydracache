@@ -1,0 +1,167 @@
+"""Pure exact lock review plus checksum-bound upstream source capture, no execution."""
+from pathlib import Path
+import difflib
+import importlib.util
+import json
+import os
+import tomllib
+
+import review as r
+
+REGISTRY = 'registry+https://github.com/rust-lang/crates.io-index'
+OUT = r.BASE / 'effects'
+PARSER = r.ROOT / 'tools/dbus-native-transport-074/lock_review.py'
+r.need(r.sha(PARSER.read_bytes()) == '48601d51f185686d3b273041edd5cfeb6d398ef3aa4bb810350669659cca1795',
+       'exact independent semantic lock parser')
+spec = importlib.util.spec_from_file_location('root_semantic_lock_parser', PARSER)
+core = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(core)
+
+
+def reg(name, version):
+    return name, version, REGISTRY
+
+
+REPLACED = {
+    reg('bitflags', '2.13.0'): reg('bitflags', '2.13.2'),
+    reg('futures-core', '0.3.32'): reg('futures-core', '0.3.34'),
+    reg('futures-io', '0.3.32'): reg('futures-io', '0.3.34'),
+    reg('socket2', '0.6.4'): reg('socket2', '0.6.5'),
+    reg('zbus', '5.19.0'): ('zbus', '6.1.0', None),
+}
+OBSOLETE = {reg(n, v) for n, v in (
+    ('async-recursion', '1.2.0'), ('enumflags2', '0.7.12'), ('enumflags2_derive', '0.7.12'),
+    ('futures-lite', '2.6.1'), ('zbus_macros', '5.19.0'), ('zbus_names', '4.3.4'),
+    ('zvariant', '5.15.0'), ('zvariant_derive', '5.15.0'), ('zvariant_utils', '4.2.0'))}
+ADDED = set(REPLACED.values()) | {('zbus_macros', '6.1.0', None), ('zbus_utils', '6.0.0', None), reg('zruntime', '0.2.0')}
+LOCK_ONLY = {reg(n, v) for n, v in (
+    ('fail', '0.5.1'), ('libmimalloc-sys', '0.1.49'), ('mimalloc', '0.1.52'),
+    ('tikv-jemalloc-sys', '0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7'), ('tikv-jemallocator', '0.6.1'))}
+
+
+def review(before, after, qualified, metadata, old_zbus, tokio):
+    old, new, prior = map(core.packages, (before, after, qualified))
+    r.need(r.sha(before) == r.PROTECTED['Cargo.lock'], 'whole original root lock')
+    r.need(set(old)-set(new) == set(REPLACED) | OBSOLETE, 'only exact reviewed obsolete identities disappear')
+    r.need(set(new)-set(old) == ADDED, 'only exact reviewed replacement/native identities appear')
+    r.need(r.sha(old_zbus) == 'e7d3f2da900f6d134b59397e46885600ba9cd395e6249e388fc6e687d301b19e'
+           and r.sha(tokio) == '6e6a777fce6800a5ed2a0efb672d7751445556ee40d258157938ba4506b78c35',
+           'exact primary optional tracing feature proof')
+    z = tomllib.loads(old_zbus.decode())
+    t = tomllib.loads(tokio.decode())
+    r.need('tracing' in z['dependencies']['tokio']['features']
+           and t['target']['cfg(tokio_unstable)']['dependencies']['tracing']['optional'],
+           'old backend was explicit optional Tokio tracing owner')
+    changed = []
+    for key in set(old) & set(new):
+        a, b = old[key], new[key]
+        r.need({k:v for k,v in a.items() if k != 'dependencies'} ==
+               {k:v for k,v in b.items() if k != 'dependencies'}, 'retained identity/checksum/metadata exact')
+        initial = core.edges(a, old)
+        expected = {REPLACED.get(k, k) for k in initial}
+        if key == reg('tokio', '1.53.3'):
+            r.need(reg('tracing', '0.1.44') in expected, 'original optional Tokio tracing edge exists')
+            expected.remove(reg('tracing', '0.1.44'))
+        actual = core.edges(b, new)
+        r.need(expected == actual, 'no unrelated semantic retained-edge effect')
+        if actual != initial:
+            changed.append(dict(owner=key, removed=sorted(initial-actual, key=str), added=sorted(actual-initial, key=str)))
+    for key in ADDED:
+        r.need(key in prior and {k:v for k,v in new[key].items() if k != 'dependencies'} ==
+               {k:v for k,v in prior[key].items() if k != 'dependencies'}
+               and core.edges(new[key], new) == core.edges(prior[key], prior),
+               'added node equals already compiled qualified source/checksum/dependency selection')
+    active = {(p['name'], p['version'], p['source']) for p in metadata['packages']}
+    r.need(set(new)-active == LOCK_ONLY and not active-set(new), 'explicit default-feature lock-only identities')
+    r.need(all(new[k] == old[k] for k in LOCK_ONLY), 'optional allocator/fault records retained exactly')
+    return dict(old_lock_packages=len(old), new_lock_packages=len(new), default_metadata_packages=len(active),
+        removed=sorted(set(old)-set(new), key=str), added=sorted(ADDED, key=str),
+        changed_semantic_edge_owners=sorted(changed, key=lambda v: str(v['owner'])),
+        retained_checksums_unchanged=True, all_added_nodes_equal_qualified=True,
+        lock_only_default_feature_nodes=sorted(LOCK_ONLY, key=str), root_changed=False,
+        lock_delta_reviewed=True, upstream_body_review_complete=False, compiler_gate_complete=False,
+        root_adopted=False, release_admitted=False)
+
+
+def native_member(name):
+    package = r.source_package()
+    return package.member('dbus-native-transport-20261028', package.NATIVE, name)
+
+
+def primary(row, codec):
+    name, version = row['name'], row['version']
+    caches = Path(os.environ['USERPROFILE']) / '.cargo/registry/cache'
+    candidates = list(caches.glob('*/' + name + '-' + version + '.crate'))
+    matches = [(p, p.read_bytes()) for p in candidates]
+    matches = [(p, raw) for p, raw in matches if r.sha(raw) == row['checksum']]
+    r.need(len(matches) == 1, 'one exact checksum-bound primary archive: ' + name + '-' + version)
+    path, raw = matches[0]
+    members = codec.unpack(raw, name + '-' + version)
+    manifest = tomllib.loads(members['Cargo.toml'].decode())
+    r.need(manifest['package']['name'] == name and manifest['package']['version'] == version, 'primary package identity')
+    (OUT / 'primary' / (name + '-' + version + '.crate')).write_bytes(raw)
+    return members, dict(name=name, version=version, source_path=str(path), sha256=r.sha(raw),
+        rust_version=manifest['package'].get('rust-version'), member_sha256={n:r.sha(b) for n,b in members.items()},
+        build_script=manifest['package'].get('build'), features=manifest.get('features', {}))
+
+
+def main():
+    OUT.mkdir(exist_ok=False)
+    (OUT / 'primary').mkdir()
+    (OUT / 'diffs').mkdir()
+    (OUT / 'producer.py').write_bytes(Path(__file__).read_bytes())
+    result = json.loads((r.BASE / 'metadata/result.json').read_bytes())
+    execution = json.loads((r.BASE / 'metadata/execution.json').read_bytes())
+    r.need(result['passed'] and execution['retired'] and not execution['errors'], 'actual first metadata gate')
+    before = r.checked('Cargo.lock', r.PROTECTED['Cargo.lock'])
+    after = (r.BASE / 'input/workspace/Cargo.lock').read_bytes()
+    qualified = r.held('consumer2/input/fd/Cargo.lock')
+    metadata = json.loads((r.BASE / 'metadata/cargo.stdout.json').read_bytes())
+    old_zbus = native_member('feature-audit/old-Cargo.toml')
+    tokio = native_member('feature-audit/tokio-Cargo.toml')
+    value = review(before, after, qualified, metadata, old_zbus, tokio)
+    package = r.source_package()
+    old, new = core.packages(before), core.packages(after)
+    captures, diffs = [], []
+    for key in sorted(k for k in ADDED if k[2] == REGISTRY):
+        members, capture = primary(new[key], package.codec)
+        floor = capture['rust_version']
+        r.need(floor and tuple((list(map(int, floor.split('.'))) + [0,0])[:3]) <= (1,88,0),
+               'new dependency declares no raised MSRV')
+        captures.append(capture)
+        old_key = next((k for k,v in REPLACED.items() if v == key), None)
+        if old_key is None:
+            continue
+        original, baseline = primary(old[old_key], package.codec)
+        captures.append(baseline)
+        changed = []
+        for name in sorted(set(original) | set(members)):
+            a, b = original.get(name), members.get(name)
+            if a == b:
+                continue
+            changed.append(dict(path=name, before_sha256=r.sha(a) if a is not None else None,
+                                after_sha256=r.sha(b) if b is not None else None))
+            if name.endswith(('.rs', '.toml', '.md')):
+                try:
+                    delta = ''.join(difflib.unified_diff((a or b'').decode().splitlines(True),
+                        (b or b'').decode().splitlines(True), fromfile='before/' + name, tofile='after/' + name))
+                except UnicodeDecodeError:
+                    continue
+                path = OUT / 'diffs' / key[0] / (name + '.diff')
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(delta, encoding='utf8', newline='\n')
+        diffs.append(dict(name=key[0], before=old_key[1], after=key[1], changed=changed))
+    value.update(primary=captures, source_diffs=diffs, source_archives_executed=False)
+    r.write(OUT, 'result.json', value)
+    (OUT / 'before-Cargo.lock').write_bytes(before)
+    (OUT / 'after-Cargo.lock').write_bytes(after)
+    (OUT / 'qualified-Cargo.lock').write_bytes(qualified)
+    (OUT / 'old-zbus-Cargo.toml').write_bytes(old_zbus)
+    (OUT / 'tokio-Cargo.toml').write_bytes(tokio)
+    print(json.dumps(dict(lock_before=value['old_lock_packages'], lock_after=value['new_lock_packages'],
+        metadata=value['default_metadata_packages'], added=len(value['added']), removed=len(value['removed']),
+        primary_archives=len(captures), source_executed=False)))
+
+
+if __name__ == '__main__':
+    main()

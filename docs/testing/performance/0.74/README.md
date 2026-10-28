@@ -7463,3 +7463,14 @@ pass, with the first multiline-regex control failure preserved as an inert resul
 Root security/adoption, complete package/workspace and original execution/recovery
 remain open. The source export is unsigned/unpublished, with no host admission
 or product performance claim.
+
+The [isolated root source/effect review](dbus-root-integration-result-20261028.md)
+now passes both default and locked all-feature full-workspace metadata, preserving
+all 36 product members. Root source/lock remain unchanged. The reviewed lock has
+683 records versus 689 originally; default metadata activates 678, while all
+683 appear with all features. Eight additions/14 removals and 42 canonical edge
+owners are explicitly reviewed with nine primary archives; no build script or
+MSRV increase is found. Actual transitive closure from 23 publishable roots reaches
+599 identities and no private vendor/tool. Eighteen inert/retention controls pass.
+The exact 291-operation changeset remains unapplied; root compiler/format/policy/
+package/workspace and original-execution/recovery gates remain open.

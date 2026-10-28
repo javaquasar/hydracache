@@ -1,0 +1,18 @@
+--- before/src/tests.rs
++++ after/src/tests.rs
+@@ -22,6 +22,7 @@
+ mod is_all;
+ mod is_empty;
+ mod iter;
++mod iter_equal_names;
+ mod known_bits;
+ mod parser;
+ mod remove;
+@@ -30,7 +31,6 @@
+ mod union;
+ mod unknown;
+ mod unknown_bits;
+-mod iter_equal_names;
+ 
+ mod custom {
+     pub const NAME: &'static str = "custom";
