@@ -1,0 +1,36 @@
+"""Read-only API/distribution boundary; never invoke a D-Bus manager."""
+from pathlib import Path
+import hashlib,json,tomllib
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/remaining-security-20261028'
+out=BASE/'dbus-boundary-review';out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+upstream=BASE/'upstream-first/zbus-6.1.0/review-source'
+manifest=tomllib.loads((upstream/'Cargo.toml').read_text(encoding='utf-8'))
+assert manifest['package']['rust-version']=='1.89' and 'blocking-api' not in manifest['features']
+lib=(upstream/'src/lib.rs').read_text(encoding='utf-8')
+assert 'pub mod wire;' in lib and 'pub mod names;' in lib and 'pub mod blocking;' not in lib
+assert 'zvariant was merged into zbus' in lib and '#[deprecated(' in lib
+current=ROOT/'tools/long-run-supervisor-074/src'
+uses={}
+for path in sorted(current.glob('*.rs')):
+ raw=path.read_bytes();text=raw.decode('utf-8')
+ if 'zbus::' in text:
+  uses[path.relative_to(ROOT).as_posix()]=dict(sha256=sha(raw),blocking='zbus::blocking' in text,
+   old_wire_alias='zbus::zvariant' in text,test_source='test' in path.stem)
+result=dict(source_sha256=sha(Path(__file__).read_bytes()),current_uses=uses,
+ observed_zbus_version='6.1.0',declared_msrv='1.89',old_blocking_api_absent=True,
+ old_zvariant_alias_deprecated=True,wire_and_names_merged=True,upstream_archive_checksum='cf' if False else
+ json.loads((BASE/'upstream-first/result.json').read_bytes())['packages']['zbus']['checksum'],
+ root_dependencies_changed=False,manager_or_service_contacted=False,compiler_floor_overridden=False,
+ integration_required=['real Rust 1.88 backport, not --ignore-rust-version',
+  'blocking manager/proxy and runtime ownership migration',
+  'wire/names/FD/credentials/method-return and legacy dispatch compatibility',
+  'all original live frames and 300/60/10 deadlines unchanged',
+  'reproducible reviewed dependency distribution with no deny exception',
+  'fresh Linux MSRV, concurrency/fault and full package/workspace gates'],
+ release_admitted=False)
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+(out/'result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+print(json.dumps(dict(source_files=len(uses),blocking_sources=[n for n,r in uses.items() if r['blocking']],
+ deprecated_alias_sources=sum(r['old_wire_alias'] for r in uses.values()),declared_msrv='1.89')))

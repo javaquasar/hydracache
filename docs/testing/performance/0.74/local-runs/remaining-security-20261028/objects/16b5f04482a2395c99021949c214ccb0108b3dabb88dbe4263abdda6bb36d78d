@@ -1,0 +1,62 @@
+"""Archive an unaccepted feasibility candidate and all first results."""
+from pathlib import Path
+import hashlib,json,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/remaining-security-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/remaining-security-20261028'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+analysis=json.loads((BASE/'analysis/result.json').read_bytes())
+assert not analysis['original_wide_snapshot_pass'] and not analysis['strict_clippy_pass']
+assert analysis['candidate_188_selected_test_pass'] and not analysis['candidate_194_context_accounting_pass']
+assert analysis['root_dependencies_changed'] is False and analysis['product_advisories_remaining']==6
+review=json.loads((BASE/'fixture-review/result.json').read_bytes())['fixtures']
+context=json.loads((BASE/'context-fixture-review/result.json').read_bytes())['fixtures']
+for label,row in analysis['steps'].items():
+ intent=json.loads((BASE/label/'intent.json').read_bytes())
+ mode=intent.get('fixture_mode')
+ if not mode or label.startswith('resolve-'):continue
+ expected=context[mode] if 'context' in label else review[mode]
+ assert intent['source']['tools/chitchat-zstd-review-074/fixture_tests.rs']==expected.get('original_probe_sha256',expected.get('probe_sha256'))
+ if 'context' in label:
+  assert intent['source']['tools/chitchat-zstd-review-074/context_tests.rs']==expected['context_source_sha256']
+ assert intent['fixture_inputs']==expected['files']
+ assert row['fixture_inputs_unchanged']
+assert b'Ran 8 tests' in (BASE/'accounting-controls/stderr.log').read_bytes()
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members
+ members[name]=dict(sha256=digest,bytes=len(raw))
+for top in sorted(BASE.iterdir()):
+ if top.name=='targets':continue
+ for path in ([top] if top.is_file() else sorted(top.rglob('*'))):
+  if not path.is_file() or path.suffix=='.exe':continue
+  rel=path.relative_to(BASE).as_posix()
+  if '/review-source/' in rel:
+   tail=rel.split('/review-source/',1)[1]
+   if tail not in ('Cargo.toml','Cargo.toml.orig','README.md','src/lib.rs','build.rs'):continue
+  add('capture/'+rel,path)
+for path in sorted((ROOT/'target').glob('*remaining-security*20261028.py')):
+ add('producer/'+path.name,path)
+for path in sorted((ROOT/'tools/chitchat-zstd-review-074').iterdir()):
+ if path.is_file():add('source/current/'+path.relative_to(ROOT).as_posix(),path)
+for name in ('Cargo.toml','Cargo.lock','deny.toml','tools/long-run-supervisor-074/Cargo.toml',
+             'docs/testing/performance/0.74/qualification-manifest.toml'):
+ add('source/current/'+name,ROOT/name)
+for name,version in (('zstd','0.13.3'),('zstd-safe','7.2.4')):
+ cache=Path('C:/Users/ArturBuzov/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f')/(name+'-'+version+'.crate')
+ add('registry-baseline/'+cache.name,cache)
+index=dict(schema='hc074-remaining-security-feasibility-v1',members=members,
+ source_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ upstream_units_per_fixture=25,wide_gate_pass=False,strict_clippy_pass=False,
+ candidate_msrv_context_test_pass=True,paired_context_comparison_complete=False,
+ zero_selected_test_run_rejected=True,first_refusals_retained=True,product_dependencies_changed=False,
+ product_advisories_remaining=6,full_gate_replayed=False,release_admitted=False,
+ live_checks_or_deadlines_changed=False,server=False,services=False,clocks=False,performance_claim=False,
+ sealer_executed_archived_code=False)
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf-8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf-8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

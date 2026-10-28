@@ -396,6 +396,16 @@ GNU/MSRV and focused compatibility checks. Before roots approval its graph has
 nine findings; the preceding roots-only candidate's eight is not a combined-graph result.
 Security policy, complete milestone coverage and package 3 remain open.
 
+The [separate D-Bus/Zstd feasibility](remaining-security-feasibility-20261028.md)
+now retains exact upstream archives and an isolated Chitchat requirement patch.
+Both inputs pass 25 pure upstream cases; a separate MSRV context test passes.
+The original wide MTU assertion and two strict-Clippy failures remain red on
+both inputs, and a zero-test artifact-selection command is refused. No product
+dependency changes or new full-gate acceptance occur. The concrete next boundary
+is separately maintained, distributable backports under Rust 1.88, including
+supported-MTU attribution and real zbus blocking/wire migration. Scope approval
+is required before adopting that dependency-maintenance responsibility.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

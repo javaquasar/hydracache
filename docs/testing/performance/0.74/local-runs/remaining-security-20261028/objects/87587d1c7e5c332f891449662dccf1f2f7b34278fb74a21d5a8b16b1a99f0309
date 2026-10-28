@@ -1,0 +1,9 @@
+
+running 4 tests
+test message::tests::test_bad_cluster ... ok
+test message::tests::test_syn ... ok
+test message::tests::test_ack ... ok
+test message::tests::test_syn_ack ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 97 filtered out; finished in 0.00s
+

@@ -1,0 +1,28 @@
+"""Correct only the shared standalone workspace overlay; retain v1 refusal."""
+from pathlib import Path
+import hashlib,json,shutil
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/remaining-security-20261028'
+out=BASE/'preparation-v2';out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(out/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+failed=json.loads((BASE/'resolve-baseline/result.json').read_bytes())
+assert failed['exit']==101 and failed['source_unchanged'] and failed['head_unchanged']
+assert b'cannot specify `resolver` field in both' in (BASE/'resolve-baseline/stderr.log').read_bytes()
+write('intent.json',dict(source_sha256=sha(Path(__file__).read_bytes()),
+ first_refusal_retained=True,shared_overlay_correction=True,root_lock_sha256=sha((ROOT/'Cargo.lock').read_bytes())))
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+for mode in ('baseline','candidate'):
+ source=BASE/'fixtures'/mode;dest=BASE/'fixtures-v2'/mode
+ shutil.copytree(source,dest)
+ raw=(dest/'Cargo.toml').read_bytes()
+ assert raw.count(b'resolver = "2"')==2
+ raw=raw.replace(b'resolver = "2"\n',b'',1)
+ assert raw.count(b'resolver = "2"')==1
+ (dest/'Cargo.toml').write_bytes(raw)
+ (out/(mode+'-Cargo.toml')).write_bytes(raw)
+old=(BASE/'fixtures-v2/baseline/Cargo.toml').read_bytes()
+new=(BASE/'fixtures-v2/candidate/Cargo.toml').read_bytes()
+assert old.replace(b'[dependencies.zstd]\nversion = "0.13"',b'[dependencies.zstd]\nversion = "0.14.3"',1)==new
+write('result.json',dict(first_refusal_retained=True,only_pair_difference='Zstd requirement',
+ root_lock_unchanged=sha((ROOT/'Cargo.lock').read_bytes())==json.loads((out/'intent.json').read_bytes())['root_lock_sha256']))

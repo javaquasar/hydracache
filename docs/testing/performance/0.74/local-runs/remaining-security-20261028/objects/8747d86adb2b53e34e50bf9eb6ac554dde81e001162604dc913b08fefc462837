@@ -1,0 +1,22 @@
+
+running 1 test
+test migration_review_074::snapshot ... FAILED
+
+successes:
+
+successes:
+
+failures:
+
+---- migration_review_074::snapshot stdout ----
+
+thread 'migration_review_074::snapshot' (10508) panicked at C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-zstd-review-074\fixture_tests.rs:37:9:
+assertion failed: encoded.len() <= *bound
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    migration_review_074::snapshot
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 100 filtered out; finished in 0.00s
+

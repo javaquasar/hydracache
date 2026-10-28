@@ -21846,3 +21846,39 @@ original execution or server admission follows. Raw first results, exact
 candidate source, source diffs and full milestone accounting remain in the
 repository. No latency, allocation or throughput improvement is claimed by this
 security and compatibility work.
+
+The [remaining dependency feasibility](../testing/performance/0.74/remaining-security-feasibility-20261028.md)
+then demonstrates why a minimum patched version is only the start of a migration.
+The maintained Chitchat releases still constrain Zstd to the old branch. An
+isolated copy changes only that requirement: its graph replaces two wrapper
+nodes, while all original Chitchat Rust bodies stay exact. Twenty-five pure
+upstream cases pass per fixture. This is useful compatibility evidence, but it
+does not make the candidate accepted.
+
+The wider deterministic snapshot fails its MTU upperbound assertion on both
+inputs before producing a complete comparison. Offline inspection identifies a
+possible metadata-accounting gap for items spanning more than two blocks. That
+is a reason to investigate actual supported-operation reachability, not to lower
+the bound, shrink the corpus or assert that production is already affected.
+Strict Clippy separately finds the same two existing lifetime annotations on
+both inputs. The exact candidate and first failures remain preserved; neither
+fix is smuggled into the security requirement change.
+
+The context control exposes another distinction. Baseline reuse ends in an
+Unknown frame descriptor error before its complete observation. One candidate
+command exits zero while selecting zero tests; matching executable paths raise
+an artifact-selection concern but do not prove the cache cause. Exact accounting
+rejects that run. A separate Rust 1.88 cohort first lists the expected test and
+then actually executes it: both constructors return exactly the second synthetic
+job. This establishes that narrow behavior, not a completed paired disclosure,
+wire proof or performance improvement. Empty native execution never counts as a
+successful test, even when the command's exit status looks healthy.
+
+The source review also confirms that zbus 6 removes the old blocking surface and
+changes wire ownership in addition to requiring Rust 1.89. Under the fixed Rust
+1.88/no-exception contract, the next choice is dependency-maintenance ownership:
+reviewed distributable backports with complete caller/fault gates, or waiting
+for compatible upstream releases. Renaming old crates or excluding Linux would
+mask a boundary rather than resolve it. The main documentation retains this
+decision, the exact patch and all negative results; the product graph and its
+last six-finding policy refusal remain unchanged.

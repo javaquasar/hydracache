@@ -1,0 +1,14 @@
+
+running 9 tests
+test delta::tests::test_delta_op_tag ... ok
+test delta::tests::test_delta_serialization_default ... ok
+test delta::tests::test_delta_serialization_panic_if_add_after_exceed - should panic ... ok
+test delta::tests::test_delta_serialization_exceed_mtu_on_add_kv ... ok
+test delta::tests::test_delta_serialization_simple_node ... ok
+test delta::tests::test_delta_serialization_exceed_mtu_on_add_node ... ok
+test delta::tests::test_delta_serialization_simple_foo ... ok
+test delta::tests::test_delta_serialization_with_set_max_version ... ok
+test delta::tests::test_delta_serialization_simple_with_nodes_to_reset ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 92 filtered out; finished in 0.00s
+

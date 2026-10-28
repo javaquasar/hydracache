@@ -1,0 +1,84 @@
+"""Fixed local fixture commands, original owned containment/budgets, no retries."""
+from pathlib import Path
+import hashlib,json,os,shutil,subprocess,sys
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/remaining-security-20261028'
+sys.path.insert(0,str(ROOT/'tools/windows-workspace-preflight-074'))
+import owned,prepare as p
+def manifest(mode):return str(BASE/'fixtures-v2'/mode/'Cargo.toml')
+def cargo(mode,action,toolchain='1.94.0',context=False):
+ selected=str(BASE/'fixtures-context'/mode/'Cargo.toml') if context else manifest(mode)
+ return ['cargo','+'+toolchain,action,'--offline','--locked','--manifest-path',selected,'--target-dir',str(BASE/'targets'/mode)]
+commands={'controls':[sys.executable,'-B','-m','unittest','discover','-s','tools/chitchat-zstd-review-074','-p','test_*.py','-v'],
+ 'doc-check':[str(ROOT/'target/debug/xtask.exe'),'doc-check']}
+for mode in ('baseline','candidate'):
+ commands['resolve-'+mode+'-v2']=['cargo','+1.94.0','metadata','--manifest-path',manifest(mode),'--format-version=1']
+ commands['build-'+mode]=cargo(mode,'test')+['--lib','--features','testsuite','--no-run']
+ commands['snapshot-'+mode]=cargo(mode,'test')+['--lib','--features','testsuite','migration_review_074::snapshot','--','--exact','--test-threads=1','--show-output']
+ for group in ('serialize','delta','message','digest'):
+  commands[group+'-'+mode]=cargo(mode,'test')+['--lib','--features','testsuite',group+'::tests::','--','--test-threads=4']
+ commands['check-'+mode]=cargo(mode,'check')+['--all-targets','--features','testsuite']
+ commands['clippy-'+mode]=cargo(mode,'clippy')+['--lib','--features','testsuite','--','-D','warnings']
+commands['msrv-candidate']=cargo('candidate','test','1.88.0')+['--lib','--features','testsuite','--no-run']
+commands['context-controls']=commands['controls']
+commands['accounting-controls']=commands['controls']
+for mode in ('baseline','candidate'):
+ commands['build-context-'+mode]=cargo(mode,'test',context=True)+['--lib','--features','testsuite','--no-run']
+ commands['context-'+mode]=cargo(mode,'test',context=True)+['--lib','--features','testsuite','context_review_074::snapshot','--','--exact','--test-threads=1','--show-output']
+commands['msrv-context-candidate']=cargo('candidate','test','1.88.0',True)+['--lib','--features','testsuite','--no-run']
+commands['list-context-msrv-candidate']=cargo('candidate','test','1.88.0',True)+['--lib','--features','testsuite','context_review_074::snapshot','--','--exact','--list']
+commands['run-context-msrv-candidate']=cargo('candidate','test','1.88.0',True)+['--lib','--features','testsuite','context_review_074::snapshot','--','--exact','--test-threads=1','--show-output']
+def snapshot():
+ names=[n.decode() for n in subprocess.check_output(['git','ls-files','-z','--cached','--others','--exclude-standard','--',
+  'Cargo.toml','Cargo.lock','deny.toml','.cargo','crates','tools','scripts'],cwd=ROOT).split(b'\0') if n]
+ return {n:p.sha((ROOT/n).read_bytes()) for n in sorted(set(names))}
+def fixture(mode):
+ folder=BASE/('fixtures-context' if 'context' in label else 'fixtures-v2')/mode
+ return {n.relative_to(folder).as_posix():p.sha(n.read_bytes()) for n in sorted(folder.rglob('*')) if n.is_file()}
+label=sys.argv[1];argv=commands[label];out=BASE/label
+if len(sys.argv)>2:
+ assert sys.argv[2:]==['--worker']
+ def capacity():
+  if shutil.disk_usage(ROOT).free<p.FLOOR:raise owned.CapacityError('original 4 GiB floor')
+ result=owned._owned(owned.load_job().WindowsJob(),argv,str(ROOT),capacity,bound=1200)
+ p.write(out,'execution.json',result);raise SystemExit(result['exit'])
+out.mkdir(exist_ok=False)
+if label=='run-context-msrv-candidate':
+ listed=json.loads((BASE/'list-context-msrv-candidate/result.json').read_bytes())
+ p.require(listed['exit']==0 and listed['source_unchanged'] and listed['head_unchanged'] and listed['fixture_inputs_unchanged'],'MSRV context listing custody')
+ lines=(BASE/'list-context-msrv-candidate/stdout.log').read_text(encoding='utf-8').splitlines()
+ p.require(lines.count('context_review_074::snapshot: test')==1 and '1 test, 0 benchmarks' in lines,'exact nonempty MSRV test inventory')
+before=snapshot();head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+mode=next((m for m in ('baseline','candidate') if label.endswith('-'+m) or label=='resolve-'+m+'-v2'),None)
+inputs=fixture(mode) if mode else None
+if inputs is not None and not label.startswith('resolve-'):
+ reviewed=json.loads((BASE/('context-fixture-review' if 'context' in label else 'fixture-review')/'result.json').read_bytes())['fixtures'][mode]
+ p.require(inputs==reviewed['files'],'complete reviewed fixture before execution')
+p.write(out,'intent.json',dict(argv=argv,source=before,head=head,source_sha256=p.sha(Path(__file__).read_bytes()),
+ fixture_mode=mode,fixture_inputs=inputs,bound_seconds=1200,review_only=True,retry=False,server=False,services=False,clocks=False,
+ proptest_rng_seed='7606312',random_upstream_tests_are_not_matched_measurements=True))
+(out/'launcher.py').write_bytes(Path(__file__).read_bytes())
+if label=='doc-check':
+ p.write(out,'document-inputs.json',dict(executable_sha256=p.sha(Path(argv[0]).read_bytes()),documents={n:p.sha((ROOT/n).read_bytes()) for n in (
+  'docs/testing/performance/0.74/remaining-security-feasibility-20261028.md',
+  'docs/testing/performance/0.74/README.md',
+  'docs/testing/performance/0.74/release-closure-execution-plan-20261026.md',
+  'docs/articles/007-optimization-starts-with-measurement.md')}))
+with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+ process=subprocess.Popen([sys.executable,'-B',str(Path(__file__)),label,'--worker'],cwd=ROOT,stdin=subprocess.DEVNULL,
+  stdout=stdout,stderr=stderr,env=dict(os.environ,CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2',PROPTEST_RNG_SEED='7606312'))
+ try:code=process.wait(timeout=1210)
+ except subprocess.TimeoutExpired:
+  process.kill();process.wait(timeout=5);p.write(out,'refusal.json',dict(reason='original worker lost'));raise
+after=snapshot()
+result=dict(exit=code,source_unchanged=before==after,source_after=after,
+ changed=[n for n in before.keys()|after.keys() if before.get(n)!=after.get(n)],
+ head_unchanged=head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),release_admitted=False)
+if inputs is not None:
+ result['fixture_after']=fixture(mode);result['fixture_inputs_unchanged']=inputs==result['fixture_after']
+if label=='doc-check':
+ docs=json.loads((out/'document-inputs.json').read_bytes())
+ result['documents_and_executable_unchanged']=all(p.sha((ROOT/n).read_bytes())==v for n,v in docs['documents'].items()) and p.sha(Path(argv[0]).read_bytes())==docs['executable_sha256']
+p.write(out,'result.json',result)
+print(json.dumps(dict(label=label,exit=code,source_unchanged=before==after)))
+raise SystemExit(code)

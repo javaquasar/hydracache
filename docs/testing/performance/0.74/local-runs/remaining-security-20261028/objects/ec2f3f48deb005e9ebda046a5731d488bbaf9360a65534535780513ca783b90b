@@ -1,0 +1,131 @@
+{
+  "compiler_floor_overridden": false,
+  "current_uses": {
+    "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs": {
+      "blocking": false,
+      "old_wire_alias": true,
+      "sha256": "3a10d18ef079e33da17e7e48dc28b34e43c11fcc315985bdc91f82d3bcd1ddbf",
+      "test_source": false
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs": {
+      "blocking": false,
+      "old_wire_alias": true,
+      "sha256": "fbc7ce7072957d5543e9bbe8815127fb781b4a567996315f920ff75b0b2c6905",
+      "test_source": true
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs": {
+      "blocking": false,
+      "old_wire_alias": true,
+      "sha256": "32668eb8d87dd62a71c9c677c16e9d1146bf447ff1a44144f33eaef7fa50470b",
+      "test_source": true
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_dispatch_negotiated_tests.rs": {
+      "blocking": false,
+      "old_wire_alias": false,
+      "sha256": "a9c1b3caa736074e78d5ac67934472a1f53e126cf5d0c77030370bf3bb80895f",
+      "test_source": true
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_flags_tests.rs": {
+      "blocking": false,
+      "old_wire_alias": false,
+      "sha256": "2a931adae40f43147c5ee7050354e62afc54c05120c18a730a01bbf69c84b7cc",
+      "test_source": true
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs": {
+      "blocking": false,
+      "old_wire_alias": false,
+      "sha256": "d1d970db92b60c0c474932f55210b29c0eaf632d5ad15636763dfe8034a07116",
+      "test_source": true
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire.rs": {
+      "blocking": false,
+      "old_wire_alias": false,
+      "sha256": "57e1758273e0116dc4b5288cb6f05618ecc50222f5a84935985095254ff27059",
+      "test_source": false
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_loaded.rs": {
+      "blocking": false,
+      "old_wire_alias": true,
+      "sha256": "dedbee622bc143a7177c7edb660d115338c14cb9e845a7c891bc086e0ae974eb",
+      "test_source": false
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_manager.rs": {
+      "blocking": true,
+      "old_wire_alias": true,
+      "sha256": "7950deead36bcc6514f1c2f73be3cbce126a6e7a3bff3d1a55d11eac0be674db",
+      "test_source": false
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "blocking": false,
+      "old_wire_alias": true,
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d",
+      "test_source": false
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs": {
+      "blocking": false,
+      "old_wire_alias": true,
+      "sha256": "3d6567947ff6073ea76f95bbf8916a91f3d7d6560a22ad51686208d1259cb3f6",
+      "test_source": true
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_manager_held_delivery.rs": {
+      "blocking": false,
+      "old_wire_alias": false,
+      "sha256": "b6c341382843857204ca8dc10edde89f4aa0ecb2417d3eafee642964dd7499e5",
+      "test_source": false
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_manager_sandbox_query.rs": {
+      "blocking": false,
+      "old_wire_alias": true,
+      "sha256": "f8f52fa47e09d9b7ee977c3595cf2269ed80228a0df24bb566d300a50a2612ba",
+      "test_source": false
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_original_manager_message.rs": {
+      "blocking": false,
+      "old_wire_alias": false,
+      "sha256": "95ba07f143ead7683c2c3d20b178560f6d086d2643f09f030f690b45fd9b17da",
+      "test_source": false
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_units.rs": {
+      "blocking": false,
+      "old_wire_alias": true,
+      "sha256": "0e57912330b92230885f15eaee932dc303a51bf78b47a0835ab40cbbf1334d1f",
+      "test_source": false
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs": {
+      "blocking": false,
+      "old_wire_alias": true,
+      "sha256": "e761ec070542dca7268ecacd3dbd43d09cb6f5ed05bc19933a35e1589a109a1b",
+      "test_source": false
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs": {
+      "blocking": false,
+      "old_wire_alias": false,
+      "sha256": "f88e0f99f22380c37617300e6bb1074668a2064e37e4195fdda8b332fb5bd10f",
+      "test_source": true
+    },
+    "tools/long-run-supervisor-074/src/systemd_unit.rs": {
+      "blocking": true,
+      "old_wire_alias": true,
+      "sha256": "4b8f35e341b489f5928206b2df3f09525abb081b937e35cefd5c1ca1bad01cac",
+      "test_source": false
+    }
+  },
+  "declared_msrv": "1.89",
+  "integration_required": [
+    "real Rust 1.88 backport, not --ignore-rust-version",
+    "blocking manager/proxy and runtime ownership migration",
+    "wire/names/FD/credentials/method-return and legacy dispatch compatibility",
+    "all original live frames and 300/60/10 deadlines unchanged",
+    "reproducible reviewed dependency distribution with no deny exception",
+    "fresh Linux MSRV, concurrency/fault and full package/workspace gates"
+  ],
+  "manager_or_service_contacted": false,
+  "observed_zbus_version": "6.1.0",
+  "old_blocking_api_absent": true,
+  "old_zvariant_alias_deprecated": true,
+  "release_admitted": false,
+  "root_dependencies_changed": false,
+  "source_sha256": "4593fb2a8f34fbc70c253a7f1117d45364694077f0ff23e78943e5bdf8180144",
+  "upstream_archive_checksum": "fcff5faa63a63d5b81051740f7382017f10b3440b3f401d97f0cf0b3b39c62d9",
+  "wire_and_names_merged": true
+}

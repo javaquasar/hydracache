@@ -1,0 +1,31 @@
+"""Fresh primary metadata, append-only; no root dependency or service changes."""
+from pathlib import Path
+import datetime,hashlib,json,subprocess,urllib.request
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'target/remaining-security-20261028/catalog-first'
+OUT.mkdir(parents=True,exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(OUT/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+protected=('Cargo.toml','Cargo.lock','tools/long-run-supervisor-074/Cargo.toml','deny.toml')
+before={n:sha((ROOT/n).read_bytes()) for n in protected}
+write('intent.json',dict(utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+ source=before,head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ producer_sha256=sha(Path(__file__).read_bytes()),read_only=True,retry=False))
+(OUT/'producer.py').write_bytes(Path(__file__).read_bytes())
+rows={}
+try:
+ for name,path in (('chitchat','ch/it/chitchat'),('zstd','zs/td/zstd'),('zstd-safe','zs/td/zstd-safe'),
+                   ('zbus','zb/us/zbus'),('zbus_macros','zb/us/zbus_macros')):
+  url='https://index.crates.io/'+path
+  with urllib.request.urlopen(url,timeout=30) as response:raw=response.read(8*1024*1024+1);headers=dict(response.headers)
+  assert len(raw)<=8*1024*1024
+  (OUT/(name+'.index')).write_bytes(raw)
+  versions=list(map(json.loads,raw.splitlines()))
+  latest=versions[-8:]
+  rows[name]=dict(url=url,sha256=sha(raw),headers=headers,versions=latest)
+  print(json.dumps(dict(name=name,versions=[dict(version=r['vers'],msrv=r.get('rust_version'),yanked=r['yanked'],
+   relevant_dependencies=[d for d in r['deps'] if d['name'] in ('zstd','zstd-safe','zvariant','zbus_names','zvariant_derive','zbus')]) for r in latest])))
+ assert before=={n:sha((ROOT/n).read_bytes()) for n in protected}
+ write('result.json',dict(packages=rows,source_unchanged=True,source_code_executed=False,release_admitted=False))
+except BaseException as error:
+ write('refusal.json',dict(type=type(error).__name__,reason=str(error)));raise

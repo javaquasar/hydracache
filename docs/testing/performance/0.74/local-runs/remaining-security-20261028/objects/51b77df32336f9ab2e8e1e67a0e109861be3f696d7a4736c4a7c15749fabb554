@@ -1,0 +1,11 @@
+--- baseline/Cargo.toml
++++ candidate/Cargo.toml
+@@ -89,7 +89,7 @@
+ optional = true
+ 
+ [dependencies.zstd]
+-version = "0.13"
++version = "0.14.3"
+ 
+ [dev-dependencies.assert-json-diff]
+ version = "2"

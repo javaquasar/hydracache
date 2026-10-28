@@ -1,0 +1,33 @@
+from pathlib import Path
+import hashlib,json
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/remaining-security-verification-20261028'
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def add(name,path):
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members
+ members[name]=dict(sha256=digest,bytes=len(raw))
+verify=ROOT/'target/remaining-security-verification-20261028'
+assert json.loads((verify/'result.json').read_bytes())['verified']
+for path in sorted(verify.iterdir()):
+ if path.is_file():add('verification/'+path.name,path)
+doc=ROOT/'target/remaining-security-20261028/doc-check'
+result=json.loads((doc/'result.json').read_bytes())
+assert result['exit']==0 and result['source_unchanged'] and result['head_unchanged'] and result['documents_and_executable_unchanged']
+for path in sorted(doc.iterdir()):
+ if path.is_file():add('doc-check/'+path.name,path)
+for name,digest in json.loads((doc/'document-inputs.json').read_bytes())['documents'].items():
+ assert sha((ROOT/name).read_bytes())==digest
+ add('document/'+name,ROOT/name)
+for name in ('verify-remaining-security-20261028.py','retain-remaining-security-verification-20261028.py'):
+ add('producer/'+name,ROOT/'target'/name)
+index=dict(schema='hc074-remaining-security-verification-v1',members=members,
+ parent_index_sha256='06c216b4efc54dcf6cab2cad8f2d2d342d20652d0bd14086b1f2ea8d5fabf541',
+ parent_members_verified=381,parent_objects_verified=183,doc_check_pass=True,
+ native_or_archive_code_executed=False,gate_replayed=False,candidate_admitted=False,release_admitted=False)
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf-8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf-8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

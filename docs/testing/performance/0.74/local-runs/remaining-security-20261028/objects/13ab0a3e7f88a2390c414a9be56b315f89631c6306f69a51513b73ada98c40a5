@@ -1,0 +1,45 @@
+"""Fetch exact review data only; no build script or source execution here."""
+from pathlib import Path,PurePosixPath
+import hashlib,io,json,tarfile,tomllib,urllib.request
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/remaining-security-20261028'
+OUT=BASE/'upstream-first';OUT.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(OUT/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+write('intent.json',dict(producer_sha256=sha(Path(__file__).read_bytes()),source_code_executed=False,
+ root_lock_sha256=sha((ROOT/'Cargo.lock').read_bytes()),retry=False))
+(OUT/'producer.py').write_bytes(Path(__file__).read_bytes())
+rows={}
+try:
+ for name,version in (('chitchat','0.11.1'),('zstd','0.14.3'),('zstd-safe','8.2.0'),('zbus','6.1.0'),('zbus_macros','6.1.0')):
+  index=(BASE/'catalog-first'/(name+'.index')).read_bytes()
+  metadata=next(r for r in map(json.loads,index.splitlines()) if r['vers']==version)
+  url=f'https://static.crates.io/crates/{name}/{name}-{version}.crate'
+  cache=Path('C:/Users/ArturBuzov/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f')/(name+'-'+version+'.crate')
+  if cache.is_file():raw=cache.read_bytes();headers={'source':'existing Cargo cache'}
+  else:
+   with urllib.request.urlopen(url,timeout=30) as response:raw=response.read(16*1024*1024+1);headers=dict(response.headers)
+  assert len(raw)<=16*1024*1024 and sha(raw)==metadata['cksum'] and not metadata['yanked']
+  (OUT/(name+'-'+version+'.crate')).write_bytes(raw)
+  dest=OUT/(name+'-'+version)/'review-source';dest.mkdir(parents=True)
+  files={};expanded=0
+  with tarfile.open(fileobj=io.BytesIO(raw),mode='r:gz') as archive:
+   for member in archive:
+    path=PurePosixPath(member.name)
+    assert not path.is_absolute() and '..' not in path.parts and path.parts[0]==name+'-'+version
+    assert member.isfile() or member.isdir()
+    if member.isdir():continue
+    tail=Path(*path.parts[1:]);assert tail.parts and tail.as_posix() not in files
+    assert member.size<=8*1024*1024
+    expanded+=member.size;assert expanded<=32*1024*1024
+    body=archive.extractfile(member).read();assert len(body)==member.size
+    target=dest/tail;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(body)
+    files[tail.as_posix()]=dict(sha256=sha(body),bytes=len(body))
+  manifest=tomllib.loads((dest/'Cargo.toml').read_text(encoding='utf-8'))
+  rows[name]=dict(version=version,url=url,headers=headers,checksum=sha(raw),metadata=metadata,
+   manifest=manifest,members=files,source_code_executed=False)
+ write('result.json',dict(packages=rows,source_code_executed=False,release_admitted=False))
+ print(json.dumps({n:dict(version=r['version'],msrv=r['manifest']['package'].get('rust-version'),
+  build=r['manifest']['package'].get('build'),files=len(r['members'])) for n,r in rows.items()}))
+except BaseException as error:
+ write('refusal.json',dict(type=type(error).__name__,reason=str(error)));raise

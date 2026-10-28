@@ -1,0 +1,4 @@
+error: failed to parse manifest at `C:\Workspace\prj\jq\cashe\hydracache-074\target\remaining-security-20261028\fixtures\baseline\Cargo.toml`
+
+Caused by:
+  cannot specify `resolver` field in both `[workspace]` and `[package]`

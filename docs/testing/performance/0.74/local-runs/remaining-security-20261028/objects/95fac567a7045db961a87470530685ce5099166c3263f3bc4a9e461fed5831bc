@@ -1,0 +1,37 @@
+from pathlib import Path
+import difflib,hashlib,json,shutil,tomllib
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/remaining-security-20261028'
+out=BASE/'preparation';out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(out/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+protected=('Cargo.toml','Cargo.lock','tools/long-run-supervisor-074/Cargo.toml','deny.toml')
+before={n:sha((ROOT/n).read_bytes()) for n in protected}
+write('intent.json',dict(source=before,producer_sha256=sha(Path(__file__).read_bytes()),retry=False,fixture_only=True))
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+review=json.loads((BASE/'upstream-first/result.json').read_bytes())['packages']['chitchat']
+upstream=BASE/'upstream-first/chitchat-0.11.1/review-source'
+assert {p.relative_to(upstream).as_posix():sha(p.read_bytes()) for p in upstream.rglob('*') if p.is_file()}=={n:r['sha256'] for n,r in review['members'].items()}
+lock=(ROOT/'Cargo.lock').read_bytes()
+version=next(r['version'] for r in tomllib.loads(lock.decode())['package'] if r['name']=='serde_json')
+overlay=ROOT/'tools/chitchat-zstd-review-074/fixture_tests.rs'
+append='\n#[cfg(test)]\n#[path = '+json.dumps(overlay.as_posix())+']\nmod migration_review_074;\n'
+fixture_manifest=upstream.joinpath('Cargo.toml').read_text(encoding='utf-8')+f'\n[dev-dependencies.serde_json]\nversion = "={version}"\n\n[workspace]\nresolver = "2"\n'
+old='[dependencies.zstd]\nversion = "0.13"';new='[dependencies.zstd]\nversion = "0.14.3"'
+assert fixture_manifest.count(old)==1
+for mode in ('baseline','candidate'):
+ dest=BASE/'fixtures'/mode
+ shutil.copytree(upstream,dest)
+ manifest=fixture_manifest if mode=='baseline' else fixture_manifest.replace(old,new,1)
+ (dest/'Cargo.toml').write_text(manifest,encoding='utf-8',newline='\n')
+ (dest/'src/lib.rs').write_bytes((upstream/'src/lib.rs').read_bytes()+append.encode())
+ (dest/'Cargo.lock').write_bytes(lock)
+ (out/(mode+'-Cargo.toml')).write_bytes((dest/'Cargo.toml').read_bytes())
+ (out/(mode+'-lib.rs')).write_bytes((dest/'src/lib.rs').read_bytes())
+assert before=={n:sha((ROOT/n).read_bytes()) for n in protected}
+diff=''.join(difflib.unified_diff(fixture_manifest.splitlines(True),fixture_manifest.replace(old,new,1).splitlines(True),fromfile='baseline/Cargo.toml',tofile='candidate/Cargo.toml'))
+(out/'candidate.diff').write_text(diff,encoding='utf-8',newline='\n')
+write('result.json',dict(source_unchanged=True,root_source=before,fixture_only=True,
+ fixture_overlay_sha256=sha(overlay.read_bytes()),candidate_only_dependency_requirement=True,
+ shared_test_overlay=append,seed=0x0741028,per_step_bound_seconds=1200,release_admitted=False))
+print(diff)

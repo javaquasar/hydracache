@@ -1,0 +1,14 @@
+{
+  "candidate_msrv_context_test_pass": true,
+  "first_refusals_preserved": true,
+  "gate_replayed": false,
+  "index_sha256": "06c216b4efc54dcf6cab2cad8f2d2d342d20652d0bd14086b1f2ea8d5fabf541",
+  "members": 381,
+  "objects": 183,
+  "product_graph_unchanged": true,
+  "release_admitted": false,
+  "strict_clippy_pass": false,
+  "verified": true,
+  "wide_gate_pass": false,
+  "zero_test_refused": true
+}

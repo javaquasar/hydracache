@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [remaining D-Bus/Zstd feasibility review](remaining-security-feasibility-20261028.md)
+retains the unchanged product graph and its last six-finding policy refusal.
+An isolated two-node Chitchat/Zstd candidate passes 25 original pure unit cases
+per fixture and a separate Rust 1.88 context control, but both wide MTU snapshots
+and strict upstream Clippy remain red. A zero-selected-test command is explicitly
+rejected. Exact patches, first failures and a concrete backport/distribution plan
+are retained; no fork is installed, published or admitted to the product graph.
+
 The [isolated YAML migration](yaml-security-result-20261028.md) replaces only
 xtask's archived parser dependency with the reviewed maintained successor.
 All 102 inert inputs per parser agree, including serialization and diagnostics;

@@ -1,0 +1,225 @@
+{
+  "baseline_context_observation": "read_to_end refused: Unknown frame descriptor; no complete snapshot",
+  "candidate_188_context_observation": {
+    "decoder": {
+      "isolated": true,
+      "output": "7365636f6e64206a6f62"
+    },
+    "encoder": {
+      "isolated": true,
+      "output": "7365636f6e64206a6f62"
+    }
+  },
+  "candidate_188_selected_test_pass": true,
+  "candidate_194_context_accounting_pass": false,
+  "candidate_194_zero_test_refusal": "exact successful selected test",
+  "first_outcomes_retained": true,
+  "lifetime_failures_per_fixture": 2,
+  "live_checks_or_deadlines_changed": false,
+  "original_wide_snapshot_pass": false,
+  "paired_context_comparison_complete": false,
+  "performance_claim": false,
+  "product_advisories_remaining": 6,
+  "product_advisory_gate_replayed": false,
+  "release_admitted": false,
+  "root_dependencies_changed": false,
+  "steps": {
+    "accounting-controls": {
+      "exit": 0,
+      "fixture_inputs_unchanged": null,
+      "retired": true,
+      "source_stable": true
+    },
+    "build-baseline": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "build-candidate": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "build-context-baseline": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "build-context-candidate": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "check-baseline": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "check-candidate": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "clippy-baseline": {
+      "exit": 101,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "clippy-candidate": {
+      "exit": 101,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "context-baseline": {
+      "exit": 101,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "context-candidate": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "context-controls": {
+      "exit": 0,
+      "fixture_inputs_unchanged": null,
+      "retired": true,
+      "source_stable": true
+    },
+    "controls": {
+      "exit": 0,
+      "fixture_inputs_unchanged": null,
+      "retired": true,
+      "source_stable": true
+    },
+    "delta-baseline": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "delta-candidate": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "digest-baseline": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "digest-candidate": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "list-context-msrv-candidate": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "message-baseline": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "message-candidate": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "msrv-context-candidate": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "resolve-baseline": {
+      "exit": 101,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "resolve-baseline-v2": {
+      "exit": 0,
+      "fixture_inputs_unchanged": false,
+      "retired": true,
+      "source_stable": true
+    },
+    "resolve-candidate-v2": {
+      "exit": 0,
+      "fixture_inputs_unchanged": false,
+      "retired": true,
+      "source_stable": true
+    },
+    "run-context-msrv-candidate": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "serialize-baseline": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "serialize-candidate": {
+      "exit": 0,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "snapshot-baseline": {
+      "exit": 101,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    },
+    "snapshot-candidate": {
+      "exit": 101,
+      "fixture_inputs_unchanged": true,
+      "retired": true,
+      "source_stable": true
+    }
+  },
+  "strict_clippy_pass": false,
+  "upstream_unit_groups": {
+    "baseline": {
+      "groups": {
+        "delta": 9,
+        "digest": 2,
+        "message": 4,
+        "serialize": 10
+      },
+      "total": 25
+    },
+    "candidate": {
+      "groups": {
+        "delta": 9,
+        "digest": 2,
+        "message": 4,
+        "serialize": 10
+      },
+      "total": 25
+    }
+  },
+  "wide_failure": "MTU upperbound assertion on both inputs",
+  "wide_stream_comparison_complete": false
+}

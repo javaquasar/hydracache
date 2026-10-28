@@ -1,0 +1,33 @@
+   Compiling chitchat v0.11.1 (C:\Workspace\prj\jq\cashe\hydracache-074\target\remaining-security-20261028\fixtures-context\baseline)
+warning: hiding a lifetime that's elided elsewhere is confusing
+   --> src\lib.rs:474:25
+    |
+474 |     fn strip_key_prefix(&self, prefix: &str) -> Option<KeyChangeEvent> {
+    |                         ^^^^^                          ^^^^^^^^^^^^^^ the same lifetime is hidden here
+    |                         |
+    |                         the lifetime is elided here
+    |
+    = help: the same lifetime is referred to in inconsistent ways, making the signature confusing
+    = note: `#[warn(mismatched_lifetime_syntaxes)]` on by default
+help: use `'_` for type paths
+    |
+474 |     fn strip_key_prefix(&self, prefix: &str) -> Option<KeyChangeEvent<'_>> {
+    |                                                                      ++++
+
+warning: hiding a lifetime that's elided elsewhere is confusing
+   --> src\delta.rs:148:15
+    |
+148 |     fn as_ref(&self) -> DeltaOpRef {
+    |               ^^^^^     ^^^^^^^^^^ the same lifetime is hidden here
+    |               |
+    |               the lifetime is elided here
+    |
+    = help: the same lifetime is referred to in inconsistent ways, making the signature confusing
+help: use `'_` for type paths
+    |
+148 |     fn as_ref(&self) -> DeltaOpRef<'_> {
+    |                                   ++++
+
+warning: `chitchat` (lib test) generated 2 warnings (run `cargo fix --lib -p chitchat --tests` to apply 2 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.17s
+  Executable unittests src\lib.rs (target\remaining-security-20261028\targets\baseline\debug\deps\chitchat-5238fa7b8db783b0.exe)

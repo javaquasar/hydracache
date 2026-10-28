@@ -1,0 +1,9 @@
+{
+  "documents": {
+    "docs/articles/007-optimization-starts-with-measurement.md": "e41357d11bbfd8d37ef05b16be16b159e29c0e167db9aaab844cacd683be6009",
+    "docs/testing/performance/0.74/README.md": "ba42d24ff70493af34053349f064d3f190597434a9e3389068794c7f7df635a9",
+    "docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": "0128eb844ba6227ed2254a4dd3022a1051f97f8b23c955bdcafce1d10e34b9bf",
+    "docs/testing/performance/0.74/remaining-security-feasibility-20261028.md": "767541a188d7f77e04e5a7261b029c8e8e7396e7bcbefa5474cdd5e4ae6bf896"
+  },
+  "executable_sha256": "b7a6cc3e1dc61bb610c0e7948aa692fe74123f7a9957c5850883d6822cf3c8ce"
+}

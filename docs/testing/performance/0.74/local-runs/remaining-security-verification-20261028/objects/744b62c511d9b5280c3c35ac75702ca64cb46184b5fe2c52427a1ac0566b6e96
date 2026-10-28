@@ -1,0 +1,57 @@
+"""Independent inert verification: unaccepted candidates stay unaccepted."""
+from pathlib import Path
+import hashlib,json,re,sys
+ROOT=Path(__file__).resolve().parent.parent
+PACKET=ROOT/'docs/testing/performance/0.74/local-runs/remaining-security-20261028'
+out=ROOT/'target/remaining-security-verification-20261028';out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(out/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+expected='06c216b4efc54dcf6cab2cad8f2d2d342d20652d0bd14086b1f2ea8d5fabf541'
+write('intent.json',dict(index_sha256=expected,source_sha256=sha(Path(__file__).read_bytes()),native_or_archive_code_execution=False))
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+try:
+ raw=(PACKET/'index.json').read_bytes();assert sha(raw)==expected
+ index=json.loads(raw);members=index['members'];objects=set()
+ for name,row in members.items():
+  assert not Path(name).is_absolute() and '..' not in Path(name).parts
+  assert set(row)=={'bytes','sha256'} and re.fullmatch('[0-9a-f]{64}',row['sha256'])
+  file=PACKET/'objects'/row['sha256'];assert file.is_file() and not file.is_symlink() and not file.is_junction()
+  body=file.read_bytes();assert len(body)==row['bytes'] and sha(body)==row['sha256']
+  objects.add(row['sha256'])
+ assert objects=={p.name for p in (PACKET/'objects').iterdir()}
+ def body(name):return (PACKET/'objects'/members[name]['sha256']).read_bytes()
+ def read(name):return json.loads(body('capture/'+name))
+ module=ROOT/'tools/chitchat-zstd-review-074/compare.py'
+ assert sha(module.read_bytes())==members['source/current/tools/chitchat-zstd-review-074/compare.py']['sha256']
+ sys.path.insert(0,str(module.parent));import compare
+ analysis=read('analysis/result.json')
+ assert analysis['product_advisory_gate_replayed'] is False and not analysis['root_dependencies_changed']
+ assert not analysis['original_wide_snapshot_pass'] and not analysis['strict_clippy_pass']
+ for mode in ('baseline','candidate'):
+  assert read('snapshot-'+mode+'/result.json')['exit']==101
+  assert b'assertion failed: encoded.len() <= *bound' in body('capture/snapshot-'+mode+'/stdout.log')
+  for group,count in (('serialize',10),('delta',9),('message',4),('digest',2)):
+   assert read(group+'-'+mode+'/result.json')['exit']==0
+   summaries=re.findall(rb'^test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;',body('capture/'+group+'-'+mode+'/stdout.log'),re.M)
+   assert summaries==[(str(count).encode(),b'0',b'0')]
+ zero=body('capture/context-candidate/stdout.log')
+ try:compare.require_selected_test(zero,'context_review_074::snapshot',102)
+ except ValueError:pass
+ else:raise AssertionError('zero-test command admitted')
+ current=body('capture/run-context-msrv-candidate/stdout.log')
+ compare.require_selected_test(current,'context_review_074::snapshot',102)
+ observed=compare.parse_context(current)
+ assert all(row==dict(isolated=True,output=b'second job'.hex()) for row in observed.values()) and set(observed)=={'encoder','decoder'}
+ upstream=read('upstream-first/result.json')['packages']
+ for name,row in upstream.items():
+  assert sha(body('capture/upstream-first/'+name+'-'+row['version']+'.crate'))==row['checksum']==row['metadata']['cksum']
+ for name in ('Cargo.toml','Cargo.lock','deny.toml','tools/long-run-supervisor-074/Cargo.toml',
+              'docs/testing/performance/0.74/qualification-manifest.toml'):
+  assert sha((ROOT/name).read_bytes())==members['source/current/'+name]['sha256']
+ assert not index['wide_gate_pass'] and not index['strict_clippy_pass'] and not index['release_admitted']
+ write('result.json',dict(verified=True,members=len(members),objects=len(objects),index_sha256=expected,
+  first_refusals_preserved=True,zero_test_refused=True,wide_gate_pass=False,strict_clippy_pass=False,
+  candidate_msrv_context_test_pass=True,product_graph_unchanged=True,gate_replayed=False,release_admitted=False))
+ print(json.dumps(dict(verified=True,members=len(members),objects=len(objects),candidate_admitted=False)))
+except BaseException as error:
+ write('refusal.json',dict(type=type(error).__name__,reason=str(error)));raise

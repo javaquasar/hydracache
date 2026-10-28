@@ -1,0 +1,71 @@
+from pathlib import Path
+import difflib,hashlib,json,tomllib,urllib.request
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/remaining-security-20261028'
+out=BASE/'fixture-review';out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def graph(raw):
+ rows=tomllib.loads(raw.decode())['package'];result={r['name']+'@'+r['version']:r for r in rows}
+ assert len(rows)==len(result)
+ return result
+url='https://index.crates.io/as/se/assert-json-diff'
+with urllib.request.urlopen(url,timeout=30) as response:index=response.read(1024*1024+1)
+assert len(index)<=1024*1024
+(out/'assert-json-diff.index').write_bytes(index)
+fixture={}
+for mode in ('baseline','candidate'):
+ folder=BASE/'fixtures-v2'/mode
+ raw=(folder/'Cargo.lock').read_bytes();packages=graph(raw)
+ for key,row in packages.items():
+  if 'checksum' not in row:continue
+  cache=Path('C:/Users/ArturBuzov/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f')/(row['name']+'-'+row['version']+'.crate')
+  assert sha(cache.read_bytes())==row['checksum'],key
+ for name in (('assert-json-diff',) if mode=='baseline' else ('assert-json-diff','zstd','zstd-safe')):
+  row=next(r for r in packages.values() if r['name']==name)
+  primary=index if name=='assert-json-diff' else (BASE/'catalog-first'/(name+'.index')).read_bytes()
+  metadata=next(r for r in map(json.loads,primary.splitlines()) if r['vers']==row['version'])
+  assert metadata['cksum']==row['checksum'] and not metadata['yanked']
+ if mode=='baseline':
+  row=next(r for r in packages.values() if r['name']=='assert-json-diff')
+  cache=Path('C:/Users/ArturBuzov/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f')/('assert-json-diff-'+row['version']+'.crate')
+  (out/cache.name).write_bytes(cache.read_bytes())
+ fixture[mode]=dict(files={p.relative_to(folder).as_posix():sha(p.read_bytes()) for p in sorted(folder.rglob('*')) if p.is_file()},
+  packages=len(packages),probe_sha256=sha((ROOT/'tools/chitchat-zstd-review-074/fixture_tests.rs').read_bytes()))
+a=graph((BASE/'fixtures-v2/baseline/Cargo.lock').read_bytes())
+b=graph((BASE/'fixtures-v2/candidate/Cargo.lock').read_bytes())
+assert sorted(a.keys()-b.keys())==['zstd-safe@7.2.4','zstd@0.13.3']
+assert sorted(b.keys()-a.keys())==['zstd-safe@8.2.0','zstd@0.14.3']
+def edge(n,inventory):
+ parts=n.split();matches=[r for r in inventory.values() if r['name']==parts[0] and (len(parts)==1 or parts[1]==r['version'])]
+ assert len(matches)==1
+ r=matches[0];return (r['name'],r['version'],r.get('source'))
+changed={}
+for key in a.keys()&b.keys():
+ assert {k:v for k,v in a[key].items() if k!='dependencies'}=={k:v for k,v in b[key].items() if k!='dependencies'}
+ old={edge(n,a) for n in a[key].get('dependencies',[])};new={edge(n,b) for n in b[key].get('dependencies',[])}
+ if old!=new:changed[key]=dict(removed=sorted(old-new),added=sorted(new-old))
+assert list(changed)==['chitchat@0.11.1']
+upstream=json.loads((BASE/'upstream-first/result.json').read_bytes())['packages']['chitchat']['members']
+for mode in fixture:
+ assert fixture[mode]['files']['src/lib.rs']==sha((BASE/'preparation'/(mode+'-lib.rs')).read_bytes())
+ assert fixture[mode]['files']['Cargo.toml']==sha((BASE/'preparation-v2'/(mode+'-Cargo.toml')).read_bytes())
+ for name,row in upstream.items():
+  if name in ('Cargo.lock','Cargo.toml','src/lib.rs'):continue
+  assert fixture[mode]['files'][name]==row['sha256']
+for name,version in (('zstd','0.14.3'),('zstd-safe','8.2.0')):
+ oldversion='0.13.3' if name=='zstd' else '7.2.4'
+ old=Path('C:/Users/ArturBuzov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f')/(name+'-'+oldversion)
+ new=BASE/'upstream-first'/(name+'-'+version)/'review-source'
+ diff=[]
+ names={p.relative_to(old).as_posix() for p in old.rglob('*') if p.is_file()}|{p.relative_to(new).as_posix() for p in new.rglob('*') if p.is_file()}
+ for path in sorted(names):
+  if not (path.endswith('.rs') or path in ('Cargo.toml','Cargo.toml.orig')):continue
+  l=(old/path).read_text(encoding='utf-8').splitlines(True) if (old/path).is_file() else []
+  r=(new/path).read_text(encoding='utf-8').splitlines(True) if (new/path).is_file() else []
+  diff.extend(difflib.unified_diff(l,r,fromfile='baseline/'+name+'/'+path,tofile='candidate/'+name+'/'+path))
+ (out/(name+'.diff')).write_text(''.join(diff),encoding='utf-8',newline='\n')
+result=dict(fixtures=fixture,only_existing_edge_owner=changed,all_archive_checksums_match=True,
+ root_lock_sha256=sha((ROOT/'Cargo.lock').read_bytes()),candidate_only_requirement_change=True,
+ diagnostic_overlays_identical=True,source_code_executed=False,release_admitted=False)
+(out/'result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+print(json.dumps(dict(fixtures={m:r['packages'] for m,r in fixture.items()},existing_edge_owners=list(changed))))

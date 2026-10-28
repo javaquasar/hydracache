@@ -1,0 +1,65 @@
+"""Inert analysis of separate cohorts; no native execution or result repair."""
+from pathlib import Path
+import hashlib,json,re,sys
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/remaining-security-20261028'
+out=BASE/'analysis';out.mkdir(exist_ok=False)
+sys.path.insert(0,str(ROOT/'tools/chitchat-zstd-review-074'))
+import compare
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def read(name):return json.loads((BASE/name).read_bytes())
+steps={}
+for folder in sorted(BASE.iterdir()):
+ if not folder.is_dir() or not (folder/'execution.json').is_file():continue
+ result=json.loads((folder/'result.json').read_bytes());execution=json.loads((folder/'execution.json').read_bytes())
+ assert result['source_unchanged'] and result['head_unchanged'],folder.name
+ assert execution['retired'] and not execution['errors'],folder.name
+ assert (execution['bound_seconds'],execution['cleanup_seconds'],execution['capacity_poll_seconds'])==(1200,5,5)
+ steps[folder.name]=dict(exit=result['exit'],source_stable=True,retired=True,
+  fixture_inputs_unchanged=result.get('fixture_inputs_unchanged'))
+assert steps['resolve-baseline']['exit']==101
+assert b'cannot specify `resolver` field in both' in (BASE/'resolve-baseline/stderr.log').read_bytes()
+units={}
+for mode in ('baseline','candidate'):
+ total=0;groups={}
+ for group,expected in (('serialize',10),('delta',9),('message',4),('digest',2)):
+  step=group+'-'+mode;assert steps[step]['exit']==0 and steps[step]['fixture_inputs_unchanged']
+  raw=(BASE/step/'stdout.log').read_text(encoding='utf-8')
+  counts=re.findall(r'^test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored;',raw,re.M)
+  assert counts==[(str(expected),'0','0')]
+  groups[group]=expected;total+=expected
+ units[mode]=dict(groups=groups,total=total)
+ assert steps['snapshot-'+mode]['exit']==101 and steps['snapshot-'+mode]['fixture_inputs_unchanged']
+ assert b'assertion failed: encoded.len() <= *bound' in (BASE/('snapshot-'+mode)/'stdout.log').read_bytes()
+ assert b'HC074_ZSTD_SNAPSHOT:' not in (BASE/('snapshot-'+mode)/'stdout.log').read_bytes()
+ assert steps['clippy-'+mode]['exit']==101
+ lint=(BASE/('clippy-'+mode)/'stderr.log').read_bytes()
+ assert lint.count(b"error: hiding a lifetime that's elided elsewhere is confusing")==2
+ assert b'could not compile `chitchat` (lib) due to 2 previous errors' in lint
+assert steps['context-baseline']['exit']==101 and b'Unknown frame descriptor' in (BASE/'context-baseline/stdout.log').read_bytes()
+zero=(BASE/'context-candidate/stdout.log').read_bytes()
+assert steps['context-candidate']['exit']==0 and b'0 passed; 0 failed' in zero
+try:compare.require_selected_test(zero,'context_review_074::snapshot',102)
+except ValueError as error:zero_refusal=str(error)
+else:raise AssertionError('zero selected tests must refuse')
+assert steps['msrv-context-candidate']['exit']==steps['list-context-msrv-candidate']['exit']==steps['run-context-msrv-candidate']['exit']==0
+raw=(BASE/'run-context-msrv-candidate/stdout.log').read_bytes()
+compare.require_selected_test(raw,'context_review_074::snapshot',102)
+context=compare.parse_context(raw)
+assert set(context)=={'encoder','decoder'}
+for row in context.values():assert row==dict(isolated=True,output=b'second job'.hex())
+for name,digest in read('catalog-first/intent.json')['source'].items():assert sha((ROOT/name).read_bytes())==digest
+assert sha((ROOT/'docs/testing/performance/0.74/qualification-manifest.toml').read_bytes())=='11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
+result=dict(steps=steps,upstream_unit_groups=units,original_wide_snapshot_pass=False,
+ wide_stream_comparison_complete=False,wide_failure='MTU upperbound assertion on both inputs',
+ strict_clippy_pass=False,lifetime_failures_per_fixture=2,
+ baseline_context_observation='read_to_end refused: Unknown frame descriptor; no complete snapshot',
+ candidate_194_context_accounting_pass=False,candidate_194_zero_test_refusal=zero_refusal,
+ candidate_188_context_observation=context,candidate_188_selected_test_pass=True,
+ paired_context_comparison_complete=False,root_dependencies_changed=False,
+ product_advisories_remaining=6,product_advisory_gate_replayed=False,first_outcomes_retained=True,
+ live_checks_or_deadlines_changed=False,release_admitted=False,performance_claim=False)
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+(out/'result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+print(json.dumps(dict(upstream_units_per_fixture=25,wide_gate=False,strict_clippy=False,
+ candidate_msrv_context=True,zero_test_run_accepted=False,root_graph_changed=False)))

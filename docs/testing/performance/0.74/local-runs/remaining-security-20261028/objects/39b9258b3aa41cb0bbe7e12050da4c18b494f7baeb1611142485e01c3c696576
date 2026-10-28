@@ -1,0 +1,8 @@
+    Updating crates.io index
+     Locking 3 packages to latest compatible versions
+      Adding assert-json-diff v2.0.2
+    Updating zstd v0.13.3 -> v0.14.3
+    Updating zstd-safe v7.2.4 -> v8.2.0
+ Downloading crates ...
+  Downloaded zstd v0.14.3
+  Downloaded zstd-safe v8.2.0

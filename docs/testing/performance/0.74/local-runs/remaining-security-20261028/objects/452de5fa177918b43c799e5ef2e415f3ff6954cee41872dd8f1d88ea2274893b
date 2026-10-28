@@ -1,0 +1,23 @@
+"""Independent context cohort; preserves original broad snapshot source/refusal."""
+from pathlib import Path
+import hashlib,json,shutil
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/remaining-security-20261028'
+out=BASE/'context-fixture-review';out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+source=ROOT/'tools/chitchat-zstd-review-074/context_tests.rs'
+append='\n#[cfg(test)]\n#[path = '+json.dumps(source.as_posix())+']\nmod context_review_074;\n'
+review=json.loads((BASE/'fixture-review/result.json').read_bytes())['fixtures']
+rows={}
+for mode in ('baseline','candidate'):
+ old=BASE/'fixtures-v2'/mode;dest=BASE/'fixtures-context'/mode
+ assert {p.relative_to(old).as_posix():sha(p.read_bytes()) for p in old.rglob('*') if p.is_file()}==review[mode]['files']
+ shutil.copytree(old,dest)
+ (dest/'src/lib.rs').write_bytes((old/'src/lib.rs').read_bytes()+append.encode())
+ rows[mode]=dict(files={p.relative_to(dest).as_posix():sha(p.read_bytes()) for p in sorted(dest.rglob('*')) if p.is_file()},
+  context_source_sha256=sha(source.read_bytes()),original_probe_sha256=review[mode]['probe_sha256'])
+assert (BASE/'fixtures-context/baseline/src/lib.rs').read_bytes()==(BASE/'fixtures-context/candidate/src/lib.rs').read_bytes()
+result=dict(fixtures=rows,original_snapshot_failure_retained=True,full_wire_gate_pass=False,
+ source_sha256=sha(Path(__file__).read_bytes()),shared_overlay=append,release_admitted=False)
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+(out/'result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')

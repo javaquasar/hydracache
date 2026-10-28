@@ -1,0 +1,13 @@
+{
+  "head": "0c9cd79ef5bf3233ce5c5a2667d8d956b1762ce5",
+  "producer_sha256": "5e35f0c50f9dd268dcfc6cdc9a7ee992e17e459338294505c1ba5e13f78ce490",
+  "read_only": true,
+  "retry": false,
+  "source": {
+    "Cargo.lock": "9efeffabd8726a961a84d23b7a8e5f2ce74e0e313698f064eed603ea79062a7c",
+    "Cargo.toml": "a494481b85fa84fd07e19a447c6d5fe7a49aa12557e0c0befc86fdea390d3bf2",
+    "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+    "tools/long-run-supervisor-074/Cargo.toml": "f38fc2c3e40b71fbac2aa2c54ed545828177860bed060d4c43981af796fd73e1"
+  },
+  "utc": "2026-10-28T01:28:14.697790+00:00"
+}
