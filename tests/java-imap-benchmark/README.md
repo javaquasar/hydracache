@@ -36,8 +36,10 @@ function is executed on a member.
 `replaceAllDetailed` preserves each existing entry's expiry. It admits at most 256 explicit
 replacements under aggregate request/response byte bounds; the identity-retaining variant returns
 the same receipt on replay and rejects conflicting identities or exhausted retained-outcome
-capacity. Descriptor operation names denote planned surface semantics, while production capability
-remains disabled.
+capacity. Scope-specific descriptors distinguish 21 actual `BoundedIMapApi` operations, 40 actual
+`UnifiedIMapService` operations with seven local lifecycle families, and the existing SDK's eleven
+capability tokens. Planned surface projections remain separate. The expanded 0.75 production
+capability stays disabled; existing narrow SDK behavior remains available under its own contract.
 
 The local `UnifiedIMapService` dispatches all 40 provisional operations into the
 existing bounded map and its shared outcome ledger. It adds map/generation/version tokens,
@@ -56,6 +58,12 @@ batch outcome queries and incremental expiry. Quiescent in-memory checkpoints re
 receipts while restoration gives the map a fresh instance identity. They assign no persisted or
 production protocol format. `IMapConcurrentRunner` exercises real worker-thread schedules and
 async cancellation; the independent Rust checker validates legal histories and real-time edges.
+
+`IMapMigrationDryRun` writes bounded codec/TTL fixtures into a separate actual local service,
+checks the resulting count and digest, and leaves the supplied live owner unchanged. It is an
+API-only/cold-repopulation dry-run, without a production import endpoint or SDK activation. Run
+`cargo xtask imap-capability-audit --release 0.75` for code/contract/SDK drift checks and
+`cargo xtask imap-migration-dry-run --release 0.75` for the checked-in migration corpus.
 
 ## Blocked by 0.74
 

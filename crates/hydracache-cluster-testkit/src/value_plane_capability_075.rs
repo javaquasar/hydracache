@@ -5,6 +5,124 @@ use std::fmt;
 
 use serde_json::Value;
 
+pub const BOUNDED_OPERATIONS: &[&str] = &[
+    "put",
+    "entry_listener",
+    "size",
+    "is_empty",
+    "contains_value_bounded",
+    "clear_detailed",
+    "destroy",
+    "evict",
+    "evict_all_detailed",
+    "key_set_page",
+    "values_page",
+    "entry_set_page",
+    "get_or_default",
+    "contains_entry",
+    "set",
+    "get_entry_view",
+    "try_put",
+    "try_remove",
+    "replace_all_detailed",
+    "remove_entry_listener",
+    "capability_descriptor",
+];
+pub const UNIFIED_OPERATIONS: &[&str] = &[
+    "get",
+    "put",
+    "delete",
+    "conditional_replace",
+    "conditional_remove",
+    "contains_key",
+    "put_if_absent",
+    "replace_if_present",
+    "get_and_remove",
+    "get_and_put",
+    "get_all",
+    "put_all_detailed",
+    "remove_all_detailed",
+    "set_ttl",
+    "remaining_ttl",
+    "entry_listener",
+    "size",
+    "is_empty",
+    "contains_value_bounded",
+    "clear_detailed",
+    "destroy",
+    "evict",
+    "evict_all_detailed",
+    "key_set_page",
+    "values_page",
+    "entry_set_page",
+    "get_or_default",
+    "contains_entry",
+    "set",
+    "get_entry_view",
+    "try_put",
+    "try_remove",
+    "replace_all_detailed",
+    "remove_entry_listener",
+    "capability_descriptor",
+    "replace_if_version",
+    "remove_if_version",
+    "set_ttl_if_version",
+    "query_operation_outcome",
+    "local_statistics",
+];
+pub const LIFECYCLE_FEATURES: &[&str] = &[
+    "safe_outcome_retirement",
+    "aggregate_payload_budgets",
+    "atomic_listener_resynchronization",
+    "version_conditional_bulk_api",
+    "bounded_batch_outcome_query",
+    "incremental_expiry_cleanup",
+    "runtime_service_checkpoint_restore",
+];
+pub const SDK_OPERATIONS: &[&str] = &[
+    "IMap.get",
+    "IMap.put",
+    "IMap.replace",
+    "IMap.remove(key,value)",
+    "IMap.addEntryListener",
+    "IMap.getLock",
+    "FencedLock.tryLock",
+    "FencedLock.unlock",
+    "FencedLock.renew",
+    "FencedLock.isLocked",
+    "FencedLock.getFence",
+];
+
+/// Actual checked-in reference or legacy SDK families, distinct from planned surface projections.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LocalCapabilityDescriptor {
+    pub scope: &'static str,
+    /// The expanded 0.75 production capability; this does not disable existing legacy SDK APIs.
+    pub production_enabled: bool,
+    pub operations: BTreeSet<String>,
+    pub interface_features: BTreeSet<String>,
+}
+
+impl LocalCapabilityDescriptor {
+    pub fn bounded() -> Self {
+        Self::new("bounded_reference", BOUNDED_OPERATIONS, &[])
+    }
+    pub fn unified() -> Self {
+        Self::new("unified_reference", UNIFIED_OPERATIONS, LIFECYCLE_FEATURES)
+    }
+    pub fn sdk_actual() -> Self {
+        Self::new("sdk_existing_narrow", SDK_OPERATIONS, &[])
+    }
+    fn new(scope: &'static str, operations: &[&str], features: &[&str]) -> Self {
+        Self {
+            scope,
+            production_enabled: false,
+            operations: operations.iter().map(|id| (*id).into()).collect(),
+            interface_features: features.iter().map(|id| (*id).into()).collect(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CapabilityError(pub String);
 

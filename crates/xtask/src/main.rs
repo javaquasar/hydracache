@@ -52,6 +52,16 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("gated-test-check") => xtask::gated_tests::run(args.collect())?,
         Some("imap-contract-check") => xtask::imap_contract::run(args.collect())?,
         Some("imap-api-differential") => xtask::imap_api_differential::run(args.collect())?,
+        Some("imap-capability-audit") => xtask::imap_capability_audit::run(args.collect())?,
+        Some("imap-migration-dry-run") => xtask::imap_migration_dry_run::run(args.collect())?,
+        Some("imap-comparison-check") => {
+            xtask::imap_qualification_075::comparison_run(args.collect())?
+        }
+        Some("imap-release-admission") => {
+            xtask::imap_qualification_075::release_run(args.collect())?
+        }
+        Some("imap-ci-check") => xtask::imap_ci_075::run_check(args.collect())?,
+        Some("imap-ci-run") => xtask::imap_ci_075::run_lane(args.collect())?,
         Some("imap-distributed-correctness") => {
             xtask::imap_distributed_correctness::run(args.collect())?
         }
@@ -153,6 +163,12 @@ fn print_usage() {
          cargo xtask gated-test-check  # validate every ignored/cfg/env-gated test registration\n  \
          cargo xtask imap-contract-check --release 0.75  # validate the provisional Extended IMap W0 contracts\n  \
          cargo xtask imap-api-differential --release 0.75 [--seed <u64>] [--steps <n>]  # compare real Rust and Java local IMap execution traces\n  \
+         cargo xtask imap-capability-audit --release 0.75  # compare actual reference and existing SDK claims\n  \
+         cargo xtask imap-migration-dry-run --release 0.75 [--fixtures <path>] [--output <path>]\n  \
+         cargo xtask imap-comparison-check --release 0.75 [--require-ready]\n  \
+         cargo xtask imap-release-admission --release 0.75 [--manifest <path>] [--require-ship]\n  \
+         cargo xtask imap-ci-check --release 0.75 [--mode pr|nightly] [--receipts <dir>]\n  \
+         cargo xtask imap-ci-run --release 0.75 --rust <version> --java <major> --shard <index> --output <path>\n  \
          cargo xtask imap-distributed-correctness --release 0.75 [--evidence <new-dir>]  # run every locally available distributed simulator/security/key proof and optionally emit receipts\n  \
          cargo xtask imap-value-plane-model --release 0.75 [--seed <u64>] [--max-depth <n>] [--max-states <n>] [--output <path>]  # explore the bounded authority model and emit an exact-source receipt\n  \
          cargo xtask imap-foundation-evidence-check --release 0.75 [--receipt <path>|--receipts <dir>]  # validate schemas, one receipt, or a complete exact-source evidence set\n  \

@@ -1,0 +1,179 @@
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use xtask::imap_ci_075::*;
+use xtask::imap_qualification_075::digest;
+const WORKFLOW: &str = include_str!("../../../.github/workflows/imap-075.yml");
+fn root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .to_path_buf()
+}
+fn receipts(mode: &str) -> Vec<CiReceipt> {
+    expected_lanes(mode)
+        .unwrap()
+        .into_iter()
+        .map(|lane| CiReceipt {
+            release: "0.75".into(),
+            receipt_version: 1,
+            scope: "local_ci".into(),
+            mode: mode.into(),
+            source_sha: "a".repeat(40),
+            workflow_sha256: digest(WORKFLOW.as_bytes()),
+            seeds: seeds_for(lane.shard).unwrap(),
+            steps: 128,
+            rust_fingerprint: format!("rustc {} (test fixture)", lane.rust),
+            java_fingerprint: format!("openjdk {}.0.1 test fixture", lane.java),
+            lane,
+            commands: vec![
+                "imap-distributed-correctness".into(),
+                "imap-capability-audit".into(),
+                "imap-migration-dry-run".into(),
+                "imap-comparison-check".into(),
+                "imap-release-admission".into(),
+                "imap-tooling-tests".into(),
+            ],
+            completed: true,
+            passed: true,
+            production_enabled: false,
+        })
+        .collect()
+}
+#[test]
+fn pr_and_nightly_matrices_have_exact_bounded_toolchains_and_disjoint_seed_shards() {
+    check_workflow(&root()).unwrap();
+    assert_eq!(expected_lanes("pr").unwrap().len(), 4);
+    assert_eq!(expected_lanes("nightly").unwrap().len(), 16);
+    for mode in ["pr", "nightly"] {
+        validate_receipts(
+            &receipts(mode),
+            mode,
+            &"a".repeat(40),
+            &digest(WORKFLOW.as_bytes()),
+        )
+        .unwrap();
+    }
+    assert_eq!(seeds_for(3).unwrap(), [123, 124]);
+    assert!(seeds_for(4).is_err());
+    assert!(expected_lanes("full").is_err());
+}
+#[test]
+fn incomplete_failed_mixed_source_or_weakened_lanes_never_complete_ci() {
+    for field in [
+        "release",
+        "receipt_version",
+        "scope",
+        "mode",
+        "source_sha",
+        "workflow_sha256",
+        "seeds",
+        "steps",
+        "rust_fingerprint",
+        "java_fingerprint",
+        "commands",
+        "completed",
+        "passed",
+        "production_enabled",
+    ] {
+        let mut lanes = receipts("pr");
+        let mut value = serde_json::to_value(&lanes[0]).unwrap();
+        value[field] = match field {
+            "completed" | "passed" => serde_json::json!(false),
+            "production_enabled" => serde_json::json!(true),
+            "seeds" => serde_json::json!([999]),
+            "commands" => serde_json::json!([]),
+            "steps" | "receipt_version" => serde_json::json!(0),
+            _ => serde_json::json!("wrong"),
+        };
+        lanes[0] = serde_json::from_value(value).unwrap();
+        assert!(
+            validate_receipts(&lanes, "pr", &"a".repeat(40), &digest(WORKFLOW.as_bytes())).is_err(),
+            "{field}"
+        );
+    }
+    let mut lanes = receipts("pr");
+    lanes.pop();
+    assert!(
+        validate_receipts(&lanes, "pr", &"a".repeat(40), &digest(WORKFLOW.as_bytes())).is_err()
+    );
+    let mut lanes = receipts("pr");
+    lanes.push(lanes[0].clone());
+    assert!(
+        validate_receipts(&lanes, "pr", &"a".repeat(40), &digest(WORKFLOW.as_bytes())).is_err()
+    );
+    let mut lanes = receipts("pr");
+    lanes[0].lane.rust = "1.99.0".into();
+    assert!(
+        validate_receipts(&lanes, "pr", &"a".repeat(40), &digest(WORKFLOW.as_bytes())).is_err()
+    );
+}
+#[test]
+fn workflow_canaries_reject_unpinned_actions_ignored_failures_and_missing_completion() {
+    for changed in [
+        WORKFLOW.replace("fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09", "v5"),
+        WORKFLOW.replace("fail-fast: false", "fail-fast: true"),
+        WORKFLOW.replace("timeout-minutes: 45", "timeout-minutes: 999"),
+        WORKFLOW.replace("if: always()", "if: success()"),
+        WORKFLOW.replace("imap-ci-run", "echo skipped"),
+        WORKFLOW.replace("test \"$LANES_RESULT\" = success", "true"),
+        WORKFLOW
+            .replace(
+                "retention-days: 14",
+                "retention-days: 14\n          unused: true",
+            )
+            .replace("--receipts", "--missing"),
+    ] {
+        let temp = tempfile::tempdir().unwrap();
+        fs::create_dir_all(temp.path().join(".github/workflows")).unwrap();
+        fs::write(temp.path().join(".github/workflows/imap-075.yml"), changed).unwrap();
+        assert!(check_workflow(temp.path()).is_err());
+    }
+}
+#[test]
+fn receipt_writes_are_bounded_idempotent_and_never_overwrite_conflicting_evidence() {
+    let temp = tempfile::tempdir().unwrap();
+    let receipt = receipts("pr").remove(0);
+    let path = "target/ci/ci-receipt-test.json";
+    write_receipt(temp.path(), path, &receipt).unwrap();
+    write_receipt(temp.path(), path, &receipt).unwrap();
+    let mut changed = receipt.clone();
+    changed.passed = false;
+    assert!(write_receipt(temp.path(), path, &changed).is_err());
+    let stored: CiReceipt =
+        serde_json::from_slice(&fs::read(temp.path().join(path)).unwrap()).unwrap();
+    assert!(stored.passed);
+    for path in [
+        "",
+        "../escape.json",
+        "/absolute.json",
+        "C:\\escape.json",
+        "target\\ci\\ambiguous.json",
+    ] {
+        assert!(write_receipt(temp.path(), path, &receipt).is_err());
+    }
+    assert!(check_receipts(temp.path(), "../outside", "pr").is_err());
+}
+#[test]
+fn cli_rejects_ambiguous_modes_and_false_lane_identity_before_running_work() {
+    for command in ["imap-ci-check", "imap-ci-run"] {
+        for args in [
+            vec!["--release", "0.74"],
+            vec!["--release"],
+            vec!["--release", "0.75", "--mode", "invalid"],
+            vec!["--release", "0.75", "--java", "99"],
+            vec!["--release", "0.75", "--release", "0.75"],
+        ] {
+            assert!(!Command::new(env!("CARGO_BIN_EXE_xtask"))
+                .current_dir(root())
+                .arg(command)
+                .args(args)
+                .output()
+                .unwrap()
+                .status
+                .success());
+        }
+    }
+}

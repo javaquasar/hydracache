@@ -261,6 +261,13 @@ independent of the unfinished 0.74 production shape:
   bounded batch outcome lookup, incremental expiry and quiescent in-memory checkpoint/restore;
 - real concurrent Rust/Java histories checked against legal serial orders and real-time edges,
   including cancellation, response-loss replay, expiry and listeners with bounded failure shrinking;
+- an actual-service test cluster with bounded logical transport faults, owner-decision replica
+  images, ordered bulk/coordinator receipts, fenced promotion and runtime state rebalance;
+- authenticated service registry integration for tenant isolation, fair admission, quota ownership
+  and generation-fenced namespace drain/reclamation;
+- separate actual reference/SDK capability audit, migration staging fixtures and cold-repopulation
+  dry-runs, a bounded PR/nightly Java/Rust CI matrix, comparison policy validation and a provisional
+  release-admission checker that remains blocked without qualified production verifier adapters;
 - a bounded Rust/Java reference canonical-key codec and checked-in UTF-8/empty-key golden vectors;
   the production wire identity and partition hash deliberately remain unassigned.
 

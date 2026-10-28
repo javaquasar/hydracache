@@ -54,6 +54,10 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "--test",
             "value_plane_service_075",
             "--test",
+            "value_plane_service_cluster_075",
+            "--test",
+            "value_plane_service_registry_075",
+            "--test",
             "value_plane_service_lifecycle_075",
             "--test",
             "value_plane_service_async_075",
@@ -91,6 +95,19 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     if !evidence_problems.is_empty() {
         return Err(format!("IMap evidence contract problems: {evidence_problems:?}").into());
     }
+    let capability_problems = crate::imap_capability_audit::check_at_root(&root, RELEASE)?;
+    if !capability_problems.is_empty() {
+        return Err(format!("IMap capability drift: {capability_problems:?}").into());
+    }
+    crate::imap_migration_dry_run::check_at_root(&root, RELEASE)?;
+    crate::imap_ci_075::check_workflow(&root)?;
+    let comparison_blockers = crate::imap_qualification_075::check_comparison_at_root(&root)?;
+    let admission = crate::imap_qualification_075::check_release_at_root(&root, None)?;
+    println!(
+        "IMap release preparation: contracts valid; comparison blockers={}, ship admitted={}",
+        comparison_blockers.len(),
+        admission.admitted
+    );
     if let Some(output) = evidence {
         crate::imap_foundation_generate::generate_at_root(&root, &output, 117)?;
         let problems =

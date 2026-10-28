@@ -668,7 +668,7 @@ public final class UnifiedIMapService {
         boolean removed = removeListener(c.listenerId);
         yield numbered(removed ? "listener_removed" : "absent", 0, removed);
       }
-      case "capability_descriptor" -> numbered("capabilities", IMapCapabilityDescriptor.local(bounds).plannedOperations().size(), false);
+      case "capability_descriptor" -> numbered("capabilities", IMapCapabilityDescriptor.unified(bounds).operations().size(), false);
       case "query_operation_outcome" -> {
         OperationStatus status = queryOperationOutcome(c.identity.orElseThrow(() -> domain(
             IMapDomainException.Kind.INVALID_ARGUMENT, "identity required")));
@@ -799,7 +799,9 @@ public final class UnifiedIMapService {
         }
       }
     }
+    seen.clear();
     for (var key : c.keys) {
+      if (!seen.add(key)) throw domain(IMapDomainException.Kind.INVALID_ARGUMENT, "duplicate key");
       if (key.size() > bounds.maxKeyBytes()) throw domain(IMapDomainException.Kind.KEY_TOO_LARGE, "key bound");
       requestBytes += 4L + key.size(); responseBytes += 17L + key.size();
       if (stateful && (c.operation.equals("get_all") || c.operation.equals("remove_all_detailed"))) {

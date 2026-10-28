@@ -19,7 +19,7 @@ const MUTATION_STAGES: [&str; 10] = [
     "responded",
     "outcome_unknown",
 ];
-const REQUIRED_OPERATIONS: [&str; 40] = [
+pub(crate) const REQUIRED_OPERATIONS: [&str; 40] = [
     "get",
     "put",
     "delete",
@@ -157,6 +157,24 @@ struct ApiExtensions {
     unsupported_families: Vec<String>,
     local_service: LocalServiceContract,
     local_lifecycle: LocalLifecycleContract,
+    release_preparation: ReleasePreparationContract,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ReleasePreparationContract {
+    cluster_value_owner: String,
+    replication: String,
+    coordinator: String,
+    map_wide: String,
+    transfer: String,
+    registry: String,
+    capabilities: String,
+    ci: String,
+    migration: String,
+    comparison: String,
+    admission: String,
+    test_ids: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -654,6 +672,14 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         "incremental_expiry_cleanup",
         "runtime_service_checkpoint_restore",
         "concurrent_cross_language_qualification",
+        "testkit_service_cluster_bridge",
+        "runtime_replica_state_transfer",
+        "authenticated_service_registry",
+        "capability_drift_audit",
+        "imap_ci_matrix",
+        "migration_dry_run",
+        "comparison_policy_validation",
+        "release_admission_validation",
     ] {
         if !implemented.contains(required) {
             problems.push(format!(
@@ -750,6 +776,14 @@ fn validate_test_registry(
         operations
             .api_extensions
             .local_lifecycle
+            .test_ids
+            .iter()
+            .map(String::as_str),
+    );
+    claimed.extend(
+        operations
+            .api_extensions
+            .release_preparation
             .test_ids
             .iter()
             .map(String::as_str),
@@ -1030,7 +1064,94 @@ fn validate_operations(
     validate_api_extensions(contract, problems);
     validate_local_service(&contract.api_extensions.local_service, problems);
     validate_local_lifecycle(&contract.api_extensions.local_lifecycle, problems);
+    validate_release_preparation(&contract.api_extensions.release_preparation, problems);
     operation_ids
+}
+
+fn validate_release_preparation(contract: &ReleasePreparationContract, problems: &mut Vec<String>) {
+    for (label, actual, expected) in [
+        (
+            "cluster owner",
+            contract.cluster_value_owner.as_str(),
+            "actual_unified_imap_service",
+        ),
+        (
+            "replication",
+            contract.replication.as_str(),
+            "owner_decision_and_receipt_without_command_reexecution",
+        ),
+        (
+            "coordinator",
+            contract.coordinator.as_str(),
+            "bounded_actual_service_root_receipt_ledger",
+        ),
+        (
+            "map wide",
+            contract.map_wide.as_str(),
+            "explicit_unsupported_for_undefined_cross_partition_semantics",
+        ),
+        (
+            "transfer",
+            contract.transfer.as_str(),
+            "bounded_runtime_state_preserves_logical_incarnation",
+        ),
+        (
+            "registry",
+            contract.registry.as_str(),
+            "authenticated_scope_before_actual_service_dispatch",
+        ),
+        (
+            "capabilities",
+            contract.capabilities.as_str(),
+            "separate_bounded_unified_existing_sdk_claims",
+        ),
+        (
+            "CI",
+            contract.ci.as_str(),
+            "complete_exact_source_local_matrix_not_ship_evidence",
+        ),
+        (
+            "migration",
+            contract.migration.as_str(),
+            "api_only_cold_repopulation_dry_run",
+        ),
+        (
+            "comparison",
+            contract.comparison.as_str(),
+            "equal_semantics_no_claim_before_qualification",
+        ),
+        (
+            "admission",
+            contract.admission.as_str(),
+            "blocked_without_qualified_production_verifiers",
+        ),
+    ] {
+        if actual != expected {
+            problems.push(format!(
+                "IMap release preparation {label} must be {expected}"
+            ));
+        }
+    }
+    let expected = [
+        "imap075::service_cluster::routing",
+        "imap075::replica_transfer::state",
+        "imap075::service_registry::scope",
+        "imap075::capability_audit::truth",
+        "imap075::ci_matrix::complete",
+        "imap075::migration_dry_run::staging",
+        "imap075::comparison_policy::semantics",
+        "imap075::release_admission::evidence",
+    ]
+    .into_iter()
+    .collect::<BTreeSet<_>>();
+    let actual = contract
+        .test_ids
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    if actual != expected || actual.len() != contract.test_ids.len() {
+        problems.push("IMap release preparation must name every unique executable proof".into());
+    }
 }
 
 fn validate_local_lifecycle(contract: &LocalLifecycleContract, problems: &mut Vec<String>) {

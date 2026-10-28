@@ -95,8 +95,14 @@ impl FairAdmissionQueue {
             });
         }
         if queue.is_empty() {
-            self.tenant_order.push(work.tenant.clone());
-            self.tenant_order.sort();
+            let position = self
+                .tenant_order
+                .binary_search(&work.tenant)
+                .unwrap_or_else(|position| position);
+            if !self.tenant_order.is_empty() && position <= self.cursor {
+                self.cursor += 1;
+            }
+            self.tenant_order.insert(position, work.tenant.clone());
         }
         queue.push_back(work);
         self.data_len += 1;
@@ -110,16 +116,21 @@ impl FairAdmissionQueue {
         if self.tenant_order.is_empty() {
             return None;
         }
-        for _ in 0..self.tenant_order.len() {
-            self.cursor %= self.tenant_order.len();
-            let tenant = self.tenant_order[self.cursor].clone();
-            self.cursor = (self.cursor + 1) % self.tenant_order.len();
-            if let Some(work) = self.tenants.get_mut(&tenant).and_then(VecDeque::pop_front) {
-                self.data_len -= 1;
-                return Some(WorkItem::Data(work));
+        self.cursor %= self.tenant_order.len();
+        let tenant = self.tenant_order[self.cursor].clone();
+        let queue = self.tenants.get_mut(&tenant).expect("active tenant queue");
+        let work = queue.pop_front().expect("active tenant has queued work");
+        if queue.is_empty() {
+            self.tenants.remove(&tenant);
+            self.tenant_order.remove(self.cursor);
+            if self.cursor == self.tenant_order.len() {
+                self.cursor = 0;
             }
+        } else {
+            self.cursor = (self.cursor + 1) % self.tenant_order.len();
         }
-        None
+        self.data_len -= 1;
+        Some(WorkItem::Data(work))
     }
 
     pub fn len(&self) -> usize {
@@ -128,6 +139,11 @@ impl FairAdmissionQueue {
 
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    /// Only tenants that currently own queued work retain scheduler metadata.
+    pub fn active_tenants(&self) -> usize {
+        self.tenant_order.len()
     }
 }
 

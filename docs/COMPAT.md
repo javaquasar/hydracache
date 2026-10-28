@@ -61,6 +61,14 @@ service execution. Seeded traces and schedules are local correctness fixtures;
 they allocate no HC/1, HC/2, production operation/error number or durable identity.
 Runtime checkpoint objects have no serialization or persisted format.
 
+The 0.75 migration corpus uses `fixture_version = 1` for bounded development
+staging/dry-run readers only. Runtime replica images preserve logical incarnation
+within the test cluster and have no persisted reader or production transport
+schema. CI receipts use `receipt_version = 1` with explicit `local_ci` scope;
+comparison/release manifests use provisional `contract_version = 1` and reject
+unknown fields/versions. None is a production HC/1/HC/2 allocation or an import
+endpoint, and local receipts cannot authorize a release.
+
 ## Upgrade Rules
 
 - Writers may not emit a newer durable or wire artifact until readers in the

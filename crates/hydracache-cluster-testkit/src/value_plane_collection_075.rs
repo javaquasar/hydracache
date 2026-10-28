@@ -659,6 +659,13 @@ impl ReferenceCollectionMap {
             })
     }
 
+    pub(crate) fn service_live_value_len(&self, key: &[u8], now: u64) -> Option<usize> {
+        self.entries
+            .get(key)
+            .filter(|value| is_live(value, now))
+            .map(|value| value.value.len())
+    }
+
     pub(crate) fn service_preflight_puts(
         &self,
         entries: &[ReplacementEntry],
@@ -794,6 +801,52 @@ impl ReferenceCollectionMap {
                 RetainedOutcome::ServicePending { result_bytes } => Some(*result_bytes),
                 _ => None,
             })
+    }
+
+    pub(crate) fn service_owner_counts(&self) -> (usize, usize, usize, usize) {
+        let pending = self.service_pending_count();
+        (
+            self.entries.len(),
+            self.retained.len() - pending,
+            self.retirement_fences.len(),
+            pending,
+        )
+    }
+
+    pub(crate) fn service_pending_identities(&self) -> Vec<MutationIdentity> {
+        self.retained
+            .iter()
+            .filter(|(_, (_, outcome))| matches!(outcome, RetainedOutcome::ServicePending { .. }))
+            .map(|(identity, _)| identity.clone())
+            .collect()
+    }
+
+    pub(crate) fn service_reclaim(&mut self, maximum: usize) -> usize {
+        let mut removed = 0;
+        while removed < maximum {
+            if let Some((key, value)) = self.entries.pop_first() {
+                if let Some(at) = value.expires_at {
+                    self.expiry_index.remove(&(at, key));
+                }
+            } else if let Some(identity) = self
+                .retained
+                .iter()
+                .find(|(_, (_, outcome))| {
+                    !matches!(outcome, RetainedOutcome::ServicePending { .. })
+                })
+                .map(|(id, _)| id.clone())
+            {
+                self.retained.remove(&identity);
+            } else if self.retirement_fences.pop_first().is_none() {
+                break;
+            }
+            removed += 1;
+        }
+        if self.entries.is_empty() && self.retained.is_empty() && self.retirement_fences.is_empty()
+        {
+            self.destroyed = true;
+        }
+        removed
     }
 
     pub fn put(

@@ -69,7 +69,15 @@
       "bounded_batch_outcome_query",
       "incremental_expiry_cleanup",
       "runtime_service_checkpoint_restore",
-      "concurrent_cross_language_qualification"
+      "concurrent_cross_language_qualification",
+      "testkit_service_cluster_bridge",
+      "runtime_replica_state_transfer",
+      "authenticated_service_registry",
+      "capability_drift_audit",
+      "imap_ci_matrix",
+      "migration_dry_run",
+      "comparison_policy_validation",
+      "release_admission_validation"
     ],
     "deferred": [
       "production_backend_and_partition_ownership",

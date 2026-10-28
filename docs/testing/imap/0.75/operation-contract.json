@@ -17,6 +17,20 @@
       {"id":"cursor_iterator_adapters","cancellation":"stop_fetching_and_release_buffer","test_ids":["imap075::iterator_rust::lazy_stale_cursor","imap075::iterator_java::lazy_stale_cursor"]}
     ],
     "unsupported_families": ["remote_entry_processor","remote_predicate","remote_interceptor","distributed_transaction","unbounded_scan"],
+    "release_preparation": {
+      "cluster_value_owner": "actual_unified_imap_service",
+      "replication": "owner_decision_and_receipt_without_command_reexecution",
+      "coordinator": "bounded_actual_service_root_receipt_ledger",
+      "map_wide": "explicit_unsupported_for_undefined_cross_partition_semantics",
+      "transfer": "bounded_runtime_state_preserves_logical_incarnation",
+      "registry": "authenticated_scope_before_actual_service_dispatch",
+      "capabilities": "separate_bounded_unified_existing_sdk_claims",
+      "ci": "complete_exact_source_local_matrix_not_ship_evidence",
+      "migration": "api_only_cold_repopulation_dry_run",
+      "comparison": "equal_semantics_no_claim_before_qualification",
+      "admission": "blocked_without_qualified_production_verifiers",
+      "test_ids": ["imap075::service_cluster::routing","imap075::replica_transfer::state","imap075::service_registry::scope","imap075::capability_audit::truth","imap075::ci_matrix::complete","imap075::migration_dry_run::staging","imap075::comparison_policy::semantics","imap075::release_admission::evidence"]
+    },
     "local_lifecycle": {
       "retirement_scope": ["client","namespace_generation"],
       "retired_retry": "reject_before_admission_query_unknown",
@@ -50,6 +64,7 @@
     }
   },
   "errors": [
+    {"id":"namespace_deleted","retry_class":"open_only_an_admitted_new_namespace_generation","certainty":"old_generation_fenced","test_id":"imap075::service_registry::scope"},
     {"id":"retired_identity","retry_class":"never_with_retired_identity","certainty":"not_applied","test_id":"imap075::retirement::fences"},
     {"id":"pending_retirement","retry_class":"after_pending_completion","certainty":"retirement_not_applied","test_id":"imap075::retirement::fences"},
     {"id":"resource_budget_exhausted","retry_class":"after_capacity_or_request_reduction","certainty":"not_applied","test_id":"imap075::payload_budget::owners"},

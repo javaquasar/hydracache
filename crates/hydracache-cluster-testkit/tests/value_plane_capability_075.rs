@@ -1,5 +1,5 @@
 use hydracache_cluster_testkit::value_plane_capability_075::{
-    CapabilityDescriptor, SurfaceSupport,
+    CapabilityDescriptor, LocalCapabilityDescriptor, SurfaceSupport,
 };
 use serde_json::{json, Value};
 
@@ -7,6 +7,24 @@ const OPERATIONS: &str = include_str!("../../../docs/testing/imap/0.75/operation
 const BOUNDS: &str = include_str!("../../../docs/testing/imap/0.75/resource-bounds.json");
 const SURFACES: &str = include_str!("../../../docs/testing/imap/0.75/surface-equivalence.json");
 const STATUS: &str = include_str!("../../../docs/testing/imap/0.75/status.json");
+
+#[test]
+fn actual_capabilities_keep_reference_owners_and_existing_sdk_separate() {
+    let bounded = LocalCapabilityDescriptor::bounded();
+    let unified = LocalCapabilityDescriptor::unified();
+    let sdk = LocalCapabilityDescriptor::sdk_actual();
+    assert_eq!(bounded.operations.len(), 21);
+    assert_eq!(unified.operations.len(), 40);
+    assert_eq!(sdk.operations.len(), 11);
+    assert_eq!(unified.interface_features.len(), 7);
+    assert!(bounded.interface_features.is_empty());
+    assert!(sdk.interface_features.is_empty());
+    assert!(bounded.operations.is_subset(&unified.operations));
+    assert!(!sdk.operations.contains("get_all"));
+    for descriptor in [bounded, unified, sdk] {
+        assert!(!descriptor.production_enabled);
+    }
+}
 
 #[test]
 fn capability_descriptor_matches_provisional_contract_and_bounds() {

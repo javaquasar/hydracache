@@ -30,6 +30,8 @@ pub mod value_plane_resources_075;
 pub mod value_plane_security_075;
 pub mod value_plane_service_075;
 pub mod value_plane_service_async_075;
+pub mod value_plane_service_cluster_075;
+pub mod value_plane_service_registry_075;
 pub mod value_plane_stream_075;
 pub mod value_plane_subscriptions_075;
 pub mod value_plane_surface_075;

@@ -319,4 +319,46 @@ final class UnifiedIMapServiceTest {
     var absent = service.execute(c("try_remove", 3));
     assertEquals("applied", absent.kind()); assertFalse(absent.flag()); assertTrue(absent.version().isEmpty());
   }
+
+  @Test
+  void bulkRemovalPreflightsEveryReturnedOldValueBeforeDeletingOrRetainingAReceipt() {
+    var service = new UnifiedIMapService(new BoundedIMapApi.Bounds(8, 8, 8, 8, 8, 40, 8), 1);
+    var listener = service.registerListener(1, UnifiedIMapService.ListenerOptions.metadata(8));
+    service.execute(c("set", 1).value(b("01020304")));
+    service.execute(c("set", 2).key(b("62")).value(b("05060708")));
+    listener.drain();
+    var before = service.diagnosticSnapshot(0); var owned = service.resourceUsage();
+    var removal = c("remove_all_detailed", 3).keys(List.of(b("61"), b("62")));
+    // Two 18-byte item headers plus both four-byte previous values exceed the 40-byte response.
+    assertEquals("response_too_large", assertThrows(IMapDomainException.class, () -> service.execute(removal)).kind());
+    assertEquals(before, service.diagnosticSnapshot(0)); assertEquals(owned, service.resourceUsage());
+    assertTrue(listener.drain().isEmpty()); assertEquals("unknown", service.queryOperationOutcome(id(3)).kind());
+    service.execute(c("set", 4).value(b("0102")));
+    service.execute(c("set", 5).key(b("62")).value(b("0506")));
+    listener.drain();
+    var accepted = service.execute(removal);
+    assertEquals(List.of(b("0102"), b("0506")), accepted.items().stream().map(item -> item.value().orElseThrow()).toList());
+    assertEquals("completed", service.queryOperationOutcome(id(3)).kind());
+    assertTrue(service.diagnosticSnapshot(0).isEmpty()); assertEquals(2, listener.drain().size());
+    listener.close();
+  }
+
+  @Test
+  void duplicateExplicitKeysFailBeforeBulkReadOrRemovalChangesAnyOwner() {
+    var service = new UnifiedIMapService(BOUNDS, 1);
+    var listener = service.registerListener(1, UnifiedIMapService.ListenerOptions.metadata(64));
+    service.execute(c("set", 1).value(b("31")).ttl(TtlDirective.expireAfter(5)));
+    service.execute(c("set", 2).key(b("62")).value(b("32")));
+    listener.drain(); var before = service.diagnosticSnapshot(0); var owned = service.resourceUsage();
+    for (var command : List.of(c("get_all", 3), c("remove_all_detailed", 4))) {
+      command.keys(List.of(b("61"), b("61"))).now(1);
+      assertEquals("invalid_argument", assertThrows(IMapDomainException.class, () -> service.execute(command)).kind());
+      assertEquals(before, service.diagnosticSnapshot(0)); assertEquals(owned, service.resourceUsage());
+      assertEquals("unknown", service.queryOperationOutcome(command.identity.orElseThrow()).kind());
+      assertTrue(listener.drain().isEmpty());
+    }
+    assertEquals(0, service.expireStep(0, 1).expired());
+    assertEquals(2, service.execute(c("get_all", 5).keys(List.of(b("61"), b("62")))).items().size());
+    listener.close();
+  }
 }

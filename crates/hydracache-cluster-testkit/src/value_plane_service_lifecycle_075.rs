@@ -90,18 +90,21 @@ impl ListenerSnapshot {
 }
 
 #[derive(Debug)]
-struct ByteLease {
-    service: Weak<Mutex<ServiceState>>,
-    bytes: usize,
+pub(super) struct ByteLease {
+    pub(super) service: Weak<Mutex<ServiceState>>,
+    pub(super) bytes: usize,
+    pub(super) active: bool,
 }
 impl ByteLease {
-    fn release(&mut self) {
-        if self.bytes != 0 {
+    pub(super) fn release(&mut self) {
+        if self.active {
             if let Some(service) = self.service.upgrade() {
                 let mut state = service.lock().expect("local IMap state poisoned");
                 state.resync_bytes = state.resync_bytes.saturating_sub(self.bytes);
+                state.resync_leases = state.resync_leases.saturating_sub(1);
             }
             self.bytes = 0;
+            self.active = false;
         }
     }
 }
@@ -210,6 +213,14 @@ pub(super) fn check_identity(
 ) -> Result<(), MapServiceError> {
     if state.map.service_retired(id) {
         Err(MapServiceError::RetiredIdentity)
+    } else {
+        Ok(())
+    }
+}
+
+pub(super) fn require_namespace(state: &ServiceState) -> Result<(), MapServiceError> {
+    if state.namespace_fenced {
+        Err(MapServiceError::NamespaceDeleted)
     } else {
         Ok(())
     }
@@ -384,6 +395,7 @@ impl UnifiedIMapService {
         through: u64,
     ) -> Result<RetirementReceipt, MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
         if state.map.is_destroyed() {
             return Err(CollectionError::MapDestroyed.into());
         }
@@ -402,6 +414,7 @@ impl UnifiedIMapService {
         if state.map.service_pending_before(client, through) {
             return Err(MapServiceError::PendingOperation);
         }
+        cluster_hooks::require_replication_capacity(&state)?;
         if !state.map.service_fences().contains_key(client) {
             if state.map.service_fences().len() >= state.limits.max_clients {
                 return Err(MapServiceError::ResourceBudget("retirement_clients"));
@@ -428,6 +441,7 @@ impl UnifiedIMapService {
         max_bytes: usize,
     ) -> Result<Vec<OperationOutcomeQuery>, MapServiceError> {
         let state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
         if identities.is_empty()
             || identities.len() > state.limits.max_batch
             || max_bytes == 0
@@ -469,6 +483,7 @@ impl UnifiedIMapService {
         max_work: usize,
     ) -> Result<ExpiryProgress, MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
         if max_work == 0 || max_work > state.map.service_bounds().max_scan_items {
             return Err(MapServiceError::InvalidArgument);
         }
@@ -477,6 +492,9 @@ impl UnifiedIMapService {
         }
         if state.map.is_destroyed() {
             return Err(CollectionError::MapDestroyed.into());
+        }
+        if now != state.now || state.map.service_expiry_pending(now) {
+            cluster_hooks::require_replication_capacity(&state)?;
         }
         let expired = state.map.service_expire_step(now, max_work)?;
         let count = expired.len();
@@ -505,6 +523,7 @@ impl UnifiedIMapService {
         max_bytes: usize,
     ) -> Result<ListenerSnapshot, MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
         if state.map.is_destroyed() {
             return Err(CollectionError::MapDestroyed.into());
         }
@@ -560,6 +579,7 @@ impl UnifiedIMapService {
         listener.queue.clear();
         listener.gap = false;
         state.resync_bytes += bytes;
+        state.resync_leases += 1;
         let snapshot = ListenerSnapshot {
             entries,
             watermark: state.watermark,
@@ -568,6 +588,7 @@ impl UnifiedIMapService {
             lease: ByteLease {
                 service: Arc::downgrade(&self.state),
                 bytes,
+                active: true,
             },
         };
         let wakes = std::mem::take(&mut state.pending_wakes);
@@ -580,10 +601,11 @@ impl UnifiedIMapService {
 
     pub fn checkpoint(&self) -> Result<ServiceCheckpoint, MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
         if state.map.service_pending_count() != 0
             || !state.listeners.is_empty()
             || state.active_streams != 0
-            || state.resync_bytes != 0
+            || state.resync_leases != 0
         {
             return Err(MapServiceError::ActiveOwners);
         }
@@ -595,6 +617,7 @@ impl UnifiedIMapService {
         )?;
         budget("resync", state.limits.resync_bytes, bytes)?;
         state.resync_bytes = bytes;
+        state.resync_leases += 1;
         Ok(ServiceCheckpoint {
             map: Some(state.map.service_checkpoint_clone()),
             generation: state.namespace_generation,
@@ -604,6 +627,7 @@ impl UnifiedIMapService {
             lease: ByteLease {
                 service: Arc::downgrade(&self.state),
                 bytes,
+                active: true,
             },
         })
     }
@@ -666,6 +690,7 @@ fn bulk_version(
     deadline: u64,
     lose_response: bool,
 ) -> Result<ServiceResult, MapServiceError> {
+    require_namespace(state)?;
     state.requests = state.requests.saturating_add(1);
     if entries.is_empty()
         || entries.len() > state.limits.max_batch
@@ -728,6 +753,7 @@ fn bulk_version(
     if now >= deadline {
         return Ok(ServiceResult::new("not_applied"));
     }
+    cluster_hooks::require_replication_capacity(state)?;
     if state.map.is_destroyed() {
         return Err(CollectionError::MapDestroyed.into());
     }

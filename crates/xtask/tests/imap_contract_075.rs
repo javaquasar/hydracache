@@ -689,3 +689,47 @@ fn lifecycle_contract_requires_both_implementations_and_unique_proofs() {
         );
     }
 }
+
+#[test]
+fn release_preparation_canaries_cannot_promote_models_or_weaken_integrated_owners() {
+    for (field, value) in [
+        (
+            "cluster_value_owner",
+            serde_json::json!("second_reference_value_plane"),
+        ),
+        (
+            "replication",
+            serde_json::json!("rerun_conditional_on_backup"),
+        ),
+        ("coordinator", serde_json::json!("unbounded_side_map")),
+        ("map_wide", serde_json::json!("global_atomic_clear")),
+        (
+            "transfer",
+            serde_json::json!("fresh_instance_drops_receipts"),
+        ),
+        ("registry", serde_json::json!("trust_client_tenant")),
+        (
+            "capabilities",
+            serde_json::json!("planned_equals_implemented"),
+        ),
+        ("ci", serde_json::json!("accept_partial_matrix")),
+        ("migration", serde_json::json!("lossless_online_cdc")),
+        ("comparison", serde_json::json!("ignore_backup_mismatch")),
+        (
+            "admission",
+            serde_json::json!("foundation_receipts_authorize_ship"),
+        ),
+        ("test_ids", serde_json::json!([])),
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |contract| {
+            contract["api_extensions"]["release_preparation"][field] = value;
+        });
+        assert!(
+            problems(&temp)
+                .iter()
+                .any(|problem| problem.starts_with("IMap release preparation")),
+            "{field}"
+        );
+    }
+}

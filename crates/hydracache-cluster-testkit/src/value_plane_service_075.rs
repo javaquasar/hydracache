@@ -19,6 +19,9 @@ use crate::value_plane_stream_075::{BatchPoll, BoundedStreamSource};
 #[path = "value_plane_service_lifecycle_075.rs"]
 mod lifecycle;
 pub use lifecycle::*;
+#[path = "value_plane_service_cluster_hooks_075.rs"]
+mod cluster_hooks;
+pub use cluster_hooks::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ServiceTtl {
@@ -197,6 +200,7 @@ pub enum MapServiceError {
     ExpiryBacklog,
     ActiveOwners,
     ResourceBudget(&'static str),
+    NamespaceDeleted,
     Model(CollectionError),
 }
 
@@ -213,6 +217,7 @@ impl MapServiceError {
             Self::ExpiryBacklog => "expiry_backlog",
             Self::ActiveOwners => "active_owners",
             Self::ResourceBudget(_) => "resource_budget_exhausted",
+            Self::NamespaceDeleted => "namespace_deleted",
             Self::Model(error) => match error {
                 CollectionError::InvalidBound(_)
                 | CollectionError::InvalidExpiry
@@ -340,6 +345,10 @@ struct ServiceState {
     active_cursors: usize,
     limits: ServiceLimits,
     resync_bytes: usize,
+    resync_leases: usize,
+    namespace_fenced: bool,
+    replica_sequence: u64,
+    replica_digest: Option<[u8; 32]>,
 }
 
 #[derive(Clone)]
@@ -431,6 +440,10 @@ impl UnifiedIMapService {
                 active_cursors: 0,
                 limits,
                 resync_bytes: 0,
+                resync_leases: 0,
+                namespace_fenced: false,
+                replica_sequence: 0,
+                replica_digest: None,
             })),
         };
         lifecycle::check_usage(&service.state.lock().expect("local IMap state poisoned"))?;
@@ -459,9 +472,11 @@ impl UnifiedIMapService {
         command: &ServiceCommand,
     ) -> Result<(), MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
+        lifecycle::require_namespace(&state)?;
         if !mutating(&command.operation) {
             return Err(MapServiceError::InvalidArgument);
         }
+        cluster_hooks::require_replication_capacity(&state)?;
         if command
             .identity
             .as_ref()
@@ -487,6 +502,7 @@ impl UnifiedIMapService {
             .as_ref()
             .ok_or(MapServiceError::InvalidArgument)?;
         let mut state = self.state.lock().expect("local IMap state poisoned");
+        lifecycle::require_namespace(&state)?;
         lifecycle::check_identity(&state, id)?;
         let original_reservation = state.map.service_pending_result_bytes(id);
         match state
@@ -494,6 +510,7 @@ impl UnifiedIMapService {
             .service_lookup(id, Some(command_digest(&command)))?
         {
             ServiceRetainedOutcome::Pending => {
+                cluster_hooks::require_replication_capacity(&state)?;
                 validate(&state, &command)?;
                 if !command.cancelled && command.now < command.deadline {
                     lifecycle::preflight_command(&state, &command, id)?;
@@ -531,6 +548,9 @@ impl UnifiedIMapService {
             ServiceRetainedOutcome::Pending
         );
         if pending {
+            if !state.namespace_fenced {
+                cluster_hooks::require_replication_capacity(&state)?;
+            }
             state.map.service_abort(identity);
             state.cancellations = state.cancellations.saturating_add(1);
         }
@@ -539,6 +559,7 @@ impl UnifiedIMapService {
 
     pub fn snapshot(&self, now: u64) -> Result<Vec<ServiceEntry>, MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
+        lifecycle::require_namespace(&state)?;
         advance(&mut state, now)?;
         let snapshot = state
             .map
@@ -566,6 +587,7 @@ impl UnifiedIMapService {
     /// Observation only: does not advance the maintenance cursor or publish expiry events.
     pub fn diagnostic_snapshot(&self, now: u64) -> Result<Vec<ServiceEntry>, MapServiceError> {
         let state = self.state.lock().expect("local IMap state poisoned");
+        lifecycle::require_namespace(&state)?;
         if now < state.now {
             return Err(MapServiceError::ClockRegressed);
         }
@@ -587,6 +609,7 @@ impl UnifiedIMapService {
         identity: &MutationIdentity,
     ) -> Result<OperationOutcomeQuery, MapServiceError> {
         let state = self.state.lock().expect("local IMap state poisoned");
+        lifecycle::require_namespace(&state)?;
         Ok(match state.map.service_lookup(identity, None)? {
             ServiceRetainedOutcome::Unknown => OperationOutcomeQuery::Unknown,
             ServiceRetainedOutcome::Pending => OperationOutcomeQuery::Pending,
@@ -602,6 +625,7 @@ impl UnifiedIMapService {
         identity: &MutationIdentity,
     ) -> Result<ServiceRecovery, MapServiceError> {
         let state = self.state.lock().expect("local IMap state poisoned");
+        lifecycle::require_namespace(&state)?;
         validate(&state, command)?;
         lifecycle::check_identity(&state, identity)?;
         Ok(
@@ -631,6 +655,7 @@ impl UnifiedIMapService {
 
     fn open_stream(&self, cursor: bool) -> Result<(), MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
+        lifecycle::require_namespace(&state)?;
         check_stream_admission(&state)?;
         state.active_streams += 1;
         if cursor {
@@ -651,6 +676,7 @@ impl UnifiedIMapService {
         options: ServiceListenerOptions,
     ) -> Result<ListenerRegistration, MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
+        lifecycle::require_namespace(&state)?;
         let id = register(&mut state, options, 0)?;
         Ok(ListenerRegistration {
             service: Arc::downgrade(&self.state),
@@ -681,6 +707,7 @@ impl UnifiedIMapService {
 
     pub fn repair_listener(&self, id: u64) -> Result<(), MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
+        lifecycle::require_namespace(&state)?;
         let listener = state
             .listeners
             .get_mut(&id)
@@ -713,6 +740,9 @@ impl UnifiedIMapService {
             return (None, Poll::Ready(Err(MapServiceError::InvalidArgument)));
         }
         let mut state = self.state.lock().expect("local IMap state poisoned");
+        if let Err(error) = lifecycle::require_namespace(&state) {
+            return (None, Poll::Ready(Err(error)));
+        }
         let destroyed = state.map.is_destroyed();
         let max_bytes = lifecycle::stream_reservation(&state);
         let Some(listener) = state.listeners.get_mut(&id) else {
@@ -983,6 +1013,7 @@ fn execute(
     state: &mut ServiceState,
     command: &ServiceCommand,
 ) -> Result<ServiceResult, MapServiceError> {
+    lifecycle::require_namespace(state)?;
     validate(state, command)?;
     if command.operation == "query_operation_outcome" {
         let id = command
@@ -1027,6 +1058,9 @@ fn execute(
         && command.operation != "capability_descriptor"
     {
         return Err(CollectionError::MapDestroyed.into());
+    }
+    if is_mutation {
+        cluster_hooks::require_replication_capacity(state)?;
     }
     let result_bytes = if is_mutation {
         lifecycle::preflight_command(
@@ -1086,6 +1120,9 @@ fn execute(
 fn advance(state: &mut ServiceState, now: u64) -> Result<(), MapServiceError> {
     if now < state.now {
         return Err(MapServiceError::ClockRegressed);
+    }
+    if now != state.now || state.map.service_expiry_pending(now) {
+        cluster_hooks::require_replication_capacity(state)?;
     }
     if !state.map.is_destroyed() {
         for (key, value) in state
@@ -1170,12 +1207,9 @@ fn dispatch(
         }
         "capability_descriptor" => {
             let mut result = ServiceResult::new("capabilities");
-            result.number = serde_json::from_str::<Value>(include_str!(
-                "../../../docs/testing/imap/0.75/operation-contract.json"
-            ))
-            .ok()
-            .and_then(|value| value["operations"].as_array().map(|ops| ops.len() as u64))
-            .ok_or(MapServiceError::InvalidArgument)?;
+            result.number = crate::value_plane_capability_075::LocalCapabilityDescriptor::unified()
+                .operations
+                .len() as u64;
             return Ok(result);
         }
         "local_statistics" => {
@@ -1527,7 +1561,10 @@ fn bulk(
     for key in &keys {
         let value = state.map.service_entry(key, command.now);
         response_bytes = response_bytes.saturating_add(17).saturating_add(key.len());
-        if command.operation == "get_all" {
+        if matches!(
+            command.operation.as_str(),
+            "get_all" | "remove_all_detailed"
+        ) {
             response_bytes =
                 response_bytes.saturating_add(value.as_ref().map_or(0, |entry| entry.value.len()));
         }
@@ -1731,6 +1768,7 @@ fn register(
 }
 
 fn drain_listener(state: &mut ServiceState, id: u64) -> Result<Vec<ServiceEvent>, MapServiceError> {
+    lifecycle::require_namespace(state)?;
     let listener = state
         .listeners
         .get_mut(&id)
@@ -1924,6 +1962,13 @@ impl BoundedStreamSource for ServicePageSource {
         if self.closed {
             return Ok(());
         }
+        lifecycle::require_namespace(
+            &self
+                .service
+                .state
+                .lock()
+                .expect("local IMap state poisoned"),
+        )?;
         let current = self.service.revision();
         if current != self.revision {
             Err(CollectionError::CursorStale {
@@ -1965,6 +2010,7 @@ impl ServiceListenerSource {
         options: ServiceListenerOptions,
     ) -> Result<Self, MapServiceError> {
         let mut state = service.state.lock().expect("local IMap state poisoned");
+        lifecycle::require_namespace(&state)?;
         check_stream_admission(&state)?;
         let id = register(&mut state, options, 0)?;
         let delivery_epoch = state.listeners[&id].delivery_epoch;
@@ -2025,6 +2071,7 @@ impl BoundedStreamSource for ServiceListenerSource {
                     .state
                     .lock()
                     .expect("local IMap state poisoned");
+                lifecycle::require_namespace(&state)?;
                 if let Some(listener) = state.listeners.get(&registration.id()) {
                     if self.delivery_epoch != listener.delivery_epoch {
                         self.delivery_epoch = listener.delivery_epoch;

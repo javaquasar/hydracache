@@ -8,18 +8,48 @@ import java.util.Set;
 public record IMapCapabilityDescriptor(
     Set<String> plannedOperations, Set<String> operations,
     Map<String, Integer> bounds, Set<String> divergences,
-    Set<String> unsupportedOperations) {
+    Set<String> unsupportedOperations, String scope, Set<String> interfaceFeatures) {
+  public IMapCapabilityDescriptor(Set<String> plannedOperations, Set<String> operations,
+      Map<String, Integer> bounds, Set<String> divergences, Set<String> unsupportedOperations) {
+    this(plannedOperations, operations, bounds, divergences, unsupportedOperations, "bounded_reference", Set.of());
+  }
   public IMapCapabilityDescriptor {
     plannedOperations = Set.copyOf(plannedOperations);
     operations = Set.copyOf(operations);
     bounds = Map.copyOf(bounds);
     divergences = Set.copyOf(divergences);
     unsupportedOperations = Set.copyOf(unsupportedOperations);
+    interfaceFeatures = Set.copyOf(interfaceFeatures);
+    if (!Set.of("bounded_reference", "unified_reference", "sdk_existing_narrow").contains(scope)) {
+      throw new IllegalArgumentException("unknown capability scope");
+    }
     if (operations.isEmpty() || !plannedOperations.containsAll(operations)
         || bounds.values().stream().anyMatch(bound -> bound <= 0)
         || operations.stream().anyMatch(unsupportedOperations::contains)) {
       throw new IllegalArgumentException("invalid capability descriptor");
     }
+  }
+
+  public static IMapCapabilityDescriptor unified(BoundedIMapApi.Bounds bounds) {
+    var local = local(bounds);
+    return new IMapCapabilityDescriptor(local.plannedOperations(), local.plannedOperations(), local.bounds(),
+        local.divergences(), local.unsupportedOperations(), "unified_reference", lifecycleFeatures());
+  }
+
+  /** Existing SDK tokens only; productionEnabled concerns the expanded 0.75 capability. */
+  public static IMapCapabilityDescriptor sdkActual() {
+    Set<String> operations = Set.of("IMap.get", "IMap.put", "IMap.replace", "IMap.remove(key,value)",
+        "IMap.addEntryListener", "IMap.getLock", "FencedLock.tryLock", "FencedLock.unlock",
+        "FencedLock.renew", "FencedLock.isLocked", "FencedLock.getFence");
+    return new IMapCapabilityDescriptor(operations, operations, Map.of(), Set.of("existing_sdk_surface_only", "no_expanded_075_claim"),
+        Set.of("IMap.executeOnKey", "IMap.addInterceptor", "HazelcastInstance.getExecutorService", "HazelcastInstance.getSql",
+            "ReplicatedMap", "Ringbuffer", "ReliableTopic", "PNCounter", "CPSubsystem.semaphore", "CPSubsystem.atomicLong"),
+        "sdk_existing_narrow", Set.of());
+  }
+
+  public static Set<String> lifecycleFeatures() {
+    return Set.of("safe_outcome_retirement", "aggregate_payload_budgets", "atomic_listener_resynchronization",
+        "version_conditional_bulk_api", "bounded_batch_outcome_query", "incremental_expiry_cleanup", "runtime_service_checkpoint_restore");
   }
 
   public static IMapCapabilityDescriptor local(BoundedIMapApi.Bounds bounds) {
