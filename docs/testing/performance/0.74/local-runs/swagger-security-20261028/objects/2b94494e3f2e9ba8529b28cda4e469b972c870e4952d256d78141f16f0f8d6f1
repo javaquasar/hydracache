@@ -1,0 +1,13 @@
+{
+  "head": "66f05b21f3ee58e0eb414ae8df5d5910278bba68",
+  "inputs": {
+    "Cargo.lock": "50ec8e7e20a8caebeefdbdde7bbafb36b96257daf1204dcd6dfa8f6c5b7c925a",
+    "Cargo.toml": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8",
+    "crates/hydracache-sandbox/src/lib.rs": "f63acfb189c338a01891841006b314dc405c1f7454d9e3b78ba01cad0d69b270",
+    "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "metadata_only": true,
+  "msrv": "1.88",
+  "source_sha256": "bb87c4ac3debf8b75f8255221c694c570f13e41ea0f449c32541766ad7193e01"
+}

@@ -1,0 +1,14 @@
+test_corrupt_payload_crc_refuses (test_review.Assets.test_corrupt_payload_crc_refuses) ... ok
+test_duplicate_and_case_alias_refuse (test_review.Assets.test_duplicate_and_case_alias_refuse) ... ok
+test_file_parent_refuses (test_review.Assets.test_file_parent_refuses) ... ok
+test_missing_required_assets_and_size_limits_refuse (test_review.Assets.test_missing_required_assets_and_size_limits_refuse) ... ok
+test_noncanonical_cross_platform_paths_refuse (test_review.Assets.test_noncanonical_cross_platform_paths_refuse) ... ok
+test_privileged_bits_refuse (test_review.Assets.test_privileged_bits_refuse) ... ok
+test_regular_archive_is_inspected_without_extraction (test_review.Assets.test_regular_archive_is_inspected_without_extraction) ... ok
+test_symlinks_and_special_files_refuse (test_review.Assets.test_symlinks_and_special_files_refuse) ... ok
+test_unknown_crate_refuses_before_archive_parsing (test_review.Assets.test_unknown_crate_refuses_before_archive_parsing) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.006s
+
+OK

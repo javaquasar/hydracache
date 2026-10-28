@@ -1,0 +1,93 @@
+{
+  "archived_code_executed": false,
+  "doc_check_pass": true,
+  "gate_replayed": false,
+  "members": {
+    "doc-check/before-Cargo.lock": {
+      "bytes": 175585,
+      "sha256": "00efd4a2cafeb5e82d757cc4855e440c627211c1544c22dcbf8c875f85337cd8"
+    },
+    "doc-check/before-Cargo.toml": {
+      "bytes": 7160,
+      "sha256": "a494481b85fa84fd07e19a447c6d5fe7a49aa12557e0c0befc86fdea390d3bf2"
+    },
+    "doc-check/before-deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "doc-check/document-inputs.json": {
+      "bytes": 652,
+      "sha256": "73bc4a4ab1af66beccd6ca6cfbce75e592232fadb0bb83dab50d07580de59b47"
+    },
+    "doc-check/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "doc-check/intent.json": {
+      "bytes": 383408,
+      "sha256": "323719f9cab2022f51ff95685b722f6d3d8ffcf107a0fd1dbf8c410720e81421"
+    },
+    "doc-check/launcher.py": {
+      "bytes": 7200,
+      "sha256": "b07001eb3940ac0b211d26e46afccf714fcca58eb8297d32e4eccf1462f52fdd"
+    },
+    "doc-check/result.json": {
+      "bytes": 383075,
+      "sha256": "bd258b83bca0bdd338237652f0dd1eafa5d28e62f1bdbe62a62bc2771b1f2c55"
+    },
+    "doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "document/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1489442,
+      "sha256": "d557261a668885f98deb1c6174fe06df0ff1c6a1f1e7e38bc67153fd74821105"
+    },
+    "document/docs/testing/performance/0.74/README.md": {
+      "bytes": 494619,
+      "sha256": "51ae825c284ba56c09c737025721f658e0ca07c3e7d3d6aef980d83842c19ed5"
+    },
+    "document/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 29382,
+      "sha256": "86ee302523fc0239fe445119a670d982c9054967089f06325b62dc9df2a99ea7"
+    },
+    "document/docs/testing/performance/0.74/swagger-security-result-20261028.md": {
+      "bytes": 11020,
+      "sha256": "93c9459e3cb3b13d7e66222a0d8c42caeae29e7063a2bd72d35e8df69f1f90b0"
+    },
+    "producer/retain-swagger-verification-20261028.py": {
+      "bytes": 2231,
+      "sha256": "9fb29f2ed8d160a454cd76b1d48b86073af77e1c6d01092fb7793f078cb920ac"
+    },
+    "producer/verify-swagger-packet-20261028.py": {
+      "bytes": 6094,
+      "sha256": "3b7440eb7badacb2dbf10516b064a58eebbcb4313a18de7405a483745caffd7e"
+    },
+    "verification/intent.json": {
+      "bytes": 243,
+      "sha256": "705fc07c58ca51ea19eba8cc2528552b31bc72d43e7d00c3b8c80d62f8d96f87"
+    },
+    "verification/result.json": {
+      "bytes": 451,
+      "sha256": "c023397e5e1209f586eb653305b9a816bc782ab2850c8bdb1792dd09b9e5ca13"
+    },
+    "verification/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "verification/stdout.log": {
+      "bytes": 400,
+      "sha256": "b79e90fde271f29904edf78c10a1dcd38c462c97b9d3a7a9344377d5fc0644fe"
+    }
+  },
+  "parent_index_sha256": "d645f31d20591bbd57a4e31744f77270165a0da9765658d240bd5f11f51855a0",
+  "parent_members_verified": 396,
+  "parent_objects_verified": 199,
+  "release_admitted": false,
+  "schema": "hc074-swagger-security-verification-v1",
+  "workspace_pass": false
+}

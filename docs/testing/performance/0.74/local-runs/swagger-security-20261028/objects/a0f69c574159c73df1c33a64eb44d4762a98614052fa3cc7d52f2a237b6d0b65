@@ -1,0 +1,39 @@
+"""Generate exact inverse edits only after the independent graph/HTTP reviews."""
+from pathlib import Path
+import difflib,hashlib,json
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/swagger-security-20261028'
+OUT=BASE/'input-proposal-normalized'
+OUT.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+graph=json.loads((BASE/'graph-review-corrected/result.json').read_bytes())
+http=json.loads((BASE/'http-comparison/result.json').read_bytes())
+assert graph['all_new_package_msrv_at_most_188'] and graph['archive_checksums_match_primary_metadata']
+assert http['complete_openapi_bytes_equal']
+artifacts={}
+for name,newsha,oldsha in (
+ ('Cargo.lock','00efd4a2cafeb5e82d757cc4855e440c627211c1544c22dcbf8c875f85337cd8','50ec8e7e20a8caebeefdbdde7bbafb36b96257daf1204dcd6dfa8f6c5b7c925a'),
+ ('Cargo.toml','fd57accedc5029f0024c45e72f3c3ef66501d670eaa8776cf293553ff8d5a1ad','7877b4051e4952e7a809896cf46c03a80c6ae3bae3fd13ed95ed0b47d377f472')):
+ old=(BASE/'baseline'/('before-'+name)).read_bytes().replace(b'\r\n',b'\n')
+ new=(ROOT/name).read_bytes().replace(b'\r\n',b'\n')
+ assert sha(old)==oldsha and sha(new)==newsha
+ a,b=old.splitlines(keepends=True),new.splitlines(keepends=True)
+ offsets=[0]
+ for line in b:offsets.append(offsets[-1]+len(line))
+ patches=[]
+ for kind,i,j,k,l in difflib.SequenceMatcher(a=a,b=b,autojunk=False).get_opcodes():
+  if kind=='equal':continue
+  patches.append(dict(offset=offsets[k],current=b''.join(b[k:l]).decode(),previous=b''.join(a[i:j]).decode()))
+ reconstructed=new
+ for patch in reversed(patches):
+  start=patch['offset'];present=patch['current'].encode();end=start+len(present)
+  assert reconstructed[start:end]==present
+  reconstructed=reconstructed[:start]+patch['previous'].encode()+reconstructed[end:]
+ assert reconstructed==old
+ artifacts[name]=dict(current_sha256=newsha,previous_sha256=oldsha,patches=patches)
+result=dict(schema='hc074-reviewed-swagger-inputs-v1',previous_revision='58a994a4c79fd5e8dd2fa622bcd57bbf640ff2df',
+ graph_review_sha256=sha((BASE/'graph-review-corrected/result.json').read_bytes()),
+ openapi_sha256=http['document_sha256'],artifacts=artifacts)
+with (OUT/'rules.json').open('x',encoding='utf-8',newline='\n') as stream:
+ json.dump(result,stream,indent=2,sort_keys=True);stream.write('\n')
+print(json.dumps(dict(rules_sha256=sha((OUT/'rules.json').read_bytes()),patches={k:len(v['patches']) for k,v in artifacts.items()})))

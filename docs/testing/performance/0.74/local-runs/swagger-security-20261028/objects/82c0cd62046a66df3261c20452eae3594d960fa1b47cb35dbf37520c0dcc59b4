@@ -1,0 +1,14 @@
+    Updating crates.io index
+      Adding base64 v0.23.1
+    Removing derive_arbitrary v1.4.2
+      Adding nix v0.31.3
+    Removing rust-embed v8.11.0
+    Removing rust-embed-impl v8.11.0
+    Removing rust-embed-utils v8.11.0
+      Adding typed-path v0.13.0
+      Adding utoipa v6.0.0
+      Adding utoipa-gen v6.0.1
+    Updating utoipa-swagger-ui v9.0.2 -> v10.0.2
+      Adding utoipa-swagger-ui-vendored v0.2.0
+    Updating zip v3.0.0 -> v9.1.3
+note: pass `--verbose` to see 243 unchanged dependencies behind latest

@@ -142,9 +142,40 @@ The first original workspace command on clean source
 refuses seven remaining advisories. All three ZIP findings disappear; the nine
 following stages remain unstarted. Its frame postflight and owned retirement
 pass. This is the pre-Arc-preservation source, not an interchangeable suffix for
-the successor. The next operation is the original command on the committed Arc
-successor with the same stages, limits and floors; its exact outcome will be
-appended after execution. Focused Windows/MSRV compatibility does
-not establish a full package, Linux/browser gate, server rehearsal or production
-admission. D-Bus/MSRV, YAML and chitchat/Zstd security blockers remain separate;
-no other dependency migration or performance candidate is mixed into this step.
+the successor.
+
+The final original command runs once on the distinct committed Arc successor
+`11c17e7cfc68594e380d87028d43d1a7942a7dcb`. It independently completes all
+eleven preceding stages, then exits naturally with dependency policy code 1:
+the same **seven** IDs remain (three vulnerabilities and four unmaintained
+findings). ZIP 0367/0368/0369 are absent. Licenses, sources and bans pass.
+Nine subsequent stages stay unstarted, including workspace/xtask tests, rustdoc,
+performance contract and management console. No previous suffix or test count
+fills those stages. The original Job retires, no cleanup error or timeout occurs,
+and complete source/ref/configuration/toolchain/environment frames match.
+
+The original 4800-second envelope, 16 GiB initial/4 GiB running floors,
+five-second capacity cadence/retirement and fixed unfiltered command remain.
+Postflight observes clean advisory DB
+`99670cfc0bc574433034b75876a4b791ccaa2efb`, the same revision as the preceding
+sys report; this is an observation, not a retroactive preflight or immutable
+per-lookup pin. Compiler/version/binary probes independently confirm installed
+Rust/Cargo 1.88.0 and 1.94.0 without auto-install or build replay.
+
+The [retained packet](local-runs/swagger-security-20261028/index.json) has 396
+named references/199 objects, including both complete workspace streams/ledgers,
+all baseline/refusal/corrected/cached commands, four identical full HTTP documents,
+new crate archives and primary metadata, asset inventory, inverse rules and source.
+Index SHA-256:
+`d645f31d20591bbd57a4e31744f77270165a0da9765658d240bd5f11f51855a0`.
+Independent verification checks every object, Git helper/product provenance,
+requests, limits, ledgers, seven actual IDs, all new archive checksums and the
+embedded ZIP/CRCs without importing archived project code or repeating Cargo.
+
+Focused Windows/MSRV compatibility does not establish a complete package,
+Linux/browser gate, server rehearsal or production admission. Existing Rust
+historical-input adapters still need exact successors for the final dependency
+graph before their old package contracts can be reused; no such old package
+receipt is claimed here. D-Bus/MSRV, YAML and chitchat/Zstd security blockers
+remain separate. No other dependency migration or performance candidate is mixed
+into this step. Release and server admission remain **false**.

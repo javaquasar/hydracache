@@ -1,0 +1,87 @@
+[package]
+name = "utoipa-gen"
+description = "Code generation implementation for utoipa"
+version = "6.0.1"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+keywords = ["openapi", "codegen", "proc-macro", "documentation", "compile-time"]
+repository = "https://github.com/juhaku/utoipa"
+authors = ["Juha Kukkonen <juha7kukkonen@gmail.com>"]
+rust-version.workspace = true
+include = [
+    "README.md",
+    "src/**/*.rs",
+    "LICENSE-APACHE",
+    "LICENSE-MIT",
+    "CHANGELOG.md",
+    "Cargo.toml",
+]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+utoipa-config = { version = "0.1", path = "../utoipa-config", optional = true }
+once_cell = { version = "1.21.4", optional = true }
+proc-macro2 = "1.0"
+syn = { version = "3", features = ["full", "extra-traits"] }
+quote = "1.0"
+regex = { version = "1.12", optional = true }
+uuid = { version = "1", features = ["serde"], optional = true }
+ulid = { version = "1", optional = true, default-features = false }
+url = { version = "2", optional = true }
+
+[dev-dependencies]
+utoipa = { path = "../utoipa", features = [
+    "debug",
+    "uuid",
+    "macros",
+], default-features = false }
+serde_json = "1"
+serde = "1"
+actix-web = { version = "4", features = ["macros"], default-features = false }
+axum = { version = "0.8.4", default-features = false, features = [
+    "json",
+    "query",
+] }
+pastey = "0.2"
+rocket = { version = "0.5", features = ["json"] }
+smallvec = { version = "1.15", features = ["serde"] }
+rust_decimal = { version = "1", default-features = false }
+bigdecimal = { version = "0.4", default-features = false }
+chrono = { version = "0.4", features = ["serde"] }
+time = { workspace = true, features = ["serde-human-readable"] }
+jiff = { version = "0.2", features = ["serde"] }
+serde_with = "3.14"
+insta = { version = "1.47", features = ["json"] }
+
+[features]
+# See README.md for list and explanations of features
+debug = ["syn/extra-traits"]
+actix_extras = ["regex", "syn/extra-traits"]
+chrono = []
+yaml = ["utoipa/yaml"]
+decimal = []
+decimal_float = []
+bigdecimal = []
+bigdecimal_float = []
+rocket_extras = ["regex", "syn/extra-traits"]
+non_strict_integers = []
+uuid = ["dep:uuid"]
+ulid = ["dep:ulid"]
+url = ["dep:url"]
+axum_extras = ["regex", "syn/extra-traits"]
+time = []
+jiff_0_2 = []
+smallvec = []
+repr = []
+indexmap = []
+rc_schema = []
+config = ["dep:utoipa-config", "dep:once_cell"]
+
+# EXPERIEMENTAL! use with cauntion
+auto_into_responses = []
+
+[lints]
+workspace = true

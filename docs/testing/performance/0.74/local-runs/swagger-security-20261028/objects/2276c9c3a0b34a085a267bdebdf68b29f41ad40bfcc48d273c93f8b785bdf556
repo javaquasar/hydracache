@@ -1,0 +1,5 @@
+{
+  "first_graph_refusal_retained": true,
+  "gate_dispatched": false,
+  "reason": "unrelated resolver edge drift; original candidate not accepted"
+}

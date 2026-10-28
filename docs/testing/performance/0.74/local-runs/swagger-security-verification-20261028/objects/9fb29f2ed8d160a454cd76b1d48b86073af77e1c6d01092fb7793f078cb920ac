@@ -1,0 +1,41 @@
+"""Retain independent packet checks and final document validation separately."""
+from pathlib import Path
+import hashlib,json
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/swagger-security-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/swagger-security-verification-20261028'
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+members={}
+def add(name,path):
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:
+  with dest.open('xb') as stream:stream.write(raw)
+ assert name not in members
+ members[name]=dict(sha256=digest,bytes=len(raw))
+verify=ROOT/'target/swagger-verification-20261028'
+assert json.loads((verify/'result.json').read_bytes())['verified']
+for path in sorted(verify.iterdir()):
+ if path.is_file():add('verification/'+path.name,path)
+for name in ('verify-swagger-packet-20261028.py','retain-swagger-verification-20261028.py'):
+ add('producer/'+name,ROOT/'target'/name)
+doc=BASE/'doc-check-final'
+result=json.loads((doc/'result.json').read_bytes())
+assert result['exit']==0 and result['source_unchanged'] and result['head_unchanged']
+for path in sorted(doc.iterdir()):
+ if path.is_file():add('doc-check/'+path.name,path)
+inputs=json.loads((doc/'document-inputs.json').read_bytes())
+for name,digest in inputs['documents'].items():
+ assert sha((ROOT/name).read_bytes())==digest
+ add('document/'+name,ROOT/name)
+index=dict(schema='hc074-swagger-security-verification-v1',members=members,
+ parent_index_sha256='d645f31d20591bbd57a4e31744f77270165a0da9765658d240bd5f11f51855a0',
+ parent_members_verified=396,parent_objects_verified=199,doc_check_pass=True,
+ archived_code_executed=False,gate_replayed=False,workspace_pass=False,release_admitted=False)
+with (OUT/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+ json.dump(index,stream,indent=2,sort_keys=True);stream.write('\n')
+with (OUT/'.gitattributes').open('x',encoding='utf-8',newline='\n') as stream:
+ stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+print(json.dumps(dict(members=len(members),index_sha256=sha((OUT/'index.json').read_bytes()))))

@@ -21766,3 +21766,37 @@ observation is neither a policy exemption nor proof that another code path is
 safe. These are explicit migration/backport boundaries, not throughput hypotheses
 or permission to lower the release bar. The complete review, original refusals,
 candidate code and raw workspace ledger remain recoverable from the repository.
+
+The [separate Swagger/ZIP migration](../testing/performance/0.74/swagger-security-result-20261028.md)
+then closes three dependency findings without increasing Rust 1.88. A direct
+Swagger 10 update would also bring utoipa 6 into application schema generation.
+Instead, the sandbox keeps the old utoipa 5 document type and exposes the exact
+same document to the new UI through its configured JSON URL. Full response bytes
+match the baseline, and HTTP tests preserve public documentation, guarded sandbox
+data, local assets and refusal behavior. Final review also retains the previous
+Arc ownership: the UI document is generated once per application rather than
+recomputed for every documentation request. That is preservation of the old
+source behavior, not a measured allocation or throughput win. The final source
+has separate passing check/Clippy/MSRV and four-case HTTP receipts.
+
+The asset trust boundary is explicit. The build uses one checksum-verified
+registry-vendored archive rather than the upstream downloader; an independent
+reader inspects all 711 entries and CRCs without extracting files. Nine mutation
+controls cover paths, symlinks, privileged modes, aliases, size limits and corrupt
+payloads. The accepted fixed input does not certify arbitrary untrusted ZIPs or
+a hostile preexisting build directory. Build overrides stay outside this candidate.
+
+The graph review catches a different kind of regression: selecting the minimum
+patched ZIP version changed unrelated Windows/getrandom dependency edges. HTTP
+tests alone passed that graph. The source audit refused it, the unrelated edges
+were restored, and a distinct corrected candidate passed metadata and semantic
+checks. This demonstrates why a compiling update or a working UI is not the whole
+dependency contract. First metadata and CRLF rule-generation errors also remain
+visible as preparation results; they never become reasons to splice live runs.
+
+The two committed source milestones keep independent ledgers. The final cached
+document source completes eleven workspace stages, then refuses seven remaining
+findings; nine stages are unstarted. Three ZIP IDs disappear, while YAML, D-Bus
+and chitchat/Zstd remain genuine blockers. Complete package/historical-input,
+Linux/browser and release/server gates remain open. All original budgets and
+live checks hold, and no old green package receipt is relabeled for this graph.

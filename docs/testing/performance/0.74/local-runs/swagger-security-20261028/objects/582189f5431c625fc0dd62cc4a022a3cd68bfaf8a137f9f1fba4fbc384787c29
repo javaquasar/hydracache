@@ -1,0 +1,80 @@
+"""Review every graph delta and new archive without executing downloaded code."""
+from pathlib import Path
+import hashlib,json,subprocess,tomllib,urllib.request
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/swagger-security-20261028'
+OUT=BASE/'graph-review'
+OUT.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(OUT/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n')
+protected=('Cargo.toml','Cargo.lock','deny.toml','crates/hydracache-sandbox/src/lib.rs')
+source={n:sha((ROOT/n).read_bytes()) for n in protected}
+write('intent.json',dict(source=source,source_sha256=sha(Path(__file__).read_bytes()),read_only=True,
+ source_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()))
+with (OUT/'stdout.log').open('x',encoding='utf-8') as stdout,(OUT/'stderr.log').open('x',encoding='utf-8') as stderr:
+ try:
+  url='https://index.crates.io/ty/pe/typed-path'
+  with urllib.request.urlopen(url,timeout=40) as response:
+   typed=response.read();headers=dict(response.headers)
+  (OUT/'typed-path.index').write_bytes(typed)
+  def graph(raw):
+   rows=tomllib.loads(raw.decode())['package']
+   result={r['name']+'@'+r['version']:r for r in rows}
+   assert len(result)==len(rows)
+   return result
+  previous=(BASE/'baseline/before-Cargo.lock').read_bytes()
+  current=(ROOT/'Cargo.lock').read_bytes()
+  a,b=graph(previous),graph(current)
+  removed=sorted(a.keys()-b.keys());added=sorted(b.keys()-a.keys())
+  assert removed==['derive_arbitrary@1.4.2','rust-embed-impl@8.11.0','rust-embed-utils@8.11.0',
+                    'rust-embed@8.11.0','utoipa-swagger-ui@9.0.2','zip@3.0.0'],removed
+  assert added==['base64@0.23.1','typed-path@0.12.4','utoipa-gen@6.0.1','utoipa-swagger-ui-vendored@0.2.0',
+                 'utoipa-swagger-ui@10.0.2','utoipa@6.0.0','zip@9.0.0'],added
+  def dependency(identity, inventory):
+   parts=identity.split()
+   matches=[r for r in inventory.values() if r['name']==parts[0] and (len(parts)==1 or r['version']==parts[1])]
+   assert len(matches)==1,(identity,matches)
+   row=matches[0]
+   return (row['name'],row['version'],row.get('source'))
+  changed={}
+  for name in a.keys()&b.keys():
+   left={k:v for k,v in a[name].items() if k!='dependencies'}
+   right={k:v for k,v in b[name].items() if k!='dependencies'}
+   assert left==right,name
+   old={dependency(d,a) for d in a[name].get('dependencies',[])}
+   new={dependency(d,b) for d in b[name].get('dependencies',[])}
+   if old!=new:changed[name]=dict(removed=sorted(old-new),added=sorted(new-old))
+  assert set(changed)=={'arbitrary@1.4.2','hydracache-sandbox@0.73.0'},changed
+  assert changed['arbitrary@1.4.2']['added']==[]
+  assert [r[:2] for r in changed['arbitrary@1.4.2']['removed']]==[('derive_arbitrary','1.4.2')]
+  assert [r[:2] for r in changed['hydracache-sandbox@0.73.0']['removed']]==[('utoipa-swagger-ui','9.0.2')]
+  assert [r[:2] for r in changed['hydracache-sandbox@0.73.0']['added']]==[('utoipa-swagger-ui','10.0.2')]
+  reviewed={}
+  for key in added:
+   row=b[key];name=row['name']
+   if name=='typed-path':index=typed
+   elif name in ('zip','utoipa-swagger-ui'):
+    index=(ROOT/'target/security-review-20261028/catalog-first'/(name+'.index')).read_bytes()
+   else:index=(BASE/'catalog'/(name+'.index')).read_bytes()
+   metadata=next(r for r in map(json.loads,index.splitlines()) if r['vers']==row['version'])
+   assert metadata['cksum']==row['checksum'] and not metadata['yanked']
+   version=tuple(map(int,metadata['rust_version'].split('.')))
+   assert (version+(0,)*(3-len(version))) <= (1,88,0),(key,version)
+   cache=Path('C:/Users/ArturBuzov/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f')/(name+'-'+row['version']+'.crate')
+   assert sha(cache.read_bytes())==row['checksum'],key
+   folder=Path('C:/Users/ArturBuzov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f')/(name+'-'+row['version'])
+   manifest=tomllib.loads((folder/'Cargo.toml').read_text())
+   assert manifest['package']['name']==name and manifest['package']['version']==row['version']
+   reviewed[key]=dict(checksum=row['checksum'],metadata=metadata,index_sha256=sha(index),
+    cargo_build=manifest['package'].get('build'),manifest_sha256=sha((folder/'Cargo.toml').read_bytes()))
+   (OUT/(name+'-'+row['version']+'.Cargo.toml')).write_bytes((folder/'Cargo.toml').read_bytes())
+  assert source=={n:sha((ROOT/n).read_bytes()) for n in protected}
+  write('result.json',dict(added=added,removed=removed,effective_existing_edge_delta=changed,new_packages=reviewed,
+   source_unchanged=True,all_new_package_msrv_at_most_188=True,archive_checksums_match_primary_metadata=True,
+   typed_metadata=dict(url=url,headers=headers,sha256=sha(typed)),old_lock_sha256=sha(previous),
+   new_lock_sha256=sha(current),old_manifest_sha256=sha((BASE/'baseline/before-Cargo.toml').read_bytes()),
+   new_manifest_sha256=source['Cargo.toml'],source_code_executed=False,release_admitted=False))
+  stdout.write(json.dumps(dict(added=len(added),removed=len(removed),existing_effective_edge_delta=sorted(changed),msrv='1.88')))
+ except BaseException as error:
+  write('refusal.json',dict(type=type(error).__name__,reason=str(error)));raise
+print((OUT/'stdout.log').read_text())

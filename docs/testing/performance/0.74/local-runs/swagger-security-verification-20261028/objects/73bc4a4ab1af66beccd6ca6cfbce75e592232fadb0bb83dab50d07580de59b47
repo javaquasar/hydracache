@@ -1,0 +1,9 @@
+{
+  "documents": {
+    "docs/articles/007-optimization-starts-with-measurement.md": "d557261a668885f98deb1c6174fe06df0ff1c6a1f1e7e38bc67153fd74821105",
+    "docs/testing/performance/0.74/README.md": "51ae825c284ba56c09c737025721f658e0ca07c3e7d3d6aef980d83842c19ed5",
+    "docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": "86ee302523fc0239fe445119a670d982c9054967089f06325b62dc9df2a99ea7",
+    "docs/testing/performance/0.74/swagger-security-result-20261028.md": "93c9459e3cb3b13d7e66222a0d8c42caeae29e7063a2bd72d35e8df69f1f90b0"
+  },
+  "executable_sha256": "90cb196ad3ce29a6f22bde86f3b496b68986f85b11d4be121f735fd32f1ae98d"
+}

@@ -357,6 +357,19 @@ is Rust 1.89; serde_yaml_ng still uses unsafe-libyaml; a supervisor-only Zstd
 bump leaves chitchat's ^0.13 branch. No fork, hidden target exclusion, exception
 or compiler-floor change is introduced to make this gate green.
 
+The subsequent [Swagger/ZIP migration](swagger-security-result-20261028.md)
+closes the three ZIP advisories using the reviewed registry-vendored UI and
+ZIP 9.0.0. It retains the existing utoipa 5 generator, exact full OpenAPI bytes,
+cached typed document and authorization behavior. Windows/MSRV, four HTTP cases,
+nine independent asset controls and 58 source-runner controls pass. An unrelated
+resolver edge change is refused and corrected separately; original outcomes stay
+intact. The final full milestone on
+`11c17e7cfc68594e380d87028d43d1a7942a7dcb` completes eleven stages and
+refuses seven remaining findings with nine stages unstarted. No full package,
+Linux/browser, production or server admission follows. Next address YAML and the
+remaining D-Bus/chitchat compression frontiers, extend exact historical Rust input
+views for the final graph, and rerun complete package/workspace and native gates.
+
 The [earlier public trust-roots candidate](roots-security-result-20261026.md)
 retains its pre-approval narrow-delta refusal and pre-Tokio results. The operator
 has now approved the complete upstream 1.0.10 catalog conditional on exact key/

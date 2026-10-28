@@ -1,0 +1,13 @@
+    Checking hydracache v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache)
+    Checking hydracache-db v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-db)
+    Checking hydracache-observability v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-observability)
+    Checking hydracache-cluster-raft v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-raft)
+    Checking hydracache-actuator-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-actuator-axum)
+    Checking hydracache-sim v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sim)
+    Checking hydracache-sqlx v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sqlx)
+    Checking hydracache-diesel v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-diesel)
+    Checking hydracache-seaorm v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-seaorm)
+    Checking hydracache-cluster-chitchat v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-chitchat)
+    Checking hydracache-cluster-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-transport-axum)
+    Checking hydracache-sandbox v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sandbox)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 22.45s

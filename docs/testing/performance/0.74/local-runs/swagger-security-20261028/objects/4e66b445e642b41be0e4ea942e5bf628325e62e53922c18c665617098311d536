@@ -1,0 +1,7 @@
+    Checking hydracache-db v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-db)
+    Checking hydracache-cluster-transport-axum v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-cluster-transport-axum)
+    Checking hydracache-diesel v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-diesel)
+    Checking hydracache-seaorm v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-seaorm)
+    Checking hydracache-sqlx v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sqlx)
+    Checking hydracache-sandbox v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-sandbox)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 11.39s

@@ -1,5 +1,16 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [isolated Swagger/ZIP migration](swagger-security-result-20261028.md)
+updates the UI to the exact registry-vendored 5.32.6 input and ZIP 9.0.0, while
+preserving utoipa 5 generation, cached typed document ownership and the existing
+auth boundary. Four HTTP cases, complete OpenAPI byte comparison, nine asset
+mutation controls, 58 runner controls and Windows check/Clippy/MSRV pass. The
+final workspace command on `11c17e7cfc68594e380d87028d43d1a7942a7dcb`
+completes eleven stages and refuses seven remaining findings; all three ZIP IDs
+disappear, nine following stages stay unstarted. First resolver/utility refusals
+and distinct source milestones remain retained. Linux/browser, historical Rust
+input adapters, complete package and other security/release gates remain open.
+
 The [2026-10-28 eleven-advisory review](security-review-20261028.md) applies the
 compatible zstd-sys 2.1.2 patch under unchanged Rust 1.88 and deny policy. Four
 stable-source archive cases, check/Clippy/MSRV, 49 runner controls and five native

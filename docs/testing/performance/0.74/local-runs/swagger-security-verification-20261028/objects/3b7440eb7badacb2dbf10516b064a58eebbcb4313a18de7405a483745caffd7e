@@ -1,0 +1,86 @@
+"""Independent inert verification; no imports of archived/current project helpers."""
+from pathlib import Path
+import contextlib,hashlib,io,json,re,stat,subprocess,tarfile,traceback,zipfile
+ROOT=Path(__file__).resolve().parent.parent
+PACKET=ROOT/'docs/testing/performance/0.74/local-runs/swagger-security-20261028'
+OUT=ROOT/'target/swagger-verification-20261028'
+OUT.mkdir(exist_ok=False)
+EXPECTED='d645f31d20591bbd57a4e31744f77270165a0da9765658d240bd5f11f51855a0'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(OUT/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n')
+write('intent.json',dict(source_sha256=sha(Path(__file__).read_bytes()),index_sha256=EXPECTED,
+ archived_code_executed=False,gate_replayed=False))
+with (OUT/'stdout.log').open('x',encoding='utf-8') as stdout,(OUT/'stderr.log').open('x',encoding='utf-8') as stderr,contextlib.redirect_stdout(stdout),contextlib.redirect_stderr(stderr):
+ try:
+  raw=(PACKET/'index.json').read_bytes();assert sha(raw)==EXPECTED
+  index=json.loads(raw);objects=set()
+  for name,row in index['members'].items():
+   assert re.fullmatch('[0-9a-f]{64}',row['sha256']) and '..' not in Path(name).parts
+   path=PACKET/'objects'/row['sha256']
+   assert path.is_file() and not path.is_symlink() and not path.is_junction()
+   body=path.read_bytes();assert len(body)==row['bytes'] and sha(body)==row['sha256']
+   objects.add(row['sha256'])
+  assert objects=={p.name for p in (PACKET/'objects').iterdir()}
+  def member(name):return (PACKET/'objects'/index['members'][name]['sha256']).read_bytes()
+  def document(name):return json.loads(member(name))
+  for phase in ('workspace','workspace-cached'):
+   before=document('capture/'+phase+'/frame-before.json')
+   assert before==document('capture/'+phase+'/frame-after.json')
+   controller=document('capture/'+phase+'/controller.json')
+   assert sha(member('capture/'+phase+'/request.json'))==controller['request_sha256']
+   assert controller['execution']['exit']==1 and controller['execution']['retired'] and not controller['execution']['errors']
+   assert controller['execution']['bound_seconds']==4800 and controller['execution']['cleanup_seconds']==5
+   assert controller['specification']['argv']==['cargo','xtask','verify']
+   assert controller['specification']['start_free_bytes']==16*1024**3 and controller['specification']['floor_bytes']==4*1024**3
+   ledger=document('capture/'+phase+'/accounting.json')
+   assert [r['state'] for r in ledger['stages']]==['complete']*11+['incomplete-or-failed']+['unstarted']*9
+   assert not ledger['workspace_pass'] and not ledger['targets']
+   ids=sorted(set(re.findall(r'RUSTSEC-\d{4}-\d{4}',member('capture/'+phase+'/stderr.log').decode())))
+   assert ids==index['remaining'] and len(ids)==7
+  final=document('capture/workspace-cached/frame-before.json')
+  assert final['head']=='11c17e7cfc68594e380d87028d43d1a7942a7dcb'
+  for name,digest in final['helpers'].items():
+   body=member('source/current/'+name);assert sha(body)==digest
+   git=subprocess.check_output(['git','--no-replace-objects','show',final['head']+':'+name],cwd=ROOT,timeout=10)
+   assert body.replace(b'\r\n',b'\n')==git.replace(b'\r\n',b'\n')
+  for name in ('Cargo.toml','Cargo.lock','crates/hydracache-sandbox/src/lib.rs','crates/hydracache-sandbox/tests/swagger_routes.rs'):
+   body=member('source/current/'+name)
+   assert sha(body)==final['sources'][name]
+   git=subprocess.check_output(['git','--no-replace-objects','show',final['head']+':'+name],cwd=ROOT,timeout=10)
+   assert body.replace(b'\r\n',b'\n')==git.replace(b'\r\n',b'\n')
+  graph=document('capture/graph-review-corrected/result.json')
+  for key,row in graph['new_packages'].items():
+   assert sha(member('registry-crates/'+key+'.crate'))==row['checksum']==row['metadata']['cksum']
+  vendor=member('registry-crates/utoipa-swagger-ui-vendored@0.2.0.crate')
+  assert sha(vendor)=='552a64d6a0d251ae28bc021838800943cce60c9ec2e60ff331f54e79f696268f'
+  with tarfile.open(fileobj=io.BytesIO(vendor),mode='r:gz') as archive:
+   blob=archive.extractfile('utoipa-swagger-ui-vendored-0.2.0/res/v5.32.6.zip').read()
+  assert sha(blob)=='b3c07e091559b59a833f66547eb1fc18f2896f96e3f1f953e2f1efb328aa3394'
+  with zipfile.ZipFile(io.BytesIO(blob)) as archive:
+   assert len(archive.infolist())==711
+   for row in archive.infolist():
+    assert not (row.external_attr>>16)&0o7000
+    assert stat.S_IFMT(row.external_attr>>16) in (0,stat.S_IFREG,stat.S_IFDIR)
+    assert len(archive.read(row))==row.file_size
+  bodies=[member('capture/http-comparison-cached/'+phase+'.openapi.json') for phase in
+          ('baseline','candidate','candidate-corrected','candidate-cached')]
+  assert len(set(bodies))==1 and len(bodies[0])==117641
+  assert sha(bodies[0])=='989c92b97e9c4475792864fd073664a6ac81cf2f246f38492412636fa2768414'
+  assert b'Ran 58 tests' in member('capture/runner-controls/stderr.log')
+  assert b'Ran 9 tests' in member('capture/asset-controls/stderr.log')
+  for phase in ('candidate-cached','check-cached','clippy-cached','msrv-cached'):
+   result=document('capture/'+phase+'/result.json')
+   assert result['exit']==0 and result['source_unchanged'] and result['head_unchanged']
+  assert document('capture/catalog/refusal.json')['type']=='HTTPError'
+  assert document('capture/graph-review/refusal.json')['type']=='AssertionError'
+  assert not document('capture/clippy/refusal.json')['gate_dispatched']
+  assert not document('capture/msrv/refusal.json')['gate_dispatched']
+  result=dict(verified=True,members=len(index['members']),objects=len(objects),
+   source_commits=index['source_commits'],remaining_advisories=7,original_budget_seconds=4800,
+   complete_openapi_bytes_equal=True,archived_code_executed=False,gate_replayed=False,
+   workspace_pass=False,release_admitted=False)
+  write('result.json',result);print(json.dumps(result,sort_keys=True))
+ except BaseException as error:
+  write('refusal.json',dict(type=type(error).__name__,reason=str(error),gate_replayed=False))
+  traceback.print_exc();raise
+print(json.dumps(dict(verified=True,members=len(index['members']),objects=len(objects))))

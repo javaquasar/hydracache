@@ -1,0 +1,16 @@
+{
+  "archived_code_executed": false,
+  "complete_openapi_bytes_equal": true,
+  "gate_replayed": false,
+  "members": 396,
+  "objects": 199,
+  "original_budget_seconds": 4800,
+  "release_admitted": false,
+  "remaining_advisories": 7,
+  "source_commits": {
+    "workspace": "836800c836580a26f7fa0beb4eaeab41ff764d58",
+    "workspace-cached": "11c17e7cfc68594e380d87028d43d1a7942a7dcb"
+  },
+  "verified": true,
+  "workspace_pass": false
+}

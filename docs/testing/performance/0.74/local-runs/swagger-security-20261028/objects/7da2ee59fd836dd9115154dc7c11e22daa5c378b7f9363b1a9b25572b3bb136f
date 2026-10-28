@@ -1,0 +1,8 @@
+{
+  "transcribed_from_tool_result": true,
+  "type": "AssertionError",
+  "reason": "Generation compared normalized predecessor Cargo.toml against its raw CRLF hash. No rules were published.",
+  "raw_predecessor_sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8",
+  "normalized_predecessor_sha256": "7877b4051e4952e7a809896cf46c03a80c6ae3bae3fd13ed95ed0b47d377f472",
+  "gate_or_workload_replayed": false
+}

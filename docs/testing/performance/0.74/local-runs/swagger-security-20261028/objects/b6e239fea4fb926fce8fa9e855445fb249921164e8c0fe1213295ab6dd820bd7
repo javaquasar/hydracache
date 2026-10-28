@@ -1,0 +1,8 @@
+{
+  "transcribed_from_tool_result": true,
+  "type": "AssertionError",
+  "reason": "The successor Cargo.toml also has CRLF. Normalized content cannot be compared against its raw hash. No rules were published.",
+  "raw_successor_sha256": "a494481b85fa84fd07e19a447c6d5fe7a49aa12557e0c0befc86fdea390d3bf2",
+  "normalized_successor_sha256": "fd57accedc5029f0024c45e72f3c3ef66501d670eaa8776cf293553ff8d5a1ad",
+  "gate_or_workload_replayed": false
+}

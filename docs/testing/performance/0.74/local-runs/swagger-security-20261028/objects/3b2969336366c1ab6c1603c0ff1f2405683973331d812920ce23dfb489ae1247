@@ -1,0 +1,1361 @@
+{
+  "added": [
+    "base64@0.23.1",
+    "typed-path@0.12.4",
+    "utoipa-gen@6.0.1",
+    "utoipa-swagger-ui-vendored@0.2.0",
+    "utoipa-swagger-ui@10.0.2",
+    "utoipa@6.0.0",
+    "zip@9.0.0"
+  ],
+  "all_new_package_msrv_at_most_188": true,
+  "archive_checksums_match_primary_metadata": true,
+  "effective_existing_edge_delta": {
+    "arbitrary@1.4.2": {
+      "added": [],
+      "removed": [
+        [
+          "derive_arbitrary",
+          "1.4.2",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    },
+    "hydracache-sandbox@0.73.0": {
+      "added": [
+        [
+          "utoipa-swagger-ui",
+          "10.0.2",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ],
+      "removed": [
+        [
+          "utoipa-swagger-ui",
+          "9.0.2",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ]
+      ]
+    }
+  },
+  "new_lock_sha256": "00efd4a2cafeb5e82d757cc4855e440c627211c1544c22dcbf8c875f85337cd8",
+  "new_manifest_sha256": "a494481b85fa84fd07e19a447c6d5fe7a49aa12557e0c0befc86fdea390d3bf2",
+  "new_packages": {
+    "base64@0.23.1": {
+      "cargo_build": false,
+      "checksum": "ac07cdecf99051d9a5238b80f35af32cdeba5b336e55d957b318b50137e18da5",
+      "index_sha256": "42a061d4b29c30417df7b028aa5274a1dfe5b7304794ac05e5bce9ac44b40153",
+      "manifest_sha256": "3951a99756ac9b339501a149c547ce0e24248287a10830298ea319c006090790",
+      "metadata": {
+        "cksum": "ac07cdecf99051d9a5238b80f35af32cdeba5b336e55d957b318b50137e18da5",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "dev",
+            "name": "clap",
+            "optional": false,
+            "req": "^4.6.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "criterion",
+            "optional": false,
+            "req": "^0.7.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rand",
+            "optional": false,
+            "req": "^0.10.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rstest",
+            "optional": false,
+            "req": "^0.26.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rstest_reuse",
+            "optional": false,
+            "req": "^0.7.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "dev",
+            "name": "strum",
+            "optional": false,
+            "req": "^0.28.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "alloc": [],
+          "default": [
+            "std",
+            "simd-unsafe"
+          ],
+          "simd-unsafe": [],
+          "std": [
+            "alloc"
+          ]
+        },
+        "name": "base64",
+        "pubtime": "2026-08-04T12:34:31Z",
+        "rust_version": "1.71.0",
+        "vers": "0.23.1",
+        "yanked": false
+      }
+    },
+    "typed-path@0.12.4": {
+      "cargo_build": false,
+      "checksum": "54ec2755506471f54baf5e4bb5499d8e510cc1caf271270e778a736bd2d7336c",
+      "index_sha256": "8361b4e657d3106ecc455e8d26374a89d9a7e6c0af34f3d271539bea73c3cfe8",
+      "manifest_sha256": "0ea5ac1f52cbe99e9d3204de4374ccff5c454a8a9714ac2ba0b4424271647160",
+      "metadata": {
+        "cksum": "54ec2755506471f54baf5e4bb5499d8e510cc1caf271270e778a736bd2d7336c",
+        "deps": [],
+        "features": {
+          "default": [
+            "std"
+          ],
+          "nightly-wasip2": [
+            "std"
+          ],
+          "std": []
+        },
+        "name": "typed-path",
+        "pubtime": "2026-10-20T03:03:01Z",
+        "rust_version": "1.65.0",
+        "vers": "0.12.4",
+        "yanked": false
+      }
+    },
+    "utoipa-gen@6.0.1": {
+      "cargo_build": false,
+      "checksum": "d935f1c83fdf8b88f09bbe050d0cea78ea4afee6d7b0317403228c1200b2c8ab",
+      "index_sha256": "fe2a3cc959b465571f70115c968ce3e990603f8260b83de64638c65543ce29c5",
+      "manifest_sha256": "f5f5730b4733c8041efe894e78e774f67d9e0548a33947282a5865009709851b",
+      "metadata": {
+        "cksum": "d935f1c83fdf8b88f09bbe050d0cea78ea4afee6d7b0317403228c1200b2c8ab",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [
+              "macros"
+            ],
+            "kind": "dev",
+            "name": "actix-web",
+            "optional": false,
+            "req": "^4",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "json",
+              "query"
+            ],
+            "kind": "dev",
+            "name": "axum",
+            "optional": false,
+            "req": "^0.8.4",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "bigdecimal",
+            "optional": false,
+            "req": "^0.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "dev",
+            "name": "chrono",
+            "optional": false,
+            "req": "^0.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "json"
+            ],
+            "kind": "dev",
+            "name": "insta",
+            "optional": false,
+            "req": "^1.47",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "dev",
+            "name": "jiff",
+            "optional": false,
+            "req": "^0.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "once_cell",
+            "optional": true,
+            "req": "^1.21.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "pastey",
+            "optional": false,
+            "req": "^0.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "proc-macro2",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "quote",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "regex",
+            "optional": true,
+            "req": "^1.12",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "json"
+            ],
+            "kind": "dev",
+            "name": "rocket",
+            "optional": false,
+            "req": "^0.5",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "rust_decimal",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_json",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_with",
+            "optional": false,
+            "req": "^3.14",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "dev",
+            "name": "smallvec",
+            "optional": false,
+            "req": "^1.15",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "full",
+              "extra-traits"
+            ],
+            "kind": "normal",
+            "name": "syn",
+            "optional": false,
+            "req": "^3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde-human-readable"
+            ],
+            "kind": "dev",
+            "name": "time",
+            "optional": false,
+            "req": ">=0.3, <0.3.52",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "ulid",
+            "optional": true,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "url",
+            "optional": true,
+            "req": "^2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "utoipa-config",
+            "optional": true,
+            "req": "^0.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "normal",
+            "name": "uuid",
+            "optional": true,
+            "req": "^1",
+            "target": null
+          }
+        ],
+        "features": {
+          "actix_extras": [
+            "regex",
+            "syn/extra-traits"
+          ],
+          "auto_into_responses": [],
+          "axum_extras": [
+            "regex",
+            "syn/extra-traits"
+          ],
+          "bigdecimal": [],
+          "bigdecimal_float": [],
+          "chrono": [],
+          "debug": [
+            "syn/extra-traits"
+          ],
+          "decimal": [],
+          "decimal_float": [],
+          "indexmap": [],
+          "jiff_0_2": [],
+          "non_strict_integers": [],
+          "rc_schema": [],
+          "repr": [],
+          "rocket_extras": [
+            "regex",
+            "syn/extra-traits"
+          ],
+          "smallvec": [],
+          "time": [],
+          "yaml": []
+        },
+        "features2": {
+          "config": [
+            "dep:utoipa-config",
+            "dep:once_cell"
+          ],
+          "ulid": [
+            "dep:ulid"
+          ],
+          "url": [
+            "dep:url"
+          ],
+          "uuid": [
+            "dep:uuid"
+          ]
+        },
+        "name": "utoipa-gen",
+        "pubtime": "2026-09-23T15:51:17Z",
+        "rust_version": "1.88",
+        "v": 2,
+        "vers": "6.0.1",
+        "yanked": false
+      }
+    },
+    "utoipa-swagger-ui-vendored@0.2.0": {
+      "cargo_build": false,
+      "checksum": "552a64d6a0d251ae28bc021838800943cce60c9ec2e60ff331f54e79f696268f",
+      "index_sha256": "aedd105521b4df82a197d9106a42ec27888bd0ae0201ff8391578fb4d9446d90",
+      "manifest_sha256": "97c9edc85c3a548c693f79895bb2e94d40d46af5308e3991b2ad401db24a97da",
+      "metadata": {
+        "cksum": "552a64d6a0d251ae28bc021838800943cce60c9ec2e60ff331f54e79f696268f",
+        "deps": [],
+        "features": {},
+        "name": "utoipa-swagger-ui-vendored",
+        "pubtime": "2026-09-22T22:31:13Z",
+        "rust_version": "1.88",
+        "vers": "0.2.0",
+        "yanked": false
+      }
+    },
+    "utoipa-swagger-ui@10.0.2": {
+      "cargo_build": "build.rs",
+      "checksum": "4f1fd2f9615838885c6ff4115fde8a2b58825dc7b4617f78d29c167377a15c92",
+      "index_sha256": "cdf900402369015e58f4c0f1e14ce1d81ceeee48ac3f47f4dcd2bb46be7d0c27",
+      "manifest_sha256": "737ab835b89d115890b472439ef09ae01da9b2c64118562d12d74c0dde2047cc",
+      "metadata": {
+        "cksum": "4f1fd2f9615838885c6ff4115fde8a2b58825dc7b4617f78d29c167377a15c92",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [
+              "macros"
+            ],
+            "kind": "normal",
+            "name": "actix-web",
+            "optional": true,
+            "req": "^4",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "json"
+            ],
+            "kind": "normal",
+            "name": "axum",
+            "optional": true,
+            "req": "^0.8.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "build",
+            "name": "base16ct",
+            "optional": true,
+            "req": "^1.0.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "base64",
+            "optional": false,
+            "req": "^0.23.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "build",
+            "name": "dirs",
+            "optional": true,
+            "req": "^7.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "build",
+            "name": "flate2",
+            "optional": true,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "http",
+            "optional": false,
+            "req": "^1.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "mime_guess",
+            "optional": false,
+            "req": "^2.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "build",
+            "name": "regex",
+            "optional": false,
+            "req": "^1.12",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "blocking",
+              "rustls"
+            ],
+            "kind": "build",
+            "name": "reqwest",
+            "optional": true,
+            "req": "^0.13",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "json"
+            ],
+            "kind": "normal",
+            "name": "rocket",
+            "optional": true,
+            "req": "^0.5",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive",
+              "rc"
+            ],
+            "kind": "normal",
+            "name": "serde",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "serde_json",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "build",
+            "name": "sha2",
+            "optional": true,
+            "req": "^0.11",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "similar",
+            "optional": false,
+            "req": "^3.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "time",
+            "optional": true,
+            "req": ">=0.3, <0.3.52",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "macros"
+            ],
+            "kind": "dev",
+            "name": "tokio",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tower",
+            "optional": false,
+            "req": "^0.5",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "build",
+            "name": "url",
+            "optional": true,
+            "req": "^2",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "macros"
+            ],
+            "kind": "normal",
+            "name": "utoipa",
+            "optional": false,
+            "req": "^6.0.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "build",
+            "name": "utoipa-swagger-ui-vendored",
+            "optional": true,
+            "req": "^0.2",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "deflate"
+            ],
+            "kind": "build",
+            "name": "zip",
+            "optional": false,
+            "req": "^9.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "debug": [],
+          "minified": []
+        },
+        "features2": {
+          "cache": [
+            "dep:dirs",
+            "dep:sha2",
+            "dep:base16ct"
+          ],
+          "default": [
+            "url"
+          ],
+          "gzip": [
+            "dep:flate2"
+          ],
+          "reqwest": [
+            "dep:reqwest"
+          ],
+          "rocket": [
+            "dep:rocket",
+            "dep:time"
+          ],
+          "url": [
+            "dep:url"
+          ],
+          "vendored": [
+            "dep:utoipa-swagger-ui-vendored"
+          ]
+        },
+        "name": "utoipa-swagger-ui",
+        "pubtime": "2026-10-20T16:27:11Z",
+        "rust_version": "1.88",
+        "v": 2,
+        "vers": "10.0.2",
+        "yanked": false
+      }
+    },
+    "utoipa@6.0.0": {
+      "cargo_build": false,
+      "checksum": "8765fe27aeff71012a3f90fa474cf1df863a7d0dd81ed25de4e63fff2544994f",
+      "index_sha256": "8569f8f0d3feb7168b26f0e58437b0c8873e11c88cde6021e267ffeac08e6d02",
+      "manifest_sha256": "a458d5cf4903a19a011a3b3d8eaeac2e266a4bb32854853321f4e2d6426a10e0",
+      "metadata": {
+        "cksum": "8765fe27aeff71012a3f90fa474cf1df863a7d0dd81ed25de4e63fff2544994f",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "normal",
+            "name": "indexmap",
+            "optional": false,
+            "req": "^2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "json",
+              "redactions"
+            ],
+            "kind": "dev",
+            "name": "insta",
+            "optional": false,
+            "req": "^1.47",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "normal",
+            "name": "serde",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "serde_json",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "utoipa-gen",
+            "optional": true,
+            "req": "^6.0.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "yaml_serde",
+            "optional": true,
+            "req": "^0.10.4",
+            "target": null
+          }
+        ],
+        "features": {
+          "openapi_extensions": [],
+          "preserve_order": [],
+          "preserve_path_order": []
+        },
+        "features2": {
+          "actix_extras": [
+            "utoipa-gen?/actix_extras"
+          ],
+          "auto_into_responses": [
+            "utoipa-gen?/auto_into_responses"
+          ],
+          "axum_extras": [
+            "utoipa-gen?/axum_extras"
+          ],
+          "bigdecimal": [
+            "utoipa-gen?/bigdecimal"
+          ],
+          "bigdecimal_float": [
+            "utoipa-gen?/bigdecimal_float"
+          ],
+          "chrono": [
+            "utoipa-gen?/chrono"
+          ],
+          "config": [
+            "utoipa-gen?/config"
+          ],
+          "debug": [
+            "utoipa-gen?/debug"
+          ],
+          "decimal": [
+            "utoipa-gen?/decimal"
+          ],
+          "decimal_float": [
+            "utoipa-gen?/decimal_float"
+          ],
+          "default": [
+            "macros"
+          ],
+          "indexmap": [
+            "utoipa-gen?/indexmap"
+          ],
+          "jiff_0_2": [
+            "utoipa-gen?/jiff_0_2"
+          ],
+          "macros": [
+            "dep:utoipa-gen"
+          ],
+          "non_strict_integers": [
+            "utoipa-gen?/non_strict_integers"
+          ],
+          "rc_schema": [
+            "utoipa-gen?/rc_schema"
+          ],
+          "repr": [
+            "utoipa-gen?/repr"
+          ],
+          "rocket_extras": [
+            "utoipa-gen?/rocket_extras"
+          ],
+          "smallvec": [
+            "utoipa-gen?/smallvec"
+          ],
+          "time": [
+            "utoipa-gen?/time"
+          ],
+          "ulid": [
+            "utoipa-gen?/ulid"
+          ],
+          "url": [
+            "utoipa-gen?/url"
+          ],
+          "uuid": [
+            "utoipa-gen?/uuid"
+          ],
+          "yaml": [
+            "dep:yaml_serde",
+            "utoipa-gen?/yaml"
+          ]
+        },
+        "name": "utoipa",
+        "pubtime": "2026-09-22T22:30:17Z",
+        "rust_version": "1.88",
+        "v": 2,
+        "vers": "6.0.0",
+        "yanked": false
+      }
+    },
+    "zip@9.0.0": {
+      "cargo_build": false,
+      "checksum": "711e8c9646791c49b7eb799a19c4ae70a9b8372ddc6a1fa4778defd1e2aa5d5e",
+      "index_sha256": "f616345fa82ba4b8d964a7fa363c4bf462ffabdfd359ec00dd47008545d74f61",
+      "manifest_sha256": "12e5de0ac74c2d8fe50acba07c84557b94a33ba34c05a4047e7b505c2cfde7f3",
+      "metadata": {
+        "cksum": "711e8c9646791c49b7eb799a19c4ae70a9b8372ddc6a1fa4778defd1e2aa5d5e",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "aes",
+            "optional": true,
+            "req": "^0.9",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "normal",
+            "name": "arbitrary",
+            "optional": true,
+            "req": "^1.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "bencher",
+            "optional": false,
+            "req": "^0.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "bitstream-io",
+            "optional": true,
+            "req": "^4.9",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "bzip2",
+            "optional": true,
+            "req": "^0.6",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "std"
+            ],
+            "kind": "normal",
+            "name": "chrono",
+            "optional": true,
+            "req": "^0.4.27",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "dev",
+            "name": "clap",
+            "optional": false,
+            "req": "^4.4.18",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "constant_time_eq",
+            "optional": true,
+            "req": "^0.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "crc32fast",
+            "optional": false,
+            "req": "^1.5",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "deflate64",
+            "optional": true,
+            "req": "^0.1.10",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "flate2",
+            "optional": true,
+            "req": "^1.1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "getrandom",
+            "optional": true,
+            "req": "^0.4",
+            "target": "cfg(not(target_arch = \"wasm32\"))"
+          },
+          {
+            "default_features": false,
+            "features": [
+              "wasm_js"
+            ],
+            "kind": "normal",
+            "name": "getrandom",
+            "optional": true,
+            "req": "^0.4",
+            "target": "cfg(target_arch = \"wasm32\")"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "getrandom",
+            "optional": false,
+            "req": "^0.4",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "getrandom",
+            "optional": false,
+            "req": "^0.4",
+            "target": "cfg(not(target_arch = \"wasm32\"))"
+          },
+          {
+            "default_features": false,
+            "features": [
+              "wasm_js"
+            ],
+            "kind": "dev",
+            "name": "getrandom",
+            "optional": false,
+            "req": "^0.4",
+            "target": "cfg(target_arch = \"wasm32\")"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "zeroize"
+            ],
+            "kind": "normal",
+            "name": "hmac",
+            "optional": true,
+            "req": "^0.13",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "indexmap",
+            "optional": false,
+            "req": "^2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "jiff",
+            "optional": true,
+            "req": "^0.2.4",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "std",
+              "encoder",
+              "optimization",
+              "xz"
+            ],
+            "kind": "normal",
+            "name": "lzma-rust2",
+            "optional": true,
+            "req": "^0.21.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "memchr",
+            "optional": false,
+            "req": "^2.7",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "nt-time",
+            "optional": true,
+            "req": "^0.13",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "pbkdf2",
+            "optional": true,
+            "req": "^0.13",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "ppmd-rust",
+            "optional": true,
+            "req": "^1.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rayon",
+            "optional": false,
+            "req": "^1.11",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "sha1",
+            "optional": true,
+            "req": "^0.11",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tempfile",
+            "optional": false,
+            "req": "^3.15",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "std"
+            ],
+            "kind": "normal",
+            "name": "time",
+            "optional": true,
+            "req": "^0.3.47",
+            "target": "cfg(not(target_arch = \"wasm32\"))"
+          },
+          {
+            "default_features": false,
+            "features": [
+              "std",
+              "wasm-bindgen"
+            ],
+            "kind": "normal",
+            "name": "time",
+            "optional": true,
+            "req": "^0.3.47",
+            "target": "cfg(target_arch = \"wasm32\")"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "formatting",
+              "macros"
+            ],
+            "kind": "dev",
+            "name": "time",
+            "optional": false,
+            "req": "^0.3.47",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "typed-path",
+            "optional": false,
+            "req": "^0.12",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "walkdir",
+            "optional": false,
+            "req": "^2.5",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "wasm-bindgen-test",
+            "optional": false,
+            "req": "^0.3.56",
+            "target": "cfg(target_arch = \"wasm32\")"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "zeroize",
+            "optional": true,
+            "req": "^1.8",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "zopfli",
+            "optional": true,
+            "req": "^0.8.3",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "zstd",
+            "optional": true,
+            "req": "^0.13.3",
+            "target": null
+          }
+        ],
+        "features": {
+          "_bzip2_any": [],
+          "_deflate-any": [],
+          "legacy-zip": [
+            "bitstream-io"
+          ],
+          "unreserved": []
+        },
+        "features2": {
+          "_arbitrary": [
+            "dep:arbitrary"
+          ],
+          "aes-crypto": [
+            "dep:aes",
+            "dep:constant_time_eq",
+            "getrandom/std",
+            "dep:hmac",
+            "dep:pbkdf2",
+            "dep:sha1",
+            "dep:zeroize"
+          ],
+          "bzip2": [
+            "dep:bzip2",
+            "bzip2/default",
+            "_bzip2_any"
+          ],
+          "bzip2-rs": [
+            "dep:bzip2",
+            "bzip2/bzip2-sys",
+            "_bzip2_any"
+          ],
+          "chrono": [
+            "dep:chrono"
+          ],
+          "default": [
+            "aes-crypto",
+            "bzip2",
+            "deflate64",
+            "deflate",
+            "lzma",
+            "ppmd",
+            "time",
+            "zstd",
+            "xz"
+          ],
+          "deflate": [
+            "deflate-zopfli",
+            "deflate-flate2-zlib-rs"
+          ],
+          "deflate-flate2": [
+            "_deflate-any",
+            "dep:flate2"
+          ],
+          "deflate-flate2-zlib": [
+            "deflate-flate2",
+            "flate2/zlib"
+          ],
+          "deflate-flate2-zlib-ng": [
+            "deflate-flate2",
+            "flate2/zlib-ng"
+          ],
+          "deflate-flate2-zlib-ng-compat": [
+            "deflate-flate2",
+            "flate2/zlib-ng-compat"
+          ],
+          "deflate-flate2-zlib-rs": [
+            "deflate-flate2",
+            "flate2/zlib-rs"
+          ],
+          "deflate-zopfli": [
+            "dep:zopfli",
+            "_deflate-any"
+          ],
+          "jiff-02": [
+            "dep:jiff"
+          ],
+          "lzma": [
+            "dep:lzma-rust2"
+          ],
+          "nt-time": [
+            "dep:nt-time"
+          ],
+          "ppmd": [
+            "dep:ppmd-rust"
+          ],
+          "time": [
+            "dep:time"
+          ],
+          "xz": [
+            "dep:lzma-rust2"
+          ]
+        },
+        "name": "zip",
+        "pubtime": "2026-10-09T04:48:51Z",
+        "rust_version": "1.88",
+        "v": 2,
+        "vers": "9.0.0",
+        "yanked": false
+      }
+    }
+  },
+  "old_lock_sha256": "50ec8e7e20a8caebeefdbdde7bbafb36b96257daf1204dcd6dfa8f6c5b7c925a",
+  "old_manifest_sha256": "d33222d3205112762984df4088523e5acb7b5fcb3f2afaf913e8c31f2bbed6d8",
+  "release_admitted": false,
+  "removed": [
+    "derive_arbitrary@1.4.2",
+    "rust-embed-impl@8.11.0",
+    "rust-embed-utils@8.11.0",
+    "rust-embed@8.11.0",
+    "utoipa-swagger-ui@9.0.2",
+    "zip@3.0.0"
+  ],
+  "source_code_executed": false,
+  "source_unchanged": true,
+  "typed_metadata": {
+    "headers": {
+      "source": "retained first successful primary response; no repeated request"
+    },
+    "sha256": "8361b4e657d3106ecc455e8d26374a89d9a7e6c0af34f3d271539bea73c3cfe8",
+    "url": "https://index.crates.io/ty/pe/typed-path"
+  }
+}

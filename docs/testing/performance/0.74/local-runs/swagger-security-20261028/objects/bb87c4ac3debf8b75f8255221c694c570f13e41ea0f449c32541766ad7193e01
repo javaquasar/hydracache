@@ -1,0 +1,37 @@
+"""Primary metadata before the isolated Swagger migration; no Cargo resolution."""
+from pathlib import Path
+import hashlib,json,subprocess,urllib.request
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'target/swagger-security-20261028/catalog'
+OUT.mkdir(parents=True,exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(OUT/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n')
+protected=['Cargo.toml','Cargo.lock','deny.toml','crates/hydracache-sandbox/src/lib.rs',
+ 'docs/testing/performance/0.74/qualification-manifest.toml']
+before={n:sha((ROOT/n).read_bytes()) for n in protected}
+write('intent.json',dict(head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ inputs=before,metadata_only=True,source_sha256=sha(Path(__file__).read_bytes()),msrv='1.88'))
+records={}
+with (OUT/'stdout.log').open('x',encoding='utf-8') as stdout,(OUT/'stderr.log').open('x',encoding='utf-8') as stderr:
+ try:
+  for name in ('utoipa','utoipa-gen','utoipa-swagger-ui-vendored','base64','zip'):
+   url='https://index.crates.io/'+name[:2]+'/'+name[2:4]+'/'+name
+   with urllib.request.urlopen(url,timeout=40) as response:
+    raw=response.read();headers=dict(response.headers)
+   (OUT/(name+'.index')).write_bytes(raw)
+   rows=[json.loads(line) for line in raw.splitlines()]
+   families={}
+   for row in rows:
+    if row['yanked'] or '-' in row['vers'].split('+')[0]:continue
+    major,minor,*_=row['vers'].split('.')
+    family=major+'.'+minor if major=='0' else major
+    families.setdefault(family,[]).append(row)
+   selected={k:v[-2:] for k,v in families.items()}
+   records[name]=dict(url=url,sha256=sha(raw),headers=headers,families=selected)
+   stdout.write(json.dumps(dict(name=name,versions=[dict(version=r['vers'],rust_version=r.get('rust_version'))
+    for v in list(selected.values())[-2:] for r in v]))+'\n');stdout.flush()
+  assert before=={n:sha((ROOT/n).read_bytes()) for n in protected}
+  write('result.json',dict(packages=records,source_unchanged=True,msrv_changed=False))
+ except BaseException as error:
+  write('refusal.json',dict(type=type(error).__name__,reason=str(error)));raise
+print((OUT/'stdout.log').read_text())

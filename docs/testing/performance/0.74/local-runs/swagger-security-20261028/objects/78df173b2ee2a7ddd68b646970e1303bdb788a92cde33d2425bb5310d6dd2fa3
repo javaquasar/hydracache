@@ -1,0 +1,104 @@
+"""Retain the isolated migration and distinct first/final source outcomes."""
+from pathlib import Path
+import hashlib,json,re
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/swagger-security-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/swagger-security-20261028'
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def read(name):return json.loads((BASE/name).read_bytes())
+for phase in ('baseline','baseline-check','baseline-clippy','asset-controls','asset-review','fetch',
+              'metadata-corrected','candidate-corrected','check-corrected','clippy-corrected','msrv-corrected',
+              'runner-controls','source-review','candidate-cached','check-cached','clippy-cached','msrv-cached','doc-check'):
+ result=read(phase+'/result.json')
+ assert result['exit']==0 and result['source_unchanged'] and result['head_unchanged'],phase
+ assert read(phase+'/execution.json')['retired'] and not read(phase+'/execution.json')['errors'],phase
+assert b'Ran 9 tests' in (BASE/'asset-controls/stderr.log').read_bytes()
+assert b'Ran 58 tests' in (BASE/'runner-controls/stderr.log').read_bytes()
+assert read('asset-review-data/result.json')['entry_count']==711
+assert read('http-comparison-cached/result.json')['complete_openapi_bytes_equal']
+assert read('graph-review/refusal.json')['type']=='AssertionError'
+assert read('catalog/refusal.json')['reason']=='HTTP Error 404: Not Found'
+for phase in ('clippy','msrv'):
+ assert not read(phase+'/refusal.json')['gate_dispatched']
+assert read('graph-review-corrected/result.json')['all_new_package_msrv_at_most_188']
+expected=['RUSTSEC-2024-0449','RUSTSEC-2026-0370','RUSTSEC-2026-0371','RUSTSEC-2026-0372',
+          'RUSTSEC-2026-0391','RUSTSEC-2026-0398','RUSTSEC-2026-0403']
+sources={}
+for phase in ('workspace','workspace-cached'):
+ before=read(phase+'/frame-before.json');after=read(phase+'/frame-after.json')
+ assert before==after
+ sources[phase]=before['head']
+ controller=read(phase+'/controller.json');execution=controller['execution']
+ assert execution['exit']==1 and execution['classification']=='test-failure'
+ assert execution['retired'] and not execution['errors']
+ assert (execution['bound_seconds'],execution['cleanup_seconds'],execution['capacity_poll_seconds'])==(4800,5,5)
+ assert sha((BASE/phase/'request.json').read_bytes())==controller['request_sha256']
+ assert read(phase+'/result.json')['source_refs_configuration_environment_unchanged']
+ ledger=read(phase+'/accounting.json')
+ assert [r['state'] for r in ledger['stages']]==['complete']*11+['incomplete-or-failed']+['unstarted']*9
+ assert not ledger['workspace_pass'] and not ledger['targets']
+ identifiers=sorted(set(re.findall(r'RUSTSEC-\d{4}-\d{4}',(BASE/phase/'stderr.log').read_text(encoding='utf-8'))))
+ assert identifiers==expected
+assert sources['workspace']=='836800c836580a26f7fa0beb4eaeab41ff764d58'
+assert sources['workspace']!=sources['workspace-cached']
+final=read('workspace-cached/frame-before.json')
+for phase in ('candidate-cached','check-cached','clippy-cached','msrv-cached'):
+ for name,digest in read(phase+'/result.json')['source_after'].items():
+  assert final['sources'][name]==digest,(phase,name)
+assert sha((ROOT/'deny.toml').read_bytes())=='16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930'
+assert sha((ROOT/'docs/testing/performance/0.74/qualification-manifest.toml').read_bytes())=='11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc'
+OUT.mkdir(exist_ok=False)
+(OUT/'objects').mkdir()
+members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:
+  with dest.open('xb') as stream:stream.write(raw)
+ assert name not in members
+ members[name]=dict(sha256=digest,bytes=len(raw))
+for path in sorted(BASE.rglob('*')):
+ if not path.is_file() or path.suffix=='.exe':continue
+ rel=path.relative_to(BASE).as_posix()
+ if rel.startswith('upstream/') and '/review-source/' in rel:
+  tail=rel.split('/review-source/',1)[1]
+  if tail not in ('Cargo.toml','Cargo.toml.orig','CHANGELOG.md','README.md','LICENSE-APACHE','LICENSE-MIT','src/lib.rs'):continue
+ add('capture/'+rel,path)
+for name in ('swagger-catalog-20261028.py','swagger-upstream-20261028.py','swagger-step-20261028.py',
+             'swagger-graph-review-20261028.py','swagger-http-compare-20261028.py',
+             'swagger-input-proposal-20261028.py','swagger-postflight-20261028.py','seal-swagger-20261028.py'):
+ add('producer/'+name,ROOT/'target'/name)
+graph=read('graph-review-corrected/result.json')
+for key,row in graph['new_packages'].items():
+ name,version=key.split('@')
+ add('registry-crates/'+key+'.crate',Path('C:/Users/ArturBuzov/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f')/(name+'-'+version+'.crate'))
+for folder in ('tools/windows-workspace-preflight-074','tools/swagger-assets-review-074'):
+ for path in sorted((ROOT/folder).iterdir()):
+  if path.is_file():add('source/current/'+path.relative_to(ROOT).as_posix(),path)
+for name in ('Cargo.toml','Cargo.lock','deny.toml','crates/hydracache-sandbox/src/lib.rs',
+ 'crates/hydracache-sandbox/tests/swagger_routes.rs','crates/xtask/src/verify.rs',
+ 'scripts/ci/watchdog_windows_job.py','tools/xtask-package-attribution-074/review.py',
+ '.cargo/config.toml',
+ 'docs/testing/performance/0.74/qualification-manifest.toml'):
+ add('source/current/'+name,ROOT/name)
+for phase in sources:
+ frame=read(phase+'/frame-before.json');spec=read(phase+'/request.json')['specification']
+ identity=sha(json.dumps(dict(sources=frame['sources'],specification=spec,
+  versions=frame['versions'],environment=frame['environment']),sort_keys=True).encode())
+ claim=ROOT/'target/windows-fixed-cargo-20261027/claims'/(identity+'-workspace.json')
+ assert json.loads(claim.read_bytes())['output']==str(BASE/phase)
+ add('capture/'+phase+'/execution-claim.json',claim)
+index=dict(schema='hc074-swagger-security-review-v1',members=members,source_commits=sources,
+ fixed=['RUSTSEC-2026-0367','RUSTSEC-2026-0368','RUSTSEC-2026-0369'],remaining=expected,
+ http_cases_per_command=4,asset_controls=9,runner_controls=58,msrv='1.88',
+ complete_openapi_bytes_equal=True,retained_first_outcomes=True,workspace_pass=False,
+ distinct_source_milestones=True,concatenate_results=False,release_admitted=False,
+ server=False,services=False,clocks=False,product_workload=False,performance_claim=False,
+ archived_code_executed_by_sealer=False)
+with (OUT/'index.json').open('x',encoding='utf-8',newline='\n') as stream:
+ json.dump(index,stream,indent=2,sort_keys=True);stream.write('\n')
+with (OUT/'.gitattributes').open('x',encoding='utf-8',newline='\n') as stream:
+ stream.write('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),
+ index_sha256=sha((OUT/'index.json').read_bytes()),sources=sources,remaining=len(expected))))

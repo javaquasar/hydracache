@@ -1,0 +1,11 @@
+{
+  "read_only": true,
+  "source": {
+    "Cargo.lock": "cb6ddce4bba0119c2b095b12c4b3fd89f39bc90d71965858b51086b2eb3fee89",
+    "Cargo.toml": "a494481b85fa84fd07e19a447c6d5fe7a49aa12557e0c0befc86fdea390d3bf2",
+    "crates/hydracache-sandbox/src/lib.rs": "31833d4a3c826e100273305e9f50e3d7e7eada8813b1bccabb1104edc037f652",
+    "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+  },
+  "source_commit": "eaebf65b9bb6a7250bc35fcd1e361a33f9848073",
+  "source_sha256": "582189f5431c625fc0dd62cc4a022a3cd68bfaf8a137f9f1fba4fbc384787c29"
+}

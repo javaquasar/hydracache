@@ -1,0 +1,35 @@
+"""Compare retained complete HTTP test documents, never replay a workload."""
+from pathlib import Path
+import hashlib,json
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/swagger-security-20261028'
+OUT=BASE/'http-comparison-cached'
+OUT.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+with (OUT/'intent.json').open('x') as stream:
+ json.dump(dict(source_sha256=sha(Path(__file__).read_bytes()),offline_only=True,no_replay=True),stream)
+try:
+ bodies={}
+ for label in ('baseline','candidate','candidate-corrected','candidate-cached'):
+  result=json.loads((BASE/label/'result.json').read_bytes())
+  assert result['exit']==0 and result['source_unchanged'] and result['head_unchanged']
+  raw=(BASE/label/'stdout.log').read_bytes()
+  assert b'4 passed; 0 failed; 0 ignored;' in raw
+  marker=b'HC074_SWAGGER_OPENAPI '
+  assert raw.count(marker)==1
+  body=raw.split(marker,1)[1].splitlines()[0]
+  value=json.loads(body)
+  assert value['openapi']=='3.1.0'
+  bodies[label]=body
+  (OUT/(label+'.openapi.json')).write_bytes(body)
+ assert len(set(bodies.values()))==1
+ result=dict(complete_openapi_bytes_equal=True,document_sha256=sha(bodies['baseline']),
+  document_bytes=len(bodies['baseline']),original_schema_version='3.1.0',
+  cases_per_command=4,first_candidate_graph_not_accepted=True,performance_claim=False,
+  sources={label:json.loads((BASE/label/'intent.json').read_bytes())['source'] for label in bodies},
+  replayed=False,release_admitted=False)
+ with (OUT/'result.json').open('x') as stream:json.dump(result,stream,indent=2,sort_keys=True)
+ print(json.dumps({k:v for k,v in result.items() if k!='sources'}))
+except BaseException as error:
+ with (OUT/'refusal.json').open('x') as stream:json.dump(dict(type=type(error).__name__,reason=str(error)),stream)
+ raise

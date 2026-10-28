@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\windows-workspace-preflight-074\\worker.py",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\swagger-security-20261028\\workspace-cached",
+    "fa0ebb11280121749763a953331c4b63c2285a2a2f9012d5c711614026d06319",
+    "workspace"
+  ],
+  "cleanup_seconds": 5,
+  "deadline": 35957.3026365,
+  "pid": 37532,
+  "request_sha256": "fa0ebb11280121749763a953331c4b63c2285a2a2f9012d5c711614026d06319"
+}

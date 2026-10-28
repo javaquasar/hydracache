@@ -1,0 +1,1049 @@
+{
+  "inputs_unchanged": true,
+  "releases": {
+    "base64@0.23.1": {
+      "checksum": "ac07cdecf99051d9a5238b80f35af32cdeba5b336e55d957b318b50137e18da5",
+      "index_sha256": "42a061d4b29c30417df7b028aa5274a1dfe5b7304794ac05e5bce9ac44b40153",
+      "members": {
+        ".cargo_vcs_info.json": {
+          "bytes": 94,
+          "sha256": "da5065eb9aebc01c4df84bcd11af890c9cd03b7b7f61df224e876d30759989f2"
+        },
+        ".circleci/config.yml": {
+          "bytes": 8980,
+          "sha256": "a79313f9e1df0abd31a0c05edc92ea64034b823d4838b544928b31ed719040ef"
+        },
+        ".github/ISSUE_TEMPLATE/general-purpose-issue.md": {
+          "bytes": 268,
+          "sha256": "9e89c069e50dc24a09ece40bd6d02618ab044b2b53d2e5221defd6c884c96964"
+        },
+        ".gitignore": {
+          "bytes": 103,
+          "sha256": "fdddacd3d2271f3adb2a0a64c0cdff47503f19c54e8bd2af3b8c876aeb8bcc51"
+        },
+        "Cargo.lock": {
+          "bytes": 25204,
+          "sha256": "90b6ae83c1c6b662eb8e2ccdc28cabde439f3bde7c6cb7e5899a479c7b590440"
+        },
+        "Cargo.toml": {
+          "bytes": 1983,
+          "sha256": "3951a99756ac9b339501a149c547ce0e24248287a10830298ea319c006090790"
+        },
+        "Cargo.toml.orig": {
+          "bytes": 1599,
+          "sha256": "cf1d96ff463ee2680db8948e5bd5fcf2b7241381b4c530008d5e6d292bf9f186"
+        },
+        "LICENSE-APACHE": {
+          "bytes": 10847,
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+        },
+        "LICENSE-MIT": {
+          "bytes": 1093,
+          "sha256": "ab499c75a0f0da8e0fe83bf9ba3a27e5c39705310f07107c6c66b69958d2401c"
+        },
+        "README.md": {
+          "bytes": 9190,
+          "sha256": "e215f222008381c7e16c7616aea20c03e091f68f995699ca319e7f016463d905"
+        },
+        "RELEASE-NOTES.md": {
+          "bytes": 11930,
+          "sha256": "2caa288e216c82d7bea1ff8dcdd5f21cb9dfae7fbe4f79526ebf5aafef3a0b57"
+        },
+        "benches/benchmarks.rs": {
+          "bytes": 8951,
+          "sha256": "d4f47781e6b477c8d0a5ba87bb8a4b4f7d9fa7bda135172bc976caf953da930e"
+        },
+        "clippy.toml": {
+          "bytes": 16,
+          "sha256": "9992b0c89d1c43170379460a0b63e1e25732d218e64d5b66392f83337576dc5b"
+        },
+        "examples/base64.rs": {
+          "bytes": 2298,
+          "sha256": "42361a044181d278a841fdc4af7eec9698ab4887d17c4c27202bd804847c913b"
+        },
+        "icon_CLion.svg": {
+          "bytes": 2244,
+          "sha256": "cffa044ba75cb998ee3306991dc4a3755ec2f39ab95ddd4b74bc21988389020f"
+        },
+        "src/alphabet.rs": {
+          "bytes": 12435,
+          "sha256": "57c482d72d440b6d9f14916f20ec37c441a06908304e3752249969a5096abd81"
+        },
+        "src/chunked_encoder.rs": {
+          "bytes": 5308,
+          "sha256": "5fcb620338587fd04874ba60ce665004b1a0936e305269057532052b95f10ce6"
+        },
+        "src/decode.rs": {
+          "bytes": 14901,
+          "sha256": "f739f2d143700cd8fec8c299e61bb500ab4bced6f8a9a0f5f75e4681cdea9515"
+        },
+        "src/display.rs": {
+          "bytes": 2731,
+          "sha256": "31bf3e19274a0b80dd8948a81ea535944f756ef5b88736124c940f5fe1e8c71c"
+        },
+        "src/encode.rs": {
+          "bytes": 15855,
+          "sha256": "77048ba481faa9ee8f69a2e50a455cf2054c4e4b568a7e2509954e904954345a"
+        },
+        "src/engine/general_purpose/decode.rs": {
+          "bytes": 13574,
+          "sha256": "43309c606181b6bb67ebd25867df1a2c0ba708423f5e822bfddc87ad07092dbf"
+        },
+        "src/engine/general_purpose/decode_suffix.rs": {
+          "bytes": 7133,
+          "sha256": "640a1f57c970de4640a8263a4f9e339ffaed1094785fdeb732b744a0ccb03147"
+        },
+        "src/engine/general_purpose/mod.rs": {
+          "bytes": 20506,
+          "sha256": "5cf527f5fe331553c373fbd1d9ddb598de319d831cffe60aa91e41c669b270f9"
+        },
+        "src/engine/mod.rs": {
+          "bytes": 19038,
+          "sha256": "6ce97ed46c6548e97e45d5b67ad41a2028ff2353f0311ed32317e9fe3b83532b"
+        },
+        "src/engine/naive.rs": {
+          "bytes": 6742,
+          "sha256": "1afa649f854d05753b465d0da57d5c1ecf8bc507cbf8c6bc26973f324f9f87c6"
+        },
+        "src/engine/simd.rs": {
+          "bytes": 32820,
+          "sha256": "15a28ec933c6d8bd37df823b486b2d7f40a030d35458ffa0f46364480e2f6806"
+        },
+        "src/engine/tests.rs": {
+          "bytes": 72932,
+          "sha256": "2e2dc283e0147f622154b0d0a715100a9d4407e2fb898cab7c4163196c024b7f"
+        },
+        "src/lib.rs": {
+          "bytes": 12483,
+          "sha256": "181e64750ab1ddfc80e1c1f8e1fb4ce7ef63a21bc27d26d5a974b65454a66724"
+        },
+        "src/prelude.rs": {
+          "bytes": 920,
+          "sha256": "78cdbae61663dad4b9bbd201ab57b751e8a27daefe20f6363721226d44c4f401"
+        },
+        "src/read/decoder.rs": {
+          "bytes": 14362,
+          "sha256": "f9a12a0c6fb992ef3eec4905c18e1fc72acc7201bc5b8a846a4820d863e0a2bc"
+        },
+        "src/read/decoder_tests.rs": {
+          "bytes": 15854,
+          "sha256": "3c685f5d08caf7d379c41c256d6d4d534d86b7c4f28aa304aee5290df2f9e942"
+        },
+        "src/read/mod.rs": {
+          "bytes": 150,
+          "sha256": "e0b714eda02d16b1ffa6f78fd09b2f963e01c881b1f7c17b39db4e904be5e746"
+        },
+        "src/tests.rs": {
+          "bytes": 3941,
+          "sha256": "daa2fa7edcd33e32991d86e750da3075c3c49934b1d2c50e9741485474c2ad6b"
+        },
+        "src/write/encoder.rs": {
+          "bytes": 17289,
+          "sha256": "e49481470ae685a98c8943c5c90650e0240e0d64c8260fe79f7c05faa881d57e"
+        },
+        "src/write/encoder_string_writer.rs": {
+          "bytes": 6244,
+          "sha256": "77cd9faaa52e5feeed51c27e3d9d16d48a7fa0610a7d97c31374c7900cae5191"
+        },
+        "src/write/encoder_tests.rs": {
+          "bytes": 17080,
+          "sha256": "9a730fbd91305609b36716568ac862419e8b25524f4d93d8ae84f6764972890f"
+        },
+        "src/write/mod.rs": {
+          "bytes": 251,
+          "sha256": "73cd98dadc9d712b3fefd9449d97e825e097397441b90588e0051e4d3b0911b9"
+        },
+        "tests/encode.rs": {
+          "bytes": 2755,
+          "sha256": "5309f4538b1df611436f7bfba7409c725161b6f841b1bbf8d9890ae185de7d88"
+        },
+        "tests/tests.rs": {
+          "bytes": 4759,
+          "sha256": "0f9ec361f9c87a2c629c433fe4a179b66162d5d8f33caa57660f4714ff1d6e8b"
+        }
+      },
+      "metadata": {
+        "cksum": "ac07cdecf99051d9a5238b80f35af32cdeba5b336e55d957b318b50137e18da5",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "dev",
+            "name": "clap",
+            "optional": false,
+            "req": "^4.6.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "criterion",
+            "optional": false,
+            "req": "^0.7.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rand",
+            "optional": false,
+            "req": "^0.10.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rstest",
+            "optional": false,
+            "req": "^0.26.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "rstest_reuse",
+            "optional": false,
+            "req": "^0.7.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "dev",
+            "name": "strum",
+            "optional": false,
+            "req": "^0.28.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "alloc": [],
+          "default": [
+            "std",
+            "simd-unsafe"
+          ],
+          "simd-unsafe": [],
+          "std": [
+            "alloc"
+          ]
+        },
+        "name": "base64",
+        "pubtime": "2026-08-04T12:34:31Z",
+        "rust_version": "1.71.0",
+        "vers": "0.23.1",
+        "yanked": false
+      },
+      "rust_version": "1.71.0",
+      "url": "https://static.crates.io/crates/base64/base64-0.23.1.crate"
+    },
+    "utoipa-gen@6.0.1": {
+      "checksum": "d935f1c83fdf8b88f09bbe050d0cea78ea4afee6d7b0317403228c1200b2c8ab",
+      "index_sha256": "fe2a3cc959b465571f70115c968ce3e990603f8260b83de64638c65543ce29c5",
+      "members": {
+        ".cargo_vcs_info.json": {
+          "bytes": 104,
+          "sha256": "bb02d193ab767b263939cb29ca79eda6e9b9e189c7e3310a3be250939e1c987c"
+        },
+        "CHANGELOG.md": {
+          "bytes": 25847,
+          "sha256": "008733a2231f87cec13dcf84db0da716b6868e21c0ad43dd356d0ae57ec3819f"
+        },
+        "Cargo.lock": {
+          "bytes": 71300,
+          "sha256": "7d51efa5d094dd743c33561fe48f391d9c675e3c9c32e85f3b1b3f1a39d37d58"
+        },
+        "Cargo.toml": {
+          "bytes": 3310,
+          "sha256": "f5f5730b4733c8041efe894e78e774f67d9e0548a33947282a5865009709851b"
+        },
+        "Cargo.toml.orig": {
+          "bytes": 2442,
+          "sha256": "3894eef761adf2104b87528cee6d61af71b05867ee860f2c92fe86ceb84f5337"
+        },
+        "LICENSE-APACHE": {
+          "bytes": 11356,
+          "sha256": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1"
+        },
+        "LICENSE-MIT": {
+          "bytes": 1074,
+          "sha256": "82b13fb25622b1950fecb9efa76d8b3cfd956ecc136893e4fe47fbaf74fba097"
+        },
+        "README.md": {
+          "bytes": 17513,
+          "sha256": "825ec1f60aedbbe5e37256c8430df8c6d3cf36ba0843caeacb1c8dab24d6d74c"
+        },
+        "src/component.rs": {
+          "bytes": 64775,
+          "sha256": "160bfcf34afe3a3867696c29b3e1621e5e9d8cd1605ccbc3231a11831f7b7b03"
+        },
+        "src/component/features.rs": {
+          "bytes": 28176,
+          "sha256": "6cad4df7da222f69c9ace19e4dd82aecc5002589214a42b0a31a905cfb14adf4"
+        },
+        "src/component/features/attributes.rs": {
+          "bytes": 26622,
+          "sha256": "c03f1c98bd8b1d76dd658eca7c28a0e521c30547a5a9e227dd165467ed0cd0f9"
+        },
+        "src/component/features/attributes/extensions.rs": {
+          "bytes": 2436,
+          "sha256": "5f52d4d4956ca4fd07b09ce853960db1ac1da7b6ff4b1c5fa59b74063e98fe76"
+        },
+        "src/component/features/validation.rs": {
+          "bytes": 14005,
+          "sha256": "9e5cff07cd289911dc69c2be084ad4225393fbc373d09c9ad63b424f5b70bad1"
+        },
+        "src/component/features/validators.rs": {
+          "bytes": 2987,
+          "sha256": "256be6e89fe66408d55e1d3b535c6143cc71225281825b1f6358789157efa2f7"
+        },
+        "src/component/into_params.rs": {
+          "bytes": 19500,
+          "sha256": "5c097258eafe381e9dd86f3aab7968c41791afc2d41061700c38237a2dd16c6f"
+        },
+        "src/component/schema.rs": {
+          "bytes": 36632,
+          "sha256": "a9cd00fecdfa9363aafdf4f94db3a8d76feb679171980901ec9526739db9d2c0"
+        },
+        "src/component/schema/enums.rs": {
+          "bytes": 37746,
+          "sha256": "483a0a44dd1ccaabbda98619e49e630e57d708b90d013b59d538e5567257e13d"
+        },
+        "src/component/schema/features.rs": {
+          "bytes": 7455,
+          "sha256": "dae6b1aa20e57f867650c138abc4abcc70c46722d1e8afb54fab1d9d3a112a13"
+        },
+        "src/component/schema/xml.rs": {
+          "bytes": 4389,
+          "sha256": "673092bd3562e585a00172a06d9390d83883d0ac6d928078bc0d44b1f5d17f26"
+        },
+        "src/component/serde.rs": {
+          "bytes": 18163,
+          "sha256": "e00ae4194666cfc1e41719cddf4d19f29277411b8615c15ba1352476ca75cf0e"
+        },
+        "src/doc_comment.rs": {
+          "bytes": 2289,
+          "sha256": "8f06e6f0379aac9ea37af0db779d4ee482a16adb169134a92a702223ffd33910"
+        },
+        "src/ext.rs": {
+          "bytes": 16841,
+          "sha256": "8746050fcea643d19b8991857b7da51534b563049720110a0480ec83d8917e17"
+        },
+        "src/ext/actix.rs": {
+          "bytes": 10217,
+          "sha256": "b56bf4a633dec0a5f7c620816756a25e955ff1caab09298a3675a0f3536235f5"
+        },
+        "src/ext/auto_types.rs": {
+          "bytes": 460,
+          "sha256": "9aa3e347e8b9cad3bf583a4c3fc597fa69443d1e38b1966b98cb50a88de8c416"
+        },
+        "src/ext/axum.rs": {
+          "bytes": 5267,
+          "sha256": "6fc03b5ea4f44e3ce68fa5268c07935d15baa46f5ffc52b5b8fad6878e9ad7ea"
+        },
+        "src/ext/rocket.rs": {
+          "bytes": 11590,
+          "sha256": "c2e3a839422fc58af5c3334619a8ed33072038dabee441dd040b1c4beeeccb58"
+        },
+        "src/lib.rs": {
+          "bytes": 148392,
+          "sha256": "2e504e77bdd71ad58da61d765bc66c7c61ac77ef43f9e2bf350569997ec1bf07"
+        },
+        "src/openapi.rs": {
+          "bytes": 26708,
+          "sha256": "49c3fb70b0df269feeac9b27accd605149fa62233c0f9a6f59a28dce49ec537e"
+        },
+        "src/openapi/info.rs": {
+          "bytes": 14916,
+          "sha256": "01f09c2aeea1b034477807284d2e24e4a2a23a696a8b6ac1e57737a83763837e"
+        },
+        "src/path.rs": {
+          "bytes": 28572,
+          "sha256": "14c2f1aa75e79feeabf03b5e9a64b6ab36361b24ab33db7a1c6f14e63dadbc3f"
+        },
+        "src/path/example.rs": {
+          "bytes": 4518,
+          "sha256": "fd0a1e458a8946ae98acb43c9228ba6acf5099aec3240d2101c11480c26d1643"
+        },
+        "src/path/handler.rs": {
+          "bytes": 522,
+          "sha256": "fa74b162aafb7305fafa997a7dcd0e2f32c4a05982ef9c61b8e72ed226110e4f"
+        },
+        "src/path/media_type.rs": {
+          "bytes": 15081,
+          "sha256": "18ec69375b9232ebe7d99f67792aba5ae18912094baafae9bef755a5cb83c9ab"
+        },
+        "src/path/media_type/encoding.rs": {
+          "bytes": 2912,
+          "sha256": "e6e0fa4b2d10ed8c7dd4fb3ab3b2381874112012ed0f2f343ab9c4cd4a20d9e7"
+        },
+        "src/path/parameter.rs": {
+          "bytes": 19586,
+          "sha256": "07ae37d47224a3eb309b18216a9ca2546caccc8b82d8fa2e5f47b425ad6c419d"
+        },
+        "src/path/request_body.rs": {
+          "bytes": 9669,
+          "sha256": "3218e5742de7b6756b2b3370c1db859bd4e211274817efa4a6c07cb3146603fe"
+        },
+        "src/path/response.rs": {
+          "bytes": 26856,
+          "sha256": "a79472b0a0a3e60462609f923afc64fea139ac47014f78de61164340fc3a88e7"
+        },
+        "src/path/response/derive.rs": {
+          "bytes": 27309,
+          "sha256": "77409da14a8145328c80d8b29ae97ef8301f967e5f1dd592fcfe3f236988b2ff"
+        },
+        "src/path/response/header.rs": {
+          "bytes": 5187,
+          "sha256": "b7bb393ef126d0a960c18cce42d1e4bbbe4c48aef4b792c513cd937fc38b9967"
+        },
+        "src/path/response/link.rs": {
+          "bytes": 4766,
+          "sha256": "3324326237d513dd1be5234e89808bc78f2728a1069d15d24ad1cc6c3a22f744"
+        },
+        "src/path/status.rs": {
+          "bytes": 1964,
+          "sha256": "9d809e276c9d532b543436f945fb945305959b96411f6b2054508f29f03613d9"
+        },
+        "src/schema_type.rs": {
+          "bytes": 26931,
+          "sha256": "2d8883b402e984efd2506d3ef2f659bfef69b6dcaf711459324833f78bb69f35"
+        },
+        "src/security_requirement.rs": {
+          "bytes": 2201,
+          "sha256": "4364e671d8affb48e6b6fd0588044e930ee33b4a136d792d53de3412539dac18"
+        },
+        "src/server.rs": {
+          "bytes": 5202,
+          "sha256": "8521e2cb660d1844c7f5e0ca1be00e34db30903fec97da58404d5e983800213e"
+        },
+        "src/token_stream.rs": {
+          "bytes": 13582,
+          "sha256": "cb913b404bfbb1a868d77abcdca9eefb89ef5cab879ef13a629eea7cac0f8cda"
+        }
+      },
+      "metadata": {
+        "cksum": "d935f1c83fdf8b88f09bbe050d0cea78ea4afee6d7b0317403228c1200b2c8ab",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [
+              "macros"
+            ],
+            "kind": "dev",
+            "name": "actix-web",
+            "optional": false,
+            "req": "^4",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "json",
+              "query"
+            ],
+            "kind": "dev",
+            "name": "axum",
+            "optional": false,
+            "req": "^0.8.4",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "bigdecimal",
+            "optional": false,
+            "req": "^0.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "dev",
+            "name": "chrono",
+            "optional": false,
+            "req": "^0.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "json"
+            ],
+            "kind": "dev",
+            "name": "insta",
+            "optional": false,
+            "req": "^1.47",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "dev",
+            "name": "jiff",
+            "optional": false,
+            "req": "^0.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "once_cell",
+            "optional": true,
+            "req": "^1.21.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "pastey",
+            "optional": false,
+            "req": "^0.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "proc-macro2",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "quote",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "regex",
+            "optional": true,
+            "req": "^1.12",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "json"
+            ],
+            "kind": "dev",
+            "name": "rocket",
+            "optional": false,
+            "req": "^0.5",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "rust_decimal",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_json",
+            "optional": false,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_with",
+            "optional": false,
+            "req": "^3.14",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "dev",
+            "name": "smallvec",
+            "optional": false,
+            "req": "^1.15",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "full",
+              "extra-traits"
+            ],
+            "kind": "normal",
+            "name": "syn",
+            "optional": false,
+            "req": "^3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde-human-readable"
+            ],
+            "kind": "dev",
+            "name": "time",
+            "optional": false,
+            "req": ">=0.3, <0.3.52",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "ulid",
+            "optional": true,
+            "req": "^1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "url",
+            "optional": true,
+            "req": "^2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "utoipa-config",
+            "optional": true,
+            "req": "^0.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "normal",
+            "name": "uuid",
+            "optional": true,
+            "req": "^1",
+            "target": null
+          }
+        ],
+        "features": {
+          "actix_extras": [
+            "regex",
+            "syn/extra-traits"
+          ],
+          "auto_into_responses": [],
+          "axum_extras": [
+            "regex",
+            "syn/extra-traits"
+          ],
+          "bigdecimal": [],
+          "bigdecimal_float": [],
+          "chrono": [],
+          "debug": [
+            "syn/extra-traits"
+          ],
+          "decimal": [],
+          "decimal_float": [],
+          "indexmap": [],
+          "jiff_0_2": [],
+          "non_strict_integers": [],
+          "rc_schema": [],
+          "repr": [],
+          "rocket_extras": [
+            "regex",
+            "syn/extra-traits"
+          ],
+          "smallvec": [],
+          "time": [],
+          "yaml": []
+        },
+        "features2": {
+          "config": [
+            "dep:utoipa-config",
+            "dep:once_cell"
+          ],
+          "ulid": [
+            "dep:ulid"
+          ],
+          "url": [
+            "dep:url"
+          ],
+          "uuid": [
+            "dep:uuid"
+          ]
+        },
+        "name": "utoipa-gen",
+        "pubtime": "2026-09-23T15:51:17Z",
+        "rust_version": "1.88",
+        "v": 2,
+        "vers": "6.0.1",
+        "yanked": false
+      },
+      "rust_version": "1.88",
+      "url": "https://static.crates.io/crates/utoipa-gen/utoipa-gen-6.0.1.crate"
+    },
+    "utoipa-swagger-ui-vendored@0.2.0": {
+      "checksum": "552a64d6a0d251ae28bc021838800943cce60c9ec2e60ff331f54e79f696268f",
+      "index_sha256": "aedd105521b4df82a197d9106a42ec27888bd0ae0201ff8391578fb4d9446d90",
+      "members": {
+        ".cargo_vcs_info.json": {
+          "bytes": 120,
+          "sha256": "59cd1f3c177024f9ad6beffe2ec44c23c1d2147bd6019fff4a5db86c60bd618c"
+        },
+        "CHANGELOG.md": {
+          "bytes": 705,
+          "sha256": "b0b38d35563db851c8e69e38d6696dea61ca8541e2e9ad0aca2cfbd3a7367649"
+        },
+        "Cargo.lock": {
+          "bytes": 170,
+          "sha256": "3f023e7c57126328e1baf2de2bf04dfa40c40ad6c977358f0ae0650b8665372a"
+        },
+        "Cargo.toml": {
+          "bytes": 1204,
+          "sha256": "97c9edc85c3a548c693f79895bb2e94d40d46af5308e3991b2ad401db24a97da"
+        },
+        "Cargo.toml.orig": {
+          "bytes": 452,
+          "sha256": "c607b8b87398f9249c02ed2e8e2d40da9735e2e0c5be8bfddae9b18d316f308b"
+        },
+        "LICENSE-APACHE": {
+          "bytes": 11356,
+          "sha256": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1"
+        },
+        "LICENSE-MIT": {
+          "bytes": 1074,
+          "sha256": "82b13fb25622b1950fecb9efa76d8b3cfd956ecc136893e4fe47fbaf74fba097"
+        },
+        "README.md": {
+          "bytes": 2385,
+          "sha256": "3e8159c72ccaa0dc5f00ed34e3e2780b7df31ee53f6e98aa4c28a80868a43e0f"
+        },
+        "res/v5.32.6.zip": {
+          "bytes": 1797931,
+          "sha256": "b3c07e091559b59a833f66547eb1fc18f2896f96e3f1f953e2f1efb328aa3394"
+        },
+        "src/lib.rs": {
+          "bytes": 963,
+          "sha256": "b564cf8b0dbf8d0dc9ba2a98fdd2627b423853cb56221c513f0555d2ce66dc2c"
+        }
+      },
+      "metadata": {
+        "cksum": "552a64d6a0d251ae28bc021838800943cce60c9ec2e60ff331f54e79f696268f",
+        "deps": [],
+        "features": {},
+        "name": "utoipa-swagger-ui-vendored",
+        "pubtime": "2026-09-22T22:31:13Z",
+        "rust_version": "1.88",
+        "vers": "0.2.0",
+        "yanked": false
+      },
+      "rust_version": "1.88",
+      "url": "https://static.crates.io/crates/utoipa-swagger-ui-vendored/utoipa-swagger-ui-vendored-0.2.0.crate"
+    },
+    "utoipa@6.0.0": {
+      "checksum": "8765fe27aeff71012a3f90fa474cf1df863a7d0dd81ed25de4e63fff2544994f",
+      "index_sha256": "8569f8f0d3feb7168b26f0e58437b0c8873e11c88cde6021e267ffeac08e6d02",
+      "members": {
+        ".cargo_vcs_info.json": {
+          "bytes": 100,
+          "sha256": "1ba8f3a8149009461b01f9c621c244a501d9fe6732e04561a0680db4522f5d3c"
+        },
+        "CHANGELOG.md": {
+          "bytes": 24375,
+          "sha256": "d6bad3e800bfb51cdb24688b9aa6000106dd8acf6294fb3b7e709a6250883ccc"
+        },
+        "Cargo.lock": {
+          "bytes": 21156,
+          "sha256": "78fabe8577892609c9af16d8eb1782de14495da987f373140845cc752fea932c"
+        },
+        "Cargo.toml": {
+          "bytes": 2906,
+          "sha256": "a458d5cf4903a19a011a3b3d8eaeac2e266a4bb32854853321f4e2d6426a10e0"
+        },
+        "Cargo.toml.orig": {
+          "bytes": 2334,
+          "sha256": "79921eb1af8937cf8694c325a6666595c78ba08e6d544dce5c156f648dbfc509"
+        },
+        "LICENSE-APACHE": {
+          "bytes": 11356,
+          "sha256": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1"
+        },
+        "LICENSE-MIT": {
+          "bytes": 1074,
+          "sha256": "82b13fb25622b1950fecb9efa76d8b3cfd956ecc136893e4fe47fbaf74fba097"
+        },
+        "README.md": {
+          "bytes": 17513,
+          "sha256": "825ec1f60aedbbe5e37256c8430df8c6d3cf36ba0843caeacb1c8dab24d6d74c"
+        },
+        "src/gen.rs": {
+          "bytes": 20,
+          "sha256": "93992d5d729c0034ab287228f123fe6847e1e970f2f76ec3425d14a368573d43"
+        },
+        "src/lib.rs": {
+          "bytes": 62820,
+          "sha256": "1158f1127b5de67571306176a606ac308711b9ea0a9e89f186de0511934fae80"
+        },
+        "src/openapi.rs": {
+          "bytes": 59740,
+          "sha256": "360e3830458a98b64b3928c5e2d3404d9d38954aa2149a3bd8c63efe8d83ae41"
+        },
+        "src/openapi/content.rs": {
+          "bytes": 6608,
+          "sha256": "10fe03abe3b08b85aa5d9d8383930acb04bbfd7aed7acaab9fb7c05c96cff7fa"
+        },
+        "src/openapi/encoding.rs": {
+          "bytes": 6123,
+          "sha256": "a58d0ce1ee7f19903024abd85aa4eecbc13565827dfa35ee217fe72730100afa"
+        },
+        "src/openapi/example.rs": {
+          "bytes": 4940,
+          "sha256": "91fa0f2064b4f7011d19c128139a8b70c63a8aaba01c7c9620ee64301e9613d5"
+        },
+        "src/openapi/extensions.rs": {
+          "bytes": 3577,
+          "sha256": "b93c9016255ea6684a11ad223a085c656e7a2191671b109680f827907c65ff21"
+        },
+        "src/openapi/external_docs.rs": {
+          "bytes": 2094,
+          "sha256": "0380c403abfe98b76936d96797247f72e5047bf2487eb8fa163dbd15409a8a16"
+        },
+        "src/openapi/header.rs": {
+          "bytes": 7634,
+          "sha256": "50a54366fed31ba954c4efc97c632c59309d2e687de400286f026d337a30c888"
+        },
+        "src/openapi/info.rs": {
+          "bytes": 9340,
+          "sha256": "4e5051998bd1829fc54393eb53e2294f7b8b55f23b806c2f45459abbd8919306"
+        },
+        "src/openapi/link.rs": {
+          "bytes": 5860,
+          "sha256": "6131099d9bf8fb5328798d1fb77641c45ccbf2940de54983a9dd74ae77d6178b"
+        },
+        "src/openapi/path.rs": {
+          "bytes": 44027,
+          "sha256": "560ef085e7da0c40617c6ecd8d0883080f518e0e32ed10e00a3bb4443116808c"
+        },
+        "src/openapi/request_body.rs": {
+          "bytes": 6129,
+          "sha256": "1217bd6131214ed5626f06eee21864b5da92a4a9ce361529719831bfcb2f382e"
+        },
+        "src/openapi/response.rs": {
+          "bytes": 10427,
+          "sha256": "d30c32b57863b1f3784ba7a34b5577c3c0987e5feabd0e6785e31144113e0393"
+        },
+        "src/openapi/schema.rs": {
+          "bytes": 118758,
+          "sha256": "941fd8df7d6072ff15e21c8992ec0aaa9c6c400aa87c17ed102e726f467f7998"
+        },
+        "src/openapi/security.rs": {
+          "bytes": 49914,
+          "sha256": "7bd72ab6de3714e04f8c411beda069f1ec23523649f46674cdc47ff35c4e93ab"
+        },
+        "src/openapi/server.rs": {
+          "bytes": 9763,
+          "sha256": "06dfc24ce14455ef41b52e614501c0a301a203590e223d6582a27d10456e613d"
+        },
+        "src/openapi/tag.rs": {
+          "bytes": 3269,
+          "sha256": "965cdd438c9f91cf1bfeae8ca4196535bd1aef0a39359352acaabb0fe94768af"
+        },
+        "src/openapi/xml.rs": {
+          "bytes": 4553,
+          "sha256": "097747beef369c2a4e598f91d1aea11b14ab2b3409cd53d8221a172ee2ac658f"
+        }
+      },
+      "metadata": {
+        "cksum": "8765fe27aeff71012a3f90fa474cf1df863a7d0dd81ed25de4e63fff2544994f",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "normal",
+            "name": "indexmap",
+            "optional": false,
+            "req": "^2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "json",
+              "redactions"
+            ],
+            "kind": "dev",
+            "name": "insta",
+            "optional": false,
+            "req": "^1.47",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "normal",
+            "name": "serde",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "serde_json",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "utoipa-gen",
+            "optional": true,
+            "req": "^6.0.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "yaml_serde",
+            "optional": true,
+            "req": "^0.10.4",
+            "target": null
+          }
+        ],
+        "features": {
+          "openapi_extensions": [],
+          "preserve_order": [],
+          "preserve_path_order": []
+        },
+        "features2": {
+          "actix_extras": [
+            "utoipa-gen?/actix_extras"
+          ],
+          "auto_into_responses": [
+            "utoipa-gen?/auto_into_responses"
+          ],
+          "axum_extras": [
+            "utoipa-gen?/axum_extras"
+          ],
+          "bigdecimal": [
+            "utoipa-gen?/bigdecimal"
+          ],
+          "bigdecimal_float": [
+            "utoipa-gen?/bigdecimal_float"
+          ],
+          "chrono": [
+            "utoipa-gen?/chrono"
+          ],
+          "config": [
+            "utoipa-gen?/config"
+          ],
+          "debug": [
+            "utoipa-gen?/debug"
+          ],
+          "decimal": [
+            "utoipa-gen?/decimal"
+          ],
+          "decimal_float": [
+            "utoipa-gen?/decimal_float"
+          ],
+          "default": [
+            "macros"
+          ],
+          "indexmap": [
+            "utoipa-gen?/indexmap"
+          ],
+          "jiff_0_2": [
+            "utoipa-gen?/jiff_0_2"
+          ],
+          "macros": [
+            "dep:utoipa-gen"
+          ],
+          "non_strict_integers": [
+            "utoipa-gen?/non_strict_integers"
+          ],
+          "rc_schema": [
+            "utoipa-gen?/rc_schema"
+          ],
+          "repr": [
+            "utoipa-gen?/repr"
+          ],
+          "rocket_extras": [
+            "utoipa-gen?/rocket_extras"
+          ],
+          "smallvec": [
+            "utoipa-gen?/smallvec"
+          ],
+          "time": [
+            "utoipa-gen?/time"
+          ],
+          "ulid": [
+            "utoipa-gen?/ulid"
+          ],
+          "url": [
+            "utoipa-gen?/url"
+          ],
+          "uuid": [
+            "utoipa-gen?/uuid"
+          ],
+          "yaml": [
+            "dep:yaml_serde",
+            "utoipa-gen?/yaml"
+          ]
+        },
+        "name": "utoipa",
+        "pubtime": "2026-09-22T22:30:17Z",
+        "rust_version": "1.88",
+        "v": 2,
+        "vers": "6.0.0",
+        "yanked": false
+      },
+      "rust_version": "1.88",
+      "url": "https://static.crates.io/crates/utoipa/utoipa-6.0.0.crate"
+    }
+  },
+  "source_code_executed": false
+}

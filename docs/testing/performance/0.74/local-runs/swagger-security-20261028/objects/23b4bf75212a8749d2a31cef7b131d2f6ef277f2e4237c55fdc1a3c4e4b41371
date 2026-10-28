@@ -1,0 +1,39 @@
+"""Read-only source/DB/toolchain observations after the final exact command."""
+from pathlib import Path
+from datetime import datetime,timezone
+import hashlib,json,os,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/swagger-security-20261028'
+OUT=BASE/'postflight'
+OUT.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def write(name,value):(OUT/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n')
+write('intent.json',dict(utc=datetime.now(timezone.utc).isoformat(),source_sha256=sha(Path(__file__).read_bytes()),
+ gate_replay=False,read_only=True))
+db='C:/Users/ArturBuzov/.cargo/advisory-dbs/advisory-db-3157b0e258782691'
+with (OUT/'stdout.log').open('xb') as stdout,(OUT/'stderr.log').open('xb') as stderr:
+ def command(argv):
+  value=subprocess.run(argv,cwd=ROOT,stdout=subprocess.PIPE,stderr=stderr,timeout=15,check=True,
+   env=dict(os.environ,RUSTUP_AUTO_INSTALL='0')).stdout
+  return value
+ revision=command(['git','-C',db,'rev-parse','HEAD']).decode().strip()
+ assert not command(['git','-C',db,'status','--porcelain'])
+ head=command(['git','rev-parse','HEAD']).decode().strip()
+ assert head=='11c17e7cfc68594e380d87028d43d1a7942a7dcb'
+ toolchains={}
+ for version in ('1.88.0','1.94.0'):
+  rustc=command(['rustc','+'+version,'-vV']).decode()
+  cargo=command(['cargo','+'+version,'--version']).decode()
+  assert 'release: '+version+'\n' in rustc and cargo.startswith('cargo '+version+' ')
+  paths={name:Path(command(['rustup','which','--toolchain',version,name]).decode().strip()) for name in ('rustc','cargo')}
+  toolchains[version]=dict(rustc_version=rustc,cargo_version=cargo,
+   executables={n:dict(path=str(p),sha256=sha(p.read_bytes())) for n,p in paths.items()})
+ result=dict(source_commit=head,advisory_db_commit=revision,advisory_db_clean=True,
+  preflight_db_pin_claimed=False,immutable_per_lookup_db_pin_claimed=False,
+  same_as_previous_sys_postflight=revision=='99670cfc0bc574433034b75876a4b791ccaa2efb',
+  swagger_override_names=[k for k in os.environ if k.startswith('SWAGGER_UI_')],
+  toolchains=toolchains,gate_replayed=False,workspace_pass=False,release_admitted=False)
+ assert not result['swagger_override_names']
+ write('result.json',result)
+ stdout.write(json.dumps(dict(head=head,db=revision,toolchains=list(toolchains))).encode())
+print(json.dumps(dict(head=head,db=revision,toolchains=list(toolchains))))
