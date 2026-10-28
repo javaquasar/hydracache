@@ -136,3 +136,13 @@ deadline or live check is replaced. Current execution requires the complete
 `target/swagger-security-20261028/runner-controls` receipt for these exact helpers.
 Inherited `SWAGGER_UI_*` overrides refuse before Cargo because they are outside
 the reviewed registry-vendored asset path. The older receipts stay historical.
+
+The subsequent YAML successor uses `yaml_inputs.py` and SHA-pinned
+`yaml-inputs.json` to reconstruct both complete preceding lock/xtask manifest
+bodies. Both original Swagger and sys inverse proofs still execute; the root
+manifest's Swagger proof also stays mandatory. Only these three named inherited
+auxiliary entries change, with all Rust sources, target/module inventories and
+live checks retained. Historical Swagger API tests use its immutable packet;
+new controls separately validate the current YAML bodies and refusal paths.
+Execution requires the distinct complete
+`target/yaml-security-20261028/runner-controls` receipt for the current helpers.
