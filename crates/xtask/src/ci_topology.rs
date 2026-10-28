@@ -5,10 +5,8 @@ use std::error::Error;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-const FROZEN_TOPOLOGY: &str = "docs/testing/memory/0.71/ci-topology.json";
-const LIVE_TOPOLOGY: &str = "docs/testing/ci-topology.json";
-const IMAP_EXTENSION: &str = "docs/testing/imap/0.75/ci-topology-extension.json";
-const IMAP_WORKFLOW: &str = ".github/workflows/imap-075.yml";
+// The 0.71 snapshot is a frozen measurement input, not the mutable workflow inventory.
+const DEFAULT_TOPOLOGY: &str = "docs/testing/ci-topology.json";
 const JOB_CLASSES: [&str; 5] = [
     "core",
     "release-only",
@@ -16,6 +14,10 @@ const JOB_CLASSES: [&str; 5] = [
     "manual-protected",
     "publish",
 ];
+
+const FROZEN_TOPOLOGY: &str = "docs/testing/memory/0.71/ci-topology.json";
+const IMAP_EXTENSION: &str = "docs/testing/imap/0.75/ci-topology-extension.json";
+const IMAP_WORKFLOW: &str = ".github/workflows/imap-075.yml";
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -110,7 +112,7 @@ pub fn check(root: &Path, release: &str) -> Result<(), Box<dyn Error>> {
 
 fn default_topology(root: &Path) -> PathBuf {
     // Newer branches maintain a live inventory separately from the frozen measurement input.
-    let live = root.join(LIVE_TOPOLOGY);
+    let live = root.join(DEFAULT_TOPOLOGY);
     if live.exists() {
         live
     } else {
