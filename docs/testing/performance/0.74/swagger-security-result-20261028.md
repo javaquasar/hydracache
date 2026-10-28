@@ -20,14 +20,23 @@ The exact registry-vendored UI is 5.32.6, replacing the old 5.17.14 UI. This is
 an intentional static documentation asset update, not a cache protocol change.
 
 Swagger 10 also depends on utoipa 6. The application deliberately keeps its
-existing utoipa 5.5.0 generator and macros. The existing typed `openapi()` handler
-now explicitly serves the same public `/swagger-ui/openapi.json`; Swagger's
+existing utoipa 5.5.0 generator and macros. An explicitly cached typed document
+now serves the same public `/swagger-ui/openapi.json`; Swagger's
 configuration points to that path instead of taking a differently versioned
 OpenApi Rust object. No unchecked JSON bridge, schema regeneration, new
 deserialization or fallback document is used. `/openapi.json` and sandbox data
 retain their existing token guard; Swagger HTML/assets/document remain public
 as before. Existing paths, JSON type, headers, method and traversal refusals
 are covered by before/after HTTP tests.
+
+Final review also restores Swagger 9's document ownership: one generated
+utoipa 5 document is retained in an Arc and serialized through a typed Json
+response. The first migration reused the ordinary `openapi()` handler, which
+would regenerate the document per request. That earlier source's complete
+milestone remains separate; the Arc-preserving successor has its own four HTTP
+cases, check/Clippy and Rust 1.88 all-target checks. All pass with stable source
+frames. No measured allocation or latency improvement is claimed. The ordinary
+protected `/openapi.json` handler is unchanged.
 
 The complete OpenAPI response is byte-identical before/after: 117,641 bytes,
 SHA-256 `989c92b97e9c4475792864fd073664a6ac81cf2f246f38492412636fa2768414`,
@@ -128,9 +137,14 @@ this new dependency graph.
 
 ## Milestone and remaining work
 
-The next operation is the one original workspace command on a clean committed
-candidate, with its original stages, limits, floors and Job retirement. Its exact
-outcome will be appended after execution. Focused Windows/MSRV compatibility does
+The first original workspace command on clean source
+`836800c836580a26f7fa0beb4eaeab41ff764d58` completes eleven stages and then
+refuses seven remaining advisories. All three ZIP findings disappear; the nine
+following stages remain unstarted. Its frame postflight and owned retirement
+pass. This is the pre-Arc-preservation source, not an interchangeable suffix for
+the successor. The next operation is the original command on the committed Arc
+successor with the same stages, limits and floors; its exact outcome will be
+appended after execution. Focused Windows/MSRV compatibility does
 not establish a full package, Linux/browser gate, server rehearsal or production
 admission. D-Bus/MSRV, YAML and chitchat/Zstd security blockers remain separate;
 no other dependency migration or performance candidate is mixed into this step.

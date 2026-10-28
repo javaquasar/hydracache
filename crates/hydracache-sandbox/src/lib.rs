@@ -723,11 +723,17 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .merge(sim_routes::router())
         .route_layer(middleware::from_fn_with_state(state.clone(), sandbox_auth))
         .with_state(state);
+    // Swagger 9 retained this document in an Arc rather than regenerating it
+    // per request. Keep that ownership while using the original utoipa 5 type.
+    let swagger_document = Arc::new(SandboxApiDoc::openapi());
     let router = Router::new()
         .merge(sandbox_routes)
         // Keep the existing utoipa 5 document and its public Swagger endpoint.
         // The UI's transitive utoipa 6 types must not regenerate our API schema.
-        .route("/swagger-ui/openapi.json", get(openapi))
+        .route(
+            "/swagger-ui/openapi.json",
+            get(move || async { Json(swagger_document) }),
+        )
         .merge(
             SwaggerUi::new("/swagger-ui")
                 .config(utoipa_swagger_ui::Config::from("/swagger-ui/openapi.json")),
