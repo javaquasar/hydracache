@@ -8,6 +8,10 @@ The [first server result](server-preparation-profile-result-20261028.md) refuses
 at enrollment on unchanged causal expiry. Outputs records 6,668.333 ms wall /
 6,581.329 ms parent CPU; nested spans overlap and no comparative gain is claimed.
 CI retirement and unchanged host postflight pass. No retry or original delivery.
+The [offline outputs decomposition](server-preparation-outputs-analysis-20261028.md)
+then binds the compiled step/stage enums: nine Starting effects total 29.452 ms
+wall, versus 46 ReservedLive steps / 5,626.445 ms. No fresh measurement, syscall-only
+claim, check-frequency change or admission follows.
 
 The [first real local manager baseline](original-manager-baseline-result-20261028.md)
 fails closed before held send: causal age 10,005,213,283 ns exceeds the unchanged

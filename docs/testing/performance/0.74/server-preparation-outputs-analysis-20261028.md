@@ -1,0 +1,69 @@
+# Offline outputs/Starting attribution from the first server profile
+
+This analysis reads only the immutable first server packet, index SHA256
+`16cea26f61984e9f07cf434cc17d0ad21961159cb55d61374dfb8d5d5e446b2f`.
+Every raw member is hash/size checked. The observed enum indexes are bound to the
+exact compiled validation-frame and Starting-storage sources before naming them.
+No process fixture, measurement, server command or clock/service operation runs.
+The original expired enrollment result and original 300/60/10 windows stay exact.
+
+## What the existing boundary observations distinguish
+
+| Outputs section | Wall ms | Parent CPU ms |
+| --- | ---: | ---: |
+| Starting, including surrounding validation | 2,754.319 | 2,724.962 |
+| pipes, including validation | 858.241 | 858.230 |
+| sinks, including validation | 3,055.760 | 2,998.126 |
+
+The nine exact `st-effect`/`st-effected` pairs total **29.452 ms wall / 0.148 ms
+parent CPU**. These are enclosing storage-effect regions, not syscall-only
+measurements. CreateDirectorySynced spans 14.781 ms wall, FileSynced 14.577 ms,
+DirectorySynced 0.001 ms. The other six regions include create, prefix/remaining
+writes, sealing and two no-op stage transitions. Validation and storage inspection
+around those pairs remain outside them. No fsync or durable effect is removed.
+
+All eight validation steps have **46 calls and 46 completions**, in original
+source order. Their independent step windows sum to 6,576.106 ms wall:
+
+| Step | Wall ms | Authentication calls |
+| --- | ---: | ---: |
+| StorageBefore | 5.907 | 0 |
+| ReservedLive | 5,626.445 | 736 |
+| Progress | 177.932 | 46 |
+| Causal | 145.156 | 0 |
+| Prepared | 275.282 | 0 |
+| Consent | 194.915 | 0 |
+| StorageAfter | 5.763 | 0 |
+| FinalClocks | 144.705 | 0 |
+
+These step windows do not overlap each other; their nested kernel/live/auth views
+do. Do not add those nested views again or interpret the authentication count as
+authentication CPU. No per-step CPU is present in the original trace. This sample
+places the bulk of observed outputs wall time in ReservedLive under the unchanged
+frequency, rather than the measured Starting effects. It is not a repeatable
+performance comparison, exact syscall decomposition or permission to remove
+intermediate observations. All original checks and admitted origins remain.
+
+The observer itself is instrumented and its overhead is not independently
+subtracted. CPU excludes children; the host was not exclusive. Actual original
+service delivery, completion/cells 2–4, writer retirement before cleanup and
+same-attempt reconnect remain unproved. No implementation gain is accepted by
+this read-only decomposition.
+
+## Analysis checks and next boundary
+
+Three offline controls cover exact pairing/disjoint accounting, unknown CPU and
+eight tampered/incomplete observation cases: unmatched/nested stages, backward
+clock data, reordered or incomplete rounds, changed guard semantics, duplicate
+boundary and impossible aggregate duration all refuse. Enum census must be
+unique and simple; the actual compiled source checksum precedes interpretation.
+The first server result is neither replaced nor retried.
+
+Continue security/caller integration and local gates independently. A future
+execution candidate may change only confirmed leaf implementation costs with
+the same live check count/order/windows; a change to observation frequency would
+require the operator's separate architectural decision. No further live attempt
+is included here. The original packet and this derived report must not be joined
+with unrelated successful tests to declare a release gate green.
+
+[Derived packet](local-runs/server-preparation-outputs-analysis-20261028/index.json): eight members, index SHA256 3a9d5ef5f7e7bace1193924518be9b90f711b7ba2d8c84da2f41446dabfec598.

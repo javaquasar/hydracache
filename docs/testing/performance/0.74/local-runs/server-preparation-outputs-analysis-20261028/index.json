@@ -1,0 +1,41 @@
+{
+  "admission": false,
+  "files": {
+    "diagnostic_collector_starting_storage.rs": {
+      "bytes": 12973,
+      "sha256": "22bafaef0b1e2dfe2006d1b173932ff7668e01707898218e0286b598a3e666f2"
+    },
+    "diagnostic_validation_frame.rs": {
+      "bytes": 12966,
+      "sha256": "6ae6d77f724c03e6449342f22152e685216af477172f39c6239d329ae0b78e6e"
+    },
+    "producer.py": {
+      "bytes": 6248,
+      "sha256": "349c8531102e860f433d0d502582b0382da478f168cc1e9b0e6dbf246180d437"
+    },
+    "report.md": {
+      "bytes": 3614,
+      "sha256": "1ab557abfa8684570dda20e4ae1ece995d4b51deff158b7d42bd10f86d2bf932"
+    },
+    "result.json": {
+      "bytes": 2819,
+      "sha256": "d945ffcb070f58021caea25accfa58869aa0c54978ddd3609af0ac30bd87657b"
+    },
+    "tool/analyze.py": {
+      "bytes": 6248,
+      "sha256": "349c8531102e860f433d0d502582b0382da478f168cc1e9b0e6dbf246180d437"
+    },
+    "tool/run.py": {
+      "bytes": 8563,
+      "sha256": "7964e0c49350cfee9632ac3ba79bfa268bd697987a75b0eec7eda83960b3ff73"
+    },
+    "tool/test_analysis.py": {
+      "bytes": 2929,
+      "sha256": "21804f31937010bd0f05e0f1164d45a654530eebcb7f1da3f5a61a77b5161fdd"
+    }
+  },
+  "new_measurement": false,
+  "new_server_run": false,
+  "original_index_sha256": "16cea26f61984e9f07cf434cc17d0ad21961159cb55d61374dfb8d5d5e446b2f",
+  "schema_version": 1
+}

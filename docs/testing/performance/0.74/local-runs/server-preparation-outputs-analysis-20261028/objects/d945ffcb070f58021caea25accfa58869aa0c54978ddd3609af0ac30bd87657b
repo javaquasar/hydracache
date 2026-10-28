@@ -1,0 +1,135 @@
+{
+  "admission": false,
+  "first_refusal_preserved": true,
+  "nested_views_overlap": true,
+  "new_measurement": false,
+  "new_server_run": false,
+  "original_delivery_proven": false,
+  "original_index_sha256": "16cea26f61984e9f07cf434cc17d0ad21961159cb55d61374dfb8d5d5e446b2f",
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "output_sections": [
+    {
+      "process_cpu_ns": 2724961646,
+      "section": "starting",
+      "wall_ns": 2754319425
+    },
+    {
+      "process_cpu_ns": 858229650,
+      "section": "pipes",
+      "wall_ns": 858240966
+    },
+    {
+      "process_cpu_ns": 2998125697,
+      "section": "sinks",
+      "wall_ns": 3055760187
+    }
+  ],
+  "parent_cpu_only": true,
+  "performance_improvement_proven": false,
+  "source_unchanged": true,
+  "storage_effect_process_cpu_ns": 148010,
+  "storage_effect_wall_ns": 29451782,
+  "storage_effects": [
+    {
+      "process_cpu_ns": 1120,
+      "stage": "BeforeCreate",
+      "wall_ns": 1120
+    },
+    {
+      "process_cpu_ns": 25000,
+      "stage": "Created",
+      "wall_ns": 24979
+    },
+    {
+      "process_cpu_ns": 8590,
+      "stage": "CreateDirectorySynced",
+      "wall_ns": 14780655
+    },
+    {
+      "process_cpu_ns": 28440,
+      "stage": "PrefixWritten",
+      "wall_ns": 28430
+    },
+    {
+      "process_cpu_ns": 18570,
+      "stage": "BytesWritten",
+      "wall_ns": 18579
+    },
+    {
+      "process_cpu_ns": 18310,
+      "stage": "Sealed",
+      "wall_ns": 18300
+    },
+    {
+      "process_cpu_ns": 45760,
+      "stage": "FileSynced",
+      "wall_ns": 14577478
+    },
+    {
+      "process_cpu_ns": 1460,
+      "stage": "DirectorySynced",
+      "wall_ns": 1470
+    },
+    {
+      "process_cpu_ns": 760,
+      "stage": "Acknowledging",
+      "wall_ns": 771
+    }
+  ],
+  "syscall_only_cost": false,
+  "validation_step_wall_ns": 6576105810,
+  "validation_steps": [
+    {
+      "authentication_calls": 0,
+      "calls": 46,
+      "step": "StorageBefore",
+      "wall_ns": 5907328
+    },
+    {
+      "authentication_calls": 736,
+      "calls": 46,
+      "step": "ReservedLive",
+      "wall_ns": 5626445295
+    },
+    {
+      "authentication_calls": 46,
+      "calls": 46,
+      "step": "Progress",
+      "wall_ns": 177931791
+    },
+    {
+      "authentication_calls": 0,
+      "calls": 46,
+      "step": "Causal",
+      "wall_ns": 145155920
+    },
+    {
+      "authentication_calls": 0,
+      "calls": 46,
+      "step": "Prepared",
+      "wall_ns": 275282382
+    },
+    {
+      "authentication_calls": 0,
+      "calls": 46,
+      "step": "Consent",
+      "wall_ns": 194915225
+    },
+    {
+      "authentication_calls": 0,
+      "calls": 46,
+      "step": "StorageAfter",
+      "wall_ns": 5763311
+    },
+    {
+      "authentication_calls": 0,
+      "calls": 46,
+      "step": "FinalClocks",
+      "wall_ns": 144704558
+    }
+  ]
+}
