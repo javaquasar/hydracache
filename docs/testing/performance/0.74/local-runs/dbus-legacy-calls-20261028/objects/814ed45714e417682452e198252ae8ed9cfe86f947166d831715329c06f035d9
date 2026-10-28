@@ -1,0 +1,68 @@
+"""Inert complete helper-corpus audit and first-outcome retention."""
+from pathlib import Path
+import importlib.util,json,re,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/dbus-legacy-calls-20261028';OUT=ROOT/'docs/testing/performance/0.74/local-runs/dbus-legacy-calls-20261028'
+spec=importlib.util.spec_from_file_location('hc074_legacy_seal',ROOT/'tools/dbus-legacy-calls-074/run.py');r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
+sha=r.sha;read=lambda p:json.loads(p.read_bytes())
+contexts={'first':BASE,'observed':BASE/'observed','partial-sender':BASE/'fixed','final':BASE/'fixed-sender'}
+for label in ('first','observed','partial-sender'):
+ folder=contexts[label];test=read(folder/'session/fd-194-test/result.json')
+ assert test['exit']==101 and test['accounting']['complete'] and test['accounting']['passed']==68 and test['accounting']['failed']==10 and test['accounting']['selected']==78
+ assert all(name.startswith('legacy_calls::') for name,status in test['accounting']['executed'] if status=='FAILED')
+ if label!='first':assert b'Invalid unique name' in (folder/'session/fd-194-test/stdout.log').read_bytes()
+final=contexts['final'];native=read(final/'session/native-result.json');assert native['passed'] and native['source_unchanged'] and native['boot_unchanged'] and len(native['phases'])==10
+streams=[];timed=[]
+for compiler in ('194','188'):
+ test=read(final/f'session/fd-{compiler}-test/result.json');listing=read(final/f'session/fd-{compiler}-list/result.json')
+ assert test['exit']==0 and test['artifact']==listing['artifact'] and len(listing['inventory'])==78
+ assert test['accounting']['passed']==test['accounting']['selected']==78 and test['accounting']['failed']==test['accounting']['filtered']==0
+ raw=(final/f'session/fd-{compiler}-test/stdout.log').read_bytes()
+ records=[json.loads(v.split(b':',1)[1]) for v in raw.splitlines() if v.startswith(b'HC074_LEGACY_TRACE:')]
+ assert len(records)==24
+ streams.append([v for v in records if v['label']!='stop-original-timeout'])
+ timeout=[v for v in records if v['label']=='stop-original-timeout'];assert len(timeout)==1 and timeout[0]['calls']>=2;timed.append(timeout[0]['calls'])
+ assert sum(v['calls'] for v in streams[-1])==34
+ for action in ('build','list','test','check','clippy'):
+  assert read(final/f'session/fd-{compiler}-{action}/result.json')['exit']==0
+  execution=read(final/f'session/fd-{compiler}-{action}/execution.json');assert execution['retired'] and not execution['errors']
+assert streams[0]==streams[1]
+for folder in contexts.values():
+ review=read(folder/'prepare/result.json');assert r.files(folder/'input')==review['files']
+ original=(folder/'prepare/systemd_unit.rs').read_bytes();assert sha(original)==r.SOURCE_SHA
+ projection,chunks=r.projection(original,review['native_root'])
+ assert projection==(folder/'input/fd/probe/src/legacy_calls.rs').read_bytes()
+ for name,body in chunks.items():assert body==(folder/'prepare'/(name+'.rs')).read_bytes()
+assert read(ROOT/'target/dbus-legacy-final-20261028/controls/result.json')['exit']==1
+assert read(ROOT/'target/dbus-legacy-final-20261028/controls-export/result.json')['exit']==0
+assert read(ROOT/'target/dbus-legacy-final-20261028/format/result.json')['exit']==0
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members;members[name]=dict(sha256=digest,bytes=len(raw))
+for label,folder in contexts.items():
+ for area in ('prepare','input','session'):
+  for path in sorted((folder/area).rglob('*')):
+   if path.is_file() and '__pycache__' not in path.parts:add('capture/'+label+'/'+path.relative_to(folder).as_posix(),path)
+for mode in ('controls','controls-export','format'):
+ for path in sorted((ROOT/'target/dbus-legacy-final-20261028'/mode).iterdir()):
+  if path.is_file():add('capture/final-checks/'+mode+'/'+path.name,path)
+for path in sorted((ROOT/'target/dbus-legacy-caller-inventory-20261028').iterdir()):
+ if path.is_file():add('capture/census/'+path.name,path)
+for path in sorted((ROOT/'tools/dbus-legacy-calls-074').rglob('*')):
+ if path.is_file() and '__pycache__' not in path.parts:add('source/'+path.relative_to(ROOT).as_posix(),path)
+for name in ('Cargo.toml','Cargo.lock','deny.toml','docs/testing/performance/0.74/qualification-manifest.toml','tools/long-run-supervisor-074/Cargo.toml','tools/long-run-supervisor-074/src/systemd_unit.rs','tools/dbus-linux-074/native.py','tools/dbus-linux-074/run.py','tools/dbus-source-package-074/run.py','tools/dbus-fragments-074/run.py','tools/windows-workspace-preflight-074/owned.py','tools/windows-workspace-preflight-074/prepare.py','scripts/ci/watchdog_linux_group.py','scripts/ci/watchdog_windows_job.py','target/seal-dbus-legacy-20261028.py','target/dbus-legacy-step-20261028.py'):
+ add('source/'+name,ROOT/name)
+add('predecessor/index.json',ROOT/'docs/testing/performance/0.74/local-runs/dbus-source-package-20261028/index.json')
+index=dict(schema='hc074-whole-legacy-helpers-v1',members=members,native_passes_per_compiler=78,predecessor_cases=67,new_cases=11,whole_original_helpers=8,original_connection_sites=4,
+ scripted_scenarios_per_compiler=24,fixed_acquisitions_per_compiler=34,timeout_acquisitions=timed,stable_transcripts_equal=True,
+ original_source_sha256=r.SOURCE_SHA,first_native_outcomes=[dict(passed=68,failed=10)]*3,inert_controls=8,
+ lexical_direct_files=18,module_closure_complete=False,root_changed=False,system_bus=False,services=False,server=False,clocks_changed=False,
+ original_execution_admitted=False,release_admitted=False,performance_claim=False,product_gate_replayed=False,
+ source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip())
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()),timeout_acquisitions=timed)))

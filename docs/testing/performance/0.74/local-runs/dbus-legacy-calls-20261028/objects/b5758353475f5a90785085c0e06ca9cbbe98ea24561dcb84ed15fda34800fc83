@@ -1,0 +1,51 @@
+import unittest,json,re
+from pathlib import Path
+import run,native
+class Controls(unittest.TestCase):
+ def test_exact_whole_helper_bodies_and_four_connection_sites(self):
+  raw=(run.ROOT/'tools/long-run-supervisor-074/src/systemd_unit.rs').read_bytes()
+  projection,chunks=run.projection(raw,run.NATIVE)
+  for body in chunks.values():self.assertEqual(projection.count(body),1)
+  self.assertEqual(projection.count(b'Connection::system()?'),4)
+  self.assertEqual(projection.count(b'let deadline = Instant::now() + Duration::from_secs(timeout_seconds);'),2)
+  self.assertEqual(projection.count(b'std::thread::sleep(Duration::from_millis(100));'),2)
+  self.assertNotIn(b'CampaignManifest',projection)
+ def test_source_drift_refuses_before_projection(self):
+  raw=(run.ROOT/'tools/long-run-supervisor-074/src/systemd_unit.rs').read_bytes()
+  for changed in (raw+b'\n',raw.replace(b'timeout_seconds > 300',b'timeout_seconds > 600',1)):
+   with self.assertRaises(ValueError):run.projection(changed,run.NATIVE)
+ def test_complete_old_and_added_catalog(self):
+  review=json.loads((run.BASE/'prepare/result.json').read_bytes())
+  self.assertEqual(len(set(review['baseline']+review['extras'])),78)
+  extra=[n for n in review['extras'] if n.startswith('legacy_calls::')];self.assertEqual(len(extra),11)
+  source=(run.ROOT/'tools/dbus-legacy-calls-074/fixture.rs').read_text(encoding='utf8')
+  self.assertEqual(len(re.findall(r'#\[test\]\s*fn ',source)),11)
+ def test_input_source_and_protected_product_guards(self):
+  review=json.loads((run.BASE/'prepare/result.json').read_bytes())
+  self.assertEqual(run.files(run.BASE/'input'),review['files'])
+  self.assertEqual(run.parent.parent.fragment.prior.parent.old.root_inputs(),review['root_inputs'])
+  self.assertEqual(review['legacy_source_sha256'],run.SOURCE_SHA)
+ def test_no_dependency_or_vendor_delta(self):
+  previous=run.ROOT/'target/dbus-source-package-20261028/input'
+  for variant in ('baseline','fd'):
+   self.assertEqual((run.BASE/'input'/variant/'Cargo.lock').read_bytes(),(previous/variant/'Cargo.lock').read_bytes())
+   for crate in ('zbus','zbus_macros','zbus_utils'):self.assertEqual(run.files(run.BASE/'input'/variant/crate),run.files(previous/variant/crate))
+ def test_native_worker_binds_same_context_and_offline_msrv(self):
+  owner=native.configured(run.ROOT,4)
+  self.assertEqual(owner.BASE,run.BASE);self.assertEqual(owner.NATIVE.as_posix(),run.NATIVE)
+  self.assertEqual(owner.session.__globals__['__file__'],str(Path(native.__file__)))
+  argv,env,_,_,_,_=owner.command('fd-188-clippy',{})
+  for flag in ('--offline','--locked','-D'):self.assertIn(flag,argv)
+  self.assertEqual(env['CARGO_INCREMENTAL'],'0')
+ def test_only_fixed_dispatch(self):
+  self.assertEqual(run.native_command(4)[-1],'session')
+  with self.assertRaises(ValueError):run.native_command(3)
+ def test_test_only_factory_keeps_all_original_function_bodies(self):
+  text=(run.BASE/'input/fd/probe/src/legacy_calls.rs').read_text(encoding='utf8')
+  self.assertIn('use fixture::Connection;',text)
+  fixture=(run.ROOT/'tools/dbus-legacy-calls-074/fixture.rs').read_text(encoding='utf8')
+  self.assertNotIn('.sender(SYSTEMD_DESTINATION)',fixture)
+  self.assertIn('.sender(ifbus{BUS}else{":1.1"});',''.join(fixture.split()))
+  for name in run.NAMES:self.assertEqual(len(re.findall(r'fn '+name+r'\(',text)),1)
+  lib=(run.BASE/'input/fd/probe/src/lib.rs').read_text(encoding='utf8');self.assertIn('#[cfg(test)]\npub mod legacy_calls;',lib)
+if __name__=='__main__':unittest.main()

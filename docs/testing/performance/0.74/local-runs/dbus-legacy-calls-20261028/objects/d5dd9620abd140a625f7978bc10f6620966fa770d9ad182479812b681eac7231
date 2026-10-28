@@ -1,0 +1,42 @@
+{
+  "boot_after": "24fa8945-e4a4-4027-9c3f-7022bec0e372",
+  "boot_before": "24fa8945-e4a4-4027-9c3f-7022bec0e372",
+  "boot_unchanged": true,
+  "clocks_after": {
+    "CLOCK_BOOTTIME": 51884995931,
+    "CLOCK_MONOTONIC": 51884995084,
+    "CLOCK_MONOTONIC_RAW": 51792699975,
+    "CLOCK_REALTIME": 1793175146336307437
+  },
+  "clocks_before": {
+    "CLOCK_BOOTTIME": 2667151268,
+    "CLOCK_MONOTONIC": 2667150449,
+    "CLOCK_MONOTONIC_RAW": 2601808442,
+    "CLOCK_REALTIME": 1793175097118463135
+  },
+  "clocks_changed": false,
+  "first_refusal": {
+    "reason": "first GNU phase refusal: fd-194-test",
+    "type": "ValueError"
+  },
+  "native_root": "/home/artur/.cache/hydracache-074-dbus-legacy-calls/20261028-a2",
+  "passed": false,
+  "phases": [
+    {
+      "exit": 0,
+      "label": "fd-194-build"
+    },
+    {
+      "exit": 0,
+      "label": "fd-194-list"
+    },
+    {
+      "exit": 101,
+      "label": "fd-194-test"
+    }
+  ],
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

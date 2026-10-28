@@ -122,3 +122,9 @@ final graph adoption and complete product package/workspace gates. The prior
 root formatting debt is not changed or relabeled passed by scoped vendor
 formatting. Original execution/all-writer retirement, lifecycle/SIGKILL/lost-ACK,
 reconnection and compatible host/trust admission remain independent blockers.
+
+The subsequent [whole legacy helper gate](dbus-legacy-calls-result-20261028.md)
+retains these exact source-package Rust/manifests/lock and adds eleven tests of
+eight complete original legacy helper bodies. Both GNU compilers pass 78/78 with
+check/strict Clippy. The first fixture sender/cleanup diagnostics remain; no package
+source, production caller, live frame, deadline or admission changes follow.

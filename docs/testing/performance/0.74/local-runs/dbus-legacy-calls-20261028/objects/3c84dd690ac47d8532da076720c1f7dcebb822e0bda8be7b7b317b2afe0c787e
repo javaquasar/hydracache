@@ -1,0 +1,36 @@
+"""Owned fixed local commands; no package, clock, service or server authority."""
+from pathlib import Path
+import ast,json,os,shutil,subprocess,sys
+ROOT=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(ROOT/'tools/dbus-legacy-calls-074'));import run
+r=run.parent.parent.fragment.prior
+mode=sys.argv[1];assert mode in ('controls','controls-export','format','doc-check','verify')
+OUT=ROOT/'target/dbus-legacy-final-20261028'/mode
+argv={'verify':[sys.executable,'-B',str(ROOT/'target/verify-dbus-legacy-20261028.py')],
+ 'controls-export':[sys.executable,'-B','-m','unittest','discover','-s','tools/dbus-legacy-calls-074','-p','test_controls.py','-v'],
+ 'controls':[sys.executable,'-B','-m','unittest','discover','-s','tools/dbus-legacy-calls-074','-p','test_controls.py','-v'],
+ 'format':['rustfmt','+1.94.0','--edition','2024','--check',str(ROOT/'tools/dbus-legacy-calls-074/fixture.rs')],
+ 'doc-check':[str(ROOT/'target/debug/xtask.exe'),'doc-check']}[mode]
+if len(sys.argv)==3:
+ assert sys.argv[2]=='--worker'
+ def capacity():
+  if shutil.disk_usage(ROOT).free<r.p.FLOOR:raise r.owned.CapacityError('original 4 GiB floor')
+ result=r.owned._owned(r.owned.load_job().WindowsJob(),argv,str(ROOT),capacity,bound=1200)
+ r.write(OUT,'execution.json',result);raise SystemExit(result['exit'])
+OUT.mkdir(parents=True,exist_ok=False);(OUT/'producer.py').write_bytes(Path(__file__).read_bytes())
+with (OUT/'stdout.log').open('xb') as stdout,(OUT/'stderr.log').open('xb') as stderr:
+ try:
+  before=dict(source=r.snapshot(),head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),input=run.files(run.BASE/'input'))
+  if mode=='doc-check':before['documents']={p.relative_to(ROOT).as_posix():r.sha(p.read_bytes()) for p in sorted((ROOT/'docs').rglob('*.md'))};before['executable_sha256']=r.sha(Path(argv[0]).read_bytes())
+  r.write(OUT,'intent.json',dict(argv=argv,inputs=before,bound=1200,floor=r.p.FLOOR,poll=5,retirement=5,retry=False))
+  child=subprocess.Popen([sys.executable,'-B',str(Path(__file__)),mode,'--worker'],cwd=ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr)
+  try:code=child.wait(timeout=1210)
+  except subprocess.TimeoutExpired:child.kill();child.wait(timeout=5);raise ValueError('worker lost; no PID fallback')
+  execution=json.loads((OUT/'execution.json').read_bytes());assert execution['retired'] and not execution['errors']
+  assert before['source']==r.snapshot() and before['head']==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip() and before['input']==run.files(run.BASE/'input')
+  if mode=='doc-check':
+   assert before['executable_sha256']==r.sha(Path(argv[0]).read_bytes())
+   assert before['documents']=={p.relative_to(ROOT).as_posix():r.sha(p.read_bytes()) for p in sorted((ROOT/'docs').rglob('*.md'))}
+  r.write(OUT,'result.json',dict(exit=code,inputs_unchanged=True,release_admitted=False))
+ except BaseException as error:r.write(OUT,'refusal.json',dict(type=type(error).__name__,reason=str(error)));raise
+print(json.dumps(dict(mode=mode,exit=code)));raise SystemExit(code)

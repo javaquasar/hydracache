@@ -515,6 +515,16 @@ pass. Registry/shipping qualification, full caller/source/effect and product gat
 remain required. Source reconstruction does not reopen the declined Chitchat
 preview or provide signed host/original execution authority.
 
+The [whole legacy helper gate](dbus-legacy-calls-result-20261028.md) copies eight
+original bodies unchanged and preserves their four acquisition sites under a
+private provider. All 78 cases pass, plus check/strict Clippy on GNU Rust 1.94/1.88;
+eight inert controls and formatting pass. The three first 68/10 fixture outcomes
+are retained and attributed to invalid reply Sender construction, including a
+partial repair. The final 24 scenarios retain exact modes, properties, lazy reads,
+preconditions, no retry and original timeout loops. A pinned 18-file direct-use
+census does not close AST/module/transitive resolution. Full manager/kernel/held
+caller migration, source/effect and product gates remain unqualified.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

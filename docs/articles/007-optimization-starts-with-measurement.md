@@ -22285,3 +22285,37 @@ consumer-проверки, совместимый security-путь Chitchat и 
 Original execution, прекращение записи writers и восстановление связи требуют
 собственных доказательств. Архивы, SHA, команды и ограничения приведены в
 [отчёте source-package](../testing/performance/0.74/dbus-source-package-result-20261028.md).
+
+### 0.74: полные legacy start/stop/reset helpers на новом bridge
+
+Следующий compatibility-gate проверяет уже не только чтение свойств и ReplyState,
+но и восемь целых исходных helper-функций systemd_unit. Их тела не редактировались.
+Четыре места Connection::system направлены через приватный test-only provider;
+каждое успешное получение даёт новое p2p-соединение. Реальный systemd не вызывается,
+original-owner/kernel frame не подменяется успешной заглушкой: он в этот legacy
+корпус не входит и требует отдельного доказательства.
+
+На первом полном прогоне получили 68 проходов и 10 отказов из 78. Все 67 прежних
+кейсов оставались зелёными. Ошибка fixture скрывалась за BrokenPipe: cleanup сводил
+JoinError к boolean. Отдельная диагностическая версия сохранила отказ и показала
+InvalidName. В Sender ответа ошибочно использовался well-known destination systemd,
+а нужен unique name. Первая правка затронула только error-ответы и снова дала 68/10;
+это тоже сохранено. Финальный fixture исправляет обе ветви на :1.1, оставляя исходный
+адрес запросов прежним. Проверки callers и deadlines не менялись.
+
+Оба GNU-компилятора — Rust 1.94 и MSRV 1.88 — затем дали 78/78, check и строгий
+Clippy. В 24 сценариях проверены шесть форм свойств и их порядок, fail/replace modes,
+ошибочные ответы, disconnect, отсутствие повтора после withheld ACK, ранние policy
+отказы, lazy GetNameOwner/GetAll и свежие инспекции. Reset требует failed/failed,
+нулевой PID и пустой cgroup; продолжающийся failed не выдаётся за retirement.
+Исходный stop-loop с допустимым timeout=1 достигает прежнего StopTimeout без
+пересоздания deadline. Это функциональное покрытие, а не измерение ускорения.
+
+Восемь inert-контролей и форматирование проходят; первый отказ layout-sensitive
+контроля тоже сохранён. Лексический census закрепляет 18 прямых zbus/wire-файлов,
+но не объявляет закрытыми AST/module/transitive зависимости. Root dependency graph,
+продуктовые callers, live-проверки, лимиты и qualification identity прежние.
+Далее нужны полный manager/kernel/held migration и source/effect review, shipping
+consumer и product gates. Прекращение записи всех writers и lifecycle/reconnect
+не следуют из успешного legacy ответа. Источники и первые результаты собраны в
+[отчёте legacy helpers](../testing/performance/0.74/dbus-legacy-calls-result-20261028.md).

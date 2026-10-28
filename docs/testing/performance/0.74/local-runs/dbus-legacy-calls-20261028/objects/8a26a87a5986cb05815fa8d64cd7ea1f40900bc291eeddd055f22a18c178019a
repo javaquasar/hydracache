@@ -1,0 +1,15 @@
+"""Read-only lexical caller inventory, explicitly not an AST/module closure proof."""
+from pathlib import Path
+import hashlib,json,re
+ROOT=Path(__file__).resolve().parent.parent;OUT=ROOT/'target/dbus-legacy-caller-inventory-20261028';OUT.mkdir(exist_ok=False)
+rows={}
+for p in sorted((ROOT/'tools/long-run-supervisor-074/src').rglob('*.rs')):
+ raw=p.read_bytes();text=raw.decode()
+ refs=[dict(line=i,text=line) for i,line in enumerate(text.splitlines(),1) if re.search(r'\bzbus::|\bzvariant::',line)]
+ if refs:rows[p.relative_to(ROOT).as_posix()]=dict(sha256=hashlib.sha256(raw).hexdigest(),references=refs,crate_imports=re.findall(r'use crate::([^;]+);',text))
+assert len(rows)==18
+result=dict(schema='hc074-zbus-direct-lexical-census-v1',direct_source_files=18,files=rows,ast_or_module_closure_complete=False,macro_or_transitive_resolution_proved=False,
+ selected_unchanged_legacy_helpers=['start_transient_unit','inspect_unit','inspect_unit_optional','stop_unit_and_wait','reset_failed_unit_and_wait','inspect_loaded_unit','dbus_properties','validate_unit_name'],
+ original_manager_channel_and_kernel_frames_included_in_shadow=False,root_caller_or_dependency_changed=False,release_admitted=False)
+(OUT/'producer.py').write_bytes(Path(__file__).read_bytes());(OUT/'result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf8',newline='\n')
+print('18 direct files pinned; full AST/module closure remains open')

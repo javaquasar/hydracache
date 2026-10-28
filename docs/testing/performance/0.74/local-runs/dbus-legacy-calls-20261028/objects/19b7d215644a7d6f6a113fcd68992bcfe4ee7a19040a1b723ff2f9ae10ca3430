@@ -1,0 +1,13 @@
+test_complete_old_and_added_catalog (test_controls.Controls.test_complete_old_and_added_catalog) ... ok
+test_exact_whole_helper_bodies_and_four_connection_sites (test_controls.Controls.test_exact_whole_helper_bodies_and_four_connection_sites) ... ok
+test_input_source_and_protected_product_guards (test_controls.Controls.test_input_source_and_protected_product_guards) ... ok
+test_native_worker_binds_same_context_and_offline_msrv (test_controls.Controls.test_native_worker_binds_same_context_and_offline_msrv) ... ok
+test_no_dependency_or_vendor_delta (test_controls.Controls.test_no_dependency_or_vendor_delta) ... ok
+test_only_fixed_dispatch (test_controls.Controls.test_only_fixed_dispatch) ... ok
+test_source_drift_refuses_before_projection (test_controls.Controls.test_source_drift_refuses_before_projection) ... ok
+test_test_only_factory_keeps_all_original_function_bodies (test_controls.Controls.test_test_only_factory_keeps_all_original_function_bodies) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.230s
+
+OK

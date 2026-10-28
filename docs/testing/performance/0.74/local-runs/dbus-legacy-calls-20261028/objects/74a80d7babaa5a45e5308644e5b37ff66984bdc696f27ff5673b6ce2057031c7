@@ -1,0 +1,59 @@
+fn inspect_loaded_unit(unit_name: &str) -> Result<UnitSnapshot, UnitError> {
+    let connection = Connection::system()?;
+    let manager = Proxy::new(
+        &connection,
+        SYSTEMD_DESTINATION,
+        SYSTEMD_MANAGER_PATH,
+        SYSTEMD_MANAGER_INTERFACE,
+    )?;
+    let path: OwnedObjectPath = manager.call("GetUnit", &(unit_name,))?;
+    let unit = Proxy::new(
+        &connection,
+        SYSTEMD_DESTINATION,
+        path.as_str(),
+        SYSTEMD_UNIT_INTERFACE,
+    )?;
+    let service = Proxy::new(
+        &connection,
+        SYSTEMD_DESTINATION,
+        path.as_str(),
+        SYSTEMD_SERVICE_INTERFACE,
+    )?;
+    Ok(UnitSnapshot {
+        unit_name: unit_name.to_owned(),
+        active_state: unit.get_property("ActiveState")?,
+        sub_state: unit.get_property("SubState")?,
+        main_pid: service.get_property("MainPID")?,
+        control_group: service.get_property("ControlGroup")?,
+        result: service.get_property("Result")?,
+    })
+}
+
+fn dbus_properties(spec: &TransientUnitSpec) -> Vec<(&str, Value<'_>)> {
+    spec.properties
+        .iter()
+        .map(|(name, property)| {
+            let value = match property {
+                UnitProperty::Text(value) => Value::from(value),
+                UnitProperty::Boolean(value) => Value::from(*value),
+                UnitProperty::Unsigned(value) => Value::from(*value),
+                UnitProperty::Bytes(value) => Value::from(value),
+                UnitProperty::Strings(value) => Value::from(value),
+                UnitProperty::Commands(commands) => Value::from(
+                    commands
+                        .iter()
+                        .map(|command| {
+                            (
+                                command.path.as_str(),
+                                command.argv.iter().map(String::as_str).collect::<Vec<_>>(),
+                                command.ignore_failure,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                ),
+            };
+            (*name, value)
+        })
+        .collect()
+}
+

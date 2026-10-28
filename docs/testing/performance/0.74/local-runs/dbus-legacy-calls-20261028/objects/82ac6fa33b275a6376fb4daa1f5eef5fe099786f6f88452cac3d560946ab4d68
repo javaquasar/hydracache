@@ -1,0 +1,66 @@
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExecCommand {
+    pub path: String,
+    pub argv: Vec<String>,
+    pub ignore_failure: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum UnitProperty {
+    Text(String),
+    Boolean(bool),
+    Unsigned(u64),
+    Bytes(Vec<u8>),
+    Strings(Vec<String>),
+    Commands(Vec<ExecCommand>),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TransientUnitSpec {
+    pub unit_name: String,
+    pub properties: Vec<(&'static str, UnitProperty)>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitSnapshot {
+    pub unit_name: String,
+    pub active_state: String,
+    pub sub_state: String,
+    pub main_pid: u32,
+    pub control_group: String,
+    pub result: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UnitMismatch {
+    UnitName,
+    ActiveState,
+    SubState,
+    MainPid,
+    ControlGroup,
+    Result,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AttachableUnitState {
+    Live,
+    Terminal,
+}
+
+#[derive(Debug, Error)]
+pub enum UnitError {
+    #[error("systemd unit name is outside the fixed HydraCache 0.74 namespace")]
+    UnitName,
+    #[error("systemd D-Bus inspection failed: {0}")]
+    Dbus(#[from] zbus::Error),
+    #[error("transient systemd unit policy or campaign path is invalid")]
+    Policy,
+    #[error("transient systemd unit policy serialization failed: {0}")]
+    Json(#[from] serde_json::Error),
+    #[error("systemd unit identity differs: {0:?}")]
+    Mismatch(Vec<UnitMismatch>),
+    #[error("systemd unit did not stop within the frozen diagnostic grace")]
+    StopTimeout,
+}
+

@@ -171,3 +171,9 @@ inert archive/export controls pass. This is local, unsigned source preparation,
 not registry qualification, product adoption or a new dependency-policy verdict.
 Chitchat S remains declined after its separate allocation attribution; its earlier
 green functional tests must not be used to reverse that decision silently.
+
+The [whole legacy systemd helper gate](dbus-legacy-calls-result-20261028.md) now
+passes 78 cases plus check/strict Clippy on GNU Rust 1.88/1.94, preserving eight
+original helper bodies and all 67 earlier identities. Invalid fixture reply-sender
+construction, its diagnostic and partial-repair failures remain. This advances
+caller compatibility without root integration or a full module/source/effect proof.

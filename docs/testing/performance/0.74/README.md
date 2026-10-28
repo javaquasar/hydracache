@@ -7376,3 +7376,12 @@ inert controls and source formatting pass. A rebuild-only command needs retained
 repository inputs rather than old build trees. The unsigned source package is
 not published/registry-qualified or root-adopted. Chitchat preview stays declined;
 complete migration/source/effect/product and original-execution gates remain open.
+
+The [whole legacy helper continuation](dbus-legacy-calls-result-20261028.md)
+passes 78/78, check and strict Clippy on GNU Rust 1.94/1.88. Eight exact original
+helper bodies use a private fresh-connection provider; eleven new functions cover
+24 start/stop/reset/read/error/lost-ACK/timeout scenarios beside all 67 prior cases.
+All first 68/10 fixture refusals and the layout-sensitive control refusal remain.
+Eight corrected inert controls and Rust formatting pass. No root caller/graph or
+original live frame is changed; full module/source/effect/product and authenticated
+execution/all-writer/recovery gates remain open.

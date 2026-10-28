@@ -1,0 +1,14 @@
+fn validate_unit_name(value: &str) -> Result<(), UnitError> {
+    if value.starts_with(UNIT_PREFIX)
+        && value.ends_with(".service")
+        && value.len() > UNIT_PREFIX.len() + ".service".len()
+        && value.len() <= 255
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.' | b'@'))
+    {
+        Ok(())
+    } else {
+        Err(UnitError::UnitName)
+    }
+}

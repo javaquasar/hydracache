@@ -1,0 +1,449 @@
+{
+  "ast_or_module_closure_complete": false,
+  "direct_source_files": 18,
+  "files": {
+    "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs": {
+      "crate_imports": [],
+      "references": [
+        {
+          "line": 4,
+          "text": "use zbus::message::{Message, Type};"
+        },
+        {
+          "line": 5,
+          "text": "use zbus::zvariant::OwnedObjectPath;"
+        },
+        {
+          "line": 165,
+          "text": "                & !(zbus::message::Flags::NoReplyExpected as u8)"
+        }
+      ],
+      "sha256": "3a10d18ef079e33da17e7e48dc28b34e43c11fcc315985bdc91f82d3bcd1ddbf"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs": {
+      "crate_imports": [],
+      "references": [
+        {
+          "line": 5,
+          "text": "use zbus::zvariant::serialized::Data;"
+        }
+      ],
+      "sha256": "fbc7ce7072957d5543e9bbe8815127fb781b4a567996315f920ff75b0b2c6905"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs": {
+      "crate_imports": [],
+      "references": [
+        {
+          "line": 5,
+          "text": "use zbus::zvariant::{Fd, Value};"
+        },
+        {
+          "line": 58,
+          "text": "        (\"no-reply\", zbus::message::Flags::NoReplyExpected),"
+        },
+        {
+          "line": 59,
+          "text": "        (\"no-auto\", zbus::message::Flags::NoAutoStart),"
+        },
+        {
+          "line": 60,
+          "text": "        (\"interactive\", zbus::message::Flags::AllowInteractiveAuth),"
+        },
+        {
+          "line": 336,
+          "text": "                .with_flags(zbus::message::Flags::NoAutoStart)"
+        }
+      ],
+      "sha256": "32668eb8d87dd62a71c9c677c16e9d1146bf447ff1a44144f33eaef7fa50470b"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_dispatch_negotiated_tests.rs": {
+      "crate_imports": [],
+      "references": [
+        {
+          "line": 12,
+          "text": "use zbus::connection::socket::{BoxedSplit, ReadHalf, Split, WriteHalf};"
+        },
+        {
+          "line": 13,
+          "text": "use zbus::export::{async_trait::async_trait, futures_core::Stream};"
+        },
+        {
+          "line": 14,
+          "text": "use zbus::{Connection, MatchRule, MessageStream};"
+        },
+        {
+          "line": 61,
+          "text": "    async fn peer_credentials(&mut self) -> io::Result<zbus::fdo::ConnectionCredentials> {"
+        },
+        {
+          "line": 87,
+          "text": "    async fn peer_credentials(&mut self) -> io::Result<zbus::fdo::ConnectionCredentials> {"
+        },
+        {
+          "line": 180,
+          "text": "            zbus::connection::Builder::socket(socket)"
+        },
+        {
+          "line": 181,
+          "text": "                .auth_mechanism(zbus::AuthMechanism::External)"
+        },
+        {
+          "line": 286,
+          "text": "        assert!(matches!(sent, Err(zbus::Error::Unsupported)));"
+        }
+      ],
+      "sha256": "a9c1b3caa736074e78d5ac67934472a1f53e126cf5d0c77030370bf3bb80895f"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_flags_tests.rs": {
+      "crate_imports": [],
+      "references": [
+        {
+          "line": 3,
+          "text": "use zbus::message::{Builder, Flags};"
+        }
+      ],
+      "sha256": "2a931adae40f43147c5ee7050354e62afc54c05120c18a730a01bbf69c84b7cc"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs": {
+      "crate_imports": [],
+      "references": [
+        {
+          "line": 170,
+          "text": "        zbus::message::Builder::from(good.header())"
+        },
+        {
+          "line": 182,
+          "text": "            let flags = header.primary().flags() | zbus::message::Flags::NoReplyExpected;"
+        },
+        {
+          "line": 184,
+          "text": "            builder = zbus::message::Builder::from(header);"
+        },
+        {
+          "line": 188,
+          "text": "                .with_flags(zbus::message::Flags::NoAutoStart)"
+        }
+      ],
+      "sha256": "d1d970db92b60c0c474932f55210b29c0eaf632d5ad15636763dfe8034a07116"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire.rs": {
+      "crate_imports": [
+        "systemd_unit::UnitProperty",
+        "diagnostic_kernel_admission::KernelError",
+        "protocol::MAX_PACKET_BYTES"
+      ],
+      "references": [
+        {
+          "line": 9,
+          "text": "use zbus::{"
+        },
+        {
+          "line": 11,
+          "text": "    zvariant::{Fd, OwnedObjectPath, Value},"
+        },
+        {
+          "line": 212,
+          "text": "                    & !(zbus::message::Flags::NoReplyExpected as u8)"
+        }
+      ],
+      "sha256": "57e1758273e0116dc4b5288cb6f05618ecc50222f5a84935985095254ff27059"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_loaded.rs": {
+      "crate_imports": [
+        "canonical_json",
+        "diagnostic_lease::DiagnosticState",
+        "diagnostic_manager::{ManagerScope, ManagerSnapshot}",
+        "diagnostic_unit::{build_diagnostic_unit_spec, diagnostic_start_intent}",
+        "systemd_unit::{TransientUnitSpec, UnitProperty}",
+        "diagnostic_manager::take",
+        "diagnostic_lease::{DiagnosticIdentity, DiagnosticStage}"
+      ],
+      "references": [
+        {
+          "line": 9,
+          "text": "use zbus::zvariant::OwnedValue;"
+        },
+        {
+          "line": 598,
+          "text": "        use zbus::zvariant::Value;"
+        }
+      ],
+      "sha256": "dedbee622bc143a7177c7edb660d115338c14cb9e845a7c891bc086e0ae974eb"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_manager.rs": {
+      "crate_imports": [
+        "diagnostic_lease::{validate_identity, DiagnosticIdentity, SURFACES}",
+        "diagnostic_loaded::{decode_settings, InvocationGuard, LoadedSettings, LoadedSnapshot}",
+        "{canonical_json, is_hash}"
+      ],
+      "references": [
+        {
+          "line": 13,
+          "text": "use zbus::blocking::{connection::Builder, Connection, Proxy};"
+        },
+        {
+          "line": 14,
+          "text": "use zbus::zvariant::{OwnedObjectPath, OwnedValue};"
+        },
+        {
+          "line": 608,
+          "text": "    zbus::blocking::proxy::Builder::new(connection)"
+        },
+        {
+          "line": 615,
+          "text": "        .cache_properties(zbus::proxy::CacheProperties::No)"
+        },
+        {
+          "line": 656,
+          "text": "fn decode_reply<R: for<'de> zbus::zvariant::DynamicDeserialize<'de>>("
+        },
+        {
+          "line": 657,
+          "text": "    message: &zbus::Message,"
+        },
+        {
+          "line": 675,
+          "text": "    B: Serialize + zbus::zvariant::DynamicType,"
+        },
+        {
+          "line": 676,
+          "text": "    R: for<'de> zbus::zvariant::DynamicDeserialize<'de>,"
+        },
+        {
+          "line": 680,
+          "text": "        Err(zbus::Error::MethodError(name, _, message)) => {"
+        },
+        {
+          "line": 829,
+          "text": "        let method = zbus::Message::method_call(\"/org/freedesktop/systemd1\", \"GetUnit\")"
+        },
+        {
+          "line": 833,
+          "text": "        let reply = zbus::Message::method_return(&method.header())"
+        },
+        {
+          "line": 1170,
+          "text": "        use zbus::zvariant::Value;"
+        }
+      ],
+      "sha256": "7950deead36bcc6514f1c2f73be3cbce126a6e7a3bff3d1a55d11eac0be674db"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs": {
+      "crate_imports": [],
+      "references": [
+        {
+          "line": 5,
+          "text": "use zbus::{Connection, Message};"
+        },
+        {
+          "line": 61,
+          "text": "    if reply.message_type() != zbus::message::Type::MethodReturn"
+        },
+        {
+          "line": 63,
+          "text": "        || reply.primary_header().flags().bits() & !(zbus::message::Flags::NoReplyExpected as u8)"
+        },
+        {
+          "line": 80,
+          "text": "async fn query<R: for<'de> zbus::zvariant::DynamicDeserialize<'de>>("
+        },
+        {
+          "line": 146,
+          "text": "                let connection = zbus::connection::Builder::unix_stream(stream)"
+        },
+        {
+          "line": 147,
+          "text": "                    .auth_mechanism(zbus::AuthMechanism::External)"
+        }
+      ],
+      "sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs": {
+      "crate_imports": [],
+      "references": [
+        {
+          "line": 3,
+          "text": "use zbus::zvariant::Fd;"
+        },
+        {
+          "line": 5,
+          "text": "pub(super) fn trace_query(response: &zbus::Result<Message>, client: &str, kind: Query) {"
+        },
+        {
+          "line": 13,
+          "text": "                kind.member(),reply.message_type()==zbus::message::Type::MethodReturn,"
+        },
+        {
+          "line": 23,
+          "text": "            matches!(error, zbus::Error::MethodError(..))"
+        },
+        {
+          "line": 60,
+          "text": "        let flags = header.primary().flags() | zbus::message::Flags::NoReplyExpected;"
+        },
+        {
+          "line": 66,
+          "text": "        zbus::message::Builder::from(header)"
+        },
+        {
+          "line": 96,
+          "text": "            .with_flags(zbus::message::Flags::NoAutoStart)"
+        },
+        {
+          "line": 101,
+          "text": "            .with_flags(zbus::message::Flags::AllowInteractiveAuth)"
+        }
+      ],
+      "sha256": "3d6567947ff6073ea76f95bbf8916a91f3d7d6560a22ad51686208d1259cb3f6"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_manager_held_delivery.rs": {
+      "crate_imports": [
+        "diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::HeldRequest"
+      ],
+      "references": [
+        {
+          "line": 4,
+          "text": "use zbus::export::futures_core::Stream;"
+        },
+        {
+          "line": 16,
+          "text": "                let mut stream = zbus::MessageStream::from(&self.connection);"
+        }
+      ],
+      "sha256": "b6c341382843857204ca8dc10edde89f4aa0ecb2417d3eafee642964dd7499e5"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_manager_sandbox_query.rs": {
+      "crate_imports": [],
+      "references": [
+        {
+          "line": 3,
+          "text": "use zbus::zvariant::{OwnedObjectPath, OwnedValue};"
+        },
+        {
+          "line": 12,
+          "text": "    if reply.message_type() != zbus::message::Type::MethodReturn"
+        },
+        {
+          "line": 14,
+          "text": "        || reply.primary_header().flags().bits() & !(zbus::message::Flags::NoReplyExpected as u8)"
+        }
+      ],
+      "sha256": "f8f52fa47e09d9b7ee977c3595cf2269ed80228a0df24bb566d300a50a2612ba"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_original_manager_message.rs": {
+      "crate_imports": [
+        "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport as canonical",
+        "systemd_unit::TransientUnitSpec"
+      ],
+      "references": [
+        {
+          "line": 8,
+          "text": "use zbus::message::{Message, Type};"
+        },
+        {
+          "line": 58,
+          "text": "    let build = || -> zbus::Result<Message> {"
+        }
+      ],
+      "sha256": "95ba07f143ead7683c2c3d20b178560f6d086d2643f09f030f690b45fd9b17da"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_units.rs": {
+      "crate_imports": [
+        "systemd_unit::UnitProperty"
+      ],
+      "references": [
+        {
+          "line": 4,
+          "text": "use zbus::zvariant::Value;"
+        },
+        {
+          "line": 68,
+          "text": "            .with_flags(zbus::message::Flags::NoReplyExpected)"
+        }
+      ],
+      "sha256": "0e57912330b92230885f15eaee932dc303a51bf78b47a0835ab40cbbf1334d1f"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs": {
+      "crate_imports": [
+        "systemd_unit::{TransientUnitSpec, UnitProperty}"
+      ],
+      "references": [
+        {
+          "line": 11,
+          "text": "use zbus::message::{Message, Type};"
+        },
+        {
+          "line": 12,
+          "text": "use zbus::zvariant::{Fd, Value};"
+        },
+        {
+          "line": 28,
+          "text": "    Encoding(#[from] zbus::Error),"
+        }
+      ],
+      "sha256": "e761ec070542dca7268ecacd3dbd43d09cb6f5ed05bc19933a35e1589a109a1b"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs": {
+      "crate_imports": [
+        "diagnostic_lease::{DiagnosticIdentity, DiagnosticStage}"
+      ],
+      "references": [
+        {
+          "line": 56,
+          "text": "                .with_flags(zbus::message::Flags::NoReplyExpected)"
+        }
+      ],
+      "sha256": "f88e0f99f22380c37617300e6bb1074668a2064e37e4195fdda8b332fb5bd10f"
+    },
+    "tools/long-run-supervisor-074/src/systemd_unit.rs": {
+      "crate_imports": [
+        "manifest::CampaignManifest",
+        "spawn::SpawnIntent",
+        "{canonical_json, sha256_hex, ProcessIdentity, Role}",
+        "ProcessIdentity"
+      ],
+      "references": [
+        {
+          "line": 9,
+          "text": "use zbus::blocking::{Connection, Proxy};"
+        },
+        {
+          "line": 10,
+          "text": "use zbus::zvariant::{OwnedObjectPath, Value};"
+        },
+        {
+          "line": 81,
+          "text": "    Dbus(#[from] zbus::Error),"
+        },
+        {
+          "line": 265,
+          "text": "        Err(UnitError::Dbus(zbus::Error::MethodError(name, _, _)))"
+        },
+        {
+          "line": 297,
+          "text": "            Err(UnitError::Dbus(zbus::Error::MethodError(name, _, _)))"
+        },
+        {
+          "line": 340,
+          "text": "            Err(UnitError::Dbus(zbus::Error::MethodError(name, _, _)))"
+        }
+      ],
+      "sha256": "4b8f35e341b489f5928206b2df3f09525abb081b937e35cefd5c1ca1bad01cac"
+    }
+  },
+  "macro_or_transitive_resolution_proved": false,
+  "original_manager_channel_and_kernel_frames_included_in_shadow": false,
+  "release_admitted": false,
+  "root_caller_or_dependency_changed": false,
+  "schema": "hc074-zbus-direct-lexical-census-v1",
+  "selected_unchanged_legacy_helpers": [
+    "start_transient_unit",
+    "inspect_unit",
+    "inspect_unit_optional",
+    "stop_unit_and_wait",
+    "reset_failed_unit_and_wait",
+    "inspect_loaded_unit",
+    "dbus_properties",
+    "validate_unit_name"
+  ]
+}

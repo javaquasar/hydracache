@@ -1,0 +1,56 @@
+from pathlib import Path
+import hashlib,json,subprocess,sys
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/dbus-legacy-final-20261028'
+prefix='docs/testing/performance/0.74/local-runs/'
+OUT=ROOT/(prefix+'dbus-legacy-calls-verification-20261028')
+docs={'docs/testing/performance/0.74/dbus-legacy-calls-result-20261028.md','docs/testing/performance/0.74/README.md',
+ 'docs/testing/performance/0.74/release-closure-execution-plan-20261026.md','docs/testing/performance/0.74/remaining-security-feasibility-20261028.md',
+ 'docs/testing/performance/0.74/dbus-source-package-result-20261028.md','docs/articles/007-optimization-starts-with-measurement.md'}
+sha=lambda b:hashlib.sha256(b).hexdigest()
+if sys.argv[1]=='retain':
+ OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+ def add(name,path):
+  assert path.is_file() and not path.is_symlink() and not path.is_junction()
+  raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+  if dest.exists():assert dest.read_bytes()==raw
+  else:dest.write_bytes(raw)
+  assert name not in members;members[name]=dict(sha256=digest,bytes=len(raw))
+ for mode in ('verify','doc-check'):
+  result=json.loads((BASE/mode/'result.json').read_bytes());assert result['exit']==0 and result['inputs_unchanged']
+  execution=json.loads((BASE/mode/'execution.json').read_bytes());assert execution['retired'] and not execution['errors']
+  for path in sorted((BASE/mode).iterdir()):
+   if path.is_file():add('capture/'+mode+'/'+path.name,path)
+ doc_intent=json.loads((BASE/'doc-check/intent.json').read_bytes())
+ for name in docs:assert doc_intent['inputs']['documents'][name]==sha((ROOT/name).read_bytes())
+ for name in sorted(docs|{'target/verify-dbus-legacy-20261028.py','target/dbus-legacy-step-20261028.py','target/retain-dbus-legacy-20261028.py'}):add('source/'+name,ROOT/name)
+ index=dict(schema='hc074-legacy-helpers-verification-v1',members=members,primary_index_sha256='eb82212e5e93a10017712b4499ad4b288e8e1018801aa0d64b9184a04e3417f6',
+  source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),doc_check=True,
+  whole_original_helpers_verified=8,scripted_scenarios_per_compiler=24,native_passes_per_compiler=78,archive_code_executed_in_verification=False,
+  registry_qualified=False,root_adopted=False,release_admitted=False)
+ (OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf8',newline='\n')
+ (OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf8',newline='\n')
+ print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))
+else:
+ assert sys.argv[1]=='staged'
+ prefixes=[prefix+n for n in ('dbus-legacy-calls-20261028/','dbus-legacy-calls-verification-20261028/')]
+ names=[n.decode() for n in subprocess.check_output(['git','diff','--cached','--name-only','-z'],cwd=ROOT).split(b'\0') if n]
+ assert names and docs.issubset(names)
+ assert subprocess.check_output(['git','rev-parse','--show-object-format'],cwd=ROOT).strip()==b'sha1'
+ entries=subprocess.check_output(['git','ls-files','--stage','-z','--',*sorted(docs),*prefixes],cwd=ROOT).split(b'\0');oids={}
+ for entry in entries:
+  if not entry:continue
+  meta,name=entry.split(b'\t',1);mode,oid,stage=meta.split();assert mode==b'100644' and stage==b'0';oids[name.decode()]=oid.decode()
+ assert set(names)==set(oids)
+ for name in names:
+  assert name in docs or any(name.startswith(p) for p in prefixes)
+  raw=(ROOT/name).read_bytes()
+  if '/objects/' in name or name.endswith('/index.json'):
+   if '/objects/' in name:assert sha(raw)==Path(name).name
+  else:raw=raw.replace(b'\r\n',b'\n')
+  assert hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()==oids[name]
+ for p in prefixes:
+  for row in json.loads((ROOT/p/'index.json').read_bytes())['members'].values():
+   name=p+'objects/'+row['sha256'];assert name in oids
+   raw=(ROOT/name).read_bytes();assert sha(raw)==row['sha256'] and len(raw)==row['bytes']
+ print(json.dumps(dict(staged_files=len(names),whitelist=True,raw_evidence_byte_exact=True)))

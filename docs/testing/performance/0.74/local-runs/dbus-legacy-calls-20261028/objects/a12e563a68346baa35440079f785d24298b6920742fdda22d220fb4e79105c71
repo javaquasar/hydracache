@@ -1,0 +1,576 @@
+//! Legacy compatibility only. Private Channel bypasses OS authentication.
+use super::*;
+use std::{
+    cell::RefCell,
+    collections::{HashMap, VecDeque},
+    future::poll_fn,
+    pin::Pin,
+    sync::{Arc, Mutex},
+};
+use zbus::{Message, OwnedVariant, Variant, export::futures_core::Stream};
+const LIMIT: Duration = Duration::from_millis(250);
+const NAME: &str = "hydracache-performance-074-legacy.service";
+const OBJECT: &str = "/org/freedesktop/systemd1/unit/legacy";
+const BUS: &str = "org.freedesktop.DBus";
+type Map = HashMap<String, OwnedVariant>;
+enum Reply {
+    Path,
+    Unit,
+    Map(Map),
+    Error,
+    Bad,
+    Hold,
+    Disconnect,
+}
+struct Step {
+    path: &'static str,
+    iface: &'static str,
+    member: &'static str,
+    arg: &'static str,
+    reply: Reply,
+}
+fn step(member: &'static str, reply: Reply) -> Step {
+    Step {
+        path: SYSTEMD_MANAGER_PATH,
+        iface: SYSTEMD_MANAGER_INTERFACE,
+        member,
+        arg: NAME,
+        reply,
+    }
+}
+fn owned(value: Variant<'static>) -> OwnedVariant {
+    OwnedVariant::try_from(value).unwrap()
+}
+fn read(active: &'static str, sub: &'static str, pid: u32, group: &'static str) -> Vec<Step> {
+    let unit = HashMap::from([
+        ("ActiveState".into(), owned(active.into())),
+        ("SubState".into(), owned(sub.into())),
+    ]);
+    let service = HashMap::from([
+        ("MainPID".into(), owned(pid.into())),
+        ("ControlGroup".into(), owned(group.into())),
+        ("Result".into(), owned("success".into())),
+    ]);
+    let owner = || Step {
+        path: "/org/freedesktop/DBus",
+        iface: BUS,
+        member: "GetNameOwner",
+        arg: SYSTEMD_DESTINATION,
+        reply: Reply::Unit,
+    };
+    vec![
+        step("GetUnit", Reply::Path),
+        owner(),
+        Step {
+            path: OBJECT,
+            iface: "org.freedesktop.DBus.Properties",
+            member: "GetAll",
+            arg: SYSTEMD_UNIT_INTERFACE,
+            reply: Reply::Map(unit),
+        },
+        owner(),
+        Step {
+            path: OBJECT,
+            iface: "org.freedesktop.DBus.Properties",
+            member: "GetAll",
+            arg: SYSTEMD_SERVICE_INTERFACE,
+            reply: Reply::Map(service),
+        },
+    ]
+}
+fn spec() -> TransientUnitSpec {
+    TransientUnitSpec {
+        unit_name: NAME.into(),
+        properties: vec![
+            ("Text", UnitProperty::Text("literal λ".into())),
+            ("Boolean", UnitProperty::Boolean(false)),
+            ("Unsigned", UnitProperty::Unsigned(74)),
+            ("Bytes", UnitProperty::Bytes(vec![0, 74, 255])),
+            (
+                "Strings",
+                UnitProperty::Strings(vec!["A=1".into(), "B=two words".into()]),
+            ),
+            (
+                "Commands",
+                UnitProperty::Commands(vec![ExecCommand {
+                    path: "/fixture".into(),
+                    argv: vec!["fixture".into(), "two words".into()],
+                    ignore_failure: false,
+                }]),
+            ),
+        ],
+    }
+}
+fn check_start(message: &Message) {
+    type Properties = Vec<(String, OwnedVariant)>;
+    let (name, mode, actual, aux): (String, String, Properties, Vec<(String, Properties)>) =
+        message.body().deserialize().unwrap();
+    assert_eq!(name, NAME);
+    assert_eq!(mode, "fail");
+    assert!(aux.is_empty());
+    let expected = vec![
+        ("Text", owned("literal λ".into())),
+        ("Boolean", owned(false.into())),
+        ("Unsigned", owned(74u64.into())),
+        ("Bytes", owned(vec![0u8, 74, 255].into())),
+        ("Strings", owned(vec!["A=1", "B=two words"].into())),
+        (
+            "Commands",
+            owned(vec![("/fixture", vec!["fixture", "two words"], false)].into()),
+        ),
+    ];
+    assert_eq!(
+        actual,
+        expected
+            .into_iter()
+            .map(|(k, v)| (k.to_owned(), v))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(message.body().signature().to_string(), "(ssa(sv)a(sa(sv)))");
+}
+struct Peer {
+    client: crate::bridge::Connection,
+    server: zbus::Connection,
+    task: tokio::task::JoinHandle<()>,
+    release: Option<tokio::sync::oneshot::Sender<()>>,
+    trace: Arc<Mutex<Vec<String>>>,
+    expected: Vec<String>,
+}
+impl Peer {
+    fn new(steps: Vec<Step>) -> Self {
+        let (client, server) = zbus::block_on(async {
+            let (a, b) = zbus::connection::socket::Channel::pair();
+            let guid = zbus::Guid::try_from("07400000000000000000000000000000").unwrap();
+            let a = zbus::connection::Builder::authenticated_socket(a, guid.clone())
+                .p2p()
+                .method_timeout(LIMIT)
+                .build()
+                .await
+                .unwrap();
+            let b = zbus::connection::Builder::authenticated_socket(b, guid)
+                .p2p()
+                .method_timeout(LIMIT)
+                .build()
+                .await
+                .unwrap();
+            (crate::bridge::Connection::from_async(a), b)
+        });
+        let expected = steps
+            .iter()
+            .map(|s| format!("{}|{}|{}|{}", s.path, s.iface, s.member, s.arg))
+            .collect();
+        let trace = Arc::new(Mutex::new(Vec::new()));
+        let record = trace.clone();
+        let connection = server.clone();
+        let (runtime, mut stream) = zbus::block_on(async {
+            (
+                tokio::runtime::Handle::current(),
+                zbus::MessageStream::from(&connection),
+            )
+        });
+        let (release, mut wait) = tokio::sync::oneshot::channel();
+        let task = runtime.spawn(async move {
+            let work = async {
+                for s in steps {
+                    let request = tokio::time::timeout(
+                        LIMIT,
+                        poll_fn(|cx| Pin::new(&mut stream).poll_next(cx)),
+                    )
+                    .await
+                    .unwrap()
+                    .unwrap()
+                    .unwrap();
+                    let h = request.header();
+                    let bus = s.member == "GetNameOwner";
+                    assert_eq!(
+                        h.destination().unwrap().as_str(),
+                        if bus { BUS } else { SYSTEMD_DESTINATION }
+                    );
+                    assert_eq!(h.path().unwrap().as_str(), s.path);
+                    assert_eq!(h.interface().unwrap().as_str(), s.iface);
+                    assert_eq!(h.member().unwrap().as_str(), s.member);
+                    record
+                        .lock()
+                        .unwrap()
+                        .push(format!("{}|{}|{}|{}", s.path, s.iface, s.member, s.arg));
+                    match s.member {
+                        "StartTransientUnit" => check_start(&request),
+                        "StopUnit" => assert_eq!(
+                            request.body().deserialize::<(String, String)>().unwrap(),
+                            (NAME.into(), "replace".into())
+                        ),
+                        _ => assert_eq!(request.body().deserialize::<String>().unwrap(), s.arg),
+                    }
+                    if matches!(s.reply, Reply::Hold) {
+                        let _ = (&mut wait).await;
+                        break;
+                    }
+                    if matches!(s.reply, Reply::Disconnect) {
+                        connection.clone().close().await.unwrap();
+                        break;
+                    }
+                    let builder = Message::method_return(&h).sender(if bus {
+                        BUS
+                    } else {
+                        SYSTEMD_DESTINATION
+                    });
+                    let reply = match s.reply {
+                        Reply::Path => builder.build(&OwnedObjectPath::try_from(OBJECT).unwrap()),
+                        Reply::Unit if bus => builder.build(&":1.1"),
+                        Reply::Unit => builder.build(&()),
+                        Reply::Map(v) => builder.build(&v),
+                        Reply::Bad => builder.build(&74u32),
+                        Reply::Error => Message::error(&h, "org.freedesktop.systemd1.NoSuchUnit")
+                            .sender(SYSTEMD_DESTINATION)
+                            .build(&"synthetic"),
+                        Reply::Hold | Reply::Disconnect => unreachable!(),
+                    }
+                    .unwrap();
+                    connection.send(&reply).await.unwrap();
+                }
+                zbus::AsyncDrop::async_drop(stream).await;
+            };
+            let mut work = Box::pin(work);
+            let outcome = poll_fn(|cx| {
+                match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    std::future::Future::poll(work.as_mut(), cx)
+                })) {
+                    Ok(std::task::Poll::Ready(())) => std::task::Poll::Ready(Ok(())),
+                    Ok(std::task::Poll::Pending) => std::task::Poll::Pending,
+                    Err(error) => std::task::Poll::Ready(Err(error)),
+                }
+            })
+            .await;
+            drop(work);
+            if let Err(error) = outcome {
+                let _ = connection.close().await;
+                std::panic::resume_unwind(error);
+            }
+        });
+        Self {
+            client,
+            server,
+            task,
+            release: Some(release),
+            trace,
+            expected,
+        }
+    }
+    fn finish(mut self) -> bool {
+        if let Some(release) = self.release.take() {
+            let _ = release.send(());
+        }
+        let complete = zbus::block_on(async {
+            match tokio::time::timeout(LIMIT, &mut self.task).await {
+                Ok(result) => {
+                    println!("HC074_LEGACY_PEER_JOIN:{result:?}");
+                    result.is_ok()
+                }
+                Err(_) => {
+                    self.task.abort();
+                    let _ = self.task.await;
+                    false
+                }
+            }
+        });
+        let _ = self.client.close();
+        let _ = zbus::block_on(self.server.close());
+        complete && *self.trace.lock().unwrap() == self.expected
+    }
+}
+struct State {
+    plan: VecDeque<Option<Vec<Step>>>,
+    repeat: Option<fn(usize) -> Vec<Step>>,
+    peers: Vec<Peer>,
+    calls: usize,
+}
+thread_local! { static STATE:RefCell<Option<State>>=const { RefCell::new(None) }; }
+pub(super) struct Connection;
+impl Connection {
+    pub(super) fn system() -> zbus::Result<crate::bridge::Connection> {
+        STATE.with(|slot| {
+            let mut guard = slot.borrow_mut();
+            let state = guard.as_mut().expect("private fixture provider");
+            let n = state.calls;
+            state.calls += 1;
+            let script = state.plan.pop_front().unwrap_or_else(|| {
+                Some(state.repeat.expect("unexpected connection acquisition")(n))
+            });
+            let Some(script) = script else {
+                return Err(zbus::Error::Failure("synthetic acquisition refusal".into()));
+            };
+            let peer = Peer::new(script);
+            let result = peer.client.clone();
+            state.peers.push(peer);
+            Ok(result)
+        })
+    }
+}
+fn exercise(
+    label: &str,
+    plan: Vec<Option<Vec<Step>>>,
+    repeat: Option<fn(usize) -> Vec<Step>>,
+    work: impl FnOnce(),
+    expected: Option<usize>,
+) {
+    STATE.with(|slot| {
+        assert!(
+            slot.replace(Some(State {
+                plan: plan.into(),
+                repeat,
+                peers: vec![],
+                calls: 0
+            }))
+            .is_none()
+        )
+    });
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(work));
+    let state = STATE.with(|slot| slot.take().unwrap());
+    let calls = state.calls;
+    let unused = state.plan.len();
+    let traces = state
+        .peers
+        .iter()
+        .map(|p| p.expected.clone())
+        .collect::<Vec<_>>();
+    let good = state
+        .peers
+        .into_iter()
+        .map(Peer::finish)
+        .collect::<Vec<_>>()
+        .into_iter()
+        .all(|ok| ok);
+    println!(
+        "HC074_LEGACY_TRACE:{}",
+        serde_json::json!({"label":label,"calls":calls,"requests":traces})
+    );
+    assert!(good);
+    assert_eq!(unused, 0);
+    if let Some(expected) = expected {
+        assert_eq!(calls, expected);
+    }
+    if let Err(error) = result {
+        std::panic::resume_unwind(error);
+    }
+}
+fn run(label: &str, plan: Vec<Vec<Step>>, work: impl FnOnce()) {
+    let n = plan.len();
+    exercise(
+        label,
+        plan.into_iter().map(Some).collect(),
+        None,
+        work,
+        Some(n),
+    );
+}
+#[test]
+fn start_preserves_all_property_shapes_order_fail_mode_and_empty_aux() {
+    run(
+        "start",
+        vec![vec![step("StartTransientUnit", Reply::Path)]],
+        || assert_eq!(start_transient_unit(&spec()).unwrap().as_str(), OBJECT),
+    );
+}
+#[test]
+fn start_bad_error_disconnect_and_lost_ack_do_not_retry() {
+    for (label, reply) in [
+        ("start-bad", Reply::Bad),
+        ("start-error", Reply::Error),
+        ("start-disconnect", Reply::Disconnect),
+        ("start-lost-ack", Reply::Hold),
+    ] {
+        run(label, vec![vec![step("StartTransientUnit", reply)]], || {
+            assert!(matches!(
+                start_transient_unit(&spec()),
+                Err(UnitError::Dbus(_))
+            ))
+        });
+    }
+}
+#[test]
+fn namespace_and_duration_refuse_before_connection() {
+    run("preflight", vec![], || {
+        let mut bad = spec();
+        bad.unit_name = "foreign.service".into();
+        assert!(matches!(
+            start_transient_unit(&bad),
+            Err(UnitError::UnitName)
+        ));
+        assert!(matches!(
+            inspect_unit("foreign.service"),
+            Err(UnitError::UnitName)
+        ));
+        assert!(matches!(
+            inspect_unit_optional("foreign.service"),
+            Err(UnitError::UnitName)
+        ));
+        for timeout in [0, 301] {
+            assert!(matches!(
+                stop_unit_and_wait(NAME, timeout),
+                Err(UnitError::Policy)
+            ));
+            assert!(matches!(
+                reset_failed_unit_and_wait(NAME, timeout),
+                Err(UnitError::Policy)
+            ));
+        }
+    });
+}
+#[test]
+fn inspect_wrappers_keep_lazy_reads_optional_absence_and_wrong_type_refusal() {
+    run(
+        "inspect",
+        vec![read("active", "running", 74, "/fixture")],
+        || assert_eq!(inspect_unit(NAME).unwrap().main_pid, 74),
+    );
+    run(
+        "optional-present",
+        vec![read("active", "running", 74, "/fixture")],
+        || assert!(inspect_unit_optional(NAME).unwrap().is_some()),
+    );
+    run(
+        "optional-absent",
+        vec![vec![step("GetUnit", Reply::Error)]],
+        || assert!(inspect_unit_optional(NAME).unwrap().is_none()),
+    );
+    run(
+        "inspect-wrong-path-type",
+        vec![vec![step("GetUnit", Reply::Bad)]],
+        || assert!(matches!(inspect_unit(NAME), Err(UnitError::Dbus(_)))),
+    );
+}
+#[test]
+fn stop_accepts_only_inactive_dead_or_post_stop_absence() {
+    for (label, script) in [
+        ("stop-inactive", read("inactive", "dead", 0, "")),
+        ("stop-absent", vec![step("GetUnit", Reply::Error)]),
+    ] {
+        run(
+            label,
+            vec![vec![step("StopUnit", Reply::Path)], script],
+            || stop_unit_and_wait(NAME, 1).unwrap(),
+        );
+    }
+}
+#[test]
+fn stop_polls_exited_before_a_fresh_inactive_snapshot() {
+    run(
+        "stop-poll",
+        vec![
+            vec![step("StopUnit", Reply::Path)],
+            read("active", "exited", 0, ""),
+            read("inactive", "dead", 0, ""),
+        ],
+        || stop_unit_and_wait(NAME, 1).unwrap(),
+    );
+}
+#[test]
+fn stop_acquisition_dispatch_and_inspection_errors_refuse_without_retry() {
+    exercise(
+        "stop-acquire",
+        vec![None],
+        None,
+        || {
+            assert!(matches!(
+                stop_unit_and_wait(NAME, 1),
+                Err(UnitError::Dbus(_))
+            ))
+        },
+        Some(1),
+    );
+    run(
+        "stop-dispatch-error",
+        vec![vec![step("StopUnit", Reply::Error)]],
+        || {
+            assert!(matches!(
+                stop_unit_and_wait(NAME, 1),
+                Err(UnitError::Dbus(_))
+            ))
+        },
+    );
+    run(
+        "stop-inspect-error",
+        vec![
+            vec![step("StopUnit", Reply::Path)],
+            vec![step("GetUnit", Reply::Bad)],
+        ],
+        || {
+            assert!(matches!(
+                stop_unit_and_wait(NAME, 1),
+                Err(UnitError::Dbus(_))
+            ))
+        },
+    );
+}
+#[test]
+fn reset_requires_failed_failed_zero_pid_and_empty_cgroup_before_send() {
+    for (active, sub, pid, group) in [
+        ("active", "failed", 0, ""),
+        ("failed", "dead", 0, ""),
+        ("failed", "failed", 74, ""),
+        ("failed", "failed", 0, "/fixture"),
+    ] {
+        run(
+            "reset-precondition",
+            vec![read(active, sub, pid, group)],
+            || {
+                assert!(matches!(
+                    reset_failed_unit_and_wait(NAME, 1),
+                    Err(UnitError::Policy)
+                ))
+            },
+        );
+    }
+}
+#[test]
+fn reset_waits_for_absence_or_exact_empty_inactive_shape() {
+    for (label, last) in [
+        ("reset-absent", vec![step("GetUnit", Reply::Error)]),
+        ("reset-inactive", read("inactive", "dead", 0, "")),
+    ] {
+        run(
+            label,
+            vec![
+                read("failed", "failed", 0, ""),
+                vec![step("ResetFailedUnit", Reply::Unit)],
+                last,
+            ],
+            || reset_failed_unit_and_wait(NAME, 1).unwrap(),
+        );
+    }
+}
+#[test]
+fn reset_keeps_polling_failed_shape_instead_of_claiming_retirement() {
+    run(
+        "reset-poll",
+        vec![
+            read("failed", "failed", 0, ""),
+            vec![step("ResetFailedUnit", Reply::Unit)],
+            read("failed", "failed", 0, ""),
+            read("inactive", "dead", 0, ""),
+        ],
+        || reset_failed_unit_and_wait(NAME, 1).unwrap(),
+    );
+}
+#[test]
+fn original_stop_deadline_expires_without_resetting_between_reads() {
+    fn repeat(n: usize) -> Vec<Step> {
+        if n == 0 {
+            vec![step("StopUnit", Reply::Path)]
+        } else {
+            read("active", "running", 74, "/fixture")
+        }
+    }
+    exercise(
+        "stop-original-timeout",
+        vec![],
+        Some(repeat),
+        || {
+            assert!(matches!(
+                stop_unit_and_wait(NAME, 1),
+                Err(UnitError::StopTimeout)
+            ))
+        },
+        None,
+    );
+}

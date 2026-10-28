@@ -1,0 +1,10 @@
+{
+  "artifact": {
+    "bytes": 63678904,
+    "path": "/home/artur/.cache/hydracache-074-dbus-legacy-calls/20261028-a4/builds/fd/188/debug/deps/dbus_probe_074-a1ef06f79f4325c7",
+    "sha256": "9d681484e226a773e08ee0e0002a1cca81a8e8dc0c8c381a3db176ad89508908"
+  },
+  "exit": 0,
+  "release_admitted": false,
+  "source_unchanged": true
+}
