@@ -130,7 +130,7 @@ final class IMapFlowPublisherTest {
 
   @Test
   void removingAListenerDiscardsPrefetchedEventsAndClosesItsSource() {
-    var service = new UnifiedIMapService(BOUNDS, 1);
+    var service = new UnifiedIMapService(new BoundedIMapApi.Bounds(8, 8, 8, 2, 8, 128, 8), 1);
     var handle = service.registerListener(1, UnifiedIMapService.ListenerOptions.metadata(2));
     var publisher = service.events(handle); var sink = new Sink<UnifiedIMapService.Event>();
     publisher.subscribe(sink);
@@ -210,5 +210,24 @@ final class IMapFlowPublisherTest {
     service.execute(put(1, "61"));
     assertEquals(1, callbacks.get());
     assertEquals(0, service.stats(0).activeStreams());
+  }
+
+  @Test
+  void listenerSnapshotCutoverDiscardsAlreadyPrefetchedEvents() {
+    var service = new UnifiedIMapService(new BoundedIMapApi.Bounds(8, 8, 8, 2, 8, 128, 8), 1);
+    var handle = service.registerListener(1, UnifiedIMapService.ListenerOptions.metadata(2));
+    var publisher = service.events(handle); var sink = new Sink<UnifiedIMapService.Event>();
+    publisher.subscribe(sink);
+    service.execute(put(1, "61")); service.execute(put(2, "62"));
+    sink.subscription.request(1); assertEquals(1, sink.values.size());
+    assertEquals(0, service.diagnosticStats(0).queuedEvents());
+    try (var snapshot = service.snapshotListener(1, 2, 66, 0)) {
+      sink.subscription.request(1); assertEquals(1, sink.values.size());
+      service.execute(put(3, "61"));
+      assertEquals(2, sink.values.size()); assertEquals(BytesValue.fromHex("61"), sink.values.get(1).key());
+      assertTrue(sink.values.get(1).watermark() > snapshot.watermark()); assertNull(sink.error);
+    }
+    sink.subscription.cancel(); assertEquals(0, service.resourceUsage().streams());
+    assertEquals(0, service.resourceUsage().resync());
   }
 }

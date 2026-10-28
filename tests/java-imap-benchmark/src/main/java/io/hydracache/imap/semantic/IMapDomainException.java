@@ -10,7 +10,9 @@ public final class IMapDomainException extends RuntimeException {
     CURSOR_MISMATCH("cursor_mismatch"), MAP_DESTROYED("map_destroyed"),
     VERSION_EXHAUSTED("capacity"), UNSUPPORTED_OPERATION("unsupported_operation"),
     IDEMPOTENCY_CAPACITY_EXHAUSTED("idempotency_capacity_exhausted"), CLOCK_REGRESSED("clock_regressed"),
-    UNKNOWN_LISTENER("unknown_listener");
+    UNKNOWN_LISTENER("unknown_listener"), RETIRED_IDENTITY("retired_identity"),
+    PENDING_RETIREMENT("pending_retirement"), AGGREGATE_BYTE_BUDGET("resource_budget_exhausted"),
+    EXPIRY_BACKLOG("expiry_backlog"), CHECKPOINT_BUSY("active_owners");
     private final String id;
     Kind(String id) { this.id = id; }
     public String id() { return id; }
@@ -29,6 +31,11 @@ public final class IMapDomainException extends RuntimeException {
     String detail = failure.getMessage() == null ? "invalid map request" : failure.getMessage();
     Kind kind = Kind.INVALID_ARGUMENT;
     if (failure instanceof ArithmeticException) kind = Kind.VERSION_EXHAUSTED;
+    else if (detail.contains("retired_identity")) kind = Kind.RETIRED_IDENTITY;
+    else if (detail.contains("pending_retirement")) kind = Kind.PENDING_RETIREMENT;
+    else if (detail.contains("aggregate_byte_budget")) kind = Kind.AGGREGATE_BYTE_BUDGET;
+    else if (detail.contains("expiry_backlog")) kind = Kind.EXPIRY_BACKLOG;
+    else if (detail.contains("checkpoint_busy")) kind = Kind.CHECKPOINT_BUSY;
     else if (detail.contains("mutation conflict")) kind = Kind.MUTATION_IDENTITY_CONFLICT;
     else if (detail.contains("keyBytes")) kind = Kind.KEY_TOO_LARGE;
     else if (detail.contains("valueBytes")) kind = Kind.VALUE_TOO_LARGE;

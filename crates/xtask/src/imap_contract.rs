@@ -156,6 +156,27 @@ struct ApiExtensions {
     interface_features: Vec<InterfaceFeature>,
     unsupported_families: Vec<String>,
     local_service: LocalServiceContract,
+    local_lifecycle: LocalLifecycleContract,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LocalLifecycleContract {
+    retirement_scope: Vec<String>,
+    retired_retry: String,
+    pending_retirement: String,
+    accounting_scope: String,
+    resource_owners: Vec<String>,
+    admission: String,
+    listener_repair: String,
+    repair_bounds: String,
+    version_bulk: String,
+    batch_outcomes: String,
+    expiry_work: String,
+    expired_visibility: String,
+    checkpoint: String,
+    qualification: String,
+    test_ids: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -625,6 +646,14 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         "typed_cross_language_errors",
         "local_statistics_snapshot",
         "cross_language_execution_differential",
+        "safe_outcome_retirement",
+        "aggregate_payload_budgets",
+        "atomic_listener_resynchronization",
+        "version_conditional_bulk_api",
+        "bounded_batch_outcome_query",
+        "incremental_expiry_cleanup",
+        "runtime_service_checkpoint_restore",
+        "concurrent_cross_language_qualification",
     ] {
         if !implemented.contains(required) {
             problems.push(format!(
@@ -713,6 +742,14 @@ fn validate_test_registry(
         operations
             .api_extensions
             .local_service
+            .test_ids
+            .iter()
+            .map(String::as_str),
+    );
+    claimed.extend(
+        operations
+            .api_extensions
+            .local_lifecycle
             .test_ids
             .iter()
             .map(String::as_str),
@@ -899,6 +936,17 @@ fn validate_operations(
         require_text("error certainty", &error.certainty, problems);
         require_test("error", &error.id, &error.test_id, problems);
     }
+    for id in [
+        "retired_identity",
+        "pending_retirement",
+        "resource_budget_exhausted",
+        "active_owners",
+        "expiry_backlog",
+    ] {
+        if !error_ids.contains(id) {
+            problems.push(format!("local IMap lifecycle is missing typed error {id}"));
+        }
+    }
     let mut ttl_ids = BTreeSet::new();
     for ttl in &contract.ttl_directives {
         if !ttl_ids.insert(ttl.id.clone()) {
@@ -981,7 +1029,131 @@ fn validate_operations(
     require_exact_ids("operations", &operation_ids, REQUIRED_OPERATIONS, problems);
     validate_api_extensions(contract, problems);
     validate_local_service(&contract.api_extensions.local_service, problems);
+    validate_local_lifecycle(&contract.api_extensions.local_lifecycle, problems);
     operation_ids
+}
+
+fn validate_local_lifecycle(contract: &LocalLifecycleContract, problems: &mut Vec<String>) {
+    for (label, actual, expected) in [
+        (
+            "retired retry",
+            contract.retired_retry.as_str(),
+            "reject_before_admission_query_unknown",
+        ),
+        (
+            "pending retirement",
+            contract.pending_retirement.as_str(),
+            "refuse_without_eviction",
+        ),
+        (
+            "accounting scope",
+            contract.accounting_scope.as_str(),
+            "logical_owned_payload_bytes_not_rss",
+        ),
+        (
+            "admission",
+            contract.admission.as_str(),
+            "preflight_before_visible_mutation",
+        ),
+        (
+            "listener repair",
+            contract.listener_repair.as_str(),
+            "atomic_snapshot_watermark_then_live",
+        ),
+        (
+            "repair bounds",
+            contract.repair_bounds.as_str(),
+            "items_and_bytes_before_gap_reset",
+        ),
+        (
+            "version bulk",
+            contract.version_bulk.as_str(),
+            "ordered_per_item_no_cross_key_transaction",
+        ),
+        (
+            "batch outcomes",
+            contract.batch_outcomes.as_str(),
+            "ordered_exact_pending_completed_unknown",
+        ),
+        (
+            "expiry work",
+            contract.expiry_work.as_str(),
+            "bounded_entries_examined_per_step",
+        ),
+        (
+            "expired visibility",
+            contract.expired_visibility.as_str(),
+            "never_visible_before_cleanup",
+        ),
+        (
+            "checkpoint",
+            contract.checkpoint.as_str(),
+            "quiescent_runtime_only_fresh_map_instance",
+        ),
+        (
+            "qualification",
+            contract.qualification.as_str(),
+            "concurrent_histories_respect_real_time_partial_order",
+        ),
+    ] {
+        if actual != expected {
+            problems.push(format!("local IMap lifecycle {label} must be {expected}"));
+        }
+    }
+    for (label, actual, expected) in [
+        (
+            "retirement scope",
+            &contract.retirement_scope,
+            vec!["client", "namespace_generation"],
+        ),
+        (
+            "resource owners",
+            &contract.resource_owners,
+            vec![
+                "values",
+                "outcomes",
+                "pending",
+                "listeners",
+                "streams",
+                "resync",
+            ],
+        ),
+    ] {
+        let values = actual.iter().map(String::as_str).collect::<BTreeSet<_>>();
+        if values != expected.into_iter().collect() || values.len() != actual.len() {
+            problems.push(format!(
+                "local IMap lifecycle {label} must retain the complete unique contract"
+            ));
+        }
+    }
+    let tests = contract
+        .test_ids
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let required = [
+        "imap075::retirement::fences",
+        "imap075::payload_budget::owners",
+        "imap075::listener_resync::cutover",
+        "imap075::version_bulk::receipts",
+        "imap075::batch_query::certainty",
+        "imap075::incremental_expiry::work",
+        "imap075::checkpoint::restore",
+        "imap075::concurrent_execution::histories",
+        "imap075::retirement_java::fences",
+        "imap075::payload_budget_java::owners",
+        "imap075::listener_resync_java::cutover",
+        "imap075::version_bulk_java::receipts",
+        "imap075::batch_query_java::certainty",
+        "imap075::incremental_expiry_java::work",
+        "imap075::checkpoint_java::restore",
+    ]
+    .into_iter()
+    .collect::<BTreeSet<_>>();
+    if tests != required || tests.len() != contract.test_ids.len() {
+        problems
+            .push("local IMap lifecycle must name each unique Rust/Java executable test".into());
+    }
 }
 
 fn validate_local_service(service: &LocalServiceContract, problems: &mut Vec<String>) {

@@ -79,6 +79,126 @@ fn trace_generation_roundtrips_and_covers_every_contract_operation() {
 }
 
 #[test]
+fn typed_lifecycle_trace_observes_retirement_budgets_resync_restore_and_exact_expiry_work() {
+    let trace = generated_trace(117, 0).unwrap();
+    let results = execute_rust(&trace).unwrap();
+    for prefix in [
+        "error:resource_budget_exhausted|",
+        "error:pending_retirement|",
+        "retired|",
+        "error:retired_identity|",
+        "outcomes|",
+        "resynced|",
+        "error:active_owners|",
+        "restored|",
+        "resources|",
+    ] {
+        assert!(
+            results.iter().any(|line| line.starts_with(prefix)),
+            "missing {prefix}"
+        );
+    }
+    let bulk_index = trace
+        .steps
+        .iter()
+        .position(|step| step.operation == "version_bulk_replace")
+        .unwrap();
+    assert!(results[bulk_index].contains("0/79/replaced/"));
+    assert!(results[bulk_index + 1].contains("0/79/mismatch/"));
+    assert_eq!(
+        results[bulk_index].split('|').take(7).collect::<Vec<_>>(),
+        results[bulk_index + 2]
+            .split('|')
+            .take(7)
+            .collect::<Vec<_>>()
+    );
+    let restored = trace
+        .steps
+        .iter()
+        .enumerate()
+        .find(|(index, step)| {
+            step.operation == "checkpoint_restore" && results[*index].starts_with("restored|")
+        })
+        .unwrap()
+        .0;
+    assert!(
+        results[restored + 1].contains("0/79/mismatch/"),
+        "restore must fence cached map-local tokens"
+    );
+    let expiry = trace
+        .steps
+        .iter()
+        .enumerate()
+        .filter(|(_, step)| step.operation == "expire_step")
+        .map(|(index, _)| &results[index])
+        .collect::<Vec<_>>();
+    assert_eq!(expiry.len(), 4);
+    for (index, line) in expiry.iter().enumerate() {
+        assert_eq!(
+            line.split('|').nth(7),
+            Some("[]"),
+            "diagnostic snapshot hides expired entries"
+        );
+        let owned_values = line
+            .split('|')
+            .nth(10)
+            .unwrap()
+            .trim_start_matches('[')
+            .split(',')
+            .next()
+            .unwrap()
+            .parse::<usize>()
+            .unwrap();
+        assert_eq!(
+            owned_values,
+            [52, 26, 0, 0][index],
+            "observation must not perform extra expiry work"
+        );
+        assert_eq!(line.matches("/expired/").count(), usize::from(index < 3));
+        assert_eq!(
+            line.split('|').nth(5),
+            Some(if index < 2 { "1" } else { "0" })
+        );
+    }
+}
+
+#[test]
+fn typed_trace_controls_reject_bad_shapes_and_keep_unknown_keys_absent() {
+    let mut absent = TraceStep::point("version_bulk_remove", b"", None);
+    absent.identity = 1;
+    absent.extra = "61".into();
+    let trace = ApiTrace {
+        seed: 117,
+        steps: vec![absent],
+    };
+    assert!(execute_rust(&trace).unwrap()[0].contains("0/61/absent/"));
+    let mut malformed = TraceStep::point("version_bulk_replace", b"", None);
+    malformed.identity = 1;
+    malformed.extra = "61".into();
+    assert!(execute_rust(&ApiTrace {
+        seed: 117,
+        steps: vec![malformed]
+    })
+    .is_err());
+    let mut malformed = TraceStep::point("query_outcomes", b"", None);
+    malformed.extra = "not_an_identity".into();
+    assert!(execute_rust(&ApiTrace {
+        seed: 117,
+        steps: vec![malformed]
+    })
+    .is_err());
+    let mut invalid = TraceStep::point("reset_limits", b"", None);
+    invalid.detail = "0".into();
+    invalid.extra = "1".into();
+    assert!(execute_rust(&ApiTrace {
+        seed: 117,
+        steps: vec![invalid]
+    })
+    .unwrap()[0]
+        .starts_with("error:invalid_argument|"));
+}
+
+#[test]
 fn malformed_or_oversized_trace_inputs_fail_before_execution() {
     let valid = TraceStep::point("get", b"", Some(b""));
     assert_eq!(TraceStep::parse(&valid.encode()).unwrap(), valid);

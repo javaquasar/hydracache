@@ -8,7 +8,8 @@ use std::fmt;
 use crate::value_plane_collection_075::{CollectionBounds, ReplacementEntry, ScanCursor};
 use crate::value_plane_model_075::MutationIdentity;
 use crate::value_plane_service_075::{
-    ServiceCommand, ServiceResult, ServiceTtl, UnifiedIMapService, VersionToken,
+    OperationOutcomeQuery, ServiceCommand, ServiceItem, ServiceLimits, ServiceResult, ServiceTtl,
+    UnifiedIMapService, VersionBulkEntry, VersionBulkOperation, VersionToken,
 };
 
 pub const MAX_TRACE_STEPS: usize = 512;
@@ -173,10 +174,14 @@ impl ApiTrace {
 
 /// A deterministic prefix exercises every admitted operation before the seeded suffix.
 pub fn generated_trace(seed: u64, random_steps: usize) -> Result<ApiTrace, DifferentialError> {
-    if seed > i64::MAX as u64 || random_steps > MAX_TRACE_STEPS - 96 {
+    if seed > i64::MAX as u64 {
         return fail("generated trace seed or step budget exceeded");
     }
     let mut steps = coverage_steps();
+    steps.extend(lifecycle_steps());
+    if random_steps > MAX_TRACE_STEPS.saturating_sub(steps.len() + 4) {
+        return fail("generated trace seed or step budget exceeded");
+    }
     let mut state = seed.max(1);
     let operations = [
         "get",
@@ -358,9 +363,122 @@ fn coverage_steps() -> Vec<TraceStep> {
     steps
 }
 
+fn lifecycle_steps() -> Vec<TraceStep> {
+    let mut steps = Vec::new();
+    let mut reset = TraceStep::point("reset_limits", b"", None);
+    reset.detail = "96".into();
+    reset.extra = "1".into();
+    steps.push(reset);
+    let mut listener = TraceStep::point("entry_listener", b"", None);
+    listener.identity = 10000;
+    listener.detail = "values".into();
+    listener.extra = "1".into();
+    steps.push(listener);
+    for (key, value, id) in [(b"x", b"1", 10001), (b"y", b"2", 10002)] {
+        let mut step = TraceStep::point("put", key, Some(value));
+        step.identity = id;
+        step.ttl = "after:5".into();
+        steps.push(step);
+    }
+    let mut over_budget = TraceStep::point("put", b"z", Some(&[1; 100]));
+    over_budget.identity = 10003;
+    steps.push(over_budget);
+    let mut pending = TraceStep::point("reserve_operation", b"p", Some(b"p"));
+    pending.identity = 10004;
+    steps.push(pending);
+    let mut retire = TraceStep::point("retire_outcomes", b"", None);
+    retire.identity = 10004;
+    steps.push(retire);
+    let mut query = TraceStep::point("query_outcomes", b"", None);
+    query.detail = "4096".into();
+    query.extra = "10001,10004,99999".into();
+    steps.push(query.clone());
+    let mut cancel = TraceStep::point("cancel_reserved", b"", None);
+    cancel.identity = 10004;
+    steps.push(cancel);
+    let mut retire = TraceStep::point("retire_outcomes", b"", None);
+    retire.identity = 10002;
+    steps.push(retire);
+    let mut retry = TraceStep::point("put", b"x", Some(b"1"));
+    retry.identity = 10001;
+    retry.ttl = "after:5".into();
+    steps.push(retry.clone());
+    steps.push(query);
+    for key in [b"x", b"y"] {
+        steps.push(TraceStep::point("get_entry_view", key, None));
+    }
+    let mut bulk = TraceStep::point("version_bulk_replace", b"", None);
+    bulk.identity = 10005;
+    bulk.ttl = "preserve".into();
+    bulk.extra = "79:33,78:34".into();
+    steps.push(bulk.clone());
+    let mut mismatch = bulk.clone();
+    mismatch.identity = 10006;
+    steps.push(mismatch);
+    steps.push(bulk);
+    let mut resync = TraceStep::point("resync_listener", b"", None);
+    resync.identity = 10000;
+    resync.detail = "2".into();
+    resync.extra = "4096".into();
+    steps.push(resync);
+    for key in [b"x", b"y"] {
+        steps.push(TraceStep::point("get_entry_view", key, None));
+    }
+    let mut ttl = TraceStep::point("version_bulk_set_ttl", b"", None);
+    ttl.identity = 10007;
+    ttl.ttl = "after:1".into();
+    ttl.extra = "79,78".into();
+    steps.push(ttl);
+    for key in [b"x", b"y"] {
+        steps.push(TraceStep::point("get_entry_view", key, None));
+    }
+    let mut remove = TraceStep::point("version_bulk_remove", b"", None);
+    remove.identity = 10008;
+    remove.extra = "78".into();
+    steps.push(remove.clone());
+    steps.push(TraceStep::point("checkpoint_restore", b"", None));
+    let mut remove_listener = TraceStep::point("remove_entry_listener", b"", None);
+    remove_listener.identity = 10000;
+    steps.push(remove_listener);
+    steps.push(TraceStep::point("checkpoint_restore", b"", None));
+    remove.identity = 10009;
+    remove.extra = "79".into();
+    steps.push(remove);
+    steps.push(retry);
+    let mut resource = TraceStep::point("resource_usage", b"", None);
+    resource.detail = "".into();
+    steps.push(resource);
+    let mut reset = TraceStep::point("reset_limits", b"", None);
+    reset.detail = "96".into();
+    reset.extra = "1".into();
+    steps.push(reset);
+    let mut listener = TraceStep::point("entry_listener", b"", None);
+    listener.identity = 11000;
+    listener.detail = "values".into();
+    steps.push(listener);
+    for (index, key) in [b"x", b"y", b"z"].iter().enumerate() {
+        let mut step = TraceStep::point("set", *key, Some(b"e"));
+        step.identity = 11001 + index as u64;
+        step.ttl = "after:1".into();
+        steps.push(step);
+    }
+    for _ in 0..4 {
+        let mut expire = TraceStep::point("expire_step", b"", None);
+        expire.now = 1;
+        expire.detail = "1".into();
+        steps.push(expire);
+    }
+    let mut reset = TraceStep::point("reset_limits", b"", None);
+    reset.detail = "67108864".into();
+    reset.extra = "64".into();
+    reset.now = 1;
+    steps.push(reset);
+    steps
+}
+
 pub fn execute_rust(trace: &ApiTrace) -> Result<Vec<String>, DifferentialError> {
     ApiTrace::parse(&trace.encode())?;
-    let service = UnifiedIMapService::new(CollectionBounds::default(), 1)
+    let mut service = UnifiedIMapService::new(CollectionBounds::default(), 1)
         .map_err(|error| DifferentialError(error.to_string()))?;
     let mut remembered = BTreeMap::<Vec<u8>, VersionToken>::new();
     let mut cursors = BTreeMap::<String, ScanCursor>::new();
@@ -370,6 +488,136 @@ pub fn execute_rust(trace: &ApiTrace) -> Result<Vec<String>, DifferentialError> 
     for step in &trace.steps {
         let command = to_command(step, &remembered, &cursors)?;
         let result = match step.operation.as_str() {
+            "reset_limits" => {
+                let limits = ServiceLimits {
+                    value_bytes: parse_number(&step.detail)? as usize,
+                    expiry_work: parse_number(&step.extra)? as usize,
+                    ..ServiceLimits::default()
+                };
+                UnifiedIMapService::with_limits(CollectionBounds::default(), 1, limits).map(
+                    |replacement| {
+                        service = replacement;
+                        remembered.clear();
+                        cursors.clear();
+                        listeners.clear();
+                        ServiceResult::new("reset")
+                    },
+                )
+            }
+            "retire_outcomes" => {
+                service
+                    .retire_outcomes("trace", 1, step.identity)
+                    .map(|receipt| {
+                        let mut result = ServiceResult::new("retired");
+                        result.number = receipt.removed as u64;
+                        result.version = Some(receipt.through);
+                        result
+                    })
+            }
+            "query_outcomes" => {
+                let identities = step
+                    .extra
+                    .split(',')
+                    .map(|number| Ok(MutationIdentity::new("trace", parse_number(number)?)))
+                    .collect::<Result<Vec<_>, DifferentialError>>()?;
+                service
+                    .query_operation_outcomes(&identities, command.limit)
+                    .map(|outcomes| {
+                        let mut result = ServiceResult::new("outcomes");
+                        result.number = outcomes.len() as u64;
+                        result.items = outcomes
+                            .into_iter()
+                            .enumerate()
+                            .map(|(index, outcome)| {
+                                let mut item = ServiceItem {
+                                    index,
+                                    key: identities[index].sequence.to_string().into_bytes(),
+                                    kind: String::new(),
+                                    value: None,
+                                    version: None,
+                                    remaining_ttl: None,
+                                };
+                                match outcome {
+                                    OperationOutcomeQuery::Unknown => item.kind = "unknown".into(),
+                                    OperationOutcomeQuery::Pending => item.kind = "pending".into(),
+                                    OperationOutcomeQuery::Completed(receipt) => {
+                                        item.kind = format!("completed:{}", receipt.kind);
+                                        item.value = receipt.value;
+                                        item.version = receipt.version;
+                                        item.remaining_ttl = receipt.remaining_ttl;
+                                    }
+                                }
+                                item
+                            })
+                            .collect();
+                        result
+                    })
+            }
+            "resync_listener" => service
+                .resync_listener(
+                    step.identity,
+                    step.now,
+                    command.limit,
+                    parse_number(&step.extra)? as usize,
+                )
+                .map(|mut snapshot| {
+                    let mut result = ServiceResult::new("resynced");
+                    result.version = Some(snapshot.watermark);
+                    result.number = snapshot.entries.len() as u64;
+                    result.flag = service.resource_usage().resync > 0;
+                    result.items = snapshot
+                        .entries
+                        .iter()
+                        .enumerate()
+                        .map(|(index, entry)| ServiceItem {
+                            index,
+                            key: entry.key.clone(),
+                            kind: "present".into(),
+                            value: Some(entry.value.clone()),
+                            version: Some(entry.version),
+                            remaining_ttl: entry.remaining_ttl,
+                        })
+                        .collect();
+                    snapshot.close();
+                    result
+                }),
+            "expire_step" => service
+                .expire_step(step.now, command.limit)
+                .map(|progress| {
+                    let mut result = ServiceResult::new("expiry_progress");
+                    result.number = progress.expired as u64;
+                    result.version = Some(progress.examined as u64);
+                    result.flag = progress.pending;
+                    result
+                }),
+            "checkpoint_restore" => service
+                .checkpoint()
+                .and_then(UnifiedIMapService::restore)
+                .map(|replacement| {
+                    service = replacement;
+                    ServiceResult::new("restored")
+                }),
+            "resource_usage" => {
+                let mut result = ServiceResult::new("resources");
+                result.number = service.resource_usage().values as u64;
+                Ok(result)
+            }
+            "version_bulk_replace" | "version_bulk_remove" | "version_bulk_set_ttl" => {
+                let entries = version_entries(step, &remembered, command.ttl)?;
+                let operation = match step.operation.as_str() {
+                    "version_bulk_replace" => VersionBulkOperation::Replace,
+                    "version_bulk_remove" => VersionBulkOperation::Remove,
+                    _ => VersionBulkOperation::SetTtl,
+                };
+                service.bulk_version_conditional(
+                    operation,
+                    &entries,
+                    MutationIdentity::new("trace", step.identity),
+                    step.now,
+                    step.deadline,
+                    command.lose_response,
+                )
+            }
             "reserve_operation" => service
                 .reserve_operation(MutationIdentity::new("trace", step.identity), &command)
                 .map(|()| ServiceResult::new("reserved")),
@@ -407,7 +655,7 @@ pub fn execute_rust(trace: &ApiTrace) -> Result<Vec<String>, DifferentialError> 
             Err(error) => status.push_str(&format!("error:{}|~|~|~|0|0|[]", error.kind())),
         }
         let snapshot = service
-            .snapshot(step.now)
+            .diagnostic_snapshot(step.now)
             .map_err(|error| DifferentialError(error.to_string()))?;
         status.push_str("|[");
         status.push_str(
@@ -460,6 +708,16 @@ pub fn execute_rust(trace: &ApiTrace) -> Result<Vec<String>, DifferentialError> 
             stats.active_streams,
             stats.active_cursors
         ));
+        let usage = service.resource_usage();
+        status.push_str(&format!(
+            "|[{},{},{},{},{},{}]",
+            usage.values,
+            usage.outcomes,
+            usage.pending,
+            usage.listeners,
+            usage.streams,
+            usage.resync
+        ));
         transcript_bytes = transcript_bytes
             .saturating_add(status.len())
             .saturating_add(1);
@@ -500,6 +758,9 @@ fn to_command(
         } else {
             256
         };
+    if step.operation == "entry_listener" && !step.extra.is_empty() {
+        command.limit = parse_number(&step.extra)? as usize;
+    }
     if step.detail == "resume" {
         command.cursor = cursors.get(&step.operation).copied();
         command.limit = 1;
@@ -563,6 +824,37 @@ fn to_command(
             .collect::<Result<_, DifferentialError>>()?;
     }
     Ok(command)
+}
+
+fn version_entries(
+    step: &TraceStep,
+    remembered: &BTreeMap<Vec<u8>, VersionToken>,
+    ttl: ServiceTtl,
+) -> Result<Vec<VersionBulkEntry>, DifferentialError> {
+    step.extra
+        .split(',')
+        .map(|entry| {
+            let (key, value) = if step.operation == "version_bulk_replace" {
+                let (key, value) = entry
+                    .split_once(':')
+                    .ok_or_else(|| DifferentialError("invalid version bulk entry".into()))?;
+                (decode_hex(key)?, Some(decode_hex(value)?))
+            } else {
+                (decode_hex(entry)?, None)
+            };
+            let token = remembered.get(&key).copied().unwrap_or(VersionToken {
+                namespace_generation: 1,
+                map_id: i64::MAX as u64,
+                version: 1,
+            });
+            Ok(VersionBulkEntry {
+                key,
+                token,
+                value,
+                ttl,
+            })
+        })
+        .collect()
 }
 
 fn canonical_result(result: &ServiceResult) -> String {

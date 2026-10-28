@@ -8,6 +8,10 @@ use std::process::{Command, Stdio};
 use std::thread;
 use std::time::{Duration, Instant};
 
+use hydracache_cluster_testkit::value_plane_concurrent_075::{
+    execute_concurrent_rust, generated_schedule, parse_histories, shrink_schedule,
+    validate_histories, ConcurrentHistory, ConcurrentSchedule, MAX_SCHEDULE_BYTES,
+};
 use hydracache_cluster_testkit::value_plane_differential_075::{
     execute_rust, first_difference, generated_trace, shrink_trace, ApiTrace, DifferentialError,
     TraceDifference, MAX_TRACE_BYTES, MAX_TRACE_STEPS,
@@ -23,6 +27,15 @@ pub struct DifferentialReport {
     pub steps: usize,
     pub comparisons: usize,
     pub canary_detected: bool,
+    pub concurrent_rounds: usize,
+    pub concurrent_canary_detected: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConcurrentReport {
+    pub seed: u64,
+    pub rounds: usize,
+    pub canary_detected: bool,
 }
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
@@ -30,7 +43,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let root = crate::doc_check::find_repo_root()?;
     prepare_java_at_root(&root)?;
     let report = check_actual_at_root(&root, seed, steps)?;
-    println!("imap-api-differential 0.75: OK (seed={}, {} independent observations; process canary detected)", report.seed, report.comparisons);
+    println!("imap-api-differential 0.75: OK (seed={}, {} independent observations, {} legal concurrent histories per language; both process canaries detected)", report.seed, report.comparisons, report.concurrent_rounds);
     Ok(())
 }
 
@@ -77,12 +90,73 @@ pub fn check_actual_at_root(
     if first_difference(&trace, &rust, &canary).is_none() {
         return Err("differential canary failed: Java dropped-set defect escaped detection".into());
     }
+    let concurrent = check_concurrent_at_root(root, seed, 16)?;
     Ok(DifferentialReport {
         seed,
         steps: trace.steps.len(),
         comparisons: rust.len(),
         canary_detected: true,
+        concurrent_rounds: concurrent.rounds,
+        concurrent_canary_detected: concurrent.canary_detected,
     })
+}
+
+/// Different overlap winners are permitted, but every independent history must be legal.
+pub fn check_concurrent_at_root(
+    root: &Path,
+    seed: u64,
+    random_rounds: usize,
+) -> Result<ConcurrentReport, Box<dyn Error>> {
+    let schedule = generated_schedule(seed, random_rounds)?;
+    let rust = execute_concurrent_rust(&schedule)?;
+    let java = execute_java_concurrent(root, &schedule, false)?;
+    let failure = validate_histories(&schedule, &rust)
+        .err()
+        .map(|error| format!("Rust: {error}"))
+        .or_else(|| {
+            validate_histories(&schedule, &java)
+                .err()
+                .map(|error| format!("Java: {error}"))
+        });
+    if let Some(failure) = failure {
+        let minimized = shrink_schedule(&schedule, 16, |candidate| {
+            let rust = execute_concurrent_rust(candidate)?;
+            let java = execute_java_concurrent(root, candidate, false)
+                .map_err(|error| DifferentialError(error.to_string()))?;
+            Ok(validate_histories(candidate, &rust).is_err()
+                || validate_histories(candidate, &java).is_err())
+        })?;
+        let path = retain_failure_schedule(root, &minimized)?;
+        return Err(format!("illegal concurrent IMap history ({failure}); seed={seed}; minimized {} rounds retained at {}\n{}", minimized.rounds.len(), path.display(), bounded_preview(&minimized.encode(), 4096)).into());
+    }
+    let broken_java = execute_java_concurrent(root, &schedule, true)?;
+    if validate_histories(&schedule, &broken_java).is_ok() {
+        return Err("concurrent canary failed: Java unconditional-compare defect escaped legal-history checker".into());
+    }
+    Ok(ConcurrentReport {
+        seed,
+        rounds: schedule.rounds.len(),
+        canary_detected: true,
+    })
+}
+
+pub fn execute_java_concurrent(
+    root: &Path,
+    schedule: &ConcurrentSchedule,
+    defect: bool,
+) -> Result<Vec<ConcurrentHistory>, Box<dyn Error>> {
+    let input = schedule.encode();
+    ConcurrentSchedule::parse(&input)?;
+    if input.len() > MAX_SCHEDULE_BYTES {
+        return Err("Java concurrent input exceeds bound".into());
+    }
+    let output = execute_java_peer(
+        root,
+        "IMapConcurrentRunner",
+        input,
+        defect.then_some("--canary-unconditional-compare"),
+    )?;
+    Ok(parse_histories(&output, schedule.rounds.len())?)
 }
 
 pub fn execute_java(
@@ -94,13 +168,28 @@ pub fn execute_java(
     if input.len() > MAX_TRACE_BYTES || trace.steps.len() > MAX_TRACE_STEPS {
         return Err("Java differential input exceeds bound".into());
     }
+    let output = execute_java_peer(
+        root,
+        "IMapTraceRunner",
+        input,
+        defect.then_some("--canary-drop-set"),
+    )?;
+    parse_observations(&output, trace.steps.len())
+}
+
+fn execute_java_peer(
+    root: &Path,
+    runner: &str,
+    input: String,
+    defect: Option<&str>,
+) -> Result<Vec<u8>, Box<dyn Error>> {
     let classpath = root.join("tests/java-imap-benchmark/target/classes");
     if !classpath
-        .join("io/hydracache/imap/semantic/IMapTraceRunner.class")
+        .join(format!("io/hydracache/imap/semantic/{runner}.class"))
         .is_file()
     {
         return Err(
-            "compiled IMapTraceRunner is missing; run the Java semantic build first".into(),
+            format!("compiled {runner} is missing; run the Java semantic build first").into(),
         );
     }
     let java = std::env::var_os("JAVA_HOME")
@@ -116,9 +205,9 @@ pub fn execute_java(
         .arg("-Xmx128m")
         .arg("-cp")
         .arg(classpath)
-        .arg("io.hydracache.imap.semantic.IMapTraceRunner");
-    if defect {
-        command.arg("--canary-drop-set");
+        .arg(format!("io.hydracache.imap.semantic.{runner}"));
+    if let Some(defect) = defect {
+        command.arg(defect);
     }
     command
         .current_dir(root)
@@ -159,7 +248,7 @@ pub fn execute_java(
         )
         .into());
     }
-    parse_observations(&output, trace.steps.len())
+    Ok(output)
 }
 
 fn bounded_read(source: impl Read, maximum: usize) -> Result<Vec<u8>, std::io::Error> {
@@ -213,13 +302,30 @@ pub fn retain_failure_trace(
 ) -> Result<std::path::PathBuf, Box<dyn Error>> {
     let source = trace.encode();
     ApiTrace::parse(&source)?;
+    retain_source(root, &source, &format!("seed-{}", trace.seed))
+}
+
+pub fn retain_failure_schedule(
+    root: &Path,
+    schedule: &ConcurrentSchedule,
+) -> Result<std::path::PathBuf, Box<dyn Error>> {
+    let source = schedule.encode();
+    ConcurrentSchedule::parse(&source)?;
+    retain_source(root, &source, &format!("schedule-seed-{}", schedule.seed))
+}
+
+fn retain_source(
+    root: &Path,
+    source: &str,
+    prefix: &str,
+) -> Result<std::path::PathBuf, Box<dyn Error>> {
     let digest = Sha256::digest(source.as_bytes())
         .iter()
         .map(|byte| format!("{byte:02x}"))
         .collect::<String>();
     let directory = root.join("target/imap-075/differential-failures");
     std::fs::create_dir_all(&directory)?;
-    let path = directory.join(format!("seed-{}-{digest}.tsv", trace.seed));
+    let path = directory.join(format!("{prefix}-{digest}.tsv"));
     match std::fs::OpenOptions::new()
         .write(true)
         .create_new(true)

@@ -80,6 +80,30 @@ The shared `imap-distributed-correctness` gate runs this comparison after Maven 
 the existing isolated authority/replication proofs. Local service and stream tests do not admit a
 production backend or establish cluster statistics.
 
+The next lifecycle helpers operate on that same local owner without adding wire operations:
+
+- client/generation-scoped retirement frees completed outcomes only behind a monotonic fence;
+  pending work is protected, and a retired identity cannot be admitted again;
+- aggregate logical payload budgets cover values, outcomes, pending requests, listeners, stream
+  buffers and repair snapshots, with admission checked before visible mutation;
+- listener repair captures a bounded snapshot and watermark atomically before live delivery;
+- version-conditional bulk returns ordered per-item results, and bounded batch outcome lookup
+  preserves exact pending/completed/unknown certainty;
+- expiry maintenance examines a bounded number of entries per step while expired values stay
+  invisible before physical cleanup;
+- quiescent checkpoint/restore is an in-memory test helper, retains TTL/outcomes/retirement fences
+  and creates a fresh map instance so old instance tokens and cursors cannot cross restoration.
+
+These budgets describe owned logical payload, not process RSS or a production memory guarantee.
+Listener repair provides snapshot/cutover rather than a durable event history. Bulk operations
+retain their per-item semantics and do not provide distributed transactions. Checkpoints assign
+no persisted format, wire version or production durability identity.
+
+The shared differential gate also executes real worker-thread schedules in the Rust and Java
+services. Its independent checker accepts legal winners consistent with invocation/return edges,
+validates async cancellation/recovery and listener effects, and rejects a deliberately broken Java
+history. The development schedule format and deterministic shrinker remain bounded.
+
 Run all locally available Rust distributed-foundation proofs and optionally retain their evidence
 with one command:
 

@@ -566,3 +566,126 @@ fn canary_stream_listener_stats_and_differential_cannot_weaken_their_contract() 
         );
     }
 }
+
+#[test]
+fn canary_retirement_budgets_and_repair_cannot_drop_owner_guards() {
+    for (field, replacement) in [
+        ("retirement_scope", serde_json::json!(["client"])),
+        (
+            "retirement_scope",
+            serde_json::json!(["client", "namespace_generation", "client"]),
+        ),
+        ("retired_retry", serde_json::json!("reexecute_if_missing")),
+        ("pending_retirement", serde_json::json!("evict_pending")),
+        ("accounting_scope", serde_json::json!("unmeasured_rss")),
+        ("resource_owners", serde_json::json!(["values"])),
+        ("admission", serde_json::json!("check_after_mutation")),
+        (
+            "listener_repair",
+            serde_json::json!("register_after_snapshot"),
+        ),
+        (
+            "repair_bounds",
+            serde_json::json!("clear_gap_then_check_size"),
+        ),
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |value| {
+            value["api_extensions"]["local_lifecycle"][field] = replacement;
+        });
+        assert!(
+            problems(&temp)
+                .iter()
+                .any(|problem| problem.starts_with("local IMap lifecycle")),
+            "{field}"
+        );
+    }
+}
+
+#[test]
+fn canary_bulk_expiry_checkpoint_and_concurrency_preserve_local_limits() {
+    for (field, replacement) in [
+        ("version_bulk", serde_json::json!("cross_key_transaction")),
+        (
+            "batch_outcomes",
+            serde_json::json!("missing_means_not_applied"),
+        ),
+        ("expiry_work", serde_json::json!("full_sweep_per_request")),
+        (
+            "expired_visibility",
+            serde_json::json!("visible_until_cleanup"),
+        ),
+        ("checkpoint", serde_json::json!("production_durable_format")),
+        (
+            "qualification",
+            serde_json::json!("identical_winner_required"),
+        ),
+        ("test_ids", serde_json::json!([])),
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |value| {
+            value["api_extensions"]["local_lifecycle"][field] = replacement;
+        });
+        assert!(
+            problems(&temp)
+                .iter()
+                .any(|problem| problem.starts_with("local IMap lifecycle")),
+            "{field}"
+        );
+    }
+}
+
+#[test]
+fn lifecycle_contract_requires_both_implementations_and_unique_proofs() {
+    for field in ["local_lifecycle", "local_service"] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |value| {
+            value["api_extensions"]
+                .as_object_mut()
+                .unwrap()
+                .remove(field);
+        });
+        assert!(xtask::imap_contract::check_contract_dir(temp.path()).is_err());
+    }
+    let temp = fixture();
+    edit(&temp.path().join("operation-contract.json"), |value| {
+        value["api_extensions"]["local_lifecycle"]["test_ids"]
+            .as_array_mut()
+            .unwrap()
+            .pop();
+    });
+    assert!(problems(&temp)
+        .iter()
+        .any(|problem| problem.contains("each unique Rust/Java")));
+    let temp = fixture();
+    edit(&temp.path().join("operation-contract.json"), |value| {
+        let tests = value["api_extensions"]["local_lifecycle"]["test_ids"]
+            .as_array_mut()
+            .unwrap();
+        tests.push(tests[0].clone());
+    });
+    assert!(problems(&temp)
+        .iter()
+        .any(|problem| problem.contains("each unique Rust/Java")));
+    for error in [
+        "retired_identity",
+        "pending_retirement",
+        "resource_budget_exhausted",
+        "active_owners",
+        "expiry_backlog",
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |value| {
+            value["errors"]
+                .as_array_mut()
+                .unwrap()
+                .retain(|item| item["id"] != error);
+        });
+        assert!(
+            problems(&temp)
+                .iter()
+                .any(|problem| problem.contains("missing typed error")),
+            "{error}"
+        );
+    }
+}

@@ -45,7 +45,48 @@ public final class IMapTraceRunner {
       String status;
       try {
         UnifiedIMapService.Result result;
-        if (step.operation().equals("reserve_operation")) {
+        if (step.operation().equals("reset_limits")) {
+          var limits = UnifiedIMapService.BudgetLimits.defaults();
+          service = new UnifiedIMapService(bounds, 1, new UnifiedIMapService.BudgetLimits(
+              number(step.detail()), limits.outcomes(), limits.pending(), limits.listeners(), limits.streams(),
+              limits.resync(), limits.maxClients(), limits.maxBatch(), Math.toIntExact(number(step.extra())), limits.queryBytes()));
+          remembered.clear(); cursors.clear(); listeners.clear();
+          result = developmentResult("reset", List.of(), 0, false, OptionalLong.empty());
+        } else if (step.operation().equals("retire_outcomes")) {
+          var receipt = service.retireOutcomes("trace", 1, step.identity());
+          result = developmentResult("retired", List.of(), receipt.removed(), false, OptionalLong.of(receipt.through()));
+        } else if (step.operation().equals("query_outcomes")) {
+          var identities = java.util.Arrays.stream(step.extra().split(",", -1))
+              .map(value -> new BoundedIMapApi.MutationIdentity("trace", number(value))).toList();
+          var outcomes = service.queryOutcomes(identities, command.limit);
+          var items = new ArrayList<UnifiedIMapService.Item>();
+          for (var outcome : outcomes) {
+            var receipt = outcome.status().result();
+            items.add(new UnifiedIMapService.Item(outcome.index(), BytesValue.copyOf(Long.toString(outcome.identity().sequence()).getBytes(StandardCharsets.US_ASCII)),
+                outcome.status().kind() + receipt.map(value -> ":" + value.kind()).orElse(""),
+                receipt.flatMap(UnifiedIMapService.Result::value), receipt.map(UnifiedIMapService.Result::version).orElse(OptionalLong.empty()),
+                receipt.map(UnifiedIMapService.Result::remainingTtl).orElse(OptionalLong.empty())));
+          }
+          result = developmentResult("outcomes", items, items.size(), false, OptionalLong.empty());
+        } else if (step.operation().equals("resync_listener")) {
+          try (var snapshot = service.snapshotListener(step.identity(), command.limit, number(step.extra()), step.now())) {
+            var items = new ArrayList<UnifiedIMapService.Item>();
+            for (var entry : snapshot.entries()) items.add(new UnifiedIMapService.Item(items.size(), entry.key(), "present", entry.value(), OptionalLong.of(entry.version()), entry.remainingTtl()));
+            result = developmentResult("resynced", items, items.size(), service.resourceUsage().resync() > 0, OptionalLong.of(snapshot.watermark()));
+          }
+        } else if (step.operation().equals("expire_step")) {
+          var progress = service.expireStep(step.now(), command.limit);
+          result = developmentResult("expiry_progress", List.of(), progress.expired(), progress.remaining(), OptionalLong.of(progress.work()));
+        } else if (step.operation().equals("checkpoint_restore")) {
+          service = UnifiedIMapService.restore(service.checkpoint());
+          result = developmentResult("restored", List.of(), 0, false, OptionalLong.empty());
+        } else if (step.operation().equals("resource_usage")) {
+          result = developmentResult("resources", List.of(), service.resourceUsage().values(), false, OptionalLong.empty());
+        } else if (java.util.Set.of("version_bulk_replace", "version_bulk_remove", "version_bulk_set_ttl").contains(step.operation())) {
+          var entries = versionEntries(step, remembered, command.ttl);
+          var operation = switch (step.operation()) { case "version_bulk_replace" -> UnifiedIMapService.VersionAction.REPLACE; case "version_bulk_remove" -> UnifiedIMapService.VersionAction.REMOVE; default -> UnifiedIMapService.VersionAction.SET_TTL; };
+          result = service.versionBulk(operation, entries, new BoundedIMapApi.MutationIdentity("trace", step.identity()), step.now(), step.deadline(), command.loseResponse);
+        } else if (step.operation().equals("reserve_operation")) {
           service.beginOperation(command);
           result = new UnifiedIMapService.Result("reserved", Optional.empty(), OptionalLong.empty(),
               OptionalLong.empty(), List.of(), 0, false, Optional.empty());
@@ -69,7 +110,7 @@ public final class IMapTraceRunner {
       } catch (IMapDomainException failure) {
         status = "error:" + failure.kind() + "|~|~|~|0|0|[]";
       }
-      String state = service.snapshot(step.now()).stream().map(entry ->
+      String state = service.diagnosticSnapshot(step.now()).stream().map(entry ->
           entry.key().hex() + "/" + entry.value().hex() + "/" + entry.version() + "/"
               + number(entry.remainingTtl())).collect(Collectors.joining(","));
       var events = new ArrayList<String>();
@@ -80,12 +121,15 @@ public final class IMapTraceRunner {
               + "/" + event.watermark());
         }
       }
-      var stats = service.stats(step.now());
+      var stats = service.diagnosticStats(step.now());
       String observation = status + "|[" + state + "]|[" + String.join(",", events) + "]|["
           + stats.liveEntries() + "," + stats.valueBytes() + "," + stats.retainedOutcomes() + ","
           + stats.listeners() + "," + stats.queuedEvents() + "," + stats.inflight() + ","
           + stats.rejections() + "," + stats.cancellations() + "," + stats.requests() + ","
           + stats.activeStreams() + "," + stats.activeCursors() + "]";
+      var usage = service.resourceUsage();
+      observation += "|[" + usage.values() + "," + usage.outcomes() + "," + usage.pending() + ","
+          + usage.listeners() + "," + usage.streams() + "," + usage.resync() + "]";
       outputBytes = Math.addExact(outputBytes, observation.length() + 1);
       if (observation.length() > MAX_OBSERVATION_BYTES || outputBytes > MAX_OUTPUT_BYTES) {
         throw new IllegalArgumentException("trace observations exceed output bound");
@@ -106,6 +150,7 @@ public final class IMapTraceRunner {
     step.expected().ifPresent(command::expected);
     if (step.identity() > 0) command.identity(new BoundedIMapApi.MutationIdentity("trace", step.identity()));
     if (step.detail().matches("[0-9]+")) command.limit(Math.toIntExact(number(step.detail())));
+    if (step.operation().equals("entry_listener") && !step.extra().isEmpty()) command.limit(Math.toIntExact(number(step.extra())));
     if (step.detail().equals("resume")) {
       if (cursors.containsKey(step.operation())) command.cursor(cursors.get(step.operation()));
       command.limit(1);
@@ -145,6 +190,25 @@ public final class IMapTraceRunner {
       }
     }
     return command;
+  }
+
+  private static UnifiedIMapService.Result developmentResult(String kind, List<UnifiedIMapService.Item> items,
+      long number, boolean flag, OptionalLong version) {
+    return new UnifiedIMapService.Result(kind, Optional.empty(), version, OptionalLong.empty(), items, number, flag, Optional.empty());
+  }
+
+  private static List<UnifiedIMapService.VersionInput> versionEntries(Step step,
+      Map<BytesValue, UnifiedIMapService.VersionToken> remembered, TtlDirective ttl) {
+    var entries = new ArrayList<UnifiedIMapService.VersionInput>();
+    for (String source : step.extra().split(",", -1)) {
+      String[] parts = source.split(":", -1);
+      boolean replace = step.operation().equals("version_bulk_replace");
+      if (parts.length != (replace ? 2 : 1)) throw new IllegalArgumentException("invalid version bulk entry");
+      BytesValue key = hex(parts[0]);
+      var token = remembered.getOrDefault(key, new UnifiedIMapService.VersionToken(1, Long.MAX_VALUE, 1));
+      entries.add(new UnifiedIMapService.VersionInput(key, token, replace ? Optional.of(hex(parts[1])) : Optional.empty(), ttl));
+    }
+    return List.copyOf(entries);
   }
 
   private static String canonicalResult(UnifiedIMapService.Result result) {

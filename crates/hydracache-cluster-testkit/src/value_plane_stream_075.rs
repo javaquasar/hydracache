@@ -28,6 +28,11 @@ pub trait BoundedStreamSource: Unpin {
         Ok(())
     }
 
+    /// A local snapshot/repair cutover invalidates prefetched items without replaying history.
+    fn take_buffer_reset(&mut self) -> bool {
+        false
+    }
+
     fn close(&mut self);
 }
 
@@ -99,6 +104,9 @@ impl<S: BoundedStreamSource> Stream for DemandStream<S> {
         }
         if let Err(error) = this.source.validate_buffered() {
             return this.fail(DemandStreamError::Source(error));
+        }
+        if this.source.take_buffer_reset() {
+            this.buffered.clear();
         }
         if let Some(item) = this.buffered.pop_front() {
             return Poll::Ready(Some(Ok(item)));

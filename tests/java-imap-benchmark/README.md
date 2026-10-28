@@ -50,6 +50,13 @@ gate compares each result, error, state, TTL, version, event and statistics obse
 independent Rust service; an actual dropped-set Java canary must diverge. Run it from the repo root
 with `cargo xtask imap-api-differential --release 0.75 --seed 117 --steps 128`.
 
+Local lifecycle helpers extend the unified reference owner with safe outcome retirement fences,
+aggregate logical payload budgets, atomic listener snapshot/cutover repair, per-item version bulk,
+batch outcome queries and incremental expiry. Quiescent in-memory checkpoints retain TTL and
+receipts while restoration gives the map a fresh instance identity. They assign no persisted or
+production protocol format. `IMapConcurrentRunner` exercises real worker-thread schedules and
+async cancellation; the independent Rust checker validates legal histories and real-time edges.
+
 ## Blocked by 0.74
 
 Real HydraCache/Hazelcast adapters and every timed run are **blocked-by-0.74**. They must not be

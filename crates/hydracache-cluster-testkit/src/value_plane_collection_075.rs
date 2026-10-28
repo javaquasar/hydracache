@@ -183,7 +183,7 @@ enum RetainedCommand {
 enum RetainedOutcome {
     Point(TimedMutationOutcome),
     Replacements(Vec<ReplacementReceipt>),
-    ServicePending,
+    ServicePending { result_bytes: usize },
     Service(serde_json::Value),
 }
 
@@ -299,6 +299,10 @@ pub struct ReferenceCollectionMap {
     destroyed: bool,
     map_id: u64,
     retained: BTreeMap<MutationIdentity, (RetainedCommand, RetainedOutcome)>,
+    service_mode: bool,
+    expiry_index: BTreeSet<(u64, Vec<u8>)>,
+    observed_time: u64,
+    retirement_fences: BTreeMap<String, u64>,
 }
 
 impl ReferenceCollectionMap {
@@ -310,6 +314,10 @@ impl ReferenceCollectionMap {
             destroyed: false,
             map_id: allocate_map_id(&NEXT_MAP_ID)?,
             retained: BTreeMap::new(),
+            service_mode: false,
+            expiry_index: BTreeSet::new(),
+            observed_time: 0,
+            retirement_fences: BTreeMap::new(),
         })
     }
 
@@ -331,6 +339,241 @@ impl ReferenceCollectionMap {
 
     pub(crate) const fn service_bounds(&self) -> CollectionBounds {
         self.bounds
+    }
+
+    pub(crate) fn enable_service_mode(&mut self) {
+        self.service_mode = true;
+        self.expiry_index = self
+            .entries
+            .iter()
+            .filter_map(|(key, value)| value.expires_at.map(|at| (at, key.clone())))
+            .collect();
+    }
+
+    pub(crate) fn service_observe_time(&mut self, now: u64) -> Result<(), CollectionError> {
+        if self.observed_time.checked_add(1).is_some_and(|start| {
+            self.expiry_index
+                .range((start, Vec::new())..)
+                .next()
+                .is_some_and(|(at, _)| *at <= now)
+        }) {
+            self.bump_revision()?;
+        }
+        self.observed_time = now;
+        Ok(())
+    }
+
+    pub(crate) fn service_expire_step(
+        &mut self,
+        now: u64,
+        maximum: usize,
+    ) -> Result<ExpiredServiceEntries, CollectionError> {
+        self.service_observe_time(now)?;
+        let mut expired = Vec::new();
+        for _ in 0..maximum {
+            if self.expiry_index.first().is_none_or(|(at, _)| *at > now) {
+                break;
+            }
+            let (at, key) = self.expiry_index.pop_first().expect("checked expiry head");
+            if self
+                .entries
+                .get(&key)
+                .is_some_and(|value| value.expires_at == Some(at))
+            {
+                let value = self.entries.remove(&key).expect("indexed entry exists");
+                expired.push((key, value.value));
+            }
+        }
+        Ok(expired)
+    }
+
+    pub(crate) fn service_expire_key(&mut self, key: &[u8], now: u64) -> Option<Vec<u8>> {
+        if self
+            .entries
+            .get(key)
+            .is_none_or(|value| is_live(value, now))
+        {
+            return None;
+        }
+        let value = self.entries.remove(key)?;
+        if let Some(at) = value.expires_at {
+            self.expiry_index.remove(&(at, key.to_vec()));
+        }
+        Some(value.value)
+    }
+
+    pub(crate) fn service_expiry_pending(&self, now: u64) -> bool {
+        self.expiry_index.first().is_some_and(|(at, _)| *at <= now)
+    }
+
+    pub(crate) fn service_value_bytes(&self) -> usize {
+        self.entries.iter().fold(0usize, |sum, (key, value)| {
+            sum.saturating_add(24)
+                .saturating_add(key.len())
+                .saturating_add(value.value.len())
+        })
+    }
+
+    pub(crate) fn service_physical_entry_bytes(&self, key: &[u8]) -> usize {
+        self.entries.get(key).map_or(0, |value| {
+            24usize
+                .saturating_add(key.len())
+                .saturating_add(value.value.len())
+        })
+    }
+
+    pub(crate) fn service_retained_bytes(&self) -> (usize, usize) {
+        let mut completed = self.retirement_fences.keys().fold(0usize, |sum, client| {
+            sum.saturating_add(client.len()).saturating_add(24)
+        });
+        let mut pending = 0usize;
+        for (id, (_, outcome)) in &self.retained {
+            let base = id.client.len().saturating_add(48);
+            let result = match outcome {
+                RetainedOutcome::ServicePending { result_bytes } => {
+                    pending = pending.saturating_add(base);
+                    *result_bytes
+                }
+                RetainedOutcome::Service(value) => {
+                    let value_len = value["value"].as_array().map_or(0, Vec::len);
+                    value["items"]
+                        .as_array()
+                        .map_or(64usize.saturating_add(value_len), |items| {
+                            items
+                                .iter()
+                                .fold(64usize.saturating_add(value_len), |sum, item| {
+                                    sum.saturating_add(64)
+                                        .saturating_add(item["key"].as_array().map_or(0, Vec::len))
+                                        .saturating_add(
+                                            item["value"].as_array().map_or(0, Vec::len),
+                                        )
+                                })
+                        })
+                }
+                RetainedOutcome::Point(_) => 64,
+                RetainedOutcome::Replacements(items) => items.iter().fold(64usize, |sum, item| {
+                    sum.saturating_add(64).saturating_add(item.key.len())
+                }),
+            };
+            completed = completed.saturating_add(base).saturating_add(result);
+        }
+        (completed, pending)
+    }
+
+    pub(crate) fn service_query_result_bytes(
+        &self,
+        identity: &MutationIdentity,
+    ) -> Result<usize, CollectionError> {
+        self.validate_mutation_identity(identity)?;
+        let Some((_, outcome)) = self.retained.get(identity) else {
+            return Ok(0);
+        };
+        Ok(match outcome {
+            RetainedOutcome::ServicePending { .. } => 0,
+            RetainedOutcome::Point(_) => 64,
+            RetainedOutcome::Replacements(items) => items.iter().fold(64usize, |sum, item| {
+                sum.saturating_add(64).saturating_add(item.key.len())
+            }),
+            RetainedOutcome::Service(value) => value["items"].as_array().map_or(
+                64usize.saturating_add(value["value"].as_array().map_or(0, Vec::len)),
+                |items| {
+                    items.iter().fold(
+                        64usize.saturating_add(value["value"].as_array().map_or(0, Vec::len)),
+                        |sum, item| {
+                            sum.saturating_add(64)
+                                .saturating_add(item["key"].as_array().map_or(0, Vec::len))
+                                .saturating_add(item["value"].as_array().map_or(0, Vec::len))
+                        },
+                    )
+                },
+            ),
+        })
+    }
+
+    pub(crate) fn service_pending_before(&self, client: &str, through: u64) -> bool {
+        self.retained.iter().any(|(id, (_, outcome))| {
+            id.client == client
+                && id.sequence <= through
+                && matches!(outcome, RetainedOutcome::ServicePending { .. })
+        })
+    }
+
+    pub(crate) fn service_retirement_credit(&self, client: &str, through: u64) -> usize {
+        self.retained
+            .iter()
+            .filter(|(id, _)| id.client == client && id.sequence <= through)
+            .fold(0usize, |sum, (id, (_, outcome))| {
+                let result = match outcome {
+                    RetainedOutcome::ServicePending { result_bytes } => *result_bytes,
+                    RetainedOutcome::Service(value) => value["items"].as_array().map_or(
+                        64usize.saturating_add(value["value"].as_array().map_or(0, Vec::len)),
+                        |items| {
+                            items.iter().fold(
+                                64usize
+                                    .saturating_add(value["value"].as_array().map_or(0, Vec::len)),
+                                |sum, item| {
+                                    sum.saturating_add(64)
+                                        .saturating_add(item["key"].as_array().map_or(0, Vec::len))
+                                        .saturating_add(
+                                            item["value"].as_array().map_or(0, Vec::len),
+                                        )
+                                },
+                            )
+                        },
+                    ),
+                    RetainedOutcome::Point(_) => 64,
+                    RetainedOutcome::Replacements(items) => {
+                        items.iter().fold(64usize, |sum, item| {
+                            sum.saturating_add(64).saturating_add(item.key.len())
+                        })
+                    }
+                };
+                sum.saturating_add(id.client.len())
+                    .saturating_add(48)
+                    .saturating_add(result)
+            })
+    }
+
+    pub(crate) fn service_fences(&self) -> &BTreeMap<String, u64> {
+        &self.retirement_fences
+    }
+
+    pub(crate) fn service_retired(&self, identity: &MutationIdentity) -> bool {
+        self.retirement_fences
+            .get(&identity.client)
+            .is_some_and(|through| identity.sequence <= *through)
+    }
+
+    pub(crate) fn service_retire(&mut self, client: String, through: u64) -> usize {
+        let before = self.retained.len();
+        self.retained
+            .retain(|id, _| id.client != client || id.sequence > through);
+        self.retirement_fences.insert(client, through);
+        before - self.retained.len()
+    }
+
+    pub(crate) fn service_checkpoint_clone(&self) -> Self {
+        Self {
+            bounds: self.bounds,
+            entries: self.entries.clone(),
+            revision: self.revision,
+            destroyed: self.destroyed,
+            map_id: self.map_id,
+            retained: self.retained.clone(),
+            service_mode: true,
+            expiry_index: self.expiry_index.clone(),
+            observed_time: self.observed_time,
+            retirement_fences: self.retirement_fences.clone(),
+        }
+    }
+
+    pub(crate) fn service_restore_identity(&mut self) -> Result<(), CollectionError> {
+        self.map_id = allocate_map_id(&NEXT_MAP_ID)?;
+        Ok(())
+    }
+
+    pub(crate) fn service_reserve_versions(&self, count: usize) -> Result<(), CollectionError> {
+        self.reserve_revisions(count as u64)
     }
 
     pub(crate) fn service_counts(&self, now: u64) -> (usize, usize) {
@@ -359,6 +602,52 @@ impl ReferenceCollectionMap {
             .collect()
     }
 
+    pub(crate) fn service_snapshot_cost(
+        &self,
+        prefix: &[u8],
+        include_value: bool,
+        now: u64,
+    ) -> (usize, usize) {
+        self.entries
+            .iter()
+            .filter(|(key, value)| key.starts_with(prefix) && is_live(value, now))
+            .fold((0usize, 0usize), |(count, bytes), (key, value)| {
+                (
+                    count.saturating_add(1),
+                    bytes
+                        .saturating_add(32)
+                        .saturating_add(key.len())
+                        .saturating_add(if include_value { value.value.len() } else { 0 }),
+                )
+            })
+    }
+
+    pub(crate) fn service_filtered_snapshot(
+        &self,
+        prefix: &[u8],
+        include_value: bool,
+        now: u64,
+    ) -> Vec<(Vec<u8>, EntryView)> {
+        self.entries
+            .iter()
+            .filter(|(key, value)| key.starts_with(prefix) && is_live(value, now))
+            .map(|(key, value)| {
+                (
+                    key.clone(),
+                    EntryView {
+                        value: if include_value {
+                            value.value.clone()
+                        } else {
+                            Vec::new()
+                        },
+                        version: value.version,
+                        remaining_ttl: value.expires_at.map(|at| at - now),
+                    },
+                )
+            })
+            .collect()
+    }
+
     pub(crate) fn service_entry(&self, key: &[u8], now: u64) -> Option<EntryView> {
         self.entries
             .get(key)
@@ -381,13 +670,18 @@ impl ReferenceCollectionMap {
                 !self
                     .entries
                     .get(&entry.key)
-                    .is_some_and(|stored| is_live(stored, now))
+                    .is_some_and(|stored| self.service_mode || is_live(stored, now))
             })
             .count();
         self.check_bound(
             "entries",
             self.bounds.max_entries,
-            self.live_count(now).saturating_add(additional),
+            (if self.service_mode {
+                self.entries.len()
+            } else {
+                self.live_count(now)
+            })
+            .saturating_add(additional),
         )?;
         self.reserve_revisions(entries.len() as u64)
     }
@@ -408,20 +702,6 @@ impl ReferenceCollectionMap {
         self.reserve_revisions(removed as u64)
     }
 
-    pub(crate) fn service_expire(
-        &mut self,
-        now: u64,
-    ) -> Result<ExpiredServiceEntries, CollectionError> {
-        let expired = self
-            .entries
-            .iter()
-            .filter(|(_, stored)| !is_live(stored, now))
-            .map(|(key, stored)| (key.clone(), stored.value.clone()))
-            .collect();
-        self.purge_expired(now)?;
-        Ok(expired)
-    }
-
     pub(crate) fn service_lookup(
         &self,
         identity: &MutationIdentity,
@@ -437,7 +717,7 @@ impl ReferenceCollectionMap {
             }
         }
         Ok(match outcome {
-            RetainedOutcome::ServicePending => ServiceRetainedOutcome::Pending,
+            RetainedOutcome::ServicePending { .. } => ServiceRetainedOutcome::Pending,
             RetainedOutcome::Service(value) => ServiceRetainedOutcome::Completed(value.clone()),
             RetainedOutcome::Point(outcome) => ServiceRetainedOutcome::Completed(match outcome {
                 TimedMutationOutcome::Applied { changed, version } => {
@@ -461,6 +741,7 @@ impl ReferenceCollectionMap {
         &mut self,
         identity: MutationIdentity,
         digest: [u8; 32],
+        result_bytes: usize,
     ) -> Result<(), CollectionError> {
         self.require_active()?;
         self.validate_mutation_identity(&identity)?;
@@ -476,7 +757,7 @@ impl ReferenceCollectionMap {
             identity,
             (
                 RetainedCommand::Service(digest),
-                RetainedOutcome::ServicePending,
+                RetainedOutcome::ServicePending { result_bytes },
             ),
         );
         Ok(())
@@ -499,8 +780,20 @@ impl ReferenceCollectionMap {
     pub(crate) fn service_pending_count(&self) -> usize {
         self.retained
             .values()
-            .filter(|(_, outcome)| matches!(outcome, RetainedOutcome::ServicePending))
+            .filter(|(_, outcome)| matches!(outcome, RetainedOutcome::ServicePending { .. }))
             .count()
+    }
+
+    pub(crate) fn service_pending_result_bytes(
+        &self,
+        identity: &MutationIdentity,
+    ) -> Option<usize> {
+        self.retained
+            .get(identity)
+            .and_then(|(_, outcome)| match outcome {
+                RetainedOutcome::ServicePending { result_bytes } => Some(*result_bytes),
+                _ => None,
+            })
     }
 
     pub fn put(
@@ -516,11 +809,15 @@ impl ReferenceCollectionMap {
         if expires_at.is_some_and(|deadline| deadline <= now) {
             return Err(CollectionError::InvalidExpiry);
         }
-        let live_entries = self.live_count(now);
+        let live_entries = if self.service_mode {
+            self.entries.len()
+        } else {
+            self.live_count(now)
+        };
         let key_is_live = self
             .entries
             .get(&key)
-            .is_some_and(|stored| is_live(stored, now));
+            .is_some_and(|stored| self.service_mode || is_live(stored, now));
         self.check_bound(
             "entries",
             self.bounds.max_entries,
@@ -529,6 +826,14 @@ impl ReferenceCollectionMap {
         self.reserve_revisions(u64::from(self.has_expired(now)) + 1)?;
         self.purge_expired(now)?;
         self.bump_revision()?;
+        if self.service_mode {
+            if let Some(old) = self.entries.get(&key).and_then(|value| value.expires_at) {
+                self.expiry_index.remove(&(old, key.clone()));
+            }
+            if let Some(at) = expires_at {
+                self.expiry_index.insert((at, key.clone()));
+            }
+        }
         self.entries.insert(
             key,
             StoredValue {
@@ -573,7 +878,7 @@ impl ReferenceCollectionMap {
         Ok(self
             .entries
             .get(key)
-            .is_some_and(|stored| stored.value == value))
+            .is_some_and(|stored| is_live(stored, now) && stored.value == value))
     }
 
     pub fn set(
@@ -594,18 +899,22 @@ impl ReferenceCollectionMap {
         self.require_active()?;
         self.check_bound("key_bytes", self.bounds.max_key_bytes, key.len())?;
         self.purge_expired(now)?;
-        if let Some(stored) = self.entries.get(key) {
+        if let Some(stored) = self.entries.get(key).filter(|stored| is_live(stored, now)) {
             self.check_bound(
                 "response_bytes",
                 self.bounds.max_response_bytes,
                 stored.value.len(),
             )?;
         }
-        Ok(self.entries.get(key).map(|stored| EntryView {
-            value: stored.value.clone(),
-            version: stored.version,
-            remaining_ttl: stored.expires_at.map(|deadline| deadline - now),
-        }))
+        Ok(self
+            .entries
+            .get(key)
+            .filter(|stored| is_live(stored, now))
+            .map(|stored| EntryView {
+                value: stored.value.clone(),
+                version: stored.version,
+                remaining_ttl: stored.expires_at.map(|deadline| deadline - now),
+            }))
     }
 
     pub fn try_put(
@@ -938,7 +1247,7 @@ impl ReferenceCollectionMap {
     pub fn size(&mut self, now: u64) -> Result<usize, CollectionError> {
         self.require_active()?;
         self.purge_expired(now)?;
-        Ok(self.entries.len())
+        Ok(self.live_count(now))
     }
 
     pub fn is_empty(&mut self, now: u64) -> Result<bool, CollectionError> {
@@ -965,13 +1274,20 @@ impl ReferenceCollectionMap {
         self.purge_expired(now)?;
         let purpose = search_purpose(value);
         let offset = self.cursor_offset(cursor, purpose)?;
-        for stored in self.entries.values().skip(offset).take(scan_budget) {
+        for stored in self
+            .entries
+            .values()
+            .filter(|stored| is_live(stored, now))
+            .skip(offset)
+            .take(scan_budget)
+        {
             if stored.value == value {
                 return Ok(BoundedMatch::Present);
             }
         }
-        let next_offset = offset.saturating_add(scan_budget).min(self.entries.len());
-        if next_offset == self.entries.len() {
+        let live = self.live_count(now);
+        let next_offset = offset.saturating_add(scan_budget).min(live);
+        if next_offset == live {
             Ok(BoundedMatch::Absent)
         } else {
             Ok(BoundedMatch::Incomplete(ScanCursor {
@@ -1005,7 +1321,13 @@ impl ReferenceCollectionMap {
         let mut items = Vec::with_capacity(page_items.min(self.entries.len()));
         let mut response_bytes = 0_usize;
         let mut consumed = 0_usize;
-        for (key, stored) in self.entries.iter().skip(offset).take(page_items) {
+        for (key, stored) in self
+            .entries
+            .iter()
+            .filter(|(_, stored)| is_live(stored, now))
+            .skip(offset)
+            .take(page_items)
+        {
             let encoded_bytes = match projection {
                 ScanProjection::Keys => key.len(),
                 ScanProjection::Values => stored.value.len(),
@@ -1034,7 +1356,7 @@ impl ReferenceCollectionMap {
             consumed = consumed.saturating_add(1);
         }
         let next_offset = offset.saturating_add(consumed);
-        let complete = next_offset == self.entries.len();
+        let complete = next_offset == self.live_count(now);
         Ok(ScanPage {
             items,
             next_cursor: (!complete).then_some(ScanCursor {
@@ -1059,6 +1381,9 @@ impl ReferenceCollectionMap {
         self.purge_expired(now)?;
         if removed {
             self.bump_revision()?;
+            if let Some(at) = self.entries.get(key).and_then(|value| value.expires_at) {
+                self.expiry_index.remove(&(at, key.to_vec()));
+            }
             self.entries.remove(key);
         }
         Ok(removed)
@@ -1082,7 +1407,9 @@ impl ReferenceCollectionMap {
         )?;
         self.bump_revision()?;
         self.entries.clear();
+        self.expiry_index.clear();
         self.retained.clear();
+        self.retirement_fences.clear();
         self.destroyed = true;
         Ok(RemovalReceipt {
             cause: RemovalCause::Destroy,
@@ -1108,6 +1435,7 @@ impl ReferenceCollectionMap {
         if removed > 0 {
             self.bump_revision()?;
             self.entries.clear();
+            self.expiry_index.clear();
         }
         Ok(RemovalReceipt {
             cause,
@@ -1137,6 +1465,9 @@ impl ReferenceCollectionMap {
     }
 
     fn purge_expired(&mut self, now: u64) -> Result<(), CollectionError> {
+        if self.service_mode {
+            return Ok(());
+        }
         if self.has_expired(now) {
             self.bump_revision()?;
             self.entries.retain(|_, stored| is_live(stored, now));
@@ -1152,7 +1483,7 @@ impl ReferenceCollectionMap {
     }
 
     fn has_expired(&self, now: u64) -> bool {
-        self.entries.values().any(|stored| !is_live(stored, now))
+        !self.service_mode && self.entries.values().any(|stored| !is_live(stored, now))
     }
 
     fn reserve_revisions(&self, count: u64) -> Result<(), CollectionError> {
@@ -1345,5 +1676,83 @@ mod counter_exhaustion_tests {
             OperationOutcomeQuery::Unknown
         );
         assert_eq!(service.statistics().retained_outcomes, 0);
+    }
+
+    #[test]
+    fn legacy_expiry_index_stays_bounded_and_service_refresh_removes_old_deadlines() {
+        let mut map = ReferenceCollectionMap::new(CollectionBounds {
+            max_entries: 1,
+            ..CollectionBounds::default()
+        })
+        .unwrap();
+        for now in 0..128 {
+            map.put(b"a".to_vec(), b"v".to_vec(), Some(now + 1), now)
+                .unwrap();
+            assert_eq!(map.size(now + 1).unwrap(), 0);
+            assert!(map.expiry_index.is_empty());
+        }
+        map.enable_service_mode();
+        map.put(b"a".to_vec(), b"v".to_vec(), Some(200), 128)
+            .unwrap();
+        map.put(b"a".to_vec(), b"v".to_vec(), Some(300), 128)
+            .unwrap();
+        assert_eq!(map.expiry_index.len(), 1);
+        assert!(map.service_expire_step(200, 1).unwrap().is_empty());
+        map.clear(200).unwrap();
+        assert!(map.expiry_index.is_empty());
+    }
+
+    #[test]
+    fn version_bulk_exhaustion_has_no_partial_mutations_or_retained_receipt() {
+        use crate::value_plane_service_075::{
+            OperationOutcomeQuery, ServiceCommand, ServiceTtl, UnifiedIMapService,
+            VersionBulkEntry, VersionBulkOperation,
+        };
+        let mut map = ReferenceCollectionMap::new(CollectionBounds::default()).unwrap();
+        map.put(b"a".to_vec(), b"one".to_vec(), None, 0).unwrap();
+        map.put(b"b".to_vec(), b"two".to_vec(), None, 0).unwrap();
+        map.revision = u64::MAX - 1;
+        let service = UnifiedIMapService::from_map(map, 1).unwrap();
+        let entries = [b"a", b"b"]
+            .iter()
+            .map(|key| VersionBulkEntry {
+                key: key.to_vec(),
+                token: service
+                    .execute(ServiceCommand::point("get_entry_view", *key))
+                    .unwrap()
+                    .token
+                    .unwrap(),
+                value: Some(b"new".to_vec()),
+                ttl: ServiceTtl::Eternal,
+            })
+            .collect::<Vec<_>>();
+        let identity = MutationIdentity::new("version-bulk", 1);
+        assert_eq!(
+            service
+                .bulk_version_conditional(
+                    VersionBulkOperation::Replace,
+                    &entries,
+                    identity.clone(),
+                    0,
+                    1,
+                    false
+                )
+                .unwrap_err()
+                .kind(),
+            "capacity"
+        );
+        assert_eq!(
+            service
+                .diagnostic_snapshot(0)
+                .unwrap()
+                .iter()
+                .map(|entry| entry.value.as_slice())
+                .collect::<Vec<_>>(),
+            [b"one".as_slice(), b"two".as_slice()]
+        );
+        assert_eq!(
+            service.query_operation_outcome(&identity).unwrap(),
+            OperationOutcomeQuery::Unknown
+        );
     }
 }

@@ -79,11 +79,14 @@ public final class BoundedIMapApi {
   private record BulkRequest(List<ReplaceInput> replacements) {}
   private record RetainedMutation(Object request, TryOutcome outcome, List<ReplaceReceipt> items,
       Object serviceOutcome) {
+    RetainedMutation { request = digestObject(request); items = List.copyOf(items); }
     RetainedMutation(Object request, TryOutcome outcome, List<ReplaceReceipt> items) {
       this(request, outcome, items, null);
     }
   }
   private final Map<MutationIdentity, Object> pendingService = new HashMap<>();
+  private final Map<MutationIdentity, Long> pendingReservations = new HashMap<>();
+  private final Map<String, Long> retirementFences = new HashMap<>();
 
   public record Bounds(
       int maxKeyBytes,
@@ -172,6 +175,11 @@ public final class BoundedIMapApi {
   private final Object cursorOwner = new Object();
   private long revision = 1;
   private boolean destroyed;
+  private final TreeMap<Long, java.util.TreeSet<BytesValue>> expiryIndex = new TreeMap<>();
+  private boolean serviceMode;
+  private long observedTime, namespaceGeneration, maxValueOwnerBytes = Long.MAX_VALUE,
+      maxOutcomeOwnerBytes = Long.MAX_VALUE, maxPendingOwnerBytes = Long.MAX_VALUE;
+  private int maxRetirementClients = 4096;
 
   public BoundedIMapApi(Bounds bounds) {
     this.bounds = Objects.requireNonNull(bounds, "bounds");
@@ -189,10 +197,16 @@ public final class BoundedIMapApi {
     if (expiresAt != null && expiresAt <= now) {
       throw new IllegalArgumentException("expiry must be in the future");
     }
+    if (serviceMode) preflightValues(Map.of(key, Optional.of(value)));
     purgeExpired(now);
     if (!entries.containsKey(key)) checkBound("entries", bounds.maxEntries(), entries.size() + 1);
-    revision++;
+    StoredValue previous = entries.get(key);
+    long prospective = serviceValueOwnerBytes() - (previous == null ? 0 : valueCost(key, previous.value())) + valueCost(key, value);
+    ownerBound(prospective, maxValueOwnerBytes);
+    revision = Math.incrementExact(revision);
+    unindex(key, previous);
     entries.put(key, new StoredValue(value, expiresAt, revision));
+    if (expiresAt != null) expiryIndex.computeIfAbsent(expiresAt, unused -> new java.util.TreeSet<>()).add(key);
     publish(key);
   }
 
@@ -220,7 +234,7 @@ public final class BoundedIMapApi {
     checkBound("keyBytes", bounds.maxKeyBytes(), key.size());
     purgeExpired(now);
     StoredValue stored = entries.get(key);
-    if (stored == null) return Optional.empty();
+    if (stored == null || expired(stored, now)) return Optional.empty();
     checkBound("responseBytes", bounds.maxResponseBytes(), stored.value().size());
     return Optional.of(new EntryView(stored.value(), stored.version(), stored.expiresAt() == null
         ? OptionalLong.empty() : OptionalLong.of(stored.expiresAt() - now)));
@@ -243,15 +257,17 @@ public final class BoundedIMapApi {
       long deadline, long now, boolean responseLostAfterApply) {
     requireActive();
     Objects.requireNonNull(identity, "identity");
+    requireFresh(identity);
     Objects.requireNonNull(request.key(), "key");
     RetainedMutation prior = retained.get(identity);
     if (prior != null) {
-      if (!prior.request().equals(request)) throw new IllegalArgumentException("mutation conflict");
+      if (!prior.request().equals(digestObject(request))) throw new IllegalArgumentException("mutation conflict");
       return prior.outcome();
     }
     if (pendingService.containsKey(identity)) throw new IllegalArgumentException("mutation conflict");
     if (deadline <= now) return new TryOutcome(TryStatus.NOT_APPLIED, identity, OptionalLong.empty());
     checkBound("dedupEntries", bounds.maxEntries(), retained.size() + pendingService.size() + 1);
+    checkLedgerBudget(identity, 64);
     boolean applied;
     if (request.remove()) {
       applied = evict(request.key(), now);
@@ -288,11 +304,14 @@ public final class BoundedIMapApi {
         throw new IllegalArgumentException("response byte bound");
       }
     }
+    var prospective = new java.util.LinkedHashMap<BytesValue, Optional<BytesValue>>();
+    for (var inputEntry : input) if (entries.containsKey(inputEntry.key()) && !expired(entries.get(inputEntry.key()), now)) prospective.put(inputEntry.key(), Optional.of(inputEntry.value()));
+    preflightValues(prospective);
     purgeExpired(now);
     var result = new ArrayList<ReplaceReceipt>(input.size());
     for (int index = 0; index < input.size(); index++) {
       ReplaceInput replacement = input.get(index);
-      boolean present = entries.containsKey(replacement.key());
+      boolean present = entries.containsKey(replacement.key()) && !expired(entries.get(replacement.key()), now);
       if (present) put(replacement.key(), replacement.value(),
           entries.get(replacement.key()).expiresAt(), now);
       result.add(new ReplaceReceipt(index, replacement.key(), present,
@@ -305,6 +324,7 @@ public final class BoundedIMapApi {
       List<ReplaceInput> replacements, long deadline, long now, boolean responseLostAfterApply) {
     requireActive();
     Objects.requireNonNull(identity, "identity");
+    requireFresh(identity);
     Objects.requireNonNull(replacements, "replacements");
     requirePositive("replacementCount", replacements.size());
     checkBound("requestEntries", Math.min(bounds.maxBulkMutationItems(), MAX_REQUEST_ENTRIES),
@@ -312,13 +332,14 @@ public final class BoundedIMapApi {
     BulkRequest request = new BulkRequest(List.copyOf(replacements));
     RetainedMutation prior = retained.get(identity);
     if (prior != null) {
-      if (!prior.request().equals(request)) throw new IllegalArgumentException("mutation conflict");
+      if (!prior.request().equals(digestObject(request))) throw new IllegalArgumentException("mutation conflict");
       return new BulkTryOutcome(prior.outcome(), prior.items());
     }
     if (pendingService.containsKey(identity)) throw new IllegalArgumentException("mutation conflict");
     if (deadline <= now) return new BulkTryOutcome(
         new TryOutcome(TryStatus.NOT_APPLIED, identity, OptionalLong.empty()), List.of());
     checkBound("dedupEntries", bounds.maxEntries(), retained.size() + pendingService.size() + 1);
+    checkLedgerBudget(identity, 64 + replacements.stream().mapToLong(item -> 64L + item.key().size()).sum());
     List<ReplaceReceipt> result = replaceAllDetailed(request.replacements(), now);
     boolean applied = result.stream().anyMatch(ReplaceReceipt::replaced);
     TryOutcome outcome = new TryOutcome(TryStatus.APPLIED,
@@ -372,7 +393,7 @@ public final class BoundedIMapApi {
   public synchronized int size(long now) {
     requireActive();
     purgeExpired(now);
-    return entries.size();
+    return (int) entries.values().stream().filter(value -> !expired(value, now)).count();
   }
 
   public synchronized boolean isEmpty(long now) { return size(now) == 0; }
@@ -388,12 +409,13 @@ public final class BoundedIMapApi {
     purgeExpired(now);
     int offset = cursorOffset(cursor, value, null);
     int visited = 0;
-    for (StoredValue stored : entries.values().stream().skip(offset).limit(scanBudget).toList()) {
+    var live = entries.values().stream().filter(stored -> !expired(stored, now)).toList();
+    for (StoredValue stored : live.stream().skip(offset).limit(scanBudget).toList()) {
       visited++;
       if (stored.value().equals(value)) return new MatchResult(Match.PRESENT, Optional.empty());
     }
-    int nextOffset = Math.min(entries.size(), offset + visited);
-    if (nextOffset == entries.size()) return new MatchResult(Match.ABSENT, Optional.empty());
+    int nextOffset = Math.min(live.size(), offset + visited);
+    if (nextOffset == live.size()) return new MatchResult(Match.ABSENT, Optional.empty());
     return new MatchResult(
         Match.INCOMPLETE, Optional.of(new Cursor(revision, nextOffset, cursorOwner, value, null)));
   }
@@ -409,7 +431,8 @@ public final class BoundedIMapApi {
     int offset = cursorOffset(cursor, null, projection);
     int responseBytes = 0;
     var items = new ArrayList<ScanItem>();
-    for (var entry : entries.entrySet().stream().skip(offset).limit(pageItems).toList()) {
+    var live = entries.entrySet().stream().filter(entry -> !expired(entry.getValue(), now)).toList();
+    for (var entry : live.stream().skip(offset).limit(pageItems).toList()) {
       int encodedBytes = switch (projection) {
         case KEYS -> entry.getKey().size();
         case VALUES -> entry.getValue().value().size();
@@ -425,7 +448,7 @@ public final class BoundedIMapApi {
       });
     }
     int nextOffset = offset + items.size();
-    boolean complete = nextOffset == entries.size();
+    boolean complete = nextOffset == live.size();
     return new ScanPage(items,
         complete ? Optional.empty()
             : Optional.of(new Cursor(revision, nextOffset, cursorOwner, null, projection)),
@@ -437,9 +460,11 @@ public final class BoundedIMapApi {
     Objects.requireNonNull(key, "key");
     checkBound("keyBytes", bounds.maxKeyBytes(), key.size());
     purgeExpired(now);
-    boolean removed = entries.remove(key) != null;
+    StoredValue previous = entries.get(key);
+    boolean removed = previous != null && !expired(previous, now);
     if (removed) {
-      revision++;
+      revision = Math.incrementExact(revision);
+      entries.remove(key); unindex(key, previous);
       publish(key);
     }
     return removed;
@@ -453,11 +478,15 @@ public final class BoundedIMapApi {
     int removed = (int) entries.values().stream()
         .filter(value -> value.expiresAt() == null || value.expiresAt() > now).count();
     checkBound("bulkMutationItems", bounds.maxBulkMutationItems(), removed);
+    requireNoExpiryBacklog(now);
     revision = Math.incrementExact(revision);
     entries.clear();
+    expiryIndex.clear();
     destroyed = true;
     retained.clear();
     pendingService.clear();
+    pendingReservations.clear();
+    retirementFences.clear();
     listeners.clear();
     return new RemovalReceipt(RemovalCause.DESTROY, removed, revision);
   }
@@ -465,11 +494,13 @@ public final class BoundedIMapApi {
   private RemovalReceipt removeAll(RemovalCause cause, long now) {
     requireActive();
     purgeExpired(now);
+    requireNoExpiryBacklog(now);
     checkBound("bulkMutationItems", bounds.maxBulkMutationItems(), entries.size());
     int removed = entries.size();
     if (removed > 0) {
       entries.clear();
-      revision++;
+      expiryIndex.clear();
+      revision = Math.incrementExact(revision);
     }
     return new RemovalReceipt(cause, removed, revision);
   }
@@ -487,10 +518,11 @@ public final class BoundedIMapApi {
   }
 
   private void purgeExpired(long now) {
+    if (serviceMode) { observeServiceTime(now); return; }
     int before = entries.size();
     entries.entrySet().removeIf(
-        entry -> entry.getValue().expiresAt() != null && entry.getValue().expiresAt() <= now);
-    if (before != entries.size()) revision++;
+        entry -> { if (expired(entry.getValue(), now)) { unindex(entry.getKey(), entry.getValue()); return true; } return false; });
+    if (before != entries.size()) revision = Math.incrementExact(revision);
   }
 
   private void requireActive() {
@@ -563,40 +595,123 @@ public final class BoundedIMapApi {
 
   record RetainedEntry(BytesValue key, BytesValue value, Long expiresAt, long version) {}
   record LegacyOutcome(TryOutcome outcome, List<ReplaceReceipt> items) {}
+  record ExpiryBatch(int work, List<RetainedEntry> expired, boolean remaining) {}
 
   synchronized List<RetainedEntry> retainedEntries() {
     return entries.entrySet().stream().map(entry -> new RetainedEntry(entry.getKey(),
         entry.getValue().value(), entry.getValue().expiresAt(), entry.getValue().version())).toList();
   }
 
-  synchronized void expireForService(long now) { if (!destroyed) purgeExpired(now); }
+  synchronized void configureService(long generation, long values, long outcomes, long pending, int clients) {
+    if (namespaceGeneration != 0 && namespaceGeneration != generation) throw new IllegalArgumentException("generation mismatch");
+    ownerBound(serviceValueOwnerBytes(), values);
+    ownerBound(serviceOutcomeOwnerBytes(), outcomes);
+    ownerBound(servicePendingOwnerBytes(), pending);
+    serviceMode = true; namespaceGeneration = generation;
+    maxValueOwnerBytes = values; maxOutcomeOwnerBytes = outcomes; maxPendingOwnerBytes = pending;
+    maxRetirementClients = clients;
+  }
+  synchronized void observeServiceTime(long time) {
+    if (time < observedTime) throw new IllegalArgumentException("logical time regressed");
+    var newlyDue = expiryIndex.higherEntry(observedTime);
+    if (newlyDue != null && newlyDue.getKey() <= time) revision = Math.incrementExact(revision);
+    observedTime = time;
+  }
+  synchronized ExpiryBatch expireStep(long time, int maxWork) {
+    if (maxWork <= 0) throw new IllegalArgumentException("expiry work must be positive");
+    observeServiceTime(time);
+    var expired = new ArrayList<RetainedEntry>();
+    while (expired.size() < maxWork && !expiryIndex.isEmpty() && expiryIndex.firstKey() <= time) {
+      var first = expiryIndex.firstEntry();
+      BytesValue key = first.getValue().first();
+      StoredValue value = entries.remove(key);
+      unindex(key, value);
+      expired.add(new RetainedEntry(key, value.value(), value.expiresAt(), value.version()));
+    }
+    expired.sort(java.util.Comparator.comparing(RetainedEntry::key));
+    return new ExpiryBatch(expired.size(), List.copyOf(expired), hasExpiryBacklog(time));
+  }
+  synchronized Optional<RetainedEntry> expireTarget(BytesValue key, long time) {
+    StoredValue value = entries.get(key);
+    if (value == null || !expired(value, time)) return Optional.empty();
+    entries.remove(key); unindex(key, value);
+    return Optional.of(new RetainedEntry(key, value.value(), value.expiresAt(), value.version()));
+  }
+  synchronized boolean hasExpiryBacklog(long time) {
+    return !expiryIndex.isEmpty() && expiryIndex.firstKey() <= time;
+  }
+  private void requireNoExpiryBacklog(long time) {
+    if (serviceMode && hasExpiryBacklog(time)) throw new IllegalArgumentException("expiry_backlog");
+  }
+  private static boolean expired(StoredValue value, long time) {
+    return value.expiresAt() != null && value.expiresAt() <= time;
+  }
+  private void unindex(BytesValue key, StoredValue value) {
+    if (value == null || value.expiresAt() == null) return;
+    var keys = expiryIndex.get(value.expiresAt());
+    if (keys != null) { keys.remove(key); if (keys.isEmpty()) expiryIndex.remove(value.expiresAt()); }
+  }
+  synchronized List<RetainedEntry> liveEntries(long time) {
+    return retainedEntries().stream().filter(value -> value.expiresAt() == null || value.expiresAt() > time).toList();
+  }
   Bounds serviceBounds() { return bounds; }
 
   synchronized Object recoverService(MutationIdentity identity, Object request) {
+    requireFresh(identity);
     RetainedMutation value = retained.get(identity);
     if (value == null) return null;
-    if (!value.request().equals(request)) throw new IllegalArgumentException("mutation conflict");
+    if (!value.request().equals(digestObject(request))) throw new IllegalArgumentException("mutation conflict");
     return value.serviceOutcome();
   }
 
-  synchronized void beginService(MutationIdentity identity, Object request) {
+  synchronized void beginService(MutationIdentity identity, Object request, long resultReservation) {
     requireActive();
+    preflightAdmission(identity, request, resultReservation);
+    requireFresh(identity);
     Object pending = pendingService.get(identity);
-    if (pending != null && !pending.equals(request)) {
-      throw new IllegalArgumentException("mutation conflict");
-    }
+    Object digest = digestObject(request);
     if (pending == null) {
       checkBound("dedupEntries", bounds.maxEntries(), retained.size() + pendingService.size() + 1);
-      pendingService.put(identity, request);
+      ownerBound(servicePendingOwnerBytes() + identityCost(identity), maxPendingOwnerBytes);
+      checkLedgerBudget(identity, resultReservation);
+      pendingService.put(identity, digest);
     }
+    pendingReservations.put(identity, resultReservation);
   }
+  synchronized void preflightAdmission(MutationIdentity identity, Object request, long resultReservation) {
+    requireFresh(identity);
+    Object pending = pendingService.get(identity);
+    if (pending != null) {
+      if (!pending.equals(digestObject(request))) throw new IllegalArgumentException("mutation conflict");
+      ownerBound(serviceOutcomeOwnerBytes() - pendingReservations.get(identity) + resultReservation, maxOutcomeOwnerBytes);
+      return;
+    }
+    checkBound("dedupEntries", bounds.maxEntries(), retained.size() + pendingService.size() + 1);
+    ownerBound(servicePendingOwnerBytes() + identityCost(identity), maxPendingOwnerBytes);
+    checkLedgerBudget(identity, resultReservation);
+  }
+  synchronized void preflightValues(Map<BytesValue, Optional<BytesValue>> changes) {
+    long bytes = serviceValueOwnerBytes();
+    int count = entries.size();
+    for (var entry : changes.entrySet()) {
+      StoredValue old = entries.get(entry.getKey());
+      if (old != null) { bytes -= valueCost(entry.getKey(), old.value()); count--; }
+      if (entry.getValue().isPresent()) { bytes += valueCost(entry.getKey(), entry.getValue().orElseThrow()); count++; }
+      ownerBound(bytes, maxValueOwnerBytes);
+      checkBound("entries", bounds.maxEntries(), count);
+    }
+    ownerBound(bytes, maxValueOwnerBytes);
+    checkBound("entries", bounds.maxEntries(), count);
+  }
+  synchronized void preflightVersions(int count) { Math.addExact(revision, count); }
 
   synchronized void completeService(MutationIdentity identity, Object request, Object outcome) {
     pendingService.remove(identity);
+    pendingReservations.remove(identity);
     retained.put(identity, new RetainedMutation(request, null, List.of(), outcome));
   }
 
-  synchronized void abandonService(MutationIdentity identity) { pendingService.remove(identity); }
+  synchronized void abandonService(MutationIdentity identity) { pendingService.remove(identity); pendingReservations.remove(identity); }
   synchronized boolean servicePending(MutationIdentity identity) {
     return pendingService.containsKey(identity);
   }
@@ -607,8 +722,77 @@ public final class BoundedIMapApi {
   }
   synchronized int serviceRetainedCount() { return retained.size(); }
   synchronized int servicePendingCount() { return pendingService.size(); }
-  synchronized int serviceLiveCount() { return entries.size(); }
   synchronized long serviceValueBytes() {
-    return entries.values().stream().mapToLong(entry -> entry.value().size()).sum();
+    return entries.values().stream().filter(value -> !expired(value, observedTime)).mapToLong(entry -> entry.value().size()).sum();
+  }
+  static long identityCost(MutationIdentity identity) { return identity.client().getBytes(StandardCharsets.UTF_8).length + 48L; }
+  private static Object digestObject(Object request) { return request instanceof BytesValue ? request : fingerprint(request.toString()); }
+  static BytesValue fingerprint(String canonical) {
+    return fingerprint(canonical, "SHA-256");
+  }
+  static BytesValue fingerprint(String canonical, String algorithm) {
+    try { return BytesValue.copyOf(java.security.MessageDigest.getInstance(algorithm).digest(canonical.getBytes(StandardCharsets.UTF_8))); }
+    catch (java.security.NoSuchAlgorithmException unavailable) { throw new IllegalStateException("required digest unavailable", unavailable); }
+  }
+  static long valueCost(BytesValue key, BytesValue value) { return key.size() + value.size() + 24L; }
+  synchronized long serviceValueOwnerBytes() {
+    return entries.entrySet().stream().mapToLong(entry -> valueCost(entry.getKey(), entry.getValue().value())).sum();
+  }
+  synchronized long servicePendingOwnerBytes() { return pendingService.keySet().stream().mapToLong(BoundedIMapApi::identityCost).sum(); }
+  synchronized long serviceOutcomeOwnerBytes() {
+    long total = retirementFences.keySet().stream().mapToLong(client -> client.getBytes(StandardCharsets.UTF_8).length + 24L).sum();
+    for (var entry : retained.entrySet()) {
+      var value = entry.getValue();
+      long result = value.serviceOutcome() instanceof UnifiedIMapService.Result service
+          ? UnifiedIMapService.logicalResultBytes(service)
+          : 64 + value.items().stream().mapToLong(item -> 64L + item.key().size()).sum();
+      total += identityCost(entry.getKey()) + result;
+    }
+    for (var entry : pendingReservations.entrySet()) total += identityCost(entry.getKey()) + entry.getValue();
+    return total;
+  }
+  private void checkLedgerBudget(MutationIdentity identity, long resultBytes) {
+    ownerBound(serviceOutcomeOwnerBytes() + identityCost(identity) + resultBytes, maxOutcomeOwnerBytes);
+  }
+  static void ownerBound(long actual, long limit) {
+    if (actual > limit) throw new IllegalArgumentException("aggregate_byte_budget");
+  }
+  private void requireFresh(MutationIdentity identity) {
+    if (identity.sequence() <= retirementFences.getOrDefault(identity.client(), 0L)) throw new IllegalArgumentException("retired_identity");
+  }
+  synchronized int retireOutcomes(String client, long generation, long through) {
+    new MutationIdentity(client, through);
+    if (generation != namespaceGeneration || through < retirementFences.getOrDefault(client, 0L)) throw new IllegalArgumentException("invalid retirement fence");
+    if (pendingService.keySet().stream().anyMatch(id -> id.client().equals(client) && id.sequence() <= through)) throw new IllegalArgumentException("pending_retirement");
+    long reclaimed = retained.entrySet().stream().filter(entry -> entry.getKey().client().equals(client) && entry.getKey().sequence() <= through)
+        .mapToLong(entry -> identityCost(entry.getKey()) + (entry.getValue().serviceOutcome() instanceof UnifiedIMapService.Result result
+            ? UnifiedIMapService.logicalResultBytes(result) : 64 + entry.getValue().items().stream().mapToLong(item -> 64L + item.key().size()).sum())).sum();
+    if (!retirementFences.containsKey(client)) {
+      ownerBound(retirementFences.size() + 1, maxRetirementClients);
+      ownerBound(serviceOutcomeOwnerBytes() - reclaimed + client.getBytes(StandardCharsets.UTF_8).length + 24L, maxOutcomeOwnerBytes);
+    }
+    int before = retained.size();
+    retained.keySet().removeIf(id -> id.client().equals(client) && id.sequence() <= through);
+    retirementFences.put(client, through);
+    return before - retained.size();
+  }
+  synchronized long serviceQueryResultBytes(MutationIdentity identity) {
+    RetainedMutation retainedValue = retained.get(identity);
+    if (retainedValue == null) return 0;
+    return retainedValue.serviceOutcome() instanceof UnifiedIMapService.Result result ? UnifiedIMapService.logicalResultBytes(result)
+        : 64 + retainedValue.items().stream().mapToLong(item -> 64L + item.key().size()).sum();
+  }
+  synchronized Optional<EntryView> serviceEntryView(BytesValue key, long time) {
+    StoredValue value = entries.get(key);
+    return value == null || expired(value, time) ? Optional.empty()
+        : Optional.of(new EntryView(value.value(), value.version(), value.expiresAt() == null ? OptionalLong.empty() : OptionalLong.of(value.expiresAt() - time)));
+  }
+  synchronized BoundedIMapApi checkpointCopy() {
+    if (!pendingService.isEmpty() || !listeners.isEmpty()) throw new IllegalArgumentException("checkpoint_busy");
+    var copy = new BoundedIMapApi(bounds);
+    copy.entries.putAll(entries); copy.retained.putAll(retained); copy.retirementFences.putAll(retirementFences);
+    expiryIndex.forEach((deadline, keys) -> copy.expiryIndex.put(deadline, new java.util.TreeSet<>(keys)));
+    copy.revision = revision; copy.destroyed = destroyed; copy.observedTime = observedTime;
+    return copy;
   }
 }

@@ -16,6 +16,10 @@ use crate::value_plane_collection_075::{
 use crate::value_plane_model_075::MutationIdentity;
 use crate::value_plane_stream_075::{BatchPoll, BoundedStreamSource};
 
+#[path = "value_plane_service_lifecycle_075.rs"]
+mod lifecycle;
+pub use lifecycle::*;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ServiceTtl {
     Preserve,
@@ -188,6 +192,11 @@ pub enum MapServiceError {
     UnknownListener,
     ClockRegressed,
     Capacity,
+    RetiredIdentity,
+    PendingOperation,
+    ExpiryBacklog,
+    ActiveOwners,
+    ResourceBudget(&'static str),
     Model(CollectionError),
 }
 
@@ -199,6 +208,11 @@ impl MapServiceError {
             Self::UnknownListener => "unknown_listener",
             Self::ClockRegressed => "clock_regressed",
             Self::Capacity => "capacity",
+            Self::RetiredIdentity => "retired_identity",
+            Self::PendingOperation => "pending_retirement",
+            Self::ExpiryBacklog => "expiry_backlog",
+            Self::ActiveOwners => "active_owners",
+            Self::ResourceBudget(_) => "resource_budget_exhausted",
             Self::Model(error) => match error {
                 CollectionError::InvalidBound(_)
                 | CollectionError::InvalidExpiry
@@ -308,6 +322,7 @@ struct ListenerState {
     queue: VecDeque<ServiceEvent>,
     gap: bool,
     waker: Option<Waker>,
+    delivery_epoch: u64,
 }
 
 struct ServiceState {
@@ -323,6 +338,8 @@ struct ServiceState {
     pending_wakes: Vec<Waker>,
     active_streams: usize,
     active_cursors: usize,
+    limits: ServiceLimits,
+    resync_bytes: usize,
 }
 
 #[derive(Clone)]
@@ -386,10 +403,19 @@ impl UnifiedIMapService {
         map: ReferenceCollectionMap,
         namespace_generation: u64,
     ) -> Result<Self, MapServiceError> {
+        Self::from_map_with_limits(map, namespace_generation, ServiceLimits::default())
+    }
+
+    fn from_map_with_limits(
+        mut map: ReferenceCollectionMap,
+        namespace_generation: u64,
+        limits: ServiceLimits,
+    ) -> Result<Self, MapServiceError> {
         if namespace_generation == 0 {
             return Err(MapServiceError::InvalidArgument);
         }
-        Ok(Self {
+        map.enable_service_mode();
+        let service = Self {
             state: Arc::new(Mutex::new(ServiceState {
                 map,
                 namespace_generation,
@@ -403,8 +429,12 @@ impl UnifiedIMapService {
                 pending_wakes: Vec::new(),
                 active_streams: 0,
                 active_cursors: 0,
+                limits,
+                resync_bytes: 0,
             })),
-        })
+        };
+        lifecycle::check_usage(&service.state.lock().expect("local IMap state poisoned"))?;
+        Ok(service)
     }
 
     pub fn execute(&self, command: ServiceCommand) -> Result<ServiceResult, MapServiceError> {
@@ -440,9 +470,11 @@ impl UnifiedIMapService {
             return Err(MapServiceError::InvalidArgument);
         }
         validate(&state, command)?;
+        lifecycle::check_identity(&state, &identity)?;
+        let result_bytes = lifecycle::preflight_command(&state, command, &identity)?;
         state
             .map
-            .service_reserve(identity, command_digest(command))?;
+            .service_reserve(identity, command_digest(command), result_bytes)?;
         Ok(())
     }
 
@@ -455,16 +487,32 @@ impl UnifiedIMapService {
             .as_ref()
             .ok_or(MapServiceError::InvalidArgument)?;
         let mut state = self.state.lock().expect("local IMap state poisoned");
+        lifecycle::check_identity(&state, id)?;
+        let original_reservation = state.map.service_pending_result_bytes(id);
         match state
             .map
             .service_lookup(id, Some(command_digest(&command)))?
         {
-            ServiceRetainedOutcome::Pending => state.map.service_abort(id),
+            ServiceRetainedOutcome::Pending => {
+                validate(&state, &command)?;
+                if !command.cancelled && command.now < command.deadline {
+                    lifecycle::preflight_command(&state, &command, id)?;
+                }
+                state.map.service_abort(id);
+            }
             ServiceRetainedOutcome::Unknown => return Err(MapServiceError::InvalidArgument),
             ServiceRetainedOutcome::Completed(_) => {}
         }
         state.requests = state.requests.saturating_add(1);
         let result = execute(&mut state, &command);
+        if result.is_err() {
+            if let Some(bytes) = original_reservation {
+                state
+                    .map
+                    .service_reserve(id.clone(), command_digest(&command), bytes)
+                    .expect("failed resume keeps its reserved ledger slot");
+            }
+        }
         if result.is_err() {
             state.rejections = state.rejections.saturating_add(1);
         }
@@ -515,6 +563,25 @@ impl UnifiedIMapService {
         statistics(&self.state.lock().expect("local IMap state poisoned"))
     }
 
+    /// Observation only: does not advance the maintenance cursor or publish expiry events.
+    pub fn diagnostic_snapshot(&self, now: u64) -> Result<Vec<ServiceEntry>, MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        if now < state.now {
+            return Err(MapServiceError::ClockRegressed);
+        }
+        Ok(state
+            .map
+            .service_snapshot(now)
+            .into_iter()
+            .map(|(key, view)| ServiceEntry {
+                key,
+                value: view.value,
+                version: view.version,
+                remaining_ttl: view.remaining_ttl,
+            })
+            .collect())
+    }
+
     pub fn query_operation_outcome(
         &self,
         identity: &MutationIdentity,
@@ -536,6 +603,7 @@ impl UnifiedIMapService {
     ) -> Result<ServiceRecovery, MapServiceError> {
         let state = self.state.lock().expect("local IMap state poisoned");
         validate(&state, command)?;
+        lifecycle::check_identity(&state, identity)?;
         Ok(
             match state
                 .map
@@ -563,9 +631,7 @@ impl UnifiedIMapService {
 
     fn open_stream(&self, cursor: bool) -> Result<(), MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
-        if state.active_streams >= state.map.service_bounds().max_entries {
-            return Err(MapServiceError::Capacity);
-        }
+        check_stream_admission(&state)?;
         state.active_streams += 1;
         if cursor {
             state.active_cursors += 1;
@@ -619,6 +685,10 @@ impl UnifiedIMapService {
             .listeners
             .get_mut(&id)
             .ok_or(MapServiceError::UnknownListener)?;
+        listener.delivery_epoch = listener
+            .delivery_epoch
+            .checked_add(1)
+            .ok_or(MapServiceError::Capacity)?;
         listener.queue.clear();
         listener.gap = false;
         Ok(())
@@ -630,28 +700,68 @@ impl UnifiedIMapService {
         max_items: usize,
         cx: &mut Context<'_>,
     ) -> Poll<Result<Option<Vec<ServiceEvent>>, MapServiceError>> {
+        self.poll_listener_epoch(id, max_items, cx).1
+    }
+
+    fn poll_listener_epoch(
+        &self,
+        id: u64,
+        max_items: usize,
+        cx: &mut Context<'_>,
+    ) -> EpochListenerPoll {
         if max_items == 0 {
-            return Poll::Ready(Err(MapServiceError::InvalidArgument));
+            return (None, Poll::Ready(Err(MapServiceError::InvalidArgument)));
         }
         let mut state = self.state.lock().expect("local IMap state poisoned");
         let destroyed = state.map.is_destroyed();
+        let max_bytes = lifecycle::stream_reservation(&state);
         let Some(listener) = state.listeners.get_mut(&id) else {
-            return Poll::Ready(Err(MapServiceError::UnknownListener));
+            return (None, Poll::Ready(Err(MapServiceError::UnknownListener)));
         };
+        let epoch = Some(listener.delivery_epoch);
         if !listener.queue.is_empty() {
-            return Poll::Ready(Ok(Some(
-                listener
-                    .queue
-                    .drain(..max_items.min(listener.queue.len()))
-                    .collect(),
-            )));
+            let mut bytes = 0usize;
+            let mut count = 0usize;
+            for event in listener.queue.iter().take(max_items) {
+                let cost = lifecycle::event_bytes(event);
+                if cost > max_bytes && count == 0 {
+                    return (
+                        epoch,
+                        Poll::Ready(Err(MapServiceError::ResourceBudget("streams"))),
+                    );
+                }
+                if bytes.saturating_add(cost) > max_bytes {
+                    break;
+                }
+                bytes += cost;
+                count += 1;
+            }
+            return (
+                epoch,
+                Poll::Ready(Ok(Some(listener.queue.drain(..count).collect()))),
+            );
         }
         if destroyed {
-            return Poll::Ready(Ok(None));
+            return (epoch, Poll::Ready(Ok(None)));
         }
         listener.waker = Some(cx.waker().clone());
-        Poll::Pending
+        (epoch, Poll::Pending)
     }
+}
+
+type EpochListenerPoll = (Option<u64>, BatchPoll<ServiceEvent, MapServiceError>);
+
+fn check_stream_admission(state: &ServiceState) -> Result<(), MapServiceError> {
+    if state.active_streams >= state.map.service_bounds().max_entries {
+        return Err(MapServiceError::Capacity);
+    }
+    let stream_bytes = lifecycle::stream_reservation(state);
+    let total = state
+        .active_streams
+        .checked_add(1)
+        .and_then(|count| count.checked_mul(stream_bytes))
+        .ok_or(MapServiceError::ResourceBudget("streams"))?;
+    lifecycle::budget("streams", state.limits.stream_bytes, total)
 }
 
 fn statistics(state: &ServiceState) -> ServiceStatistics {
@@ -896,6 +1006,7 @@ fn execute(
     let digest = command_digest(command);
     if is_mutation {
         if let Some(id) = &command.identity {
+            lifecycle::check_identity(state, id)?;
             match state.map.service_lookup(id, Some(digest))? {
                 ServiceRetainedOutcome::Completed(value) => {
                     return ServiceResult::from_retained(&value)
@@ -917,11 +1028,44 @@ fn execute(
     {
         return Err(CollectionError::MapDestroyed.into());
     }
+    let result_bytes = if is_mutation {
+        lifecycle::preflight_command(
+            state,
+            command,
+            command
+                .identity
+                .as_ref()
+                .ok_or(MapServiceError::InvalidArgument)?,
+        )?
+    } else {
+        0
+    };
     advance(state, command.now)?;
+    if matches!(
+        command.operation.as_str(),
+        "clear_detailed" | "evict_all_detailed" | "destroy"
+    ) && state.map.service_expiry_pending(command.now)
+    {
+        return Err(MapServiceError::ExpiryBacklog);
+    }
+    if is_mutation {
+        let mut keys = command.keys.clone();
+        keys.extend(command.entries.iter().map(|entry| entry.key.clone()));
+        if keys.is_empty() {
+            keys.push(command.key.clone());
+        }
+        for key in keys {
+            if let Some(value) = state.map.service_expire_key(&key, command.now) {
+                publish(state, "expired", key, Some(value), None);
+            }
+        }
+    }
     let reserve = is_mutation && command.operation != "destroy";
     if reserve {
         if let Some(id) = &command.identity {
-            state.map.service_reserve(id.clone(), digest)?;
+            state
+                .map
+                .service_reserve(id.clone(), digest, result_bytes)?;
         }
     }
     let result = dispatch(state, command);
@@ -944,7 +1088,10 @@ fn advance(state: &mut ServiceState, now: u64) -> Result<(), MapServiceError> {
         return Err(MapServiceError::ClockRegressed);
     }
     if !state.map.is_destroyed() {
-        for (key, value) in state.map.service_expire(now)? {
+        for (key, value) in state
+            .map
+            .service_expire_step(now, state.limits.expiry_work)?
+        {
             publish(state, "expired", key, Some(value), None);
         }
     }
@@ -1552,6 +1699,13 @@ fn register(
     if state.listeners.len() >= bounds.max_entries {
         return Err(MapServiceError::Capacity);
     }
+    lifecycle::budget(
+        "listeners",
+        state.limits.listener_bytes,
+        lifecycle::listener_bytes(state)
+            .saturating_add(128)
+            .saturating_add(options.key_prefix.len()),
+    )?;
     let id = if requested == 0 {
         state.next_listener
     } else {
@@ -1570,6 +1724,7 @@ fn register(
             queue: VecDeque::new(),
             gap: false,
             waker: None,
+            delivery_epoch: 1,
         },
     );
     Ok(id)
@@ -1608,6 +1763,8 @@ fn publish_at(
 ) {
     state.watermark = state.watermark.saturating_add(1);
     let watermark = state.watermark;
+    let mut queued_bytes = lifecycle::listener_bytes(state);
+    let stream_maximum = lifecycle::stream_reservation(state);
     for listener in state.listeners.values_mut() {
         if listener.gap
             || (!key.is_empty() && !key.starts_with(&listener.options.key_prefix))
@@ -1621,7 +1778,29 @@ fn publish_at(
                 .map_or(0, Vec::len)
                 .saturating_add(value.as_ref().map_or(0, Vec::len))
                 > listener.options.max_value_bytes;
-        if oversized || listener.queue.len() >= listener.options.queue_capacity {
+        let event_bytes =
+            64usize
+                .saturating_add(key.len())
+                .saturating_add(if listener.options.include_value {
+                    old_value
+                        .as_ref()
+                        .map_or(0, Vec::len)
+                        .saturating_add(value.as_ref().map_or(0, Vec::len))
+                } else {
+                    0
+                });
+        if oversized
+            || event_bytes > stream_maximum
+            || listener.queue.len() >= listener.options.queue_capacity
+            || queued_bytes.saturating_add(event_bytes) > state.limits.listener_bytes
+        {
+            queued_bytes = queued_bytes.saturating_sub(
+                listener
+                    .queue
+                    .iter()
+                    .map(lifecycle::event_bytes)
+                    .sum::<usize>(),
+            );
             listener.queue.clear();
             listener.gap = true;
             listener.queue.push_back(ServiceEvent {
@@ -1633,6 +1812,7 @@ fn publish_at(
                 watermark,
             });
         } else {
+            queued_bytes = queued_bytes.saturating_add(event_bytes);
             listener.queue.push_back(ServiceEvent {
                 kind: kind.into(),
                 key: key.clone(),
@@ -1775,6 +1955,8 @@ pub struct ServiceListenerSource {
     service: UnifiedIMapService,
     registration: Option<ListenerRegistration>,
     closed: bool,
+    delivery_epoch: u64,
+    reset_buffer: bool,
 }
 
 impl ServiceListenerSource {
@@ -1782,12 +1964,22 @@ impl ServiceListenerSource {
         service: UnifiedIMapService,
         options: ServiceListenerOptions,
     ) -> Result<Self, MapServiceError> {
-        let registration = service.register_listener(options)?;
-        service.open_stream(false)?;
+        let mut state = service.state.lock().expect("local IMap state poisoned");
+        check_stream_admission(&state)?;
+        let id = register(&mut state, options, 0)?;
+        let delivery_epoch = state.listeners[&id].delivery_epoch;
+        state.active_streams += 1;
+        drop(state);
+        let registration = ListenerRegistration {
+            service: Arc::downgrade(&service.state),
+            id,
+        };
         Ok(Self {
             service,
             registration: Some(registration),
             closed: false,
+            delivery_epoch,
+            reset_buffer: false,
         })
     }
     pub fn registration_id(&self) -> Option<u64> {
@@ -1805,7 +1997,15 @@ impl BoundedStreamSource for ServiceListenerSource {
     ) -> BatchPoll<Self::Item, Self::Error> {
         match self.registration.as_ref() {
             None => Poll::Ready(Ok(None)),
-            Some(registration) => self.service.poll_listener(registration.id(), max_items, cx),
+            Some(registration) => {
+                let (epoch, result) =
+                    self.service
+                        .poll_listener_epoch(registration.id(), max_items, cx);
+                if let Some(epoch) = epoch {
+                    self.delivery_epoch = epoch;
+                }
+                result
+            }
         }
     }
     fn close(&mut self) {
@@ -1825,13 +2025,21 @@ impl BoundedStreamSource for ServiceListenerSource {
                     .state
                     .lock()
                     .expect("local IMap state poisoned");
-                if state.listeners.contains_key(&registration.id()) {
+                if let Some(listener) = state.listeners.get(&registration.id()) {
+                    if self.delivery_epoch != listener.delivery_epoch {
+                        self.delivery_epoch = listener.delivery_epoch;
+                        self.reset_buffer = true;
+                    }
                     Ok(())
                 } else {
                     Err(MapServiceError::UnknownListener)
                 }
             }
         }
+    }
+
+    fn take_buffer_reset(&mut self) -> bool {
+        std::mem::take(&mut self.reset_buffer)
     }
 }
 

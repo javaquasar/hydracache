@@ -137,4 +137,82 @@ final class IMapTraceRunnerTest {
     assertThrows(IllegalArgumentException.class, () -> IMapTraceRunner.execute(new StringReader(
         "imap-api-trace-v1\t1\n" + step("put_all_detailed", "", "~", "~", "eternal", 1, "", "61")), false));
   }
+
+  @Test
+  void typedLifecycleFramesExecuteRealBudgetsRetirementResyncVersionBatchesAndRestore() throws Exception {
+    String source = "imap-api-trace-v1\t117\n"
+        + step("reset_limits", "", "~", "~", "eternal", 0, "96", "1")
+        + step("entry_listener", "", "~", "~", "eternal", 10000, "values", "1")
+        + step("put", "78", "31", "~", "after:5", 10001, "", "")
+        + step("put", "79", "32", "~", "after:5", 10002, "", "")
+        + step("put", "7a", "01".repeat(100), "~", "eternal", 10003, "", "")
+        + step("reserve_operation", "70", "70", "~", "eternal", 10004, "", "")
+        + step("retire_outcomes", "", "~", "~", "eternal", 10004, "", "")
+        + step("query_outcomes", "", "~", "~", "eternal", 0, "4096", "10001,10004,99999")
+        + step("cancel_reserved", "", "~", "~", "eternal", 10004, "", "")
+        + step("retire_outcomes", "", "~", "~", "eternal", 10002, "", "")
+        + step("put", "78", "31", "~", "after:5", 10001, "", "")
+        + step("query_outcomes", "", "~", "~", "eternal", 0, "4096", "10001,10004,99999")
+        + step("get_entry_view", "78", "~", "~", "eternal", 0, "", "")
+        + step("get_entry_view", "79", "~", "~", "eternal", 0, "", "")
+        + step("version_bulk_replace", "", "~", "~", "preserve", 10005, "", "79:33,78:34")
+        + step("version_bulk_replace", "", "~", "~", "preserve", 10006, "", "79:33,78:34")
+        + step("version_bulk_replace", "", "~", "~", "preserve", 10005, "", "79:33,78:34")
+        + step("resync_listener", "", "~", "~", "eternal", 10000, "2", "4096")
+        + step("get_entry_view", "78", "~", "~", "eternal", 0, "", "")
+        + step("get_entry_view", "79", "~", "~", "eternal", 0, "", "")
+        + step("version_bulk_set_ttl", "", "~", "~", "after:1", 10007, "", "79,78")
+        + step("get_entry_view", "78", "~", "~", "eternal", 0, "", "")
+        + step("get_entry_view", "79", "~", "~", "eternal", 0, "", "")
+        + step("version_bulk_remove", "", "~", "~", "eternal", 10008, "", "78")
+        + step("checkpoint_restore", "", "~", "~", "eternal", 0, "", "")
+        + step("remove_entry_listener", "", "~", "~", "eternal", 10000, "", "")
+        + step("checkpoint_restore", "", "~", "~", "eternal", 0, "", "")
+        + step("version_bulk_remove", "", "~", "~", "eternal", 10009, "", "79")
+        + step("put", "78", "31", "~", "after:5", 10001, "", "")
+        + step("resource_usage", "", "~", "~", "eternal", 0, "", "");
+    var results = IMapTraceRunner.execute(new StringReader(source), false);
+    assertTrue(results.get(4).startsWith("error:resource_budget_exhausted|"));
+    assertTrue(results.get(6).startsWith("error:pending_retirement|"));
+    assertTrue(results.get(7).contains("/completed:inserted/"));
+    assertTrue(results.get(7).contains("/pending/"));
+    assertTrue(results.get(10).startsWith("error:retired_identity|"));
+    assertTrue(results.get(11).contains("/unknown/"));
+    assertTrue(results.get(14).contains("0/79/replaced/"));
+    assertTrue(results.get(15).contains("0/79/mismatch/"));
+    assertEquals(List.of(results.get(14).split("\\|", -1)).subList(0, 7), List.of(results.get(16).split("\\|", -1)).subList(0, 7));
+    assertTrue(results.get(17).startsWith("resynced|"));
+    assertTrue(results.get(17).contains("/78/present/34/"));
+    assertTrue(results.get(24).startsWith("error:active_owners|"));
+    assertTrue(results.get(26).startsWith("restored|"));
+    assertTrue(results.get(27).contains("0/79/mismatch/"));
+    assertTrue(results.get(28).startsWith("error:retired_identity|"));
+    assertTrue(results.get(29).startsWith("resources|"));
+    assertThrows(IllegalArgumentException.class, () -> IMapTraceRunner.execute(new StringReader(
+        "imap-api-trace-v1\t1\n" + step("version_bulk_replace", "", "~", "~", "eternal", 1, "", "61")), false));
+    var absent = IMapTraceRunner.execute(new StringReader("imap-api-trace-v1\t1\n"
+        + step("version_bulk_remove", "", "~", "~", "eternal", 1, "", "61")), false);
+    assertTrue(absent.get(0).contains("0/61/absent/"));
+  }
+
+  @Test
+  void readOnlyTraceObservationDoesNotConsumeIncrementalExpiryWork() throws Exception {
+    String source = "imap-api-trace-v1\t117\n"
+        + step("reset_limits", "", "~", "~", "eternal", 0, "96", "1")
+        + step("entry_listener", "", "~", "~", "eternal", 1, "values", "")
+        + step("set", "78", "65", "~", "after:1", 2, "", "")
+        + step("set", "79", "65", "~", "after:1", 3, "", "")
+        + step("set", "7a", "65", "~", "after:1", 4, "", "");
+    String expire = step("expire_step", "", "~", "~", "eternal", 0, "1", "")
+        .replace("\t0\t1000\t", "\t1\t1000\t");
+    var results = IMapTraceRunner.execute(new StringReader(source + expire.repeat(4)), false);
+    for (int index = 0; index < 4; index++) {
+      String[] fields = results.get(index + 5).split("\\|", -1);
+      assertEquals("expiry_progress", fields[0]);
+      assertEquals("[]", fields[7]);
+      assertEquals(index < 2 ? "1" : "0", fields[5]);
+      assertTrue(fields[10].startsWith("[" + new int[] {52, 26, 0, 0}[index] + ","));
+      assertEquals(index < 3 ? 1 : 0, fields[8].split("/expired/", -1).length - 1);
+    }
+  }
 }

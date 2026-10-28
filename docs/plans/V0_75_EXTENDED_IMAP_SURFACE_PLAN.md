@@ -15,7 +15,8 @@
 >   composition is racy, bulk emulation amplifies protocol overhead, and node-local routing,
 >   listeners, retries and expiry prevent an honest distributed IMap claim.
 > - **After (depends on):** published `0.74.0`, including its accepted native/batch performance
->   baseline and compatibility receipts. Release 0.75 must not invalidate the 0.74 native-path gains.
+>   baseline and compatibility receipts. Release 0.75 must preserve the accepted 0.74 native-path
+>   behavior, including an explicitly accepted baseline with no numerical improvement.
 > - **Unblocks:** a practical Hazelcast-to-HydraCache distributed-map migration path, a publishable
 >   cluster comparison, and a shared atomic collection foundation for later `MultiMap` and `Set`
 >   proposals.
@@ -255,6 +256,11 @@ independent of the unfinished 0.74 production shape:
   version conditionals, read-only pending/completed/unknown outcome queries, demand-bounded Rust
   streams and Java Flow publishers, richer listener payload/lifecycle handling, typed domain
   errors, local statistics and actual Rust-versus-Java execution differential with shrinking;
+- local lifecycle helpers for safe client/generation-scoped outcome retirement, aggregate owned
+  payload budgets, atomic listener snapshot/watermark repair, ordered version-conditional bulk,
+  bounded batch outcome lookup, incremental expiry and quiescent in-memory checkpoint/restore;
+- real concurrent Rust/Java histories checked against legal serial orders and real-time edges,
+  including cancellation, response-loss replay, expiry and listeners with bounded failure shrinking;
 - a bounded Rust/Java reference canonical-key codec and checked-in UTF-8/empty-key golden vectors;
   the production wire identity and partition hash deliberately remain unassigned.
 
@@ -263,10 +269,13 @@ backend remains disabled and fail-closed. Backend extraction, partition ownershi
 wire/durable identities, SDK generation, production surface routing, performance qualification and
 release-candidate work remain blocked on the published 0.74 artifact and its accepted native/batch
 baseline. Machine-readable status is maintained in `docs/testing/imap/0.75/status.json` and the
-provisional gate is `cargo xtask imap-contract-check --release 0.75`. The current published 0.74
-tip also leaves the full workspace gate blocked at `cargo deny check licenses` because
-`hydracache-long-run-supervisor-074` has no accepted license expression; 0.75 records that exact
-predecessor artifact instead of weakening the dependency policy.
+provisional gate is `cargo xtask imap-contract-check --release 0.75`. The observed 0.74 branch at
+`355c6fe226a17e63d60ac6c831eb081afd648d82` has no accepted performance candidate and is preparing
+the test-process control plane. Its closure scope permits no numerical improvement claim while
+retaining package, compatibility, dependency-policy and server-qualification gates. The supervisor
+manifest now inherits the workspace license; the earlier missing-license observation is not a
+claim about this newer source. Release 0.75 needs the published, qualified baseline and exact-source
+receipts, rather than a positive throughput gain. Local development does not freeze or admit 0.74.
 
 ## W0. Freeze the compatibility and divergence ledger
 

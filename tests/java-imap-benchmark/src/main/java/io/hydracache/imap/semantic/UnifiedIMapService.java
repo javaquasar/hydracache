@@ -61,6 +61,29 @@ public final class UnifiedIMapService {
     }
   }
   public record OperationStatus(String kind, Optional<Result> result) {}
+  /** Logical retained payload bounds, not an estimate of JVM RSS. */
+  public record BudgetLimits(long values, long outcomes, long pending, long listeners,
+      long streams, long resync, int maxClients, int maxBatch, int expiryWork, long queryBytes) {
+    public BudgetLimits {
+      if (values <= 0 || outcomes <= 0 || pending <= 0 || listeners <= 0 || streams <= 0
+          || resync <= 0 || maxClients <= 0 || maxBatch <= 0 || maxBatch > 256 || expiryWork <= 0
+          || queryBytes <= 0) throw domain(IMapDomainException.Kind.INVALID_ARGUMENT, "resource limits must be positive and batch <=256");
+    }
+    public static BudgetLimits defaults() {
+      return new BudgetLimits(64L << 20, 32L << 20, 1L << 20, 16L << 20,
+          64L << 20, 8L << 20, 4096, 256, 64, 8L << 20);
+    }
+  }
+  public record ResourceUsage(long values, long outcomes, long pending, long listeners,
+      long streams, long resync) {}
+  public record RetirementReceipt(String client, long generation, long through, int removed) {}
+  public record OutcomeItem(int index, BoundedIMapApi.MutationIdentity identity, OperationStatus status) {}
+  public enum VersionAction { REPLACE, REMOVE, SET_TTL }
+  public record VersionInput(BytesValue key, VersionToken token, Optional<BytesValue> value, TtlDirective ttl) {
+    public VersionInput { Objects.requireNonNull(key); Objects.requireNonNull(token); Objects.requireNonNull(value); Objects.requireNonNull(ttl); }
+  }
+  public record ExpiryProgress(int work, int expired, boolean remaining) {}
+  public record ResyncEntry(BytesValue key, Optional<BytesValue> value, long version, OptionalLong remainingTtl) {}
 
   /** Mutable request builder; execution snapshots its bounded immutable identity digest. */
   public static final class DomainCommand {
@@ -104,13 +127,11 @@ public final class UnifiedIMapService {
     }
   }
 
-  private record Request(String operation, BytesValue key, Optional<BytesValue> value,
-      Optional<BytesValue> expected, List<BytesValue> keys, List<BoundedIMapApi.ReplaceInput> entries,
-      TtlDirective ttl, Optional<VersionToken> token) {}
   private static final class ListenerState {
     final ListenerOptions options;
     final ArrayDeque<Event> queue = new ArrayDeque<>();
     boolean gap, terminal, streamAttached;
+    long deliveryEpoch;
     Runnable wake = () -> {};
     ListenerState(ListenerOptions options) { this.options = options; }
   }
@@ -118,20 +139,30 @@ public final class UnifiedIMapService {
   private final BoundedIMapApi map;
   private final BoundedIMapApi.Bounds bounds;
   private final long generation, mapId;
+  private final BudgetLimits limits;
   private final TreeMap<Long, ListenerState> listeners = new TreeMap<>();
   private final Set<Runnable> pendingWake = new java.util.LinkedHashSet<>();
   private long now, watermark, requests, rejections, cancellations, activeStreams, activeCursors;
+  private long streamBytes, resyncBytes;
 
   public UnifiedIMapService(BoundedIMapApi.Bounds bounds, long namespaceGeneration) {
     this(new BoundedIMapApi(bounds), namespaceGeneration);
   }
 
   public UnifiedIMapService(BoundedIMapApi existing, long namespaceGeneration) {
+    this(existing, namespaceGeneration, BudgetLimits.defaults());
+  }
+  public UnifiedIMapService(BoundedIMapApi.Bounds bounds, long namespaceGeneration, BudgetLimits limits) {
+    this(new BoundedIMapApi(bounds), namespaceGeneration, limits);
+  }
+  public UnifiedIMapService(BoundedIMapApi existing, long namespaceGeneration, BudgetLimits limits) {
     if (namespaceGeneration <= 0) invalid("namespace generation must be positive");
     map = Objects.requireNonNull(existing);
     this.bounds = map.serviceBounds();
+    this.limits = Objects.requireNonNull(limits);
     if (bounds.maxPageItems() > 256) invalid("page bound must not exceed 256");
     generation = namespaceGeneration;
+    map.configureService(generation, limits.values(), limits.outcomes(), limits.pending(), limits.maxClients());
     mapId = NEXT_MAP.getAndUpdate(value -> Math.incrementExact(value));
   }
 
@@ -150,12 +181,20 @@ public final class UnifiedIMapService {
       if (isMutation(command.operation) && command.identity.isPresent()) {
         Object prior = map.recoverService(command.identity.orElseThrow(), request(command));
         if (prior instanceof Result result) return result;
+        if (!command.cancelled && command.now < command.deadline) {
+          validate(command, true);
+          map.preflightAdmission(command.identity.orElseThrow(), request(command), resultReservation(command));
+          map.preflightVersions(command.entries.size() + command.keys.size() + 2);
+        }
       }
+      if (!isMutation(command.operation)) validate(command, true);
       advance(command.now);
       if (!isMutation(command.operation)) return read(command);
+      if (Set.of("clear_detailed", "evict_all_detailed", "destroy").contains(command.operation)
+          && map.hasExpiryBacklog(now)) throw domain(IMapDomainException.Kind.EXPIRY_BACKLOG, "expiry_backlog");
       identity = command.identity.orElseThrow(() -> domain(IMapDomainException.Kind.INVALID_ARGUMENT,
           "mutation identity required"));
-      Request digest = request(command);
+      BytesValue digest = request(command);
       Object prior = map.recoverService(identity, digest);
       if (prior instanceof Result result) return result;
       if (command.cancelled || command.now >= command.deadline) {
@@ -163,8 +202,9 @@ public final class UnifiedIMapService {
         if (command.cancelled) cancellations++;
         return simple("not_applied");
       }
-      map.beginService(identity, digest);
+      map.beginService(identity, digest, resultReservation(command));
       admitted = true;
+      expireTargets(command);
       List<BoundedIMapApi.RetainedEntry> before = map.retainedEntries();
       Result result = mutate(command);
       if (!map.isDestroyed()) map.completeService(identity, digest, result);
@@ -186,8 +226,10 @@ public final class UnifiedIMapService {
       var identity = command.identity.orElseThrow(() -> domain(
           IMapDomainException.Kind.INVALID_ARGUMENT, "mutation identity required"));
       if (map.recoverService(identity, request(command)) != null) return;
+      validate(command, true);
+      map.preflightAdmission(identity, request(command), resultReservation(command));
       advance(command.now);
-      map.beginService(identity, request(command));
+      map.beginService(identity, request(command), resultReservation(command));
     } catch (RuntimeException failure) { throw IMapDomainException.translate(failure); }
   }
 
@@ -195,14 +237,18 @@ public final class UnifiedIMapService {
     map.abandonService(identity);
   }
   public Result executeReserved(DomainCommand command) {
-    synchronized (this) {
+    try { synchronized (this) {
       if (isMutation(command.operation)) {
         var identity = command.identity.orElseThrow(() -> domain(IMapDomainException.Kind.INVALID_ARGUMENT, "identity required"));
         if (!map.servicePending(identity) && map.recoverService(identity, request(command)) == null) {
           throw domain(IMapDomainException.Kind.INVALID_ARGUMENT, "unknown operation reservation");
         }
+        if (map.servicePending(identity) && !command.cancelled && command.now < command.deadline) {
+          preflightOwnerChanges(command);
+          map.preflightAdmission(identity, request(command), resultReservation(command));
+        }
       }
-    }
+    } } catch (RuntimeException failure) { throw IMapDomainException.translate(failure); }
     return execute(command);
   }
   static boolean isMutation(String operation) { return MUTATIONS.contains(operation); }
@@ -241,28 +287,205 @@ public final class UnifiedIMapService {
     return new OperationStatus(map.servicePending(identity) ? "pending" : "unknown", Optional.empty());
   }
 
+  public synchronized RetirementReceipt retireOutcomes(String client, long namespaceGeneration, long through) {
+    try { return new RetirementReceipt(client, namespaceGeneration, through, map.retireOutcomes(client, namespaceGeneration, through)); }
+    catch (RuntimeException failure) { throw IMapDomainException.translate(failure); }
+  }
+  public synchronized List<OutcomeItem> queryOutcomes(List<BoundedIMapApi.MutationIdentity> identities, long maxBytes) {
+    if (identities.isEmpty() || identities.size() > limits.maxBatch() || maxBytes <= 0 || maxBytes > limits.queryBytes()) invalid("invalid outcome batch bound");
+    long bytes = 0;
+    for (var identity : identities) {
+      Objects.requireNonNull(identity);
+      bytes += 64L + identity.client().getBytes(java.nio.charset.StandardCharsets.UTF_8).length
+          + map.serviceQueryResultBytes(identity);
+      budget(bytes, maxBytes);
+    }
+    var result = new ArrayList<OutcomeItem>();
+    for (int index = 0; index < identities.size(); index++) result.add(new OutcomeItem(index, identities.get(index), queryOperationOutcome(identities.get(index))));
+    return List.copyOf(result);
+  }
+  public synchronized ResourceUsage resourceUsage() {
+    return new ResourceUsage(map.serviceValueOwnerBytes(), map.serviceOutcomeOwnerBytes(),
+        map.servicePendingOwnerBytes(), listenerBytes(), streamBytes, resyncBytes);
+  }
+  /** Each entry has its own conditional decision; this receipt is not a transaction. */
+  public Result versionBulk(VersionAction action, List<VersionInput> input,
+      BoundedIMapApi.MutationIdentity identity, long time, long deadline, boolean loseResponse) {
+    try { synchronized (this) {
+      requests++;
+      Objects.requireNonNull(action); Objects.requireNonNull(identity);
+      List<VersionInput> entries = List.copyOf(input);
+      if (entries.isEmpty() || entries.size() > limits.maxBatch()) invalid("invalid version batch size");
+      var keys = new HashSet<BytesValue>(); long requestBytes = 0, responseBytes = 0;
+      for (var entry : entries) {
+        if (!keys.add(entry.key())) invalid("duplicate key");
+        if (entry.key().size() > bounds.maxKeyBytes()) throw domain(IMapDomainException.Kind.KEY_TOO_LARGE, "key bound");
+        if ((action == VersionAction.REPLACE) != entry.value().isPresent()) invalid("version batch value shape");
+        if (entry.value().isPresent() && entry.value().orElseThrow().size() > bounds.maxValueBytes()) throw domain(IMapDomainException.Kind.VALUE_TOO_LARGE, "value bound");
+        if (action == VersionAction.SET_TTL && entry.ttl().kind() == TtlDirective.Kind.PRESERVE) invalid("set TTL requires explicit expiry");
+        if (entry.ttl().kind() == TtlDirective.Kind.EXPIRE_AFTER) {
+          try { Math.addExact(time, entry.ttl().ticks()); } catch (ArithmeticException overflow) { invalid("expiry overflow"); }
+        }
+        requestBytes += 32L + entry.key().size() + entry.value().map(BytesValue::size).orElse(0);
+        responseBytes += 17L + entry.key().size();
+      }
+      if (requestBytes > BoundedIMapApi.MAX_REQUEST_BYTES) throw domain(IMapDomainException.Kind.REQUEST_TOO_LARGE, "request bytes");
+      if (responseBytes > bounds.maxResponseBytes()) throw domain(IMapDomainException.Kind.RESPONSE_TOO_LARGE, "response bytes");
+      BytesValue digest = BoundedIMapApi.fingerprint("versionBulk|" + action + "|" + entries);
+      Object prior = map.recoverService(identity, digest);
+      if (prior instanceof Result result) return result;
+      checkTime(time);
+      if (time >= deadline) return simple("not_applied");
+      var existing = new HashMap<BytesValue, BoundedIMapApi.RetainedEntry>();
+      map.liveEntries(time).forEach(entry -> existing.put(entry.key(), entry));
+      var changes = new java.util.LinkedHashMap<BytesValue, Optional<BytesValue>>();
+      for (var entry : entries) {
+        var old = existing.get(entry.key());
+        if (old != null && entry.token().equals(new VersionToken(generation, mapId, old.version()))) {
+          changes.put(entry.key(), action == VersionAction.REMOVE ? Optional.empty()
+              : action == VersionAction.REPLACE ? entry.value() : Optional.of(old.value()));
+        }
+      }
+      map.preflightValues(changes);
+      long reservation = 64 + entries.stream().mapToLong(entry -> 64L + entry.key().size()).sum();
+      map.preflightAdmission(identity, digest, reservation);
+      map.preflightVersions(changes.size() + 1);
+      advance(time); map.beginService(identity, digest, reservation);
+      for (var entry : entries) map.expireTarget(entry.key(), time).ifPresent(old -> emit("expired", old.key(), Optional.of(old.value()), Optional.empty(), map.revision()));
+      var receipts = new ArrayList<Item>();
+      for (int index = 0; index < entries.size(); index++) {
+        var entry = entries.get(index); var old = map.serviceEntryView(entry.key(), time);
+        String kind = old.isEmpty() ? "absent" : !entry.token().equals(token(old.orElseThrow())) ? "mismatch"
+            : action == VersionAction.REMOVE ? "removed" : "replaced";
+        OptionalLong version = old.isPresent() ? OptionalLong.of(old.orElseThrow().version()) : OptionalLong.empty();
+        OptionalLong remaining = old.isPresent() ? old.orElseThrow().remainingTtl() : OptionalLong.empty();
+        if (kind.equals("removed")) {
+          map.evict(entry.key(), time); version = OptionalLong.of(map.revision()); remaining = OptionalLong.empty();
+          emit("removed", entry.key(), old.map(BoundedIMapApi.EntryView::value), Optional.empty(), map.revision());
+        } else if (kind.equals("replaced")) {
+          BytesValue value = action == VersionAction.REPLACE ? entry.value().orElseThrow() : old.orElseThrow().value();
+          map.put(entry.key(), value, expiry(entry.ttl(), old), time);
+          var changed = map.getEntryView(entry.key(), time).orElseThrow();
+          version = OptionalLong.of(changed.version()); remaining = changed.remainingTtl();
+          emit("updated", entry.key(), old.map(BoundedIMapApi.EntryView::value), Optional.of(value), map.revision());
+        }
+        receipts.add(new Item(index, entry.key(), kind, Optional.empty(), version, remaining));
+      }
+      Result result = items("bulk", receipts); map.completeService(identity, digest, result);
+      return loseResponse ? simple("outcome_unknown") : result;
+    } } catch (RuntimeException failure) { synchronized (this) { rejections++; } throw IMapDomainException.translate(failure); }
+    finally { wakeListeners(); }
+  }
+  public ExpiryProgress expireStep(long time, int maxWork) {
+    try { synchronized (this) {
+      if (maxWork <= 0 || maxWork > bounds.maxScanItems()) invalid("invalid expiry work bound");
+      if (map.isDestroyed()) throw domain(IMapDomainException.Kind.MAP_DESTROYED, "map is destroyed");
+      return expireLocked(time, maxWork);
+    } }
+    catch (RuntimeException failure) { throw IMapDomainException.translate(failure); }
+    finally { wakeListeners(); }
+  }
+  private ExpiryProgress expireLocked(long time, int maxWork) {
+    checkTime(time);
+    var batch = map.expireStep(time, maxWork); now = time;
+    for (var entry : batch.expired()) emit("expired", entry.key(), Optional.of(entry.value()), Optional.empty(), map.revision());
+    return new ExpiryProgress(batch.work(), batch.expired().size(), batch.remaining());
+  }
+  public final class SnapshotLease implements AutoCloseable {
+    private final List<ResyncEntry> entries;
+    private final long watermark, bytes;
+    private boolean closed;
+    private SnapshotLease(List<ResyncEntry> entries, long watermark, long bytes) {
+      this.entries = List.copyOf(entries); this.watermark = watermark; this.bytes = bytes;
+    }
+    public List<ResyncEntry> entries() { return entries; }
+    public long watermark() { return watermark; }
+    @Override public void close() { synchronized (UnifiedIMapService.this) { if (!closed) { resyncBytes -= bytes; closed = true; } } }
+  }
+  public SnapshotLease snapshotListener(long id, int maxItems, long maxBytes, long time) {
+    try { synchronized (this) {
+      if (map.isDestroyed()) throw domain(IMapDomainException.Kind.MAP_DESTROYED, "map is destroyed");
+      ListenerState state = listeners.get(id);
+      if (state == null) throw domain(IMapDomainException.Kind.UNKNOWN_LISTENER, "unknown listener");
+      if (state.terminal || maxItems <= 0 || maxItems > limits.maxBatch() || maxBytes <= 0) invalid("invalid listener snapshot bounds");
+      checkTime(time);
+      var entries = new ArrayList<ResyncEntry>(); long bytes = 0;
+      for (var entry : map.liveEntries(time)) {
+        if (state.options.exactKey().isPresent() && !state.options.exactKey().orElseThrow().equals(entry.key())) continue;
+        bytes += 32L + entry.key().size() + (state.options.includeValue() ? entry.value().size() : 0);
+        entries.add(new ResyncEntry(entry.key(), state.options.includeValue() ? Optional.of(entry.value()) : Optional.empty(),
+            entry.version(), entry.expiresAt() == null ? OptionalLong.empty() : OptionalLong.of(entry.expiresAt() - time)));
+      }
+      budget(entries.size(), maxItems); budget(bytes, maxBytes);
+      budget(resyncBytes + bytes, limits.resync());
+      advance(time);
+      resyncBytes += bytes;
+      state.queue.clear(); state.gap = false; state.deliveryEpoch++;
+      return new SnapshotLease(entries, watermark, bytes);
+    } } catch (RuntimeException failure) { throw IMapDomainException.translate(failure); }
+    finally { wakeListeners(); }
+  }
+  public static final class RuntimeCheckpoint implements AutoCloseable {
+    private final UnifiedIMapService owner;
+    private final BoundedIMapApi snapshot;
+    private final BudgetLimits limits;
+    private final long generation, now, watermark, bytes;
+    private boolean closed;
+    private RuntimeCheckpoint(UnifiedIMapService owner, BoundedIMapApi snapshot, long bytes) {
+      this.owner = owner; this.snapshot = snapshot; this.bytes = bytes;
+      limits = owner.limits; generation = owner.generation; now = owner.now; watermark = owner.watermark;
+    }
+    @Override public void close() { synchronized (owner) { if (!closed) { owner.resyncBytes -= bytes; closed = true; } } }
+  }
+  public synchronized RuntimeCheckpoint checkpoint() {
+    if (map.servicePendingCount() != 0 || !listeners.isEmpty() || activeStreams != 0) throw domain(IMapDomainException.Kind.CHECKPOINT_BUSY, "checkpoint_busy");
+    long bytes = 256 + map.serviceValueOwnerBytes() + map.serviceOutcomeOwnerBytes();
+    budget(resyncBytes + bytes, limits.resync());
+    var snapshot = map.checkpointCopy(); resyncBytes += bytes;
+    return new RuntimeCheckpoint(this, snapshot, bytes);
+  }
+  public static UnifiedIMapService restore(RuntimeCheckpoint checkpoint) {
+    synchronized (checkpoint.owner) {
+      if (checkpoint.closed) invalid("checkpoint is closed");
+      var restored = new UnifiedIMapService(checkpoint.snapshot.checkpointCopy(), checkpoint.generation, checkpoint.limits);
+      restored.now = checkpoint.now; restored.watermark = checkpoint.watermark;
+      checkpoint.close(); return restored;
+    }
+  }
+
   public List<SnapshotEntry> snapshot(long time) {
     List<SnapshotEntry> result;
     synchronized (this) {
       advance(time);
-      result = map.retainedEntries().stream().map(entry -> new SnapshotEntry(entry.key(), entry.value(),
+      result = map.liveEntries(time).stream().map(entry -> new SnapshotEntry(entry.key(), entry.value(),
           entry.version(), ttl(entry.expiresAt()))).toList();
     }
     wakeListeners();
     return result;
+  }
+  public synchronized List<SnapshotEntry> diagnosticSnapshot(long time) {
+    return map.liveEntries(time).stream().map(entry -> new SnapshotEntry(entry.key(), entry.value(),
+        entry.version(), entry.expiresAt() == null ? OptionalLong.empty() : OptionalLong.of(entry.expiresAt() - time))).toList();
   }
 
   public Statistics stats(long time) {
     Statistics result;
     synchronized (this) {
       advance(time);
-      result = new Statistics(map.serviceLiveCount(), map.serviceValueBytes(),
+      result = new Statistics(map.liveEntries(now).size(), map.serviceValueBytes(),
         map.serviceRetainedCount(), listeners.values().stream().filter(state -> !state.terminal).count(),
         listeners.values().stream().mapToLong(state -> state.queue.size()).sum(),
         map.servicePendingCount(), rejections, cancellations, requests, activeStreams, activeCursors);
     }
     wakeListeners();
     return result;
+  }
+  public synchronized Statistics diagnosticStats(long time) {
+    var live = map.liveEntries(time);
+    return new Statistics(live.size(), live.stream().mapToLong(entry -> entry.value().size()).sum(),
+        map.serviceRetainedCount(), listeners.values().stream().filter(state -> !state.terminal).count(),
+        listeners.values().stream().mapToLong(state -> state.queue.size()).sum(), map.servicePendingCount(),
+        rejections, cancellations, requests, activeStreams, activeCursors);
   }
 
   public synchronized ListenerHandle registerListener(long id, ListenerOptions options) {
@@ -272,6 +495,7 @@ public final class UnifiedIMapService {
         || options.maxValueBytes() > bounds.maxResponseBytes()) {
       throw domain(IMapDomainException.Kind.CAPACITY, "listener capacity");
     }
+    budget(listenerBytes() + 128 + options.exactKey().map(BytesValue::size).orElse(0), limits.listeners());
     listeners.put(id, new ListenerState(options));
     return new ListenerHandle(id);
   }
@@ -297,7 +521,7 @@ public final class UnifiedIMapService {
   public synchronized void repairListener(long id) {
     ListenerState state = listeners.get(id);
     if (state == null) throw domain(IMapDomainException.Kind.UNKNOWN_LISTENER, "unknown listener");
-    state.queue.clear(); state.gap = false;
+    state.queue.clear(); state.gap = false; state.deliveryEpoch++;
   }
 
   public final class ListenerHandle implements AutoCloseable {
@@ -332,7 +556,7 @@ public final class UnifiedIMapService {
         finally { wakeListeners(); }
       }
       @Override public void close() { iterator.close(); synchronized (UnifiedIMapService.this) {
-        activeStreams--; activeCursors--;
+        releaseStream(); activeCursors--;
       } }
     }, pageItems);
   }
@@ -346,16 +570,28 @@ public final class UnifiedIMapService {
     var publisher = new IMapFlowPublisher<Event>(new IMapFlowPublisher.Source<>() {
       final ArrayDeque<Event> pending = new ArrayDeque<>();
       boolean terminalBatch;
+      long deliveryEpoch = -1;
       @Override public IMapFlowPublisher.Pull<Event> poll() {
         synchronized (UnifiedIMapService.this) {
           if (handle.closed || (!terminalBatch && !listeners.containsKey(handle.id()))) {
             pending.clear();
             throw domain(IMapDomainException.Kind.UNKNOWN_LISTENER, "listener removed");
           }
+          ListenerState current = listeners.get(handle.id());
+          if (current != null && current.deliveryEpoch != deliveryEpoch) {
+            pending.clear(); deliveryEpoch = current.deliveryEpoch;
+          }
           if (pending.isEmpty()) {
             ListenerState state = listeners.get(handle.id());
             terminalBatch = terminalBatch || (state != null && state.terminal);
-            pending.addAll(handle.drain());
+            if (state != null) {
+              deliveryEpoch = state.deliveryEpoch;
+              long bytes = 0;
+              while (!state.queue.isEmpty() && bytes + eventBytes(state.queue.peekFirst()) <= streamReservation()) {
+                Event event = state.queue.removeFirst(); bytes += eventBytes(event); pending.addLast(event);
+              }
+              if (terminalBatch && state.queue.isEmpty()) listeners.remove(handle.id());
+            }
           }
           if (pending.isEmpty()) {
             if (terminalBatch) return IMapFlowPublisher.Pull.end();
@@ -364,7 +600,7 @@ public final class UnifiedIMapService {
           return IMapFlowPublisher.Pull.item(pending.removeFirst());
         }
       }
-      @Override public void close() { pending.clear(); handle.close(); synchronized (UnifiedIMapService.this) { activeStreams--; } }
+      @Override public void close() { pending.clear(); handle.close(); synchronized (UnifiedIMapService.this) { releaseStream(); } }
     }, bounds.maxPageItems());
     synchronized (this) {
       ListenerState state = listeners.get(handle.id());
@@ -528,7 +764,8 @@ public final class UnifiedIMapService {
     return appliedPoint(kind, returned, map.getEntryView(c.key, now).orElseThrow());
   }
 
-  private void validate(DomainCommand c) {
+  private void validate(DomainCommand c) { validate(c, false); }
+  private void validate(DomainCommand c, boolean stateful) {
     Objects.requireNonNull(c.key); Objects.requireNonNull(c.ttl);
     if (c.key.size() > bounds.maxKeyBytes()) throw domain(IMapDomainException.Kind.KEY_TOO_LARGE, "key bound");
     for (var value : List.of(c.value, c.expected)) {
@@ -540,7 +777,7 @@ public final class UnifiedIMapService {
       throw domain(IMapDomainException.Kind.RESPONSE_TOO_LARGE, "response value bound");
     }
     if (c.limit <= 0) invalid("limit must be positive");
-    if (c.keys.size() > 256 || c.entries.size() > 256) throw domain(IMapDomainException.Kind.REQUEST_TOO_LARGE, "request count");
+    if (c.keys.size() > limits.maxBatch() || c.entries.size() > limits.maxBatch()) throw domain(IMapDomainException.Kind.REQUEST_TOO_LARGE, "request count");
     long requestBytes = 0, responseBytes = 0;
     var seen = new HashSet<BytesValue>();
     var existing = new HashMap<BytesValue, BoundedIMapApi.RetainedEntry>();
@@ -557,7 +794,7 @@ public final class UnifiedIMapService {
           IMapDomainException.Kind.RESPONSE_TOO_LARGE, "response value bound");
       if (c.operation.equals("put_all_detailed")) {
         if (!existing.containsKey(entry.key())) inserted++;
-        if (c.ttl.kind() == TtlDirective.Kind.PRESERVE && !existing.containsKey(entry.key())) {
+        if (stateful && c.ttl.kind() == TtlDirective.Kind.PRESERVE && !existing.containsKey(entry.key())) {
           throw domain(IMapDomainException.Kind.INVALID_ARGUMENT, "preserve requires existing entry");
         }
       }
@@ -565,14 +802,14 @@ public final class UnifiedIMapService {
     for (var key : c.keys) {
       if (key.size() > bounds.maxKeyBytes()) throw domain(IMapDomainException.Kind.KEY_TOO_LARGE, "key bound");
       requestBytes += 4L + key.size(); responseBytes += 17L + key.size();
-      if (c.operation.equals("get_all") || c.operation.equals("remove_all_detailed")) {
+      if (stateful && (c.operation.equals("get_all") || c.operation.equals("remove_all_detailed"))) {
         var old = existing.get(key);
         if (old != null) responseBytes += old.value().size();
       }
     }
     if (requestBytes > BoundedIMapApi.MAX_REQUEST_BYTES) throw domain(IMapDomainException.Kind.REQUEST_TOO_LARGE, "request bytes");
     if (responseBytes > bounds.maxResponseBytes()) throw domain(IMapDomainException.Kind.RESPONSE_TOO_LARGE, "response bytes");
-    if (existing.size() + inserted > bounds.maxEntries()) throw domain(IMapDomainException.Kind.CAPACITY, "entry capacity");
+    if (stateful && existing.size() + inserted > bounds.maxEntries()) throw domain(IMapDomainException.Kind.CAPACITY, "entry capacity");
     if (c.ttl.kind() == TtlDirective.Kind.EXPIRE_AFTER) {
       try { Math.addExact(c.now, c.ttl.ticks()); }
       catch (ArithmeticException failure) { invalid("expiry overflow"); }
@@ -583,16 +820,54 @@ public final class UnifiedIMapService {
         "conditional_replace", "replace_if_version", "get_or_default", "contains_value_bounded")
         .contains(c.operation)) required(c.value);
     if (Set.of("conditional_replace", "conditional_remove", "contains_entry").contains(c.operation)) required(c.expected);
+    if (!stateful) return;
+    if (c.ttl.kind() == TtlDirective.Kind.PRESERVE && !existing.containsKey(c.key)
+        && Set.of("put", "set", "try_put", "get_and_put", "put_if_absent").contains(c.operation)) invalid("preserve requires existing entry");
+    preflightOwnerChanges(c);
+  }
+  private void preflightOwnerChanges(DomainCommand c) {
+    var existing = new HashMap<BytesValue, BoundedIMapApi.RetainedEntry>();
+    map.liveEntries(c.now).forEach(entry -> existing.put(entry.key(), entry));
+    var changes = new java.util.LinkedHashMap<BytesValue, Optional<BytesValue>>();
+    for (var entry : c.entries) {
+      if (c.operation.equals("put_all_detailed") || (c.operation.equals("replace_all_detailed") && existing.containsKey(entry.key()))) changes.put(entry.key(), Optional.of(entry.value()));
+    }
+    var current = existing.get(c.key);
+    boolean match = current != null && (!Set.of("conditional_replace", "conditional_remove").contains(c.operation)
+        || c.expected.equals(Optional.of(current.value())));
+    if (c.operation.endsWith("_if_version")) match = current != null && c.token.isPresent()
+        && c.token.orElseThrow().equals(new VersionToken(generation, mapId, current.version()));
+    if (Set.of("put", "set", "try_put", "get_and_put").contains(c.operation)
+        || (c.operation.equals("put_if_absent") && current == null)
+        || (Set.of("replace_if_present", "conditional_replace", "replace_if_version").contains(c.operation) && match)) {
+      changes.put(c.key, c.value);
+    }
+    map.preflightValues(changes);
+  }
+
+  private long resultReservation(DomainCommand c) {
+    var existing = new HashMap<BytesValue, BoundedIMapApi.RetainedEntry>();
+    map.liveEntries(c.now).forEach(entry -> existing.put(entry.key(), entry));
+    long bytes = 64;
+    for (var entry : c.entries) bytes += 64L + entry.key().size();
+    if (c.operation.equals("remove_all_detailed")) for (var key : c.keys) {
+      bytes += 64L + key.size() + (existing.containsKey(key) ? existing.get(key).value().size() : 0);
+    }
+    if (Set.of("put_if_absent", "get_and_put", "replace_if_present", "conditional_replace", "conditional_remove", "get_and_remove", "replace_if_version").contains(c.operation)) {
+      var old = existing.get(c.key); if (old != null) bytes += old.value().size();
+    }
+    return bytes;
+  }
+  private void expireTargets(DomainCommand command) {
+    var keys = new java.util.TreeSet<BytesValue>(); keys.add(command.key);
+    keys.addAll(command.keys); command.entries.forEach(entry -> keys.add(entry.key()));
+    for (var key : keys) map.expireTarget(key, now).ifPresent(entry -> emit("expired", key,
+        Optional.of(entry.value()), Optional.empty(), map.revision()));
   }
 
   private void advance(long time) {
-    if (time < now || time < 0) invalid("logical time regressed");
-    List<BoundedIMapApi.RetainedEntry> before = map.retainedEntries();
-    now = time;
-    map.expireForService(now);
-    for (var entry : before) if (entry.expiresAt() != null && entry.expiresAt() <= now) {
-      emit("expired", entry.key(), Optional.of(entry.value()), Optional.empty(), map.revision());
-    }
+    checkTime(time);
+    expireLocked(time, limits.expiryWork());
   }
 
   private void publishChanges(String operation, List<BoundedIMapApi.RetainedEntry> before,
@@ -628,12 +903,15 @@ public final class UnifiedIMapService {
           && !state.options.exactKey().orElseThrow().equals(key))
           || (!state.options.kinds().isEmpty() && !state.options.kinds().contains(kind))) continue;
       int bytes = oldValue.map(BytesValue::size).orElse(0) + value.map(BytesValue::size).orElse(0);
+      Event event = new Event(kind, key, state.options.includeValue() ? oldValue : Optional.empty(),
+          state.options.includeValue() ? value : Optional.empty(), version, watermark);
       if (state.queue.size() >= state.options.queueCapacity()
-          || (state.options.includeValue() && bytes > state.options.maxValueBytes())) {
+          || (state.options.includeValue() && bytes > state.options.maxValueBytes())
+          || eventBytes(event) > streamReservation()
+          || listenerBytes() + eventBytes(event) > limits.listeners()) {
         state.queue.clear(); state.gap = true;
         state.queue.add(new Event("gap", EMPTY, Optional.empty(), Optional.empty(), version, watermark));
-      } else state.queue.add(new Event(kind, key, state.options.includeValue() ? oldValue : Optional.empty(),
-          state.options.includeValue() ? value : Optional.empty(), version, watermark));
+      } else state.queue.add(event);
     }
     listeners.values().stream().map(state -> state.wake).forEach(pendingWake::add);
   }
@@ -645,9 +923,9 @@ public final class UnifiedIMapService {
     wake.forEach(Runnable::run);
   }
 
-  private Request request(DomainCommand c) {
-    return new Request(c.operation, c.key, c.value, c.expected, List.copyOf(c.keys),
-        List.copyOf(c.entries), c.ttl, c.token);
+  private BytesValue request(DomainCommand c) {
+    return BoundedIMapApi.fingerprint(c.operation + "|" + c.key + "|" + c.value + "|" + c.expected
+        + "|" + c.keys + "|" + c.entries + "|" + c.ttl + "|" + c.token);
   }
   private static boolean pointRead(String op) {
     return Set.of("get", "get_entry_view", "contains_key", "contains_entry", "get_or_default",
@@ -689,7 +967,30 @@ public final class UnifiedIMapService {
   }
   private void reserveStream() {
     if (activeStreams >= bounds.maxEntries()) throw domain(IMapDomainException.Kind.CAPACITY, "stream capacity");
+    budget(streamBytes + streamReservation(), limits.streams());
+    streamBytes += streamReservation();
     activeStreams++;
+  }
+  private void releaseStream() { activeStreams--; streamBytes -= streamReservation(); }
+  private long streamReservation() { return 64L + bounds.maxResponseBytes(); }
+  private static long eventBytes(Event event) {
+    return event.kind().equals("gap") ? 0 : 64L + event.key().size()
+        + event.oldValue().map(BytesValue::size).orElse(0) + event.value().map(BytesValue::size).orElse(0);
+  }
+  private long listenerBytes() {
+    return listeners.values().stream().mapToLong(state -> 128L + state.options.exactKey().map(BytesValue::size).orElse(0)
+        + state.queue.stream().mapToLong(UnifiedIMapService::eventBytes).sum()).sum();
+  }
+  private static void budget(long actual, long limit) {
+    if (actual > limit) throw domain(IMapDomainException.Kind.AGGREGATE_BYTE_BUDGET, "aggregate_byte_budget");
+  }
+  private void checkTime(long time) {
+    if (time < 0) invalid("logical time must be nonnegative");
+    if (time < now) throw domain(IMapDomainException.Kind.CLOCK_REGRESSED, "logical time regressed");
+  }
+  public static long logicalResultBytes(Result result) {
+    return 64L + result.value().map(BytesValue::size).orElse(0)
+        + result.items().stream().mapToLong(item -> 64L + item.key().size() + item.value().map(BytesValue::size).orElse(0)).sum();
   }
   private static Item item(int index, BytesValue key, String kind, Optional<BoundedIMapApi.EntryView> view) {
     return new Item(index, key, kind, view.map(BoundedIMapApi.EntryView::value), view.isPresent()
