@@ -1,0 +1,256 @@
+name: Lint, Build and Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  MSRV:
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -D warnings
+      MSRV: 1.88.0
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.MSRV }}
+          targets: x86_64-pc-windows-gnu, x86_64-apple-darwin, x86_64-unknown-freebsd, x86_64-unknown-netbsd, aarch64-linux-android
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Check build with MSRV
+        run: |
+          cargo --locked check --all-features
+          cargo --locked check --all-features --target x86_64-pc-windows-gnu
+          cargo --locked check --all-features --target x86_64-apple-darwin
+          cargo --locked check --all-features --target x86_64-unknown-freebsd
+          cargo --locked check --all-features --target x86_64-unknown-netbsd
+          cargo --locked check --all-features --target aarch64-linux-android
+      # The features all but only add code, so the jobs build with all of them. That covers all of
+      # it but the no-op `error!` that `log.rs` builds in place of `tracing`'s where that feature
+      # is off, and the panic of a `spawn` that finds no runtime to go on where `helper` is off,
+      # and cannot show that `runtime`, `event`, `broadcast`, `mpmc`, `lock`, `unblock`, `fs`,
+      # `tcp`, `udp`, `unix` and `process` each build without the others: checking each alone covers
+      # them. `unix`, which builds nothing on Windows, is checked to build nothing there with no
+      # warning, and `process`, which builds code of its own there, to build that alone as well.
+      - name: Check build with each feature alone
+        run: |
+          cargo --locked check --no-default-features --features runtime
+          cargo --locked check --no-default-features --features event
+          cargo --locked check --no-default-features --features broadcast
+          cargo --locked check --no-default-features --features mpmc
+          cargo --locked check --no-default-features --features lock
+          cargo --locked check --no-default-features --features unblock
+          cargo --locked check --no-default-features --features fs
+          cargo --locked check --no-default-features --features tcp
+          cargo --locked check --no-default-features --features udp
+          cargo --locked check --no-default-features --features unix
+          cargo --locked check --no-default-features --features process
+          cargo --locked check --no-default-features --features unix --target x86_64-pc-windows-gnu
+          cargo --locked check --no-default-features --features process --target x86_64-pc-windows-gnu
+
+  fmt:
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -D warnings
+      RUST_BACKTRACE: full
+      RUST_LOG: trace
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          # We use some nightly fmt options.
+          toolchain: nightly
+          components: rustfmt
+          targets: x86_64-apple-darwin, x86_64-unknown-freebsd, x86_64-unknown-netbsd, x86_64-pc-windows-gnu, aarch64-linux-android
+      - uses: Swatinem/rust-cache@v2
+      - name: Check formatting
+        run: |
+          cargo --locked fmt -- --check
+          cargo --locked check --target x86_64-apple-darwin
+          cargo --locked check --target x86_64-unknown-freebsd
+          cargo --locked check --target x86_64-unknown-netbsd
+          cargo --locked check --target x86_64-pc-windows-gnu
+          cargo --locked check --target aarch64-linux-android
+
+  clippy:
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -D warnings
+      RUST_BACKTRACE: full
+      RUST_LOG: trace
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: clippy
+          targets: x86_64-apple-darwin, x86_64-unknown-freebsd, x86_64-unknown-netbsd, x86_64-pc-windows-gnu, aarch64-linux-android, wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Catch common mistakes and unwrap calls
+        run: |
+          cargo --locked clippy --all-targets --all-features
+          cargo --locked clippy --all-targets --all-features --target x86_64-apple-darwin
+          cargo --locked clippy --all-targets --all-features --target x86_64-unknown-freebsd
+          cargo --locked clippy --all-targets --all-features --target x86_64-unknown-netbsd
+          cargo --locked clippy --all-targets --all-features --target x86_64-pc-windows-gnu
+          cargo --locked clippy --all-targets --all-features --target aarch64-linux-android
+      # The pollers that no runner waits on by default, as the test job runs them: `poll(2)`, which
+      # is there on every unix the crate builds for, and kqueue on Apple's platforms.
+      - name: Catch common mistakes in the poll(2) and kqueue pollers
+        run: |
+          RUSTFLAGS="-D warnings --cfg zruntime_poll" cargo --locked clippy --all-targets --all-features
+          RUSTFLAGS="-D warnings --cfg zruntime_poll" cargo --locked clippy --all-targets --all-features --target x86_64-apple-darwin
+          RUSTFLAGS="-D warnings --cfg zruntime_poll" cargo --locked clippy --all-targets --all-features --target x86_64-unknown-freebsd
+          RUSTFLAGS="-D warnings --cfg zruntime_poll" cargo --locked clippy --all-targets --all-features --target x86_64-unknown-netbsd
+          RUSTFLAGS="-D warnings --cfg zruntime_poll" cargo --locked clippy --all-targets --all-features --target aarch64-linux-android
+          RUSTFLAGS="-D warnings --cfg zruntime_kqueue" cargo --locked clippy --all-targets --all-features --target x86_64-apple-darwin
+      # The locks and channels build for `wasm32-unknown-unknown` too, where the wasm job runs the
+      # locks: the library alone, as that job builds it.
+      - name: Catch common mistakes in the build for wasm32-unknown-unknown
+        run: cargo --locked clippy --no-default-features --features lock,broadcast,mpmc --target wasm32-unknown-unknown
+
+  test:
+    runs-on: ${{ matrix.os }}
+    needs: [fmt, clippy]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      RUSTFLAGS: -D warnings
+      RUST_BACKTRACE: full
+      RUST_LOG: trace
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.os }}
+      - name: Test with all features
+        run: cargo --locked test --all-features
+      # The features all but only add code, and the tests of what they take out are left out of a
+      # build with every feature on: those of what `spawn` does without `helper`, where a thread
+      # that drives no shared runtime has none to spawn on. The runtime alone runs them, with the
+      # rest of its tests.
+      - name: Test the runtime alone
+        run: cargo --locked test --no-default-features --features runtime
+      # Linux waits on epoll and macOS on `select(2)`, which leaves two of the unix pollers with no
+      # runner of their own: `poll(2)`, which a unix with neither epoll nor kqueue waits on, runs
+      # the tests on Linux, and kqueue, which the BSDs wait on, on macOS.
+      - name: Test on poll(2)
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          RUSTFLAGS: -D warnings --cfg zruntime_poll
+        run: cargo --locked test --all-features
+      - name: Test on kqueue
+        if: matrix.os == 'macos-latest'
+        env:
+          RUSTFLAGS: -D warnings --cfg zruntime_kqueue
+        run: cargo --locked test --all-features
+
+  # Miri checks the lock module's `unsafe` code, and the concurrency of everything that needs no
+  # runtime: Event, the locks, the two channels and unblock, doc tests included. The runtime's
+  # tests are left out, as its poller on Linux keeps a timerfd, which Miri does not run, and so are
+  # those of `fs`, which reaches the filesystem, which Miri's isolation keeps it from.
+  miri:
+    runs-on: ubuntu-latest
+    needs: [fmt, clippy]
+    env:
+      RUSTFLAGS: -D warnings
+      RUST_BACKTRACE: full
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly
+          components: miri, rust-src
+      - uses: Swatinem/rust-cache@v2
+      - name: Test Event, the locks, the two channels and unblock under Miri
+        run: cargo --locked miri test --no-default-features --features lock,broadcast,mpmc,unblock
+
+  # Once a task starts to wait for a lock, the locks read the clock, where the target has one.
+  # On `wasm32-unknown-unknown` the standard library has none, and reading it panics, which no
+  # build can show: this runs the locks' waiting paths there, in Node.
+  wasm:
+    runs-on: ubuntu-latest
+    needs: [fmt, clippy]
+    env:
+      RUSTFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ci/wasm
+      - name: Run the locks' waiting paths on wasm32-unknown-unknown
+        working-directory: ci/wasm
+        run: |
+          cargo --locked build --release --target wasm32-unknown-unknown
+          node run.mjs target/wasm32-unknown-unknown/release/zruntime_wasm_check.wasm
+
+  # WASI cannot start a thread, has no pipe, and on preview 1 cannot create a socket, all of which
+  # the runtime does without there. This lints what builds there, each feature alone included, as
+  # the MSRV job checks it on the host, and runs the runtime, its shared runtimes without a helper,
+  # the filesystem module and the sockets there under wasmtime. The filesystem module works, on both
+  # previews, in a new directory of the runner's that wasmtime lends the program as `/data`; the
+  # sockets need preview 2 with the network.
+  wasi:
+    runs-on: ubuntu-latest
+    needs: [fmt, clippy]
+    env:
+      RUSTFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: clippy
+          targets: wasm32-wasip1, wasm32-wasip2
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            .
+            ci/wasi
+      - uses: bytecodealliance/actions/wasmtime/setup@v1
+      - name: Catch common mistakes in the builds for WASI
+        run: |
+          for target in wasm32-wasip1 wasm32-wasip2; do
+            cargo --locked clippy --all-features --target $target
+            for feature in runtime event broadcast mpmc lock unblock fs tcp udp unix process helper; do
+              cargo --locked clippy --no-default-features --features $feature --target $target
+            done
+          done
+      - name: Run zruntime on WASI
+        working-directory: ci/wasi
+        run: |
+          cargo --locked clippy --target wasm32-wasip1
+          cargo --locked clippy --target wasm32-wasip2
+          cargo --locked build --target wasm32-wasip1
+          cargo --locked build --target wasm32-wasip2
+          data=$(mktemp -d -p "$RUNNER_TEMP")
+          wasmtime run --dir "$data"::/data target/wasm32-wasip1/debug/zruntime-wasi-check.wasm
+          wasmtime run -S inherit-network --dir "$data"::/data \
+            target/wasm32-wasip2/debug/zruntime-wasi-check.wasm
+
+  doc_build:
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Check documentation build
+        run: cargo --locked doc --all-features
+
+  # No semver-checks job yet: zruntime has no release on crates.io yet to compare against.

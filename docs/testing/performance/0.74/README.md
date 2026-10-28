@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [D-Bus MSRV source preparation](dbus-msrv-backport-result-20261028.md)
+now fixes two actual Rust 1.88 MatchRule temporary-lifetime errors after retaining
+the declaration/UUID refusals. The final local tokio+proxy candidate passes five
+controls, check and strict Clippy on Rust 1.88 and 1.94, plus scoped dependency
+policy. Source fragments, the first decoder refusals and all native outcomes
+remain retained. Runtime/caller/Unix FD/GNU/distribution and product gates remain
+open; no root dependency or manager call changes.
+
 The [first matched preview attribution](chitchat-preview-cost-result-20261028.md)
 finds additional Rust allocations on 71/239 cases (23 accepted, 48 rejected),
 with identical repeated allocation records and original admission/wire. The S

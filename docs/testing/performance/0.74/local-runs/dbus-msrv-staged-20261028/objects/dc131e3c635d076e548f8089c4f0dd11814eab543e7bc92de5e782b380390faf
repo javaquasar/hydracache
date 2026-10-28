@@ -1,0 +1,29 @@
+from pathlib import Path
+import hashlib,json,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+docs={'docs/articles/007-optimization-starts-with-measurement.md','docs/testing/performance/0.74/README.md',
+ 'docs/testing/performance/0.74/release-closure-execution-plan-20261026.md','docs/testing/performance/0.74/dbus-msrv-backport-result-20261028.md'}
+prefixes=['docs/testing/performance/0.74/local-runs/'+n for n in ('dbus-msrv-backport-20261028/','dbus-msrv-verification-20261028/')]
+names=[n.decode() for n in subprocess.check_output(['git','diff','--cached','--name-only','-z'],cwd=ROOT).split(b'\0') if n]
+assert names and docs.issubset(names)
+assert subprocess.check_output(['git','rev-parse','--show-object-format'],cwd=ROOT).strip()==b'sha1'
+entries=subprocess.check_output(['git','ls-files','--stage','-z','--',*names],cwd=ROOT).split(b'\0')
+oids={}
+for entry in entries:
+ if not entry:continue
+ meta,name=entry.split(b'\t',1);mode,oid,stage=meta.split();assert stage==b'0' and mode==b'100644'
+ oids[name.decode()]=oid.decode()
+assert set(names)==set(oids)
+for name in names:
+ assert name in docs or any(name.startswith(p) for p in prefixes)
+ raw=(ROOT/name).read_bytes()
+ if '/objects/' in name or name.endswith('/index.json'):
+  if '/objects/' in name:assert hashlib.sha256(raw).hexdigest()==Path(name).name
+ else:raw=raw.replace(b'\r\n',b'\n')
+ assert hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()==oids[name]
+for prefix in prefixes:
+ index=json.loads((ROOT/prefix/'index.json').read_bytes())
+ for row in index['members'].values():
+  name=prefix+'objects/'+row['sha256'];assert name in oids
+  raw=(ROOT/name).read_bytes();assert len(raw)==row['bytes'] and hashlib.sha256(raw).hexdigest()==row['sha256']
+print(json.dumps(dict(staged_files=len(names),whitelist=True,raw_objects_and_indices_byte_exact=True)))

@@ -1,0 +1,53 @@
+"""Archive source-only backport, independently replay each hunk in memory."""
+from pathlib import Path
+import difflib,hashlib,json,re
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/dbus-backport-20261028'
+OUT=ROOT/'tools/dbus-msrv-backport-074/patches'
+OUT.mkdir(exist_ok=False)
+sha=lambda b:hashlib.sha256(b).hexdigest()
+primary=json.loads((BASE/'primary/result.json').read_bytes())['packages']
+final=BASE/'fixtures/F3'
+patches={'01-msrv-manifests.patch':[],'02-match-rule-temporaries.patch':[]};files={};changed=[]
+def replay(before,patch):
+ lines=patch.splitlines(True);source=before.splitlines(True);out=[];at=0;i=2
+ while i<len(lines):
+  match=re.fullmatch(r'@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@.*\n',lines[i]);assert match
+  pos=int(match[1])-1;assert pos>=at
+  out+=source[at:pos];at=pos;removed=added=0;i+=1
+  while i<len(lines) and not lines[i].startswith('@@ '):
+   prefix,body=lines[i][0],lines[i][1:]
+   if prefix in (' ','-'):
+    assert source[at]==body;at+=1;removed+=1
+   if prefix in (' ','+'):out.append(body);added+=1
+   assert prefix in (' ','-','+');i+=1
+  assert removed==int(match[2] or 1) and added==int(match[4] or 1)
+ out+=source[at:];return ''.join(out)
+for package in ('zbus','zbus_macros','zbus_utils'):
+ row=primary[package];source=BASE/'primary'/(package+'-'+row['version'])
+ for name,digest in row['members'].items():
+  before=(source/name).read_bytes();after=(final/package/name).read_bytes()
+  assert sha(before)==digest
+  logical=package+'/'+name;files[logical]=dict(base_sha256=digest,final_sha256=sha(after))
+  if before==after:continue
+  assert logical in ('zbus/Cargo.toml','zbus_macros/Cargo.toml','zbus_utils/Cargo.toml','zbus/src/match_rule/mod.rs')
+  patch=''.join(difflib.unified_diff(before.decode().splitlines(True),after.decode().splitlines(True),fromfile='a/'+logical,tofile='b/'+logical))
+  assert replay(before.decode(),patch).encode()==after
+  patches['01-msrv-manifests.patch' if name=='Cargo.toml' else '02-match-rule-temporaries.patch'].append(patch)
+  changed.append(logical)
+assert len(changed)==4
+for name,parts in patches.items():(OUT/name).write_bytes(''.join(parts).encode())
+(OUT/'fixture.lock').write_bytes((final/'Cargo.lock').read_bytes())
+receipt=dict(schema='hc074-local-dbus-msrv-source-v1',base_archives={n:dict(version=primary[n]['version'],sha256=primary[n]['checksum']) for n in ('zbus','zbus_macros','zbus_utils')},
+ files=files,changed_members=changed,patches={n:sha((OUT/n).read_bytes()) for n in patches},
+ tested_fixture_lock_sha256=sha((OUT/'fixture.lock').read_bytes()),uuid_tested_version='1.23.4',
+ independently_replayed_inert=True,archived_code_executed=False,
+ authoring_workspace_manifests_materialized=False,distributable_package=False,
+ rust_188_default_rt_or_all_features_qualified=False,root_dependencies_changed=False,
+ product_caller_migrated=False,release_admitted=False,published=False)
+(OUT/'receipt.json').write_text(json.dumps(receipt,sort_keys=True,indent=2)+'\n',encoding='utf-8',newline='\n')
+(OUT/'.gitattributes').write_text('*.patch -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nreceipt.json -text\nfixture.lock -text\n',encoding='utf-8',newline='\n')
+dest=BASE/'portable';dest.mkdir();(dest/'producer.py').write_bytes(Path(__file__).read_bytes())
+(dest/'result.json').write_text(json.dumps(dict(replayed_members=len(files),changed_members=changed,
+ receipt_sha256=sha((OUT/'receipt.json').read_bytes()),source_executed=False),sort_keys=True,indent=2)+'\n',encoding='utf-8',newline='\n')
+print(json.dumps(dict(replayed_members=len(files),changed_members=changed,receipt_sha256=sha((OUT/'receipt.json').read_bytes()))))

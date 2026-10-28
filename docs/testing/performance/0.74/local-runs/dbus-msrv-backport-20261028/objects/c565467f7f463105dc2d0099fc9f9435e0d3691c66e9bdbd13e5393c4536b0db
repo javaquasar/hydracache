@@ -1,0 +1,7 @@
+match_rule_review::argument_and_path_format_roundtrip: test
+tests::derive_and_wire_roundtrip: test
+tests::invalid_names_and_builder_refuse: test
+tests::reply_serial_sender_and_signature: test
+tests::runtime_timeout_and_nested_entry: test
+
+5 tests, 0 benchmarks

@@ -1,0 +1,7 @@
+error: rustc 1.88.0 is not supported by the following packages:
+  uuid@1.29.0 requires rustc 1.89.0
+  zbus@6.1.0 requires rustc 1.89
+  zbus_macros@6.1.0 requires rustc 1.89
+  zbus_utils@6.0.0 requires rustc 1.89
+  zbus_utils@6.0.0 requires rustc 1.89
+

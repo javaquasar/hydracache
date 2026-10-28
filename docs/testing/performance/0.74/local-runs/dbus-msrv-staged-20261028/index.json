@@ -1,0 +1,25 @@
+{
+  "first_refusal_preserved": true,
+  "members": {
+    "first-refusal.json": {
+      "bytes": 495,
+      "sha256": "9646d4472f441594246b8a52401b9892450a654f8cc1ce9d265d4554b43f2878"
+    },
+    "producer/dbus-staged-20261028.py": {
+      "bytes": 1845,
+      "sha256": "dc131e3c635d076e548f8089c4f0dd11814eab543e7bc92de5e782b380390faf"
+    },
+    "producer/dbus-staged-v2-20261028.py": {
+      "bytes": 1891,
+      "sha256": "70c152759ad84510413bf86902db24dce2eab981da0dae27a4214e46cb99ea8d"
+    },
+    "producer/retain-dbus-staged-20261028.py": {
+      "bytes": 1656,
+      "sha256": "ee8a049386cb3c655f88e0e260e5c56cbe7e04ed9943975db8735df711623ed6"
+    }
+  },
+  "product_gate_replayed": false,
+  "release_admitted": false,
+  "schema": "hc074-staged-metadata-audit-v1",
+  "staged_audit_must_pass_separately": true
+}

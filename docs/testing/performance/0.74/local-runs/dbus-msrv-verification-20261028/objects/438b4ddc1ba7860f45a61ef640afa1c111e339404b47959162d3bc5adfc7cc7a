@@ -1,0 +1,31 @@
+from pathlib import Path
+import hashlib,json,subprocess
+ROOT=Path(__file__).resolve().parent.parent;BASE=ROOT/'target/dbus-msrv-final-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/dbus-msrv-verification-20261028'
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+sha=lambda b:hashlib.sha256(b).hexdigest()
+def add(name,path):
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members;members[name]=dict(sha256=digest,bytes=len(raw))
+for mode in ('verify','controls','format','doc-check'):
+ result=json.loads((BASE/mode/'result.json').read_bytes());assert result['exit']==0 and result['inputs_unchanged']
+ for path in sorted((BASE/mode).iterdir()):
+  if path.is_file():add('capture/'+path.relative_to(BASE).as_posix(),path)
+for name in ('docs/testing/performance/0.74/dbus-msrv-backport-result-20261028.md',
+ 'docs/testing/performance/0.74/README.md','docs/testing/performance/0.74/release-closure-execution-plan-20261026.md',
+ 'docs/articles/007-optimization-starts-with-measurement.md',
+ 'target/dbus-final-checks-20261028.py','target/retain-dbus-final-20261028.py'):
+ add('source/'+name,ROOT/name)
+index=dict(schema='hc074-dbus-msrv-verification-v1',members=members,
+ source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ primary_index_sha256='ab5c211321f2557437f0c93c0bf2e99b82f8dd417a68e95f84590fb8a45c109e',
+ source_receipt_sha256='59a5cd3f030648218b36f0f4c2f066d1d04c1c5320d059ffef5435df5ad8d2d2',
+ byte_verifier_executed_archived_code=False,doc_check=True,python_controls_passed=3,formatting=True,
+ product_gate_replayed=False,release_admitted=False)
+(OUT/'index.json').write_text(json.dumps(index,sort_keys=True,indent=2)+'\n',encoding='utf-8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf-8',newline='\n')
+for row in members.values():
+ raw=(OUT/'objects'/row['sha256']).read_bytes();assert sha(raw)==row['sha256'] and len(raw)==row['bytes']
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

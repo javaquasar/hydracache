@@ -21978,3 +21978,37 @@ in the repository; the product graph remains unchanged. This rejects the tested
 candidate, not the need to repair the bound or update vulnerable dependencies.
 The separate D-Bus repair, compatible dependency distribution, GNU/consumer and
 final package gates remain work to complete under the original release contract.
+
+The [next D-Bus source preparation](../testing/performance/0.74/dbus-msrv-backport-result-20261028.md)
+separates three compiler boundaries that a version edit could conceal. Published
+zbus 6 and its two helpers declare Rust 1.89. Reducing only those declarations
+still leaves the newly selected UUID requiring 1.89. Selecting the existing
+product's compatible UUID identity in the isolated lock finally reaches two
+actual 1.88 compiler errors: MatchRule stores format_args temporaries until the
+next statement. Passing each format_args directly into the same helper repairs
+that lifetime without introducing a heap String. A common apostrophe/comma/path
+format-and-parse regression passes on upstream source with Rust 1.94 and the
+repaired source with Rust 1.88.
+
+The final formatted local candidate passes five wire/name/reply/runtime controls,
+check and strict Clippy on both compilers, plus the unchanged dependency policy.
+These tests never connect to a manager or service. The first declared-floor,
+UUID and genuine source failures remain evidence. Two overly strict inert
+Rustfmt-output decoders also refuse before freezing a source candidate; the
+corrected decoder consumes the original projection, with exact child/parent
+headers and the two known trailing-comma changes. It does not repeat native
+failures. Portable patches reconstruct every member of the three upstream
+archives and keep the tested lock distinguishable from a shipping package.
+
+Compiler compatibility still does not establish caller compatibility. The old
+blocking API disappears, message-builder errors move to final build, header
+flags become a bitflags struct, and deprecated wire aliases cannot survive a
+strict-warning migration. There is also a runtime ownership difference: old
+Tokio block_on creates a multi-threaded runtime, while the new tokio-only build
+uses current-thread unless another feature is deliberately selected. An adapter
+that looks synchronous at the call site may stop driving background tasks
+between calls. No such substitution is installed in the supervisor. The next
+work must prove progress and retained connection/reply/FD ownership under the
+existing windows, then pass GNU, consumer/distribution and full product gates.
+This source backport narrows a security blocker; it is not a performance win or
+a completed original-delivery/recovery gate.

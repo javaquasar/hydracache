@@ -1,0 +1,2553 @@
+{
+  "packages": {
+    "zbus": {
+      "checksum": "fcff5faa63a63d5b81051740f7382017f10b3440b3f401d97f0cf0b3b39c62d9",
+      "declared_msrv": "1.89",
+      "manifest": {
+        "bench": [
+          {
+            "harness": false,
+            "name": "benchmarks",
+            "path": "benches/benchmarks.rs",
+            "required-features": [
+              "comms"
+            ]
+          },
+          {
+            "harness": false,
+            "name": "names",
+            "path": "benches/names.rs"
+          },
+          {
+            "harness": false,
+            "name": "runtime",
+            "path": "benches/runtime.rs",
+            "required-features": [
+              "p2p"
+            ]
+          },
+          {
+            "harness": false,
+            "name": "wire",
+            "path": "benches/wire.rs"
+          }
+        ],
+        "dependencies": {
+          "arrayvec": {
+            "features": [
+              "serde"
+            ],
+            "optional": true,
+            "version": "0.7.4"
+          },
+          "async-trait": {
+            "optional": true,
+            "version": "0.1.80"
+          },
+          "bitflags": {
+            "optional": true,
+            "version": "2.13.2"
+          },
+          "camino": {
+            "optional": true,
+            "version": "1.1.9"
+          },
+          "chrono": {
+            "default-features": false,
+            "features": [
+              "serde"
+            ],
+            "optional": true,
+            "version": "0.4.38"
+          },
+          "endi": {
+            "version": "1.1.0"
+          },
+          "futures-core": {
+            "optional": true,
+            "version": "0.3.30"
+          },
+          "heapless": {
+            "features": [
+              "serde"
+            ],
+            "optional": true,
+            "version": "0.9.0"
+          },
+          "hex": {
+            "optional": true,
+            "version": "0.4.3"
+          },
+          "ordered-stream": {
+            "optional": true,
+            "version": "0.2"
+          },
+          "serde": {
+            "features": [
+              "derive"
+            ],
+            "version": "1.0.200"
+          },
+          "serde_bytes": {
+            "optional": true,
+            "version": "0.11.14"
+          },
+          "serde_repr": {
+            "optional": true,
+            "version": "0.1.19"
+          },
+          "time": {
+            "features": [
+              "serde"
+            ],
+            "optional": true,
+            "version": "0.3.36"
+          },
+          "tokio": {
+            "features": [
+              "rt",
+              "net",
+              "time",
+              "sync"
+            ],
+            "optional": true,
+            "version": "1.53.3"
+          },
+          "tracing": {
+            "optional": true,
+            "version": "0.1.40"
+          },
+          "url": {
+            "features": [
+              "serde"
+            ],
+            "optional": true,
+            "version": "2.5.0"
+          },
+          "uuid": {
+            "features": [
+              "serde"
+            ],
+            "optional": true,
+            "version": "1.8.0"
+          },
+          "winnow": {
+            "version": "1.0"
+          },
+          "zbus_macros": {
+            "default-features": false,
+            "version": "6.1.0"
+          },
+          "zbus_utils": {
+            "version": "6.0.0"
+          },
+          "zcheapstr": {
+            "features": [
+              "serde"
+            ],
+            "version": "1.0.0"
+          },
+          "zruntime": {
+            "default-features": false,
+            "optional": true,
+            "version": "0.2.0"
+          }
+        },
+        "dev-dependencies": {
+          "async-executor": {
+            "version": "1.11.0"
+          },
+          "async-io": {
+            "version": "2.3.2"
+          },
+          "async-task": {
+            "version": "4.7.1"
+          },
+          "bitflags": {
+            "version": "2.13.2"
+          },
+          "chrono": {
+            "default-features": false,
+            "features": [
+              "serde",
+              "serde",
+              "alloc"
+            ],
+            "version": "0.4.38"
+          },
+          "criterion": {
+            "package": "codspeed-criterion-compat",
+            "version": "6.0.0"
+          },
+          "doc-comment": {
+            "version": "0.3.3"
+          },
+          "futures-lite": {
+            "default-features": false,
+            "features": [
+              "std"
+            ],
+            "version": "2.6.0"
+          },
+          "futures-util": {
+            "default-features": false,
+            "features": [
+              "io",
+              "async-await-macro",
+              "async-await"
+            ],
+            "version": "0.3.31"
+          },
+          "libc": {
+            "default-features": false,
+            "version": "0.2"
+          },
+          "ntest": {
+            "version": "0.10.0"
+          },
+          "polling": {
+            "version": "3.11.0"
+          },
+          "serde_json": {
+            "version": "1.0.116"
+          },
+          "serde_repr": {
+            "version": "0.1.19"
+          },
+          "socket2": {
+            "version": "0.6.5"
+          },
+          "static_assertions": {
+            "version": "1.1.0"
+          },
+          "tempfile": {
+            "version": "3.10.1"
+          },
+          "test-log": {
+            "default-features": false,
+            "features": [
+              "trace"
+            ],
+            "version": "0.2.16"
+          },
+          "tokio": {
+            "features": [
+              "macros",
+              "rt-multi-thread",
+              "fs",
+              "io-util",
+              "net",
+              "sync",
+              "time",
+              "test-util"
+            ],
+            "version": "1.53.3"
+          },
+          "tracing": {
+            "version": "0.1.40"
+          },
+          "tracing-subscriber": {
+            "default-features": false,
+            "features": [
+              "env-filter",
+              "fmt",
+              "ansi"
+            ],
+            "version": "0.3.18"
+          }
+        },
+        "example": [
+          {
+            "name": "screen-brightness",
+            "path": "examples/screen-brightness.rs",
+            "required-features": [
+              "proxy"
+            ]
+          },
+          {
+            "name": "watch-systemd-jobs",
+            "path": "examples/watch-systemd-jobs.rs",
+            "required-features": [
+              "default-rt",
+              "proxy"
+            ]
+          }
+        ],
+        "features": {
+          "arrayvec": [
+            "dep:arrayvec"
+          ],
+          "bus-impl": [
+            "p2p"
+          ],
+          "camino": [
+            "dep:camino"
+          ],
+          "chrono": [
+            "dep:chrono"
+          ],
+          "comms": [
+            "dep:bitflags",
+            "zbus_macros/comms",
+            "dep:serde_repr",
+            "dep:futures-core",
+            "dep:hex",
+            "dep:ordered-stream",
+            "dep:zruntime",
+            "zruntime/broadcast",
+            "zruntime/lock",
+            "zruntime/unblock",
+            "dep:async-trait",
+            "dep:rustix",
+            "dep:libc",
+            "dep:windows-sys",
+            "dep:uds_windows",
+            "dep:socket2",
+            "dep:uuid"
+          ],
+          "default": [
+            "default-rt",
+            "proxy",
+            "service",
+            "object-manager",
+            "tracing"
+          ],
+          "default-rt": [
+            "comms",
+            "zruntime/runtime",
+            "zruntime/helper",
+            "zruntime/tcp",
+            "zruntime/unix",
+            "zruntime/process"
+          ],
+          "heapless": [
+            "dep:heapless"
+          ],
+          "ibus": [
+            "comms",
+            "tokio?/process"
+          ],
+          "object-manager": [
+            "service"
+          ],
+          "option-as-array": [],
+          "p2p": [
+            "comms",
+            "uuid?/v4"
+          ],
+          "proxy": [
+            "comms",
+            "zbus_macros/proxy"
+          ],
+          "serde_bytes": [
+            "dep:serde_bytes"
+          ],
+          "service": [
+            "comms",
+            "zbus_macros/service"
+          ],
+          "time": [
+            "dep:time"
+          ],
+          "tokio": [
+            "comms",
+            "dep:tokio"
+          ],
+          "tokio-multithread": [
+            "tokio",
+            "tokio/rt-multi-thread"
+          ],
+          "tracing": [
+            "dep:tracing",
+            "tokio?/tracing",
+            "zruntime?/tracing"
+          ],
+          "unixexec": [
+            "comms",
+            "tokio?/process"
+          ],
+          "url": [
+            "dep:url"
+          ],
+          "uuid": [
+            "dep:uuid"
+          ]
+        },
+        "lib": {
+          "bench": false,
+          "name": "zbus",
+          "path": "src/lib.rs"
+        },
+        "lints": {
+          "rust": {
+            "unexpected_cfgs": {
+              "check-cfg": [
+                "cfg(tokio_unstable)"
+              ],
+              "level": "warn",
+              "priority": 0
+            }
+          }
+        },
+        "package": {
+          "authors": [
+            "Zeeshan Ali Khan <zeeshanak@gnome.org>"
+          ],
+          "autobenches": false,
+          "autobins": false,
+          "autoexamples": false,
+          "autolib": false,
+          "autotests": false,
+          "build": false,
+          "categories": [
+            "os::unix-apis",
+            "data-structures",
+            "encoding",
+            "parsing"
+          ],
+          "description": "API for D-Bus communication and its wire format",
+          "edition": "2024",
+          "keywords": [
+            "D-Bus",
+            "DBus",
+            "IPC",
+            "serde"
+          ],
+          "license": "MIT",
+          "metadata": {
+            "docs": {
+              "rs": {
+                "all-features": true,
+                "targets": [
+                  "x86_64-unknown-linux-gnu",
+                  "x86_64-pc-windows-gnu",
+                  "x86_64-apple-darwin",
+                  "x86_64-unknown-freebsd",
+                  "x86_64-unknown-netbsd",
+                  "aarch64-linux-android"
+                ]
+              }
+            }
+          },
+          "name": "zbus",
+          "readme": "README.md",
+          "repository": "https://github.com/z-galaxy/zbus/",
+          "rust-version": "1.89",
+          "version": "6.1.0"
+        },
+        "target": {
+          "cfg(any(unix, target_os = \"wasi\"))": {
+            "dependencies": {
+              "rustix": {
+                "default-features": false,
+                "features": [
+                  "net",
+                  "process",
+                  "std"
+                ],
+                "optional": true,
+                "version": "1.1.2"
+              }
+            }
+          },
+          "cfg(not(target_os = \"wasi\"))": {
+            "dependencies": {
+              "socket2": {
+                "optional": true,
+                "version": "0.6.5"
+              }
+            }
+          },
+          "cfg(target_os = \"macos\")": {
+            "dependencies": {
+              "tokio": {
+                "features": [
+                  "process"
+                ],
+                "optional": true,
+                "version": "1.53.3"
+              }
+            }
+          },
+          "cfg(unix)": {
+            "dependencies": {
+              "libc": {
+                "default-features": false,
+                "optional": true,
+                "version": "0.2"
+              }
+            }
+          },
+          "cfg(windows)": {
+            "dependencies": {
+              "uds_windows": {
+                "optional": true,
+                "version": "1.1.0"
+              },
+              "windows-sys": {
+                "features": [
+                  "Win32_Foundation",
+                  "Win32_Security_Authorization",
+                  "Win32_System_Memory",
+                  "Win32_System_WindowsProgramming",
+                  "Win32_Networking",
+                  "Win32_Networking_WinSock",
+                  "Win32_NetworkManagement",
+                  "Win32_NetworkManagement_IpHelper",
+                  "Win32_System_IO",
+                  "Win32_System_Threading"
+                ],
+                "optional": true,
+                "version": "0.61"
+              }
+            }
+          }
+        },
+        "test": [
+          {
+            "name": "basic",
+            "path": "tests/basic.rs"
+          },
+          {
+            "name": "builder_feature_additivity",
+            "path": "tests/builder_feature_additivity.rs"
+          },
+          {
+            "name": "builder_message_stream",
+            "path": "tests/builder_message_stream.rs"
+          },
+          {
+            "name": "connection_closed",
+            "path": "tests/connection_closed.rs"
+          },
+          {
+            "name": "e2e",
+            "path": "tests/e2e.rs"
+          },
+          {
+            "name": "issues",
+            "path": "tests/issues.rs"
+          },
+          {
+            "name": "polling_runtime",
+            "path": "tests/polling_runtime/main.rs"
+          },
+          {
+            "name": "uncached_propert",
+            "path": "tests/uncached_propert.rs"
+          },
+          {
+            "name": "unixexec",
+            "path": "tests/unixexec.rs"
+          },
+          {
+            "name": "wire",
+            "path": "tests/wire/main.rs"
+          },
+          {
+            "name": "zvariant_compat",
+            "path": "tests/zvariant_compat.rs"
+          }
+        ]
+      },
+      "members": {
+        ".cargo_vcs_info.json": "7ed91444881a0889e2cbe6d08c933e190d52f3340b489adc0f5b5f0f674c9bf1",
+        "CHANGELOG.md": "93a9030606bd17def10aa0bf607ba9c37835d13f26aa232552a24569d367f230",
+        "Cargo.lock": "251467a1767ef3aeeced3a709169792c1395962148fa57254f9329803481cb9f",
+        "Cargo.toml": "cef226d3c59a6da5b82d78c76e21bb5a85d78016841a6eba0e8d6a71cfce9271",
+        "Cargo.toml.orig": "9f3df9a46fe65d9fa85f8b8fc439bf3af33681e778874e4528b95f1711b8caaa",
+        "LICENSE": "260e4ff3fc493695880c90774283eb1e3d018f898fabe655bbd52dd2cbd2fcad",
+        "README.md": "0e5d1c7b4d4766f2249cb98b29e250c56d750bebfdbef2f06a2088e86ddb095d",
+        "benches/benchmarks.rs": "f46ad8ea6da860ae8c2ce52ff73c2e4cc5cb8948e74ac1425e4b5c774374fc96",
+        "benches/names.rs": "c9c3c395fccc8af649d01b52e4a0bb4ecf389352291cacf32fd9b974bc0fca14",
+        "benches/runtime.rs": "7c2a0dee7d8adaeb8fd7967d3353d2006484728c9cf647978f3caeb25e55a9b6",
+        "benches/wire.rs": "fd106e71bee564ccb01bcf29d855f2832b30c503e2bde310e78c183baa4e47d7",
+        "examples/screen-brightness.rs": "a2fb0a13ade2b6f67e02598e897179cea756168712e6dbdb313350de44abb80d",
+        "examples/watch-systemd-jobs.rs": "39aaf487cd3dc8bfc628538d635e6184e8c4e22a4a6f02c18bf988b6edb03df7",
+        "src/address/mod.rs": "1d0ab8a3a9e07b7faa3bd731f9aeb7fe3dd1d60210074d1e0f3506eabd3dc3c2",
+        "src/address/transport/autolaunch.rs": "55e1b03ac8610d71f24dc2cb0c98bd77f8a3b1f0f9328840202fc40e5624fb33",
+        "src/address/transport/ibus.rs": "90400033fde554f96083911cbce20f9b3d87d68ed26ff625df47f6c89082118f",
+        "src/address/transport/launchd.rs": "166445b88a0226a4fda38a00878315604f788da65bf7846abe1bf3de1865ca47",
+        "src/address/transport/mod.rs": "b0d9421e17cbd80b0d45413e9a045e747bdc3936008ce9f12723701771f32f0c",
+        "src/address/transport/tcp.rs": "68ea72dccf39bfcf10085e7989bd31d15616f93eb45a2fb85e398acd4187a9d6",
+        "src/address/transport/unix.rs": "9fbb2da5a6400344d0dfef8e7c6d2e6148f7050d35d746126db98d468aa75ae7",
+        "src/address/transport/unixexec.rs": "ba545e1163ce5b6a0a30a4f9921e37979f964ad086bc314dc88fb8f9c7aa129e",
+        "src/connection/activity_listener.rs": "1ecc2871ba0ad93602c9028b8ab10378ab8caacb0104863e9703e5042a085c7b",
+        "src/connection/builder.rs": "00e190e31b5363d281a4ba3c2c6ac81a6661ce580192b0462894df90fddc9346",
+        "src/connection/handshake/auth_mechanism.rs": "686eee8beb962e90e8bfc713f5cc75b161de0553e7ea52cbfadb659f6297df88",
+        "src/connection/handshake/client.rs": "3884b5161166b5d7103360b90f211f5050c061e5762da55641678195b9aeea60",
+        "src/connection/handshake/command.rs": "8a6c5d85ab7bc7c55e9115f8394ea74b93e0c2694198100f659cd55986205bde",
+        "src/connection/handshake/common.rs": "e97ff5a9ffd1845e76f7895d6bb52bf9e3c44d144259d1f9e735b8abe24bd4db",
+        "src/connection/handshake/mod.rs": "c72998ad1b264ac0fba0589db78876779077d2b8c712e07920baa80836e49feb",
+        "src/connection/handshake/server.rs": "de4699767520a5fa16b1a48e99c8665694f6f7cb2ef7b5b53ad04cfbee795ce8",
+        "src/connection/mod.rs": "9cafce21471655aae2dc1d76fd7d60c101e24f73e91680c0f078c50821ae0ae6",
+        "src/connection/pending_method_calls.rs": "fafd8230264322710e182b71927a1a2081cac566836955fc89a884efb7817347",
+        "src/connection/socket/channel.rs": "96f8c53a9791c4829f54a8de3f047826216e204885d4e3638e1658acee768ecf",
+        "src/connection/socket/mod.rs": "72ca2ca5d08f4758c099045b7a887a4f1b0e034c28d29a3d34460caa90649794",
+        "src/connection/socket/split.rs": "af67db0f9dd761bc1eee30971fae9d6f9cab0bd88e2817d6f97fe23c6de1a468",
+        "src/connection/socket_reader.rs": "fe9ee64e3622ccb818f2c040ff6152ed4c332b5dcbdfb5e34244fea994860343",
+        "src/dbus_error.rs": "97df2c7f76b428e1b8bc300c302aefae8afc8016e38a8a607fefd6e8fe2b3544",
+        "src/error.rs": "9354a9ba49779727d35d0ea623bf11b2b4e0fb5c7dd6fea0b44e8086ed652faa",
+        "src/fdo/dbus.rs": "9499c009e49bf376b99e3e6a978e8a0674937f667a63f554232655f50a1fe678",
+        "src/fdo/error.rs": "00e7a5aeaf20a59a553026d70198be66d296589926233d2de1b325ac319a1311",
+        "src/fdo/introspectable.rs": "1b82b3f51a09a5fcd956f302161922b6d95da67e27d11ea4877858b685c9dba2",
+        "src/fdo/mod.rs": "ac0c590b217fb49d16e16be1f1718a12d5491f2a400be9b596bf34deca309a29",
+        "src/fdo/monitoring.rs": "ec2892855e71af3315981cfe684669b8d266f68a15ce4c55266e251c5e60ff26",
+        "src/fdo/object_manager.rs": "939b5a92dd26c148cb62949fe325dcac8af96a985cbf75338fe8c33e92567f55",
+        "src/fdo/peer.rs": "b36c50c98026a4250624ca6b869c332e45246d61c4a7ffdfa9e0f2c88125ccd5",
+        "src/fdo/properties.rs": "a127ce901fd23fea18f542a6c22f5bca55a3fab53bea9c5bd95c61168359256d",
+        "src/fdo/stats.rs": "b58bd63a4cbe6d0fa1662697ee85a51f8123d0a26e25fab4a0da59e654283ab2",
+        "src/guid.rs": "d5d968eebc282185bd7defff7d8ace5f6f47e06f558cc7ad77bafc9d3af50be0",
+        "src/lib.rs": "8268c3d7d85ef55d464e188fe56910029f3aadffcab79e0d02dff315e190f2ef",
+        "src/log.rs": "622013636636a5cc08ba23be5e4be3d1a1fc46b262c6e0d0d0dad8d6d90b87c5",
+        "src/match_rule/builder.rs": "53e6e273a2e5f6a80eef898e51393d9dcc694fc3855d1deeb925ffdb1ca6b4bd",
+        "src/match_rule/mod.rs": "4374feb3320cf6510fcd37ac8414cfa87f01a2f72d3a83e3bacbe58a7f3cb2fd",
+        "src/message/body.rs": "1f534eb3a69d68edf3fc167e6652c5b9cf6617b75d74d6a7c8dc84394b6f16db",
+        "src/message/builder.rs": "d2e77fec62f99f542b6e568773fcc065ab84612b52c045cadfbcd92a0e740706",
+        "src/message/field_code.rs": "cacc1883ce41dd4d982b75c4ba6285ca0ffc97e94ed4eed43726ea25e2976c89",
+        "src/message/fields.rs": "7d2dac5741a3970eb99a2dc12b5fb63f2ec9426951fc453fcac9a6a9f7994e83",
+        "src/message/header.rs": "7db91f7d3761a5630777072bcb3274e6cb503d3df0c8f120d9a59d7471f34bb7",
+        "src/message/mod.rs": "0af0e03285b17cbca064c0400255accc4c533daca7fdc24a8fb44881c56e7fd4",
+        "src/message_stream.rs": "1b5955be7e20e9599aa3392acba0c63f527e7a0d4e751ac0cd1c2d80a3924478",
+        "src/names/bus_name.rs": "d64218124411960be2292d1e367b64131b360fcc86155d5416064857fc3312f3",
+        "src/names/error_name.rs": "52bf391c0aab3cb3bed3dba5f9983ddf6597c82825e1ff9e19ddd1b823b0e746",
+        "src/names/interface_name.rs": "8dfe95f3d68d23a7f605f82613bbda2667dd0f9f08c6992494e299e5bd7bd442",
+        "src/names/member_name.rs": "64dc35c6fe83ab553bcf74666ef5648d51584eca2bf54d6218aeb289cdc4f727",
+        "src/names/mod.rs": "baa62518e536c0d044539dd827a7a3a313c29c1405a2cb05eb21fe3e242be4c7",
+        "src/names/property_name.rs": "b899869b2d199ac99c89dd3efe5e31fa4485d7ee8f08c8183537379ef115835b",
+        "src/names/unique_name.rs": "b6e9a417c635794f5be4e7a644d28ebaa8a60ce6f6f8b40d2ba079be9df5996e",
+        "src/names/utils.rs": "cac3b08c6c38affda9196b545abe67a42f5e560eec024fae80d522ca3d35b345",
+        "src/names/well_known_name.rs": "eedcbcd70b6cb7c6a04fbf395496db531da9f23c5aba041ddce5f79942dbdd28",
+        "src/object_server/dispatch_notifier.rs": "4ed51ab5f33edb414b9aa5d38576b1b254dc6fbce02f0f9f778a1ec5bd6cf30c",
+        "src/object_server/interface/dispatch_result.rs": "db30513f0212ac72fa8fb895569bcb67675a6de366411fd586dd06a8ffa504cb",
+        "src/object_server/interface/interface_deref.rs": "bc35ecb53a70c8401e56d5c98a385ec98478d31e646be2160533bb704109f359",
+        "src/object_server/interface/interface_ref.rs": "b49b0090b28574f5086c5ad24a3fbbe701e5607a69fb4c01d8fe3e70a74bb5c7",
+        "src/object_server/interface/mod.rs": "a11b41b7d25e222a992f89397873ec5c3f19c4847c5805a6369644ec10e20617",
+        "src/object_server/mod.rs": "752c8c86e311b70a407b1dcf0d21d6a6836ed2f859ce3fb92a642bfc23a791b2",
+        "src/object_server/node.rs": "2dd4b82db498356002ce4be4cc5936bfc5dcb0bcac63a6f962552c24dcb731fc",
+        "src/object_server/signal_emitter.rs": "105250c7dc07cbf450eab66fb9da8da1d3615e52c54f9830917faf67a55e1641",
+        "src/proxy/builder.rs": "dd003a4b1410e026dea25df62e4140b51340275e75aae1884a70de712790296d",
+        "src/proxy/defaults.rs": "aaa5bf9940fcd07020b723a40643b2e237222972fcdce20c01612548d9ffef06",
+        "src/proxy/mod.rs": "0847d645241640928b4907f1e2cf98f61cfb60b5371677ded235d2883d8266ae",
+        "src/runtime/async_drop.rs": "6e2ad9b3d6617a3286ff491273f584015a17e3caf1714acefe722596774a678f",
+        "src/runtime/erased.rs": "409dc520b7b6ff41b8836dc22a13e2cf2f7ee130fc4462233056714d510d325a",
+        "src/runtime/io/connect.rs": "e6654360c7111ec43624dca5dd4549748df0c6be188bce0c7950df1a31bdc60d",
+        "src/runtime/io/mod.rs": "18bf7429ee2734fcd9f418461ac7a0191e36ac173d68e449d62ead0cdf6956b1",
+        "src/runtime/io/pipe.rs": "c4142352608b9e4be0d1b9aedbdfff640c296177761ecd0cb417cb0fdb78fe38",
+        "src/runtime/io/tcp.rs": "9ce9fcd11f6cb0a63ec14690ed0f787591339573c8501fa57622abe9aec1b28a",
+        "src/runtime/io/tests.rs": "e5c8bde9760da554c46731fe7bf8345ea71eb5d01a70d528a1aa5f01762b5596",
+        "src/runtime/io/unix.rs": "f8cc21f18420cae201ba3faa43ea1e29d0fbf45af00c4938dcf5159c82907c76",
+        "src/runtime/io_source.rs": "f14933061cfd6267df669404eb0f4335fd350efd27e9c77253fb1c386454e4be",
+        "src/runtime/locks.rs": "8f75750e6169a01b61d964f41e02b67eaaaf458a44bcaf31f76f462c692e5e81",
+        "src/runtime/mod.rs": "9ba4411270039c07d97f98ec9db9afa3bb07f2276826d68438d2a7d7fd14bca1",
+        "src/runtime/process.rs": "bff83624e87afe5183052fc7b7884c252da9208d5ddebb75fc51be57b2b728e3",
+        "src/runtime/process_table.rs": "c68379c26a58e00bb00363e753b65609b74c79cf29007f9c3676cceb8038c4b1",
+        "src/runtime/task.rs": "43d65542067acecd464a922da04c488c1ce7482f6eb14f17319cda7670f87f04",
+        "src/runtime/test_runtime.rs": "caf7d650e483686184de1fb9ff169dad3f9f0545cad63597a5058069630156e8",
+        "src/runtime/tests.rs": "f3002873d2bf0f401dd4fd1d0af7d83722238e58f6142df4ecf06c903fe62923",
+        "src/runtime/timeout.rs": "2a57d4437da8b2db0725c5c0276e6d6bf0b52f70a511310148f4ffcba334a19a",
+        "src/runtime/tokio_rt.rs": "2fa701fb928152f6fdcf14f7e12ce9ecc86d28e937f6154b62e0f4aca3502b6c",
+        "src/runtime/traits.rs": "a12ace869fa49b5fae71144bcd213946a076f317f4319672b95a5074af854371",
+        "src/runtime/zruntime.rs": "e11f63e579ccbbf68945130ac5f9c4bbb7fbe7d7202502229833b520121d5121",
+        "src/utils.rs": "482f02e58fae185b47086dcbe540fe535ad9df15f027ae228409653c61f612c3",
+        "src/win32.rs": "6c9ebabb9fa104d93ee1f7b1ec2d4454ed69654b8f90ee58229d9df97be33805",
+        "src/wire/array.rs": "6cf33328a41840443a85a7d9b4a0630b397943405e39bba454cf2e534dc6b47f",
+        "src/wire/as_variant/deserialize.rs": "1be8743fc35356804c6e9abc8edffe1aa4d319582446a7cb0138505d6f576373",
+        "src/wire/as_variant/mod.rs": "0e9f9a6e8377ae34d8be9c435ce1b7f42438f9a539bad7ecf2fff63fb64903e1",
+        "src/wire/as_variant/property.rs": "6728a413119b71892ea4d80c54e00023f0de6263a9d640da255edc5fd2a5c1fa",
+        "src/wire/as_variant/serialize.rs": "e3519dfd2acc98bf7e738272491645f2934116b8c8648bfa87e46a6cd4d0da44",
+        "src/wire/as_variant/variant_serializer.rs": "3dc6ad9ae7cbda9db4f32fecf59504db51314804736a6354fe389e3e72d066a6",
+        "src/wire/basic.rs": "980a7b7536315c2b96d72c35f3b984db842974ad273ce06aeff7e6c445b0a3fc",
+        "src/wire/container_depths.rs": "7f9826cea03a2b819c940849b4408f20d4d17c76a63e06301483234dfb8cc295",
+        "src/wire/dbus/de.rs": "dd2424524ddfa2fc537b3305f7c3bc4fa4f4a5367a6e995753422aed14da5362",
+        "src/wire/dbus/mod.rs": "48193cf0154467486c8e9809d376a6d9e4639a6b474bbd2164eab3a7fcc80f5b",
+        "src/wire/dbus/ser.rs": "66c5fadc85ddb4e31139eb3288fc5e780ec8c9fc8022fad7100ba5ae222f0161",
+        "src/wire/de.rs": "060f62c70148d5ced52fdcd4d3237f07e4889f775196d35cff419f2c9c99d08f",
+        "src/wire/dict.rs": "626ea2703d0beefa2592290a1f2753a4d1130528cdbb87139a4f34d5074f20f0",
+        "src/wire/fd.rs": "310a8b7f26ab32fcd88a5bf4073c15c5b658383c060fddf524a4702660201081",
+        "src/wire/file_path.rs": "267cd1caeaa73bb8e556b0cbe24bc65b7c04dbb19fde7c90957d625ab22247fd",
+        "src/wire/from_variant.rs": "65d0f15127dbc0ea75fd0c54545fbb480664a46d43e3c1333288545086ec4616",
+        "src/wire/into_variant.rs": "7cf2d5e242fb1aa06094e77733887b9b02c69d274b12979c252c8285210bb495",
+        "src/wire/mod.rs": "9e9230179d12aea49fa2531b947576a86a62345c4484f2a32db7d094fcfaaeab",
+        "src/wire/object_path.rs": "e20ebbc8ce280bef57597d49aaa1cd4131a549efb2793b7178d11f9bdb95727b",
+        "src/wire/optional.rs": "c3658f893e603f65f7a2c921ffd2183bd7208db93faedde742fabb0c7b2d7ad9",
+        "src/wire/owned_variant.rs": "71379cc96d6e52e642f72b6cbc0bafdf050423e76cdf5cb37c94d4abc09e77f3",
+        "src/wire/ser.rs": "8523393836cb15d2908f985db9aca0abd80033ea55986eb6260a9ca7a3a9662e",
+        "src/wire/serialized/context.rs": "7b9c972dd02a3f19bdaea696959277495dfd8cf98261396a50882b8a3ec9b8de",
+        "src/wire/serialized/data.rs": "7efde0cf9f76dbb5d20833c9dead63a879754c426a3c10dfc21f87f217871d67",
+        "src/wire/serialized/mod.rs": "51d03e25d0ef5c4eb0fc54085506f8efeb19e24e0a5626a2a60606e293f3f002",
+        "src/wire/serialized/size.rs": "fc29d6a223c088afe215baa7f65ee82c0c4c55356b4ed54ccd6c6b114f9b8d22",
+        "src/wire/serialized/written.rs": "cc63e2bfb00311a8b1bcac475825451aef1806f16097028a19cc9396bff14ed1",
+        "src/wire/signature.rs": "31c011b50cf720b3a303d2784d09483169d8a0c13a61fb2ba2050513e5406ab5",
+        "src/wire/str.rs": "38c9a891dd836b2936289b4db61c3ba31b626b9057084e8263aaf2b6aef94ca5",
+        "src/wire/structure.rs": "a3e215770b1eaa680290bf17815050ce677081c12c8054e92e4b4a8b4a4a8f0b",
+        "src/wire/tuple.rs": "63c8006b54c24006da971bf71a9de75546de4782ab5d3a78ed2c79f5e810d97f",
+        "src/wire/type/bytes.rs": "c1135a4badfd9fa111acbbc32f547410fce62c985026d0bf45d32ee89a20db8a",
+        "src/wire/type/dynamic.rs": "350376615e6530538d73ce51320d93503729815e8cc4a6c92f85d7c3b3bcd22d",
+        "src/wire/type/libstd.rs": "4fc222cb301cfc53548d7e556e9e1f9f9068f3141780b4c0bb67150a111730f6",
+        "src/wire/type/mod.rs": "5d853117a187380efe59d99daef632c5e365743c40a28b6d85ff2914788d9668",
+        "src/wire/type/net.rs": "73b7f5859671a94de2024f4e7c897ca9d0f32aee18af2a2a451fa8423e3f90b0",
+        "src/wire/type/paths.rs": "9e59f1a3c113d8aafbe3611d1e107929a7d468ed501f93ce97ad6ee36f6bad77",
+        "src/wire/type/time.rs": "e4defc069929631dacd81cb3af164f5e805944434d3eca2296a6f31a1338592b",
+        "src/wire/type/uuid.rs": "a50ffaac2ab88bdeb7c7b97fac69a00c88560e218d6a575eb7d6eec12408742c",
+        "src/wire/utils.rs": "95eb7955d12b116afd7212cb921374be4c4f6f6ad742516436088d2f02e806b3",
+        "src/wire/variant.rs": "6a65d951bb47282c940ff0e6191b921ff08f7910372bd2266132738092a65cbd",
+        "src/zvariant.rs": "ada9b605a2961cd906b84d2fdf28d70c70b7e6a2db8e7640ccba4fa1d525643a",
+        "tests/basic.rs": "eba44ab81c2b26f92a2aeff0c30a36b36507b617a363988a7abec94901dcda1e",
+        "tests/builder_feature_additivity.rs": "4684a34f4c22e3b2c4dae043a37977701db90d8429193402f08af2ca57c0ae4b",
+        "tests/builder_message_stream.rs": "09b3880b81cee716449b27464d7cac7863d82b503d01cc030239bfb22a1d20bb",
+        "tests/connection_closed.rs": "321b371915ed4b65a4ee7072b4da13502259e5071e0e52d81e9b790a5a92554f",
+        "tests/e2e.rs": "0416c8aaff95c6f2006f4ef42df01862a52bbbb37a431a6471cd619e1cfeebe7",
+        "tests/iface_and_proxy/client.rs": "67899cab46ccdb161b7cc55b5246bf818efc27079b77255e11c38bac36a5c3a4",
+        "tests/iface_and_proxy/helpers.rs": "65dcf7d973108c141889baf7114e0c82a3aef2233b4008d3d05c5e742c8056cf",
+        "tests/iface_and_proxy/iface.rs": "89ffdc884a348ebdfaeff872168dc5d6f1e4de1ebb7474a9c3c3239b6c20cb60",
+        "tests/iface_and_proxy/mod.rs": "33ac8419b5ebbeacecd2bf044d416f78999606e19007515b99b0c6cff58c0508",
+        "tests/iface_and_proxy/types.rs": "47300c554708ea728c9a9e3d0fb4aa89e18190ea9cd4ad8cb6daf8c0a9fc66e2",
+        "tests/issue/issue_1003.rs": "63964b9ff0c0278b8a9566713919c7e39cd504e5fe7c140cc0827fc0d155d00f",
+        "tests/issue/issue_1015.rs": "144b6668846b9089291cc4c5622fea295ea982e6e6c87c84259efcab35b6d37f",
+        "tests/issue/issue_104.rs": "efc1086ced81f1c1985c2db61fb299147c36638c41ff4f131adcd5852c784632",
+        "tests/issue/issue_121.rs": "f9a58f30dc3d1f4f81a2c0d10dbb1a8126c408e0057a90528ee7a0b6f685458e",
+        "tests/issue/issue_1478.rs": "5115599468eb63146e2771a368196197b22106a7e859df8f6e9a8e6259a0aaa2",
+        "tests/issue/issue_173.rs": "d89307bd2d9c4d072e1ea882ff7d810e4400111286a9586f4409236d36d1335a",
+        "tests/issue/issue_1916.rs": "cc83f97139d99a1d6b87daae98f9784fcff4c02c9e37f244957556d739f95ea7",
+        "tests/issue/issue_260.rs": "71027c23f149a7b61d14295eeef769fd7cccf012cedd6a01ee3296115e426f20",
+        "tests/issue/issue_279.rs": "a884303b058f7f09e410a2bd107ffd6057109a8fba46003c9c6d7af7cbd9b0c6",
+        "tests/issue/issue_310.rs": "90eff26e25fd4b84d84a27ef1e24fcdc4456fb455b6c0f96d5acb150b48094fa",
+        "tests/issue/issue_356.rs": "1b4d2e11781aaa132150ebcbbf68e8f285a07edf79c2f8bff941949e6222f61c",
+        "tests/issue/issue_466.rs": "6c4b33bb4304c294389ff34640193682106cfe28455153c916d4a5f351e51a1e",
+        "tests/issue/issue_68.rs": "66683c49dd5dbbcf8cf987d78661b4acf8a146a192811ab15fc16af7b8a504af",
+        "tests/issue/issue_799.rs": "61103f6cd762e1389f08464d701b9797180caeebf81542648fece5c2833c1fea",
+        "tests/issue/issue_81.rs": "7ad39c8094e4fd47330f939086f48ee6bdc1f8c3e22b8399f1bc92a0957af656",
+        "tests/issue/issue_813.rs": "864817ccafa6064a9d1aabc9d05bf1c22ec8b6e27a6f4f1116f49104da8c6dc9",
+        "tests/issue/mod.rs": "0c2f8fb1269b5dc41374f5bd53b6303e9f15cbe17cdd081b364e17697a7d3e63",
+        "tests/issues.rs": "09e91286e5adf9a74b570d93e8866bb73b4da283f5f16fc5887c1a2e9abe7555",
+        "tests/polling_runtime/connect.rs": "8781e5e8aae6fedf376d7a2c48f569df8a80cbd3e2f5c54afd2f85765cb39d67",
+        "tests/polling_runtime/lifecycle.rs": "c89d17b25ff2527eae7d455bcb9c2fb0df74758a81f91c282e0070a1efff8bb1",
+        "tests/polling_runtime/main.rs": "97538abb19e3f238f88f69d24b4792cbf9aa336b5ce265a1ae43463769977732",
+        "tests/polling_runtime/process.rs": "5b13572fa2d0a41f42fb0c138c36803ad05010b9c095a98492c0aff4757fd9cd",
+        "tests/polling_runtime/runtime/connect.rs": "3f0ad1c93ac64f0dfa972b193dd06962f9d96120a1d3684382f7a73f923cf8ab",
+        "tests/polling_runtime/runtime/io.rs": "cdd2b9fa40a442e229468e729f39ae6e48cb9508b3bb94ce55f16c457384bbcf",
+        "tests/polling_runtime/runtime/mod.rs": "f561fd93f9606b2b5b519467b30f70ac8741e50c84e2c0e7e7844dc8652ad03f",
+        "tests/polling_runtime/runtime/process.rs": "5a90feff499de62c97815746eefe64adf35db6b78043241d5b7287dde8faf377",
+        "tests/polling_runtime/runtime/task.rs": "22a6b18aaa5243db28fc7bf2a5a3da482c5db683378738f027e63c619c60d8a0",
+        "tests/polling_runtime/runtime/timer.rs": "53fd11e531dbeccf8ae6169e1d0badacd9faf9194d08a0a149cbaa9a572ba685",
+        "tests/polling_runtime/teardown.rs": "be542795d83f528efa7d83ed2e78dff393736448d75454a6df2aff9df51246af",
+        "tests/polling_runtime/timeout.rs": "22ff41391bb0b778caa98bce0d2b8ce23279414bcd49332cb04a01bb642c257b",
+        "tests/uncached_propert.rs": "e53b0b4a4b1c2a84112ddb51db3bf14d0e43407b208f90272cde17ba1865f4de",
+        "tests/unixexec.rs": "2cbbb0be1a8a4f86c83409edf7b2740a21245ece8a8194d78eb8ea8e0d9f349d",
+        "tests/wire/array_string_value.rs": "6da8991b24b25de902a93557825ad039a187ed0384018465cf4e854971fbad23",
+        "tests/wire/array_value.rs": "18d02e5d7c2c8203ac1b37cf69c4dc2a728c8c06c98ad11ec7bc5c5e26f3b1f3",
+        "tests/wire/bitflags_value.rs": "8340d9a7f48ef25548f72874c3de294d0c79362845752f03f1c34a1af6adf4e9",
+        "tests/wire/common.rs": "625352233fd513c9393fc4193a1de51eaf2233ba34ba9bff65becfeb0b45d995",
+        "tests/wire/dbus_maybe_rejection.rs": "46665a638ed3e851034763f98efcaac94cdee2fed0daad1a743d22a95884cc3f",
+        "tests/wire/derive.rs": "dd3cab276ba0b8673247939afa82d4309f0b456132ae15c18cf15ba32c64c105",
+        "tests/wire/dict_compare.rs": "a024b33e1c0beb4aa3830e4925dc5f6a2888c993b2934e856c4cda03390a6fb7",
+        "tests/wire/dict_value.rs": "4b163cf33aa142c0969025835e51dae7cec0dac7a587cd70c93ee1e55ee39760",
+        "tests/wire/enums.rs": "eb57917b9bb019f13edffd0da39df5fa41fca2862dfc479cac4e0246158fcbd7",
+        "tests/wire/fd_value.rs": "2a6305c446c1bae9dba1549c5c71b830f45656a5cc0efe54a7f88c2d508ac79c",
+        "tests/wire/heapless_string_value.rs": "12977e1075457192eb69fcddaf2520583752493f130d0e590c16f6fd7f24fa40",
+        "tests/wire/issue/issue_1145.rs": "73732f139709ed32eed1d2fcadec4d129f8215a9b088d06af1ceb0812a0a41c6",
+        "tests/wire/issue/issue_1819.rs": "c324fda945e58f17d44042ae68dc295b72a8406e00cab663abcb65bc3165c4f3",
+        "tests/wire/issue/issue_59.rs": "e9e0295713b7807de3ddae2015e49e9258714a3e99143d0ac39f0a69860df62e",
+        "tests/wire/issue/mod.rs": "e7464ffa7ccf586f48274b76198e8bad609bef5546c179d30b573a138ff0cefb",
+        "tests/wire/main.rs": "d790c2f632f81f9922c0df4ee3af2d5f173338c3a438d6c9af042584269d3d57",
+        "tests/wire/number/bool_value.rs": "e304d606f4aa4b4ea37c936d26cbbf3441fa8fbcbd93cfed4d37b4087703cef3",
+        "tests/wire/number/f64_value.rs": "f7ed92befeddd477fa638f94e842c31eaa4c7861d5675fc1e1a282015741ffda",
+        "tests/wire/number/i16_value.rs": "aab526364c6a64c9ba51f8eb6fb9b5fa4a7a218f01b221d6b4a664059ecbb385",
+        "tests/wire/number/i32_value.rs": "757dcb1105231afc0508d5f8182bb8d35c5aa73ac095752230cd2aa384d5c687",
+        "tests/wire/number/i64_value.rs": "d816505495c60f0988cded7d049084a19828a72a79c6d8aba946bb447b0bc92a",
+        "tests/wire/number/i8_value.rs": "db3eef3aecc5553a52968996d0954d2b4134a69e90ee6f443af999872b33edcd",
+        "tests/wire/number/mod.rs": "6fcc9a2e0f054660b7756d99aefad02b35e827746e53f857aba87f1237dc1115",
+        "tests/wire/number/u16_value.rs": "e38039cbf9da9c5cb2ffb862ec37dbb63a82aabf3c9ba3cdc16477cbf95ba318",
+        "tests/wire/number/u32_value.rs": "0f006df8fb9ccf438e7cd42943c49157246406ee355d401b375824784c0f7982",
+        "tests/wire/number/u8_value.rs": "e3ce8a189724c7447aa7293d5db8ec37cf0c10c9fde88f07aed77f088c92d8f3",
+        "tests/wire/object_path_value.rs": "058fe32a57e8dae46bd24411ef7bf177e7507d81810c6bed96f0e2c69fa85531",
+        "tests/wire/recursion_limits.rs": "d1d72c7abbd38973f3479dcfd4e54edae525e5510a8a37dde51ce662af210254",
+        "tests/wire/serde_bytes.rs": "80cc7915d63ad9a312da4c928187ea7b19a8944d04cab25dcc98b79e2e8ee696",
+        "tests/wire/serialized_size.rs": "b339960522fb1c9d6b3ae985b53d18ed205940db10ad42592755934a8bb78db3",
+        "tests/wire/signature.rs": "bb7ed4a6444d5b5a03e2e249a9958829a6161953c9de874841a6620783537f20",
+        "tests/wire/str_value.rs": "64886aa41a054e2846d392d4468bf8fe5f145c0d9b52be3f8abb73cd8882d5ce",
+        "tests/wire/struct_byte_array.rs": "2b869167d03d32b3ed70da0c646e0281f51d0efb90fef9368be701b8820cac59",
+        "tests/wire/struct_ref.rs": "4f897f207913f5b82dac219ac19d578b8ef6a43f431961725e8b5a4639ea04df",
+        "tests/wire/struct_value.rs": "b7f7e2b4b7a9028ec064314593f049426dc7403483ca6a400abe58ed784014ee",
+        "tests/wire/struct_with_hashmap.rs": "516c6793e328434e4a8c47dbb30dbec39d9ccc74247d773c035b3c5e83156496",
+        "tests/wire/unit.rs": "854f63024bca460c0603c4d705d56a42575c1bffdbed1133a1a14c6396a36479",
+        "tests/wire/unit_fds.rs": "26a063902c151147c059f1a32aa92935c59c448275b9b8e416b8cf37b7cd59c4",
+        "tests/wire/value_value.rs": "5e90e8848e68929e165507777f043bd25d0534727125be83e49bbce5b5932836",
+        "tests/zvariant_compat.rs": "ef5793cc4a3856f696b629aa20b4e041693e9db14eb69c8e99f19308b4a16ddf"
+      },
+      "metadata": {
+        "cksum": "fcff5faa63a63d5b81051740f7382017f10b3440b3f401d97f0cf0b3b39c62d9",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "normal",
+            "name": "arrayvec",
+            "optional": true,
+            "req": "^0.7.4",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "async-executor",
+            "optional": false,
+            "req": "^1.11.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "async-io",
+            "optional": false,
+            "req": "^2.3.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "async-task",
+            "optional": false,
+            "req": "^4.7.1",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "async-trait",
+            "optional": true,
+            "req": "^0.1.80",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "bitflags",
+            "optional": true,
+            "req": "^2.13.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "bitflags",
+            "optional": false,
+            "req": "^2.13.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "camino",
+            "optional": true,
+            "req": "^1.1.9",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "serde"
+            ],
+            "kind": "normal",
+            "name": "chrono",
+            "optional": true,
+            "req": "^0.4.38",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "serde",
+              "serde",
+              "alloc"
+            ],
+            "kind": "dev",
+            "name": "chrono",
+            "optional": false,
+            "req": "^0.4.38",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "criterion",
+            "optional": false,
+            "package": "codspeed-criterion-compat",
+            "req": "^6.0.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "doc-comment",
+            "optional": false,
+            "req": "^0.3.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "endi",
+            "optional": false,
+            "req": "^1.1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "futures-core",
+            "optional": true,
+            "req": "^0.3.30",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "std"
+            ],
+            "kind": "dev",
+            "name": "futures-lite",
+            "optional": false,
+            "req": "^2.6.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "io",
+              "async-await-macro",
+              "async-await"
+            ],
+            "kind": "dev",
+            "name": "futures-util",
+            "optional": false,
+            "req": "^0.3.31",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "normal",
+            "name": "heapless",
+            "optional": true,
+            "req": "^0.9.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "hex",
+            "optional": true,
+            "req": "^0.4.3",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "libc",
+            "optional": true,
+            "req": "^0.2",
+            "target": "cfg(unix)"
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "libc",
+            "optional": false,
+            "req": "^0.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "ntest",
+            "optional": false,
+            "req": "^0.10.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "ordered-stream",
+            "optional": true,
+            "req": "^0.2",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "polling",
+            "optional": false,
+            "req": "^3.11.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "net",
+              "process",
+              "std"
+            ],
+            "kind": "normal",
+            "name": "rustix",
+            "optional": true,
+            "req": "^1.1.2",
+            "target": "cfg(any(unix, target_os = \"wasi\"))"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "normal",
+            "name": "serde",
+            "optional": false,
+            "req": "^1.0.200",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "serde_bytes",
+            "optional": true,
+            "req": "^0.11.14",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_json",
+            "optional": false,
+            "req": "^1.0.116",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "serde_repr",
+            "optional": true,
+            "req": "^0.1.19",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_repr",
+            "optional": false,
+            "req": "^0.1.19",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "socket2",
+            "optional": true,
+            "req": "^0.6.5",
+            "target": "cfg(not(target_os = \"wasi\"))"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "socket2",
+            "optional": false,
+            "req": "^0.6.5",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "static_assertions",
+            "optional": false,
+            "req": "^1.1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tempfile",
+            "optional": false,
+            "req": "^3.10.1",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "trace"
+            ],
+            "kind": "dev",
+            "name": "test-log",
+            "optional": false,
+            "req": "^0.2.16",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "normal",
+            "name": "time",
+            "optional": true,
+            "req": "^0.3.36",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "rt",
+              "net",
+              "time",
+              "sync"
+            ],
+            "kind": "normal",
+            "name": "tokio",
+            "optional": true,
+            "req": "^1.53.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "process"
+            ],
+            "kind": "normal",
+            "name": "tokio",
+            "optional": true,
+            "req": "^1.53.3",
+            "target": "cfg(target_os = \"macos\")"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "macros",
+              "rt-multi-thread",
+              "fs",
+              "io-util",
+              "net",
+              "sync",
+              "time",
+              "test-util"
+            ],
+            "kind": "dev",
+            "name": "tokio",
+            "optional": false,
+            "req": "^1.53.3",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "tracing",
+            "optional": true,
+            "req": "^0.1.40",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "tracing",
+            "optional": false,
+            "req": "^0.1.40",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "env-filter",
+              "fmt",
+              "ansi"
+            ],
+            "kind": "dev",
+            "name": "tracing-subscriber",
+            "optional": false,
+            "req": "^0.3.18",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "uds_windows",
+            "optional": true,
+            "req": "^1.1.0",
+            "target": "cfg(windows)"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "normal",
+            "name": "url",
+            "optional": true,
+            "req": "^2.5.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "normal",
+            "name": "uuid",
+            "optional": true,
+            "req": "^1.8.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "Win32_Foundation",
+              "Win32_Security_Authorization",
+              "Win32_System_Memory",
+              "Win32_System_WindowsProgramming",
+              "Win32_Networking",
+              "Win32_Networking_WinSock",
+              "Win32_NetworkManagement",
+              "Win32_NetworkManagement_IpHelper",
+              "Win32_System_IO",
+              "Win32_System_Threading"
+            ],
+            "kind": "normal",
+            "name": "windows-sys",
+            "optional": true,
+            "req": "^0.61",
+            "target": "cfg(windows)"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "winnow",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "zbus_macros",
+            "optional": false,
+            "req": "^6.1.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "zbus_utils",
+            "optional": false,
+            "req": "^6.0.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "serde"
+            ],
+            "kind": "normal",
+            "name": "zcheapstr",
+            "optional": false,
+            "req": "^1.0.0",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "zruntime",
+            "optional": true,
+            "req": "^0.2.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "option-as-array": []
+        },
+        "features2": {
+          "arrayvec": [
+            "dep:arrayvec"
+          ],
+          "bus-impl": [
+            "p2p"
+          ],
+          "camino": [
+            "dep:camino"
+          ],
+          "chrono": [
+            "dep:chrono"
+          ],
+          "comms": [
+            "dep:bitflags",
+            "zbus_macros/comms",
+            "dep:serde_repr",
+            "dep:futures-core",
+            "dep:hex",
+            "dep:ordered-stream",
+            "dep:zruntime",
+            "zruntime/broadcast",
+            "zruntime/lock",
+            "zruntime/unblock",
+            "dep:async-trait",
+            "dep:rustix",
+            "dep:libc",
+            "dep:windows-sys",
+            "dep:uds_windows",
+            "dep:socket2",
+            "dep:uuid"
+          ],
+          "default": [
+            "default-rt",
+            "proxy",
+            "service",
+            "object-manager",
+            "tracing"
+          ],
+          "default-rt": [
+            "comms",
+            "zruntime/runtime",
+            "zruntime/helper",
+            "zruntime/tcp",
+            "zruntime/unix",
+            "zruntime/process"
+          ],
+          "heapless": [
+            "dep:heapless"
+          ],
+          "ibus": [
+            "comms",
+            "tokio?/process"
+          ],
+          "object-manager": [
+            "service"
+          ],
+          "p2p": [
+            "comms",
+            "uuid?/v4"
+          ],
+          "proxy": [
+            "comms",
+            "zbus_macros/proxy"
+          ],
+          "serde_bytes": [
+            "dep:serde_bytes"
+          ],
+          "service": [
+            "comms",
+            "zbus_macros/service"
+          ],
+          "time": [
+            "dep:time"
+          ],
+          "tokio": [
+            "comms",
+            "dep:tokio"
+          ],
+          "tokio-multithread": [
+            "tokio",
+            "tokio/rt-multi-thread"
+          ],
+          "tracing": [
+            "dep:tracing",
+            "tokio?/tracing",
+            "zruntime?/tracing"
+          ],
+          "unixexec": [
+            "comms",
+            "tokio?/process"
+          ],
+          "url": [
+            "dep:url"
+          ],
+          "uuid": [
+            "dep:uuid"
+          ]
+        },
+        "name": "zbus",
+        "pubtime": "2026-10-23T11:04:18Z",
+        "rust_version": "1.89",
+        "v": 2,
+        "vers": "6.1.0",
+        "yanked": false
+      },
+      "published_versions": [
+        {
+          "rust_version": "1.87",
+          "version": "5.16.0",
+          "yanked": false
+        },
+        {
+          "rust_version": "1.87",
+          "version": "5.17.0",
+          "yanked": false
+        },
+        {
+          "rust_version": "1.87",
+          "version": "5.18.0",
+          "yanked": false
+        },
+        {
+          "rust_version": "1.87",
+          "version": "5.19.0",
+          "yanked": false
+        },
+        {
+          "rust_version": "1.89",
+          "version": "6.0.0",
+          "yanked": false
+        },
+        {
+          "rust_version": "1.89",
+          "version": "6.1.0",
+          "yanked": false
+        }
+      ],
+      "version": "6.1.0"
+    },
+    "zbus_macros": {
+      "checksum": "5bba6e2bfe19571dc81b3e0be9f8daec6e5422db3e2eea2e766a859553e7bd37",
+      "declared_msrv": "1.89",
+      "manifest": {
+        "dependencies": {
+          "proc-macro2": {
+            "version": "1.0.81"
+          },
+          "quote": {
+            "version": "1.0.36"
+          },
+          "syn": {
+            "features": [
+              "extra-traits",
+              "full",
+              "extra-traits",
+              "full"
+            ],
+            "version": "3.0"
+          },
+          "zbus_utils": {
+            "version": "6.0.0"
+          }
+        },
+        "dev-dependencies": {
+          "futures-util": {
+            "default-features": false,
+            "version": "0.3.31"
+          },
+          "serde": {
+            "features": [
+              "derive"
+            ],
+            "version": "1.0.200"
+          },
+          "serde_repr": {
+            "version": "0.1.19"
+          }
+        },
+        "features": {
+          "comms": [
+            "syn/fold"
+          ],
+          "default": [
+            "comms",
+            "proxy",
+            "service"
+          ],
+          "proxy": [
+            "comms"
+          ],
+          "service": [
+            "comms"
+          ]
+        },
+        "lib": {
+          "name": "zbus_macros",
+          "path": "src/lib.rs",
+          "proc-macro": true
+        },
+        "lints": {
+          "rust": {
+            "unexpected_cfgs": {
+              "check-cfg": [
+                "cfg(tokio_unstable)"
+              ],
+              "level": "warn",
+              "priority": 0
+            }
+          }
+        },
+        "package": {
+          "authors": [
+            "Marc-Andr\u00e9 Lureau <marcandre.lureau@redhat.com>",
+            "Zeeshan Ali Khan <zeeshanak@gnome.org>"
+          ],
+          "autobenches": false,
+          "autobins": false,
+          "autoexamples": false,
+          "autolib": false,
+          "autotests": false,
+          "build": false,
+          "categories": [
+            "data-structures",
+            "encoding",
+            "parsing"
+          ],
+          "description": "proc-macros for zbus",
+          "edition": "2024",
+          "keywords": [
+            "D-Bus",
+            "DBus",
+            "IPC"
+          ],
+          "license": "MIT",
+          "metadata": {
+            "docs": {
+              "rs": {
+                "all-features": true,
+                "targets": [
+                  "x86_64-unknown-linux-gnu",
+                  "x86_64-pc-windows-gnu",
+                  "x86_64-apple-darwin",
+                  "x86_64-unknown-freebsd",
+                  "x86_64-unknown-netbsd",
+                  "aarch64-linux-android"
+                ]
+              }
+            }
+          },
+          "name": "zbus_macros",
+          "readme": "README.md",
+          "repository": "https://github.com/z-galaxy/zbus/",
+          "rust-version": "1.89",
+          "version": "6.1.0"
+        },
+        "test": [
+          {
+            "name": "derives",
+            "path": "tests/derives.rs"
+          },
+          {
+            "name": "missing_docs",
+            "path": "tests/missing_docs.rs"
+          },
+          {
+            "name": "no_prelude",
+            "path": "tests/no_prelude.rs"
+          },
+          {
+            "name": "tests",
+            "path": "tests/tests.rs"
+          }
+        ]
+      },
+      "members": {
+        ".cargo_vcs_info.json": "e9e8c6f21c6d78bda80a33638698abb47414d71929c6421203b519ae3f7b07a9",
+        "CHANGELOG.md": "36791b6522743b5db3dcb9523e718c2ca6f68de7e432a9643be59f08aa8ee600",
+        "Cargo.lock": "93203842be195a78f587ae88b8bc85f23074ce179ead3bdcfd573e342d786e44",
+        "Cargo.toml": "ab56cc60ce091ad7d5d7e53ac188ed38cbe5fc01c542bcf2a529d76c285711d7",
+        "Cargo.toml.orig": "bee6e95c9e2ae8730cac9a4b58288e062ba63170d2ee8dd8c8d61e06ead6351a",
+        "LICENSE": "260e4ff3fc493695880c90774283eb1e3d018f898fabe655bbd52dd2cbd2fcad",
+        "README.md": "2cd84596f0b599a5357f72293fe0b5c47e0e6e9e3caaff6ca69cac40b30a197c",
+        "src/error.rs": "4d5b08673b4ddfc088c0248518558f93fbb46542ab034e71634cc1fa36149c8d",
+        "src/iface.rs": "ad396f6ece6ed084bc4c8b662907ca04088cedeb7f3d0698a429a58887484463",
+        "src/lib.rs": "4c3a141e5f2951e54d50ab978b17e5f9290b1176c188ce20a78ef5c46a83aefa",
+        "src/proxy.rs": "6cc3d911624a8ebfcb500d77568c5ce987b7e2cbb192b518e8a5fa92472b724c",
+        "src/utils.rs": "c41d3c01a1eae65babf15e6abbf205abc4c3fbeba4a3641d20577d0fb0e7e670",
+        "tests/derives.rs": "16bc46cffc47f139b250e4e821e1a0b0e431a55134d5cce7ada410017a6244a5",
+        "tests/missing_docs.rs": "e424c55b9f87900f1a3ed028b01f962e3414f109bcaae85df4dd5916ab1acba5",
+        "tests/no_prelude.rs": "023651318ac7765fdbad982bc0bdc37a6235287e7a7f57f242e11ca047e868f4",
+        "tests/tests.rs": "726091c0326cc7711b1707db57b4cbca2166ef920714563cc65e2cdeb2381190"
+      },
+      "metadata": {
+        "cksum": "5bba6e2bfe19571dc81b3e0be9f8daec6e5422db3e2eea2e766a859553e7bd37",
+        "deps": [
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "dev",
+            "name": "futures-util",
+            "optional": false,
+            "req": "^0.3.31",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "proc-macro2",
+            "optional": false,
+            "req": "^1.0.81",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "quote",
+            "optional": false,
+            "req": "^1.0.36",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "dev",
+            "name": "serde",
+            "optional": false,
+            "req": "^1.0.200",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "serde_repr",
+            "optional": false,
+            "req": "^0.1.19",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "extra-traits",
+              "full",
+              "extra-traits",
+              "full"
+            ],
+            "kind": "normal",
+            "name": "syn",
+            "optional": false,
+            "req": "^3.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "zbus_utils",
+            "optional": false,
+            "req": "^6.0.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "comms": [
+            "syn/fold"
+          ],
+          "default": [
+            "comms",
+            "proxy",
+            "service"
+          ],
+          "proxy": [
+            "comms"
+          ],
+          "service": [
+            "comms"
+          ]
+        },
+        "name": "zbus_macros",
+        "pubtime": "2026-10-23T11:04:02Z",
+        "rust_version": "1.89",
+        "vers": "6.1.0",
+        "yanked": false
+      },
+      "published_versions": [
+        {
+          "rust_version": "1.87",
+          "version": "5.16.0",
+          "yanked": false
+        },
+        {
+          "rust_version": "1.87",
+          "version": "5.17.0",
+          "yanked": false
+        },
+        {
+          "rust_version": "1.87",
+          "version": "5.18.0",
+          "yanked": false
+        },
+        {
+          "rust_version": "1.87",
+          "version": "5.19.0",
+          "yanked": false
+        },
+        {
+          "rust_version": "1.89",
+          "version": "6.0.0",
+          "yanked": false
+        },
+        {
+          "rust_version": "1.89",
+          "version": "6.1.0",
+          "yanked": false
+        }
+      ],
+      "version": "6.1.0"
+    },
+    "zbus_utils": {
+      "checksum": "c27a055b114bd9fc3686e90f62bd1fe612d523fc5f620bac3b1d2f42d3f6cab8",
+      "declared_msrv": "1.89",
+      "manifest": {
+        "dependencies": {
+          "proc-macro2": {
+            "version": "1.0.81"
+          },
+          "quote": {
+            "version": "1.0.36"
+          },
+          "serde": {
+            "features": [
+              "derive"
+            ],
+            "version": "1.0.200"
+          },
+          "syn": {
+            "features": [
+              "extra-traits",
+              "full"
+            ],
+            "version": "3.0"
+          },
+          "winnow": {
+            "version": "1.0"
+          }
+        },
+        "features": {
+          "default": [],
+          "gvariant": []
+        },
+        "lib": {
+          "name": "zbus_utils",
+          "path": "src/lib.rs"
+        },
+        "lints": {
+          "rust": {
+            "unexpected_cfgs": {
+              "check-cfg": [
+                "cfg(tokio_unstable)"
+              ],
+              "level": "warn",
+              "priority": 0
+            }
+          }
+        },
+        "package": {
+          "authors": [
+            "Zeeshan Ali Khan <zeeshanak@gnome.org>",
+            "turbocooler <turbocooler@cocaine.ninja>"
+          ],
+          "autobenches": false,
+          "autobins": false,
+          "autoexamples": false,
+          "autolib": false,
+          "autotests": false,
+          "build": false,
+          "categories": [
+            "data-structures",
+            "encoding",
+            "parsing"
+          ],
+          "description": "Various utilities used by the zbus and zgvariant crates.",
+          "edition": "2024",
+          "keywords": [
+            "D-Bus",
+            "DBus",
+            "IPC",
+            "GVariant"
+          ],
+          "license": "MIT",
+          "metadata": {
+            "docs": {
+              "rs": {
+                "all-features": true,
+                "targets": [
+                  "x86_64-unknown-linux-gnu",
+                  "x86_64-pc-windows-gnu",
+                  "x86_64-apple-darwin",
+                  "x86_64-unknown-freebsd",
+                  "x86_64-unknown-netbsd",
+                  "aarch64-linux-android"
+                ]
+              }
+            }
+          },
+          "name": "zbus_utils",
+          "readme": "README.md",
+          "repository": "https://github.com/z-galaxy/zbus/",
+          "rust-version": "1.89",
+          "version": "6.0.0"
+        }
+      },
+      "members": {
+        ".cargo_vcs_info.json": "4b11bd2a4a0c674d3b26983e87fba1632296c54c666edd197a2dfb0394c3acac",
+        "CHANGELOG.md": "46f71a71df7e6aa3de21659245ef5179b21c228840428d4d2a83a57ac1e882b8",
+        "Cargo.lock": "e7fa48c540796b18500ce847749e7f8172ff14d14bf14e52bf407963e2e73f80",
+        "Cargo.toml": "c20edf98c055734a9c82a5bc6077d472347eaff94e2d9ddfbc3ca3106cd6d353",
+        "Cargo.toml.orig": "2dec0afe37e2a76decf84596028d9515b903d3bb2ec67cf252ed764aa8d7656f",
+        "LICENSE": "260e4ff3fc493695880c90774283eb1e3d018f898fabe655bbd52dd2cbd2fcad",
+        "README.md": "8596fd9d05c153e4943bd58ce27ab88096473a519d3502f463ff8be8ff2ad3a9",
+        "src/case.rs": "26f782e1c57ba1dc4b87bfd6648b6b0be56fc1a92b054ba2f3dbc65490600bbd",
+        "src/derive/attrs.rs": "882609857d78ac2019ddf882e3b2cd1207a3021a9ef3b2719d1796e2f8da1cce",
+        "src/derive/dict.rs": "f5501e7e8af5dace2b35636e5b16037916ffabbc93069b77a69dcbaed5a4dc24",
+        "src/derive/mod.rs": "4810ed550ddd31b8e3b5e8e4a5f3341cc1cf8e3b19f2652563b24e86040ae360",
+        "src/derive/signature.rs": "314c2983e814050b122e0b326fa7291fc249e1f67f17ca507c367698a4a70a3c",
+        "src/derive/type.rs": "86a6f7c8d7bd9e5aa91cdcee2b4cdf79c52daf98d50af526492f887692ecac05",
+        "src/derive/variant.rs": "b2850bbcf73c8dc79a89f0d1c81e9e610589f394d21aef0970a976dcfa572449",
+        "src/lib.rs": "c7475ccc1fbcb6d42573e5fe30f27654031d5254bc0e46e088fdba6bc030f492",
+        "src/macros.rs": "5f8730c5f7d48776eef7bfed5e033b9985340ebdaaeb03dbdffcfe1b014cff9b",
+        "src/names.rs": "ba94eb73ee905c14a5823b96a3de7c1d93ad54163df6c35812368a59db167987",
+        "src/object_path.rs": "df02ec4b9f5e204da525a3cb12c164f07c0425480068a218ce89fdd9afdf5a45",
+        "src/signature/child.rs": "0ce0226739dc55284809694180051b97f8b1fa24b073ac88cb9e8617b549a1dd",
+        "src/signature/error.rs": "a406075d747c9ace8b1df380531fba11a96bd548c7177d43bac43986c8582663",
+        "src/signature/fields.rs": "500e070a3300409f1caba4118f458f731cb03418ed08916cd0b7b0ecbd29fe98",
+        "src/signature/mod.rs": "74f7f1a46cb31d2fa3722f960b69b7d55fd2361316c6d32d82c9d8a136a10bb1",
+        "src/signature/tests.rs": "fa473710f322bff84fd51a0567544857ffb0250dad53333fac49fc3e603fefaf"
+      },
+      "metadata": {
+        "cksum": "c27a055b114bd9fc3686e90f62bd1fe612d523fc5f620bac3b1d2f42d3f6cab8",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "proc-macro2",
+            "optional": false,
+            "req": "^1.0.81",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "quote",
+            "optional": false,
+            "req": "^1.0.36",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "derive"
+            ],
+            "kind": "normal",
+            "name": "serde",
+            "optional": false,
+            "req": "^1.0.200",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [
+              "extra-traits",
+              "full"
+            ],
+            "kind": "normal",
+            "name": "syn",
+            "optional": false,
+            "req": "^3.0",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "winnow",
+            "optional": false,
+            "req": "^1.0",
+            "target": null
+          }
+        ],
+        "features": {
+          "default": [],
+          "gvariant": []
+        },
+        "name": "zbus_utils",
+        "pubtime": "2026-10-16T13:19:41Z",
+        "rust_version": "1.89",
+        "vers": "6.0.0",
+        "yanked": false
+      },
+      "published_versions": [
+        {
+          "rust_version": "1.87",
+          "version": "1.0.0",
+          "yanked": false
+        },
+        {
+          "rust_version": "1.89",
+          "version": "6.0.0",
+          "yanked": false
+        }
+      ],
+      "version": "6.0.0"
+    },
+    "zruntime": {
+      "checksum": "467fd80a2014d186319f14b81aef027aa466712f355c90158a0e6b39de60726d",
+      "declared_msrv": "1.88",
+      "manifest": {
+        "bench": [
+          {
+            "harness": false,
+            "name": "broadcast",
+            "path": "benches/broadcast.rs",
+            "required-features": [
+              "broadcast"
+            ]
+          },
+          {
+            "harness": false,
+            "name": "connection",
+            "path": "benches/connection.rs",
+            "required-features": [
+              "helper",
+              "lock"
+            ]
+          },
+          {
+            "harness": false,
+            "name": "contention",
+            "path": "benches/contention.rs",
+            "required-features": [
+              "mpmc",
+              "lock",
+              "runtime"
+            ]
+          },
+          {
+            "harness": false,
+            "name": "event",
+            "path": "benches/event.rs",
+            "required-features": [
+              "lock"
+            ]
+          },
+          {
+            "harness": false,
+            "name": "mpmc",
+            "path": "benches/mpmc.rs",
+            "required-features": [
+              "mpmc"
+            ]
+          },
+          {
+            "harness": false,
+            "name": "runtime",
+            "path": "benches/runtime.rs",
+            "required-features": [
+              "helper"
+            ]
+          },
+          {
+            "harness": false,
+            "name": "spawn",
+            "path": "benches/spawn.rs",
+            "required-features": [
+              "helper"
+            ]
+          },
+          {
+            "harness": false,
+            "name": "unblock",
+            "path": "benches/unblock.rs",
+            "required-features": [
+              "unblock"
+            ]
+          }
+        ],
+        "dependencies": {
+          "futures-core": {
+            "default-features": false,
+            "optional": true,
+            "version": "0.3.34"
+          },
+          "futures-io": {
+            "optional": true,
+            "version": "0.3.34"
+          },
+          "tracing": {
+            "default-features": false,
+            "features": [
+              "std"
+            ],
+            "optional": true,
+            "version": "0.1.44"
+          }
+        },
+        "dev-dependencies": {
+          "criterion": {
+            "features": [
+              "async"
+            ],
+            "package": "codspeed-criterion-compat",
+            "version": "5.0.2"
+          },
+          "futures": {
+            "default-features": false,
+            "features": [
+              "std",
+              "executor"
+            ],
+            "version": "0.3.34"
+          },
+          "ntest": {
+            "version": "0.9.5"
+          },
+          "socket2": {
+            "features": [
+              "all"
+            ],
+            "version": "0.6.5"
+          }
+        },
+        "features": {
+          "broadcast": [
+            "event",
+            "dep:futures-core"
+          ],
+          "default": [
+            "runtime",
+            "event",
+            "tracing"
+          ],
+          "event": [],
+          "fs": [
+            "dep:futures-io",
+            "dep:futures-core"
+          ],
+          "helper": [
+            "runtime"
+          ],
+          "lock": [
+            "event"
+          ],
+          "mpmc": [
+            "event",
+            "dep:futures-core"
+          ],
+          "process": [
+            "runtime",
+            "unblock",
+            "rustix?/process",
+            "windows-sys?/Win32_Foundation",
+            "windows-sys?/Win32_System_Threading"
+          ],
+          "runtime": [
+            "dep:rustix",
+            "dep:windows-sys",
+            "dep:futures-core",
+            "dep:futures-io"
+          ],
+          "tcp": [
+            "runtime",
+            "dep:socket2",
+            "rustix?/net"
+          ],
+          "tracing": [
+            "dep:tracing"
+          ],
+          "udp": [
+            "runtime"
+          ],
+          "unblock": [
+            "dep:futures-io",
+            "dep:futures-core"
+          ],
+          "unix": [
+            "runtime",
+            "dep:socket2",
+            "rustix?/net"
+          ]
+        },
+        "lib": {
+          "bench": false,
+          "name": "zruntime",
+          "path": "src/lib.rs"
+        },
+        "lints": {
+          "rust": {
+            "unexpected_cfgs": {
+              "check-cfg": [
+                "cfg(zruntime_poll)",
+                "cfg(zruntime_kqueue)"
+              ],
+              "level": "warn",
+              "priority": 0
+            }
+          }
+        },
+        "package": {
+          "authors": [
+            "Zeeshan Ali Khan <zeeshanak@gnome.org>"
+          ],
+          "autobenches": false,
+          "autobins": false,
+          "autoexamples": false,
+          "autolib": false,
+          "autotests": false,
+          "build": false,
+          "categories": [
+            "asynchronous"
+          ],
+          "description": "A simple single-threaded Rust async runtime",
+          "edition": "2024",
+          "keywords": [
+            "async",
+            "runtime",
+            "reactor",
+            "single-threaded"
+          ],
+          "license": "MIT",
+          "metadata": {
+            "docs": {
+              "rs": {
+                "all-features": true,
+                "targets": [
+                  "x86_64-unknown-linux-gnu",
+                  "x86_64-pc-windows-gnu",
+                  "x86_64-apple-darwin",
+                  "wasm32-wasip2"
+                ]
+              }
+            }
+          },
+          "name": "zruntime",
+          "readme": "README.md",
+          "repository": "https://github.com/z-galaxy/zruntime",
+          "rust-version": "1.88",
+          "version": "0.2.0"
+        },
+        "profile": {
+          "bench": {
+            "codegen-units": 1,
+            "debug": 2,
+            "strip": "none"
+          }
+        },
+        "target": {
+          "cfg(any(unix, target_os = \"wasi\"))": {
+            "dependencies": {
+              "rustix": {
+                "default-features": false,
+                "features": [
+                  "event",
+                  "pipe",
+                  "std",
+                  "time"
+                ],
+                "optional": true,
+                "version": "1.1.5"
+              }
+            }
+          },
+          "cfg(not(all(target_os = \"wasi\", target_env = \"p1\")))": {
+            "dependencies": {
+              "socket2": {
+                "optional": true,
+                "version": "0.6.5"
+              }
+            }
+          },
+          "cfg(target_os = \"linux\")": {
+            "dev-dependencies": {
+              "rustix": {
+                "features": [
+                  "thread"
+                ],
+                "version": "1.1.5"
+              }
+            }
+          },
+          "cfg(windows)": {
+            "dependencies": {
+              "windows-sys": {
+                "features": [
+                  "Win32_Networking_WinSock"
+                ],
+                "optional": true,
+                "version": "0.61.2"
+              }
+            },
+            "dev-dependencies": {
+              "uds_windows": {
+                "version": "1.2.1"
+              }
+            }
+          }
+        },
+        "test": [
+          {
+            "name": "process",
+            "path": "tests/process.rs"
+          }
+        ]
+      },
+      "members": {
+        ".cargo_vcs_info.json": "f4410c6bd1fd1156aaa148bd59f844cc1efb0a923edd1b1a4e8d40a076fc2d05",
+        ".codespellrc": "5db3af36e2f3c61d05c543a51b87dfe024eafae0fb6faa3164908e859d1bee96",
+        ".commitlintrc.mjs": "6c6aecc7b1264601c08e7a29b1db7d458fe523112179834063773596c50549a0",
+        ".editorconfig": "2629901b63b9638f7f4697621b5b3bc9aa2078bdd82ed8bd8f32230e965a7c04",
+        ".githooks/pre-commit": "ee1e27b73482a643c3fa58d9dad8f032abe0b94c63ee892c731b43466e0ead68",
+        ".githooks/pre-push": "c1c76198909d2d80d94e6a4382616d622d2ab85845fee12525d7fa1b839a2fab",
+        ".githooks/util.sh": "eb1fab73bfa1a6ec0add3bf7198e88ed0e9f7394c09b934f1264c310d298680b",
+        ".github/FUNDING.yml": "897a4c1857e872f4d6229a87c1c6d66c2d62533c059c33e5897195e6cc4f7a9c",
+        ".github/pull_request_template.md": "c8687066d463353f75e21a0257e2990f1d3181e56a0296d7a59b5c8f0357a548",
+        ".github/renovate.json": "de45e025e249710854c10bcff0658024aee0e577a590201f1526d6dce30251cf",
+        ".github/workflows/bench.yml": "4f8b963831a8289fe51ed82b4c0017721c4f12b97313d38e83bbeace475ea104",
+        ".github/workflows/commitlint.yml": "60bca2296a32f784c93b77297572b73f5b153396ef7bf389411826a0ec44c752",
+        ".github/workflows/rust.yml": "8aaca2d44389c94850f1fd7317b0e504603f21c6ff3688e31db01b4d5af895ab",
+        ".gitignore": "ed994cef755adda315a06c635eca9c652254457186da8724a4422742b73909ec",
+        ".rustfmt.toml": "2550dec5c78b0e01b7ee0abd685fbcc3daf63b1900ee246b96ad06da13117ac6",
+        "AGENTS.md": "475afa2e82850cc82e2b07730a0fe452279c61439c699aa8e9e065aa0959c4fc",
+        "CHANGELOG.md": "19f75ca402abda06f41f8c317d353d53f0f45c831c797654f2f664075906458d",
+        "CLAUDE.md": "475afa2e82850cc82e2b07730a0fe452279c61439c699aa8e9e065aa0959c4fc",
+        "CONTRIBUTING.md": "0c35505085fe01be0d43815a0af5e678c7a5189e5b1a4d091f073e13018ad64f",
+        "Cargo.lock": "32a637442ef8a4db55e57be083c58b5a9400de6e1311de1bec4c7857850cc17b",
+        "Cargo.toml": "4d06dfd77b184273cb48b89ea54fffd1e22d75e5b238688309c857f53ee215f6",
+        "Cargo.toml.orig": "30de8a39ac63e8a5e0b786a8d2542f801d0b3ecd4eaf8d580b4f169f91a5e929",
+        "LICENSE": "ec2e030f7cd75edbe3e981d10b458a100a90a6c6056334538ab933f8db71654e",
+        "README.md": "3b2c351bbe242e6867411fd61c052b9916a58828caae6b79080986a613dc55bc",
+        "SECURITY.md": "209bc8e6e307cdaab2b85bb36d085d2c629a2f0e452e7c6e64d82294185bb8d3",
+        "benches/broadcast.rs": "34fb3d48d63f03446c526ffa57dc74738557c184c48a6ba1aab84377f4c0d668",
+        "benches/common/channel.rs": "4dc53c4ea9ea0080a4d8ef634ea39ce241a112ea54b1023789f1d23d7ad4b33f",
+        "benches/common/cpus.rs": "933ce82dbc6c10520b1a16b79259dc565757a7ad61028293279113307f1830e2",
+        "benches/common/crew.rs": "7c948b3452e343bf203e46643ae402d9f4ef6ac8da10daeb2c670ef34fbe59d8",
+        "benches/common/executor.rs": "ea4964ebcdc57ac6b2933c9d1838854e420831f9685e9e00d190cc656ef2c779",
+        "benches/common/rounds.rs": "b6b269bb4f0a803441feb625c8819f6dd668f7fca606398accaa656aad1b5f1e",
+        "benches/connection.rs": "fa44b635f0e3ea87adec52bac57add2b637057a7d8790e211b587c0d7c8444ef",
+        "benches/contention.rs": "ef202557c409935c9fd4bfaafaedb5986d291be18eb4756a7bc3497093e135c2",
+        "benches/event.rs": "1a4438c463f4ff9a532457c2b067b94072347a3f4cdb299f93defe8eefa431e9",
+        "benches/mpmc.rs": "c2f36973ae14a4afab765b0a8a9339b35b1e8fc347af3330275261eb8713e1f8",
+        "benches/runtime.rs": "6580fc973fd0adae243763a8f4b0561eecd2e82474522065b9131e4e3a5b4c0f",
+        "benches/spawn.rs": "69bcbff84e0ffdf042276e2776bf870d1e3cc772a8aff48163db9b2f70b0c602",
+        "benches/unblock.rs": "5e67f03adff2b36b7aa55aed2eb072aab50fd8308f11fb5300fda428a172515f",
+        "data/logo.png": "0aca94d193db5d0c8028b50f85f530d295b2ad9502c34dceba3650629b513102",
+        "data/logo.svg": "bdbb25a05815f03ab417b717929e312677282e1140de4442554bc23ddffdeab5",
+        "release-plz.toml": "ca78374225d396e2db87fd627db7dc801b63ab2c4767ae20cba4070c1308e6ef",
+        "src/async_io.rs": "b239145b5ff6cbcf69e3ec5153388101a2ec0a478ee3caa3dbd9d9ccd6f2cbe7",
+        "src/broadcast.rs": "c0d04452c490b32e2d0447169daa67e674e09263777af843b1d4d474d5df3751",
+        "src/coop.rs": "2a584eefb9d97074bdcbc6a8054b22b403e39f24c16b2dc2b282d88fb3a3d5d0",
+        "src/driver.rs": "8adf9e938adcff3017aeb7250da1ac7fef3dae3cb458b0102e940ef9ad8bfd35",
+        "src/event-only.md": "984f55d785b1b1a6bda74825b0877430d2b7bd5e8a8ad49dac63dc06fa65894c",
+        "src/event.rs": "d5ce31e4fe38aa2f902fcb7f226c583e29c4ff8f120c73e2d1ca98fea173c2e7",
+        "src/fs/dir.rs": "f5dbe785f4a9522f275ac0614ffefd493dba3bfee233145efea651a222a29194",
+        "src/fs/file.rs": "09af0afdc4dd9c6a2e6a94e25abda4f6d1525b30b0c9d8111657aa2d2e077972",
+        "src/fs/mod.rs": "7fc380743b1debbeba15e853999a320eed5fe1417cb01a3b1600a5e85b7cc17e",
+        "src/fs/options.rs": "46d4fc7ee2abde8ff94a2956cd50088c12360f575f5c6be20da55903b4317680",
+        "src/fs/unix.rs": "377fe497c201ba93c470f4a83db5a285c446e9681160e9234a4d47b4279aad72",
+        "src/fs/windows.rs": "0c7c53ca35404bdf8aa94b790aee25ca37b6f2fea95aaebd8f3a81bc46c6cdef",
+        "src/lib.rs": "2d3fc89ba90d62c1650a196458db2d9ba9ed01fcb601524c411919de1d234c99",
+        "src/lock/barrier.rs": "92880f0a70b06227a9c04ca2888aa59b2679b080b5350f97a127a715d62111ce",
+        "src/lock/mod.rs": "6faf1cd000ebdcf3118b2430d3e29e49b8a0d21bda15900c32033aa507800806",
+        "src/lock/mutex.rs": "b4e279755f27c65e4095632169207ee5612a26be59df3eda8eb2bb1cd547be56",
+        "src/lock/once_cell.rs": "5b33f4f92afc10211446eff79359a95d9e6dcb748f0c4dee14c8c36bcf8cf350",
+        "src/lock/rwlock.rs": "e7115852acbb0d31947e42f817bf9b00b0915935d165768a42a0cf73bb42cc18",
+        "src/lock/semaphore.rs": "fa69153da77d227bacec7f9e9f379211d6f4edc69f633c7bed873f100ff4a864",
+        "src/log.rs": "c668a34f03c0daf02b3221e83a4871171629b7f9cdb41e4b8ade9b25987e6c0c",
+        "src/mode.rs": "0dcb702f4e2ed75f1a9642b8499e6687ffe097b37eed9e510bd626ad83dcd386",
+        "src/mpmc.rs": "d7a3f817759bb75c0ec0e849d3ce295f5f3a200dae1d737f641970bb39afcd04",
+        "src/net/connect.rs": "98192f5797b95bd6ac28ddb80590982bee39650c35e4d0b9a595c7ba54c210dd",
+        "src/net/mod.rs": "743176a4b36a33dab84f73860f9a4df604264abdb41919db3f295c75f180bea5",
+        "src/net/tcp.rs": "d292049fcf64eb605816db4205d984bd8afa5c0b4c502849b0bc3d55381a7b7b",
+        "src/net/udp.rs": "ab4a188e53a769c0984460a19ff0ea47f4db27007bbd4b2f347ebdd3a56f9f9d",
+        "src/net/unix.rs": "013f7da444eb9e854869d77dca105b64862ba395162ceb80825c61990dee39b5",
+        "src/poll/epoll.rs": "e8149d78e19c563597317c9e1b30da2ac8be1535fb44252aac0acdb7dd53d2b1",
+        "src/poll/generic.rs": "3f2aae7c86c1d58437d0db1225eec11e0e8081c83cd24f2e2f84dd40cf82f728",
+        "src/poll/kqueue.rs": "ccdbcf7c075185d94f9c7d2ec47df1bd996ea83f135c5e6d19a713d3fc4bf713",
+        "src/poll/list.rs": "dbf8a5741d884538e3aa9bcd76c10dde289f48ee281e85c79fe3d6e67390e671",
+        "src/poll/mod.rs": "dedabdf2bb5e432cbe8032aaa7d33ca1a2ca83cdf61f5c07e9c7129f10a4cdee",
+        "src/poll/pipe.rs": "257bbdbf1426ead0cf296c102a70e8086992ebef3d65af04903fb1e41c889531",
+        "src/poll/select.rs": "3c03abe02089d968ccbcab9ddd54d9ffa3c2ad320a039c1e5e804c2dd45e4952",
+        "src/poll/windows.rs": "4da64eccd738645e4f14790d9378aa6a801e5916229949ae256132a3c9cf5ef8",
+        "src/process/exit/kqueue.rs": "f8aec02da08bbf60463fc9484d1314ba7107deb12c34f6d11777ca744fcb3af2",
+        "src/process/exit/mod.rs": "705ef2628634da71a7e36523dba308f782a71f15ac6e0574722acd2b1129c632",
+        "src/process/exit/pool.rs": "9b39a0c1a64900b689b01dd541ad5f3f7864cbf653498ba54abdde3e21615b73",
+        "src/process/mod.rs": "162c303e6eae439dac17d444a5a47ecdd16078ab67b9eac53c73c0bdb8696b7b",
+        "src/process/stdio.rs": "ddf96967c8e1054f92081590d18ce495250d66c847c6cd4abc6f0b2144f962a8",
+        "src/reactor.rs": "bc07e77f65b4ea3509abe0886c60a566e89271b0762d14957cc8a6892939671c",
+        "src/runtime.rs": "9b6db72bd8606d66ef5596a4e92396ab295fb3834eb98cc174f72f1f3148239b",
+        "src/scheduler.rs": "24be9fc93c7eec33b78f4f734742983663828d292eeac5446b431c4c0ab2fc84",
+        "src/tests/async_io.rs": "030c3d1fa75fd9f383baeb74b5120c5b4856eb8f1130f3cc4b329de98170cb10",
+        "src/tests/broadcast.rs": "b93bc07a162aef64cc6b9cb99c4f8e7995c4ef254d11e2760c290a769bdad082",
+        "src/tests/coop.rs": "f6cadd3f3776af59d2d4c0615234e3f95c09391695fc81af5de6e53295be26fd",
+        "src/tests/core.rs": "0c0d09da0420a17c4092f3947d401a710e9d8a76975d56f8effbfb9a3eacabbf",
+        "src/tests/event.rs": "31e9d3cbd083402ebfb16956d4921aa9a391f7406330d4dd4346b02b71a9184c",
+        "src/tests/fs.rs": "20910b728c89e161ca5a7e1e380f5755e5441741fe473502bea56ffc53f2aa7c",
+        "src/tests/helper.rs": "b9b802acaed7a9e61b06f6fbe9d46cfaabb5eace98485f600777ae4b8b208ca5",
+        "src/tests/lock/barrier.rs": "affa1dd9b519c7197e55f7fcd243b7b3dda15f7e17a16507a02d905f3d5779b1",
+        "src/tests/lock/mod.rs": "513078841bef6b6bb5bf4f6fe9335e6b95bd564b6e25f620dcfe9546902d88a6",
+        "src/tests/lock/once_cell.rs": "4fcde913f10cf8c0b560e4b3c6e7feec5418d3bc50ca65d7188a2087227c83a5",
+        "src/tests/lock/semaphore.rs": "2a6a888b3814ea52b09b6b2253cd8a7a0f45960a33e51c8214ca6a299b51bccd",
+        "src/tests/mod.rs": "b09bdc1de24fc161636adc238ed94bee222585feb3f13b45202369903b7ca0a3",
+        "src/tests/mpmc.rs": "b6ecb6d156245d1a0aaa3b8c835e21540dc5d3b5fdda613f6c23b4644ff648c3",
+        "src/tests/net/mod.rs": "65d703808591b404eab4488f1efc9fe6a9e566dbeff9acf56c483b5ee36e8b87",
+        "src/tests/net/tcp.rs": "7152807a683aa98ab1f103bb8a61f5b00a07736bc362fffa53ca585a47872203",
+        "src/tests/net/udp.rs": "f90805a5f94be084f983e4b538f146dee75560d9365adaef29eefe72c6d826bd",
+        "src/tests/net/unix.rs": "a5f5e08a408d874c62862e4b8266c5abae5777bd557dd5a38fd8e3ca74673348",
+        "src/tests/process.rs": "57cc99f280d53d5c28f6aa20ab041731511e386807c93a846160d9d4ecf4e375",
+        "src/tests/unblock/io.rs": "6855315555dc45a4d57ab906c39b9bc3fbf906adf58019f69ce13b9fb7bd6ad5",
+        "src/tests/unblock/mod.rs": "2db51b40b944faeeaefabcfb84d7288fee30e75873b5f7c39333b7a089e9ba87",
+        "src/tests/unblock/pool.rs": "216c430edd003edbdb36aabb99ab1836105cdb66fa8368d8bdb73efd28ea63f8",
+        "src/time.rs": "49e325c85737cad03426116443c407c39d937de10e177c5fd5a935ee7be400ed",
+        "src/unblock/io.rs": "13cf9d2e00414f495bc9677d764cc45c7d9ac4afb5d51cf75be8c65651975052",
+        "src/unblock/mod.rs": "8b44951c31bcd70858cd78eefad1be3ae4b2c6e506dd7e3a8858d665a54a641e",
+        "src/unblock/pool.rs": "b48af051ab918833fa0292e612756606cf01fa5b192ccc969af778238b8fefdb",
+        "tests/process.rs": "11b09c32668aa3306d2347430af5eb0029c094aab22097ce7d03de9c97e73514"
+      },
+      "metadata": {
+        "cksum": "467fd80a2014d186319f14b81aef027aa466712f355c90158a0e6b39de60726d",
+        "deps": [
+          {
+            "default_features": true,
+            "features": [
+              "async"
+            ],
+            "kind": "dev",
+            "name": "criterion",
+            "optional": false,
+            "package": "codspeed-criterion-compat",
+            "req": "^5.0.2",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "std",
+              "executor"
+            ],
+            "kind": "dev",
+            "name": "futures",
+            "optional": false,
+            "req": "^0.3.34",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [],
+            "kind": "normal",
+            "name": "futures-core",
+            "optional": true,
+            "req": "^0.3.34",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "futures-io",
+            "optional": true,
+            "req": "^0.3.34",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "ntest",
+            "optional": false,
+            "req": "^0.9.5",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "event",
+              "pipe",
+              "std",
+              "time"
+            ],
+            "kind": "normal",
+            "name": "rustix",
+            "optional": true,
+            "req": "^1.1.5",
+            "target": "cfg(any(unix, target_os = \"wasi\"))"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "thread"
+            ],
+            "kind": "dev",
+            "name": "rustix",
+            "optional": false,
+            "req": "^1.1.5",
+            "target": "cfg(target_os = \"linux\")"
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "normal",
+            "name": "socket2",
+            "optional": true,
+            "req": "^0.6.5",
+            "target": "cfg(not(all(target_os = \"wasi\", target_env = \"p1\")))"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "all"
+            ],
+            "kind": "dev",
+            "name": "socket2",
+            "optional": false,
+            "req": "^0.6.5",
+            "target": null
+          },
+          {
+            "default_features": false,
+            "features": [
+              "std"
+            ],
+            "kind": "normal",
+            "name": "tracing",
+            "optional": true,
+            "req": "^0.1.44",
+            "target": null
+          },
+          {
+            "default_features": true,
+            "features": [],
+            "kind": "dev",
+            "name": "uds_windows",
+            "optional": false,
+            "req": "^1.2.1",
+            "target": "cfg(windows)"
+          },
+          {
+            "default_features": true,
+            "features": [
+              "Win32_Networking_WinSock"
+            ],
+            "kind": "normal",
+            "name": "windows-sys",
+            "optional": true,
+            "req": "^0.61.2",
+            "target": "cfg(windows)"
+          }
+        ],
+        "features": {
+          "event": [],
+          "lock": [
+            "event"
+          ]
+        },
+        "features2": {
+          "broadcast": [
+            "event",
+            "dep:futures-core"
+          ],
+          "default": [
+            "runtime",
+            "event",
+            "tracing"
+          ],
+          "fs": [
+            "dep:futures-io",
+            "dep:futures-core"
+          ],
+          "helper": [
+            "runtime"
+          ],
+          "mpmc": [
+            "event",
+            "dep:futures-core"
+          ],
+          "process": [
+            "runtime",
+            "unblock",
+            "rustix?/process",
+            "windows-sys?/Win32_Foundation",
+            "windows-sys?/Win32_System_Threading"
+          ],
+          "runtime": [
+            "dep:rustix",
+            "dep:windows-sys",
+            "dep:futures-core",
+            "dep:futures-io"
+          ],
+          "tcp": [
+            "runtime",
+            "dep:socket2",
+            "rustix?/net"
+          ],
+          "tracing": [
+            "dep:tracing"
+          ],
+          "udp": [
+            "runtime"
+          ],
+          "unblock": [
+            "dep:futures-io",
+            "dep:futures-core"
+          ],
+          "unix": [
+            "runtime",
+            "dep:socket2",
+            "rustix?/net"
+          ]
+        },
+        "name": "zruntime",
+        "pubtime": "2026-10-14T22:07:11Z",
+        "rust_version": "1.88",
+        "v": 2,
+        "vers": "0.2.0",
+        "yanked": false
+      },
+      "published_versions": [
+        {
+          "rust_version": "1.88",
+          "version": "0.1.0",
+          "yanked": false
+        },
+        {
+          "rust_version": "1.88",
+          "version": "0.2.0",
+          "yanked": false
+        },
+        {
+          "rust_version": "1.88",
+          "version": "0.2.1",
+          "yanked": false
+        }
+      ],
+      "version": "0.2.0"
+    }
+  },
+  "release_admitted": false,
+  "source_executed": false
+}

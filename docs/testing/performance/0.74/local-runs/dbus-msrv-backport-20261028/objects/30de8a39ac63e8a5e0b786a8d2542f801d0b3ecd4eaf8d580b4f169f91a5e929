@@ -1,0 +1,167 @@
+[package]
+name = "zruntime"
+version = "0.2.0"
+edition = "2024"
+rust-version = "1.88"
+license = "MIT"
+authors = ["Zeeshan Ali Khan <zeeshanak@gnome.org>"]
+description = "A simple single-threaded Rust async runtime"
+repository = "https://github.com/z-galaxy/zruntime"
+keywords = ["async", "runtime", "reactor", "single-threaded"]
+categories = ["asynchronous"]
+readme = "README.md"
+
+[package.metadata.docs.rs]
+all-features = true
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "x86_64-pc-windows-gnu",
+    "x86_64-apple-darwin",
+    "wasm32-wasip2",
+]
+
+[features]
+default = ["runtime", "event", "tracing"]
+# The runtime: `Runtime`, `LocalRuntime`, `SharedRuntime`, tasks, timers, I/O registrations and
+# `AsyncIo`, the async counterpart of a non-blocking I/O handle; `futures-core` gives an interval
+# timer its `Stream` impl, and `futures-io` gives `AsyncIo` its `AsyncRead` and `AsyncWrite` impls.
+runtime = ["dep:rustix", "dep:windows-sys", "dep:futures-core", "dep:futures-io"]
+# `Event` and `EventListener`, which need no runtime.
+event = []
+# Logs through `tracing`; a build without it emits no log events.
+tracing = ["dep:tracing"]
+# Per-thread shared runtimes: `SharedRuntime::current()`, the free `block_on`, and the helper
+# thread that keeps their work moving in between `block_on` calls.
+helper = ["runtime"]
+# The `broadcast` module: an async multi-producer multi-consumer broadcast channel.
+broadcast = ["event", "dep:futures-core"]
+# The `mpmc` module: an async multi-producer multi-consumer channel, each of whose messages one
+# receiver gets.
+mpmc = ["event", "dep:futures-core"]
+# The `lock` module: an async mutex, readers-writer lock and semaphore, a barrier, and a cell that
+# is set once, which need no runtime.
+lock = ["event"]
+# `unblock`: blocking work run on a pool of threads, out of the way of the async tasks, and
+# `Unblock`, which gives a blocking I/O handle the async I/O traits through it; needs no runtime.
+# Builds nothing on WASI, which cannot start a thread for the work.
+unblock = ["dep:futures-io", "dep:futures-core"]
+# The `fs` module: async access to the filesystem, with each operation run on the thread that polls
+# its future; needs no runtime. `futures-io` gives its file the async I/O traits, and `futures-core`
+# gives its stream of a directory's entries the `Stream` trait. Builds on WASI too, where it reaches
+# the directories that the host lends the program.
+fs = ["dep:futures-io", "dep:futures-core"]
+# The `net` module's TCP sockets: `TcpListener` and `TcpStream`. On `wasm32-wasip1`, which cannot
+# create a socket, they can only be made from a std socket that the host handed in.
+tcp = ["runtime", "dep:socket2", "rustix?/net"]
+# The `net` module's UDP socket: `UdpSocket`. It builds on `wasm32-wasip1`, but does not work
+# there: that target has no UDP.
+udp = ["runtime"]
+# The `net::unix` module's unix-domain sockets, `UnixListener`, `UnixStream` and `UnixDatagram`;
+# unix only: it builds nothing on Windows or WASI.
+unix = ["runtime", "dep:socket2", "rustix?/net"]
+# The `process` module: async child processes, as `Command`, `Child` and the pipes to a child; it
+# needs `unblock` for the pipes on Windows, and for the pool of threads that waits for a child where
+# the runtime cannot watch for its exit and collects one that is dropped while it runs on unix. It
+# builds nothing on WASI, which has no child processes.
+process = [
+    "runtime",
+    "unblock",
+    "rustix?/process",
+    "windows-sys?/Win32_Foundation",
+    "windows-sys?/Win32_System_Threading",
+]
+
+[lints.rust]
+# `--cfg zruntime_poll` has the runtime wait on `poll(2)` on every unix, and `--cfg zruntime_kqueue`
+# on kqueue on Apple's platforms, so that CI can run the tests on those pollers.
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(zruntime_poll)", "cfg(zruntime_kqueue)"] }
+
+[dependencies]
+futures-core = { version = "0.3.34", default-features = false, optional = true }
+futures-io = { version = "0.3.34", optional = true }
+# Without its default features: the crate logs through `error!` alone, and the `attributes`
+# feature, for `#[instrument]`, would build a proc-macro and `syn` along with it. `std` stays, so
+# that the events still reach a subscriber that a thread sets as its default.
+tracing = { version = "0.1.44", default-features = false, features = ["std"], optional = true }
+
+# Left out on `wasm32-wasip1`, which socket2 does not build for: no socket can be created there, so
+# the sockets of the `net` module have no use for it. A feature can still name it as `dep:socket2`;
+# on that target it then pulls in nothing.
+[target.'cfg(not(all(target_os = "wasi", target_env = "p1")))'.dependencies]
+socket2 = { version = "0.6.5", optional = true }
+
+[target.'cfg(any(unix, target_os = "wasi"))'.dependencies.rustix]
+version = "1.1.5"
+default-features = false
+features = ["event", "pipe", "std", "time"]
+optional = true
+
+[target."cfg(windows)".dependencies.windows-sys]
+version = "0.61.2"
+features = ["Win32_Networking_WinSock"]
+optional = true
+
+[target."cfg(windows)".dev-dependencies]
+uds_windows = "1.2.1"
+
+# Pins the threads of the benchmarks to CPUs of their own (see `benches/common/cpus.rs`).
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+rustix = { version = "1.1.5", features = ["thread"] }
+
+[dev-dependencies]
+criterion = { version = "5.0.2", package = "codspeed-criterion-compat", features = ["async"] }
+futures = { version = "0.3.34", default-features = false, features = ["std", "executor"] }
+ntest = "0.9.5"
+socket2 = { version = "0.6.5", features = ["all"] }
+
+# A single codegen unit, so that how the compiler splits a crate into units, and so what it
+# inlines, cannot shift the numbers when unrelated code changes.
+[profile.bench]
+codegen-units = 1
+debug = true
+strip = "none"
+
+[lib]
+bench = false
+
+# Each bench target is measured on CodSpeed by one of the two jobs of
+# `.github/workflows/bench.yml`, which lists it: by CPU simulation, or by the clock.
+[[bench]]
+name = "runtime"
+harness = false
+required-features = ["helper"]
+
+[[bench]]
+name = "spawn"
+harness = false
+required-features = ["helper"]
+
+[[bench]]
+name = "connection"
+harness = false
+required-features = ["helper", "lock"]
+
+[[bench]]
+name = "event"
+harness = false
+required-features = ["lock"]
+
+[[bench]]
+name = "broadcast"
+harness = false
+required-features = ["broadcast"]
+
+[[bench]]
+name = "mpmc"
+harness = false
+required-features = ["mpmc"]
+
+[[bench]]
+name = "contention"
+harness = false
+required-features = ["mpmc", "lock", "runtime"]
+
+[[bench]]
+name = "unblock"
+harness = false
+required-features = ["unblock"]

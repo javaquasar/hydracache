@@ -1,0 +1,1 @@
+{"type": "ValueError", "reason": "whitespace-only source projection", "inert_prepare_failure": true, "native_command_replayed": false, "details": "Rustfmt stdout contains canonical Windows headers and child/parent sections; initial single-body decoder refused before freezing F. Original stdout remains format-view-Q-194/stdout.log."}

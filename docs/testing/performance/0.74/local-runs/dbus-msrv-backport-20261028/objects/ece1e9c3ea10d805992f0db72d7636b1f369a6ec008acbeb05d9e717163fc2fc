@@ -1,0 +1,36 @@
+from pathlib import Path
+import hashlib,json,subprocess,tarfile,io,tomllib
+ROOT=Path(__file__).resolve().parent.parent;BASE=ROOT/'target/dbus-backport-20261028'
+OUT=BASE/'boundary';OUT.mkdir(exist_ok=False)
+sha=lambda b:hashlib.sha256(b).hexdigest()
+(OUT/'producer.py').write_bytes(Path(__file__).read_bytes())
+old=json.loads((ROOT/'target/remaining-security-20261028/dbus-boundary-review/result.json').read_bytes())
+uses=old['current_uses']
+assert len(uses)==18 and sum(v['blocking'] for v in uses.values())==2 and sum(v['old_wire_alias'] for v in uses.values())==11
+for name,row in uses.items():
+ raw=(ROOT/name).read_bytes();assert sha(raw)==row['sha256']
+ dest=OUT/'current-caller'/name;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(raw)
+cache=Path('C:/Users/ArturBuzov/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f')
+rootlock=tomllib.loads((ROOT/'Cargo.lock').read_text(encoding='utf-8'))['package']
+row=next(v for v in rootlock if v['name']=='zbus');assert row['version']=='5.19.0'
+archive=(cache/'zbus-5.19.0.crate').read_bytes();assert sha(archive)==row['checksum']
+(OUT/'zbus-5.19.0.crate').write_bytes(archive)
+with tarfile.open(fileobj=io.BytesIO(archive),mode='r:gz') as tar:
+ for name in ('src/utils.rs','src/blocking/connection/mod.rs'):
+  raw=tar.extractfile('zbus-5.19.0/'+name).read()
+  dest=OUT/'old'/name;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(raw)
+old_runtime=(OUT/'old/src/utils.rs').read_bytes()
+new=BASE/'primary/zbus-6.1.0/src'
+assert b'Builder::new_multi_thread()' in old_runtime
+assert b'#[cfg(not(feature = "tokio-multithread"))]' in (new/'utils.rs').read_bytes()
+assert b'Builder::new_current_thread()' in (new/'utils.rs').read_bytes()
+assert b'pub struct Flags(u8);' in (new/'message/header.rs').read_bytes()
+db=Path('C:/Users/ArturBuzov/.cargo/advisory-dbs/advisory-db-3157b0e258782691')
+head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=db).decode().strip()
+assert not subprocess.check_output(['git','status','--porcelain'],cwd=db)
+result=dict(current_uses=uses,census_closed_ast=False,root_manifest_unchanged=True,
+ old_runtime='new_multi_thread',new_selected_runtime='new_current_thread',
+ runtime_progress_demonstrated=False,manager_connected=False,root_caller_changed=False,
+ advisory_db_postflight=dict(head=head,clean=True,per_lookup_seal=False),release_admitted=False)
+(OUT/'result.json').write_text(json.dumps(result,sort_keys=True,indent=2)+'\n',encoding='utf-8',newline='\n')
+print(json.dumps(dict(unchanged_direct_files=18,blocking_files=2,explicit_old_wire_alias_files=11,advisory_db_postflight=head)))

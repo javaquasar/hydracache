@@ -1,0 +1,3 @@
+*.patch -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+receipt.json -text
+fixture.lock -text

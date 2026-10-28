@@ -1,0 +1,54 @@
+from pathlib import Path
+import hashlib,json,subprocess
+ROOT=Path(__file__).resolve().parent.parent;BASE=ROOT/'target/dbus-backport-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/dbus-msrv-backport-20261028'
+sha=lambda b:hashlib.sha256(b).hexdigest()
+steps={};native=0
+for top in sorted(BASE.iterdir()):
+ if not (top/'execution.json').is_file():continue
+ execution=json.loads((top/'execution.json').read_bytes());result=json.loads((top/'result.json').read_bytes())
+ assert execution['retired'] and not execution['errors'] and result['unchanged']
+ expected=101 if top.name in ('floor-U-188','check-M-188','check-P-188') else 0
+ assert result['exit']==execution['exit']==expected
+ if 'accounting' in result:
+  assert result['accounting']['test_pass'] and result['accounting']['selected']==5
+  native+=result['accounting']['passed']
+ if result.get('artifact'):
+  artifact=result['artifact'];assert sha(Path(artifact['path']).read_bytes())==artifact['sha256']
+ steps[top.name]=dict(exit=expected,retired=True,native_accounting=result.get('accounting'),
+  source_head=json.loads((top/'intent.json').read_bytes())['head'])
+assert native==20
+for variant in ('F','F2'):
+ assert json.loads((BASE/('prepare-'+variant)/'refusal.json').read_bytes())['inert_prepare_failure']
+assert json.loads((BASE/'portable/result.json').read_bytes())['replayed_members']==263
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members
+ members[name]=dict(sha256=digest,bytes=len(raw))
+for top in sorted(BASE.iterdir()):
+ if top.name=='targets':continue
+ for path in ([top] if top.is_file() else sorted(top.rglob('*'))):
+  if path.is_file():add('capture/'+path.relative_to(BASE).as_posix(),path)
+for path in sorted((ROOT/'tools/dbus-msrv-backport-074').rglob('*')):
+ if path.is_file() and '__pycache__' not in path.parts:add('source/'+path.relative_to(ROOT).as_posix(),path)
+for name in ('Cargo.lock','Cargo.toml','deny.toml','tools/long-run-supervisor-074/Cargo.toml',
+ 'docs/testing/performance/0.74/qualification-manifest.toml','tools/chitchat-mtu-review-074/accounting.py',
+ 'tools/windows-workspace-preflight-074/owned.py','tools/windows-workspace-preflight-074/prepare.py',
+ 'scripts/ci/watchdog_windows_job.py'):
+ add('source/'+name,ROOT/name)
+for path in sorted((ROOT/'target').glob('*dbus*20261028.py')):add('producer/'+path.name,path)
+index=dict(schema='hc074-local-dbus-msrv-v1',members=members,steps=steps,native_selected_passes=20,
+ final_native_selected_passes={'rust_188':5,'rust_194':5},compiler_floor_ignored=False,
+ first_native_refusals_preserved=3,first_inert_decoder_refusals_preserved=2,
+ source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ no_legacy_caller_migration=True,no_unix_fd_or_gnu_claim=True,no_source_effect_closure_claim=True,
+ source_backport_scoped_only=True,root_dependencies_changed=False,product_gate_replayed=False,
+ server=False,services=False,clocks=False,performance_claim=False,release_admitted=False,
+ byte_sealer_executed_archived_code=False)
+(OUT/'index.json').write_text(json.dumps(index,sort_keys=True,indent=2)+'\n',encoding='utf-8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf-8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

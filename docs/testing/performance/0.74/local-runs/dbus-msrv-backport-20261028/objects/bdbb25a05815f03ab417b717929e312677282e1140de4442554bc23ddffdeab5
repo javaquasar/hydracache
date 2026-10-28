@@ -1,0 +1,14 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<title>zruntime logo</title>
+<circle cx="64" cy="64" r="64" fill="#CC4800"/>
+<path d="M80.45 28.5L102.97 67.5A19 19 0 0 1 86.52 96
+  L41.48 96A19 19 0 0 1 25.03 67.5
+  L47.55 28.5A19 19 0 0 1 80.45 28.5Z"
+  stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="64" cy="38" r="9" stroke="white" stroke-width="5"/>
+<circle cx="86.52" cy="77" r="9" stroke="white" stroke-width="5"/>
+<circle cx="41.48" cy="77" r="9" stroke="white" stroke-width="5"/>
+<circle cx="64" cy="38" r="2.5" fill="white"/>
+<circle cx="86.52" cy="77" r="2.5" fill="white"/>
+<circle cx="41.48" cy="77" r="2.5" fill="white"/>
+</svg>

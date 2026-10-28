@@ -1,0 +1,69 @@
+name: CodSpeed Benchmarks
+
+on:
+  push:
+    branches:
+      - "main" # or "master"
+  pull_request:
+  # `workflow_dispatch` allows CodSpeed to trigger backtest
+  # performance analysis in order to generate initial data.
+  workflow_dispatch:
+
+# A push to a pull request makes the report of the run still going for its previous push moot,
+# so that run is cancelled rather than left to use up runner minutes. Every run on main is kept:
+# each is the baseline of the pull requests based on it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  # Lets the CodSpeed action authenticate the upload with GitHub's OIDC token instead of a secret.
+  id-token: write
+
+jobs:
+  benchmarks:
+    name: Run benchmarks (${{ matrix.mode }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        # Every bench target of `Cargo.toml` goes in exactly one of the two lists: CodSpeed puts the
+        # results of the two jobs together into one report, and takes each benchmark's from one.
+        include:
+          # What runs on one thread, with no runtime: measured by simulating the CPU it runs on,
+          # which counts the same instructions and cache misses on every run, on any runner, so a
+          # GitHub-hosted one does.
+          - mode: simulation
+            runner: ubuntu-latest
+            benches: --bench broadcast --bench event --bench mpmc
+          # What waits on timers, sockets or other threads, or runs on a runtime, which waits on
+          # its reactor at every turn: in the kernel, which the simulation leaves out, so measured
+          # by the clock. On a bare-metal CodSpeed macro runner, given to
+          # this job alone, so that the numbers move with the code rather than with the load of
+          # whoever shares a hosted runner's host. Keep the job on this one label: two runs are only
+          # comparable when measured on the same machine.
+          - mode: walltime
+            runner: codspeed-macro-arm64-graviton-ubuntu-22-04
+            benches: --bench connection --bench contention --bench runtime --bench spawn --bench unblock
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup rust toolchain, cache and cargo-codspeed binary
+        uses: moonrepo/setup-rust@v1
+        with:
+          channel: stable
+          cache-target: release
+          # setup-rust's cache key leaves the architecture out: without this, the arm64 job would
+          # find the cache the x86_64 one saved under the same key, and never save its own.
+          cache-extra-identifier: ${{ runner.arch }}
+          bins: cargo-codspeed
+      # The features the bench targets need between them, as their `required-features` in
+      # `Cargo.toml` say; each job builds its own targets only.
+      - name: Build the benchmark target(s)
+        run: >-
+          cargo codspeed build -m ${{ matrix.mode }}
+          --features helper,broadcast,lock,mpmc,unblock ${{ matrix.benches }}
+      - name: Run the benchmarks
+        uses: CodSpeedHQ/action@v5
+        with:
+          mode: ${{ matrix.mode }}
+          run: cargo codspeed run -m ${{ matrix.mode }} ${{ matrix.benches }}

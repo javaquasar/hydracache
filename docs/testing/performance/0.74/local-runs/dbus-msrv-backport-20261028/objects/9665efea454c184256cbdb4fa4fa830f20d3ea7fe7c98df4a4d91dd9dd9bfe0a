@@ -1,0 +1,44 @@
+"""Inert selected-lock archive/check-out identity and build-input inventory."""
+from pathlib import Path,PurePosixPath
+import hashlib,io,json,tarfile,tomllib
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/dbus-backport-20261028'
+OUT=BASE/'graph-review';OUT.mkdir(exist_ok=False)
+(OUT/'producer.py').write_bytes(Path(__file__).read_bytes())
+sha=lambda b:hashlib.sha256(b).hexdigest()
+lock=(BASE/'fixtures/P/Cargo.lock').read_bytes()
+rows=tomllib.loads(lock.decode())['package']
+original=tomllib.loads((ROOT/'Cargo.lock').read_text(encoding='utf-8'))['package']
+old={(r['name'],r['version'],r.get('checksum')) for r in original}
+cache=Path('C:/Users/ArturBuzov/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f')
+sources=Path('C:/Users/ArturBuzov/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f')
+packages=[]
+for row in rows:
+ name,version=row['name'],row['version']
+ if not row.get('source'):continue
+ assert row['source']=='registry+https://github.com/rust-lang/crates.io-index'
+ raw=(cache/(name+'-'+version+'.crate')).read_bytes();assert sha(raw)==row['checksum']
+ manifest=None;members={};builds={}
+ with tarfile.open(fileobj=io.BytesIO(raw),mode='r:gz') as archive:
+  for member in archive:
+   path=PurePosixPath(member.name)
+   assert not path.is_absolute() and '..' not in path.parts and path.parts[0]==name+'-'+version
+   assert member.isfile() or member.isdir()
+   if member.isdir():continue
+   tail=Path(*path.parts[1:]);body=archive.extractfile(member).read()
+   assert len(body)==member.size and sha((sources/(name+'-'+version)/tail).read_bytes())==sha(body)
+   members[tail.as_posix()]=sha(body)
+   if tail.as_posix()=='Cargo.toml':manifest=tomllib.loads(body.decode())
+   if tail.name=='build.rs':builds[tail.as_posix()]=sha(body)
+ assert manifest is not None
+ floor=manifest['package'].get('rust-version')
+ assert floor is None or tuple(map(int,floor.split('.')[:2]))<=(1,88)
+ packages.append(dict(name=name,version=version,checksum=row['checksum'],msrv=floor,
+  new_identity_vs_product=(name,version,row['checksum']) not in old,members=members,
+  package_build=manifest['package'].get('build'),build_rs=builds,manifest=manifest))
+result=dict(packages=packages,lock_sha256=sha(lock),source_code_executed=False,
+ registry_checkout_comparison='postflight only, no per-lookup seal',
+ source_effect_review_complete=False,product_gate=False,release_admitted=False)
+(OUT/'result.json').write_text(json.dumps(result,sort_keys=True,indent=2)+'\n',encoding='utf-8',newline='\n')
+print(json.dumps(dict(registry_nodes=len(packages),new_nodes=[(r['name'],r['version']) for r in packages if r['new_identity_vs_product']],
+ build_scripts=[(r['name'],r['build_rs']) for r in packages if r['build_rs']],all_declared_minima_at_most_188=True)))

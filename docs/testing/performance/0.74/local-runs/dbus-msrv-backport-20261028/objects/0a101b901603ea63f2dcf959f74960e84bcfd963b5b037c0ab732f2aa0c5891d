@@ -1,0 +1,25 @@
+--- Q/zbus/src/match_rule/mod.rs
++++ F3/zbus/src/match_rule/mod.rs
+@@ -395,10 +395,20 @@
+             write_match_rule_string_component(f, key, value, &mut first_component)?;
+         }
+         for (i, arg) in self.args() {
+-            write_match_rule_string_component(f, format_args!("arg{i}"), arg, &mut first_component)?;
++            write_match_rule_string_component(
++                f,
++                format_args!("arg{i}"),
++                arg,
++                &mut first_component,
++            )?;
+         }
+         for (i, arg_path) in self.arg_paths() {
+-            write_match_rule_string_component(f, format_args!("arg{i}path"), arg_path, &mut first_component)?;
++            write_match_rule_string_component(
++                f,
++                format_args!("arg{i}path"),
++                arg_path,
++                &mut first_component,
++            )?;
+         }
+         if let Some(arg0namespace) = self.arg0ns() {
+             write_match_rule_string_component(

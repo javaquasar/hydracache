@@ -1,0 +1,200 @@
+"""Fixed isolated MSRV steps, preserving every first output."""
+from pathlib import Path
+import hashlib,json,os,re,shutil,subprocess,sys,tomllib
+ROOT=Path(__file__).resolve().parents[2]
+BASE=ROOT/'target/dbus-backport-20261028'
+sys.path.insert(0,str(ROOT/'tools/windows-workspace-preflight-074'))
+import owned,prepare as p
+sha=lambda b:hashlib.sha256(b).hexdigest()
+def write(out,n,v):(out/n).write_text(json.dumps(v,sort_keys=True,indent=2)+'\n',encoding='utf-8',newline='\n')
+def files(folder):
+ return {n.relative_to(folder).as_posix():sha(n.read_bytes()) for n in sorted(folder.rglob('*')) if n.is_file()}
+def root_inputs():
+ names=('Cargo.toml','Cargo.lock','deny.toml','tools/long-run-supervisor-074/Cargo.toml','docs/testing/performance/0.74/qualification-manifest.toml')
+ return {n:sha((ROOT/n).read_bytes()) for n in names}
+def prepare(variant):
+ out=BASE/('prepare-'+variant);out.mkdir(exist_ok=False)
+ (out/'producer.py').write_bytes(Path(__file__).read_bytes())
+ dest=BASE/'fixtures'/variant;dest.parent.mkdir(exist_ok=True)
+ primary=json.loads((BASE/'primary/result.json').read_bytes())['packages']
+ roots=root_inputs()
+ if variant=='U':
+  dest.mkdir()
+  for name in ('zbus','zbus_macros','zbus_utils'):
+   row=primary[name];source=BASE/'primary'/(name+'-'+row['version'])
+   p.require(files(source)==row['members'],'exact primary source: '+name)
+   shutil.copytree(source,dest/name)
+  (dest/'probe/src').mkdir(parents=True)
+  (dest/'Cargo.toml').write_text('''[workspace]
+members = ["probe"]
+exclude = ["zbus", "zbus_macros", "zbus_utils"]
+resolver = "2"
+[patch.crates-io]
+zbus_macros = { path = "zbus_macros" }
+zbus_utils = { path = "zbus_utils" }
+''',encoding='utf-8',newline='\n')
+  (dest/'probe/Cargo.toml').write_text('''[package]
+name = "dbus-probe-074"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.88"
+publish = false
+license = "MIT"
+[dependencies]
+zbus = { path = "../zbus", default-features = false, features = ["tokio", "proxy"] }
+zruntime = { version = "=0.2.0", default-features = false }
+tokio = { version = "=1.53.3", features = ["rt", "time"] }
+serde = { version = "1", features = ["derive"] }
+''',encoding='utf-8',newline='\n')
+  overlay=ROOT/'tools/dbus-msrv-backport-074/probe.rs'
+  (dest/'probe/src/lib.rs').write_bytes(overlay.read_bytes())
+ elif variant=='M':
+  refusal=json.loads((BASE/'floor-U-188/result.json').read_bytes())
+  p.require(refusal['exit']==101 and refusal['unchanged'],'first real upstream floor refusal')
+  stderr=(BASE/'floor-U-188/stderr.log').read_bytes()
+  p.require(b'rustc 1.88.0 is not supported' in stderr and b'requires rustc 1.89' in stderr,'actual compiler floor reason')
+  u=BASE/'fixtures/U';p.require(files(u)==json.loads((BASE/'resolve-U-194/result.json').read_bytes())['fixture_after'],'resolved unmodified U')
+  shutil.copytree(u,dest)
+  patches=[]
+  import difflib
+  for name in ('zbus','zbus_macros','zbus_utils'):
+   path=dest/name/'Cargo.toml';before=path.read_text(encoding='utf-8')
+   p.require(before.count('rust-version = "1.89"')==1,'exact upstream declared floor')
+   after=before.replace('rust-version = "1.89"','rust-version = "1.88"',1)
+   path.write_text(after,encoding='utf-8',newline='\n')
+   patches.extend(difflib.unified_diff(before.splitlines(True),after.splitlines(True),fromfile='U/'+name+'/Cargo.toml',tofile='M/'+name+'/Cargo.toml'))
+  (out/'floor-only.patch').write_text(''.join(patches),encoding='utf-8',newline='\n')
+ elif variant=='P':
+  refusal=json.loads((BASE/'check-M-188/result.json').read_bytes())
+  p.require(refusal['exit']==101 and refusal['unchanged'],'preserved first M floor refusal')
+  stderr=(BASE/'check-M-188/stderr.log').read_bytes()
+  p.require(b'uuid@1.29.0 requires rustc 1.89.0' in stderr,'actual transitive floor reason')
+  source=BASE/'fixtures/M'
+  p.require(files(source)==json.loads((BASE/'prepare-M/result.json').read_bytes())['files'],'exact first M')
+  shutil.copytree(source,dest)
+ else:
+  first=json.loads((BASE/'check-P-188/result.json').read_bytes())
+  p.require(first['exit']==101 and first['unchanged'],'preserved first genuine 1.88 source refusal')
+  stderr=(BASE/'check-P-188/stderr.log').read_bytes()
+  p.require(stderr.count(b'error[E0716]')==2 and b'format_args!' in stderr,'exact two temporary-lifetime errors')
+  source=BASE/'fixtures/P';p.require(files(source)==json.loads((BASE/'pin-P-194/result.json').read_bytes())['fixture_after'],'exact first P')
+  shutil.copytree(source,dest)
+  overlay=ROOT/'tools/dbus-msrv-backport-074/match_rule_tests.rs'
+  with (dest/'probe/src/lib.rs').open('ab') as stream:
+   stream.write(('\n#[cfg(test)]\n#[path = '+json.dumps(overlay.as_posix())+']\nmod match_rule_review;\n').encode())
+  if variant=='A':
+   for name in ('zbus','zbus_macros','zbus_utils'):
+    path=dest/name/'Cargo.toml';raw=path.read_text(encoding='utf-8')
+    p.require(raw.count('rust-version = "1.88"')==1,'counterpart original floor')
+    path.write_text(raw.replace('rust-version = "1.88"','rust-version = "1.89"',1),encoding='utf-8',newline='\n')
+  else:
+   path=dest/'zbus/src/match_rule/mod.rs';before=path.read_text(encoding='utf-8')
+   after=before
+   for fmt,arg in (('arg{i}','arg'),('arg{i}path','arg_path')):
+    old='            let key = format_args!("'+fmt+'");\n            write_match_rule_string_component(f, key, '+arg+', &mut first_component)?;'
+    new='            write_match_rule_string_component(f, format_args!("'+fmt+'"), '+arg+', &mut first_component)?;'
+    p.require(after.count(old)==1,'one exact temporary-lifetime site')
+    after=after.replace(old,new,1)
+   path.write_text(after,encoding='utf-8',newline='\n')
+   import difflib
+   (out/'source.patch').write_text(''.join(difflib.unified_diff(before.splitlines(True),after.splitlines(True),fromfile='P/zbus/src/match_rule/mod.rs',tofile='Q/zbus/src/match_rule/mod.rs')),encoding='utf-8',newline='\n')
+ write(out,'result.json',dict(files=files(dest),root_inputs=roots,variant=variant,
+  source_body_changed=variant=='Q',compiler_floor_experiment_only=variant not in ('U','A'),release_admitted=False))
+ print('prepared '+variant)
+def snapshot():
+ names=subprocess.check_output(['git','ls-files','-z','--cached','--others','--exclude-standard','--','Cargo.toml','Cargo.lock','deny.toml','.cargo','crates','tools','scripts'],cwd=ROOT).split(b'\0')
+ return {n.decode():sha((ROOT/n.decode()).read_bytes()) for n in sorted(set(names)) if n}
+def run(label,worker):
+ match=re.fullmatch(r'(resolve|fetch|pin|floor|build|list|test|check|clippy|policy)-(U|M|P|A|Q)-(194|188)',label)
+ p.require(match is not None,'fixed local step');action,variant,compiler=match.groups()
+ p.require((action not in ('resolve','fetch') or (variant,compiler)==('U','194')) and (action!='floor' or (variant,compiler)==('U','188')),'fixed preparation/refusal commands')
+ p.require(action!='pin' or (variant,compiler)==('P','194'),'fixed compatible UUID lock control')
+ folder=BASE/'fixtures'/variant;review=json.loads((BASE/('prepare-'+variant)/'result.json').read_bytes())
+ expected=review['files']
+ if variant=='U' and action!='resolve':expected=json.loads((BASE/'resolve-U-194/result.json').read_bytes())['fixture_after']
+ if variant=='P' and action!='pin':expected=json.loads((BASE/'pin-P-194/result.json').read_bytes())['fixture_after']
+ def guard():
+  p.require(root_inputs()==review['root_inputs'],'exact protected root inputs')
+  p.require(files(folder)==expected,'exact whole fixture before command')
+ identity=sha(json.dumps(dict(files=expected,compiler=compiler),sort_keys=True).encode())
+ target=BASE/'targets'/variant/compiler/identity
+ cargo=['cargo','+1.94.0' if compiler=='194' else '+1.88.0']
+ common=['--offline','--locked','--manifest-path',str(folder/'Cargo.toml'),'--target-dir',str(target),'-p','dbus-probe-074']
+ artifact=None;listing=None
+ if action=='resolve':argv=cargo+['generate-lockfile','--manifest-path',str(folder/'Cargo.toml')]
+ elif action=='pin':argv=cargo+['update','--offline','--manifest-path',str(folder/'Cargo.toml'),'--package','uuid','--precise','1.23.4']
+ elif action=='fetch':argv=cargo+['fetch','--locked','--manifest-path',str(folder/'Cargo.toml')]
+ elif action in ('floor','check','clippy'):
+  argv=cargo+['clippy' if action=='clippy' else 'check',*common,'--all-targets','--all-features']+(['--','-D','warnings'] if action=='clippy' else [])
+ elif action=='build':argv=cargo+['test',*common,'--lib','--no-run','--message-format=json']
+ elif action=='policy':argv=cargo+['deny','--manifest-path',str(folder/'Cargo.toml'),'--offline','--locked','check','--config',str(ROOT/'deny.toml')]
+ else:
+  build=json.loads((BASE/f'build-{variant}-{compiler}/result.json').read_bytes())
+  p.require(build['exit']==0 and build['unchanged'],'actual successful build')
+  artifact=build['artifact'];image=Path(artifact['path'])
+  p.require(image.resolve().is_relative_to(target) and not image.is_symlink() and not image.is_junction() and sha(image.read_bytes())==artifact['sha256'],'bound compiler image')
+  if action=='list':argv=[str(image),'--list']
+  else:
+   listing=json.loads((BASE/f'list-{variant}-{compiler}/result.json').read_bytes())
+   p.require(listing['exit']==0 and listing['artifact']==artifact and listing['unchanged'],'actual complete native catalog')
+   argv=[str(image),'--test-threads=1','--show-output']
+ out=BASE/label
+ if worker:
+  guard()
+  def capacity():
+   if shutil.disk_usage(ROOT).free<p.FLOOR:raise owned.CapacityError('original 4 GiB floor')
+  result=owned._owned(owned.load_job().WindowsJob(),argv,str(ROOT),capacity,bound=1200)
+  write(out,'execution.json',result);raise SystemExit(result['exit'])
+ out.mkdir(exist_ok=False);(out/'launcher.py').write_bytes(Path(__file__).read_bytes())
+ with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+  try:
+   guard();before=snapshot();head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+   write(out,'intent.json',dict(argv=argv,source=before,head=head,variant=variant,compiler=compiler,
+    artifact=artifact,fixture_before=expected,bound=1200,floor=p.FLOOR,capacity_poll=5,retirement=5,retry=False,server=False,services=False,clocks=False))
+   child=subprocess.Popen([sys.executable,'-B',str(Path(__file__)),label,'--worker'],cwd=ROOT,
+    stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,env=dict(os.environ,CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2'))
+   try:code=child.wait(timeout=1210)
+   except subprocess.TimeoutExpired:
+    child.kill();child.wait(timeout=5);raise ValueError('owned worker lost; no PID fallback')
+   after=files(folder)
+   if action=='resolve' and code==0:
+    p.require(set(after)==set(expected)|{'Cargo.lock'} and all(after[n]==v for n,v in expected.items()),'only standalone lock added')
+   elif action=='pin' and code==0:
+    p.require(set(after)==set(expected) and [n for n in expected if after[n]!=expected[n]]==['Cargo.lock'],'only standalone lock changed')
+    lock=tomllib.loads((folder/'Cargo.lock').read_text(encoding='utf-8'))['package']
+    root=tomllib.loads((ROOT/'Cargo.lock').read_text(encoding='utf-8'))['package']
+    actual=next(v for v in lock if v['name']=='uuid');original=next(v for v in root if v['name']=='uuid')
+    p.require(actual['version']==original['version']=='1.23.4' and actual['checksum']==original['checksum'],'exact existing root UUID identity')
+   else:guard()
+   execution=json.loads((out/'execution.json').read_bytes())
+   unchanged=before==snapshot() and head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+   p.require(unchanged and execution['retired'] and not execution['errors'],'whole source/head and original Job retirement')
+   result=dict(exit=code,unchanged=unchanged,fixture_after=after,artifact=artifact,release_admitted=False)
+   raw=(out/'stdout.log').read_bytes()
+   if action=='build' and code==0:
+    messages=[json.loads(line) for line in raw.splitlines()]
+    found=[m for m in messages if m.get('reason')=='compiler-artifact' and m['target']['name']=='dbus_probe_074' and m['target']['kind']==['lib'] and m['profile']['test'] and m.get('executable')]
+    p.require(len(found)==1 and [m['success'] for m in messages if m.get('reason')=='build-finished']==[True],'actual successful artifact')
+    image=Path(found[0]['executable']);p.require(image.resolve().is_relative_to(target) and Path(found[0]['target']['src_path']).resolve()==(folder/'probe/src/lib.rs').resolve(),'artifact input')
+    result['artifact']=dict(path=str(image),sha256=sha(image.read_bytes()),bytes=image.stat().st_size)
+   if artifact:p.require(sha(Path(artifact['path']).read_bytes())==artifact['sha256'],'original image postflight')
+   if action=='list' and code==0:
+    names=[line[:-6] for line in raw.decode().splitlines() if line.endswith(': test')]
+    expected_names=['tests::'+n for n in ('derive_and_wire_roundtrip','invalid_names_and_builder_refuse','reply_serial_sender_and_signature','runtime_timeout_and_nested_entry')]
+    if variant in ('A','Q'):expected_names.append('match_rule_review::argument_and_path_format_roundtrip')
+    p.require(sorted(names)==sorted(expected_names) and raw.decode().splitlines()[-1]==f'{len(expected_names)} tests, 0 benchmarks','exact complete probe catalog')
+    result['inventory']=sorted(names)
+   if action=='test':
+    accounting=p.load(ROOT/'tools/chitchat-mtu-review-074/accounting.py','dbus_accounting')
+    result['accounting']=accounting.account(raw,listing['inventory'],'',False)
+    p.require((code==0)==result['accounting']['test_pass'],'exact native status/count agreement')
+   write(out,'result.json',result)
+  except BaseException as error:
+   write(out,'refusal.json',dict(type=type(error).__name__,reason=str(error),release_admitted=False));raise
+ print(json.dumps(dict(label=label,exit=code,unchanged=unchanged)))
+ raise SystemExit(code)
+if __name__=='__main__':
+ p.require(len(sys.argv) in (2,3) and (len(sys.argv)==2 or sys.argv[2]=='--worker'),'fixed invocation')
+ if sys.argv[1] in ('prepare-U','prepare-M','prepare-P','prepare-A','prepare-Q'):
+  p.require(len(sys.argv)==2,'inert prepare only');prepare(sys.argv[1][-1])
+ else:run(sys.argv[1],len(sys.argv)==3)

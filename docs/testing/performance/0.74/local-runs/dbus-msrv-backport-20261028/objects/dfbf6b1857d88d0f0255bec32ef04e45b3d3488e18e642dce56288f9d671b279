@@ -1,0 +1,48 @@
+"""Fresh bounded primary data; no archive/source execution."""
+from pathlib import Path,PurePosixPath
+import hashlib,io,json,tarfile,tomllib,urllib.request
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'target/dbus-backport-20261028/primary'
+OUT.mkdir(parents=True,exist_ok=False)
+sha=lambda b:hashlib.sha256(b).hexdigest()
+def write(n,v):(OUT/n).write_text(json.dumps(v,sort_keys=True,indent=2)+'\n',encoding='utf-8')
+(OUT/'producer.py').write_bytes(Path(__file__).read_bytes())
+write('intent.json',dict(source_executed=False,retry=False,root_lock_sha256=sha((ROOT/'Cargo.lock').read_bytes())))
+rows={}
+try:
+ for name,version in [('zbus','6.1.0'),('zbus_macros','6.1.0'),('zbus_utils','6.0.0'),('zruntime','0.2.0')]:
+  index=name[:2]+'/'+name[2:4]+'/'+name
+  with urllib.request.urlopen('https://index.crates.io/'+index,timeout=30) as response:
+   metadata_raw=response.read(4*1024*1024+1)
+  assert len(metadata_raw)<=4*1024*1024
+  (OUT/(name+'.index')).write_bytes(metadata_raw)
+  catalog=list(map(json.loads,metadata_raw.splitlines()))
+  meta=next(v for v in catalog if v['vers']==version)
+  assert not meta['yanked']
+  old=ROOT/'target/remaining-security-20261028/upstream-first'/(name+'-'+version+'.crate')
+  if old.is_file():raw=old.read_bytes()
+  else:
+   with urllib.request.urlopen(f'https://static.crates.io/crates/{name}/{name}-{version}.crate',timeout=30) as response:
+    raw=response.read(16*1024*1024+1)
+  assert len(raw)<=16*1024*1024 and sha(raw)==meta['cksum']
+  (OUT/(name+'-'+version+'.crate')).write_bytes(raw)
+  dest=OUT/(name+'-'+version);dest.mkdir();members={};expanded=0
+  with tarfile.open(fileobj=io.BytesIO(raw),mode='r:gz') as archive:
+   for member in archive:
+    path=PurePosixPath(member.name)
+    assert not path.is_absolute() and '..' not in path.parts and path.parts[0]==name+'-'+version
+    assert member.isfile() or member.isdir()
+    if member.isdir():continue
+    tail=Path(*path.parts[1:]);assert tail.parts and tail.as_posix() not in members
+    expanded+=member.size;assert member.size<=8*1024*1024 and expanded<=32*1024*1024
+    body=archive.extractfile(member).read();assert len(body)==member.size
+    p=dest/tail;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(body)
+    members[tail.as_posix()]=sha(body)
+  manifest=tomllib.loads((dest/'Cargo.toml').read_text(encoding='utf-8'))
+  rows[name]=dict(version=version,metadata=meta,checksum=sha(raw),members=members,
+   declared_msrv=manifest['package'].get('rust-version'),manifest=manifest,
+   published_versions=[dict(version=v['vers'],rust_version=v.get('rust_version'),yanked=v['yanked']) for v in catalog[-6:]])
+ write('result.json',dict(packages=rows,source_executed=False,release_admitted=False))
+ print(json.dumps({n:dict(msrv=v['declared_msrv'],recent=v['published_versions']) for n,v in rows.items()}))
+except BaseException as e:
+ write('refusal.json',dict(type=type(e).__name__,reason=str(e)));raise

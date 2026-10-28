@@ -1,0 +1,1 @@
+{"type": "ValueError", "reason": "formatter preserves source tokens", "inert_prepare_failure": true, "native_command_replayed": false, "details": "Exact section parsing passed; Rustfmt adds final argument commas at both held calls. Initial whitespace-only comparator refused. No native rerun."}

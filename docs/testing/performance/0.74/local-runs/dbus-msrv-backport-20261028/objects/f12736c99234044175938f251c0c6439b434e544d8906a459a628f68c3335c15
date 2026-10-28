@@ -1,0 +1,11 @@
+{
+  "changed_members": [
+    "zbus/Cargo.toml",
+    "zbus/src/match_rule/mod.rs",
+    "zbus_macros/Cargo.toml",
+    "zbus_utils/Cargo.toml"
+  ],
+  "receipt_sha256": "59a5cd3f030648218b36f0f4c2f066d1d04c1c5320d059ffef5435df5ad8d2d2",
+  "replayed_members": 263,
+  "source_executed": false
+}

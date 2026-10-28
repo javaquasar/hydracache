@@ -1,0 +1,33 @@
+--- a/zbus/Cargo.toml
++++ b/zbus/Cargo.toml
+@@ -11,7 +11,7 @@
+ 
+ [package]
+ edition = "2024"
+-rust-version = "1.89"
++rust-version = "1.88"
+ name = "zbus"
+ version = "6.1.0"
+ authors = ["Zeeshan Ali Khan <zeeshanak@gnome.org>"]
+--- a/zbus_macros/Cargo.toml
++++ b/zbus_macros/Cargo.toml
+@@ -11,7 +11,7 @@
+ 
+ [package]
+ edition = "2024"
+-rust-version = "1.89"
++rust-version = "1.88"
+ name = "zbus_macros"
+ version = "6.1.0"
+ authors = [
+--- a/zbus_utils/Cargo.toml
++++ b/zbus_utils/Cargo.toml
+@@ -11,7 +11,7 @@
+ 
+ [package]
+ edition = "2024"
+-rust-version = "1.89"
++rust-version = "1.88"
+ name = "zbus_utils"
+ version = "6.0.0"
+ authors = [

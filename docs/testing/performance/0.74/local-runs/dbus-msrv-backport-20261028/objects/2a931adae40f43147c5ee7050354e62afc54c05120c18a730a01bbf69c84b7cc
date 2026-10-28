@@ -1,0 +1,177 @@
+//! Typed wire forms, not a manager, transport or execution capability.
+use super::*;
+use zbus::message::{Builder, Flags};
+
+fn with_flags(message: &Message, bits: u8) -> Builder<'_> {
+    let mut header = message.header();
+    let mut flags = header.primary().flags();
+    for (bit, flag) in [
+        (1, Flags::NoReplyExpected),
+        (2, Flags::NoAutoStart),
+        (4, Flags::AllowInteractiveAuth),
+    ] {
+        if bits & bit != 0 {
+            flags |= flag;
+        }
+    }
+    header.primary_mut().set_flags(flags);
+    Builder::from(header)
+}
+
+fn returned(exchange: &DispatchExchange, bits: u8, kind: &str) -> Message {
+    let seed = reply(exchange, "/org/freedesktop/systemd1/job/74");
+    let mut builder = with_flags(&seed, bits);
+    match kind {
+        "sender" => builder = builder.sender(":1.999").unwrap(),
+        "destination" => builder = builder.destination(":1.998").unwrap(),
+        "serial" => {
+            let serial = exchange.serial.get().wrapping_add(1).max(1);
+            builder = builder.reply_serial(NonZeroU32::new(serial));
+        }
+        "path" => builder = builder.path("/foreign").unwrap(),
+        "interface" => builder = builder.interface("org.example.Foreign").unwrap(),
+        "member" => builder = builder.member("Foreign").unwrap(),
+        _ => (),
+    }
+    let path = OwnedObjectPath::try_from("/org/freedesktop/systemd1/job/74").unwrap();
+    let file = tempfile::tempfile().unwrap();
+    match kind {
+        "body" => builder.build(&path.as_str()),
+        "extra" => builder.build(&(path, 7u32)),
+        "fd" => builder.build(&(path, Fd::from(&file))),
+        _ => builder.build(&path),
+    }
+    .unwrap()
+}
+
+#[test]
+fn dispatch_reply_flags_accept_only_zero_or_no_reply_expected_on_method_return() {
+    for bits in 0..8 {
+        let mut held = exchange();
+        let message = returned(&held, bits, "ok");
+        assert_eq!(message.primary_header().flags().bits(), bits);
+        held.arm().unwrap();
+        match held.observe(&message) {
+            Ok(job) => {
+                assert!(matches!(bits, 0 | 1), "bits={bits}");
+                assert_eq!(job.path.as_str(), "/org/freedesktop/systemd1/job/74");
+                assert_eq!(held.phase, Phase::JobObserved);
+            }
+            Err(error) => {
+                assert!(!matches!(bits, 0 | 1), "bits={bits} error={error:?}");
+                assert_eq!(error, ExchangeError::Reply);
+                assert_eq!(held.phase, Phase::Refused);
+            }
+        }
+        assert_eq!(held.observe(&message).unwrap_err(), ExchangeError::Reply);
+        assert_eq!(held.arm(), Err(ExchangeError::AlreadyAttempted));
+    }
+}
+
+#[test]
+fn dispatch_reply_flags_do_not_relax_request_flags() {
+    for bits in 1..8 {
+        let [_out, out] = pipe();
+        let [_err, err] = pipe();
+        let seed = request_kind([&out, &err], "ok");
+        let builder = with_flags(&seed, bits);
+        let auxiliary: Vec<(&str, Vec<(&str, Value<'_>)>)> = vec![];
+        let properties = vec![
+            ("StandardOutputFileDescriptor", Value::from(Fd::from(&out))),
+            ("StandardErrorFileDescriptor", Value::from(Fd::from(&err))),
+        ];
+        let request = builder
+            .build(&(
+                "hydracache-diagnostic-074-fixture-1.service",
+                "fail",
+                properties,
+                auxiliary,
+            ))
+            .unwrap();
+        let failure = DispatchExchange::prepare(request, MANAGER, CLIENT).unwrap_err();
+        assert_eq!(failure.error, ExchangeError::Request, "bits={bits}");
+        assert_eq!(failure.request.data().fds().len(), 2);
+    }
+}
+
+#[test]
+fn dispatch_reply_flags_preserve_all_correlations_and_refusal_latch() {
+    for bits in [0, 1] {
+        for kind in [
+            "sender",
+            "destination",
+            "serial",
+            "path",
+            "interface",
+            "member",
+            "body",
+            "extra",
+            "fd",
+        ] {
+            let mut held = exchange();
+            let bad = returned(&held, bits, kind);
+            let good = returned(&held, bits, "ok");
+            held.arm().unwrap();
+            assert_eq!(
+                held.observe(&bad).unwrap_err(),
+                ExchangeError::Reply,
+                "bits={bits} kind={kind}"
+            );
+            assert_eq!(held.phase, Phase::Refused);
+            assert_eq!(held.observe(&good).unwrap_err(), ExchangeError::Reply);
+            assert_eq!(held.arm(), Err(ExchangeError::AlreadyAttempted));
+        }
+    }
+}
+
+#[test]
+fn dispatch_reply_flags_do_not_change_error_classification_or_expose_body() {
+    for bits in 0..8 {
+        let mut held = exchange();
+        let seed = Message::error(
+            &held.request.header(),
+            "org.freedesktop.systemd1.UnitExists",
+        )
+        .unwrap()
+        .sender(MANAGER)
+        .unwrap()
+        .destination(CLIENT)
+        .unwrap()
+        .build(&())
+        .unwrap();
+        let message = with_flags(&seed, bits)
+            .build(&"sensitive-manager-detail")
+            .unwrap();
+        held.arm().unwrap();
+        let error = held.observe(&message).unwrap_err();
+        assert_eq!(
+            error,
+            if bits == 0 {
+                ExchangeError::ManagerError
+            } else {
+                ExchangeError::Reply
+            }
+        );
+        assert!(!format!("{error:?}").contains("sensitive"));
+        assert_eq!(held.phase, Phase::Refused);
+        assert_eq!(held.arm(), Err(ExchangeError::AlreadyAttempted));
+    }
+}
+
+#[test]
+fn dispatch_reply_flags_cannot_heal_lost_acknowledgement_or_early_reply() {
+    for bits in [0, 1] {
+        for armed in [false, true] {
+            let mut held = exchange();
+            let message = returned(&held, bits, "ok");
+            if armed {
+                held.arm().unwrap();
+                held.lose_reply();
+                assert_eq!(held.phase, Phase::Uncertain);
+            }
+            assert_eq!(held.observe(&message).unwrap_err(), ExchangeError::Reply);
+            assert_eq!(held.phase, Phase::Refused);
+            assert_eq!(held.arm(), Err(ExchangeError::AlreadyAttempted));
+        }
+    }
+}

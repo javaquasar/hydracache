@@ -1,0 +1,26 @@
+
+running 5 tests
+test match_rule_review::argument_and_path_format_roundtrip ... ok
+test tests::derive_and_wire_roundtrip ... ok
+test tests::invalid_names_and_builder_refuse ... ok
+test tests::reply_serial_sender_and_signature ... ok
+test tests::runtime_timeout_and_nested_entry ... ok
+
+successes:
+
+---- tests::runtime_timeout_and_nested_entry stdout ----
+
+thread 'tests::runtime_timeout_and_nested_entry' panicked at C:\Workspace\prj\jq\cashe\hydracache-074\target\dbus-backport-20261028\fixtures\F3\zbus\src\utils.rs:171:10:
+Cannot start a runtime from within a runtime. This happens because a function (like `block_on`) attempted to block the current thread while the thread is being used to drive asynchronous tasks.
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+successes:
+    match_rule_review::argument_and_path_format_roundtrip
+    tests::derive_and_wire_roundtrip
+    tests::invalid_names_and_builder_refuse
+    tests::reply_serial_sender_and_signature
+    tests::runtime_timeout_and_nested_entry
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+

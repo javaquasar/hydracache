@@ -427,6 +427,17 @@ check and strict Clippy. Source patches remain archived; no product dependency
 was adopted or reverted. GNU/consumer/distribution, D-Bus and the actual final
 package/workspace gates remain open; no new optimization hypothesis is opened.
 
+The [D-Bus MSRV preparation](dbus-msrv-backport-result-20261028.md) now retains
+the original declared-floor, transitive UUID and genuine Rust 1.88 E0716 refusals.
+Two inline-formatting source repairs pass the common regression against upstream
+1.94, then five final controls, check and strict Clippy pass on both 1.88 and 1.94.
+Standalone policy passes without a new exception; no root graph is changed. The
+263-member source reconstruction is local review material. Blocking/runtime
+ownership, builder refusal ordering, header flags, Unix FD/original reply and GNU/
+consumer/distribution/full product gates remain open. A simple block_on swap is
+not accepted: the old Tokio runtime was multi-threaded and the selected new one
+is current-thread. Live frames, check frequency and all original limits remain.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

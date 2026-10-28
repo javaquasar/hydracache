@@ -1,0 +1,11 @@
+{
+  "code_executed_archived_source": false,
+  "correction": "Read the same whitelist using four document paths and three fixed directory prefixes; verify exact staged membership and every object identity.",
+  "native_test_replayed": false,
+  "observed_in_tool_stream": true,
+  "reason": "The filename or extension is too long",
+  "reconstructed_classification_not_raw_stderr": true,
+  "stage": "CreateProcess git ls-files before child launch",
+  "type": "FileNotFoundError",
+  "winerror": 206
+}

@@ -1,0 +1,8 @@
+test_child_cannot_become_parent (test_projection.ProjectionControls.test_child_cannot_become_parent) ... ok
+test_exact_multiple_sections (test_projection.ProjectionControls.test_exact_multiple_sections) ... ok
+test_only_reviewed_call_may_gain_comma (test_projection.ProjectionControls.test_only_reviewed_call_may_gain_comma) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.000s
+
+OK

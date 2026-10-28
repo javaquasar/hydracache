@@ -1,0 +1,22 @@
+from pathlib import Path
+import hashlib,json
+ROOT=Path(__file__).resolve().parent.parent
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/dbus-msrv-staged-20261028'
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,raw):
+ digest=hashlib.sha256(raw).hexdigest();path=OUT/'objects'/digest
+ if path.exists():assert path.read_bytes()==raw
+ else:path.write_bytes(raw)
+ members[name]=dict(sha256=digest,bytes=len(raw))
+for name in ('dbus-staged-20261028.py','dbus-staged-v2-20261028.py','retain-dbus-staged-20261028.py'):
+ add('producer/'+name,(ROOT/'target'/name).read_bytes())
+add('first-refusal.json',(json.dumps(dict(type='FileNotFoundError',winerror=206,
+ reason='The filename or extension is too long',stage='CreateProcess git ls-files before child launch',
+ observed_in_tool_stream=True,reconstructed_classification_not_raw_stderr=True,
+ code_executed_archived_source=False,native_test_replayed=False,
+ correction='Read the same whitelist using four document paths and three fixed directory prefixes; verify exact staged membership and every object identity.'),sort_keys=True,indent=2)+'\n').encode())
+(OUT/'index.json').write_text(json.dumps(dict(schema='hc074-staged-metadata-audit-v1',members=members,
+ first_refusal_preserved=True,staged_audit_must_pass_separately=True,
+ product_gate_replayed=False,release_admitted=False),sort_keys=True,indent=2)+'\n',encoding='utf-8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf-8',newline='\n')
+print('retained first inert Windows argv-length refusal and scoped metadata successor')
