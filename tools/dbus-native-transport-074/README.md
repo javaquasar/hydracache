@@ -36,3 +36,16 @@ server workload. Compiler/MSRV, all 64 prior cases, real private-bus transport/
 FD/fault checks, new source-package reconstruction and full policy/root/product
 gates remain separate. Preserve first results; no retry of unchanged candidates,
 new performance hypothesis, threshold change, deny exception or MSRV increase.
+
+The first resolver is consumed: Cargo succeeds, but the original strict audit
+refuses the accompanying Tokio→tracing feature-edge removal. `review_saved.py`
+uses exact held manifests to review that same first lock offline; the old refusal
+is never changed and Cargo is not rerun. It accepts only the source-proven old
+zbus test edge and Tokio optional tracing edge; all unrelated effects refuse.
+156→135 packages, 21 removed, no added package or retained checksum change.
+
+`compile_prepare.py prepare` creates the separate c/native-a2 source with this
+accepted lock; `compile_run.py` uses the original paired GNU/MSRV library owner.
+The exact already-qualified 64-case unit coordinator is source-pinned and only
+relocated by `unit_native.py`/`unit_run.py`. Their additional units-inputs receipt
+is separate. All real compile/runtime/source/policy gates still need verdicts.

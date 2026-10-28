@@ -55,3 +55,33 @@ original checks/count/order. No service/clock/server/product activity or new
 qualification follows. After accepted lock/source closure, run GNU/MSRV and
 the original complete selected cases, then actual private-bus partial/FD/peer/
 lost-ACK faults, source reconstruction/distribution and final policy/root gates.
+
+## First resolution and source-audited feature effect
+
+The first actual offline resolver succeeds, produces a 135-package lock from the
+156-package predecessor and introduces no package/checksum change. The original
+strict audit refuses a second changed retained edge, Tokio→tracing, so its native
+result remains failed. All other source/boot and CI-retirement checks pass. No
+compiler, test or bus runs. Do not rerun Cargo or rewrite that first refusal.
+
+Primary normalized manifests prove the cause: zbus 5.19.0 explicitly requests
+Tokio's tracing feature, while the qualified 6.1.0 manifest does not. Pinned Tokio
+1.53.3 declares tracing as an optional cfg(tokio_unstable) dependency. This is
+neither a HydraCache live-check predicate nor its own validation observer. A
+separate offline reviewer requires exact whole manifest hashes and the exact
+candidate manifest's one empty nondefault feature, then permits only root→old
+zbus and this exact Tokio→tracing removal. Every other package/checksum/edge
+predicate stays strict. Three controls refuse source and unrelated graph mutations.
+The old strict auditor is unchanged; its failure remains evidence.
+
+The same first lock passes that explicit source/effect review with 21 removed
+packages, no new nodes and unchanged retained checksums. It is not a full policy
+or compatibility verdict. The first review loader also records a Python prepare
+module-name collision before writing any result; the corrected unique module
+loader performs the offline review without another resolver run.
+
+A separate c/native-a2 compiler context freezes exactly that reviewed lock and
+the same transport sources; only vendor paths relocate. Paired original library
+check/strict Clippy and the exact preserved 64-case/test-cfg gate follow under
+unchanged CI bounds. Native private-bus/FD/peer faults and source reconstruction
+remain subsequent gates. No numerical claim, MSRV change or deny exception.
