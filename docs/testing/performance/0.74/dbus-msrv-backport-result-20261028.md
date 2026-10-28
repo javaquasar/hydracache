@@ -113,3 +113,11 @@ complete source/effect and distribution reviews must precede root adoption and a
 fresh complete package/workspace gate. Chitchat's costly preview remains declined;
 security closure and original execution/recovery remain open. This result grants
 neither release nor server admission and makes no numerical performance claim.
+
+The later [source-package consumer gate](dbus-source-package-result-20261028.md)
+now materializes standalone authoring manifests and binds the three local source
+archives, including the separately tested Linux CLOEXEC/CTRUNC fixes. Every
+compiler Rust body and manifest equals the 67-case predecessor; the reconstructed
+consumer passes all 67 on GNU Rust 1.94/1.88 with check/strict Clippy. The original
+MSRV/formatting refusals remain. Registry distribution/actual shipping consumers,
+complete source/effect/caller migration and final product admission stay open.

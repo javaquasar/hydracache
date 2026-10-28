@@ -1,0 +1,16 @@
+{
+  "authoring_manifests_standalone": true,
+  "compiler_manifests_equal_previous": true,
+  "recipe_sha256": "6ab8b734574c81f54afb4d1ebb88765210101b8afb86d7730b720f1e8eee4576",
+  "registry_qualified": false,
+  "release_admitted": false,
+  "repeated_build_equal": true,
+  "rust_bodies_equal_previous": true,
+  "source_archive_sha256": {
+    "zbus": "3f4287e62f910d4c624e449394cc256588a3eb77ff98d4032d7c7c4aec2454c0",
+    "zbus_macros": "0485f3fa2b311beb0ba6e2ce5080c7ab9dfee515a70ebd151fb897fe61cdecfe",
+    "zbus_utils": "be51fb124bbc2da01473d4d56da44911ac3df321042867cfd5e869ee087c312c"
+  },
+  "source_members": 266,
+  "unsigned": true
+}

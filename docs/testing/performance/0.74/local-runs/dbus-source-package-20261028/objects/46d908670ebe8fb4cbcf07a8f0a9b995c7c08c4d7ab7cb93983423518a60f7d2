@@ -1,0 +1,151 @@
+"""Archive/consumer gate for the already tested zbus source, never root adoption."""
+from pathlib import Path
+import json
+import shutil
+import sys
+import tomllib
+import types
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / 'tools/windows-workspace-preflight-074'))
+import prepare as p
+
+parent = p.load(ROOT / 'tools/dbus-reply-state-074/run.py', 'package_reply_parent')
+codec = p.load(ROOT / 'tools/dbus-source-package-074/package.py', 'package_codec')
+sha, files, write = parent.sha, parent.files, parent.write
+BASE = ROOT / 'target/dbus-source-package-20261028'
+NATIVE = '/home/artur/.cache/hydracache-074-dbus-source-package/20261028-a1'
+RECIPE_SHA = '6ab8b734574c81f54afb4d1ebb88765210101b8afb86d7730b720f1e8eee4576'  # Filled after the inert recipe generation, before any command.
+FRAGMENT_SHA = 'f7dd3e7198daa2d595eccef3a71b35a4a8efba5f389bf4dd5d6c205f183f8744'
+
+
+def held(packet, digest):
+    folder = ROOT / 'docs/testing/performance/0.74/local-runs' / packet
+    raw = (folder / 'index.json').read_bytes()
+    p.require(sha(raw) == digest, 'held predecessor index')
+    members = json.loads(raw)['members']
+
+    def get(name):
+        row = members[name]
+        body = (folder / 'objects' / row['sha256']).read_bytes()
+        p.require(sha(body) == row['sha256'] and len(body) == row['bytes'], 'held member')
+        return body
+
+    return get
+
+
+def predecessors():
+    original = held('dbus-msrv-backport-20261028',
+                    'ab5c211321f2557437f0c93c0bf2e99b82f8dd417a68e95f84590fb8a45c109e')
+    previous = held('dbus-reply-state-20261028',
+                    '59d8018a968bf93e59073bf15791d17b861d3bdd7751821d45342c0df52c0072')
+    return original, previous
+
+
+def reviewed_packages():
+    original, _ = predecessors()
+    folder = ROOT / 'tools/dbus-source-package-074/patches'
+    raw = (folder / 'recipe.json').read_bytes()
+    p.require(RECIPE_SHA is not None and sha(raw) == RECIPE_SHA, 'whole source recipe')
+    recipe = json.loads(raw)
+    archives = {name: original('capture/primary/' + name + '-' + row['version'] + '.crate')
+                for name, row in recipe['bases'].items()}
+    objects = {r['after_sha256']: (folder / 'objects' / r['after_sha256']).read_bytes()
+               for r in recipe['changes']}
+    packages, final = codec.rebuild(recipe, archives, objects)
+    p.require(codec.rebuild(recipe, archives, objects)[0] == packages, 'second inert build byte equality')
+    return recipe, packages, final
+
+
+def export(out):
+    """Reconstruct from retained inputs only; never reuse/overwrite an output."""
+    recipe, packages, _ = reviewed_packages()
+    out.mkdir(parents=True, exist_ok=False)
+    for crate, raw in sorted(packages.items()):
+        name = crate + '-' + recipe['bases'][crate]['version'] + '-hc074-source.tar'
+        (out / name).write_bytes(raw)
+    write(out, 'receipt.json', dict(schema='hc074-source-export-v1', recipe_sha256=RECIPE_SHA,
+          source_archive_sha256=recipe['source_archive_sha256'], unsigned=True,
+          registry_qualified=False, code_executed=False, release_admitted=False))
+    return recipe['source_archive_sha256']
+
+
+def prepare():
+    out = BASE / 'prepare'
+    out.mkdir(parents=True, exist_ok=False)
+    (out / 'producer.py').write_bytes(Path(__file__).read_bytes())
+    _, previous = predecessors()
+    review = json.loads(previous('capture/alias-fixed/prepare/result.json'))
+    source = ROOT / 'target/dbus-reply-state-20261028/alias-fixed/input'
+    p.require(files(source) == review['files'], 'exact complete previous consumer')
+    p.require(parent.fragment.prior.parent.old.root_inputs() == review['root_inputs'], 'protected product inputs')
+    recipe, packages, final = reviewed_packages()
+    dest = BASE / 'input'
+    shutil.copytree(source, dest)
+    for path in dest.rglob('*'):
+        if path.is_file() and 'archives' not in path.relative_to(dest).parts:
+            path.write_bytes(path.read_bytes().replace(review['native_root'].encode(), NATIVE.encode()))
+    bundles = dest / 'packages'
+    bundles.mkdir()
+    (bundles / 'recipe.json').write_bytes((ROOT / 'tools/dbus-source-package-074/patches/recipe.json').read_bytes())
+    for crate, raw in packages.items():
+        row = recipe['bases'][crate]
+        name = crate + '-' + row['version']
+        (bundles / (name + '-hc074-source.tar')).write_bytes(raw)
+        members = codec.unpack(raw, name, True)
+        p.require(members == final[crate], 'actual archive consumer bytes')
+        before = {n.relative_to(source / 'fd' / crate).as_posix(): n.read_bytes()
+                  for n in (source / 'fd' / crate).rglob('*') if n.is_file()}
+        p.require({n: b for n, b in members.items() if n.endswith('.rs')} ==
+                  {n: b for n, b in before.items() if n.endswith('.rs')}, 'no new compiler Rust body')
+        p.require(set(members) == set(before) | {'BACKPORT074.json'}, 'only provenance member added')
+        normalized = tomllib.loads(members['Cargo.toml'].decode())
+        p.require(normalized == tomllib.loads(members['Cargo.toml.orig'].decode()), 'standalone authoring mirror')
+        p.require(members['Cargo.toml'] == before['Cargo.toml'], 'compiler manifest unchanged')
+        for variant in ('baseline', 'fd'):
+            target = dest / variant / crate
+            for name, body in members.items():
+                path = target / name
+                p.require(path.resolve().is_relative_to(target.resolve()), 'own generated source scope')
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(body)
+            p.require(files(target) == recipe['final_members'][crate], 'exact source package installation into consumer')
+    for variant in ('baseline', 'fd'):
+        p.require((dest / variant / 'Cargo.lock').read_bytes() ==
+                  (source / variant / 'Cargo.lock').read_bytes(), 'unchanged complete consumer lock')
+    write(out, 'source-receipt.json', dict(recipe_sha256=RECIPE_SHA,
+          source_archive_sha256=recipe['source_archive_sha256'], source_members=sum(map(len, final.values())),
+          repeated_build_equal=True, rust_bodies_equal_previous=True, compiler_manifests_equal_previous=True,
+          authoring_manifests_standalone=True, unsigned=True, registry_qualified=False, release_admitted=False))
+    write(out, 'result.json', dict(review, files=files(dest), native_root=NATIVE, attempt=5,
+          reuse_passing_baseline=True, recipe_sha256=RECIPE_SHA, root_changed=False, release_admitted=False))
+    print(json.dumps(dict(prepared=True, source_members=sum(map(len, final.values())), tests=67)))
+
+
+def native_command(attempt):
+    p.require(attempt == 4, 'single fixed context')
+    return ['wsl.exe', '-d', 'Ubuntu', '-u', 'artur', '--cd', '/', '--exec', '/usr/bin/python3', '-B',
+            '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-source-package-074/native.py', 'session']
+
+
+def launch(worker):
+    p.require(sha((ROOT / 'tools/dbus-fragments-074/run.py').read_bytes()) == FRAGMENT_SHA,
+              'unchanged parent CI owner')
+    reviewed_packages()
+    scope = dict(parent.fragment.launch.__globals__, context=lambda attempt: (BASE, NATIVE),
+                 native_command=native_command, __file__=str(Path(__file__)))
+    types.FunctionType(parent.fragment.launch.__code__, scope)(4, worker)
+
+
+if __name__ == '__main__':
+    p.require(len(sys.argv) in (2, 3) and (len(sys.argv) == 2 or sys.argv[2] == '--worker'), 'fixed dispatch')
+    if sys.argv[1] == 'prepare':
+        p.require(len(sys.argv) == 2, 'inert preparation')
+        prepare()
+    elif sys.argv[1] == 'rebuild-only':
+        p.require(len(sys.argv) == 2, 'inert source export')
+        print(json.dumps(export(BASE / 'export')))
+    elif sys.argv[1] == 'session-io-safe':
+        launch(len(sys.argv) == 3)
+    else:
+        raise ValueError('fixed command')

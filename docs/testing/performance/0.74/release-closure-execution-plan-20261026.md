@@ -505,6 +505,16 @@ separate maintained backport-package preparation; publication, installation and
 server runs are not included. Remaining migration/source/effect/distribution,
 Chitchat wide-wire and full product gates stay required.
 
+The [zbus source-package continuation](dbus-source-package-result-20261028.md)
+now reconstructs three byte-pinned local source archives from 263 base members
+and a whole-preimage recipe. Provenance and standalone authoring manifests yield
+266 final members without changing the previous compiler Rust/manifests/features/
+lock. The separate archive-member consumer passes 67/67, check and strict Clippy
+on GNU Rust 1.94/1.88. Thirteen inert packaging/export controls and vendor formatting
+pass. Registry/shipping qualification, full caller/source/effect and product gates
+remain required. Source reconstruction does not reopen the declined Chitchat
+preview or provide signed host/original execution authority.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

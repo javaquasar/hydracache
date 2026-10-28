@@ -1,0 +1,99 @@
+{
+  "archive_code_executed_in_verification": false,
+  "doc_check": true,
+  "members": {
+    "capture/doc-check/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/doc-check/intent.json": {
+      "bytes": 847409,
+      "sha256": "2c483abd2fd7c83ecaf763fce13a37603440a740d41989fb0d7dd8feee9160f4"
+    },
+    "capture/doc-check/producer.py": {
+      "bytes": 3070,
+      "sha256": "d573a64826416f1bd1211e31382167ee0f6f384f5711962816ef0709060d3c8f"
+    },
+    "capture/doc-check/result.json": {
+      "bytes": 73,
+      "sha256": "d4c3c1448535744b4f257eb1a411089bec35038ec813a67a4de5cf4fb98085d1"
+    },
+    "capture/doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "capture/verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/verify/intent.json": {
+      "bytes": 473858,
+      "sha256": "9cc190c7d2309822f307ca67a5cd46b728b8c2ec6bb9552aaddf8c40db6d41c4"
+    },
+    "capture/verify/producer.py": {
+      "bytes": 3170,
+      "sha256": "6770ce818c1dd0f42491c03a55ad4d88031dc2526754090e85b99d036340a144"
+    },
+    "capture/verify/result.json": {
+      "bytes": 73,
+      "sha256": "d4c3c1448535744b4f257eb1a411089bec35038ec813a67a4de5cf4fb98085d1"
+    },
+    "capture/verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/verify/stdout.log": {
+      "bytes": 240,
+      "sha256": "6e16c353d0a032b5b2c376d85e26992e08e4806bf3f4edc761fd45192172e53a"
+    },
+    "source/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1503658,
+      "sha256": "ed1984681525dcfa217e439c317e54323b21bd2aa59f67bee42198f59eb64709"
+    },
+    "source/docs/testing/performance/0.74/README.md": {
+      "bytes": 502134,
+      "sha256": "39d72c09cf16d3daad2f40594bba3731d8ecdc0219be3a486e51e7722f186672"
+    },
+    "source/docs/testing/performance/0.74/dbus-msrv-backport-result-20261028.md": {
+      "bytes": 8358,
+      "sha256": "74acc43a0b8a1ee49c5623724e8a3711ca8eb39c4fa084f51553fe6717b55553"
+    },
+    "source/docs/testing/performance/0.74/dbus-source-package-result-20261028.md": {
+      "bytes": 7607,
+      "sha256": "ca46edc4b478f6000ac64f374e222a30e0858207ea5c23741e3c5f36a28ddb3d"
+    },
+    "source/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 38758,
+      "sha256": "439d695c6d070a6dea564fe39adfd62d2213ab0ee7bb41623be7ad2dbcb9554a"
+    },
+    "source/docs/testing/performance/0.74/remaining-security-feasibility-20261028.md": {
+      "bytes": 10785,
+      "sha256": "5fff4a8045b797723ca572412e80c9366e753dbd492160d4cb4ce35910c37d95"
+    },
+    "source/target/dbus-source-package-step-20261028.py": {
+      "bytes": 3170,
+      "sha256": "6770ce818c1dd0f42491c03a55ad4d88031dc2526754090e85b99d036340a144"
+    },
+    "source/target/retain-dbus-source-package-20261028.py": {
+      "bytes": 4209,
+      "sha256": "c8b9be58bbff165f5d1fdaaab56b702f7fe302bfa33f7dd4240ba14036ef8f96"
+    },
+    "source/target/verify-dbus-source-package-20261028.py": {
+      "bytes": 3546,
+      "sha256": "1b6ac5966dc3ba10858c34b465d6049ea41ae7c92852918e88297703a707f606"
+    }
+  },
+  "native_passes_per_compiler": 67,
+  "primary_index_sha256": "84008a428497fcc0445527c86c7576fd94bb12c742aa667f03e81f4acdebd227",
+  "registry_qualified": false,
+  "release_admitted": false,
+  "root_adopted": false,
+  "schema": "hc074-source-package-verification-v1",
+  "source_archives_rebuilt": 3,
+  "source_head_observation": "efab729bc9efe829c58684baad0aff87688dbef2",
+  "source_members_verified": 266
+}

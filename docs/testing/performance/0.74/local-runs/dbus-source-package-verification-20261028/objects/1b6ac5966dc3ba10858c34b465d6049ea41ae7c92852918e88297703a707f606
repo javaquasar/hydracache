@@ -1,0 +1,41 @@
+"""Independent inert packet/recipe/tar/native-accounting audit."""
+from pathlib import Path
+import hashlib,importlib.util,json,re
+ROOT=Path(__file__).resolve().parent.parent
+PACKET=ROOT/'docs/testing/performance/0.74/local-runs/dbus-source-package-20261028'
+sha=lambda b:hashlib.sha256(b).hexdigest()
+raw=(PACKET/'index.json').read_bytes();assert sha(raw)=='84008a428497fcc0445527c86c7576fd94bb12c742aa667f03e81f4acdebd227'
+index=json.loads(raw);members=index['members'];assert len(members)==750
+for row in members.values():
+ body=(PACKET/'objects'/row['sha256']).read_bytes();assert sha(body)==row['sha256'] and len(body)==row['bytes']
+def get(name):return (PACKET/'objects'/members[name]['sha256']).read_bytes()
+recipe=json.loads(get('source/tools/dbus-source-package-074/patches/recipe.json'))
+assert sha(get('source/tools/dbus-source-package-074/patches/recipe.json'))=='6ab8b734574c81f54afb4d1ebb88765210101b8afb86d7730b720f1e8eee4576'
+spec=importlib.util.spec_from_file_location('hc074_current_owned_codec',ROOT/'tools/dbus-source-package-074/package.py')
+codec=importlib.util.module_from_spec(spec);spec.loader.exec_module(codec)
+assert sha((ROOT/'tools/dbus-source-package-074/package.py').read_bytes())==sha(get('source/tools/dbus-source-package-074/package.py'))
+archives={name:get('upstream/'+name+'-'+row['version']+'.crate') for name,row in recipe['bases'].items()}
+objects={row['after_sha256']:get('source/tools/dbus-source-package-074/patches/objects/'+row['after_sha256']) for row in recipe['changes']}
+packages,final=codec.rebuild(recipe,archives,objects)
+assert sum(map(len,final.values()))==266
+for crate,body in packages.items():
+ name=crate+'-'+recipe['bases'][crate]['version']+'-hc074-source.tar'
+ assert body==get('capture/input/packages/'+name)==get('capture/export/'+name)
+ for variant in ('fd','baseline'):
+  for name,raw in final[crate].items():assert raw==get('capture/input/'+variant+'/'+crate+'/'+name)
+models=[]
+for compiler in ('194','188'):
+ test=json.loads(get(f'capture/session/fd-{compiler}-test/result.json'));listing=json.loads(get(f'capture/session/fd-{compiler}-list/result.json'))
+ assert test['exit']==0 and test['artifact']==listing['artifact'] and len(listing['inventory'])==67
+ assert test['accounting']['passed']==test['accounting']['selected']==67 and test['accounting']['failed']==test['accounting']['filtered']==0
+ raw=get(f'capture/session/fd-{compiler}-test/stdout.log');rows=re.findall(rb'^test (.+?) \.\.\. (ok|FAILED)$',raw,re.M)
+ assert len(rows)==67 and sorted(n.decode() for n,s in rows)==listing['inventory'] and all(s==b'ok' for n,s in rows)
+ models += [v for v in raw.splitlines() if v.startswith(b'HC074-REPLY-STATE ')]
+ for action in ('build','list','test','check','clippy'):
+  result=json.loads(get(f'capture/session/fd-{compiler}-{action}/result.json'));execution=json.loads(get(f'capture/session/fd-{compiler}-{action}/execution.json'))
+  assert result['exit']==0 and execution['retired'] and not execution['errors']
+assert len(models)==2 and models[0]==models[1] and b'checks=17150' in models[0]
+for mode,count in (('controls',12),('controls-export',13)):
+ assert json.loads(get('capture/final/'+mode+'/result.json'))['exit']==0
+ assert f'Ran {count} tests'.encode() in get('capture/final/'+mode+'/stderr.log')
+print(json.dumps(dict(passed=True,members_verified=750,objects_verified=len(list((PACKET/'objects').iterdir())),source_archives_rebuilt=3,source_members_verified=266,native_passes_per_compiler=67,seeded_model_checks_per_compiler=17150,archived_code_executed=False)))

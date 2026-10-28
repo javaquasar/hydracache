@@ -1,0 +1,65 @@
+"""Inert one-time recipe authoring from the sealed base and final tested bodies."""
+from pathlib import Path
+import difflib,importlib.util,json
+ROOT=Path(__file__).resolve().parent.parent
+path=ROOT/'tools/dbus-source-package-074/run.py'
+spec=importlib.util.spec_from_file_location('source_package_authoring',path)
+r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
+original,previous=r.predecessors()
+review=json.loads(previous('capture/alias-fixed/prepare/result.json'))
+source=ROOT/'target/dbus-reply-state-20261028/alias-fixed/input'
+assert r.files(source)==review['files']
+legacy_raw=(ROOT/'tools/dbus-msrv-backport-074/patches/receipt.json').read_bytes()
+assert r.sha(legacy_raw)=='59a5cd3f030648218b36f0f4c2f066d1d04c1c5320d059ffef5435df5ad8d2d2'
+legacy=json.loads(legacy_raw)
+base={};chosen={};changed_prior=[]
+for crate,row in legacy['base_archives'].items():
+ raw=original('capture/primary/'+crate+'-'+row['version']+'.crate')
+ assert r.sha(raw)==row['sha256']
+ base[crate]=r.codec.unpack(raw,crate+'-'+row['version'])
+ chosen[crate]={p.relative_to(source/'fd'/crate).as_posix():p.read_bytes() for p in (source/'fd'/crate).rglob('*') if p.is_file()}
+ for name,body in chosen[crate].items():
+  expected=legacy['files'][crate+'/'+name]['final_sha256']
+  if r.sha(body)!=expected:changed_prior.append(crate+'/'+name)
+assert changed_prior==['zbus/src/runtime/io/unix.rs']
+assert r.sha(chosen['zbus']['src/runtime/io/unix.rs'])=='f54f8160a3cdb0c9cdd68189a462079d94d4d46c6821458eaf544609bb933588'
+assert sum(map(len,base.values()))==sum(map(len,chosen.values()))==263
+recipe=dict(schema='hc074-zbus-source-package-v1',maintenance_owner='HydraCache repository maintainers: local backport preparation',
+ source_revision='hc074-zbus-backport-source-1',unsigned=True,published=False,registry_qualified=False,root_adopted=False,
+ upstream_package_versions_preserved=True,upstream_vcs_file_is_base_provenance_only=True,
+ upstream_packaged_locks_are_data_only=True,tested_consumer_lock_is_separate=True,msrv='1.88',
+ supported_validation_target='x86_64-unknown-linux-gnu',selected_features=['tokio-multithread','proxy','p2p'],
+ base_receipt_sha256=r.sha(legacy_raw),predecessor_index_sha256='59d8018a968bf93e59073bf15791d17b861d3bdd7751821d45342c0df52c0072',
+ bases={},changes=[],final_members={},source_archive_sha256={},review_diff_sha256={})
+objects={}
+folder=ROOT/'tools/dbus-source-package-074/patches';folder.mkdir(exist_ok=False);(folder/'objects').mkdir()
+for crate,members in chosen.items():
+ row=legacy['base_archives'][crate]
+ # Authoring is made standalone from the tested normalized manifest; this
+ # changes no compiler manifest, dependency, feature or Rust body.
+ members['Cargo.toml.orig']=members['Cargo.toml']
+ meta=dict(schema='hc074-local-backport-provenance-v1',source_revision=recipe['source_revision'],package=crate,
+ upstream_version=row['version'],upstream_archive_sha256=row['sha256'],msrv='1.88',
+ maintenance_owner=recipe['maintenance_owner'],published=False,unsigned=True,release_admitted=False,
+ upstream_vcs_file_is_base_provenance_only=True,upstream_packaged_lock_is_not_tested_consumer_lock=True,
+ source_changes_from_upstream=[name for name in sorted(members) if members[name]!=base[crate].get(name)],
+ compiler_manifest_sha256=r.sha(members['Cargo.toml']))
+ members['BACKPORT074.json']=r.codec.encoded(meta)
+ recipe['bases'][crate]=dict(row,members=r.codec.inventory(base[crate]))
+ recipe['final_members'][crate]=r.codec.inventory(members)
+ diffs=[]
+ for name,body in sorted(members.items()):
+  before=base[crate].get(name)
+  if body==before:continue
+  digest=r.sha(body);objects[digest]=body
+  recipe['changes'].append(dict(crate=crate,path=name,before_sha256=r.sha(before) if before is not None else None,after_sha256=digest))
+  diffs.extend(difflib.unified_diff((before or b'').decode().splitlines(True),body.decode().splitlines(True),
+               fromfile='a/'+crate+'/'+name if before is not None else '/dev/null',tofile='b/'+crate+'/'+name))
+ diff=''.join(diffs).encode();(folder/(crate+'.patch')).write_bytes(diff);recipe['review_diff_sha256'][crate]=r.sha(diff)
+ recipe['source_archive_sha256'][crate]=r.sha(r.codec.pack(members,crate+'-'+row['version']))
+for digest,raw in objects.items():(folder/'objects'/digest).write_bytes(raw)
+raw=r.codec.encoded(recipe);(folder/'recipe.json').write_bytes(raw)
+assert r.codec.rebuild(recipe,{c:original('capture/primary/'+c+'-'+v['version']+'.crate') for c,v in recipe['bases'].items()},objects)[1]==chosen
+text=path.read_text(encoding='utf8');assert text.count('RECIPE_SHA = None')==1
+path.write_text(text.replace('RECIPE_SHA = None', 'RECIPE_SHA = '+repr(r.sha(raw))),encoding='utf8',newline='\n')
+print(json.dumps(dict(base_members=263,source_members=sum(map(len,chosen.values())),changed_members=len(recipe['changes']),recipe_sha256=r.sha(raw),source_archive_sha256=recipe['source_archive_sha256'])))

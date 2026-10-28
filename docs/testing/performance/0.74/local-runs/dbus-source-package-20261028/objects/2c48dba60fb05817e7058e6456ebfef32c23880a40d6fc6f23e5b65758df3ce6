@@ -1,0 +1,18 @@
+test_canonical_metadata_tampering_refuses (test_controls.Controls.test_canonical_metadata_tampering_refuses) ... ok
+test_canonical_order_clock_and_metadata_have_no_host_inputs (test_controls.Controls.test_canonical_order_clock_and_metadata_have_no_host_inputs) ... ok
+test_compiler_bodies_manifests_and_license_match_previous_consumer (test_controls.Controls.test_compiler_bodies_manifests_and_license_match_previous_consumer) ... ok
+test_duplicate_and_foreign_change_owners_refuse (test_controls.Controls.test_duplicate_and_foreign_change_owners_refuse) ... ok
+test_export_needs_no_prior_builds_and_never_overwrites (test_controls.Controls.test_export_needs_no_prior_builds_and_never_overwrites) ... ok
+test_links_duplicates_and_foreign_prefix_refuse_without_extraction (test_controls.Controls.test_links_duplicates_and_foreign_prefix_refuse_without_extraction) ... ok
+test_native_worker_and_original_limits_and_toolchain_context (test_controls.Controls.test_native_worker_and_original_limits_and_toolchain_context) ... ok
+test_prepared_source_archives_catalog_and_root_guards (test_controls.Controls.test_prepared_source_archives_catalog_and_root_guards) ... ok
+test_readable_diffs_and_replacement_objects_are_pinned (test_controls.Controls.test_readable_diffs_and_replacement_objects_are_pinned) ... ok
+test_stale_preimage_final_map_and_archive_pins_refuse (test_controls.Controls.test_stale_preimage_final_map_and_archive_pins_refuse) ... ok
+test_unsafe_and_aliased_paths_refuse (test_controls.Controls.test_unsafe_and_aliased_paths_refuse) ... ok
+test_whole_base_and_final_inventory_and_two_rebuilds (test_controls.Controls.test_whole_base_and_final_inventory_and_two_rebuilds) ... ok
+test_wrong_base_and_missing_or_changed_replacement_refuse (test_controls.Controls.test_wrong_base_and_missing_or_changed_replacement_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.560s
+
+OK

@@ -7366,3 +7366,13 @@ The first wire::Value build refusal is retained; only fixture alias/builder API
 spellings change, with two spelling changes in the exact execution module.
 Root adoption, maintained package/source/effect/distribution and full product
 milestones remain open, as do authenticated execution/all-writer/recovery gates.
+
+The [reconstructed zbus source-package gate](dbus-source-package-result-20261028.md)
+adds a pinned portable recipe and three deterministic source archives, explicit
+local-backport provenance and standalone authoring manifests. A consumer built
+from those exact archive members passes all 67 cases, check and strict Clippy
+on GNU Rust 1.94/1.88, with unchanged compiler Rust bodies/features/lock. Thirteen
+inert controls and source formatting pass. A rebuild-only command needs retained
+repository inputs rather than old build trees. The unsigned source package is
+not published/registry-qualified or root-adopted. Chitchat preview stays declined;
+complete migration/source/effect/product and original-execution gates remain open.

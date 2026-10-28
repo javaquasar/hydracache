@@ -1,0 +1,87 @@
+"""Inert source-archive/consumer audit; never execute retained native images."""
+from pathlib import Path
+import hashlib,importlib.util,json,re,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/dbus-source-package-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/dbus-source-package-20261028'
+spec=importlib.util.spec_from_file_location('hc074_source_seal',ROOT/'tools/dbus-source-package-074/run.py')
+r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
+sha=r.sha;read=lambda p:json.loads(p.read_bytes())
+recipe,packages,final=r.reviewed_packages()
+assert r.RECIPE_SHA=='6ab8b734574c81f54afb4d1ebb88765210101b8afb86d7730b720f1e8eee4576'
+review=read(BASE/'prepare/result.json');receipt=read(BASE/'prepare/source-receipt.json')
+assert receipt['source_members']==266 and receipt['repeated_build_equal'] and receipt['rust_bodies_equal_previous'] and receipt['compiler_manifests_equal_previous'] and receipt['authoring_manifests_standalone']
+assert r.files(BASE/'input')==review['files'] and r.parent.fragment.prior.parent.old.root_inputs()==review['root_inputs']
+original,previous=r.predecessors();old_review=json.loads(previous('capture/alias-fixed/prepare/result.json'))
+assert review['baseline']==old_review['baseline'] and review['extras']==old_review['extras']
+old_models=[];models=[]
+for compiler in ('194','188'):
+ test=read(BASE/f'session/fd-{compiler}-test/result.json');listing=read(BASE/f'session/fd-{compiler}-list/result.json')
+ assert test['exit']==0 and test['artifact']==listing['artifact'] and len(listing['inventory'])==67
+ account=test['accounting'];assert account['complete'] and account['passed']==account['selected']==67 and account['failed']==account['filtered']==0
+ raw=(BASE/f'session/fd-{compiler}-test/stdout.log').read_bytes();rows=re.findall(rb'^test (.+?) \.\.\. (ok|FAILED)$',raw,re.M)
+ assert len(rows)==67 and sorted(n.decode() for n,status in rows)==listing['inventory'] and all(s==b'ok' for _,s in rows)
+ before=previous(f'capture/alias-fixed/session/fd-{compiler}-test/stdout.log')
+ for marker in (b'HC074_FLOW_TRACE:',b'HC074_READ_TRACE:',b'HC074_PEER_MISMATCH_TRACE:'):
+  trace=lambda b:[json.loads(v.split(b':',1)[1]) for v in b.splitlines() if v.startswith(marker)]
+  assert trace(raw)==trace(before)
+ model=lambda b:[v.decode() for v in b.splitlines() if v.startswith(b'HC074-REPLY-STATE ')]
+ models+=model(raw);old_models+=model(before)
+ for action in ('build','list','test','check','clippy'):
+  result=read(BASE/f'session/fd-{compiler}-{action}/result.json');execution=read(BASE/f'session/fd-{compiler}-{action}/execution.json')
+  assert result['exit']==0 and execution['retired'] and not execution['errors']
+assert models==old_models and len(models)==2 and models[0]==models[1] and 'checks=17150' in models[0]
+native=read(BASE/'session/native-result.json');assert native['passed'] and native['source_unchanged'] and native['boot_unchanged'] and len(native['phases'])==10
+for variant in ('fd','baseline'):
+ assert (BASE/'input'/variant/'Cargo.lock').read_bytes()==previous('capture/alias-fixed/input/'+variant+'/Cargo.lock')
+ for crate,members in final.items():
+  assert r.files(BASE/'input'/variant/crate)==recipe['final_members'][crate]
+for crate,raw in packages.items():
+ name=crate+'-'+recipe['bases'][crate]['version']+'-hc074-source.tar'
+ assert raw==(BASE/'input/packages'/name).read_bytes()==(BASE/'export'/name).read_bytes()
+ assert r.codec.unpack(raw,crate+'-'+recipe['bases'][crate]['version'],True)==final[crate]
+assert read(BASE/'export/receipt.json')['source_archive_sha256']==recipe['source_archive_sha256']
+checks=ROOT/'target/dbus-source-package-final-20261028'
+for mode,count in (('controls',12),('controls-export',13)):
+ assert read(checks/mode/'result.json')['exit']==0
+ assert f'Ran {count} tests' in (checks/mode/'stderr.log').read_text(encoding='utf8')
+assert read(checks/'format/result.json')['exit']==0
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members;members[name]=dict(sha256=digest,bytes=len(raw))
+for path in sorted(BASE.rglob('*')):
+ if path.is_file() and '__pycache__' not in path.parts:add('capture/'+path.relative_to(BASE).as_posix(),path)
+for mode in ('controls','controls-export','format'):
+ for path in sorted((checks/mode).iterdir()):
+  if path.is_file():add('capture/final/'+mode+'/'+path.name,path)
+for path in sorted((ROOT/'tools/dbus-source-package-074').rglob('*')):
+ if path.is_file() and '__pycache__' not in path.parts:add('source/'+path.relative_to(ROOT).as_posix(),path)
+for name in ('Cargo.toml','Cargo.lock','deny.toml','docs/testing/performance/0.74/qualification-manifest.toml','tools/long-run-supervisor-074/Cargo.toml',
+ 'tools/dbus-linux-074/native.py','tools/dbus-linux-074/run.py','tools/dbus-fragments-074/run.py','tools/dbus-reply-state-074/run.py',
+ 'tools/windows-workspace-preflight-074/owned.py','tools/windows-workspace-preflight-074/prepare.py',
+ 'scripts/ci/watchdog_windows_job.py','scripts/ci/watchdog_linux_group.py','tools/chitchat-mtu-review-074/accounting.py',
+ 'target/dbus-source-package-author-20261028.py','target/dbus-source-package-step-20261028.py','target/seal-dbus-source-package-20261028.py'):
+ add('source/'+name,ROOT/name)
+for packet in ('dbus-msrv-backport-20261028','dbus-reply-state-20261028','chitchat-preview-cost-20261028'):
+ add('predecessor/'+packet+'/index.json',ROOT/'docs/testing/performance/0.74/local-runs'/packet/'index.json')
+for crate,row in recipe['bases'].items():
+ raw=original('capture/primary/'+crate+'-'+row['version']+'.crate');digest=sha(raw)
+ dest=OUT/'objects'/digest
+ if not dest.exists():dest.write_bytes(raw)
+ members['upstream/'+crate+'-'+row['version']+'.crate']=dict(sha256=digest,bytes=len(raw))
+index=dict(schema='hc074-source-package-consumer-v1',members=members,recipe_sha256=r.RECIPE_SHA,
+ source_archive_sha256=recipe['source_archive_sha256'],original_source_members=263,final_source_members=266,
+ changed_or_added_source_members=11,native_passes_per_compiler=67,package_identities=62,registry_archives=58,
+ seeded_model=models[0],inert_controls=13,earlier_controls=12,rust_body_and_compiler_manifest_delta_from_predecessor=False,
+ source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ source_export_and_consumer_archives_equal=True,authoring_manifests_standalone=True,
+ root_changed=False,performance_claim=False,server=False,services=False,clocks_changed=False,
+ published=False,registry_qualified=False,unsigned=True,original_execution_admitted=False,
+ product_gate_replayed=False,release_admitted=False,archived_code_executed=False)
+(OUT/'index.json').write_bytes(r.codec.encoded(index))
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

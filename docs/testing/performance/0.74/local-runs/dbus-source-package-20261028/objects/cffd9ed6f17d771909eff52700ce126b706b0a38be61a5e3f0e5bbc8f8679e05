@@ -1,0 +1,7 @@
+[workspace]
+members = ["probe"]
+exclude = ["zbus", "zbus_macros", "zbus_utils"]
+resolver = "2"
+[patch.crates-io]
+zbus_macros = { path = "zbus_macros" }
+zbus_utils = { path = "zbus_utils" }

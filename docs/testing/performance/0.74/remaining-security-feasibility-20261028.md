@@ -162,3 +162,12 @@ cases, check and strict Clippy on GNU Rust 1.88/1.94. The first import refusal
 remains. This advances item 3 without closing distribution/source/effect, complete
 caller migration or root package/workspace adoption. It grants no execution or
 server authority.
+
+The [reconstructed zbus source packages](dbus-source-package-result-20261028.md)
+advance item 2 with whole base/final inventories, portable replacements, stable
+local source identities and standalone authoring manifests. The packaged-source
+GNU consumer passes 67/67, check and strict Clippy on Rust 1.94/1.88; thirteen
+inert archive/export controls pass. This is local, unsigned source preparation,
+not registry qualification, product adoption or a new dependency-policy verdict.
+Chitchat S remains declined after its separate allocation attribution; its earlier
+green functional tests must not be used to reverse that decision silently.

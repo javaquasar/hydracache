@@ -22252,3 +22252,36 @@ effect/distribution review, принятие итогового dependency graph
 milestone и original execution/watchdog/completion/reconnect. Подробные ограничения,
 первый отказ и сырые результаты приведены в
 [отчёте ReplyState](../testing/performance/0.74/dbus-reply-state-result-20261028.md).
+
+### 0.74: воспроизводимый source-пакет zbus без подмены готовности релиза
+
+Следующая проверка отделяет успешно собранный fixture от исходников, которые
+можно восстановить после очистки build-кэшей. Из трёх точных upstream-архивов
+собирается локальный zbus backport source revision 1. Рецепт закрепляет каждый
+из 263 исходных файлов, целые preimage/after-объекты и итоговые архивы. В пакете
+266 файлов: добавлены три записи provenance. Самостоятельные authoring manifests
+совпадают с ранее испытанными compiler manifests; Rust-код, версии, features и
+consumer lock относительно предыдущего кандидата не меняются. Лицензии сохранены.
+
+Tar-порядок, UID/GID, права и mtime заданы явно; часы и компрессор не участвуют.
+Две реконструкции дают одинаковые байты. Тринадцать inert-контролей проверяют
+восстановление и отказы при подмене pins, файлов, путей, ссылок и дублей. Экспорт
+запрещает перезапись существующего результата. Команда rebuild-only читает
+сохранённые repository inputs; старые target/native source trees ей не нужны.
+Это не signed build receipt и не production enrollment. Названия и версии
+upstream сохранены вместе с явной маркировкой изменённого локального source.
+
+Отдельный GNU consumer из этих восстановленных файлов дал 67/67 на Rust 1.94
+и MSRV 1.88, с check и строгим Clippy. Сохранились полный каталог, read/caller
+transcripts и 17 150 проверок модели ReplyState на каждый компилятор. Проверена
+упаковка уже испытанного кода; это не измерение ускорения и не доказательство
+полной совместимости всех upstream features и платформ. Пороги, live-проверки,
+сроки, root dependency graph, supervisor и qualification identity не изменялись.
+
+Отрицательный результат Chitchat preview остаётся окончательным для интеграции:
+его дополнительные аллокации нельзя оправдать успешной упаковкой другого пакета.
+До принятия графа остаются полный caller/source/effect review, registry/shipping
+consumer-проверки, совместимый security-путь Chitchat и полные product gates.
+Original execution, прекращение записи writers и восстановление связи требуют
+собственных доказательств. Архивы, SHA, команды и ограничения приведены в
+[отчёте source-package](../testing/performance/0.74/dbus-source-package-result-20261028.md).
