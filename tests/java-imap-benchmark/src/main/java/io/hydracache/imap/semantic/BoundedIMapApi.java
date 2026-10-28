@@ -77,7 +77,13 @@ public final class BoundedIMapApi {
 
   private record MutationRequest(BytesValue key, BytesValue value, Long expiresAt, boolean remove) {}
   private record BulkRequest(List<ReplaceInput> replacements) {}
-  private record RetainedMutation(Object request, TryOutcome outcome, List<ReplaceReceipt> items) {}
+  private record RetainedMutation(Object request, TryOutcome outcome, List<ReplaceReceipt> items,
+      Object serviceOutcome) {
+    RetainedMutation(Object request, TryOutcome outcome, List<ReplaceReceipt> items) {
+      this(request, outcome, items, null);
+    }
+  }
+  private final Map<MutationIdentity, Object> pendingService = new HashMap<>();
 
   public record Bounds(
       int maxKeyBytes,
@@ -243,8 +249,9 @@ public final class BoundedIMapApi {
       if (!prior.request().equals(request)) throw new IllegalArgumentException("mutation conflict");
       return prior.outcome();
     }
+    if (pendingService.containsKey(identity)) throw new IllegalArgumentException("mutation conflict");
     if (deadline <= now) return new TryOutcome(TryStatus.NOT_APPLIED, identity, OptionalLong.empty());
-    checkBound("dedupEntries", bounds.maxEntries(), retained.size() + 1);
+    checkBound("dedupEntries", bounds.maxEntries(), retained.size() + pendingService.size() + 1);
     boolean applied;
     if (request.remove()) {
       applied = evict(request.key(), now);
@@ -308,9 +315,10 @@ public final class BoundedIMapApi {
       if (!prior.request().equals(request)) throw new IllegalArgumentException("mutation conflict");
       return new BulkTryOutcome(prior.outcome(), prior.items());
     }
+    if (pendingService.containsKey(identity)) throw new IllegalArgumentException("mutation conflict");
     if (deadline <= now) return new BulkTryOutcome(
         new TryOutcome(TryStatus.NOT_APPLIED, identity, OptionalLong.empty()), List.of());
-    checkBound("dedupEntries", bounds.maxEntries(), retained.size() + 1);
+    checkBound("dedupEntries", bounds.maxEntries(), retained.size() + pendingService.size() + 1);
     List<ReplaceReceipt> result = replaceAllDetailed(request.replacements(), now);
     boolean applied = result.stream().anyMatch(ReplaceReceipt::replaced);
     TryOutcome outcome = new TryOutcome(TryStatus.APPLIED,
@@ -441,12 +449,17 @@ public final class BoundedIMapApi {
   public synchronized RemovalReceipt evictAll(long now) { return removeAll(RemovalCause.EVICT, now); }
 
   public synchronized RemovalReceipt destroy(long now) {
-    RemovalReceipt receipt = removeAll(RemovalCause.DESTROY, now);
+    requireActive();
+    int removed = (int) entries.values().stream()
+        .filter(value -> value.expiresAt() == null || value.expiresAt() > now).count();
+    checkBound("bulkMutationItems", bounds.maxBulkMutationItems(), removed);
+    revision = Math.incrementExact(revision);
+    entries.clear();
     destroyed = true;
     retained.clear();
+    pendingService.clear();
     listeners.clear();
-    revision++;
-    return new RemovalReceipt(receipt.cause(), receipt.removed(), revision);
+    return new RemovalReceipt(RemovalCause.DESTROY, removed, revision);
   }
 
   private RemovalReceipt removeAll(RemovalCause cause, long now) {
@@ -464,11 +477,12 @@ public final class BoundedIMapApi {
   private int cursorOffset(Optional<Cursor> cursor, BytesValue searchValue, Projection projection) {
     if (cursor.isEmpty()) return 0;
     Cursor value = cursor.orElseThrow();
-    if (value.revision() != revision) throw new IllegalStateException("stale scan cursor");
-    if (value.owner != cursorOwner || value.offset() > entries.size()
-        || !Objects.equals(value.searchValue, searchValue) || value.projection != projection) {
+    if (value.owner != cursorOwner || !Objects.equals(value.searchValue, searchValue)
+        || value.projection != projection) {
       throw new IllegalArgumentException("foreign or invalid cursor");
     }
+    if (value.revision() != revision) throw new IllegalStateException("stale scan cursor");
+    if (value.offset() > entries.size()) throw new IllegalArgumentException("foreign or invalid cursor");
     return Math.min(value.offset(), entries.size());
   }
 
@@ -545,5 +559,56 @@ public final class BoundedIMapApi {
         }
       }
     };
+  }
+
+  record RetainedEntry(BytesValue key, BytesValue value, Long expiresAt, long version) {}
+  record LegacyOutcome(TryOutcome outcome, List<ReplaceReceipt> items) {}
+
+  synchronized List<RetainedEntry> retainedEntries() {
+    return entries.entrySet().stream().map(entry -> new RetainedEntry(entry.getKey(),
+        entry.getValue().value(), entry.getValue().expiresAt(), entry.getValue().version())).toList();
+  }
+
+  synchronized void expireForService(long now) { if (!destroyed) purgeExpired(now); }
+  Bounds serviceBounds() { return bounds; }
+
+  synchronized Object recoverService(MutationIdentity identity, Object request) {
+    RetainedMutation value = retained.get(identity);
+    if (value == null) return null;
+    if (!value.request().equals(request)) throw new IllegalArgumentException("mutation conflict");
+    return value.serviceOutcome();
+  }
+
+  synchronized void beginService(MutationIdentity identity, Object request) {
+    requireActive();
+    Object pending = pendingService.get(identity);
+    if (pending != null && !pending.equals(request)) {
+      throw new IllegalArgumentException("mutation conflict");
+    }
+    if (pending == null) {
+      checkBound("dedupEntries", bounds.maxEntries(), retained.size() + pendingService.size() + 1);
+      pendingService.put(identity, request);
+    }
+  }
+
+  synchronized void completeService(MutationIdentity identity, Object request, Object outcome) {
+    pendingService.remove(identity);
+    retained.put(identity, new RetainedMutation(request, null, List.of(), outcome));
+  }
+
+  synchronized void abandonService(MutationIdentity identity) { pendingService.remove(identity); }
+  synchronized boolean servicePending(MutationIdentity identity) {
+    return pendingService.containsKey(identity);
+  }
+  synchronized Object serviceOutcome(MutationIdentity identity) {
+    RetainedMutation value = retained.get(identity);
+    return value == null ? null : value.serviceOutcome() == null
+        ? new LegacyOutcome(value.outcome(), value.items()) : value.serviceOutcome();
+  }
+  synchronized int serviceRetainedCount() { return retained.size(); }
+  synchronized int servicePendingCount() { return pendingService.size(); }
+  synchronized int serviceLiveCount() { return entries.size(); }
+  synchronized long serviceValueBytes() {
+    return entries.values().stream().mapToLong(entry -> entry.value().size()).sum();
   }
 }

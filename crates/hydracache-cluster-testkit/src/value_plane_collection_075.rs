@@ -176,13 +176,24 @@ enum PointCommand {
 enum RetainedCommand {
     Point(PointCommand),
     ReplaceAll(Vec<ReplacementEntry>),
+    Service([u8; 32]),
 }
 
 #[derive(Debug, Clone)]
 enum RetainedOutcome {
     Point(TimedMutationOutcome),
     Replacements(Vec<ReplacementReceipt>),
+    ServicePending,
+    Service(serde_json::Value),
 }
+
+pub(crate) enum ServiceRetainedOutcome {
+    Unknown,
+    Pending,
+    Completed(serde_json::Value),
+}
+
+pub(crate) type ExpiredServiceEntries = Vec<(Vec<u8>, Vec<u8>)>;
 
 /// Pulls at most one bounded page at a time, including revision validation for buffered items.
 #[derive(Debug)]
@@ -312,6 +323,184 @@ impl ReferenceCollectionMap {
 
     pub fn retained_mutation_count(&self) -> usize {
         self.retained.len()
+    }
+
+    pub(crate) const fn service_map_id(&self) -> u64 {
+        self.map_id
+    }
+
+    pub(crate) const fn service_bounds(&self) -> CollectionBounds {
+        self.bounds
+    }
+
+    pub(crate) fn service_counts(&self, now: u64) -> (usize, usize) {
+        self.entries
+            .values()
+            .filter(|stored| is_live(stored, now))
+            .fold((0, 0), |(count, bytes), stored| {
+                (count + 1, bytes + stored.value.len())
+            })
+    }
+
+    pub(crate) fn service_snapshot(&self, now: u64) -> Vec<(Vec<u8>, EntryView)> {
+        self.entries
+            .iter()
+            .filter(|(_, stored)| is_live(stored, now))
+            .map(|(key, stored)| {
+                (
+                    key.clone(),
+                    EntryView {
+                        value: stored.value.clone(),
+                        version: stored.version,
+                        remaining_ttl: stored.expires_at.map(|deadline| deadline - now),
+                    },
+                )
+            })
+            .collect()
+    }
+
+    pub(crate) fn service_entry(&self, key: &[u8], now: u64) -> Option<EntryView> {
+        self.entries
+            .get(key)
+            .filter(|stored| is_live(stored, now))
+            .map(|stored| EntryView {
+                value: stored.value.clone(),
+                version: stored.version,
+                remaining_ttl: stored.expires_at.map(|deadline| deadline - now),
+            })
+    }
+
+    pub(crate) fn service_preflight_puts(
+        &self,
+        entries: &[ReplacementEntry],
+        now: u64,
+    ) -> Result<(), CollectionError> {
+        let additional = entries
+            .iter()
+            .filter(|entry| {
+                !self
+                    .entries
+                    .get(&entry.key)
+                    .is_some_and(|stored| is_live(stored, now))
+            })
+            .count();
+        self.check_bound(
+            "entries",
+            self.bounds.max_entries,
+            self.live_count(now).saturating_add(additional),
+        )?;
+        self.reserve_revisions(entries.len() as u64)
+    }
+
+    pub(crate) fn service_preflight_removals(
+        &self,
+        keys: &[Vec<u8>],
+        now: u64,
+    ) -> Result<(), CollectionError> {
+        let removed = keys
+            .iter()
+            .filter(|key| {
+                self.entries
+                    .get(key.as_slice())
+                    .is_some_and(|stored| is_live(stored, now))
+            })
+            .count();
+        self.reserve_revisions(removed as u64)
+    }
+
+    pub(crate) fn service_expire(
+        &mut self,
+        now: u64,
+    ) -> Result<ExpiredServiceEntries, CollectionError> {
+        let expired = self
+            .entries
+            .iter()
+            .filter(|(_, stored)| !is_live(stored, now))
+            .map(|(key, stored)| (key.clone(), stored.value.clone()))
+            .collect();
+        self.purge_expired(now)?;
+        Ok(expired)
+    }
+
+    pub(crate) fn service_lookup(
+        &self,
+        identity: &MutationIdentity,
+        digest: Option<[u8; 32]>,
+    ) -> Result<ServiceRetainedOutcome, CollectionError> {
+        self.validate_mutation_identity(identity)?;
+        let Some((command, outcome)) = self.retained.get(identity) else {
+            return Ok(ServiceRetainedOutcome::Unknown);
+        };
+        if let Some(digest) = digest {
+            if command != &RetainedCommand::Service(digest) {
+                return Err(CollectionError::MutationIdentityConflict);
+            }
+        }
+        Ok(match outcome {
+            RetainedOutcome::ServicePending => ServiceRetainedOutcome::Pending,
+            RetainedOutcome::Service(value) => ServiceRetainedOutcome::Completed(value.clone()),
+            RetainedOutcome::Point(outcome) => ServiceRetainedOutcome::Completed(match outcome {
+                TimedMutationOutcome::Applied { changed, version } => {
+                    serde_json::json!({"kind":"applied","flag":changed,"version":version})
+                }
+                TimedMutationOutcome::NotApplied(_) => serde_json::json!({"kind":"not_applied"}),
+                TimedMutationOutcome::OutcomeUnknown => {
+                    serde_json::json!({"kind":"outcome_unknown"})
+                }
+            }),
+            RetainedOutcome::Replacements(receipts) => ServiceRetainedOutcome::Completed(
+                serde_json::json!({"kind":"bulk","number":receipts.len(),"items":receipts.iter().map(|receipt|serde_json::json!({
+                    "index":receipt.input_index,"key":receipt.key,"kind":if receipt.replaced{"replaced"}else{"absent"},
+                    "value":null,"version":receipt.version,"remaining_ttl":null
+                })).collect::<Vec<_>>()}),
+            ),
+        })
+    }
+
+    pub(crate) fn service_reserve(
+        &mut self,
+        identity: MutationIdentity,
+        digest: [u8; 32],
+    ) -> Result<(), CollectionError> {
+        self.require_active()?;
+        self.validate_mutation_identity(&identity)?;
+        if self.retained.contains_key(&identity) {
+            return Err(CollectionError::MutationIdentityConflict);
+        }
+        self.check_bound(
+            "retained_mutations",
+            self.bounds.max_entries,
+            self.retained.len().saturating_add(1),
+        )?;
+        self.retained.insert(
+            identity,
+            (
+                RetainedCommand::Service(digest),
+                RetainedOutcome::ServicePending,
+            ),
+        );
+        Ok(())
+    }
+
+    pub(crate) fn service_complete(
+        &mut self,
+        identity: &MutationIdentity,
+        value: serde_json::Value,
+    ) {
+        if let Some((_, outcome)) = self.retained.get_mut(identity) {
+            *outcome = RetainedOutcome::Service(value);
+        }
+    }
+
+    pub(crate) fn service_abort(&mut self, identity: &MutationIdentity) {
+        self.retained.remove(identity);
+    }
+
+    pub(crate) fn service_pending_count(&self) -> usize {
+        self.retained
+            .values()
+            .filter(|(_, outcome)| matches!(outcome, RetainedOutcome::ServicePending))
+            .count()
     }
 
     pub fn put(
@@ -1129,5 +1318,32 @@ mod counter_exhaustion_tests {
             Err(CollectionError::MapIdentityExhausted)
         );
         assert_eq!(counter.load(Ordering::Relaxed), u64::MAX);
+    }
+
+    #[test]
+    fn unified_bulk_remove_reserves_every_version_before_mutation() {
+        use crate::value_plane_service_075::{
+            OperationOutcomeQuery, ServiceCommand, UnifiedIMapService,
+        };
+        let mut map = ReferenceCollectionMap::new(CollectionBounds::default()).unwrap();
+        map.put(b"a".to_vec(), b"one".to_vec(), None, 0).unwrap();
+        map.put(b"b".to_vec(), b"two".to_vec(), None, 0).unwrap();
+        map.revision = u64::MAX - 1;
+        let service = UnifiedIMapService::from_map(map, 1).unwrap();
+        let identity = MutationIdentity::new("bulk-remove", 1);
+        let mut command = ServiceCommand::point("remove_all_detailed", b"");
+        command.keys = vec![b"a".to_vec(), b"b".to_vec()];
+        command.identity = Some(identity.clone());
+        assert_eq!(service.execute(command).unwrap_err().kind(), "capacity");
+        let entries = service.snapshot(0).unwrap();
+        assert_eq!(entries.len(), 2);
+        assert_eq!(entries[0].value, b"one");
+        assert_eq!(entries[1].value, b"two");
+        assert_eq!(service.revision(), u64::MAX - 1);
+        assert_eq!(
+            service.query_operation_outcome(&identity).unwrap(),
+            OperationOutcomeQuery::Unknown
+        );
+        assert_eq!(service.statistics().retained_outcomes, 0);
     }
 }

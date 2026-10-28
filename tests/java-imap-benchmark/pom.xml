@@ -75,6 +75,11 @@
                     <include>io.hydracache.imap.semantic.BoundedIMapApi*</include>
                     <include>io.hydracache.imap.semantic.AsyncIMapFacade*</include>
                     <include>io.hydracache.imap.semantic.IMapCapabilityDescriptor*</include>
+                    <include>io.hydracache.imap.semantic.UnifiedIMapService*</include>
+                    <include>io.hydracache.imap.semantic.IMapDomainException*</include>
+                    <include>io.hydracache.imap.semantic.IMapFlowPublisher*</include>
+                    <include>io.hydracache.imap.semantic.UnifiedIMapAsyncFacade*</include>
+                    <include>io.hydracache.imap.semantic.IMapTraceRunner*</include>
                   </includes>
                   <limits>
                     <limit>

@@ -254,7 +254,7 @@ final class ExtendedIMapApiTest {
   void capabilityDescriptorIsExplicitAndCannotEnableProduction() {
     var descriptor = IMapCapabilityDescriptor.local(BOUNDS);
     assertFalse(descriptor.productionEnabled());
-    assertEquals(35, descriptor.plannedOperations().size());
+    assertEquals(40, descriptor.plannedOperations().size());
     assertTrue(descriptor.plannedOperations().contains("get_and_put"));
     assertFalse(descriptor.supports("get_and_put"));
     assertTrue(descriptor.supports("get_entry_view"));

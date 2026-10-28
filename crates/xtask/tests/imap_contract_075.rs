@@ -482,3 +482,87 @@ fn canary_assigning_production_key_identity_fails_closed() {
         .iter()
         .any(|problem| problem.contains("must not allocate production identities")));
 }
+
+#[test]
+fn unified_surface_matrix_is_explicit_and_fail_closed() {
+    let contract: Value = serde_json::from_slice(
+        &fs::read(root().join("docs/testing/imap/0.75/surface-equivalence.json")).unwrap(),
+    )
+    .unwrap();
+    for surface in contract["surfaces"].as_array().unwrap() {
+        for operation in [
+            "replace_if_version",
+            "remove_if_version",
+            "set_ttl_if_version",
+            "query_operation_outcome",
+            "local_statistics",
+        ] {
+            let cells = surface["cells"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .filter(|cell| cell["operation"] == operation)
+                .collect::<Vec<_>>();
+            assert_eq!(cells.len(), 1);
+            let unsupported = matches!(surface["id"].as_str().unwrap(), "resp" | "hc1");
+            assert_eq!(
+                cells[0]["disposition"],
+                if unsupported {
+                    "unsupported"
+                } else {
+                    "enabled"
+                }
+            );
+            assert_eq!(cells[0]["unsupported_error"].is_string(), unsupported);
+        }
+    }
+}
+
+#[test]
+fn canary_local_service_cannot_split_authority_or_invent_absent_outcomes() {
+    for (field, replacement) in [
+        ("value_owner", serde_json::json!("second_shadow_map")),
+        ("outcome_owner", serde_json::json!("independent_history")),
+        ("missing_outcome", serde_json::json!("not_applied")),
+        ("version_scope", serde_json::json!(["entry_version"])),
+        ("query_outcomes", serde_json::json!(["completed", "absent"])),
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |value| {
+            value["api_extensions"]["local_service"][field] = replacement;
+        });
+        assert!(
+            problems(&temp)
+                .iter()
+                .any(|problem| problem.starts_with("local IMap service")),
+            "{field}"
+        );
+    }
+}
+
+#[test]
+fn canary_stream_listener_stats_and_differential_cannot_weaken_their_contract() {
+    for (field, replacement) in [
+        ("include_value", serde_json::json!("unbounded_default")),
+        ("stream_buffer_pages", serde_json::json!(0)),
+        ("stream_terminal", serde_json::json!("drop_silently")),
+        ("statistics_scope", serde_json::json!("cluster_aggregate")),
+        ("listener_kinds", serde_json::json!(["added"])),
+        (
+            "differential_observations",
+            serde_json::json!(["command_hash"]),
+        ),
+        ("test_ids", serde_json::json!([])),
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |value| {
+            value["api_extensions"]["local_service"][field] = replacement;
+        });
+        assert!(
+            problems(&temp)
+                .iter()
+                .any(|problem| problem.starts_with("local IMap service")),
+            "{field}"
+        );
+    }
+}

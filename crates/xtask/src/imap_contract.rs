@@ -19,7 +19,7 @@ const MUTATION_STAGES: [&str; 10] = [
     "responded",
     "outcome_unknown",
 ];
-const REQUIRED_OPERATIONS: [&str; 35] = [
+const REQUIRED_OPERATIONS: [&str; 40] = [
     "get",
     "put",
     "delete",
@@ -55,6 +55,11 @@ const REQUIRED_OPERATIONS: [&str; 35] = [
     "replace_all_detailed",
     "remove_entry_listener",
     "capability_descriptor",
+    "replace_if_version",
+    "remove_if_version",
+    "set_ttl_if_version",
+    "query_operation_outcome",
+    "local_statistics",
 ];
 const FAILURE_SCENARIOS: [&str; 9] = [
     "ready_owner",
@@ -150,6 +155,24 @@ struct ApiExtensions {
     production_enabled: bool,
     interface_features: Vec<InterfaceFeature>,
     unsupported_families: Vec<String>,
+    local_service: LocalServiceContract,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LocalServiceContract {
+    value_owner: String,
+    outcome_owner: String,
+    version_scope: Vec<String>,
+    query_outcomes: Vec<String>,
+    missing_outcome: String,
+    listener_kinds: Vec<String>,
+    include_value: String,
+    stream_buffer_pages: u32,
+    stream_terminal: String,
+    statistics_scope: String,
+    differential_observations: Vec<String>,
+    test_ids: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -594,6 +617,14 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         "java_async_facade",
         "cursor_iterator_adapters",
         "capability_descriptor",
+        "unified_local_imap_service",
+        "generation_scoped_version_conditionals",
+        "public_retained_outcome_query",
+        "demand_bounded_streams",
+        "rich_listener_lifecycle",
+        "typed_cross_language_errors",
+        "local_statistics_snapshot",
+        "cross_language_execution_differential",
     ] {
         if !implemented.contains(required) {
             problems.push(format!(
@@ -678,6 +709,14 @@ fn validate_test_registry(
             .flat_map(|item| item.test_ids.iter().map(String::as_str)),
     );
     claimed.extend(bounds.bounds.iter().map(|item| item.test_id.as_str()));
+    claimed.extend(
+        operations
+            .api_extensions
+            .local_service
+            .test_ids
+            .iter()
+            .map(String::as_str),
+    );
     claimed.extend(
         surfaces
             .surfaces
@@ -840,8 +879,13 @@ fn validate_operations(
         "not_applied",
         "outcome_unknown",
         "entry_view",
+        "listener_added",
         "listener_removed",
         "capabilities",
+        "pending",
+        "completed",
+        "unknown",
+        "statistics",
     ];
     let outcomes: BTreeSet<_> = contract.result_outcomes.iter().cloned().collect();
     require_exact_ids("result outcomes", &outcomes, required_outcomes, problems);
@@ -936,7 +980,98 @@ fn validate_operations(
     }
     require_exact_ids("operations", &operation_ids, REQUIRED_OPERATIONS, problems);
     validate_api_extensions(contract, problems);
+    validate_local_service(&contract.api_extensions.local_service, problems);
     operation_ids
+}
+
+fn validate_local_service(service: &LocalServiceContract, problems: &mut Vec<String>) {
+    for (label, actual, expected) in [
+        (
+            "value owner",
+            service.value_owner.as_str(),
+            "reference_collection_map",
+        ),
+        (
+            "outcome owner",
+            service.outcome_owner.as_str(),
+            "same_retained_identity_ledger",
+        ),
+        (
+            "missing outcome",
+            service.missing_outcome.as_str(),
+            "unknown_never_not_applied",
+        ),
+        (
+            "include value",
+            service.include_value.as_str(),
+            "bounded_opt_in",
+        ),
+        (
+            "stream terminal",
+            service.stream_terminal.as_str(),
+            "exactly_once_close_on_error_cancel_or_drop",
+        ),
+        (
+            "statistics scope",
+            service.statistics_scope.as_str(),
+            "local_reference_only",
+        ),
+    ] {
+        if actual != expected {
+            problems.push(format!("local IMap service {label} must be {expected}"));
+        }
+    }
+    for (label, actual, expected) in [
+        (
+            "version scope",
+            &service.version_scope,
+            vec!["map_instance", "namespace_generation", "entry_version"],
+        ),
+        (
+            "query outcomes",
+            &service.query_outcomes,
+            vec!["pending", "completed", "unknown"],
+        ),
+        (
+            "listener kinds",
+            &service.listener_kinds,
+            vec![
+                "added",
+                "updated",
+                "removed",
+                "expired",
+                "evicted",
+                "cleared",
+                "destroyed",
+            ],
+        ),
+        (
+            "differential observations",
+            &service.differential_observations,
+            vec![
+                "outcome",
+                "error",
+                "value",
+                "ttl",
+                "version",
+                "events",
+                "statistics",
+            ],
+        ),
+    ] {
+        let values = actual.iter().map(String::as_str).collect::<BTreeSet<_>>();
+        if values != expected.into_iter().collect() || values.len() != actual.len() {
+            problems.push(format!(
+                "local IMap service {label} must retain the complete unique contract"
+            ));
+        }
+    }
+    if service.stream_buffer_pages != 1 {
+        problems.push("local IMap service stream buffer must be one page".into());
+    }
+    if service.test_ids.is_empty() || service.test_ids.iter().any(|id| id.trim().is_empty()) {
+        problems.push("local IMap service must name executable tests".into());
+    }
 }
 
 fn validate_api_extensions(contract: &OperationContract, problems: &mut Vec<String>) {

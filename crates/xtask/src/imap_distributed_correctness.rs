@@ -34,6 +34,8 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "--test",
             "value_plane_capability_075",
             "--test",
+            "value_plane_differential_075",
+            "--test",
             "value_plane_dedup_075",
             "--test",
             "value_plane_durable_075",
@@ -47,6 +49,12 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "value_plane_model_075",
             "--test",
             "value_plane_security_075",
+            "--test",
+            "value_plane_service_075",
+            "--test",
+            "value_plane_service_async_075",
+            "--test",
+            "value_plane_stream_075",
             "--test",
             "value_plane_resources_075",
             "--test",
@@ -69,6 +77,8 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     if !java_status.success() {
         return Err("Java IMap semantic suite failed".into());
     }
+    let differential = crate::imap_api_differential::check_actual_at_root(&root, 117, 128)?;
+    println!("imap-api-differential: {differential:?}");
     let contract_problems = crate::imap_contract::check_at_root(&root, RELEASE)?;
     if !contract_problems.is_empty() {
         return Err(format!("IMap contract problems: {contract_problems:?}").into());

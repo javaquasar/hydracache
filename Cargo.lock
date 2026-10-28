@@ -2351,6 +2351,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "chitchat",
+ "futures-util",
  "hydracache",
  "hydracache-client-protocol",
  "hydracache-cluster-raft",

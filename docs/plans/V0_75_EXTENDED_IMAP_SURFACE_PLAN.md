@@ -219,7 +219,7 @@ evidence.
 
 ### Provisional safe-foundation progress
 
-As of 2026-10-04, branch `feat/0.75-distributed-imap-foundation` contains only work that is
+As of 2026-10-28, branch `feat/0.75-distributed-imap-foundation` contains only work that is
 independent of the unfinished 0.74 production shape:
 
 - a provisional, machine-checked W0 registry for operations, results, errors, TTL, bounds, surface
@@ -251,6 +251,10 @@ independent of the unfinished 0.74 production shape:
 - twelve local API extensions: read defaults, entry equality, void set, bounded entry views,
   identity-aware deadline put/remove, explicit bounded replacements, listener removal, Rust and
   Java asynchronous facades, lazy cursor iterators and programmatic capability descriptors;
+- a unified local command service over one collection/outcome owner, instance/generation-scoped
+  version conditionals, read-only pending/completed/unknown outcome queries, demand-bounded Rust
+  streams and Java Flow publishers, richer listener payload/lifecycle handling, typed domain
+  errors, local statistics and actual Rust-versus-Java execution differential with shrinking;
 - a bounded Rust/Java reference canonical-key codec and checked-in UTF-8/empty-key golden vectors;
   the production wire identity and partition hash deliberately remain unassigned.
 

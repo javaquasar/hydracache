@@ -25,6 +25,7 @@ pub mod fast_suite;
 pub mod feature_leak;
 pub mod gated_tests;
 pub mod host_attestation;
+pub mod imap_api_differential;
 pub mod imap_contract;
 pub mod imap_distributed_correctness;
 pub mod imap_foundation_component_proofs;

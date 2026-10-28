@@ -31,7 +31,8 @@ public record IMapCapabilityDescriptor(
         "clear_detailed", "destroy", "evict", "evict_all_detailed", "key_set_page", "values_page",
         "entry_set_page", "get_or_default", "contains_entry", "set",
         "get_entry_view", "try_put", "try_remove", "replace_all_detailed", "remove_entry_listener",
-        "capability_descriptor");
+        "capability_descriptor", "replace_if_version", "remove_if_version", "set_ttl_if_version",
+        "query_operation_outcome", "local_statistics");
     return new IMapCapabilityDescriptor(planned,
         Set.of("put", "entry_listener", "size", "is_empty", "contains_value_bounded",
             "clear_detailed", "destroy", "evict", "evict_all_detailed", "key_set_page",

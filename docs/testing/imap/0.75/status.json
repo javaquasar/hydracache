@@ -53,7 +53,15 @@
       "rust_async_facade",
       "java_async_facade",
       "cursor_iterator_adapters",
-      "capability_descriptor"
+      "capability_descriptor",
+      "unified_local_imap_service",
+      "generation_scoped_version_conditionals",
+      "public_retained_outcome_query",
+      "demand_bounded_streams",
+      "rich_listener_lifecycle",
+      "typed_cross_language_errors",
+      "local_statistics_snapshot",
+      "cross_language_execution_differential"
     ],
     "deferred": [
       "production_backend_and_partition_ownership",

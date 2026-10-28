@@ -12,6 +12,7 @@ publish = false
 anyhow = "1"
 async-trait.workspace = true
 chitchat.workspace = true
+futures-util.workspace = true
 hydracache.workspace = true
 hydracache-client-protocol.workspace = true
 hydracache-cluster-raft.workspace = true

@@ -39,6 +39,17 @@ the same receipt on replay and rejects conflicting identities or exhausted retai
 capacity. Descriptor operation names denote planned surface semantics, while production capability
 remains disabled.
 
+The local `UnifiedIMapService` dispatches all 40 provisional operations into the
+existing bounded map and its shared outcome ledger. It adds map/generation/version tokens,
+read-only pending/completed/unknown queries, typed domain exceptions, bounded value-bearing
+listener lifecycle events and local owner statistics. Java Flow sources respect demand, retain
+one bounded page and release registrations/cursors on termination. These are reference APIs.
+
+`IMapTraceRunner` executes bounded development traces in a separate JVM. The Rust differential
+gate compares each result, error, state, TTL, version, event and statistics observation with the
+independent Rust service; an actual dropped-set Java canary must diverge. Run it from the repo root
+with `cargo xtask imap-api-differential --release 0.75 --seed 117 --steps 128`.
+
 ## Blocked by 0.74
 
 Real HydraCache/Hazelcast adapters and every timed run are **blocked-by-0.74**. They must not be
