@@ -1,0 +1,26 @@
+test_all_original_module_and_test_routes_retained (test_controls.Controls.test_all_original_module_and_test_routes_retained) ... ok
+test_builder_converter_v2_keeps_getters_character_and_raw_literals (test_controls.Controls.test_builder_converter_v2_keeps_getters_character_and_raw_literals) ... ok
+test_closed_whole_source_census_and_pins (test_controls.Controls.test_closed_whole_source_census_and_pins) ... FAIL
+test_complete_original_tree_only_changes_fifteen_direct_callers (test_controls.Controls.test_complete_original_tree_only_changes_fifteen_direct_callers) ... ok
+test_final_unit_delta_is_only_two_test_files_and_metadata_adapter (test_controls.Controls.test_final_unit_delta_is_only_two_test_files_and_metadata_adapter) ... ok
+test_held_delivery_is_same_body_and_one_send_without_bridge (test_controls.Controls.test_held_delivery_is_same_body_and_one_send_without_bridge) ... ok
+test_literal_inventory_closes_external_sources_without_editing_them (test_controls.Controls.test_literal_inventory_closes_external_sources_without_editing_them) ... ok
+test_literal_inventory_refuses_unknown_expressions_and_escapes (test_controls.Controls.test_literal_inventory_refuses_unknown_expressions_and_escapes) ... ok
+test_locks_canonical_sources_and_roots_unchanged (test_controls.Controls.test_locks_canonical_sources_and_roots_unchanged) ... ok
+test_original_owner_receiver_join_and_watchdog_unchanged (test_controls.Controls.test_original_owner_receiver_join_and_watchdog_unchanged) ... ok
+test_owner_round_and_reply_binding_preserve_validation_cadence (test_controls.Controls.test_owner_round_and_reply_binding_preserve_validation_cadence) ... ok
+test_same_fixed_deadlines_and_no_api_expansion (test_controls.Controls.test_same_fixed_deadlines_and_no_api_expansion) ... ok
+
+======================================================================
+FAIL: test_closed_whole_source_census_and_pins (test_controls.Controls.test_closed_whole_source_census_and_pins)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-original-delivery-074\test_controls.py", line 13, in test_closed_whole_source_census_and_pins
+    self.assertEqual(r.project(name,raw),(r.BASE/'input/fd'/r.PKG/'src'/name).read_bytes())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'//![8623 chars]     \n        .destination(manager)\n        [9172 chars]n}\n' != b'//![8623 chars]     .unwrap()\n        .destination(manager)\[9253 chars]n}\n'
+
+----------------------------------------------------------------------
+Ran 12 tests in 1.462s
+
+FAILED (failures=1)

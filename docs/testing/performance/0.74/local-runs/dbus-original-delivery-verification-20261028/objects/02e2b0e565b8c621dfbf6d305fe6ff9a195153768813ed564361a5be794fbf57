@@ -1,0 +1,72 @@
+"""Independent raw-object, source and actual row audit; no archived code executes."""
+from pathlib import Path
+import hashlib,json,re
+ROOT=Path(__file__).resolve().parent.parent;OUT=ROOT/'docs/testing/performance/0.74/local-runs/dbus-original-delivery-20261028'
+sha=lambda b:hashlib.sha256(b).hexdigest();index=json.loads((OUT/'index.json').read_bytes());members=index['members'];seen=set()
+def get(name):
+ row=members[name];raw=(OUT/'objects'/row['sha256']).read_bytes();assert sha(raw)==row['sha256'] and len(raw)==row['bytes'];return raw
+read=lambda n:json.loads(get(n))
+for name,row in members.items():get(name);seen.add(row['sha256'])
+assert seen=={p.name for p in (OUT/'objects').iterdir()}
+original='tools/long-run-supervisor-074/src/'
+before='capture/production/input/baseline/'+original;after='capture/final/input/fd/'+original
+old={n[len(before):]:row['sha256'] for n,row in members.items() if n.startswith(before)}
+new={n[len(after):]:row['sha256'] for n,row in members.items() if n.startswith(after)}
+pins=read('source/tools/dbus-original-delivery-074/source-pins.json');legacy={'diagnostic_manager.rs','diagnostic_loaded.rs','systemd_unit.rs'}
+assert len(old)==545 and len(new)==546 and set(new)-set(old)=={'diagnostic_negotiated_credentials_adapter.rs'}
+assert {n for n in old if old[n]!=new[n]}==(set(pins)-legacy)|{'diagnostic_held_delivery_wire_tests.rs'}
+for name,digest in pins.items():assert sha(get(before+name))==digest
+for name in ('diagnostic_original_manager_join.rs','diagnostic_original_enrollment_frame.rs','diagnostic_manager_receiver_pin.rs','diagnostic_kernel_manager_binding.rs','diagnostic_original_watchdog_context.rs'):
+ assert get(before+name)==get(after+name)
+assert get(after+'diagnostic_manager_held_delivery.rs').replace(b'use zbus6 as zbus;\n',b'',1)==get(before+'diagnostic_manager_held_delivery.rs')
+name='diagnostic_original_manager_message.rs';a=get(before+name);b=get(after+name);start=b'pub(super) fn round(';end=b'pub(crate) struct OriginalManagerMessage'
+assert a[a.index(start):a.index(end)]==b[b.index(start):b.index(end)]
+for variant in ('baseline','fd'):assert get('capture/production/input/'+variant+'/Cargo.lock')==get('capture/final/input/'+variant+'/Cargo.lock')
+expected={'unit-build':(1,'owned-case-074/library.rs'),'unit-complete':(1,'material-lock-fixture-074/controls.rs'),'unit-inventory':(13,None),'unit-api-fixed':(2,None)}
+for scope,(count,marker) in expected.items():
+ prefix='capture/'+scope+'/session/';native=read(prefix+'native-result.json');assert not native['passed'] and native['source_unchanged'] and native['boot_unchanged']
+ assert native['phases']==[dict(label='fd-194-build',exit=101)]
+ messages=[json.loads(line) for line in get(prefix+'fd-194-build/stdout.log').splitlines()]
+ errors=[m['message'] for m in messages if m.get('reason')=='compiler-message' and m['message']['level']=='error'];assert len(errors)==count
+ if marker:assert marker in errors[0]['message'] and 'No such file' in errors[0]['message']
+ e=read(prefix+'fd-194-build/execution.json');assert e['retired'] and not e['errors']
+assert read('capture/unit-api/prepare/tool-observation.json')['capture_kind']=='tool_call_observation_not_OS_stream'
+scopes=[('production','session',[f'fd-{c}-{a}' for c in ('194','188') for a in ('check','clippy')]),('final','session',[f'fd-{c}-build' for c in ('194','188')]),('final','runtime',[f'fd-{c}-{a}' for c in ('194','188') for a in ('list','test')]),('final','lint',[f'fd-{c}-clippy' for c in ('194','188')])]
+for scope,area,labels in scopes:
+ prefix='capture/'+scope+'/'+area+'/'
+ n=read(prefix+'native-result.json');assert n['passed'] and n['source_unchanged'] and n['boot_unchanged'] and n['phases']==[dict(label=v,exit=0) for v in labels]
+ for label in labels:
+  e=read(prefix+label+'/execution.json');intent=read(prefix+label+'/intent.json');assert e['retired'] and not e['errors']
+  assert intent['bound']==1200 and intent['session_bound']==1100 and intent['floor']==4*1024**3 and intent['poll']==intent['retirement']==5
+  assert read(prefix+label+'/result.json')['exit']==0
+ e=read(prefix+'execution.json');assert e['retired'] and not e['errors']
+selected_files=('diagnostic_held_delivery_wire_tests.rs','diagnostic_original_manager_message_units.rs','diagnostic_original_pipe_transport_tests.rs','diagnostic_dispatch_exchange_tests.rs','diagnostic_dispatch_reply_flags_tests.rs','diagnostic_dispatch_reply_state_tests.rs','diagnostic_original_reply_binding_tests.rs')
+leaves=[]
+for name in selected_files:leaves+=re.findall(rb'#\[test\]\s*fn (\w+)',get(before+name))
+assert len(leaves)==len(set(leaves))==40
+leaf_names={v.decode() for v in leaves}|{'negotiated_credential_adapter_keeps_optional_fields_and_process_fd_alias'}
+catalogs=[]
+for compiler in ('194','188'):
+ prefix=f'capture/final/runtime/fd-{compiler}-';listing=read(prefix+'list/result.json');test=read(prefix+'test/result.json')
+ actual=sorted(line[:-6] for line in get(prefix+'list/stdout.log').decode().splitlines() if line.endswith(': test'))
+ assert actual==listing['inventory'] and len(actual)==1593 and len(set(actual))==1593;catalogs.append(actual)
+ selected=listing['selected'];assert len(selected)==len(set(selected))==41 and {n.rsplit('::',1)[1] for n in selected}==leaf_names
+ rows=re.findall(r'^test (.+?) \.\.\. (ok|FAILED|ignored)$',get(prefix+'test/stdout.log').decode(),re.M)
+ assert len(rows)==41 and sorted(n for n,state in rows)==selected and all(state=='ok' for n,state in rows)
+ assert test['summary']==[['ok','41','0','0','0','1552']] and [list(v) for v in rows]==test['rows']
+ summary=re.findall(r'^test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;',get(prefix+'test/stdout.log').decode(),re.M)
+ assert summary==[('ok','41','0','0','0','1552')]
+ build=read(f'capture/final/session/fd-{compiler}-build/result.json');assert build['artifact']==listing['artifact']==test['artifact']
+ messages=[json.loads(line) for line in get(f'capture/final/session/fd-{compiler}-build/stdout.log').splitlines()]
+ found=[m for m in messages if m.get('reason')=='compiler-artifact' and m['target']['name']=='hydracache_long_run_supervisor_074' and m['target']['kind']==['lib'] and m['profile']['test'] and m.get('executable')]
+ assert len(found)==1 and found[0]['executable']==build['artifact']['path'] and '/fd/tools/long-run-supervisor-074/src/lib.rs' in found[0]['target']['src_path']
+ assert [m['success'] for m in messages if m.get('reason')=='build-finished']==[True]
+ argv=read(f'capture/final/lint/fd-{compiler}-clippy/intent.json')['argv'];assert all(v in argv for v in ('--lib','--tests','--all-features','--offline','--locked')) and argv[-3:]==['--','-D','warnings']
+assert catalogs[0]==catalogs[1]
+freeze=read('capture/final/freeze/result.json')
+for name,digest in freeze['root_inputs'].items():assert sha((ROOT/name).read_bytes())==digest==sha(get('source/'+name))
+assert read('capture/checks/controls-api/result.json')['exit']==1
+for mode in ('controls-owned','format'):assert read('capture/checks/'+mode+'/result.json')['exit']==0
+assert b'Ran 13 tests' in get('capture/checks/controls-owned/stderr.log')
+assert not any(index[n] for n in ('root_changed','real_original_owner_executed','manual_private_bus_executed','system_bus','services','server','clocks_changed','performance_measurement','product_gate_replayed','release_admitted'))
+print(json.dumps(dict(verified=True,members=len(members),objects=len(seen),passes_per_compiler=41,catalog=1593,filtered=1552,index_sha256=sha((OUT/'index.json').read_bytes()),no_archived_code_executed=True)))

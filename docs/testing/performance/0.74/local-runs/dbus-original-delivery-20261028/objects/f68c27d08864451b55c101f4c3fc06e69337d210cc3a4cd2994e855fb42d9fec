@@ -1,0 +1,35 @@
+{
+  "boot_after": "283e2bd8-d655-4f59-bacc-445eb1a234dd",
+  "boot_before": "283e2bd8-d655-4f59-bacc-445eb1a234dd",
+  "boot_unchanged": true,
+  "clocks_after": {
+    "CLOCK_BOOTTIME": 111660378070,
+    "CLOCK_MONOTONIC": 111660377400,
+    "CLOCK_MONOTONIC_RAW": 111474657836,
+    "CLOCK_REALTIME": 1793186907983990175
+  },
+  "clocks_before": {
+    "CLOCK_BOOTTIME": 3028472055,
+    "CLOCK_MONOTONIC": 3028470969,
+    "CLOCK_MONOTONIC_RAW": 2958451398,
+    "CLOCK_REALTIME": 1793186799352083877
+  },
+  "clocks_changed": false,
+  "first_refusal": {
+    "reason": "first actual library refusal: fd-194-build",
+    "type": "ValueError"
+  },
+  "library_only": true,
+  "passed": false,
+  "phases": [
+    {
+      "exit": 101,
+      "label": "fd-194-build"
+    }
+  ],
+  "root_changed": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true,
+  "tests_executed": false
+}

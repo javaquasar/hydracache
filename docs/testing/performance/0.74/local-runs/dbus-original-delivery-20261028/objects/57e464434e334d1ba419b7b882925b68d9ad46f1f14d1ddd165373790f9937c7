@@ -1,0 +1,92 @@
+{
+  "diagnostic_dispatch_exchange.rs": {
+    "candidate": "8a34c96a926bb4df3488cc770417d7b43a5b8fd2cfb709c0c46580292cf0dea0",
+    "legacy": false,
+    "original": "3a10d18ef079e33da17e7e48dc28b34e43c11fcc315985bdc91f82d3bcd1ddbf"
+  },
+  "diagnostic_dispatch_exchange_socket_tests.rs": {
+    "candidate": "a7cc09119434976ed292c1162aa2b8ec08ca67a047174123ed220502966d550a",
+    "legacy": false,
+    "original": "fbc7ce7072957d5543e9bbe8815127fb781b4a567996315f920ff75b0b2c6905"
+  },
+  "diagnostic_dispatch_exchange_tests.rs": {
+    "candidate": "19ce6034425053736f41e8892e21b096d6f6d662c49d2fa5d5da99601219f0a9",
+    "legacy": false,
+    "original": "32668eb8d87dd62a71c9c677c16e9d1146bf447ff1a44144f33eaef7fa50470b"
+  },
+  "diagnostic_dispatch_negotiated_tests.rs": {
+    "candidate": "e898b06d6137fa5277705e9e99dfd279fa13b70ecdb6b1640a8c7fb1f7073668",
+    "legacy": false,
+    "original": "a9c1b3caa736074e78d5ac67934472a1f53e126cf5d0c77030370bf3bb80895f"
+  },
+  "diagnostic_dispatch_reply_flags_tests.rs": {
+    "candidate": "376922a8a9480f30a805507467d6d513fccfb380f6b807f815516d0c1a16e2ee",
+    "legacy": false,
+    "original": "2a931adae40f43147c5ee7050354e62afc54c05120c18a730a01bbf69c84b7cc"
+  },
+  "diagnostic_dispatch_reply_state_tests.rs": {
+    "candidate": "a297d55ce8b099d323cea4c56ea08ddaa90a6b3e5ea85b93cad3c6de069a9fbb",
+    "legacy": false,
+    "original": "d1d970db92b60c0c474932f55210b29c0eaf632d5ad15636763dfe8034a07116"
+  },
+  "diagnostic_held_delivery_wire.rs": {
+    "candidate": "514d67b5069f0ee68afbf9b95512c11b915709510748fc84d4a41662388dff9b",
+    "legacy": false,
+    "original": "57e1758273e0116dc4b5288cb6f05618ecc50222f5a84935985095254ff27059"
+  },
+  "diagnostic_loaded.rs": {
+    "candidate": "dedbee622bc143a7177c7edb660d115338c14cb9e845a7c891bc086e0ae974eb",
+    "legacy": true,
+    "original": "dedbee622bc143a7177c7edb660d115338c14cb9e845a7c891bc086e0ae974eb"
+  },
+  "diagnostic_manager.rs": {
+    "candidate": "7950deead36bcc6514f1c2f73be3cbce126a6e7a3bff3d1a55d11eac0be674db",
+    "legacy": true,
+    "original": "7950deead36bcc6514f1c2f73be3cbce126a6e7a3bff3d1a55d11eac0be674db"
+  },
+  "diagnostic_manager_channel.rs": {
+    "candidate": "0e28136c80da65b9367fdb361edce4f2e5ad590fd6baee2a19daf99f230361e2",
+    "legacy": false,
+    "original": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d"
+  },
+  "diagnostic_manager_channel_tests.rs": {
+    "candidate": "595d521d0cac9e2572fa076e5945c459939a3ef3593c85d743dbd01e2c6c735b",
+    "legacy": false,
+    "original": "3d6567947ff6073ea76f95bbf8916a91f3d7d6560a22ad51686208d1259cb3f6"
+  },
+  "diagnostic_manager_held_delivery.rs": {
+    "candidate": "6574b36bc2c38ecabb29b0d89a6ff1b4ff3e142b1c1603c69538c43bfcb406dc",
+    "legacy": false,
+    "original": "b6c341382843857204ca8dc10edde89f4aa0ecb2417d3eafee642964dd7499e5"
+  },
+  "diagnostic_manager_sandbox_query.rs": {
+    "candidate": "6dfc41482b0be06a2a117ced2cdfbe6832099c7a45e6ba65ad220d3694661306",
+    "legacy": false,
+    "original": "f8f52fa47e09d9b7ee977c3595cf2269ed80228a0df24bb566d300a50a2612ba"
+  },
+  "diagnostic_original_manager_message.rs": {
+    "candidate": "a7df52503859378904d635e8fe3bb9d30f0c4c8416b948357dbdd6f1d9659924",
+    "legacy": false,
+    "original": "95ba07f143ead7683c2c3d20b178560f6d086d2643f09f030f690b45fd9b17da"
+  },
+  "diagnostic_original_manager_message_units.rs": {
+    "candidate": "3487d8b5564375edf8c812510ec1aa6b45d2d25c6ca2a00b96eb943e03c77ce2",
+    "legacy": false,
+    "original": "0e57912330b92230885f15eaee932dc303a51bf78b47a0835ab40cbbf1334d1f"
+  },
+  "diagnostic_original_pipe_transport.rs": {
+    "candidate": "4090e81df17aa49ccce8ac49bccc92db892d922065a1fd3478015bdb60df6ac3",
+    "legacy": false,
+    "original": "e761ec070542dca7268ecacd3dbd43d09cb6f5ed05bc19933a35e1589a109a1b"
+  },
+  "diagnostic_original_pipe_transport_tests.rs": {
+    "candidate": "94340f2271807d305575e3ab8d4f12be184973511580e7751064fdbcc60070f9",
+    "legacy": false,
+    "original": "f88e0f99f22380c37617300e6bb1074668a2064e37e4195fdda8b332fb5bd10f"
+  },
+  "systemd_unit.rs": {
+    "candidate": "4b8f35e341b489f5928206b2df3f09525abb081b937e35cefd5c1ca1bad01cac",
+    "legacy": true,
+    "original": "4b8f35e341b489f5928206b2df3f09525abb081b937e35cefd5c1ca1bad01cac"
+  }
+}

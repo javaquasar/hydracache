@@ -1,0 +1,13 @@
+test_all_original_module_and_test_routes_retained (test_controls.Controls.test_all_original_module_and_test_routes_retained) ... ok
+test_closed_whole_source_census_and_pins (test_controls.Controls.test_closed_whole_source_census_and_pins) ... ok
+test_complete_original_tree_only_changes_fifteen_direct_callers (test_controls.Controls.test_complete_original_tree_only_changes_fifteen_direct_callers) ... ok
+test_held_delivery_is_same_body_and_one_send_without_bridge (test_controls.Controls.test_held_delivery_is_same_body_and_one_send_without_bridge) ... ok
+test_locks_canonical_sources_and_roots_unchanged (test_controls.Controls.test_locks_canonical_sources_and_roots_unchanged) ... ok
+test_original_owner_receiver_join_and_watchdog_unchanged (test_controls.Controls.test_original_owner_receiver_join_and_watchdog_unchanged) ... ok
+test_owner_round_and_reply_binding_preserve_validation_cadence (test_controls.Controls.test_owner_round_and_reply_binding_preserve_validation_cadence) ... ok
+test_same_fixed_deadlines_and_no_api_expansion (test_controls.Controls.test_same_fixed_deadlines_and_no_api_expansion) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.480s
+
+OK

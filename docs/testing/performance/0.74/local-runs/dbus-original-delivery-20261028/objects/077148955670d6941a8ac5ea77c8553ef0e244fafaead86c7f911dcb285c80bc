@@ -1,0 +1,93 @@
+"""Inert source/phase audit and content-addressed retention, never archived execution."""
+from pathlib import Path
+import hashlib,importlib.util,json,re,subprocess
+ROOT=Path(__file__).resolve().parent.parent;BASE=ROOT/'target/dbus-original-delivery-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/dbus-original-delivery-20261028'
+sha=lambda b:hashlib.sha256(b).hexdigest();read=lambda p:json.loads(p.read_bytes())
+spec=importlib.util.spec_from_file_location('delivery_seal_prepare',ROOT/'tools/dbus-original-delivery-074/prepare.py');r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
+def passed(folder,labels):
+ d=read(folder/'native-result.json');assert d['passed'] and d['source_unchanged'] and d['boot_unchanged']
+ assert d['phases']==[dict(label=n,exit=0) for n in labels]
+ for name in labels:
+  phase=folder/name;e=read(phase/'execution.json');intent=read(phase/'intent.json');assert e['retired'] and not e['errors']
+  assert intent['bound']==1200 and intent['session_bound']==1100 and intent['floor']==4*1024**3 and intent['poll']==intent['retirement']==5
+  assert read(phase/'result.json')['exit']==0
+ e=read(folder/'execution.json');assert e['retired'] and not e['errors'];assert read(folder/'result.json')['exit']==0
+ return d
+prod=passed(BASE/'session',[f'fd-{c}-{a}' for c in ('194','188') for a in ('check','clippy')])
+final=BASE/'unit-api-owned';review=read(final/'freeze/result.json');assert r.files(final/'input')==review['files']
+build=passed(final/'session',[f'fd-{c}-build' for c in ('194','188')])
+runtime=passed(final/'runtime',[f'fd-{c}-{a}' for c in ('194','188') for a in ('list','test')])
+lint=passed(final/'lint',[f'fd-{c}-clippy' for c in ('194','188')])
+assert runtime['passes_per_compiler']==41 and runtime['catalog_count']==1593
+catalogs=[]
+for c in ('194','188'):
+ listing=read(final/f'runtime/fd-{c}-list/result.json');test=read(final/f'runtime/fd-{c}-test/result.json');artifact=read(final/f'session/fd-{c}-build/result.json')['artifact']
+ assert artifact==listing['artifact']==test['artifact'] and artifact['bytes']>0
+ assert len(listing['inventory'])==1593 and len(listing['selected'])==41 and len(set(listing['selected']))==41
+ assert test['summary']==[['ok','41','0','0','0','1552']] and len(test['rows'])==41 and sorted(n for n,s in test['rows'])==listing['selected'] and all(s=='ok' for n,s in test['rows'])
+ catalogs.append(listing['inventory'])
+ argv=read(final/f'lint/fd-{c}-clippy/intent.json')['argv'];assert all(v in argv for v in ('--lib','--tests','--all-features','--offline','--locked')) and argv[-3:]==['--','-D','warnings']
+assert catalogs[0]==catalogs[1]
+refusals={}
+for scope,count in [('unit-build',1),('unit-complete',1),('unit-inventory',13),('unit-api-fixed',2)]:
+ folder=BASE/scope;d=read(folder/'session/native-result.json');assert not d['passed'] and d['source_unchanged'] and d['boot_unchanged'] and d['phases']==[dict(label='fd-194-build',exit=101)]
+ e=read(folder/'session/fd-194-build/execution.json');assert e['retired'] and not e['errors']
+ messages=[json.loads(line) for line in (folder/'session/fd-194-build/stdout.log').read_bytes().splitlines()]
+ errors=[m['message'] for m in messages if m.get('reason')=='compiler-message' and m['message']['level']=='error'];assert len(errors)==count
+ refusals[scope]=[dict(code=(e.get('code') or {}).get('code'),message=e['message']) for e in errors]
+assert 'owned-case-074/library.rs' in refusals['unit-build'][0]['message']
+assert 'material-lock-fixture-074/controls.rs' in refusals['unit-complete'][0]['message']
+assert [e['code'] for e in refusals['unit-api-fixed']]==['E0599','E0282']
+src=final/'input/fd'/r.PKG/'src';baseline=final/'input/baseline'/r.PKG/'src'
+old,new=r.files(baseline),r.files(src);assert len(old)==545 and len(new)==546
+assert set(new)-set(old)=={'diagnostic_negotiated_credentials_adapter.rs'}
+assert {n for n in old if old[n]!=new[n]}==(set(r.PINS)-r.LEGACY)|{'diagnostic_held_delivery_wire_tests.rs'}
+for name in ('diagnostic_original_manager_join.rs','diagnostic_original_enrollment_frame.rs','diagnostic_manager_receiver_pin.rs','diagnostic_kernel_manager_binding.rs','diagnostic_original_watchdog_context.rs'):
+ assert (src/name).read_bytes()==(r.fixed.SOURCE/name).read_bytes()
+held=(src/'diagnostic_manager_held_delivery.rs').read_bytes();assert held.replace(b'use zbus6 as zbus;\n',b'',1)==(r.fixed.SOURCE/'diagnostic_manager_held_delivery.rs').read_bytes()
+original=(r.fixed.SOURCE/'diagnostic_original_manager_message.rs').read_bytes();candidate=(src/'diagnostic_original_manager_message.rs').read_bytes();a=b'pub(super) fn round(';b=b'pub(crate) struct OriginalManagerMessage'
+assert original[original.index(a):original.index(b)]==candidate[candidate.index(a):candidate.index(b)]
+assert (src/'diagnostic_negotiated_credentials_adapter.rs').read_bytes()==(ROOT/'tools/dbus-original-delivery-074/negotiated_credentials.rs').read_bytes()
+before=BASE/'unit-inventory/input/fd'/r.PKG/'src';beforemap=r.files(before)
+assert {n for n in beforemap if beforemap[n]!=new[n]}=={'diagnostic_dispatch_negotiated_tests.rs','diagnostic_original_manager_message_units.rs'}
+for variant in ('baseline','fd'):
+ assert (BASE/'input'/variant/'Cargo.lock').read_bytes()==(final/'input'/variant/'Cargo.lock').read_bytes()
+assert r.fixed.prior.parent.parent.fragment.prior.parent.old.root_inputs()==review['root_inputs']
+checks=ROOT/'target/dbus-original-delivery-checks-20261028'
+for mode in ('controls','controls-fixed','controls-final','controls-owned','format'):assert read(checks/mode/'result.json')['exit']==0
+assert read(checks/'controls-api/result.json')['exit']==1
+assert 'Ran 13 tests' in (checks/'controls-owned/stderr.log').read_text(encoding='utf8')
+# Recover old inert control sources only if their exact original recorded digest
+# agrees; this is a verified source reconstruction, never an invented OS stream.
+current=(ROOT/'tools/dbus-original-delivery-074/test_controls.py').read_text(encoding='utf8')
+for mode,marker,remove_import in [('controls',' def test_literal_inventory_closes_external_sources_without_editing_them(self):',True),('controls-fixed',' def test_builder_converter_v2_keeps_getters_character_and_raw_literals(self):',False)]:
+ text=current[:current.index(marker)].rstrip()+'\n\nif __name__==\'__main__\':unittest.main()\n'
+ if remove_import:text=text.replace(',tempfile,',',')
+ expected=read(checks/mode/'intent.json')['inputs']['source']['tools/dbus-original-delivery-074/test_controls.py']
+ assert sha(text.encode())==expected,(mode,'verified historical control bytes')
+ path=checks/mode/'test_controls.py';assert not path.exists();path.write_text(text,encoding='utf8',newline='\n')
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction();raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members;members[name]=dict(sha256=digest,bytes=len(raw))
+scopes=[('production',BASE,('input','prepare','freeze','session','first-implementation'))]
+scopes += [(n,BASE/n,('input','prepare','freeze','session')) for n in ('unit-build','unit-complete','unit-inventory','unit-api','unit-api-fixed')]
+scopes += [('final',final,('input','prepare','freeze','session','runtime','lint'))]
+for label,folder,areas in scopes:
+ for area in areas:
+  for path in sorted((folder/area).rglob('*')):
+   if path.is_file() and '__pycache__' not in path.parts:add('capture/'+label+'/'+path.relative_to(folder).as_posix(),path)
+for mode in ('controls','controls-fixed','controls-api','controls-final','controls-owned','format'):
+ for path in sorted((checks/mode).iterdir()):
+  if path.is_file():add('capture/checks/'+mode+'/'+path.name,path)
+for path in sorted((ROOT/'tools/dbus-original-delivery-074').iterdir()):
+ if path.is_file():add('source/'+path.relative_to(ROOT).as_posix(),path)
+helpers=set(review['helpers'])|set(review['root_inputs'])|{'tools/dbus-original-owner-074/prepare.py','tools/dbus-original-owner-074/native.py','tools/dbus-original-owner-074/run.py','tools/dbus-fixed-channel-074/run.py','tools/dbus-legacy-calls-074/run.py','tools/dbus-source-package-074/run.py','tools/dbus-reply-state-074/run.py','tools/dbus-fragments-074/run.py','tools/dbus-read-flows-074/run.py','tools/dbus-linux-074/native.py','tools/windows-workspace-preflight-074/prepare.py','target/seal-dbus-original-delivery-20261028.py','target/dbus-original-delivery-step-20261028.py'}
+for name in sorted(helpers):add('source/'+name,ROOT/name)
+add('predecessor/index.json',ROOT/'docs/testing/performance/0.74/local-runs/dbus-original-owner-20261028/index.json')
+index=dict(schema='hc074-original-held-message-compatibility-v1',members=members,source_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),original_rust_inventory=545,final_rust_inventory=546,initial_direct_callers=18,initial_migrated_callers=15,unmigrated_legacy_helpers=3,original_literal_targets=557,original_literal_edges=621,passes_per_compiler=41,original_cases=40,adapter_cases=1,catalog_count=1593,filtered_per_compiler=1552,inert_controls=13,first_refusals=refusals,first_partial_prepare_refusal_retained=True,first_control_refusal_retained=True,test_only_legacy_io_preserved=True,process_fd_metadata_helper_duplicates_same_resource=True,original_owner_graph_not_fabricated=True,production_round_and_delivery_bodies_equal=True,root_changed=False,real_original_owner_executed=False,manual_private_bus_executed=False,system_bus=False,services=False,server=False,clocks_changed=False,performance_measurement=False,product_gate_replayed=False,release_admitted=False)
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf8',newline='\n');(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

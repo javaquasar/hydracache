@@ -194,3 +194,13 @@ inert controls and retained first lint/control refusals. There is no fake frame,
 lint exemption or validation/window change. This two-major, compile-only fixture
 keeps old messages on zbus 5; root adoption/security approval, held delivery and
 full product gates remain open.
+
+The [held/message-owner/reply continuation](dbus-original-delivery-result-20261028.md)
+now compiles the real original message graph on zbus 6 and passes 40 original
+wire cases plus one credential DTO control on GNU 1.94/1.88. Both full default
+library test images and strict test-cfg/all-feature Clippy pass; 1,552 of each
+1,593-case catalog remain explicitly unexecuted. Thirteen inert controls pass.
+First missing-source, API and control refusals remain. The ignored custom private
+transport retains its legacy I/O implementation; no real owner or bus is opened.
+This advances compatibility, not root/security/shipping, full package/workspace
+coverage, all-writer retirement, lifecycle or server admission.

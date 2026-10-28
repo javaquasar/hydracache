@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [original held/message-owner/reply continuation](dbus-original-delivery-result-20261028.md)
+now keeps the genuine Message graph on zbus 6 in an isolated copy, with unchanged
+owner/receiver/watchdog sources and delivery/validation bodies. GNU 1.94/1.88 each
+pass 40 original wire cases plus one metadata control, full library test-image
+build and strict test-cfg all-feature Clippy. Complete catalogs agree at 1,593;
+1,552 cases per compiler are explicitly filtered, not passed. Thirteen inert
+controls pass; all first source/API/control refusals remain. Root code/graph and
+original windows stay exact. Real original-owner delivery and release/server gates
+remain open.
+
 The [original-owner type closure](dbus-original-owner-result-20261028.md) now binds
 the migrated read-only channel to the real OriginalEnrollmentFrame and kernel
 receiver graph in a temporary two-major fixture. Baseline and corrected candidate

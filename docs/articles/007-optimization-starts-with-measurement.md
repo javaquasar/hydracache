@@ -22400,3 +22400,48 @@ Root зависимости, qualification identity, частота live-наб�
 shipping/product gates и отдельное доказательство retirement/reconnect. Исходники,
 первые отказы и границы вывода собраны в
 [отчёте original-owner](../testing/performance/0.74/dbus-original-owner-result-20261028.md).
+
+### 0.74: held message, original owner и честный учёт выполненных тестов
+
+После проверки типов весь original Message-граф соединён на zbus 6 в отдельной
+копии supervisor: canonical pipe transport, addressed payload, OriginalReplyState,
+HeldRequest и удерживаемый channel. Между версиями Message не преобразуется;
+исходный unsent addressing encode сохраняется. Тела message-owner validation round
+и deliver_held_once не меняются: прежние наблюдения, stream перед arm/send, одна
+отправка, ограниченное число ответов и те же closing/refusal проверки. Источники
+настоящего frame, KernelPacket/Origin, ReceiverPin, consuming join и watchdog прежние.
+
+Полная library test-сборка оказалась более полезной, чем ещё один узкий source
+slice. Сначала она нашла внешний owned-case module, затем manifest-relative concat
+include. Все отказы сохранены. Инвентаризация 557 literal targets/621 edges позволила
+добавить отсутствующие оригинальные assets без удаления тестовых маршрутов. После
+этого компилятор показал 13 ошибок API в двух тестовых файлах. Среди них была ошибка
+самого converter: Rust quote character нарушал разбор, а header getter лишился
+unwrap. Отдельный v2 учитывает character/raw literals и не трогает getter без
+аргументов. Контроль также поймал случайную смену DOTALL у старого converter;
+его прежний результат восстановлен, первый отказ не удалён.
+
+Оставлена явная граница: ignored private-bus harness по-прежнему использует прежний
+zbus 5 I/O backend, а credential DTO адаптируется к новому trait. Это не проверка
+встроенного I/O zbus 6. Сохраняются отсутствие и пустота groups/labels; process FD
+из старого borrowed API получает CLOEXEC-дубликат того же ресурса. Новый контроль
+проверяет metadata, inode/flags и закрытие обоих descriptor slots. В production
+writer path этот helper не участвует и дополнительной стоимости туда не переносит.
+
+На GNU Rust 1.94 и MSRV 1.88 собраны настоящие library test images, их полные
+каталоги совпали — по 1 593 теста. По точным именам выполнены 40 исходных wire cases
+и один новый DTO-контроль: 41 passed, ноль failed/ignored, 1 552 filtered на каждом
+компиляторе. Проверены 18 FD, body/serial/names, подмены envelope/aliases/flags,
+one-shot/lost-ACK, подписанные settings, binary streams и EOF после последнего
+writer. Остальные 1 552 теста не объявлены успешными. Строгий Clippy с test cfg и
+всеми features проходит на обоих компиляторах; 13 offline-контролей и форматирование
+нового helper тоже проходят. Первые ошибки подготовки, unavailable API и warning
+сохранены вместе с исправленными вариантами.
+
+Это совместимость и wire-поведение, а не измеренный выигрыш и не выполненный
+original-start. Root code/graph, live-проверки, qualification identity и исходные
+сроки прежние. Никакая system/private bus, служба, сервер или продуктовая нагрузка
+не запускались. Дальше нужны реальная held delivery под допущенным owner, retirement
+всех writers и reattach к той же попытке, затем оставшиеся release gates. Подробные
+исходники, границы вывода и accounting находятся в
+[отчёте held/message-owner/reply](../testing/performance/0.74/dbus-original-delivery-result-20261028.md).

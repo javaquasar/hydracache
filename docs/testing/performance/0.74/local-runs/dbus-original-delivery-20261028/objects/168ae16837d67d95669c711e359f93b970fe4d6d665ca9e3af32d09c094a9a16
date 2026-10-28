@@ -1,0 +1,8 @@
+{
+  "capture_kind": "tool_call_observation_not_OS_stream",
+  "command": "python -B tools/dbus-original-delivery-074/unit_api_prepare.py prepare",
+  "exit": 1,
+  "reason": "exact test API site: self.0.sendmsg(&bytes[..max], fds).await?",
+  "native_dispatched": false,
+  "first_partial_tree_retained": true
+}

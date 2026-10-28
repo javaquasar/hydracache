@@ -1,0 +1,42 @@
+"""Only repair the two compiler-identified unit compatibility regions."""
+from pathlib import Path
+import importlib.util,json,shutil,sys
+ROOT=Path(__file__).resolve().parents[2]
+spec=importlib.util.spec_from_file_location('delivery_api_parent',ROOT/'tools/dbus-original-delivery-074/prepare.py');r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
+p,prior,sha,files,write,fixed=r.p,r.prior,r.sha,r.files,r.write,r.fixed
+BASE=r.BASE/'unit-api-fixed';NATIVE=r.NATIVE.replace('-a1','-a6')
+
+def adapt(name):
+ text=r.project(name,(fixed.SOURCE/name).read_bytes(),v2=True).decode()
+ if name=='diagnostic_dispatch_negotiated_tests.rs':
+  changes={
+   'zbus::AuthMechanism::External':'zbus::connection::AuthMechanism::External',
+   '.max_queued(16)':'.max_queued(std::num::NonZeroUsize::new(16).unwrap())',
+   'MatchRule::builder().msg_type(kind).build()':'MatchRule::builder().msg_type(kind).build().unwrap()',
+   'Some(8),':'Some(std::num::NonZeroUsize::new(8).unwrap()),',
+   'self.0.recvmsg(bytes).await?':'::zbus::connection::socket::ReadHalf::recvmsg(&mut self.0, bytes).await?',
+   'self.0.sendmsg(&bytes[..bytes.len().min(max)], fds).await?':'::zbus::connection::socket::WriteHalf::sendmsg(&mut self.0, &bytes[..bytes.len().min(max)], fds).await?',
+   'self.0.close().await':'::zbus::connection::socket::WriteHalf::close(&mut self.0).await',
+   'ReadHalf::peer_credentials(&mut self.0).await':'credential_adapter::transfer(::zbus::connection::socket::ReadHalf::peer_credentials(&mut self.0).await?)',
+   'WriteHalf::peer_credentials(&mut self.0).await':'credential_adapter::transfer(::zbus::connection::socket::WriteHalf::peer_credentials(&mut self.0).await?)',
+  }
+  for old,new in changes.items():p.require(text.count(old)==1,'exact test API site: '+old);text=text.replace(old,new,1)
+  text+='\n#[path = "diagnostic_negotiated_credentials_adapter.rs"]\nmod credential_adapter;\n'
+ return text.encode()
+
+if __name__=='__main__':
+ p.require(sys.argv==[sys.argv[0],'prepare'],'fixed exclusive preparation')
+ before=r.BASE/'unit-inventory';gate=json.loads((before/'session/native-result.json').read_bytes())
+ p.require(not gate['passed'] and gate['source_unchanged'] and gate['phases']==[dict(label='fd-194-build',exit=101)],'first actual test API refusal retained')
+ messages=[json.loads(line) for line in (before/'session/fd-194-build/stdout.log').read_bytes().splitlines()]
+ errors=[m['message'] for m in messages if m.get('reason')=='compiler-message' and m['message']['level']=='error'];p.require(len(errors)==13,'exact first thirteen test API errors')
+ review=json.loads((before/'freeze/result.json').read_bytes());p.require(files(before/'input')==review['files'],'immutable previous unit input')
+ adapted={name:adapt(name) for name in ('diagnostic_dispatch_negotiated_tests.rs','diagnostic_original_manager_message_units.rs')}
+ out=BASE/'prepare';out.mkdir(parents=True,exist_ok=False);(out/'producer.py').write_bytes(Path(__file__).read_bytes());dest=BASE/'input';shutil.copytree(before/'input',dest)
+ for name,raw in adapted.items():(dest/'fd'/r.PKG/'src'/name).write_bytes(raw)
+ helper=Path(__file__).parent/'negotiated_credentials.rs';(dest/'fd'/r.PKG/'src/diagnostic_negotiated_credentials_adapter.rs').write_bytes(helper.read_bytes())
+ for variant in ('baseline','fd'):
+  config=dest/variant/'.cargo/config.toml';raw=config.read_bytes();p.require(raw.count(review['native_root'].encode())==1,'only vendor relocation');config.write_bytes(raw.replace(review['native_root'].encode(),NATIVE.encode(),1))
+ receipt=dict(review,files=files(dest),native_root=NATIVE,test_only_legacy_io_backend_preserved=True,test_credential_helper_sha256=sha(helper.read_bytes()),production_source_unchanged=True)
+ (BASE/'freeze').mkdir();write(BASE/'freeze','result.json',receipt);write(out,'result.json',receipt)
+ print('prepared two test API repairs; legacy manual IO remains explicit, no Message bridge')

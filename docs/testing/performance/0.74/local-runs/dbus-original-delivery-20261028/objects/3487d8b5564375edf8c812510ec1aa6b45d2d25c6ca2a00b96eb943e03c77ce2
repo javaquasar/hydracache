@@ -1,0 +1,273 @@
+use zbus6 as zbus;
+use super::*;
+use crate::systemd_unit::UnitProperty;
+use std::os::fd::FromRawFd;
+use zbus::wire::Variant as Value;
+const MANAGER: &str = ":1.74";
+const CLIENT: &str = ":1.75";
+fn pipe() -> [File; 2] {
+    let mut fds = [-1; 2];
+    assert_eq!(unsafe { libc::pipe2(fds.as_mut_ptr(), libc::O_CLOEXEC) }, 0);
+    unsafe { [File::from_raw_fd(fds[0]), File::from_raw_fd(fds[1])] }
+}
+fn fixture() -> (TransientUnitSpec, [File; 2], [File; 2]) {
+    (
+        TransientUnitSpec {
+            unit_name: "hc074-message-test.service".into(),
+            properties: vec![(
+                "Description",
+                UnitProperty::Text("nonexecuted fixture".into()),
+            )],
+        },
+        pipe(),
+        pipe(),
+    )
+}
+fn altered(input: &Inputs<'_>, kind: &str) -> Message {
+    let body = input.legacy.body();
+    let (name, mode, mut props, auxiliary): canonical::Body<'_> = body.deserialize().unwrap();
+    if kind == "body" {
+        props[0].1 = Value::from("different");
+    }
+    if kind == "swapped" {
+        let n = props.len();
+        props.swap(n - 1, n - 2);
+    }
+    let mut builder = Message::method_call(
+        if kind == "path" {
+            "/foreign"
+        } else {
+            canonical::PATH
+        },
+        if kind == "member" {
+            "StopUnit"
+        } else {
+            canonical::METHOD
+        },
+    )
+    
+    .interface(canonical::INTERFACE)
+    
+    .destination(if kind == "well-known" {
+        "org.freedesktop.systemd1"
+    } else if kind == "manager" {
+        ":1.99"
+    } else {
+        MANAGER
+    })
+    
+    .serial(if kind == "serial" {
+        NonZeroU32::new(input.legacy.primary_header().serial_num().get() + 1).unwrap()
+    } else {
+        input.legacy.primary_header().serial_num()
+    });
+    if kind == "sender" {
+        builder = builder.sender(CLIENT);
+    }
+    if kind == "flags" {
+        builder = builder
+            .with_flags(zbus::message::Flags::NO_REPLY_EXPECTED)
+            ;
+    }
+    builder.build(&(name, mode, props, auxiliary)).unwrap()
+}
+impl Payload {
+    pub(super) fn tamper(&mut self, input: &Inputs<'_>, kind: &str) {
+        match kind {
+            "reply-missing" => self.reply = None,
+            "reply-client" => {
+                self.reply = Some(
+                    OriginalReplyState::prepare(self.message.as_ref().unwrap(), MANAGER, ":1.99")
+                        .unwrap(),
+                );
+            }
+            "reply-manager" | "reply-serial" => {
+                let message = altered(input, kind.strip_prefix("reply-").unwrap());
+                self.reply = Some(
+                    OriginalReplyState::prepare(
+                        &message,
+                        if kind == "reply-manager" {
+                            ":1.99"
+                        } else {
+                            MANAGER
+                        },
+                        CLIENT,
+                    )
+                    .unwrap(),
+                );
+            }
+            "missing" => self.message = None,
+            "alias" => self.pinned.as_mut().unwrap().swap(0, 1),
+            "client" => self.names.as_mut().unwrap().1 = ":1.99".into(),
+            "flags-fd" => {
+                assert_eq!(
+                    unsafe { libc::fcntl(self.pinned.unwrap()[0], libc::F_SETFD, 0) },
+                    0
+                );
+            }
+            _ => self.message = Some(altered(input, kind)),
+        }
+    }
+}
+
+#[path = "diagnostic_original_reply_payload_tests.rs"]
+mod reply_binding;
+impl Payload {
+    pub(in super::super) fn transfer_for_test(
+        &self,
+        frame: &OriginalEnrollmentFrame<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_>,
+    ) {
+        let message = self.message.as_ref().unwrap();
+        let transferred = frame.addressed_rights_roundtrip_for_test(message);
+        let input = inputs(frame).unwrap();
+        inspect(
+            &input,
+            &transferred,
+            MANAGER,
+            CLIENT,
+            aliases(&transferred).unwrap(),
+            self.serial.unwrap(),
+        )
+        .unwrap();
+        assert_ne!(aliases(&transferred).unwrap(), self.pinned.unwrap());
+        // This extra receiver owner must close before the original fence owner.
+        drop(transferred);
+    }
+}
+#[test]
+fn original_addressed_message_keeps_exact_body_serial_and_distinct_original_writers() {
+    let (spec, out, err) = fixture();
+    let legacy = canonical::message(&spec, &out[1], &err[1]).unwrap();
+    let input = Inputs {
+        legacy: &legacy,
+        spec,
+        writers: [&out[1], &err[1]],
+    };
+    let message = encode(&legacy, MANAGER, CLIENT).unwrap();
+    let pinned = aliases(&message).unwrap();
+    for _ in 0..3 {
+        inspect(
+            &input,
+            &message,
+            MANAGER,
+            CLIENT,
+            pinned,
+            legacy.primary_header().serial_num(),
+        )
+        .unwrap();
+    }
+    assert_ne!(pinned, aliases(&legacy).unwrap());
+    assert_eq!(
+        legacy.header().destination().as_str(),
+        "org.freedesktop.systemd1"
+    );
+}
+#[test]
+fn original_addressed_message_rejects_every_envelope_body_serial_and_alias_mutation() {
+    let (spec, out, err) = fixture();
+    let legacy = canonical::message(&spec, &out[1], &err[1]).unwrap();
+    let input = Inputs {
+        legacy: &legacy,
+        spec,
+        writers: [&out[1], &err[1]],
+    };
+    for kind in [
+        "path",
+        "member",
+        "well-known",
+        "manager",
+        "serial",
+        "sender",
+        "flags",
+        "body",
+        "swapped",
+    ] {
+        let message = altered(&input, kind);
+        assert!(
+            inspect(
+                &input,
+                &message,
+                MANAGER,
+                CLIENT,
+                aliases(&message).unwrap(),
+                legacy.primary_header().serial_num()
+            )
+            .is_err(),
+            "{kind}"
+        );
+    }
+    for (manager, client) in [
+        ("org.freedesktop.systemd1", CLIENT),
+        (MANAGER, MANAGER),
+        (MANAGER, "malformed"),
+        (":1.0.3", CLIENT),
+    ] {
+        assert!(encode(&legacy, manager, client).is_err());
+    }
+}
+#[test]
+fn original_addressed_message_refuses_replaced_aliases_and_wrong_descriptor_flags() {
+    let (spec, out, err) = fixture();
+    let legacy = canonical::message(&spec, &out[1], &err[1]).unwrap();
+    let input = Inputs {
+        legacy: &legacy,
+        spec,
+        writers: [&out[1], &err[1]],
+    };
+    let message = encode(&legacy, MANAGER, CLIENT).unwrap();
+    let pinned = aliases(&message).unwrap();
+    let replacement = encode(&legacy, MANAGER, CLIENT).unwrap();
+    assert!(inspect(
+        &input,
+        &replacement,
+        MANAGER,
+        CLIENT,
+        pinned,
+        legacy.primary_header().serial_num()
+    )
+    .is_err());
+    assert_eq!(unsafe { libc::fcntl(pinned[0], libc::F_SETFD, 0) }, 0);
+    assert!(inspect(
+        &input,
+        &message,
+        MANAGER,
+        CLIENT,
+        pinned,
+        legacy.primary_header().serial_num()
+    )
+    .is_err());
+}
+
+impl MessageFailure<'_, '_, '_, '_, '_, '_, '_, '_, '_, '_> {
+    pub(crate) fn assert_retained_for_test(&mut self) {
+        assert!(self.held.original.original.original.is_refused());
+        assert!(self.held.payload.message.is_none());
+        assert!(!self.held.ready);
+        assert!(matches!(self.held.revalidate(), Err(MessageError::Refused)));
+        self.held.original.original.assert_original_for_test();
+    }
+}
+#[test]
+fn original_grouped_message_drops_only_its_extra_writer_aliases() {
+    let (spec, out, err) = fixture();
+    let legacy = canonical::message(&spec, &out[1], &err[1]).unwrap();
+    let message = encode(&legacy, MANAGER, CLIENT).unwrap();
+    let extra = aliases(&message).unwrap();
+    drop(message);
+    for fd in extra {
+        assert_eq!(unsafe { libc::fcntl(fd, libc::F_GETFD) }, -1);
+        assert_eq!(
+            std::io::Error::last_os_error().raw_os_error(),
+            Some(libc::EBADF)
+        );
+    }
+    for fd in aliases(&legacy).unwrap() {
+        assert_eq!(unsafe { libc::fcntl(fd, libc::F_GETFD) }, libc::FD_CLOEXEC);
+    }
+    for file in [&out[1], &err[1]] {
+        assert_eq!(
+            unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFD) },
+            libc::FD_CLOEXEC
+        );
+    }
+}
