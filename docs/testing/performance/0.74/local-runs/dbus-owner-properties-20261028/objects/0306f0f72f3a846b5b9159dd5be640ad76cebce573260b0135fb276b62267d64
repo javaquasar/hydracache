@@ -1,0 +1,33 @@
+{
+  "artifact": {
+    "bytes": 5302272,
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-owner-properties-20261028\\targets\\194\\629d534418185f13ff8302198c9720e3f2313da9972c300cc357d29db97ea6d5\\debug\\deps\\dbus_probe_074-8a3c9de136f41e1f.exe",
+    "sha256": "978ce8e3592c4616f4f08080b54c05b80b70c42b4d23a6edcfa7ca2a34748191"
+  },
+  "exit": 0,
+  "inventory": [
+    "caller_checks::owner_properties::manager_identity_refuses_after_all_three_reads",
+    "caller_checks::owner_properties::manager_owner_valid_reads_in_original_order",
+    "caller_checks::owner_properties::manager_signature_and_error_refuse_without_later_reads",
+    "caller_checks::owner_properties::manager_wrong_sender_stops_at_original_read",
+    "caller_checks::owner_properties::property_received_but_unanswered_preserves_timeout",
+    "caller_checks::owner_properties::property_string_u32_and_no_cache_roundtrip",
+    "caller_checks::owner_properties::property_wrong_type_body_and_error_refuse",
+    "caller_checks::tests::checked_call_preserves_success_signature_and_sender",
+    "caller_checks::tests::method_error_keeps_original_sender",
+    "caller_checks::tests::no_reply_preserves_method_timeout_refusal",
+    "caller_checks::tests::proxy_clone_keeps_connection_after_original_drop",
+    "caller_checks::tests::setters_fail_immediately_in_original_order",
+    "constructor_review::nested_constructor_panics_before_bad_arguments",
+    "match_rule_review::argument_and_path_format_roundtrip",
+    "runtime_review::background_progress_between_entries",
+    "runtime_review::invalid_address_refuses_before_build",
+    "runtime_review::nested_entry_does_not_poll_future",
+    "tests::derive_and_wire_roundtrip",
+    "tests::invalid_names_and_builder_refuse",
+    "tests::reply_serial_sender_and_signature",
+    "tests::runtime_timeout_and_nested_entry"
+  ],
+  "release_admitted": false,
+  "unchanged": true
+}

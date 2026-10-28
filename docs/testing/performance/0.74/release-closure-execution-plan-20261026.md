@@ -448,6 +448,15 @@ Synthetic channels do not qualify kernel credentials, Unix FD or original delive
 Root graph/callers and live limits stay unchanged. Property/manager-owner/full
 caller, GNU/FD/fault, source/effect/distribution and complete product gates remain.
 
+The [owner/property continuation](dbus-owner-properties-result-20261028.md)
+adds execution coverage for the exact original three-read manager_owner and the
+bridge property getter. Fifteen synthetic scenarios retain original read/error
+order and assert 31 request routes/bodies per image; 21 tests, check and strict
+Clippy pass on both 1.88 and 1.94, with passing scoped policy. Root callers, graph,
+live predicates and limits are unchanged. This closes neither real UID/PID/boot
+authority nor the full before/after owner/lazy-cache/loaded-state flow. Full
+read-caller, GNU/FD/fault, distribution and product/server gates remain open.
+
 ## 4 Finish original Linux execution and recovery
 
 The present original path ends at ReadyObserved. Before writing release data,

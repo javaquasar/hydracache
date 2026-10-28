@@ -1,5 +1,13 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [owner/property continuation](dbus-owner-properties-result-20261028.md)
+now executes the unchanged original manager_owner function and actual property
+calls in a synthetic peer. Twenty-one tests, check and strict Clippy pass on
+1.88/1.94; scoped deny policy passes. Fifteen new scenarios assert 31 received
+requests per image, original read/error order and uncached String/u32 behavior.
+Root graph/callers stay exact. This is not real host authority, default lazy-cache
+unit-reader, GNU/Unix FD or product/server qualification.
+
 The [local D-Bus runtime/caller shadow](dbus-runtime-bridge-result-20261028.md)
 now retains a real outside-entry progress refusal and a constructor-order
 regression, then passes 14 controls, check and strict Clippy on 1.88/1.94 with

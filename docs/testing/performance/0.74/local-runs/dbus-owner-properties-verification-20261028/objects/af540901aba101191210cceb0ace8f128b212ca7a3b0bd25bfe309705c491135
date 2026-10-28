@@ -1,0 +1,8 @@
+test_duplicate_refuses (test_catalog.CatalogControls.test_duplicate_refuses) ... ok
+test_empty_or_false_summary_refuses (test_catalog.CatalogControls.test_empty_or_false_summary_refuses) ... ok
+test_exact_parent_and_seven_additions (test_catalog.CatalogControls.test_exact_parent_and_seven_additions) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.000s
+
+OK

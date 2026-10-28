@@ -1,0 +1,14 @@
+{
+  "archived_code_executed": false,
+  "byte_verification_only": true,
+  "exit": 0,
+  "inputs_unchanged": true,
+  "members_verified": 365,
+  "native_selected_passes": 42,
+  "objects_verified": 329,
+  "owner_body_equal": true,
+  "received_requests_per_image": 31,
+  "release_admitted": false,
+  "scenarios_per_image": 15,
+  "traces_equal": true
+}

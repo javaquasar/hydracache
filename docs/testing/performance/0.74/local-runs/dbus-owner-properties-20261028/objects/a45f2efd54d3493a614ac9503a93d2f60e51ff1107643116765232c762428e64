@@ -1,0 +1,78 @@
+"""Inert source/trace audit and raw packet; never execute archived source."""
+from pathlib import Path
+import hashlib,json,subprocess
+ROOT=Path(__file__).resolve().parent.parent;BASE=ROOT/'target/dbus-owner-properties-20261028'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/dbus-owner-properties-20261028'
+sha=lambda b:hashlib.sha256(b).hexdigest()
+prior=ROOT/'docs/testing/performance/0.74/local-runs/dbus-runtime-bridge-20261028'
+raw=(prior/'index.json').read_bytes();assert sha(raw)=='59b7f69b3ee958f2a467af97d1cd80ed0d7f35194e33d9fbb58ed001602e1cda'
+old_index=json.loads(raw)
+def old_get(name):
+ row=old_index['members'][name];raw=(prior/'objects'/row['sha256']).read_bytes()
+ assert sha(raw)==row['sha256'] and len(raw)==row['bytes'];return raw
+review=json.loads((BASE/'prepare/result.json').read_bytes());old=json.loads(old_get('capture/prepare-S/result.json'))
+folder=BASE/'fixture';current={n.relative_to(folder).as_posix():sha(n.read_bytes()) for n in sorted(folder.rglob('*')) if n.is_file()}
+assert current==review['files'] and set(current)==set(old['files'])
+assert [n for n,v in current.items() if v!=old['files'][n]]==['probe/src/caller_checks.rs']
+assert (folder/'Cargo.lock').read_bytes()==old_get('capture/fixtures/S/Cargo.lock')
+source=(ROOT/'tools/long-run-supervisor-074/src/diagnostic_manager.rs').read_bytes();assert sha(source)==review['source_pin']
+s=source.decode();owner=s[s.index('fn manager_owner('):s.index('#[derive(Debug, PartialEq, Eq)]\nenum ReplyError')]
+assert owner.encode()==(BASE/'prepare/original-owner-function.rs').read_bytes()
+constant='const DESTINATION: &str = "org.freedesktop.systemd1";\n';assert constant in s
+projected=(folder/'probe/src/caller_checks.rs').read_text(encoding='utf-8')
+insert=constant+owner+'\n';assert projected.count(insert)==1
+suffix='\n#[cfg(test)]\n#[path = '+json.dumps((ROOT/'tools/dbus-owner-properties-074/tests.rs').as_posix())+']\nmod owner_properties;\n'
+assert projected.endswith(suffix)
+inverse=projected[:-len(suffix)].replace(insert,'',1)
+assert inverse.encode()==old_get('capture/fixtures/S/probe/src/caller_checks.rs')
+traces=[];steps={}
+for top in sorted(BASE.iterdir()):
+ if not (top/'execution.json').is_file():continue
+ result=json.loads((top/'result.json').read_bytes());execution=json.loads((top/'execution.json').read_bytes())
+ assert result['exit']==execution['exit']==0 and result['unchanged'] and execution['retired'] and not execution['errors']
+ if result.get('artifact'):
+  image=result['artifact'];assert sha(Path(image['path']).read_bytes())==image['sha256']
+ steps[top.name]=dict(exit=0,head=json.loads((top/'intent.json').read_bytes())['head'],accounting=result.get('accounting'))
+for compiler in ('188','194'):
+ result=json.loads((BASE/f'test-{compiler}/result.json').read_bytes());assert result['accounting']['passed']==result['accounting']['selected']==21
+ raw=(BASE/f'test-{compiler}/stdout.log').read_bytes()
+ values=[json.loads(line.split(b':',1)[1]) for line in raw.splitlines() if line.startswith(b'HC074_READ_TRACE:')]
+ assert len(values)==15 and sum(map(len,values))==31
+ traces.append(values)
+assert traces[0]==traces[1]
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ assert path.is_file() and not path.is_symlink() and not path.is_junction()
+ raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==raw
+ else:dest.write_bytes(raw)
+ assert name not in members;members[name]=dict(sha256=digest,bytes=len(raw))
+for top in sorted(BASE.iterdir()):
+ if top.name=='targets':continue
+ for path in ([top] if top.is_file() else sorted(top.rglob('*'))):
+  if path.is_file():add('capture/'+path.relative_to(BASE).as_posix(),path)
+for path in sorted((ROOT/'tools/dbus-owner-properties-074').rglob('*')):
+ if path.is_file() and '__pycache__' not in path.parts:add('source/'+path.relative_to(ROOT).as_posix(),path)
+for n in review['overlays']:
+ if not n.startswith('tools/dbus-owner-properties-074/'):add('source/'+n,ROOT/n)
+for name in ('tools/dbus-runtime-bridge-074/run.py','tools/dbus-msrv-backport-074/run.py','tools/windows-workspace-preflight-074/owned.py',
+ 'tools/windows-workspace-preflight-074/prepare.py','tools/chitchat-mtu-review-074/accounting.py','scripts/ci/watchdog_windows_job.py',
+ 'tools/long-run-supervisor-074/src/diagnostic_manager.rs','Cargo.lock','Cargo.toml','deny.toml',
+ 'tools/long-run-supervisor-074/Cargo.toml','docs/testing/performance/0.74/qualification-manifest.toml','target/seal-dbus-owner-20261028.py'):
+ add('source/'+name,ROOT/name)
+add('predecessor/index.json',prior/'index.json')
+db=Path('C:/Users/ArturBuzov/.cargo/advisory-dbs/advisory-db-3157b0e258782691')
+dbhead=subprocess.check_output(['git','rev-parse','HEAD'],cwd=db).decode().strip();assert not subprocess.check_output(['git','status','--porcelain'],cwd=db)
+index=dict(schema='hc074-owner-property-controls-v1',members=members,steps=steps,
+ source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ predecessor_index_sha256='59b7f69b3ee958f2a467af97d1cd80ed0d7f35194e33d9fbb58ed001602e1cda',
+ native_selected_passes={'rust_188':21,'rust_194':21},new_scenarios_per_image=15,new_received_requests_per_image=31,
+ traces_equal_between_compilers=True,owner_function_and_inverse_projection_equal=True,only_one_fixture_member_changed=True,
+ fixture_lock_unchanged=True,first_outcomes_preserved=True,native_failures=0,
+ advisory_db_postflight=dict(head=dbhead,clean=True,per_lookup_seal=False),
+ actual_caller_or_root_graph_changed=False,system_bus_or_manager_contacted=False,
+ os_credentials_or_unix_fd_qualified=False,server=False,services=False,clocks=False,
+ product_gate_replayed=False,performance_claim=False,release_admitted=False,archived_code_executed=False)
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf-8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf-8',newline='\n')
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()),scenarios=15,requests_per_image=31)))

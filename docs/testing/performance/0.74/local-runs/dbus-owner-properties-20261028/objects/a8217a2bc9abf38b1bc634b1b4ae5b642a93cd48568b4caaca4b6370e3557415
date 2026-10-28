@@ -1,0 +1,105 @@
+{
+  "accounting": {
+    "complete": true,
+    "executed": [
+      [
+        "caller_checks::owner_properties::manager_identity_refuses_after_all_three_reads",
+        "ok"
+      ],
+      [
+        "caller_checks::owner_properties::manager_owner_valid_reads_in_original_order",
+        "ok"
+      ],
+      [
+        "caller_checks::owner_properties::manager_signature_and_error_refuse_without_later_reads",
+        "ok"
+      ],
+      [
+        "caller_checks::owner_properties::manager_wrong_sender_stops_at_original_read",
+        "ok"
+      ],
+      [
+        "caller_checks::owner_properties::property_received_but_unanswered_preserves_timeout",
+        "ok"
+      ],
+      [
+        "caller_checks::owner_properties::property_string_u32_and_no_cache_roundtrip",
+        "ok"
+      ],
+      [
+        "caller_checks::owner_properties::property_wrong_type_body_and_error_refuse",
+        "ok"
+      ],
+      [
+        "caller_checks::tests::checked_call_preserves_success_signature_and_sender",
+        "ok"
+      ],
+      [
+        "caller_checks::tests::method_error_keeps_original_sender",
+        "ok"
+      ],
+      [
+        "caller_checks::tests::no_reply_preserves_method_timeout_refusal",
+        "ok"
+      ],
+      [
+        "caller_checks::tests::proxy_clone_keeps_connection_after_original_drop",
+        "ok"
+      ],
+      [
+        "caller_checks::tests::setters_fail_immediately_in_original_order",
+        "ok"
+      ],
+      [
+        "constructor_review::nested_constructor_panics_before_bad_arguments",
+        "ok"
+      ],
+      [
+        "match_rule_review::argument_and_path_format_roundtrip",
+        "ok"
+      ],
+      [
+        "runtime_review::background_progress_between_entries",
+        "ok"
+      ],
+      [
+        "runtime_review::invalid_address_refuses_before_build",
+        "ok"
+      ],
+      [
+        "runtime_review::nested_entry_does_not_poll_future",
+        "ok"
+      ],
+      [
+        "tests::derive_and_wire_roundtrip",
+        "ok"
+      ],
+      [
+        "tests::invalid_names_and_builder_refuse",
+        "ok"
+      ],
+      [
+        "tests::reply_serial_sender_and_signature",
+        "ok"
+      ],
+      [
+        "tests::runtime_timeout_and_nested_entry",
+        "ok"
+      ]
+    ],
+    "failed": 0,
+    "filtered": 0,
+    "passed": 21,
+    "release_admitted": false,
+    "selected": 21,
+    "test_pass": true
+  },
+  "artifact": {
+    "bytes": 5389312,
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-owner-properties-20261028\\targets\\188\\3d5d8f6d5b13ee772b219b31ce1b38fbcf053b3b37dc44638275740e2002ab75\\debug\\deps\\dbus_probe_074-caa1c158ccd1e6c9.exe",
+    "sha256": "fc5469bd74a1864b41d3a6845e3d626d0c8d962a31149e6ac2fd9f32eeb548ae"
+  },
+  "exit": 0,
+  "release_admitted": false,
+  "unchanged": true
+}

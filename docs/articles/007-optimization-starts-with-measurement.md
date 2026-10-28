@@ -22041,3 +22041,29 @@ bridge or expanding the original window. Final checks and scoped dependency
 policy pass. All first negatives remain in evidence, the original supervisor and
 dependency graph remain unchanged, and real property/caller/GNU/FD/fault and
 publication gates are still required before integration or server admission.
+
+The [owner/property continuation](../testing/performance/0.74/dbus-owner-properties-result-20261028.md)
+replaces another compile-only boundary with protocol execution. The complete
+original manager_owner function runs against a scripted in-process peer without
+changing its three lookups, error messages or final identity predicate. Good
+owner, wrong sender, wrong signature and method-error cases assert both result
+and exact request order. Even an invalid returned owner or nonzero UID preserves
+the existing three-read sequence before refusal; the migration does not silently
+move a check to obtain cheaper or different observations.
+
+Property calls now exercise actual Variant decoding into String/u32. Two replies
+for the same property return active then failed through the uncached helper,
+while wrong type, missing Variant wrapper and UnknownProperty refuse. A silent
+peer records the request and remains held until the original method timeout
+returns an error; explicit release/join/close follows. The new scenarios assert
+31 complete request routes/bodies per image. All 21 tests, check and strict
+Clippy pass on Rust 1.88 and 1.94, and the unchanged scoped dependency policy is
+green on the same graph.
+
+The transport still bypasses OS authentication: UID 0 and PID 1 are scripted
+values, not host evidence. Direct property getters do not gain an invented
+sender guarantee from the separate checked-call tests. The default lazy-cache
+unit reader and before/after owner comparison across loaded-state observations
+are also distinct from this uncached getter/owner-function coverage. Source,
+traces and scope remain in the repository; complete read-caller, GNU/FD/fault,
+distribution and final product gates are still needed before root adoption.

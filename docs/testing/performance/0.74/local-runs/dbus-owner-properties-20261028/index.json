@@ -1,0 +1,1739 @@
+{
+  "actual_caller_or_root_graph_changed": false,
+  "advisory_db_postflight": {
+    "clean": true,
+    "head": "99670cfc0bc574433034b75876a4b791ccaa2efb",
+    "per_lookup_seal": false
+  },
+  "archived_code_executed": false,
+  "clocks": false,
+  "first_outcomes_preserved": true,
+  "fixture_lock_unchanged": true,
+  "members": {
+    "capture/build-188/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/build-188/intent.json": {
+      "bytes": 391412,
+      "sha256": "be19b825dcd1a4ed3b89f81693f267fb3bd37308e34731f84f8313e7ff16d89a"
+    },
+    "capture/build-188/launcher.py": {
+      "bytes": 9010,
+      "sha256": "72283166ba3cfe59b82432edc3b82a7cb3faac7ef7b2fdfd90412d03c78dc57e"
+    },
+    "capture/build-188/result.json": {
+      "bytes": 421,
+      "sha256": "7ade96f34ea13f3a61c2a12ccb383e9b32788eace17afd435fe06f4cf7d08d21"
+    },
+    "capture/build-188/stderr.log": {
+      "bytes": 1580,
+      "sha256": "d482a984753c9f172c6c9066512d64d3aed0dcb7698e330c8ac78840a0e246d1"
+    },
+    "capture/build-188/stdout.log": {
+      "bytes": 55290,
+      "sha256": "7a0ad69c96a80cde5e3cffbd367a97116de136c80ac1bcd2857660961d286625"
+    },
+    "capture/build-194/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/build-194/intent.json": {
+      "bytes": 391289,
+      "sha256": "03f9bbd5a6aa69585cdb18c263b69c8900576b632dcb30a1e902950562284e09"
+    },
+    "capture/build-194/launcher.py": {
+      "bytes": 9010,
+      "sha256": "72283166ba3cfe59b82432edc3b82a7cb3faac7ef7b2fdfd90412d03c78dc57e"
+    },
+    "capture/build-194/result.json": {
+      "bytes": 421,
+      "sha256": "d7ccc33ab2ad6525b0eddaffc78c1bad71c3279be0d42c8ff98c067554578b7e"
+    },
+    "capture/build-194/stderr.log": {
+      "bytes": 1580,
+      "sha256": "5c40f7b1468b1ce7d11a75dab474151729238bd9fefd7a0f93902d39976beff4"
+    },
+    "capture/build-194/stdout.log": {
+      "bytes": 55290,
+      "sha256": "db12bc08e9d56969c8656fa4f71550c1a14c526a76499349acb1d0b71954535a"
+    },
+    "capture/check-188/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/check-188/intent.json": {
+      "bytes": 391398,
+      "sha256": "a56358f789c5e00984961583c725be854cd5ff2e4c3e586ea3c5a00ac34751df"
+    },
+    "capture/check-188/launcher.py": {
+      "bytes": 9010,
+      "sha256": "72283166ba3cfe59b82432edc3b82a7cb3faac7ef7b2fdfd90412d03c78dc57e"
+    },
+    "capture/check-188/result.json": {
+      "bytes": 86,
+      "sha256": "50745b692502a78d0b1587a496f0a14a0cd18854e1eac1a48f3ec8676245dbb4"
+    },
+    "capture/check-188/stderr.log": {
+      "bytes": 1551,
+      "sha256": "0b73eaf4ba5ac867191ba56f612a1fd1de1f05f8de21605e3321a7245b1f9c1c"
+    },
+    "capture/check-188/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/check-194/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/check-194/intent.json": {
+      "bytes": 391398,
+      "sha256": "7c42050c533834fe1d52b2b15c5d250ea5825e386092dd1471fa26f5c0719b0c"
+    },
+    "capture/check-194/launcher.py": {
+      "bytes": 9010,
+      "sha256": "72283166ba3cfe59b82432edc3b82a7cb3faac7ef7b2fdfd90412d03c78dc57e"
+    },
+    "capture/check-194/result.json": {
+      "bytes": 86,
+      "sha256": "50745b692502a78d0b1587a496f0a14a0cd18854e1eac1a48f3ec8676245dbb4"
+    },
+    "capture/check-194/stderr.log": {
+      "bytes": 1551,
+      "sha256": "cbd51606c918020fb86d6e7d0d5504cd1be52b1247b61caa8b2068371cc59d23"
+    },
+    "capture/check-194/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/clippy-188/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/clippy-188/intent.json": {
+      "bytes": 391435,
+      "sha256": "6fc4b8943e432c1405138a09f312b6a45a32efa2a2f5d3e315f9d86935d38119"
+    },
+    "capture/clippy-188/launcher.py": {
+      "bytes": 9010,
+      "sha256": "72283166ba3cfe59b82432edc3b82a7cb3faac7ef7b2fdfd90412d03c78dc57e"
+    },
+    "capture/clippy-188/result.json": {
+      "bytes": 86,
+      "sha256": "50745b692502a78d0b1587a496f0a14a0cd18854e1eac1a48f3ec8676245dbb4"
+    },
+    "capture/clippy-188/stderr.log": {
+      "bytes": 202,
+      "sha256": "8cbfa6d9d6aa4aca4a9ce15fd4d187ba8dde4e42c8a9c78aa79e1d35832e12f8"
+    },
+    "capture/clippy-188/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/clippy-194/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/clippy-194/intent.json": {
+      "bytes": 391435,
+      "sha256": "40f358ff01ab5994c24802d8073c62908015de0668fdcff21cf499feca868168"
+    },
+    "capture/clippy-194/launcher.py": {
+      "bytes": 9010,
+      "sha256": "72283166ba3cfe59b82432edc3b82a7cb3faac7ef7b2fdfd90412d03c78dc57e"
+    },
+    "capture/clippy-194/result.json": {
+      "bytes": 86,
+      "sha256": "50745b692502a78d0b1587a496f0a14a0cd18854e1eac1a48f3ec8676245dbb4"
+    },
+    "capture/clippy-194/stderr.log": {
+      "bytes": 202,
+      "sha256": "f88d268e3513ed80723ae27f5609a90bf6df58971244eccfb469db4bb8cc33b6"
+    },
+    "capture/clippy-194/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/fixture/Cargo.lock": {
+      "bytes": 12616,
+      "sha256": "349e7363abc0f9757f37479f5b2960b9c11773220a108b207a97d22e9b85392a"
+    },
+    "capture/fixture/Cargo.toml": {
+      "bytes": 189,
+      "sha256": "cffd9ed6f17d771909eff52700ce126b706b0a38be61a5e3f0e5bbc8f8679e05"
+    },
+    "capture/fixture/probe/Cargo.toml": {
+      "bytes": 428,
+      "sha256": "12f5f8a2a21bcfca2ad45d0ead05187c7f20ca049a98358d7475f1b9c48a2985"
+    },
+    "capture/fixture/probe/src/caller_checks.rs": {
+      "bytes": 3427,
+      "sha256": "6cf17afe6a2d069888c3c432cc7d0be32d21ca1638ac66600ba2bb39cafe88ed"
+    },
+    "capture/fixture/probe/src/lib.rs": {
+      "bytes": 3265,
+      "sha256": "a931a74a0f778941fe1d3f4e03617e1b81fa1e4afeeda56f9675de478d937e39"
+    },
+    "capture/fixture/zbus/.cargo_vcs_info.json": {
+      "bytes": 98,
+      "sha256": "7ed91444881a0889e2cbe6d08c933e190d52f3340b489adc0f5b5f0f674c9bf1"
+    },
+    "capture/fixture/zbus/CHANGELOG.md": {
+      "bytes": 13220,
+      "sha256": "93a9030606bd17def10aa0bf607ba9c37835d13f26aa232552a24569d367f230"
+    },
+    "capture/fixture/zbus/Cargo.lock": {
+      "bytes": 49561,
+      "sha256": "251467a1767ef3aeeced3a709169792c1395962148fa57254f9329803481cb9f"
+    },
+    "capture/fixture/zbus/Cargo.toml": {
+      "bytes": 8114,
+      "sha256": "d2836489dcf6772e84e0fdbe124078ee6fd968e99a53d312f21f10c0bfe222af"
+    },
+    "capture/fixture/zbus/Cargo.toml.orig": {
+      "bytes": 8557,
+      "sha256": "9f3df9a46fe65d9fa85f8b8fc439bf3af33681e778874e4528b95f1711b8caaa"
+    },
+    "capture/fixture/zbus/LICENSE": {
+      "bytes": 1080,
+      "sha256": "260e4ff3fc493695880c90774283eb1e3d018f898fabe655bbd52dd2cbd2fcad"
+    },
+    "capture/fixture/zbus/README.md": {
+      "bytes": 9393,
+      "sha256": "0e5d1c7b4d4766f2249cb98b29e250c56d750bebfdbef2f06a2088e86ddb095d"
+    },
+    "capture/fixture/zbus/benches/benchmarks.rs": {
+      "bytes": 3859,
+      "sha256": "f46ad8ea6da860ae8c2ce52ff73c2e4cc5cb8948e74ac1425e4b5c774374fc96"
+    },
+    "capture/fixture/zbus/benches/names.rs": {
+      "bytes": 2011,
+      "sha256": "c9c3c395fccc8af649d01b52e4a0bb4ecf389352291cacf32fd9b974bc0fca14"
+    },
+    "capture/fixture/zbus/benches/runtime.rs": {
+      "bytes": 2193,
+      "sha256": "7c2a0dee7d8adaeb8fd7967d3353d2006484728c9cf647978f3caeb25e55a9b6"
+    },
+    "capture/fixture/zbus/benches/wire.rs": {
+      "bytes": 5368,
+      "sha256": "fd106e71bee564ccb01bcf29d855f2832b30c503e2bde310e78c183baa4e47d7"
+    },
+    "capture/fixture/zbus/examples/screen-brightness.rs": {
+      "bytes": 1180,
+      "sha256": "a2fb0a13ade2b6f67e02598e897179cea756168712e6dbdb313350de44abb80d"
+    },
+    "capture/fixture/zbus/examples/watch-systemd-jobs.rs": {
+      "bytes": 1674,
+      "sha256": "39aaf487cd3dc8bfc628538d635e6184e8c4e22a4a6f02c18bf988b6edb03df7"
+    },
+    "capture/fixture/zbus/src/address/mod.rs": {
+      "bytes": 17963,
+      "sha256": "1d0ab8a3a9e07b7faa3bd731f9aeb7fe3dd1d60210074d1e0f3506eabd3dc3c2"
+    },
+    "capture/fixture/zbus/src/address/transport/autolaunch.rs": {
+      "bytes": 2475,
+      "sha256": "55e1b03ac8610d71f24dc2cb0c98bd77f8a3b1f0f9328840202fc40e5624fb33"
+    },
+    "capture/fixture/zbus/src/address/transport/ibus.rs": {
+      "bytes": 4063,
+      "sha256": "90400033fde554f96083911cbce20f9b3d87d68ed26ff625df47f6c89082118f"
+    },
+    "capture/fixture/zbus/src/address/transport/launchd.rs": {
+      "bytes": 1856,
+      "sha256": "166445b88a0226a4fda38a00878315604f788da65bf7846abe1bf3de1865ca47"
+    },
+    "capture/fixture/zbus/src/address/transport/mod.rs": {
+      "bytes": 8728,
+      "sha256": "b0d9421e17cbd80b0d45413e9a045e747bdc3936008ce9f12723701771f32f0c"
+    },
+    "capture/fixture/zbus/src/address/transport/tcp.rs": {
+      "bytes": 9005,
+      "sha256": "68ea72dccf39bfcf10085e7989bd31d15616f93eb45a2fb85e398acd4187a9d6"
+    },
+    "capture/fixture/zbus/src/address/transport/unix.rs": {
+      "bytes": 6333,
+      "sha256": "9fbb2da5a6400344d0dfef8e7c6d2e6148f7050d35d746126db98d468aa75ae7"
+    },
+    "capture/fixture/zbus/src/address/transport/unixexec.rs": {
+      "bytes": 5709,
+      "sha256": "ba545e1163ce5b6a0a30a4f9921e37979f964ad086bc314dc88fb8f9c7aa129e"
+    },
+    "capture/fixture/zbus/src/connection/activity_listener.rs": {
+      "bytes": 1980,
+      "sha256": "1ecc2871ba0ad93602c9028b8ab10378ab8caacb0104863e9703e5042a085c7b"
+    },
+    "capture/fixture/zbus/src/connection/builder.rs": {
+      "bytes": 31899,
+      "sha256": "00e190e31b5363d281a4ba3c2c6ac81a6661ce580192b0462894df90fddc9346"
+    },
+    "capture/fixture/zbus/src/connection/handshake/auth_mechanism.rs": {
+      "bytes": 1977,
+      "sha256": "686eee8beb962e90e8bfc713f5cc75b161de0553e7ea52cbfadb659f6297df88"
+    },
+    "capture/fixture/zbus/src/connection/handshake/client.rs": {
+      "bytes": 8579,
+      "sha256": "3884b5161166b5d7103360b90f211f5050c061e5762da55641678195b9aeea60"
+    },
+    "capture/fixture/zbus/src/connection/handshake/command.rs": {
+      "bytes": 3524,
+      "sha256": "8a6c5d85ab7bc7c55e9115f8394ea74b93e0c2694198100f659cd55986205bde"
+    },
+    "capture/fixture/zbus/src/connection/handshake/common.rs": {
+      "bytes": 6068,
+      "sha256": "e97ff5a9ffd1845e76f7895d6bb52bf9e3c44d144259d1f9e735b8abe24bd4db"
+    },
+    "capture/fixture/zbus/src/connection/handshake/mod.rs": {
+      "bytes": 12603,
+      "sha256": "c72998ad1b264ac0fba0589db78876779077d2b8c712e07920baa80836e49feb"
+    },
+    "capture/fixture/zbus/src/connection/handshake/server.rs": {
+      "bytes": 8689,
+      "sha256": "de4699767520a5fa16b1a48e99c8665694f6f7cb2ef7b5b53ad04cfbee795ce8"
+    },
+    "capture/fixture/zbus/src/connection/mod.rs": {
+      "bytes": 75043,
+      "sha256": "9cafce21471655aae2dc1d76fd7d60c101e24f73e91680c0f078c50821ae0ae6"
+    },
+    "capture/fixture/zbus/src/connection/pending_method_calls.rs": {
+      "bytes": 5306,
+      "sha256": "fafd8230264322710e182b71927a1a2081cac566836955fc89a884efb7817347"
+    },
+    "capture/fixture/zbus/src/connection/socket/channel.rs": {
+      "bytes": 4261,
+      "sha256": "96f8c53a9791c4829f54a8de3f047826216e204885d4e3638e1658acee768ecf"
+    },
+    "capture/fixture/zbus/src/connection/socket/mod.rs": {
+      "bytes": 19563,
+      "sha256": "72ca2ca5d08f4758c099045b7a887a4f1b0e034c28d29a3d34460caa90649794"
+    },
+    "capture/fixture/zbus/src/connection/socket/split.rs": {
+      "bytes": 1235,
+      "sha256": "af67db0f9dd761bc1eee30971fae9d6f9cab0bd88e2817d6f97fe23c6de1a468"
+    },
+    "capture/fixture/zbus/src/connection/socket_reader.rs": {
+      "bytes": 9122,
+      "sha256": "fe9ee64e3622ccb818f2c040ff6152ed4c332b5dcbdfb5e34244fea994860343"
+    },
+    "capture/fixture/zbus/src/dbus_error.rs": {
+      "bytes": 2920,
+      "sha256": "97df2c7f76b428e1b8bc300c302aefae8afc8016e38a8a607fefd6e8fe2b3544"
+    },
+    "capture/fixture/zbus/src/error.rs": {
+      "bytes": 20222,
+      "sha256": "9354a9ba49779727d35d0ea623bf11b2b4e0fb5c7dd6fea0b44e8086ed652faa"
+    },
+    "capture/fixture/zbus/src/fdo/dbus.rs": {
+      "bytes": 21196,
+      "sha256": "9499c009e49bf376b99e3e6a978e8a0674937f667a63f554232655f50a1fe678"
+    },
+    "capture/fixture/zbus/src/fdo/error.rs": {
+      "bytes": 5732,
+      "sha256": "00e7a5aeaf20a59a553026d70198be66d296589926233d2de1b325ac319a1311"
+    },
+    "capture/fixture/zbus/src/fdo/introspectable.rs": {
+      "bytes": 1853,
+      "sha256": "1b82b3f51a09a5fcd956f302161922b6d95da67e27d11ea4877858b685c9dba2"
+    },
+    "capture/fixture/zbus/src/fdo/mod.rs": {
+      "bytes": 12732,
+      "sha256": "ac0c590b217fb49d16e16be1f1718a12d5491f2a400be9b596bf34deca309a29"
+    },
+    "capture/fixture/zbus/src/fdo/monitoring.rs": {
+      "bytes": 1747,
+      "sha256": "ec2892855e71af3315981cfe684669b8d266f68a15ce4c55266e251c5e60ff26"
+    },
+    "capture/fixture/zbus/src/fdo/object_manager.rs": {
+      "bytes": 7661,
+      "sha256": "939b5a92dd26c148cb62949fe325dcac8af96a985cbf75338fe8c33e92567f55"
+    },
+    "capture/fixture/zbus/src/fdo/peer.rs": {
+      "bytes": 10295,
+      "sha256": "b36c50c98026a4250624ca6b869c332e45246d61c4a7ffdfa9e0f2c88125ccd5"
+    },
+    "capture/fixture/zbus/src/fdo/properties.rs": {
+      "bytes": 6150,
+      "sha256": "a127ce901fd23fea18f542a6c22f5bca55a3fab53bea9c5bd95c61168359256d"
+    },
+    "capture/fixture/zbus/src/fdo/stats.rs": {
+      "bytes": 11329,
+      "sha256": "b58bd63a4cbe6d0fa1662697ee85a51f8123d0a26e25fab4a0da59e654283ab2"
+    },
+    "capture/fixture/zbus/src/guid.rs": {
+      "bytes": 6547,
+      "sha256": "d5d968eebc282185bd7defff7d8ace5f6f47e06f558cc7ad77bafc9d3af50be0"
+    },
+    "capture/fixture/zbus/src/lib.rs": {
+      "bytes": 5337,
+      "sha256": "8268c3d7d85ef55d464e188fe56910029f3aadffcab79e0d02dff315e190f2ef"
+    },
+    "capture/fixture/zbus/src/log.rs": {
+      "bytes": 2488,
+      "sha256": "622013636636a5cc08ba23be5e4be3d1a1fc46b262c6e0d0d0dad8d6d90b87c5"
+    },
+    "capture/fixture/zbus/src/match_rule/builder.rs": {
+      "bytes": 26442,
+      "sha256": "53e6e273a2e5f6a80eef898e51393d9dcc694fc3855d1deeb925ffdb1ca6b4bd"
+    },
+    "capture/fixture/zbus/src/match_rule/mod.rs": {
+      "bytes": 28572,
+      "sha256": "d1d03b21bd74d7ebbca6cda290b85ec6cc8bdaeed2016c6149db9759ff4512ad"
+    },
+    "capture/fixture/zbus/src/message/body.rs": {
+      "bytes": 2124,
+      "sha256": "1f534eb3a69d68edf3fc167e6652c5b9cf6617b75d74d6a7c8dc84394b6f16db"
+    },
+    "capture/fixture/zbus/src/message/builder.rs": {
+      "bytes": 13864,
+      "sha256": "d2e77fec62f99f542b6e568773fcc065ab84612b52c045cadfbcd92a0e740706"
+    },
+    "capture/fixture/zbus/src/message/field_code.rs": {
+      "bytes": 1449,
+      "sha256": "cacc1883ce41dd4d982b75c4ba6285ca0ffc97e94ed4eed43726ea25e2976c89"
+    },
+    "capture/fixture/zbus/src/message/fields.rs": {
+      "bytes": 9861,
+      "sha256": "7d2dac5741a3970eb99a2dc12b5fb63f2ec9426951fc453fcac9a6a9f7994e83"
+    },
+    "capture/fixture/zbus/src/message/header.rs": {
+      "bytes": 14425,
+      "sha256": "7db91f7d3761a5630777072bcb3274e6cb503d3df0c8f120d9a59d7471f34bb7"
+    },
+    "capture/fixture/zbus/src/message/mod.rs": {
+      "bytes": 13170,
+      "sha256": "0af0e03285b17cbca064c0400255accc4c533daca7fdc24a8fb44881c56e7fd4"
+    },
+    "capture/fixture/zbus/src/message_stream.rs": {
+      "bytes": 14831,
+      "sha256": "1b5955be7e20e9599aa3392acba0c63f527e7a0d4e751ac0cd1c2d80a3924478"
+    },
+    "capture/fixture/zbus/src/names/bus_name.rs": {
+      "bytes": 14867,
+      "sha256": "d64218124411960be2292d1e367b64131b360fcc86155d5416064857fc3312f3"
+    },
+    "capture/fixture/zbus/src/names/error_name.rs": {
+      "bytes": 1666,
+      "sha256": "52bf391c0aab3cb3bed3dba5f9983ddf6597c82825e1ff9e19ddd1b823b0e746"
+    },
+    "capture/fixture/zbus/src/names/interface_name.rs": {
+      "bytes": 1694,
+      "sha256": "8dfe95f3d68d23a7f605f82613bbda2667dd0f9f08c6992494e299e5bd7bd442"
+    },
+    "capture/fixture/zbus/src/names/member_name.rs": {
+      "bytes": 1472,
+      "sha256": "64dc35c6fe83ab553bcf74666ef5648d51584eca2bf54d6218aeb289cdc4f727"
+    },
+    "capture/fixture/zbus/src/names/mod.rs": {
+      "bytes": 2015,
+      "sha256": "baa62518e536c0d044539dd827a7a3a313c29c1405a2cb05eb21fe3e242be4c7"
+    },
+    "capture/fixture/zbus/src/names/property_name.rs": {
+      "bytes": 1279,
+      "sha256": "b899869b2d199ac99c89dd3efe5e31fa4485d7ee8f08c8183537379ef115835b"
+    },
+    "capture/fixture/zbus/src/names/unique_name.rs": {
+      "bytes": 5967,
+      "sha256": "b6e9a417c635794f5be4e7a644d28ebaa8a60ce6f6f8b40d2ba079be9df5996e"
+    },
+    "capture/fixture/zbus/src/names/utils.rs": {
+      "bytes": 14442,
+      "sha256": "cac3b08c6c38affda9196b545abe67a42f5e560eec024fae80d522ca3d35b345"
+    },
+    "capture/fixture/zbus/src/names/well_known_name.rs": {
+      "bytes": 1555,
+      "sha256": "eedcbcd70b6cb7c6a04fbf395496db531da9f23c5aba041ddce5f79942dbdd28"
+    },
+    "capture/fixture/zbus/src/object_server/dispatch_notifier.rs": {
+      "bytes": 3325,
+      "sha256": "4ed51ab5f33edb414b9aa5d38576b1b254dc6fbce02f0f9f778a1ec5bd6cf30c"
+    },
+    "capture/fixture/zbus/src/object_server/interface/dispatch_result.rs": {
+      "bytes": 2813,
+      "sha256": "db30513f0212ac72fa8fb895569bcb67675a6de366411fd586dd06a8ffa504cb"
+    },
+    "capture/fixture/zbus/src/object_server/interface/interface_deref.rs": {
+      "bytes": 1217,
+      "sha256": "bc35ecb53a70c8401e56d5c98a385ec98478d31e646be2160533bb704109f359"
+    },
+    "capture/fixture/zbus/src/object_server/interface/interface_ref.rs": {
+      "bytes": 3317,
+      "sha256": "b49b0090b28574f5086c5ad24a3fbbe701e5607a69fb4c01d8fe3e70a74bb5c7"
+    },
+    "capture/fixture/zbus/src/object_server/interface/mod.rs": {
+      "bytes": 7422,
+      "sha256": "a11b41b7d25e222a992f89397873ec5c3f19c4847c5805a6369644ec10e20617"
+    },
+    "capture/fixture/zbus/src/object_server/mod.rs": {
+      "bytes": 20943,
+      "sha256": "752c8c86e311b70a407b1dcf0d21d6a6836ed2f859ce3fb92a642bfc23a791b2"
+    },
+    "capture/fixture/zbus/src/object_server/node.rs": {
+      "bytes": 12734,
+      "sha256": "2dd4b82db498356002ce4be4cc5936bfc5dcb0bcac63a6f962552c24dcb731fc"
+    },
+    "capture/fixture/zbus/src/object_server/signal_emitter.rs": {
+      "bytes": 3292,
+      "sha256": "105250c7dc07cbf450eab66fb9da8da1d3615e52c54f9830917faf67a55e1641"
+    },
+    "capture/fixture/zbus/src/proxy/builder.rs": {
+      "bytes": 8554,
+      "sha256": "dd003a4b1410e026dea25df62e4140b51340275e75aae1884a70de712790296d"
+    },
+    "capture/fixture/zbus/src/proxy/defaults.rs": {
+      "bytes": 1286,
+      "sha256": "aaa5bf9940fcd07020b723a40643b2e237222972fcdce20c01612548d9ffef06"
+    },
+    "capture/fixture/zbus/src/proxy/mod.rs": {
+      "bytes": 59328,
+      "sha256": "0847d645241640928b4907f1e2cf98f61cfb60b5371677ded235d2883d8266ae"
+    },
+    "capture/fixture/zbus/src/runtime/async_drop.rs": {
+      "bytes": 870,
+      "sha256": "6e2ad9b3d6617a3286ff491273f584015a17e3caf1714acefe722596774a678f"
+    },
+    "capture/fixture/zbus/src/runtime/erased.rs": {
+      "bytes": 11786,
+      "sha256": "409dc520b7b6ff41b8836dc22a13e2cf2f7ee130fc4462233056714d510d325a"
+    },
+    "capture/fixture/zbus/src/runtime/io/connect.rs": {
+      "bytes": 1758,
+      "sha256": "e6654360c7111ec43624dca5dd4549748df0c6be188bce0c7950df1a31bdc60d"
+    },
+    "capture/fixture/zbus/src/runtime/io/mod.rs": {
+      "bytes": 15229,
+      "sha256": "18bf7429ee2734fcd9f418461ac7a0191e36ac173d68e449d62ead0cdf6956b1"
+    },
+    "capture/fixture/zbus/src/runtime/io/pipe.rs": {
+      "bytes": 1387,
+      "sha256": "c4142352608b9e4be0d1b9aedbdfff640c296177761ecd0cb417cb0fdb78fe38"
+    },
+    "capture/fixture/zbus/src/runtime/io/tcp.rs": {
+      "bytes": 2711,
+      "sha256": "9ce9fcd11f6cb0a63ec14690ed0f787591339573c8501fa57622abe9aec1b28a"
+    },
+    "capture/fixture/zbus/src/runtime/io/tests.rs": {
+      "bytes": 21645,
+      "sha256": "e5c8bde9760da554c46731fe7bf8345ea71eb5d01a70d528a1aa5f01762b5596"
+    },
+    "capture/fixture/zbus/src/runtime/io/unix.rs": {
+      "bytes": 15704,
+      "sha256": "f8cc21f18420cae201ba3faa43ea1e29d0fbf45af00c4938dcf5159c82907c76"
+    },
+    "capture/fixture/zbus/src/runtime/io_source.rs": {
+      "bytes": 2523,
+      "sha256": "f14933061cfd6267df669404eb0f4335fd350efd27e9c77253fb1c386454e4be"
+    },
+    "capture/fixture/zbus/src/runtime/locks.rs": {
+      "bytes": 746,
+      "sha256": "8f75750e6169a01b61d964f41e02b67eaaaf458a44bcaf31f76f462c692e5e81"
+    },
+    "capture/fixture/zbus/src/runtime/mod.rs": {
+      "bytes": 9981,
+      "sha256": "9ba4411270039c07d97f98ec9db9afa3bb07f2276826d68438d2a7d7fd14bca1"
+    },
+    "capture/fixture/zbus/src/runtime/process.rs": {
+      "bytes": 18166,
+      "sha256": "bff83624e87afe5183052fc7b7884c252da9208d5ddebb75fc51be57b2b728e3"
+    },
+    "capture/fixture/zbus/src/runtime/process_table.rs": {
+      "bytes": 884,
+      "sha256": "c68379c26a58e00bb00363e753b65609b74c79cf29007f9c3676cceb8038c4b1"
+    },
+    "capture/fixture/zbus/src/runtime/task.rs": {
+      "bytes": 1784,
+      "sha256": "43d65542067acecd464a922da04c488c1ce7482f6eb14f17319cda7670f87f04"
+    },
+    "capture/fixture/zbus/src/runtime/test_runtime.rs": {
+      "bytes": 21689,
+      "sha256": "caf7d650e483686184de1fb9ff169dad3f9f0545cad63597a5058069630156e8"
+    },
+    "capture/fixture/zbus/src/runtime/tests.rs": {
+      "bytes": 13719,
+      "sha256": "f3002873d2bf0f401dd4fd1d0af7d83722238e58f6142df4ecf06c903fe62923"
+    },
+    "capture/fixture/zbus/src/runtime/timeout.rs": {
+      "bytes": 2940,
+      "sha256": "2a57d4437da8b2db0725c5c0276e6d6bf0b52f70a511310148f4ffcba334a19a"
+    },
+    "capture/fixture/zbus/src/runtime/tokio_rt.rs": {
+      "bytes": 27536,
+      "sha256": "2fa701fb928152f6fdcf14f7e12ce9ecc86d28e937f6154b62e0f4aca3502b6c"
+    },
+    "capture/fixture/zbus/src/runtime/traits.rs": {
+      "bytes": 15522,
+      "sha256": "a12ace869fa49b5fae71144bcd213946a076f317f4319672b95a5074af854371"
+    },
+    "capture/fixture/zbus/src/runtime/zruntime.rs": {
+      "bytes": 8840,
+      "sha256": "e11f63e579ccbbf68945130ac5f9c4bbb7fbe7d7202502229833b520121d5121"
+    },
+    "capture/fixture/zbus/src/utils.rs": {
+      "bytes": 9517,
+      "sha256": "482f02e58fae185b47086dcbe540fe535ad9df15f027ae228409653c61f612c3"
+    },
+    "capture/fixture/zbus/src/win32.rs": {
+      "bytes": 10812,
+      "sha256": "6c9ebabb9fa104d93ee1f7b1ec2d4454ed69654b8f90ee58229d9df97be33805"
+    },
+    "capture/fixture/zbus/src/wire/array.rs": {
+      "bytes": 9543,
+      "sha256": "6cf33328a41840443a85a7d9b4a0630b397943405e39bba454cf2e534dc6b47f"
+    },
+    "capture/fixture/zbus/src/wire/as_variant/deserialize.rs": {
+      "bytes": 6723,
+      "sha256": "1be8743fc35356804c6e9abc8edffe1aa4d319582446a7cb0138505d6f576373"
+    },
+    "capture/fixture/zbus/src/wire/as_variant/mod.rs": {
+      "bytes": 904,
+      "sha256": "0e9f9a6e8377ae34d8be9c435ce1b7f42438f9a539bad7ecf2fff63fb64903e1"
+    },
+    "capture/fixture/zbus/src/wire/as_variant/property.rs": {
+      "bytes": 35490,
+      "sha256": "6728a413119b71892ea4d80c54e00023f0de6263a9d640da255edc5fd2a5c1fa"
+    },
+    "capture/fixture/zbus/src/wire/as_variant/serialize.rs": {
+      "bytes": 2130,
+      "sha256": "e3519dfd2acc98bf7e738272491645f2934116b8c8648bfa87e46a6cd4d0da44"
+    },
+    "capture/fixture/zbus/src/wire/as_variant/variant_serializer.rs": {
+      "bytes": 26023,
+      "sha256": "3dc6ad9ae7cbda9db4f32fecf59504db51314804736a6354fe389e3e72d066a6"
+    },
+    "capture/fixture/zbus/src/wire/basic.rs": {
+      "bytes": 12243,
+      "sha256": "980a7b7536315c2b96d72c35f3b984db842974ad273ce06aeff7e6c445b0a3fc"
+    },
+    "capture/fixture/zbus/src/wire/container_depths.rs": {
+      "bytes": 1431,
+      "sha256": "7f9826cea03a2b819c940849b4408f20d4d17c76a63e06301483234dfb8cc295"
+    },
+    "capture/fixture/zbus/src/wire/dbus/de.rs": {
+      "bytes": 22497,
+      "sha256": "dd2424524ddfa2fc537b3305f7c3bc4fa4f4a5367a6e995753422aed14da5362"
+    },
+    "capture/fixture/zbus/src/wire/dbus/mod.rs": {
+      "bytes": 1799,
+      "sha256": "48193cf0154467486c8e9809d376a6d9e4639a6b474bbd2164eab3a7fcc80f5b"
+    },
+    "capture/fixture/zbus/src/wire/dbus/ser.rs": {
+      "bytes": 22292,
+      "sha256": "66c5fadc85ddb4e31139eb3288fc5e780ec8c9fc8022fad7100ba5ae222f0161"
+    },
+    "capture/fixture/zbus/src/wire/de.rs": {
+      "bytes": 8420,
+      "sha256": "060f62c70148d5ced52fdcd4d3237f07e4889f775196d35cff419f2c9c99d08f"
+    },
+    "capture/fixture/zbus/src/wire/dict.rs": {
+      "bytes": 9764,
+      "sha256": "626ea2703d0beefa2592290a1f2753a4d1130528cdbb87139a4f34d5074f20f0"
+    },
+    "capture/fixture/zbus/src/wire/fd.rs": {
+      "bytes": 6346,
+      "sha256": "310a8b7f26ab32fcd88a5bf4073c15c5b658383c060fddf524a4702660201081"
+    },
+    "capture/fixture/zbus/src/wire/file_path.rs": {
+      "bytes": 10514,
+      "sha256": "267cd1caeaa73bb8e556b0cbe24bc65b7c04dbb19fde7c90957d625ab22247fd"
+    },
+    "capture/fixture/zbus/src/wire/from_variant.rs": {
+      "bytes": 6146,
+      "sha256": "65d0f15127dbc0ea75fd0c54545fbb480664a46d43e3c1333288545086ec4616"
+    },
+    "capture/fixture/zbus/src/wire/into_variant.rs": {
+      "bytes": 4002,
+      "sha256": "7cf2d5e242fb1aa06094e77733887b9b02c69d274b12979c252c8285210bb495"
+    },
+    "capture/fixture/zbus/src/wire/mod.rs": {
+      "bytes": 10576,
+      "sha256": "9e9230179d12aea49fa2531b947576a86a62345c4484f2a32db7d094fcfaaeab"
+    },
+    "capture/fixture/zbus/src/wire/object_path.rs": {
+      "bytes": 9443,
+      "sha256": "e20ebbc8ce280bef57597d49aaa1cd4131a549efb2793b7178d11f9bdb95727b"
+    },
+    "capture/fixture/zbus/src/wire/optional.rs": {
+      "bytes": 6053,
+      "sha256": "c3658f893e603f65f7a2c921ffd2183bd7208db93faedde742fabb0c7b2d7ad9"
+    },
+    "capture/fixture/zbus/src/wire/owned_variant.rs": {
+      "bytes": 8773,
+      "sha256": "71379cc96d6e52e642f72b6cbc0bafdf050423e76cdf5cb37c94d4abc09e77f3"
+    },
+    "capture/fixture/zbus/src/wire/ser.rs": {
+      "bytes": 8342,
+      "sha256": "8523393836cb15d2908f985db9aca0abd80033ea55986eb6260a9ca7a3a9662e"
+    },
+    "capture/fixture/zbus/src/wire/serialized/context.rs": {
+      "bytes": 2001,
+      "sha256": "7b9c972dd02a3f19bdaea696959277495dfd8cf98261396a50882b8a3ec9b8de"
+    },
+    "capture/fixture/zbus/src/wire/serialized/data.rs": {
+      "bytes": 11197,
+      "sha256": "7efde0cf9f76dbb5d20833c9dead63a879754c426a3c10dfc21f87f217871d67"
+    },
+    "capture/fixture/zbus/src/wire/serialized/mod.rs": {
+      "bytes": 624,
+      "sha256": "51d03e25d0ef5c4eb0fc54085506f8efeb19e24e0a5626a2a60606e293f3f002"
+    },
+    "capture/fixture/zbus/src/wire/serialized/size.rs": {
+      "bytes": 1380,
+      "sha256": "fc29d6a223c088afe215baa7f65ee82c0c4c55356b4ed54ccd6c6b114f9b8d22"
+    },
+    "capture/fixture/zbus/src/wire/serialized/written.rs": {
+      "bytes": 1673,
+      "sha256": "cc63e2bfb00311a8b1bcac475825451aef1806f16097028a19cc9396bff14ed1"
+    },
+    "capture/fixture/zbus/src/wire/signature.rs": {
+      "bytes": 691,
+      "sha256": "31c011b50cf720b3a303d2784d09483169d8a0c13a61fb2ba2050513e5406ab5"
+    },
+    "capture/fixture/zbus/src/wire/str.rs": {
+      "bytes": 438,
+      "sha256": "38c9a891dd836b2936289b4db61c3ba31b626b9057084e8263aaf2b6aef94ca5"
+    },
+    "capture/fixture/zbus/src/wire/structure.rs": {
+      "bytes": 13149,
+      "sha256": "a3e215770b1eaa680290bf17815050ce677081c12c8054e92e4b4a8b4a4a8f0b"
+    },
+    "capture/fixture/zbus/src/wire/tuple.rs": {
+      "bytes": 5721,
+      "sha256": "63c8006b54c24006da971bf71a9de75546de4782ab5d3a78ed2c79f5e810d97f"
+    },
+    "capture/fixture/zbus/src/wire/type/bytes.rs": {
+      "bytes": 282,
+      "sha256": "c1135a4badfd9fa111acbbc32f547410fce62c985026d0bf45d32ee89a20db8a"
+    },
+    "capture/fixture/zbus/src/wire/type/dynamic.rs": {
+      "bytes": 2294,
+      "sha256": "350376615e6530538d73ce51320d93503729815e8cc4a6c92f85d7c3b3bcd22d"
+    },
+    "capture/fixture/zbus/src/wire/type/libstd.rs": {
+      "bytes": 9346,
+      "sha256": "4fc222cb301cfc53548d7e556e9e1f9f9068f3141780b4c0bb67150a111730f6"
+    },
+    "capture/fixture/zbus/src/wire/type/mod.rs": {
+      "bytes": 6636,
+      "sha256": "5d853117a187380efe59d99daef632c5e365743c40a28b6d85ff2914788d9668"
+    },
+    "capture/fixture/zbus/src/wire/type/net.rs": {
+      "bytes": 1646,
+      "sha256": "73b7f5859671a94de2024f4e7c897ca9d0f32aee18af2a2a451fa8423e3f90b0"
+    },
+    "capture/fixture/zbus/src/wire/type/paths.rs": {
+      "bytes": 257,
+      "sha256": "9e59f1a3c113d8aafbe3611d1e107929a7d468ed501f93ce97ad6ee36f6bad77"
+    },
+    "capture/fixture/zbus/src/wire/type/time.rs": {
+      "bytes": 6381,
+      "sha256": "e4defc069929631dacd81cb3af164f5e805944434d3eca2296a6f31a1338592b"
+    },
+    "capture/fixture/zbus/src/wire/type/uuid.rs": {
+      "bytes": 284,
+      "sha256": "a50ffaac2ab88bdeb7c7b97fac69a00c88560e218d6a575eb7d6eec12408742c"
+    },
+    "capture/fixture/zbus/src/wire/utils.rs": {
+      "bytes": 3096,
+      "sha256": "95eb7955d12b116afd7212cb921374be4c4f6f6ad742516436088d2f02e806b3"
+    },
+    "capture/fixture/zbus/src/wire/variant.rs": {
+      "bytes": 39601,
+      "sha256": "6a65d951bb47282c940ff0e6191b921ff08f7910372bd2266132738092a65cbd"
+    },
+    "capture/fixture/zbus/src/zvariant.rs": {
+      "bytes": 14330,
+      "sha256": "ada9b605a2961cd906b84d2fdf28d70c70b7e6a2db8e7640ccba4fa1d525643a"
+    },
+    "capture/fixture/zbus/tests/basic.rs": {
+      "bytes": 8554,
+      "sha256": "eba44ab81c2b26f92a2aeff0c30a36b36507b617a363988a7abec94901dcda1e"
+    },
+    "capture/fixture/zbus/tests/builder_feature_additivity.rs": {
+      "bytes": 716,
+      "sha256": "4684a34f4c22e3b2c4dae043a37977701db90d8429193402f08af2ca57c0ae4b"
+    },
+    "capture/fixture/zbus/tests/builder_message_stream.rs": {
+      "bytes": 2699,
+      "sha256": "09b3880b81cee716449b27464d7cac7863d82b503d01cc030239bfb22a1d20bb"
+    },
+    "capture/fixture/zbus/tests/connection_closed.rs": {
+      "bytes": 2384,
+      "sha256": "321b371915ed4b65a4ee7072b4da13502259e5071e0e52d81e9b790a5a92554f"
+    },
+    "capture/fixture/zbus/tests/e2e.rs": {
+      "bytes": 7507,
+      "sha256": "0416c8aaff95c6f2006f4ef42df01862a52bbbb37a431a6471cd619e1cfeebe7"
+    },
+    "capture/fixture/zbus/tests/iface_and_proxy/client.rs": {
+      "bytes": 20831,
+      "sha256": "67899cab46ccdb161b7cc55b5246bf818efc27079b77255e11c38bac36a5c3a4"
+    },
+    "capture/fixture/zbus/tests/iface_and_proxy/helpers.rs": {
+      "bytes": 671,
+      "sha256": "65dcf7d973108c141889baf7114e0c82a3aef2233b4008d3d05c5e742c8056cf"
+    },
+    "capture/fixture/zbus/tests/iface_and_proxy/iface.rs": {
+      "bytes": 19167,
+      "sha256": "89ffdc884a348ebdfaeff872168dc5d6f1e4de1ebb7474a9c3c3239b6c20cb60"
+    },
+    "capture/fixture/zbus/tests/iface_and_proxy/mod.rs": {
+      "bytes": 63,
+      "sha256": "33ac8419b5ebbeacecd2bf044d416f78999606e19007515b99b0c6cff58c0508"
+    },
+    "capture/fixture/zbus/tests/iface_and_proxy/types.rs": {
+      "bytes": 1342,
+      "sha256": "47300c554708ea728c9a9e3d0fb4aa89e18190ea9cd4ad8cb6daf8c0a9fc66e2"
+    },
+    "capture/fixture/zbus/tests/issue/issue_1003.rs": {
+      "bytes": 1306,
+      "sha256": "63964b9ff0c0278b8a9566713919c7e39cd504e5fe7c140cc0827fc0d155d00f"
+    },
+    "capture/fixture/zbus/tests/issue/issue_1015.rs": {
+      "bytes": 1201,
+      "sha256": "144b6668846b9089291cc4c5622fea295ea982e6e6c87c84259efcab35b6d37f"
+    },
+    "capture/fixture/zbus/tests/issue/issue_104.rs": {
+      "bytes": 2263,
+      "sha256": "efc1086ced81f1c1985c2db61fb299147c36638c41ff4f131adcd5852c784632"
+    },
+    "capture/fixture/zbus/tests/issue/issue_121.rs": {
+      "bytes": 601,
+      "sha256": "f9a58f30dc3d1f4f81a2c0d10dbb1a8126c408e0057a90528ee7a0b6f685458e"
+    },
+    "capture/fixture/zbus/tests/issue/issue_1478.rs": {
+      "bytes": 1926,
+      "sha256": "5115599468eb63146e2771a368196197b22106a7e859df8f6e9a8e6259a0aaa2"
+    },
+    "capture/fixture/zbus/tests/issue/issue_173.rs": {
+      "bytes": 2697,
+      "sha256": "d89307bd2d9c4d072e1ea882ff7d810e4400111286a9586f4409236d36d1335a"
+    },
+    "capture/fixture/zbus/tests/issue/issue_1916.rs": {
+      "bytes": 6406,
+      "sha256": "cc83f97139d99a1d6b87daae98f9784fcff4c02c9e37f244957556d739f95ea7"
+    },
+    "capture/fixture/zbus/tests/issue/issue_260.rs": {
+      "bytes": 1498,
+      "sha256": "71027c23f149a7b61d14295eeef769fd7cccf012cedd6a01ee3296115e426f20"
+    },
+    "capture/fixture/zbus/tests/issue/issue_279.rs": {
+      "bytes": 1082,
+      "sha256": "a884303b058f7f09e410a2bd107ffd6057109a8fba46003c9c6d7af7cbd9b0c6"
+    },
+    "capture/fixture/zbus/tests/issue/issue_310.rs": {
+      "bytes": 2725,
+      "sha256": "90eff26e25fd4b84d84a27ef1e24fcdc4456fb455b6c0f96d5acb150b48094fa"
+    },
+    "capture/fixture/zbus/tests/issue/issue_356.rs": {
+      "bytes": 2207,
+      "sha256": "1b4d2e11781aaa132150ebcbbf68e8f285a07edf79c2f8bff941949e6222f61c"
+    },
+    "capture/fixture/zbus/tests/issue/issue_466.rs": {
+      "bytes": 351,
+      "sha256": "6c4b33bb4304c294389ff34640193682106cfe28455153c916d4a5f351e51a1e"
+    },
+    "capture/fixture/zbus/tests/issue/issue_68.rs": {
+      "bytes": 1468,
+      "sha256": "66683c49dd5dbbcf8cf987d78661b4acf8a146a192811ab15fc16af7b8a504af"
+    },
+    "capture/fixture/zbus/tests/issue/issue_799.rs": {
+      "bytes": 1717,
+      "sha256": "61103f6cd762e1389f08464d701b9797180caeebf81542648fece5c2833c1fea"
+    },
+    "capture/fixture/zbus/tests/issue/issue_81.rs": {
+      "bytes": 574,
+      "sha256": "7ad39c8094e4fd47330f939086f48ee6bdc1f8c3e22b8399f1bc92a0957af656"
+    },
+    "capture/fixture/zbus/tests/issue/issue_813.rs": {
+      "bytes": 4313,
+      "sha256": "864817ccafa6064a9d1aabc9d05bf1c22ec8b6e27a6f4f1116f49104da8c6dc9"
+    },
+    "capture/fixture/zbus/tests/issue/mod.rs": {
+      "bytes": 974,
+      "sha256": "0c2f8fb1269b5dc41374f5bd53b6303e9f15cbe17cdd081b364e17697a7d3e63"
+    },
+    "capture/fixture/zbus/tests/issues.rs": {
+      "bytes": 207,
+      "sha256": "09e91286e5adf9a74b570d93e8866bb73b4da283f5f16fc5887c1a2e9abe7555"
+    },
+    "capture/fixture/zbus/tests/polling_runtime/connect.rs": {
+      "bytes": 3713,
+      "sha256": "8781e5e8aae6fedf376d7a2c48f569df8a80cbd3e2f5c54afd2f85765cb39d67"
+    },
+    "capture/fixture/zbus/tests/polling_runtime/lifecycle.rs": {
+      "bytes": 7586,
+      "sha256": "c89d17b25ff2527eae7d455bcb9c2fb0df74758a81f91c282e0070a1efff8bb1"
+    },
+    "capture/fixture/zbus/tests/polling_runtime/main.rs": {
+      "bytes": 1145,
+      "sha256": "97538abb19e3f238f88f69d24b4792cbf9aa336b5ce265a1ae43463769977732"
+    },
+    "capture/fixture/zbus/tests/polling_runtime/process.rs": {
+      "bytes": 2406,
+      "sha256": "5b13572fa2d0a41f42fb0c138c36803ad05010b9c095a98492c0aff4757fd9cd"
+    },
+    "capture/fixture/zbus/tests/polling_runtime/runtime/connect.rs": {
+      "bytes": 3890,
+      "sha256": "3f0ad1c93ac64f0dfa972b193dd06962f9d96120a1d3684382f7a73f923cf8ab"
+    },
+    "capture/fixture/zbus/tests/polling_runtime/runtime/io.rs": {
+      "bytes": 4297,
+      "sha256": "cdd2b9fa40a442e229468e729f39ae6e48cb9508b3bb94ce55f16c457384bbcf"
+    },
+    "capture/fixture/zbus/tests/polling_runtime/runtime/mod.rs": {
+      "bytes": 12246,
+      "sha256": "f561fd93f9606b2b5b519467b30f70ac8741e50c84e2c0e7e7844dc8652ad03f"
+    },
+    "capture/fixture/zbus/tests/polling_runtime/runtime/process.rs": {
+      "bytes": 3580,
+      "sha256": "5a90feff499de62c97815746eefe64adf35db6b78043241d5b7287dde8faf377"
+    },
+    "capture/fixture/zbus/tests/polling_runtime/runtime/task.rs": {
+      "bytes": 2158,
+      "sha256": "22a6b18aaa5243db28fc7bf2a5a3da482c5db683378738f027e63c619c60d8a0"
+    },
+    "capture/fixture/zbus/tests/polling_runtime/runtime/timer.rs": {
+      "bytes": 2668,
+      "sha256": "53fd11e531dbeccf8ae6169e1d0badacd9faf9194d08a0a149cbaa9a572ba685"
+    },
+    "capture/fixture/zbus/tests/polling_runtime/teardown.rs": {
+      "bytes": 6114,
+      "sha256": "be542795d83f528efa7d83ed2e78dff393736448d75454a6df2aff9df51246af"
+    },
+    "capture/fixture/zbus/tests/polling_runtime/timeout.rs": {
+      "bytes": 3534,
+      "sha256": "22ff41391bb0b778caa98bce0d2b8ce23279414bcd49332cb04a01bb642c257b"
+    },
+    "capture/fixture/zbus/tests/uncached_propert.rs": {
+      "bytes": 6418,
+      "sha256": "e53b0b4a4b1c2a84112ddb51db3bf14d0e43407b208f90272cde17ba1865f4de"
+    },
+    "capture/fixture/zbus/tests/unixexec.rs": {
+      "bytes": 3317,
+      "sha256": "2cbbb0be1a8a4f86c83409edf7b2740a21245ece8a8194d78eb8ea8e0d9f349d"
+    },
+    "capture/fixture/zbus/tests/wire/array_string_value.rs": {
+      "bytes": 476,
+      "sha256": "6da8991b24b25de902a93557825ad039a187ed0384018465cf4e854971fbad23"
+    },
+    "capture/fixture/zbus/tests/wire/array_value.rs": {
+      "bytes": 7682,
+      "sha256": "18d02e5d7c2c8203ac1b37cf69c4dc2a728c8c06c98ad11ec7bc5c5e26f3b1f3"
+    },
+    "capture/fixture/zbus/tests/wire/bitflags_value.rs": {
+      "bytes": 5504,
+      "sha256": "8340d9a7f48ef25548f72874c3de294d0c79362845752f03f1c34a1af6adf4e9"
+    },
+    "capture/fixture/zbus/tests/wire/common.rs": {
+      "bytes": 4637,
+      "sha256": "625352233fd513c9393fc4193a1de51eaf2233ba34ba9bff65becfeb0b45d995"
+    },
+    "capture/fixture/zbus/tests/wire/dbus_maybe_rejection.rs": {
+      "bytes": 5070,
+      "sha256": "46665a638ed3e851034763f98efcaac94cdee2fed0daad1a743d22a95884cc3f"
+    },
+    "capture/fixture/zbus/tests/wire/derive.rs": {
+      "bytes": 5965,
+      "sha256": "dd3cab276ba0b8673247939afa82d4309f0b456132ae15c18cf15ba32c64c105"
+    },
+    "capture/fixture/zbus/tests/wire/dict_compare.rs": {
+      "bytes": 588,
+      "sha256": "a024b33e1c0beb4aa3830e4925dc5f6a2888c993b2934e856c4cda03390a6fb7"
+    },
+    "capture/fixture/zbus/tests/wire/dict_value.rs": {
+      "bytes": 15586,
+      "sha256": "4b163cf33aa142c0969025835e51dae7cec0dac7a587cd70c93ee1e55ee39760"
+    },
+    "capture/fixture/zbus/tests/wire/enums.rs": {
+      "bytes": 3164,
+      "sha256": "eb57917b9bb019f13edffd0da39df5fa41fca2862dfc479cac4e0246158fcbd7"
+    },
+    "capture/fixture/zbus/tests/wire/fd_value.rs": {
+      "bytes": 216,
+      "sha256": "2a6305c446c1bae9dba1549c5c71b830f45656a5cc0efe54a7f88c2d508ac79c"
+    },
+    "capture/fixture/zbus/tests/wire/heapless_string_value.rs": {
+      "bytes": 437,
+      "sha256": "12977e1075457192eb69fcddaf2520583752493f130d0e590c16f6fd7f24fa40"
+    },
+    "capture/fixture/zbus/tests/wire/issue/issue_1145.rs": {
+      "bytes": 741,
+      "sha256": "73732f139709ed32eed1d2fcadec4d129f8215a9b088d06af1ceb0812a0a41c6"
+    },
+    "capture/fixture/zbus/tests/wire/issue/issue_1819.rs": {
+      "bytes": 1331,
+      "sha256": "c324fda945e58f17d44042ae68dc295b72a8406e00cab663abcb65bc3165c4f3"
+    },
+    "capture/fixture/zbus/tests/wire/issue/issue_59.rs": {
+      "bytes": 362,
+      "sha256": "e9e0295713b7807de3ddae2015e49e9258714a3e99143d0ac39f0a69860df62e"
+    },
+    "capture/fixture/zbus/tests/wire/issue/mod.rs": {
+      "bytes": 46,
+      "sha256": "e7464ffa7ccf586f48274b76198e8bad609bef5546c179d30b573a138ff0cefb"
+    },
+    "capture/fixture/zbus/tests/wire/main.rs": {
+      "bytes": 470,
+      "sha256": "d790c2f632f81f9922c0df4ee3af2d5f173338c3a438d6c9af042584269d3d57"
+    },
+    "capture/fixture/zbus/tests/wire/number/bool_value.rs": {
+      "bytes": 150,
+      "sha256": "e304d606f4aa4b4ea37c936d26cbbf3441fa8fbcbd93cfed4d37b4087703cef3"
+    },
+    "capture/fixture/zbus/tests/wire/number/f64_value.rs": {
+      "bytes": 2058,
+      "sha256": "f7ed92befeddd477fa638f94e842c31eaa4c7861d5675fc1e1a282015741ffda"
+    },
+    "capture/fixture/zbus/tests/wire/number/i16_value.rs": {
+      "bytes": 176,
+      "sha256": "aab526364c6a64c9ba51f8eb6fb9b5fa4a7a218f01b221d6b4a664059ecbb385"
+    },
+    "capture/fixture/zbus/tests/wire/number/i32_value.rs": {
+      "bytes": 187,
+      "sha256": "757dcb1105231afc0508d5f8182bb8d35c5aa73ac095752230cd2aa384d5c687"
+    },
+    "capture/fixture/zbus/tests/wire/number/i64_value.rs": {
+      "bytes": 208,
+      "sha256": "d816505495c60f0988cded7d049084a19828a72a79c6d8aba946bb447b0bc92a"
+    },
+    "capture/fixture/zbus/tests/wire/number/i8_value.rs": {
+      "bytes": 90,
+      "sha256": "db3eef3aecc5553a52968996d0954d2b4134a69e90ee6f443af999872b33edcd"
+    },
+    "capture/fixture/zbus/tests/wire/number/mod.rs": {
+      "bytes": 134,
+      "sha256": "6fcc9a2e0f054660b7756d99aefad02b35e827746e53f857aba87f1237dc1115"
+    },
+    "capture/fixture/zbus/tests/wire/number/u16_value.rs": {
+      "bytes": 153,
+      "sha256": "e38039cbf9da9c5cb2ffb862ec37dbb63a82aabf3c9ba3cdc16477cbf95ba318"
+    },
+    "capture/fixture/zbus/tests/wire/number/u32_value.rs": {
+      "bytes": 158,
+      "sha256": "0f006df8fb9ccf438e7cd42943c49157246406ee355d401b375824784c0f7982"
+    },
+    "capture/fixture/zbus/tests/wire/number/u8_value.rs": {
+      "bytes": 145,
+      "sha256": "e3ce8a189724c7447aa7293d5db8ec37cf0c10c9fde88f07aed77f088c92d8f3"
+    },
+    "capture/fixture/zbus/tests/wire/object_path_value.rs": {
+      "bytes": 498,
+      "sha256": "058fe32a57e8dae46bd24411ef7bf177e7507d81810c6bed96f0e2c69fa85531"
+    },
+    "capture/fixture/zbus/tests/wire/recursion_limits.rs": {
+      "bytes": 1824,
+      "sha256": "d1d72c7abbd38973f3479dcfd4e54edae525e5510a8a37dde51ce662af210254"
+    },
+    "capture/fixture/zbus/tests/wire/serde_bytes.rs": {
+      "bytes": 1029,
+      "sha256": "80cc7915d63ad9a312da4c928187ea7b19a8944d04cab25dcc98b79e2e8ee696"
+    },
+    "capture/fixture/zbus/tests/wire/serialized_size.rs": {
+      "bytes": 645,
+      "sha256": "b339960522fb1c9d6b3ae985b53d18ed205940db10ad42592755934a8bb78db3"
+    },
+    "capture/fixture/zbus/tests/wire/signature.rs": {
+      "bytes": 508,
+      "sha256": "bb7ed4a6444d5b5a03e2e249a9958829a6161953c9de874841a6620783537f20"
+    },
+    "capture/fixture/zbus/tests/wire/str_value.rs": {
+      "bytes": 1032,
+      "sha256": "64886aa41a054e2846d392d4468bf8fe5f145c0d9b52be3f8abb73cd8882d5ce"
+    },
+    "capture/fixture/zbus/tests/wire/struct_byte_array.rs": {
+      "bytes": 796,
+      "sha256": "2b869167d03d32b3ed70da0c646e0281f51d0efb90fef9368be701b8820cac59"
+    },
+    "capture/fixture/zbus/tests/wire/struct_ref.rs": {
+      "bytes": 279,
+      "sha256": "4f897f207913f5b82dac219ac19d578b8ef6a43f431961725e8b5a4639ea04df"
+    },
+    "capture/fixture/zbus/tests/wire/struct_value.rs": {
+      "bytes": 2068,
+      "sha256": "b7f7e2b4b7a9028ec064314593f049426dc7403483ca6a400abe58ed784014ee"
+    },
+    "capture/fixture/zbus/tests/wire/struct_with_hashmap.rs": {
+      "bytes": 629,
+      "sha256": "516c6793e328434e4a8c47dbb30dbec39d9ccc74247d773c035b3c5e83156496"
+    },
+    "capture/fixture/zbus/tests/wire/unit.rs": {
+      "bytes": 345,
+      "sha256": "854f63024bca460c0603c4d705d56a42575c1bffdbed1133a1a14c6396a36479"
+    },
+    "capture/fixture/zbus/tests/wire/unit_fds.rs": {
+      "bytes": 366,
+      "sha256": "26a063902c151147c059f1a32aa92935c59c448275b9b8e416b8cf37b7cd59c4"
+    },
+    "capture/fixture/zbus/tests/wire/value_value.rs": {
+      "bytes": 2864,
+      "sha256": "5e90e8848e68929e165507777f043bd25d0534727125be83e49bbce5b5932836"
+    },
+    "capture/fixture/zbus/tests/zvariant_compat.rs": {
+      "bytes": 5559,
+      "sha256": "ef5793cc4a3856f696b629aa20b4e041693e9db14eb69c8e99f19308b4a16ddf"
+    },
+    "capture/fixture/zbus_macros/.cargo_vcs_info.json": {
+      "bytes": 105,
+      "sha256": "e9e8c6f21c6d78bda80a33638698abb47414d71929c6421203b519ae3f7b07a9"
+    },
+    "capture/fixture/zbus_macros/CHANGELOG.md": {
+      "bytes": 4363,
+      "sha256": "36791b6522743b5db3dcb9523e718c2ca6f68de7e432a9643be59f08aa8ee600"
+    },
+    "capture/fixture/zbus_macros/Cargo.lock": {
+      "bytes": 3689,
+      "sha256": "93203842be195a78f587ae88b8bc85f23074ce179ead3bdcfd573e342d786e44"
+    },
+    "capture/fixture/zbus_macros/Cargo.toml": {
+      "bytes": 2213,
+      "sha256": "5967973f19795cbc04c5279ccab1eb5be3b93031aea09e4a1bf7df5b75f32753"
+    },
+    "capture/fixture/zbus_macros/Cargo.toml.orig": {
+      "bytes": 1434,
+      "sha256": "bee6e95c9e2ae8730cac9a4b58288e062ba63170d2ee8dd8c8d61e06ead6351a"
+    },
+    "capture/fixture/zbus_macros/LICENSE": {
+      "bytes": 1080,
+      "sha256": "260e4ff3fc493695880c90774283eb1e3d018f898fabe655bbd52dd2cbd2fcad"
+    },
+    "capture/fixture/zbus_macros/README.md": {
+      "bytes": 520,
+      "sha256": "2cd84596f0b599a5357f72293fe0b5c47e0e6e9e3caaff6ca69cac40b30a197c"
+    },
+    "capture/fixture/zbus_macros/src/error.rs": {
+      "bytes": 9588,
+      "sha256": "4d5b08673b4ddfc088c0248518558f93fbb46542ab034e71634cc1fa36149c8d"
+    },
+    "capture/fixture/zbus_macros/src/iface.rs": {
+      "bytes": 66375,
+      "sha256": "ad396f6ece6ed084bc4c8b662907ca04088cedeb7f3d0698a429a58887484463"
+    },
+    "capture/fixture/zbus_macros/src/lib.rs": {
+      "bytes": 42549,
+      "sha256": "4c3a141e5f2951e54d50ab978b17e5f9290b1176c188ce20a78ef5c46a83aefa"
+    },
+    "capture/fixture/zbus_macros/src/proxy.rs": {
+      "bytes": 40783,
+      "sha256": "6cc3d911624a8ebfcb500d77568c5ce987b7e2cbb192b518e8a5fa92472b724c"
+    },
+    "capture/fixture/zbus_macros/src/utils.rs": {
+      "bytes": 4037,
+      "sha256": "c41d3c01a1eae65babf15e6abbf205abc4c3fbeba4a3641d20577d0fb0e7e670"
+    },
+    "capture/fixture/zbus_macros/tests/derives.rs": {
+      "bytes": 4178,
+      "sha256": "16bc46cffc47f139b250e4e821e1a0b0e431a55134d5cce7ada410017a6244a5"
+    },
+    "capture/fixture/zbus_macros/tests/missing_docs.rs": {
+      "bytes": 1383,
+      "sha256": "e424c55b9f87900f1a3ed028b01f962e3414f109bcaae85df4dd5916ab1acba5"
+    },
+    "capture/fixture/zbus_macros/tests/no_prelude.rs": {
+      "bytes": 888,
+      "sha256": "023651318ac7765fdbad982bc0bdc37a6235287e7a7f57f242e11ca047e868f4"
+    },
+    "capture/fixture/zbus_macros/tests/tests.rs": {
+      "bytes": 18246,
+      "sha256": "726091c0326cc7711b1707db57b4cbca2166ef920714563cc65e2cdeb2381190"
+    },
+    "capture/fixture/zbus_utils/.cargo_vcs_info.json": {
+      "bytes": 104,
+      "sha256": "4b11bd2a4a0c674d3b26983e87fba1632296c54c666edd197a2dfb0394c3acac"
+    },
+    "capture/fixture/zbus_utils/CHANGELOG.md": {
+      "bytes": 2434,
+      "sha256": "46f71a71df7e6aa3de21659245ef5179b21c228840428d4d2a83a57ac1e882b8"
+    },
+    "capture/fixture/zbus_utils/Cargo.lock": {
+      "bytes": 2270,
+      "sha256": "e7fa48c540796b18500ce847749e7f8172ff14d14bf14e52bf407963e2e73f80"
+    },
+    "capture/fixture/zbus_utils/Cargo.toml": {
+      "bytes": 1756,
+      "sha256": "33146eab8d52612f2b85093d790caccb7afa705d95a85f0b67b8d75bfb350140"
+    },
+    "capture/fixture/zbus_utils/Cargo.toml.orig": {
+      "bytes": 925,
+      "sha256": "2dec0afe37e2a76decf84596028d9515b903d3bb2ec67cf252ed764aa8d7656f"
+    },
+    "capture/fixture/zbus_utils/LICENSE": {
+      "bytes": 1080,
+      "sha256": "260e4ff3fc493695880c90774283eb1e3d018f898fabe655bbd52dd2cbd2fcad"
+    },
+    "capture/fixture/zbus_utils/README.md": {
+      "bytes": 743,
+      "sha256": "8596fd9d05c153e4943bd58ce27ab88096473a519d3502f463ff8be8ff2ad3a9"
+    },
+    "capture/fixture/zbus_utils/src/case.rs": {
+      "bytes": 2913,
+      "sha256": "26f782e1c57ba1dc4b87bfd6648b6b0be56fc1a92b054ba2f3dbc65490600bbd"
+    },
+    "capture/fixture/zbus_utils/src/derive/attrs.rs": {
+      "bytes": 2067,
+      "sha256": "882609857d78ac2019ddf882e3b2cd1207a3021a9ef3b2719d1796e2f8da1cce"
+    },
+    "capture/fixture/zbus_utils/src/derive/dict.rs": {
+      "bytes": 10070,
+      "sha256": "f5501e7e8af5dace2b35636e5b16037916ffabbc93069b77a69dcbaed5a4dc24"
+    },
+    "capture/fixture/zbus_utils/src/derive/mod.rs": {
+      "bytes": 1089,
+      "sha256": "4810ed550ddd31b8e3b5e8e4a5f3341cc1cf8e3b19f2652563b24e86040ae360"
+    },
+    "capture/fixture/zbus_utils/src/derive/signature.rs": {
+      "bytes": 5614,
+      "sha256": "314c2983e814050b122e0b326fa7291fc249e1f67f17ca507c367698a4a70a3c"
+    },
+    "capture/fixture/zbus_utils/src/derive/type.rs": {
+      "bytes": 6265,
+      "sha256": "86a6f7c8d7bd9e5aa91cdcee2b4cdf79c52daf98d50af526492f887692ecac05"
+    },
+    "capture/fixture/zbus_utils/src/derive/variant.rs": {
+      "bytes": 18053,
+      "sha256": "b2850bbcf73c8dc79a89f0d1c81e9e610589f394d21aef0970a976dcfa572449"
+    },
+    "capture/fixture/zbus_utils/src/lib.rs": {
+      "bytes": 236,
+      "sha256": "c7475ccc1fbcb6d42573e5fe30f27654031d5254bc0e46e088fdba6bc030f492"
+    },
+    "capture/fixture/zbus_utils/src/macros.rs": {
+      "bytes": 20800,
+      "sha256": "5f8730c5f7d48776eef7bfed5e033b9985340ebdaaeb03dbdffcfe1b014cff9b"
+    },
+    "capture/fixture/zbus_utils/src/names.rs": {
+      "bytes": 13921,
+      "sha256": "ba94eb73ee905c14a5823b96a3de7c1d93ad54163df6c35812368a59db167987"
+    },
+    "capture/fixture/zbus_utils/src/object_path.rs": {
+      "bytes": 1626,
+      "sha256": "df02ec4b9f5e204da525a3cb12c164f07c0425480068a218ce89fdd9afdf5a45"
+    },
+    "capture/fixture/zbus_utils/src/signature/child.rs": {
+      "bytes": 1209,
+      "sha256": "0ce0226739dc55284809694180051b97f8b1fa24b073ac88cb9e8617b549a1dd"
+    },
+    "capture/fixture/zbus_utils/src/signature/error.rs": {
+      "bytes": 390,
+      "sha256": "a406075d747c9ace8b1df380531fba11a96bd548c7177d43bac43986c8582663"
+    },
+    "capture/fixture/zbus_utils/src/signature/fields.rs": {
+      "bytes": 2344,
+      "sha256": "500e070a3300409f1caba4118f458f731cb03418ed08916cd0b7b0ecbd29fe98"
+    },
+    "capture/fixture/zbus_utils/src/signature/mod.rs": {
+      "bytes": 30336,
+      "sha256": "74f7f1a46cb31d2fa3722f960b69b7d55fd2361316c6d32d82c9d8a136a10bb1"
+    },
+    "capture/fixture/zbus_utils/src/signature/tests.rs": {
+      "bytes": 7417,
+      "sha256": "fa473710f322bff84fd51a0567544857ffb0250dad53333fac49fc3e603fefaf"
+    },
+    "capture/list-188/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/list-188/intent.json": {
+      "bytes": 391491,
+      "sha256": "2b97cb30bff9e7b07ca6e436bd24bf2bba6ce9b1059b50e9f55986977e6851a7"
+    },
+    "capture/list-188/launcher.py": {
+      "bytes": 9010,
+      "sha256": "72283166ba3cfe59b82432edc3b82a7cb3faac7ef7b2fdfd90412d03c78dc57e"
+    },
+    "capture/list-188/result.json": {
+      "bytes": 1907,
+      "sha256": "f176ec04fddf30798c34a2c543be10761889ac5fbfc558c23d2397a8a95b086c"
+    },
+    "capture/list-188/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/list-188/stdout.log": {
+      "bytes": 1468,
+      "sha256": "f7dc6e46d4e9a34df3e50e0dc3f878f0c678f3ef4f0fbcc6254c5bbb4caff98a"
+    },
+    "capture/list-194/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/list-194/intent.json": {
+      "bytes": 391368,
+      "sha256": "cc531d1386010bd79967437635277add8b72599e13e6b47559a5334d0c562bba"
+    },
+    "capture/list-194/launcher.py": {
+      "bytes": 9010,
+      "sha256": "72283166ba3cfe59b82432edc3b82a7cb3faac7ef7b2fdfd90412d03c78dc57e"
+    },
+    "capture/list-194/result.json": {
+      "bytes": 1907,
+      "sha256": "0306f0f72f3a846b5b9159dd5be640ad76cebce573260b0135fb276b62267d64"
+    },
+    "capture/list-194/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/list-194/stdout.log": {
+      "bytes": 1468,
+      "sha256": "f7dc6e46d4e9a34df3e50e0dc3f878f0c678f3ef4f0fbcc6254c5bbb4caff98a"
+    },
+    "capture/policy-194/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/policy-194/intent.json": {
+      "bytes": 391222,
+      "sha256": "c996f868be9f518eb0e88cd36053068c670126c6ed100350cc9870a02caa083c"
+    },
+    "capture/policy-194/launcher.py": {
+      "bytes": 9010,
+      "sha256": "72283166ba3cfe59b82432edc3b82a7cb3faac7ef7b2fdfd90412d03c78dc57e"
+    },
+    "capture/policy-194/result.json": {
+      "bytes": 86,
+      "sha256": "50745b692502a78d0b1587a496f0a14a0cd18854e1eac1a48f3ec8676245dbb4"
+    },
+    "capture/policy-194/stderr.log": {
+      "bytes": 9127,
+      "sha256": "7eb7c1cd2648347f530727f2713011928a247b170f6e350c6037a52558cf9b41"
+    },
+    "capture/policy-194/stdout.log": {
+      "bytes": 48,
+      "sha256": "f1a0fca39d4280363937aabd77783990ea6480bd9ca257816de3b68fc8efa845"
+    },
+    "capture/prepare/original-owner-function.rs": {
+      "bytes": 730,
+      "sha256": "69a2f9d47670ddb14c7580c875c5d5846999043fdc53e6d76fbcb540dbb0663d"
+    },
+    "capture/prepare/producer.py": {
+      "bytes": 9010,
+      "sha256": "72283166ba3cfe59b82432edc3b82a7cb3faac7ef7b2fdfd90412d03c78dc57e"
+    },
+    "capture/prepare/result.json": {
+      "bytes": 30110,
+      "sha256": "0564f40a1a3ce9efa38d5bee777f76e05c66ec703b68431dd9d0d8ba2dd72bc8"
+    },
+    "capture/test-188/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/test-188/intent.json": {
+      "bytes": 391522,
+      "sha256": "6fa9a319be6a74ebca0d0377e039f59adca284a3afbc56e643c5f60d61e858fa"
+    },
+    "capture/test-188/launcher.py": {
+      "bytes": 9010,
+      "sha256": "72283166ba3cfe59b82432edc3b82a7cb3faac7ef7b2fdfd90412d03c78dc57e"
+    },
+    "capture/test-188/result.json": {
+      "bytes": 2796,
+      "sha256": "a8217a2bc9abf38b1bc634b1b4ae5b642a93cd48568b4caaca4b6370e3557415"
+    },
+    "capture/test-188/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/test-188/stdout.log": {
+      "bytes": 7353,
+      "sha256": "ee613d3417f0be95ab451c59a1293758ba5d083dd08dcb356cdf4f84864aa73e"
+    },
+    "capture/test-194/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/test-194/intent.json": {
+      "bytes": 391399,
+      "sha256": "3214ce61e9442cec1ef3d674d3c53b1353e82de771fe3b4b777587963ab76569"
+    },
+    "capture/test-194/launcher.py": {
+      "bytes": 9010,
+      "sha256": "72283166ba3cfe59b82432edc3b82a7cb3faac7ef7b2fdfd90412d03c78dc57e"
+    },
+    "capture/test-194/result.json": {
+      "bytes": 2796,
+      "sha256": "26f563089b242383cdc845576765c13c9ea76318567a0cf602d3108abdd15b80"
+    },
+    "capture/test-194/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/test-194/stdout.log": {
+      "bytes": 7377,
+      "sha256": "14246e4922757e17b565bc9ce060d96088524ed1df254e95223c473b24af8134"
+    },
+    "predecessor/index.json": {
+      "bytes": 262066,
+      "sha256": "59b7f69b3ee958f2a467af97d1cd80ed0d7f35194e33d9fbb58ed001602e1cda"
+    },
+    "source/Cargo.lock": {
+      "bytes": 175565,
+      "sha256": "9efeffabd8726a961a84d23b7a8e5f2ce74e0e313698f064eed603ea79062a7c"
+    },
+    "source/Cargo.toml": {
+      "bytes": 7160,
+      "sha256": "a494481b85fa84fd07e19a447c6d5fe7a49aa12557e0c0befc86fdea390d3bf2"
+    },
+    "source/deny.toml": {
+      "bytes": 2401,
+      "sha256": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930"
+    },
+    "source/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "source/scripts/ci/watchdog_windows_job.py": {
+      "bytes": 12151,
+      "sha256": "8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1"
+    },
+    "source/target/seal-dbus-owner-20261028.py": {
+      "bytes": 6230,
+      "sha256": "a45f2efd54d3493a614ac9503a93d2f60e51ff1107643116765232c762428e64"
+    },
+    "source/tools/chitchat-mtu-review-074/accounting.py": {
+      "bytes": 2723,
+      "sha256": "65ddd7bcb7397b5185812e65bee30db68bde5feab37aa347af1cde6c86addd73"
+    },
+    "source/tools/dbus-msrv-backport-074/match_rule_tests.rs": {
+      "bytes": 492,
+      "sha256": "0a7003126275b017d06322ff4c462708fab9018a484a6364db0622f0066db5ae"
+    },
+    "source/tools/dbus-msrv-backport-074/probe.rs": {
+      "bytes": 2702,
+      "sha256": "f01743850ffed052773b259bad5e8f8a10a94b42c33cd77cd239c15433fbbe9b"
+    },
+    "source/tools/dbus-msrv-backport-074/run.py": {
+      "bytes": 16810,
+      "sha256": "ae92d3e73c00ca83a6bb1488fc6ae02c61e817f0875a5131c00d70188d4f888f"
+    },
+    "source/tools/dbus-owner-properties-074/.gitattributes": {
+      "bytes": 14,
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9"
+    },
+    "source/tools/dbus-owner-properties-074/README.md": {
+      "bytes": 3360,
+      "sha256": "d1be294b3927ba2c2cc2bafc0fb0cdfd67914cf2e50fd923dc630848baaa9821"
+    },
+    "source/tools/dbus-owner-properties-074/run.py": {
+      "bytes": 9010,
+      "sha256": "72283166ba3cfe59b82432edc3b82a7cb3faac7ef7b2fdfd90412d03c78dc57e"
+    },
+    "source/tools/dbus-owner-properties-074/test_catalog.py": {
+      "bytes": 1203,
+      "sha256": "031d5fbfe281737ebf106dcd2253072fc605f2e522a40ef98ea2026e4233e4dd"
+    },
+    "source/tools/dbus-owner-properties-074/tests.rs": {
+      "bytes": 10174,
+      "sha256": "334259b9a8c89064f07ece748b46ad1199bf7cc94ff1bfe89175d3e8769bc768"
+    },
+    "source/tools/dbus-runtime-bridge-074/bridge.rs": {
+      "bytes": 4381,
+      "sha256": "f79523088368cf95ae679d6b9d5e40e4d887333d09832259ad506911825c7609"
+    },
+    "source/tools/dbus-runtime-bridge-074/bridge_v2.rs": {
+      "bytes": 4649,
+      "sha256": "56650da011824f801a7d8d43c983328c8db9c46f157ddb4fe9cfd8124a305a54"
+    },
+    "source/tools/dbus-runtime-bridge-074/caller_tests.rs": {
+      "bytes": 7631,
+      "sha256": "33312a13eeab7b977c2dae00eb60d9fe51cecc883e1c0e27c08f1b09193da3b2"
+    },
+    "source/tools/dbus-runtime-bridge-074/caller_tests_v2.rs": {
+      "bytes": 7546,
+      "sha256": "e141867536295f66eeed17f62388e69e97a0801adef4ab167345c45044a31cf7"
+    },
+    "source/tools/dbus-runtime-bridge-074/constructor_test.rs": {
+      "bytes": 1302,
+      "sha256": "ca1f4b694bd3e665267b601e96e451600c7a8d6eba6f1963b4046cf90427a1fe"
+    },
+    "source/tools/dbus-runtime-bridge-074/run.py": {
+      "bytes": 14723,
+      "sha256": "8b616be1eb3753ba72ec99de51bc542df0037f03419fb44e8209d235a546aa87"
+    },
+    "source/tools/dbus-runtime-bridge-074/runtime_tests.rs": {
+      "bytes": 1688,
+      "sha256": "3d9fc8a9a5cf572e88096e4debd292c8f1ffa43d36fb9fbf78e98aab21c35b7f"
+    },
+    "source/tools/dbus-runtime-bridge-074/runtime_tests_v2.rs": {
+      "bytes": 1714,
+      "sha256": "eb8d5a48a9a13a6e920f2865df05b4aad929a0446dbe8fd438ee8ce9477431b1"
+    },
+    "source/tools/long-run-supervisor-074/Cargo.toml": {
+      "bytes": 918,
+      "sha256": "f38fc2c3e40b71fbac2aa2c54ed545828177860bed060d4c43981af796fd73e1"
+    },
+    "source/tools/long-run-supervisor-074/src/diagnostic_manager.rs": {
+      "bytes": 44392,
+      "sha256": "7950deead36bcc6514f1c2f73be3cbce126a6e7a3bff3d1a55d11eac0be674db"
+    },
+    "source/tools/windows-workspace-preflight-074/owned.py": {
+      "bytes": 5008,
+      "sha256": "e7c5a3c0c4fea90f39772512c4ad96c60693fc0b482092a608dcf039e151eade"
+    },
+    "source/tools/windows-workspace-preflight-074/prepare.py": {
+      "bytes": 10884,
+      "sha256": "c7f35ef9f497f548cf3de4c11fd6bff833621b2ba3a498621a57a7402af1224b"
+    }
+  },
+  "native_failures": 0,
+  "native_selected_passes": {
+    "rust_188": 21,
+    "rust_194": 21
+  },
+  "new_received_requests_per_image": 31,
+  "new_scenarios_per_image": 15,
+  "only_one_fixture_member_changed": true,
+  "os_credentials_or_unix_fd_qualified": false,
+  "owner_function_and_inverse_projection_equal": true,
+  "performance_claim": false,
+  "predecessor_index_sha256": "59b7f69b3ee958f2a467af97d1cd80ed0d7f35194e33d9fbb58ed001602e1cda",
+  "product_gate_replayed": false,
+  "release_admitted": false,
+  "schema": "hc074-owner-property-controls-v1",
+  "server": false,
+  "services": false,
+  "source_head_observation": "c4903e8798151e68326cde92ea37d50636883b40",
+  "steps": {
+    "build-188": {
+      "accounting": null,
+      "exit": 0,
+      "head": "e8ca17b7d1c2509636e4e6660c28d28f3892d509"
+    },
+    "build-194": {
+      "accounting": null,
+      "exit": 0,
+      "head": "e8ca17b7d1c2509636e4e6660c28d28f3892d509"
+    },
+    "check-188": {
+      "accounting": null,
+      "exit": 0,
+      "head": "e8ca17b7d1c2509636e4e6660c28d28f3892d509"
+    },
+    "check-194": {
+      "accounting": null,
+      "exit": 0,
+      "head": "e8ca17b7d1c2509636e4e6660c28d28f3892d509"
+    },
+    "clippy-188": {
+      "accounting": null,
+      "exit": 0,
+      "head": "e8ca17b7d1c2509636e4e6660c28d28f3892d509"
+    },
+    "clippy-194": {
+      "accounting": null,
+      "exit": 0,
+      "head": "e8ca17b7d1c2509636e4e6660c28d28f3892d509"
+    },
+    "list-188": {
+      "accounting": null,
+      "exit": 0,
+      "head": "e8ca17b7d1c2509636e4e6660c28d28f3892d509"
+    },
+    "list-194": {
+      "accounting": null,
+      "exit": 0,
+      "head": "e8ca17b7d1c2509636e4e6660c28d28f3892d509"
+    },
+    "policy-194": {
+      "accounting": null,
+      "exit": 0,
+      "head": "e8ca17b7d1c2509636e4e6660c28d28f3892d509"
+    },
+    "test-188": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "caller_checks::owner_properties::manager_identity_refuses_after_all_three_reads",
+            "ok"
+          ],
+          [
+            "caller_checks::owner_properties::manager_owner_valid_reads_in_original_order",
+            "ok"
+          ],
+          [
+            "caller_checks::owner_properties::manager_signature_and_error_refuse_without_later_reads",
+            "ok"
+          ],
+          [
+            "caller_checks::owner_properties::manager_wrong_sender_stops_at_original_read",
+            "ok"
+          ],
+          [
+            "caller_checks::owner_properties::property_received_but_unanswered_preserves_timeout",
+            "ok"
+          ],
+          [
+            "caller_checks::owner_properties::property_string_u32_and_no_cache_roundtrip",
+            "ok"
+          ],
+          [
+            "caller_checks::owner_properties::property_wrong_type_body_and_error_refuse",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::checked_call_preserves_success_signature_and_sender",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::method_error_keeps_original_sender",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::no_reply_preserves_method_timeout_refusal",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::proxy_clone_keeps_connection_after_original_drop",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::setters_fail_immediately_in_original_order",
+            "ok"
+          ],
+          [
+            "constructor_review::nested_constructor_panics_before_bad_arguments",
+            "ok"
+          ],
+          [
+            "match_rule_review::argument_and_path_format_roundtrip",
+            "ok"
+          ],
+          [
+            "runtime_review::background_progress_between_entries",
+            "ok"
+          ],
+          [
+            "runtime_review::invalid_address_refuses_before_build",
+            "ok"
+          ],
+          [
+            "runtime_review::nested_entry_does_not_poll_future",
+            "ok"
+          ],
+          [
+            "tests::derive_and_wire_roundtrip",
+            "ok"
+          ],
+          [
+            "tests::invalid_names_and_builder_refuse",
+            "ok"
+          ],
+          [
+            "tests::reply_serial_sender_and_signature",
+            "ok"
+          ],
+          [
+            "tests::runtime_timeout_and_nested_entry",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 0,
+        "passed": 21,
+        "release_admitted": false,
+        "selected": 21,
+        "test_pass": true
+      },
+      "exit": 0,
+      "head": "e8ca17b7d1c2509636e4e6660c28d28f3892d509"
+    },
+    "test-194": {
+      "accounting": {
+        "complete": true,
+        "executed": [
+          [
+            "caller_checks::owner_properties::manager_identity_refuses_after_all_three_reads",
+            "ok"
+          ],
+          [
+            "caller_checks::owner_properties::manager_owner_valid_reads_in_original_order",
+            "ok"
+          ],
+          [
+            "caller_checks::owner_properties::manager_signature_and_error_refuse_without_later_reads",
+            "ok"
+          ],
+          [
+            "caller_checks::owner_properties::manager_wrong_sender_stops_at_original_read",
+            "ok"
+          ],
+          [
+            "caller_checks::owner_properties::property_received_but_unanswered_preserves_timeout",
+            "ok"
+          ],
+          [
+            "caller_checks::owner_properties::property_string_u32_and_no_cache_roundtrip",
+            "ok"
+          ],
+          [
+            "caller_checks::owner_properties::property_wrong_type_body_and_error_refuse",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::checked_call_preserves_success_signature_and_sender",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::method_error_keeps_original_sender",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::no_reply_preserves_method_timeout_refusal",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::proxy_clone_keeps_connection_after_original_drop",
+            "ok"
+          ],
+          [
+            "caller_checks::tests::setters_fail_immediately_in_original_order",
+            "ok"
+          ],
+          [
+            "constructor_review::nested_constructor_panics_before_bad_arguments",
+            "ok"
+          ],
+          [
+            "match_rule_review::argument_and_path_format_roundtrip",
+            "ok"
+          ],
+          [
+            "runtime_review::background_progress_between_entries",
+            "ok"
+          ],
+          [
+            "runtime_review::invalid_address_refuses_before_build",
+            "ok"
+          ],
+          [
+            "runtime_review::nested_entry_does_not_poll_future",
+            "ok"
+          ],
+          [
+            "tests::derive_and_wire_roundtrip",
+            "ok"
+          ],
+          [
+            "tests::invalid_names_and_builder_refuse",
+            "ok"
+          ],
+          [
+            "tests::reply_serial_sender_and_signature",
+            "ok"
+          ],
+          [
+            "tests::runtime_timeout_and_nested_entry",
+            "ok"
+          ]
+        ],
+        "failed": 0,
+        "filtered": 0,
+        "passed": 21,
+        "release_admitted": false,
+        "selected": 21,
+        "test_pass": true
+      },
+      "exit": 0,
+      "head": "e8ca17b7d1c2509636e4e6660c28d28f3892d509"
+    }
+  },
+  "system_bus_or_manager_contacted": false,
+  "traces_equal_between_compilers": true
+}

@@ -1,0 +1,22 @@
+fn manager_owner(bus: &Proxy<'_>) -> Result<String, String> {
+    let owner: String = checked_call(bus, "org.freedesktop.DBus", "GetNameOwner", &(DESTINATION,))
+        .map_err(|_| "manager owner unavailable")?;
+    let uid: u32 = checked_call(
+        bus,
+        "org.freedesktop.DBus",
+        "GetConnectionUnixUser",
+        &(owner.as_str(),),
+    )
+    .map_err(|_| "manager user unavailable")?;
+    let pid: u32 = checked_call(
+        bus,
+        "org.freedesktop.DBus",
+        "GetConnectionUnixProcessID",
+        &(owner.as_str(),),
+    )
+    .map_err(|_| "manager pid unavailable")?;
+    if !unique_owner(&owner) || uid != 0 || pid != 1 {
+        return Err("foreign manager owner".into());
+    }
+    Ok(owner)
+}

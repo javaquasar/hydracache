@@ -1,0 +1,10 @@
+{
+  "artifact": {
+    "bytes": 5389312,
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-owner-properties-20261028\\targets\\188\\3d5d8f6d5b13ee772b219b31ce1b38fbcf053b3b37dc44638275740e2002ab75\\debug\\deps\\dbus_probe_074-caa1c158ccd1e6c9.exe",
+    "sha256": "fc5469bd74a1864b41d3a6845e3d626d0c8d962a31149e6ac2fd9f32eeb548ae"
+  },
+  "exit": 0,
+  "release_admitted": false,
+  "unchanged": true
+}
