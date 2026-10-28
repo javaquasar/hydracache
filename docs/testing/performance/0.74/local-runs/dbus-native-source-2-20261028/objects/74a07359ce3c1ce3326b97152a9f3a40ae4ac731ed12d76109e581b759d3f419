@@ -1,0 +1,4 @@
+[source.crates-io]
+replace-with = "held-vendor"
+[source.held-vendor]
+directory = "/home/artur/.cache/hydracache-074-dbus-native/20261028-a6/vendor"

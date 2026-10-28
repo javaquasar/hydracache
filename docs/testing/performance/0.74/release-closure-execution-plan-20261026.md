@@ -557,6 +557,14 @@ that candidate only. Generated formatting, source revision-2 reconstruction,
 policy/root adoption and full package/workspace gates remain open; root's old
 graph is unchanged. No real original-owner execution or server admission follows.
 
+The [revision-2 archive consumer](dbus-native-source-2-result-20261028.md) now
+closes that candidate's source-reconstruction and generated-formatting subgate:
+all 266 source members reconstruct, both GNU/MSRV actual full images execute
+65/65 including ten private faults, and strict test-cfg/all-feature Clippy passes.
+Thirty inert/retention controls pass. Its first inert literal-parser refusal is
+retained. Root graph/security/adoption, final package/workspace and the original
+execution path remain open; unsigned source export is not publication/enrollment.
+
 The [whole remaining production caller join](dbus-legacy-integration-result-20261028.md)
 now uses the qualified zbus 6 blocking bridge in all three remaining legacy
 helpers inside an isolated full source copy. GNU 1.94/1.88 check and strict

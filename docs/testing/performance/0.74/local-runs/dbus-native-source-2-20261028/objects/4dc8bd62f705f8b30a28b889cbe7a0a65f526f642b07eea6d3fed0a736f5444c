@@ -1,0 +1,12 @@
+"""Exact 65-case owner reused without selection, accounting or bound changes."""
+from pathlib import Path
+import hashlib
+
+path = Path('/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-native-transport-074/fault_unit_native.py')
+raw = path.read_bytes()
+if hashlib.sha256(raw).hexdigest() != '50bad33c01d05244f2a92518ae71e85149237bcca81eda775192e81baa301768':
+    raise ValueError('same exact qualified 65-case owner')
+text = raw.decode().replace('dbus-native-20261028/f2', 'dbus-native-source-2-20261028/consumer', 1).replace(
+    '/home/artur/.cache/hydracache-074-dbus-native/20261028-a5',
+    '/home/artur/.cache/hydracache-074-dbus-native/20261028-a6', 1)
+exec(compile(text, str(path), 'exec'), globals())

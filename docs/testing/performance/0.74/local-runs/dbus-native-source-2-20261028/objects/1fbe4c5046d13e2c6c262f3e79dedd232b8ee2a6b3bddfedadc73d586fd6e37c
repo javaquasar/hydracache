@@ -1,0 +1,8 @@
+{
+  "kind": "observed-first-control-summary-not-raw-log",
+  "test": "test_two_fixed_formatting_projections_preserve_literals_guards_and_fail_stale",
+  "passed": false,
+  "reason": "regex dot did not match escaped newline in Rust multiline XML string",
+  "native_executed": false,
+  "preparation_only": true
+}

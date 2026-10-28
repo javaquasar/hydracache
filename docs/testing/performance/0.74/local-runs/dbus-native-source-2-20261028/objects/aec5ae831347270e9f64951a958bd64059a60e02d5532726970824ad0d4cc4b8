@@ -1,0 +1,8 @@
+{
+  "files": {
+    "tools/dbus-native-transport-074/consumer_unit_native.py": "39e9ba792ca9578ea02bcf8fdbcd3da019dd6d2c667a39115680ea5c0f85e37b",
+    "tools/dbus-native-transport-074/consumer_unit_run.py": "0ccd9a773c6e16217ed557ed42a09baa3581c0addeaf536db0a8a70c48e459ae",
+    "tools/dbus-native-transport-074/test_consumer.py": "a23b3d8636c1ec9d00697bc9a4a47d3d80a5177416a3c30aa1b3c2dcd86ee56e"
+  },
+  "freeze_sha256": "a1f2438f1f44eb0bb9691b5179b9b2859bf8a51cdfaf94f78bb5c0e1152cb368"
+}

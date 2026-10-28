@@ -1,0 +1,30 @@
+{
+  "absolute_deadline": 1305.32345778,
+  "argv": [
+    "/home/artur/.cache/hydracache-074-dbus-native/20261028-a7/builds/fd/194/debug/deps/hydracache_long_run_supervisor_074-f1c715c91ea0090c",
+    "--list"
+  ],
+  "artifact": {
+    "bytes": 195750040,
+    "path": "/home/artur/.cache/hydracache-074-dbus-native/20261028-a7/builds/fd/194/debug/deps/hydracache_long_run_supervisor_074-f1c715c91ea0090c",
+    "sha256": "8b5661f546766507804f5f0df780a368fa98b06b7212500d053808695164da23"
+  },
+  "bound": 1200,
+  "environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_HOME": "/home/artur/.cache/hydracache-074-dbus-native/20261028-a7/cargo-home",
+    "CARGO_INCREMENTAL": "0",
+    "HC074_FD_ROOT": "/home/artur/.cache/hydracache-074-dbus-native/20261028-a7/fd-fixtures",
+    "HOME": "/home/artur",
+    "LANG": "C.UTF-8",
+    "LOGNAME": "artur",
+    "PATH": "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin:/usr/local/bin:/usr/bin:/bin",
+    "USER": "artur"
+  },
+  "floor": 4294967296,
+  "poll": 5,
+  "retirement": 5,
+  "retry": false,
+  "selected_only": true,
+  "session_bound": 1100
+}

@@ -1,0 +1,52 @@
+{
+  "boot_after": "8917ddfc-6c8e-459b-8cea-bedbe8b33aae",
+  "boot_before": "8917ddfc-6c8e-459b-8cea-bedbe8b33aae",
+  "boot_unchanged": true,
+  "catalog_count": 1593,
+  "clocks_after": {
+    "CLOCK_BOOTTIME": 307682986250,
+    "CLOCK_MONOTONIC": 307682985351,
+    "CLOCK_MONOTONIC_RAW": 310130476277,
+    "CLOCK_REALTIME": 1793210596112483088
+  },
+  "clocks_before": {
+    "CLOCK_BOOTTIME": 205323549420,
+    "CLOCK_MONOTONIC": 205323548018,
+    "CLOCK_MONOTONIC_RAW": 206964224038,
+    "CLOCK_REALTIME": 1793210492765003203
+  },
+  "clocks_changed": false,
+  "passed": true,
+  "passes_per_compiler": 65,
+  "phases": [
+    {
+      "exit": 0,
+      "label": "fd-194-list"
+    },
+    {
+      "exit": 0,
+      "label": "fd-194-test"
+    },
+    {
+      "exit": 0,
+      "label": "fd-194-clippy"
+    },
+    {
+      "exit": 0,
+      "label": "fd-188-list"
+    },
+    {
+      "exit": 0,
+      "label": "fd-188-test"
+    },
+    {
+      "exit": 0,
+      "label": "fd-188-clippy"
+    }
+  ],
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true,
+  "tests_executed": true
+}

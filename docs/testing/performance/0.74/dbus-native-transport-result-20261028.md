@@ -76,6 +76,11 @@ existing service, original owner, server run or product workload is involved.
 
 ## Remaining gates
 
+The subsequent [revision-2 consumer gate](dbus-native-source-2-result-20261028.md)
+closes reconstruction/formatting for this candidate with paired 65/65 and strict
+Clippy. The following paragraph records the boundary at this transport packet;
+root/policy/full product and original execution gates remain open.
+
 A separate read-only rustfmt check reports formatting differences in the
 generated transport/credential test files. That is an open formatting gate;
 the consumed f2 source is not edited in place. Canonical source-package revision

@@ -7453,3 +7453,13 @@ producer plus three independent retention controls pass; 1,528 of the complete
 1,593-case catalogs remain filtered. Generated formatting, source revision-2
 reconstruction, root/security/policy/full product and original execution/recovery
 gates remain open. No service/system bus/server/product or numerical claim follows.
+
+The [native source revision-2 consumer](dbus-native-source-2-result-20261028.md)
+subsequently closes that candidate's reconstruction/formatting subgate. Three
+canonical archives reproduce all 266 tested source members; an archive-only,
+separately formatted consumer passes 65/65, ten private-bus scenarios and strict
+test-cfg/all-feature Clippy on GNU 1.94/MSRV 1.88. Thirty inert/retention controls
+pass, with the first multiline-regex control failure preserved as an inert result.
+Root security/adoption, complete package/workspace and original execution/recovery
+remain open. The source export is unsigned/unpublished, with no host admission
+or product performance claim.

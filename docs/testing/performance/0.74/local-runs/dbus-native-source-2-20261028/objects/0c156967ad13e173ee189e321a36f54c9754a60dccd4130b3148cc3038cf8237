@@ -1,0 +1,35 @@
+{
+  "boot_after": "8917ddfc-6c8e-459b-8cea-bedbe8b33aae",
+  "boot_before": "8917ddfc-6c8e-459b-8cea-bedbe8b33aae",
+  "boot_unchanged": true,
+  "clocks_after": {
+    "CLOCK_BOOTTIME": 183712574818,
+    "CLOCK_MONOTONIC": 183712574347,
+    "CLOCK_MONOTONIC_RAW": 184902115564,
+    "CLOCK_REALTIME": 1793210470634147818
+  },
+  "clocks_before": {
+    "CLOCK_BOOTTIME": 2708447438,
+    "CLOCK_MONOTONIC": 2708446574,
+    "CLOCK_MONOTONIC_RAW": 2649514553,
+    "CLOCK_REALTIME": 1793210288777390687
+  },
+  "clocks_changed": false,
+  "library_only": true,
+  "passed": true,
+  "phases": [
+    {
+      "exit": 0,
+      "label": "fd-194-build"
+    },
+    {
+      "exit": 0,
+      "label": "fd-188-build"
+    }
+  ],
+  "root_changed": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true,
+  "tests_executed": false
+}

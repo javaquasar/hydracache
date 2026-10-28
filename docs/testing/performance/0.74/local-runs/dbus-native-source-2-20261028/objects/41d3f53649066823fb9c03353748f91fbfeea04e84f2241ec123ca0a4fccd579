@@ -1,0 +1,12 @@
+{
+  "code_executed": false,
+  "recipe_sha256": "c3fe73bd7c470ca3f524c7dc3b84746ceb051fd43a8e5d64737879b66d648a5f",
+  "registry_qualified": false,
+  "root_adopted": false,
+  "source_archive_sha256": {
+    "zbus": "f7b72098a9c8ae25801f71c0f4f3f9f0b3a6c4a826c031a3177ef424c4924c7f",
+    "zbus_macros": "0485f3fa2b311beb0ba6e2ce5080c7ab9dfee515a70ebd151fb897fe61cdecfe",
+    "zbus_utils": "be51fb124bbc2da01473d4d56da44911ac3df321042867cfd5e869ee087c312c"
+  },
+  "unsigned": true
+}
