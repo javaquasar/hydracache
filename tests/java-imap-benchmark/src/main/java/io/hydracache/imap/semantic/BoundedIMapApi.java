@@ -659,7 +659,11 @@ public final class BoundedIMapApi {
   synchronized Object recoverService(MutationIdentity identity, Object request) {
     requireFresh(identity);
     RetainedMutation value = retained.get(identity);
-    if (value == null) return null;
+    if (value == null) {
+      Object pending = pendingService.get(identity);
+      if (pending != null && !pending.equals(digestObject(request))) throw new IllegalArgumentException("mutation conflict");
+      return null;
+    }
     if (!value.request().equals(digestObject(request))) throw new IllegalArgumentException("mutation conflict");
     return value.serviceOutcome();
   }
@@ -761,6 +765,7 @@ public final class BoundedIMapApi {
     if (identity.sequence() <= retirementFences.getOrDefault(identity.client(), 0L)) throw new IllegalArgumentException("retired_identity");
   }
   synchronized int retireOutcomes(String client, long generation, long through) {
+    requireActive();
     new MutationIdentity(client, through);
     if (generation != namespaceGeneration || through < retirementFences.getOrDefault(client, 0L)) throw new IllegalArgumentException("invalid retirement fence");
     if (pendingService.keySet().stream().anyMatch(id -> id.client().equals(client) && id.sequence() <= through)) throw new IllegalArgumentException("pending_retirement");

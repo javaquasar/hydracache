@@ -59,6 +59,17 @@ receipts while restoration gives the map a fresh instance identity. They assign 
 production protocol format. `IMapConcurrentRunner` exercises real worker-thread schedules and
 async cancellation; the independent Rust checker validates legal histories and real-time edges.
 
+`DomainCommand` remains a caller-thread-confined builder. `freeze()` captures immutable request
+ownership; `prepareRequest()` also checks current shape/bounds without advancing time or retaining
+an outcome. The named snapshot methods preserve that captured request for synchronous execution
+and reservation. `UnifiedIMapAsyncFacade.invokeSnapshot()` uses the same owner and captured image.
+Its `invokeHelper()` accepts typed version bulk, batch outcome query, listener snapshot, retirement,
+expiry and checkpoint requests. Pending-count and logical-byte admission are shared across both
+async paths; separate facades also charge the service's aggregate byte owner. A mutation cancelled
+after admission reports outcome unknown and retains the original result for identity-based retry.
+Snapshot/checkpoint results own explicit leases and must be closed; undeliverable results are
+closed by the facade. These local types assign no SDK or protocol operations.
+
 `IMapMigrationDryRun` writes bounded codec/TTL fixtures into a separate actual local service,
 checks the resulting count and digest, and leaves the supplied live owner unchanged. It is an
 API-only/cold-repopulation dry-run, without a production import endpoint or SDK activation. Run
@@ -112,6 +123,12 @@ step=s10 remove_if_value key=6b31 expected=7631
 
 Unknown versions, operations, fields, duplicates, malformed hex, oversized lines/manifests,
 excessive steps/bulk items, and payload-budget violations fail closed.
+
+New semantic fixture identities use `v2:` SHA-256 fingerprints with length-framed fields, stable
+operation names, explicit optional-value presence and TTL directives. The retained v1 manifest
+grammar is unchanged. Old unprefixed fingerprints require explicit `migrateLegacy()` validation
+against the original bounded scenario. Shrinking has replay/work budgets and returns the consumed
+work plus an explicit budget-exhausted flag; a bounded result need not be minimal.
 
 Run the focused gate with:
 

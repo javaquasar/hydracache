@@ -6,6 +6,10 @@ import java.util.Objects;
 
 /** Runs one frozen trace against two fresh adapters and fails before any timed phase on mismatch. */
 public final class SemanticOracle {
+  public ExtendedSemanticOracle.Report compare(ExtendedSemanticScenario scenario, ExtendedMapSemanticAdapter actual) {
+    return new ExtendedSemanticOracle().compare(scenario, actual);
+  }
+
   public OracleReport compare(
       ScenarioManifest scenario, MapSemanticAdapter left, MapSemanticAdapter right) {
     Objects.requireNonNull(scenario, "scenario");

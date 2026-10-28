@@ -131,7 +131,7 @@ final class DistributedSemanticFoundationTest {
     assertEquals(SeededSemanticScenario.fingerprint(first),
         SeededSemanticScenario.fingerprint(replay));
     assertEquals("08cd0f692503e5105b115e71a62f165ebdc3ebb3aaf1376d06f0a5ca8e956bfe",
-        SeededSemanticScenario.fingerprint(first));
+        SeededSemanticScenario.legacyFingerprintV1(first));
     assertFalse(SeededSemanticScenario.fingerprint(first).equals(
         SeededSemanticScenario.fingerprint(SeededSemanticScenario.generate(118, 90))));
     Set<Operation> operations = first.steps().stream()

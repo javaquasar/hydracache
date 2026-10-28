@@ -52,21 +52,54 @@ public final class SeededSemanticScenario {
 
   public static List<ScenarioStep> shrink(
       List<ScenarioStep> original, Predicate<List<ScenarioStep>> stillFails) {
+    return shrink(original, ShrinkBudget.defaults(), stillFails).steps();
+  }
+
+  public record ShrinkBudget(int maxReplays, long maxWork) {
+    public ShrinkBudget {
+      if (maxReplays <= 0 || maxReplays > 1024 || maxWork <= 0 || maxWork > 10_000_000) {
+        throw new IllegalArgumentException("shrink budget outside bounded range");
+      }
+    }
+    public static ShrinkBudget defaults() { return new ShrinkBudget(64, 1_000_000); }
+  }
+  public record ShrinkResult(List<ScenarioStep> steps, int replays, long work, boolean budgetExhausted) {
+    public ShrinkResult { steps = List.copyOf(steps); }
+  }
+
+  public static ShrinkResult shrink(List<ScenarioStep> original, ShrinkBudget budget,
+      Predicate<List<ScenarioStep>> stillFails) {
+    java.util.Objects.requireNonNull(budget); java.util.Objects.requireNonNull(stillFails);
+    SemanticScenarioFingerprint.validateSteps(original);
     var minimized = new ArrayList<>(List.copyOf(original));
+    if (minimized.size() > budget.maxWork()) throw new IllegalArgumentException("initial replay exceeds work budget");
+    if (!stillFails.test(List.copyOf(minimized))) throw new IllegalArgumentException("original scenario is not a counterexample");
+    int replays = 1;
+    long work = minimized.size();
     int index = 0;
     while (index < minimized.size()) {
+      if (replays == budget.maxReplays() || work + minimized.size() - 1 > budget.maxWork()) {
+        return new ShrinkResult(minimized, replays, work, true);
+      }
       var candidate = new ArrayList<>(minimized);
       candidate.remove(index);
+      replays++; work += candidate.size();
       if (stillFails.test(List.copyOf(candidate))) {
         minimized = candidate;
       } else {
         index++;
       }
     }
-    return List.copyOf(minimized);
+    return new ShrinkResult(minimized, replays, work, false);
   }
 
   public static String fingerprint(ScenarioManifest scenario) {
+    return SemanticScenarioFingerprint.fingerprint(scenario);
+  }
+
+  /** Retained v1 comparison only. Use explicit migration with the original scenario. */
+  public static String legacyFingerprintV1(ScenarioManifest scenario) {
+    SemanticScenarioFingerprint.validateSteps(scenario.steps());
     MessageDigest digest;
     try {
       digest = MessageDigest.getInstance("SHA-256");

@@ -1,5 +1,7 @@
 package io.hydracache.imap.semantic;
 
+import java.nio.charset.StandardCharsets;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,7 +94,7 @@ public final class UnifiedIMapService {
   public record ExpiryProgress(int work, int expired, boolean remaining) {}
   public record ResyncEntry(BytesValue key, Optional<BytesValue> value, long version, OptionalLong remainingTtl) {}
 
-  /** Mutable request builder; execution snapshots its bounded immutable identity digest. */
+  /** Caller-confined builder. Freeze before publishing it to another thread. */
   public static final class DomainCommand {
     public final String operation;
     public BytesValue key = EMPTY;
@@ -123,15 +125,34 @@ public final class UnifiedIMapService {
     public DomainCommand includeValue(boolean v) { includeValue = v; return this; }
     public DomainCommand loseResponse(boolean v) { loseResponse = v; return this; }
     public DomainCommand cancelled(boolean v) { cancelled = v; return this; }
-    public DomainCommand copy() {
-      DomainCommand result = new DomainCommand(operation);
-      result.key = key; result.value = value; result.expected = expected; result.keys = List.copyOf(keys);
-      result.entries = List.copyOf(entries); result.identity = identity; result.ttl = ttl;
-      result.now = now; result.deadline = deadline; result.listenerId = listenerId;
-      result.token = token; result.limit = limit; result.includeValue = includeValue;
-      result.cursor = cursor;
-      result.loseResponse = loseResponse; result.cancelled = cancelled; return result;
+    public RequestSnapshot freeze() {
+      return new RequestSnapshot(operation, key, value, expected, keys, entries, identity, ttl,
+          now, deadline, listenerId, token, cursor, limit, includeValue, loseResponse, cancelled);
     }
+    public DomainCommand copy() {
+      return freeze().toBuilder();
+    }
+  }
+
+  /** Immutable ownership boundary. Admission rechecks current state; preparation guarantees shape and bounds. */
+  public record RequestSnapshot(String operation, BytesValue key, Optional<BytesValue> value,
+      Optional<BytesValue> expected, List<BytesValue> keys, List<BoundedIMapApi.ReplaceInput> entries,
+      Optional<BoundedIMapApi.MutationIdentity> identity, TtlDirective ttl, long now, long deadline,
+      long listenerId, Optional<VersionToken> token, Optional<BoundedIMapApi.Cursor> cursor,
+      int limit, boolean includeValue, boolean loseResponse, boolean cancelled) {
+    public RequestSnapshot {
+      Objects.requireNonNull(operation); Objects.requireNonNull(key); Objects.requireNonNull(value);
+      Objects.requireNonNull(expected); keys = List.copyOf(keys); entries = List.copyOf(entries);
+      Objects.requireNonNull(identity); Objects.requireNonNull(ttl); Objects.requireNonNull(token); Objects.requireNonNull(cursor);
+    }
+    public DomainCommand toBuilder() {
+      var builder = new DomainCommand(operation); builder.key = key; builder.value = value; builder.expected = expected;
+      builder.keys = keys; builder.entries = entries; builder.identity = identity; builder.ttl = ttl;
+      builder.now = now; builder.deadline = deadline; builder.listenerId = listenerId; builder.token = token;
+      builder.cursor = cursor; builder.limit = limit; builder.includeValue = includeValue;
+      builder.loseResponse = loseResponse; builder.cancelled = cancelled; return builder;
+    }
+    public RequestSnapshot atTime(long time) { return toBuilder().now(time).freeze(); }
   }
 
   private static final class ListenerState {
@@ -174,6 +195,16 @@ public final class UnifiedIMapService {
   }
 
   public Result execute(DomainCommand command) {
+    return executeSnapshot(Objects.requireNonNull(command, "command").freeze());
+  }
+  public synchronized RequestSnapshot prepareRequest(DomainCommand command) {
+    var snapshot = Objects.requireNonNull(command, "command").freeze();
+    try { validate(snapshot.toBuilder(), true); }
+    catch (RuntimeException failure) { throw IMapDomainException.translate(failure); }
+    return snapshot;
+  }
+  public Result executeSnapshot(RequestSnapshot snapshot) {
+    var command = Objects.requireNonNull(snapshot, "snapshot").toBuilder();
     try { synchronized (this) { return executeLocked(command); } }
     finally { wakeListeners(); }
   }
@@ -226,7 +257,15 @@ public final class UnifiedIMapService {
     }
   }
 
-  public synchronized void beginOperation(DomainCommand command) {
+  public void beginOperation(DomainCommand command) {
+    beginSnapshot(Objects.requireNonNull(command, "command").freeze());
+  }
+  public void beginSnapshot(RequestSnapshot snapshot) {
+    var command = Objects.requireNonNull(snapshot, "snapshot").toBuilder();
+    try { synchronized (this) { beginLocked(command); } }
+    finally { wakeListeners(); }
+  }
+  private void beginLocked(DomainCommand command) {
     try {
       validate(command);
       if (!isMutation(command.operation)) invalid("only mutation identities can be pending");
@@ -244,6 +283,10 @@ public final class UnifiedIMapService {
     map.abandonService(identity);
   }
   public Result executeReserved(DomainCommand command) {
+    return executeReservedSnapshot(Objects.requireNonNull(command, "command").freeze());
+  }
+  public Result executeReservedSnapshot(RequestSnapshot snapshot) {
+    var command = Objects.requireNonNull(snapshot, "snapshot").toBuilder();
     try { synchronized (this) {
       if (isMutation(command.operation)) {
         var identity = command.identity.orElseThrow(() -> domain(IMapDomainException.Kind.INVALID_ARGUMENT, "identity required"));
@@ -256,7 +299,7 @@ public final class UnifiedIMapService {
         }
       }
     } } catch (RuntimeException failure) { throw IMapDomainException.translate(failure); }
-    return execute(command);
+    return executeSnapshot(snapshot);
   }
   static boolean isMutation(String operation) { return MUTATIONS.contains(operation); }
   synchronized Optional<Result> recoverOperation(DomainCommand command) {
@@ -402,24 +445,42 @@ public final class UnifiedIMapService {
   public final class SnapshotLease implements AutoCloseable {
     private final List<ResyncEntry> entries;
     private final long watermark, bytes;
+    private final long namespaceGeneration, incarnation, revision;
+    private final boolean includeValue;
     private boolean closed;
-    private SnapshotLease(List<ResyncEntry> entries, long watermark, long bytes) {
+    private SnapshotLease(List<ResyncEntry> entries, long watermark, long bytes,
+        long namespaceGeneration, long incarnation, long revision, boolean includeValue) {
       this.entries = List.copyOf(entries); this.watermark = watermark; this.bytes = bytes;
+      this.namespaceGeneration = namespaceGeneration; this.incarnation = incarnation; this.revision = revision; this.includeValue = includeValue;
     }
     public List<ResyncEntry> entries() { return entries; }
     public long watermark() { return watermark; }
+    public long namespaceGeneration() { return namespaceGeneration; }
+    public long mapId() { return incarnation; }
+    public long revision() { return revision; }
+    public boolean includeValue() { return includeValue; }
     @Override public void close() { synchronized (UnifiedIMapService.this) { if (!closed) { resyncBytes -= bytes; closed = true; } } }
   }
   public SnapshotLease snapshotListener(long id, int maxItems, long maxBytes, long time) {
-    try { synchronized (this) {
+    try { synchronized (this) { return snapshotListenerLocked(id, maxItems, maxBytes, time); } }
+    catch (RuntimeException failure) { throw IMapDomainException.translate(failure); }
+    finally { wakeListeners(); }
+  }
+  private SnapshotLease snapshotListenerLocked(long id, int maxItems, long maxBytes, long time) {
       if (map.isDestroyed()) throw domain(IMapDomainException.Kind.MAP_DESTROYED, "map is destroyed");
       ListenerState state = listeners.get(id);
       if (state == null) throw domain(IMapDomainException.Kind.UNKNOWN_LISTENER, "unknown listener");
       if (state.terminal || maxItems <= 0 || maxItems > limits.maxBatch() || maxBytes <= 0) invalid("invalid listener snapshot bounds");
       checkTime(time);
+      long nextEpoch;
+      try { nextEpoch = Math.addExact(state.deliveryEpoch, 1); }
+      catch (ArithmeticException overflow) { throw domain(IMapDomainException.Kind.VERSION_EXHAUSTED, "listener delivery epoch exhausted"); }
       var entries = new ArrayList<ResyncEntry>(); long bytes = 0;
       for (var entry : map.liveEntries(time)) {
         if (!matches(state.options, entry.key())) continue;
+        if (state.options.includeValue() && entry.value().size() > state.options.maxValueBytes()) {
+          throw domain(IMapDomainException.Kind.AGGREGATE_BYTE_BUDGET, "snapshot value bound");
+        }
         bytes += 32L + entry.key().size() + (state.options.includeValue() ? entry.value().size() : 0);
         entries.add(new ResyncEntry(entry.key(), state.options.includeValue() ? Optional.of(entry.value()) : Optional.empty(),
             entry.version(), entry.expiresAt() == null ? OptionalLong.empty() : OptionalLong.of(entry.expiresAt() - time)));
@@ -428,10 +489,107 @@ public final class UnifiedIMapService {
       budget(resyncBytes + bytes, limits.resync());
       advance(time);
       resyncBytes += bytes;
-      state.queue.clear(); state.gap = false; state.deliveryEpoch++;
-      return new SnapshotLease(entries, watermark, bytes);
+      state.queue.clear(); state.gap = false; state.deliveryEpoch = nextEpoch;
+      return new SnapshotLease(entries, watermark, bytes, generation, mapId, map.revision(), state.options.includeValue());
+  }
+
+  synchronized long requestOwnedBytes(RequestSnapshot request) {
+    long bytes = 128L + request.operation().getBytes(StandardCharsets.UTF_8).length + request.key().size() + bounds.maxResponseBytes();
+    bytes += request.value().map(BytesValue::size).orElse(0);
+    bytes += request.expected().map(BytesValue::size).orElse(0);
+    for (var key : request.keys()) bytes += 16L + key.size();
+    for (var entry : request.entries()) bytes += 32L + entry.key().size() + entry.value().size();
+    return bytes + request.identity().map(BoundedIMapApi::identityCost).orElse(0L);
+  }
+  synchronized void reserveAsyncBytes(long bytes) { budget(Math.addExact(streamBytes, bytes), limits.streams()); streamBytes += bytes; }
+  synchronized void releaseAsyncBytes(long bytes) { streamBytes -= bytes; }
+  synchronized long helperOwnedBytes(IMapLocalHelper.Command<?> command) {
+    long bytes = 128 + helperReservation(command);
+    if (command instanceof IMapLocalHelper.VersionBulk request) for (var entry : request.entries()) {
+      bytes += 64L + entry.key().size() + entry.value().map(BytesValue::size).orElse(0);
+    }
+    if (command instanceof IMapLocalHelper.QueryOutcomes request) {
+      if (request.maxBytes() > limits.queryBytes()) invalid("query helper byte bound");
+      bytes += request.maxBytes();
+      for (var identity : request.identities()) bytes += BoundedIMapApi.identityCost(identity);
+    }
+    if (command instanceof IMapLocalHelper.Checkpoint) bytes += 256 + map.serviceValueOwnerBytes() + map.serviceOutcomeOwnerBytes();
+    if (command instanceof IMapLocalHelper.RetireOutcomes request) bytes += request.client().getBytes(StandardCharsets.UTF_8).length;
+    return bytes + IMapLocalHelper.identity(command).map(BoundedIMapApi::identityCost).orElse(0L);
+  }
+  private long helperReservation(IMapLocalHelper.Command<?> command) {
+    if (command instanceof IMapLocalHelper.VersionBulk request) return 64 + request.entries().stream().mapToLong(entry -> 64L + entry.key().size()).sum();
+    if (command instanceof IMapLocalHelper.ListenerSnapshot request) {
+      if (request.maxBytes() > limits.resync() || request.maxItems() > limits.maxBatch()) invalid("snapshot helper bound");
+      return Math.addExact(64L + 32L * request.maxItems(), request.maxBytes());
+    }
+    return 64;
+  }
+  private BytesValue helperDigest(IMapLocalHelper.Command<?> command) {
+    if (command instanceof IMapLocalHelper.VersionBulk request) return BoundedIMapApi.fingerprint("versionBulk|" + request.action() + "|" + request.entries());
+    if (command instanceof IMapLocalHelper.ListenerSnapshot request) return BoundedIMapApi.fingerprint("helper_snapshot|" + request.listenerId() + "|" + request.maxItems() + "|" + request.maxBytes());
+    if (command instanceof IMapLocalHelper.RetireOutcomes request) return BoundedIMapApi.fingerprint("helper_retire|" + request.client().getBytes(StandardCharsets.UTF_8).length + ":" + request.client() + "|" + request.generation() + "|" + request.through());
+    var request = (IMapLocalHelper.ExpireStep) command;
+    return BoundedIMapApi.fingerprint("helper_expiry|" + request.maxWork());
+  }
+  synchronized void beginLocalHelper(IMapLocalHelper.Command<?> command, long time) {
+    var identity = IMapLocalHelper.identity(command);
+    if (identity.isEmpty()) return;
+    if (map.recoverService(identity.orElseThrow(), helperDigest(command)) instanceof Result) return;
+    checkTime(time);
+    map.beginService(identity.orElseThrow(), helperDigest(command), helperReservation(command));
+  }
+  synchronized <T> Optional<T> recoverLocalHelper(IMapLocalHelper.Command<T> command) {
+    var identity = IMapLocalHelper.identity(command);
+    if (identity.isEmpty()) return Optional.empty();
+    var digest = helperDigest(command); var result = map.recoverService(identity.orElseThrow(), digest);
+    if (map.servicePending(identity.orElseThrow())) map.preflightAdmission(identity.orElseThrow(), digest, helperReservation(command));
+    return result instanceof Result receipt ? Optional.of(helperValue(command, receipt)) : Optional.empty();
+  }
+  <T> T executeLocalHelper(IMapLocalHelper.Command<T> command, long time) {
+    if (command instanceof IMapLocalHelper.VersionBulk request) {
+      @SuppressWarnings("unchecked") T result = (T) versionBulk(request.action(), request.entries(), request.identity(), time, request.deadline(), request.loseResponse());
+      return result;
+    }
+    try { synchronized (this) {
+      var prior = recoverLocalHelper(command); if (prior.isPresent()) return prior.orElseThrow();
+      if (command instanceof IMapLocalHelper.QueryOutcomes request) {
+        @SuppressWarnings("unchecked") T result = (T) queryOutcomes(request.identities(), request.maxBytes()); return result;
+      }
+      if (command instanceof IMapLocalHelper.Checkpoint) {
+        @SuppressWarnings("unchecked") T result = (T) checkpoint(); return result;
+      }
+      var identity = IMapLocalHelper.identity(command).orElseThrow(); var digest = helperDigest(command);
+      if (!map.servicePending(identity)) invalid("unknown helper reservation");
+      map.preflightAdmission(identity, digest, helperReservation(command));
+      Result receipt;
+      if (command instanceof IMapLocalHelper.RetireOutcomes request) {
+        var retired = retireOutcomes(request.client(), request.generation(), request.through()); receipt = numbered("helper_retired", retired.removed(), false);
+      } else if (command instanceof IMapLocalHelper.ExpireStep request) {
+        if (request.maxWork() > bounds.maxScanItems()) invalid("expiry helper work bound");
+        var expired = expireLocked(time, request.maxWork()); receipt = new Result("helper_expiry", Optional.empty(), OptionalLong.of(expired.expired()), OptionalLong.empty(), List.of(), expired.work(), expired.remaining(), Optional.empty());
+      } else {
+        var request = (IMapLocalHelper.ListenerSnapshot) command;
+        try (var snapshot = snapshotListenerLocked(request.listenerId(), request.maxItems(), request.maxBytes(), time)) {
+          var items = new ArrayList<Item>();
+          for (var entry : snapshot.entries()) items.add(new Item(items.size(), entry.key(), "present", entry.value(), OptionalLong.of(entry.version()), entry.remainingTtl()));
+          receipt = new Result("helper_listener_snapshot", Optional.empty(), OptionalLong.empty(), OptionalLong.empty(), items, snapshot.watermark(), snapshot.includeValue(), Optional.of(new VersionToken(snapshot.namespaceGeneration(), snapshot.mapId(), snapshot.revision())));
+        }
+      }
+      map.completeService(identity, digest, receipt); return helperValue(command, receipt);
     } } catch (RuntimeException failure) { throw IMapDomainException.translate(failure); }
     finally { wakeListeners(); }
+  }
+  @SuppressWarnings("unchecked")
+  private <T> T helperValue(IMapLocalHelper.Command<T> command, Result receipt) {
+    if (command instanceof IMapLocalHelper.VersionBulk) return (T) receipt;
+    if (command instanceof IMapLocalHelper.RetireOutcomes request) return (T) new RetirementReceipt(request.client(), request.generation(), request.through(), Math.toIntExact(receipt.number()));
+    if (command instanceof IMapLocalHelper.ExpireStep) return (T) new ExpiryProgress(Math.toIntExact(receipt.number()), Math.toIntExact(receipt.version().orElseThrow()), receipt.flag());
+    var entries = receipt.items().stream().map(item -> new ResyncEntry(item.key(), item.value(), item.version().orElseThrow(), item.remainingTtl())).toList();
+    long bytes = entries.stream().mapToLong(entry -> 32L + entry.key().size() + entry.value().map(BytesValue::size).orElse(0)).sum();
+    budget(resyncBytes + bytes, limits.resync()); resyncBytes += bytes;
+    var token = receipt.token().orElseThrow();
+    return (T) new SnapshotLease(entries, receipt.number(), bytes, token.namespaceGeneration(), token.mapId(), token.version(), receipt.flag());
   }
   public static final class RuntimeCheckpoint implements AutoCloseable {
     private final UnifiedIMapService owner;
