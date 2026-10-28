@@ -458,7 +458,7 @@ impl ServiceClusterHarness {
             digest,
             &ServiceResult::new("outcome_unknown"),
         )?;
-        if let Ok(stamp) = journal.replica_stamp() {
+        if let Ok(stamp) = journal.journal_replica_stamp() {
             self.assignments[p as usize].required_journal = stamp;
         }
         if !self.replicate(p, true, ServiceLinkFaults::default())? {
@@ -728,7 +728,7 @@ impl ServiceClusterHarness {
             combined.number = combined.items.len() as u64;
         }
         journal.complete_external_operation(&identity, digest, &combined)?;
-        if let Ok(stamp) = journal.replica_stamp() {
+        if let Ok(stamp) = journal.journal_replica_stamp() {
             self.assignments[coordinator as usize].required_journal = stamp;
         }
         let proof = self.replicate(coordinator, true, call.faults.coordinator);
@@ -969,7 +969,11 @@ impl ServiceClusterHarness {
                 };
                 let service = self.service(&route.owner, partition, journal)?;
                 service.retire_outcomes(&identity_client, self.generation, through)?;
-                let stamp = service.replica_stamp()?;
+                let stamp = if journal {
+                    service.journal_replica_stamp()?
+                } else {
+                    service.replica_stamp()?
+                };
                 if journal {
                     self.assignments[partition as usize].required_journal = stamp;
                 } else {
@@ -1257,7 +1261,11 @@ impl ServiceClusterHarness {
         self.require_live(&route.owner)?;
         self.require_live(&route.backup)?;
         let source = self.service(&route.owner, p, journal)?;
-        let image = source.export_replica_image()?;
+        let image = if journal {
+            source.export_journal_image()?
+        } else {
+            source.export_replica_image()?
+        };
         let stamp = image.stamp();
         let payload = image.transport_payload(self.bounds.max_frame_bytes)?;
         self.authorize_message(
@@ -1281,11 +1289,13 @@ impl ServiceClusterHarness {
         {
             return Ok(false);
         }
-        if self
-            .service(&route.backup, p, journal)?
-            .install_replica_image(image)?
-            != stamp
-        {
+        let backup = self.service(&route.backup, p, journal)?;
+        let installed = if journal {
+            backup.install_journal_image(image)?
+        } else {
+            backup.install_replica_image(image)?
+        };
+        if installed != stamp {
             return Err(ServiceClusterError::ReplicaNotProved);
         }
         self.authorize_message(

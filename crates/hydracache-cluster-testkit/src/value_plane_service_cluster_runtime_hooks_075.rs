@@ -454,7 +454,71 @@ impl ServiceClusterHarness {
         }
         self.service(&route.owner, p, true)?
             .admit_external_operation(identity, request_digest(command), bytes)?;
+        self.assignments[p as usize].required_journal = self
+            .service(&route.owner, p, true)?
+            .journal_replica_stamp()?;
+        if !self.replicate(p, true, ServiceLinkFaults::default())? {
+            return Err(ServiceClusterError::ReplicaNotProved);
+        }
+        self.capture_online_changes();
         Ok(())
+    }
+    pub fn reserve_operation_guarded(
+        &mut self,
+        entry: &str,
+        command: &ServiceCommand,
+        guard: Arc<dyn ServiceMessageGuard>,
+    ) -> Result<(), ServiceClusterError> {
+        if command.cancelled || command.now >= command.deadline {
+            return Err(MapServiceError::InvalidArgument.into());
+        }
+        self.validate_request(command)?;
+        self.require_live(entry)?;
+        if self.node_is_draining(entry) {
+            return Err(ServiceClusterError::NodeUnavailable);
+        }
+        let identity = command
+            .identity
+            .clone()
+            .ok_or(MapServiceError::InvalidArgument)?;
+        let previous = self.runtime.invocation.replace(Invocation {
+            digest: command.test_request_digest(),
+            identity: Some(identity.clone()),
+            now: command.now,
+            deadline: command.deadline,
+        });
+        let result = self.with_message_guard(guard, |cluster| {
+            let p = cluster.coordinator_for(&identity);
+            let target = cluster.assignments[p as usize].route.owner.clone();
+            let payload = command.test_transport_payload(cluster.bounds.max_frame_bytes)?;
+            cluster.authorize_message(
+                ServiceMessageKind::Request,
+                entry,
+                &target,
+                p,
+                None,
+                &payload,
+            )?;
+            cluster.reserve_operation(identity, command)
+        });
+        self.runtime.invocation = previous;
+        result
+    }
+    pub fn recover_invocation(
+        &self,
+        command: &ServiceCommand,
+    ) -> Result<ServiceRecovery, ServiceClusterError> {
+        self.validate_request(command)?;
+        let identity = command
+            .identity
+            .as_ref()
+            .ok_or(MapServiceError::InvalidArgument)?;
+        let p = self.coordinator_for(identity);
+        let owner = &self.assignments[p as usize].route.owner;
+        self.require_live(owner)?;
+        Ok(self
+            .service(owner, p, true)?
+            .recover_external_operation(identity, request_digest(command))?)
     }
     pub fn cancel_pending_identity(
         &mut self,
@@ -474,7 +538,7 @@ impl ServiceClusterHarness {
         if !journal.cancel_admitted_identity(identity)? {
             return Ok(false);
         }
-        if let Ok(stamp) = journal.replica_stamp() {
+        if let Ok(stamp) = journal.journal_replica_stamp() {
             self.assignments[p as usize].required_journal = stamp;
         }
         if !self.replicate(p, true, ServiceLinkFaults::default())? {

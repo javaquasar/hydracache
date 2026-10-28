@@ -79,7 +79,9 @@ pub struct ListenerSnapshot {
     pub watermark: u64,
     pub namespace_generation: u64,
     pub map_id: u64,
-    lease: ByteLease,
+    pub revision: u64,
+    pub include_value: bool,
+    pub(super) lease: ByteLease,
 }
 
 impl ListenerSnapshot {
@@ -188,7 +190,8 @@ pub(super) fn usage(state: &ServiceState) -> ServiceResourceUsage {
         listeners: listener_bytes(state),
         streams: state
             .active_streams
-            .saturating_mul(stream_reservation(state)),
+            .saturating_mul(stream_reservation(state))
+            .saturating_add(state.helper_bytes),
         resync: state.resync_bytes,
     }
 }
@@ -396,44 +399,13 @@ impl UnifiedIMapService {
         through: u64,
     ) -> Result<RetirementReceipt, MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
-        require_namespace(&state)?;
-        if state.map.is_destroyed() {
-            return Err(CollectionError::MapDestroyed.into());
+        let result = retire_locked(&mut state, client, generation, through);
+        let wakes = std::mem::take(&mut state.pending_wakes);
+        drop(state);
+        for wake in wakes {
+            wake.wake();
         }
-        if generation != state.namespace_generation
-            || client.trim().is_empty()
-            || client.len() > 128
-            || through == 0
-            || state
-                .map
-                .service_fences()
-                .get(client)
-                .is_some_and(|old| through < *old)
-        {
-            return Err(MapServiceError::InvalidArgument);
-        }
-        if state.map.service_pending_before(client, through) {
-            return Err(MapServiceError::PendingOperation);
-        }
-        cluster_hooks::require_replication_capacity(&state)?;
-        if !state.map.service_fences().contains_key(client) {
-            if state.map.service_fences().len() >= state.limits.max_clients {
-                return Err(MapServiceError::ResourceBudget("retirement_clients"));
-            }
-            budget(
-                "outcomes",
-                state.limits.outcome_bytes,
-                checked_add(
-                    usage(&state)
-                        .outcomes
-                        .saturating_sub(state.map.service_retirement_credit(client, through)),
-                    client.len().saturating_add(24),
-                    "outcomes",
-                )?,
-            )?;
-        }
-        let removed = state.map.service_retire(client.into(), through);
-        Ok(RetirementReceipt { removed, through })
+        result
     }
 
     pub fn query_operation_outcomes(
@@ -484,36 +456,13 @@ impl UnifiedIMapService {
         max_work: usize,
     ) -> Result<ExpiryProgress, MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
-        require_namespace(&state)?;
-        if max_work == 0 || max_work > state.map.service_bounds().max_scan_items {
-            return Err(MapServiceError::InvalidArgument);
-        }
-        if now < state.now {
-            return Err(MapServiceError::ClockRegressed);
-        }
-        if state.map.is_destroyed() {
-            return Err(CollectionError::MapDestroyed.into());
-        }
-        if now != state.now || state.map.service_expiry_pending(now) {
-            cluster_hooks::require_replication_capacity(&state)?;
-        }
-        let expired = state.map.service_expire_step(now, max_work)?;
-        let count = expired.len();
-        state.now = now;
-        for (key, value) in expired {
-            publish(&mut state, "expired", key, Some(value), None);
-        }
-        let progress = ExpiryProgress {
-            examined: count,
-            expired: count,
-            pending: state.map.service_expiry_pending(now),
-        };
+        let result = expire_locked(&mut state, now, max_work);
         let wakes = std::mem::take(&mut state.pending_wakes);
         drop(state);
         for wake in wakes {
             wake.wake();
         }
-        Ok(progress)
+        result
     }
 
     pub fn resync_listener(
@@ -524,100 +473,20 @@ impl UnifiedIMapService {
         max_bytes: usize,
     ) -> Result<ListenerSnapshot, MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
-        require_namespace(&state)?;
-        if state.resync_leases >= state.map.service_bounds().max_entries {
-            return Err(MapServiceError::Capacity);
-        }
-        if state.map.is_destroyed() {
-            return Err(CollectionError::MapDestroyed.into());
-        }
-        if max_items == 0
-            || max_items > state.map.service_bounds().max_entries
-            || max_bytes == 0
-            || max_bytes > state.limits.resync_bytes
-        {
-            return Err(MapServiceError::InvalidArgument);
-        }
-        let options = state
-            .listeners
-            .get(&id)
-            .ok_or(MapServiceError::UnknownListener)?
-            .options
-            .clone();
-        if options.include_value
-            && state.map.service_snapshot_value_exceeds(
-                &options.key_prefix,
-                options.exact_key.as_deref(),
-                now,
-                options.max_value_bytes,
-            )
-        {
-            return Err(MapServiceError::ResourceBudget("resync_value_bytes"));
-        }
-        let next_epoch = state.listeners[&id]
-            .delivery_epoch
-            .checked_add(1)
-            .ok_or(MapServiceError::Capacity)?;
-        if now < state.now {
-            return Err(MapServiceError::ClockRegressed);
-        }
-        // Check size before advancing expiry or clearing a sticky gap.
-        let (count, bytes) = state.map.service_snapshot_cost(
-            &options.key_prefix,
-            options.exact_key.as_deref(),
-            options.include_value,
+        let result = resync_locked(
+            &mut state,
+            Arc::downgrade(&self.state),
+            id,
             now,
+            max_items,
+            max_bytes,
         );
-        budget("resync_items", max_items, count)?;
-        budget("resync", max_bytes, bytes)?;
-        budget(
-            "resync",
-            state.limits.resync_bytes,
-            checked_add(state.resync_bytes, bytes, "resync")?,
-        )?;
-        advance(&mut state, now)?;
-        let entries = state
-            .map
-            .service_filtered_snapshot(
-                &options.key_prefix,
-                options.exact_key.as_deref(),
-                options.include_value,
-                now,
-            )
-            .into_iter()
-            .map(|(key, view)| ServiceEntry {
-                key,
-                value: view.value,
-                version: view.version,
-                remaining_ttl: view.remaining_ttl,
-            })
-            .collect();
-        let listener = state
-            .listeners
-            .get_mut(&id)
-            .expect("registration held under lock");
-        listener.delivery_epoch = next_epoch;
-        listener.queue.clear();
-        listener.gap = false;
-        state.resync_bytes += bytes;
-        state.resync_leases += 1;
-        let snapshot = ListenerSnapshot {
-            entries,
-            watermark: state.watermark,
-            namespace_generation: state.namespace_generation,
-            map_id: state.map.service_map_id(),
-            lease: ByteLease {
-                service: Arc::downgrade(&self.state),
-                bytes,
-                active: true,
-            },
-        };
         let wakes = std::mem::take(&mut state.pending_wakes);
         drop(state);
         for wake in wakes {
             wake.wake();
         }
-        Ok(snapshot)
+        result
     }
 
     pub fn checkpoint(&self) -> Result<ServiceCheckpoint, MapServiceError> {
@@ -702,7 +571,7 @@ impl UnifiedIMapService {
     }
 }
 
-fn bulk_version(
+pub(super) fn bulk_version(
     state: &mut ServiceState,
     operation: VersionBulkOperation,
     entries: &[VersionBulkEntry],
@@ -746,25 +615,7 @@ fn bulk_version(
         )?;
     }
     check_bound("request_bytes", 8 * 1_024 * 1_024, request_bytes)?;
-    let digest: [u8; 32] = Sha256::digest(
-        json!([
-            format!("{:?}", operation),
-            entries
-                .iter()
-                .map(|e| json!([
-                    e.key,
-                    e.token.namespace_generation,
-                    e.token.map_id,
-                    e.token.version,
-                    e.value,
-                    format!("{:?}", e.ttl)
-                ]))
-                .collect::<Vec<_>>()
-        ])
-        .to_string()
-        .as_bytes(),
-    )
-    .into();
+    let digest = version_digest(operation, entries);
     check_identity(state, &identity)?;
     match state.map.service_lookup(&identity, Some(digest))? {
         ServiceRetainedOutcome::Completed(value) => return ServiceResult::from_retained(&value),
@@ -923,6 +774,210 @@ fn bulk_version(
     } else {
         result
     })
+}
+
+pub(super) fn version_digest(
+    operation: VersionBulkOperation,
+    entries: &[VersionBulkEntry],
+) -> [u8; 32] {
+    Sha256::digest(
+        json!([
+            format!("{:?}", operation),
+            entries
+                .iter()
+                .map(|e| json!([
+                    e.key,
+                    e.token.namespace_generation,
+                    e.token.map_id,
+                    e.token.version,
+                    e.value,
+                    format!("{:?}", e.ttl)
+                ]))
+                .collect::<Vec<_>>()
+        ])
+        .to_string()
+        .as_bytes(),
+    )
+    .into()
+}
+
+pub(super) fn retire_locked(
+    state: &mut ServiceState,
+    client: &str,
+    generation: u64,
+    through: u64,
+) -> Result<RetirementReceipt, MapServiceError> {
+    require_namespace(state)?;
+    if state.map.is_destroyed() {
+        return Err(CollectionError::MapDestroyed.into());
+    }
+    if generation != state.namespace_generation
+        || client.trim().is_empty()
+        || client.len() > 128
+        || through == 0
+        || state
+            .map
+            .service_fences()
+            .get(client)
+            .is_some_and(|old| through < *old)
+    {
+        return Err(MapServiceError::InvalidArgument);
+    }
+    if state.map.service_pending_before(client, through) {
+        return Err(MapServiceError::PendingOperation);
+    }
+    cluster_hooks::require_replication_capacity(state)?;
+    if !state.map.service_fences().contains_key(client) {
+        if state.map.service_fences().len() >= state.limits.max_clients {
+            return Err(MapServiceError::ResourceBudget("retirement_clients"));
+        }
+        budget(
+            "outcomes",
+            state.limits.outcome_bytes,
+            checked_add(
+                usage(state)
+                    .outcomes
+                    .saturating_sub(state.map.service_retirement_credit(client, through)),
+                client.len().saturating_add(24),
+                "outcomes",
+            )?,
+        )?;
+    }
+    let removed = state.map.service_retire(client.into(), through);
+    Ok(RetirementReceipt { removed, through })
+}
+
+pub(super) fn expire_locked(
+    state: &mut ServiceState,
+    now: u64,
+    max_work: usize,
+) -> Result<ExpiryProgress, MapServiceError> {
+    require_namespace(state)?;
+    if max_work == 0 || max_work > state.map.service_bounds().max_scan_items {
+        return Err(MapServiceError::InvalidArgument);
+    }
+    if now < state.now {
+        return Err(MapServiceError::ClockRegressed);
+    }
+    if state.map.is_destroyed() {
+        return Err(CollectionError::MapDestroyed.into());
+    }
+    if now != state.now || state.map.service_expiry_pending(now) {
+        cluster_hooks::require_replication_capacity(state)?;
+    }
+    let expired = state.map.service_expire_step(now, max_work)?;
+    let count = expired.len();
+    state.now = now;
+    for (key, value) in expired {
+        publish(state, "expired", key, Some(value), None);
+    }
+    let progress = ExpiryProgress {
+        examined: count,
+        expired: count,
+        pending: state.map.service_expiry_pending(now),
+    };
+    Ok(progress)
+}
+
+pub(super) fn resync_locked(
+    state: &mut ServiceState,
+    source: Weak<Mutex<ServiceState>>,
+    id: u64,
+    now: u64,
+    max_items: usize,
+    max_bytes: usize,
+) -> Result<ListenerSnapshot, MapServiceError> {
+    require_namespace(state)?;
+    if state.resync_leases >= state.map.service_bounds().max_entries {
+        return Err(MapServiceError::Capacity);
+    }
+    if state.map.is_destroyed() {
+        return Err(CollectionError::MapDestroyed.into());
+    }
+    if max_items == 0
+        || max_items > state.map.service_bounds().max_entries
+        || max_bytes == 0
+        || max_bytes > state.limits.resync_bytes
+    {
+        return Err(MapServiceError::InvalidArgument);
+    }
+    let options = state
+        .listeners
+        .get(&id)
+        .ok_or(MapServiceError::UnknownListener)?
+        .options
+        .clone();
+    if options.include_value
+        && state.map.service_snapshot_value_exceeds(
+            &options.key_prefix,
+            options.exact_key.as_deref(),
+            now,
+            options.max_value_bytes,
+        )
+    {
+        return Err(MapServiceError::ResourceBudget("resync_value_bytes"));
+    }
+    let next_epoch = state.listeners[&id]
+        .delivery_epoch
+        .checked_add(1)
+        .ok_or(MapServiceError::Capacity)?;
+    if now < state.now {
+        return Err(MapServiceError::ClockRegressed);
+    }
+    // Check size before advancing expiry or clearing a sticky gap.
+    let (count, bytes) = state.map.service_snapshot_cost(
+        &options.key_prefix,
+        options.exact_key.as_deref(),
+        options.include_value,
+        now,
+    );
+    budget("resync_items", max_items, count)?;
+    budget("resync", max_bytes, bytes)?;
+    budget(
+        "resync",
+        state.limits.resync_bytes,
+        checked_add(state.resync_bytes, bytes, "resync")?,
+    )?;
+    advance(state, now)?;
+    let entries = state
+        .map
+        .service_filtered_snapshot(
+            &options.key_prefix,
+            options.exact_key.as_deref(),
+            options.include_value,
+            now,
+        )
+        .into_iter()
+        .map(|(key, view)| ServiceEntry {
+            key,
+            value: view.value,
+            version: view.version,
+            remaining_ttl: view.remaining_ttl,
+        })
+        .collect();
+    let listener = state
+        .listeners
+        .get_mut(&id)
+        .expect("registration held under lock");
+    listener.delivery_epoch = next_epoch;
+    listener.queue.clear();
+    listener.gap = false;
+    state.resync_bytes += bytes;
+    state.resync_leases += 1;
+    let snapshot = ListenerSnapshot {
+        entries,
+        watermark: state.watermark,
+        namespace_generation: state.namespace_generation,
+        map_id: state.map.service_map_id(),
+        revision: state.map.revision(),
+        include_value: options.include_value,
+        lease: ByteLease {
+            service: source,
+            bytes,
+            active: true,
+        },
+    };
+    Ok(snapshot)
 }
 
 #[cfg(test)]

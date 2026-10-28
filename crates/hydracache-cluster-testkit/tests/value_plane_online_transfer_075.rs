@@ -48,6 +48,80 @@ fn deltas(cluster: &mut ServiceClusterHarness, id: u64) {
 }
 
 #[test]
+fn sparse_online_deltas_exclude_unchanged_payload_and_preserve_decisions() {
+    let mut cluster = cluster();
+    let mut large = command(b"unchanged", 1);
+    large.value = Some(vec![173; 32 * 1_024]);
+    run(&mut cluster, large);
+    let mut expiring = command(b"removed", 2);
+    expiring.ttl = ServiceTtl::ExpireAfter(20);
+    run(&mut cluster, expiring);
+    let id = cluster
+        .begin_online_transfer(0, "c", OnlineTransferOptions::default())
+        .unwrap();
+    let original_bytes = cluster
+        .online_transfer_manifest(id)
+        .unwrap()
+        .snapshots
+        .iter()
+        .map(|part| part.total_bytes)
+        .sum::<usize>();
+    snapshot(&mut cluster, id);
+    let receipt = run(&mut cluster, command(b"small", 3)).result;
+    let first = cluster.next_online_delta(id).unwrap().unwrap();
+    let measured = cluster.online_delta_measure(id, first.sequence).unwrap();
+    assert_eq!(measured.entry_upserts, 1);
+    assert_eq!(measured.entry_deletions, 0);
+    assert_eq!(measured.outcome_upserts, 1);
+    assert!(first.payload_bytes * 10 < original_bytes);
+    deltas(&mut cluster, id);
+    let mut remove = ServiceCommand::point("delete", b"removed");
+    remove.identity = Some(MutationIdentity::new("transfer", 4));
+    let removed = run(&mut cluster, remove.clone()).result;
+    let deletion = cluster.next_online_delta(id).unwrap().unwrap();
+    assert_eq!(
+        cluster
+            .online_delta_measure(id, deletion.sequence)
+            .unwrap()
+            .entry_deletions,
+        1
+    );
+    deltas(&mut cluster, id);
+    cluster.retire_outcomes("transfer", 2).unwrap();
+    let fence = cluster.next_online_delta(id).unwrap().unwrap();
+    let measured = cluster.online_delta_measure(id, fence.sequence).unwrap();
+    assert_eq!(measured.entry_upserts + measured.entry_deletions, 0);
+    assert_eq!(measured.fence_upserts, 1);
+    assert_eq!(measured.outcome_deletions, 2);
+    deltas(&mut cluster, id);
+    cluster.ready_online_transfer(id).unwrap();
+    cluster.commit_online_transfer(id).unwrap();
+    let state = cluster.diagnostic_node_snapshot("c", 0, 0).unwrap();
+    assert_eq!(state.len(), 2);
+    assert_eq!(
+        state
+            .iter()
+            .find(|entry| entry.key == b"unchanged")
+            .unwrap()
+            .value,
+        vec![173; 32 * 1_024]
+    );
+    assert_eq!(
+        cluster
+            .query_operation_outcome(&MutationIdentity::new("transfer", 3))
+            .unwrap(),
+        OperationOutcomeQuery::Completed(Box::new(receipt))
+    );
+    assert_eq!(run(&mut cluster, remove).result, removed);
+    assert!(matches!(
+        cluster.execute("c", command(b"unchanged", 1), ServiceClusterCall::default()),
+        Err(ServiceClusterError::Model(MapServiceError::RetiredIdentity))
+    ));
+    cluster.cleanup_online_transfer(id).unwrap();
+    assert_eq!(cluster.aggregate_namespace_owners().resync_leases, 0);
+}
+
+#[test]
 fn online_snapshot_resumes_chunks_and_applies_actual_live_decision_deltas() {
     let mut cluster = cluster();
     let mut first = command(b"a", 1);

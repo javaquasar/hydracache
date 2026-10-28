@@ -14,8 +14,8 @@ use sha2::{Digest, Sha256};
 
 use crate::value_plane_model_075::MutationIdentity;
 use crate::value_plane_security_075::{
-    validate_replica_proof, validate_route, ReplayDisposition, ReplayGuard, ReplayIdentity,
-    ReplicaProofClaims, RouteClaims, SecurityBounds, TrustEpochWindow,
+    validate_replica_proof, validate_route, ReplayDisposition, ReplayWindow,
+    ReplayWindowObservations, ReplicaProofClaims, RouteClaims, SecurityBounds, TrustEpochWindow,
 };
 use crate::value_plane_service_075::ReplicaStamp;
 use crate::value_plane_service_cluster_075::{
@@ -49,6 +49,8 @@ pub struct ClusterAuthConfig {
 /// field against the real transport context and independently authenticated member identity.
 #[derive(Clone)]
 pub struct RuntimeEnvelope {
+    pub grant_digest: Option<[u8; 32]>,
+    pub admission_digest: Option<[u8; 32]>,
     pub kind: ServiceMessageKind,
     pub cluster: String,
     pub tenant: String,
@@ -85,6 +87,8 @@ impl fmt::Debug for RuntimeEnvelope {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EnvelopeFault {
+    AdmissionDigest,
+    GrantDigest,
     None,
     Tenant,
     Namespace,
@@ -110,8 +114,10 @@ struct MemberIdentity {
     credential_epochs: BTreeMap<String, u64>,
 }
 struct AuthState {
+    observed_time: u64,
+    policy_epoch: Option<u64>,
     members: BTreeMap<String, MemberIdentity>,
-    replay: ReplayGuard,
+    replay: ReplayWindow,
     next_nonce: u64,
     trust: TrustEpochWindow,
     failures: BTreeMap<&'static str, u64>,
@@ -179,13 +185,15 @@ impl RuntimeAuthentication {
                 },
             );
         }
-        let replay = ReplayGuard::new(config.max_replays)
+        let replay = ReplayWindow::new(config.max_replays, 48)
             .map_err(|_| ServiceClusterError::Authorization("configuration"))?;
         Ok(Self {
             config: Arc::new(config),
             security,
             authorizer,
             state: Arc::new(Mutex::new(AuthState {
+                observed_time: 0,
+                policy_epoch: None,
                 members,
                 replay,
                 next_nonce: 1,
@@ -298,6 +306,20 @@ impl RuntimeAuthentication {
             .failures
             .clone()
     }
+    pub fn replay_observations(&self) -> ReplayWindowObservations {
+        self.state.lock().unwrap().replay.observations()
+    }
+    pub fn ready(&self) -> bool {
+        self.state.lock().unwrap().next_nonce < u64::MAX
+    }
+    pub fn set_policy_epoch(&self, next: u64) -> Result<(), ServiceClusterError> {
+        let mut state = self.state.lock().unwrap();
+        if next == 0 || state.policy_epoch.is_some_and(|epoch| next < epoch) {
+            return Err(ServiceClusterError::Authorization("policy_epoch"));
+        }
+        state.policy_epoch = Some(next);
+        Ok(())
+    }
 
     pub fn guard(
         &self,
@@ -306,8 +328,21 @@ impl RuntimeAuthentication {
         credit: usize,
         fault: Option<AuthFault>,
     ) -> Arc<dyn ServiceMessageGuard> {
+        self.guard_with_receipt(authenticated, admission, credit, fault, None)
+    }
+    pub fn guard_with_receipt(
+        &self,
+        authenticated: &AuthenticatedNamespace,
+        admission: u64,
+        credit: usize,
+        fault: Option<AuthFault>,
+        admission_digest: Option<[u8; 32]>,
+    ) -> Arc<dyn ServiceMessageGuard> {
         let (tenant, namespace, generation, trust_epoch, deadline) = authenticated.runtime_proof();
         Arc::new(AuthenticatedMessageGuard {
+            policy_epoch: authenticated.policy_epoch(),
+            admission_digest,
+            grant_digest: authenticated.grant_digest(),
             authority: self.clone(),
             tenant,
             namespace,
@@ -337,6 +372,8 @@ impl RuntimeAuthentication {
             .checked_add(1)
             .ok_or(ServiceClusterError::Authorization("nonce_capacity"))?;
         Ok(RuntimeEnvelope {
+            grant_digest: principal.grant_digest,
+            admission_digest: principal.admission_digest,
             kind: context.kind,
             cluster: self.config.cluster.clone(),
             tenant: principal.tenant.clone(),
@@ -372,6 +409,9 @@ impl RuntimeAuthentication {
         self.envelope(
             expected,
             &AuthenticatedMessageGuard {
+                policy_epoch: authenticated.policy_epoch(),
+                admission_digest: None,
+                grant_digest: authenticated.grant_digest(),
                 authority: self.clone(),
                 tenant,
                 namespace,
@@ -397,6 +437,11 @@ impl RuntimeAuthentication {
             return Err(ServiceClusterError::Authorization("principal"));
         }
         let state = self.state.lock().unwrap();
+        match (state.policy_epoch, authenticated.policy_epoch()) {
+            (None, None) => {}
+            (Some(expected), Some(actual)) if expected == actual => {}
+            _ => return Err(ServiceClusterError::Authorization("policy_epoch")),
+        }
         validate_route(
             &RouteClaims {
                 authenticated: true,
@@ -489,6 +534,9 @@ impl RuntimeAuthentication {
             return Err(fail("request_binding"));
         }
         let mut state = self.state.lock().expect("member auth poisoned");
+        if expected.now < state.observed_time {
+            return Err(fail("clock_regressed"));
+        }
         let source = state
             .members
             .get(&envelope.source)
@@ -572,17 +620,33 @@ impl RuntimeAuthentication {
             return Err(fail("replica_binding"));
         }
         let canonical = envelope_digest(envelope, expected.kind);
+        state.observed_time = expected.now;
+        let mut active = std::collections::BTreeSet::new();
+        for (node, member) in &state.members {
+            for epoch in member.credential_epochs.values() {
+                if state.trust.accepts(*epoch, expected.now) {
+                    for kind in [
+                        ServiceMessageKind::Request,
+                        ServiceMessageKind::ReplicaApply,
+                        ServiceMessageKind::Ack,
+                    ] {
+                        active.insert(format!("{node}:{}:{epoch}:{kind:?}", member.generation));
+                    }
+                }
+            }
+        }
+        state.replay.retain_lanes(|lane| active.contains(lane));
         state
             .replay
             .admit(
-                ReplayIdentity {
-                    tenant: self.config.tenant.clone(),
-                    client: format!(
-                        "{}:{}:{:?}",
-                        envelope.source, envelope.source_generation, expected.kind
-                    ),
-                    request: envelope.nonce,
-                },
+                &format!(
+                    "{}:{}:{}:{:?}",
+                    envelope.source,
+                    envelope.source_generation,
+                    envelope.member_trust_epoch,
+                    expected.kind
+                ),
+                envelope.nonce,
                 &canonical,
             )
             .map_err(|_| fail("replay"))
@@ -623,6 +687,9 @@ pub fn validate_member_rotation(
 }
 
 struct AuthenticatedMessageGuard {
+    policy_epoch: Option<u64>,
+    admission_digest: Option<[u8; 32]>,
+    grant_digest: Option<[u8; 32]>,
     authority: RuntimeAuthentication,
     tenant: String,
     namespace: String,
@@ -635,12 +702,17 @@ struct AuthenticatedMessageGuard {
 }
 impl ServiceMessageGuard for AuthenticatedMessageGuard {
     fn authorize(&self, context: &ServiceMessageContext) -> Result<(), ServiceClusterError> {
+        if self.authority.state.lock().unwrap().policy_epoch != self.policy_epoch {
+            return Err(ServiceClusterError::Authorization("policy_epoch"));
+        }
         if context.payload_bytes > self.credit {
             return Err(ServiceClusterError::Authorization("replica_credit"));
         }
         let mut envelope = self.authority.envelope(context, self)?;
         if let Some(fault) = self.fault.filter(|fault| fault.stage == context.kind) {
             match fault.fault {
+                EnvelopeFault::AdmissionDigest => envelope.admission_digest = Some([255; 32]),
+                EnvelopeFault::GrantDigest => envelope.grant_digest = Some([255; 32]),
                 EnvelopeFault::None => {}
                 EnvelopeFault::Tenant => envelope.tenant.push('!'),
                 EnvelopeFault::Namespace => envelope.namespace.push('!'),
@@ -665,6 +737,11 @@ impl ServiceMessageGuard for AuthenticatedMessageGuard {
                 EnvelopeFault::Deadline => envelope.deadline = context.now,
             }
         }
+        if envelope.grant_digest != self.grant_digest
+            || envelope.admission_digest != self.admission_digest
+        {
+            return Err(ServiceClusterError::Authorization("receipt_binding"));
+        }
         self.authority
             .verify_envelope(&envelope, context, self.admission)
             .map(|_| ())
@@ -672,6 +749,8 @@ impl ServiceMessageGuard for AuthenticatedMessageGuard {
 }
 fn envelope_digest(envelope: &RuntimeEnvelope, kind: ServiceMessageKind) -> [u8; 32] {
     let mut hash = Sha256::new();
+    hash.update(envelope.grant_digest.unwrap_or([0; 32]));
+    hash.update(envelope.admission_digest.unwrap_or([0; 32]));
     for value in [
         &envelope.cluster,
         &envelope.tenant,

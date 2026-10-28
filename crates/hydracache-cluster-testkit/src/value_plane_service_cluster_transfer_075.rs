@@ -1,5 +1,5 @@
-//! Online, runtime-only transfer of actual owner decision state. Delta records contain full
-//! bounded typed decision images; this is not a production byte codec or a throughput claim.
+//! Online, runtime-only transfer of actual owner decisions. The initial snapshot is followed
+//! by sparse record, outcome and retirement decisions, never reevaluated commands.
 use super::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -89,13 +89,14 @@ pub struct OnlineTransferReadiness {
 struct SnapshotComponent {
     manifest: TransferSnapshotManifest,
     image: Option<ServiceReplicaImage>,
+    cursor: ServiceReplicaCursor,
     payload: Vec<u8>,
     accepted: BTreeMap<usize, Vec<u8>>,
     staging: UnifiedIMapService,
 }
 struct DecisionDelta {
     descriptor: OnlineDeltaDescriptor,
-    image: ServiceReplicaImage,
+    decisions: ServiceReplicaDelta,
     payload: Vec<u8>,
 }
 pub(super) struct OnlineTransferState {
@@ -143,14 +144,15 @@ impl OnlineTransferState {
     fn resident_bytes(&self) -> usize {
         self.components.values().fold(
             self.deltas.iter().fold(self.owned_bytes(), |sum, delta| {
-                sum.saturating_add(delta.image.owned_payload_bytes())
+                sum.saturating_add(delta.decisions.owned_payload_bytes())
             }),
             |sum, part| {
-                sum.saturating_add(
-                    part.image
-                        .as_ref()
-                        .map_or(0, ServiceReplicaImage::owned_payload_bytes),
-                )
+                sum.saturating_add(part.cursor.owned_payload_bytes())
+                    .saturating_add(
+                        part.image
+                            .as_ref()
+                            .map_or(0, ServiceReplicaImage::owned_payload_bytes),
+                    )
             },
         )
     }
@@ -233,13 +235,14 @@ impl ServiceClusterHarness {
         for component in [TransferComponent::Data, TransferComponent::Journal] {
             let source = self.service(&route.owner, p, component == TransferComponent::Journal)?;
             source.replica_stamp()?;
-            let image_bytes = source.preflight_replica_image()?;
+            let (image_bytes, cursor_bytes) = source.preflight_replica_snapshot_with_cursor()?;
             let payload_bytes = source.replica_transport_size(options.max_snapshot_bytes)?;
             if payload_bytes.div_ceil(options.chunk_bytes) > 4_096 {
                 return Err(ServiceClusterError::InvalidBound);
             }
             admission = admission
                 .checked_add(image_bytes)
+                .and_then(|n| n.checked_add(cursor_bytes))
                 .and_then(|n| n.checked_add(payload_bytes))
                 .ok_or(MapServiceError::ResourceBudget("transfer_staging"))?;
         }
@@ -252,6 +255,7 @@ impl ServiceClusterHarness {
         for component in [TransferComponent::Data, TransferComponent::Journal] {
             let source = self.service(&route.owner, p, component == TransferComponent::Journal)?;
             let image = source.export_replica_image()?;
+            let cursor = image.replication_cursor()?;
             let payload = image.transport_payload(options.max_snapshot_bytes)?;
             let count = payload.len().div_ceil(options.chunk_bytes);
             if count == 0 || count > 4_096 {
@@ -271,6 +275,7 @@ impl ServiceClusterHarness {
                 SnapshotComponent {
                     manifest,
                     image: Some(image),
+                    cursor,
                     payload,
                     accepted: BTreeMap::new(),
                     staging: UnifiedIMapService::with_limits(
@@ -523,6 +528,22 @@ impl ServiceClusterHarness {
             .front()
             .map(|delta| delta.descriptor.clone()))
     }
+    pub fn online_delta_measure(
+        &self,
+        id: u64,
+        sequence: u64,
+    ) -> Result<ReplicaDeltaMeasure, ServiceClusterError> {
+        self.runtime
+            .transfers
+            .get(&id)
+            .ok_or(ServiceClusterError::UnknownTransfer)?
+            .deltas
+            .iter()
+            .find(|delta| delta.descriptor.sequence == sequence)
+            .map(|delta| delta.decisions.measure())
+            .ok_or(ServiceClusterError::DeltaOutOfOrder)
+    }
+
     pub fn apply_online_delta(
         &mut self,
         id: u64,
@@ -579,7 +600,7 @@ impl ServiceClusterHarness {
                 &delta.payload,
             )?;
             let delta = state.deltas.pop_front().expect("verified delta head");
-            let installed = staging.install_replica_image(delta.image)?;
+            let installed = staging.install_replica_delta(delta.decisions)?;
             if installed != delta.descriptor.target {
                 return Err(ServiceClusterError::ReplicaNotProved);
             }
@@ -847,29 +868,29 @@ impl ServiceClusterHarness {
                         if actual == base {
                             continue;
                         }
-                        let predicted =
-                            match source.replica_transport_size(state.options.max_delta_bytes) {
-                                Ok(bytes) => bytes,
-                                Err(_) => {
-                                    state.restart("delta_bytes");
-                                    break;
-                                }
-                            };
+                        let measured = match source.preflight_replica_delta(
+                            &state.components[&component].cursor,
+                            state.options.max_delta_bytes,
+                        ) {
+                            Ok(measured) => measured,
+                            Err(MapServiceError::ActiveOwners) => continue,
+                            Err(_) => {
+                                state.restart("delta_bytes");
+                                break;
+                            }
+                        };
+                        let predicted = measured.payload_bytes;
                         let used = self
                             .runtime
                             .transfers
                             .values()
                             .map(OnlineTransferState::resident_bytes)
                             .sum::<usize>();
-                        let usage = source.resource_usage();
-                        let image_bytes = usage
-                            .values
-                            .saturating_add(usage.outcomes)
-                            .saturating_add(256);
                         if used
                             .saturating_add(state.resident_bytes())
                             .saturating_add(predicted)
-                            .saturating_add(image_bytes)
+                            .saturating_add(measured.owned_bytes)
+                            .saturating_add(measured.cursor_growth)
                             .saturating_add(192)
                             > self.runtime.limits.max_transfer_bytes
                         {
@@ -886,20 +907,28 @@ impl ServiceClusterHarness {
                             state.restart("delta_log_full");
                             break;
                         }
-                        let image = match source.export_replica_image() {
-                            Ok(image) => image,
+                        let decisions = match source.export_replica_delta(
+                            &mut state
+                                .components
+                                .get_mut(&component)
+                                .expect("snapshot component")
+                                .cursor,
+                            state.options.max_delta_bytes,
+                        ) {
+                            Ok(decisions) => decisions,
                             Err(_) => {
-                                state.restart("decision_image_budget");
+                                state.restart("decision_delta_budget");
                                 break;
                             }
                         };
-                        let payload = match image.transport_payload(state.options.max_delta_bytes) {
-                            Ok(payload) => payload,
-                            Err(_) => {
-                                state.restart("delta_bytes");
-                                break;
-                            }
-                        };
+                        let payload =
+                            match decisions.transport_payload(state.options.max_delta_bytes) {
+                                Ok(payload) => payload,
+                                Err(_) => {
+                                    state.restart("delta_bytes");
+                                    break;
+                                }
+                            };
                         if state.deltas.len() == state.options.max_delta_images
                             || state
                                 .delta_bytes()
@@ -926,7 +955,7 @@ impl ServiceClusterHarness {
                         state.captured.insert(component, actual);
                         state.deltas.push_back(DecisionDelta {
                             descriptor,
-                            image,
+                            decisions,
                             payload,
                         });
                         if state.phase == OnlineTransferPhase::Ready {

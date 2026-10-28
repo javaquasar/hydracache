@@ -6,6 +6,7 @@ use crate::value_plane_service_cluster_075::{ServiceClusterError, ServiceLinkFau
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ReadinessReason {
+    AuthenticationUnavailable,
     NamespaceFenced,
     Draining,
     OwnerUnavailable,
@@ -16,6 +17,7 @@ pub enum ReadinessReason {
 impl ReadinessReason {
     pub const fn label(self) -> &'static str {
         match self {
+            Self::AuthenticationUnavailable => "authentication_unavailable",
             Self::NamespaceFenced => "namespace_fenced",
             Self::Draining => "draining",
             Self::OwnerUnavailable => "owner_unavailable",
@@ -35,6 +37,8 @@ pub struct PartitionHealth {
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RuntimeHealth {
+    pub authentication_ready: bool,
+    pub replay: crate::value_plane_security_075::ReplayWindowObservations,
     pub production_enabled: bool,
     pub ready: bool,
     pub reasons: Vec<ReadinessReason>,
@@ -95,6 +99,10 @@ impl ClusterNamespaceRuntime {
     pub fn health(&self) -> Result<RuntimeHealth, ServiceClusterError> {
         let cluster = self.cluster.lock().unwrap();
         let mut reasons = std::collections::BTreeSet::new();
+        let authentication_ready = self.authentication.ready();
+        if !authentication_ready {
+            reasons.insert(ReadinessReason::AuthenticationUnavailable);
+        }
         let mut partitions = Vec::new();
         if cluster.is_namespace_fenced() {
             reasons.insert(ReadinessReason::NamespaceFenced);
@@ -146,6 +154,8 @@ impl ClusterNamespaceRuntime {
         let owners = cluster.aggregate_namespace_owners();
         drop(cluster);
         Ok(RuntimeHealth {
+            authentication_ready,
+            replay: self.authentication.replay_observations(),
             production_enabled: false,
             ready: reasons.is_empty(),
             reasons: reasons.into_iter().collect(),
@@ -177,6 +187,13 @@ impl ClusterNamespaceRuntime {
         permit: &crate::value_plane_cluster_admission_075::ClusterPermit,
         operation: &RuntimeMaintenance,
     ) -> Result<MaintenanceResult, ServiceClusterError> {
+        authenticated
+            .authorize(
+                crate::value_plane_security_075::GrantOperation::Admin,
+                &[],
+                true,
+            )
+            .map_err(|_| ServiceClusterError::Authorization("operation_policy"))?;
         let lane = if operation.repair_lane() {
             crate::value_plane_cluster_admission_075::ClusterLane::Repair
         } else {
@@ -188,11 +205,24 @@ impl ClusterNamespaceRuntime {
         self.sync_members()?;
         self.authentication
             .validate_principal(authenticated, self.logical_time())?;
-        let guard = self.authentication.guard(
+        use sha2::Digest;
+        let binding = crate::value_plane_cluster_admission_075::AdmissionBinding {
+            namespace: authenticated.address().namespace.clone(),
+            namespace_generation: authenticated.address().generation,
+            request_digest: sha2::Sha256::digest(format!("{operation:?}").as_bytes()).into(),
+            identity: None,
+            deadline: authenticated.runtime_proof().4,
+            grant_digest: authenticated.grant_digest(),
+        };
+        let _attempt = permit
+            .begin_invocation(binding.clone())
+            .map_err(|_| ServiceClusterError::Authorization("admission_receipt"))?;
+        let guard = self.authentication.guard_with_receipt(
             authenticated,
             permit.ticket(),
             permit.work().replica_bytes,
             None,
+            Some(permit.receipt_digest(&binding)),
         );
         if operation.repair_lane()
             && self.maintenance_replica_bound(operation)? > permit.work().replica_bytes

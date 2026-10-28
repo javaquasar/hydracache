@@ -110,6 +110,18 @@ fn retirement_fences_reclaim_completed_and_reject_old_retries() {
     limited.execute(request("destroy", b"", 2)).unwrap();
     assert_eq!(limited.resource_usage().outcomes, 0);
     assert_eq!(limited.resource_usage().values, 0);
+    let terminal_usage = limited.resource_usage();
+    let terminal_revision = limited.revision();
+    assert_eq!(
+        limited
+            .retire_outcomes("after-destroy", 1, 3)
+            .unwrap_err()
+            .kind(),
+        "map_destroyed"
+    );
+    assert_eq!(limited.resource_usage(), terminal_usage);
+    assert_eq!(limited.revision(), terminal_revision);
+    assert_eq!(limited.namespace_owners().retirement_fences, 0);
 }
 
 #[test]

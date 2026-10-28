@@ -22,6 +22,12 @@ pub use lifecycle::*;
 #[path = "value_plane_service_cluster_hooks_075.rs"]
 mod cluster_hooks;
 pub use cluster_hooks::*;
+#[path = "value_plane_service_replica_delta_075.rs"]
+mod replica_delta;
+pub use replica_delta::*;
+#[path = "value_plane_service_helpers_075.rs"]
+mod helpers;
+pub use helpers::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ServiceTtl {
@@ -345,6 +351,8 @@ struct ServiceState {
     pending_wakes: Vec<Waker>,
     active_streams: usize,
     active_cursors: usize,
+    helper_bytes: usize,
+    helper_leases: usize,
     limits: ServiceLimits,
     resync_bytes: usize,
     resync_leases: usize,
@@ -439,6 +447,8 @@ impl UnifiedIMapService {
                 cancellations: 0,
                 pending_wakes: Vec::new(),
                 active_streams: 0,
+                helper_bytes: 0,
+                helper_leases: 0,
                 active_cursors: 0,
                 limits,
                 resync_bytes: 0,
@@ -792,6 +802,7 @@ fn check_stream_admission(state: &ServiceState) -> Result<(), MapServiceError> {
         .active_streams
         .checked_add(1)
         .and_then(|count| count.checked_mul(stream_bytes))
+        .and_then(|bytes| bytes.checked_add(state.helper_bytes))
         .ok_or(MapServiceError::ResourceBudget("streams"))?;
     lifecycle::budget("streams", state.limits.stream_bytes, total)
 }

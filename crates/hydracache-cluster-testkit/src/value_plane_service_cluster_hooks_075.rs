@@ -15,12 +15,12 @@ pub struct ReplicaStamp {
 
 #[derive(Debug)]
 pub struct ServiceReplicaImage {
-    map: Option<ReferenceCollectionMap>,
-    generation: u64,
-    now: u64,
-    watermark: u64,
-    stamp: ReplicaStamp,
-    lease: ByteLease,
+    pub(super) map: Option<ReferenceCollectionMap>,
+    pub(super) generation: u64,
+    pub(super) now: u64,
+    pub(super) watermark: u64,
+    pub(super) stamp: ReplicaStamp,
+    pub(super) lease: ByteLease,
 }
 
 impl ServiceReplicaImage {
@@ -54,14 +54,14 @@ impl ServiceReplicaImage {
     }
 }
 
-struct BoundedDebug {
-    bytes: Vec<u8>,
-    maximum: usize,
+pub(super) struct BoundedDebug {
+    pub(super) bytes: Vec<u8>,
+    pub(super) maximum: usize,
 }
 
-struct CountingDebug {
-    bytes: usize,
-    maximum: usize,
+pub(super) struct CountingDebug {
+    pub(super) bytes: usize,
+    pub(super) maximum: usize,
 }
 impl fmt::Write for CountingDebug {
     fn write_str(&mut self, value: &str) -> fmt::Result {
@@ -96,11 +96,19 @@ impl fmt::Write for HashDebug {
     }
 }
 
-fn stamp(map: &ReferenceCollectionMap, generation: u64, now: u64, watermark: u64) -> ReplicaStamp {
+pub(super) fn stamp(
+    map: &ReferenceCollectionMap,
+    generation: u64,
+    now: u64,
+    watermark: u64,
+) -> ReplicaStamp {
     let mut writer = HashDebug(Sha256::new());
     fmt::Write::write_fmt(
         &mut writer,
-        format_args!("{generation}:{now}:{watermark}:{map:?}"),
+        format_args!(
+            "{generation}:{now}:{watermark}:{:?}",
+            map.service_replication_debug()
+        ),
     )
     .expect("hash writer cannot fail");
     ReplicaStamp {
@@ -120,7 +128,10 @@ pub(super) fn require_replication_capacity(state: &ServiceState) -> Result<(), M
     }
 }
 
-fn current_stamp(state: &mut ServiceState) -> Result<ReplicaStamp, MapServiceError> {
+pub(super) fn current_stamp(state: &mut ServiceState) -> Result<ReplicaStamp, MapServiceError> {
+    if !state.map.service_index_valid() {
+        return Err(MapServiceError::InvalidArgument);
+    }
     let mut result = stamp(
         &state.map,
         state.namespace_generation,
@@ -186,7 +197,7 @@ fn owners(state: &ServiceState) -> NamespaceOwners {
         retirement_fences,
         pending,
         listeners: state.listeners.len(),
-        streams: state.active_streams,
+        streams: state.active_streams.saturating_add(state.helper_leases),
         resync_leases: state.resync_leases,
         resync_bytes: state.resync_bytes,
     }
@@ -446,21 +457,38 @@ impl UnifiedIMapService {
         current_stamp(&mut state)
     }
 
+    /// Only the test coordinator journal may replicate admitted Pending decisions.
+    pub fn journal_replica_stamp(&self) -> Result<ReplicaStamp, MapServiceError> {
+        let mut state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
+        current_stamp(&mut state)
+    }
+
     /// The image retains a charged clone until installed or dropped. Live registrations are
     /// deliberately excluded; a new owner must register and resynchronize its own listeners.
     pub fn export_replica_image(&self) -> Result<ServiceReplicaImage, MapServiceError> {
+        self.export_decision_image(false)
+    }
+    pub fn export_journal_image(&self) -> Result<ServiceReplicaImage, MapServiceError> {
+        self.export_decision_image(true)
+    }
+    fn export_decision_image(
+        &self,
+        allow_pending: bool,
+    ) -> Result<ServiceReplicaImage, MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
         require_namespace(&state)?;
         if state.resync_leases >= state.map.service_bounds().max_entries {
             return Err(MapServiceError::Capacity);
         }
-        if state.map.service_pending_count() != 0 {
+        if !allow_pending && state.map.service_pending_count() != 0 {
             return Err(MapServiceError::ActiveOwners);
         }
         let used = lifecycle::usage(&state);
         let bytes = used
             .values
             .checked_add(used.outcomes)
+            .and_then(|n| n.checked_add(used.pending))
             .and_then(|n| n.checked_add(256))
             .ok_or(MapServiceError::ResourceBudget("resync"))?;
         budget(
@@ -492,7 +520,20 @@ impl UnifiedIMapService {
     /// TTL directive, or mutation identity is evaluated again on the backup.
     pub fn install_replica_image(
         &self,
+        image: ServiceReplicaImage,
+    ) -> Result<ReplicaStamp, MapServiceError> {
+        self.install_decision_image(image, false)
+    }
+    pub fn install_journal_image(
+        &self,
+        image: ServiceReplicaImage,
+    ) -> Result<ReplicaStamp, MapServiceError> {
+        self.install_decision_image(image, true)
+    }
+    fn install_decision_image(
+        &self,
         mut image: ServiceReplicaImage,
+        allow_pending: bool,
     ) -> Result<ReplicaStamp, MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
         require_namespace(&state)?;
@@ -505,16 +546,22 @@ impl UnifiedIMapService {
             || actual.namespace_generation != image.stamp.namespace_generation
             || actual.revision != image.stamp.revision
             || image.stamp.sequence == 0
-            || map.service_pending_count() != 0
+            || (!allow_pending && map.service_pending_count() != 0)
+            || !map.service_index_valid()
         {
             return Err(MapServiceError::InvalidArgument);
         }
-        if owners(&state).blocked_owners() != 0 || !state.listeners.is_empty() {
+        let owned = owners(&state);
+        if (!allow_pending && owned.pending != 0)
+            || owned.streams != 0
+            || owned.resync_leases != 0
+            || !state.listeners.is_empty()
+        {
             return Err(MapServiceError::ActiveOwners);
         }
         let occupied = state.map.service_owner_counts();
         if state.map.service_map_id() != image.stamp.map_id {
-            if occupied.0 != 0 || occupied.1 != 0 || occupied.2 != 0 {
+            if occupied.0 != 0 || occupied.1 != 0 || occupied.2 != 0 || occupied.3 != 0 {
                 return Err(MapServiceError::InvalidArgument);
             }
         } else {
@@ -536,6 +583,11 @@ impl UnifiedIMapService {
         )?;
         budget("outcomes", state.limits.outcome_bytes, outcomes)?;
         budget("pending", state.limits.pending_bytes, pending)?;
+        budget(
+            "retirement_clients",
+            state.limits.max_clients,
+            map.service_fences().len(),
+        )?;
         state.map = image.map.take().expect("validated replica image");
         state.now = image.now;
         state.watermark = image.watermark;

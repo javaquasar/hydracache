@@ -43,6 +43,9 @@ pub enum SecurityError {
     ValueTooLarge { limit: usize, actual: usize },
     ReplayCapacityExhausted,
     ReplayDigestConflict,
+    ReplayTooOld,
+    PermissionDenied,
+    PolicyEpochMismatch,
     InvalidReplicaProof,
     AuditCapacityExhausted,
 }
@@ -233,6 +236,297 @@ impl ReplayGuard {
         }
         self.digests.insert(identity, digest);
         Ok(ReplayDisposition::New)
+    }
+}
+
+/// An active lane keeps its monotonic retirement fence even when it retains no digest.
+/// Callers may remove a lane only after its member generation or trust epoch is rejected.
+#[derive(Debug, Clone)]
+pub struct ReplayWindow {
+    maximum: usize,
+    maximum_lanes: usize,
+    lanes: BTreeMap<String, ReplayLane>,
+    observations: ReplayWindowObservations,
+}
+#[derive(Debug, Clone, Default)]
+struct ReplayLane {
+    floor: u64,
+    digests: BTreeMap<u64, [u8; 32]>,
+}
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ReplayWindowObservations {
+    pub retained: usize,
+    pub lanes: usize,
+    pub retired: u64,
+    pub accepted: u64,
+    pub replays: u64,
+    pub stale: u64,
+    pub conflicts: u64,
+}
+impl ReplayWindow {
+    pub fn new(maximum: usize, maximum_lanes: usize) -> Result<Self, SecurityError> {
+        if maximum == 0 || maximum > 65_536 || maximum_lanes == 0 || maximum_lanes > 128 {
+            return Err(SecurityError::InvalidBound("replay_window"));
+        }
+        Ok(Self {
+            maximum,
+            maximum_lanes,
+            lanes: BTreeMap::new(),
+            observations: ReplayWindowObservations::default(),
+        })
+    }
+    pub fn admit(
+        &mut self,
+        lane: &str,
+        nonce: u64,
+        payload: &[u8],
+    ) -> Result<ReplayDisposition, SecurityError> {
+        if lane.len() > 256 || lane.is_empty() {
+            return Err(SecurityError::InvalidBound("replay_lane"));
+        }
+        let digest = fingerprint(payload);
+        if let Some(current) = self.lanes.get(lane) {
+            if nonce <= current.floor {
+                self.observations.stale = self.observations.stale.saturating_add(1);
+                return Err(SecurityError::ReplayTooOld);
+            }
+            if let Some(previous) = current.digests.get(&nonce) {
+                if previous != &digest {
+                    self.observations.conflicts = self.observations.conflicts.saturating_add(1);
+                    return Err(SecurityError::ReplayDigestConflict);
+                }
+                self.observations.replays = self.observations.replays.saturating_add(1);
+                return Ok(ReplayDisposition::ExactReplay);
+            }
+        } else if self.lanes.len() == self.maximum_lanes {
+            return Err(SecurityError::ReplayCapacityExhausted);
+        }
+        if nonce == 0 {
+            return Err(SecurityError::ReplayTooOld);
+        }
+        if self.observations.retained == self.maximum {
+            let victim = self
+                .lanes
+                .iter()
+                .filter_map(|(name, current)| {
+                    current
+                        .digests
+                        .first_key_value()
+                        .map(|(nonce, _)| (*nonce, name.clone()))
+                })
+                .min()
+                .expect("full replay window");
+            if victim.1 == lane && nonce <= victim.0 {
+                self.observations.stale = self.observations.stale.saturating_add(1);
+                return Err(SecurityError::ReplayTooOld);
+            }
+            let current = self.lanes.get_mut(&victim.1).expect("replay victim");
+            current.digests.remove(&victim.0);
+            current.floor = current.floor.max(victim.0);
+            self.observations.retired = self.observations.retired.saturating_add(1);
+            self.observations.retained -= 1;
+        }
+        self.lanes
+            .entry(lane.into())
+            .or_default()
+            .digests
+            .insert(nonce, digest);
+        self.observations.retained += 1;
+        self.observations.accepted = self.observations.accepted.saturating_add(1);
+        self.observations.lanes = self.lanes.len();
+        Ok(ReplayDisposition::New)
+    }
+    pub(crate) fn retain_lanes(&mut self, mut active: impl FnMut(&str) -> bool) {
+        self.lanes.retain(|name, _| active(name));
+        self.observations.retained = self.lanes.values().map(|lane| lane.digests.len()).sum();
+        self.observations.lanes = self.lanes.len();
+    }
+    pub fn observations(&self) -> ReplayWindowObservations {
+        self.observations
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GrantOperation {
+    Read,
+    Write,
+    Listen,
+    Admin,
+}
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct GrantRights {
+    pub read: bool,
+    pub write: bool,
+    pub listen: bool,
+    pub admin: bool,
+}
+impl GrantRights {
+    pub const ALL: Self = Self {
+        read: true,
+        write: true,
+        listen: true,
+        admin: true,
+    };
+    fn contains(self, rights: Self) -> bool {
+        (!rights.read || self.read)
+            && (!rights.write || self.write)
+            && (!rights.listen || self.listen)
+            && (!rights.admin || self.admin)
+    }
+    pub fn permits(self, operation: GrantOperation) -> bool {
+        match operation {
+            GrantOperation::Read => self.read,
+            GrantOperation::Write => self.write,
+            GrantOperation::Listen => self.listen,
+            GrantOperation::Admin => self.admin,
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GrantKeys {
+    All,
+    Prefixes(Vec<Vec<u8>>),
+}
+#[derive(Clone, PartialEq, Eq)]
+pub struct NamespaceGrant {
+    tenant: String,
+    namespace: String,
+    generation: u64,
+    epoch: u64,
+    rights: GrantRights,
+    keys: GrantKeys,
+}
+impl std::fmt::Debug for NamespaceGrant {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("NamespaceGrant")
+            .field("epoch", &self.epoch)
+            .field("rights", &self.rights)
+            .field("scope", &"[redacted]")
+            .finish()
+    }
+}
+impl NamespaceGrant {
+    pub fn new(
+        tenant: &str,
+        namespace: &str,
+        generation: u64,
+        epoch: u64,
+        rights: GrantRights,
+        keys: GrantKeys,
+    ) -> Result<Self, SecurityError> {
+        if tenant.is_empty()
+            || namespace.is_empty()
+            || tenant.len() > 128
+            || namespace.len() > 128
+            || generation == 0
+            || epoch == 0
+        {
+            return Err(SecurityError::InvalidBound("grant_identity"));
+        }
+        if let GrantKeys::Prefixes(prefixes) = &keys {
+            if prefixes.is_empty()
+                || prefixes.len() > 16
+                || prefixes
+                    .iter()
+                    .any(|prefix| prefix.is_empty() || prefix.len() > 4_096)
+                || prefixes.iter().map(Vec::len).sum::<usize>() > 16_384
+            {
+                return Err(SecurityError::InvalidBound("grant_keys"));
+            }
+        }
+        Ok(Self {
+            tenant: tenant.into(),
+            namespace: namespace.into(),
+            generation,
+            epoch,
+            rights,
+            keys,
+        })
+    }
+    pub fn epoch(&self) -> u64 {
+        self.epoch
+    }
+    pub fn owned_bytes(&self) -> usize {
+        64 + self.tenant.len()
+            + self.namespace.len()
+            + match &self.keys {
+                GrantKeys::All => 0,
+                GrantKeys::Prefixes(prefixes) => {
+                    prefixes.iter().map(|prefix| 24 + prefix.len()).sum()
+                }
+            }
+    }
+    pub fn matches(&self, tenant: &str, namespace: &str, generation: u64) -> bool {
+        self.tenant == tenant && self.namespace == namespace && self.generation == generation
+    }
+    pub fn key_allowed(&self, key: &[u8]) -> bool {
+        match &self.keys {
+            GrantKeys::All => true,
+            GrantKeys::Prefixes(prefixes) => prefixes.iter().any(|prefix| key.starts_with(prefix)),
+        }
+    }
+    pub fn all_keys(&self) -> bool {
+        matches!(self.keys, GrantKeys::All)
+    }
+    pub fn authorize(
+        &self,
+        operation: GrantOperation,
+        keys: &[Vec<u8>],
+        map_wide: bool,
+    ) -> Result<(), SecurityError> {
+        if !self.rights.permits(operation)
+            || (map_wide && !self.all_keys())
+            || keys.iter().any(|key| !self.key_allowed(key))
+        {
+            return Err(SecurityError::PermissionDenied);
+        }
+        Ok(())
+    }
+    pub fn attenuate(&self, rights: GrantRights, keys: GrantKeys) -> Result<Self, SecurityError> {
+        if !self.rights.contains(rights)
+            || match &keys {
+                GrantKeys::All => !self.all_keys(),
+                GrantKeys::Prefixes(prefixes) => {
+                    prefixes.iter().any(|prefix| !self.key_allowed(prefix))
+                }
+            }
+        {
+            return Err(SecurityError::PermissionDenied);
+        }
+        Self::new(
+            &self.tenant,
+            &self.namespace,
+            self.generation,
+            self.epoch,
+            rights,
+            keys,
+        )
+    }
+    pub fn digest(&self) -> [u8; 32] {
+        let mut hash = Sha256::new();
+        for value in [&self.tenant, &self.namespace] {
+            hash.update(value.len().to_le_bytes());
+            hash.update(value.as_bytes());
+        }
+        hash.update(self.generation.to_le_bytes());
+        hash.update(self.epoch.to_le_bytes());
+        hash.update([
+            self.rights.read as u8,
+            self.rights.write as u8,
+            self.rights.listen as u8,
+            self.rights.admin as u8,
+        ]);
+        match &self.keys {
+            GrantKeys::All => hash.update([0]),
+            GrantKeys::Prefixes(prefixes) => {
+                hash.update([1]);
+                for prefix in prefixes {
+                    hash.update(prefix.len().to_le_bytes());
+                    hash.update(prefix);
+                }
+            }
+        }
+        hash.finalize().into()
     }
 }
 

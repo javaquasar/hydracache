@@ -120,9 +120,14 @@ impl ClusterNamespaceRuntime {
         &self,
         authenticated: &AuthenticatedNamespace,
         permit: &ClusterPermit,
-        command: ServiceCommand,
+        mut command: ServiceCommand,
         options: Option<&RuntimeCallOptions>,
     ) -> Result<ServiceClusterExecution, ServiceClusterError> {
+        authenticated
+            .authorize_command(&command)
+            .map_err(|_| ServiceClusterError::Authorization("operation_policy"))?;
+        self.authentication
+            .validate_principal(authenticated, command.now)?;
         if permit.work().lane != ClusterLane::Data
             || permit.work().tenant != authenticated.address().tenant
             || !permit.keys_match(
@@ -135,16 +140,22 @@ impl ClusterNamespaceRuntime {
         {
             return Err(ServiceClusterError::Authorization("admission_binding"));
         }
+        command.deadline = command.deadline.min(authenticated.runtime_proof().4);
+        let binding = self.admission_binding(authenticated, &command);
+        let _attempt = permit
+            .begin_invocation(binding.clone())
+            .map_err(|_| ServiceClusterError::Authorization("admission_receipt"))?;
         if self.command_replica_bound(&command)? > permit.work().replica_bytes {
             return Err(ServiceClusterError::Authorization("replica_credit"));
         }
         let options = options.cloned().unwrap_or_default();
         self.sync_members()?;
-        let guard = self.authentication.guard(
+        let guard = self.authentication.guard_with_receipt(
             authenticated,
             permit.ticket(),
             permit.work().replica_bytes,
             options.auth_fault,
+            Some(permit.receipt_digest(&binding)),
         );
         let mut cluster = self.cluster.lock().expect("cluster runtime poisoned");
         let result = cluster.execute_guarded(
@@ -162,6 +173,20 @@ impl ClusterNamespaceRuntime {
             wake.wake();
         }
         result
+    }
+    pub fn admission_binding(
+        &self,
+        authenticated: &AuthenticatedNamespace,
+        command: &ServiceCommand,
+    ) -> crate::value_plane_cluster_admission_075::AdmissionBinding {
+        crate::value_plane_cluster_admission_075::AdmissionBinding {
+            namespace: authenticated.address().namespace.clone(),
+            namespace_generation: authenticated.address().generation,
+            request_digest: command.test_request_digest(),
+            identity: command.identity.clone(),
+            deadline: command.deadline.min(authenticated.runtime_proof().4),
+            grant_digest: authenticated.grant_digest(),
+        }
     }
     pub fn logical_time(&self) -> u64 {
         self.cluster.lock().unwrap().logical_time()
@@ -314,6 +339,89 @@ impl ClusterNamespaceRuntime {
     ) -> Result<(), ServiceClusterError> {
         Err(ServiceClusterError::UnsupportedScope)
     }
+    pub fn reserve_invocation(
+        &self,
+        authenticated: &AuthenticatedNamespace,
+        permit: &ClusterPermit,
+        command: &ServiceCommand,
+        options: Option<&RuntimeCallOptions>,
+    ) -> Result<(), ServiceClusterError> {
+        authenticated
+            .authorize_command(command)
+            .map_err(|_| ServiceClusterError::Authorization("operation_policy"))?;
+        self.authentication
+            .validate_principal(authenticated, command.now)?;
+        if permit.work().lane != ClusterLane::Data
+            || permit.work().tenant != authenticated.address().tenant
+            || !permit
+                .keys_match(&crate::value_plane_service_registry_075::runtime_command_keys(command))
+            || self
+                .affected_partitions(command)
+                .iter()
+                .any(|partition| !permit.partitions().contains(partition))
+        {
+            return Err(ServiceClusterError::Authorization("admission_binding"));
+        }
+        if self.command_replica_bound(command)? > permit.work().replica_bytes {
+            return Err(ServiceClusterError::Authorization("replica_credit"));
+        }
+        let binding = self.admission_binding(authenticated, command);
+        let _attempt = permit
+            .begin_invocation(binding.clone())
+            .map_err(|_| ServiceClusterError::Authorization("admission_receipt"))?;
+        self.sync_members()?;
+        let options = options.cloned().unwrap_or_default();
+        let guard = self.authentication.guard_with_receipt(
+            authenticated,
+            permit.ticket(),
+            permit.work().replica_bytes,
+            options.auth_fault,
+            Some(permit.receipt_digest(&binding)),
+        );
+        self.with_cluster_wakes(|cluster| {
+            cluster.reserve_operation_guarded(
+                options
+                    .entry_node
+                    .as_deref()
+                    .unwrap_or(&self.config.entry_node),
+                command,
+                guard,
+            )
+        })
+    }
+    pub(crate) fn recover_invocation(
+        &self,
+        authenticated: &AuthenticatedNamespace,
+        command: &ServiceCommand,
+    ) -> Result<ServiceRecovery, ServiceClusterError> {
+        self.authentication
+            .validate_principal(authenticated, command.now)?;
+        authenticated
+            .authorize_command(command)
+            .map_err(|_| ServiceClusterError::Authorization("operation_policy"))?;
+        self.cluster.lock().unwrap().recover_invocation(command)
+    }
+    pub(crate) fn recovered_execution(
+        &self,
+        command: &ServiceCommand,
+        result: ServiceResult,
+    ) -> ServiceClusterExecution {
+        let partitions = self.affected_partitions(command);
+        let cluster = self.cluster.lock().unwrap();
+        let proved = partitions
+            .iter()
+            .all(|partition| cluster.backup_proved(*partition));
+        ServiceClusterExecution {
+            result,
+            replayed: true,
+            backup_proved: proved,
+            routes: partitions
+                .iter()
+                .filter_map(|partition| cluster.assignment(*partition))
+                .collect(),
+            failure: (!proved).then_some(ServiceClusterError::ReplicaNotProved),
+        }
+    }
     pub fn page_source(
         &self,
         projection: ScanProjection,
@@ -344,6 +452,9 @@ impl ClusterNamespaceRuntime {
         authenticated: &AuthenticatedNamespace,
         options: ClusterSubscriptionOptions,
     ) -> Result<ClusterListenerSource, ServiceClusterError> {
+        authenticated
+            .authorize_listener(&options.listener)
+            .map_err(|_| ServiceClusterError::Authorization("operation_policy"))?;
         self.authentication
             .validate_principal(authenticated, self.logical_time())?;
         ClusterListenerSource::new(Arc::clone(&self.cluster), options)
@@ -373,6 +484,20 @@ impl ClusterNamespaceRuntime {
         maximum_items: usize,
         maximum_bytes: usize,
     ) -> Result<ClusterSubscriptionSnapshot, ServiceClusterError> {
+        authenticated
+            .authorize(
+                crate::value_plane_security_075::GrantOperation::Listen,
+                &[],
+                true,
+            )
+            .map_err(|_| ServiceClusterError::Authorization("operation_policy"))?;
+        authenticated
+            .authorize(
+                crate::value_plane_security_075::GrantOperation::Read,
+                &[],
+                true,
+            )
+            .map_err(|_| ServiceClusterError::Authorization("operation_policy"))?;
         self.authentication.validate_principal(authenticated, now)?;
         let mut cluster = self.cluster.lock().unwrap();
         let result = cluster.resync_subscription(id, now, maximum_items, maximum_bytes);

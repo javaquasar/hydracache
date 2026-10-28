@@ -10,6 +10,12 @@ use sha2::{Digest, Sha256};
 
 use crate::value_plane_model_075::MutationIdentity;
 
+#[path = "value_plane_collection_delta_075.rs"]
+mod replica_delta;
+pub(crate) use replica_delta::{
+    CollectionDeltaMeasure, CollectionReplicaCursor, CollectionReplicaPatch,
+};
+
 static NEXT_MAP_ID: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

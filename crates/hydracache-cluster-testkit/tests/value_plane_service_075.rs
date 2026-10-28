@@ -39,6 +39,49 @@ fn view(service: &UnifiedIMapService) -> ServiceResult {
 }
 
 #[test]
+fn conflicting_cancelled_and_expired_commands_cannot_abandon_another_pending_request() {
+    for reserved in [false, true] {
+        for cancelled in [false, true] {
+            let service = service();
+            let mut seed = command("put", 1);
+            seed.ttl = ServiceTtl::ExpireAfter(1);
+            service.execute(seed).unwrap();
+            let listener = service
+                .register_listener(ServiceListenerOptions::default())
+                .unwrap();
+            let mut original = command("put", 2);
+            original.key = b"b".to_vec();
+            service.reserve_operation(id(2), &original).unwrap();
+            let resources = service.resource_usage();
+            let revision = service.revision();
+            let mut conflicting = original.clone();
+            conflicting.value = Some(b"conflicting".to_vec());
+            conflicting.now = 1;
+            conflicting.deadline = if cancelled { 10 } else { 1 };
+            conflicting.cancelled = cancelled;
+            let result = if reserved {
+                service.execute_reserved(conflicting)
+            } else {
+                service.execute(conflicting)
+            };
+            assert_eq!(result.unwrap_err().kind(), "mutation_identity_conflict");
+            assert_eq!(service.resource_usage(), resources);
+            assert_eq!(service.revision(), revision);
+            assert_eq!(service.logical_time(), 0);
+            assert_eq!(service.statistics().cancellations, 0);
+            assert!(listener.drain().unwrap().is_empty());
+            assert_eq!(
+                service.query_operation_outcome(&id(2)).unwrap(),
+                OperationOutcomeQuery::Pending
+            );
+            assert_eq!(service.execute_reserved(original).unwrap().kind, "inserted");
+            assert_eq!(service.statistics().inflight, 0);
+            assert_eq!(service.diagnostic_snapshot(0).unwrap().len(), 2);
+        }
+    }
+}
+
+#[test]
 fn existing_collection_values_and_retained_receipts_share_the_service_owner() {
     let mut collection = ReferenceCollectionMap::new(CollectionBounds::default()).unwrap();
     collection

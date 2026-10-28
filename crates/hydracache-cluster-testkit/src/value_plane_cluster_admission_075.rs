@@ -1,9 +1,11 @@
 //! Runtime-only admission for actual cluster work. Byte credits describe logical owned
 //! payload, not RSS. A permit owns its credits until the real operation finishes or drops.
+use crate::value_plane_model_075::MutationIdentity;
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 use std::fmt;
 use std::sync::{Arc, Mutex};
+use std::task::Waker;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ClusterLane {
@@ -78,6 +80,8 @@ pub enum ClusterAdmissionError {
     InvalidBound,
     InvalidWork,
     Exhausted(&'static str),
+    ReceiptConflict,
+    InvocationInFlight,
 }
 impl fmt::Display for ClusterAdmissionError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -105,6 +109,7 @@ struct Job {
     running: bool,
 }
 struct State {
+    waiters: BTreeMap<u64, Waker>,
     bounds: ClusterAdmissionBounds,
     jobs: BTreeMap<u64, Job>,
     next: u64,
@@ -120,15 +125,51 @@ pub struct ClusterAdmission {
     state: Arc<Mutex<State>>,
 }
 pub struct ClusterPermit {
-    state: Arc<Mutex<State>>,
-    ticket: u64,
+    credits: Arc<PermitCredits>,
     work: Arc<ClusterWork>,
     partitions: Arc<[u32]>,
     keys: Arc<[[u8; 32]]>,
 }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AdmissionBinding {
+    pub namespace: String,
+    pub namespace_generation: u64,
+    pub request_digest: [u8; 32],
+    pub identity: Option<MutationIdentity>,
+    pub deadline: u64,
+    pub grant_digest: Option<[u8; 32]>,
+}
+struct PermitCredits {
+    state: Arc<Mutex<State>>,
+    ticket: u64,
+    attempt: Mutex<(Option<AdmissionBinding>, bool)>,
+}
+/// One physical attempt borrows the same logical receipt. Credits outlive either owner.
+pub struct ClusterAttempt {
+    credits: Arc<PermitCredits>,
+}
+impl Drop for ClusterAttempt {
+    fn drop(&mut self) {
+        self.credits.attempt.lock().unwrap().1 = false;
+    }
+}
+impl Drop for PermitCredits {
+    fn drop(&mut self) {
+        let mut state = self.state.lock().unwrap();
+        if state.jobs.remove(&self.ticket).is_some() {
+            state.released = state.released.saturating_add(1);
+        }
+        state.waiters.remove(&self.ticket);
+        let wakes = std::mem::take(&mut state.waiters);
+        drop(state);
+        for wake in wakes.into_values() {
+            wake.wake();
+        }
+    }
+}
 impl ClusterPermit {
-    pub const fn ticket(&self) -> u64 {
-        self.ticket
+    pub fn ticket(&self) -> u64 {
+        self.credits.ticket
     }
     pub fn work(&self) -> &ClusterWork {
         &self.work
@@ -143,13 +184,67 @@ impl ClusterPermit {
     pub fn finish(self) {
         drop(self);
     }
-}
-impl Drop for ClusterPermit {
-    fn drop(&mut self) {
-        let mut state = self.state.lock().unwrap();
-        if state.jobs.remove(&self.ticket).is_some() {
-            state.released = state.released.saturating_add(1);
+    pub fn begin_invocation(
+        &self,
+        binding: AdmissionBinding,
+    ) -> Result<ClusterAttempt, ClusterAdmissionError> {
+        if binding.namespace.is_empty()
+            || binding.namespace.len() > 128
+            || binding.namespace_generation == 0
+            || binding
+                .identity
+                .as_ref()
+                .is_some_and(|identity| identity.client.len() > 128)
+        {
+            return Err(ClusterAdmissionError::InvalidWork);
         }
+        let mut state = self.credits.attempt.lock().unwrap();
+        if state
+            .0
+            .as_ref()
+            .is_some_and(|previous| previous != &binding)
+        {
+            return Err(ClusterAdmissionError::ReceiptConflict);
+        }
+        if state.1 {
+            return Err(ClusterAdmissionError::InvocationInFlight);
+        }
+        state.0 = Some(binding);
+        state.1 = true;
+        Ok(ClusterAttempt {
+            credits: Arc::clone(&self.credits),
+        })
+    }
+    pub fn receipt_digest(&self, binding: &AdmissionBinding) -> [u8; 32] {
+        let mut hash = Sha256::new();
+        hash.update(self.ticket().to_le_bytes());
+        for value in [self.work.tenant.as_bytes(), binding.namespace.as_bytes()] {
+            hash.update((value.len() as u64).to_le_bytes());
+            hash.update(value);
+        }
+        hash.update(binding.namespace_generation.to_le_bytes());
+        hash.update(binding.request_digest);
+        hash.update(binding.deadline.to_le_bytes());
+        hash.update([binding.grant_digest.is_some() as u8]);
+        hash.update(binding.grant_digest.unwrap_or([0; 32]));
+        hash.update([binding.identity.is_some() as u8]);
+        if let Some(identity) = &binding.identity {
+            hash.update((identity.client.len() as u64).to_le_bytes());
+            hash.update(identity.client.as_bytes());
+            hash.update(identity.sequence.to_le_bytes());
+        }
+        hash.update((self.work.bytes as u64).to_le_bytes());
+        hash.update((self.work.replica_bytes as u64).to_le_bytes());
+        hash.update([self.work.lane.index() as u8]);
+        hash.update((self.partitions.len() as u64).to_le_bytes());
+        for partition in self.partitions.iter() {
+            hash.update(partition.to_le_bytes());
+        }
+        hash.update((self.keys.len() as u64).to_le_bytes());
+        for key in self.keys.iter() {
+            hash.update(key);
+        }
+        hash.finalize().into()
     }
 }
 impl ClusterAdmission {
@@ -179,6 +274,7 @@ impl ClusterAdmission {
         }
         Ok(Self {
             state: Arc::new(Mutex::new(State {
+                waiters: BTreeMap::new(),
                 bounds,
                 jobs: BTreeMap::new(),
                 next: 1,
@@ -304,6 +400,34 @@ impl ClusterAdmission {
         Ok(ticket)
     }
     pub fn pop(&self) -> Result<Option<ClusterPermit>, ClusterAdmissionError> {
+        self.pop_selected(None, &[])
+    }
+    pub fn pop_for(&self, ticket: u64) -> Result<Option<ClusterPermit>, ClusterAdmissionError> {
+        self.pop_selected(Some(ticket), &[])
+    }
+    pub fn pop_except(
+        &self,
+        excluded: &[u64],
+    ) -> Result<Option<ClusterPermit>, ClusterAdmissionError> {
+        self.pop_selected(None, excluded)
+    }
+    pub fn register_waiter(&self, ticket: u64, waker: &Waker) {
+        let mut state = self.state.lock().unwrap();
+        if state.jobs.contains_key(&ticket) {
+            state.waiters.insert(ticket, waker.clone());
+        }
+    }
+    pub fn wake_waiters(&self) {
+        let wakes = std::mem::take(&mut self.state.lock().unwrap().waiters);
+        for wake in wakes.into_values() {
+            wake.wake();
+        }
+    }
+    fn pop_selected(
+        &self,
+        expected: Option<u64>,
+        excluded: &[u64],
+    ) -> Result<Option<ClusterPermit>, ClusterAdmissionError> {
         let mut state = self.state.lock().unwrap();
         state.tick = state
             .tick
@@ -391,6 +515,9 @@ impl ClusterAdmission {
         let Some((ticket, lane)) = selected else {
             return Ok(None);
         };
+        if expected.is_some_and(|expected| expected != ticket) || excluded.contains(&ticket) {
+            return Ok(None);
+        }
         let tick = state.tick;
         let job = state.jobs.get_mut(&ticket).unwrap();
         job.running = true;
@@ -402,8 +529,11 @@ impl ClusterAdmission {
         state.last_tenant[lane] = Some(work.tenant.clone());
         state.lane = (lane + 1) % 3;
         Ok(Some(ClusterPermit {
-            state: self.state.clone(),
-            ticket,
+            credits: Arc::new(PermitCredits {
+                state: self.state.clone(),
+                ticket,
+                attempt: Mutex::new((None, false)),
+            }),
             work,
             partitions,
             keys,

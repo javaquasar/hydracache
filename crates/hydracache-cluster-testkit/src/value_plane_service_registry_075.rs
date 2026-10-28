@@ -25,7 +25,8 @@ use crate::value_plane_cluster_runtime_075::{
 use crate::value_plane_collection_075::{CollectionBounds, ScanProjection};
 use crate::value_plane_model_075::{MutationIdentity, MutationOperation, TtlDirective};
 use crate::value_plane_security_075::{
-    validate_route, RouteClaims, SecurityBounds, SecurityError, TrustEpochWindow,
+    validate_route, GrantKeys, GrantOperation, GrantRights, NamespaceGrant, RouteClaims,
+    SecurityBounds, SecurityError, TrustEpochWindow,
 };
 use crate::value_plane_service_075::{
     ListenerSnapshot, MapServiceError, NamespaceOwners, ServiceCommand, ServiceEvent, ServiceItem,
@@ -42,6 +43,10 @@ use crate::value_plane_surface_075::{
 };
 
 static NEXT_REGISTRY: AtomicU64 = AtomicU64::new(1);
+
+#[path = "value_plane_service_registry_invocation_075.rs"]
+mod invocation;
+pub use invocation::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RegistryBounds {
@@ -154,6 +159,7 @@ pub struct NamespaceAddress {
 /// replace it. Trust epoch, deadline, topology, and generation are checked again on use.
 #[derive(Debug, Clone)]
 pub struct AuthenticatedNamespace {
+    grant: Option<Arc<NamespaceGrant>>,
     address: NamespaceAddress,
     trust_epoch: u64,
     topology_epoch: u64,
@@ -204,6 +210,7 @@ impl AuthenticatedNamespace {
             .checked_add(claims.deadline_remaining_ticks)
             .ok_or(RegistryError::Security(SecurityError::DeadlineExpired))?;
         Ok(Self {
+            grant: None,
             address: NamespaceAddress {
                 tenant: verified.tenant.clone(),
                 namespace: verified.namespace.clone(),
@@ -220,6 +227,113 @@ impl AuthenticatedNamespace {
     }
     pub fn address(&self) -> &NamespaceAddress {
         &self.address
+    }
+    /// The caller supplying this immutable grant is the local trusted policy resolver.
+    pub fn with_grant(mut self, grant: NamespaceGrant) -> Result<Self, RegistryError> {
+        if !grant.matches(
+            &self.address.tenant,
+            &self.address.namespace,
+            self.address.generation,
+        ) || self.grant.is_some()
+        {
+            return Err(SecurityError::PermissionDenied.into());
+        }
+        self.grant = Some(Arc::new(grant));
+        Ok(self)
+    }
+    pub fn attenuate(&self, rights: GrantRights, keys: GrantKeys) -> Result<Self, RegistryError> {
+        let mut next = self.clone();
+        next.grant = Some(Arc::new(
+            self.grant
+                .as_ref()
+                .ok_or(SecurityError::PermissionDenied)?
+                .attenuate(rights, keys)?,
+        ));
+        Ok(next)
+    }
+    pub fn grant_digest(&self) -> Option<[u8; 32]> {
+        self.grant.as_ref().map(|grant| grant.digest())
+    }
+    pub fn policy_epoch(&self) -> Option<u64> {
+        self.grant.as_ref().map(|grant| grant.epoch())
+    }
+    pub(crate) fn authorize_command(&self, command: &ServiceCommand) -> Result<(), RegistryError> {
+        let Some(grant) = &self.grant else {
+            return Ok(());
+        };
+        let operation = match command.operation.as_str() {
+            "entry_listener" | "remove_entry_listener" => GrantOperation::Listen,
+            "clear_detailed" | "destroy" | "evict_all_detailed" => GrantOperation::Admin,
+            op if crate::value_plane_service_075::is_mutating_operation(op) => {
+                GrantOperation::Write
+            }
+            _ => GrantOperation::Read,
+        };
+        if matches!(
+            command.operation.as_str(),
+            "get_and_put"
+                | "get_and_remove"
+                | "replace_if_present"
+                | "conditional_replace"
+                | "conditional_remove"
+                | "replace_if_version"
+                | "put_if_absent"
+                | "remove_all_detailed"
+        ) {
+            grant.authorize(GrantOperation::Read, &runtime_command_keys(command), false)?;
+        }
+        if command.operation == "entry_listener" {
+            let filter = command.expected.as_ref().unwrap_or(&command.key);
+            grant.authorize(operation, std::slice::from_ref(filter), filter.is_empty())?;
+            if command.include_value {
+                grant.authorize(
+                    GrantOperation::Read,
+                    std::slice::from_ref(filter),
+                    filter.is_empty(),
+                )?;
+            }
+        } else {
+            let map_wide = matches!(
+                command.operation.as_str(),
+                "size"
+                    | "is_empty"
+                    | "contains_value_bounded"
+                    | "key_set_page"
+                    | "values_page"
+                    | "entry_set_page"
+                    | "clear_detailed"
+                    | "destroy"
+                    | "evict_all_detailed"
+                    | "query_operation_outcome"
+                    | "local_statistics"
+                    | "remove_entry_listener"
+            );
+            grant.authorize(operation, &runtime_command_keys(command), map_wide)?;
+        }
+        Ok(())
+    }
+    pub(crate) fn authorize(
+        &self,
+        operation: GrantOperation,
+        keys: &[Vec<u8>],
+        map_wide: bool,
+    ) -> Result<(), RegistryError> {
+        if let Some(grant) = &self.grant {
+            grant.authorize(operation, keys, map_wide)?;
+        }
+        Ok(())
+    }
+    pub(crate) fn authorize_listener(
+        &self,
+        options: &ServiceListenerOptions,
+    ) -> Result<(), RegistryError> {
+        let keys = std::slice::from_ref(options.exact_key.as_ref().unwrap_or(&options.key_prefix));
+        let wide = options.exact_key.is_none() && options.key_prefix.is_empty();
+        self.authorize(GrantOperation::Listen, keys, wide)?;
+        if options.include_value {
+            self.authorize(GrantOperation::Read, keys, wide)?;
+        }
+        Ok(())
     }
     pub(crate) fn runtime_proof(&self) -> (String, String, u64, u64, u64) {
         (
@@ -365,10 +479,22 @@ impl NamespaceBackend {
         &self,
         identity: MutationIdentity,
         command: &ServiceCommand,
+        authenticated: &AuthenticatedNamespace,
+        permit: Option<&ClusterPermit>,
     ) -> Result<(), RegistryError> {
         match self {
             Self::Local(service) => Ok(service.reserve_operation(identity, command)?),
-            Self::Cluster(service) => Ok(service.reserve_operation(identity, command)?),
+            Self::Cluster(service) => {
+                if command.identity.as_ref() != Some(&identity) {
+                    return Err(MapServiceError::InvalidArgument.into());
+                }
+                Ok(service.reserve_invocation(
+                    authenticated,
+                    permit.ok_or(ServiceClusterError::Authorization("admission_binding"))?,
+                    command,
+                    None,
+                )?)
+            }
         }
     }
     fn cancel_reserved(&self, identity: &MutationIdentity) -> Result<bool, RegistryError> {
@@ -456,6 +582,7 @@ impl NamespaceBackend {
 #[derive(Clone)]
 enum JobKind {
     Execute {
+        cooperative: bool,
         surface: SurfaceId,
         command: ServiceCommand,
         options: Option<RuntimeCallOptions>,
@@ -475,6 +602,8 @@ struct QueuedJob {
     admission: Option<u64>,
 }
 struct RegistryState {
+    active_invocations: BTreeMap<u64, (NamespaceAddress, usize, usize)>,
+    policy_epoch: Option<u64>,
     id: u64,
     bounds: RegistryBounds,
     collection: CollectionBounds,
@@ -503,6 +632,57 @@ pub struct UnifiedServiceRegistry {
 }
 
 impl UnifiedServiceRegistry {
+    /// Select strict policy mode, or revoke every older epoch. This cannot revert to legacy mode.
+    pub fn advance_policy_epoch(&self, next: u64) -> Result<(), RegistryError> {
+        let _dispatch = self
+            .dispatching
+            .try_lock()
+            .map_err(|_| RegistryError::DispatcherBusy)?;
+        let mut state = self.state.lock().unwrap();
+        if next == 0 || state.policy_epoch.is_some_and(|epoch| next <= epoch) {
+            return Err(SecurityError::PolicyEpochMismatch.into());
+        }
+        let services = state
+            .maps
+            .values()
+            .map(|owner| owner.service.clone())
+            .collect::<Vec<_>>();
+        if let Some(scheduler) = &state.cluster_admission {
+            for job in state.jobs.values() {
+                if let Some(ticket) = job.admission {
+                    scheduler.cancel(ticket)?;
+                }
+            }
+        }
+        state.queue = FairAdmissionQueue::new(state.bounds.admission)?;
+        state.jobs.clear();
+        state.queued_bytes = state
+            .active_invocations
+            .values()
+            .map(|(_, bytes, _)| *bytes)
+            .sum();
+        state.reserved_growth = state
+            .active_invocations
+            .values()
+            .map(|(_, _, growth)| *growth)
+            .sum();
+        state.policy_epoch = Some(next);
+        let scheduler = state.cluster_admission.clone();
+        for service in &services {
+            if let NamespaceBackend::Cluster(runtime) = service {
+                runtime.authentication.set_policy_epoch(next)?;
+            }
+        }
+        drop(state);
+        drop(_dispatch);
+        if let Some(scheduler) = scheduler {
+            scheduler.wake_waiters();
+        }
+        for service in services {
+            service.wake_listener_waiters();
+        }
+        Ok(())
+    }
     pub fn new(
         bounds: RegistryBounds,
         collection: CollectionBounds,
@@ -551,6 +731,8 @@ impl UnifiedServiceRegistry {
             .map_err(|_| RegistryError::InvalidBound("registry_identity"))?;
         Ok(Self {
             state: Arc::new(Mutex::new(RegistryState {
+                active_invocations: BTreeMap::new(),
+                policy_epoch: None,
                 id,
                 bounds,
                 collection,
@@ -622,6 +804,7 @@ impl UnifiedServiceRegistry {
         if requested.generation != 1 {
             return Err(NamespaceError::InvalidGeneration.into());
         }
+        authenticated.authorize(GrantOperation::Admin, &[], true)?;
         quota(
             "maps",
             state.bounds.max_maps,
@@ -672,6 +855,9 @@ impl UnifiedServiceRegistry {
                 state.service_limits,
             )?)
         };
+        if let (Some(epoch), NamespaceBackend::Cluster(runtime)) = (state.policy_epoch, &service) {
+            runtime.authentication.set_policy_epoch(epoch)?;
+        }
         state.maps.insert(
             key,
             NamespaceOwner {
@@ -701,6 +887,7 @@ impl UnifiedServiceRegistry {
             handle,
             authenticated,
             JobKind::Execute {
+                cooperative: false,
                 surface,
                 command,
                 options: None,
@@ -732,6 +919,7 @@ impl UnifiedServiceRegistry {
             handle,
             authenticated,
             JobKind::Execute {
+                cooperative: false,
                 surface,
                 command,
                 options: Some(options),
@@ -883,6 +1071,7 @@ impl UnifiedServiceRegistry {
             .map_err(|_| RegistryError::DispatcherBusy)?;
         let state = self.state.lock().unwrap();
         validate_handle(&state, handle, authenticated, false)?;
+        authenticated.authorize_listener(&options.listener)?;
         let runtime = match &state.maps[&address_key(&handle.address)].service {
             NamespaceBackend::Cluster(runtime) => runtime,
             _ => return Err(ServiceClusterError::UnsupportedScope.into()),
@@ -928,6 +1117,8 @@ impl UnifiedServiceRegistry {
             .map_err(|_| RegistryError::DispatcherBusy)?;
         let mut state = self.state.lock().unwrap();
         validate_handle(&state, handle, authenticated, false)?;
+        authenticated.authorize(GrantOperation::Listen, &[], true)?;
+        authenticated.authorize(GrantOperation::Read, &[], true)?;
         let runtime = match &state.maps[&address_key(&handle.address)].service {
             NamespaceBackend::Cluster(runtime) => runtime.clone(),
             _ => return Err(ServiceClusterError::UnsupportedScope.into()),
@@ -940,13 +1131,20 @@ impl UnifiedServiceRegistry {
         let _reservation = TransientReservation {
             state: Arc::downgrade(&self.state),
         };
-        Ok(runtime.resync_cluster_listener(
+        let result = runtime.resync_cluster_listener(
             authenticated,
             listener,
             now,
             maximum_items,
             maximum_bytes,
-        )?)
+        );
+        drop(_reservation);
+        drop(_dispatch);
+        let scheduler = self.state.lock().unwrap().cluster_admission.clone();
+        if let Some(scheduler) = scheduler {
+            scheduler.wake_waiters();
+        }
+        Ok(result?)
     }
     pub fn cancel_cluster_queued(
         &self,
@@ -962,6 +1160,7 @@ impl UnifiedServiceRegistry {
         if job.handle.address != handle.address {
             return Err(RegistryError::IdentitySubstitution("namespace"));
         }
+        authorize_job(authenticated, &job.kind)?;
         let scheduler = state
             .cluster_admission
             .as_ref()
@@ -972,6 +1171,11 @@ impl UnifiedServiceRegistry {
         let job = state.jobs.remove(&ticket.0).expect("cancelled queued work");
         state.queued_bytes -= job.bytes;
         state.reserved_growth -= job.growth;
+        let scheduler = state.cluster_admission.clone();
+        drop(state);
+        if let Some(scheduler) = scheduler {
+            scheduler.wake_waiters();
+        }
         Ok(true)
     }
 
@@ -990,6 +1194,7 @@ impl UnifiedServiceRegistry {
             authenticated,
             matches!(kind, JobKind::Reclaim(_)),
         )?;
+        authorize_job(authenticated, &kind)?;
         let owner = &state.maps[&address_key(&handle.address)];
         let (bytes, growth, partition) = match &mut kind {
             JobKind::Execute { command, .. } | JobKind::Reserve(command) => {
@@ -1031,6 +1236,13 @@ impl UnifiedServiceRegistry {
                 )
             }
         };
+        let bytes = bytes.saturating_add(
+            authenticated
+                .grant
+                .as_ref()
+                .map_or(0, |grant| grant.owned_bytes()),
+        );
+        quota("command_bytes", state.bounds.max_command_bytes, bytes)?;
         if !safety {
             let data_bytes = state
                 .jobs
@@ -1068,18 +1280,35 @@ impl UnifiedServiceRegistry {
             } else {
                 ClusterLane::Data
             };
-            let replica_bytes = match &kind {
-                JobKind::Execute { command, .. } | JobKind::Reserve(command) => {
-                    owner.service.replica_bound(command)?
-                }
-                JobKind::Maintenance(operation) => match &owner.service {
-                    NamespaceBackend::Cluster(runtime) => {
-                        runtime.maintenance_replica_bound(operation)?
+            let replica_bytes =
+                match &kind {
+                    JobKind::Execute {
+                        command,
+                        cooperative,
+                        ..
+                    } => {
+                        let bytes = owner.service.replica_bound(command)?;
+                        if *cooperative {
+                            bytes
+                                .checked_mul(2)
+                                .ok_or(RegistryError::InvalidBound("invocation_replica_bytes"))?
+                        } else {
+                            bytes
+                        }
                     }
+                    JobKind::Reserve(command) => owner
+                        .service
+                        .replica_bound(command)?
+                        .checked_mul(2)
+                        .ok_or(RegistryError::InvalidBound("invocation_replica_bytes"))?,
+                    JobKind::Maintenance(operation) => match &owner.service {
+                        NamespaceBackend::Cluster(runtime) => {
+                            runtime.maintenance_replica_bound(operation)?
+                        }
+                        _ => 0,
+                    },
                     _ => 0,
-                },
-                _ => 0,
-            };
+                };
             let primary = if let NamespaceBackend::Cluster(runtime) = &owner.service {
                 match &kind {
                     JobKind::Execute { command, .. } | JobKind::Reserve(command) => {
@@ -1152,6 +1381,11 @@ impl UnifiedServiceRegistry {
         state.next_request = next;
         state.queued_bytes += bytes;
         state.reserved_growth += growth;
+        let scheduler = state.cluster_admission.clone();
+        drop(state);
+        if let Some(scheduler) = scheduler {
+            scheduler.wake_waiters();
+        }
         Ok(RequestTicket(ticket))
     }
 
@@ -1163,7 +1397,21 @@ impl UnifiedServiceRegistry {
         let (id, job, permit) = {
             let mut state = self.state.lock().expect("registry poisoned");
             let (id, permit) = if let Some(scheduler) = &state.cluster_admission {
-                let Some(permit) = scheduler.pop()? else {
+                let excluded = state
+                    .jobs
+                    .values()
+                    .filter(|job| {
+                        matches!(
+                            &job.kind,
+                            JobKind::Execute {
+                                cooperative: true,
+                                ..
+                            }
+                        )
+                    })
+                    .filter_map(|job| job.admission)
+                    .collect::<Vec<_>>();
+                let Some(permit) = scheduler.pop_except(&excluded)? else {
                     return Ok(None);
                 };
                 let id = state
@@ -1195,6 +1443,7 @@ impl UnifiedServiceRegistry {
         state.queued_bytes -= job.bytes;
         state.reserved_growth -= job.growth;
         drop(state);
+        drop(_dispatch);
         drop(permit);
         let surface = if let JobKind::Execute { surface, .. } = &job.kind {
             Some(*surface)
@@ -1234,7 +1483,7 @@ impl UnifiedServiceRegistry {
             metadata_bytes: state.metadata_bytes,
             owned_bytes: owned_bytes(&state, None),
             queued_bytes: state.queued_bytes,
-            queued_requests: state.jobs.len(),
+            queued_requests: state.jobs.len() + state.active_invocations.len(),
             reserved_growth: state
                 .reserved_growth
                 .saturating_add(state.transient.as_ref().map_or(0, |(_, bytes)| *bytes)),
@@ -1249,6 +1498,7 @@ impl UnifiedServiceRegistry {
     ) -> Result<bool, RegistryError> {
         let state = self.state.lock().expect("registry poisoned");
         validate_handle(&state, handle, authenticated, true)?;
+        authenticated.authorize(GrantOperation::Write, &[], true)?;
         state.maps[&address_key(&handle.address)]
             .service
             .cancel_reserved(identity)
@@ -1261,6 +1511,7 @@ impl UnifiedServiceRegistry {
     ) -> Result<RegistryHandle, RegistryError> {
         let mut state = self.state.lock().expect("registry poisoned");
         validate_handle(&state, handle, authenticated, true)?;
+        authenticated.authorize(GrantOperation::Admin, &[], true)?;
         let key = address_key(&handle.address);
         let owner = &state.maps[&key];
         let actual = owner.service.namespace_owners();
@@ -1269,6 +1520,10 @@ impl UnifiedServiceRegistry {
                 .jobs
                 .values()
                 .any(|job| address_key(&job.handle.address) == key)
+            || state
+                .active_invocations
+                .values()
+                .any(|(address, _, _)| address_key(address) == key)
         {
             return Err(MapServiceError::ActiveOwners.into());
         }
@@ -1292,6 +1547,9 @@ impl UnifiedServiceRegistry {
                 state.trust,
             )?),
         };
+        if let (Some(epoch), NamespaceBackend::Cluster(runtime)) = (state.policy_epoch, &service) {
+            runtime.authentication.set_policy_epoch(epoch)?;
+        }
         state
             .maps
             .insert(key, NamespaceOwner { lifecycle, service });
@@ -1318,7 +1576,11 @@ impl UnifiedServiceRegistry {
             .values()
             .map(|owner| owner.service.clone())
             .collect::<Vec<_>>();
+        let scheduler = state.cluster_admission.clone();
         drop(state);
+        if let Some(scheduler) = scheduler {
+            scheduler.wake_waiters();
+        }
         for service in services {
             service.wake_listener_waiters();
         }
@@ -1336,7 +1598,11 @@ impl UnifiedServiceRegistry {
             .values()
             .map(|owner| owner.service.clone())
             .collect::<Vec<_>>();
+        let scheduler = state.cluster_admission.clone();
         drop(state);
+        if let Some(scheduler) = scheduler {
+            scheduler.wake_waiters();
+        }
         for service in services {
             service.wake_listener_waiters();
         }
@@ -1387,7 +1653,12 @@ impl UnifiedServiceRegistry {
             .values()
             .map(|owner| owner.service.clone())
             .collect::<Vec<_>>();
+        let scheduler = state.cluster_admission.clone();
         drop(state);
+        drop(_dispatch);
+        if let Some(scheduler) = scheduler {
+            scheduler.wake_waiters();
+        }
         for service in services {
             service.wake_listener_waiters();
         }
@@ -1406,6 +1677,7 @@ impl UnifiedServiceRegistry {
             .map_err(|_| RegistryError::DispatcherBusy)?;
         let state = self.state.lock().expect("registry poisoned");
         validate_handle(&state, handle, authenticated, false)?;
+        authenticated.authorize(GrantOperation::Read, &[], true)?;
         let growth = state.collection.max_response_bytes.saturating_add(64);
         check_owned_growth(&state, &handle.address.tenant, growth, None)?;
         let inner = state.maps[&address_key(&handle.address)]
@@ -1430,6 +1702,7 @@ impl UnifiedServiceRegistry {
             .map_err(|_| RegistryError::DispatcherBusy)?;
         let state = self.state.lock().expect("registry poisoned");
         validate_handle(&state, handle, authenticated, false)?;
+        authenticated.authorize_listener(&options)?;
         let growth = state
             .collection
             .max_response_bytes
@@ -1461,6 +1734,8 @@ impl UnifiedServiceRegistry {
             .map_err(|_| RegistryError::DispatcherBusy)?;
         let mut state = self.state.lock().expect("registry poisoned");
         validate_handle(&state, handle, authenticated, false)?;
+        authenticated.authorize(GrantOperation::Listen, &[], true)?;
+        authenticated.authorize(GrantOperation::Read, &[], true)?;
         let service = state.maps[&address_key(&handle.address)].service.clone();
         let now = state.now;
         // Resync advances expiry before clearing its target listener. Other listener queues
@@ -1493,6 +1768,7 @@ fn dispatch(
         &job.authenticated,
         matches!(job.kind, JobKind::Reclaim(_)),
     )?;
+    authorize_job(&job.authenticated, &job.kind)?;
     let key = address_key(&job.handle.address);
     match &job.kind {
         JobKind::Execute { command, .. } | JobKind::Reserve(command) => {
@@ -1510,7 +1786,7 @@ fn dispatch(
                     .identity
                     .clone()
                     .ok_or(MapServiceError::InvalidArgument)?;
-                service.reserve_operation(identity, &command)?;
+                service.reserve_operation(identity, &command, &job.authenticated, permit)?;
                 Ok(RegistryResult::Command(ServiceResult::new("reserved")))
             } else {
                 let options = if let JobKind::Execute { options, .. } = &job.kind {
@@ -1544,7 +1820,12 @@ fn dispatch(
                 .filter(|(queued_id, queued)| {
                     **queued_id != id && address_key(&queued.handle.address) == key
                 })
-                .count();
+                .count()
+                + state
+                    .active_invocations
+                    .values()
+                    .filter(|(address, _, _)| address_key(address) == key)
+                    .count();
             let owner = state.maps.get_mut(&key).expect("validated owner");
             let owners = owner.service.namespace_owners();
             if owners.total() == 0
@@ -1597,6 +1878,11 @@ fn validate_auth(
     authenticated: &AuthenticatedNamespace,
     requested: &NamespaceAddress,
 ) -> Result<(), RegistryError> {
+    match (state.policy_epoch, authenticated.policy_epoch()) {
+        (None, None) => {}
+        (Some(expected), Some(actual)) if expected == actual => {}
+        _ => return Err(SecurityError::PolicyEpochMismatch.into()),
+    }
     if requested.tenant != authenticated.address.tenant {
         return Err(RegistryError::IdentitySubstitution("tenant"));
     }
@@ -1627,6 +1913,20 @@ fn validate_auth(
         state.now,
     )?;
     Ok(())
+}
+
+fn authorize_job(
+    authenticated: &AuthenticatedNamespace,
+    job: &JobKind,
+) -> Result<(), RegistryError> {
+    match job {
+        JobKind::Execute { command, .. } | JobKind::Reserve(command) => {
+            authenticated.authorize_command(command)
+        }
+        JobKind::BeginDelete | JobKind::Reclaim(_) | JobKind::Maintenance(_) => {
+            authenticated.authorize(GrantOperation::Admin, &[], true)
+        }
+    }
 }
 
 fn service_ttl(ttl: TtlDirective) -> ServiceTtl {
@@ -1773,10 +2073,26 @@ fn check_owned_growth(
     let reservations = state.jobs.iter().filter(|(id, _)| exclude != Some(**id));
     let global_reserved = reservations
         .clone()
-        .fold(0usize, |sum, (_, job)| sum.saturating_add(job.growth));
+        .fold(0usize, |sum, (_, job)| sum.saturating_add(job.growth))
+        .saturating_add(
+            state
+                .active_invocations
+                .iter()
+                .filter(|(id, _)| exclude != Some(**id))
+                .map(|(_, (_, _, growth))| *growth)
+                .sum::<usize>(),
+        );
     let tenant_reserved = reservations
         .filter(|(_, job)| job.handle.address.tenant == tenant)
-        .fold(0usize, |sum, (_, job)| sum.saturating_add(job.growth));
+        .fold(0usize, |sum, (_, job)| sum.saturating_add(job.growth))
+        .saturating_add(
+            state
+                .active_invocations
+                .iter()
+                .filter(|(id, (address, _, _))| exclude != Some(**id) && address.tenant == tenant)
+                .map(|(_, (_, _, growth))| *growth)
+                .sum::<usize>(),
+        );
     let global_transient = state.transient.as_ref().map_or(0, |(_, bytes)| *bytes);
     let tenant_transient = state
         .transient
@@ -1910,7 +2226,14 @@ impl StreamGuard {
         let _reservation = TransientReservation {
             state: Arc::downgrade(&shared),
         };
-        Ok(poll())
+        let result = poll();
+        drop(_reservation);
+        drop(_dispatch);
+        let scheduler = shared.lock().unwrap().cluster_admission.clone();
+        if let Some(scheduler) = scheduler {
+            scheduler.wake_waiters();
+        }
+        Ok(result)
     }
 }
 

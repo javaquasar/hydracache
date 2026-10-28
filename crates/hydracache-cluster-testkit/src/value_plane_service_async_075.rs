@@ -2,12 +2,18 @@
 
 use async_trait::async_trait;
 
+use crate::value_plane_async_075::{
+    AsyncIMapFacade, InvocationClock, InvocationFuture, InvocationHandle, InvocationRejection,
+};
 use crate::value_plane_async_075::{AsyncMapBackend, BackendRecovery, InvocationContext};
 use crate::value_plane_model_075::MutationIdentity;
+use crate::value_plane_service_075::LocalHelperCredit;
 use crate::value_plane_service_075::{
     is_mutating_operation, MapServiceError, ServiceCommand, ServiceRecovery, ServiceResult,
     UnifiedIMapService,
 };
+pub use crate::value_plane_service_075::{LocalHelperCommand, LocalHelperResult};
+use std::sync::Arc;
 
 pub struct UnifiedServiceAsyncBackend {
     pub service: UnifiedIMapService,
@@ -49,5 +55,106 @@ impl AsyncMapBackend for UnifiedServiceAsyncBackend {
             command.identity = Some(context.identity);
         }
         self.service.execute(command)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LocalHelperStartError {
+    Domain(MapServiceError),
+    Invocation(InvocationRejection),
+}
+
+struct HelperRequest {
+    command: LocalHelperCommand,
+    _credit: LocalHelperCredit,
+}
+struct LocalHelperBackend {
+    service: UnifiedIMapService,
+}
+
+#[async_trait]
+impl AsyncMapBackend for LocalHelperBackend {
+    type Command = HelperRequest;
+    type Output = LocalHelperResult;
+    type Error = MapServiceError;
+    fn recover(
+        &self,
+        command: &HelperRequest,
+        identity: &MutationIdentity,
+    ) -> Result<BackendRecovery<LocalHelperResult>, MapServiceError> {
+        self.service
+            .recover_local_helper(&command.command, identity)
+    }
+    async fn execute(
+        &self,
+        command: &HelperRequest,
+        context: InvocationContext,
+    ) -> Result<LocalHelperResult, MapServiceError> {
+        context
+            .admit()
+            .map_err(|_| MapServiceError::InvalidArgument)?;
+        self.service.execute_local_helper(
+            &command.command,
+            context.identity.clone(),
+            context.now(),
+            context.deadline,
+        )
+    }
+}
+
+pub type StartedLocalHelper = Result<
+    (
+        InvocationHandle,
+        InvocationFuture<LocalHelperResult, MapServiceError>,
+    ),
+    LocalHelperStartError,
+>;
+
+/// Lazy typed helpers over the same local owner. Both queued request bytes and maximum result
+/// bytes hold aggregate service credit; leased results retain their own credit after delivery.
+pub struct LocalHelperAsyncFacade {
+    service: UnifiedIMapService,
+    facade: AsyncIMapFacade<LocalHelperBackend>,
+}
+impl LocalHelperAsyncFacade {
+    pub fn new(
+        service: UnifiedIMapService,
+        clock: Arc<InvocationClock>,
+        max_inflight: usize,
+    ) -> Result<Self, InvocationRejection> {
+        Ok(Self {
+            facade: AsyncIMapFacade::new(
+                Arc::new(LocalHelperBackend {
+                    service: service.clone(),
+                }),
+                clock,
+                max_inflight,
+            )?,
+            service,
+        })
+    }
+    pub fn inflight(&self) -> usize {
+        self.facade.inflight()
+    }
+    pub fn invoke(
+        &self,
+        identity: MutationIdentity,
+        deadline: u64,
+        command: LocalHelperCommand,
+    ) -> StartedLocalHelper {
+        let credit = self
+            .service
+            .reserve_local_helper_credit(&command)
+            .map_err(LocalHelperStartError::Domain)?;
+        self.facade
+            .invoke(
+                identity,
+                deadline,
+                HelperRequest {
+                    command,
+                    _credit: credit,
+                },
+            )
+            .map_err(LocalHelperStartError::Invocation)
     }
 }
