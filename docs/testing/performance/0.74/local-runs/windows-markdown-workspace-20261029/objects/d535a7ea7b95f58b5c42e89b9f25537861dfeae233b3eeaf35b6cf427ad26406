@@ -1,0 +1,37 @@
+//! Exact source assertion view, compiled only by the two reader-proof targets.
+use sha2::{Digest, Sha256};
+pub const READER: &str = "tools/remaining-readers-074/inputs.rs";
+pub const IMPORT: &str =
+    "#[path = \"../package-frontier-inputs-074/contract.rs\"]\npub mod closure;\n";
+pub const BRANCH: &str = "    if closure::known(path) {\n        return closure::project(path, old::read(path));\n    }\n";
+pub fn source_previous(path: &str, raw: String) -> String {
+    if path != READER {
+        return raw;
+    }
+    let mut previous = raw.replace("\r\n", "\n");
+    let current: String = Sha256::digest(previous.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
+    assert_eq!(
+        current, "88a49e93fdb837ab0d1b0c24ce1f6809189585278ac648548137c7a0d5c05f27",
+        "whole current reader facade"
+    );
+    for addition in [IMPORT, BRANCH] {
+        assert_eq!(
+            previous.matches(addition).count(),
+            1,
+            "one exact reader addition"
+        );
+        previous = previous.replacen(addition, "", 1);
+    }
+    let digest: String = Sha256::digest(previous.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
+    assert_eq!(
+        digest, "96651cff002a24f192526b4a619376a6229bb45ee5d1e791640c47ef94b42c88",
+        "complete original reader facade"
+    );
+    previous
+}

@@ -1,0 +1,607 @@
+{
+  "additions": {
+    "tools/long-run-supervisor-074/src/bin/diagnostic_held_bootstrap.rs": {
+      "blob": "2498d3947f93dbc4975342a535ea4738e6c5d425",
+      "bytes": 2740,
+      "mode": "100644",
+      "sha256": "251c8460288c593d4a89ad903aa94f2194d1729e6c8fa5ec15ec50c2eae21b51"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_build.rs": {
+      "blob": "475cebe0ee1ba38a9efcd80b5115eef448223f90",
+      "bytes": 15650,
+      "mode": "100644",
+      "sha256": "77e7de86c744ed87cc916d98640c7c1625d8a392c1ac7dd056e4d173e580c195"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_build_tests.rs": {
+      "blob": "d3f0e5c2c4860644e41d534bdb0e36cc85e4c190",
+      "bytes": 15911,
+      "mode": "100644",
+      "sha256": "ce1efc4063b12ee010fafb10039d824b7f470c52ac517641e39f86276bb3a41a"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_census_entry.rs": {
+      "blob": "0c5b8f8e731e05151ff85b6c864f54255a17d553",
+      "bytes": 2570,
+      "mode": "100644",
+      "sha256": "f83b8c2a9eaa4121a21bf057f71775715a0affc4528603ea3bdc683162842cd9"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_ingress.rs": {
+      "blob": "242ff4638311cbd794e3ee66c03b61898675a970",
+      "bytes": 3685,
+      "mode": "100644",
+      "sha256": "ac31b79d502b076e27a05d94b793be627e030273871d829518f75808b43c6d36"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_reader.rs": {
+      "blob": "edd6467f8990a02c174713083188b912911e07a7",
+      "bytes": 3433,
+      "mode": "100644",
+      "sha256": "ce60ba202c4672c21e7b3e84001457e267a7e59d4f3801e53872f717fcb07d40"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_reader_tests.rs": {
+      "blob": "3c7534059587eabafe42e6f62bfaa8f2cd86f4a9",
+      "bytes": 3424,
+      "mode": "100644",
+      "sha256": "f7404ff3b07ea7e8dc0da0ce25bbd4cbd364cb21a76cf005bf6103903aed5dab"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_role_kernel.rs": {
+      "blob": "9d3082f95d02aeec2c773d6297ea015e6bbcf334",
+      "bytes": 7558,
+      "mode": "100644",
+      "sha256": "d8bef8f77881ba532bb9ce49b46df42095c8c5241818f04860ff15fe0b036c42"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_roles.rs": {
+      "blob": "d45bf8f38e4e586664a1efde4716269bd3938769",
+      "bytes": 7675,
+      "mode": "100644",
+      "sha256": "1b5db8a5b4f33848e6df45d3d13c400305f3974f580339673d6f934d578d3525"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_roles_tests.rs": {
+      "blob": "a9ec2bd50380bcd765b2cc6ac138eea5057f76d0",
+      "bytes": 3183,
+      "mode": "100644",
+      "sha256": "65c7d8bedb1cf7493f2785cb53599a8e0adce56a36f93217c3011b7cf98a2f23"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_closed_inventory.rs": {
+      "blob": "e6010f2659053834371b0720ff01be56053164a8",
+      "bytes": 4239,
+      "mode": "100644",
+      "sha256": "9f5f6582854e001ef7e1f154d12b3ba6f145c5b03f90e1439c3920b05727af77"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_current_image.rs": {
+      "blob": "5d08a0e32fdbd0f42371743a9f4ffac4e2dad891",
+      "bytes": 4705,
+      "mode": "100644",
+      "sha256": "993752e570b8c05b8313b27fc029b2eb10192add432dc254d4acf3577e114ee7"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_enrollment.rs": {
+      "blob": "bb312d1a6a3252ccd9d047fd4a90686cff0bd6d4",
+      "bytes": 4535,
+      "mode": "100644",
+      "sha256": "53d1db7da4fd26691fef5912cd5f1e8edc889334d2fa081ab225bc5d46e5c72f"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_enrollment_tests.rs": {
+      "blob": "447eced62b44ae07c7025c76184d074bf3d0330f",
+      "bytes": 7752,
+      "mode": "100644",
+      "sha256": "d7b821018835c8a67fe8cc9634af1dcdd625e9f08b8b2b335ccbabe28c95a679"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_entry_binding.rs": {
+      "blob": "2d4599fd220fdd6f72b7cdb8cc4a53e3ebc73811",
+      "bytes": 2896,
+      "mode": "100644",
+      "sha256": "2212c0efaedc7c7a62c01ab41b946fe51e7570d2aee65af1ef2dc70ddc809247"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_entry_binding_tests.rs": {
+      "blob": "d0e1b6c7a0be8c3c4dd297577c33756131817a1c",
+      "bytes": 5108,
+      "mode": "100644",
+      "sha256": "add52cdf6cb5a0018abc8674f91d474141fff53021babaded9200ff49b50c63f"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_entry_census.rs": {
+      "blob": "616dc313d3d9ce7887d8d44d20b42133573a6027",
+      "bytes": 3487,
+      "mode": "100644",
+      "sha256": "cb7ccd513b77d06308836dcfa918d8b5ff99e1c6035f8be09cc0ce0f850207d7"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_entry_format.rs": {
+      "blob": "d3b1bf5fad7dfbe417ba1c055085b6721ceabc23",
+      "bytes": 7741,
+      "mode": "100644",
+      "sha256": "e8fadd09e524480b329bfd9f966cc05a89f47f9ddf1f11a3b3c8ae7971edd61f"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_entry_resource.rs": {
+      "blob": "a1079bf8a8d607b5c4cc49f1e2e35f77187c8e4e",
+      "bytes": 5713,
+      "mode": "100644",
+      "sha256": "0703cb28424ac375b1280dcaeb156f1a4b339102c3fbcbee9248aad9f187cc9e"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_held_child.rs": {
+      "blob": "1fd40215f4b04e35327338f8e825fb97182c35ea",
+      "bytes": 4656,
+      "mode": "100644",
+      "sha256": "1d3dc2277a3a8978927f1049e976b911ae7185ab1fa0b0d81e3330ca582feb7c"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_held_inventory.rs": {
+      "blob": "8f833a4fba3ddac82f2d415c4b5b2bb9d5e4f5d1",
+      "bytes": 3409,
+      "mode": "100644",
+      "sha256": "cf1261e1df99483b01bae5d0497671669f72c5485f2b130bbce399a46e7b6e60"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_held_mode.rs": {
+      "blob": "743fa18cddebd2c2ce63d1048924edb4626f7d5f",
+      "bytes": 996,
+      "mode": "100644",
+      "sha256": "ec1b93372c799410c4a84d49d5d9f4fcb533ea9c9fe3de98d51b146067368507"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_held_transport.rs": {
+      "blob": "0f452d46d06fd17a90ccd1ad264e62724153a77a",
+      "bytes": 2151,
+      "mode": "100644",
+      "sha256": "d4fcf6edff6123a3807b6a6c93310c0ae4a36a595f9b4d8f1b5266257ef25e56"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_image_census.rs": {
+      "blob": "c23dd1648c3f33dd7b21e93432a9efe0cc955a49",
+      "bytes": 3444,
+      "mode": "100644",
+      "sha256": "9499cc194ae1b8c389bfddec2ceca4c36a83c9a6b0266190ff5198fddf85e673"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_image_census_tests.rs": {
+      "blob": "8c42706c94740f9351c45cf5a000376f2f54607b",
+      "bytes": 7275,
+      "mode": "100644",
+      "sha256": "9e2c79787425f1feedf7d89785e06061703aee0b57518c30e038006c48a259ae"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_image_entry.rs": {
+      "blob": "84408970302524bb633a1908475df8fdca69e1de",
+      "bytes": 2701,
+      "mode": "100644",
+      "sha256": "316f7122c91f369d26c77bc10547cda7d422e0a673faf118a4f746d50fba8f53"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_image_provider.rs": {
+      "blob": "658bc87c733951901d40f28518a028e949978523",
+      "bytes": 4955,
+      "mode": "100644",
+      "sha256": "319ecbe3176ffab1bb9ed234b28efd935df3f871a777f059fd9cbb24d0ab0238"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_census.rs": {
+      "blob": "db1bca353b04e46f61173fd98aa52846732ab960",
+      "bytes": 2051,
+      "mode": "100644",
+      "sha256": "7c4a9ccd6fd81848cef84c3a1faf8ca76ff0fd0721315c3a00078cc4e6eaae9e"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_census_tests.rs": {
+      "blob": "523cbe2417e2db0f3da836573f2f74753db8adda",
+      "bytes": 1668,
+      "mode": "100644",
+      "sha256": "3cb4c094c05605a665149dc22fb0dfd9d02e0d723fda8e2ca1583c33f39c4196"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_child.rs": {
+      "blob": "4d80f2624eeb81393d5f02e42d879dcf6503d33c",
+      "bytes": 4261,
+      "mode": "100644",
+      "sha256": "a93d858fddadf2f24e64625b7d33790d3752acb70c5d9ac8819e92b3e7358cfe"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_child_tests.rs": {
+      "blob": "5b49b9520106709b4deabd6e387522cbf255b084",
+      "bytes": 2319,
+      "mode": "100644",
+      "sha256": "f3d1c04db313d4cdb2c0e028ba1fd5b3638a7a36302b80e59c036c932e1b0fd6"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_census.rs": {
+      "blob": "aede19a14dfdd7cf88eddcf3c80bbf0bb1588548",
+      "bytes": 3649,
+      "mode": "100644",
+      "sha256": "6e9089cd9fbb907029ce7c0f52fcee746d1f99d506259193acd1dc5707287e6e"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_census_tests.rs": {
+      "blob": "5177ffb77841b73a319852f7370ccfdd17ca3761",
+      "bytes": 5585,
+      "mode": "100644",
+      "sha256": "30f0d501e91e14eced5a3d0ece9da87924fd9e63d5c36f326ed23b9285f813e9"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_format.rs": {
+      "blob": "4b1bce90e451489f5871f6a33b7df280cfe0d2b4",
+      "bytes": 4014,
+      "mode": "100644",
+      "sha256": "4b82d909d556b8cdfd1ee64d93fbd047f5851b1388898fe74a31513a1c063844"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_format_tests.rs": {
+      "blob": "40d50e0e2669962ac647de440d1ac34b8ed2f841",
+      "bytes": 6375,
+      "mode": "100644",
+      "sha256": "2ab7ad9539e9e005438501ae0b4c9de8feca5ea370a81e50d88333b9bce66c5c"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_owner.rs": {
+      "blob": "5067b1884d02d3c35cf467c33e0466ef547366a3",
+      "bytes": 4182,
+      "mode": "100644",
+      "sha256": "8f306898edb823e1ffe2b44abbc0f00bc083bf0075d8793123627c3f43c56427"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_owner_tests.rs": {
+      "blob": "5d542a2e009a415591f2d9b8bcc5db0ebf87ce7c",
+      "bytes": 3284,
+      "mode": "100644",
+      "sha256": "260e1e98262eee77619dc4f21ca532052c0f7372a285b4739ef074e0ffae9806"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_resource.rs": {
+      "blob": "89b0967c844074587ebd986fe0938cf5ee92762b",
+      "bytes": 2631,
+      "mode": "100644",
+      "sha256": "2985c76447596697d90f66dc4ee79daf2da3dacc6f11d5e24d8367d629ba4004"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_entry_resource_tests.rs": {
+      "blob": "fdc20e21e6177f87cc53f2424d7147f7e57b3002",
+      "bytes": 5154,
+      "mode": "100644",
+      "sha256": "f0c503dd6fd05613836d0282d2f8a5d22e86f4c977a9620d09648b553759fbaa"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_executable.rs": {
+      "blob": "0894a1d04ffd53584075993071b6ae7486b7fb38",
+      "bytes": 4118,
+      "mode": "100644",
+      "sha256": "627d5869f1508480705a023cd723d72a27fc0a094bca5d0efaa71b65fe829468"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_inventory.rs": {
+      "blob": "88b22d343182a9d60cfd7560afe00f4c0f7ee3d8",
+      "bytes": 4081,
+      "mode": "100644",
+      "sha256": "b2b7b2ec243438bac0b7ea5925468f2a8a538573fba3b042643092059a74defb"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_mode.rs": {
+      "blob": "a9990c739e3d8f71ea52f0f15d72e35bdf65e35e",
+      "bytes": 4309,
+      "mode": "100644",
+      "sha256": "1172444cd9ae08cb430d7d575a13336554b2c341d09c4409fb56375668108c44"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_owner.rs": {
+      "blob": "99c720c932b0305d7a4d7b6028aaf47cf77ff56d",
+      "bytes": 3938,
+      "mode": "100644",
+      "sha256": "a17f4c7c608c7dfa7c05079a47bcf92a8ab13aaa709dce0b28c6a0ef31039295"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_owner_tests.rs": {
+      "blob": "ffc11e15bcc176c7b1bef3010558f6845776261f",
+      "bytes": 3002,
+      "mode": "100644",
+      "sha256": "90fcf3ba27cb8967d370f23b3161c827a7af8a1c7f80076e793f6ac3b57ac57d"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_source.rs": {
+      "blob": "6de101051bc10b1e23f8545a92b1fd8bfb40d793",
+      "bytes": 8024,
+      "mode": "100644",
+      "sha256": "2b6ae1d20ad0c42c448e6d047f0a57681a4809ce79a8b20c47995bbe63ed840c"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_source_tests.rs": {
+      "blob": "a76638bf47b18271b7d87162d972d1cff5be12f8",
+      "bytes": 5215,
+      "mode": "100644",
+      "sha256": "7714d0fde8493f93cd82a098f91b48ecd1273aa2ad34108f2cb0570ea17d83b5"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_original_inventory.rs": {
+      "blob": "538099497b240eea33612ad36d6604e13fedb574",
+      "bytes": 2121,
+      "mode": "100644",
+      "sha256": "d31dce9dfc5360e83e5328b06fb765e6d0c25057a4d1cb7442ff7ff46b235240"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_owner.rs": {
+      "blob": "55ba3fcb70d402a8d4d473ad2c49c36d13f47d6b",
+      "bytes": 8566,
+      "mode": "100644",
+      "sha256": "49902872dd5f3119a98b9ffaa5fe3fa2c6173972cb2683107223be123de4fc2e"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_owner_tests.rs": {
+      "blob": "a5f4c2b3d3216b073da410e21e60d002f99adc82",
+      "bytes": 2629,
+      "mode": "100644",
+      "sha256": "8fd300e351f1bd196d8128c91596be1df444fa3268f5995cab3b9f34ef5714d6"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_sandbox_owner.rs": {
+      "blob": "347f519c97a48d99ffeb42a6408a0c449f2fd117",
+      "bytes": 12551,
+      "mode": "100644",
+      "sha256": "f2b2a57257e9a7f1cf547d4ce8693803ed30e55faa52b8eb8658879f3ce36f74"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_sealed.rs": {
+      "blob": "af3185bb84ca53e2a988022e7c11fe5eeb4f4ab1",
+      "bytes": 2567,
+      "mode": "100644",
+      "sha256": "f697fdd353b58be19df185d7a91a5984f66499d0728f3b928973c918e499c8c1"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_selected_build.rs": {
+      "blob": "03db435f8b5ec127febb5fa72ab936a150e387dc",
+      "bytes": 2651,
+      "mode": "100644",
+      "sha256": "9590c13bcc0dbb51c6f81a1ab8f20637e33f739af04451a057dc99b26db67c6f"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_selected_build_tests.rs": {
+      "blob": "fe0b8cdfd7203548854aaf74b08d8270d2ec135a",
+      "bytes": 5359,
+      "mode": "100644",
+      "sha256": "5d184228acab2e6dccc328de64409b544160b715f357f347ef4b9b2f6378b102"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_bundle_role_census.rs": {
+      "blob": "1b5ad3e280191de8250ff35f4cbc71e32e040f7f",
+      "bytes": 1927,
+      "mode": "100644",
+      "sha256": "541840b72fd2825d65b7584ea3143af998f1d6fe1fd88c9e437b5d60e7ecf561"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_guardian_role_census.rs": {
+      "blob": "0ef6f8535d83b81d40c99749596b27ec96b8628a",
+      "bytes": 1534,
+      "mode": "100644",
+      "sha256": "7df41e2b56d32268e7d245ea6b0393bc1a5419c9c5a799a3db8f60f4995864ee"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_held_activation.rs": {
+      "blob": "2a4df7e9407cc714d15099f1a26b51e4522eebb7",
+      "bytes": 4898,
+      "mode": "100644",
+      "sha256": "b7610456c861a3baf28e2950acbb877268a006e77a917e84bdf2833e0e842711"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_held_activation_ingress.rs": {
+      "blob": "2381feb7b771b41014761d5a1805e12dd34e0e01",
+      "bytes": 4836,
+      "mode": "100644",
+      "sha256": "c2bb75d950d4702c4f32e72cf30dd95d79e1742d3ae1ed907f3daf9cb5267cb8"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_held_child_exchange.rs": {
+      "blob": "45dc816f1d9053847ef529d59dc5140aa558ff26",
+      "bytes": 12673,
+      "mode": "100644",
+      "sha256": "9197e11e63a3aa26937d3cdc7532b10607f3abc6ec2c787aaeabac9efb7fc44d"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_held_child_exchange_tests.rs": {
+      "blob": "fe59afd10cd70f596aa0d9e8741891c349dd5656",
+      "bytes": 7030,
+      "mode": "100644",
+      "sha256": "bf3b1f8a176a2c47f1467a13f761b88347c128b579f043180e7330ec3211b61a"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire.rs": {
+      "blob": "744a2fd8b7d0e34e946b1a33fd9a62b443047390",
+      "bytes": 13136,
+      "mode": "100644",
+      "sha256": "57e1758273e0116dc4b5288cb6f05618ecc50222f5a84935985095254ff27059"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire_tests.rs": {
+      "blob": "c9cf45c5c438b33529da142199abdccddccd6c6b",
+      "bytes": 5207,
+      "mode": "100644",
+      "sha256": "0df6c2e23e9c2b9cd866dc819cbdae72130ff496bbc5af80890906db84363580"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_held_role_census.rs": {
+      "blob": "0aa67369a55c8776e8b2c5dd6d40d0f45970730e",
+      "bytes": 8509,
+      "mode": "100644",
+      "sha256": "1a6b5d6f66acca73ab09fcab2092fe7614a210e0bd00adc577543972b88fda08"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_held_role_census_tests.rs": {
+      "blob": "59c7b8a384c80dabf86197a4358384cd619a9d73",
+      "bytes": 9605,
+      "mode": "100644",
+      "sha256": "5daa52aff71d1b65bbd8320bf65b40a667f683cbc28b3ffa40f266951d3845ef"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_manager_held_delivery.rs": {
+      "blob": "d7909acd4eff36e0f0b92727db3a0675c006cf55",
+      "bytes": 1941,
+      "mode": "100644",
+      "sha256": "b6c341382843857204ca8dc10edde89f4aa0ecb2417d3eafee642964dd7499e5"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_manager_sandbox_query.rs": {
+      "blob": "14ba947d2ac2f7a1167dd862a3965b821668e652",
+      "bytes": 8488,
+      "mode": "100644",
+      "sha256": "f8f52fa47e09d9b7ee977c3595cf2269ed80228a0df24bb566d300a50a2612ba"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_material_role_census.rs": {
+      "blob": "aaf606151883f5216f608bb5189da3ea97398809",
+      "bytes": 1040,
+      "mode": "100644",
+      "sha256": "6f82e231852327d42eea44c3cd1d9ffa5be89f489e9273d8fb16d79016536092"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_original_held_delivery.rs": {
+      "blob": "ca8f9c2872053bb24cabfab226b70b0fe13a8257",
+      "bytes": 11500,
+      "mode": "100644",
+      "sha256": "0ffeab6cc93898b4e37a6453521122166e492e8bbfad477232381669dc2ed87d"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_projection_fields.rs": {
+      "blob": "7fcd091cb0467eaa694b09485ed2c21ec22a7273",
+      "bytes": 1518,
+      "mode": "100644",
+      "sha256": "0bd6b4246b7d14151f378fda0090523fdc3485be254cc05df33eaa97264cd6ae"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_projection_fields_tests.rs": {
+      "blob": "c9fa7b7eb35f6ca53b5bbea40843736e5f1b9c13",
+      "bytes": 6066,
+      "mode": "100644",
+      "sha256": "8bc76ae0ad8eeda6db91a8b3439a749c10704f351f6251dbf53d89565a6f3af7"
+    },
+    "tools/long-run-supervisor-074/src/diagnostic_sandbox_process.rs": {
+      "blob": "d58dab732bb70fc0876cafeb87aee06633be557e",
+      "bytes": 16162,
+      "mode": "100644",
+      "sha256": "336d3c8cd97b039e6d19278b7d98dc31f86a5a664fb2558a6e68c44559a338ac"
+    },
+    "tools/long-run-supervisor-074/tests/bootstrap_child_census.rs": {
+      "blob": "c484416eb5f015ce51bc91be12d8bb7d5f620eba",
+      "bytes": 4224,
+      "mode": "100644",
+      "sha256": "de3022f1fba465af0cb0f26c3ce4c07b62fa51f5e69c7400732d462a238479c5"
+    },
+    "tools/long-run-supervisor-074/tests/bootstrap_child_reader.rs": {
+      "blob": "0182db245c5e40ba893b0f3817a4e9aa73623618",
+      "bytes": 4144,
+      "mode": "100644",
+      "sha256": "18268e78f7fa700bf0d65a14faefb3e1a05e52db72fbb726cf7ec3677a8f3454"
+    },
+    "tools/long-run-supervisor-074/tests/bootstrap_current_image.rs": {
+      "blob": "6d514113c648c926d015757499e6b50455b13cd1",
+      "bytes": 5540,
+      "mode": "100644",
+      "sha256": "8af7af23cab84490f6d263b120ba96af7aab3d328f49114a06b2468f84afb069"
+    },
+    "tools/long-run-supervisor-074/tests/support/bootstrap_census_material.rs": {
+      "blob": "b92de9c5f909a88a89471ec859e4014bffc7fe14",
+      "bytes": 9183,
+      "mode": "100644",
+      "sha256": "17e743de74297fb50e6fc5a2f74ba5b23da51f09df7fda3c7f8e3b59e5a5c074"
+    },
+    "tools/long-run-supervisor-074/tests/support/bootstrap_child_material.rs": {
+      "blob": "2221611c4a99e3b49b80ae04c0f8d1182316b936",
+      "bytes": 1848,
+      "mode": "100644",
+      "sha256": "8b2f3b02683b853228629643998d9a6b201e6a9b6c5419b78493143db449286e"
+    },
+    "tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs": {
+      "blob": "e1c1da03be2c68044407499972328586d4fa5826",
+      "bytes": 18481,
+      "mode": "100644",
+      "sha256": "befb67758020ad8720e3a3b4962e894035785df5e56edd9de78eeb8aead95de2"
+    },
+    "tools/long-run-supervisor-074/tests/support/bootstrap_installed_controls.rs": {
+      "blob": "71ebc654e2a63defdc4a9e1e10faf54719f45f5e",
+      "bytes": 7755,
+      "mode": "100644",
+      "sha256": "f33806ff9b16ff521430110a2321add0e8f9b56962788732d72747f9ff80e72d"
+    },
+    "tools/long-run-supervisor-074/tests/support/held_activation_process.rs": {
+      "blob": "a6482b55ee1e72ec05a5136124d1198729a16b40",
+      "bytes": 2223,
+      "mode": "100644",
+      "sha256": "bfe2d0f9a45967d7a554ed3d95814e59bf480f6d69c63d2976c3796f0ca89ae5"
+    },
+    "tools/long-run-supervisor-074/tests/support/held_original_service_documents.rs": {
+      "blob": "2a58815bcc1fedad7863af7fce282edc4e6473dd",
+      "bytes": 4917,
+      "mode": "100644",
+      "sha256": "e30d48077a3af7940c2c9383605ea9eed241451710815c062a4bc408f0c174d9"
+    },
+    "tools/long-run-supervisor-074/tests/support/held_original_service_live.rs": {
+      "blob": "b319da79faa45a93d00e4f85bda300bb58be90e2",
+      "bytes": 8659,
+      "mode": "100644",
+      "sha256": "e1a951731d4ba55aa7ac5c9b8a0f9699c5fc1763b2162d5899ef5f498a0103a1"
+    },
+    "tools/long-run-supervisor-074/tests/support/held_original_service_scope.rs": {
+      "blob": "b997a76699ace0d246a4779b0a37942311a4188a",
+      "bytes": 9113,
+      "mode": "100644",
+      "sha256": "6aea9474fe0a98760e377205a4d6444c16de4258d72ceb8d19f5d0c6cb20737a"
+    }
+  },
+  "execution_admitted": false,
+  "patches": {
+    "crates/xtask/tests/authority_context_074.rs": {
+      "current_sha256": "7370e1191e9bdc51977abe59b241dc7904e5048b597ca9bc36c5d08d751dedc5",
+      "edits": [
+        {
+          "after": "#[path = \"support/document_scratch_guard.rs\"]\nmod guard;\n#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\nfn read(path: &str) -> String {\n    if path == \"docs/testing/gated-test-registry.toml\" {\n        return runtime_io::read_to_string(\n            std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n                .join(\"../..\")\n                .join(path),\n        )\n        .unwrap();\n    }\n    std::fs::read_to_string(\n        std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n            .join(\"../..\")\n",
+          "before": "#[path = \"support/document_scratch_guard.rs\"]\nmod guard;\nfn read(path: &str) -> String {\n    std::fs::read_to_string(\n        std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n            .join(\"../..\")\n"
+        }
+      ],
+      "source_sha256": "8644cf373ee5597d0226d5084575a824f54d7e40301cb86778248f63c6be90ae"
+    },
+    "crates/xtask/tests/authority_key_hex_074.rs": {
+      "current_sha256": "e6099a84dae2a372c728245d4437c899b52d5e3235bc349e0725596951ccfb29",
+      "edits": [
+        {
+          "after": "#[path = \"support/document_scratch_guard.rs\"]\nmod guard;\n#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\nfn read(path: &str) -> String {\n    if path == \"docs/testing/gated-test-registry.toml\" {\n        return runtime_io::read_to_string(\n            std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n                .join(\"../..\")\n                .join(path),\n        )\n        .unwrap();\n    }\n    std::fs::read_to_string(\n        std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n            .join(\"../..\")\n",
+          "before": "#[path = \"support/document_scratch_guard.rs\"]\nmod guard;\nfn read(path: &str) -> String {\n    std::fs::read_to_string(\n        std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n            .join(\"../..\")\n"
+        }
+      ],
+      "source_sha256": "6a61f3a73f7bb09872ac0ca179b7802a322d10f8c643f635f14dac5c65de3589"
+    },
+    "crates/xtask/tests/custody_preparation_cost_074.rs": {
+      "current_sha256": "71a81eccf4595f2d99fcfe51cbe731c50097014ac32fb37bac89444cc6d0c3cb",
+      "edits": [
+        {
+          "after": "#[path = \"support/custody_cost_guard.rs\"]\nmod guard;\n#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\nconst BASE: &str = \"72efce2401e753b857f7fc03f3300b6aae19bd5d\";\nfn root() -> std::path::PathBuf {\n    std::path::PathBuf::from(env!(\"CARGO_MANIFEST_DIR\")).join(\"../..\")\n",
+          "before": "#[path = \"support/custody_cost_guard.rs\"]\nmod guard;\nconst BASE: &str = \"72efce2401e753b857f7fc03f3300b6aae19bd5d\";\nfn root() -> std::path::PathBuf {\n    std::path::PathBuf::from(env!(\"CARGO_MANIFEST_DIR\")).join(\"../..\")\n"
+        },
+        {
+          "after": "    String::from_utf8(out.stdout).unwrap().replace('\\r', \"\")\n}\nfn read(path: &str) -> String {\n    runtime_io::read_to_string(root().join(path))\n        .unwrap()\n        .replace('\\r', \"\")\n}\n",
+          "before": "    String::from_utf8(out.stdout).unwrap().replace('\\r', \"\")\n}\nfn read(path: &str) -> String {\n    std::fs::read_to_string(root().join(path))\n        .unwrap()\n        .replace('\\r', \"\")\n}\n"
+        }
+      ],
+      "source_sha256": "75c654c4ab7ec16c9cac73a21c0e47451184d331fb4b5b9df4ffa7afd0c74cc1"
+    },
+    "crates/xtask/tests/diagnostic_artifact_fixture_074.rs": {
+      "current_sha256": "5819f89ec58a899e03d7c0f14c6af91f4be6248a26f8578186cfc47b5900a805",
+      "edits": [
+        {
+          "after": "    }\n}\n\n#[path = \"support/artifact_inventory_input.rs\"]\nmod inventory;\n#[path = \"support/fixed_slice_namespace_guard.rs\"]\nmod namespace;\n#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\n\nconst BASE: &str = \"23c57b77523ad1cc16b1a79fc90b02a125f8d9b8\";\nconst NEW_SOURCE: &str = \"tools/long-run-supervisor-074/src/diagnostic_held_build.rs\";\n",
+          "before": "    }\n}\n\n#[path = \"support/fixed_slice_namespace_guard.rs\"]\nmod namespace;\n\nconst BASE: &str = \"23c57b77523ad1cc16b1a79fc90b02a125f8d9b8\";\nconst NEW_SOURCE: &str = \"tools/long-run-supervisor-074/src/diagnostic_held_build.rs\";\n"
+        },
+        {
+          "after": "    PathBuf::from(env!(\"CARGO_MANIFEST_DIR\")).join(\"../..\")\n}\nfn read(path: &str) -> String {\n    runtime_io::read_to_string(root().join(path))\n        .unwrap()\n        .replace('\\r', \"\")\n}\n",
+          "before": "    PathBuf::from(env!(\"CARGO_MANIFEST_DIR\")).join(\"../..\")\n}\nfn read(path: &str) -> String {\n    std::fs::read_to_string(root().join(path))\n        .unwrap()\n        .replace('\\r', \"\")\n}\n"
+        },
+        {
+          "after": "        \"{}\",\n        String::from_utf8_lossy(&output.stderr)\n    );\n    let raw = String::from_utf8(output.stdout).unwrap().replace('\\r', \"\");\n    if args == [\"ls-files\", \"--\", inventory::SCOPE] {\n        inventory::project(&raw).expect(\"current inventory refused before historical phase\")\n    } else {\n        raw\n    }\n}\nfn normalize(raw: &str) -> String {\n    assert_eq!(raw.matches(NEW).count(), 1, \"exact immutable helper\");\n",
+          "before": "        \"{}\",\n        String::from_utf8_lossy(&output.stderr)\n    );\n    String::from_utf8(output.stdout).unwrap().replace('\\r', \"\")\n}\nfn normalize(raw: &str) -> String {\n    assert_eq!(raw.matches(NEW).count(), 1, \"exact immutable helper\");\n"
+        }
+      ],
+      "source_sha256": "93ca89a049f40d1ae6b2c82078578abc82656e9a22c9496f565873827e3c9afb"
+    },
+    "crates/xtask/tests/document_scratch_cost_074.rs": {
+      "current_sha256": "3f221c36780e053481009987b27bda38f69385d55ef778364882030ef856248c",
+      "edits": [
+        {
+          "after": "const BASE: &str = \"72efce2401e753b857f7fc03f3300b6aae19bd5d\";\n#[path = \"support/document_scratch_guard.rs\"]\nmod guard;\n#[path = \"support/document_scratch_inputs.rs\"]\nmod inputs;\n#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\nfn root() -> std::path::PathBuf {\n    std::path::PathBuf::from(env!(\"CARGO_MANIFEST_DIR\")).join(\"../..\")\n}\nfn read(path: &str) -> String {\n    let raw = inputs::read(path);\n    if path == guard::ORIGIN {\n        crate::hc074_pidfd_info_path_view!(path, &raw)\n    } else {\n        raw\n    }\n}\nfn git(path: &str) -> String {\n    let out = std::process::Command::new(\"git\")\n",
+          "before": "const BASE: &str = \"72efce2401e753b857f7fc03f3300b6aae19bd5d\";\n#[path = \"support/document_scratch_guard.rs\"]\nmod guard;\nfn root() -> std::path::PathBuf {\n    std::path::PathBuf::from(env!(\"CARGO_MANIFEST_DIR\")).join(\"../..\")\n}\nfn read(path: &str) -> String {\n    std::fs::read_to_string(root().join(path))\n        .unwrap()\n        .replace('\\r', \"\")\n}\nfn git(path: &str) -> String {\n    let out = std::process::Command::new(\"git\")\n"
+        }
+      ],
+      "source_sha256": "5f08d663a835310945fc2b9f1524dbd809ccd6b7db5fc1af8a99ed3e713dcfec"
+    },
+    "crates/xtask/tests/fresh_kernel_cost_074.rs": {
+      "current_sha256": "c3a5690ec07c0dc6eb6b139472c27059bda3d9bec944578878a0fa28f8f254c8",
+      "edits": [
+        {
+          "after": "#[path = \"support/fresh_status_guard.rs\"]\nmod guard;\n#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\nconst BASE: &str = \"94e53f29bab80734862673063bb3e9e114838ef0\";\nfn read(path: &str) -> String {\n    let loader = if path == runtime::status_fields::SOURCE {\n        runtime_io::read_to_string\n    } else {\n        std::fs::read_to_string\n    };\n    let raw = loader(\n        std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n            .join(\"../..\")\n            .join(path),\n",
+          "before": "#[path = \"support/fresh_status_guard.rs\"]\nmod guard;\nconst BASE: &str = \"94e53f29bab80734862673063bb3e9e114838ef0\";\nfn read(path: &str) -> String {\n    let raw = std::fs::read_to_string(\n        std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n            .join(\"../..\")\n            .join(path),\n"
+        }
+      ],
+      "source_sha256": "0cab4860903a2f18dc9bb955debf0406e06be94d53c26284344c779c7f133f26"
+    },
+    "crates/xtask/tests/pid_path_cost_074.rs": {
+      "current_sha256": "1bfc08e9169bfedbfb08c4fcc9d74525ababc380818b5664ef0f06448b1acffd",
+      "edits": [
+        {
+          "after": "#[path = \"support/pid_path_guard.rs\"]\nmod guard;\n#[path = \"../../../tools/authority-runtime-074/gate.rs\"]\nmod runtime;\n#[path = \"../../../tools/authority-runtime-074/io.rs\"]\nmod runtime_io;\n#[path = \"../../../tools/authority-storage-source-074/contract.rs\"]\nmod storage_contract;\nconst BASE: &str = \"b63a0e81ad808d6f65e8c8d818ee4c090c3718ff\";\nfn read(path: &str) -> String {\n    let loader = if path == runtime::status_fields::SOURCE {\n        runtime_io::read_to_string\n    } else {\n        std::fs::read_to_string\n    };\n    let raw = loader(\n        std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n            .join(\"../..\")\n            .join(path),\n",
+          "before": "#[path = \"support/pid_path_guard.rs\"]\nmod guard;\nconst BASE: &str = \"b63a0e81ad808d6f65e8c8d818ee4c090c3718ff\";\nfn read(path: &str) -> String {\n    let raw = std::fs::read_to_string(\n        std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n            .join(\"../..\")\n            .join(path),\n"
+        }
+      ],
+      "source_sha256": "de40b15b3a46e94c00995f3f6628b1a34d597843292084517a751b82b3e0c211"
+    },
+    "crates/xtask/tests/support/held_material_live_guard.rs": {
+      "current_sha256": "03fe0fceeb389a6bfc82565141cd9926e1fb4a5162213f23df1691f84d5f32fa",
+      "edits": [
+        {
+          "after": "    ($path:expr,$source:expr) => {{\n        let path: &str = $path;\n        let mut raw: String = $crate::hc074_pidfd_info_path_view!(path, $source);\n        for (file, hook) in [\n            (\"tools/long-run-supervisor-074/tests/support/consuming_held_live.rs\", \"#[path = \\\"held_original_service_live.rs\\\"]\\nmod original_service;\\n\"),\n            (\"tools/long-run-supervisor-074/tests/support/consuming_held_live_documents.rs\", \"#[path = \\\"held_original_service_documents.rs\\\"]\\nmod original_service;\\n\"),\n        ] {\n            if path == file && raw.contains(\"mod original_service;\") {\n                assert_eq!(raw.matches(hook).count(), 1);\n                raw = raw.replacen(hook, \"\", 1);\n            }\n        }\n        if path == \"docs/testing/gated-test-registry.toml\" && raw.contains(\"# BEGIN ORIGINAL MANAGER SERVICE GATE\") {\n            let gate = include_str!(concat!(env!(\"CARGO_MANIFEST_DIR\"), \"/tests/support/original_service_gate.txt\")).replace('\\r', \"\");\n            assert_eq!(raw.matches(gate.as_str()).count(), 1);\n            raw = raw.replacen(gate.as_str(), \"\", 1);\n        }\n        if path == \"tools/long-run-supervisor-074/src/diagnostic_held_unit_material.rs\"\n            && raw.contains(\"held_material_live_api.rs\")\n        {\n",
+          "before": "    ($path:expr,$source:expr) => {{\n        let path: &str = $path;\n        let mut raw: String = $crate::hc074_pidfd_info_path_view!(path, $source);\n        if path == \"tools/long-run-supervisor-074/src/diagnostic_held_unit_material.rs\"\n            && raw.contains(\"held_material_live_api.rs\")\n        {\n"
+        }
+      ],
+      "source_sha256": "d0eb0c826f00afbcfd4c417eeeee4ecf681954a97c01bda9198b254ee68ea8f8"
+    },
+    "crates/xtask/tests/support/remaining_preparation_guard.rs": {
+      "current_sha256": "dde531610ab4981ecec66d8d01610c50115fb670c694c3f2a83e9eafb5c704ec",
+      "edits": [
+        {
+          "after": "    ($path:expr, $source:expr) => {{\n        let path: &str = $path;\n        let mut raw: String = $crate::hc074_leaf_requests_view!(path, $source);\n        if path == \"tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs\"\n            && raw.contains(\"pub(crate) mod owned_case;\")\n        {\n            let hook = \"\\n#[cfg(target_os = \\\"linux\\\")]\\n#[path = \\\"../../owned-case-074/library.rs\\\"]\\npub(crate) mod owned_case;\\n\";\n            assert_eq!(raw.matches(hook).count(), 1, \"exact test-only owned-case hook\");\n            raw = raw.replacen(hook, \"\", 1);\n        }\n        for (file, hooks) in [\n            (\"tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs\", &[\n                \"#[cfg(target_os = \\\"linux\\\")]\\n#[path = \\\"../tests/support/round_cost.rs\\\"]\\npub(crate) mod round_cost;\\n\\n\",\n",
+          "before": "    ($path:expr, $source:expr) => {{\n        let path: &str = $path;\n        let mut raw: String = $crate::hc074_leaf_requests_view!(path, $source);\n        for (file, hooks) in [\n            (\"tools/long-run-supervisor-074/src/diagnostic_validation_trace.rs\", &[\n                \"#[cfg(target_os = \\\"linux\\\")]\\n#[path = \\\"../tests/support/round_cost.rs\\\"]\\npub(crate) mod round_cost;\\n\\n\",\n"
+        },
+        {
+          "after": "macro_rules! hc074_remaining_preparation_view {\n    ($path:expr, $source:expr) => {{\n        let path: &str = $path;\n        let mut raw: String = $source.to_owned();\n        // The inner prefix view expects the pre-scalar parser. Undo only the\n        // exact accepted group/scalar leaves before entering that older view.\n        // Other paths and every match-count/whole-body assertion stay intact.\n        if path == \"tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs\" {\n            raw = $crate::hc074_projection_groups_view!(path, &raw);\n            if raw.contains(\"    let scalar = |prefix:\") {\n                let before = include_str!(concat!(env!(\"CARGO_MANIFEST_DIR\"), \"/../../tools/long-run-supervisor-074/tests/support/projection_reference.rs\")).replace('\\r', \"\");\n                let after = include_str!(concat!(env!(\"CARGO_MANIFEST_DIR\"), \"/../../tools/long-run-supervisor-074/tests/support/projection_candidate.rs\")).replace('\\r', \"\");\n                let function = |text: &str| format!(\"fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {{{}\", text.split_once(\") -> Result<Projection, KernelError> {\").unwrap().1.trim_end());\n                let after = function(&after);\n                assert_eq!(raw.matches(&after).count(), 1, \"exact bounded projection parser\");\n                let old_body = before.split_once(\") -> Result<Projection, KernelError> {\").unwrap().1;\n                let before = format!(\"fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {{{}\", old_body.trim_end());\n                raw = raw.replacen(&after, &before, 1);\n            }\n        }\n        let mut raw: String = $crate::hc074_starting_effects_view!(path, &raw);\n        for (file, hook) in [\n            (\"tools/long-run-supervisor-074/src/diagnostic_kernel_admission_tests.rs\", \"#[path = \\\"../tests/support/projection_cost.rs\\\"]\\npub(super) mod projection_cost;\\n\\n\"),\n            (\"tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs\", \"\\n#[path = \\\"../tests/support/projection_alloc.rs\\\"]\\nmod projection_fields;\\n\"),\n",
+          "before": "macro_rules! hc074_remaining_preparation_view {\n    ($path:expr, $source:expr) => {{\n        let path: &str = $path;\n        let mut raw: String = $crate::hc074_starting_effects_view!(path, $source);\n        for (file, hook) in [\n            (\"tools/long-run-supervisor-074/src/diagnostic_kernel_admission_tests.rs\", \"#[path = \\\"../tests/support/projection_cost.rs\\\"]\\npub(super) mod projection_cost;\\n\\n\"),\n            (\"tools/long-run-supervisor-074/src/diagnostic_fixed_leaf_alloc_tests.rs\", \"\\n#[path = \\\"../tests/support/projection_alloc.rs\\\"]\\nmod projection_fields;\\n\"),\n"
+        },
+        {
+          "after": "                assert_eq!(raw.matches(hook).count(), 1, \"exact projection test hook\");\n                raw = raw.replacen(hook, \"\", 1);\n            }\n        }\n        let has_marks = raw.contains(\"::mark(\\\"outputs-\") || raw.contains(\"::mark(\\\"owned-\");\n        for (file, indent, names) in [\n",
+          "before": "                assert_eq!(raw.matches(hook).count(), 1, \"exact projection test hook\");\n                raw = raw.replacen(hook, \"\", 1);\n            }\n        }\n        if path == \"tools/long-run-supervisor-074/src/diagnostic_kernel_admission.rs\"\n            && raw.contains(\"    let scalar = |prefix:\")\n        {\n            let before = include_str!(concat!(env!(\"CARGO_MANIFEST_DIR\"), \"/../../tools/long-run-supervisor-074/tests/support/projection_reference.rs\")).replace('\\r', \"\");\n            let after = include_str!(concat!(env!(\"CARGO_MANIFEST_DIR\"), \"/../../tools/long-run-supervisor-074/tests/support/projection_candidate.rs\")).replace('\\r', \"\");\n            let function = |text: &str| format!(\"fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {{{}\", text.split_once(\") -> Result<Projection, KernelError> {\").unwrap().1.trim_end());\n            let after = function(&after);\n            assert_eq!(raw.matches(&after).count(), 1, \"exact bounded projection parser\");\n            let old_body = before.split_once(\") -> Result<Projection, KernelError> {\").unwrap().1;\n            let before = format!(\"fn projection(bytes: &[u8], credentials: &libc::ucred) -> Result<Projection, KernelError> {{{}\", old_body.trim_end());\n            raw = raw.replacen(&after, &before, 1);\n        }\n        let has_marks = raw.contains(\"::mark(\\\"outputs-\") || raw.contains(\"::mark(\\\"owned-\");\n        for (file, indent, names) in [\n"
+        }
+      ],
+      "source_sha256": "b79bd6b91d060209334d6e870e205f4b10c4c5c662ed2d8a42ebdb394e0987c3"
+    }
+  },
+  "purpose": "test-source-compatibility-only",
+  "reviewed": "b571bef2bcd2ceb3ed044c9e31bce4f670cfafdd",
+  "schema": "hc074-current-tree-test-input-v1",
+  "source": "33c54b0cda8c330b115009cdf092ad002077cedf"
+}

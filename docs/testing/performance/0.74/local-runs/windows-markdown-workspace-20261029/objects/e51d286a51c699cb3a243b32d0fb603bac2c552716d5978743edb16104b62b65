@@ -1,0 +1,13 @@
+[workspace]
+
+[package]
+name = "durability-page-cache-profile-073"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+hydracache = { path = "../../crates/hydracache", features = ["durable-value-store"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+windows-sys = { version = "0.61", features = ["Win32_System_ProcessStatus", "Win32_System_Threading"] }

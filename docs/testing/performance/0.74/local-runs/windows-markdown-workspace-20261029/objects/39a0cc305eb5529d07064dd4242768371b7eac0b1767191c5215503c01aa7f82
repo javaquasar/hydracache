@@ -1,0 +1,43 @@
+[package]
+name = "hydracache-client-plane-spike"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Non-production HC/2 transport-selection semantic spikes."
+publish = false
+
+[dependencies]
+ed25519-dalek.workspace = true
+futures-util.workspace = true
+prost.workspace = true
+rcgen.workspace = true
+serde.workspace = true
+sha2.workspace = true
+tokio.workspace = true
+tokio-stream = { workspace = true, features = ["net"] }
+tonic.workspace = true
+tonic-prost.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+bytes.workspace = true
+h2.workspace = true
+http.workspace = true
+prost-types.workspace = true
+protoc-bin-vendored = "3.2.0"
+rustls.workspace = true
+serde_json.workspace = true
+tokio-rustls.workspace = true
+
+[build-dependencies]
+protoc-bin-vendored = "3.2.0"
+tonic-prost-build.workspace = true
+
+[lints]
+workspace = true

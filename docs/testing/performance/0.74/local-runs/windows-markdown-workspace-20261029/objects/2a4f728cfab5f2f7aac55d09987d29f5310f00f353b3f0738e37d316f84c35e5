@@ -1,0 +1,1 @@
+        for entry in fs::read_dir(format!("/proc/self/fd/{}", self.leaf.as_raw_fd()))? {

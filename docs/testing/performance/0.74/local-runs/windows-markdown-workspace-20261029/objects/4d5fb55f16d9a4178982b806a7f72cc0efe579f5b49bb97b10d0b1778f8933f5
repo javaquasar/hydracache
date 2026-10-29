@@ -1,0 +1,55 @@
+"""Retain the first complete changed-candidate milestone, including its refusal."""
+from pathlib import Path
+import hashlib
+import json
+import re
+
+ROOT=Path(__file__).resolve().parents[2]
+BASE=Path(__file__).resolve().parent
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/windows-markdown-workspace-20261029'
+sha=lambda body:hashlib.sha256(body).hexdigest()
+def load(name):return json.loads((BASE/name).read_bytes())
+def main():
+    before=load('milestone-first/frame-before.json');after=load('milestone-first/frame-after.json')
+    assert before==after and before['head']=='c62a2aa38810c96c9e480c6db39a8afbfa41b456'
+    assert before['member_source_coverage']==dict(complete=True,original_node_modules_exclusion=True,tracked_member_files=1962,workspace_members=36)
+    assert len(before['sources'])==3740
+    controller=load('milestone-first/controller.json');execution=controller['execution'];spec=controller['specification']
+    assert execution['retired'] and not execution['errors'] and execution['classification']=='test-failure' and execution['exit']==1
+    assert spec['argv']==['cargo','xtask','verify'] and spec['bound_seconds']==4800 and spec['start_free_bytes']==16*1024**3 and spec['floor_bytes']==4*1024**3
+    assert spec['capacity_poll_seconds']==5 and spec['cleanup_seconds']==5
+    assert load('milestone-first/result.json')['source_refs_configuration_environment_unchanged']
+    assert not load('milestone-first/result.json')['gate_pass']
+    stages=load('milestone-first/accounting.json')['stages']
+    assert [v['state'] for v in stages]==['complete']*11+['incomplete-or-failed']+['unstarted']*9
+    ids=sorted(set(re.findall(r'RUSTSEC-\d{4}-\d{4}',(BASE/'milestone-first/stderr.log').read_text(encoding='utf8'))))
+    assert ids==['RUSTSEC-2026-0391','RUSTSEC-2026-0398','RUSTSEC-2026-0403']
+    assert load('doc-final/result.json')['exit']==0
+    for name in ('deny.toml','docs/testing/performance/0.74/qualification-manifest.toml'):
+        assert before['sources'][name]==sha((ROOT/name).read_bytes())
+    claim_identity=sha(json.dumps(dict(sources=before['sources'],specification=spec,versions=before['versions'],environment=before['environment']),sort_keys=True).encode())
+    claim=ROOT/'target/windows-fixed-cargo-20261027/claims'/(claim_identity+'-workspace.json')
+    held=json.loads(claim.read_bytes());assert held['head']==before['head'] and held['output']==str(BASE/'milestone-first')
+    raw={p.relative_to(BASE).as_posix():p.read_bytes() for p in BASE.rglob('*') if p.is_file()}
+    raw['execution-claim.json']=claim.read_bytes()
+    for name,digest in before['sources'].items():
+        body=(ROOT/name).read_bytes();assert sha(body)==digest
+        raw['exact-framed-source/'+name]=body
+    OUT.mkdir(exist_ok=False);objects=OUT/'objects';objects.mkdir();members={}
+    for name,body in sorted(raw.items()):
+        digest=sha(body);path=objects/digest
+        if not path.exists():path.write_bytes(body)
+        members[name]=dict(sha256=digest,bytes=len(body))
+    index=dict(schema_version=1,files=members,head=before['head'],first_execution=True,
+        source_frames_identical=True,source_frame_files=3740,member_coverage=before['member_source_coverage'],
+        original_job=True,original_limits_unchanged=True,low_free_bytes=controller['low_observed_free_bytes'],
+        stages_passed=11,stages_refused=1,stages_unstarted=9,advisories=ids,markdown_finding_absent=True,
+        workspace_pass=False,security_pass=False,release_admitted=False,retired=True,
+        claim_retained=True,first_refusals_retained=True,binaries_excluded=True,
+        predecessor_packets=dict(markdown='2a9ae414126ae6741b7f2e5f0ff2f305e42c6ea5c68a5dbebf484fbcd5d62cca',
+                                first_windows='c7dade0ea66bb2adec6784c50872b112e07d13e007676c3c9e3c857c305b083f'),
+        server=False,services=False,clocks=False,performance_claim=False)
+    body=(json.dumps(index,indent=2,sort_keys=True)+'\n').encode();(OUT/'index.json').write_bytes(body)
+    (OUT/'.gitattributes').write_text('objects/* -text -diff\nindex.json -text\n',encoding='ascii',newline='\n')
+    print(json.dumps(dict(index_sha256=sha(body),members=len(members),objects=len(list(objects.iterdir())))))
+if __name__=='__main__':main()

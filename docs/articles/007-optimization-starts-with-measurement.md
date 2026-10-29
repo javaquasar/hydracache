@@ -22723,3 +22723,12 @@ original delivery, все writers и reconnect требуют отдельных
 Источники, первые отказы, ограничения и результаты сохранены в
 [Windows milestone](../testing/performance/0.74/windows-dbus-workspace-result-20261029.md)
 и [Markdown review](../testing/performance/0.74/markdown-security-result-20261029.md).
+
+Отдельный полный Windows milestone на зафиксированном кандидате затем подтвердил:
+Markdown finding исчез. Все 36 workspace members входят в одинаковые pre/post
+frames. Пройдены 11 этапов, policy отклоняет ровно три оставшихся finding Zstd;
+девять этапов не выполнялись. Часы, пороги, admission windows и retirement не
+менялись. Поэтому итог этой части — принятое локальное security-исправление и
+точно локализованный следующий блокер, а не завершённый релиз. Первый полный
+[результат нового кандидата](../testing/performance/0.74/windows-markdown-workspace-result-20261029.md)
+сохранён отдельно от предыдущего отказа и focused-прогонов.

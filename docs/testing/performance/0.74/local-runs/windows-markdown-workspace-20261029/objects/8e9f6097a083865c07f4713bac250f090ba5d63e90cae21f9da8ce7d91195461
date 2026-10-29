@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "seeds": [
+    {
+      "suite": "nemesis_membership",
+      "seed": 25607,
+      "steps": 24,
+      "reason": "0.64 W7 composed-fault membership seed kept as a frozen fast-tier replay sentinel"
+    },
+    {
+      "suite": "nemesis_membership",
+      "seed": 25608,
+      "steps": 24,
+      "reason": "0.64 W7 adjacent deterministic seed covering partition/heal plus snapshot-restore checks"
+    },
+    {
+      "suite": "nemesis_membership",
+      "seed": 25624,
+      "steps": 16,
+      "reason": "0.64 W18 deterministic replay seed used by the same-seed outcome proof"
+    }
+  ]
+}

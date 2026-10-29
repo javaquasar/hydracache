@@ -1,0 +1,13 @@
+[
+  {"id":"payload-bitflip","mutation":"payload_bitflip","outcome":"reject"},
+  {"id":"checksum-bitflip","mutation":"checksum_bitflip","outcome":"reject"},
+  {"id":"identity-cluster-swap","mutation":"wrong_cluster_identity","outcome":"reject"},
+  {"id":"identity-node-swap","mutation":"wrong_node_identity","outcome":"reject"},
+  {"id":"index-bitflip","mutation":"index_bitflip","outcome":"reject"},
+  {"id":"term-bitflip","mutation":"term_bitflip","outcome":"reject"},
+  {"id":"truncated-header","mutation":"truncate_header","outcome":"reject"},
+  {"id":"truncated-payload","mutation":"truncate_payload","outcome":"reject"},
+  {"id":"stale-snapshot-newer-tail","mutation":"stale_snapshot_newer_tail","outcome":"recover"},
+  {"id":"staged-without-activation","mutation":"staged_without_activation","outcome":"ignore-stale"},
+  {"id":"activation-without-payload","mutation":"activation_without_payload","outcome":"ignore-stale"}
+]

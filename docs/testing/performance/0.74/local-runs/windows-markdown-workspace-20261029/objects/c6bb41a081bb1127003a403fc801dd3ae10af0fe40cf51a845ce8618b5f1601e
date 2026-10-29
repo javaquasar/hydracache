@@ -1,0 +1,6 @@
+{
+  "exit": 1,
+  "dispatcher_unchanged_during_run": true,
+  "retry": false,
+  "release_admitted": false
+}

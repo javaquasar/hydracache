@@ -116,9 +116,10 @@ Production live checks and their 300/60/10 windows, and tests' 5/10/45 boundarie
 are unchanged. No retry-to-pass, deny exception, issuer/policy change, clock,
 existing service, server, supervisor or product performance workload is involved.
 
-A distinct full Windows milestone on the changed, committed graph remains a
-separate gate. The three Zstd findings are still open; the prior Chitchat preview
-allocation refusal is preserved. Original delivery, all-writer retirement,
+A [distinct full Windows milestone](windows-markdown-workspace-result-20261029.md)
+on the changed, committed graph subsequently completed 11 stages and refused the
+three remaining Zstd findings; Markdown's finding was absent. The prior Chitchat
+preview allocation refusal is preserved. Original delivery, all-writer retirement,
 lifecycle/reconnect, enrollment, server rehearsal and final qualification still
 need their own exact-candidate evidence. Parser event counts support this security
 regression result, not HydraCache CPU, allocation, throughput or latency claims.

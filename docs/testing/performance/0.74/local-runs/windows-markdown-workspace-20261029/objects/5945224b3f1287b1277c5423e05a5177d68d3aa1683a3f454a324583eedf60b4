@@ -1,0 +1,3 @@
+# Type Name                    ID GECOS                               Home                                     Shell
+u hydracache-perf              -  "HydraCache performance runner"    /var/lib/hydracache-performance          /usr/sbin/nologin
+g hydracache-perf-client       -

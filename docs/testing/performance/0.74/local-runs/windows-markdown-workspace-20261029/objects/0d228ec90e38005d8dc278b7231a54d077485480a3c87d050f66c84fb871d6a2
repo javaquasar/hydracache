@@ -1,0 +1,29 @@
+[package]
+name = "hydracache-sim-wasm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "wasm-bindgen bindings for the deterministic HydraCache simulator."
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+# Not published to crates.io: browser-demo wasm cdylib built via wasm-pack, not a library crate.
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+hydracache-sim.workspace = true
+wasm-bindgen.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+wasm-bindgen-test.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,75 @@
+"""Inert actual-artifact, complete-accounting and compiler/environment controls."""
+from pathlib import Path
+import json
+import tempfile
+import unittest
+from unittest import mock
+
+import common as c
+import native as n
+
+
+class Package(unittest.TestCase):
+    def test_expired_seed_or_expired_preflight_cannot_start_an_effect(self):
+        with tempfile.TemporaryDirectory(dir=c.ROOT/'target') as name:
+            folder=Path(name)
+            native=folder/'never-created'
+            with mock.patch.object(n,'NATIVE',native),mock.patch.object(n.time,'monotonic',return_value=11):
+                with self.assertRaises(ValueError):n.seed({},folder,10)
+                self.assertFalse(native.exists())
+            with mock.patch.object(n.time,'monotonic',side_effect=[1,11]),\
+                 mock.patch.object(c,'guard'),mock.patch.object(n,'capacity'),\
+                 mock.patch.object(n.subprocess,'Popen') as spawn:
+                with self.assertRaises(ValueError):n.invoke(folder,'not-started',['never'],{}, {},10)
+                spawn.assert_not_called()
+                self.assertFalse((folder/'not-started').exists())
+
+    def test_all_target_checks_and_clippy_keep_exact_flags_and_explicit_compilers(self):
+        with mock.patch.object(Path,'is_file',return_value=True):
+            for compiler,version in (('194','1.94.0'),('188','1.88.0')):
+                for action in ('check','clippy','build'):
+                    argv,env=n.cargo_command(compiler,action)
+                    self.assertIn('--offline',argv);self.assertIn('--locked',argv);self.assertIn('--all-targets',argv)
+                    self.assertIn(version,argv[0])
+                    self.assertEqual(env['RUSTUP_TOOLCHAIN'],version+'-x86_64-unknown-linux-gnu')
+                    self.assertEqual(env['RUSTC_WRAPPER'],'')
+                    if action in ('check','clippy'):self.assertIn('--all-features',argv)
+                    if action=='clippy':self.assertEqual(argv[-3:],['--','-D','warnings'])
+        self.assertEqual(n.PHASES,('seed','format','checks','focus-194','focus-188','spool-194','spool-188','tests-194','tests-188'))
+
+    def test_only_actual_test_profile_artifacts_are_runnable_and_all_targets_are_accounted(self):
+        with tempfile.TemporaryDirectory(dir=c.ROOT/'target') as name:
+            root=Path(name);build=root/'builds/194';build.mkdir(parents=True)
+            image=build/'libtest';image.write_bytes(b'held synthetic image, not executed')
+            ordinary=build/'example';ordinary.write_bytes(b'normal program, never execute as a test')
+            targets=[dict(name='library',kind=['lib'],src=c.PKG+'/src/lib.rs',test=True),
+                     dict(name='example',kind=['example'],src=c.PKG+'/examples/model.rs',test=False)]
+            def row(target,path,test):
+                return dict(reason='compiler-artifact',target=dict(name=target['name'],kind=target['kind'],
+                    src_path=str(c.ROOT/target['src'])),profile=dict(test=test),executable=str(path))
+            messages=[row(targets[0],image,True),row(targets[1],ordinary,False),dict(reason='build-finished',success=True)]
+            encode=lambda rows:b'\n'.join(json.dumps(v).encode() for v in rows)
+            with mock.patch.object(n,'NATIVE',root):
+                found=n.artifacts(encode(messages),dict(targets=targets),'194')
+                self.assertEqual([v['path'] for v in found],[str(image)])
+                with self.assertRaises(ValueError):n.artifacts(encode(messages[:1]+messages[-1:]),dict(targets=targets),'194')
+                duplicate=messages[:1]+messages
+                with self.assertRaises(ValueError):n.artifacts(encode(duplicate),dict(targets=targets),'194')
+                messages[0]['profile']['test']=False
+                with self.assertRaises(ValueError):n.artifacts(encode(messages),dict(targets=targets),'194')
+
+    def test_full_accounting_refuses_wrong_duplicate_filtered_failed_or_missing_cases(self):
+        good=(b'test alpha ... ok\ntest beta ... ignored, manual fixture\n'
+              b'test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s\n')
+        value=n.account(good,['alpha','beta'])
+        self.assertEqual((value['passed'],value['ignored'],value['catalog']),(1,1,2))
+        for raw in (good.replace(b'beta ...',b'alpha ...'),good.replace(b'0 filtered',b'1 filtered'),
+                    good.replace(b'0 failed',b'1 failed'),good.replace(b'1 passed',b'0 passed'),
+                    good+good):
+            with self.assertRaises(ValueError):n.account(raw,['alpha','beta'])
+        zero=b'test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n'
+        self.assertEqual(n.account(zero,[])['catalog'],0)
+        with self.assertRaises(ValueError):n.account(zero,['required-case'])
+
+
+if __name__=='__main__':unittest.main()

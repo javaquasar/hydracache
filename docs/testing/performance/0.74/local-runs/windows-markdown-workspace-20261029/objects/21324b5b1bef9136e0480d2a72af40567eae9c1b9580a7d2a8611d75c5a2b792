@@ -1,0 +1,7 @@
+{
+  "kind": "offline-inspection",
+  "complete": false,
+  "reason": "Default cp1252 could not decode byte0x81 in original UTF8 Cargo stderr at offset1027814",
+  "corrected_by": "Explicit UTF8 decode of the same saved bytes",
+  "compiler_or_product_rerun": false
+}

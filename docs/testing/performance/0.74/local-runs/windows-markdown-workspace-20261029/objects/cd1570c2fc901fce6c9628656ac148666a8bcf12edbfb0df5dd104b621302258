@@ -1,0 +1,833 @@
+# Release evidence hashes exact trace bytes; keep them stable across platforms.
+crates/hydracache-cache-sim/traces/*.trace text eol=lf
+*.sh text eol=lf
+# Vite preserves source HTML line endings in generated/embedded artifacts.
+console/index.html text eol=lf
+scripts/perf/*.py text eol=lf
+docs/testing/hc2-compat/artifacts/**/*.pom text eol=lf
+sdks/python/hydracache-client-hc2/src/hydracache_hc2_generated/** text eol=lf
+.github/workflows/*.yml text eol=lf
+docs/testing/memory/0.71/** text eol=lf
+docs/testing/perf-scenarios/0.71/** text eol=lf
+docs/testing/perf-host-profiles/memory-reference-071-v1.json text eol=lf
+docs/testing/perf-artifacts/0.67.1/**/accepted-receipts/*.json text eol=lf
+
+# Archived performance evidence is immutable. Do not normalize text files inside
+# these byte-for-byte campaign copies on add or checkout.
+docs/testing/perf-artifacts/0.71/** -text
+docs/testing/perf-artifacts/0.71/**/*.tar.gz filter=lfs diff=lfs merge=lfs -text
+docs/testing/perf-artifacts/0.71/**/*.zip filter=lfs diff=lfs merge=lfs -text
+docs/testing/perf-artifacts/0.71/**/README.md text eol=lf
+docs/testing/perf-artifacts/0.71/**/manifest.json text eol=lf
+docs/testing/perf-artifacts/0.71/**/SHA256SUMS text eol=lf
+docs/testing/perf-artifacts/0.71/**/verify.ps1 text eol=lf
+docs/testing/perf-artifacts/0.71/**/redaction-receipt.json text eol=lf
+docs/testing/perf-artifacts/0.73/** -text
+docs/testing/perf-artifacts/0.73/**/*.zip -text
+docs/testing/perf-artifacts/0.73/**/job-log.txt text eol=lf
+docs/testing/perf-artifacts/0.73/**/README.md text eol=lf
+docs/testing/perf-artifacts/0.73/**/manifest.json text eol=lf
+docs/testing/perf-artifacts/0.73/**/SHA256SUMS text eol=lf
+docs/testing/perf-artifacts/0.73/**/verify.ps1 text eol=lf
+
+# D1 response-owner receipts hash raw bytes; never rewrite them on checkout.
+docs/testing/performance/0.74/local-runs/response-owner-*/** -text
+# Raw Windows runner receipts retain CRLF bytes; recognize CR as line ending.
+docs/testing/performance/0.74/local-runs/get-owner-d3a-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/get-owner-b0-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/secure-memory-*/** -text whitespace=cr-at-eol
+# Native test logs include a final blank line; preserve the receipt bytes.
+docs/testing/performance/0.74/local-runs/secure-memory-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/embedded-scheduled-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/embedded-scheduled-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+# Timing instrumentation/semantic receipts also bind raw log bytes, not speedup.
+docs/testing/performance/0.74/local-runs/timing-instrumentation-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/timing-instrumentation-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+# Read-only host inventory receipts bind captured bytes, not admission.
+scripts/perf/performance_rental_preflight_074.py text eol=lf
+docs/testing/performance/0.74/local-runs/rental-preflight-*/** -text whitespace=cr-at-eol
+scripts/perf/performance_rental_pilot_prepare_074.py text eol=lf
+scripts/perf/test_performance_rental_pilot_prepare_074.py text eol=lf
+docs/testing/performance/0.74/rental*-contract.toml text eol=lf
+docs/testing/performance/0.74/rental-pilot-draft/*.json text eol=lf
+docs/testing/performance/0.74/diagnostic-builder-public-policy.json text eol=lf
+# Preparation receipts preserve exact local capture bytes, not performance proof.
+docs/testing/performance/0.74/local-runs/rental-prepare-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/rental-prepare-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-lease-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-lease-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-ipc-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-ipc-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-artifacts-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-artifacts-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-receipts-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-receipts-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-spool-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-spool-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-tree-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-tree-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-process-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-process-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-manager-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-manager-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-local-build-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-local-build-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-builder-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-builder-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+# Start-material check captures are evidence, not normalized source text.
+docs/testing/performance/0.74/local-runs/diagnostic-start-material-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-loaded-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-io-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-named-output-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-live-identity-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-production-output-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-live-execution-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-output-preparation-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-worker-credentials-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-worker-account-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-worker-binding-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-user-namespace-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-namespace-credentials-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-namespace-worker-binding-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-host-policy-audit-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-worker-policy-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-worker-files-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-worker-context-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-context-files-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-policy-credentials-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-signed-opening-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-mount-namespace-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof
+# cargo-deny draws trailing spaces; immutable captures must not be reformatted.
+docs/testing/performance/0.74/local-runs/diagnostic-signed-mount-*/**/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/production-readiness-local-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/production-readiness-local-*/*.json -text whitespace=cr-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/diagnostic-task-set-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-task-set-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signed-tasks-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signed-tasks-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-authority-registry-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-authority-registry-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-authority-fixed-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-authority-fixed-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signed-authority-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signed-authority-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-fixture-recovery-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-fixture-recovery-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-intent-projection-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-intent-projection-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-intent-journal-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-intent-journal-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-intent-fixed-storage-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-intent-fixed-storage-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-storage-preflight-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-storage-preflight-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-authority-intent-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-authority-intent-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-reserved-state-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-reserved-state-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-original-fence-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-original-fence-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-fixed-admission-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-fixed-admission-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-fenced-intent-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-fenced-intent-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-empty-reservation-fence-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-empty-reservation-fence-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-empty-fenced-intent-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-empty-fenced-intent-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-reservation-publication-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-reservation-publication-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-initial-consumption-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-initial-consumption-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-process-crash-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-process-crash-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-transition-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-transition-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-early-attempt-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-early-attempt-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-attempt-publication-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-attempt-publication-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signed-history-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signed-history-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-starting-intent-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-starting-intent-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-starting-quarantine-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-starting-quarantine-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-quarantine-crash-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-quarantine-crash-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-context-replay-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-context-replay-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-completion-boundary-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-completion-boundary-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-collector-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-collector-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-kernel-admission-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-kernel-admission-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-reviewed-trust-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-reviewed-trust-*/manifest.json -text
+docs/testing/performance/0.74/diagnostic-worker-issuer-public.json text eol=lf
+docs/testing/performance/0.74/diagnostic-signer-issuer-public.json text eol=lf
+docs/testing/performance/0.74/diagnostic-signer-issuer-selection.json text eol=lf
+docs/testing/performance/0.74/local-runs/diagnostic-worker-key-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-worker-key-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-worker-trust-input-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-worker-trust-input-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-worker-kernel-binding-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-worker-kernel-binding-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-controller-trust-input-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-controller-trust-input-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-controller-build-input-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-controller-build-input-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-oidc-input-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-oidc-input-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-controller-producer-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-controller-producer-*/manifest.json -text
+scripts/perf/fixtures/public-synthetic-oidc-tls-*.pem text eol=lf
+docs/testing/performance/0.74/local-runs/diagnostic-oidc-acquisition-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-oidc-acquisition-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-oidc-public-source-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-oidc-public-source-*/acquisition-*.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-oidc-public-source-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-oidc-roster-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-oidc-roster-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-retained-producer-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-retained-producer-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signer-build-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-build-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signer-bundle-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-bundle-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signer-executable-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-executable-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signer-bootstrap-decision-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-bootstrap-decision-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signer-first-exec-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-first-exec-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signer-seccomp-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-seccomp-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signer-joined-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-joined-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signer-runtime-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-runtime-*/manifest.json -text
+docs/testing/performance/0.74/local-runs/diagnostic-signer-root-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-root-*/manifest.json -text
+
+# Enrollment inventory hashes retained public observations and collector bytes.
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-isolation-*/** -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-exec-*/** -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-enrollment-inventory-*/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/diagnostic-signer-gnu-catalog-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-runtime-join-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-bootstrap-context-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-child-entry-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-probe-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-loss-*/** -text whitespace=cr-at-eol
+# Preserve raw libtest/proc status whitespace in the failed and passing captures.
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-loss-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-thread-exit-race-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-thread-exit-race-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-constructor-gate-race-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-constructor-gate-race-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-loss-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-loss-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-handoff-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-handoff-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-handoff-loss-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-handoff-loss-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-send-windows-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/diagnostic-signer-owned-root-send-windows-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/msrv-macro-diagnostics-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/msrv-macro-diagnostics-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/msrv-conditional-diagnostics-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/msrv-conditional-diagnostics-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/msrv-tooling-trace-cleanup-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/msrv-tooling-trace-cleanup-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/msrv-tooling-trace-cleanup-*/verification-first-failed.txt -text whitespace=cr-at-eol,-blank-at-eol
+docs/testing/performance/0.74/local-runs/root-guard-attribution-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/root-guard-attribution-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/scm-rights-eof-isolation-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/scm-rights-eof-isolation-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/controller-fence-preflight-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/controller-fence-preflight-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/controller-attempt-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/controller-attempt-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/controller-attempt-*/*.patch -text whitespace=cr-at-eol,-blank-at-eol
+docs/testing/performance/0.74/local-runs/kernel-refusal-attribution-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/kernel-refusal-attribution-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/kernel-refusal-attribution-*/*.patch -text whitespace=cr-at-eol,-blank-at-eol
+docs/testing/performance/0.74/local-runs/collector-intent-prerequisite-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/collector-intent-prerequisite-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/collector-intent-prerequisite-*/*.patch -text whitespace=cr-at-eol,-blank-at-eol
+docs/testing/performance/0.74/local-runs/collector-intent-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/collector-intent-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/original-collector-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/original-collector-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/observed-reservation-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/observed-reservation-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/collector-reserved-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/collector-reserved-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/collector-progress-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/collector-progress-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/collector-causal-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/collector-causal-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/validation-cost-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/validation-cost-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/worker-proof-reuse-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/worker-proof-reuse-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/worker-proof-reuse-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/short-fence-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/short-fence-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/claim-construction-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/claim-construction-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/claim-construction-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/start-consent-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/start-consent-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/validation-frame-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/validation-frame-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/validation-frame-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/collector-starting-record-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/collector-starting-publication-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/collector-starting-publication-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/collector-starting-publication-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/preconsent-frame-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/preconsent-frame-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/collector-starting-framed-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/collector-starting-framed-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/original-collector-pipes-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/original-collector-pipes-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/original-collector-sinks-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/original-collector-sinks-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/original-collector-sinks-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/original-collector-start-material-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/original-pipe-transport-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/original-pipe-transport-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/original-safety-alarm-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/original-safety-alarm-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/original-safety-alarm-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/validation-leaf-cost-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/validation-leaf-cost-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/validation-leaf-cost-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/controller-component-cost-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/controller-component-cost-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/controller-component-cost-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/controller-syscall-cost-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/controller-syscall-cost-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/grouped-preparation-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/grouped-preparation-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/grouped-preparation-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/grouped-process-loss-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/grouped-process-loss-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/grouped-process-loss-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/fixed-grouped-preparation-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/fixed-grouped-preparation-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/fixed-grouped-preparation-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/fixed-grouped-process-loss-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/fixed-grouped-process-loss-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/fixed-grouped-process-loss-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/autonomous-watchdog-*/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/autonomous-watchdog-*/*.log -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/autonomous-watchdog-*/*.patch -text whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+# Preserve raw negotiated-dispatch capsules; CRLF is a line ending, not a mutation.
+docs/testing/performance/0.74/local-runs/negotiated-dispatch-20261018/** -text whitespace=cr-at-eol
+
+# The cancelled libtest stream ends in a partial prompt; retain its exact bytes.
+docs/testing/performance/0.74/local-runs/boot-comparison-20261019/source-full.log -diff
+
+# Keep raw fixed-slice commands and receipts byte-exact.
+docs/testing/performance/0.74/local-runs/fixed-slice-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/fixed-slice-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+# Frozen worker lock bytes are test data, not a moving dependency lock.
+tools/long-run-supervisor-074/tests/fixtures/diagnostic-pilot-root-Cargo.lock -text
+docs/testing/performance/0.74/local-runs/frozen-lock-fixture-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/frozen-lock-fixture-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+# Retain isolated cgroup namespace fixture refusals and compiler receipts.
+docs/testing/performance/0.74/local-runs/fixed-slice-namespace-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/fixed-slice-namespace-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-artifact-boundary-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-artifact-boundary-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+# Purpose-bound authority: retain compile refusals and exact selected-source logs.
+docs/testing/performance/0.74/local-runs/held-build-authority-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-build-authority-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-launcher-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-launcher-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-role-files-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-role-files-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-role-binding-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-role-binding-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-runtime-trust-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-runtime-trust-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-consuming-join-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-consuming-join-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-consuming-server-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-consuming-server-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-consuming-live-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-consuming-live-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+docs/testing/performance/0.74/local-runs/held-consuming-live-20261020/**/*.patch whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-consuming-privileged-server-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-consuming-privileged-server-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-preparation-cost-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-preparation-cost-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/fresh-kernel-cost-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/fresh-kernel-cost-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/pid-path-cost-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/pid-path-cost-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-composition-recheck-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-composition-recheck-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-native-recheck-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-native-recheck-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/custody-preparation-cost-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/custody-preparation-cost-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/remaining-preparation-cost-20261020/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/remaining-preparation-cost-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/starting-effects-cost-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/starting-effects-cost-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/validation-round-cost-20261020/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/validation-round-cost-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/validation-leaf-requests-20261020/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/validation-leaf-requests-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-key-hex-20261020/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-key-hex-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-context-20261020/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-context-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-leaf-name-20261020/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-leaf-name-20261020/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-inventory-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-inventory-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-name-capacity-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-name-capacity-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-expected-name-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-expected-name-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-breakdown-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-breakdown-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-fd-path-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-fd-path-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-owners-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-owners-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-cpu-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-cpu-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-leaf-cpu-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-leaf-cpu-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-open-name-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-open-name-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/validation-round-residual-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/validation-round-residual-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/single-session-rounds-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/single-session-rounds-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/single-session-rounds-verified-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/single-session-rounds-verified-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/single-session-rounds-bound-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/single-session-rounds-bound-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/partial-preparation-attribution-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/partial-preparation-attribution-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/observer-topology-cost-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/observer-topology-cost-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/fresh-kernel-authority-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/fresh-kernel-authority-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/boot-authority-operations-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/boot-authority-operations-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/directory-preparation-impact-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/directory-preparation-impact-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-original-faults-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/held-original-faults-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/original-delivery-writers-audit-20261021/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/original-delivery-writers-audit-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-unit-projection-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-unit-projection-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-unit-material-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-unit-material-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-material-live-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-material-live-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-material-round-attribution-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/held-material-round-attribution-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/pidfd-info-path-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/pidfd-info-path-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/projection-groups-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/projection-groups-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/reserved-leaf-audit-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/reserved-leaf-audit-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/context-document-baseline-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/context-document-baseline-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/context-document-stack-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/context-document-stack-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/trust-component-baseline-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/trust-component-baseline-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/trust-component-stack-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/trust-component-stack-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/collector-peer-baseline-20261021/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/collector-peer-baseline-20261021/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/collector-peer-capacity-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/collector-peer-capacity-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/reserved-reconciliation-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/reserved-reconciliation-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/proc-document-baseline-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/proc-document-baseline-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/sample-boot-baseline-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/sample-boot-baseline-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/sample-boot-inline-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/sample-boot-inline-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-read-audit-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-read-audit-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-read-baseline-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-read-baseline-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-scratch-reuse-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-scratch-reuse-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-scratch-owner-audit-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-scratch-owner-audit-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-owned-journal-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-owned-journal-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-operator-order-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-operator-order-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-operator-targeted-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-operator-targeted-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-integration-audit-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-integration-audit-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-history-view-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-history-view-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-storage-source-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-storage-source-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-rust-history-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-rust-history-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-20261022/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-doc-followup-20261022/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-doc-followup-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-allocation-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-runtime-allocation-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-allocation-doc-followup-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-runtime-allocation-doc-followup-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-cpu-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-runtime-cpu-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-cpu-doc-followup-20261022/** -text whitespace=cr-at-eol
+docs/testing/performance/0.74/local-runs/authority-runtime-cpu-doc-followup-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-variance-20261022/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-variance-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-variance-doc-followup-20261022/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-variance-doc-followup-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+tools/authority-runtime-balanced-074/*.py text eol=lf
+tools/authority-runtime-balanced-074/README.md text eol=lf
+
+tools/authority-runtime-native-074/*.py text eol=lf
+tools/authority-runtime-native-074/README.md text eol=lf
+
+docs/testing/performance/0.74/local-runs/authority-runtime-native-validation-20261022/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-native-validation-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-native-doc-followup-20261022/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-native-doc-followup-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-balanced-runner-20261022/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-balanced-runner-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-balanced-20261022/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-balanced-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-balanced-doc-followup-20261022/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/authority-runtime-balanced-doc-followup-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+tools/held-manager-compat-074/*.py text eol=lf
+
+tools/held-manager-compat-074/README.md text eol=lf
+
+tools/held-wsl-native-074/*.py text eol=lf
+
+tools/held-wsl-native-074/*.sh text eol=lf
+
+tools/held-wsl-native-074/README.md text eol=lf
+
+tools/held-material-roles-074/*.py text eol=lf
+
+tools/held-material-roles-074/README.md text eol=lf
+
+docs/testing/performance/0.74/local-runs/held-manager-compat-20261022/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/held-manager-compat-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-manager-compat-doc-followup-20261022/** -text whitespace=cr-at-eol
+
+docs/testing/performance/0.74/local-runs/held-manager-compat-doc-followup-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-wsl-native-20261022/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+docs/testing/performance/0.74/local-runs/held-wsl-native-20261022/**/*.log whitespace=cr-at-eol,-blank-at-eof,-blank-at-eol
+
+docs/testing/performance/0.74/local-runs/held-material-role-binding-20261022/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+tools/held-complete-census-074/*.py text eol=lf
+tools/held-complete-census-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/held-complete-role-census-20261022/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+tools/held-activation-ingress-074/*.py text eol=lf
+tools/held-activation-ingress-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/held-activation-ingress-20261022/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+tools/held-bind-alias-074/*.py text eol=lf
+tools/held-bind-alias-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/held-bind-bootstrap-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+tools/bootstrap-build-owner-074/*.py text eol=lf
+tools/bootstrap-build-owner-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-build-owner-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+tools/bootstrap-image-census-074/*.py text eol=lf
+tools/bootstrap-image-census-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-image-census-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+tools/bootstrap-entry-binding-074/*.py text eol=lf
+tools/bootstrap-entry-binding-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-entry-binding-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+tools/bootstrap-child-reader-074/*.py text eol=lf
+tools/bootstrap-child-reader-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-child-reader-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+tools/bootstrap-child-census-074/*.py text eol=lf
+tools/bootstrap-child-census-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-child-census-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+tools/bootstrap-current-image-074/*.py text eol=lf
+tools/bootstrap-current-image-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-current-image-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+tools/bootstrap-child-boundary-074/*.py text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-child-boundary-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+tools/bootstrap-installed-origin-074/*.py text eol=lf
+tools/bootstrap-installed-origin-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-installed-origin-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+tools/bootstrap-installed-entry-074/*.py text eol=lf
+tools/bootstrap-installed-entry-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-installed-entry-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+tools/bootstrap-installed-material-074/*.py text eol=lf
+tools/bootstrap-installed-material-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-installed-material-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+tools/bootstrap-installed-child-074/*.py text eol=lf
+tools/bootstrap-installed-child-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-installed-child-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+tools/bootstrap-sandbox-owner-074/*.py text eol=lf
+tools/bootstrap-sandbox-owner-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-sandbox-owner-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+tools/bootstrap-held-delivery-074/*.py text eol=lf
+tools/bootstrap-held-delivery-074/README.md text eol=lf
+docs/testing/performance/0.74/local-runs/bootstrap-held-delivery-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+tools/bootstrap-held-entry-074/*.py text eol=lf
+tools/bootstrap-held-entry-074/README.md text eol=lf
+
+tools/source-successor-view-074/* text eol=lf
+tools/authority-reader-phase-074/* text eol=lf
+tools/bootstrap-doc-reader-074/* text eol=lf
+tools/current-frontier-074/* text eol=lf
+tools/remaining-readers-074/* text eol=lf
+tools/history-status-readers-074/* text eol=lf
+scripts/ci/watchdog_windows_job.py text eol=lf
+scripts/ci/test_watchdog_074.py text eol=lf
+scripts/ci/test_watchdog_windows_074.py text eol=lf
+tools/historical-blob-batch-074/*v5.py text eol=lf
+tools/historical-blob-batch-074/*v6.py text eol=lf
+tools/xtask-package-attribution-074/git_process_boundary.py text eol=lf
+tools/xtask-package-attribution-074/test_git_process_boundary.py text eol=lf
+tools/xtask-package-attribution-074/git_job_cpu.py text eol=lf
+tools/xtask-package-attribution-074/test_git_job_cpu.py text eol=lf
+tools/xtask-package-attribution-074/git-job-cpu* text eol=lf
+tools/xtask-package-attribution-074/git_cpu_overhead.py text eol=lf
+tools/xtask-package-attribution-074/test_git_cpu_overhead.py text eol=lf
+tools/xtask-package-attribution-074/git-cpu-overhead* text eol=lf
+tools/xtask-package-attribution-074/git_cpu_variance.py text eol=lf
+tools/xtask-package-attribution-074/test_git_cpu_variance.py text eol=lf
+tools/xtask-package-attribution-074/git-cpu-variance* text eol=lf
+tools/xtask-package-attribution-074/coordinator_frames.py text eol=lf
+tools/xtask-package-attribution-074/test_coordinator_frames.py text eol=lf
+tools/xtask-package-attribution-074/coordinator-frames* text eol=lf
+tools/xtask-package-attribution-074/capture_attribution.py text eol=lf
+tools/xtask-package-attribution-074/test_capture_attribution.py text eol=lf
+tools/xtask-package-attribution-074/capture-attribution* text eol=lf
+tools/xtask-package-attribution-074/capture_leaves.py text eol=lf
+tools/xtask-package-attribution-074/test_capture_leaves.py text eol=lf
+tools/xtask-package-attribution-074/capture-leaves* text eol=lf
+crates/xtask/tests/git_descendant_cpu_074.rs text eol=lf
+docs/testing/performance/0.74/local-runs/git-process-boundary-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/git-job-cpu-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/pipe-fixture-git-overhead-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/git-cpu-variance-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/coordinator-frames-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/coordinator-native-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/capture-attribution-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/capture-leaves-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/capture-leaves-native-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/leaf-attribution-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/spawn-frames-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/spawn-capture-native-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/package-review-v6-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/package-closure-v6-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/package-closure-v5-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/history-status-cleanup-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/ci-watchdog-owned-cleanup-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/ci-watchdog-cleanup-budget-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/module-context-v5-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/remaining-readers-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/current-frontier-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/bootstrap-doc-reader-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/authority-reader-phase-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/source-successor-view-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/bootstrap-held-entry-20261023/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+docs/testing/performance/0.74/local-runs/closure-preflight-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+docs/testing/performance/0.74/local-runs/rustls-authorized-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+docs/testing/performance/0.74/local-runs/selected-manager-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+docs/testing/performance/0.74/local-runs/webpki-security-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/roots-security-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+docs/testing/performance/0.74/local-runs/tokio-security-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+docs/testing/performance/0.74/local-runs/security-successor-audit-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+
+tools/security-input-view-074/rules.json -text
+tools/source-successor-view-074/diagnostic-additions.txt -text whitespace=-blank-at-eof
+
+docs/testing/performance/0.74/local-runs/security-input-view-20261026/** -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof

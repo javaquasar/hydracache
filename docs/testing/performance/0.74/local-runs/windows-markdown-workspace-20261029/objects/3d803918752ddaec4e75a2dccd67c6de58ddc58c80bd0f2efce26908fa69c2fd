@@ -1,0 +1,66 @@
+import json
+from pathlib import Path
+import tempfile
+import unittest
+from unittest.mock import Mock, patch
+
+import coordinator_control as subject
+from owned_process_observer import Refusal
+
+
+class ControlTests(unittest.TestCase):
+    def test_bad_mode_refuses_before_spawn(self):
+        with patch.object(subject.subprocess, "Popen") as spawn:
+            with self.assertRaisesRegex(Refusal, "unknown"):
+                subject.control("unused", "unused", "invalid")
+        spawn.assert_not_called()
+
+    def test_wrapper_pin_refusal_retained_before_spawn(self):
+        with tempfile.TemporaryDirectory() as temp:
+            out = Path(temp) / "first"
+            with patch.object(subject, "pinned", side_effect=Refusal("wrapper bytes drift")), \
+                    patch.object(subject.subprocess, "Popen") as spawn:
+                self.assertFalse(subject.control(out, "unit-before-spawn", "healthy"))
+            spawn.assert_not_called()
+            self.assertIn("wrapper bytes drift", json.loads((out / "result.json").read_text())["first_refusal"])
+            self.assertTrue((out / "intent.json").is_file())
+            with self.assertRaises(FileExistsError):
+                subject.control(out, "unit-before-spawn", "healthy")
+
+    def test_fixed_cohort_stops_at_first_unexpected_failure(self):
+        with tempfile.TemporaryDirectory() as temp:
+            with patch.object(subject, "control", return_value=False) as control:
+                self.assertFalse(subject.cohort(Path(temp) / "first"))
+            control.assert_called_once()
+
+    def test_fixed_cohort_modes_once(self):
+        with tempfile.TemporaryDirectory() as temp:
+            with patch.object(subject, "control", return_value=True) as control:
+                self.assertTrue(subject.cohort(Path(temp) / "first"))
+            self.assertEqual([call.args[-1] for call in control.call_args_list],
+                             ["healthy", "wrong-path", "census-fault"])
+
+    def test_attachment_error_releases_fixture_and_drains_never_kills_wrapper(self):
+        with tempfile.TemporaryDirectory() as temp:
+            out = Path(temp) / "first"
+            child = Mock()
+            child.poll.return_value = None
+
+            def waited(**kwargs):
+                child.poll.return_value = 0
+
+            child.wait.side_effect = waited
+            with patch.object(subject, "pinned"), patch.object(subject, "SnapshotApi"), \
+                    patch.object(subject.subprocess, "Popen", return_value=child) as spawn, \
+                    patch.object(subject, "OwnedObserver", side_effect=Refusal("attach failed")):
+                self.assertFalse(subject.control(out, "unit-attach-before-monitor", "healthy"))
+            child.kill.assert_not_called()
+            child.terminate.assert_not_called()
+            child.wait.assert_called_once_with(timeout=810)
+            self.assertEqual(set(spawn.call_args.kwargs), {"cwd", "stdout", "stderr"})
+            self.assertTrue((out / "release").is_file())
+            self.assertIn("attach failed", json.loads((out / "result.json").read_text())["first_refusal"])
+
+
+if __name__ == "__main__":
+    unittest.main()

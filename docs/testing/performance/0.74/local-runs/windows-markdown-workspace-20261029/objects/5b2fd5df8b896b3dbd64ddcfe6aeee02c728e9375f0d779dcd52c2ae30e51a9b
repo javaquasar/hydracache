@@ -1,0 +1,64 @@
+from pathlib import Path
+import hashlib,json,sys
+ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT/'tools/chitchat-preview-cost-074'))
+import run as r
+BASE=r.BASE
+OUT=BASE/'analysis'
+OUT.mkdir(exist_ok=False)
+(OUT/'producer.py').write_bytes(Path(__file__).read_bytes())
+trials=[]
+for trial,variant in enumerate(('C0','C1','C1','C0'),1):
+ folder=BASE/f'cohort-{trial}'
+ result=json.loads((folder/'result.json').read_bytes())
+ assert result['exit']==0 and result['unchanged'] and result['original_semantics_equal']
+ assert result['accounting']['passed']==3 and result['accounting']['selected']==3
+ raw=(folder/'stdout.log').read_bytes()
+ allocation=r.payload(raw,b'HC074_PREVIEW_ALLOC:')
+ cpu=r.payload(raw,b'HC074_PREVIEW_CPU:')
+ assert not allocation['native_allocations_included'] and not cpu['tracking_enabled']
+ assert allocation['seed']==cpu['seed']==0x0741028
+ trials.append(dict(trial=trial,variant=variant,allocation=allocation['rows'],cpu=cpu['rows'],
+  artifact=result['artifact'],stdout_sha256=r.sha(raw)))
+base=trials[0]['allocation'];cand=trials[1]['allocation']
+assert all(t['allocation']==(base if t['variant']=='C0' else cand) for t in trials)
+assert all(row['records'][0]==row['records'][1] for t in trials for row in t['allocation'])
+changed=[];preview=0
+for a,b in zip(base,cand):
+ assert (a['mtu'],a['value_len'],a['accepted'],a['wire'])==(b['mtu'],b['value_len'],b['accepted'],b['wire'])
+ assert all(v['bound_counts']['live']==v['complete_counts']['live']==0 for row in (a,b) for v in row['records'])
+ x,y=a['records'][0],b['records'][0]
+ if b['source_preview_branch']:preview+=1
+ if x!=y:
+  changed.append(dict(mtu=a['mtu'],value_len=a['value_len'],accepted=a['accepted'],
+   baseline=x,candidate=y,source_clone_bytes=b['source_clone_bytes_if_preview'],
+   source_append_bytes=b['source_append_bytes_if_preview']))
+expected=[(100,1,1024),(100,4096,64),(1000,64,1024),(1000,4096,64),(40000,39938,64),(65507,65447,64)]
+cpu=[]
+for index,key in enumerate(expected):
+ for phase in ('bound','complete'):
+  samples=[]
+  for t in trials:
+   row=t['cpu'][index]
+   assert (row['mtu'],row['value_len'],row['repetitions'])==key
+   assert [v['phase'] for v in row['timings']]==['bound','complete']
+   v=next(v for v in row['timings'] if v['phase']==phase)
+   samples.append(dict(trial=t['trial'],variant=t['variant'],**v,
+    cpu_us_per_op=v['cpu_100ns']/10/key[2],wall_us_per_op=v['wall_ns']/1000/key[2],
+    cpu_batch_at_least_1ms=v['cpu_100ns']>=10000))
+  cpu.append(dict(mtu=key[0],value_len=key[1],repetitions=key[2],phase=phase,samples=samples))
+result=dict(schema='hc074-preview-cost-attribution-v1',first_cohort_only=True,order=['C0','C1','C1','C0'],
+ cases=239,alloc_observations_per_case_per_process=2,allocation_records_repeat_exactly=True,
+ original_semantics_preserved=True,preview_cases=preview,allocation_changed_cases=len(changed),
+ changed=changed,cpu=cpu,rust_requested_live_at_region_end_always_zero=True,
+ native_allocation_or_retention_measured=False,physical_copies_measured=False,
+ observer_in_cpu='tracking disabled; delegating global allocator still checks TLS',
+ performance_or_nonregression_gate=False,root_graph_changed=False,release_admitted=False,
+ trial_receipts=[{k:v for k,v in t.items() if k not in ('allocation','cpu')} for t in trials])
+r.write(OUT,'result.json',result)
+print(json.dumps(dict(cases=239,preview_cases=preview,allocation_changed_cases=len(changed),
+ changed_accepted=sum(v['accepted'] for v in changed),changed_rejected=sum(not v['accepted'] for v in changed))))
+for key in expected:
+ a=next(v for v in changed if (v['mtu'],v['value_len'])==key[:2]) if any((v['mtu'],v['value_len'])==key[:2] for v in changed) else None
+ if a:print(json.dumps(a))
+for v in cpu:print(json.dumps(v))
