@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\bin\\rustfmt.exe",
+    "--edition",
+    "2024",
+    "--config",
+    "skip_children=true",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-commit-P-20261029-r1\\observer.rs",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-commit-074\\q_append.rs",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-commit-074\\q_tests.rs",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-commit-P-20261029-r1\\fixtures\\P\\src\\serialize.rs",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-commit-P-20261029-r1\\fixtures\\P\\src\\delta.rs"
+  ]
+}

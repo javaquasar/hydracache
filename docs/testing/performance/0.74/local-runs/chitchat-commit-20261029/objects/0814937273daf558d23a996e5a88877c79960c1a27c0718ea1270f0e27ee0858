@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "/usr/bin/ld.bfd",
+    "--version"
+  ],
+  "deadline": 1274.0658444370001,
+  "frame": "c83f240255171548837cd531b116c61ef352005e5b40805a3e36e78bbbfa4390",
+  "retry": false
+}

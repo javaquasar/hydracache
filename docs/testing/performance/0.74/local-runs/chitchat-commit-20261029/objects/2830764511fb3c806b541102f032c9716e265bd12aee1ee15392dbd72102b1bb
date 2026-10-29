@@ -1,0 +1,25 @@
+"""Exclusive streams are opened before importing worker or checking inputs."""
+from pathlib import Path
+import json
+import os
+import subprocess
+import sys
+
+ROOT=Path(__file__).resolve().parents[2]
+assert len(sys.argv)==3
+profile,label=sys.argv[1:]
+assert profile in ('P','Q')
+assert label in {'prepare','format','stage','c-control','build-P','build-B','build-Q','regression-P','focused-Q',
+    'control-B','control-Q','check-B','check-Q','clippy-B','clippy-Q','cohort-1','cohort-2','cohort-3','cohort-4'}
+assert (profile=='P' and label in {'prepare','format','stage','c-control','build-P','regression-P'}) or (profile=='Q' and label not in {'build-P','regression-P'})
+out=ROOT/('target/chitchat-commit-'+profile+'-20261029')/('launch-'+label);out.mkdir(parents=True,exist_ok=False)
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+    result=dict(complete=False,retry=False,profile=profile)
+    try:
+        child=subprocess.run([sys.executable,'-B',str(Path(__file__).with_name('run.py')),label],cwd=ROOT,
+            stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,timeout=1220,env=dict(os.environ,HC074_COMMIT_PROFILE=profile))
+        result.update(exit=child.returncode,complete=child.returncode==0)
+    except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error))
+    (out/'result.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf8')
+print(json.dumps(dict(phase=label,**result)));raise SystemExit(0 if result['complete'] else 1)

@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-commit-r1-P/tools/chitchat-commit-074/run.py", line 46, in <module>
+    exec(compile(text,__file__+'[owned-derivative]','exec'),globals())
+  File "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-commit-r1-P/tools/chitchat-commit-074/run.py[owned-derivative]", line 11, in <module>
+  File "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-commit-r1-P/tools/chitchat-commit-074/common.py", line 12, in <module>
+    need(PROFILE in ('P','Q'),'explicit fixed P/Q profile')
+  File "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-commit-r1-P/tools/chitchat-native-cost-074/common.py", line 34, in need
+    if not value:raise ValueError(reason)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: explicit fixed P/Q profile

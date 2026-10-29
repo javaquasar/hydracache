@@ -1,0 +1,9 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "[Errno 2] No such file or directory: '/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-commit-r1-P/target/chitchat-commit-P-20261029-r1/c-control/gcc/execution.json'",
+    "traceback": "Traceback (most recent call last):\n  File \"/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-commit-r1-P/tools/chitchat-commit-074/run.py[owned-derivative]\", line 61, in session\n  File \"/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-commit-r1-P/tools/chitchat-commit-074/run.py[owned-derivative]\", line 40, in invoke\n    c.need(c.sha(Path(image['path']).read_bytes())==image['sha256'],'regression image postflight')\n     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1021, in read_bytes\n    with self.open(mode='rb') as f:\n         ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-commit-r1-P/target/chitchat-commit-P-20261029-r1/c-control/gcc/execution.json'\n",
+    "type": "FileNotFoundError"
+  },
+  "root_adopted": false
+}

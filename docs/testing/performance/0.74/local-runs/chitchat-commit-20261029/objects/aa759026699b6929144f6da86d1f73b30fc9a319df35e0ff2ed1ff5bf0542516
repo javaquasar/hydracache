@@ -1,0 +1,51 @@
+
+running 7 tests
+test serialize::q_review::cached_tail_survives_rejection_panic_and_continuation ... FAILED
+test serialize::q_review::cheap_panic_restores_state ... FAILED
+test serialize::q_review::consumes_compression_once ... FAILED
+test serialize::q_review::effectful_rejection_restores_stream ... ok
+test serialize::q_review::independent_writers_do_not_share_state ... ok
+test serialize::q_review::rejected_old_budget_has_no_effects ... ok
+test serialize::q_review::stateful_admission_and_wire_match_oracle ... ok
+
+successes:
+
+successes:
+    serialize::q_review::effectful_rejection_restores_stream
+    serialize::q_review::independent_writers_do_not_share_state
+    serialize::q_review::rejected_old_budget_has_no_effects
+    serialize::q_review::stateful_admission_and_wire_match_oracle
+
+failures:
+
+---- serialize::q_review::cached_tail_survives_rejection_panic_and_continuation stdout ----
+
+thread 'serialize::q_review::cached_tail_survives_rejection_panic_and_continuation' (2167) panicked at src/../../../../../tools/chitchat-commit-074/q_tests.rs:97:5:
+exact tail must be retained
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- serialize::q_review::cheap_panic_restores_state stdout ----
+
+thread 'serialize::q_review::cheap_panic_restores_state' (2168) panicked at src/../../../../../tools/chitchat-commit-074/q_tests.rs:58:9:
+controlled Q serializer panic
+
+thread 'serialize::q_review::cheap_panic_restores_state' (2168) panicked at src/../../../../../tools/chitchat-commit-074/q_tests.rs:47:5:
+assertion `left == right` failed
+  left: [4, 0, 110, 111, 100, 101, 112, 97, 114, 116, 105, 97, 108]
+ right: [4, 0, 110, 111, 100, 101]
+
+---- serialize::q_review::consumes_compression_once stdout ----
+
+thread 'serialize::q_review::consumes_compression_once' (2169) panicked at src/../../../../../tools/chitchat-commit-074/q_tests.rs:77:9:
+assertion `left == right` failed: discarded compression pass
+  left: 10
+ right: 5
+
+
+failures:
+    serialize::q_review::cached_tail_survives_rejection_panic_and_continuation
+    serialize::q_review::cheap_panic_restores_state
+    serialize::q_review::consumes_compression_once
+
+test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 121 filtered out; finished in 0.14s
+

@@ -1,0 +1,95 @@
+# Native allocation gate for the existing MTU candidate
+
+Starting HEAD: 7bc4c4218acaf651d6a8d71edbde5ce12363d989. Preserve all earlier
+P/L3 results and first refusals. No product dependency, source candidate, service,
+clock, server, allocator feature, threshold or validation-frequency change.
+This is attribution of the existing P hypothesis, not a new optimization.
+
+First inventory found GNU glibc 2.39/GCC 13.3; heaptrack/valgrind/perf/ltrace are
+absent. Use GNU ld `--wrap` for undefined malloc/calloc/realloc/free references
+in the diagnostic image, forwarding every call unchanged to `__real_*` libc.
+Pin `/usr/bin/gcc` and `-fuse-ld=bfd` for Rust linking, and the same wrapper object
+and four `--wrap` flags on both images. C uses C11/O2/no-builtin/no-LTO/strict
+warnings; the object uses local-exec TLS and is linked statically into the probe.
+Do not interpose a global library or enable Zstd's with-rust-allocator feature.
+The fixed object and link flags must be identical in B/P. Inspect Zstd's actual
+static archive allocator imports and selected linked call sites. This covers
+linked C/Zstd default-allocator calls, not allocation internal to shared libc.
+
+Use allocation-free per-thread counters and a bounded fixed pointer table to
+record requested bytes, live/peak requested bytes, successful allocations,
+reallocations, API calls/failures and external frees. Table/overflow/tag errors
+refuse attribution; never affect real allocator return values. Rust's delegating
+System observer brackets only System calls with an explicit Rust tag, separating
+Rust-origin calls from C. Keep the original allocator control and all original
+test bodies unchanged. An additional C executable tests data/zeroing/realloc
+failure/zero-size behavior, nested tags, table/refusal and thread isolation;
+both actual Rust images must pass C and Rust-tag controls before observation.
+No timing from these instrumented images can qualify production CPU.
+
+Restore B and final P/L3 bytes from the sealed 9381608b… packet. B keeps the known
+wrong original estimator and is an attribution counterfactual only. Bring its
+test-message formatting to L3, then attach identical native observers to both.
+Preserve all production P predictor/admission/append/flush/finish bodies, lock,
+old tests, seed 0x0741028, original 239 cases and exact original admissions/wires.
+Build release-profile GNU Rust 1.94 images in separate targets under a new
+native source context. No old allocation observations are spliced in.
+
+After compiler/catalog/source/allocator/semantic controls pass, run exactly four
+processes B/P/P/B, two whole-operation observations per original case. Reconcile
+all 239 cases, order, payloads, 136 admissions and wire bytes, within-process and
+cross-process equality. Drop outputs before ending both allocator regions.
+For each case compare native C allocations, reallocations, total requested and
+peak requested bytes against B, retaining raw API counts too. Any increase
+refuses this candidate's native-allocation dominance subgate. This stricter
+local criterion does not waive any release/native API gate.
+
+Order gates: native C allocation first. If it refuses, preserve the negative
+result and decline P integration; do not spend a CPU/RSS cohort trying to rescue
+it, relax a bound, or open a replacement hypothesis. CPU, process RSS/PSS,
+allocator caches/retention and the already observed pending-capacity increase
+remain unqualified rather than being inferred from balanced frees. A passing
+counter subgate alone still cannot admit a release or change Root dependencies.
+
+Keep original owned Windows/Linux envelopes 1200 seconds, complete native
+session 1100, physical/native four-GiB floor and five-second poll/retirement.
+Open stdout/stderr before preflight, freeze actual source/overlays/registry/object/
+flags/image/catalog, preserve first outcomes and refuse same-label retries.
+All original live checks and 300/60/10, 5/10/45, package 780/workspace 4800 stay
+exact. No original-owner, service, clock or product workload is run.
+
+Primary contracts: [GNU ld wrapping](https://www.sourceware.org/binutils/docs/ld/Options.html)
+only redirects undefined references; [glibc allocation](https://sourceware.org/glibc/manual/latest/html_node/Unconstrained-Allocation.html)
+documents the delegated APIs. This is a diagnostic observer, not a replacement
+production allocator or full process heap profiler.
+
+First C controls pass all seven groups. First B/P Rust builds retain a host
+proc-macro link refusal: global RUSTFLAGS attached the local-exec object to a
+shared proc-macro library. The successor adds the explicit same GNU host triple
+as `--target`, keeping flags on target code and off host tools. Both first source
+contexts remain. No allocation observations occurred in the refused builds.
+The successor has exclusive outputs `target/chitchat-native-cost-target-20261029`
+and a separate native cache. This follows [Cargo's target flag contract](https://doc.rust-lang.org/cargo/reference/config.html#buildrustflags)
+without changing the allocator or TLS model to force a shared-library link.
+
+Two subsequent tag-control refusals remain distinct. Wrapping the whole legacy
+allocator control included its deliberate panic and retained 232 Rust bytes;
+the corrected control scopes only explicit System operations. Its next optimized
+image retained logical Rust counts but eliminated empty physical allocations.
+Read-only disassembly is retained. The final opaque-pointer/volatile control
+requires the original 2 allocations/1 realloc/512 requested bytes/zero balance
+from both meters; the old control and its panic assertions remain unchanged.
+
+Current final context is `target/chitchat-native-cost-opaque-20261029`, with its
+own source root. It explicitly reuses the unchanged qualified C object and
+registry/build cache from the retained target context; their hashes/sources are
+checked and earlier logs/source frames are never overwritten. This historical
+diagnostic is not a standalone installer. Restoring it requires its retained
+inputs/object and reviewed source, not silently rerunning archived code.
+
+Final B/P/P/B refuses native C dominance in nine accepted cases. At MTU 40000,
+payload 39938: allocations 12 -> 18 and requested bytes 1436748 -> 2155122.
+All 239 admissions/wires, logical Rust counters and physically tagged Rust
+counters match; C frees balance and peak requested C bytes stay equal. P still
+performs the extra compression pass. Decline integration; no CPU/RSS/retained
+qualification or replacement hypothesis is started by this result.

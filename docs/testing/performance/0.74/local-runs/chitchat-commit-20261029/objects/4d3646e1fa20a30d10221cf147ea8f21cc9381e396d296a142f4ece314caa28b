@@ -1,0 +1,11 @@
+test_baseline_precedes_Q_and_root_pins_remain_exact (test_analysis.Accounting.test_baseline_precedes_Q_and_root_pins_remain_exact) ... ok
+test_each_allocation_metric_refuses_independently (test_analysis.Accounting.test_each_allocation_metric_refuses_independently) ... ok
+test_exact_positive_is_only_a_subgate (test_analysis.Accounting.test_exact_positive_is_only_a_subgate) ... ok
+test_missing_duplicate_reordered_semantics_refuse (test_analysis.Accounting.test_missing_duplicate_reordered_semantics_refuse) ... ok
+test_repeatability_seed_scope_and_counter_refusals (test_analysis.Accounting.test_repeatability_seed_scope_and_counter_refusals) ... ok
+test_source_capsule_is_exact_and_old_allocator_unchanged (test_analysis.Accounting.test_source_capsule_is_exact_and_old_allocator_unchanged) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 3.030s
+
+OK

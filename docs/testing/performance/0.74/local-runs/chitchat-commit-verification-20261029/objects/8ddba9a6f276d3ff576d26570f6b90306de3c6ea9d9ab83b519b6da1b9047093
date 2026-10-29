@@ -1,0 +1,237 @@
+//! Actual consuming-append controls; S remains an independent reference oracle.
+use super::*;
+use std::cell::Cell;
+thread_local! { static COMPRESSIONS: Cell<u64> = const { Cell::new(0) }; }
+pub(crate) fn record() {
+    COMPRESSIONS.with(|v| v.set(v.get() + 1));
+}
+fn reset() {
+    COMPRESSIONS.with(|v| v.set(0));
+}
+fn calls() -> u64 {
+    COMPRESSIONS.with(Cell::get)
+}
+
+struct Blob(Vec<u8>);
+impl Serializable for Blob {
+    fn serialized_len(&self) -> usize {
+        self.0.len()
+    }
+    fn serialize(&self, out: &mut Vec<u8>) {
+        out.extend_from_slice(&self.0);
+    }
+}
+fn data(n: usize, ascii: bool) -> Blob {
+    let mut seed = 0x0741028_u64;
+    Blob(
+        (0..n)
+            .map(|_| {
+                seed ^= seed << 13;
+                seed ^= seed >> 7;
+                seed ^= seed << 17;
+                if ascii {
+                    32 + (seed % 95) as u8
+                } else {
+                    seed as u8
+                }
+            })
+            .collect(),
+    )
+}
+fn old_bound(w: &CompressedStreamWriter, n: usize) -> usize {
+    let total = w.uncompressed_block.len() + n;
+    w.output.len() + total + if total > w.block_threshold { 6 } else { 3 } + 1
+}
+fn same_logical(actual: &CompressedStreamWriter, old: &CompressedStreamWriter) {
+    assert_eq!(actual.output, old.output);
+    assert_eq!(actual.uncompressed_block, old.uncompressed_block);
+    assert_eq!(actual.q_cache(), old.q_cache());
+    assert_eq!(actual.clone().finish(), old.clone().finish());
+}
+struct Broken;
+impl Serializable for Broken {
+    fn serialized_len(&self) -> usize {
+        4096
+    }
+    fn serialize(&self, out: &mut Vec<u8>) {
+        out.extend_from_slice(b"partial");
+        panic!("controlled Q serializer panic");
+    }
+}
+
+#[test]
+fn consumes_compression_once() {
+    for (threshold, n) in [(1000u16, 4096usize), (16384, 39938)] {
+        let mut w = CompressedStreamWriter::with_block_threshold(threshold);
+        w.append("node");
+        let item = data(n, true);
+        let total = w.uncompressed_block.len() + n;
+        let budget = old_bound(&w, n);
+        let mut expected = w.clone();
+        expected.append(&item);
+        let bytes = expected.finish();
+        assert!(bytes.len() <= budget);
+        reset();
+        assert!(w.try_append_with_budget(&item, budget));
+        assert_eq!(w.finish(), bytes);
+        assert_eq!(
+            calls(),
+            total.div_ceil(threshold as usize) as u64,
+            "discarded compression pass"
+        );
+    }
+}
+
+#[test]
+fn cached_tail_survives_rejection_panic_and_continuation() {
+    let mut payload = data(128, false).0;
+    payload.extend_from_slice(&[b'r'; 32]);
+    let item = Blob(payload);
+    let mut w = CompressedStreamWriter::with_block_threshold(64);
+    let budget = old_bound(&w, item.serialized_len());
+    let mut reference = w.clone();
+    reference.append(&item);
+    let expected = reference.clone().finish();
+    reset();
+    assert!(w.try_append_with_budget(&item, budget));
+    assert!(w.q_cache().is_some(), "exact tail must be retained");
+    assert_eq!(calls(), 3);
+    assert_eq!(w.clone().finish(), expected);
+    assert_eq!(calls(), 3, "finish reused tail");
+    let saved = w.clone();
+    let encoded = w.q_cache().unwrap();
+    let prefix = w.compressed_block[..encoded].to_vec();
+    let noisy = data(4096, false);
+    let refusal = old_bound(&w, noisy.serialized_len());
+    assert!(w.serialized_len_upperbound_after(&noisy) > refusal);
+    assert!(!w.try_append_with_budget(&noisy, refusal));
+    same_logical(&w, &saved);
+    assert_eq!(&w.compressed_block[..encoded], prefix.as_slice());
+    let panic_budget = old_bound(&w, 4096);
+    assert!(
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(
+            || w.try_append_with_budget(&Broken, panic_budget)
+        ))
+        .is_err()
+    );
+    same_logical(&w, &saved);
+    assert_eq!(&w.compressed_block[..encoded], prefix.as_slice());
+    let suffix = Blob(vec![17, 18, 19]);
+    let next = w.serialized_len_upperbound_after(&suffix);
+    assert!(w.try_append_with_budget(&suffix, next));
+    reference.append(&suffix);
+    assert_eq!(w.finish(), reference.finish());
+}
+
+#[test]
+fn cheap_panic_restores_state() {
+    let mut w = CompressedStreamWriter::with_block_threshold(1000);
+    w.append("node");
+    let saved = w.clone();
+    assert!(
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(
+            || w.try_append_with_budget(&Broken, 10000)
+        ))
+        .is_err()
+    );
+    same_logical(&w, &saved);
+}
+
+#[test]
+fn effectful_rejection_restores_stream() {
+    let mut w = CompressedStreamWriter::with_block_threshold(16);
+    w.append(&data(35, false));
+    let saved = w.clone();
+    let item = data(129, false);
+    let budget = old_bound(&w, item.serialized_len());
+    assert!(w.serialized_len_upperbound_after(&item) > budget);
+    assert!(!w.try_append_with_budget(&item, budget));
+    same_logical(&w, &saved);
+    w.append("after");
+    let mut saved = saved;
+    saved.append("after");
+    assert_eq!(w.finish(), saved.finish());
+}
+
+#[test]
+fn rejected_old_budget_has_no_effects() {
+    let mut w = CompressedStreamWriter::with_block_threshold(1000);
+    w.append("node");
+    let saved = w.clone();
+    let capacities = [
+        w.output.capacity(),
+        w.uncompressed_block.capacity(),
+        w.compressed_block.capacity(),
+    ];
+    reset();
+    assert!(!w.try_append_with_budget(&Broken, 1000));
+    assert_eq!(calls(), 0, "old-budget rejection precedes compression");
+    same_logical(&w, &saved);
+    assert_eq!(
+        capacities,
+        [
+            w.output.capacity(),
+            w.uncompressed_block.capacity(),
+            w.compressed_block.capacity()
+        ]
+    );
+}
+
+#[test]
+fn stateful_admission_and_wire_match_oracle() {
+    for threshold in [16u16, 64, 1000, 16384] {
+        let mut w = CompressedStreamWriter::with_block_threshold(threshold);
+        w.append("node");
+        for step in 0..48usize {
+            let n = [1, 63, 64, 65, 129, 1024, 4096, 65535][step % 8];
+            let item = if step % 3 == 0 {
+                Blob(vec![b'r'; n])
+            } else {
+                data(n, step % 3 == 1)
+            };
+            let bound = w.serialized_len_upperbound_after(&item);
+            let budget = match step % 3 {
+                0 => bound.saturating_sub(1),
+                1 => bound,
+                _ => bound + 3,
+            };
+            let saved = w.clone();
+            let accepted = w.try_append_with_budget(&item, budget);
+            assert_eq!(
+                accepted,
+                bound <= budget,
+                "seed=0x0741028 threshold={threshold} step={step}"
+            );
+            if accepted {
+                let mut expected = saved;
+                expected.append(&item);
+                assert_eq!(w.clone().finish(), expected.finish());
+            } else {
+                same_logical(&w, &saved);
+            }
+        }
+    }
+}
+
+#[test]
+fn independent_writers_do_not_share_state() {
+    std::thread::scope(|scope| {
+        let mut tasks = Vec::new();
+        for id in 0..8 {
+            tasks.push(scope.spawn(move || {
+                let mut w = CompressedStreamWriter::with_block_threshold(64);
+                for n in [65, 129, 1024] {
+                    let item = data(n + id, true);
+                    let budget = w.serialized_len_upperbound_after(&item);
+                    let mut expected = w.clone();
+                    expected.append(&item);
+                    assert!(w.try_append_with_budget(&item, budget));
+                    assert_eq!(w.clone().finish(), expected.finish());
+                }
+            }));
+        }
+        for task in tasks {
+            task.join().unwrap();
+        }
+    });
+}

@@ -1,0 +1,210 @@
+{
+  "artifacts": {
+    "Cargo.lock": {
+      "current_sha256": "00efd4a2cafeb5e82d757cc4855e440c627211c1544c22dcbf8c875f85337cd8",
+      "patches": [
+        {
+          "current": "",
+          "offset": 2918,
+          "previous": "dependencies = [\n \"derive_arbitrary\",\n]\n"
+        },
+        {
+          "current": "name = \"base64\"\nversion = \"0.23.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ac07cdecf99051d9a5238b80f35af32cdeba5b336e55d957b318b50137e18da5\"\n\n[[package]]\n",
+          "offset": 10269,
+          "previous": ""
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 12356,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 13409,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": "",
+          "offset": 28759,
+          "previous": "name = \"derive_arbitrary\"\nversion = \"1.4.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"1e567bd82dcff979e4b03460c307b3cdc9e96fde3d73bed1496d2bc75d9dd62a\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn 2.0.118\",\n]\n\n[[package]]\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 31140,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 56216,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 57912,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"utoipa 5.5.0\",\n",
+          "offset": 60181,
+          "previous": " \"utoipa\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 63851,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 73515,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 74086,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 89567,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 110706,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": "",
+          "offset": 111761,
+          "previous": "]\n\n[[package]]\nname = \"rust-embed\"\nversion = \"8.11.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"04113cb9355a377d83f06ef1f0a45b8ab8cd7d8b1288160717d66df5c7988d27\"\ndependencies = [\n \"rust-embed-impl\",\n \"rust-embed-utils\",\n \"walkdir\",\n]\n\n[[package]]\nname = \"rust-embed-impl\"\nversion = \"8.11.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"da0902e4c7c8e997159ab384e6d0fc91c221375f6894346ae107f47dd0f3ccaa\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"rust-embed-utils\",\n \"syn 2.0.118\",\n \"walkdir\",\n]\n\n[[package]]\nname = \"rust-embed-utils\"\nversion = \"8.11.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"5bcdef0be6fe7f6fa333b1073c949729274b05f123a0ad7efcb8efd878e5c3b1\"\ndependencies = [\n \"sha2 0.10.9\",\n \"walkdir\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 120170,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 122811,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 128287,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 129654,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 141171,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 142907,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 144647,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": "name = \"typed-path\"\nversion = \"0.12.4\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"54ec2755506471f54baf5e4bb5499d8e510cc1caf271270e778a736bd2d7336c\"\n\n[[package]]\n",
+          "offset": 147150,
+          "previous": ""
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 150393,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"base64 0.22.1\",\n",
+          "offset": 150714,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": " \"utoipa-gen 5.5.0\",\n]\n\n[[package]]\nname = \"utoipa\"\nversion = \"6.0.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"8765fe27aeff71012a3f90fa474cf1df863a7d0dd81ed25de4e63fff2544994f\"\ndependencies = [\n \"indexmap 2.14.0\",\n \"serde\",\n \"serde_json\",\n \"utoipa-gen 6.0.1\",\n",
+          "offset": 151685,
+          "previous": " \"utoipa-gen\",\n"
+        },
+        {
+          "current": "name = \"utoipa-gen\"\nversion = \"6.0.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"d935f1c83fdf8b88f09bbe050d0cea78ea4afee6d7b0317403228c1200b2c8ab\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn 3.0.6\",\n]\n\n[[package]]\n",
+          "offset": 152251,
+          "previous": ""
+        },
+        {
+          "current": "version = \"10.0.2\"\n",
+          "offset": 152531,
+          "previous": "version = \"9.0.2\"\n"
+        },
+        {
+          "current": "checksum = \"4f1fd2f9615838885c6ff4115fde8a2b58825dc7b4617f78d29c167377a15c92\"\n",
+          "offset": 152615,
+          "previous": "checksum = \"d047458f1b5b65237c2f6dc6db136945667f40a7668627b3490b9513a3d43a55\"\n"
+        },
+        {
+          "current": " \"base64 0.23.1\",\n",
+          "offset": 152719,
+          "previous": " \"base64\",\n"
+        },
+        {
+          "current": "",
+          "offset": 152762,
+          "previous": " \"rust-embed\",\n"
+        },
+        {
+          "current": " \"utoipa 6.0.0\",\n \"utoipa-swagger-ui-vendored\",\n",
+          "offset": 152787,
+          "previous": " \"url\",\n \"utoipa\",\n"
+        },
+        {
+          "current": "\n[[package]]\nname = \"utoipa-swagger-ui-vendored\"\nversion = \"0.2.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"552a64d6a0d251ae28bc021838800943cce60c9ec2e60ff331f54e79f696268f\"\n",
+          "offset": 152845,
+          "previous": ""
+        },
+        {
+          "current": "version = \"9.0.0\"\n",
+          "offset": 173105,
+          "previous": "version = \"3.0.0\"\n"
+        },
+        {
+          "current": "checksum = \"711e8c9646791c49b7eb799a19c4ae70a9b8372ddc6a1fa4778defd1e2aa5d5e\"\n",
+          "offset": 173188,
+          "previous": "checksum = \"12598812502ed0105f607f941c386f43d441e00148fce9dec3ca5ffb0bde9308\"\n"
+        },
+        {
+          "current": "",
+          "offset": 173283,
+          "previous": " \"arbitrary\",\n"
+        },
+        {
+          "current": " \"typed-path\",\n",
+          "offset": 173339,
+          "previous": ""
+        }
+      ],
+      "previous_sha256": "50ec8e7e20a8caebeefdbdde7bbafb36b96257daf1204dcd6dfa8f6c5b7c925a"
+    },
+    "Cargo.toml": {
+      "current_sha256": "fd57accedc5029f0024c45e72f3c3ef66501d670eaa8776cf293553ff8d5a1ad",
+      "patches": [
+        {
+          "current": "utoipa-swagger-ui = { version = \"10.0.2\", default-features = false, features = [\"axum\", \"vendored\"] }\n",
+          "offset": 6861,
+          "previous": "utoipa-swagger-ui = { version = \"9\", features = [\"axum\"] }\n"
+        }
+      ],
+      "previous_sha256": "7877b4051e4952e7a809896cf46c03a80c6ae3bae3fd13ed95ed0b47d377f472"
+    }
+  },
+  "graph_review_sha256": "3b2969336366c1ab6c1603c0ff1f2405683973331d812920ce23dfb489ae1247",
+  "openapi_sha256": "989c92b97e9c4475792864fd073664a6ac81cf2f246f38492412636fa2768414",
+  "previous_revision": "58a994a4c79fd5e8dd2fa622bcd57bbf640ff2df",
+  "schema": "hc074-reviewed-swagger-inputs-v1"
+}

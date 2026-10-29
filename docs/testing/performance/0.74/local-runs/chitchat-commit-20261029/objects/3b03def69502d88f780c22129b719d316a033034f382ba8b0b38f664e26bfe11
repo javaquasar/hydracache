@@ -1,0 +1,55 @@
+{
+  "artifacts": {
+    "Cargo.lock": {
+      "current_sha256": "9efeffabd8726a961a84d23b7a8e5f2ce74e0e313698f064eed603ea79062a7c",
+      "patches": [
+        {
+          "current": "name = \"libyaml-rs\"\nversion = \"0.3.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"2e126dda6f34391ab7b444f9922055facc83c07a910da3eb16f1e4d9c45dc777\"\n\n[[package]]\n",
+          "offset": 77206,
+          "previous": ""
+        },
+        {
+          "current": "",
+          "offset": 123486,
+          "previous": "name = \"serde_yaml\"\nversion = \"0.9.34+deprecated\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"6a8b1a1a2ebf674015cc02edccce75287f1a0130d394307b36743c2f5d504b47\"\ndependencies = [\n \"indexmap 2.14.0\",\n \"itoa\",\n \"ryu\",\n \"serde\",\n \"unsafe-libyaml\",\n]\n\n[[package]]\n"
+        },
+        {
+          "current": "",
+          "offset": 149712,
+          "previous": "name = \"unsafe-libyaml\"\nversion = \"0.2.11\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"673aac59facbab8a9007c7f6108d11f63b603f7cabff99fabf650fea5c32b861\"\n\n[[package]]\n"
+        },
+        {
+          "current": "",
+          "offset": 168241,
+          "previous": " \"serde_yaml\",\n"
+        },
+        {
+          "current": " \"yaml_serde\",\n",
+          "offset": 168335,
+          "previous": ""
+        },
+        {
+          "current": "\n[[package]]\nname = \"yaml_serde\"\nversion = \"0.10.7\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"33b729a08a9a6be689bbad3e2bf8015926db54b6622cc89c3a5f7dc174b9e918\"\ndependencies = [\n \"indexmap 2.14.0\",\n \"itoa\",\n \"libyaml-rs\",\n \"ryu\",\n \"serde\",\n]\n",
+          "offset": 168548,
+          "previous": ""
+        }
+      ],
+      "previous_sha256": "00efd4a2cafeb5e82d757cc4855e440c627211c1544c22dcbf8c875f85337cd8"
+    },
+    "crates/xtask/Cargo.toml": {
+      "current_sha256": "7e8ecf9044d082cabf09444d5be1499b93edba5fa6135f999fafe376d5794756",
+      "patches": [
+        {
+          "current": "serde_yaml = { package = \"yaml_serde\", version = \"0.10.7\" }\n",
+          "offset": 578,
+          "previous": "serde_yaml = \"0.9.34\"\n"
+        }
+      ],
+      "previous_sha256": "9e1b7d0249dc246e2d50bff92b14540c08f379eb98448cb80e13ed325d5c039b"
+    }
+  },
+  "graph_review_sha256": "49c403ee20d9a55875b912a92afca78c9bc01b05cb175fb9d6e97f875fc6ae56",
+  "previous_revision": "6faa544c9493b4dfdb87fc31ba3fb78456a9455f",
+  "schema": "hc074-reviewed-yaml-inputs-v1",
+  "semantic_review_sha256": "0c2748e61fcb4e3bf3094c287efa21f19a649e322205711ea70c4c7343c4214a"
+}

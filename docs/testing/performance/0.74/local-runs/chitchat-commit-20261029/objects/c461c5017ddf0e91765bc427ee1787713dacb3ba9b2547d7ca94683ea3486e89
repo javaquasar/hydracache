@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/commit-targets/Q/Q/x86_64-unknown-linux-gnu/release/deps/chitchat-185f33873ca268c9",
+    "delta::cost_review::native_rust_tag_control",
+    "--exact",
+    "--test-threads=1",
+    "--show-output",
+    "--color=never"
+  ],
+  "deadline": 1509.137660751,
+  "frame": "c83f240255171548837cd531b116c61ef352005e5b40805a3e36e78bbbfa4390",
+  "retry": false
+}

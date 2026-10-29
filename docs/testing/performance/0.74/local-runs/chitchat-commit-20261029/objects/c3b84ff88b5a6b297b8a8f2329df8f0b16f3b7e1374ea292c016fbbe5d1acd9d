@@ -1,0 +1,46 @@
+"""Fixed derivative of the previously qualified ownership/timeout dispatcher."""
+from pathlib import Path
+import hashlib
+
+old=Path(__file__).resolve().parents[1]/'chitchat-native-cost-074/run.py'
+raw=old.read_bytes()
+assert hashlib.sha256(raw).hexdigest()=='0de608634554774fda9d3e60d3c2418d22ba44ee31d6280206a26a15d8944902'
+text=raw.decode()
+
+
+def change(before,after,count=1):
+    global text
+    assert text.count(before)==count, before
+    text=text.replace(before,after)
+
+
+change("'check-B','check-P','clippy-B','clippy-P','cohort-1'", "'check-B','check-P','clippy-B','clippy-P','build-Q','control-Q','check-Q','clippy-Q','regression-P','focused-Q','cohort-1'")
+change('def invoke(out,name,argv,deadline,env=None,object_guard=True):','def invoke(out,name,argv,deadline,env=None,object_guard=True,expected_exit=0):')
+change("child.returncode==value['exit']==0", "child.returncode==value['exit']==expected_exit")
+change("('B','P','P','B')[position-1]", "('B','Q','Q','B')[position-1]")
+change("target=c.NATIVE/'targets'/variant", "target=c.NATIVE/'commit-targets'/c.PROFILE/variant")
+change("str(c.TOOLS/'control.c')", "str(c.ROOT/'tools/chitchat-native-cost-074/control.c')")
+change("str(c.NATIVE/'c-control-scope')", "str(c.NATIVE/('c-control-commit-'+c.PROFILE))",2)
+change("elif action in ('check','clippy'):", '''elif action in ('regression','focused'):
+                    image=json.loads((c.BASE/('build-'+variant)/'artifact.json').read_bytes())
+                    names=json.loads((c.BASE/('build-'+variant)/'catalog.json').read_bytes())
+                    c.need(c.sha(Path(image['path']).read_bytes())==image['sha256'],'held regression image')
+                    filters=['serialize::q_review::'] if action=='regression' else ['serialize::','delta::tests::','delta::mtu_review::','delta::oversize_review::','state::tests::']
+                    folder=invoke(out,'tests',[image['path'],*filters,'--test-threads=1','--show-output','--color=never'],deadline,env,expected_exit=101 if action=='regression' else 0)
+                    raw=(folder/'stdout.log').read_text()
+                    if action=='regression':
+                        expected={'serialize::q_review::'+n for n in ('consumes_compression_once','cached_tail_survives_rejection_panic_and_continuation','cheap_panic_restores_state')}
+                        failed={m.group(1) for m in re.finditer(r'^test (\\S+) \\.\\.\\. FAILED$',raw,re.M)}
+                        rows=re.findall(r'test result: FAILED\\. (\\d+) passed; (\\d+) failed; (\\d+) ignored; (\\d+) measured; (\\d+) filtered out;',raw)
+                        c.need(failed==expected and rows==[('4','3','0','0',str(len(names)-7))],'exact first P regression refusals')
+                        c.write(out,'regressions.json',dict(passed=4,failed=3,expected_refusals=sorted(failed),image=image))
+                    else:
+                        selected=sum(any(n.startswith(prefix) for prefix in filters) for n in names)
+                        accounting(raw,selected,len(names));c.write(out,'focused.json',dict(passed=selected,failed=0,catalog=len(names),image=image))
+                    c.need(c.sha(Path(image['path']).read_bytes())==image['sha256'],'regression image postflight')
+                elif action in ('check','clippy'):''')
+change("argv=[str(tool),'--edition','2024','--config','skip_children=true',str(c.BASE/'observer.rs'),str(c.TOOLS/'native_tests.rs')]", "argv=[str(tool),'--edition','2024','--config','skip_children=true',str(c.BASE/'observer.rs'),str(c.TOOLS/'q_append.rs'),str(c.TOOLS/'q_tests.rs'),*[str(p) for p in sorted((c.BASE/'fixtures').glob('*/src/serialize.rs'))],*[str(p) for p in sorted((c.BASE/'fixtures').glob('*/src/delta.rs'))]]")
+change("({'tools/chitchat-native-cost-074/native_tests.rs'} if label=='format' else set())", "({'tools/chitchat-commit-074/q_append.rs','tools/chitchat-commit-074/q_tests.rs'} if label=='format' else set())")
+change("root+'/tools/chitchat-native-cost-074/run.py'", "root+'/tools/chitchat-commit-074/run.py'")
+change("'--exec','/usr/bin/python3'", "'--exec','/usr/bin/env','HC074_COMMIT_PROFILE='+c.PROFILE,'/usr/bin/python3'")
+exec(compile(text,__file__+'[owned-derivative]','exec'),globals())

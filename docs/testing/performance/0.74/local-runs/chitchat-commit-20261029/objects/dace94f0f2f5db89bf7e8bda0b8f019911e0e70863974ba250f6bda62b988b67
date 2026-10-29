@@ -1,0 +1,13 @@
+{
+  "expected_refusals": [
+    "serialize::q_review::cached_tail_survives_rejection_panic_and_continuation",
+    "serialize::q_review::cheap_panic_restores_state",
+    "serialize::q_review::consumes_compression_once"
+  ],
+  "failed": 3,
+  "image": {
+    "path": "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/commit-targets/P/P/x86_64-unknown-linux-gnu/release/deps/chitchat-185f33873ca268c9",
+    "sha256": "e1ba393b1aab8a4415cc95363fbcb63a17de4b7c97a8acf814479bc32b6dab80"
+  },
+  "passed": 4
+}

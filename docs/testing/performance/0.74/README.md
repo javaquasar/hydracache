@@ -7551,3 +7551,13 @@ C control groups, twelve selected native executions, ten inert/source controls a
 both all-target/all-feature check/strict Clippy gates pass. Host-link, panic-scope
 and optimized-away-control refusals remain. No CPU/RSS rescue cohort, replacement
 hypothesis, Root dependency or host admission follows.
+
+The subsequently approved [consuming MTU candidate Q](chitchat-commit-result-20261029.md)
+retains actual admission compression work. After P first fails three of seven
+new controls, Q passes all seven within 72 selected GNU cases. One B/Q/Q/B cohort
+matches all 239 admissions/wires and every logical-Rust, physical-Rust and native
+C allocation field; twelve dominance fields have zero regressions. Both GNU 1.94
+check/strict Clippy peers and six offline controls pass. Q is allocation-subgate-only:
+cached multi-append retention, MSRV/Windows, CPU/RSS, distribution/Root adoption
+and the existing execution/recovery/enrollment/rehearsal gates remain open. Both
+first runner refusals and P's prior negative result are preserved.

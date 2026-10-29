@@ -647,3 +647,12 @@ First missing-source, API and control refusals remain. The ignored custom privat
 transport retains its legacy I/O implementation; no real owner or bus is opened.
 This advances compatibility, not root/security/shipping, full package/workspace
 coverage, all-writer retirement, lifecycle or server admission.
+
+The approved MTU continuation now has a positive **Q allocation subgate**:
+[consuming append report](chitchat-commit-result-20261029.md). Q retains encoded
+work instead of discarding P's prediction. P's new baseline first fails exactly
+three controls; Q passes 72 selected tests and B/Q/Q/B preserves all 239 semantics
+and every Rust/native-C allocation field. GNU 1.94 check/strict Clippy pass. This
+does not adopt Root or close the three Zstd findings. Next establish cached
+multi-append retained costs, MSRV/Windows and CPU/RSS before maintained package
+distribution, actual Root policy/package/workspace gates and host admission.

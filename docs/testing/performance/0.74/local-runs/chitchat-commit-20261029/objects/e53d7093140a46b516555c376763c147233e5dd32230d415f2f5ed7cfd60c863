@@ -1,0 +1,31 @@
+{
+  "CPU_qualified": false,
+  "MSRV_qualified": false,
+  "RSS_qualified": false,
+  "Windows_qualified": false,
+  "accepted_regressions": 0,
+  "allocation_changes": [],
+  "allocation_dominance_pass": true,
+  "allocation_regressions": [],
+  "cases": 239,
+  "complete": true,
+  "integration_decision": "allocation-subgate-only",
+  "logical_Rust_changes": [],
+  "native_C_changes": [],
+  "native_C_dominance_pass": true,
+  "native_C_regressions": 0,
+  "per_image_observations_per_case": 4,
+  "physical_tagged_Rust_changes": [],
+  "process_order": [
+    "B",
+    "Q",
+    "Q",
+    "B"
+  ],
+  "processes": 4,
+  "rejected_regressions": 0,
+  "release_admitted": false,
+  "retained_memory_qualified": false,
+  "root_adopted": false,
+  "stateful_retention_qualified": false
+}

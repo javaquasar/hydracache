@@ -1,0 +1,7 @@
+{
+  "encoded": "-C\u001flinker=/usr/bin/gcc\u001f-C\u001flink-arg=-fuse-ld=bfd\u001f-C\u001flink-arg=/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/wrap.o\u001f-C\u001flink-arg=-Wl,--wrap=malloc,--wrap=calloc,--wrap=realloc,--wrap=free",
+  "object": {
+    "path": "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/wrap.o",
+    "sha256": "62e161676d83d64c442300c013db751dc9d965336a971dfd7f490d139a560c6d"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "/usr/bin/gcc",
+    "--version"
+  ],
+  "deadline": 1172.7775547,
+  "frame": "9f78ac2bfa7aa3189c85998009149707ce820d38a5f7bd901599bc7d8409aee7",
+  "retry": false
+}

@@ -1,0 +1,35 @@
+"""Reuse the byte-pinned owned runner, with disjoint P-baseline/Q custody."""
+from pathlib import Path
+import hashlib
+import os
+
+_old=Path(__file__).resolve().parents[1]/'chitchat-native-cost-074/common.py'
+_raw=_old.read_bytes()
+assert hashlib.sha256(_raw).hexdigest()=='730ea6a12376cd72eaa0e6543685a443241ab0a12e0bb039ab02543961840a96'
+exec(compile(_raw,str(_old),'exec'),globals())
+
+PROFILE=os.environ.get('HC074_COMMIT_PROFILE')
+need(PROFILE in ('P','Q'),'explicit fixed P/Q profile')
+TOOLS=ROOT/'tools/chitchat-commit-074'
+RELBASE='target/chitchat-commit-'+PROFILE+'-20261029-r1'
+BASE=ROOT/RELBASE
+COPY=NATIVE/('source-root-commit-r1-'+PROFILE)
+_inherited_source=source
+
+
+def source():
+    result=_inherited_source()
+    for p in (ROOT/'tools/chitchat-native-cost-074').iterdir():
+        if p.is_file():result[p.relative_to(ROOT).as_posix()]=sha(p.read_bytes())
+    return result
+
+
+def prepare():
+    producer=load(TOOLS/'prepare.py','commit_exact_preparation')
+    producer.main()
+
+
+# The inherited check is byte-identical except for selecting the fixed profile's lock.
+_text=_raw.decode().split('def native_guard():',1)[1].split('\n\ndef stage(',1)[0]
+_text=_text.replace("BASE/'fixtures/P/Cargo.lock'","BASE/'fixtures'/('P' if PROFILE=='P' else 'B')/'Cargo.lock'")
+exec(compile('def native_guard():'+_text,str(_old)+'[profile-lock]','exec'),globals())

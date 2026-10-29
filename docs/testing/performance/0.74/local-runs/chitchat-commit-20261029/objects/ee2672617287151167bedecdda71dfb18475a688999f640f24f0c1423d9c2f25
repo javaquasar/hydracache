@@ -1,0 +1,110 @@
+// Q: commit the encoded prefix produced during actual admission.
+impl CompressedStreamWriter {
+    pub(crate) fn try_append_with_budget<S: Serializable + ?Sized>(
+        &mut self,
+        item: &S,
+        budget: usize,
+    ) -> bool {
+        let n = item.serialized_len();
+        assert!(n > 0);
+        let total = self.uncompressed_block.len() + n;
+        let old = self.output.len() + total + if total > self.block_threshold { 6 } else { 3 } + 1;
+        if old > budget {
+            #[cfg(test)]
+            inplace_review::record(2);
+            return false;
+        }
+        assert!(n <= u16::MAX as usize);
+        assert!(self.block_threshold > 0, "positive block threshold");
+        #[cfg(test)]
+        let conservative = self.output.len() + total + 3 * total.div_ceil(self.block_threshold) + 1;
+        #[cfg(test)]
+        inplace_review::record(if conservative <= budget { 3 } else { 1 });
+
+        struct Checkpoint<'a> {
+            writer: &'a mut CompressedStreamWriter,
+            output_len: usize,
+            pending_len: usize,
+            scratch_len: usize,
+            cache: Option<usize>,
+            backup_ready: bool,
+            committed: bool,
+        }
+        impl Drop for Checkpoint<'_> {
+            fn drop(&mut self) {
+                if self.committed {
+                    return;
+                }
+                let w = &mut self.writer;
+                w.compressed_block.resize(self.scratch_len, 0);
+                if self.backup_ready {
+                    if let Some(n) = self.cache {
+                        w.compressed_block[..n]
+                            .copy_from_slice(&w.output[self.output_len..self.output_len + n]);
+                    }
+                }
+                w.output.truncate(self.output_len);
+                w.uncompressed_block.truncate(self.pending_len);
+                w.tail_cache = self.cache;
+            }
+        }
+        let output_len = self.output.len();
+        let pending_len = self.uncompressed_block.len();
+        let scratch_len = self.compressed_block.len();
+        let cache = self.tail_cache;
+        let backup_len = cache.unwrap_or(0);
+        let mut checkpoint = Checkpoint {
+            writer: self, output_len, pending_len, scratch_len, cache,
+            backup_ready: false, committed: false,
+        };
+        if let Some(n) = cache {
+            let w = &mut checkpoint.writer;
+            w.output.extend_from_slice(&w.compressed_block[..n]);
+        }
+        checkpoint.backup_ready = true;
+        let w = &mut checkpoint.writer;
+        w.tail_cache = None;
+        item.serialize(&mut w.uncompressed_block);
+        let mut consumed = 0;
+        while w.uncompressed_block.len() - consumed > w.block_threshold {
+            let end = consumed + w.block_threshold;
+            w.compressed_block.resize(w.block_threshold, 0);
+            match zstd::bulk::compress_to_buffer(
+                &w.uncompressed_block[consumed..end], &mut w.compressed_block[..], 0,
+            ) {
+                Ok(size) => {
+                    BlockType::Compressed.serialize(&mut w.output);
+                    u16::try_from(size).unwrap().serialize(&mut w.output);
+                    w.output.extend_from_slice(&w.compressed_block[..size]);
+                }
+                Err(_) => {
+                    BlockType::Uncompressed.serialize(&mut w.output);
+                    u16::try_from(w.block_threshold).unwrap().serialize(&mut w.output);
+                    w.output.extend_from_slice(&w.uncompressed_block[consumed..end]);
+                }
+            }
+            consumed = end;
+        }
+        let tail = &w.uncompressed_block[consumed..];
+        let prefix_len = w.output.len() - backup_len;
+        let mut next_cache = None;
+        if prefix_len + tail.len() + 4 > budget {
+            w.compressed_block.resize(tail.len(), 0);
+            let compressed = zstd::bulk::compress_to_buffer(tail, &mut w.compressed_block[..], 0);
+            let size = compressed.as_ref().copied().unwrap_or(tail.len());
+            if prefix_len + size + 4 > budget {
+                return false;
+            }
+            // A raw fallback cannot improve the raw upper bound which failed.
+            next_cache = Some(compressed.expect("accepted tail must be compressed"));
+        }
+        w.uncompressed_block.drain(..consumed);
+        if backup_len != 0 {
+            w.output.copy_within(output_len + backup_len.., output_len);
+            w.output.truncate(w.output.len() - backup_len);
+        }
+        w.tail_cache = next_cache;
+        checkpoint.committed = true;
+        true
+    }
+}
