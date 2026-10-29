@@ -1,0 +1,9 @@
+    Checking unicode-width v0.2.2
+    Checking unicase v2.9.0
+    Checking bitflags v2.13.2
+    Checking getopts v0.2.24
+    Checking pulldown-cmark-escape v0.11.0
+    Checking memchr v2.8.2
+    Checking pulldown-cmark v0.13.4
+    Checking hc074-markdown-security-probe v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/pulldown-security-20261029/fixtures/baseline)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.76s

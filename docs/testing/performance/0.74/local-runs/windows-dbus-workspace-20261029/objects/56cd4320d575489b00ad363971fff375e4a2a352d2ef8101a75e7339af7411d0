@@ -1,0 +1,146 @@
+{
+  "crates/hydracache-actuator-axum/Cargo.toml": {
+    "package": "hydracache-actuator-axum",
+    "raw_sha256": "68c90002a447cac4159e13b490f4bb078f93ca248c1742ecbdf643fd6bb2724a"
+  },
+  "crates/hydracache-cache-sim/Cargo.toml": {
+    "package": "hydracache-cache-sim",
+    "raw_sha256": "ca8e765eee67fdb8baebb8e3059231db07c7f440d232fa9b10069122a1fcbd55"
+  },
+  "crates/hydracache-cdc-postgres/Cargo.toml": {
+    "package": "hydracache-cdc-postgres",
+    "raw_sha256": "4ffa66e9d71c97080ac9356060150c3502d1ff25dd9d6ef84a91e51372f93409"
+  },
+  "crates/hydracache-client-hc2/Cargo.toml": {
+    "package": "hydracache-client-hc2",
+    "raw_sha256": "4fce719f3d72a9df449af9aa534c944c307b787452f71c915698cf02d04c1a05"
+  },
+  "crates/hydracache-client-plane-spike/Cargo.toml": {
+    "package": "hydracache-client-plane-spike",
+    "raw_sha256": "39a0cc305eb5529d07064dd4242768371b7eac0b1767191c5215503c01aa7f82"
+  },
+  "crates/hydracache-client-protocol/Cargo.toml": {
+    "package": "hydracache-client-protocol",
+    "raw_sha256": "dbb1641d23c00c76d048b9f276d3c847f448cc89babdc984995a05c256421783"
+  },
+  "crates/hydracache-client-transport-axum/Cargo.toml": {
+    "package": "hydracache-client-transport-axum",
+    "raw_sha256": "f83e9e914d2a1970998fec5cd5e2282f67c492baa186c201cde48cfdf5b6d900"
+  },
+  "crates/hydracache-client/Cargo.toml": {
+    "package": "hydracache-client",
+    "raw_sha256": "d4be9eb7e278c9567e96623701cab87a1c38b79f8279446b4908b938e9b1800d"
+  },
+  "crates/hydracache-cluster-chitchat/Cargo.toml": {
+    "package": "hydracache-cluster-chitchat",
+    "raw_sha256": "54a0fbf32e7a379b6afa313afc9c00708f30415dc84dfa7a2b137d445c1d2678"
+  },
+  "crates/hydracache-cluster-raft/Cargo.toml": {
+    "package": "hydracache-cluster-raft",
+    "raw_sha256": "f5fec460dac6fe9c24f47b9f5071362ce896bc9af84693b4751c2550a9b56980"
+  },
+  "crates/hydracache-cluster-testkit/Cargo.toml": {
+    "package": "hydracache-cluster-testkit",
+    "raw_sha256": "6d5cc7a16bc457feeee7c35a3492f5387debe9372c295551922a897cdbad0eda"
+  },
+  "crates/hydracache-cluster-transport-axum/Cargo.toml": {
+    "package": "hydracache-cluster-transport-axum",
+    "raw_sha256": "8e23a925af80401c30a7c1d6cc14d905c60efa64972af1e1a100f366ef098f2e"
+  },
+  "crates/hydracache-cluster/Cargo.toml": {
+    "package": "hydracache-cluster",
+    "raw_sha256": "200a8fece05419d6accaf9cd08ab40093e738c88b4467d562f8891f1ea5a74ff"
+  },
+  "crates/hydracache-core/Cargo.toml": {
+    "package": "hydracache-core",
+    "raw_sha256": "4a9484cecd7395252366517f5f3ed7c511360e3228ccecbc6fc8a322b963fdfe"
+  },
+  "crates/hydracache-db/Cargo.toml": {
+    "package": "hydracache-db",
+    "raw_sha256": "7dfddc03f0fd52a253d56d4d958be5f2cad044a8f1841e7c60b85f858b7a993d"
+  },
+  "crates/hydracache-diesel/Cargo.toml": {
+    "package": "hydracache-diesel",
+    "raw_sha256": "b42c93214aa9657054ada863690eeeab8b86b22e00dd9f704e72f154bd695ce6"
+  },
+  "crates/hydracache-loadgen/Cargo.toml": {
+    "package": "hydracache-loadgen",
+    "raw_sha256": "2a5e3f328f09c2670060062c65aeac872ab702213697f1f7f8d53dc33bf3a03e"
+  },
+  "crates/hydracache-macros/Cargo.toml": {
+    "package": "hydracache-macros",
+    "raw_sha256": "219d2ca91bd65d2c8f3d055dcfbeffa99d7c4b5dc67891b5d2520c30c7179a01"
+  },
+  "crates/hydracache-observability/Cargo.toml": {
+    "package": "hydracache-observability",
+    "raw_sha256": "9d403baf07090ccbeeba7247da38a2f3e6c4e7d2bebdc6c86f673b85c12c1d02"
+  },
+  "crates/hydracache-operator/Cargo.toml": {
+    "package": "hydracache-operator",
+    "raw_sha256": "f47f34eb3b8502703224d65811c122e90c00aebddfea1a6fe78c4742234f6334"
+  },
+  "crates/hydracache-redis-compat/Cargo.toml": {
+    "package": "hydracache-redis-compat",
+    "raw_sha256": "b188f9eeef837b115841f8bba5a5cab12bc37f5681657766e5d07e6b056d9379"
+  },
+  "crates/hydracache-sandbox/Cargo.toml": {
+    "package": "hydracache-sandbox",
+    "raw_sha256": "4d2249fdecee434c838fcfbab5633687b4062f0f2a16d638a1a62059636baa0d"
+  },
+  "crates/hydracache-seaorm/Cargo.toml": {
+    "package": "hydracache-seaorm",
+    "raw_sha256": "4739e16e06eb577b513748e41f364ad7d844d99895c6ccce31f4964d374e1a32"
+  },
+  "crates/hydracache-server/Cargo.toml": {
+    "package": "hydracache-server",
+    "raw_sha256": "9c6ecdbefb599ef63edca3517a15ce33ae12fe6f1c37d49355d778d558ea812e"
+  },
+  "crates/hydracache-sim-wasm/Cargo.toml": {
+    "package": "hydracache-sim-wasm",
+    "raw_sha256": "0d228ec90e38005d8dc278b7231a54d077485480a3c87d050f66c84fb871d6a2"
+  },
+  "crates/hydracache-sim/Cargo.toml": {
+    "package": "hydracache-sim",
+    "raw_sha256": "6bd6c3b10626fcb23db70c77998f70871f212882fa9a65b582f10d741a54fa25"
+  },
+  "crates/hydracache-sql-lint/Cargo.toml": {
+    "package": "hydracache-sql-lint",
+    "raw_sha256": "1b8d695743dffac7866a677506fd36cc41406d1cc57f6b755457e08ee083d24f"
+  },
+  "crates/hydracache-sqlx/Cargo.toml": {
+    "package": "hydracache-sqlx",
+    "raw_sha256": "be6a8b3daf8da0b7dc1cd16fac86f72b0162f4b1e3f88b72ca78a7a8192668b6"
+  },
+  "crates/hydracache-transport-nats/Cargo.toml": {
+    "package": "hydracache-transport-nats",
+    "raw_sha256": "c672a7f8fdb8ea22294cf37d7e9b0c2363603b641039c3fde1749fff111650cb"
+  },
+  "crates/hydracache-transport-redis/Cargo.toml": {
+    "package": "hydracache-transport-redis",
+    "raw_sha256": "8f4744ffabb1d2194402e3d53cb19e57d7aee5f53117ac1d3a450efa8a9922e5"
+  },
+  "crates/hydracache/Cargo.toml": {
+    "package": "hydracache",
+    "raw_sha256": "db947e78e4ecb6573c865b5051a1f8a07d8970c12a02e570a85a2feceb105e36"
+  },
+  "crates/xtask/Cargo.toml": {
+    "package": "xtask",
+    "raw_sha256": "5f29059c1f8dcc7b925876565090e8133697fcffc76499f01c0fbeffb3356d50"
+  },
+  "fuzz/Cargo.toml": {
+    "package": "hydracache-fuzz",
+    "raw_sha256": "d239a085583e3f4d7527bad45d9f8fd2ba0c41b852ae9d7444f3b01d5179f1c5"
+  },
+  "tests/post-publish-consumer/Cargo.toml": {
+    "package": "hydracache-post-publish-consumer",
+    "raw_sha256": "122bde0f6de61d3f0106779ea728141536766939d6a2b4d2be393ac4ae061a0d"
+  },
+  "tools/long-run-supervisor-074/Cargo.toml": {
+    "package": "hydracache-long-run-supervisor-074",
+    "raw_sha256": "04bfe87051697d84b54a3ed0ee8a4c2d3dbe4c39107d2eb0b9f14116c7d49c61"
+  },
+  "tools/performance-integrated-074/Cargo.toml": {
+    "package": "hydracache-performance-integrated-074",
+    "raw_sha256": "cad8082818cec75a901599d8a4470becebede9067dc69fd12644a06afc254a3c"
+  }
+}

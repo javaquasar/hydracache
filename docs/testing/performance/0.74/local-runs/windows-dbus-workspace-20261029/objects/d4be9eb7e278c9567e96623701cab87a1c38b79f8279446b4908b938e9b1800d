@@ -1,0 +1,32 @@
+[package]
+name = "hydracache-client"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Remote HydraCache client SDK over the stable external client protocol."
+
+[dependencies]
+async-trait.workspace = true
+bytes.workspace = true
+hydracache-client-protocol.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+axum.workspace = true
+hydracache.workspace = true
+hydracache-client-transport-axum.workspace = true
+proptest.workspace = true
+tower.workspace = true
+
+[lints]
+workspace = true

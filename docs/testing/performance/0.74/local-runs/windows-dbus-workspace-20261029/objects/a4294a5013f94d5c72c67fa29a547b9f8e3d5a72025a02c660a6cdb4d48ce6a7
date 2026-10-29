@@ -1,0 +1,7 @@
+{
+  "gate_dispatched": false,
+  "package_pass": false,
+  "reason": "unreviewed complete YAML input: Cargo.lock",
+  "type": "ValueError",
+  "workspace_pass": false
+}

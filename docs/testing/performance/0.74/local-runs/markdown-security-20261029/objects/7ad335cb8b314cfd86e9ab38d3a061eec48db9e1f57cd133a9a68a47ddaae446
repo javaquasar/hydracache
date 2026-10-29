@@ -1,0 +1,254 @@
+[
+  {
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\hydracache_client_hc2-3fe13f3943d8fc64.exe",
+    "sha256": "411e92f9f6910d589ced8c6d85ce011765ab5304b2ce9af8dbd866d35f1efaa0",
+    "target": {
+      "crate_types": [
+        "lib"
+      ],
+      "doc": true,
+      "doctest": true,
+      "edition": "2021",
+      "kind": [
+        "lib"
+      ],
+      "name": "hydracache_client_hc2",
+      "src_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\hydracache-client-hc2\\src\\lib.rs",
+      "test": true
+    }
+  },
+  {
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\reconnect_repair-3ef6b8a29ad16487.exe",
+    "sha256": "19c1030f39e4a05576b1f20a33691e20afc4e6db21ee1c61f74d1b342444d51b",
+    "target": {
+      "crate_types": [
+        "bin"
+      ],
+      "doc": false,
+      "doctest": false,
+      "edition": "2021",
+      "kind": [
+        "test"
+      ],
+      "name": "reconnect_repair",
+      "src_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\hydracache-client-hc2\\tests\\reconnect_repair.rs",
+      "test": true
+    }
+  },
+  {
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\grpc_process-33d8142285f52699.exe",
+    "sha256": "90ecb69601704db94e2a85d1e19baf2f6b5a2df70e2f3b8efd23d9e09eadcd01",
+    "target": {
+      "crate_types": [
+        "bin"
+      ],
+      "doc": false,
+      "doctest": false,
+      "edition": "2021",
+      "kind": [
+        "test"
+      ],
+      "name": "grpc_process",
+      "src_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\hydracache-client-hc2\\tests\\grpc_process.rs",
+      "test": true
+    }
+  },
+  {
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\observability_contract-ceea09976f86f16d.exe",
+    "sha256": "5857fbb85b41bc022986993d3516070d2220cba00fface2b0c60f5e8353074bd",
+    "target": {
+      "crate_types": [
+        "bin"
+      ],
+      "doc": false,
+      "doctest": false,
+      "edition": "2021",
+      "kind": [
+        "test"
+      ],
+      "name": "observability_contract",
+      "src_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\hydracache-client-plane-spike\\tests\\observability_contract.rs",
+      "test": true
+    }
+  },
+  {
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\candidate_socket_corpus-829ec849c0ae4b4d.exe",
+    "sha256": "835d9f9f0992bb55a8591ec4c1889f0daa056ec9a3ebbd6522f19bbdda138861",
+    "target": {
+      "crate_types": [
+        "bin"
+      ],
+      "doc": false,
+      "doctest": false,
+      "edition": "2021",
+      "kind": [
+        "test"
+      ],
+      "name": "candidate_socket_corpus",
+      "src_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\hydracache-client-plane-spike\\tests\\candidate_socket_corpus.rs",
+      "test": true
+    }
+  },
+  {
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\grpc_bidirectional_loopback-6bc9c4fed4b45273.exe",
+    "sha256": "767878337d7719b5adf0517c45d3318afcfaab18458a1e59b40eec66d23f83f4",
+    "target": {
+      "crate_types": [
+        "bin"
+      ],
+      "doc": false,
+      "doctest": false,
+      "edition": "2021",
+      "kind": [
+        "test"
+      ],
+      "name": "grpc_bidirectional_loopback",
+      "src_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\hydracache-client-plane-spike\\tests\\grpc_bidirectional_loopback.rs",
+      "test": true
+    }
+  },
+  {
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\http2_drain_faults-0893597fa5d8500f.exe",
+    "sha256": "fe5cf1fd7c79468f3d7dd045d591605048ddec2ef261a1d2f8dbe8a940ac29e8",
+    "target": {
+      "crate_types": [
+        "bin"
+      ],
+      "doc": false,
+      "doctest": false,
+      "edition": "2021",
+      "kind": [
+        "test"
+      ],
+      "name": "http2_drain_faults",
+      "src_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\hydracache-client-plane-spike\\tests\\http2_drain_faults.rs",
+      "test": true
+    }
+  },
+  {
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\http2_bidirectional_loopback-341881356d327c52.exe",
+    "sha256": "36a8f6041dc4f270f57c10f1a40fecb9e392a79be1b6931516e8dc37c393dc65",
+    "target": {
+      "crate_types": [
+        "bin"
+      ],
+      "doc": false,
+      "doctest": false,
+      "edition": "2021",
+      "kind": [
+        "test"
+      ],
+      "name": "http2_bidirectional_loopback",
+      "src_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\hydracache-client-plane-spike\\tests\\http2_bidirectional_loopback.rs",
+      "test": true
+    }
+  },
+  {
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\fault_proxy-989c38c1a9c58aac.exe",
+    "sha256": "954f9c31e08c012b07ef9d6697574513faca8b4af5e538f65d539f34f7edd20e",
+    "target": {
+      "crate_types": [
+        "bin"
+      ],
+      "doc": false,
+      "doctest": false,
+      "edition": "2021",
+      "kind": [
+        "test"
+      ],
+      "name": "fault_proxy",
+      "src_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\hydracache-client-plane-spike\\tests\\fault_proxy.rs",
+      "test": true
+    }
+  },
+  {
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\dedicated_tcp_loopback-e12fade6bb80b5b3.exe",
+    "sha256": "8537d4f372cb7c028e702486d5429f697a599c80e2152ccf10ecdadc6e60ca42",
+    "target": {
+      "crate_types": [
+        "bin"
+      ],
+      "doc": false,
+      "doctest": false,
+      "edition": "2021",
+      "kind": [
+        "test"
+      ],
+      "name": "dedicated_tcp_loopback",
+      "src_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\hydracache-client-plane-spike\\tests\\dedicated_tcp_loopback.rs",
+      "test": true
+    }
+  },
+  {
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\semantic_harness-339f5ea0ced65218.exe",
+    "sha256": "b0c84ad8122ea92540d1e0384dbde72b205f7f5b4d1556d1a05a962d1469f3a1",
+    "target": {
+      "crate_types": [
+        "bin"
+      ],
+      "doc": false,
+      "doctest": false,
+      "edition": "2021",
+      "kind": [
+        "test"
+      ],
+      "name": "semantic_harness",
+      "src_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\hydracache-client-plane-spike\\tests\\semantic_harness.rs",
+      "test": true
+    }
+  },
+  {
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\contract_schema-21203971874c6458.exe",
+    "sha256": "5491168e55f2b1b427f1972cf4b3799ee17bfe2d075d8d415dde2b98afb00b69",
+    "target": {
+      "crate_types": [
+        "bin"
+      ],
+      "doc": false,
+      "doctest": false,
+      "edition": "2021",
+      "kind": [
+        "test"
+      ],
+      "name": "contract_schema",
+      "src_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\hydracache-client-plane-spike\\tests\\contract_schema.rs",
+      "test": true
+    }
+  },
+  {
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\hc2_java_interop_server-4f8a11083ed8ade2.exe",
+    "sha256": "982cbda26b3e14830fb6adc9a16f0e2df61a182432a0065353854c6dad0384c7",
+    "target": {
+      "crate_types": [
+        "bin"
+      ],
+      "doc": true,
+      "doctest": false,
+      "edition": "2021",
+      "kind": [
+        "bin"
+      ],
+      "name": "hc2_java_interop_server",
+      "src_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\hydracache-client-plane-spike\\src\\bin\\hc2_java_interop_server.rs",
+      "test": true
+    }
+  },
+  {
+    "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\hydracache_client_plane_spike-411e571908ed5a17.exe",
+    "sha256": "68244ddf419d1782f64a3efaf45f8072a6d356530271990032a3236f7a7a548d",
+    "target": {
+      "crate_types": [
+        "lib"
+      ],
+      "doc": true,
+      "doctest": true,
+      "edition": "2021",
+      "kind": [
+        "lib"
+      ],
+      "name": "hydracache_client_plane_spike",
+      "src_path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\crates\\hydracache-client-plane-spike\\src\\lib.rs",
+      "test": true
+    }
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "complete": false,
+  "kind": "offline-retention",
+  "reason": "Missing source body outside pre-format Rust allowlist; refused before output creation",
+  "producer_sha256": "7e0bb4bf41c2df7acb04080071a2960f220725200c3abc3ece4fe18b30f59a56",
+  "product_or_compiler_rerun": false
+}

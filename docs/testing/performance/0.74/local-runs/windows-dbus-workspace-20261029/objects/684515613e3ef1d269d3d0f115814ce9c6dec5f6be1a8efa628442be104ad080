@@ -1,0 +1,48 @@
+"""One exact original workspace dispatcher, with streams before child preflight."""
+from pathlib import Path
+import json
+import os
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[2]
+BASE = Path(__file__).resolve().parent
+
+
+def advisory_observation(label):
+    home = Path(os.environ.get('CARGO_HOME', str(Path.home()/'.cargo')))
+    directory = home/'advisory-dbs'
+    rows = []
+    if directory.is_dir():
+        for path in sorted(directory.iterdir()):
+            if not path.is_dir() or path.is_symlink() or path.is_junction():
+                continue
+            row = dict(path=str(path))
+            for name, argv in (('head',['rev-parse','HEAD']),
+                               ('status',['status','--porcelain','--untracked-files=all'])):
+                result = subprocess.run(['git','--no-replace-objects','-C',str(path),*argv],
+                    stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=30)
+                row[name] = dict(exit=result.returncode,stdout=result.stdout.decode(errors='replace'),
+                                 stderr=result.stderr.decode(errors='replace'))
+            rows.append(row)
+    with (BASE/('advisory-'+label+'.json')).open('x',encoding='utf8',newline='\n') as out:
+        json.dump(dict(observations=rows,readonly=True,sealed_per_lookup=False),out,indent=2)
+        out.write('\n')
+
+
+argv = [sys.executable,'-B',str(ROOT/'tools/windows-workspace-preflight-074/dispatch.py'),
+        str(BASE/'milestone-first'),'--mode','workspace','--execute']
+with (BASE/'milestone-launch.stdout.log').open('xb') as stdout, \
+     (BASE/'milestone-launch.stderr.log').open('xb') as stderr:
+    with (BASE/'milestone-launch-intent.json').open('x',encoding='utf8',newline='\n') as out:
+        json.dump(dict(argv=argv,retry=False,server=False,services=False,clocks_changed=False,
+                       workload=False,qualification=False),out,indent=2)
+        out.write('\n')
+    advisory_observation('before')
+    result = subprocess.run(argv,cwd=ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr)
+    advisory_observation('after')
+with (BASE/'milestone-launch-result.json').open('x',encoding='utf8',newline='\n') as out:
+    json.dump(dict(exit=result.returncode,dispatcher_unchanged=True,retry=False,release_admitted=False),out,indent=2)
+    out.write('\n')
+print(json.dumps(dict(dispatcher_exit=result.returncode,retry=False)))
+raise SystemExit(result.returncode)

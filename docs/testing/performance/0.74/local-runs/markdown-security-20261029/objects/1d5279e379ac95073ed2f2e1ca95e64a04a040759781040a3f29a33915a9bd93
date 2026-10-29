@@ -1,0 +1,34 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\bin\\rustfmt.exe",
+    "--edition",
+    "2021",
+    "--config",
+    "skip_children=true",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\markdown-security-review-074\\probe.rs",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\markdown-security-review-074\\corpus.rs"
+  ],
+  "bound_seconds": 1200,
+  "clocks": false,
+  "head": "7d0f2885176812202faac6e8bcbf753e185f3ce0",
+  "performance_claim": false,
+  "retry": false,
+  "server": false,
+  "services": false,
+  "source": {
+    ".cargo/config.toml": "90f023744f969c176d98d811145b883b411da0fe8a294e930a0f965456ac49a3",
+    "Cargo.lock": "76d4ab3b38c1b259c0784e66dd620a5f61d45cde1760a9533c4d6c7db061b207",
+    "Cargo.toml": "84b1986d8a2014be985460b3ecc4a809f3ae3e8f9822ef6c7134b3ecbe9af114",
+    "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "target/pulldown-security-20261029/fixtures/baseline/Cargo.lock": "76d4ab3b38c1b259c0784e66dd620a5f61d45cde1760a9533c4d6c7db061b207",
+    "target/pulldown-security-20261029/fixtures/baseline/Cargo.toml": "74f78799f8c934ffedc3bc5ce5c485c56e25130e077b8c7f2c2654e58cfb8015",
+    "target/pulldown-security-20261029/fixtures/candidate/Cargo.lock": "76d4ab3b38c1b259c0784e66dd620a5f61d45cde1760a9533c4d6c7db061b207",
+    "target/pulldown-security-20261029/fixtures/candidate/Cargo.toml": "bc36688bd9c4c35b1ffaf36c45ab3e04078274bec12c941d22a6776dfd8b56e6",
+    "tools/markdown-security-review-074/README.md": "e2bf4e3fa298ea9ea01cdc211c4a240a284cc2a0af7d9be6e444b1222da841f2",
+    "tools/markdown-security-review-074/corpus.rs": "1c248ba15b20c2b9539986163c77c3fa9cb53b53bffce8886751e9c798c34286",
+    "tools/markdown-security-review-074/probe.rs": "dd8c26205f7029ff9ea3da352cf3f71f50e648040b73c65205ab3952f8d60152",
+    "tools/markdown-security-review-074/run.py": "19c95dbe4e74f941b07827e5a42258df0b32ebc00e8838b3522f5b8885d5cddd"
+  },
+  "source_worktree_uncommitted": true
+}

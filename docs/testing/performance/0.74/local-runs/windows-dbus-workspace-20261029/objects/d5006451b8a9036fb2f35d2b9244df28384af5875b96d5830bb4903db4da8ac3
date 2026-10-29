@@ -1,0 +1,47 @@
+# Exact security input compatibility for historical tests
+
+This pure test-source adapter connects already accepted security successors to
+the existing preservation chain. It is not linked into the supervisor or cache
+runtime. It performs no filesystem/Git/clock/process operation and exports no
+execution or admission authority. Current inputs must match complete pinned
+canonical bodies before inverse edits; unknown paths remain byte-identical.
+
+The four paths are Cargo.toml, Cargo.lock, the owned-registration manager channel
+and the root performance-contract test. Rules pin the complete descriptor and
+both sides of every inverse edit. Only immutable compiled rules are cached, not
+observed current files. Known stale, partial, mixed, duplicate or unrelated
+changes panic before any predecessor is returned, preserving the historical API.
+
+Cargo and channel predecessors come from the fixed pre-security commit
+`fa9e708868b22999d60c9ccd97b694662910a095`; current bodies match the independent
+accepted producer `2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d`. The root test's only
+executing edit replaces its raw lock read with the existing fresh-read facade.
+Its historical output is the exact IO-prefixed root already expected by the old
+gate at `33c54b0cda8c330b115009cdf092ad002077cedf`. This also reconciles that old
+textual view with the terminal GET-owner rejection. The executing rejection
+assertions and disabled product selector remain unchanged; historical text is
+not compiled, evaluated or used to restore the rejected feature.
+
+A separate [diagnostic document adapter](../source-successor-view-074/diagnostic.rs)
+checks the complete already committed COMPAT insertion and restores its exact
+predecessor before the unchanged five old rules. That document is not covered by
+security approval. The actual COMPAT file, gate/IO helpers and old rule descriptor
+remain unchanged. Source-successor mutation offsets account for the exact
+diagnostic insertion without weakening their body checks.
+
+Focused gates, with explicit `+1.88.0` for MSRV:
+
+```text
+cargo test --locked -p xtask --test security_input_view_074 --test source_successor_view_074 --test historical_input_view_074
+cargo test --locked -p xtask --test performance_contract_074 diagnostic_oidc_keeps_configured_origin_separate_from_enrollment_replay_and_start -- --exact
+cargo test --locked -p xtask --test performance_contract_074 manager_channel
+python -m unittest discover -s tools/security-successor-audit-074 -p test_audit.py -v
+```
+
+These are source/mutation and compatibility controls, not filtered substitutes
+for the complete package command. See the [result and first failures](../../docs/testing/performance/0.74/security-input-view-result-20261026.md).
+Linux Git cannot interpret this Windows worktree's .git pointer directly. The
+retained GNU control supplies explicit Linux GIT_DIR/GIT_WORK_TREE paths only in
+its test environment; it does not rewrite the worktree pointer or Git config.
+Full current source/effect review, original execution, all-writer retirement,
+security policy and release admission remain separate gates.

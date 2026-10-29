@@ -1,0 +1,240 @@
+use super::*;
+use std::os::fd::AsRawFd;
+use zbus::wire::Fd;
+use zbus6 as zbus;
+const CLIENT: &str = ":1.74";
+pub(super) fn trace_query(response: &zbus::Result<Message>, client: &str, kind: Query) {
+    if std::env::var("HC074_PRIVATE_MANAGER_REPLY_TRACE").as_deref() != Ok("1") {
+        return;
+    }
+    match response {
+        Ok(reply) => {
+            let h = reply.header();
+            println!("HC074-MANAGER-REPLY member={} returned=true method_return={} flags={} sender_bus={} destination_client={} serial={} error={} path={} interface={} member_header={} fd_count={} unix_fds={} signature_expected={} bounded={}",
+                kind.member(),reply.message_type()==zbus::message::Type::MethodReturn,
+                reply.primary_header().flags().bits(),h.sender().map(|v|v.as_str())==Some(BUS),
+                h.destination().map(|v|v.as_str())==Some(client),h.reply_serial().is_some(),
+                h.error_name().is_some(),h.path().is_some(),h.interface().is_some(),h.member().is_some(),
+                reply.data().fds().len(),h.unix_fds().unwrap_or(0),reply.body().signature().to_string()==kind.signature(),
+                reply.data().bytes().len()<=crate::protocol::MAX_PACKET_BYTES);
+        }
+        Err(error) => println!(
+            "HC074-MANAGER-REPLY member={} returned=false method_error={}",
+            kind.member(),
+            matches!(error, zbus::Error::MethodError(..))
+        ),
+    }
+}
+#[test]
+fn manager_channel_unique_names_are_bounded_not_well_known_claims() {
+    for value in [":1.2", ":123.456"] {
+        assert!(unique(value));
+    }
+    for value in [
+        "",
+        "1.2",
+        ":1",
+        ":1.2.3",
+        ":.1",
+        ":1.",
+        ":x.2",
+        "org.freedesktop.systemd1",
+    ] {
+        assert!(!unique(value), "{value}");
+    }
+    assert!(unique(&format!(":1.{}", "2".repeat(62))));
+    assert!(!unique(&format!(":1.{}", "2".repeat(63))));
+}
+fn response(kind: &str) -> Message {
+    let request = Message::method_call(BUS_PATH, "GetNameOwner")
+        .build(&())
+        .unwrap();
+    let seed = Message::method_return(&request.header())
+        .build(&())
+        .unwrap();
+    let mut header = seed.header();
+    if matches!(kind, "no-reply" | "combined" | "uint-no-reply") {
+        // The 5.19 builder helper rejects this flag on replies, although the
+        // wire specification permits it. Use its safe typed header API.
+        let flags = header.primary().flags() | zbus::message::Flags::NO_REPLY_EXPECTED;
+        header.primary_mut().set_flags(flags);
+    }
+    let mut builder = if kind == "error" {
+        Message::error(&request.header(), "org.example.Refused")
+    } else {
+        zbus::message::Builder::from(header)
+    };
+    if kind != "no-sender" {
+        builder = builder.sender(if kind == "sender" { ":1.999" } else { BUS });
+    }
+    if kind != "no-destination" {
+        builder = builder.destination(if kind == "destination" {
+            ":1.998"
+        } else {
+            CLIENT
+        });
+    }
+    if kind == "no-serial" {
+        builder = builder.reply_serial(None);
+    }
+    if kind == "path" {
+        builder = builder.path("/foreign");
+    }
+    if kind == "interface" {
+        builder = builder.interface("org.example.Foreign");
+    }
+    if kind == "member" {
+        builder = builder.member("Foreign");
+    }
+    if matches!(kind, "flags" | "combined") {
+        builder = builder.with_flags(zbus::message::Flags::NO_AUTO_START);
+    }
+    if kind == "interactive" {
+        builder = builder.with_flags(zbus::message::Flags::ALLOW_INTERACTIVE_AUTH);
+    }
+    let file = tempfile::tempfile().unwrap();
+    match kind {
+        "fd" => builder.build(&Fd::from(&file)),
+        "uint" | "uint-no-reply" => builder.build(&0u32),
+        "extra" => builder.build(&(":1.75", 0u32)),
+        "oversize" => builder.build(&"x".repeat(65_537)),
+        _ => builder.build(&":1.75"),
+    }
+    .unwrap()
+}
+#[test]
+fn manager_channel_identity_reply_shape_is_exact() {
+    let seed = 0x0740_c518_u64;
+    reply_shape(&response("ok"), CLIENT, Query::Owner).unwrap();
+    reply_shape(&response("no-reply"), CLIENT, Query::Owner).unwrap();
+    for kind in [
+        "error",
+        "no-sender",
+        "sender",
+        "no-destination",
+        "destination",
+        "no-serial",
+        "path",
+        "interface",
+        "member",
+        "flags",
+        "fd",
+        "uint",
+        "extra",
+        "oversize",
+        "combined",
+        "interactive",
+    ] {
+        assert_eq!(
+            reply_shape(&response(kind), CLIENT, Query::Owner),
+            Err(ChannelError::Reply),
+            "seed={seed:#x} kind={kind}"
+        );
+    }
+    for query in [Query::Uid, Query::Pid] {
+        reply_shape(&response("uint"), CLIENT, query).unwrap();
+        reply_shape(&response("uint-no-reply"), CLIENT, query).unwrap();
+        assert_eq!(
+            reply_shape(&response("ok"), CLIENT, query),
+            Err(ChannelError::Reply)
+        );
+    }
+}
+#[test]
+fn manager_channel_expired_cap_does_not_poll_or_accept_ready_work() {
+    let runtime = Builder::new_current_thread()
+        .enable_io()
+        .enable_time()
+        .build()
+        .unwrap();
+    let mut op = Operation::new().unwrap();
+    op.deadline = clock().unwrap();
+    let polled = std::cell::Cell::new(false);
+    let result = runtime.block_on(op.bound(async {
+        polled.set(true);
+        Ok(())
+    }));
+    assert_eq!(result, Err(ChannelError::Deadline));
+    assert!(!polled.get());
+}
+#[test]
+fn manager_channel_pending_future_expires_without_consuming_alarm() {
+    let runtime = Builder::new_current_thread()
+        .enable_io()
+        .enable_time()
+        .build()
+        .unwrap();
+    let op = Operation::new().unwrap();
+    let original = op.deadline;
+    assert_eq!(
+        runtime.block_on(op.bound(std::future::pending::<Result<()>>())),
+        Err(ChannelError::Deadline)
+    );
+    assert_eq!(op.deadline, original);
+    let mut poll = libc::pollfd {
+        fd: op.file.as_raw_fd(),
+        events: libc::POLLIN,
+        revents: 0,
+    };
+    assert_eq!(unsafe { libc::poll(&mut poll, 1, 0) }, 1);
+    assert_eq!(poll.revents, libc::POLLIN);
+    assert_eq!(
+        runtime.block_on(op.bound(async { Ok(()) })),
+        Err(ChannelError::Deadline)
+    );
+}
+#[test]
+fn manager_channel_ready_future_does_not_replace_the_operation_alarm() {
+    let runtime = Builder::new_current_thread()
+        .enable_io()
+        .enable_time()
+        .build()
+        .unwrap();
+    let op = Operation::new().unwrap();
+    let before = op.file.metadata().unwrap();
+    assert_eq!(runtime.block_on(op.bound(async { Ok(74u32) })).unwrap(), 74);
+    use std::os::unix::fs::MetadataExt;
+    assert_eq!(before.ino(), op.file.metadata().unwrap().ino());
+    assert_eq!(
+        unsafe { libc::fcntl(op.file.as_raw_fd(), libc::F_GETFD) },
+        libc::FD_CLOEXEC
+    );
+}
+#[test]
+#[ignore = "manual local nonroot fixed manager namespace-access refusal; no mutation"]
+fn manager_channel_nonroot_fixed_context_refusal() {
+    assert_eq!(
+        std::env::var("HC074_LOCAL_MANAGER_READONLY").as_deref(),
+        Ok("1")
+    );
+    assert_ne!(unsafe { libc::geteuid() }, 0);
+    assert_eq!(
+        FixedManagerChannel::open_fixed().unwrap_err(),
+        ChannelError::Namespace
+    );
+    println!(
+        "HC074-MANAGER-CHANNEL nonroot=true namespace_refused=true original_join=false start=false"
+    );
+}
+#[test]
+#[ignore = "manual local root read-only fixed manager context; no mutation"]
+fn manager_channel_root_fixed_context() {
+    assert_eq!(
+        std::env::var("HC074_LOCAL_MANAGER_READONLY").as_deref(),
+        Ok("1")
+    );
+    assert_eq!(unsafe { libc::geteuid() }, 0);
+    let mut channel = FixedManagerChannel::open_fixed().unwrap();
+    channel.revalidate().unwrap();
+    channel.inspect().unwrap();
+    let debug = format!("{channel:?}");
+    assert!(!debug.contains(&channel.manager));
+    assert!(!debug.contains(&channel.guid));
+    channel
+        .runtime
+        .block_on(channel.connection.clone().close())
+        .unwrap();
+    assert!(channel.revalidate().is_err());
+    assert_eq!(channel.revalidate(), Err(ChannelError::Refused));
+    println!("HC074-MANAGER-CHANNEL root_read_only=true same_connection=true manager_pid=1 closed_sticky=true original_join=false start=false");
+}

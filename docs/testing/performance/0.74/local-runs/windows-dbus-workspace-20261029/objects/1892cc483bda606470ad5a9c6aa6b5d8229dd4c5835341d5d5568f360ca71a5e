@@ -1,0 +1,60 @@
+{
+  "workspace_members": 36,
+  "framed_source_files": 3688,
+  "unframed_members": [
+    {
+      "member": "fuzz/",
+      "missing_files": [
+        "fuzz/Cargo.toml",
+        "fuzz/corpus/fuzz_config_parse/invalid.toml",
+        "fuzz/corpus/fuzz_config_parse/minimal.toml",
+        "fuzz/corpus/fuzz_kv_codec/handshake.seed",
+        "fuzz/corpus/fuzz_kv_codec/truncated.seed",
+        "fuzz/corpus/fuzz_management_cursor/hostile.json",
+        "fuzz/corpus/fuzz_management_cursor/valid.json",
+        "fuzz/corpus/fuzz_management_envelope/hostile.json",
+        "fuzz/corpus/fuzz_management_envelope/valid.json",
+        "fuzz/corpus/fuzz_management_placement/hostile.json",
+        "fuzz/corpus/fuzz_management_placement/valid.json",
+        "fuzz/corpus/fuzz_management_recovery/hostile.json",
+        "fuzz/corpus/fuzz_management_recovery/valid.json",
+        "fuzz/corpus/fuzz_resp_command/bad-bulk.resp",
+        "fuzz/corpus/fuzz_resp_command/get.resp",
+        "fuzz/corpus/fuzz_snapshot_decode/empty.seed",
+        "fuzz/corpus/fuzz_snapshot_decode/garbage.seed",
+        "fuzz/corpus/raft_wire_frame/invalid-base64.json",
+        "fuzz/corpus/raft_wire_frame/malformed-metadata-snapshot.json",
+        "fuzz/corpus/raft_wire_frame/malformed-protobuf.json",
+        "fuzz/corpus/raft_wire_frame/outer-from-mismatch.json",
+        "fuzz/corpus/raft_wire_frame/outer-term-mismatch.json",
+        "fuzz/corpus/raft_wire_frame/outer-to-mismatch.json",
+        "fuzz/corpus/raft_wire_frame/read-index-without-context.json",
+        "fuzz/corpus/raft_wire_frame/snapshot-index-mismatch.json",
+        "fuzz/corpus/raft_wire_frame/snapshot-source-mismatch.json",
+        "fuzz/corpus/raft_wire_frame/truncated-json.seed",
+        "fuzz/corpus/raft_wire_frame/valid-empty-protobuf.json",
+        "fuzz/fuzz_targets/fuzz_config_parse.rs",
+        "fuzz/fuzz_targets/fuzz_hc2_client_plane.rs",
+        "fuzz/fuzz_targets/fuzz_kv_codec.rs",
+        "fuzz/fuzz_targets/fuzz_management_cursor.rs",
+        "fuzz/fuzz_targets/fuzz_management_envelope.rs",
+        "fuzz/fuzz_targets/fuzz_management_placement.rs",
+        "fuzz/fuzz_targets/fuzz_management_recovery.rs",
+        "fuzz/fuzz_targets/fuzz_resp_command.rs",
+        "fuzz/fuzz_targets/fuzz_snapshot_decode.rs",
+        "fuzz/fuzz_targets/raft_wire_frame.rs",
+        "fuzz/src/lib.rs",
+        "fuzz/tests/fuzz_corpus_regression.rs"
+      ]
+    },
+    {
+      "member": "tests/post-publish-consumer/",
+      "missing_files": [
+        "tests/post-publish-consumer/Cargo.toml",
+        "tests/post-publish-consumer/src/lib.rs"
+      ]
+    }
+  ],
+  "full_source_frame_asserted": false,
+  "readonly": true
+}

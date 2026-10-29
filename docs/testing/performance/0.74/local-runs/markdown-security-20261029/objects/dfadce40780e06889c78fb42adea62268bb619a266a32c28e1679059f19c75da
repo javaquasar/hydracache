@@ -1,0 +1,12 @@
+
+running 7 tests
+test half_open_can_retain_then_late_deliver_bytes ... ok
+test invalid_or_unbounded_plans_fail_closed ... ok
+test every_declared_action_has_a_bounded_explicit_trace ... ok
+test one_way_proxy_operates_on_real_async_byte_streams ... ok
+test same_seed_replays_exact_schedule_and_different_seed_changes_fragmentation ... ok
+test replay_artifact_is_payload_free_exact_and_tamper_evident ... ok
+test semantic_preservation_and_fail_closed_faults_match_all_candidates ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

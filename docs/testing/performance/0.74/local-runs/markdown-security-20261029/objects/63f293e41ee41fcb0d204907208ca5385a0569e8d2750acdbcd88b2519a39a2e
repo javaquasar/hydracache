@@ -1,0 +1,19 @@
+{
+  "bindings": [
+    {
+      "out_dir": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\build\\hydracache-client-plane-spike-552dec9fbf51bf9b\\out",
+      "package": "hydracache-client-plane-spike"
+    },
+    {
+      "out_dir": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\build\\hydracache-client-hc2-6b41eb92b9a7bf24\\out",
+      "package": "hydracache-client-hc2"
+    }
+  ],
+  "generated": {
+    "hydracache-client-hc2/hydracache.client.v2alpha.rs": "f29c0d5e7215c35b64919d2923be0e252fd745ce7c2ab23a3ecf8bcb6fa37747",
+    "hydracache-client-plane-spike/hc2_contract_descriptor.bin": "2c16e8c049dea6a53180f535f4e3165a751f7099f011f84b5bd80cd127c31641",
+    "hydracache-client-plane-spike/hydracache.client.v2.rs": "5b99bf59574138f77c3c9ac4512a3be57d43ad3146af63002c2295dd3179f69b",
+    "hydracache-client-plane-spike/hydracache.client.v2alpha.rs": "c3a9fb46c0c15de1f87687a128e1a6ba1319a7b9c83f44e2016d0c34f2f63452"
+  },
+  "matched": true
+}

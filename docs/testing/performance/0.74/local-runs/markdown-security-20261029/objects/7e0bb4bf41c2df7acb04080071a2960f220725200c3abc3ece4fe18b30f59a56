@@ -1,0 +1,68 @@
+from pathlib import Path
+import hashlib
+import json
+import re
+
+ROOT=Path(__file__).resolve().parents[2]
+BASE=Path(__file__).resolve().parent
+PEER=ROOT/'target/workspace-markdown-20261029'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/markdown-security-20261029'
+sha=lambda body:hashlib.sha256(body).hexdigest()
+def load(path):return json.loads(path.read_bytes())
+def main():
+    analysis=load(BASE/'analysis-2/result.json');assert analysis['complete']
+    assert all(v['passed']==97 and v['targets']==14 and v['generated_equal'] for v in analysis['consumers'].values())
+    for label,count in [('markdown-controls',8),('runner-controls',86),('runner-controls-final',86)]:
+        value=load(PEER/label/'result.json')
+        assert value['exit']==0 and value['source_unchanged'] and value['head_unchanged'] and value['retired']
+        assert 'Ran '+str(count)+' tests' in (PEER/label/'stderr.log').read_text()
+    raw={}
+    for folder,prefix in [(BASE,'probe'),(PEER,'continuation')]:
+        for path in folder.rglob('*'):
+            if path.is_file() and not any(p in ('targets','consumer-targets') for p in path.relative_to(folder).parts):
+                raw[prefix+'/'+path.relative_to(folder).as_posix()]=path.read_bytes()
+    for path in (ROOT/'tools/markdown-security-review-074').iterdir():
+        if path.is_file():raw['current-producer/'+path.name]=path.read_bytes()
+    available={sha(body):body for body in raw.values()}
+    # Retain the exact earlier dispatch view only if it matches a recorded digest.
+    body=(ROOT/'tools/windows-workspace-preflight-074/dispatch.py').read_bytes().replace(
+        b'workspace-markdown-20261029/runner-controls-final',b'workspace-markdown-20261029/runner-controls')
+    available[sha(body)]=body
+    wanted=set()
+    for name,body in list(raw.items()):
+        if name.endswith('/intent.json'):
+            value=json.loads(body)
+            for path,digest in value.get('source',{}).items():
+                if isinstance(digest,str) and re.fullmatch('[0-9a-f]{64}',digest):wanted.add((path,digest))
+        if name.endswith('/execution.json'):
+            value=json.loads(body)
+            assert value['retired'] and not value['errors']
+            assert value['exit']==0 or value['exit']==101 and 'baseline' in name and 'test' in name
+    missing=[]
+    for name,digest in sorted(wanted):
+        path=ROOT/name
+        if digest not in available and path.is_file():
+            body=path.read_bytes()
+            if sha(body)==digest:available[digest]=body
+        if digest in available:raw['recorded-source/'+digest+'/'+name]=available[digest]
+        else:missing.append(dict(name=name,sha256=digest))
+    # Missing pre-format bodies were not compiled; never manufacture those bytes.
+    assert all(v['name'] in ('tools/markdown-security-review-074/probe.rs','tools/markdown-security-review-074/corpus.rs') for v in missing)
+    OUT.mkdir(exist_ok=False);objects=OUT/'objects';objects.mkdir();members={}
+    for name,body in sorted(raw.items()):
+        digest=sha(body);path=objects/digest
+        if not path.exists():path.write_bytes(body)
+        members[name]=dict(sha256=digest,bytes=len(body))
+    index=dict(schema_version=1,files=members,analysis=analysis,unavailable_preformat_source_bodies=missing,
+        all_compiled_probe_source_retained=True,windows_real_consumers_per_compiler=dict(passed=97,targets=14,ignored=0),
+        parser_peers=['Windows1.94','Windows1.88','GNU1.94','GNU1.88'],first_refusals_retained=True,
+        actual_consumer_GNU_not_requalified=True,runner_controls=86,inert_review_controls=8,
+        root_lock_before='76d4ab3b38c1b259c0784e66dd620a5f61d45cde1760a9533c4d6c7db061b207',
+        root_lock_candidate='34d7a21d9833a180460e5a094f9ee7f1effe07dfb43a65d90865798963e0070c',
+        workspace_complete=False,security_complete=False,release_admitted=False,
+        original_live_checks_and_deadlines_unchanged=True,performance_claim=False,
+        binaries_excluded=True,server=False,services=False,clocks=False)
+    body=(json.dumps(index,indent=2,sort_keys=True)+'\n').encode();(OUT/'index.json').write_bytes(body)
+    (OUT/'.gitattributes').write_text('objects/* -text -diff\nindex.json -text\n',encoding='ascii',newline='\n')
+    print(json.dumps(dict(index_sha256=sha(body),members=len(members),objects=len(list(objects.iterdir())),missing_preformat=missing)))
+if __name__=='__main__':main()

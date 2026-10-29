@@ -1,0 +1,10 @@
+
+running 5 tests
+test rustls_candidates_reject_an_untrusted_ca_before_protocol_dispatch ... ok
+test rustls_candidates_reject_a_missing_client_certificate_before_protocol_dispatch ... ok
+test rustls_candidates_accept_ca_overlap_then_reject_retired_client_identity ... ok
+test dedicated_tcp_candidate_round_trips_on_a_real_loopback_socket ... ok
+test rustls_candidates_reject_hostname_time_eku_ca_and_protocol_policy_failures ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+

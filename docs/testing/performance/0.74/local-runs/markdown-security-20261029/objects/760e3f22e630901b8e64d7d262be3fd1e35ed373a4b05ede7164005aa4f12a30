@@ -1,0 +1,16 @@
+{
+  "observe": {"bracket":4,"document-read":4},
+  "bracket": {"named":1,"namespace-require":2,"namespace-open":1,"gettid":2},
+  "named": {"root":1,"open":7,"new-directory-plain":1,"new-directory-proc":4,"new-document-plain":1,"new-document-proc":1,"same-directory":6,"same-document":2,"dup":3},
+  "root": {"open":1,"new-directory-plain":1},
+  "new-directory-plain": {"metadata":1},
+  "new-directory-proc": {"metadata":1,"fstatfs":1},
+  "new-document-plain": {"metadata":1},
+  "new-document-proc": {"metadata":1,"fstatfs":1},
+  "same-directory": {"metadata":1,"directory_same":1},
+  "same-document": {"metadata":1},
+  "document-read": {"metadata":2,"read_at":1},
+  "namespace-open": {"open":4,"fstatfs":2},
+  "namespace-require": {"namespace-check":2},
+  "namespace-check": {"fstatfs":1,"ioctl":1,"metadata":1}
+}

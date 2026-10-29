@@ -1,0 +1,37 @@
+[package]
+name = "xtask"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+description = "HydraCache repository automation tasks."
+
+[dependencies]
+flate2 = "1.1.2"
+hydracache = { workspace = true, features = ["durable-value-store"] }
+hydracache-client-plane-spike.workspace = true
+hydracache-loadgen.workspace = true
+jsonschema.workspace = true
+proc-macro2.workspace = true
+prost.workspace = true
+prost-types.workspace = true
+protoc-bin-vendored = "3.2.0"
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml = { package = "yaml_serde", version = "0.10.7" }
+sha2.workspace = true
+syn = { version = "2.0", features = ["full", "visit"] }
+tar = "0.4.44"
+time = { version = "0.3.36", features = ["formatting", "parsing"] }
+toml.workspace = true
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+hydracache-long-run-supervisor-074 = { path = "../../tools/long-run-supervisor-074" }
+tempfile = "3"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_Diagnostics_ToolHelp", "Win32_System_JobObjects", "Win32_System_Threading"] }

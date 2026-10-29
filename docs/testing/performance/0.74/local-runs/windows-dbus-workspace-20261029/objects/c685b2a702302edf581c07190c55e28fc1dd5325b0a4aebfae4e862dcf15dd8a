@@ -1,0 +1,48 @@
+from pathlib import Path
+import hashlib
+import json
+
+ROOT=Path(__file__).resolve().parents[2]
+BASE=Path(__file__).resolve().parent
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/windows-dbus-workspace-20261029'
+sha=lambda raw:hashlib.sha256(raw).hexdigest()
+def load(name):return json.loads((BASE/name).read_bytes())
+def main():
+    before,after=load('milestone-first/frame-before.json'),load('milestone-first/frame-after.json')
+    assert before==after and not load('milestone-first/result.json')['gate_pass']
+    execution=load('milestone-first/controller.json')['execution']
+    assert execution['classification']=='test-failure' and execution['retired'] and not execution['errors']
+    assert execution['bound_seconds']==4800 and execution['cleanup_seconds']==5
+    counts=load('milestone-first/accounting.json')['stages']
+    assert len(counts)==21 and [v['state'] for v in counts]==['complete']*11+['incomplete-or-failed']+['unstarted']*9
+    source=load('first-framed-source-map.json');assert source==before['sources'] and len(source)==3688
+    raw={}
+    for path in BASE.rglob('*'):
+        if path.is_file() and not path.is_relative_to(BASE/'first-framed-source'):
+            raw[path.relative_to(BASE).as_posix()]=path.read_bytes()
+    for name,digest in source.items():
+        body=(BASE/'first-framed-source'/digest).read_bytes();assert sha(body)==digest
+        raw['first-tested-source/'+name]=body
+    for controls,n in [('runner-controls',77),('coverage-controls',79)]:
+        value=load(controls+'/result.json')
+        assert value['exit']==0 and value['source_unchanged'] and value['head_unchanged'] and value['retired']
+        assert 'Ran '+str(n)+' tests' in (BASE/controls/'stderr.log').read_text()
+    OUT.mkdir(exist_ok=False);objects=OUT/'objects';objects.mkdir();members={}
+    for name,body in sorted(raw.items()):
+        digest=sha(body);path=objects/digest
+        if not path.exists():path.write_bytes(body)
+        members[name]=dict(sha256=digest,bytes=len(body))
+    index=dict(schema_version=1,files=members,head=before['head'],workspace_pass=False,
+        security_pass=False,stages_passed=11,stages_stopped=1,stages_unstarted=9,
+        advisories=['RUSTSEC-2026-0391','RUSTSEC-2026-0398','RUSTSEC-2026-0403','RUSTSEC-2026-0414'],
+        first_source_frame_files=3688,first_frame_missing_member_files=42,
+        first_source_frame_complete=False,coverage_successor_controls=79,
+        prior_controls=77,original_first_refusals_retained=True,original_bounds_unchanged=True,
+        registry_advisory_before_after_is_not_a_per_lookup_pin=True,
+        retired=True,release_admitted=False,server=False,services=False,clocks=False,
+        performance_claim=False,binaries_excluded=True)
+    body=(json.dumps(index,indent=2,sort_keys=True)+'\n').encode()
+    (OUT/'index.json').write_bytes(body)
+    (OUT/'.gitattributes').write_text('objects/* -text -diff\nindex.json -text\n',encoding='ascii',newline='\n')
+    print(json.dumps(dict(index_sha256=sha(body),members=len(members),objects=len(list(objects.iterdir())))))
+if __name__=='__main__':main()

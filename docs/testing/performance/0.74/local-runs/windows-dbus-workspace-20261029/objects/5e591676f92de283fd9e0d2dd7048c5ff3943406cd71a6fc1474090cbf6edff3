@@ -1,0 +1,116 @@
+{
+  "schema": "hc074-package-closure-inputs-v1",
+  "source": "46648903c0eb7ce88d438008fa6465a96cc3c414",
+  "rows": [
+    {
+      "consumer": "cache",
+      "path": "tools/authority-runtime-074/gate.rs",
+      "current_revision": "46648903c0eb7ce88d438008fa6465a96cc3c414",
+      "previous_revision": "25faa7bb762aa229631e6f6cfc25cae33e16ff43",
+      "current_sha256": "6eb0e78bc5b8cb4f7324747c3d0b78b0113c6a58ac9af2c1871d9fbf267b1363",
+      "previous_sha256": "0c539c0c44d90f4e62d566db1b141a6982042b58378f236f5134126df266671d",
+      "patches": [
+        {
+          "offset": 357,
+          "current": "#[path = \"../source-successor-view-074/contract.rs\"]\npub mod successor;\n",
+          "previous": ""
+        },
+        {
+          "offset": 7058,
+          "current": "    let raw = successor::project(path, raw);\n",
+          "previous": ""
+        }
+      ]
+    },
+    {
+      "consumer": "cache",
+      "path": "tools/historical-input-view-074/contract.rs",
+      "current_revision": "46648903c0eb7ce88d438008fa6465a96cc3c414",
+      "previous_revision": "25faa7bb762aa229631e6f6cfc25cae33e16ff43",
+      "current_sha256": "8c09a9e9e694fb939ffef27cc27b73ace09323f56d85dd8944f145971c056a92",
+      "previous_sha256": "158fc7ae7e8325f05c272218919e81f8e0cb17123ead1007a25f120757f6dd94",
+      "patches": [
+        {
+          "offset": 2158,
+          "current": "    let raw = crate::runtime::successor::project(path, raw.to_owned());\n",
+          "previous": ""
+        },
+        {
+          "offset": 2243,
+          "current": "        accepts(path, &raw),\n",
+          "previous": "        accepts(path, raw),\n"
+        }
+      ]
+    },
+    {
+      "consumer": "remaining",
+      "path": "crates/xtask/tests/held_activation_ingress_074.rs",
+      "current_revision": "46648903c0eb7ce88d438008fa6465a96cc3c414",
+      "previous_revision": "49f9b0b22b45010d6b407faf92588e7032ba05f2",
+      "current_sha256": "43592054eeef39fb068984ddc65ab4b345893e68922bf70e700f422d26f2b44f",
+      "previous_sha256": "e895b3f0fe09678d39201840124742a18ce2aea98045006c1dd3fe90c9a53541",
+      "patches": [
+        {
+          "offset": 517,
+          "current": "    let raw = current::project(name, raw);\n",
+          "previous": ""
+        },
+        {
+          "offset": 5523,
+          "current": "\n#[path = \"../../../tools/held-security-view-074/contract.rs\"]\nmod current;\n\nuse bootstrap_docs::successor::security as current_security;\n",
+          "previous": ""
+        }
+      ]
+    },
+    {
+      "consumer": "remaining",
+      "path": "crates/xtask/tests/current_frontier_074.rs",
+      "current_revision": "46648903c0eb7ce88d438008fa6465a96cc3c414",
+      "previous_revision": "49f9b0b22b45010d6b407faf92588e7032ba05f2",
+      "current_sha256": "56411a3a382eab48f457184d12eeed2be5d70e63fbd67ac049697c52eb4b1ee9",
+      "previous_sha256": "62b2b19f1c71cd9d3328e63aac6c300cdf85f80204047bb4ffac5c02a8a3c784",
+      "patches": [
+        {
+          "offset": 714,
+          "current": "    let raw = frontier::current::project(path, raw);\n",
+          "previous": ""
+        }
+      ]
+    },
+    {
+      "consumer": "census",
+      "path": "crates/xtask/tests/held_complete_role_census_074.rs",
+      "current_revision": "46648903c0eb7ce88d438008fa6465a96cc3c414",
+      "previous_revision": "ae508a57220fe95b11887b81f16ff05263f1dee9",
+      "current_sha256": "43094f856ed4d6cf53985a076d8cbfd0958bfd651a0cb3398fec5b4189c1718d",
+      "previous_sha256": "afee11f16f157f7ef9cbc254950fd0b853c8ee7ef553a92981b0fbf823a302a9",
+      "patches": [
+        {
+          "offset": 845,
+          "current": "    let raw = current::project(name, raw);\n",
+          "previous": ""
+        },
+        {
+          "offset": 5796,
+          "current": "\n#[path = \"../../../tools/held-security-view-074/contract.rs\"]\nmod current;\n\n#[path = \"../../../tools/security-input-view-074/contract.rs\"]\nmod current_security;\n",
+          "previous": ""
+        }
+      ]
+    },
+    {
+      "consumer": "leaf",
+      "path": "docs/testing/gated-test-registry.toml",
+      "current_revision": "46648903c0eb7ce88d438008fa6465a96cc3c414",
+      "previous_revision": "a329cac91784d79d9e5b925c22d882cb0d327283",
+      "current_sha256": "7e879f84b299b43e9d344c6baa83e77a4455320d31421712b3703e9bc7fe80a0",
+      "previous_sha256": "a100bb06a49a7e316bf4b39ad5d783467c636ff7486643ce7f88dce68ddbc88b",
+      "patches": [
+        {
+          "offset": 38,
+          "current": "\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.filesystem-projection-prototype-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_filesystem_projection_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"filesystem_projection_prototype_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\" , target_env = \"gnu\")'\nenv = \"\"\nreason = \"manual finite baseline filesystem projection screen; no preparation retry or admission\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_FILESYSTEM_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"filesystem_projection_prototype_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_FILESYSTEM_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.filesystem-projection-installed-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_filesystem_projection_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"filesystem_projection_installed_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\" , target_env = \"gnu\")'\nenv = \"\"\nreason = \"manual finite integrated filesystem projection screen; no preparation retry or admission\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_FILESYSTEM_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"filesystem_projection_installed_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_FILESYSTEM_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.namespace-open-prototype-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"namespace_open_prototype_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\" , target_env = \"gnu\")'\nenv = \"\"\nreason = \"manual finite baseline Namespace open CPU screen; no preparation retry or admission\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_NAMESPACE_OPEN_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"namespace_open_prototype_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_NAMESPACE_OPEN_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.namespace-open-installed-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_namespace_open_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"namespace_open_installed_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\" , target_env = \"gnu\")'\nenv = \"\"\nreason = \"manual finite integrated Namespace open CPU screen; no preparation retry or admission\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_NAMESPACE_OPEN_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"namespace_open_installed_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_NAMESPACE_OPEN_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.kernel-operation-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_kernel_operation_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_kernel_operation_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite Boot Namespace operation attribution; no preparation retry or admission\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_KERNEL_OPERATION_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_kernel_operation_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_KERNEL_OPERATION_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.parent-prototype-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_authority_parent_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_authority_parent_prototype_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite baseline parent-device CPU attribution; no admission or preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_PARENT_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_authority_parent_prototype_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_PARENT_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.parent-installed-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_authority_parent_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_authority_parent_installed_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite installed parent-device CPU attribution; no admission or preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_PARENT_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_authority_parent_installed_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_PARENT_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.before-prototype-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_authority_before_prototype_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite baseline before-read CPU attribution; no admission or preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_BEFORE_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_authority_before_prototype_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_BEFORE_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.before-installed-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_authority_before_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_authority_before_installed_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite installed before-read CPU attribution; no admission or preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_BEFORE_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_authority_before_installed_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_BEFORE_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.directory-prototype-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_authority_directory_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_authority_directory_prototype_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite baseline directory CPU attribution; no admission or preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_DIRECTORY_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_authority_directory_prototype_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_DIRECTORY_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.directory-installed-cpu\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_authority_directory_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_authority_directory_installed_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite installed directory CPU attribution; no admission or preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_DIRECTORY_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_authority_directory_installed_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_DIRECTORY_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.fresh-authority-stamp-leaf\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_authority_stamp_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_authority_stamp_installed_leaf_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite authority leaf CPU screen; not admission or a preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_STAMP_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_authority_stamp_installed_leaf_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_STAMP_COHORT = \"0\"\n\n[[gate]]\nid = \"tool.hydracache-long-run-supervisor-074.fresh-fd-identity-origin\"\nkind = \"external_tool\"\nsource = \"tools/long-run-supervisor-074/src/diagnostic_kernel_fd_identity_tests.rs\"\npackage = \"hydracache-long-run-supervisor-074\"\ntarget = \"hydracache_long_run_supervisor_074\"\ntest = \"fresh_fd_identity_original_origin_cpu_screen\"\ncfg = 'all (target_os = \"linux\" , target_arch = \"x86_64\")'\nenv = \"\"\nreason = \"manual finite installed-origin CPU screen; not admission or a live preparation retry\"\ntier = \"manual\"\nrequired_features = []\nrequired_env = [\"HC074_FD_IDENTITY_COHORT\"]\nrequired_tools = [\"cargo\"]\ntimeout_seconds = 300\nowner_release = \"0.74.0\"\nship_mandatory = false\nartifacts = []\n[gate.ci]\nworkflow = \".github/workflows/ci.yml\"\njob = \"gated-proof-registry\"\nstep = \"Run registered gated proofs\"\n[gate.command]\nprogram = \"cargo\"\nargs = [\"test\",\"--release\",\"--locked\",\"-p\",\"hydracache-long-run-supervisor-074\",\"--lib\",\"fresh_fd_identity_original_origin_cpu_screen\",\"--\",\"--ignored\",\"--nocapture\",\"--test-threads=1\"]\ncwd = \".\"\nplatform = \"linux\"\n[gate.command.env]\nHC074_FD_IDENTITY_COHORT = \"0\"\n",
+          "previous": ""
+        }
+      ]
+    }
+  ]
+}

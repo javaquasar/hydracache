@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\windows-workspace-preflight-074\\dispatch.py",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\workspace-dbus-20261029\\milestone-first",
+    "--mode",
+    "workspace",
+    "--execute"
+  ],
+  "retry": false,
+  "server": false,
+  "services": false,
+  "clocks_changed": false,
+  "workload": false,
+  "qualification": false
+}

@@ -1,0 +1,121 @@
+"""Inert whole-tree and complete original message graph controls."""
+from pathlib import Path
+import importlib.util,json,re,tempfile,unittest
+ROOT=Path(__file__).resolve().parents[2]
+spec=importlib.util.spec_from_file_location('delivery_controls_prepare',ROOT/'tools/dbus-original-delivery-074/prepare.py');r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
+read=lambda p:json.loads(p.read_bytes())
+
+class Controls(unittest.TestCase):
+ def test_closed_whole_source_census_and_pins(self):
+  self.assertEqual(len(r.PINS),18)
+  for name,digest in r.PINS.items():
+   raw=(r.fixed.SOURCE/name).read_bytes();self.assertEqual(r.sha(raw),digest)
+   self.assertEqual(r.project(name,raw),(r.BASE/'input/fd'/r.PKG/'src'/name).read_bytes())
+   with self.assertRaises(ValueError):r.project(name,raw+b'\n')
+
+ def test_complete_original_tree_only_changes_fifteen_direct_callers(self):
+  before=r.files(r.BASE/'input/baseline'/r.PKG/'src');after=r.files(r.BASE/'input/fd'/r.PKG/'src')
+  self.assertEqual(len(before),545);self.assertEqual(set(before),set(after))
+  self.assertEqual({n for n in before if before[n]!=after[n]},set(r.PINS)-r.LEGACY)
+  for name in r.LEGACY:self.assertEqual(before[name],after[name])
+
+ def test_original_owner_receiver_join_and_watchdog_unchanged(self):
+  for name in ('diagnostic_original_enrollment_frame.rs','diagnostic_manager_receiver_pin.rs','diagnostic_kernel_manager_binding.rs','diagnostic_original_manager_join.rs','diagnostic_original_watchdog_context.rs'):
+   self.assertEqual((r.BASE/'input/fd'/r.PKG/'src'/name).read_bytes(),(r.fixed.SOURCE/name).read_bytes())
+
+ def test_all_original_module_and_test_routes_retained(self):
+  for name in r.PINS:
+   old=(r.fixed.SOURCE/name).read_text(encoding='utf8');new=(r.BASE/'input/fd'/r.PKG/'src'/name).read_text(encoding='utf8')
+   self.assertEqual(re.findall(r'#\[path = "[^"]+"\]',old),re.findall(r'#\[path = "[^"]+"\]',new))
+   self.assertEqual(old.count('#[test]'),new.count('#[test]'))
+
+ def test_held_delivery_is_same_body_and_one_send_without_bridge(self):
+  name='diagnostic_manager_held_delivery.rs';old=(r.fixed.SOURCE/name).read_bytes();new=(r.BASE/'input/fd'/r.PKG/'src'/name).read_bytes()
+  self.assertEqual(new.replace(b'use zbus6 as zbus;\n',b'',1),old)
+  self.assertEqual(new.count(b'.send(message)'),1);self.assertNotIn(b'Message::from_bytes',new)
+  self.assertIn(b'let message = request.arm()',new);self.assertIn(b'request.observe(&reply)',new)
+
+ def test_owner_round_and_reply_binding_preserve_validation_cadence(self):
+  name='diagnostic_original_manager_message.rs';old=(r.fixed.SOURCE/name).read_bytes();new=(r.BASE/'input/fd'/r.PKG/'src'/name).read_bytes()
+  start=b'pub(super) fn round(';end=b'pub(crate) struct OriginalManagerMessage'
+  self.assertEqual(old[old.index(start):old.index(end)],new[new.index(start):new.index(end)])
+  exchange=(r.BASE/'input/fd'/r.PKG/'src/diagnostic_dispatch_exchange.rs').read_bytes()
+  self.assertIn(b'if self.state.phase != Phase::Prepared',exchange)
+  self.assertIn(b'self.state.serial != request.primary_header().serial_num()',exchange)
+
+ def test_locks_canonical_sources_and_roots_unchanged(self):
+  review=read(r.BASE/'freeze/result.json');parent=r.parent.BASE/'lint-fixed/input'
+  self.assertEqual(r.files(r.BASE/'input'),review['files'])
+  for variant in ('baseline','fd'):
+   self.assertEqual((r.BASE/'input'/variant/'Cargo.lock').read_bytes(),(parent/variant/'Cargo.lock').read_bytes())
+  self.assertEqual(r.files(r.BASE/'input/fd/source'),r.files(parent/'fd/source'))
+  self.assertEqual(r.fixed.prior.parent.parent.fragment.prior.parent.old.root_inputs(),review['root_inputs'])
+  self.assertTrue(review['held_delivery_included']);self.assertTrue(review['message_owner_included']);self.assertFalse(review['release_admitted'])
+
+ def test_same_fixed_deadlines_and_no_api_expansion(self):
+  root=r.BASE/'input/fd'/r.PKG/'src'
+  self.assertIn('checked_add(2_000_000_000)',(root/'diagnostic_manager_channel_kernel.rs').read_text(encoding='utf8'))
+  self.assertIn('.method_timeout(Duration::from_millis(250))',(root/'diagnostic_manager_channel.rs').read_text(encoding='utf8'))
+  for name in set(r.PINS)-r.LEGACY:
+   old=(r.fixed.SOURCE/name).read_text(encoding='utf8');new=(root/name).read_text(encoding='utf8')
+   self.assertEqual(re.findall(r'\b(?:pub(?:\([^)]*\))?\s+)?(?:async\s+)?fn\s+(\w+)',old),re.findall(r'\b(?:pub(?:\([^)]*\))?\s+)?(?:async\s+)?fn\s+(\w+)',new))
+
+ def test_literal_inventory_closes_external_sources_without_editing_them(self):
+  module=r.p.load(Path(__file__).parent/'include_inventory.py','delivery_inventory_control')
+  members,edges=module.inventory(ROOT,r.PKG,r.p.require)
+  self.assertEqual(len(members),557);self.assertEqual(len(edges),621)
+  review=read(r.BASE/'unit-inventory/freeze/result.json')
+  self.assertEqual({n:r.sha(raw) for n,raw in members.items()},review['original_literal_inventory'])
+  for variant in ('baseline','fd'):
+   for name,digest in review['added_assets'].items():
+    self.assertEqual(r.sha((r.BASE/'unit-inventory/input'/variant/name).read_bytes()),digest)
+
+ def test_literal_inventory_refuses_unknown_expressions_and_escapes(self):
+  module=r.p.load(Path(__file__).parent/'include_inventory.py','delivery_inventory_negative')
+  with tempfile.TemporaryDirectory() as directory:
+   root=Path(directory);source=root/'pkg/src/lib.rs';source.parent.mkdir(parents=True)
+   for body in ('include!(unknown!());','include!(concat!(env!("HOME"), "/foreign"));','include!("../../../outside.rs");'):
+    source.write_text(body,encoding='utf8')
+    with self.assertRaises(ValueError):module.inventory(root,'pkg',r.p.require)
+   source.write_text('// include!("not-code");\nconst S: &str = "include!(missing)";\n',encoding='utf8')
+   self.assertEqual(module.inventory(root,'pkg',r.p.require),({},[]))
+
+ def test_builder_converter_v2_keeps_getters_character_and_raw_literals(self):
+  raw=b'''const QUOTE: u8 = b'"';
+const RAW: &str = r#"Message::method_call(PATH, METHOD).unwrap()"#;
+fn check() { let m = Message::method_call(PATH, METHOD).unwrap().destination(manager).unwrap().build(&body).unwrap(); let d = legacy.header().destination().unwrap().as_str(); }
+'''
+  name='inert_builder_control.rs';r.PINS[name]=r.sha(raw)
+  try:body=r.project(name,raw,v2=True)
+  finally:del r.PINS[name]
+  self.assertIn(b'r#"Message::method_call(PATH, METHOD).unwrap()"#',body)
+  self.assertIn(b'Message::method_call(PATH, METHOD).destination(manager).build(&body).unwrap()',body)
+  self.assertIn(b'legacy.header().destination().unwrap().as_str()',body)
+
+ def test_final_unit_delta_is_only_two_test_files_and_metadata_adapter(self):
+  before=r.BASE/'unit-inventory/input/fd'/r.PKG/'src';after=r.BASE/'unit-api-owned/input/fd'/r.PKG/'src'
+  old,new=r.files(before),r.files(after)
+  self.assertEqual(set(new)-set(old),{'diagnostic_negotiated_credentials_adapter.rs'})
+  self.assertEqual({n for n in old if old[n]!=new[n]},{'diagnostic_dispatch_negotiated_tests.rs','diagnostic_original_manager_message_units.rs'})
+  self.assertEqual((after/'diagnostic_negotiated_credentials_adapter.rs').read_bytes(),(Path(__file__).parent/'negotiated_credentials.rs').read_bytes())
+  units=(after/'diagnostic_original_manager_message_units.rs').read_bytes()
+  self.assertIn(b'legacy.header().destination().unwrap().as_str()',units)
+  for variant in ('baseline','fd'):
+   self.assertEqual((r.BASE/'input'/variant/'Cargo.lock').read_bytes(),(r.BASE/'unit-api-owned/input'/variant/'Cargo.lock').read_bytes())
+
+ def test_actual_catalog_selected_results_and_strict_test_cfg_lint(self):
+  base=r.BASE/'unit-api-owned';runtime=read(base/'runtime/native-result.json')
+  self.assertTrue(runtime['passed']);self.assertEqual(runtime['catalog_count'],1593);self.assertEqual(runtime['passes_per_compiler'],41)
+  catalogs=[]
+  for compiler in ('194','188'):
+   listing=read(base/f'runtime/fd-{compiler}-list/result.json');result=read(base/f'runtime/fd-{compiler}-test/result.json')
+   self.assertEqual(len(listing['inventory']),1593);self.assertEqual(len(listing['selected']),41);catalogs.append(listing['inventory'])
+   self.assertEqual(result['summary'],[['ok','41','0','0','0','1552']]);self.assertEqual(sorted(n for n,state in result['rows']),listing['selected'])
+   self.assertTrue(all(state=='ok' for n,state in result['rows']))
+   self.assertEqual(read(base/f'lint/fd-{compiler}-clippy/result.json')['exit'],0)
+   argv=read(base/f'lint/fd-{compiler}-clippy/intent.json')['argv']
+   for flag in ('--offline','--locked','--lib','--tests','--all-features'):self.assertIn(flag,argv)
+   self.assertEqual(argv[-3:],['--','-D','warnings'])
+  self.assertEqual(catalogs[0],catalogs[1])
+
+if __name__=='__main__':unittest.main()

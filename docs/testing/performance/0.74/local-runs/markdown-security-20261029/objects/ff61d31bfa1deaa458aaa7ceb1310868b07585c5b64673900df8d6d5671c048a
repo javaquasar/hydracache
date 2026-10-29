@@ -1,0 +1,5 @@
+error: query_cache_policy preset cannot be combined with ttl or ttl_secs
+ --> tests/policy/fail_preset_with_ttl.rs:5:18
+  |
+5 |         preset = read_mostly,
+  |                  ^^^^^^^^^^^

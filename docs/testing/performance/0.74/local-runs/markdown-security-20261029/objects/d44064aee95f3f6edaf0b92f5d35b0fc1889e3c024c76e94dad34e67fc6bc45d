@@ -1,0 +1,9 @@
+
+running 4 tests
+test runtime_failures_reconnect_and_terminal_reasons_increment_named_series ... ok
+test typed_sink_receives_exact_snapshot_without_dynamic_labels ... ok
+test closed_runtime_exports_zero_resource_gauges ... ok
+test schema_cardinality_trace_memory_and_privacy_are_bounded ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

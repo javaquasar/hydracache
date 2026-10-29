@@ -1,0 +1,74 @@
+"""No UAC or WSL here: projection checks, mocks and a temporary fake payload."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import tempfile
+import unittest
+from unittest import mock
+
+import root_namespace_uac as uac
+
+HERE = Path(__file__).resolve().parent
+PS = Path('C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe')
+
+
+class PlacementTests(unittest.TestCase):
+    def test_launcher_only_changes_two_fixed_placement_tokens(self):
+        original = (HERE / 'root_namespace_logged.ps1').read_bytes()
+        self.assertEqual(hashlib.sha256(original).hexdigest(), '0b7183f23434729f0f3b9b46709517ae03ab0347686a17b7d97ea69154c03de9')
+        candidate = (HERE / 'root_namespace_uac.ps1').read_bytes()
+        projected = candidate.replace(b'root-namespace-uac-20261023', b'root-namespace-logged-20261023')
+        projected = projected.replace(b'root_namespace_uac.py', b'root_namespace_logged.py')
+        self.assertEqual(projected, original)
+
+    def test_adapter_calls_same_core_once_and_restores_placement(self):
+        old = uac.core.JOURNAL
+        for fail in (False, True):
+            with self.subTest(fail=fail), mock.patch.object(uac.core, 'execute') as execute:
+                def call(journal):
+                    self.assertEqual(uac.core.JOURNAL, uac.JOURNAL)
+                    if fail:
+                        raise RuntimeError('first refusal')
+                    return 7
+                execute.side_effect = call
+                if fail:
+                    with self.assertRaises(RuntimeError):
+                        uac.execute(uac.JOURNAL)
+                else:
+                    self.assertEqual(uac.execute(uac.JOURNAL), 7)
+                execute.assert_called_once_with(uac.JOURNAL)
+                self.assertEqual(uac.core.JOURNAL, old)
+
+    def test_changed_core_refuses_before_original_checks(self):
+        with mock.patch.object(uac, 'CORE_SHA', 'wrong'), mock.patch.object(uac.core, 'execute') as execute:
+            with self.assertRaises(ValueError):
+                uac.execute(uac.JOURNAL)
+            execute.assert_not_called()
+
+    @unittest.skipUnless(os.name == 'nt' and PS.is_file(), 'Windows fixture only')
+    def test_fake_child_receives_only_new_directory_and_cannot_reuse_it(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / 'workspace with spaces'
+            tool = root / 'tools/wsl-clock-trace-074'
+            tool.mkdir(parents=True)
+            (root / 'target').mkdir()
+            shutil.copyfile(HERE / 'root_namespace_uac.ps1', tool / 'root_namespace_uac.ps1')
+            (tool / 'root_namespace_uac.py').write_text('import sys\nprint(sys.argv[1])\nraise SystemExit(7)\n', encoding='utf-8')
+            argv = [str(PS), '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', str(tool / 'root_namespace_uac.ps1')]
+            result = subprocess.run(argv, capture_output=True, timeout=25, check=False)
+            self.assertEqual(result.returncode, 7, result.stderr)
+            journal = root / 'target/wsl-clock-root-namespace-uac-20261023'
+            # Windows expands the caller's 8.3 TEMP spelling; compare directory identity.
+            self.assertTrue(Path((journal / 'stdout.log').read_text().strip()).samefile(journal))
+            self.assertEqual(json.loads((journal / 'launcher-result.json').read_bytes())['child_exit'], 7)
+            before = {p.name: p.read_bytes() for p in journal.iterdir()}
+            self.assertNotEqual(subprocess.run(argv, capture_output=True, timeout=25, check=False).returncode, 0)
+            self.assertEqual(before, {p.name: p.read_bytes() for p in journal.iterdir()})
+            self.assertFalse((root / 'target/wsl-clock-root-namespace-logged-20261023').exists())
+
+
+if __name__ == '__main__':
+    unittest.main()

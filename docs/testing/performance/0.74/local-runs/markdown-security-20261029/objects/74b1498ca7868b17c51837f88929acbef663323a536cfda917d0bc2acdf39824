@@ -1,0 +1,12 @@
+{
+  "before_sha256": "76d4ab3b38c1b259c0784e66dd620a5f61d45cde1760a9533c4d6c7db061b207",
+  "candidate_sha256": "34d7a21d9833a180460e5a094f9ee7f1effe07dfb43a65d90865798963e0070c",
+  "package_records": 683,
+  "changed_fields": [
+    "version",
+    "checksum"
+  ],
+  "one_owner": "pulldown-cmark",
+  "applied": false,
+  "denials_unchanged": true
+}

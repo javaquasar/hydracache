@@ -1,0 +1,88 @@
+//! Exact test-input routing edits, never runtime validation or source approval.
+use sha2::{Digest, Sha256};
+
+pub const FILES: [(&str, &str); 5] = [
+    (
+        "crates/xtask/tests/authority_hex_reader_074.rs",
+        "b9ecbcccb582f784ec99787d05ecf7e88b51991bc3fc102d519ba3190d668090",
+    ),
+    (
+        "crates/xtask/tests/owned_case_074.rs",
+        "2a5def6be0bef44b32ffb177540b9b98b100464c995b997db4a69572e3b17239",
+    ),
+    (
+        "crates/xtask/tests/historical_input_view_074.rs",
+        "5a020d1c4c98f338bb1c2b9182bc7bb139363cbfaf643ea0ab996f6541d28261",
+    ),
+    (
+        "crates/xtask/tests/authority_runtime_074.rs",
+        "fcc4472d1ffa648449913bbe3782c8065ff3d606511ffd4a936d223b3725c48e",
+    ),
+    (
+        "crates/xtask/tests/current_tree_reader_074.rs",
+        "7d76db82b03761e933c407021454ccf717989e553310f0269d27d27cdd0e7973",
+    ),
+];
+const OLD_READ: &str = "fn read(path: &str) -> String {\n    let raw = std::fs::read_to_string(gate::root().join(path))\n        .unwrap()\n        .replace(\"\\r\\n\", \"\\n\");\n    if path == gate::HISTORY_TEST {\n        history_reader::previous(&raw)\n    } else {\n        raw\n    }\n}";
+const NEW_READ: &str = "fn observed(path: &str) -> String {\n    std::fs::read_to_string(gate::root().join(path))\n        .unwrap()\n        .replace(\"\\r\\n\", \"\\n\")\n}\nfn read(path: &str) -> String {\n    let raw = observed(path);\n    if path == gate::FIXTURE {\n        gate::successor::project(path, raw)\n    } else if path == main_phase::SOURCE {\n        main_phase::project(raw)\n    } else if path == gate::HISTORY_TEST {\n        history_reader::previous(&raw)\n    } else {\n        raw\n    }\n}\nfn view_input(path: &str) -> String {\n    if path == gate::FIXTURE {\n        observed(path)\n    } else {\n        read(path)\n    }\n}";
+
+fn digest(raw: &str) -> String {
+    Sha256::digest(raw.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+fn edit(raw: &str, before: &str, after: &str) -> String {
+    assert_eq!(
+        raw.matches(before).count(),
+        1,
+        "one exact reader-phase edit"
+    );
+    raw.replacen(before, after, 1)
+}
+fn current_read() -> String {
+    let raw = edit(
+        NEW_READ,
+        "main_phase::project(raw)",
+        "main_phase::project(current_main::project(raw))",
+    );
+    edit(
+        &raw,
+        "    if path == gate::FIXTURE {\n        observed(path)",
+        "    if path == gate::FIXTURE || path == main_phase::SOURCE {\n        observed(path)",
+    )
+}
+pub fn expected(path: &str, original: &str) -> Option<String> {
+    let index = FILES.iter().position(|(file, _)| *file == path)?;
+    let raw = original.replace("\r\n", "\n");
+    assert_eq!(digest(&raw), FILES[index].1, "fixed reader predecessor");
+    Some(match index {
+        0 => edit(&raw,
+            "    let raw = std::fs::read_to_string(runtime::root().join(REGISTRY)).unwrap();",
+            "    let raw = std::fs::read_to_string(runtime::root().join(REGISTRY)).unwrap();\n    let raw = runtime::successor::project(REGISTRY, raw);"),
+        1 => edit(&raw,
+            "    let raw = std::fs::read_to_string(runtime::root().join(registry)).unwrap();",
+            "    let raw = std::fs::read_to_string(runtime::root().join(registry)).unwrap();\n    let raw = runtime::successor::project(registry, raw);"),
+        2 => {
+            let raw = edit(&raw, "            current = original;\n        }\n        assert!(",
+                "            current = original;\n        }\n        let entry = current.clone();\n        let current = runtime::successor::project(path, current);\n        assert!(");
+            edit(&raw, "contract::predecessor(path, &current)", "contract::predecessor(path, &entry)")
+        }
+        3 => {
+            let raw = edit(&raw, "mod history_reader;", "mod history_reader;\n#[path = \"../../../tools/authority-reader-phase-074/main.rs\"]\nmod main_phase;");
+            let raw = format!("#[path = \"../../../tools/authority-reader-phase-074/current_main.rs\"]\nmod current_main;\n{raw}");
+            let raw = edit(&raw, OLD_READ, &current_read());
+            edit(&raw, "gate::view(&path, read(&path))", "gate::view(&path, view_input(&path))")
+        }
+        4 => {
+            let raw = edit(&raw, "use current_inputs::history_reader;",
+                "use current_inputs::history_reader;\n#[path = \"../../../tools/authority-reader-phase-074/contract.rs\"]\nmod reader_phase;");
+            edit(&raw, "    let actual = std::fs::read_to_string(runtime::root().join(path))",
+                "    let expected = reader_phase::runtime(&expected);\n    let actual = std::fs::read_to_string(runtime::root().join(path))")
+        }
+        _ => unreachable!(),
+    })
+}
+pub fn runtime(original: &str) -> String {
+    expected(FILES[3].0, original).unwrap()
+}

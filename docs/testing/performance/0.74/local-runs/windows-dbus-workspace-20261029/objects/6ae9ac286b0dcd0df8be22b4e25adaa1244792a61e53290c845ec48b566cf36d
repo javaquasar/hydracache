@@ -1,0 +1,24 @@
+# syntax=docker/dockerfile:1
+
+FROM rust:1.88-bookworm
+
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends git linux-perf numactl python3 ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace
+COPY . .
+
+# The campaign code expects a Git worktree for immutable source metadata. The
+# real history is deliberately excluded from the Docker context; this commit is
+# a diagnostic snapshot and can never be promoted as ship evidence.
+RUN git init --quiet \
+    && git config user.email "memory-rehearsal@localhost" \
+    && git config user.name "Memory Rehearsal" \
+    && git add --all \
+    && git commit --quiet --message "diagnostic Docker source snapshot"
+
+ENV CARGO_INCREMENTAL=0
+ENV CARGO_BUILD_JOBS=2
+
+CMD ["python3", "scripts/perf/run_memory_docker_rehearsal_071.py", "--output", "/evidence"]

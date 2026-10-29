@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-markdown-review/20261029/targets/baseline-188/debug/deps/hc074_markdown_security_probe-277db186ab455cf1",
+    "--test-threads=1",
+    "--nocapture",
+    "--color=never"
+  ],
+  "deadline": 1154.384206666,
+  "expected_exit": 101,
+  "retry": false
+}

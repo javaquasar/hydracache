@@ -1,0 +1,164 @@
+"""Fixed Windows source/dependency controls; original local CI Job and bounds."""
+from pathlib import Path
+import hashlib
+import importlib.util
+import io
+import json
+import os
+import subprocess
+import sys
+import traceback
+
+ROOT = Path(__file__).resolve().parents[2]
+BASE = ROOT/'target/pulldown-security-20261029'
+TOOLS = Path(__file__).resolve().parent
+sys.path.insert(0,str(ROOT/'tools/windows-workspace-preflight-074'))
+import owned
+import prepare as p
+
+TESTS = sorted('tests::'+s for s in ('empty_display_wikilinks_have_linear_event_growth',
+    'consumer_options_complete_corpus_snapshot','malformed_unicode_and_boundary_inputs_remain_bounded'))
+PHASES = ['format','resolve-baseline','resolve-candidate','version-194','version-188']+[
+    action+'-'+mode+'-'+compiler for compiler in ('194','188')
+    for mode in ('baseline','candidate') for action in ('build','list','test','check','clippy')]
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+
+
+def source():
+    names = ['Cargo.toml','Cargo.lock','deny.toml','.cargo/config.toml',
+             'docs/testing/performance/0.74/qualification-manifest.toml']
+    names += [v.relative_to(ROOT).as_posix() for v in TOOLS.iterdir() if v.is_file()]
+    names += [v.relative_to(ROOT).as_posix() for v in (BASE/'fixtures').rglob('*') if v.is_file()]
+    names += ['tools/dbus-source-package-074/package.py']
+    return {n:sha((ROOT/n).read_bytes()) for n in sorted(names)}
+
+
+def registry_guard(mode):
+    metadata = BASE/('resolve-'+mode)/'stdout.log'
+    if mode not in ('baseline','candidate') or not metadata.is_file() or not metadata.stat().st_size:
+        return None
+    value = json.loads(metadata.read_bytes())
+    selected = [v for v in value['packages'] if v['name']=='pulldown-cmark']
+    p.require(len(selected)==1,'one actual parser package')
+    package = selected[0]
+    version = {'baseline':'0.13.4','candidate':'0.13.5'}[mode]
+    p.require(package['version']==version and package['source']=='registry+https://github.com/rust-lang/crates.io-index',
+              'actual registry parser identity')
+    archive = (BASE/(version+'.crate')).read_bytes()
+    expected = {'0.13.4':'e9f068eba8e7071c5f9511831b44f32c740d5adf574e990f946ddb53db2f314e',
+                '0.13.5':'278e9268c93b9e498a2da46c34d90ba93a3255eb99009646398f34bc73ab36eb'}[version]
+    p.require(sha(archive)==expected,'whole official source archive')
+    codec = ROOT/'tools/dbus-source-package-074/package.py'
+    p.require(sha(codec.read_bytes())=='1b13c005abfbb96b1374e27fcc871ce0a14d87fe955e2097712a9cfb029fadf3','reviewed pure source decoder')
+    spec=importlib.util.spec_from_file_location('markdown_source_codec',codec)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    files=module.unpack(archive,'pulldown-cmark-'+version)
+    directory=Path(package['manifest_path']).parent
+    for name,body in files.items():
+        path=directory/name
+        p.require(path.is_file() and not path.is_symlink() and path.read_bytes()==body,'actual registry source: '+name)
+    return dict(version=version,archive_sha256=expected,compiler_source_members=len(files),whole_source_equal=True)
+
+
+def parts(label):
+    fields = label.split('-')
+    if fields[0]=='version':return 'version','',fields[1]
+    return fields[0],fields[1] if len(fields)>1 else '',fields[2] if len(fields)>2 else '194'
+
+
+def command(label):
+    action,mode,compiler = parts(label)
+    version = {'194':'1.94.0','188':'1.88.0'}[compiler]
+    tool = Path(os.environ['USERPROFILE'])/'.rustup/toolchains'/(version+'-x86_64-pc-windows-msvc')/'bin'
+    env = dict(os.environ,RUSTC=str(tool/'rustc.exe'),RUSTUP_TOOLCHAIN=version+'-x86_64-pc-windows-msvc',
+        RUSTC_WRAPPER='',RUSTC_WORKSPACE_WRAPPER='',CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2')
+    env['PATH'] = str(tool)+os.pathsep+env['PATH']
+    if action=='version':return [str(tool/'rustc.exe'),'-vV'],env
+    if action=='format':
+        return [str(tool/'rustfmt.exe'),'--edition','2021','--config','skip_children=true',
+                str(TOOLS/'probe.rs'),str(TOOLS/'corpus.rs')],env
+    manifest = BASE/'fixtures'/mode/'Cargo.toml'
+    args = ['--manifest-path',str(manifest),'--target-dir',str(BASE/'targets'/(mode+'-'+compiler))]
+    if action=='resolve':
+        return [str(tool/'cargo.exe'),'metadata','--manifest-path',str(manifest),'--format-version','1',
+                *(['--locked'] if mode=='candidate' else [])],env
+    args += ['--offline','--locked']
+    if action=='build': argv = [str(tool/'cargo.exe'),'test',*args,'--no-run','--message-format=json']
+    elif action in ('check','clippy'):
+        argv = [str(tool/'cargo.exe'),action,*args,'--all-targets','--all-features']
+        if action=='clippy':argv += ['--','-D','warnings']
+    else:
+        built = json.loads((BASE/('build-'+mode+'-'+compiler)/'artifact.json').read_bytes())
+        path = Path(built['path']);p.require(sha(path.read_bytes())==built['sha256'],'actual held probe image')
+        argv = [str(path),'--list'] if action=='list' else [str(path),'--test-threads=1','--nocapture','--color=never']
+        if action=='test':
+            listed = (BASE/('list-'+mode+'-'+compiler)/'stdout.log').read_text()
+            p.require(sorted(s[:-6] for s in listed.splitlines() if s.endswith(': test'))==TESTS,
+                      'complete actual three-case probe inventory')
+    return argv,env
+
+
+def main(label):
+    p.require(label in PHASES,'fixed probe phase')
+    folder = BASE/label;folder.mkdir(exist_ok=False)
+    (folder/'producer.py').write_bytes(Path(__file__).read_bytes())
+    with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+        before = source();head = subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+        argv,env = command(label)
+        action,mode,compiler = parts(label)
+        p.write(folder,'registry-before.json',registry_guard(mode))
+        p.write(folder,'intent.json',dict(argv=argv,source=before,head=head,bound_seconds=1200,retry=False,
+            source_worktree_uncommitted=True,server=False,services=False,clocks=False,performance_claim=False))
+        child = subprocess.run([sys.executable,'-B',str(Path(__file__)),label,'worker'],cwd=ROOT,
+            stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,timeout=1210)
+        execution = json.loads((folder/'execution.json').read_bytes())
+        p.require(execution['retired'] and not execution['errors'],'original Job retirement')
+        p.write(folder,'registry-after.json',registry_guard(mode))
+        after = source()
+        changed = {n for n in before.keys()|after.keys() if before.get(n)!=after.get(n)}
+        allowed = {str((TOOLS/n).relative_to(ROOT)).replace('\\','/') for n in ('probe.rs','corpus.rs')} if action=='format' else (
+            {(BASE/'fixtures'/mode/'Cargo.lock').relative_to(ROOT).as_posix()} if action=='resolve' else set())
+        p.require(changed<=allowed,'unreviewed probe/root source change')
+        p.require(head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),'probe HEAD drift')
+        expected = 101 if action=='test' and mode=='baseline' else 0
+        p.require(child.returncode==execution['exit']==expected,'first actual probe outcome')
+        if action=='version':
+            version={'194':'1.94.0','188':'1.88.0'}[compiler]
+            raw=(folder/'stdout.log').read_text()
+            p.require('release: '+version+'\n' in raw and 'host: x86_64-pc-windows-msvc\n' in raw,'actual compiler identity')
+        if action=='build':
+            images=[]
+            for line in (folder/'stdout.log').read_text().splitlines():
+                row=json.loads(line)
+                if row.get('reason')=='compiler-artifact' and row.get('profile',{}).get('test') and row.get('executable'):
+                    p.require(Path(row['target']['src_path']).resolve()==(TOOLS/'probe.rs').resolve(),'actual source target')
+                    path=Path(row['executable']);p.require(path.resolve().is_relative_to(BASE/'targets'/(mode+'-'+compiler)),'isolated actual artifact')
+                    images.append(dict(path=str(path),sha256=sha(path.read_bytes())))
+            p.require(len(images)==1,'one actual test artifact');p.write(folder,'artifact.json',images[0])
+        if action=='test':
+            raw=(folder/'stdout.log').read_text()
+            summary='2 passed; 1 failed;' if mode=='baseline' else '3 passed; 0 failed;'
+            p.require(raw.count('test result:')==1 and summary in raw and '0 ignored; 0 measured; 0 filtered out;' in raw,
+                      'complete unfiltered actual probe result')
+            if mode=='baseline':p.require('327676' in raw and 'fixed-parser linear event oracle' in raw,'original documented first counterexample')
+        p.write(folder,'result.json',dict(review_complete=True,exit=child.returncode,expected_refusal=expected!=0,
+            candidate_tests_pass=action=='test' and mode=='candidate',source_after=after,changed=sorted(changed),
+            head_unchanged=True,retired=True,release_admitted=False,performance_claim=False))
+    print(json.dumps(dict(phase=label,review_complete=True,actual_exit=child.returncode)))
+
+
+if __name__=='__main__':
+    if len(sys.argv)==3 and sys.argv[2]=='worker':
+        label=sys.argv[1];p.require(label in PHASES,'fixed worker command')
+        argv,env=command(label);os.environ.clear();os.environ.update(env)
+        def capacity():
+            if __import__('shutil').disk_usage(ROOT).free<p.FLOOR:raise owned.CapacityError('original local four-GiB floor')
+        value=owned._owned(owned.load_job().WindowsJob(),argv,str(ROOT),capacity,bound=1200)
+        p.write(BASE/label,'execution.json',value);raise SystemExit(value['exit'])
+    p.require(len(sys.argv)==2,'one fixed phase')
+    try:main(sys.argv[1])
+    except BaseException:
+        folder=BASE/sys.argv[1]
+        if folder.is_dir() and not (folder/'refusal.json').exists():
+            p.write(folder,'refusal.json',dict(reason=traceback.format_exc(),release_admitted=False))
+        raise

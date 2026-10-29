@@ -1,0 +1,229 @@
+//! The approved Tokio source successor must not bypass the frozen inventories.
+#[path = "support/artifact_inventory_input.rs"]
+mod inventory;
+
+use sha2::{Digest, Sha256};
+use std::collections::BTreeMap;
+use std::io::Read;
+
+const PREVIOUS: &str = "958b3135a15c00b9f6aad41522cef9d1f6608d3a";
+const PRODUCER: &str = "2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d";
+const ADDED: &str = "tools/long-run-supervisor-074/src/diagnostic_manager_alarm_tests.rs";
+const CHANGED: &str = "tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs";
+
+fn git(args: &[&str]) -> Vec<u8> {
+    let out = std::process::Command::new("git")
+        .arg("--no-replace-objects")
+        .args(args)
+        .current_dir(inventory::root())
+        .output()
+        .unwrap();
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    out.stdout
+}
+
+fn sha(raw: &[u8]) -> String {
+    Sha256::digest(raw)
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect()
+}
+
+fn index(revision: &str) -> String {
+    String::from_utf8(git(&["ls-tree", "-r", revision, "--", inventory::SCOPE]))
+        .unwrap()
+        .lines()
+        .map(|line| {
+            let (meta, path) = line.split_once('\t').unwrap();
+            let parts: Vec<_> = meta.split_whitespace().collect();
+            assert_eq!(&parts[..2], ["100644", "blob"]);
+            format!("{} {} 0\t{path}\n", parts[0], parts[2])
+        })
+        .collect()
+}
+
+#[test]
+fn all_545_modes_blobs_and_canonical_bodies_match_independent_tokio_producer() {
+    assert_eq!(inventory::entries().len(), 545);
+    assert_eq!(inventory::expected_index(), index(PRODUCER));
+    let bytes = git(&["archive", "--format=tar", PRODUCER, "--", inventory::SCOPE]);
+    let mut archive = tar::Archive::new(&bytes[..]);
+    let mut observed = BTreeMap::new();
+    let mut commit_headers = 0;
+    for entry in archive.entries().unwrap() {
+        let mut entry = entry.unwrap();
+        if entry.header().entry_type().is_pax_global_extensions() {
+            assert_eq!(entry.path().unwrap().to_str().unwrap(), "pax_global_header");
+            let fields: Vec<_> = entry
+                .pax_extensions()
+                .unwrap()
+                .unwrap()
+                .map(|field| {
+                    let field = field.unwrap();
+                    (
+                        field.key().unwrap().to_owned(),
+                        field.value().unwrap().to_owned(),
+                    )
+                })
+                .collect();
+            assert_eq!(fields, [("comment".to_owned(), PRODUCER.to_owned())]);
+            commit_headers += 1;
+            continue;
+        }
+        if entry.header().entry_type().is_dir() {
+            continue;
+        }
+        assert!(entry.header().entry_type().is_file());
+        let path = entry.path().unwrap().to_str().unwrap().to_owned();
+        let mut raw = String::new();
+        entry.read_to_string(&mut raw).unwrap();
+        assert!(observed
+            .insert(path, sha(raw.replace("\r\n", "\n").as_bytes()))
+            .is_none());
+    }
+    assert_eq!(commit_headers, 1);
+    assert_eq!(observed.len(), 545);
+    for (name, entry) in inventory::entries() {
+        assert_eq!(observed[name], entry.digest, "{name}");
+    }
+}
+
+#[test]
+fn physical_current_inventory_reaches_446_only_after_every_545_check() {
+    let current = inventory::current();
+    assert_eq!(current.lines().count(), 545);
+    assert_eq!(inventory::project(current).unwrap().lines().count(), 446);
+    assert_eq!(inventory::project(current).unwrap().lines().count(), 446);
+}
+
+#[test]
+fn stale_544_names_and_index_refuse_before_observing_any_body() {
+    let old = index(PREVIOUS);
+    assert_eq!(old.lines().count(), 544);
+    assert!(!inventory::index_matches(&old));
+    let names: String = old
+        .lines()
+        .map(|line| format!("{}\n", line.split_once('\t').unwrap().1))
+        .collect();
+    assert!(inventory::project_phase530_with(&names, |_| panic!("stale phase observed")).is_err());
+}
+
+#[test]
+fn changed_and_added_source_are_freshly_observed_on_each_projection() {
+    for bad in [CHANGED, ADDED] {
+        let mut seen = Vec::new();
+        inventory::project_with(inventory::current(), |path| {
+            seen.push(path.to_owned());
+            Ok(inventory::entries()[path].digest.clone())
+        })
+        .unwrap();
+        assert_eq!(seen.len(), 545);
+        assert_eq!(seen.iter().filter(|p| p.as_str() == bad).count(), 1);
+        for read_error in [false, true] {
+            let mut second = Vec::new();
+            assert!(inventory::project_with(inventory::current(), |path| {
+                second.push(path.to_owned());
+                if path == bad {
+                    if read_error {
+                        Err("fresh failure")
+                    } else {
+                        Ok("wrong digest".into())
+                    }
+                } else {
+                    Ok(inventory::entries()[path].digest.clone())
+                }
+            })
+            .is_err());
+            assert_eq!(second.last().unwrap(), bad);
+            assert!(second.len() <= seen.len());
+        }
+    }
+}
+
+#[test]
+fn alarm_test_index_requires_original_mode_blob_stage_and_exact_presence() {
+    let good = inventory::expected_index();
+    let row = &inventory::entries()[ADDED];
+    let exact = format!("{} {} 0\t{ADDED}\n", row.mode, row.blob);
+    for bad in [
+        good.replacen(&exact, "", 1),
+        format!("{good}{exact}"),
+        good.replacen(&exact, &format!("100755 {} 0\t{ADDED}\n", row.blob), 1),
+        good.replacen(&exact, &format!("100644 {} 1\t{ADDED}\n", row.blob), 1),
+        good.replacen(
+            &exact,
+            &format!("100644 {} 0\t{ADDED}\n", "0".repeat(40)),
+            1,
+        ),
+    ] {
+        assert!(!inventory::index_matches(&bad));
+    }
+}
+
+#[test]
+fn inverse_phase_rejects_missing_extra_and_changed_reviewed_metadata() {
+    for path in [CHANGED, ADDED] {
+        let mut missing = inventory::entries().clone();
+        missing.remove(path);
+        assert!(
+            std::panic::catch_unwind(|| inventory::phase_545::predecessor_entries(&missing))
+                .is_err()
+        );
+        for field in 0..3 {
+            let mut changed = inventory::entries().clone();
+            let row = changed.get_mut(path).unwrap();
+            match field {
+                0 => row.mode = "100755".into(),
+                1 => row.blob = "0".repeat(40),
+                _ => row.digest = "0".repeat(64),
+            }
+            assert!(
+                std::panic::catch_unwind(|| inventory::phase_545::predecessor_entries(&changed))
+                    .is_err()
+            );
+        }
+    }
+    let mut extra = inventory::entries().clone();
+    extra.insert(
+        format!("{}/unexpected.rs", inventory::SCOPE),
+        extra[ADDED].clone(),
+    );
+    assert!(
+        std::panic::catch_unwind(|| inventory::phase_545::predecessor_entries(&extra)).is_err()
+    );
+}
+
+#[test]
+fn old_544_descriptor_and_every_physical_check_remain_byte_identical() {
+    let path = "crates/xtask/tests/support/artifact_inventory_phase_544.rs";
+    let old = git(&[
+        "show",
+        &format!("77ccbe7d57203d1c5f263a4046aee0b81e06357e:{path}"),
+    ]);
+    let current = std::fs::read_to_string(inventory::root().join(path))
+        .unwrap()
+        .replace("\r\n", "\n");
+    assert_eq!(
+        String::from_utf8(old).unwrap().replace("\r\n", "\n"),
+        current
+    );
+    let path = "crates/xtask/tests/support/artifact_inventory_input.rs";
+    let old = String::from_utf8(git(&[
+        "show",
+        &format!("2b83dff9d7445aa8a14890b51ae5d4b276b048f7:{path}"),
+    ]))
+    .unwrap()
+    .replace("\r\n", "\n");
+    let current = std::fs::read_to_string(inventory::root().join(path))
+        .unwrap()
+        .replace("\r\n", "\n");
+    let marker = "pub(crate) fn root() -> PathBuf {";
+    assert_eq!(
+        old.split_once(marker).unwrap().1,
+        current.split_once(marker).unwrap().1
+    );
+}

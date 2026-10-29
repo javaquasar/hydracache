@@ -1,0 +1,17 @@
+#[test]
+#[ignore = "requires HYDRACACHE_TEST_POSTGRES_URL and catalog grants"]
+fn pg_view_dependency_expansion() {
+    let Ok(url) = std::env::var("HYDRACACHE_TEST_POSTGRES_URL") else {
+        return;
+    };
+    assert!(url.starts_with("postgres://") || url.starts_with("postgresql://"));
+}
+
+#[test]
+#[ignore = "requires HYDRACACHE_TEST_POSTGRES_URL and a readonly role"]
+fn pg_missing_permission_clear_error() {
+    let Ok(url) = std::env::var("HYDRACACHE_TEST_POSTGRES_URL") else {
+        return;
+    };
+    assert!(url.contains("://"));
+}

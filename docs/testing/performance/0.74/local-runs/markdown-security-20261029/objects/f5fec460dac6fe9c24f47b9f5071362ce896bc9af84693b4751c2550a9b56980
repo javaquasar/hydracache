@@ -1,0 +1,45 @@
+[package]
+name = "hydracache-cluster-raft"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "raft-rs metadata control-plane runtime for HydraCache cluster mode"
+readme = "README.md"
+
+[features]
+default = ["durable-log"]
+durable-log = []
+sled-log-store = ["dep:sled"]
+test-failpoints = ["dep:fail", "fail/failpoints"]
+
+[dependencies]
+async-trait.workspace = true
+fail = { version = "0.5", optional = true }
+hydracache.workspace = true
+protobuf.workspace = true
+raft.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sled = { workspace = true, optional = true }
+slog.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+axum.workspace = true
+chitchat.workspace = true
+hydracache-cluster-chitchat.workspace = true
+hydracache-cluster-testkit.workspace = true
+hydracache-cluster-transport-axum.workspace = true
+proptest.workspace = true
+serde_json.workspace = true
+stateright.workspace = true
+tokio.workspace = true
+tower.workspace = true
+
+[target.'cfg(hydracache_loom)'.dev-dependencies]
+loom.workspace = true
+
+[lints]
+workspace = true

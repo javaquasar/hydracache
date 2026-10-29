@@ -1,0 +1,5 @@
+     Locking 2 packages to latest compatible versions
+      Adding getopts v0.2.24
+      Adding pulldown-cmark-escape v0.11.0
+ Downloading crates ...
+  Downloaded pulldown-cmark-escape v0.11.0

@@ -1,0 +1,133 @@
+name: Post Publish Verification
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Published HydraCache version to verify
+        required: true
+        type: string
+      metadata_artifact:
+        description: Release metadata artifact produced by Publish Crates
+        required: false
+        default: ""
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Published HydraCache version to verify
+        required: true
+        default: 0.24.0
+      metadata_artifact:
+        description: Optional release metadata artifact produced by Publish Crates
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: post-publish-${{ inputs.version }}-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify published crates
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout verification fixture
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Download publication manifest
+        if: inputs.metadata_artifact != ''
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.metadata_artifact }}
+          path: target/release-publish
+
+      - name: Create consumer project
+        run: cargo new hydracache-consumer --lib
+
+      - name: Create dependency-order smoke project
+        run: cargo new hydracache-order-smoke --lib
+
+      - name: Add published dependencies in package order
+        working-directory: hydracache-order-smoke
+        run: |
+          set -euo pipefail
+          manifest="$GITHUB_WORKSPACE/target/release-publish/packages.txt"
+          if [[ -f "$manifest" ]]; then
+            mapfile -t packages < "$manifest"
+          else
+            packages=(
+              hydracache-client-protocol hydracache-core hydracache-macros
+              hydracache-sql-lint hydracache hydracache-client
+              hydracache-client-hc2
+              hydracache-cluster-chitchat hydracache-cluster-raft
+              hydracache-cluster-transport-axum hydracache-db
+              hydracache-observability hydracache-transport-nats
+              hydracache-transport-redis hydracache-actuator-axum
+              hydracache-cdc-postgres hydracache-client-transport-axum
+              hydracache-cluster hydracache-diesel hydracache-seaorm
+              hydracache-sqlx hydracache-redis-compat hydracache-server
+            )
+          fi
+          for package in "${packages[@]}"; do
+            [[ -z "$package" ]] && continue
+            cargo add "$package@${{ inputs.version }}"
+            cargo check
+          done
+
+      - name: Add published dependencies
+        working-directory: hydracache-consumer
+        run: |
+          set -euo pipefail
+          manifest="$GITHUB_WORKSPACE/target/release-publish/packages.txt"
+          if [[ -f "$manifest" ]]; then
+            mapfile -t packages < "$manifest"
+          else
+            packages=(
+              hydracache-client-protocol hydracache-core hydracache-macros
+              hydracache-sql-lint hydracache hydracache-client
+              hydracache-client-hc2
+              hydracache-cluster-chitchat hydracache-cluster-raft
+              hydracache-cluster-transport-axum hydracache-db
+              hydracache-observability hydracache-transport-nats
+              hydracache-transport-redis hydracache-actuator-axum
+              hydracache-cdc-postgres hydracache-client-transport-axum
+              hydracache-cluster hydracache-diesel hydracache-seaorm
+              hydracache-sqlx hydracache-redis-compat hydracache-server
+            )
+          fi
+          for package in "${packages[@]}"; do
+            [[ -z "$package" ]] && continue
+            cargo add "$package@${{ inputs.version }}"
+          done
+          cargo add serde --features derive
+          cargo add serde_json --dev
+          cargo add tokio --features macros,rt-multi-thread
+
+      - name: Install smoke test fixture
+        timeout-minutes: 15
+        working-directory: hydracache-consumer
+        run: cp "$GITHUB_WORKSPACE/tests/post-publish-consumer/src/lib.rs" src/lib.rs
+
+      - name: Check published consumer
+        working-directory: hydracache-consumer
+        run: cargo check
+
+      - name: Test published consumer
+        working-directory: hydracache-consumer
+        run: cargo test
+
+      - name: Build published docs
+        working-directory: hydracache-consumer
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --no-deps

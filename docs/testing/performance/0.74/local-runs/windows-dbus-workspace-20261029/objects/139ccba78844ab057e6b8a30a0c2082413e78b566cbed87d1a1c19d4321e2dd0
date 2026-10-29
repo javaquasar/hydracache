@@ -1,0 +1,456 @@
+use serde_json::{json, Value};
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process::{Command, Output};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+struct TempDir(PathBuf);
+
+impl TempDir {
+    fn new(label: &str) -> Self {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock")
+            .as_nanos();
+        let path = std::env::temp_dir().join(format!(
+            "hydracache-ci-reliability-{label}-{}-{nonce}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&path).expect("create temp directory");
+        Self(path)
+    }
+
+    fn path(&self) -> &Path {
+        &self.0
+    }
+}
+
+impl Drop for TempDir {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.0);
+    }
+}
+
+fn repo_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .canonicalize()
+        .expect("repository root")
+}
+
+fn python() -> &'static str {
+    if cfg!(windows) {
+        "python"
+    } else {
+        "python3"
+    }
+}
+
+fn run_watchdog(temp: &TempDir, timeout: f64, command: &[&str]) -> (Output, Value) {
+    let receipt = temp.path().join("receipt.json");
+    let log = temp.path().join("child.log");
+    let output = Command::new(python())
+        .arg(repo_root().join("scripts/ci/run-with-heartbeat.py"))
+        .args([
+            "--timeout-seconds",
+            &timeout.to_string(),
+            "--heartbeat-seconds",
+            "0.05",
+            "--status-json",
+        ])
+        .arg(&receipt)
+        .arg("--log-file")
+        .arg(&log)
+        .args(["--attempt-id", "fixture-attempt", "--"])
+        .args(command)
+        .output()
+        .expect("run watchdog");
+    let receipt = serde_json::from_slice(&fs::read(receipt).expect("watchdog receipt"))
+        .expect("valid watchdog JSON");
+    (output, receipt)
+}
+
+fn write_fixture(temp: &TempDir, workflow: &str, topology: Value) -> PathBuf {
+    let workflow_dir = temp.path().join(".github/workflows");
+    fs::create_dir_all(&workflow_dir).expect("workflow directory");
+    fs::write(workflow_dir.join("fixture.yml"), workflow).expect("fixture workflow");
+    let topology_path = temp.path().join("topology.json");
+    fs::write(
+        &topology_path,
+        serde_json::to_vec_pretty(&topology).expect("serialize topology"),
+    )
+    .expect("fixture topology");
+    topology_path
+}
+
+fn topology(classes: Value, producer: &str, triggers: &[&str]) -> Value {
+    json!({
+        "schema_version": 1,
+        "release": "0.71",
+        "publication_producer": producer,
+        "workflows": [{
+            "path": ".github/workflows/fixture.yml",
+            "purpose": "focused reliability fixture",
+            "triggers": triggers,
+            "concurrency_markers": ["github.sha"],
+            "classes": classes
+        }]
+    })
+}
+
+fn classes(core: &[&str], release: &[&str], publish: &[&str]) -> Value {
+    json!({
+        "core": core,
+        "release-only": release,
+        "scheduled-diagnostic": [],
+        "manual-protected": [],
+        "publish": publish
+    })
+}
+
+#[test]
+fn checked_in_topology_is_closed_and_valid() {
+    xtask::ci_topology::check(&repo_root(), "0.71").expect("checked-in topology must pass");
+}
+
+#[test]
+fn diagnostic_builder_is_manual_protected_and_sha_bound() {
+    let text = fs::read_to_string(repo_root().join(".github/workflows/diagnostic-builder-074.yml"))
+        .expect("registered diagnostic builder workflow");
+    let workflow: serde_yaml::Value = serde_yaml::from_str(&text).unwrap();
+    assert_eq!(workflow["on"].as_mapping().unwrap().len(), 1);
+    assert!(workflow["on"]["workflow_dispatch"].is_null());
+    let jobs = workflow["jobs"].as_mapping().unwrap();
+    assert_eq!(jobs.len(), 2);
+    assert_eq!(workflow["jobs"]["sign"]["needs"].as_str(), Some("build"));
+    for name in ["build", "sign"] {
+        let job = &workflow["jobs"][name];
+        assert_eq!(job["runs-on"].as_str(), Some("ubuntu-24.04"));
+        assert_eq!(
+            job["environment"].as_str(),
+            Some("performance-diagnostic-builder-074")
+        );
+        assert!(job["timeout-minutes"].as_u64().unwrap() > 0);
+        for step in job["steps"].as_sequence().unwrap() {
+            if step["uses"].as_str().is_some_and(|action| {
+                action.starts_with("actions/upload-artifact@")
+                    || action.starts_with("actions/download-artifact@")
+            }) {
+                let artifact = step["with"]["name"].as_str().unwrap();
+                for field in ["github.sha", "github.run_id", "github.run_attempt"] {
+                    assert!(artifact.contains(field), "{name}: {field}");
+                }
+            }
+        }
+    }
+    let install = workflow["jobs"]["build"]["steps"]
+        .as_sequence()
+        .unwrap()
+        .iter()
+        .find(|step| step["name"].as_str() == Some("Install exact reviewed compiler"))
+        .unwrap();
+    assert!(install["timeout-minutes"]
+        .as_u64()
+        .is_some_and(|minutes| minutes > 0 && minutes < 40));
+    assert!(!text.split("  sign:").next().unwrap().contains("secrets."));
+    assert!(!text.contains("self-hosted"));
+}
+
+#[test]
+fn live_builder_inventory_preserves_the_frozen_memory_input() {
+    use sha2::{Digest, Sha256};
+    let root = repo_root();
+    let frozen = fs::read_to_string(root.join("docs/testing/memory/0.71/ci-topology.json"))
+        .expect("frozen CI snapshot")
+        .replace("\r\n", "\n");
+    let digest: String = Sha256::digest(frozen.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
+    assert_eq!(
+        digest,
+        "d77fbfc7d361a807db23e4706a192bcf10ee7a2f0dccd136ababe0b5280aeef0"
+    );
+    let live: Value =
+        serde_json::from_slice(&fs::read(root.join("docs/testing/ci-topology.json")).unwrap())
+            .unwrap();
+    let builder = live["workflows"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|workflow| workflow["path"] == ".github/workflows/diagnostic-builder-074.yml")
+        .unwrap();
+    assert_eq!(
+        builder["classes"]["manual-protected"],
+        json!(["build", "sign"])
+    );
+    assert!(builder.get("artifact_identity_exemptions").is_none());
+    xtask::ci_topology::check(&root, "0.71")
+        .expect("default must validate live inventory, not frozen snapshot");
+}
+
+#[test]
+fn topology_rejects_missing_timeout_and_duplicate_branch_tag_execution() {
+    let temp = TempDir::new("trigger-timeout");
+    let workflow = r#"
+name: fixture
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+concurrency:
+  group: fixture-${{ github.sha }}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: cargo publish --dry-run
+"#;
+    let path = write_fixture(
+        &temp,
+        workflow,
+        topology(
+            classes(&["check"], &[], &[]),
+            ".github/workflows/fixture.yml#check",
+            &["push_branch", "push_tag"],
+        ),
+    );
+    let error = xtask::ci_topology::check_with_path(temp.path(), "0.71", &path)
+        .expect_err("invalid fixture")
+        .to_string();
+    assert!(error.contains("must declare a positive timeout-minutes"));
+    assert!(error.contains("without an explicit reuse/rerun disposition"));
+}
+
+#[test]
+fn topology_rejects_install_step_without_a_bounded_timeout() {
+    let temp = TempDir::new("install-step-timeout");
+    let workflow = r#"
+name: fixture
+on: workflow_dispatch
+concurrency:
+  group: fixture-${{ github.sha }}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Install management console dependencies
+        run: npm ci --prefix console
+"#;
+    let path = write_fixture(
+        &temp,
+        workflow,
+        topology(
+            classes(&["check"], &[], &[]),
+            ".github/workflows/fixture.yml#check",
+            &["workflow_dispatch"],
+        ),
+    );
+    let error = xtask::ci_topology::check_with_path(temp.path(), "0.71", &path)
+        .expect_err("unbounded install step must fail")
+        .to_string();
+    assert!(error.contains(
+        "Install management console dependencies\") needs a positive timeout-minutes smaller than job timeout 10"
+    ));
+}
+
+#[test]
+fn topology_rejects_mixed_artifact_identity() {
+    let temp = TempDir::new("artifact");
+    let workflow = r#"
+name: fixture
+on: workflow_dispatch
+concurrency:
+  group: fixture-${{ github.sha }}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: cargo publish --dry-run
+      - uses: actions/upload-artifact@v6
+        with:
+          name: proof-${{ github.sha }}-${{ github.run_id }}
+          path: receipt.json
+"#;
+    let path = write_fixture(
+        &temp,
+        workflow,
+        topology(
+            classes(&[], &[], &["publish"]),
+            ".github/workflows/fixture.yml#publish",
+            &["workflow_dispatch"],
+        ),
+    );
+    let error = xtask::ci_topology::check_with_path(temp.path(), "0.71", &path)
+        .expect_err("missing run attempt must fail")
+        .to_string();
+    assert!(error.contains("github.run_attempt"));
+}
+
+#[test]
+fn topology_rejects_two_crate_publishers() {
+    let temp = TempDir::new("publishers");
+    let workflow = r#"
+name: fixture
+on: workflow_dispatch
+concurrency:
+  group: fixture-${{ github.sha }}
+jobs:
+  first:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: cargo publish --dry-run
+  second:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: cargo publish --dry-run
+"#;
+    let path = write_fixture(
+        &temp,
+        workflow,
+        topology(
+            classes(&[], &[], &["first", "second"]),
+            ".github/workflows/fixture.yml#first",
+            &["workflow_dispatch"],
+        ),
+    );
+    let error = xtask::ci_topology::check_with_path(temp.path(), "0.71", &path)
+        .expect_err("two publishers must fail")
+        .to_string();
+    assert!(error.contains("exactly one producer"));
+    assert!(error.contains("#first"));
+    assert!(error.contains("#second"));
+}
+
+#[test]
+fn watchdog_classifies_silent_success_and_product_failure() {
+    let success = TempDir::new("watchdog-success");
+    let (output, receipt) = run_watchdog(
+        &success,
+        5.0,
+        &[python(), "-c", "import time; time.sleep(0.15)"],
+    );
+    assert!(output.status.success());
+    assert_eq!(receipt["classification"], "success");
+    assert!(String::from_utf8_lossy(&output.stdout).contains("watchdog heartbeat"));
+
+    let failure = TempDir::new("watchdog-failure");
+    let (output, receipt) = run_watchdog(
+        &failure,
+        5.0,
+        &[
+            python(),
+            "-c",
+            "print('provisioning failed', flush=True); raise SystemExit(23)",
+        ],
+    );
+    assert_eq!(output.status.code(), Some(23));
+    assert_eq!(receipt["classification"], "product-failure");
+    assert_eq!(receipt["exit_code"], 23);
+    assert!(fs::read_to_string(failure.path().join("child.log"))
+        .expect("retained child log")
+        .contains("provisioning failed"));
+}
+
+#[test]
+fn watchdog_times_out_and_kills_descendant_processes() {
+    let temp = TempDir::new("watchdog-descendant");
+    let marker = temp.path().join("descendant-survived.txt");
+    let outer = concat!(
+        "import subprocess,sys,time;",
+        "subprocess.Popen([sys.executable,'-c',",
+        "'import pathlib,sys,time;time.sleep(1.5);pathlib.Path(sys.argv[1]).write_text(\"alive\")',",
+        "sys.argv[1]]);time.sleep(10)"
+    );
+    let marker_arg = marker.to_string_lossy().into_owned();
+    let (output, receipt) =
+        run_watchdog(&temp, 0.35, &[python(), "-c", outer, marker_arg.as_str()]);
+    assert_eq!(output.status.code(), Some(124));
+    assert_eq!(receipt["classification"], "timeout");
+    std::thread::sleep(Duration::from_secs(2));
+    assert!(!marker.exists(), "descendant escaped the process-tree kill");
+}
+
+#[test]
+fn watchdog_classifies_missing_provisioning_tool() {
+    let temp = TempDir::new("watchdog-tool-unavailable");
+    let missing = format!("hydracache-missing-tool-{}", std::process::id());
+    let (output, receipt) = run_watchdog(&temp, 5.0, &[missing.as_str()]);
+    assert_eq!(output.status.code(), Some(127));
+    assert_eq!(receipt["classification"], "tool-unavailable");
+}
+
+#[test]
+fn default_manual_dispatch_runs_core_ci_jobs() {
+    let workflow = fs::read_to_string(repo_root().join(".github/workflows/ci.yml"))
+        .expect("read CI workflow")
+        .replace("\r\n", "\n");
+    let input = workflow
+        .split("      performance_0671_mode:\n")
+        .nth(1)
+        .expect("performance dispatch input");
+    assert!(
+        input
+            .lines()
+            .take(6)
+            .any(|line| line.trim() == "default: \"off\""),
+        "the default manual dispatch mode must remain off"
+    );
+    assert!(
+        !workflow.contains("inputs.performance_0671_mode == ''"),
+        "manual dispatch jobs must not compare a choice input with an empty string"
+    );
+
+    for job in ["ci-topology", "docs", "rust", "msrv"] {
+        let section = workflow
+            .split(&format!("  {job}:\n"))
+            .nth(1)
+            .unwrap_or_else(|| panic!("missing {job} job"));
+        assert!(
+            section.lines().take(5).any(|line| {
+                line.trim()
+                    == "if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'"
+            }),
+            "default manual dispatch must run {job}"
+        );
+    }
+}
+
+#[test]
+fn rust_canaries_install_locked_console_dependencies_first() {
+    let workflow = fs::read_to_string(repo_root().join(".github/workflows/ci.yml"))
+        .expect("read CI workflow")
+        .replace("\r\n", "\n");
+    let rust_job = workflow
+        .split("  rust:\n")
+        .nth(1)
+        .expect("Rust job")
+        .split("\n  migration-conformance-fast-evidence-069:")
+        .next()
+        .expect("Rust job body");
+    let install = rust_job
+        .find("run: npm ci --prefix console")
+        .expect("locked console dependency install");
+    let install_step = rust_job
+        .split("- name: Install management console dependencies for canaries\n")
+        .nth(1)
+        .expect("console install step");
+    assert!(
+        install_step
+            .lines()
+            .take(3)
+            .any(|line| line.trim() == "timeout-minutes: 15"),
+        "console install step needs an explicit bounded timeout"
+    );
+    let canaries = rust_job
+        .find("- name: Canary completeness")
+        .expect("canary step");
+    assert!(
+        install < canaries,
+        "console dependencies must precede canaries"
+    );
+}

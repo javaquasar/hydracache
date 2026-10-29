@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\194\\debug\\deps\\fault_proxy-4e7402adbbebd498.exe",
+    "--test-threads=4",
+    "--color=never"
+  ],
+  "bound": 1200,
+  "deadline": 132173.3575387,
+  "retry": false
+}

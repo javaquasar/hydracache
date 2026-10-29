@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "codec": "postcard length-prefixed ClientFrame",
+  "fixtures": [
+    {
+      "wire_version": 2,
+      "source_ref": "v0.62.0",
+      "source_commit": "bcf4b8b01448cc3b4a566bf4ed63444a2c90cbed",
+      "generated_from": "hydracache-client-protocol ClientRequest::EvictRegion and ClientResponse::Evicted",
+      "request_file": "protocol_v2_evict_request.hex",
+      "request_sha256": "21dbb8aa000a7197f9db33ad7c484c092dbd56e78df6bff176e03964cf232def",
+      "response_file": "protocol_v2_evict_response.hex",
+      "response_sha256": "08f8c8ec0cc9b5de0632f89ec67fa3d818c67324b38fb4c094df0f46574448cc"
+    },
+    {
+      "wire_version": 3,
+      "source_ref": "667b2e6",
+      "source_commit": "667b2e635fee288ef3e40632954d215e20aa5a1b",
+      "generated_from": "hydracache-client-protocol ClientRequest::EvictRegion and ClientResponse::Evicted",
+      "request_file": "protocol_v3_evict_request.hex",
+      "request_sha256": "7dee87679b956fbaae9e33dc878b8b3bcef8e109d58644ca4555efe998337805",
+      "response_file": "protocol_v3_evict_response.hex",
+      "response_sha256": "595ed7c8e428ad67001281f567c5d2179ba431683df4d5ac94a409b0b15c6b17"
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+import copy
+import json
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+import unittest
+from unittest.mock import patch
+
+import review as r
+import runner as p
+
+ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT/'tools/package-closure-offline-074'))
+# Reuse all seven pure and three real Linux CI containment controls unchanged.
+from test_gnu_package import NativeFixtures, PureControls
+
+class RepairedControls(unittest.TestCase):
+    def test_exact_review_data_and_complete_current_source_closure(self):
+        data=r.inputs()
+        context=r.load(ROOT/'tools/historical-blob-batch-074/module_context_v5.py','checked_control_context',r.CONTEXT_SHA)
+        document=json.loads((ROOT/'target/gnu-frontier-local-20261027/syntax-current/result.json').read_bytes())
+        result=r.source_review(ROOT,data,document,context)
+        self.assertEqual((result['sources'],result['auxiliary'],len(result['targets'])),(394,58,156))
+        self.assertEqual((len(result['changed']),len(result['added'])),(2,3))
+        self.assertFalse(result['package_pass'] or result['tests_dispatched'] or result['compiler_expansion'])
+        for kind in ('catalog','syntax','source'):
+            bad=copy.deepcopy(data)
+            if kind=='catalog': bad['targets'].pop()
+            if kind=='syntax': bad['syntax_sha256']='0'*64
+            if kind=='source': bad['sources']['crates/xtask/tests/pid_stage_join_074.rs']='0'*64
+            with self.subTest(kind=kind),self.assertRaises(ValueError):
+                r.source_review(ROOT,bad,document,context)
+
+    def test_complete_fixed_commands_and_no_filter_or_deadline_override(self):
+        full=p.command('full')
+        self.assertEqual(full,['/home/artur/.cargo/bin/cargo','+1.94.0','test','--offline','--locked','--no-fail-fast','--target-dir',str(r.TARGET),'-p','xtask','--lib','--tests','--','--test-threads=4'])
+        self.assertEqual(len(p.FOCUSED),16)
+        self.assertNotIn('--test',full)
+        self.assertNotIn('--all-features',full)
+        self.assertNotIn('--ignored',full)
+        self.assertEqual(p.command('clippy')[-5:],['--all-targets','--all-features','--','-D','warnings'])
+
+    def test_default_cli_does_not_execute_and_unknown_limit_refuses(self):
+        for argv,expected in [([],0),(['--timeout','900'],2),(['--mode','unknown'],2)]:
+            result=subprocess.run([sys.executable,str(Path(p.__file__)),*argv],capture_output=True,timeout=10)
+            self.assertEqual(result.returncode,expected)
+            if expected==0: self.assertIn(b'"execute": false',result.stdout)
+
+    def test_complete_bytes_eol_and_symlink_refusal(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder)
+            path=root/'file.rs'
+            path.write_bytes(b'one\r\ntwo\r\n')
+            expected={'file.rs':r.sha(b'one\ntwo\n')}
+            r.check_bytes(root,expected)
+            path.write_bytes(b'one\ntwo changed\n')
+            with self.assertRaises(ValueError): r.check_bytes(root,expected)
+            path.unlink()
+            with self.assertRaises(ValueError): r.check_bytes(root,expected)
+
+    def test_helper_drift_refuses_before_import(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/'helper.py'
+            path.write_bytes(b'raise AssertionError("must not import")')
+            with patch.object(r.importlib.util,'spec_from_file_location') as imported:
+                with self.assertRaises(ValueError): r.load(path,'never','0'*64)
+                imported.assert_not_called()
+
+    def test_control_gate_refuses_missing_red_filtered_and_stale_source(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder)
+            with self.assertRaises(FileNotFoundError): p.check_controls(root)
+            phase=root/'target/gnu-frontier-local-20261027'/p.CONTROL_PHASE
+            phase.mkdir(parents=True)
+            sources={}
+            for name in p.CONTROL_SOURCES:
+                path=root/name; path.parent.mkdir(parents=True,exist_ok=True); path.write_bytes(b'fixture')
+                sources[name]=r.sha(b'fixture')
+            argv=['wsl.exe','-d','Ubuntu','-u','artur','--exec','/usr/bin/python3','-m','unittest','discover','-s',str(r.CONTROL/'tools/package-frontier-gate-074'),'-p','test_runner.py','-v']
+            intent=dict(argv=argv,source=sources)
+            result=dict(exit=0,outer_refusal=None,source_unchanged=True,commit_unchanged=True,source_after=sources)
+            def write():
+                (phase/'intent.json').write_text(json.dumps(intent))
+                (phase/'result.json').write_text(json.dumps(result))
+            write(); p.check_controls(root)
+            result['exit']=1; write()
+            with self.assertRaises(ValueError): p.check_controls(root)
+            result['exit']=0; intent['argv']=argv+['--exact','subset']; write()
+            with self.assertRaises(ValueError): p.check_controls(root)
+            intent['argv']=argv; write()
+            (root/p.CONTROL_SOURCES[0]).write_bytes(b'changed')
+            with self.assertRaises(ValueError): p.check_controls(root)
+
+if __name__=='__main__':
+    unittest.main()

@@ -1,0 +1,16 @@
+--- a/src/runtime/io/unix.rs
++++ b/src/runtime/io/unix.rs
+@@ -153,7 +153,12 @@
+     let mut cmsg_buffer = [MaybeUninit::uninit(); rustix::cmsg_space!(ScmRights(FDS_MAX))];
+     let mut ancillary = RecvAncillaryBuffer::new(&mut cmsg_buffer);
+ 
+-    let msg = recvmsg(fd, &mut iov, &mut ancillary, RecvFlags::empty())?;
++    // Protect the raw message-owned SCM_RIGHTS descriptors, not only decoded clones.
++    #[cfg(target_os = "linux")]
++    let flags = RecvFlags::CMSG_CLOEXEC;
++    #[cfg(not(target_os = "linux"))]
++    let flags = RecvFlags::empty();
++    let msg = recvmsg(fd, &mut iov, &mut ancillary, flags)?;
+     if msg.bytes == 0 {
+         return Err(io::Error::new(
+             io::ErrorKind::BrokenPipe,

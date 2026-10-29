@@ -1,0 +1,76 @@
+name: Simulator Demo
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * *"
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: simulator-demo-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and smoke demo
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: simulator-demo
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@wasm-pack
+
+      - name: Install Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Build WASM crate
+        run: cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked
+
+      - name: Build browser package
+        timeout-minutes: 10
+        run: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked
+
+      - name: Install demo dependencies
+        timeout-minutes: 10
+        run: npm --prefix demo ci
+
+      - name: Check static demo package
+        run: npm --prefix demo run build
+
+      - name: Install Playwright browsers
+        timeout-minutes: 10
+        run: |
+          npx --prefix demo playwright install --with-deps chromium
+
+      - name: Run headless smoke
+        env:
+          HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/
+        run: npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js
+
+      - name: Keep demo artifact local to this workflow
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "The public GitHub Pages root is owned by .github/workflows/docs-site.yml."
+          echo "This workflow builds and smokes the simulator demo but does not deploy Pages."

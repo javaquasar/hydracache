@@ -1,0 +1,104 @@
+{
+  "case_to_target_assignment": "ordered-one-to-one",
+  "complete": false,
+  "failed": 0,
+  "ignored": 0,
+  "ignored_policy": "original workspace default/nightly tier unchanged",
+  "outer_verify_launches": [
+    "Running `target\\debug\\xtask.exe verify`"
+  ],
+  "passed": 0,
+  "release_admitted": false,
+  "scheduled_targets": [],
+  "stages": [
+    {
+      "name": "doc-check",
+      "state": "complete"
+    },
+    {
+      "name": "management-center-check 0.72",
+      "state": "complete"
+    },
+    {
+      "name": "performance-contract-check 0.73",
+      "state": "complete"
+    },
+    {
+      "name": "release feature leak",
+      "state": "complete"
+    },
+    {
+      "name": "format",
+      "state": "complete"
+    },
+    {
+      "name": "clippy workspace",
+      "state": "complete"
+    },
+    {
+      "name": "clippy",
+      "state": "complete"
+    },
+    {
+      "name": "clippy hydracache common",
+      "state": "complete"
+    },
+    {
+      "name": "clippy hydracache system allocator",
+      "state": "complete"
+    },
+    {
+      "name": "clippy hydracache mimalloc",
+      "state": "complete"
+    },
+    {
+      "name": "dependency bans",
+      "state": "complete"
+    },
+    {
+      "name": "dependency policy",
+      "state": "incomplete-or-failed"
+    },
+    {
+      "name": "DST fast budget",
+      "state": "unstarted"
+    },
+    {
+      "name": "soak fast budget",
+      "state": "unstarted"
+    },
+    {
+      "name": "raft failpoint crash-safety",
+      "state": "unstarted"
+    },
+    {
+      "name": "clippy (Windows allocator)",
+      "state": "unstarted"
+    },
+    {
+      "name": "tests (workspace excluding xtask)",
+      "state": "unstarted"
+    },
+    {
+      "name": "tests (xtask lib/integration)",
+      "state": "unstarted"
+    },
+    {
+      "name": "docs",
+      "state": "unstarted"
+    },
+    {
+      "name": "performance budget contract",
+      "state": "unstarted"
+    },
+    {
+      "name": "management console",
+      "state": "unstarted"
+    }
+  ],
+  "static_workspace_target_prediction": false,
+  "target_discovery_authority": "fixed unfiltered Cargo argv and pinned workspace manifests",
+  "targets": [],
+  "unsummarized_targets": [],
+  "workspace_pass": false
+}

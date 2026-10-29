@@ -1,0 +1,5 @@
+error: prepared_query_policy tag_segments expects nested segment groups like [[...], [...]]
+ --> tests/policy/fail_prepared_flat_tag_segments.rs:6:25
+  |
+6 |         tag_segments = ["tenant", 7_u64],
+  |                         ^^^^^^^^

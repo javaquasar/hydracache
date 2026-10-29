@@ -1,0 +1,38 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+    "test",
+    "--manifest-path",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\fixtures\\baseline\\Cargo.toml",
+    "--target-dir",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\targets\\baseline-194",
+    "--offline",
+    "--locked",
+    "--no-run",
+    "--message-format=json"
+  ],
+  "bound_seconds": 1200,
+  "clocks": false,
+  "head": "7d0f2885176812202faac6e8bcbf753e185f3ce0",
+  "performance_claim": false,
+  "retry": false,
+  "server": false,
+  "services": false,
+  "source": {
+    ".cargo/config.toml": "90f023744f969c176d98d811145b883b411da0fe8a294e930a0f965456ac49a3",
+    "Cargo.lock": "76d4ab3b38c1b259c0784e66dd620a5f61d45cde1760a9533c4d6c7db061b207",
+    "Cargo.toml": "84b1986d8a2014be985460b3ecc4a809f3ae3e8f9822ef6c7134b3ecbe9af114",
+    "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "target/pulldown-security-20261029/fixtures/baseline/Cargo.lock": "a5a0ae4fd39c39d01444f061dd9b077e2a05aaa33a59402ccb5cc2fa217b9597",
+    "target/pulldown-security-20261029/fixtures/baseline/Cargo.toml": "74f78799f8c934ffedc3bc5ce5c485c56e25130e077b8c7f2c2654e58cfb8015",
+    "target/pulldown-security-20261029/fixtures/candidate/Cargo.lock": "903a9a637ef5bf5c18ab8386fbb37b2ad5665be0fd34521d686a0fa030701436",
+    "target/pulldown-security-20261029/fixtures/candidate/Cargo.toml": "bc36688bd9c4c35b1ffaf36c45ab3e04078274bec12c941d22a6776dfd8b56e6",
+    "tools/dbus-source-package-074/package.py": "1b13c005abfbb96b1374e27fcc871ce0a14d87fe955e2097712a9cfb029fadf3",
+    "tools/markdown-security-review-074/README.md": "e2bf4e3fa298ea9ea01cdc211c4a240a284cc2a0af7d9be6e444b1222da841f2",
+    "tools/markdown-security-review-074/corpus.rs": "68be96bf7bca2d2306094cf96de4a318fe45701e790d4320b9fc9f51a5522d60",
+    "tools/markdown-security-review-074/probe.rs": "2492eccfdbe2472fe8f3d2458167063adb293445fdf1b100b5390db853bf8528",
+    "tools/markdown-security-review-074/run.py": "5358c008fa4b3ca45cac37537ece99a53ae8c07e1d28a2af0b315cb74dc43ac4"
+  },
+  "source_worktree_uncommitted": true
+}

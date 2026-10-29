@@ -1,0 +1,35 @@
+{
+  "matrix": {
+    "windows-194": {
+      "corpus_cases": 8,
+      "events_html_equal": true,
+      "baseline_16_events": 327676,
+      "candidate_16_events": 65,
+      "candidate_all_14_counts_linear": true
+    },
+    "windows-188": {
+      "corpus_cases": 8,
+      "events_html_equal": true,
+      "baseline_16_events": 327676,
+      "candidate_16_events": 65,
+      "candidate_all_14_counts_linear": true
+    },
+    "gnu-194": {
+      "corpus_cases": 8,
+      "events_html_equal": true,
+      "baseline_16_events": 327676,
+      "candidate_16_events": 65,
+      "candidate_all_14_counts_linear": true
+    },
+    "gnu-188": {
+      "corpus_cases": 8,
+      "events_html_equal": true,
+      "baseline_16_events": 327676,
+      "candidate_16_events": 65,
+      "candidate_all_14_counts_linear": true
+    }
+  },
+  "complete": true,
+  "root_lock_changed": false,
+  "performance_claim": false
+}

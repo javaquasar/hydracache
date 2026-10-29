@@ -1,0 +1,3 @@
+fn name(revision: usize, suffix: &str) -> String {
+    format!("{revision:016x}.{suffix}")
+}

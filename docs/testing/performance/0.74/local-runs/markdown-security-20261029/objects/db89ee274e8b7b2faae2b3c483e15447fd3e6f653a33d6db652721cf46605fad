@@ -1,0 +1,32 @@
+{
+  "source_review_complete": true,
+  "production_changed": [
+    "src/firstpass.rs",
+    "src/parse.rs"
+  ],
+  "manifest_changed_only_in_version": true,
+  "minimum_rust_version": "1.71.1",
+  "license_unchanged": true,
+  "dependency_features_unchanged": true,
+  "root_package_records": 683,
+  "actual_resolved_packages": 683,
+  "actual_parser_features": [],
+  "gen_tests_enabled": false,
+  "build_script_additions": "Only existing gen-tests gated generation; no new active host effect in this graph",
+  "effects": [
+    "Wikilink sibling-chain/prev repair and empty-display synthetic text node",
+    "Malformed link range bounds before subtraction",
+    "List tight/empty line flags and bounded nested-list scanning",
+    "Definition-list UTF-8 source offsets and string paragraph scans",
+    "Underscore lower-bound propagation"
+  ],
+  "actual_prost_options": "all minus smart punctuation",
+  "actual_prost_source_sha256": "deb9c2a75780d79c10a772c0d62c2e8c95d931b1aebb8a77a081c82068c9d7f9",
+  "finite_corpus_only": true,
+  "whole_markdown_language_equivalence": false,
+  "root_issuer_pins_changed": false,
+  "public_api_signature_change": false,
+  "server": false,
+  "services": false,
+  "clocks": false
+}

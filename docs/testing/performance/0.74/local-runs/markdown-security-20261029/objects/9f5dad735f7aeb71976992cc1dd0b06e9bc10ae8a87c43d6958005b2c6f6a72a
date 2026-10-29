@@ -1,0 +1,46 @@
+# Remaining kernel and activation reader phases
+
+This test-only repair adds one selected kernel-source projection after the
+fresh-kernel reader's existing body read and one COMPAT document view before
+activation-ingress's existing guard chain. It neither observes a live kernel nor
+delivers an activation message. Product and supervisor runtime are unchanged.
+
+`rules.json` constructs exactly seven caller/helper successors from fixed commit
+`3e7e0aa343ed51f99651761f9bb7b0b10efd359a`; its SHA256 is
+`b8803a5f12460fa2278ffef033dc0738c4dc925a65a661f701ea09ae9bb6883e`.
+Whole predecessor/successor bodies, exact replacements and all original test
+names/assertion tokens are checked. Unknown, stale, partial or unrelated caller
+changes cannot enter a predecessor phase. `generate.py` verifies the immutable
+description; `--write` exclusively creates it from that fixed baseline and
+`--patch` emits edits only while every caller still equals its predecessor.
+
+`inputs.rs` is an explicit successor facade for the three current-input audit
+consumers. The original `current_tree_input.rs` implementation, nine patch rules,
+81 additions and their ledger stay byte-identical. Only the exact new
+fresh-kernel caller is verified and folded before its original whole-body gate.
+Other reads/predicates/metadata/index checks delegate to the original code.
+The selected read keeps one physical observation and the original patch branch's
+validation order. Boolean refusal and panic-on-read-refusal APIs remain distinct.
+
+The current-tree proof and the preceding audit-body proof independently verify
+their exact new callers before releasing their prior strings. This keeps the
+earlier constructors/assertions intact without hiding an unreviewed current
+edit. New controls separately inspect the real current bodies and AST; historical
+projection is not a runtime equivalence or complete package verdict.
+
+The document-scratch reader has its own five-input historical gate. Its original
+predicate body is retained as `accepts_previous`; a wrapper verifies only the
+new fresh-kernel caller before invoking that predicate. Other four inputs and
+the original predecessor assertions/read order stay unchanged. Its first
+integration refusal is retained, and both old scratch-reader API controls run.
+
+The first formatter refusal requires one proof-reader line wrap. The final
+description constructs that exact formatted caller; complete token-stream
+equality proves the wrap changes no Rust tokens. The refusal and pre-format
+source/descriptor remain, and final current/MSRV cohorts use the formatted tree.
+
+The kernel input uses the existing independently pinned 958b3135→c91068bf
+successor; COMPAT uses a67a5299→3c52c0aa through the existing document reader.
+Only immutable expected data is cached, never a current observation. No extra
+Git command is added to a census guard and no live check, deadline, threshold,
+dependency, service, clock, server or qualification action changes.

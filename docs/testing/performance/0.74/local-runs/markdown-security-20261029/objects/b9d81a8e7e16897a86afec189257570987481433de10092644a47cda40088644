@@ -1,0 +1,12 @@
+{
+  "build_growth_reservation_established": false,
+  "headroom_above_floor_bytes": 16006111232,
+  "launch_ready": false,
+  "observed_free_bytes": 20301078528,
+  "original_floor_bytes": 4294967296,
+  "original_floor_satisfied": true,
+  "original_workspace_start_bytes": 17179869184,
+  "original_workspace_start_satisfied": true,
+  "pagefile_growth_reservation_established": false,
+  "reason": "A sampled floor is not a build/pagefile reservation; no heavy gate dispatched."
+}

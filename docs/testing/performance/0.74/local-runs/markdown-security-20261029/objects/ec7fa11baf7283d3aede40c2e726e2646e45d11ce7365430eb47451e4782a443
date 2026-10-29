@@ -1,0 +1,13 @@
+test_actual_consumer_output_is_bound_to_both_cargo_producers (test_review.ReviewControls.test_actual_consumer_output_is_bound_to_both_cargo_producers) ... ok
+test_actual_registry_and_codec_tampering_refuse (test_review.ReviewControls.test_actual_registry_and_codec_tampering_refuse) ... ok
+test_complete_positive_and_all_missing_duplicate_growth_controls (test_review.ReviewControls.test_complete_positive_and_all_missing_duplicate_growth_controls) ... ok
+test_fixed_real_consumer_argv_keeps_complete_check_and_clippy (test_review.ReviewControls.test_fixed_real_consumer_argv_keeps_complete_check_and_clippy) ... ok
+test_invalid_consumer_modes_refuse_before_output_creation (test_review.ReviewControls.test_invalid_consumer_modes_refuse_before_output_creation) ... ok
+test_native_registry_refresh_detects_changed_vendor_member (test_review.ReviewControls.test_native_registry_refresh_detects_changed_vendor_member) ... ok
+test_original_baseline_oracle_is_not_green (test_review.ReviewControls.test_original_baseline_oracle_is_not_green) ... ok
+test_target_identity_not_parallel_artifact_arrival_order (test_review.ReviewControls.test_target_identity_not_parallel_artifact_arrival_order) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.029s
+
+OK

@@ -1,0 +1,72 @@
+Baseline Linux Rust 1.94 all-target/all-feature check passed before installation.
+The first integrated Linux all-target/all-feature check also passed.
+
+The first Windows runtime-source development check ran four new controls; two
+passed and two refused the fixture test append. A seventh filesystem test had
+been added to the guarded artifact but not yet copied into the actual test
+module. The gate correctly rejected that partial installation. Its raw tool
+tail is retained separately; initial compile-warning output was in chat, not in
+that tail. Synchronizing the exact append fixed the gate. A duplicate unused
+SOURCE warning was fixed by referring to the original storage SOURCE constant.
+No runtime candidate tokens or source acceptance predicate were relaxed.
+
+The first offline Linux selector unit cohort refused the expected membership:
+the catalog contains 33 tests, not the anticipated 34 (11 original fixture tests,
+7 new filesystem tests, 10 fixed-backend tests, 2 owner controls, 2 leaf controls,
+1 breakdown control). Three controls passed, one errored. No Linux driver/test
+image executed. Correct the count to the actual frozen catalog; this is native
+test selection, not a performance threshold. Initial diagnostic is in chat.
+
+The first Linux driver attempt retained result.json with FileNotFoundError for
+rustc before any native compilation/test step. Direct WSL python invocation has
+no Cargo bin in PATH, unlike bash -lc used by the baseline. Use explicit rustup
+shim paths and a child-only PATH addition. Keep the first directory untouched;
+the repaired driver uses a new development output, not an overwrite or retry
+labelled as first success. No clock, service or runtime predicate changes.
+
+Windows strict clippy then refused duplicate_mod: the earlier storage source
+test and the new runtime gate loaded the same contract twice. Reuse that module
+through an alias and let the other two binaries load it once. No lint allowance
+or assertion removal was introduced. The repaired Windows source cohort and
+strict clippy pass. The first executed Linux filesystem cohort passed all 33
+selected tests on Rust 1.94, including all seven new tests; its output remains
+development evidence, distinct from the later committed-source final lanes.
+
+The first complete Windows performance_contract_074 cohort passed 290 tests and
+failed 31 historical preservation tests. The raw log is retained unchanged.
+Their shared older leaf normalizer refused the new installed implementation
+("one known full leaf implementation", zero matches instead of one). Add an
+exactly guarded single reader edit to each of the 31 preservation modules and
+only imports in the root binary. Read current bytes, verify complete approved
+files, then return the pinned predecessor to historical assertions. Other IO,
+test bodies, normalization predicates and live/runtime checks stay unchanged.
+The new raw-current gate independently checks every reader edit, root imports
+and runtime candidate. No failed test is filtered or assertion weakened.
+
+The first expanded source cohort passed three and failed two of the five new
+controls: rustfmt ordered runtime_io before storage_contract, while the exact
+expected import order still used the pre-format order. Align the enumerated
+expected imports with rustfmt; keep complete-file token equality. The full
+adapted performance cohort did not execute in that failed invocation.
+
+The first offline packet-control cohort passed three and failed the unsafe-path
+control: an empty path segment (a//b) was accepted. Reject empty segments too;
+the original negative case remains. Initial output is in chat, not a raw log.
+Inspection also corrected root-only inventory exclusion and facts-before-seal
+ordering before any packet publication. These repairs affect evidence tooling,
+not runtime checks, deadlines or filesystem test success criteria.
+
+The first adapted full contract cohort passed 306 and failed 15. The original
+31 leaf-preservation failures were resolved; fifteen older preservation readers
+still saw the newly added root imports or adapted support modules. Extend the
+same complete-file verified predecessor view to those fifteen readers. The
+allowlist now contains 46 modules, exactly one actual read edit in each, plus
+the root imports. Literal source templates remain unchanged. The second full
+failure log is retained separately; all 321 original tests remain selected.
+
+The focused dependency cohort then passed 234 with one custody_join preservation
+failure (86 tests explicitly filtered for this development-only diagnosis).
+Static path-reference audit identifies its chain through original_descriptors,
+original_barrier and barred_custody; add these four exact single reader edits.
+The transitive allowlist has 50 modules. Final validation selects all 321 tests
+without the development skip flags. Preserve the focused refusal log as well.

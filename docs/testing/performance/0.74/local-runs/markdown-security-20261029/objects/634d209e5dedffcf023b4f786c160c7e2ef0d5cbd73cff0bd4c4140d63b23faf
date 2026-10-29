@@ -1,0 +1,9 @@
+   Compiling unicode-width v0.2.2
+   Compiling pulldown-cmark v0.13.5
+   Compiling getopts v0.2.24
+   Compiling memchr v2.8.2
+   Compiling bitflags v2.13.2
+   Compiling pulldown-cmark-escape v0.11.0
+   Compiling unicase v2.9.0
+   Compiling hc074-markdown-security-probe v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/pulldown-security-20261029/fixtures/candidate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.47s

@@ -1,0 +1,19 @@
+{
+  "observations": [
+    {
+      "path": "C:\\Users\\ArturBuzov\\.cargo\\advisory-dbs\\advisory-db-3157b0e258782691",
+      "head": {
+        "exit": 0,
+        "stdout": "40f5be6fb12ed93fc591bf4ab23b7d793b3f2239\n",
+        "stderr": ""
+      },
+      "status": {
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    }
+  ],
+  "readonly": true,
+  "sealed_per_lookup": false
+}

@@ -1,0 +1,7 @@
+{
+  "complete": false,
+  "kind": "offline-audit",
+  "reason": "AssertionError at exact actual build-script output binding; no product/test rerun",
+  "raw_stderr": "Failed to find real location of C:\\Python313\\python.exe\nTraceback (most recent call last):\n  File \"<stdin>\", line 23, in <module>\nAssertionError\n",
+  "product_result_changed": false
+}

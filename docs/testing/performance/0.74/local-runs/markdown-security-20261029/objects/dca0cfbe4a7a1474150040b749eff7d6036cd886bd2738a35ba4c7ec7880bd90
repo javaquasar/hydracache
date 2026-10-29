@@ -1,0 +1,22 @@
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -471,7 +471,7 @@
+ }
+ 
+ impl KeyChangeEvent<'_> {
+-    fn strip_key_prefix(&self, prefix: &str) -> Option<KeyChangeEvent> {
++    fn strip_key_prefix(&self, prefix: &str) -> Option<KeyChangeEvent<'_>> {
+         let key_without_prefix = self.key.strip_prefix(prefix)?;
+         Some(KeyChangeEvent {
+             key: key_without_prefix,
+--- a/src/delta.rs
++++ b/src/delta.rs
+@@ -145,7 +145,7 @@
+ }
+ 
+ impl DeltaOp {
+-    fn as_ref(&self) -> DeltaOpRef {
++    fn as_ref(&self) -> DeltaOpRef<'_> {
+         match self {
+             DeltaOp::Node {
+                 chitchat_id,

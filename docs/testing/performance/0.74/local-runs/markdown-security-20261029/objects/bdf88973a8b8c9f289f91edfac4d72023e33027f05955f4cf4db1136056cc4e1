@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\grpc_bidirectional_loopback-6bc9c4fed4b45273.exe",
+    "--test-threads=4",
+    "--color=never"
+  ],
+  "bound": 1200,
+  "deadline": 132721.7979905,
+  "retry": false
+}

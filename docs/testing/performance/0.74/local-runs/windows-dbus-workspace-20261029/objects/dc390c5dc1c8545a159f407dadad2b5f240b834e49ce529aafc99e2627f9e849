@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\windows-workspace-preflight-074\\worker.py",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\workspace-dbus-20261029\\milestone-first",
+    "9817940fa5224b04c65c39f10d51a7f6389d590cbae79045445bbc6dfd37ee69",
+    "workspace"
+  ],
+  "cleanup_seconds": 5,
+  "deadline": 131638.6362983,
+  "pid": 18416,
+  "request_sha256": "9817940fa5224b04c65c39f10d51a7f6389d590cbae79045445bbc6dfd37ee69"
+}

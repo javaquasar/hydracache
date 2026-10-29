@@ -1,0 +1,12 @@
+[package]
+name = "hc074-sample-boot-baseline"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.88"
+publish = false
+
+[lib]
+path = "probe.rs"
+
+# Synthetic test image only, not linked into a workspace product or supervisor.
+[workspace]

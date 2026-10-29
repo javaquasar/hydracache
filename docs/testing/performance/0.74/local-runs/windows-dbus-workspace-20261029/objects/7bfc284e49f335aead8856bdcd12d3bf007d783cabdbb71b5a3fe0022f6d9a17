@@ -1,0 +1,257 @@
+//! Two explicit source names share one unchanged complete security predecessor.
+#[path = "../../../tools/held-security-view-074/contract.rs"]
+mod current;
+#[path = "../../../tools/security-input-view-074/contract.rs"]
+mod current_security;
+#[path = "support/bootstrap_entry_guard.rs"]
+mod entry_guard;
+use std::path::{Path, PathBuf};
+const STEP: &str = "b073cdaf3e96fe2400a20a7c76cecae0cf90bf6a";
+const PRODUCER: &str = "2a4a771d48ed6ad54288fd15ea7c75b56f4bd80d";
+const PREVIOUS: &str = "fa9e708868b22999d60c9ccd97b694662910a095";
+const CASES: [(&str, usize); 4] = [
+    ("held_activation_ingress_074", 4),
+    ("held_bind_alias_refusal_074", 2),
+    ("held_complete_role_census_074", 4),
+    ("held_material_roles_074", 3),
+];
+const IMPORT: &str =
+    "\n#[path = \"../../../tools/held-security-view-074/contract.rs\"]\nmod current;\n";
+fn root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
+}
+fn raw(path: &str) -> String {
+    std::fs::read_to_string(root().join(path))
+        .unwrap()
+        .replace("\r\n", "\n")
+}
+fn frozen(revision: &str, path: &str) -> String {
+    let out = std::process::Command::new("git")
+        .arg("--no-replace-objects")
+        .args(["show", &format!("{revision}:{path}")])
+        .current_dir(root())
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    String::from_utf8(out.stdout).unwrap().replace("\r\n", "\n")
+}
+#[test]
+fn both_explicit_names_recover_the_independently_fixed_complete_old_channel() {
+    let body = raw(current::PATH);
+    assert_eq!(body, frozen(PRODUCER, current::PATH));
+    let previous = frozen(PREVIOUS, current::PATH);
+    for name in [current::NAME, current::PATH] {
+        assert!(current::known(name));
+        assert_eq!(current::project(name, body.clone()), previous);
+        assert_eq!(current::project(name, body.replace('\n', "\r\n")), previous);
+    }
+    let held_previous = entry_guard::source_view(current::NAME, &previous);
+    for baseline in ["aa58bad7", "17b9c689", "798400d4", "563caf77"] {
+        assert_eq!(held_previous, frozen(baseline, current::PATH));
+    }
+    assert_eq!(
+        raw(current::PATH),
+        body,
+        "the actual channel remains current"
+    );
+}
+#[test]
+fn unknown_names_and_other_security_inputs_are_not_projected_or_normalized() {
+    for name in [
+        "unknown",
+        "Cargo.lock",
+        "Cargo.toml",
+        "crates/xtask/tests/performance_contract_074.rs",
+        "./diagnostic_manager_channel.rs",
+        "../diagnostic_manager_channel.rs",
+        "diagnostic_manager_alarm_tests.rs",
+        "other/diagnostic_manager_channel.rs",
+        "tools/long-run-supervisor-074/src/../src/diagnostic_manager_channel.rs",
+    ] {
+        assert!(!current::known(name));
+        assert_eq!(
+            current::project(name, "arbitrary\r\nbytes".into()),
+            "arbitrary\r\nbytes"
+        );
+    }
+}
+#[test]
+fn stale_partial_duplicate_and_unrelated_channel_changes_refuse_after_success() {
+    let body = raw(current::PATH);
+    let old = frozen(PREVIOUS, current::PATH);
+    let alarm = "register_operation_alarm(&self.file)";
+    let hook = "mod alarm_tests;";
+    assert_eq!(body.matches(alarm).count(), 1);
+    assert_eq!(body.matches(hook).count(), 1);
+    for name in [current::NAME, current::PATH] {
+        assert_eq!(current::project(name, body.clone()), old);
+        for bad in [
+            String::new(),
+            old.clone(),
+            format!("{body}{body}"),
+            format!("{body}\n// drift"),
+            body.replacen(alarm, "unreviewed_alarm(&self.file)", 1),
+            body.replacen(hook, "", 1),
+        ] {
+            assert_ne!(bad, body);
+            assert!(std::panic::catch_unwind(|| current::project(name, bad)).is_err());
+        }
+    }
+}
+#[test]
+fn seeded_mutations_remain_fresh_under_both_names_without_caching_success() {
+    let body = raw(current::PATH);
+    let expected = frozen(PREVIOUS, current::PATH);
+    let mut seed = 0x0740_2026_1027_u64;
+    for name in [current::NAME, current::PATH] {
+        for case in 0..24 {
+            assert_eq!(current::project(name, body.clone()), expected);
+            seed ^= seed << 13;
+            seed ^= seed >> 7;
+            seed ^= seed << 17;
+            let mut at = (seed % body.len() as u64) as usize;
+            if !body.as_bytes()[at].is_ascii() {
+                at = 0;
+            }
+            let mut changed = body.clone().into_bytes();
+            changed[at] ^= 1;
+            let changed = String::from_utf8(changed).unwrap();
+            assert_ne!(changed, body, "seed={seed:#x} case={case}");
+            assert!(std::panic::catch_unwind(|| current::project(name, changed)).is_err());
+        }
+    }
+}
+#[derive(Default)]
+struct Syntax {
+    assertions: Vec<String>,
+    calls: Vec<String>,
+}
+impl<'ast> syn::visit::Visit<'ast> for Syntax {
+    fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
+        self.calls.push(format!("method::{}", node.method));
+        syn::visit::visit_expr_method_call(self, node);
+    }
+    fn visit_macro(&mut self, node: &'ast syn::Macro) {
+        let name = node.path.segments.last().unwrap().ident.to_string();
+        if matches!(name.as_str(), "assert" | "assert_eq" | "assert_ne") {
+            self.assertions.push(format!("{name} {}", node.tokens));
+        }
+        syn::visit::visit_macro(self, node);
+    }
+    fn visit_expr_call(&mut self, node: &'ast syn::ExprCall) {
+        if let syn::Expr::Path(path) = node.func.as_ref() {
+            self.calls.push(
+                path.path
+                    .segments
+                    .iter()
+                    .map(|s| s.ident.to_string())
+                    .collect::<Vec<_>>()
+                    .join("::"),
+            );
+        }
+        syn::visit::visit_expr_call(self, node);
+    }
+}
+fn syntax(source: &str) -> (Vec<String>, Syntax) {
+    use syn::visit::Visit;
+    let file = syn::parse_file(source).unwrap();
+    let tests = file
+        .items
+        .iter()
+        .filter_map(|item| match item {
+            syn::Item::Fn(value) if value.attrs.iter().any(|attr| attr.path().is_ident("test")) => {
+                Some(value.sig.ident.to_string())
+            }
+            _ => None,
+        })
+        .collect();
+    let mut output = Syntax::default();
+    output.visit_file(&file);
+    (tests, output)
+}
+#[test]
+fn all_four_complete_callers_keep_cases_predicates_reads_and_original_hook_order() {
+    for (name, count) in CASES {
+        let path = format!("crates/xtask/tests/{name}.rs");
+        let old = frozen(STEP, &path);
+        let now = raw(&path);
+        let before = syntax(&old);
+        let after = syntax(&now);
+        assert_eq!(before.0.len(), count);
+        assert_eq!(before.0, after.0);
+        assert_eq!(before.1.assertions, after.1.assertions);
+        let mut expected = old.clone();
+        let (anchor, replacement) = match name {
+            "held_activation_ingress_074" => ("    image_guard::provider_view(name, &raw)", "    let raw = current::project(name, raw);\n    image_guard::provider_view(name, &raw)"),
+            "held_bind_alias_refusal_074" => ("    if let Some(name) = path.strip_prefix(\"tools/long-run-supervisor-074/src/\") {", "    let raw = current::project(path, raw);\n    if let Some(name) = path.strip_prefix(\"tools/long-run-supervisor-074/src/\") {"),
+            "held_complete_role_census_074" => ("    provider_input::view(name, &raw)", "    let raw = current::project(name, raw);\n    provider_input::view(name, &raw)"),
+            "held_material_roles_074" => {
+                let prefix = "fn read(name: &str) -> String {\n    std::fs::read_to_string(";
+                assert_eq!(expected.matches(prefix).count(), 1);
+                expected = expected.replacen(prefix, "fn read(name: &str) -> String {\n    let raw = std::fs::read_to_string(", 1);
+                ("    .replace('\\r', \"\")\n}", "    .replace('\\r', \"\");\n    current::project(name, raw)\n}")
+            }
+            _ => unreachable!(),
+        };
+        assert_eq!(expected.matches(anchor).count(), 1);
+        expected = expected.replacen(anchor, replacement, 1);
+        expected.push_str(IMPORT);
+        expected.push_str(if name == "held_activation_ingress_074" {
+            "\nuse bootstrap_docs::successor::security as current_security;\n"
+        } else {
+            "\n#[path = \"../../../tools/security-input-view-074/contract.rs\"]\nmod current_security;\n"
+        });
+        assert_eq!(now, expected, "whole fixed edit: {name}");
+        let without_added_call: Vec<_> = after
+            .1
+            .calls
+            .into_iter()
+            .filter(|call| call != "current::project")
+            .collect();
+        assert_eq!(
+            without_added_call, before.1.calls,
+            "all original IO/Git calls stay in order"
+        );
+    }
+}
+#[test]
+fn helper_has_only_the_pure_fixed_security_call_and_all_old_guards_stay_exact() {
+    let path = "tools/bootstrap-doc-reader-074/io.rs";
+    let previous = frozen(STEP, path);
+    assert_eq!(previous.matches("\nmod successor;\n").count(), 1);
+    assert_eq!(
+        raw(path),
+        previous.replacen("\nmod successor;\n", "\npub mod successor;\n", 1)
+    );
+    let helper = raw("tools/held-security-view-074/contract.rs");
+    assert_eq!(syntax(&helper).1.calls, ["known", "security::project"]);
+    let injected = helper.replacen(
+        "    if known(name)",
+        "    std::fs::read_to_string(\"unreviewed\").unwrap();\n    if known(name)",
+        1,
+    );
+    assert_ne!(syntax(&injected).1.calls, ["known", "security::project"]);
+    for path in [
+        "tools/security-input-view-074/contract.rs",
+        "tools/security-input-view-074/rules.json",
+        "crates/xtask/tests/support/census_provider_input.rs",
+        "crates/xtask/tests/support/bootstrap_image_guard.rs",
+        "crates/xtask/tests/support/bootstrap_entry_guard.rs",
+        "crates/xtask/tests/support/bootstrap_build_guard.rs",
+        "crates/xtask/tests/support/held_role_census_guard.rs",
+        "crates/xtask/tests/support/artifact_inventory_input.rs",
+        "crates/xtask/tests/support/artifact_inventory_phase_544.rs",
+        "crates/xtask/tests/support/artifact_inventory_phase_545.rs",
+        "crates/xtask/tests/diagnostic_artifact_fixture_074.rs",
+        "tools/authority-runtime-074/gate.rs",
+        "tools/authority-runtime-074/io.rs",
+        "Cargo.toml",
+        "Cargo.lock",
+        current::PATH,
+        "docs/COMPAT.md",
+        "docs/testing/gated-test-registry.toml",
+        "docs/testing/performance/0.74/qualification-manifest.toml",
+    ] {
+        assert_eq!(raw(path), frozen(STEP, path), "{path}");
+    }
+}

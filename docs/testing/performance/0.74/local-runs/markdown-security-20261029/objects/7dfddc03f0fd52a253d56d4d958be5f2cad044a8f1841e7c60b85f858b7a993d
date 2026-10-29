@@ -1,0 +1,34 @@
+[package]
+name = "hydracache-db"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+description = "Database-neutral query result cache adapter for HydraCache."
+
+[features]
+default = []
+sqlx-outbox = ["dep:sqlx"]
+
+[dependencies]
+async-trait.workspace = true
+hydracache.workspace = true
+hydracache-core.workspace = true
+hydracache-macros.workspace = true
+serde.workspace = true
+sha2.workspace = true
+sqlx = { workspace = true, optional = true, features = ["postgres", "runtime-tokio-rustls", "sqlite"] }
+thiserror.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+proptest.workspace = true
+trybuild.workspace = true
+
+[[bench]]
+name = "outbox_write"
+harness = false

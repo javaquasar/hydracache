@@ -1,0 +1,6 @@
+fn name(revision: usize, suffix: &str) -> String {
+    use std::fmt::Write as _;
+    let mut output = String::with_capacity(17 + suffix.len());
+    write!(&mut output, "{revision:016x}.{suffix}").expect("String formatting cannot fail");
+    output
+}

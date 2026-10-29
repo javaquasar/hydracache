@@ -1,0 +1,7 @@
+   Compiling pulldown-cmark v0.13.5
+   Compiling pulldown-cmark-to-cmark v22.0.0
+   Compiling prost-build v0.14.4
+   Compiling tonic-prost-build v0.14.6
+   Compiling hydracache-client-plane-spike v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-plane-spike)
+   Compiling hydracache-client-hc2 v0.73.0 (C:\Workspace\prj\jq\cashe\hydracache-074\crates\hydracache-client-hc2)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.27s

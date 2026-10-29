@@ -1,0 +1,2 @@
+rules.json -text
+contract.rs text eol=lf

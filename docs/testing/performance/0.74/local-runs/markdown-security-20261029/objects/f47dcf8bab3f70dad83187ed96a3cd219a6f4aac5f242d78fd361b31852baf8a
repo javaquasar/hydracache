@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\contract_schema-c00546bb341ee20c.exe",
+    "--test-threads=4",
+    "--color=never"
+  ],
+  "bound": 1200,
+  "deadline": 132421.7745542,
+  "retry": false
+}

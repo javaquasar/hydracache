@@ -1,0 +1,25 @@
+schema = "hc074-guard-path-comparison-v1"
+baseline_commit = "d200c335"
+source = "crates/xtask/tests/support/performance_contract_074_fixed_slice.rs"
+baseline_raw_sha256 = "5bf7b3618f2cf80143a28c8bf56e368faa59d8d8d8517771e3998feab51888ec"
+owner = "four temporary formatted path Strings per fixed-slice normalize invocation"
+old = 'path == format!("{PREFIX}{file}")'
+new = 'path.strip_prefix(PREFIX) == Some(*file)'
+scope = "one test-source guard predicate, not live validation or cache runtime"
+loops_per_sample = 256
+blocks = 6
+slots_per_block = 4
+order = "ABBA for even blocks; BAAB for odd blocks"
+warmup = false
+retry = false
+timing_claim = false
+acceptance = "exact output/refusal and hook order; zero candidate predicate allocations; no retained requested bytes"
+integration_requires = "exact whole-file delta, source gate, mutation/property controls, current/MSRV tests and strict checks"
+package_timeout_seconds = 780
+package_replay_authorized_by_this_file = false
+live_checks_or_origins_changed = false
+dependency_changes = false
+server = false
+services = false
+clock_changes = false
+product_candidate = false

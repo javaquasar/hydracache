@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\dedicated_tcp_loopback-e89a8afae0e99891.exe",
+    "--list"
+  ],
+  "bound": 1200,
+  "deadline": 132421.7745542,
+  "retry": false
+}

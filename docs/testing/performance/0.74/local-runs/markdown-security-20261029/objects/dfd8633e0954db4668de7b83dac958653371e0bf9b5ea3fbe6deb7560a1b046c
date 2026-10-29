@@ -1,0 +1,7 @@
+{
+  "before_fixture_sha256": "76d4ab3b38c1b259c0784e66dd620a5f61d45cde1760a9533c4d6c7db061b207",
+  "baseline_sha256": "a5a0ae4fd39c39d01444f061dd9b077e2a05aaa33a59402ccb5cc2fa217b9597",
+  "candidate_sha256": "903a9a637ef5bf5c18ab8386fbb37b2ad5665be0fd34521d686a0fa030701436",
+  "only_registry_node": "pulldown-cmark",
+  "root_lock_changed": false
+}

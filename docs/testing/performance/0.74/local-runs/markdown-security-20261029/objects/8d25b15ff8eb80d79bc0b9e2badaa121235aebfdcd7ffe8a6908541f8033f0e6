@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "clippy",
+    "--manifest-path",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/pulldown-security-20261029/fixtures/baseline/Cargo.toml",
+    "--target-dir",
+    "/home/artur/.cache/hydracache-074-markdown-review/20261029/targets/baseline-194",
+    "--offline",
+    "--locked",
+    "--all-targets",
+    "--all-features",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "deadline": 1115.8098648,
+  "expected_exit": 0,
+  "retry": false
+}

@@ -1,0 +1,22 @@
+
+running 17 tests
+test all_client_plane_candidates_pass_the_same_semantic_harness ... ok
+test authenticated_but_unauthorized_identity_cannot_reach_dispatch ... ok
+test bootstrap_rejects_unverified_tls_and_identity ... ok
+test bounded_failures_are_atomic_and_observable_without_payload_data ... ok
+test cancellation_and_completion_races_have_exactly_one_winner ... ok
+test candidate_prefaces_cannot_cross_decode ... ok
+test connection_generation_is_nonzero_monotonic_and_never_wraps ... ok
+test connection_state_machine_blocks_new_work_while_draining ... ok
+test disconnect_cancels_every_pending_invocation_and_registration ... ok
+test identity_tenant_and_global_admission_is_atomic_and_raii_released ... ok
+test every_retained_resource_class_is_bounded_atomically_and_cleared_on_close ... ok
+test invalid_zero_limits_fail_before_ready ... ok
+test malformed_oversized_truncated_and_unknown_messages_fail_before_dispatch ... ok
+test slow_event_consumer_is_bounded_and_reports_a_gap ... ok
+test stale_connection_generation_cannot_mutate_reused_ids_after_reconnect ... ok
+test subscription_ack_without_push_fails_the_common_harness_canary ... ok
+test unknown_generation_never_reaches_dispatch ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

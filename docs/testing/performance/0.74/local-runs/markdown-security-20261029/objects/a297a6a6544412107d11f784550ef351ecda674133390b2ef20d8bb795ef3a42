@@ -1,0 +1,5 @@
+error: duplicate prepared_query_policy key option
+ --> tests/policy/fail_prepared_duplicate_option.rs:6:9
+  |
+6 |         key = "two",
+  |         ^^^

@@ -1,0 +1,9 @@
+
+running 4 tests
+test retained_h11_matrix_binds_every_declared_lifecycle_failure ... ok
+test reset_reconnects_once_repairs_subscription_dedupes_and_loses_session ... ok
+test initial_handshake_reset_selects_the_next_endpoint_without_operation_replay ... ok
+test exhaustion_and_unsafe_mutation_fail_loud_without_hidden_replay ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

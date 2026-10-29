@@ -1,0 +1,3217 @@
+name: CI
+
+run-name: >-
+  ${{ github.event_name == 'workflow_dispatch'
+      && format('CI dispatch {0}', inputs.performance_0671_campaign || inputs.performance_0671_mode)
+      || '' }}
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - "v*.*.*"
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      run_nightly:
+        description: "Run scheduled/nightly proof lanes during manual dispatch"
+        required: false
+        default: false
+        type: boolean
+      run_redis_compat_release_proof:
+        description: "Run only the Redis release proof against an explicit immutable candidate SHA"
+        required: false
+        default: false
+        type: boolean
+      release_proof_candidate_sha:
+        description: "Full candidate SHA used only by the focused Redis release-proof repair lane"
+        required: false
+        default: ""
+        type: string
+      run_management_candidate_soak_072:
+        description: "Run the exact six-hour 0.72 Management Center candidate soak"
+        required: false
+        default: false
+        type: boolean
+      run_management_ship_soak_072:
+        description: "Run six-hour candidate plus 24-hour 0.72 ship confirmation on one release host"
+        required: false
+        default: false
+        type: boolean
+      run_management_mixed_072:
+        description: "Build shipped v0.71.0 and run the exact 0.71/0.72 upgrade/rollback proof"
+        required: false
+        default: false
+        type: boolean
+      run_reference_performance:
+        description: "Run 0.67 ship evidence on the authorized self-hosted bare-metal runner"
+        required: false
+        default: false
+        type: boolean
+      run_memory_diagnostic:
+        description: "Run non-promotable HydraCache/Redis memory diagnostics on a GitHub-hosted VM"
+        required: false
+        default: false
+        type: boolean
+      run_retention_soak_070:
+        description: "Run the release 0.70 100-cycle and million-mutation retention proofs"
+        required: false
+        default: false
+        type: boolean
+      run_release_070_admission:
+        description: "Require exact-SHA fast, canary and retention receipts for release 0.70"
+        required: false
+        default: false
+        type: boolean
+      memory_diagnostic_duration_seconds:
+        description: "Per-case memory diagnostic observation window"
+        required: true
+        default: "180"
+        type: choice
+        options:
+          - "120"
+          - "180"
+          - "300"
+      performance_0671_mode:
+        description: "Explicit 0.67.1 dedicated-runner stage (qualification is never ship evidence)"
+        required: true
+        default: "off"
+        type: choice
+        options:
+          - "off"
+          - "qualify"
+          - "full-dress"
+          - "bootstrap"
+          - "frozen-candidate"
+      performance_0671_campaign:
+        description: "Optional controller correlation in the exact form campaign-id:unique-step"
+        required: false
+        default: ""
+        type: string
+      full_dress_predecessor_run_id:
+        description: "Prior successful full-dress run id; empty for the first of exactly two runs"
+        required: false
+        default: ""
+        type: string
+      full_dress_admission_run_id:
+        description: "Run id that published the two-run full-dress admission required by bootstrap"
+        required: false
+        default: ""
+        type: string
+      bootstrap_sample_index:
+        description: "Serialized bootstrap sample index; samples 2..5 require the immediately prior run"
+        required: false
+        default: "1"
+        type: choice
+        options:
+          - "1"
+          - "2"
+          - "3"
+          - "4"
+          - "5"
+      bootstrap_predecessor_run_id:
+        description: "Immediately prior accepted bootstrap run id; empty only for sample 1"
+        required: false
+        default: ""
+        type: string
+      candidate_release:
+        description: "Release that owns candidate fast and manually dispatched gate receipts"
+        required: false
+        default: "0.69"
+        type: string
+      gated_gate_id:
+        description: "Exact gate id from docs/testing/gated-test-registry.toml"
+        required: false
+        type: string
+  schedule:
+    - cron: "0 3 * * 1"
+
+concurrency:
+  # Keep scheduled/push CI from cancelling a long-running reference dispatch
+  # that happens to use the same main SHA. Reference jobs have their own
+  # serialized concurrency group and must be allowed to finish.
+  group: ci-${{ github.event_name }}-${{ startsWith(github.ref, 'refs/tags/v') && 'release' || 'core' }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: ${{ (github.event_name == 'pull_request' || github.event_name == 'push') && !startsWith(github.ref, 'refs/tags/v') }}
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  CARGO_BUILD_JOBS: 2
+  CARGO_INCREMENTAL: 0
+  CARGO_PROFILE_DEV_DEBUG: 0
+  CARGO_PROFILE_TEST_DEBUG: 0
+  HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.69' }}
+  HYDRACACHE_EVIDENCE_ROOT: target/release-evidence
+  HYDRACACHE_EVIDENCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  HYDRACACHE_EVIDENCE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+  HYDRACACHE_EVIDENCE_TESTED_SHA: ${{ github.sha }}
+
+jobs:
+  ci-topology:
+    name: 0.71 CI topology safety gate
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Validate topology through fail-closed watchdog
+        run: >-
+          python3 scripts/ci/run-with-heartbeat.py
+          --timeout-seconds 600
+          --heartbeat-seconds 30
+          --attempt-id "${{ github.run_attempt }}"
+          --status-json target/ci-topology/watchdog-status.json
+          --log-file target/ci-topology/command.log
+          --
+          cargo run -p xtask --locked -- ci-topology-check --release 0.71
+
+      - name: Retain topology watchdog attempt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "ci-topology-071-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: target/ci-topology/**
+          if-no-files-found: error
+          retention-days: 30
+
+  memory-contracts-071:
+    name: 0.71 Memory Contracts
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Generate and close the ownership inventory
+        timeout-minutes: 15
+        run: |
+          cargo run -p xtask --locked -- memory-owner-inventory --release 0.71
+          cargo run -p xtask --locked -- memory-owner-inventory --release 0.71 --check
+          cargo run -p xtask --locked -- memory-ownership-check --release 0.71
+
+      - name: Validate decision, statistics, allocator, compatibility, and release contracts
+        timeout-minutes: 15
+        run: |
+          cargo run -p xtask --locked -- memory-decision-check --release 0.71
+          cargo run -p xtask --locked -- memory-statistics-check --release 0.71
+          cargo run -p xtask --locked -- allocator-capability-check --release 0.71
+          cargo run -p xtask --locked -- memory-compat-check --release 0.71
+          cargo run -p xtask --locked -- memory-release-policy-check --release 0.71
+          cargo run -p xtask --locked -- memory-contract-check --release 0.71
+          cargo run -p xtask --locked -- memory-campaign-check --release 0.71
+
+      - name: Run 0.71 contract canaries
+        timeout-minutes: 30
+        run: |
+          cargo test -p xtask --test memory_ownership_071 --locked
+          cargo test -p xtask --test memory_contracts_071 --locked
+          cargo test -p xtask --test memory_decision_071 --locked
+          cargo test -p xtask --test memory_statistics_071 --locked
+          cargo test -p xtask --test memory_profile_071 --locked
+          cargo test -p xtask --test memory_baseline_071 --locked
+          cargo test -p xtask --test allocator_matrix_071 --locked
+          cargo test -p xtask --test memory_host_profile_071 --locked
+          cargo test -p xtask --test memory_compat_071 --locked
+          cargo test -p xtask --test allocation_copy_071 --locked
+          cargo test -p xtask --test memory_campaign_admission_071 --locked
+          cargo test -p xtask --test release_governance_071 --locked
+          cargo run -p xtask --locked -- memory-baseline-check --release 0.71
+
+      - name: Verify coherent snapshots and phase providers
+        timeout-minutes: 60
+        run: |
+          cargo test -p hydracache --test memory_footprint_071 --locked
+          cargo test -p hydracache --test memory_accounting_071 --locked -- --test-threads=1
+          cargo test -p hydracache --test reclamation_071 --locked
+          cargo test -p hydracache --test representation_071 --locked
+          cargo test -p hydracache --test tag_index_model_071 --locked
+          cargo test -p hydracache --test persistence_memory_071 --locked
+          cargo test -p hydracache-client-transport-axum --test memory_admission_071 --locked
+          cargo test -p hydracache-client-transport-axum --test retention_bounds_071 --locked
+          cargo test -p hydracache-server --test memory_profiles_071 --locked
+          cargo test -p hydracache-server --test hc2_memory_071 --locked
+          cargo test -p hydracache-server --test memory_compat_process_071 --locked
+          cargo test -p hydracache memory_footprint::tests --locked
+          cargo test -p hydracache-loadgen memory_efficiency --locked
+          python scripts/perf/memory-providers/test_provider_contract.py
+          python scripts/perf/memory_campaign_071_test.py
+          python scripts/perf/memory_case_executor_071_test.py
+          python scripts/perf/memory_historical_mirror_071_test.py
+          python scripts/perf/memory_compat_receipt_071_test.py
+          python scripts/perf/test_memory_release_claims_071.py
+          for mode in off production profile; do
+            cargo run -p hydracache-loadgen --bin hydracache-loadgen --locked -- memory-efficiency --provider system --instrumentation-mode "$mode" --output-dir "target/memory-evidence/0.71/profiles/ci-smoke/$mode"
+          done
+
+      - name: Prove bounded campaign resume and finalization
+        timeout-minutes: 15
+        run: |
+          python scripts/perf/memory_campaign_071.py plan --campaign-id ci-bounded-${{ github.run_id }}-${{ github.run_attempt }} --case M0-cold --repetitions 1 --rehearsal
+          python scripts/perf/memory_campaign_071.py run --campaign-id ci-bounded-${{ github.run_id }}-${{ github.run_attempt }}
+          python scripts/perf/memory_campaign_071.py resume --campaign-id ci-bounded-${{ github.run_id }}-${{ github.run_attempt }}
+          python scripts/perf/memory_campaign_071.py finalize --campaign-id ci-bounded-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Install reviewed cargo-semver-checks
+        timeout-minutes: 30
+        run: cargo install cargo-semver-checks --version 0.50.0 --locked
+
+      - name: Validate every publishable package against v0.70.0
+        timeout-minutes: 180
+        run: |
+          python3 scripts/ci/public_api_compat_071.py --manifest docs/testing/compat/v0.70.0.json --check
+          python3 scripts/ci/public_api_compat_071.py --manifest docs/testing/compat/v0.70.0.json --output target/public-api-compat-071/receipt.json
+
+      - name: Retain ownership inventory
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "memory-ownership-071-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: |
+            target/memory-evidence/0.71/ownership-inventory.json
+            target/memory-evidence/0.71/profiles/ci-smoke/**
+            target/memory-evidence/0.71/campaigns/ci-bounded-*/**
+            target/public-api-compat-071/**
+          if-no-files-found: error
+          retention-days: 30
+
+  release-071-ci-admission:
+    name: Release 0.71 CI Admission
+    if: always() && startsWith(github.ref, 'refs/tags/v0.71.')
+    needs:
+      - ci-topology
+      - memory-contracts-071
+      - memory-regression-fast
+      - docs
+      - rust
+      - msrv
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Require the designated exact-tag core result
+        env:
+          TOPOLOGY_RESULT: ${{ needs.ci-topology.result }}
+          CONTRACTS_RESULT: ${{ needs.memory-contracts-071.result }}
+          MEMORY_RESULT: ${{ needs.memory-regression-fast.result }}
+          DOCS_RESULT: ${{ needs.docs.result }}
+          RUST_RESULT: ${{ needs.rust.result }}
+          MSRV_RESULT: ${{ needs.msrv.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for result in "$TOPOLOGY_RESULT" "$CONTRACTS_RESULT" "$MEMORY_RESULT" "$DOCS_RESULT" "$RUST_RESULT" "$MSRV_RESULT"; do
+            if [[ "$result" != "success" ]]; then
+              echo "Release 0.71 core admission refused result=$result" >&2
+              exit 1
+            fi
+          done
+          echo "Release 0.71 designated tag admission is green for $GITHUB_SHA."
+
+  memory-regression-fast:
+    name: Memory Regression Fast
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-memory-regression-fast
+          cache-targets: true
+
+      - name: Prove behavioral memory canaries are red
+        run: |
+          cargo run -p xtask --locked -- canary-check --release 0.70
+          cargo run -p xtask --locked -- canary-sweep --release 0.70 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.71
+          cargo run -p xtask --locked -- canary-sweep --release 0.71 --tier fast
+
+      - name: Run exact-candidate memory regression evidence
+        id: memory_fast
+        run: cargo run -p xtask --locked -- evidence-run --release 0.70 --gate fast.memory-regression-070
+
+      - name: Finalize memory regression lane status
+        if: always()
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.70
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "memory-fast=${{ steps.memory_fast.outcome }}"
+          --output target/release-evidence/lanes/memory-fast-070.json
+
+      - name: Upload exact-candidate memory evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "memory-regression-fast-070-${{ github.sha }}"
+          path: |
+            target/release-evidence/canaries/*.json
+            target/release-evidence/lanes/memory-fast-070.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  memory-diagnostic-hosted:
+    name: Memory Diagnostic (GitHub Hosted)
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_memory_diagnostic)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      CARGO_BUILD_JOBS: 2
+      CARGO_INCREMENTAL: 0
+      CARGO_PROFILE_RELEASE_DEBUG: 0
+      LEAK_DURATION_SECONDS: ${{ inputs.memory_diagnostic_duration_seconds || '120' }}
+      LEAK_CYCLES: 3
+      LEAK_BATCH_REQUESTS: 10000
+      MEASUREMENT_AFFINITY: 0
+      MEMORY_DIAGNOSTIC_ENVIRONMENT: github-hosted
+      MEMORY_DIAGNOSTIC_TARGETS: hydra redis
+      REDIS_IMAGE: redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e
+      MEMORY_DIAGNOSTIC_OUTPUT: target/memory-diagnostic/github-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-memory-diagnostic-hosted
+          cache-targets: false
+
+      - name: Install diagnostic tools
+        timeout-minutes: 15
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes build-essential jq netcat-openbsd redis-tools
+
+      - name: Build release daemon
+        run: cargo build --release -p hydracache-server --locked
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          set -euo pipefail
+          tools_dir="$RUNNER_TEMP/memory-diagnostic-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --fail --location --retry 3 \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' \
+            '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "REDIS_BENCHMARK=$tools_dir/redis-7.2.5/src/redis-benchmark" >> "$GITHUB_ENV"
+
+      - name: Pull pinned Redis image
+        run: |
+          docker pull "$REDIS_IMAGE"
+          docker image inspect "$REDIS_IMAGE" > target/redis-image-inspect.json
+
+      - name: Run HydraCache and Redis memory campaign
+        shell: bash
+        run: scripts/perf/run-memory-leak-stage.sh "$MEMORY_DIAGNOSTIC_OUTPUT"
+
+      - name: Publish report to job summary
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f "$MEMORY_DIAGNOSTIC_OUTPUT/report.md" ]]; then
+            cat "$MEMORY_DIAGNOSTIC_OUTPUT/report.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Build compact diagnostic summary and non-gating trend
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          summary_dir="target/memory-summary"
+          mkdir --parents "$summary_dir"
+          python3 scripts/perf/summarize-memory-diagnostic.py \
+            --input "$MEMORY_DIAGNOSTIC_OUTPUT" \
+            --output "$summary_dir/summary.json"
+          baseline_id="$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" \
+            --jq '.artifacts[] | select(.expired == false and (.name | startswith("memory-summary-"))) | [.created_at, .id] | @tsv' \
+            | sort --reverse | head -n 1 | cut -f 2)"
+          if [[ -n "$baseline_id" ]]; then
+            baseline_dir="$RUNNER_TEMP/memory-summary-baseline"
+            mkdir --parents "$baseline_dir"
+            gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$baseline_id/zip" > "$baseline_dir/artifact.zip"
+            unzip -q "$baseline_dir/artifact.zip" -d "$baseline_dir"
+            baseline_summary="$(find "$baseline_dir" -name summary.json -type f -print -quit)"
+            python3 scripts/perf/compare-memory-summaries.py \
+              --baseline "$baseline_summary" \
+              --candidate "$summary_dir/summary.json" \
+              --output "$summary_dir/trend.json"
+          else
+            python3 scripts/perf/compare-memory-summaries.py \
+              --candidate "$summary_dir/summary.json" \
+              --output "$summary_dir/trend.json"
+          fi
+
+      - name: Upload raw memory evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: memory-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/memory-diagnostic/github-hosted
+            target/redis-image-inspect.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload durable compact memory history
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: memory-summary-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/memory-summary
+          if-no-files-found: error
+          retention-days: 90
+
+  retention-soak-070:
+    name: Retention Soak 0.70
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v0.70.') || (github.event_name == 'workflow_dispatch' && (inputs.run_retention_soak_070 || inputs.run_release_070_admission))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout exact tested candidate
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-retention-soak-070
+          cache-targets: true
+
+      - name: Run 100-cycle core retention soak
+        timeout-minutes: 20
+        id: core_soak
+        run: cargo run -p xtask --locked -- evidence-run --release 0.70 --gate tool.hydracache.retention-soak-070
+
+      - name: Run million-mutation client-surface retention soak
+        timeout-minutes: 30
+        id: client_soak
+        run: cargo run -p xtask --locked -- evidence-run --release 0.70 --gate tool.hydracache-client-transport-axum.retention-soak-070
+
+      - name: Finalize retention soak lane status
+        timeout-minutes: 5
+        if: always()
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.70
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "core-soak=${{ steps.core_soak.outcome }}"
+          --require "client-soak=${{ steps.client_soak.outcome }}"
+          --output target/release-evidence/lanes/retention-soak-070.json
+
+      - name: Upload exact-candidate retention evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "retention-soak-070-${{ github.sha }}"
+          path: |
+            target/release-evidence/lanes/retention-soak-070.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  release-070-admission:
+    name: Release 0.70 Admission
+    if: always() && (startsWith(github.ref, 'refs/tags/v0.70.') || (github.event_name == 'workflow_dispatch' && inputs.run_release_070_admission))
+    needs:
+      - memory-regression-fast
+      - retention-soak-070
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout exact tested candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Materialize fail-loud upstream admission status
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.70
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "memory-fast=${{ needs.memory-regression-fast.result }}"
+          --require "retention-soak=${{ needs.retention-soak-070.result }}"
+          --output target/release-evidence/0.70.admission-upstream.json
+
+      - name: Download exact-candidate memory receipts and canaries
+        uses: actions/download-artifact@v8
+        with:
+          name: "memory-regression-fast-070-${{ github.sha }}"
+          path: target/release-evidence
+
+      - name: Download exact-candidate retention receipts
+        uses: actions/download-artifact@v8
+        with:
+          name: "retention-soak-070-${{ github.sha }}"
+          path: target/release-evidence
+
+      - name: Validate exact-candidate lane status artifacts
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.70
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --lane-status "memory-fast=target/release-evidence/lanes/memory-fast-070.json"
+          --lane-status "retention-soak=target/release-evidence/lanes/retention-soak-070.json"
+          --output target/release-evidence/0.70.admission-lanes.json
+
+      - name: Require exact-candidate release 0.70 evidence
+        run: cargo run -p xtask --locked -- release-evidence --release 0.70 --receipts-dir target/release-evidence/receipts --require-ship
+
+      - name: Upload release 0.70 admission
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "release-070-admission-${{ github.sha }}"
+          path: target/release-evidence/0.70.*
+          if-no-files-found: error
+
+  docs:
+    name: Docs
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+        with:
+          components: rustfmt
+
+      - name: Install Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-docs-ci
+          cache-targets: true
+
+      - name: Install mdBook
+        uses: taiki-e/install-action@v2
+        with:
+          tool: mdbook@0.5.2
+
+      - name: Check docs examples formatting
+        run: cargo fmt --manifest-path docs-site/examples/Cargo.toml --check
+
+      - name: Check docs examples
+        run: cargo check --manifest-path docs-site/examples/Cargo.toml --all-targets --locked
+
+      - name: Build docs site
+        run: mdbook build docs-site
+
+      - name: Check documentation links
+        run: node scripts/docs-link-check.mjs
+
+      - name: Check release documentation synchronization
+        run: |
+          node --test scripts/docs-release-check.test.mjs
+          node scripts/docs-release-check.mjs
+
+  rust:
+    name: Rust
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      CARGO_BUILD_JOBS: 4
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+        with:
+          components: rustfmt, clippy
+
+      - name: Install Java for HC/2 generated-language proof
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Install Python for HC/2 offline generated-language proof
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: console/package-lock.json
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v2-rust-with-target
+          cache-targets: true
+
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@cargo-deny
+
+      - name: Install pinned cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.137
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Check
+        run: cargo check --workspace --all-targets --locked
+
+      - name: HC/2 generated Rust, Java, and offline Python proof
+        env:
+          PIP_NO_INDEX: "1"
+          PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        run: cargo run -p xtask --locked -- client-plane-spike-check
+
+      - name: Dependency policy
+        run: cargo deny check
+
+      - name: Docs consistency
+        run: |
+          cargo test -p xtask --test doc_check --locked
+          cargo run -p xtask --locked -- doc-check
+
+      - name: Raft mutation baseline
+        run: |
+          cargo test -p xtask --test mutants --locked
+          cargo run -p xtask --locked -- mutants
+
+      - name: Install management console dependencies for canaries
+        timeout-minutes: 15
+        run: npm ci --prefix console
+
+      - name: Canary completeness
+        run: |
+          cargo test -p xtask --test canary_check --locked
+          cargo run -p xtask --locked -- canary-check --release 0.64
+          cargo run -p xtask --locked -- canary-sweep --release 0.64 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.65
+          cargo run -p xtask --locked -- canary-sweep --release 0.65 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.66
+          cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.67
+          cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.67.1
+          cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.68
+          cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.70
+          cargo run -p xtask --locked -- canary-sweep --release 0.70 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.71
+          cargo run -p xtask --locked -- canary-sweep --release 0.71 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.72
+          cargo run -p xtask --locked -- canary-sweep --release 0.72 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.73
+          cargo run -p xtask --locked -- canary-sweep --release 0.73 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.74
+          cargo run -p xtask --locked -- canary-sweep --release 0.74 --tier fast
+
+      - name: Management Center 0.72 admission contract
+        run: |
+          cargo test -p xtask --test management_center_072 --locked
+          cargo run -p xtask --locked -- management-center-check --release 0.72
+          cargo run -p xtask --locked -- release-evidence --release 0.72
+
+      - name: Release 0.73 performance and evidence contracts
+        run: |
+          cargo test -p xtask --test performance_contract_073 --test performance_local_073 --locked
+          cargo run -p xtask --locked -- performance-contract-check --release 0.73
+          cargo run -p xtask --locked -- release-evidence --release 0.73
+
+      - name: Fuzz corpus regression
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.fuzz-corpus-regression
+
+      - name: Release 0.74 local issuer tooling fixtures
+        run: python3 -m unittest scripts.perf.test_diagnostic_builder_074 scripts.perf.test_diagnostic_oidc_source_074 scripts.perf.test_diagnostic_oidc_acquisition_074
+
+      - name: Release 0.74 Linux supervisor contracts
+        if: env.HYDRACACHE_CANDIDATE_RELEASE == '0.74'
+        run: cargo test -p hydracache-long-run-supervisor-074 --locked
+
+      - name: Release 0.74 GET ownership feature semantics
+        if: env.HYDRACACHE_CANDIDATE_RELEASE == '0.74'
+        run: |
+          cargo test -p hydracache-redis-compat --features experimental-resp-get-owner-074 --locked
+          cargo test -p hydracache-server --test server_lifecycle redis --features hydracache-redis-compat/experimental-resp-get-owner-074 --locked
+
+      - name: Release feature leak
+        run: cargo run -p xtask --locked -- verify-no-test-features
+
+      - name: Release governance
+        run: cargo run -p xtask --locked -- release-governance-check --release "$HYDRACACHE_CANDIDATE_RELEASE"
+
+      - name: 0.67 performance contract
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.performance-contract-067
+
+      - name: SQL lint baseline drift
+        run: |
+          cargo test -p hydracache-sql-lint --test lint_cli --locked
+          cargo run -p hydracache-sql-lint --bin lint --locked -- --check-baseline --baseline lint-baseline.json
+
+      - name: Performance budget contract
+        run: |
+          cargo test -p xtask --test bench_budget --locked
+          cargo run -p xtask --locked -- bench-budget --current benches/baseline/0_37.json
+
+      - name: DST fast budget
+        run: cargo test -p hydracache-sim --test dst_budget --locked
+
+      - name: Soak fast budget
+        timeout-minutes: 20
+        run: cargo test -p hydracache-sim --test soak_budget --locked
+
+      - name: Raft failpoint crash-safety
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.raft-failpoints
+
+      - name: Raft compaction control 0.66
+        run: |
+          cargo test -p hydracache-cluster-raft --test compaction_seam --locked
+          cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.raft-sled-snapshot
+          cargo test -p hydracache-server compaction --locked
+
+      - name: 0.66 operational proofs
+        run: |
+          cargo test -p hydracache-cluster-raft --test membership_load --locked
+          cargo test -p hydracache-cluster-raft --test differential_model --locked
+          cargo test -p hydracache-cluster-raft --test scheduler_tick --locked
+          cargo test -p hydracache-server --test backup_authority_boundary --locked
+          cargo test -p hydracache-server --test raft_wire_socket_corpus --locked
+          cargo test -p hydracache-server --test rejoin_after_compaction_process --locked
+          cargo test -p hydracache-server --test process_control_plane_nemesis --locked
+          cargo test -p hydracache-server --test rolling_upgrade_process --locked
+          cargo test -p hydracache-server --test external_control_plane_history --locked
+          cargo test -p hydracache-server --test differential_model_process --locked
+          cargo test -p hydracache-server --test scheduler_tick_process --locked
+          cargo test -p hydracache-server --test snapshot_resource_budget --locked
+          cargo test -p hydracache-client-transport-axum --test client_surface_conformance --locked local_ttl_and_lock_contracts_survive_backward_wall_clock_step
+          cargo test -p hydracache-operator --test soak_kind --locked
+
+      - name: Raft snapshot and transport proof
+        run: |
+          cargo test -p hydracache-cluster-raft snapshot_immutability --locked
+          cargo test -p hydracache-cluster-raft --test raft_snapshot_membership --locked
+          cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_apply --locked -- --test-threads=1
+          cargo test -p hydracache-cluster-raft snapshot_replay_manifest --locked
+          cargo test -p hydracache-server grid_host::tests::http_raft_sink_times_out_when_peer_accepts_without_reply --locked
+          cargo test -p hydracache-server grid_host::tests::drive_loop_counts_and_reports_send_failures --locked
+          cargo test -p hydracache-server grid_host::tests::raft_drive_continues_after_bounded_peer_send_timeout --locked
+
+      - name: Raft nemesis membership fast
+        run: cargo test -p hydracache-cluster-raft --test nemesis_membership --locked
+
+      - name: Raft corpus vectors
+        run: cargo test -p hydracache-cluster-raft --test raft_corpus_vectors --locked
+
+      - name: Snapshot corruption
+        run: cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
+
+      - name: Raft rejoin after compaction
+        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
+
+      - name: Raft snapshot resource faults
+        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1
+
+      - name: Snapshot exhaustive grid
+        run: cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked
+
+      - name: Proposal idempotency
+        run: cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked
+
+      - name: Clock skew safety
+        run: cargo test -p hydracache-sim --test clock_skew_safety --locked
+
+      - name: Management console
+        run: |
+          npm --prefix console ci
+          npx --prefix console playwright install --with-deps chromium
+          npm --prefix console run build
+          npm --prefix console test
+
+      - name: Restore and verify full release history
+        run: |
+          if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+            git fetch --prune --unshallow origin "+refs/heads/*:refs/remotes/origin/*" "+refs/tags/*:refs/tags/*"
+          else
+            git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*" "+refs/tags/*:refs/tags/*"
+          fi
+          test "$(git rev-parse --is-shallow-repository)" = "false"
+          cargo run -p xtask --locked -- client-plane-compat-check --manifest-only
+
+      - name: Doctests
+        run: cargo test --workspace --doc --locked
+
+      - name: Documentation
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --workspace --no-deps --locked
+
+      - name: Clippy
+        run: |
+          cargo clippy --workspace --all-targets --all-features --exclude hydracache --locked -- -D warnings
+          common_features="durable-value-store,durable-values,tiered-values,testing"
+          cargo clippy -p hydracache --all-targets --no-default-features --features "$common_features" --locked -- -D warnings
+          cargo clippy -p hydracache --all-targets --no-default-features --features "$common_features,allocator-system" --locked -- -D warnings
+          for allocator in allocator-jemalloc allocator-mimalloc; do
+            cargo clippy -p hydracache --lib --no-default-features --features "$common_features,$allocator" --locked -- -D warnings
+          done
+
+      - name: Clean Rust test scratch links
+        if: always()
+        run: rm -rf target/tests
+
+  migration-conformance-fast-evidence-069:
+    name: Migration Conformance Fast Evidence 0.69
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+
+    steps:
+      - name: Checkout exact tested candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Install pinned cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.137
+
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@cargo-deny
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-migration-conformance-fast-evidence-069
+          cache-targets: true
+
+      - name: Restore and verify full release history
+        run: |
+          if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+            git fetch --prune --unshallow origin "+refs/heads/*:refs/remotes/origin/*" "+refs/tags/*:refs/tags/*"
+          else
+            git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*" "+refs/tags/*:refs/tags/*"
+          fi
+          test "$(git rev-parse --is-shallow-repository)" = "false"
+          cargo run -p xtask --locked -- client-plane-compat-check --manifest-only
+
+      - name: Run exact-candidate fast evidence
+        id: fast_evidence
+        run: |
+          test "$(git rev-parse HEAD)" = "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          cargo run -p xtask --locked -- migration-conformance-check --structural
+          cargo run -p xtask --locked -- migration-conformance-check --upstream
+          cargo run -p xtask --locked -- canary-check --release 0.69
+          cargo run -p xtask --locked -- canary-sweep --release 0.69 --tier fast
+          cargo test -p hydracache --test borrowed_cache_semantics --locked -j 2
+          cargo run -p xtask --locked -- evidence-run --release 0.69 --gate fast.migration-conformance-db-069
+          if [ "$HYDRACACHE_CANDIDATE_RELEASE" = "0.74" ]; then
+            cargo test -p xtask --test evidence_run --test performance_contract_074 --locked
+            cargo run -p xtask --locked -- canary-check --release 0.74
+            cargo run -p xtask --locked -- canary-sweep --release 0.74 --tier fast
+            cargo run -p xtask --locked -- performance-contract-check --release 0.74
+          fi
+          cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.workspace-nextest
+          if [ "$HYDRACACHE_CANDIDATE_RELEASE" = "0.74" ]; then
+            cargo run -p xtask --locked -- fast-suite-check --release 0.74 --receipts-dir target/release-evidence/receipts
+            cargo run -p xtask --locked -- release-evidence --release 0.74 --receipts-dir target/release-evidence/receipts
+          fi
+
+      - name: Finalize fast evidence lane status
+        if: always()
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.69
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "fast-evidence=${{ steps.fast_evidence.outcome }}"
+          --output target/release-evidence/lanes/fast-evidence.json
+
+      - name: Upload exact-candidate fast evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "migration-conformance-fast-evidence-069-${{ github.sha }}"
+          path: |
+            target/release-evidence/canaries/*.json
+            target/release-evidence/lanes/*.json
+            target/release-evidence/receipts/**
+            target/nextest/ci/junit.xml
+            target/release-evidence/0.74.*
+          if-no-files-found: error
+
+  migration-conformance-069:
+    name: Migration Conformance 0.69
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout full tag history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Install Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-migration-conformance-069
+          cache-targets: true
+
+      - name: Run adapted Hazelcast expectations
+        id: borrowed_hazelcast
+        run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate tool.borrowed-hazelcast-069
+
+      - name: Run shipped HC1 consumers against current daemon
+        id: legacy_hc1
+        run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate tool.legacy-hc1-clients-069
+
+      - name: Finalize Java and legacy evidence lane status
+        if: always()
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.69
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "borrowed-hazelcast=${{ steps.borrowed_hazelcast.outcome }}"
+          --require "legacy-hc1=${{ steps.legacy_hc1.outcome }}"
+          --output target/release-evidence/lanes/java-legacy.json
+
+      - name: Upload migration conformance receipts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "migration-conformance-069-receipts-${{ github.sha }}"
+          path: |
+            target/release-evidence/lanes/*.json
+            target/release-evidence/receipts/**
+            target/test-evidence/0.69/**
+          if-no-files-found: error
+
+      - name: Upload Java and legacy diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "migration-conformance-069-${{ github.sha }}"
+          path: |
+            sdks/java/**/target/surefire-reports/**
+            target/test-evidence/0.69/**
+            target/release-evidence/**
+          if-no-files-found: warn
+
+  migration-conformance-postgres-069:
+    name: Migration Conformance PostgreSQL 0.69 (${{ matrix.postgres.series }})
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        postgres:
+          - series: "16"
+            image: postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c
+            happy_gate: ignored.hydracache-db.cached-vs-direct-postgres-069
+            run_canary_and_soak: true
+          - series: "18"
+            image: postgres:18-alpine@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15
+            happy_gate: ignored.hydracache-db.cached-vs-direct-postgres-18-069
+            run_canary_and_soak: false
+    env:
+      HYDRACACHE_TEST_POSTGRES_URL: postgres://hydracache:hydracache@127.0.0.1:5432/hydracache
+      HYDRACACHE_POSTGRES_SERIES: ${{ matrix.postgres.series }}
+      HYDRACACHE_POSTGRES_IMAGE_ID: ${{ matrix.postgres.image }}
+    services:
+      postgres:
+        image: ${{ matrix.postgres.image }}
+        env:
+          POSTGRES_DB: hydracache
+          POSTGRES_PASSWORD: hydracache
+          POSTGRES_USER: hydracache
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hydracache -d hydracache"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install pinned Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v2-migration-conformance-postgres-${{ matrix.postgres.series }}-069
+          cache-targets: true
+
+      - name: Run PostgreSQL cached-vs-direct differential
+        id: postgres_happy
+        run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate "${{ matrix.postgres.happy_gate }}"
+
+      - name: Prove PostgreSQL dropped-invalidation canary is red
+        id: postgres_canary
+        if: matrix.postgres.run_canary_and_soak
+        run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-canary-069
+
+      - name: Run bounded PostgreSQL commit-wait soak
+        timeout-minutes: 20
+        id: postgres_soak
+        if: matrix.postgres.run_canary_and_soak
+        run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-soak-069
+
+      - name: Finalize PostgreSQL 16 evidence lane status
+        if: always() && matrix.postgres.run_canary_and_soak
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.69
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "postgres-happy=${{ steps.postgres_happy.outcome }}"
+          --require "postgres-canary=${{ steps.postgres_canary.outcome }}"
+          --require "postgres-soak=${{ steps.postgres_soak.outcome }}"
+          --output target/release-evidence/lanes/postgres-16.json
+
+      - name: Finalize PostgreSQL 18 evidence lane status
+        if: always() && !matrix.postgres.run_canary_and_soak
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.69
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "postgres-happy=${{ steps.postgres_happy.outcome }}"
+          --output target/release-evidence/lanes/postgres-18.json
+
+      - name: Upload PostgreSQL conformance receipts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "migration-conformance-postgres-069-receipts-${{ matrix.postgres.series }}-${{ github.sha }}"
+          path: |
+            target/release-evidence/lanes/*.json
+            target/release-evidence/receipts/**
+            target/test-evidence/0.69/**
+          if-no-files-found: error
+
+      - name: Upload PostgreSQL conformance diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "migration-conformance-postgres-069-${{ matrix.postgres.series }}-${{ github.sha }}"
+          path: |
+            target/test-evidence/0.69/**
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  migration-conformance-admission-069:
+    name: Migration Conformance Admission 0.69
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off')
+    needs:
+      - migration-conformance-fast-evidence-069
+      - migration-conformance-069
+      - migration-conformance-postgres-069
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Materialize fail-loud upstream admission status
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.69
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "fast=${{ needs.migration-conformance-fast-evidence-069.result }}"
+          --require "java-legacy=${{ needs.migration-conformance-069.result }}"
+          --require "postgres-matrix=${{ needs.migration-conformance-postgres-069.result }}"
+          --output target/release-evidence/0.69.admission-lane.json
+
+      - name: Download fast evidence receipts and canaries
+        uses: actions/download-artifact@v8
+        with:
+          name: "migration-conformance-fast-evidence-069-${{ github.sha }}"
+          path: target
+
+      - name: Download Java and legacy receipts
+        uses: actions/download-artifact@v8
+        with:
+          name: "migration-conformance-069-receipts-${{ github.sha }}"
+          path: target
+
+      - name: Download PostgreSQL receipts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: "migration-conformance-postgres-069-receipts-*-${{ github.sha }}"
+          path: target
+          merge-multiple: true
+
+      - name: Validate exact-candidate lane status artifacts
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.69
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --lane-status "fast=target/release-evidence/lanes/fast-evidence.json"
+          --lane-status "java-legacy=target/release-evidence/lanes/java-legacy.json"
+          --lane-status "postgres-16=target/release-evidence/lanes/postgres-16.json"
+          --lane-status "postgres-18=target/release-evidence/lanes/postgres-18.json"
+          --output target/release-evidence/0.69.admission-lanes.json
+
+      - name: Require exact-candidate migration conformance evidence
+        if: env.HYDRACACHE_CANDIDATE_RELEASE == '0.69'
+        run: cargo run -p xtask --locked -- release-evidence --release 0.69 --receipts-dir target/release-evidence/receipts --require-ship
+
+      - name: Upload migration conformance admission
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "migration-conformance-admission-069-${{ github.sha }}"
+          path: target/release-evidence/0.69.*
+          if-no-files-found: error
+
+  hc2-linux-required:
+    name: HC/2 Linux Required
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs:
+      - docs
+      - rust
+      - migration-conformance-069
+      - migration-conformance-postgres-069
+      - migration-conformance-admission-069
+      - msrv
+    if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off')
+
+    steps:
+      - name: Require Linux checks
+        env:
+          DOCS_RESULT: ${{ needs.docs.result }}
+          RUST_RESULT: ${{ needs.rust.result }}
+          MIGRATION_RESULT: ${{ needs.migration-conformance-069.result }}
+          POSTGRES_MIGRATION_RESULT: ${{ needs.migration-conformance-postgres-069.result }}
+          MIGRATION_ADMISSION_RESULT: ${{ needs.migration-conformance-admission-069.result }}
+          MSRV_RESULT: ${{ needs.msrv.result }}
+        run: |
+          test "$DOCS_RESULT" = "success"
+          test "$RUST_RESULT" = "success"
+          test "$MIGRATION_RESULT" = "success"
+          test "$POSTGRES_MIGRATION_RESULT" = "success"
+          test "$MIGRATION_ADMISSION_RESULT" = "success"
+          test "$MSRV_RESULT" = "success"
+
+  hc2-docker-interop:
+    name: HC/2 Docker Interop
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs:
+      - rust
+    if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off')
+
+    steps:
+      - name: Require Rust gate
+        env:
+          RUST_RESULT: ${{ needs.rust.result }}
+        run: test "$RUST_RESULT" = "success"
+
+      - name: Check Docker runtime
+        run: |
+          docker version
+          docker info
+
+  performance-budget:
+    name: Performance Budget
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: performance-budget
+
+      - name: Run criterion benchmarks
+        run: |
+          cargo bench -p hydracache --bench cache_hot_path --locked
+          cargo bench -p hydracache-db --bench outbox_write --locked
+
+      - name: Enforce performance budget
+        run: cargo run -p xtask --locked -- bench-budget --current target/criterion
+
+  redis-compat-release-proof:
+    name: Redis Compatibility Release Proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && (inputs.run_nightly || inputs.run_redis_compat_release_proof))
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.run_redis_compat_release_proof && inputs.release_proof_candidate_sha || github.sha }}
+
+      - name: Verify focused release-proof candidate
+        if: github.event_name == 'workflow_dispatch' && inputs.run_redis_compat_release_proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidate='${{ inputs.release_proof_candidate_sha }}'
+          test "$candidate" != ""
+          test "${#candidate}" -eq 40
+          test "$(git rev-parse HEAD)" = "$candidate"
+          git diff --exit-code
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+        with:
+          components: rustfmt, clippy
+
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.22.x"
+          cache: false
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: redis-compat-release-proof
+
+      - name: Check Docker availability
+        run: |
+          docker version
+          docker info
+
+      - name: Redis fast checks
+        run: |
+          cargo fmt --all -- --check
+          cargo test -p xtask --test doc_check redis_compat --locked -- --nocapture
+          cargo test -p hydracache-redis-compat --locked
+          cargo test -p hydracache-server --test server_lifecycle redis --locked
+          cargo clippy -p hydracache-redis-compat --all-targets --locked -- -D warnings
+
+      - name: Redis Docker/client/oracle matrix
+        env:
+          HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS: "1"
+          HYDRACACHE_REQUIRE_REDIS_ORACLE: "1"
+          HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER: "1"
+          HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON: "1"
+          HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE: "1"
+          HYDRACACHE_REQUIRE_REDIS_CLIENT_GO: "1"
+          HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM: "1"
+        run: cargo test -p hydracache-redis-compat --test redis_clients --locked -- --ignored --nocapture
+
+      - name: Redis resource smoke
+        env:
+          HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE: "1"
+        run: cargo test -p hydracache-redis-compat --test resp_resource_smoke --locked -- --ignored --nocapture
+
+  dst-nightly-soak:
+    name: DST and Soak Nightly
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: dst-nightly-soak
+
+      - name: Run deterministic simulation seeds
+        run: |
+          cargo run -p hydracache-sim --bin vopr --locked -- --seed 44 --steps 512
+          cargo run -p hydracache-sim --bin vopr --locked -- --seed 45 --steps 512
+          cargo run -p hydracache-sim --bin vopr --locked -- --seed 46 --steps 512
+
+      - name: Run continuous soak and write SOAK_REPORT
+        timeout-minutes: 20
+        run: |
+          cargo run -p hydracache-sim --bin vopr --locked -- soak --master-seed 22530 --budget-secs 60 --steps-per-seed 512 --max-seeds 128 | tee SOAK_REPORT.json
+
+      - name: Run ignored resource and operator skip sentinels
+        run: |
+          cargo test -p hydracache-server --test soak_resource --locked -- --ignored --nocapture
+          cargo test -p hydracache-operator --test soak_kind --locked -- --ignored --nocapture
+
+      - name: Run networked daemon E2E tier
+        env:
+          HYDRACACHE_RUN_NETWORKED_DAEMON_E2E: "1"
+        run: cargo test -p hydracache-server --test grid_host multi_node --locked -- --nocapture
+
+      - name: Run daemon-process cluster tier
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-run-daemon-process-e2e
+
+      - name: Run 0.72 production management process proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-process-072
+
+      - name: Run 0.72 management Linux resource proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-resource-linux-072
+
+      - name: Redis RESP multinode debt sentinels
+        run: cargo run -p xtask --locked -- evidence-run --release 0.65 --gate env.hydracache-run-redis-resp-multinode-e2e
+
+      - name: Upload daemon-process replay artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: daemon-process-replay-artifacts
+          path: target/test-hydracache-daemon-process/**
+          if-no-files-found: ignore
+
+      - name: Upload daemon-process evidence receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "daemon-process-evidence-${{ github.sha }}"
+          path: target/release-evidence/receipts/**
+          if-no-files-found: error
+
+      - name: Run membership-history tier
+        env:
+          HYDRACACHE_RUN_DAEMON_PROCESS_E2E: "1"
+        run: cargo test -p hydracache-server --test membership_history --locked -- --nocapture
+
+      - name: Run pre-vote nightly soak
+        timeout-minutes: 30
+        env:
+          HYDRACACHE_RUN_PREVOTE_NIGHTLY_SOAK: "1"
+        run: cargo test -p hydracache-cluster-raft --test prevote_nightly_soak --locked -- --nocapture
+
+      - name: Run raft nemesis nightly soak
+        timeout-minutes: 30
+        env:
+          HYDRACACHE_RUN_RAFT_NEMESIS_SOAK: "1"
+          HYDRACACHE_NEMESIS_BUDGET_SECS: "60"
+        run: cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_soak_over_seed_range_converges --locked -- --nocapture
+
+      - name: Upload SOAK_REPORT
+        uses: actions/upload-artifact@v6
+        with:
+          name: SOAK_REPORT
+          path: SOAK_REPORT.json
+
+  management-mixed-072:
+    name: 0.71 to 0.72 Management Compatibility
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    timeout-minutes: 120
+    if: (github.event_name == 'workflow_dispatch' && inputs.run_management_mixed_072) || startsWith(github.ref, 'refs/tags/v0.72.')
+
+    steps:
+      - name: Checkout full release history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Verify shipped v0.71.0 provenance
+        run: |
+          git rev-parse --verify refs/tags/v0.71.0
+          git merge-base --is-ancestor refs/tags/v0.71.0 HEAD
+
+      - name: Run real 0.71 and 0.72 management upgrade rollback proof
+        timeout-minutes: 105
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-mixed-072
+
+      - name: Upload mixed release evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "management-mixed-071-072-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ runner.name }}"
+          path: |
+            target/test-evidence/0.72/management-mixed-071-072.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  management-candidate-soak-072:
+    name: 0.72 Management Candidate Soak
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    timeout-minutes: 420
+    if: github.event_name == 'workflow_dispatch' && inputs.run_management_candidate_soak_072
+
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Prove exact-candidate HC1 and HC2 coexistence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.hydracache-server.management-hc1-hc2-coexistence-072
+
+      - name: Run exact six-hour 0.72 management candidate soak
+        timeout-minutes: 390
+        env:
+          HYDRACACHE_RELEASE_HOST_ID: ${{ runner.name }}
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-candidate-soak-072
+
+      - name: Upload exact candidate soak evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "management-candidate-soak-072-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ runner.name }}"
+          path: |
+            target/test-evidence/0.72/management-candidate-soak.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  management-ship-soak-072:
+    name: 0.72 Management Ship Confirmation
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    timeout-minutes: 1900
+    if: github.event_name == 'workflow_dispatch' && inputs.run_management_ship_soak_072
+
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Prove exact-candidate HC1 and HC2 coexistence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.hydracache-server.management-hc1-hc2-coexistence-072
+
+      - name: Re-run exact six-hour candidate soak on ship host
+        timeout-minutes: 390
+        env:
+          HYDRACACHE_RELEASE_HOST_ID: ${{ runner.name }}
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-candidate-soak-072
+
+      - name: Run exact 24-hour 0.72 management ship soak
+        timeout-minutes: 1500
+        env:
+          HYDRACACHE_RELEASE_HOST_ID: ${{ runner.name }}
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-ship-soak-072
+
+      - name: Upload exact ship soak evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "management-ship-soak-072-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ runner.name }}"
+          path: |
+            target/test-evidence/0.72/management-candidate-soak.json
+            target/test-evidence/0.72/management-ship-soak.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  raft-corner-case-nightly:
+    name: Raft Corner-Case Nightly
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: raft-corner-case-nightly
+
+      - name: Raft nemesis soak
+        timeout-minutes: 60
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-run-raft-nemesis-soak
+
+      - name: Snapshot exhaustive grid wide
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-grid-scope
+
+      - name: Rejoin after compaction proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate cfg.hydracache-cluster-raft.rejoin-after-compaction
+
+      - name: Snapshot resource faults
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate cfg.hydracache-cluster-raft.snapshot-resource-faults
+
+      - name: W39c Raft cancellation safety
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-run-cancellation-raft
+
+      - name: Clock skew safety
+        run: cargo test -p hydracache-sim --test clock_skew_safety --locked -- --nocapture
+
+      - name: Upload raft corner-case artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: raft-corner-case-artifacts
+          path: |
+            target/hydracache-contradiction-ledger/**
+            target/hydracache-daemon-logs/**
+            target/test-hydracache-daemon-process/**
+            target/release-evidence/receipts/**
+          if-no-files-found: ignore
+
+  release-066-daemon-process:
+    name: 0.66 Daemon Process Release Proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 130
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v2-rust-with-target
+          cache-targets: true
+          shared-key: release-066-daemon-process
+
+      - name: Verify shipped 0.65 provenance
+        run: |
+          git rev-parse --verify refs/tags/v0.65.0
+          git merge-base --is-ancestor refs/tags/v0.65.0 HEAD
+
+      - name: Run 0.66 daemon-process release proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.66 --gate env.hydracache-run-066-daemon-process-e2e
+
+      - name: Upload 0.66 daemon-process evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "daemon-process-066-${{ github.sha }}"
+          path: |
+            target/test-hydracache-daemon-process/**
+            target/test-evidence/0.66/**
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  release-066-operator-kind:
+    name: 0.66 Operator Kind Release Proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 130
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.23.4"
+          cache: false
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v5.1.0
+        with:
+          version: v1.32.0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v5.0.1
+        with:
+          version: v3.17.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v2-rust-with-target
+          cache-targets: true
+          shared-key: release-066-operator-kind
+
+      - name: Create kind cluster with enforcing CNI
+        shell: bash
+        run: |
+          go install sigs.k8s.io/kind@v0.26.0
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          "$(go env GOPATH)/bin/kind" create cluster \
+            --name hydracache-066 \
+            --image kindest/node:v1.32.0@sha256:c48c62eac5da28cdadcf560d1d8616cfa6783b58f0d94cf63ad1bf49600cb027 \
+            --config - <<'EOF'
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          networking:
+            disableDefaultCNI: true
+          nodes:
+            - role: control-plane
+            - role: worker
+            - role: worker
+          EOF
+          kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.2/manifests/calico.yaml
+          kubectl rollout status deployment/calico-kube-controllers -n kube-system --timeout=5m
+          kubectl rollout status daemonset/calico-node -n kube-system --timeout=5m
+
+      - name: Install required Chaos Mesh IOChaos runtime
+        timeout-minutes: 15
+        run: |
+          helm repo add chaos-mesh https://charts.chaos-mesh.org
+          helm repo update
+          helm install chaos-mesh chaos-mesh/chaos-mesh \
+            --namespace chaos-mesh \
+            --create-namespace \
+            --version 2.7.2 \
+            --set chaosDaemon.runtime=containerd \
+            --set chaosDaemon.socketPath=/run/containerd/containerd.sock \
+            --wait \
+            --timeout 10m
+          kubectl get crd iochaos.chaos-mesh.org
+
+      - name: Build and load current server image
+        run: |
+          docker build --tag hydracache-server:0.66-candidate .
+          kind load docker-image --name hydracache-066 hydracache-server:0.66-candidate
+
+      - name: Prepare current operator controller
+        shell: bash
+        run: |
+          mkdir -p target/test-evidence/0.66
+          kubectl apply -f deploy/operator/hydracacheclusters.hydracache.io.crd.yaml
+          kubectl auth can-i get pods --subresource=proxy --namespace default
+          kubectl auth can-i create pods --subresource=proxy --namespace default
+          cargo build -p hydracache-operator --locked
+          operator_candidate_directory="$(pwd)/target/ci-runtime/0.66"
+          operator_binary="$operator_candidate_directory/hydracache-operator-${GITHUB_SHA}"
+          mkdir -p "$operator_candidate_directory"
+          install -m 0755 "$(pwd)/target/debug/hydracache-operator" "$operator_binary"
+          operator_log="target/test-evidence/0.66/operator-controller-live.log"
+          operator_nonce="release-066-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_SHA}"
+          export HYDRACACHE_OPERATOR_EVIDENCE_NONCE="$operator_nonce"
+          echo "HYDRACACHE_OPERATOR_EVIDENCE_NONCE=$operator_nonce" >> "$GITHUB_ENV"
+          echo "HYDRACACHE_OPERATOR_BINARY=$operator_binary" >> "$GITHUB_ENV"
+          printf 'HC-OPERATOR-CONTROLLER-START nonce=%s binary=%s\n' \
+            "$operator_nonce" "$operator_binary" > "$operator_log"
+
+      - name: Start current operator controller
+        id: operator-controller
+        shell: bash
+        background: true
+        timeout-minutes: 120
+        env:
+          HYDRACACHE_OPERATOR_NAMESPACE: default
+          HYDRACACHE_OPERATOR_IDENTITY: release-066-ci
+        run: |
+          operator_log="target/test-evidence/0.66/operator-controller-live.log"
+          operator_pid_file="target/test-evidence/0.66/operator-controller.pid"
+          printf '%s\n' "$BASHPID" > "$operator_pid_file"
+          exec "$HYDRACACHE_OPERATOR_BINARY" >> "$operator_log" 2>&1
+
+      - name: Verify current operator controller
+        shell: bash
+        run: |
+          operator_log="target/test-evidence/0.66/operator-controller-live.log"
+          operator_pid_file="target/test-evidence/0.66/operator-controller.pid"
+          operator_nonce="$HYDRACACHE_OPERATOR_EVIDENCE_NONCE"
+          operator_ready=0
+          for _ in $(seq 1 30); do
+            if [[ -s "$operator_pid_file" ]]; then
+              operator_pid="$(cat "$operator_pid_file")"
+            else
+              sleep 1
+              continue
+            fi
+            if kill -0 "$operator_pid" \
+              && grep -Fq "HC-OPERATOR-CONTROLLER-RUNTIME nonce=$operator_nonce " "$operator_log"; then
+              operator_ready=1
+              break
+            fi
+            sleep 1
+          done
+          kill -0 "$operator_pid"
+          test "$operator_ready" = 1
+          grep -F "HC-OPERATOR-CONTROLLER-RUNTIME nonce=$operator_nonce " "$operator_log"
+
+      - name: Run 0.66 operator-kind release proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.66 --gate env.hydracache-operator-kind-066
+
+      - name: Stop current operator controller
+        cancel: operator-controller
+
+      - name: Capture operator-kind diagnostics
+        if: always()
+        continue-on-error: true
+        run: |
+          kubectl get pods,statefulsets,services,hydracacheclusters -A -o wide > target/test-evidence/0.66/operator-kind-resources-post.txt || true
+          kubectl get events -A --sort-by=.lastTimestamp > target/test-evidence/0.66/operator-kind-events-post.txt || true
+          kubectl logs -n default \
+            --selector 'app.kubernetes.io/name=hydracache,app.kubernetes.io/instance=hydracache-066,app.kubernetes.io/component=server' \
+            --all-containers=true \
+            --prefix=true \
+            --tail=-1 \
+            > target/test-evidence/0.66/operator-kind-pod-logs-post.txt || true
+
+      - name: Upload 0.66 operator-kind evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "operator-kind-066-${{ github.sha }}"
+          path: |
+            target/test-evidence/0.66/**
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  performance-067-shared-tripwire:
+    name: 0.67 Shared Performance Tripwire
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) || github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly && !inputs.run_reference_performance && inputs.candidate_release == '0.67')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Validate shared-runner tripwire policy
+        run: cargo test -p xtask --test perf_budget_067 --locked ci_shared_is_a_rolling_only_non_enforcing_tripwire
+
+      - name: Evaluate non-ship shared-runner tripwire
+        run: cargo run -p xtask --locked -- perf-budget-check --release 0.67 --profile ci-shared
+
+      - name: Upload 0.67 shared tripwire
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-shared-tripwire-067-${{ github.sha }}"
+          path: target/test-evidence/0.67/perf-budget-verdict.json
+          if-no-files-found: error
+
+  performance-ci-instruction-v1:
+    name: CI Instruction Work Tripwire
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+
+    steps:
+      - name: Checkout paired history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Install Callgrind
+        timeout-minutes: 10
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends valgrind
+          cargo install --locked gungraun-runner --version 0.19.4
+          gungraun-runner --version
+
+      - name: Resolve exact comparison commits
+        id: commits
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          base_sha="${PR_BASE_SHA:-${PUSH_BEFORE_SHA:-}}"
+          if ! git cat-file -e "${base_sha}^{commit}" 2>/dev/null; then
+            base_sha="$(git rev-parse HEAD^)"
+          fi
+          echo "base_sha=$base_sha" >>"$GITHUB_OUTPUT"
+          echo "head_sha=$(git rev-parse HEAD)" >>"$GITHUB_OUTPUT"
+
+      - name: Validate non-ship instruction profile
+        run: cargo test -p xtask --test perf_ci_instruction --locked
+
+      - name: Run paired base/head instruction tripwire
+        run: |
+          scripts/perf/run-ci-instruction-pair.sh \
+            --base '${{ steps.commits.outputs.base_sha }}' \
+            --head '${{ steps.commits.outputs.head_sha }}' \
+            --output target/test-evidence/ci-instruction-v1
+
+      - name: Upload instruction profiles and receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "ci-instruction-v1-${{ steps.commits.outputs.head_sha }}"
+          path: target/test-evidence/ci-instruction-v1/**
+          if-no-files-found: error
+
+  release-067-performance:
+    name: 0.67 Self-hosted Reference Evidence
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
+    timeout-minutes: 360
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.run_reference_performance && inputs.candidate_release == '0.67'
+    concurrency:
+      group: release-067-performance-reference-v1
+      cancel-in-progress: false
+    env:
+      HYDRACACHE_RUN_PERF_REFERENCE: 1
+      HYDRACACHE_PERF_RUNNER_CLASS: self-hosted-bare-metal-v1
+      # The exploratory 0.67 lane uses the same commit-bound tmpfs publication
+      # contract as qualification, while the 0.67.1 jobs remain opt-in.
+      HYDRACACHE_PERFORMANCE_0671_MODE: qualify
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+            --retry 5 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 180 \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict -
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+            make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
+
+      - name: Verify shipped 0.66 provenance
+        run: |
+          git rev-parse --verify refs/tags/v0.66.0
+          git merge-base --is-ancestor refs/tags/v0.66.0 HEAD
+
+      - name: Run 0.67 canary sweep
+        run: cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
+
+      - name: Validate 0.67 performance contract
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate fast.performance-contract-067
+
+      - name: Clear only prior performance evidence scratch
+        shell: bash
+        run: |
+          rm -rf -- \
+            target/test-evidence/0.67 \
+            target/test-evidence/0.67.1
+
+      - name: Prepare tmpfs reference evidence
+        run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
+      - name: Preflight 0.67 reference runner stability
+        run: scripts/perf/run-reference-measurement.sh attestation
+
+      - name: Prebuild 0.67 performance binaries
+        # The runner service is intentionally pinned to housekeeping CPUs; the
+        # prebuild observation itself must run on the measurement CPUs expected
+        # by the reference-v1 contract.
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+
+      - name: Run 0.67 control-plane performance evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
+      - name: Run 0.67 core performance evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+
+      - name: Run 0.67 RESP performance evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+
+      - name: Check 0.67 performance budgets
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budget-check-067
+
+      # The budget checker re-hashes the receipt-bound absolute source files.
+      # Keep tmpfs live through this step, then copy both the evidence and its
+      # verdict to persistent storage even when the checker fails.
+      - name: Materialize tmpfs reference evidence
+        if: always()
+        run: scripts/perf/reference-evidence-tmpfs.sh materialize
+
+      - name: Aggregate exact 0.67 candidate evidence
+        run: cargo run -p xtask --locked -- release-evidence --release 0.67 --receipts-dir target/release-evidence/receipts --require-ship
+
+      - name: Upload 0.67 performance evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-067-${{ github.sha }}"
+          path: |
+            target/test-evidence/0.67/**
+            target/release-evidence/canaries/0.67-*.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  release-0671-performance-qualification:
+    name: 0.67.1 Dedicated Runner Qualification
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
+    timeout-minutes: 360
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.performance_0671_mode == 'qualify' && inputs.candidate_release == '0.67.1'
+    concurrency:
+      group: release-067-performance-reference-v1
+      cancel-in-progress: false
+    env:
+      HYDRACACHE_RUN_PERF_REFERENCE: 1
+      HYDRACACHE_PERF_RUNNER_CLASS: self-hosted-bare-metal-v1
+      HYDRACACHE_PERFORMANCE_0671_MODE: qualify
+
+    steps:
+      - name: Validate optional campaign correlation
+        shell: bash
+        env:
+          HYDRACACHE_CAMPAIGN: ${{ inputs.performance_0671_campaign }}
+        run: |
+          if [[ -n "$HYDRACACHE_CAMPAIGN" ]]; then
+            [[ "$HYDRACACHE_CAMPAIGN" =~ ^hc0671-[a-z0-9][a-z0-9-]{5,55}:qualification$ ]]
+          fi
+
+      - name: Checkout trusted main
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          clean: true
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Verify trusted qualification context
+        run: cargo run -p xtask --locked -- perf-qualification --release 0.67.1 --profile reference-v1 --phase context
+
+      - name: Clear only prior performance evidence scratch
+        shell: bash
+        run: |
+          rm -rf -- \
+            target/test-evidence/0.67 \
+            target/test-evidence/0.67.1 \
+            target/release-evidence/receipts
+
+      - name: Prepare tmpfs reference evidence
+        run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
+      - name: Import frozen campaign host admission
+        run: scripts/perf/import-reference-campaign-admission.sh
+
+      - name: Import offline runner provisioning proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+            --retry 5 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 180 \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict -
+          rm -rf -- redis-7.2.5
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+            make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
+
+      - name: Attest and preflight the 0.67.1 host
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671
+
+      - name: Prebuild exact 0.67 performance binaries
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+
+      - name: Run bounded non-ship diagnostics
+        run: |
+          scripts/perf/run-reference-measurement.sh qualification-local
+          scripts/perf/run-reference-measurement.sh qualification-client-surface
+
+      - name: Materialize tmpfs reference evidence
+        if: always()
+        run: scripts/perf/reference-evidence-tmpfs.sh materialize
+
+      - name: Run 0.67.1 qualification gate
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-qualification-0671
+
+      - name: Upload 0.67.1 qualification diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-0671-qualification-${{ github.sha }}-${{ github.run_id }}"
+          path: |
+            target/test-evidence/0.67/**
+            target/test-evidence/0.67.1/**
+            target/release-evidence/receipts/**
+          if-no-files-found: warn
+
+  release-0671-performance-full-dress:
+    name: 0.67.1 Full-Dress Bootstrap Admission
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
+    timeout-minutes: 360
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.performance_0671_mode == 'full-dress' && inputs.candidate_release == '0.67.1'
+    concurrency:
+      group: release-067-performance-reference-v1
+      cancel-in-progress: false
+    env:
+      HYDRACACHE_RUN_PERF_REFERENCE: 1
+      HYDRACACHE_PERF_RUNNER_CLASS: self-hosted-bare-metal-v1
+      HYDRACACHE_PERFORMANCE_0671_MODE: full-dress
+
+    steps:
+      - name: Validate optional campaign correlation
+        shell: bash
+        env:
+          HYDRACACHE_CAMPAIGN: ${{ inputs.performance_0671_campaign }}
+        run: |
+          if [[ -n "$HYDRACACHE_CAMPAIGN" ]]; then
+            [[ "$HYDRACACHE_CAMPAIGN" =~ ^hc0671-[a-z0-9][a-z0-9-]{5,55}:full-dress-[12]$ ]]
+          fi
+
+      - name: Checkout trusted main
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          clean: true
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Verify trusted full-dress context
+        run: cargo run -p xtask --locked -- perf-full-dress --release 0.67.1 --profile reference-v1 --phase context
+
+      - name: Validate full-dress dispatch inputs
+        shell: bash
+        run: |
+          predecessor='${{ inputs.full_dress_predecessor_run_id }}'
+          if [[ -n "$predecessor" && ! "$predecessor" =~ ^[1-9][0-9]*$ ]]; then
+            echo 'full_dress_predecessor_run_id must be empty or a positive integer' >&2
+            exit 1
+          fi
+
+      - name: Download prior full-dress receipt
+        if: inputs.full_dress_predecessor_run_id != ''
+        uses: actions/download-artifact@v8
+        with:
+          name: performance-0671-full-dress-receipt
+          path: ${{ runner.temp }}/hydracache-full-dress-predecessor
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.full_dress_predecessor_run_id }}
+
+      - name: Resolve prior full-dress receipt
+        if: inputs.full_dress_predecessor_run_id != ''
+        shell: bash
+        run: |
+          mapfile -t receipts < <(find "$RUNNER_TEMP/hydracache-full-dress-predecessor" \
+            -type f -name full-dress-receipt.json -print)
+          test "${#receipts[@]}" -eq 1
+          echo "HYDRACACHE_FULL_DRESS_PREDECESSOR=${receipts[0]}" >> "$GITHUB_ENV"
+
+      - name: Clear only prior performance evidence scratch
+        shell: bash
+        run: |
+          rm -rf -- \
+            target/test-evidence/0.67 \
+            target/test-evidence/0.67.1 \
+            target/release-evidence/receipts
+
+      - name: Prepare tmpfs reference evidence
+        run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
+      - name: Import frozen campaign host admission
+        run: scripts/perf/import-reference-campaign-admission.sh
+
+      - name: Import offline runner provisioning proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+            --retry 5 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 180 \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict -
+          rm -rf -- redis-7.2.5
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+            make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
+
+      - name: Attest and preflight the 0.67.1 host
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671
+
+      - name: Prebuild exact 0.67 performance binaries
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+
+      # Run the comparatively short control-plane family first. It has no
+      # dependency on the core or Redis evidence and failing fast avoids
+      # spending roughly two hours before surfacing a membership defect.
+      - name: Run full-dress control-plane reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
+      - name: Run full-dress core reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+
+      - name: Start isolated rootless Docker for full-dress Redis comparison
+        run: scripts/perf/rootless-docker.sh start
+
+      - name: Run full-dress RESP reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+
+      - name: Stop isolated rootless Docker after full-dress Redis comparison
+        if: always()
+        run: scripts/perf/rootless-docker.sh stop
+
+      - name: Materialize tmpfs reference evidence
+        if: always()
+        run: scripts/perf/reference-evidence-tmpfs.sh materialize
+
+      - name: Retain non-promotable full-dress receipt
+        run: cargo run -p xtask --locked -- perf-full-dress --release 0.67.1 --profile reference-v1 --phase receipt
+
+      - name: Admit bootstrap after the second identical full-dress run
+        if: inputs.full_dress_predecessor_run_id != ''
+        run: cargo run -p xtask --locked -- perf-full-dress --release 0.67.1 --profile reference-v1 --phase admission --predecessor-receipt "$HYDRACACHE_FULL_DRESS_PREDECESSOR"
+
+      - name: Upload reusable full-dress receipt
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-0671-full-dress-receipt
+          path: target/test-evidence/0.67.1/full-dress-receipt.json
+          if-no-files-found: error
+
+      - name: Upload two-run full-dress admission
+        if: inputs.full_dress_predecessor_run_id != ''
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-0671-full-dress-admission
+          path: target/test-evidence/0.67.1/full-dress-admission.json
+          if-no-files-found: error
+
+      - name: Upload full-dress diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-0671-full-dress-${{ github.sha }}-${{ github.run_id }}"
+          path: |
+            target/test-evidence/0.67/**
+            target/test-evidence/0.67.1/**
+            target/release-evidence/receipts/**
+          if-no-files-found: warn
+
+  release-0671-performance-bootstrap:
+    name: 0.67.1 Bootstrap Sample Acquisition
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
+    timeout-minutes: 360
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.performance_0671_mode == 'bootstrap' && inputs.candidate_release == '0.67.1'
+    concurrency:
+      group: release-067-performance-reference-v1
+      cancel-in-progress: false
+    env:
+      HYDRACACHE_RUN_PERF_REFERENCE: 1
+      HYDRACACHE_PERF_RUNNER_CLASS: self-hosted-bare-metal-v1
+      HYDRACACHE_PERFORMANCE_0671_MODE: bootstrap
+
+    steps:
+      - name: Validate optional campaign correlation
+        shell: bash
+        env:
+          HYDRACACHE_CAMPAIGN: ${{ inputs.performance_0671_campaign }}
+        run: |
+          if [[ -n "$HYDRACACHE_CAMPAIGN" ]]; then
+            [[ "$HYDRACACHE_CAMPAIGN" =~ ^hc0671-[a-z0-9][a-z0-9-]{5,55}:bootstrap-[1-5]$ ]]
+            test "${HYDRACACHE_CAMPAIGN##*-}" = '${{ inputs.bootstrap_sample_index }}'
+          fi
+
+      - name: Checkout trusted main
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          clean: true
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Verify trusted bootstrap context
+        run: cargo run -p xtask --locked -- perf-bootstrap --release 0.67.1 --profile reference-v1 --phase context
+
+      - name: Validate serialized bootstrap dispatch inputs
+        shell: bash
+        run: |
+          sample_index='${{ inputs.bootstrap_sample_index }}'
+          admission_run='${{ inputs.full_dress_admission_run_id }}'
+          predecessor_run='${{ inputs.bootstrap_predecessor_run_id }}'
+          [[ "$sample_index" =~ ^[1-5]$ ]]
+          [[ "$admission_run" =~ ^[1-9][0-9]*$ ]]
+          if [[ "$sample_index" = 1 ]]; then
+            test -z "$predecessor_run"
+          else
+            [[ "$predecessor_run" =~ ^[1-9][0-9]*$ ]]
+          fi
+
+      - name: Download two-run full-dress admission
+        uses: actions/download-artifact@v8
+        with:
+          name: performance-0671-full-dress-admission
+          path: ${{ runner.temp }}/hydracache-full-dress-admission
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.full_dress_admission_run_id }}
+
+      - name: Download immediately prior bootstrap receipt
+        if: inputs.bootstrap_sample_index != '1'
+        uses: actions/download-artifact@v8
+        with:
+          name: performance-0671-bootstrap-receipt
+          path: ${{ runner.temp }}/hydracache-bootstrap-predecessor
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.bootstrap_predecessor_run_id }}
+
+      - name: Resolve bootstrap admission and predecessor
+        shell: bash
+        run: |
+          mapfile -t admissions < <(find "$RUNNER_TEMP/hydracache-full-dress-admission" \
+            -type f -name full-dress-admission.json -print)
+          test "${#admissions[@]}" -eq 1
+          echo "HYDRACACHE_FULL_DRESS_ADMISSION=${admissions[0]}" >> "$GITHUB_ENV"
+          if [[ '${{ inputs.bootstrap_sample_index }}' != 1 ]]; then
+            mapfile -t predecessors < <(find "$RUNNER_TEMP/hydracache-bootstrap-predecessor" \
+              -type f -name bootstrap-sample.json -print)
+            test "${#predecessors[@]}" -eq 1
+            echo "HYDRACACHE_BOOTSTRAP_PREDECESSOR=${predecessors[0]}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Clear only prior performance evidence scratch
+        shell: bash
+        run: |
+          rm -rf -- \
+            target/test-evidence/0.67 \
+            target/test-evidence/0.67.1 \
+            target/release-evidence/receipts
+
+      - name: Prepare tmpfs reference evidence
+        run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
+      - name: Import frozen campaign host admission
+        run: scripts/perf/import-reference-campaign-admission.sh
+
+      - name: Import offline runner provisioning proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+            --retry 5 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 180 \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict -
+          rm -rf -- redis-7.2.5
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+            make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
+
+      - name: Attest and preflight the 0.67.1 host
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671
+
+      - name: Prebuild exact 0.67 performance binaries
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+
+      - name: Authorize exact serialized bootstrap sample before measurement
+        shell: bash
+        run: |
+          args=(
+            --release 0.67.1
+            --profile reference-v1
+            --phase authorize
+            --sample-index '${{ inputs.bootstrap_sample_index }}'
+            --admission "$HYDRACACHE_FULL_DRESS_ADMISSION"
+          )
+          if [[ -n "${HYDRACACHE_BOOTSTRAP_PREDECESSOR:-}" ]]; then
+            args+=(--predecessor "$HYDRACACHE_BOOTSTRAP_PREDECESSOR")
+          fi
+          cargo run -p xtask --locked -- perf-bootstrap "${args[@]}"
+
+      - name: Run bootstrap control-plane reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
+      - name: Run bootstrap core reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+
+      - name: Start isolated rootless Docker for Redis comparison
+        run: scripts/perf/rootless-docker.sh start
+
+      - name: Run bootstrap RESP reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+
+      - name: Stop isolated rootless Docker after Redis comparison
+        if: always()
+        run: scripts/perf/rootless-docker.sh stop
+
+      - name: Materialize tmpfs reference evidence
+        if: always()
+        run: scripts/perf/reference-evidence-tmpfs.sh materialize
+
+      - name: Retain non-ship bootstrap sample
+        shell: bash
+        run: |
+          args=(
+            --release 0.67.1
+            --profile reference-v1
+            --phase sample
+            --sample-index '${{ inputs.bootstrap_sample_index }}'
+            --admission "$HYDRACACHE_FULL_DRESS_ADMISSION"
+          )
+          if [[ -n "${HYDRACACHE_BOOTSTRAP_PREDECESSOR:-}" ]]; then
+            args+=(--predecessor "$HYDRACACHE_BOOTSTRAP_PREDECESSOR")
+          fi
+          cargo run -p xtask --locked -- perf-bootstrap "${args[@]}"
+
+      - name: Upload reusable bootstrap receipt
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-0671-bootstrap-receipt
+          path: target/test-evidence/0.67.1/bootstrap-sample.json
+          if-no-files-found: error
+
+      - name: Upload 0.67.1 bootstrap sample
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-0671-bootstrap-${{ github.sha }}-${{ github.run_id }}"
+          path: |
+            target/test-evidence/0.67/**
+            target/test-evidence/0.67.1/**
+            target/release-evidence/receipts/**
+          if-no-files-found: warn
+
+  release-0671-frozen-candidate:
+    name: 0.67.1 Frozen Candidate Reference Evidence
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
+    timeout-minutes: 360
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.performance_0671_mode == 'frozen-candidate' && inputs.candidate_release == '0.67.1'
+    concurrency:
+      group: release-067-performance-reference-v1
+      cancel-in-progress: false
+    env:
+      HYDRACACHE_RUN_PERF_REFERENCE: 1
+      HYDRACACHE_PERF_RUNNER_CLASS: self-hosted-bare-metal-v1
+      HYDRACACHE_PERFORMANCE_0671_MODE: frozen-candidate
+
+    steps:
+      - name: Validate optional frozen-candidate campaign correlation
+        shell: bash
+        env:
+          HYDRACACHE_CAMPAIGN: ${{ inputs.performance_0671_campaign }}
+        run: |
+          if [[ -n "$HYDRACACHE_CAMPAIGN" ]]; then
+            [[ "$HYDRACACHE_CAMPAIGN" =~ ^hc0671-[a-z0-9][a-z0-9-]{5,55}:frozen-candidate$ ]]
+          fi
+
+      - name: Checkout trusted frozen main
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          clean: true
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      # The final workspace gate executes tests which invoke both `python` and
+      # `cargo deny`. Provision and probe its complete toolchain before any
+      # multi-hour performance measurements so a missing helper fails early.
+      - name: Install Python for final workspace evidence
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install cargo-deny for final workspace evidence
+        uses: taiki-e/install-action@cargo-deny
+
+      - name: Install pinned cargo-nextest for final workspace evidence
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.137
+
+      - name: Preflight final workspace evidence toolchain
+        run: |
+          python --version
+          cargo deny --version
+          cargo nextest --version
+
+      - name: Clear only prior frozen-candidate evidence scratch
+        shell: bash
+        run: |
+          rm -rf -- \
+            target/test-evidence/0.67 \
+            target/test-evidence/0.67.1 \
+            target/release-evidence/receipts \
+            target/release-evidence/canaries
+
+      - name: Prepare tmpfs reference evidence
+        run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
+      - name: Import frozen campaign host admission
+        run: scripts/perf/import-reference-campaign-admission.sh
+
+      - name: Revalidate committed five-sample independent review
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-baseline-review-0671
+
+      - name: Validate exact reference activation and TD closure
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-reference-activation-0671
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+            --retry 5 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 180 \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict -
+          rm -rf -- redis-7.2.5
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+            make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
+
+      - name: Import offline runner provisioning proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
+
+      - name: Attest and preflight the 0.67.1 host
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671
+
+      - name: Prebuild exact frozen performance binaries
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+
+      - name: Run frozen-candidate real 3/5/7 daemon control-plane evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
+      - name: Run frozen-candidate core reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+
+      - name: Start isolated rootless Docker for frozen Redis comparison
+        run: scripts/perf/rootless-docker.sh start
+
+      - name: Run frozen-candidate RESP and Redis reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+
+      - name: Stop isolated rootless Docker after frozen Redis comparison
+        if: always()
+        run: scripts/perf/rootless-docker.sh stop
+
+      - name: Check activated 0.67.1 reference budgets and rolling baseline
+        run: cargo run -p xtask --locked -- perf-budget-check --release 0.67.1 --profile reference-v1
+
+      # Live source re-hashing above depends on the absolute files under
+      # /dev/shm. Materialize only after the verdict has been written so the
+      # final receipt consumes persistent evidence without weakening that
+      # validation to archived identity checks.
+      - name: Materialize tmpfs reference evidence
+        if: always()
+        run: scripts/perf/reference-evidence-tmpfs.sh materialize
+
+      - name: Execute complete 0.67.1 expected-red canary sweep
+        run: cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all
+
+      - name: Record exact-candidate fast workspace evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate fast.workspace-nextest
+
+      - name: Seal exact frozen-candidate reference receipt
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-frozen-candidate-0671
+
+      - name: Aggregate exact 0.67.1 ship evidence
+        run: cargo run -p xtask --locked -- release-evidence --release 0.67.1 --receipts-dir target/release-evidence/receipts --require-ship
+
+      - name: Upload immutable frozen-candidate evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-0671-frozen-candidate-${{ github.sha }}-${{ github.run_id }}"
+          path: |
+            target/test-evidence/0.67/**
+            target/test-evidence/0.67.1/**
+            target/release-evidence/canaries/0.67.1-*.json
+            target/release-evidence/receipts/**
+            target/release-evidence/0.67.1.json
+            target/nextest/ci/junit.xml
+          if-no-files-found: error
+
+  raft-loom:
+    name: Raft Loom
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: raft-loom
+
+      - name: Run loom concurrency checks
+        env:
+          RUSTFLAGS: --cfg hydracache_loom
+        run: cargo test -p hydracache-cluster-raft --test loom_concurrency --locked -- --nocapture
+
+  fuzz-nightly:
+    name: Fuzz Nightly
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: fuzz-nightly
+
+      - name: Install nightly and cargo-fuzz
+        timeout-minutes: 10
+        run: |
+          rustup toolchain install nightly
+          cargo install cargo-fuzz --version 0.13.2 --locked
+
+      - name: Run time-boxed fuzz targets
+        working-directory: fuzz
+        run: |
+          cargo +nightly fuzz run fuzz_config_parse -- -max_total_time=60
+          cargo +nightly fuzz run fuzz_kv_codec -- -max_total_time=60
+          cargo +nightly fuzz run fuzz_resp_command -- -max_total_time=60
+          cargo +nightly fuzz run fuzz_snapshot_decode -- -max_total_time=60
+
+      - name: Clean corpus before 0.66 Raft wire fuzz evidence
+        run: git clean -fd -- fuzz/corpus
+
+      - name: Run 0.66 Raft wire fuzz release proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.66 --gate tool.cargo-fuzz.raft-wire-frame-066
+
+      - name: Clean corpus before 0.72 management envelope fuzz evidence
+        run: git clean -fd -- fuzz/corpus
+
+      - name: Run 0.72 management envelope fuzz proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-envelope-072
+
+      - name: Clean corpus before 0.72 management recovery fuzz evidence
+        run: git clean -fd -- fuzz/corpus
+
+      - name: Run 0.72 management recovery fuzz proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-recovery-072
+
+      - name: Clean corpus before 0.72 management placement fuzz evidence
+        run: git clean -fd -- fuzz/corpus
+
+      - name: Run 0.72 management placement fuzz proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-placement-072
+
+      - name: Clean corpus before 0.72 management cursor fuzz evidence
+        run: git clean -fd -- fuzz/corpus
+
+      - name: Run 0.72 management cursor fuzz proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-cursor-072
+
+      - name: Upload 0.66 fuzz evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "raft-wire-fuzz-066-${{ github.sha }}"
+          path: |
+            fuzz/artifacts/raft_wire_frame/**
+            fuzz/corpus/raft_wire_frame/**
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+      - name: Upload 0.72 management fuzz evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "management-fuzz-072-${{ github.sha }}"
+          path: |
+            fuzz/artifacts/fuzz_management_*/**
+            fuzz/corpus/fuzz_management_*/**
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  raft-mutation-testing:
+    name: Raft Mutation Testing (${{ matrix.label }})
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+    timeout-minutes: 110
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - label: product-0-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-0-of-8
+          - label: product-1-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-1-of-8
+          - label: product-2-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-2-of-8
+          - label: product-3-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-3-of-8
+          - label: product-4-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-4-of-8
+          - label: product-5-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-5-of-8
+          - label: product-6-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-6-of-8
+          - label: product-7-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-7-of-8
+          - label: proof-oracles-0-of-2
+            campaign: proof-oracles
+            gate: env.hydracache-run-proof-oracle-mutants-shard-0-of-2
+          - label: proof-oracles-1-of-2
+            campaign: proof-oracles
+            gate: env.hydracache-run-proof-oracle-mutants-shard-1-of-2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: raft-mutation-testing-${{ matrix.campaign }}
+
+      - name: Install cargo-mutants
+        timeout-minutes: 15
+        run: cargo install cargo-mutants --version 27.1.0 --locked
+
+      - name: Run registered mutation shard
+        run: |
+          cargo test -p xtask --test mutants --locked
+          cargo run -p xtask --locked -- evidence-run --release 0.64 --gate ${{ matrix.gate }}
+
+      - name: Upload mutation artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "raft-mutation-testing-${{ matrix.label }}-${{ github.sha }}"
+          path: |
+            target/hydracache-mutants/**
+            target/hydracache-mutants-proof-oracles/**
+            target/release-evidence/receipts/**
+          if-no-files-found: ignore
+
+  raft-miri:
+    name: Raft Miri
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install nightly Miri
+        timeout-minutes: 10
+        id: miri
+        shell: bash
+        run: |
+          set +e
+          rustup toolchain install nightly-2026-07-01 --component miri
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "::warning::nightly+miri toolchain unavailable; skipping Raft Miri lane"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          cargo +nightly-2026-07-01 miri setup
+          setup_status=$?
+          if [ "$setup_status" -ne 0 ]; then
+            echo "::warning::cargo miri setup failed; skipping Raft Miri lane"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "available=true" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Rust dependencies
+        if: steps.miri.outputs.available == 'true'
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: raft-miri
+
+      - name: Run commit-bound Miri snapshot proofs
+        if: steps.miri.outputs.available == 'true'
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.miri.snapshot-safety
+
+      - name: Upload Miri evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "raft-miri-${{ github.sha }}"
+          path: |
+            target/test-evidence/0.64/miri-snapshot-safety.json
+            target/release-evidence/receipts/**
+          if-no-files-found: warn
+
+  thread-sanitizer:
+    name: ThreadSanitizer
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install pinned nightly with rust-src
+        timeout-minutes: 15
+        run: rustup toolchain install nightly-2026-07-01 --component rust-src
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: thread-sanitizer-nightly-2026-07-01
+
+      - name: Prebuild TSan proof targets
+        timeout-minutes: 120
+        env:
+          RUSTFLAGS: -Zsanitizer=thread
+          RUSTDOCFLAGS: -Zsanitizer=thread
+        run: cargo +nightly-2026-07-01 test -Zbuild-std --target x86_64-unknown-linux-gnu --locked --no-run -p hydracache -p hydracache-cluster-raft --test cache_core_concurrency_matrix --test leadership_handoff --test snapshot_delivery_chaos --test tsan_canary
+
+      - name: Run ordinary threaded suites under TSan
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.tsan.concurrent-suites
+
+      - name: Prove TSan detects the isolated race canary
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.tsan.race-canary
+
+      - name: Upload TSan evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "thread-sanitizer-${{ github.sha }}"
+          path: |
+            target/test-evidence/0.64/tsan-*.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  dynamic-canary-sweep:
+    name: Dynamic Canary Sweep
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install stable Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Install pinned TSan nightly
+        timeout-minutes: 15
+        run: rustup toolchain install nightly-2026-07-01 --component rust-src
+
+      - name: Install Node for management canaries
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: console/package-lock.json
+
+      - name: Install management console dependencies
+        timeout-minutes: 15
+        run: npm ci --prefix console
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: dynamic-canary-sweep
+
+      - name: Download and verify pinned TLC
+        shell: bash
+        run: |
+          mkdir -p target/tools/tla2tools/1.7.4
+          curl --fail --location --silent --show-error \
+            https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar \
+            --output target/tools/tla2tools/1.7.4/tla2tools.jar
+          echo "936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88  target/tools/tla2tools/1.7.4/tla2tools.jar" | sha256sum --check
+
+      - name: Execute complete dynamic expected-red sweep
+        run: |
+          cargo run -p xtask --locked -- canary-sweep --release 0.64 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.65 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.69 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.72 --tier all
+
+      - name: Run deterministic suite sweep
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.determinism-sweep
+
+      - name: Upload complete canary evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "canary-all-${{ github.sha }}"
+          path: |
+            target/release-evidence/canaries/*.json
+            target/release-evidence/receipts/**
+            target/test-evidence/0.64/determinism-sweep.json
+            target/test-evidence/0.64/raft-spec-canary.json
+          if-no-files-found: error
+
+  coverage-ratchet:
+    name: Coverage Ratchet
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+    env:
+      HYDRACACHE_TEST_POSTGRES_URL: postgres://hydracache:hydracache@127.0.0.1:5432/hydracache
+    services:
+      postgres:
+        image: postgres:16.4-alpine
+        env:
+          POSTGRES_DB: hydracache
+          POSTGRES_PASSWORD: hydracache
+          POSTGRES_USER: hydracache
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hydracache -d hydracache"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+        with:
+          components: llvm-tools-preview
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: coverage-ratchet
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov@0.8.7
+
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@cargo-deny
+
+      - name: Run commit-bound coverage ratchet
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate tool.coverage-ratchet
+
+      - name: Generate coverage artifacts on failure
+        if: failure()
+        continue-on-error: true
+        run: |
+          cargo llvm-cov report --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --html --output-dir target/llvm-cov-html
+          cargo llvm-cov report --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --lcov --output-path target/llvm-cov.lcov
+
+      - name: Upload coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "coverage-ratchet-${{ github.sha }}"
+          path: |
+            target/llvm-cov-html
+            target/llvm-cov.lcov
+            target/test-evidence/0.64/coverage-*.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+      - name: Clean Rust test scratch links
+        if: always()
+        run: rm -rf target/tests
+
+  msrv:
+    name: MSRV 1.88.0
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust 1.88.0
+        uses: dtolnay/rust-toolchain@1.88.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: msrv-1.88.0
+
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@cargo-deny
+
+      - name: Check MSRV
+        run: cargo check --workspace --all-targets --locked
+
+      - name: Test MSRV
+        run: cargo test --workspace --locked
+
+      - name: Clean Rust test scratch links
+        if: always()
+        run: rm -rf target/tests
+
+  gated-proof-registry:
+    name: Registered Gated Proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    if: github.event_name == 'workflow_dispatch' && inputs.gated_gate_id != ''
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: registered-gated-proof
+
+      - name: Install Java for pinned TLA+ proof
+        if: startsWith(inputs.gated_gate_id, 'tool.tla-tlc.')
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Prepare pinned TLA+ tools
+        if: startsWith(inputs.gated_gate_id, 'tool.tla-tlc.')
+        shell: bash
+        run: |
+          mkdir -p target/tools/tla2tools/1.7.4
+          curl --fail --location --retry 3 \
+            --output target/tools/tla2tools/1.7.4/tla2tools.jar \
+            https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar
+          echo "936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88  target/tools/tla2tools/1.7.4/tla2tools.jar" | sha256sum --check
+
+      - name: Install pinned cargo-mutants
+        timeout-minutes: 15
+        if: contains(inputs.gated_gate_id, 'mutants')
+        run: cargo install cargo-mutants --version 27.1.0 --locked
+
+      - name: Install pinned cargo-nextest for fast suite
+        if: startsWith(inputs.gated_gate_id, 'fast.')
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.137
+
+      - name: Install cargo-deny for fast suite
+        if: startsWith(inputs.gated_gate_id, 'fast.')
+        uses: taiki-e/install-action@cargo-deny
+
+      - name: Install pinned ThreadSanitizer toolchain
+        timeout-minutes: 15
+        if: startsWith(inputs.gated_gate_id, 'tool.tsan.')
+        run: rustup toolchain install nightly-2026-07-01 --component rust-src
+
+      - name: Run registered gated proofs
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate "${{ inputs.gated_gate_id }}"
+
+      - name: Upload registered gated proof receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "release-evidence-${{ github.sha }}-${{ inputs.gated_gate_id }}"
+          path: |
+            target/release-evidence/receipts
+            target/nextest/ci/junit.xml
+          if-no-files-found: error

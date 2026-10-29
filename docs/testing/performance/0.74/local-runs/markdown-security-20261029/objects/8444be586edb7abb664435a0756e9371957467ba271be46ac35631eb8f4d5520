@@ -1,0 +1,10 @@
+
+running 5 tests
+test generated_rust_codec_matches_the_cross_language_golden_frame ... ok
+test grpc_candidate_rejects_an_untrusted_server_ca_before_dispatch ... ok
+test grpc_candidate_rejects_a_missing_client_certificate_before_dispatch ... ok
+test grpc_candidate_interleaves_reply_and_event_on_a_generated_real_stream ... ok
+test grpc_candidate_rejects_hostname_time_eku_and_wrong_client_ca_before_dispatch ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.51s
+

@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.88.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+    "test",
+    "--manifest-path",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\Cargo.toml",
+    "--target-dir",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188",
+    "--offline",
+    "--locked",
+    "-p",
+    "hydracache-client-hc2",
+    "-p",
+    "hydracache-client-plane-spike",
+    "--no-run",
+    "--message-format=json"
+  ],
+  "bound": 1200,
+  "deadline": 132721.7979905,
+  "retry": false
+}

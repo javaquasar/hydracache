@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\188\\debug\\deps\\hydracache_client_plane_spike-411e571908ed5a17.exe",
+    "--list"
+  ],
+  "bound": 1200,
+  "deadline": 132721.7979905,
+  "retry": false
+}

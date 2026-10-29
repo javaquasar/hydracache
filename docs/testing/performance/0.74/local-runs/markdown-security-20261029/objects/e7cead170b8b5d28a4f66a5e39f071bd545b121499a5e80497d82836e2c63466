@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "corpus": {
+    "194": {
+      "cases": 8,
+      "events_equal": true,
+      "html_equal": true
+    },
+    "188": {
+      "cases": 8,
+      "events_equal": true,
+      "html_equal": true
+    }
+  },
+  "one_node_delta": [
+    [
+      "0.13.4",
+      "0.13.5"
+    ]
+  ],
+  "package_nodes": 8,
+  "root_lock_changed": false,
+  "performance_claim": false
+}

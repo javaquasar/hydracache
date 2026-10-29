@@ -1,0 +1,15 @@
+--- a/src/runtime/io/unix.rs
++++ b/src/runtime/io/unix.rs
+@@ -159,6 +159,12 @@
+     #[cfg(not(target_os = "linux"))]
+     let flags = RecvFlags::empty();
+     let msg = recvmsg(fd, &mut iov, &mut ancillary, flags)?;
++    if msg.flags.contains(rustix::net::ReturnFlags::CTRUNC) {
++        return Err(io::Error::new(
++            io::ErrorKind::InvalidData,
++            "truncated ancillary data",
++        ));
++    }
+     if msg.bytes == 0 {
+         return Err(io::Error::new(
+             io::ErrorKind::BrokenPipe,

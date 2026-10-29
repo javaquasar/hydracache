@@ -1,0 +1,202 @@
+{
+  "complete": true,
+  "counts": [
+    {
+      "cases": [
+        "exhaustion_and_unsafe_mutation_fail_loud_without_hidden_replay",
+        "initial_handshake_reset_selects_the_next_endpoint_without_operation_replay",
+        "reset_reconnects_once_repairs_subscription_dedupes_and_loses_session",
+        "retained_h11_matrix_binds_every_declared_lifecycle_failure"
+      ],
+      "ignored": 0,
+      "passed": 4,
+      "target": "reconnect_repair"
+    },
+    {
+      "cases": [
+        "generation_five_client_rolls_from_retained_to_current_production_daemon",
+        "rust_sdk_is_bounded_cancel_safe_and_process_interoperable",
+        "rust_sdk_uses_the_real_production_daemon_and_drains_cleanly"
+      ],
+      "ignored": 0,
+      "passed": 3,
+      "target": "grpc_process"
+    },
+    {
+      "cases": [
+        "client::tests::retained_state_reports_every_map_queue_and_permit_then_close_releases_owners",
+        "client::tests::unknown_error_and_retry_numbers_fail_closed",
+        "grpc::tests::debug_output_never_contains_credentials",
+        "grpc::tests::mtls_configuration_rejects_plaintext_paths_credentials_and_missing_material",
+        "reconnect::tests::reconnect_backoff_is_bounded_deterministic_and_separate_from_retry"
+      ],
+      "ignored": 0,
+      "passed": 5,
+      "target": "hydracache_client_hc2"
+    },
+    {
+      "cases": [
+        "dedicated_tcp_candidate_round_trips_on_a_real_loopback_socket",
+        "rustls_candidates_accept_ca_overlap_then_reject_retired_client_identity",
+        "rustls_candidates_reject_a_missing_client_certificate_before_protocol_dispatch",
+        "rustls_candidates_reject_an_untrusted_ca_before_protocol_dispatch",
+        "rustls_candidates_reject_hostname_time_eku_ca_and_protocol_policy_failures"
+      ],
+      "ignored": 0,
+      "passed": 5,
+      "target": "dedicated_tcp_loopback"
+    },
+    {
+      "cases": [
+        "closed_runtime_exports_zero_resource_gauges",
+        "runtime_failures_reconnect_and_terminal_reasons_increment_named_series",
+        "schema_cardinality_trace_memory_and_privacy_are_bounded",
+        "typed_sink_receives_exact_snapshot_without_dynamic_labels"
+      ],
+      "ignored": 0,
+      "passed": 4,
+      "target": "observability_contract"
+    },
+    {
+      "cases": [],
+      "ignored": 0,
+      "passed": 0,
+      "target": "hc2_java_interop_server"
+    },
+    {
+      "cases": [
+        "all_client_plane_candidates_pass_the_same_semantic_harness",
+        "authenticated_but_unauthorized_identity_cannot_reach_dispatch",
+        "bootstrap_rejects_unverified_tls_and_identity",
+        "bounded_failures_are_atomic_and_observable_without_payload_data",
+        "cancellation_and_completion_races_have_exactly_one_winner",
+        "candidate_prefaces_cannot_cross_decode",
+        "connection_generation_is_nonzero_monotonic_and_never_wraps",
+        "connection_state_machine_blocks_new_work_while_draining",
+        "disconnect_cancels_every_pending_invocation_and_registration",
+        "every_retained_resource_class_is_bounded_atomically_and_cleared_on_close",
+        "identity_tenant_and_global_admission_is_atomic_and_raii_released",
+        "invalid_zero_limits_fail_before_ready",
+        "malformed_oversized_truncated_and_unknown_messages_fail_before_dispatch",
+        "slow_event_consumer_is_bounded_and_reports_a_gap",
+        "stale_connection_generation_cannot_mutate_reused_ids_after_reconnect",
+        "subscription_ack_without_push_fails_the_common_harness_canary",
+        "unknown_generation_never_reaches_dispatch"
+      ],
+      "ignored": 0,
+      "passed": 17,
+      "target": "semantic_harness"
+    },
+    {
+      "cases": [
+        "every_declared_action_has_a_bounded_explicit_trace",
+        "half_open_can_retain_then_late_deliver_bytes",
+        "invalid_or_unbounded_plans_fail_closed",
+        "one_way_proxy_operates_on_real_async_byte_streams",
+        "replay_artifact_is_payload_free_exact_and_tamper_evident",
+        "same_seed_replays_exact_schedule_and_different_seed_changes_fragmentation",
+        "semantic_preservation_and_fail_closed_faults_match_all_candidates"
+      ],
+      "ignored": 0,
+      "passed": 7,
+      "target": "fault_proxy"
+    },
+    {
+      "cases": [
+        "generated_rust_codec_matches_the_cross_language_golden_frame",
+        "grpc_candidate_interleaves_reply_and_event_on_a_generated_real_stream",
+        "grpc_candidate_rejects_a_missing_client_certificate_before_dispatch",
+        "grpc_candidate_rejects_an_untrusted_server_ca_before_dispatch",
+        "grpc_candidate_rejects_hostname_time_eku_and_wrong_client_ca_before_dispatch"
+      ],
+      "ignored": 0,
+      "passed": 5,
+      "target": "grpc_bidirectional_loopback"
+    },
+    {
+      "cases": [
+        "descriptor_freezes_operation_and_envelope_ids",
+        "descriptor_has_unique_fields_and_never_uses_reserved_ranges",
+        "protoc_rejects_duplicate_and_reserved_field_canaries",
+        "rust_golden_handshake_is_stable",
+        "unknown_additive_field_round_trips_exactly_until_known_fields_change"
+      ],
+      "ignored": 0,
+      "passed": 5,
+      "target": "contract_schema"
+    },
+    {
+      "cases": [
+        "hostile_corpus_reaches_no_dispatch_over_real_mtls_sockets",
+        "slow_consumer_receives_explicit_gap_over_each_candidate_socket_codec"
+      ],
+      "ignored": 0,
+      "passed": 2,
+      "target": "candidate_socket_corpus"
+    },
+    {
+      "cases": [
+        "retained_block_trace_cannot_extend_drain_beyond_deadline",
+        "retained_half_close_trace_enters_bounded_client_initiated_drain",
+        "retained_reset_trace_has_a_distinct_terminal_reason"
+      ],
+      "ignored": 0,
+      "passed": 3,
+      "target": "http2_drain_faults"
+    },
+    {
+      "cases": [
+        "http2_candidate_interleaves_reply_and_event_on_a_real_stream"
+      ],
+      "ignored": 0,
+      "passed": 1,
+      "target": "http2_bidirectional_loopback"
+    },
+    {
+      "cases": [
+        "endpoint::tests::canonicalizes_dns_ipv4_and_bracketed_ipv6",
+        "endpoint::tests::discovery_rejects_non_routable_advertisements_but_bootstrap_keeps_local_test_access",
+        "endpoint::tests::rejects_ambiguous_or_unsafe_uri_components",
+        "endpoint::tests::rejects_wrong_scheme_port_idn_and_sni_mismatch",
+        "fixture_receipt::tests::production_daemon_receipt_rejects_legacy_and_extended_shapes",
+        "fixture_receipt::tests::production_daemon_v1_receipt_round_trips_exactly",
+        "http2_drain::tests::active_stream_finishes_before_final_goaway_and_new_stream_is_refused",
+        "http2_drain::tests::clean_drain_sends_two_goaways_and_close_notify",
+        "http2_drain::tests::client_half_close_and_peer_goaway_are_explicit_initiators",
+        "http2_drain::tests::invalid_deadline_clock_and_duplicate_transitions_fail_closed",
+        "http2_drain::tests::reset_is_distinct_from_deadline_and_accounting_cannot_underflow",
+        "http2_drain::tests::uncooperative_peer_is_forced_only_at_deadline",
+        "policy::signed_discovery::tests::artifact_round_trip_signature_and_tamper_matrix_are_fail_closed",
+        "policy::signed_discovery::tests::canonicalization_is_independent_of_node_and_endpoint_input_order",
+        "policy::signed_discovery::tests::cluster_replacement_is_explicit_atomic_and_replay_safe",
+        "policy::signed_discovery::tests::cross_language_ed25519_canonical_vector_is_stable",
+        "policy::signed_discovery::tests::decoder_rejects_a_validly_shaped_but_noncanonical_node_order",
+        "policy::signed_discovery::tests::key_time_cluster_and_artifact_bounds_are_enforced",
+        "policy::signed_discovery::tests::replay_equivocation_and_epoch_rollback_do_not_mutate_accepted_state",
+        "policy::signed_discovery::tests::trust_rotation_overlap_accepts_new_key_then_removed_key_fails",
+        "policy::signed_discovery::tests::trust_store_refuses_duplicate_and_ninth_keys_without_mutation",
+        "policy::tests::authenticated_wrapper_exposes_read_only_bounded_metadata",
+        "policy::tests::discovery_for_another_cluster_cannot_be_authenticated",
+        "policy::tests::discovery_state_rejects_replay_equivocation_and_cluster_swap",
+        "policy::tests::duplicate_nodes_conflicting_authorities_and_oversized_documents_fail",
+        "policy::tests::fallback_rejects_wrong_stale_and_unverified_attempt_provenance",
+        "policy::tests::ordered_policy_falls_back_only_for_safe_failures",
+        "policy::tests::pinned_transport_never_falls_back",
+        "policy::tests::reconnect_rolls_forward_but_never_rolls_back_a_known_node",
+        "policy::tests::security_and_protocol_failures_cannot_trigger_downgrade",
+        "policy::tests::server_advertises_only_ready_mtls_listeners_at_proven_maturity",
+        "policy::tests::server_policy_rejects_insecure_duplicate_and_unproven_adapters",
+        "policy::tests::three_nodes_may_advertise_the_same_transport",
+        "policy::tests::wrong_generation_cannot_be_authenticated",
+        "security::tests::chain_depth_and_size_are_exact_and_fail_closed",
+        "security::tests::security_taxonomy_is_bounded_and_terminal"
+      ],
+      "ignored": 0,
+      "passed": 36,
+      "target": "hydracache_client_plane_spike"
+    }
+  ],
+  "head_unchanged": true,
+  "release_admitted": false,
+  "source_unchanged": true
+}

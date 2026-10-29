@@ -1,0 +1,43 @@
+{
+  "proto_files": [
+    "crates/hydracache-client-hc2/proto/hc2_contract.proto",
+    "crates/hydracache-client-plane-spike/proto/hc2_spike.proto",
+    "crates/hydracache-client-plane-spike/tests/fixtures/duplicate_field_number.proto",
+    "crates/hydracache-client-plane-spike/tests/fixtures/reserved_field_reuse.proto"
+  ],
+  "cases": [
+    [
+      "plain",
+      "HydraCache HC/2 **contract** and `bytes`."
+    ],
+    [
+      "list",
+      "- alpha\n- beta\n\n1. one\n2. two\n"
+    ],
+    [
+      "code",
+      "```rust\nlet x = 1;\n```\n"
+    ],
+    [
+      "link",
+      "[API](https://example.test/path?q=1)\n"
+    ],
+    [
+      "table",
+      "| a | b |\n|---|---|\n| é | 🦀 |\n"
+    ],
+    [
+      "unicode",
+      "é **текст** 🦀\n"
+    ],
+    [
+      "crates/hydracache-client-hc2/proto/hc2_contract.proto:0",
+      " HC/2 alpha contract. Removed numbers and names stay reserved permanently.\n"
+    ],
+    [
+      "crates/hydracache-client-plane-spike/proto/hc2_spike.proto:0",
+      " Minimal W0 envelope only. W1 owns the production declarative schema.\n"
+    ]
+  ],
+  "source_root_changed": false
+}

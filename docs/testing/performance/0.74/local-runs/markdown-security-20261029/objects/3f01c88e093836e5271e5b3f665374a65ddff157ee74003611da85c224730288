@@ -1,0 +1,124 @@
+{
+  "complete": true,
+  "consumers": {
+    "188": {
+      "actual_cargo_output_bound": true,
+      "artifact_arrival_order_equal": false,
+      "case_catalog_equal": true,
+      "generated_equal": true,
+      "generated_files": 4,
+      "ignored": 0,
+      "passed": 97,
+      "raw_arrival_orders": {
+        "baseline": [
+          "semantic_harness",
+          "hc2_java_interop_server",
+          "contract_schema",
+          "grpc_process",
+          "reconnect_repair",
+          "grpc_bidirectional_loopback",
+          "fault_proxy",
+          "candidate_socket_corpus",
+          "dedicated_tcp_loopback",
+          "http2_bidirectional_loopback",
+          "http2_drain_faults",
+          "observability_contract",
+          "hydracache_client_hc2",
+          "hydracache_client_plane_spike"
+        ],
+        "candidate": [
+          "hydracache_client_hc2",
+          "reconnect_repair",
+          "grpc_process",
+          "observability_contract",
+          "candidate_socket_corpus",
+          "grpc_bidirectional_loopback",
+          "http2_drain_faults",
+          "http2_bidirectional_loopback",
+          "fault_proxy",
+          "dedicated_tcp_loopback",
+          "semantic_harness",
+          "contract_schema",
+          "hc2_java_interop_server",
+          "hydracache_client_plane_spike"
+        ]
+      },
+      "targets": 14
+    },
+    "194": {
+      "actual_cargo_output_bound": true,
+      "artifact_arrival_order_equal": false,
+      "case_catalog_equal": true,
+      "generated_equal": true,
+      "generated_files": 4,
+      "ignored": 0,
+      "passed": 97,
+      "raw_arrival_orders": {
+        "baseline": [
+          "candidate_socket_corpus",
+          "http2_drain_faults",
+          "fault_proxy",
+          "grpc_process",
+          "reconnect_repair",
+          "hc2_java_interop_server",
+          "observability_contract",
+          "semantic_harness",
+          "dedicated_tcp_loopback",
+          "contract_schema",
+          "http2_bidirectional_loopback",
+          "hydracache_client_hc2",
+          "hydracache_client_plane_spike",
+          "grpc_bidirectional_loopback"
+        ],
+        "candidate": [
+          "reconnect_repair",
+          "grpc_process",
+          "hydracache_client_hc2",
+          "dedicated_tcp_loopback",
+          "observability_contract",
+          "hc2_java_interop_server",
+          "semantic_harness",
+          "fault_proxy",
+          "grpc_bidirectional_loopback",
+          "contract_schema",
+          "candidate_socket_corpus",
+          "http2_drain_faults",
+          "http2_bidirectional_loopback",
+          "hydracache_client_plane_spike"
+        ]
+      },
+      "targets": 14
+    }
+  },
+  "first_inert_failure_cause": "Compared parallel Cargo artifact arrival order instead of target identity; no product/test rerun",
+  "first_inert_failure_retained": true,
+  "matrix": {
+    "gnu-188": {
+      "baseline_16_events": 327676,
+      "candidate_16_events": 65,
+      "cases": 8,
+      "events_html_equal": true
+    },
+    "gnu-194": {
+      "baseline_16_events": 327676,
+      "candidate_16_events": 65,
+      "cases": 8,
+      "events_html_equal": true
+    },
+    "windows-188": {
+      "baseline_16_events": 327676,
+      "candidate_16_events": 65,
+      "cases": 8,
+      "events_html_equal": true
+    },
+    "windows-194": {
+      "baseline_16_events": 327676,
+      "candidate_16_events": 65,
+      "cases": 8,
+      "events_html_equal": true
+    }
+  },
+  "performance_claim": false,
+  "release_admitted": false,
+  "runtime_claim": false
+}

@@ -1,0 +1,5 @@
+error: duplicate hydracache id field marker
+ --> tests/derive/fail_duplicate_field_id.rs:8:5
+  |
+8 |     #[hydracache(id)]
+  |     ^

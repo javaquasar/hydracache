@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\windows-workspace-preflight-074\prepare.py", line 202, in <module>
+    prepare(args.out)
+    ~~~~~~~^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\windows-workspace-preflight-074\prepare.py", line 176, in prepare
+    write(out, 'source-review.json', source_review(root))
+                                     ~~~~~~~~~~~~~^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\windows-workspace-preflight-074\prepare.py", line 127, in source_review
+    data = yaml_inputs.reviewed_inputs(root, review.inputs())
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\windows-workspace-preflight-074\yaml_inputs.py", line 74, in reviewed_inputs
+    previous = predecessor(name, raw)
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\windows-workspace-preflight-074\yaml_inputs.py", line 42, in predecessor
+    s.require(s.sha(raw) == row['current_sha256'], 'unreviewed complete YAML input: '+name)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\windows-workspace-preflight-074\swagger_inputs.py", line 25, in require
+    raise ValueError(reason)
+ValueError: unreviewed complete YAML input: Cargo.lock

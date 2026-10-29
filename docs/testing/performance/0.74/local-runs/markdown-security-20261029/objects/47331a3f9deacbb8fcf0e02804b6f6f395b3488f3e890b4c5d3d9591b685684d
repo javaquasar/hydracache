@@ -1,0 +1,160 @@
+//! Source-only PID reader stage witnesses; never starts a live fixture.
+#[path = "support/pid_path_guard.rs"]
+mod guard;
+#[path = "../../../tools/authority-runtime-074/gate.rs"]
+mod runtime;
+#[path = "../../../tools/authority-runtime-074/io.rs"]
+mod runtime_io;
+#[path = "../../../tools/authority-storage-source-074/contract.rs"]
+mod storage_contract;
+
+fn root() -> std::path::PathBuf {
+    std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
+}
+fn frozen(revision: &str, path: &str) -> String {
+    let output = std::process::Command::new("git")
+        .args([
+            "--no-replace-objects",
+            "show",
+            &format!("{revision}:{path}"),
+        ])
+        .current_dir(root())
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    String::from_utf8(output.stdout).unwrap().replace('\r', "")
+}
+fn read(path: &str) -> String {
+    let loader = if path == runtime::status_fields::SOURCE {
+        runtime_io::read_to_string
+    } else {
+        std::fs::read_to_string
+    };
+    loader(root().join(path)).unwrap().replace('\r', "")
+}
+
+#[test]
+fn original_conditional_reader_and_custody_stages_are_bound_to_named_producers() {
+    for path in [guard::ORIGIN, guard::ADMISSION, guard::HOOKS[1].0] {
+        let raw = read(path);
+        let document = guard::custody_cost::document_scratch::normalize(path, &raw);
+        let custody = guard::custody_cost::normalize(path, &document);
+        let predecessor = frozen(guard::stage_join::PREVIOUS, path);
+        let revision = if path == guard::ADMISSION {
+            "33c54b0cda8c330b115009cdf092ad002077cedf"
+        } else {
+            guard::stage_join::CURRENT
+        };
+        assert_eq!(raw, frozen(revision, path));
+        if path == guard::ORIGIN {
+            use sha2::{Digest, Sha256};
+            let digest = |s: &str| {
+                Sha256::digest(s.as_bytes())
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect::<String>()
+            };
+            assert_eq!(digest(&custody), guard::stage_join::STAGE_SHA256);
+            assert_eq!(digest(&predecessor), guard::stage_join::PREVIOUS_SHA256);
+        }
+        assert_eq!(guard::stage_join::project(path, custody), predecessor);
+        assert_eq!(
+            guard::normalize(path, &document),
+            frozen("b63a0e81ad808d6f65e8c8d818ee4c090c3718ff", path)
+        );
+    }
+}
+
+#[test]
+fn exact_join_refuses_missing_duplicate_stale_and_seeded_drift_without_hiding_bytes() {
+    let path = guard::ORIGIN;
+    let document = guard::custody_cost::document_scratch::normalize(path, &read(path));
+    let previous = frozen(guard::stage_join::PREVIOUS, path);
+    for &(current, _, _) in guard::stage_join::CHANGES {
+        for bad in [
+            document.replacen(current, "", 1),
+            format!("{document}{current}"),
+        ] {
+            assert!(std::panic::catch_unwind(|| guard::stage_join::project(path, bad)).is_err());
+        }
+    }
+    assert!(
+        std::panic::catch_unwind(|| guard::stage_join::project(path, previous.clone())).is_err()
+    );
+    let mut seed = 0x0740_91d5_u64;
+    for _ in 0..64 {
+        seed ^= seed << 13;
+        seed ^= seed >> 7;
+        seed ^= seed << 17;
+        let mut bytes = document.as_bytes().to_vec();
+        let mut at = seed as usize % bytes.len();
+        while !bytes[at].is_ascii_alphabetic() {
+            at = (at + 1) % bytes.len();
+        }
+        bytes[at] ^= 0x20;
+        let bad = String::from_utf8(bytes).unwrap();
+        if let Ok(projected) = std::panic::catch_unwind(|| guard::stage_join::project(path, bad)) {
+            assert_ne!(projected, previous);
+        }
+    }
+    let appended = format!("{document}\n// unrelated drift\n");
+    assert_eq!(
+        guard::stage_join::project(path, appended),
+        format!("{previous}\n// unrelated drift\n")
+    );
+    assert_eq!(guard::stage_join::project(path, document), previous);
+    for path in [guard::ADMISSION, guard::HOOKS[1].0, "unrelated.rs"] {
+        assert_eq!(
+            guard::stage_join::project(path, "unchanged".into()),
+            "unchanged"
+        );
+    }
+}
+
+#[test]
+fn old_pid_body_and_both_readers_remain_exact_and_fresh_status_explicitly_uses_legacy() {
+    let source = guard::stage_join::CURRENT;
+    for path in [
+        "crates/xtask/tests/pid_path_cost_074.rs",
+        "crates/xtask/tests/fresh_kernel_cost_074.rs",
+    ] {
+        assert_eq!(
+            std::fs::read_to_string(root().join(path))
+                .unwrap()
+                .replace('\r', ""),
+            frozen(source, path)
+        );
+    }
+    let helper = "crates/xtask/tests/support/pid_path_guard.rs";
+    let old = frozen(source, helper);
+    let now = std::fs::read_to_string(root().join(helper))
+        .unwrap()
+        .replace('\r', "");
+    let marker = "    for (file, exact, old) in HOOKS\n";
+    assert_eq!(
+        now.split_once(marker).unwrap().1,
+        old.split_once(marker).unwrap().1
+    );
+    let fresh = "crates/xtask/tests/support/fresh_status_guard.rs";
+    let old = frozen(source, fresh);
+    assert_eq!(old.matches("pid_path::normalize(path, raw)").count(), 1);
+    assert_eq!(
+        std::fs::read_to_string(root().join(fresh))
+            .unwrap()
+            .replace('\r', ""),
+        old.replacen(
+            "pid_path::normalize(path, raw)",
+            "pid_path::normalize_legacy(path, raw)",
+            1
+        )
+    );
+    // Direct legacy calls still reconstruct the pre-join input exactly.
+    for path in [guard::ORIGIN, guard::ADMISSION, guard::HOOKS[1].0] {
+        let document = guard::custody_cost::document_scratch::normalize(path, &read(path));
+        let joined = guard::stage_join::project(path, document);
+        assert_eq!(
+            guard::normalize_legacy(path, &joined),
+            frozen("b63a0e81ad808d6f65e8c8d818ee4c090c3718ff", path)
+        );
+    }
+}

@@ -1,0 +1,10 @@
+
+running 5 tests
+test rust_golden_handshake_is_stable ... ok
+test unknown_additive_field_round_trips_exactly_until_known_fields_change ... ok
+test descriptor_freezes_operation_and_envelope_ids ... ok
+test descriptor_has_unique_fields_and_never_uses_reserved_ranges ... ok
+test protoc_rejects_duplicate_and_reserved_field_canaries ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

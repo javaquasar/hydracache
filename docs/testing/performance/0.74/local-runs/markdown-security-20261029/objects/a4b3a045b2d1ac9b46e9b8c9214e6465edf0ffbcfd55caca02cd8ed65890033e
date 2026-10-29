@@ -1,0 +1,10 @@
+
+running 5 tests
+test grpc::tests::mtls_configuration_rejects_plaintext_paths_credentials_and_missing_material ... ok
+test grpc::tests::debug_output_never_contains_credentials ... ok
+test client::tests::retained_state_reports_every_map_queue_and_permit_then_close_releases_owners ... ok
+test client::tests::unknown_error_and_retry_numbers_fail_closed ... ok
+test reconnect::tests::reconnect_backoff_is_bounded_deterministic_and_separate_from_retry ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

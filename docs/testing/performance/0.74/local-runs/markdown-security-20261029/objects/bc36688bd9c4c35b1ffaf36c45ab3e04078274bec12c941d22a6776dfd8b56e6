@@ -1,0 +1,9 @@
+[package]
+name="hc074-markdown-security-probe"
+version="0.0.0"
+edition="2021"
+[workspace]
+[lib]
+path="../../../../tools/markdown-security-review-074/probe.rs"
+[dependencies]
+pulldown-cmark="=0.13.5"

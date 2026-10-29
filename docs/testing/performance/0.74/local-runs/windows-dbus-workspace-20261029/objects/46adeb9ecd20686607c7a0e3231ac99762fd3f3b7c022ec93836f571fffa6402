@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "git",
+    "status",
+    "--porcelain",
+    "--untracked-files=all",
+    "--",
+    "Cargo.toml",
+    "Cargo.lock",
+    "deny.toml",
+    ".cargo",
+    "crates",
+    "tools",
+    "scripts/ci",
+    ".gitattributes",
+    "third_party"
+  ],
+  "exit": 0
+}

@@ -1,0 +1,102 @@
+{
+  "dispatch_supported": false,
+  "live_contract": {
+    "check_count_order_frequency": "unchanged",
+    "origins_and_windows": [
+      300,
+      60,
+      10
+    ]
+  },
+  "package": {
+    "all_default_targets_required": true,
+    "argv": [
+      "cargo",
+      "+1.94.0",
+      "test",
+      "--offline",
+      "--locked",
+      "--no-fail-fast",
+      "-p",
+      "xtask",
+      "--lib",
+      "--tests",
+      "--",
+      "--test-threads=4"
+    ],
+    "bound_seconds": 780,
+    "concatenate_prior_results": false,
+    "filter": null,
+    "includes_compilation": true,
+    "old_v9_result": "red-incomplete-immutable",
+    "physical_floor_bytes": 4294967296,
+    "retry": false,
+    "target_catalog_count": 156,
+    "test_threads": 4
+  },
+  "release_admitted": false,
+  "workspace": {
+    "argv": [
+      "cargo",
+      "xtask",
+      "verify"
+    ],
+    "bounded_outer_execution_envelope_prepared": false,
+    "console_skip": "only original Node/npm absence rule; record actual outcome",
+    "expired_20261024_schedule_reused": false,
+    "format": "original per-manifest Windows format gate",
+    "implementation": "crates/xtask/src/verify.rs",
+    "implementation_raw_sha256": "8275b2093464899319bb5de2246ec8893e872ebf67e91d1bb4e2d65ca3a41918",
+    "isolated_target_for": [
+      "tests (xtask lib/integration)",
+      "performance budget contract"
+    ],
+    "isolated_target_pattern": "target/xtask-verify-<verify-process-id>",
+    "original_capacity_poll_seconds": 5,
+    "original_captured_outer_bound_seconds": 4800,
+    "original_retry": false,
+    "original_running_floor_bytes": 4294967296,
+    "original_start_free_bytes": 17179869184,
+    "package_780_is_not_a_whole_verify_budget": true,
+    "remaining_stages": [
+      "doc-check",
+      "management-center-check 0.72",
+      "performance-contract-check 0.73",
+      "release feature leak",
+      "complete original allocator/Clippy matrix",
+      "dependency bans",
+      "dependency policy",
+      "DST fast budget",
+      "soak fast budget",
+      "raft failpoint crash-safety",
+      "rustdoc -D warnings",
+      "performance budget contract",
+      "original management console gate"
+    ],
+    "result": false,
+    "toolchain_precondition": "actual default Rust/Cargo 1.94.0; do not silently switch",
+    "windows_tests": [
+      [
+        "cargo",
+        "test",
+        "--workspace",
+        "--exclude",
+        "xtask",
+        "--locked",
+        "-j",
+        "1"
+      ],
+      [
+        "cargo",
+        "test",
+        "-p",
+        "xtask",
+        "--lib",
+        "--tests",
+        "--locked",
+        "-j",
+        "1"
+      ]
+    ]
+  }
+}

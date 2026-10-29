@@ -1,0 +1,2050 @@
+use std::collections::{BTreeMap, BTreeSet};
+use std::error::Error;
+use std::fs;
+use std::path::{Path, PathBuf};
+
+use serde_yaml::{Mapping, Value};
+
+use crate::canary_check;
+use crate::compat_check;
+use crate::coverage_ratchet;
+use crate::doc_check;
+use crate::fast_suite;
+use crate::feature_leak;
+use crate::gated_tests::{self, GateEntry};
+use crate::miri_check;
+use crate::quarantine;
+use crate::raft_spec_check;
+
+pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
+    let (root, release) = parse_args(args)?;
+    let report = check(&root, &release)?;
+    for todo in &report.todos {
+        println!("release-governance-check: TODO {todo}");
+    }
+    if report.problems.is_empty() {
+        println!(
+            "release-governance-check: OK ({} checks, {} explicit TODOs)",
+            report.completed_checks,
+            report.todos.len()
+        );
+        Ok(())
+    } else {
+        for problem in &report.problems {
+            eprintln!("release-governance-check: {problem}");
+        }
+        Err(format!(
+            "release-governance-check found {} problem(s)",
+            report.problems.len()
+        )
+        .into())
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct GovernanceReport {
+    pub completed_checks: usize,
+    pub todos: Vec<String>,
+    pub problems: Vec<String>,
+}
+
+pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Error>> {
+    let mut report = GovernanceReport::default();
+
+    report
+        .problems
+        .extend(prefix("doc-check", doc_check::check(root)?));
+    report.completed_checks += 1;
+
+    if release == "0.71" {
+        report.problems.extend(prefix(
+            "ci-topology-check",
+            crate::ci_topology::check(root, release)
+                .err()
+                .map(|error| vec![error.to_string()])
+                .unwrap_or_default(),
+        ));
+        report.problems.extend(prefix(
+            "memory-ownership-check",
+            crate::memory_ownership::check(root, release)?,
+        ));
+        report.problems.extend(prefix(
+            "memory-contracts-check",
+            crate::memory_contracts::check_static_contracts(root, release, false)?,
+        ));
+        report.completed_checks += 3;
+    }
+
+    report.problems.extend(prefix(
+        "coverage-ratchet-check",
+        coverage_ratchet::validate_contract(root, &coverage_ratchet::load_config(root)?)?,
+    ));
+    report.completed_checks += 1;
+
+    report
+        .problems
+        .extend(prefix("compat-check", compat_check::manifest_check(root)?));
+    report.completed_checks += 1;
+
+    report
+        .problems
+        .extend(feature_leak::check(root)?.into_iter().map(|leak| {
+            format!(
+                "verify-no-test-features: {} contains {} ({})",
+                leak.package, leak.marker, leak.reason
+            )
+        }));
+    report.completed_checks += 1;
+
+    report.problems.extend(prefix(
+        "canary-check",
+        canary_check::check_canary_registry_for_release(root, release)?,
+    ));
+    report.completed_checks += 1;
+
+    report.problems.extend(prefix(
+        "gated-test-check",
+        gated_tests::check_registry(root)?,
+    ));
+    report.completed_checks += 1;
+
+    let quarantine = quarantine::check_at(root, release, time::OffsetDateTime::now_utc())?;
+    report
+        .problems
+        .extend(prefix("quarantine-check", quarantine.problems));
+    report.completed_checks += 1;
+
+    let fast = fast_suite::load_registry(root)?;
+    report.problems.extend(prefix(
+        "fast-suite-check",
+        fast_suite::validate_registry(root, &fast, release, None)?,
+    ));
+    report.completed_checks += 1;
+
+    let gates = gated_tests::load_registry(root)?;
+    report
+        .problems
+        .extend(ci_wiring_problems(root, &gates.gate)?);
+    if release == "0.67.1" {
+        report
+            .problems
+            .extend(release_0671_gate_contract_problems(&gates.gate));
+    } else if normalize_release(release) == "0.66" {
+        report
+            .problems
+            .extend(release_066_gate_contract_problems(&gates.gate));
+    } else if normalize_release(release) == "0.67" {
+        report
+            .problems
+            .extend(release_067_gate_contract_problems(&gates.gate));
+    }
+    report.completed_checks += 1;
+
+    report.problems.extend(prefix(
+        "raft-spec-check",
+        raft_spec_check::structural_check(root)?,
+    ));
+    report.completed_checks += 1;
+
+    if let Err(error) = miri_check::structural_check(root) {
+        report.problems.push(format!("miri-check: {error}"));
+    }
+    report.completed_checks += 1;
+
+    let workflow = fs::read_to_string(root.join(".github/workflows/ci.yml"))?;
+    report
+        .problems
+        .extend(release_execution_wiring_problems(&workflow, release)?);
+    report.completed_checks += 1;
+    let gitignore = fs::read_to_string(root.join(".gitignore"))?;
+    report.problems.extend(prefix(
+        "runtime-evidence-hygiene",
+        runtime_evidence_hygiene_problems(&workflow, &gitignore),
+    ));
+    report.completed_checks += 1;
+    report
+        .problems
+        .extend(canary_sweep_wiring_problems(&workflow));
+    report.completed_checks += 1;
+    report
+        .problems
+        .extend(coverage_ratchet_wiring_problems(&workflow));
+    report.completed_checks += 1;
+
+    let publish_workflow = fs::read_to_string(root.join(".github/workflows/publish-crates.yml"))?;
+    report.problems.extend(prefix(
+        "publish-workflow-check",
+        publish_workflow_problems(&publish_workflow),
+    ));
+    report.completed_checks += 1;
+
+    let post_publish_workflow =
+        fs::read_to_string(root.join(".github/workflows/post-publish.yml"))?;
+    let post_publish_fixture =
+        fs::read_to_string(root.join("tests/post-publish-consumer/src/lib.rs"))?;
+    report.problems.extend(prefix(
+        "post-publish-workflow-check",
+        post_publish_contract_problems(&post_publish_workflow, &post_publish_fixture),
+    ));
+    report.completed_checks += 1;
+    Ok(report)
+}
+
+pub fn canary_sweep_wiring_problems(workflow: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    for required in [
+        "canary-sweep --release 0.64 --tier fast",
+        "dynamic-canary-sweep:",
+        "canary-sweep --release 0.67.1 --tier fast",
+        "canary-sweep --release 0.68 --tier fast",
+        "canary-sweep --release 0.69 --tier fast",
+        "canary-sweep --release 0.72 --tier fast",
+    ] {
+        if !workflow.contains(required) {
+            problems.push(format!("canary-sweep CI wiring is missing `{required}`"));
+        }
+    }
+    let dynamic_job = workflow
+        .split_once("  dynamic-canary-sweep:")
+        .and_then(|(_, suffix)| {
+            suffix
+                .split_once("\n  coverage-ratchet:")
+                .map(|(job, _)| job)
+        })
+        .unwrap_or_default();
+    for required in [
+        "actions/setup-node@v5",
+        "npm ci --prefix console",
+        "canary-sweep --release 0.64 --tier all",
+        "canary-sweep --release 0.65 --tier all",
+        "canary-sweep --release 0.66 --tier all",
+        "canary-sweep --release 0.67 --tier all",
+        "canary-sweep --release 0.67.1 --tier all",
+        "canary-sweep --release 0.68 --tier all",
+        "canary-sweep --release 0.69 --tier all",
+        "canary-sweep --release 0.72 --tier all",
+    ] {
+        if !dynamic_job.contains(required) {
+            problems.push(format!(
+                "dynamic canary sweep is missing required runtime or command `{required}`"
+            ));
+        }
+    }
+    problems
+}
+
+pub fn coverage_ratchet_wiring_problems(workflow: &str) -> Vec<String> {
+    const CANDIDATE_COMMAND: &str =
+        "evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate tool.coverage-ratchet";
+    let coverage_job = workflow
+        .split_once("  coverage-ratchet:")
+        .and_then(|(_, suffix)| suffix.split_once("\n  msrv:").map(|(job, _)| job))
+        .unwrap_or_default();
+    if coverage_job.contains(CANDIDATE_COMMAND) {
+        Vec::new()
+    } else {
+        vec!["coverage ratchet must bind its receipt to HYDRACACHE_CANDIDATE_RELEASE".to_owned()]
+    }
+}
+
+pub fn runtime_evidence_hygiene_problems(workflow: &str, gitignore: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if workflow.contains("tee SOAK_REPORT.json")
+        && !gitignore
+            .lines()
+            .any(|line| line.trim() == "/SOAK_REPORT.json")
+    {
+        problems.push(
+            "SOAK_REPORT.json is written before exact-commit evidence gates and must be root-ignored"
+                .to_owned(),
+        );
+    }
+    const FUZZ_CLEANUP: &str = "git clean -fd -- fuzz/corpus";
+    for (cleanup_step, proof_step) in [
+        (
+            "Clean corpus before 0.66 Raft wire fuzz evidence",
+            "Run 0.66 Raft wire fuzz release proof",
+        ),
+        (
+            "Clean corpus before 0.72 management envelope fuzz evidence",
+            "Run 0.72 management envelope fuzz proof",
+        ),
+        (
+            "Clean corpus before 0.72 management recovery fuzz evidence",
+            "Run 0.72 management recovery fuzz proof",
+        ),
+        (
+            "Clean corpus before 0.72 management placement fuzz evidence",
+            "Run 0.72 management placement fuzz proof",
+        ),
+        (
+            "Clean corpus before 0.72 management cursor fuzz evidence",
+            "Run 0.72 management cursor fuzz proof",
+        ),
+    ] {
+        let expected = format!(
+            "- name: {cleanup_step}\n        run: {FUZZ_CLEANUP}\n\n      - name: {proof_step}"
+        );
+        if !workflow.contains(&expected) {
+            problems.push(format!(
+                "{proof_step} must be immediately preceded by removal of untracked fuzz corpus additions"
+            ));
+        }
+    }
+    problems
+}
+
+pub fn publish_workflow_problems(text: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    for required in [
+        "crates_io_status()",
+        "--user-agent",
+        "GITHUB_REPOSITORY",
+        "status=\"$(crates_io_status \"$package\")\"",
+        "429|5??)",
+        "if dependency_id in publishable_ids:",
+        "actions/workflows/hc2-client-plane.yml/runs?head_sha=$source_sha",
+        "HC/2 Hosted Release Admission",
+        "for attempt in $(seq 1 30)",
+        "No successful HC/2 Hosted Release Admission exists for 0.68.0",
+    ] {
+        if !text.contains(required) {
+            problems.push(format!(
+                "crates.io publication probe is missing `{required}`"
+            ));
+        }
+    }
+    if text.contains("kind.get(\"kind\") is None") {
+        problems.push(
+            "publish order filters out packaged dev/build dependencies; cargo publish must see every workspace dependency in the registry first"
+                .to_owned(),
+        );
+    }
+    problems
+}
+
+pub fn post_publish_contract_problems(workflow: &str, fixture: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    for required in [
+        "actions/checkout@v5",
+        "tests/post-publish-consumer/src/lib.rs",
+        "hydracache-client-hc2",
+        "cargo add serde_json --dev",
+    ] {
+        if !workflow.contains(required) {
+            problems.push(format!(
+                "post-publish workflow is missing checked consumer fixture wiring `{required}`"
+            ));
+        }
+    }
+    for required in [
+        "cluster.ownership_diagnostics()",
+        "ownership_diagnostics.resolutions",
+        "ownership_diagnostics.no_owner",
+        "Vec::from(\"encoded-user\").into()",
+        "is_supported_hc2_generation(HC2_GENERATION)",
+        ".diesel_one(||",
+        ".sea_one(|| async",
+    ] {
+        if !fixture.contains(required) {
+            problems.push(format!(
+                "published consumer smoke is missing current API `{required}`"
+            ));
+        }
+    }
+    for obsolete in [
+        "cluster_diagnostics.ownership_resolutions",
+        "cluster_diagnostics.ownership_no_owner",
+        ".diesel_first(",
+        ".sea_value(",
+    ] {
+        if fixture.contains(obsolete) {
+            problems.push(format!(
+                "published consumer smoke still references obsolete API `{obsolete}`"
+            ));
+        }
+    }
+    problems
+}
+
+pub fn release_execution_wiring_problems(
+    text: &str,
+    requested_release: &str,
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let workflow = parse_workflow(text)?;
+    let mut problems = Vec::new();
+    problems.extend(release_history_checkout_problems(text)?);
+    problems.extend(release_scoped_fast_wiring_problems(
+        &workflow,
+        requested_release,
+    ));
+    for (job, required_steps) in [
+        (
+            "rust",
+            &[
+                "Raft nemesis membership fast",
+                "Raft corpus vectors",
+                "Snapshot corruption",
+                "Raft rejoin after compaction",
+                "Raft snapshot resource faults",
+                "Snapshot exhaustive grid",
+                "Proposal idempotency",
+                "Clock skew safety",
+            ][..],
+        ),
+        (
+            "raft-corner-case-nightly",
+            &[
+                "Raft nemesis soak",
+                "Snapshot exhaustive grid wide",
+                "Rejoin after compaction proof",
+                "Snapshot resource faults",
+                "Clock skew safety",
+                "Upload raft corner-case artifacts",
+            ][..],
+        ),
+        ("dst-nightly-soak", &["Run daemon-process cluster tier"][..]),
+        (
+            "release-066-daemon-process",
+            &[
+                "Verify shipped 0.65 provenance",
+                "Run 0.66 daemon-process release proof",
+                "Upload 0.66 daemon-process evidence",
+            ][..],
+        ),
+        (
+            "release-066-operator-kind",
+            &[
+                "Create kind cluster with enforcing CNI",
+                "Install required Chaos Mesh IOChaos runtime",
+                "Build and load current server image",
+                "Prepare current operator controller",
+                "Start current operator controller",
+                "Verify current operator controller",
+                "Run 0.66 operator-kind release proof",
+                "Stop current operator controller",
+                "Upload 0.66 operator-kind evidence",
+            ][..],
+        ),
+        (
+            "fuzz-nightly",
+            &[
+                "Install nightly and cargo-fuzz",
+                "Run 0.66 Raft wire fuzz release proof",
+                "Upload 0.66 fuzz evidence",
+            ][..],
+        ),
+    ] {
+        let Some(steps) = workflow.jobs.get(job) else {
+            problems.push(format!("release execution matrix is missing job {job}"));
+            continue;
+        };
+        for step in required_steps {
+            if !steps.contains(*step) {
+                problems.push(format!("job {job} is missing required step {step:?}"));
+            }
+        }
+    }
+    for job in [
+        "raft-corner-case-nightly",
+        "dst-nightly-soak",
+        "release-066-daemon-process",
+        "release-066-operator-kind",
+        "fuzz-nightly",
+    ] {
+        let condition = workflow
+            .conditions
+            .get(job)
+            .map(String::as_str)
+            .unwrap_or("");
+        if !condition.contains("schedule") || !condition.contains("workflow_dispatch") {
+            problems.push(format!(
+                "heavy job {job} must be gated by schedule or workflow_dispatch"
+            ));
+        }
+    }
+    if normalize_release(requested_release) == "0.66" {
+        problems.extend(release_066_execution_wiring_problems(&workflow));
+    } else if normalize_release(requested_release) == "0.67" {
+        problems.extend(release_067_execution_wiring_problems(text)?);
+    } else if normalize_release(requested_release) == "0.69" {
+        problems.extend(release_069_execution_wiring_problems(&workflow, text));
+    }
+    const REDIS_MULTINODE_EVIDENCE: &str = "cargo run -p xtask --locked -- evidence-run --release 0.65 --gate env.hydracache-run-redis-resp-multinode-e2e";
+    match workflow
+        .step_runs
+        .get("dst-nightly-soak")
+        .and_then(|steps| steps.get("Redis RESP multinode debt sentinels"))
+        .map(|run| run.trim())
+    {
+        Some(run) if run == REDIS_MULTINODE_EVIDENCE => {}
+        _ => problems.push(format!(
+            "job dst-nightly-soak step Redis RESP multinode debt sentinels must run exactly `{REDIS_MULTINODE_EVIDENCE}`"
+        )),
+    }
+    for required in [
+        "evidence-run --release 0.64 --gate env.hydracache-run-raft-nemesis-soak",
+        "evidence-run --release 0.64 --gate env.hydracache-grid-scope",
+        "evidence-run --release 0.64 --gate cfg.hydracache-cluster-raft.rejoin-after-compaction",
+        "evidence-run --release 0.64 --gate cfg.hydracache-cluster-raft.snapshot-resource-faults",
+        "evidence-run --release 0.64 --gate env.hydracache-run-daemon-process-e2e",
+    ] {
+        if !text.contains(required) {
+            problems.push(format!("release execution matrix is missing `{required}`"));
+        }
+    }
+    problems.extend(fuzz_nightly_wiring_problems(text));
+    Ok(problems)
+}
+
+fn release_scoped_fast_wiring_problems(
+    workflow: &WorkflowShape,
+    requested_release: &str,
+) -> Vec<String> {
+    let release = normalize_release(requested_release);
+    let mut problems = Vec::new();
+    let canary_job = if release == "0.69" {
+        "migration-conformance-fast-evidence-069"
+    } else {
+        "rust"
+    };
+    let canary_step = if release == "0.69" {
+        "Run exact-candidate fast evidence"
+    } else {
+        "Canary completeness"
+    };
+    for (step, command) in [
+        (
+            "Canary completeness",
+            format!("cargo run -p xtask --locked -- canary-check --release {release}"),
+        ),
+        (
+            "Canary completeness",
+            format!("cargo run -p xtask --locked -- canary-sweep --release {release} --tier fast"),
+        ),
+    ] {
+        let wired = workflow
+            .step_runs
+            .get(canary_job)
+            .and_then(|steps| steps.get(canary_step))
+            .is_some_and(|run| run.lines().any(|line| line.trim() == command));
+        if !wired {
+            problems.push(format!(
+                "release {release} fast job step {step:?} is missing exact command `{command}`"
+            ));
+        }
+    }
+    problems.extend(candidate_receipt_wiring_problems(workflow, release));
+
+    if release == "0.66" {
+        const W0_STEP: &str = "Raft compaction control 0.66";
+        const W0_COMMANDS: &str = concat!(
+            "cargo test -p hydracache-cluster-raft --test compaction_seam --locked\n",
+            "cargo run -p xtask --locked -- evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate fast.raft-sled-snapshot\n",
+            "cargo test -p hydracache-server compaction --locked"
+        );
+        let exact_w0_step = workflow
+            .step_runs
+            .get("rust")
+            .and_then(|steps| steps.get(W0_STEP))
+            .is_some_and(|run| run.trim() == W0_COMMANDS);
+        if !exact_w0_step {
+            problems.push(format!(
+                "release 0.66 fast job must contain exact {W0_STEP:?} commands for the default, receipt-bound Sled, and server compaction proofs"
+            ));
+        }
+    }
+    problems
+}
+
+fn release_066_execution_wiring_problems(workflow: &WorkflowShape) -> Vec<String> {
+    const FAST_W5: &str = "cargo run -p xtask --locked -- evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate fast.raft-failpoints";
+    const FAST_W9: &str = "cargo run -p xtask --locked -- evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate fast.fuzz-corpus-regression";
+    const DAEMON: &str = "cargo run -p xtask --locked -- evidence-run --release 0.66 --gate env.hydracache-run-066-daemon-process-e2e";
+    const OPERATOR: &str = "cargo run -p xtask --locked -- evidence-run --release 0.66 --gate env.hydracache-operator-kind-066";
+    const FUZZ: &str = "cargo run -p xtask --locked -- evidence-run --release 0.66 --gate tool.cargo-fuzz.raft-wire-frame-066";
+    const FAST_COMMANDS: &[&str] = &[
+        "cargo test -p hydracache-cluster-raft --test membership_load --locked",
+        "cargo test -p hydracache-cluster-raft --test differential_model --locked",
+        "cargo test -p hydracache-cluster-raft --test scheduler_tick --locked",
+        "cargo test -p hydracache-server --test backup_authority_boundary --locked",
+        "cargo test -p hydracache-server --test raft_wire_socket_corpus --locked",
+        "cargo test -p hydracache-server --test rejoin_after_compaction_process --locked",
+        "cargo test -p hydracache-server --test process_control_plane_nemesis --locked",
+        "cargo test -p hydracache-server --test rolling_upgrade_process --locked",
+        "cargo test -p hydracache-server --test external_control_plane_history --locked",
+        "cargo test -p hydracache-server --test differential_model_process --locked",
+        "cargo test -p hydracache-server --test scheduler_tick_process --locked",
+        "cargo test -p hydracache-server --test snapshot_resource_budget --locked",
+        "cargo test -p hydracache-client-transport-axum --test client_surface_conformance --locked local_ttl_and_lock_contracts_survive_backward_wall_clock_step",
+        "cargo test -p hydracache-operator --test soak_kind --locked",
+    ];
+    let mut problems = Vec::new();
+
+    for (job, step, expected, proof) in [
+        (
+            "rust",
+            "Raft failpoint crash-safety",
+            FAST_W5,
+            "W5 fast failpoint receipt",
+        ),
+        (
+            "rust",
+            "Fuzz corpus regression",
+            FAST_W9,
+            "W9 fast fuzz-corpus receipt",
+        ),
+        (
+            "release-066-daemon-process",
+            "Run 0.66 daemon-process release proof",
+            DAEMON,
+            "W1/W2/W6/W7/W8/W10/W12 daemon-process receipt",
+        ),
+        (
+            "release-066-operator-kind",
+            "Run 0.66 operator-kind release proof",
+            OPERATOR,
+            "W5/W11 operator-kind receipt",
+        ),
+        (
+            "fuzz-nightly",
+            "Run 0.66 Raft wire fuzz release proof",
+            FUZZ,
+            "W9 bounded cargo-fuzz receipt",
+        ),
+    ] {
+        let exact = workflow
+            .step_runs
+            .get(job)
+            .and_then(|steps| steps.get(step))
+            .is_some_and(|run| run.trim() == expected);
+        if !exact {
+            problems.push(format!(
+                "release 0.66 {proof} must use exact command `{expected}`"
+            ));
+        }
+    }
+
+    let fast = workflow
+        .step_runs
+        .get("rust")
+        .and_then(|steps| steps.get("0.66 operational proofs"));
+    for command in FAST_COMMANDS {
+        let wired = fast.is_some_and(|run| run.lines().any(|line| line.trim() == *command));
+        if !wired {
+            problems.push(format!(
+                "release 0.66 fast operational proofs are missing exact command `{command}`"
+            ));
+        }
+    }
+
+    for (job, step, required) in [
+        (
+            "release-066-daemon-process",
+            "Verify shipped 0.65 provenance",
+            &[
+                "git rev-parse --verify refs/tags/v0.65.0",
+                "git merge-base --is-ancestor refs/tags/v0.65.0 HEAD",
+            ][..],
+        ),
+        (
+            "release-066-operator-kind",
+            "Create kind cluster with enforcing CNI",
+            &[
+                "disableDefaultCNI: true",
+                "projectcalico/calico/v3.29.2/manifests/calico.yaml",
+            ][..],
+        ),
+        (
+            "release-066-operator-kind",
+            "Install required Chaos Mesh IOChaos runtime",
+            &["--version 2.7.2", "kubectl get crd iochaos.chaos-mesh.org"][..],
+        ),
+        (
+            "release-066-operator-kind",
+            "Prepare current operator controller",
+            &[
+                "cargo build -p hydracache-operator --locked",
+                "operator_candidate_directory=\"$(pwd)/target/ci-runtime/0.66\"",
+                "operator_binary=\"$operator_candidate_directory/hydracache-operator-${GITHUB_SHA}\"",
+                "mkdir -p \"$operator_candidate_directory\"",
+                "install -m 0755 \"$(pwd)/target/debug/hydracache-operator\" \"$operator_binary\"",
+                "operator_log=\"target/test-evidence/0.66/operator-controller-live.log\"",
+                "operator_nonce=\"release-066-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_SHA}\"",
+                "export HYDRACACHE_OPERATOR_EVIDENCE_NONCE=\"$operator_nonce\"",
+                "echo \"HYDRACACHE_OPERATOR_EVIDENCE_NONCE=$operator_nonce\" >> \"$GITHUB_ENV\"",
+                "echo \"HYDRACACHE_OPERATOR_BINARY=$operator_binary\" >> \"$GITHUB_ENV\"",
+                "HC-OPERATOR-CONTROLLER-START nonce=%s binary=%s",
+                "\"$operator_nonce\" \"$operator_binary\" > \"$operator_log\"",
+            ][..],
+        ),
+        (
+            "release-066-operator-kind",
+            "Start current operator controller",
+            &[
+                "operator_log=\"target/test-evidence/0.66/operator-controller-live.log\"",
+                "operator_pid_file=\"target/test-evidence/0.66/operator-controller.pid\"",
+                "printf '%s\\n' \"$BASHPID\" > \"$operator_pid_file\"",
+                "exec \"$HYDRACACHE_OPERATOR_BINARY\" >> \"$operator_log\" 2>&1",
+            ][..],
+        ),
+        (
+            "release-066-operator-kind",
+            "Verify current operator controller",
+            &[
+                "operator_log=\"target/test-evidence/0.66/operator-controller-live.log\"",
+                "operator_pid_file=\"target/test-evidence/0.66/operator-controller.pid\"",
+                "operator_nonce=\"$HYDRACACHE_OPERATOR_EVIDENCE_NONCE\"",
+                "kill -0 \"$operator_pid\"",
+                "HC-OPERATOR-CONTROLLER-RUNTIME nonce=$operator_nonce",
+            ][..],
+        ),
+        (
+            "release-066-operator-kind",
+            "Capture operator-kind diagnostics",
+            &[
+                "operator-kind-resources-post.txt",
+                "operator-kind-events-post.txt",
+                "operator-kind-pod-logs-post.txt",
+            ][..],
+        ),
+        (
+            "fuzz-nightly",
+            "Install nightly and cargo-fuzz",
+            &[
+                "rustup toolchain install nightly",
+                "cargo install cargo-fuzz --version 0.13.2 --locked",
+            ][..],
+        ),
+        (
+            "dynamic-canary-sweep",
+            "Execute complete dynamic expected-red sweep",
+            &["canary-sweep --release 0.66 --tier all"][..],
+        ),
+    ] {
+        let run = workflow
+            .step_runs
+            .get(job)
+            .and_then(|steps| steps.get(step));
+        for marker in required {
+            if !run.is_some_and(|run| run.contains(marker)) {
+                problems.push(format!(
+                    "release 0.66 job {job} step {step:?} is missing `{marker}`"
+                ));
+            }
+        }
+    }
+
+    let fuzz_install = workflow
+        .step_runs
+        .get("fuzz-nightly")
+        .and_then(|steps| steps.get("Install nightly and cargo-fuzz"))
+        .map(String::as_str)
+        .unwrap_or_default();
+    if fuzz_install.contains("available=false") || fuzz_install.contains("set +e") {
+        problems.push(
+            "release 0.66 cargo-fuzz installation must fail loud instead of producing a skip-green lane"
+                .to_owned(),
+        );
+    }
+
+    let operator_background = workflow
+        .background_step_ids
+        .get("release-066-operator-kind")
+        .is_some_and(|ids| ids.contains("operator-controller"));
+    if !operator_background {
+        problems.push(
+            "release-066 operator controller must use background step id operator-controller"
+                .to_owned(),
+        );
+    }
+    let operator_timeout = workflow
+        .step_timeouts
+        .get("release-066-operator-kind")
+        .and_then(|timeouts| timeouts.get("Start current operator controller"))
+        .copied();
+    if operator_timeout != Some(120) {
+        problems.push(
+            "release-066 operator controller background step must set timeout-minutes to 120"
+                .to_owned(),
+        );
+    }
+    let operator_cancel = workflow
+        .cancel_targets
+        .get("release-066-operator-kind")
+        .is_some_and(|targets| targets.contains("operator-controller"));
+    if !operator_cancel {
+        problems.push(
+            "release-066 operator controller background step must be explicitly canceled"
+                .to_owned(),
+        );
+    }
+    problems
+}
+
+pub fn release_066_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
+    const DAEMON_ID: &str = "env.hydracache-run-066-daemon-process-e2e";
+    const PROCESS_NEMESIS_ARTIFACT: &str =
+        "target/test-evidence/0.66/process-control-plane-nemesis.json";
+    const OPERATOR_ID: &str = "env.hydracache-operator-kind-066";
+    const OPERATOR_NONCE_ENV: &str = "HYDRACACHE_OPERATOR_EVIDENCE_NONCE";
+    const OPERATOR_ARTIFACTS: [&str; 6] = [
+        "target/test-evidence/0.66/operator-kind-w5-iochaos-capability.txt",
+        "target/test-evidence/0.66/operator-kind-w11-network-policy-capability.txt",
+        "target/test-evidence/0.66/operator-kind-pod-logs.txt",
+        "target/test-evidence/0.66/operator-kind-resources.txt",
+        "target/test-evidence/0.66/operator-kind-events.txt",
+        "target/test-evidence/0.66/operator-controller.log",
+    ];
+    const FUZZ_ID: &str = "tool.cargo-fuzz.raft-wire-frame-066";
+    let mut problems = Vec::new();
+
+    for (id, job, step, platform) in [
+        (
+            DAEMON_ID,
+            "release-066-daemon-process",
+            "Run 0.66 daemon-process release proof",
+            "linux",
+        ),
+        (
+            OPERATOR_ID,
+            "release-066-operator-kind",
+            "Run 0.66 operator-kind release proof",
+            "linux",
+        ),
+        (
+            FUZZ_ID,
+            "fuzz-nightly",
+            "Run 0.66 Raft wire fuzz release proof",
+            "linux",
+        ),
+    ] {
+        let Some(gate) = gates.iter().find(|gate| gate.id == id) else {
+            problems.push(format!("release 0.66 is missing mandatory gate {id}"));
+            continue;
+        };
+        let common = gate.kind == gated_tests::GateKind::ExternalTool
+            && gate.tier == gated_tests::GateTier::Nightly
+            && gate.owner_release == "0.66.0"
+            && gate.ship_mandatory
+            && gate.ci.workflow == ".github/workflows/ci.yml"
+            && gate.ci.job == job
+            && gate.ci.step == step
+            && gate.command.program == "cargo"
+            && gate.command.platform == platform;
+        if !common {
+            problems.push(format!(
+                "release 0.66 gate {id} must retain its mandatory nightly owner, Linux command, and exact CI lane"
+            ));
+        }
+    }
+
+    if let Some(gate) = gates.iter().find(|gate| gate.id == DAEMON_ID) {
+        for target in [
+            "rejoin_after_compaction_process",
+            "process_control_plane_nemesis",
+            "rolling_upgrade_process",
+            "external_control_plane_history",
+            "differential_model_process",
+            "scheduler_tick_process",
+            "snapshot_resource_budget",
+        ] {
+            if !gate.command.args.iter().any(|arg| arg == target) {
+                problems.push(format!(
+                    "release 0.66 daemon gate is missing process target {target}"
+                ));
+            }
+        }
+        for (env, value) in [
+            ("HYDRACACHE_RUN_DAEMON_PROCESS_E2E", "1"),
+            ("HYDRACACHE_BUILD_PREVIOUS_DAEMON", "1"),
+            ("HYDRACACHE_MIXED_DAEMON_SHIP_MODE", "1"),
+        ] {
+            if gate.command.env.get(env).map(String::as_str) != Some(value) {
+                problems.push(format!("release 0.66 daemon gate must set {env}={value}"));
+            }
+        }
+        if !gate
+            .artifacts
+            .iter()
+            .any(|artifact| artifact == PROCESS_NEMESIS_ARTIFACT)
+        {
+            problems.push(format!(
+                "release 0.66 daemon gate must retain W2 artifact {PROCESS_NEMESIS_ARTIFACT}"
+            ));
+        }
+    }
+    if let Some(gate) = gates.iter().find(|gate| gate.id == OPERATOR_ID) {
+        for (env, value) in [
+            ("HYDRACACHE_OPERATOR_KIND", "1"),
+            ("HYDRACACHE_OPERATOR_REQUIRE_IOCHAOS", "1"),
+            ("HYDRACACHE_OPERATOR_VERSION", "0.66.0"),
+        ] {
+            if gate.command.env.get(env).map(String::as_str) != Some(value) {
+                problems.push(format!("release 0.66 operator gate must set {env}={value}"));
+            }
+        }
+        if !gate.command.args.iter().any(|arg| arg == "--ignored") {
+            problems.push(
+                "release 0.66 operator gate must execute the ignored live-kind tests".to_owned(),
+            );
+        }
+        if !gate
+            .required_env
+            .iter()
+            .any(|required| required == OPERATOR_NONCE_ENV)
+        {
+            problems.push(format!(
+                "release 0.66 operator gate must require current-run nonce {OPERATOR_NONCE_ENV}"
+            ));
+        }
+        for artifact in OPERATOR_ARTIFACTS {
+            if !gate
+                .artifacts
+                .iter()
+                .any(|registered| registered == artifact)
+            {
+                problems.push(format!(
+                    "release 0.66 operator gate must declare fresh evidence artifact {artifact}"
+                ));
+            }
+        }
+    }
+    if let Some(gate) = gates.iter().find(|gate| gate.id == FUZZ_ID) {
+        let expected = [
+            "+nightly",
+            "fuzz",
+            "run",
+            "raft_wire_frame",
+            "--",
+            "-max_total_time=60",
+        ];
+        if gate.command.args != expected || gate.command.cwd != "fuzz" {
+            problems.push(
+                "release 0.66 fuzz gate must retain the exact bounded raft_wire_frame command from fuzz/"
+                    .to_owned(),
+            );
+        }
+    }
+    problems
+}
+
+pub fn release_0671_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
+    const REQUIRED: [(&str, &str, &str, &str); 8] = [
+        (
+            "tool.perf-runner-provisioned-0671",
+            "target/test-evidence/0.67.1/runner-provisioned.json",
+            "release-0671-performance-qualification",
+            "Import offline runner provisioning proof",
+        ),
+        (
+            "tool.perf-attestation-v5-0671",
+            "target/test-evidence/0.67.1/attestation-v5.json",
+            "release-0671-performance-qualification",
+            "Attest and preflight the 0.67.1 host",
+        ),
+        (
+            "tool.perf-qualification-0671",
+            "target/test-evidence/0.67.1/qualification.json",
+            "release-0671-performance-qualification",
+            "Run 0.67.1 qualification gate",
+        ),
+        (
+            "tool.perf-full-dress-admission-0671",
+            "target/test-evidence/0.67.1/full-dress-admission.json",
+            "release-0671-performance-full-dress",
+            "Admit bootstrap after the second identical full-dress run",
+        ),
+        (
+            "tool.perf-bootstrap-sample-set-0671",
+            "target/test-evidence/0.67.1/bootstrap-sample-set.json",
+            "gated-proof-registry",
+            "Run registered gated proofs",
+        ),
+        (
+            "tool.perf-baseline-review-0671",
+            "target/test-evidence/0.67.1/baseline-review.json",
+            "release-0671-frozen-candidate",
+            "Revalidate committed five-sample independent review",
+        ),
+        (
+            "tool.perf-reference-activation-0671",
+            "target/test-evidence/0.67.1/reference-activation.json",
+            "release-0671-frozen-candidate",
+            "Validate exact reference activation and TD closure",
+        ),
+        (
+            "tool.perf-frozen-candidate-0671",
+            "target/test-evidence/0.67.1/frozen-candidate.json",
+            "release-0671-frozen-candidate",
+            "Seal exact frozen-candidate reference receipt",
+        ),
+    ];
+    let mut problems = Vec::new();
+    for (id, artifact, job, step) in REQUIRED {
+        let Some(gate) = gates.iter().find(|gate| gate.id == id) else {
+            problems.push(format!("missing mandatory 0.67.1 stage gate {id}"));
+            continue;
+        };
+        if gate.owner_release != "0.67.1" || !gate.ship_mandatory {
+            problems.push(format!(
+                "0.67.1 stage gate {id} must be owned by 0.67.1 and ship-mandatory"
+            ));
+        }
+        if gate.artifacts.as_slice() != [artifact] {
+            problems.push(format!(
+                "0.67.1 stage gate {id} must bind exact artifact {artifact}"
+            ));
+        }
+        if gate.ci.workflow != ".github/workflows/ci.yml"
+            || gate.ci.job != job
+            || gate.ci.step != step
+        {
+            problems.push(format!(
+                "0.67.1 stage gate {id} must bind CI job/step {job}/{step}"
+            ));
+        }
+        if gate.required_env.as_slice() != ["HYDRACACHE_RUN_PERF_0671_STAGE"]
+            || !gate
+                .command
+                .env
+                .contains_key("HYDRACACHE_RUN_PERF_0671_STAGE")
+        {
+            problems.push(format!(
+                "0.67.1 stage gate {id} must require an explicit stage capability"
+            ));
+        }
+    }
+    if let Some(attestation) = gates
+        .iter()
+        .find(|gate| gate.id == "tool.perf-attestation-v5-0671")
+    {
+        if attestation.source != "scripts/perf/run-reference-measurement.sh"
+            || attestation.command.program != "scripts/perf/run-reference-measurement.sh"
+            || attestation.command.args != ["attestation"]
+        {
+            problems.push(
+                "0.67.1 attestation must use the reviewed housekeeping/tmpfs measurement wrapper"
+                    .to_owned(),
+            );
+        }
+    }
+    for (id, phase) in [
+        ("tool.perf-baseline-review-0671", "reviewed"),
+        ("tool.perf-reference-activation-0671", "activate"),
+        ("tool.perf-frozen-candidate-0671", "frozen-candidate"),
+    ] {
+        let Some(gate) = gates.iter().find(|gate| gate.id == id) else {
+            continue;
+        };
+        let expected = [
+            "run",
+            "-p",
+            "xtask",
+            "--locked",
+            "--",
+            "perf-reference",
+            "--release",
+            "0.67.1",
+            "--profile",
+            "reference-v1",
+            "--phase",
+            phase,
+        ];
+        if gate.command.program != "cargo" || gate.command.args != expected {
+            problems.push(format!(
+                "0.67.1 stage gate {id} must execute the exact perf-reference {phase} phase"
+            ));
+        }
+    }
+    if let Some(frozen) = gates
+        .iter()
+        .find(|gate| gate.id == "tool.perf-frozen-candidate-0671")
+    {
+        if frozen
+            .command
+            .env
+            .get("HYDRACACHE_PERFORMANCE_0671_MODE")
+            .map(String::as_str)
+            != Some("frozen-candidate")
+        {
+            problems.push(
+                "0.67.1 frozen-candidate gate must require the exact trusted mode".to_owned(),
+            );
+        }
+    }
+    problems
+}
+
+pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
+    const JOB: &str = "release-067-performance";
+    const PREBUILD_ID: &str = "tool.perf-prebuild-067";
+    const PREBUILD_ARTIFACT: &str = "target/test-evidence/0.67/prebuild-manifest.json";
+    const PREBUILD_INPUTS: &str = "target/test-evidence/0.67/resp-reference-run-inputs.json";
+    const SPECS: [(&str, &str, &[&str]); 5] = [
+        (
+            PREBUILD_ID,
+            "Prebuild 0.67 performance binaries",
+            &[PREBUILD_ARTIFACT, PREBUILD_INPUTS],
+        ),
+        (
+            "env.hydracache-run-067-perf-core",
+            "Run 0.67 core performance evidence",
+            &[
+                "target/test-evidence/0.67/local.json",
+                "target/test-evidence/0.67/client-surface.json",
+                "target/test-evidence/0.67/grid-model.json",
+                "target/test-evidence/0.67/brownout-grid-model.json",
+                "target/test-evidence/0.67/overload-local.json",
+                "target/test-evidence/0.67/overload-client-surface.json",
+            ],
+        ),
+        (
+            "env.hydracache-run-067-perf-resp",
+            "Run 0.67 RESP performance evidence",
+            &[
+                "target/test-evidence/0.67/node-resp-open-loop.json",
+                "target/test-evidence/0.67/node-resp-redis-benchmark.json",
+                "target/test-evidence/0.67/node-resp-daemon-lifecycle.json",
+                "target/test-evidence/0.67/node-resp-suite-receipt.json",
+                "target/test-evidence/0.67/brownout-resp-endpoint.json",
+                "target/test-evidence/0.67/overload-node-resp.json",
+                "target/test-evidence/0.67/compare-redis.json",
+                "target/test-evidence/0.67/metrics-resp.json",
+            ],
+        ),
+        (
+            "env.hydracache-run-067-perf-control-plane",
+            "Run 0.67 control-plane performance evidence",
+            &[
+                "target/test-evidence/0.67/control-plane-3.json",
+                "target/test-evidence/0.67/control-plane-5.json",
+                "target/test-evidence/0.67/control-plane-7.json",
+                "target/test-evidence/0.67/brownout-control-plane.json",
+                "target/test-evidence/0.67/metrics-control-plane.json",
+            ],
+        ),
+        (
+            "tool.perf-budget-check-067",
+            "Check 0.67 performance budgets",
+            &["target/test-evidence/0.67/perf-budget-verdict.json"],
+        ),
+    ];
+    let mut problems = Vec::new();
+
+    for (id, step, expected_artifacts) in SPECS {
+        let Some(gate) = gates.iter().find(|gate| gate.id == id) else {
+            problems.push(format!(
+                "release 0.67 is missing deferred reference gate {id}"
+            ));
+            continue;
+        };
+        let common = gate.kind == gated_tests::GateKind::ExternalTool
+            && gate.tier == gated_tests::GateTier::Nightly
+            && gate.owner_release == "0.67.0"
+            && !gate.ship_mandatory
+            && gate.ci.workflow == ".github/workflows/ci.yml"
+            && gate.ci.job == JOB
+            && gate.ci.step == step
+            && gate.command.platform == "linux"
+            && gate.timeout_seconds > 0
+            && gate
+                .required_env
+                .iter()
+                .any(|name| name.ends_with("RUN_PERF_REFERENCE"))
+            && gate
+                .command
+                .env
+                .iter()
+                .any(|(name, value)| name.ends_with("RUN_PERF_REFERENCE") && value == "1");
+        if !common {
+            problems.push(format!(
+                "release 0.67 gate {id} must remain a deferred, non-ship, dedicated Linux reference-v1 gate with exact CI ownership"
+            ));
+        }
+        if !gate
+            .artifacts
+            .iter()
+            .map(String::as_str)
+            .eq(expected_artifacts.iter().copied())
+        {
+            problems.push(format!(
+                "release 0.67 gate {id} must declare its exact ordered target/test-evidence/0.67 artifact set"
+            ));
+        }
+    }
+
+    if let Some(prebuild) = gates.iter().find(|gate| gate.id == PREBUILD_ID) {
+        let expected_args = [
+            "run",
+            "-p",
+            "xtask",
+            "--locked",
+            "--",
+            "perf-prebuild",
+            "--release",
+            "0.67",
+            "--profile",
+            "reference-v1",
+        ];
+        if prebuild.command.program != "cargo"
+            || prebuild.command.args != expected_args
+            || prebuild.artifacts != [PREBUILD_ARTIFACT, PREBUILD_INPUTS]
+        {
+            problems.push(
+                "release 0.67 prebuild gate must retain the exact receipt-bound build command and atomic manifest/run-input artifact pair"
+                    .to_owned(),
+            );
+        }
+    }
+
+    for (id, suite) in [
+        ("env.hydracache-run-067-perf-core", "core"),
+        ("env.hydracache-run-067-perf-resp", "resp"),
+        ("env.hydracache-run-067-perf-control-plane", "control-plane"),
+    ] {
+        if let Some(gate) = gates.iter().find(|gate| gate.id == id) {
+            if gate.source != "scripts/perf/run-reference-measurement.sh"
+                || gate.command.program != "scripts/perf/run-reference-measurement.sh"
+                || gate.command.args != [suite]
+            {
+                problems.push(format!(
+                    "release 0.67 consumer gate {id} must execute the exact prebuilt loadgen through the reviewed housekeeping/tmpfs measurement wrapper"
+                ));
+            }
+            if gate
+                .artifacts
+                .iter()
+                .any(|artifact| artifact == PREBUILD_ARTIFACT || artifact == PREBUILD_INPUTS)
+            {
+                problems.push(format!(
+                    "release 0.67 consumer gate {id} must not redeclare or delete either prebuild artifact"
+                ));
+            }
+        }
+    }
+
+    if let Some(budget) = gates
+        .iter()
+        .find(|gate| gate.id == "tool.perf-budget-check-067")
+    {
+        let expected_args = [
+            "run",
+            "-p",
+            "xtask",
+            "--locked",
+            "--",
+            "perf-budget-check",
+            "--release",
+            "0.67",
+            "--profile",
+            "reference-v1",
+        ];
+        if budget.command.program != "cargo" || budget.command.args != expected_args {
+            problems.push(
+                "release 0.67 budget gate must retain the exact receipt-bound perf-budget-check command"
+                    .to_owned(),
+            );
+        }
+        if budget
+            .artifacts
+            .iter()
+            .any(|artifact| artifact == PREBUILD_ARTIFACT || artifact == PREBUILD_INPUTS)
+        {
+            problems.push(
+                "release 0.67 budget consumer must not redeclare or delete either prebuild artifact"
+                    .to_owned(),
+            );
+        }
+    }
+
+    problems
+}
+
+fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<dyn Error>> {
+    const JOB_ID: &str = "release-067-performance";
+    const SHARED_JOB_ID: &str = "performance-067-shared-tripwire";
+    const PINNED_REDIS_BOOTSTRAP: &str = r#"tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+mkdir --parents "$tools_dir"
+cd "$tools_dir"
+curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+  --retry 5 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 180 \
+  --output redis-7.2.5.tar.gz \
+  https://download.redis.io/releases/redis-7.2.5.tar.gz
+printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+  | sha256sum --check --strict -
+tar --extract --gzip --file redis-7.2.5.tar.gz
+env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+  make -C redis-7.2.5 -j1 redis-benchmark
+test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH""#;
+    let workflow = parse_workflow(text)?;
+    let root: Value = serde_yaml::from_str(text)?;
+    let jobs = mapping_value(root.as_mapping(), "jobs")
+        .and_then(Value::as_mapping)
+        .ok_or("workflow has no jobs mapping")?;
+    let Some(job) = jobs.get(Value::String(JOB_ID.to_owned())) else {
+        return Ok(vec![format!(
+            "release 0.67 performance evidence is missing job {JOB_ID}"
+        )]);
+    };
+    let mut problems = Vec::new();
+
+    let pinned_toolchain = mapping_value(job.as_mapping(), "steps")
+        .and_then(Value::as_sequence)
+        .and_then(|steps| {
+            steps.iter().find(|step| {
+                mapping_value(step.as_mapping(), "name").and_then(Value::as_str)
+                    == Some("Install pinned Rust 1.94.0")
+            })
+        })
+        .and_then(|step| mapping_value(step.as_mapping(), "uses"))
+        .and_then(Value::as_str);
+    if pinned_toolchain != Some("dtolnay/rust-toolchain@1.94.0") {
+        problems.push(
+            "release 0.67 performance lane must install the exact rustc 1.94.0 toolchain"
+                .to_owned(),
+        );
+    }
+
+    let pinned_redis_bootstrap = workflow
+        .step_runs
+        .get(JOB_ID)
+        .and_then(|steps| steps.get("Build pinned redis-benchmark 7.2.5"))
+        .is_some_and(|run| run.trim() == PINNED_REDIS_BOOTSTRAP);
+    if !pinned_redis_bootstrap {
+        problems.push(
+            "release 0.67 performance lane must build redis-benchmark 7.2.5 from the checksum-pinned source recipe"
+                .to_owned(),
+        );
+    }
+
+    let runner_labels = mapping_value(job.as_mapping(), "runs-on")
+        .and_then(Value::as_sequence)
+        .map(|labels| labels.iter().filter_map(Value::as_str).collect::<Vec<_>>());
+    if runner_labels != Some(vec!["self-hosted", "linux", "x64", "hydracache-perf-v1"]) {
+        problems.push(
+            "release 0.67 performance lane requires the exact protected self-hosted bare-metal labels"
+                .to_owned(),
+        );
+    }
+
+    let concurrency = mapping_value(job.as_mapping(), "concurrency").and_then(Value::as_mapping);
+    let group = concurrency
+        .and_then(|value| mapping_value(Some(value), "group"))
+        .and_then(Value::as_str);
+    let cancel = concurrency
+        .and_then(|value| mapping_value(Some(value), "cancel-in-progress"))
+        .and_then(Value::as_bool);
+    if group != Some("release-067-performance-reference-v1") || cancel != Some(false) {
+        problems.push(
+            "release 0.67 performance lane must serialize one reference-v1 run and never cancel an in-progress measurement"
+                .to_owned(),
+        );
+    }
+
+    let condition = workflow
+        .conditions
+        .get(JOB_ID)
+        .map(String::as_str)
+        .unwrap_or_default();
+    if !condition.contains("workflow_dispatch")
+        || !condition.contains("github.ref == 'refs/heads/main'")
+        || !condition.contains("inputs.run_reference_performance")
+        || !condition.contains("candidate_release == '0.67'")
+        || condition.contains("schedule")
+        || condition.contains("refs/tags/")
+    {
+        problems.push(
+            "release 0.67 performance lane must require the reference-performance opt-in on an explicit 0.67 manual dispatch"
+                .to_owned(),
+        );
+    }
+
+    let Some(shared_job) = jobs.get(Value::String(SHARED_JOB_ID.to_owned())) else {
+        problems.push(
+            "release 0.67 is missing the non-ship shared-runner regression tripwire job".to_owned(),
+        );
+        return Ok(problems);
+    };
+    if mapping_value(shared_job.as_mapping(), "runs-on").and_then(Value::as_str)
+        != Some("ubuntu-latest")
+    {
+        problems.push(
+            "release 0.67 shared tripwire must remain on the hosted ubuntu-latest runner class"
+                .to_owned(),
+        );
+    }
+    let shared_condition = workflow
+        .conditions
+        .get(SHARED_JOB_ID)
+        .map(String::as_str)
+        .unwrap_or_default();
+    if !shared_condition.contains("pull_request")
+        || !shared_condition.contains("refs/heads/main")
+        || !shared_condition.contains("refs/heads/master")
+        || !shared_condition.contains("schedule")
+        || !shared_condition.contains("inputs.run_nightly")
+        || !shared_condition.contains("!inputs.run_reference_performance")
+    {
+        problems.push(
+            "release 0.67 shared tripwire must run on pull requests, main/master pushes, schedules, and ordinary hosted nightly dispatches"
+                .to_owned(),
+        );
+    }
+    for (step, command) in [
+        (
+            "Validate shared-runner tripwire policy",
+            "cargo test -p xtask --test perf_budget_067 --locked ci_shared_is_a_rolling_only_non_enforcing_tripwire",
+        ),
+        (
+            "Evaluate non-ship shared-runner tripwire",
+            "cargo run -p xtask --locked -- perf-budget-check --release 0.67 --profile ci-shared",
+        ),
+    ] {
+        let exact = workflow
+            .step_runs
+            .get(SHARED_JOB_ID)
+            .and_then(|steps| steps.get(step))
+            .is_some_and(|run| run.trim() == command);
+        if !exact {
+            problems.push(format!(
+                "release 0.67 shared tripwire step {step:?} must run exactly `{command}`"
+            ));
+        }
+    }
+    if !workflow
+        .jobs
+        .get(SHARED_JOB_ID)
+        .is_some_and(|steps| steps.contains("Upload 0.67 shared tripwire"))
+    {
+        problems
+            .push("release 0.67 shared tripwire is missing its non-ship verdict upload".to_owned());
+    }
+
+    let expected_runs = [
+        (
+            "Run 0.67 canary sweep",
+            "cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all",
+        ),
+        (
+            "Validate 0.67 performance contract",
+            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate fast.performance-contract-067",
+        ),
+        (
+            "Preflight 0.67 reference runner stability",
+            "scripts/perf/run-reference-measurement.sh attestation",
+        ),
+        (
+            "Prepare tmpfs reference evidence",
+            "scripts/perf/reference-evidence-tmpfs.sh prepare",
+        ),
+        (
+            "Prebuild 0.67 performance binaries",
+            "taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
+        ),
+        (
+            "Run 0.67 core performance evidence",
+            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core",
+        ),
+        (
+            "Run 0.67 RESP performance evidence",
+            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp",
+        ),
+        (
+            "Run 0.67 control-plane performance evidence",
+            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane",
+        ),
+        (
+            "Materialize tmpfs reference evidence",
+            "scripts/perf/reference-evidence-tmpfs.sh materialize",
+        ),
+        (
+            "Check 0.67 performance budgets",
+            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budget-check-067",
+        ),
+        (
+            "Aggregate exact 0.67 candidate evidence",
+            "cargo run -p xtask --locked -- release-evidence --release 0.67 --receipts-dir target/release-evidence/receipts --require-ship",
+        ),
+    ];
+    for (step, command) in expected_runs {
+        let exact = workflow
+            .step_runs
+            .get(JOB_ID)
+            .and_then(|steps| steps.get(step))
+            .is_some_and(|run| run.trim() == command);
+        if !exact {
+            problems.push(format!(
+                "release 0.67 performance step {step:?} must run exactly `{command}`"
+            ));
+        }
+    }
+    let expected_0671_runs = [
+        (
+            "release-0671-performance-qualification",
+            vec![
+                (
+                    "Prepare tmpfs reference evidence",
+                    "scripts/perf/reference-evidence-tmpfs.sh prepare",
+                ),
+                (
+                    "Attest and preflight the 0.67.1 host",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671",
+                ),
+                (
+                    "Prebuild exact 0.67 performance binaries",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
+                ),
+                (
+                    "Run bounded non-ship diagnostics",
+                    "scripts/perf/run-reference-measurement.sh qualification-local\nscripts/perf/run-reference-measurement.sh qualification-client-surface",
+                ),
+                (
+                    "Materialize tmpfs reference evidence",
+                    "scripts/perf/reference-evidence-tmpfs.sh materialize",
+                ),
+            ],
+        ),
+        (
+            "release-0671-performance-bootstrap",
+            vec![
+                (
+                    "Prepare tmpfs reference evidence",
+                    "scripts/perf/reference-evidence-tmpfs.sh prepare",
+                ),
+                (
+                    "Attest and preflight the 0.67.1 host",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671",
+                ),
+                (
+                    "Prebuild exact 0.67 performance binaries",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
+                ),
+                (
+                    "Run bootstrap core reference evidence",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core",
+                ),
+                (
+                    "Run bootstrap RESP reference evidence",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp",
+                ),
+                (
+                    "Run bootstrap control-plane reference evidence",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane",
+                ),
+                (
+                    "Materialize tmpfs reference evidence",
+                    "scripts/perf/reference-evidence-tmpfs.sh materialize",
+                ),
+            ],
+        ),
+    ];
+    for (job, expected) in expected_0671_runs {
+        for (step, command) in expected {
+            let exact = workflow
+                .step_runs
+                .get(job)
+                .and_then(|steps| steps.get(step))
+                .is_some_and(|run| run.trim() == command);
+            if !exact {
+                problems.push(format!(
+                    "release 0.67.1 performance step {job}/{step:?} must run exactly `{command}`"
+                ));
+            }
+        }
+        if workflow.step_runs.get(job).is_some_and(|steps| {
+            steps
+                .values()
+                .any(|run| run.contains("taskset --cpu-list 1-4 cargo run"))
+        }) {
+            problems.push(format!(
+                "release 0.67.1 performance job {job} must keep Cargo and orchestration on housekeeping CPUs"
+            ));
+        }
+    }
+    for (step, markers) in [(
+        "Verify shipped 0.66 provenance",
+        [
+            "git rev-parse --verify refs/tags/v0.66.0",
+            "git merge-base --is-ancestor refs/tags/v0.66.0 HEAD",
+        ],
+    )] {
+        let run = workflow
+            .step_runs
+            .get(JOB_ID)
+            .and_then(|steps| steps.get(step));
+        for marker in markers {
+            if !run.is_some_and(|run| run.lines().any(|line| line.trim() == marker)) {
+                problems.push(format!(
+                    "release 0.67 performance step {step:?} is missing `{marker}`"
+                ));
+            }
+        }
+    }
+    if !workflow
+        .jobs
+        .get(JOB_ID)
+        .is_some_and(|steps| steps.contains("Upload 0.67 performance evidence"))
+    {
+        problems
+            .push("release 0.67 performance lane is missing its exact artifact upload".to_owned());
+    }
+    if workflow
+        .step_runs
+        .get(JOB_ID)
+        .into_iter()
+        .flat_map(|steps| steps.values())
+        .any(|run| run.contains("target/release/hydracache-loadgen"))
+    {
+        problems.push(
+            "release 0.67 claimed CI steps must invoke performance commands through evidence-run, not raw loadgen commands"
+                .to_owned(),
+        );
+    }
+    Ok(problems)
+}
+
+fn candidate_receipt_wiring_problems(
+    workflow: &WorkflowShape,
+    requested_release: &str,
+) -> Vec<String> {
+    const DEFAULT_RELEASE: &str = "0.69";
+    const RELEASE_ENV: &str = "HYDRACACHE_CANDIDATE_RELEASE";
+    const RELEASE_ENV_BINDING: &str = "${{ inputs.candidate_release || '0.69' }}";
+    const FAST_RECEIPT: &str = "cargo run -p xtask --locked -- evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate fast.workspace-nextest";
+    const GOVERNANCE: &str = "cargo run -p xtask --locked -- release-governance-check --release \"$HYDRACACHE_CANDIDATE_RELEASE\"";
+    const MANUAL_RECEIPT: &str = r#"cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate "${{ inputs.gated_gate_id }}""#;
+    const RELEASE_069_ADMISSION_STEP: &str =
+        "Require exact-candidate migration conformance evidence";
+    const RELEASE_069_ADMISSION_CONDITION: &str = "env.HYDRACACHE_CANDIDATE_RELEASE == '0.69'";
+
+    let mut problems = Vec::new();
+    if workflow.candidate_release_default.as_deref() != Some(DEFAULT_RELEASE) {
+        problems.push(format!(
+            "release {requested_release} candidate receipt wiring requires workflow_dispatch input candidate_release with default {DEFAULT_RELEASE}"
+        ));
+    }
+    if workflow.candidate_release_env.as_deref() != Some(RELEASE_ENV_BINDING) {
+        problems.push(format!(
+            "release {requested_release} candidate receipt wiring requires global {RELEASE_ENV} to equal `{RELEASE_ENV_BINDING}`"
+        ));
+    }
+    let fast_receipt = workflow
+        .step_runs
+        .get("migration-conformance-fast-evidence-069")
+        .and_then(|steps| steps.get("Run exact-candidate fast evidence"))
+        .is_some_and(|run| run.lines().any(|line| line.trim() == FAST_RECEIPT));
+    if !fast_receipt {
+        problems.push(format!(
+            "release {requested_release} fast workspace receipt must use exact candidate binding `{FAST_RECEIPT}`"
+        ));
+    }
+    let release_069_admission_condition = workflow
+        .step_conditions
+        .get("migration-conformance-admission-069")
+        .and_then(|steps| steps.get(RELEASE_069_ADMISSION_STEP))
+        .map(String::as_str);
+    if release_069_admission_condition != Some(RELEASE_069_ADMISSION_CONDITION) {
+        problems.push(format!(
+            "release {requested_release} 0.69 ship aggregation must run only when candidate release is 0.69 via `{RELEASE_069_ADMISSION_CONDITION}`"
+        ));
+    }
+    for (job, step, command, proof) in [
+        (
+            "rust",
+            "Release governance",
+            GOVERNANCE,
+            "candidate governance",
+        ),
+        (
+            "gated-proof-registry",
+            "Run registered gated proofs",
+            MANUAL_RECEIPT,
+            "manually dispatched gate receipt",
+        ),
+    ] {
+        let exact = workflow
+            .step_runs
+            .get(job)
+            .and_then(|steps| steps.get(step))
+            .is_some_and(|run| run.trim() == command);
+        if !exact {
+            problems.push(format!(
+                "release {requested_release} {proof} must use exact candidate binding `{command}`"
+            ));
+        }
+    }
+    problems
+}
+
+fn normalize_release(release: &str) -> &str {
+    release.strip_suffix(".0").unwrap_or(release)
+}
+
+pub fn release_history_checkout_problems(text: &str) -> Result<Vec<String>, Box<dyn Error>> {
+    let root: Value = serde_yaml::from_str(text)?;
+    let jobs = mapping_value(root.as_mapping(), "jobs")
+        .and_then(Value::as_mapping)
+        .ok_or("workflow has no jobs mapping")?;
+    let mut problems = Vec::new();
+
+    for job_id in [
+        "rust",
+        "dynamic-canary-sweep",
+        "coverage-ratchet",
+        "msrv",
+        "gated-proof-registry",
+        "release-066-daemon-process",
+        "release-067-performance",
+    ] {
+        let Some(job) = jobs.get(Value::String(job_id.to_owned())) else {
+            problems.push(format!(
+                "release compatibility proof is missing required job {job_id}"
+            ));
+            continue;
+        };
+        let checkout = mapping_value(job.as_mapping(), "steps")
+            .and_then(Value::as_sequence)
+            .and_then(|steps| {
+                steps.iter().find(|step| {
+                    mapping_value(step.as_mapping(), "uses")
+                        .and_then(Value::as_str)
+                        .is_some_and(|uses| uses.starts_with("actions/checkout@"))
+                })
+            });
+        let full_history = checkout
+            .and_then(|step| mapping_value(step.as_mapping(), "with"))
+            .and_then(Value::as_mapping)
+            .and_then(|with| mapping_value(Some(with), "fetch-depth"))
+            .is_some_and(|depth| match depth {
+                Value::Number(number) => number.as_u64() == Some(0),
+                Value::String(value) => value == "0",
+                _ => false,
+            });
+
+        if !full_history {
+            problems.push(format!(
+                "job {job_id} checkout must set with.fetch-depth: 0 so compatibility tags v0.63.0/v0.65.0 and their ancestry are available"
+            ));
+        }
+    }
+
+    let rust_history_restore = jobs
+        .get(Value::String("rust".to_owned()))
+        .and_then(Value::as_mapping)
+        .and_then(|job| mapping_value(Some(job), "steps"))
+        .and_then(Value::as_sequence)
+        .and_then(|steps| {
+            steps.iter().find(|step| {
+                mapping_value(step.as_mapping(), "name").and_then(Value::as_str)
+                    == Some("Restore and verify full release history")
+            })
+        })
+        .and_then(|step| mapping_value(step.as_mapping(), "run"))
+        .and_then(Value::as_str);
+    if !rust_history_restore.is_some_and(|run| {
+        run.contains("\"+refs/heads/*:refs/remotes/origin/*\"")
+            && run.contains("\"+refs/tags/*:refs/tags/*\"")
+            && !run.contains("git fetch --prune --tags")
+            && !run.contains("git fetch --prune --unshallow --tags")
+    }) {
+        problems.push(
+            "job rust must force-fetch remote heads and annotated tags in its full-history restore without the conflicting --tags shorthand"
+                .to_owned(),
+        );
+    }
+
+    Ok(problems)
+}
+
+fn release_069_execution_wiring_problems(workflow: &WorkflowShape, text: &str) -> Vec<String> {
+    let expected = [
+        (
+            "migration-conformance-fast-evidence-069",
+            "Run exact-candidate fast evidence",
+            "cargo run -p xtask --locked -- migration-conformance-check --upstream",
+        ),
+        (
+            "migration-conformance-fast-evidence-069",
+            "Run exact-candidate fast evidence",
+            "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate fast.migration-conformance-db-069",
+        ),
+        (
+            "migration-conformance-fast-evidence-069",
+            "Run exact-candidate fast evidence",
+            "cargo run -p xtask --locked -- evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate fast.workspace-nextest",
+        ),
+        (
+            "migration-conformance-069",
+            "Run adapted Hazelcast expectations",
+            "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate tool.borrowed-hazelcast-069",
+        ),
+        (
+            "migration-conformance-069",
+            "Run shipped HC1 consumers against current daemon",
+            "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate tool.legacy-hc1-clients-069",
+        ),
+        (
+            "migration-conformance-postgres-069",
+            "Run PostgreSQL cached-vs-direct differential",
+            "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate \"${{ matrix.postgres.happy_gate }}\"",
+        ),
+        (
+            "migration-conformance-postgres-069",
+            "Prove PostgreSQL dropped-invalidation canary is red",
+            "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-canary-069",
+        ),
+        (
+            "migration-conformance-postgres-069",
+            "Run bounded PostgreSQL commit-wait soak",
+            "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-soak-069",
+        ),
+        (
+            "migration-conformance-admission-069",
+            "Require exact-candidate migration conformance evidence",
+            "cargo run -p xtask --locked -- release-evidence --release 0.69 --receipts-dir target/release-evidence/receipts --require-ship",
+        ),
+    ];
+    let mut problems = expected
+        .into_iter()
+        .filter_map(|(job, step, command)| {
+            let present = workflow
+                .step_runs
+                .get(job)
+                .and_then(|steps| steps.get(step))
+                .is_some_and(|run| run.lines().any(|line| line.trim() == command));
+            (!present)
+                .then(|| format!("release 0.69 job {job} step {step:?} must execute `{command}`"))
+        })
+        .collect::<Vec<_>>();
+    for required in [
+        "ci-admission-status",
+        "HYDRACACHE_EVIDENCE_HEAD_SHA",
+        "HYDRACACHE_EVIDENCE_BASE_SHA",
+        "HYDRACACHE_EVIDENCE_TESTED_SHA",
+        "ignored.hydracache-db.cached-vs-direct-postgres-069",
+        "ignored.hydracache-db.cached-vs-direct-postgres-18-069",
+        "postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c",
+        "postgres:18-alpine@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15",
+        "pattern: \"migration-conformance-postgres-069-receipts-*-${{ github.sha }}\"",
+        "Validate exact-candidate lane status artifacts",
+        "--lane-status \"fast=target/release-evidence/lanes/fast-evidence.json\"",
+        "--lane-status \"java-legacy=target/release-evidence/lanes/java-legacy.json\"",
+        "--lane-status \"postgres-16=target/release-evidence/lanes/postgres-16.json\"",
+        "--lane-status \"postgres-18=target/release-evidence/lanes/postgres-18.json\"",
+    ] {
+        if !text.contains(required) {
+            problems.push(format!("release 0.69 CI hardening is missing `{required}`"));
+        }
+    }
+    const ADMISSION_CONDITION: &str =
+        "always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off')";
+    if workflow
+        .conditions
+        .get("migration-conformance-admission-069")
+        .map(String::as_str)
+        != Some(ADMISSION_CONDITION)
+    {
+        problems.push(format!(
+            "release 0.69 admission must run after every normal CI outcome and stay isolated from performance dispatch via `{ADMISSION_CONDITION}`"
+        ));
+    }
+    problems
+}
+
+fn fuzz_nightly_wiring_problems(text: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    for required in [
+        "cargo install cargo-fuzz --version 0.13.2 --locked",
+        "working-directory: fuzz",
+        "cargo +nightly fuzz run fuzz_config_parse -- -max_total_time=60",
+        "cargo +nightly fuzz run fuzz_kv_codec -- -max_total_time=60",
+        "cargo +nightly fuzz run fuzz_resp_command -- -max_total_time=60",
+        "cargo +nightly fuzz run fuzz_snapshot_decode -- -max_total_time=60",
+        "evidence-run --release 0.66 --gate tool.cargo-fuzz.raft-wire-frame-066",
+    ] {
+        if !text.contains(required) {
+            problems.push(format!("fuzz nightly wiring is missing `{required}`"));
+        }
+    }
+    if text.contains("fuzz run fuzz_config_parse --manifest-path")
+        || text.contains("fuzz run fuzz_kv_codec --manifest-path")
+        || text.contains("fuzz run fuzz_resp_command --manifest-path")
+        || text.contains("fuzz run fuzz_snapshot_decode --manifest-path")
+        || text.contains("fuzz run raft_wire_frame --manifest-path")
+    {
+        problems.push(
+            "fuzz nightly passes --manifest-path after the target; cargo-fuzz parses that position as corpus/libFuzzer arguments"
+                .to_owned(),
+        );
+    }
+    if text.contains("nightly toolchain unavailable; skipping fuzz-nightly")
+        || text.contains("cargo-fuzz unavailable; skipping fuzz-nightly")
+        || text.contains("steps.fuzz-runtime.outputs.available")
+    {
+        problems.push(
+            "fuzz nightly must fail loud when the pinned nightly or cargo-fuzz runtime is unavailable"
+                .to_owned(),
+        );
+    }
+    problems
+}
+
+pub fn ci_wiring_problems(root: &Path, gates: &[GateEntry]) -> Result<Vec<String>, Box<dyn Error>> {
+    let mut problems = Vec::new();
+    let mut workflows = BTreeMap::<String, WorkflowShape>::new();
+    for gate in gates {
+        let workflow = if let Some(workflow) = workflows.get(&gate.ci.workflow) {
+            workflow
+        } else {
+            let path = root.join(&gate.ci.workflow);
+            let parsed = parse_workflow(
+                &fs::read_to_string(&path)
+                    .map_err(|error| format!("reading workflow {}: {error}", path.display()))?,
+            )?;
+            workflows.insert(gate.ci.workflow.clone(), parsed);
+            workflows.get(&gate.ci.workflow).expect("inserted workflow")
+        };
+        let Some(steps) = workflow.jobs.get(&gate.ci.job) else {
+            problems.push(format!(
+                "gate {} references missing job {} in {}",
+                gate.id, gate.ci.job, gate.ci.workflow
+            ));
+            continue;
+        };
+        if !steps.contains(&gate.ci.step) {
+            problems.push(format!(
+                "gate {} references missing step {:?} in job {}",
+                gate.id, gate.ci.step, gate.ci.job
+            ));
+        }
+    }
+    Ok(problems)
+}
+
+#[derive(Debug, Default)]
+struct WorkflowShape {
+    jobs: BTreeMap<String, BTreeSet<String>>,
+    conditions: BTreeMap<String, String>,
+    step_runs: BTreeMap<String, BTreeMap<String, String>>,
+    step_conditions: BTreeMap<String, BTreeMap<String, String>>,
+    step_timeouts: BTreeMap<String, BTreeMap<String, u64>>,
+    background_step_ids: BTreeMap<String, BTreeSet<String>>,
+    cancel_targets: BTreeMap<String, BTreeSet<String>>,
+    candidate_release_default: Option<String>,
+    candidate_release_env: Option<String>,
+}
+
+fn parse_workflow(text: &str) -> Result<WorkflowShape, Box<dyn Error>> {
+    let root: Value = serde_yaml::from_str(text)?;
+    let root_mapping = root.as_mapping().ok_or("workflow root is not a mapping")?;
+    let jobs = mapping_value(Some(root_mapping), "jobs")
+        .and_then(Value::as_mapping)
+        .ok_or("workflow has no jobs mapping")?;
+    let mut shape = WorkflowShape::default();
+    let triggers = mapping_value(Some(root_mapping), "on")
+        .or_else(|| root_mapping.get(Value::Bool(true)))
+        .and_then(Value::as_mapping);
+    shape.candidate_release_default = mapping_value(triggers, "workflow_dispatch")
+        .and_then(Value::as_mapping)
+        .and_then(|dispatch| mapping_value(Some(dispatch), "inputs"))
+        .and_then(Value::as_mapping)
+        .and_then(|inputs| mapping_value(Some(inputs), "candidate_release"))
+        .and_then(Value::as_mapping)
+        .and_then(|candidate| mapping_value(Some(candidate), "default"))
+        .and_then(Value::as_str)
+        .map(ToOwned::to_owned);
+    shape.candidate_release_env = mapping_value(Some(root_mapping), "env")
+        .and_then(Value::as_mapping)
+        .and_then(|env| mapping_value(Some(env), "HYDRACACHE_CANDIDATE_RELEASE"))
+        .and_then(Value::as_str)
+        .map(ToOwned::to_owned);
+    for (job_id, job) in jobs {
+        let Some(job_id) = job_id.as_str() else {
+            continue;
+        };
+        let mut steps = BTreeSet::new();
+        let mut step_runs = BTreeMap::new();
+        let mut step_conditions = BTreeMap::new();
+        let mut step_timeouts = BTreeMap::new();
+        let mut background_step_ids = BTreeSet::new();
+        let mut cancel_targets = BTreeSet::new();
+        if let Some(sequence) =
+            mapping_value(job.as_mapping(), "steps").and_then(Value::as_sequence)
+        {
+            for step in sequence {
+                let mapping = step.as_mapping();
+                if let Some(name) = mapping_value(mapping, "name").and_then(Value::as_str) {
+                    steps.insert(name.to_owned());
+                    if let Some(run) = mapping_value(mapping, "run").and_then(Value::as_str) {
+                        step_runs.insert(name.to_owned(), run.to_owned());
+                    }
+                    if let Some(condition) = mapping_value(mapping, "if").and_then(Value::as_str) {
+                        step_conditions.insert(name.to_owned(), condition.to_owned());
+                    }
+                    if let Some(timeout) =
+                        mapping_value(mapping, "timeout-minutes").and_then(Value::as_u64)
+                    {
+                        step_timeouts.insert(name.to_owned(), timeout);
+                    }
+                }
+                if mapping_value(mapping, "background").and_then(Value::as_bool) == Some(true) {
+                    if let Some(id) = mapping_value(mapping, "id").and_then(Value::as_str) {
+                        background_step_ids.insert(id.to_owned());
+                    }
+                }
+                if let Some(target) = mapping_value(mapping, "cancel").and_then(Value::as_str) {
+                    cancel_targets.insert(target.to_owned());
+                }
+            }
+        }
+        shape.jobs.insert(job_id.to_owned(), steps);
+        shape.step_runs.insert(job_id.to_owned(), step_runs);
+        shape
+            .step_conditions
+            .insert(job_id.to_owned(), step_conditions);
+        shape.step_timeouts.insert(job_id.to_owned(), step_timeouts);
+        shape
+            .background_step_ids
+            .insert(job_id.to_owned(), background_step_ids);
+        shape
+            .cancel_targets
+            .insert(job_id.to_owned(), cancel_targets);
+        if let Some(condition) = mapping_value(job.as_mapping(), "if").and_then(Value::as_str) {
+            shape
+                .conditions
+                .insert(job_id.to_owned(), condition.to_owned());
+        }
+    }
+    Ok(shape)
+}
+
+fn mapping_value<'a>(mapping: Option<&'a Mapping>, key: &str) -> Option<&'a Value> {
+    mapping?.get(Value::String(key.to_owned()))
+}
+
+fn prefix(name: &str, problems: Vec<String>) -> impl Iterator<Item = String> + '_ {
+    problems
+        .into_iter()
+        .map(move |problem| format!("{name}: {problem}"))
+}
+
+fn parse_args(args: Vec<String>) -> Result<(PathBuf, String), Box<dyn Error>> {
+    let mut root = doc_check::find_repo_root()?;
+    let mut release = None;
+    let mut args = args.into_iter();
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--root" => root = PathBuf::from(args.next().ok_or("--root requires a path")?),
+            "--release" => release = Some(args.next().ok_or("--release requires a value")?),
+            other => {
+                return Err(format!("unknown release-governance-check argument: {other}").into())
+            }
+        }
+    }
+    Ok((
+        root,
+        release.ok_or("release-governance-check requires --release")?,
+    ))
+}

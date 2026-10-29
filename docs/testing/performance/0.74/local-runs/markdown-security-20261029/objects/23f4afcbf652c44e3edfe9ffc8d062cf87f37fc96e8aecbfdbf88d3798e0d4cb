@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets\\194\\debug\\deps\\candidate_socket_corpus-3f3706bbe59e2967.exe",
+    "--test-threads=4",
+    "--color=never"
+  ],
+  "bound": 1200,
+  "deadline": 132701.197569,
+  "retry": false
+}
