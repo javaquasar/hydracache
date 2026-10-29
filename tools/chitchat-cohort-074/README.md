@@ -52,3 +52,30 @@ is changed. A separate r1 source/package checks those kernel availability sets,
 pins them in the plan and revalidates them in every frame. Exact controller and
 worker per-process placement remain required. First refusal/source/transport
 are preserved; no numerical observation or stable-service stop occurred.
+
+The separately approved numerical attempt is now terminal and incomplete. Four
+CPU images finish; the fifth worker refuses before image spawn because the
+unrelated /run/user/1000 tmpfs changes kernel identity. Every original numerical
+predicate and the first result stay intact. The automatic postflight refuses
+the same full-host frame before restoration. No memory phase, partial estimator,
+replacement process, source rebase or second numerical launch follows.
+
+recover.py is a one-shot recovery for that exact immutable failed plan, not a
+general admission policy. It accepts only the recorded unrelated tmpfs leaf
+identity change for service restoration, retaining the failed measurement frame.
+All other mounts/options, boot, protected bytes, namespaces, clock services and
+marker absence remain exact. Require five durable original-inode empty proofs,
+inactive non-restarting PID1 unit, nine departed original process identities,
+ten retired deadline units and exclusive original-fence custody. Missing cgroups
+are never treated as empty; PID1 has already collected them. Restore only the
+approved stable service and verify its actual image/receipt/new generation.
+manual-restored.json never substitutes for the absent successful automatic
+postflight, and the attempt cannot resume. Analyze/verify only saved bytes with
+the unchanged current semantic/clock validator; archived code never runs.
+
+Before another independently authorized numerical attempt, fault-test automatic
+recovery when the exact measurement frame fails, and establish the full mount
+identity lifetime across SSH disconnect. Keep every measurement check, scope,
+frequency and deadline; do not filter the volatile mount out of the numeric gate
+or silently normalize/rebase its identity. These defects are carrier/admission
+work, not a new product optimization hypothesis or a Q performance verdict.
