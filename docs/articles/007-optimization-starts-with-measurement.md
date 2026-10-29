@@ -22681,3 +22681,45 @@ round проверял sealed reference и установленный executable
 всеми writers, lifecycle/reconnect и server enrollment требуют своих доказательств.
 Точные источники, первые результаты и границы принятия сохранены в
 [отчёте applied-root package gate](../testing/performance/0.74/dbus-root-package-result-20261029.md).
+
+Следующий полный Windows gate проверял уже включённый D-Bus backport. Он прошёл
+11 этапов и остановился на dependency policy: три известных finding относились
+к Zstd, ещё один, RUSTSEC-2026-0414, — к Markdown-парсеру, используемому при
+генерации protobuf-кода. Девять последующих этапов не запускались. Это был
+отказ политики, при достаточном месте и корректном retirement Windows Job;
+его нельзя описывать как успешный workspace gate. Отдельный аудит нашёл 42
+файла fuzz/consumer, не входивших в source frame. Добавили полноту покрытия
+всех workspace members по уже снятым наблюдениям, сохранив порядок и число
+Git-чтений. Старый отказ и неполный frame остались в evidence.
+
+Для Markdown проверяли конкретную security-гипотезу: повторение ссылки с пустым
+display text не должно размножать хвост дерева событий. Сначала сохранили
+baseline, затем проверили upstream 0.13.5. На Windows и GNU, с Rust 1.94 и MSRV
+1.88, 16 повторений в 112 байтах дают у старого парсера 327 676 событий, у нового
+— 65. Общий тест заранее ограничивает число событий и считает их без накопления
+в памяти; красный baseline не переобъявляется зелёным. Кандидат проходит oracle
+на семи размерах при двух наборах parser options, а также malformed/Unicode
+controls. Это измерение структуры алгоритма, а не goodput или CPU HydraCache.
+
+Semver оказался недостаточным основанием для принятия: upstream меняет также
+списки, границы UTF-8 и поиск delimiters. Поэтому просмотрели оба production
+diff и feature-gated build script, закрепили official archive checksums и сравнили
+события/HTML для восьми одинаковых примеров, включая реальные proto comments.
+Затем оба реальных HC/2-пакета до и после обновления прошли по 97 тестов в
+14 targets на каждом Windows-компиляторе, без ignored, вместе с check и strict
+Clippy. Четыре generated-файла, включая descriptor, совпали побайтно; проверка
+адресует output именно из записей Cargo build-script, сохраняя исходные каталоги.
+Первый offline comparator отказал из-за сравнения порядка завершения parallel
+Cargo artifacts. Исправили только сравнение по target identity, сохранив оба
+порядка и первый отказ; продуктовые тесты для этого не перезапускались.
+
+В root lock изменили ровно версию и checksum одного пакета. Новый historical
+guard сначала проверяет весь lock, восстанавливает точный прежний и выполняет
+все старые D-Bus/YAML/Swagger/sys proofs. Старые versioned API по-прежнему
+отклоняют новый input; live-проверки, сроки и исходные пороги не меняются.
+Подтверждённое устранение Markdown-регрессии не закрывает три Zstd findings и
+не отменяет отрицательный allocation-результат Chitchat S. Полный workspace gate,
+original delivery, все writers и reconnect требуют отдельных доказательств.
+Источники, первые отказы, ограничения и результаты сохранены в
+[Windows milestone](../testing/performance/0.74/windows-dbus-workspace-result-20261029.md)
+и [Markdown review](../testing/performance/0.74/markdown-security-result-20261029.md).

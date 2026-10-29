@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -17,10 +18,23 @@ from test_yaml_inputs import data
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def held_input(name):
+    # The versioned D-Bus API still receives its exact immutable original input.
+    packet = ROOT/'docs/testing/performance/0.74/local-runs/windows-dbus-workspace-20261029'
+    raw = (packet/'index.json').read_bytes()
+    if s.sha(raw) != 'c7dade0ea66bb2adec6784c50872b112e07d13e007676c3c9e3c857c305b083f':
+        raise ValueError('exact original D-Bus test receipt')
+    row = json.loads(raw)['files']['first-tested-source/'+name]
+    body = (packet/'objects'/row['sha256']).read_bytes()
+    if s.sha(body) != row['sha256'] or len(body) != row['bytes']:
+        raise ValueError('exact original D-Bus test source')
+    return body
+
+
 class DbusInputs(unittest.TestCase):
     def test_complete_original_predecessors_and_every_old_chain(self):
         for name, (_, expected, _) in d.BODIES.items():
-            prior = d.predecessor(name, (ROOT/name).read_bytes())
+            prior = d.predecessor(name, held_input(name))
             self.assertEqual(s.sha(prior), expected)
             if name == 'Cargo.lock':
                 prior = y.predecessor(name, prior)
@@ -31,12 +45,12 @@ class DbusInputs(unittest.TestCase):
 
     def test_original_normalization_handles_mixed_lf_and_crlf(self):
         for name in d.BODIES:
-            raw = (ROOT/name).read_bytes().replace(b'\r\n', b'\n')
+            raw = held_input(name).replace(b'\r\n', b'\n')
             self.assertEqual(d.predecessor(name, raw), d.predecessor(name, raw.replace(b'\n', b'\r\n')))
 
     def test_entire_current_body_and_unknown_names_refuse(self):
         for name in d.BODIES:
-            for raw in ((ROOT/name).read_bytes()+b'\n', b'unknown'):
+            for raw in (held_input(name)+b'\n', b'unknown'):
                 with self.subTest(name=name), self.assertRaises(ValueError):
                     d.predecessor(name, raw)
         with self.assertRaises(ValueError):
@@ -53,7 +67,7 @@ class DbusInputs(unittest.TestCase):
             elif mutation == 'digest': row['previous_sha256'] = '0'*64
             else: row['patches'][-1]['offset'] = True
             with self.subTest(mutation=mutation), patch.object(d, 'rules', return_value=rows), self.assertRaises(ValueError):
-                d.predecessor('Cargo.lock', (ROOT/'Cargo.lock').read_bytes())
+                d.predecessor('Cargo.lock', held_input('Cargo.lock'))
 
     def test_rules_hash_schema_source_pins_and_artifact_set_refuse(self):
         with patch.object(Path, 'read_bytes', return_value=b'{}'), self.assertRaises(ValueError):
@@ -79,7 +93,12 @@ class DbusInputs(unittest.TestCase):
              patch.object(y, 'predecessor', side_effect=trace('yaml', y.predecessor)), \
              patch.object(s, 'predecessor', side_effect=trace('swagger', s.predecessor)), \
              patch.object(security_lock, 'predecessor', side_effect=trace('sys', security_lock.predecessor)):
-            result = d.reviewed_inputs(ROOT, original)
+            with tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                for name in ('Cargo.lock','Cargo.toml','crates/xtask/Cargo.toml'):
+                    path = root/name; path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(held_input(name))
+                result = d.reviewed_inputs(root, original)
         expected = copy.deepcopy(before)
         expected['auxiliary'].update({n:v[0] for n,v in d.BODIES.items()})
         expected['auxiliary']['crates/xtask/Cargo.toml'] = y.BODIES['crates/xtask/Cargo.toml'][0]
@@ -113,14 +132,33 @@ class DbusInputs(unittest.TestCase):
 class VendorCustody(unittest.TestCase):
     def test_status_retains_every_original_path_and_adds_vendor(self):
         self.assertEqual(custody.STATUS_PATHS, ('Cargo.toml','Cargo.lock','deny.toml','.cargo',
-            'crates','tools','scripts','console','.github','.gitattributes','third_party'))
+            'crates','tools','scripts','console','.github','.gitattributes','third_party',
+            'fuzz','tests/post-publish-consumer'))
 
     def test_source_order_and_all_old_prefixes_preserved_with_vendor(self):
         names = ['tools/tool.py','third_party/hc074-dbus/zbus/src/lib.rs','Cargo.lock',
             'crates/a/lib.rs','scripts/x.py','console/src/x.ts','.cargo/config.toml',
             '.github/workflows/ci.yml','docs/plans/V0_74.md','docs/COMPAT.md','docs/RULES.md',
             'docs/GATES.md','.gitattributes','Cargo.toml','deny.toml',
-            'docs/testing/performance/0.74/qualification-manifest.toml']
+            'docs/testing/performance/0.74/qualification-manifest.toml','fuzz/src/lib.rs',
+            'tests/post-publish-consumer/src/lib.rs']
         self.assertEqual(custody.selected_sources(names), names)
         self.assertEqual(custody.selected_sources(['target/binary.exe','console/node_modules/x',
             'tools/node_modules/x','unrelated.txt','docs/testing/unrelated.md']), [])
+
+    def test_missing_fuzz_or_consumer_or_new_member_source_refuses(self):
+        for member in ('fuzz','tests/post-publish-consumer','future-member'):
+            names = [member+'/Cargo.toml', member+'/src/lib.rs']
+            with self.subTest(member=member), self.assertRaises(ValueError):
+                custody.member_source_coverage(names, {names[0]:'held'}, {names[0]:{}})
+
+    def test_complete_member_coverage_uses_existing_observations_without_git_reads(self):
+        names = ['fuzz/Cargo.toml','fuzz/src/lib.rs','tests/post-publish-consumer/Cargo.toml',
+                 'tests/post-publish-consumer/src/lib.rs','console/node_modules/x']
+        members = {n:{} for n in names if n.endswith('/Cargo.toml')}
+        with patch.object(subprocess, 'check_output', side_effect=AssertionError('no new Git read')):
+            value = custody.member_source_coverage(names, custody.selected_sources(names), members)
+        self.assertEqual(value, dict(workspace_members=2,tracked_member_files=4,
+                                    original_node_modules_exclusion=True,complete=True))
+        with self.assertRaises(ValueError):
+            custody.member_source_coverage([], {}, {})

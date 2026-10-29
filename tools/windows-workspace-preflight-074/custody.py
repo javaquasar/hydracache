@@ -9,15 +9,26 @@ import sys
 import prepare as p
 
 STATUS_PATHS = ('Cargo.toml','Cargo.lock','deny.toml','.cargo','crates','tools',
-                'scripts','console','.github','.gitattributes','third_party')
+                'scripts','console','.github','.gitattributes','third_party',
+                'fuzz','tests/post-publish-consumer')
 
 
 def selected_sources(names):
     return [n for n in names if (n.startswith(('crates/','tools/','scripts/','console/',
-        '.cargo/','.github/','docs/plans/','third_party/'))
+        '.cargo/','.github/','docs/plans/','third_party/','fuzz/','tests/post-publish-consumer/'))
         or n in ('Cargo.toml','Cargo.lock','deny.toml','.gitattributes','docs/COMPAT.md',
                  'docs/RULES.md','docs/GATES.md','docs/testing/performance/0.74/qualification-manifest.toml'))
         and '/node_modules/' not in n]
+
+
+def member_source_coverage(names, sources, members):
+    p.require(members and all(n.endswith('/Cargo.toml') for n in members), 'workspace member catalogue')
+    prefixes = tuple(n.removesuffix('Cargo.toml') for n in members)
+    required = [n for n in names if n.startswith(prefixes) and '/node_modules/' not in n]
+    missing = [n for n in required if n not in sources]
+    p.require(not missing, 'workspace member source omitted from frame: '+', '.join(missing))
+    return dict(workspace_members=len(members),tracked_member_files=len(required),
+                original_node_modules_exclusion=True,complete=True)
 
 
 def git(root,*args):
@@ -58,10 +69,12 @@ def frame(root=p.ROOT,*,clean=True):
     versions['python']=dict(path=sys.executable,sha256=p.sha(Path(sys.executable).read_bytes()),version=sys.version)
     versions['git']=dict(path=shutil.which('git'),sha256=p.sha(Path(shutil.which('git')).read_bytes()),version=git(root,'--version').decode())
     fingerprint={k:v for k,v in os.environ.items() if k not in ('CARGO_INCREMENTAL','CARGO_BUILD_JOBS')}
-    return dict(head=git(root,'rev-parse','HEAD').decode().strip(),branch=branch,refs_sha256=p.sha(git(root,'show-ref','--head')),
+    value=dict(head=git(root,'rev-parse','HEAD').decode().strip(),branch=branch,refs_sha256=p.sha(git(root,'show-ref','--head')),
         config_sha256=p.sha(config),status_sha256=p.sha(status),sources=sources,helpers=helpers(root),versions=versions,
         inherited_environment_sha256=p.sha(json.dumps(fingerprint,sort_keys=True).encode()),
         environment=environment,targets=review['targets'],workspace_members=p.workspace_members(root))
+    value['member_source_coverage']=member_source_coverage(names,value['sources'],value['workspace_members'])
+    return value
 
 
 def equivalent(before,after):

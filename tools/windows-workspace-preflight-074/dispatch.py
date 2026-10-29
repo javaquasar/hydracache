@@ -13,7 +13,7 @@ import custody
 import owned
 import prepare as p
 
-CONTROL=p.ROOT/'target/workspace-dbus-20261029/runner-controls'
+CONTROL=p.ROOT/'target/workspace-markdown-20261029/runner-controls-final'
 
 
 def controls(root=p.ROOT):

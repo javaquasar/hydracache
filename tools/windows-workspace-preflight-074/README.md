@@ -146,3 +146,14 @@ live checks retained. Historical Swagger API tests use its immutable packet;
 new controls separately validate the current YAML bodies and refusal paths.
 Execution requires the distinct complete
 `target/yaml-security-20261028/runner-controls` receipt for the current helpers.
+
+The D-Bus successor retains its exact 38 lock/two manifest inverse edits and all
+older checks. Its historical tests now read the first tested source from the
+immutable Windows packet; they do not accept a later lock. The Markdown successor
+then checks the whole 0.13.5 lock and reconstructs the complete 0.13.4 predecessor
+before D-Bus/YAML/Swagger/sys. It changes one additional auxiliary digest only.
+Both preserve the same three conditional input reads, original environment/path
+refusals, target catalog, live checks and deadlines. Execution requires the exact
+`target/workspace-markdown-20261029/runner-controls-final` receipt for all current
+helpers. The source frame now also includes fuzz and post-publish consumer files;
+coverage of every workspace member is checked using existing observations.
