@@ -29,6 +29,8 @@ pub struct DifferentialReport {
     pub canary_detected: bool,
     pub concurrent_rounds: usize,
     pub concurrent_canary_detected: bool,
+    pub extended_steps: usize,
+    pub extended_process_canaries: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -43,7 +45,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let root = crate::doc_check::find_repo_root()?;
     prepare_java_at_root(&root)?;
     let report = check_actual_at_root(&root, seed, steps)?;
-    println!("imap-api-differential 0.75: OK (seed={}, {} independent observations, {} legal concurrent histories per language; both process canaries detected)", report.seed, report.comparisons, report.concurrent_rounds);
+    println!("imap-api-differential 0.75: OK (seed={}, {} v1 observations, {} legal concurrent histories per language, {} common v2 steps; sequential/concurrent and {} extended process canaries detected)", report.seed, report.comparisons, report.concurrent_rounds, report.extended_steps, report.extended_process_canaries);
     Ok(())
 }
 
@@ -91,6 +93,7 @@ pub fn check_actual_at_root(
         return Err("differential canary failed: Java dropped-set defect escaped detection".into());
     }
     let concurrent = check_concurrent_at_root(root, seed, 16)?;
+    let extended = crate::imap_extended_differential_075::check_actual(root, seed as i64)?;
     Ok(DifferentialReport {
         seed,
         steps: trace.steps.len(),
@@ -98,6 +101,8 @@ pub fn check_actual_at_root(
         canary_detected: true,
         concurrent_rounds: concurrent.rounds,
         concurrent_canary_detected: concurrent.canary_detected,
+        extended_steps: extended.steps,
+        extended_process_canaries: extended.process_canaries,
     })
 }
 
@@ -183,6 +188,22 @@ fn execute_java_peer(
     input: String,
     defect: Option<&str>,
 ) -> Result<Vec<u8>, Box<dyn Error>> {
+    execute_java_bounded(
+        root,
+        runner,
+        input,
+        &defect.into_iter().collect::<Vec<_>>(),
+        MAX_OUTPUT_BYTES,
+    )
+}
+
+pub(crate) fn execute_java_bounded(
+    root: &Path,
+    runner: &str,
+    input: String,
+    arguments: &[&str],
+    maximum: usize,
+) -> Result<Vec<u8>, Box<dyn Error>> {
     let classpath = root.join("tests/java-imap-benchmark/target/classes");
     if !classpath
         .join(format!("io/hydracache/imap/semantic/{runner}.class"))
@@ -206,18 +227,23 @@ fn execute_java_peer(
         .arg("-cp")
         .arg(classpath)
         .arg(format!("io.hydracache.imap.semantic.{runner}"));
-    if let Some(defect) = defect {
-        command.arg(defect);
-    }
+    command.args(arguments).current_dir(root);
+    execute_process_bounded(command, input, maximum)
+}
+
+pub(crate) fn execute_process_bounded(
+    mut command: Command,
+    input: String,
+    maximum: usize,
+) -> Result<Vec<u8>, Box<dyn Error>> {
     command
-        .current_dir(root)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
     let mut child = command.spawn()?;
     let stdout = child.stdout.take().ok_or("missing Java stdout")?;
     let stderr = child.stderr.take().ok_or("missing Java stderr")?;
-    let out_thread = thread::spawn(move || bounded_read(stdout, MAX_OUTPUT_BYTES));
+    let out_thread = thread::spawn(move || bounded_read(stdout, maximum));
     let err_thread = thread::spawn(move || bounded_read(stderr, MAX_STDERR_BYTES));
     let mut stdin = child.stdin.take().ok_or("missing Java stdin")?;
     let in_thread = thread::spawn(move || stdin.write_all(input.as_bytes()));
@@ -314,7 +340,7 @@ pub fn retain_failure_schedule(
     retain_source(root, &source, &format!("schedule-seed-{}", schedule.seed))
 }
 
-fn retain_source(
+pub(crate) fn retain_source(
     root: &Path,
     source: &str,
     prefix: &str,

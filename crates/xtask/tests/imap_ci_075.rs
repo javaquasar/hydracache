@@ -218,6 +218,8 @@ fn windows_tooling_uses_an_isolated_child_target_without_changing_linux_argument
                 "imap_cluster_fuzz_policy075",
                 "--test",
                 "imap_foundation_generate_075",
+                "--test",
+                "imap_extended_differential_075",
                 "--locked",
             ]
         );

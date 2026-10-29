@@ -38,6 +38,11 @@ public final class ExtendedSemanticOracle {
     }
     return new Report(scenario.seed(), actual.identity(), differences, checked);
   }
+  /** Streams expectations from the independent model without retaining a second observation history. */
+  public void forEachExpected(ExtendedSemanticScenario scenario, java.util.function.BiConsumer<Step, Observation> sink) {
+    Objects.requireNonNull(scenario); Objects.requireNonNull(sink); var model = new Model();
+    for (var step : scenario.steps()) sink.accept(step, model.execute(step));
+  }
   private static void difference(List<SemanticDifference> differences, Step step, String field, Object expected, Object observed) {
     if (differences.size() < 32) differences.add(new SemanticDifference("step." + step.id() + "." + field, brief(expected), brief(observed)));
   }
@@ -158,11 +163,8 @@ public final class ExtendedSemanticOracle {
       for (Entry entry : step.entries()) {
         if (!keys.add(entry.key())) throw new Refusal("invalid_argument");
         if ((step.operation() == Op.SET_TTL_IF_VERSION || step.operation() == Op.BULK_SET_TTL) && entry.ttl().kind() == TtlDirective.Kind.PRESERVE) throw new Refusal("invalid_argument");
-        if (entry.ttl().kind() == TtlDirective.Kind.EXPIRE_AFTER) {
-          try { Math.addExact(tick, entry.ttl().ticks()); }
-          catch (ArithmeticException overflow) { throw new Refusal("invalid_argument"); }
-        }
       }
+      if (step.operation() != Op.DISPATCH_PUT) validateExpiry(step);
       Op operation = step.operation() == Op.RESERVE_PUT || step.operation() == Op.DISPATCH_PUT ? Op.PUT : step.operation();
       var inputs = step.entries().stream().map(entry -> new Input(entry.key(), entry.value(),
           entry.versionRef().map(label -> {
@@ -175,11 +177,14 @@ public final class ExtendedSemanticOracle {
       Retained prior = outcomes.get(identity);
       if (prior != null) {
         if (!prior.shape().equals(shape)) throw new Refusal("mutation_identity_conflict");
+        if (step.operation() == Op.DISPATCH_PUT) validateExpiry(step);
         return step.operation() == Op.RESERVE_PUT ? Result.simple("pending") : prior.result();
       }
       Shape reserved = pending.get(identity);
+      if (step.operation() == Op.DISPATCH_PUT && reserved != null && tick == Long.MAX_VALUE) validateExpiry(step);
       if (reserved != null && !reserved.equals(shape)) throw new Refusal("mutation_identity_conflict");
       if (step.operation() == Op.DISPATCH_PUT && reserved == null) throw new Refusal("invalid_argument");
+      if (step.operation() == Op.DISPATCH_PUT) validateExpiry(step);
       if (tick == Long.MAX_VALUE && step.operation() != Op.RESERVE_PUT) { pending.remove(identity); return Result.simple("not_applied"); }
       if (operation == Op.PUT && inputs.get(0).ttl().kind() == TtlDirective.Kind.PRESERVE && !data.containsKey(inputs.get(0).key())) throw new Refusal("invalid_argument");
       if (step.operation() == Op.RESERVE_PUT) { pending.put(identity, shape); return Result.simple("pending"); }
@@ -218,6 +223,12 @@ public final class ExtendedSemanticOracle {
       return step.loseResponse() ? Result.simple("outcome_unknown") : result;
     }
     private boolean matches(Input input, Stored stored) { return input.token().equals(Optional.of(new Token(instance, stored.revision()))); }
+    private void validateExpiry(Step step) {
+      for (var entry : step.entries()) if (entry.ttl().kind() == TtlDirective.Kind.EXPIRE_AFTER) {
+        try { Math.addExact(tick, entry.ttl().ticks()); }
+        catch (ArithmeticException overflow) { throw new Refusal("invalid_argument"); }
+      }
+    }
     private Stored store(Input input, Stored old) {
       Long expiry = switch (input.ttl().kind()) { case ETERNAL -> null; case EXPIRE_AFTER -> Math.addExact(tick, input.ttl().ticks()); case PRESERVE -> old == null ? null : old.expiry(); };
       Stored value = new Stored(input.value().orElseGet(() -> old.value()), expiry, ++revision); data.put(input.key(), value); return value;

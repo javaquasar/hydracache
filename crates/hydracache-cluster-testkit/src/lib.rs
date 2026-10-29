@@ -27,6 +27,7 @@ pub mod value_plane_dedup_075;
 pub mod value_plane_differential_075;
 pub mod value_plane_durable_075;
 pub mod value_plane_explorer_075;
+pub mod value_plane_extended_075;
 pub mod value_plane_history_075;
 pub mod value_plane_listener_075;
 pub mod value_plane_loopback_075;

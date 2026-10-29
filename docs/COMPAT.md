@@ -77,6 +77,21 @@ decoder, SDK generation or persisted value format. Unknown versions fail before
 adapter execution. Version-token observations compare equality/freshness/instance
 scope rather than requiring identical language-local numeric IDs.
 
+The common Rust/Java extended corpus uses the separate development header
+`imap-extended-semantic-v2<TAB>signed-seed<TAB>step-count`. Its seven step fields
+are hex UTF-8 ID, textual operation, entries, requests, limits, ticks and loss flag.
+Entries use `keyhex:value-or-~:labelhex-or-~:p|e|xN`; requests use
+`clienthex:positive-sequence`. `~` denotes absence or an empty list, while an empty
+hex field denotes present empty bytes. Readers reject unknown versions, fields,
+noncanonical decimal/hex, invalid UTF-8, CR, unresolved token references and bounds
+before executing any owner. Limits are 256 steps, 2 MiB encoded input, 1 MiB per
+line and 512 KiB logical DTO payload. Observation transcripts use
+`imap-extended-observations-v2<TAB>actual|expected` and ID/closed JSON rows, bounded
+to 1 MiB per JSON row and 16 MiB total. These formats allocate no product IDs.
+The Rust and Java peers execute real local owners; expected observations come
+only from the separate Java model. Bounded shrinking preserves valid references,
+retains replayable source and does not claim an unconditional minimal result.
+
 The 0.75 migration corpus uses `fixture_version = 1` for bounded development
 staging/dry-run readers only. Runtime replica images preserve logical incarnation
 within the test cluster and have no persisted reader or production transport

@@ -32,6 +32,7 @@ pub mod imap_cluster_campaign_075;
 pub mod imap_cluster_fuzz_policy075;
 pub mod imap_contract;
 pub mod imap_distributed_correctness;
+pub mod imap_extended_differential_075;
 pub mod imap_foundation_component_proofs;
 pub mod imap_foundation_evidence;
 pub mod imap_foundation_generate;

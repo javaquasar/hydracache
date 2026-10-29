@@ -52,6 +52,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("gated-test-check") => xtask::gated_tests::run(args.collect())?,
         Some("imap-contract-check") => xtask::imap_contract::run(args.collect())?,
         Some("imap-api-differential") => xtask::imap_api_differential::run(args.collect())?,
+        Some("imap-extended-differential") => {
+            xtask::imap_extended_differential_075::run(args.collect())?
+        }
         Some("imap-capability-audit") => xtask::imap_capability_audit::run(args.collect())?,
         Some("imap-migration-dry-run") => xtask::imap_migration_dry_run::run(args.collect())?,
         Some("imap-comparison-check") => {
@@ -165,6 +168,7 @@ fn print_usage() {
          cargo xtask gated-test-check  # validate every ignored/cfg/env-gated test registration\n  \
          cargo xtask imap-contract-check --release 0.75  # validate the provisional Extended IMap W0 contracts\n  \
          cargo xtask imap-api-differential --release 0.75 [--seed <u64>] [--steps <n>]  # compare real Rust and Java local IMap execution traces\n  \
+         cargo xtask imap-extended-differential --release 0.75 [--seed <i64>] [--script <path>]  # compare actual Rust/Java v2 peers against independent model\n  \
          cargo xtask imap-capability-audit --release 0.75  # compare actual reference and existing SDK claims\n  \
          cargo xtask imap-migration-dry-run --release 0.75 [--fixtures <path>] [--output <path>]\n  \
          cargo xtask imap-comparison-check --release 0.75 [--require-ready]\n  \

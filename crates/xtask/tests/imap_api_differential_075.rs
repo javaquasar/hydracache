@@ -29,6 +29,8 @@ fn actual_process_differential_compares_every_observation() {
     assert!(report.canary_detected);
     assert_eq!(report.concurrent_rounds, 27);
     assert!(report.concurrent_canary_detected);
+    assert_eq!(report.extended_steps, 64);
+    assert_eq!(report.extended_process_canaries, 8);
 }
 
 #[test]

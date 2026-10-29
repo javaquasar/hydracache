@@ -130,6 +130,22 @@ grammar is unchanged. Old unprefixed fingerprints require explicit `migrateLegac
 against the original bounded scenario. Shrinking has replay/work budgets and returns the consumed
 work plus an explicit budget-exhausted flag; a bounded result need not be minimal.
 
+The separate `imap-extended-semantic-v2` corpus executes all 23 typed lifecycle actions through
+the actual unified owner and the independent `ExtendedSemanticOracle`. Its closed TSV codec uses
+hex UTF-8 identifiers, explicit absence markers, canonical numbers and bounded input. The seeded
+recipe includes retained and Pending outcomes, mixed conditional bulk results, expiry, instance
+restore, listener gap/cutover and terminal cleanup. Shorter generated corpora are valid prefixes.
+`ExtendedSemanticCorpus.shrink()` preserves version/seed and validates token references under
+explicit replay/work budgets; the caller must retain the original failure as its predicate.
+
+Run `io.hydracache.imap.semantic.ExtendedSemanticProcessRunner` from the built jar with
+`--v2-generate 117 256` to write a corpus, or `--v2-script <path|->` to execute one (`-` reads stdin).
+Adding `--v2-expected` streams independent model observations. Actual and expected modes emit the
+same bounded JSON observation schema with explicit TTL/presence, original receipts, token
+relations, owner counts, events and snapshot cut watermarks. Deliberate `--v2-fault` modes are
+development canaries; process comparison must reject their divergence. These fixtures qualify
+local reference behavior and do not activate a product adapter or production protocol.
+
 Run the focused gate with:
 
 ```powershell
