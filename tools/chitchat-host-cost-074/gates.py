@@ -11,4 +11,5 @@ text=text.replace('chitchat-stateful-result-20261029.md','chitchat-host-cost-res
 text=text.replace("c.need(mode in commands","commands['prepare-proof']=[sys.executable,'-B',str(c.TOOLS/'review.py')]\nc.need(mode in commands")
 text=text.replace('c.need(mode in commands',"commands['controls-final']=commands['controls']; commands['prepare-proof-final']=commands['prepare-proof']\nc.need(mode in commands")
 text=text.replace('c.need(mode in commands',"commands['controls-r1']=commands['controls']; commands['syntax-r1']=commands['format']; commands['revision-proof']=[sys.executable,'-B',str(c.TOOLS/'revise.py'),'review']\nc.need(mode in commands")
+text=text.replace('c.need(mode in commands',"commands['controls-accounting']=commands['controls']; commands['syntax-final']=commands['format']\nc.need(mode in commands")
 exec(compile(text,__file__+'[host-control-owned-checks]','exec'),globals())
