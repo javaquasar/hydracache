@@ -6,10 +6,14 @@ three whole-worker controls passed, but did not exercise that disappearance.
 Exact external-context recovery restored PID411840/NRestarts0 and retired its
 keeper; r2 is not resumed or promoted. Private propagation alone was insufficient.
 
-This isolated r3 change pins each original user filesystem root by FD, detaches
-only private copies, creates an own tmpfs /run/user parent and binds the SAME
-filesystem roots beneath own new dentries. No credentials/files are copied and
-the global tree is untouched. The full resulting mount graph is frozen before
+This isolated r3 change pins each original user filesystem root by FD, moves
+only the SAME private mount objects aside, creates an own tmpfs /run/user parent
+and moves those original mounts beneath own new dentries. Original kernel mount
+IDs and root device/inode must remain exact before/after both moves.
+No credentials/files are copied and the global tree is untouched. Two earlier
+bind preparations remain refused: ordinary bind did not preserve the held root
+identity, and the no-canonicalize variant refused mount. Both stop before a
+numerical attempt or stable-service mutation. The final full graph is frozen before
 the new plan. Every numeric observation remains exact; no normalization/filter.
 Add a seventh actual fault for user-leaf disappearance: only terminal recovery
 may accept that precise unrelated tmpfs loss, with all other source/protected/
@@ -48,9 +52,10 @@ namespace owner cannot block writer revocation: expiry remains independent, and
 post may use the pinned external host context solely to prove terminal recovery.
 Missing cgroups never mean empty. Unknown protected drift stays loud.
 
-Before stable-service mutation run six actual stand-in controls: healthy exit,
+Before stable-service mutation run seven actual stand-in controls: healthy exit,
 absolute expiry, external owner SIGKILL, own real mount-frame denial, that denial
-with SIGKILL, and namespace-owner SIGKILL followed by coordinator SIGKILL. Each
+with SIGKILL, namespace-owner SIGKILL followed by coordinator SIGKILL, and the
+complete original user mount leaf removal. Each
 requires autonomous retirement/fence/restoration; denied frames remain denied.
 Then run B/P/Q control images through the complete worker path. Only afterward
 create/review the new numerical context and launch once, with enough original
