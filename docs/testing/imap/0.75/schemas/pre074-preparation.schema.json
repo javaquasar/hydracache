@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hydracache:imap:pre074-preparation:v1",
+  "title": "HydraCache 0.75 pre-0.74 preparation receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "release",
+    "scope",
+    "source_sha",
+    "production_enabled",
+    "tooling",
+    "runtime",
+    "inputs",
+    "daemon",
+    "storage",
+    "java",
+    "rust",
+    "workspace_metadata",
+    "blocked_until_074",
+    "reproduced_packages"
+  ],
+  "properties": {
+    "schema": {
+      "const": "hydracache.imap.pre074-preparation.v1"
+    },
+    "release": {
+      "const": "0.75"
+    },
+    "scope": {
+      "const": "pre074_preparation"
+    },
+    "source_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "production_enabled": {
+      "const": false
+    },
+    "tooling": {
+      "$ref": "#/$defs/artifact"
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rust_fingerprint",
+        "java_fingerprint",
+        "java_launcher_sha256"
+      ],
+      "properties": {
+        "rust_fingerprint": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "java_fingerprint": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "java_launcher_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "minItems": 11,
+      "maxItems": 11,
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    },
+    "daemon": {
+      "$ref": "#/$defs/artifact"
+    },
+    "storage": {
+      "$ref": "#/$defs/artifact"
+    },
+    "java": {
+      "$ref": "#/$defs/artifact"
+    },
+    "rust": {
+      "$ref": "#/$defs/artifact"
+    },
+    "workspace_metadata": {
+      "$ref": "#/$defs/artifact"
+    },
+    "blocked_until_074": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "prefixItems": [
+        {
+          "const": "w0_closure"
+        },
+        {
+          "const": "production_backend_extraction_and_routing"
+        },
+        {
+          "const": "final_wire_and_durable_identities"
+        },
+        {
+          "const": "production_sdk_generation"
+        },
+        {
+          "const": "accepted_074_non_regression"
+        },
+        {
+          "const": "real_cluster_s2_and_release_admission"
+        }
+      ],
+      "items": false
+    },
+    "reproduced_packages": {
+      "maxItems": 2,
+      "items": {
+        "additionalProperties": false,
+        "required": [
+          "component",
+          "sha256"
+        ],
+        "type": "object",
+        "properties": {
+          "component": {
+            "type": "string",
+            "enum": [
+              "java-imap-benchmark",
+              "java-imap-hazelcast-075"
+            ]
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      },
+      "type": "array",
+      "minItems": 2
+    }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "bytes",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 536870912
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  }
+}

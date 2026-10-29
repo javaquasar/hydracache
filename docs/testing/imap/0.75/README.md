@@ -4,6 +4,12 @@ This directory is provisional, test-only foundation work. It does not enable a p
 distributed IMap capability, allocate wire or durable identities, or close W0 before 0.74 is
 published.
 
+The current predecessor-independent integration work is documented in
+[`pre074-implementation.md`](pre074-implementation.md). It adds current-daemon/storage
+characterization, closed development backend ports, external consumers, an isolated real
+Hazelcast diagnostic adapter, clean Java package reproduction and preparation receipts. The
+default product adapters and production release admission remain fail-closed.
+
 Run the bounded authority model and validate its exact-source receipt:
 
 ```powershell
@@ -141,7 +147,8 @@ the workflow contract.
 Both evidence jobs check out complete, unfiltered Git history: retained compatibility and
 predecessor closure tests read pinned ancestor objects. A real shallow-clone regression proves
 that restoring history recovers those objects; workflow canaries reject a weakened checkout.
-On Windows, nested tooling tests build in `target/imap-075/tooling` to avoid replacing the running `xtask.exe`.
+Nested tooling tests build in `target/imap-075/tooling` on every platform, preserving the live
+producer's executable identity and avoiding Windows executable sharing failures.
 
 The integrated runtime additionally connects `new_clustered` namespace registries to the
 actual proxy/owner/replica services. Held admission permits bind tenant, affected partitions

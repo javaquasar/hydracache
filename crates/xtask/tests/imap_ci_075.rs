@@ -39,6 +39,7 @@ fn receipts(mode: &str) -> Vec<CiReceipt> {
                 "imap-cluster-chaos".into(),
                 "imap-extended-concurrent".into(),
                 "imap-extended-evidence".into(),
+                "imap-pre074-preparation".into(),
             ],
             completed: true,
             passed: true,
@@ -118,6 +119,8 @@ fn incomplete_failed_mixed_source_or_weakened_lanes_never_complete_ci() {
 fn workflow_canaries_reject_unpinned_actions_ignored_failures_and_missing_completion() {
     for changed in [
         WORKFLOW.replace("'fuzz/**', ", ""),
+        WORKFLOW.replace("'tests/java-imap-hazelcast-075/**', ", ""),
+        WORKFLOW.replace("'tests/rust-imap-contract-consumer-075/**', ", ""),
         WORKFLOW.replace("'.github/workflows/ci.yml', ", ""),
         WORKFLOW.replace("paths: [", "paths-ignore: ["),
         WORKFLOW.replace("fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09", "v5"),
@@ -282,7 +285,7 @@ fn cli_rejects_ambiguous_modes_and_false_lane_identity_before_running_work() {
 }
 
 #[test]
-fn windows_tooling_uses_an_isolated_child_target_without_changing_linux_arguments() {
+fn tooling_isolates_the_live_producer_on_every_platform_and_preserves_gate_arguments() {
     let root = root();
     let isolated = root.join("target/imap-075/tooling");
     for windows in [false, true] {
@@ -325,6 +328,12 @@ fn windows_tooling_uses_an_isolated_child_target_without_changing_linux_argument
                 "imap_proof_process_075",
                 "--test",
                 "imap_extended_receipt_075",
+                "--test",
+                "imap_daemon_probe_075",
+                "--test",
+                "imap_storage_probe_075",
+                "--test",
+                "imap_pre074_075",
                 "--locked",
             ]
         );
@@ -332,6 +341,6 @@ fn windows_tooling_uses_an_isolated_child_target_without_changing_linux_argument
             .get_envs()
             .find(|(name, _)| name == &"CARGO_TARGET_DIR")
             .map(|(_, value)| value);
-        assert_eq!(child_target, windows.then_some(Some(isolated.as_os_str())));
+        assert_eq!(child_target, Some(Some(isolated.as_os_str())));
     }
 }

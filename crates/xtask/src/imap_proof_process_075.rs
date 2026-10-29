@@ -81,6 +81,7 @@ pub enum FailureKind {
     Exit,
     Cleanup,
     UnsupportedPlatform,
+    Observation,
 }
 #[derive(Debug)]
 pub struct ProcessFailure {
@@ -116,11 +117,28 @@ pub struct ProcessOutput {
     pub io_threads: usize,
 }
 
-#[cfg(any(windows, target_os = "linux"))]
+pub struct ProcessObservation<'a> {
+    pub stdout: &'a [u8],
+    pub stderr: &'a [u8],
+    pub root_exited: bool,
+    pub pid: u32,
+    pub elapsed: Duration,
+}
+
 pub fn execute(
+    command: Command,
+    input: &[u8],
+    bounds: ProcessBounds,
+) -> Result<ProcessOutput, ProcessFailure> {
+    execute_observed(command, input, bounds, |_| Ok(()))
+}
+
+#[cfg(any(windows, target_os = "linux"))]
+pub fn execute_observed(
     mut command: Command,
     input: &[u8],
     bounds: ProcessBounds,
+    mut observe: impl FnMut(ProcessObservation<'_>) -> Result<(), String>,
 ) -> Result<ProcessOutput, ProcessFailure> {
     bounds.validate()?;
     if input.len() > bounds.input_bytes {
@@ -207,6 +225,25 @@ pub fn execute(
                     .poll_exit(&mut child)
                     .map_err(|e| io_error(FailureKind::Io, e))?;
             }
+            observe(ProcessObservation {
+                stdout: &out,
+                stderr: &err,
+                root_exited: status.is_some(),
+                pid: child.id(),
+                elapsed: started.elapsed(),
+            })
+            .map_err(|reason| {
+                ProcessFailure::new(
+                    FailureKind::Observation,
+                    reason.chars().take(512).collect::<String>(),
+                )
+            })?;
+            if started.elapsed() >= bounds.timeout {
+                return Err(ProcessFailure::new(
+                    FailureKind::Timeout,
+                    "observer or process exceeded deadline",
+                ));
+            }
             if status.is_some() && !terminated {
                 tree.terminate()
                     .map_err(|e| io_error(FailureKind::Cleanup, e))?;
@@ -249,10 +286,11 @@ pub fn execute(
 }
 
 #[cfg(not(any(windows, target_os = "linux")))]
-pub fn execute(
+pub fn execute_observed(
     _: Command,
     _: &[u8],
     bounds: ProcessBounds,
+    _: impl FnMut(ProcessObservation<'_>) -> Result<(), String>,
 ) -> Result<ProcessOutput, ProcessFailure> {
     bounds.validate()?;
     Err(ProcessFailure::new(

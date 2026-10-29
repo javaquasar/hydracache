@@ -465,6 +465,21 @@ impl UnifiedIMapService {
         Ok(service)
     }
 
+    /// Development integration preflight. Does not advance time or reserve an outcome.
+    /// Execution still repeats validation under the owner lock.
+    pub fn validate_command(&self, command: &ServiceCommand) -> Result<(), MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        lifecycle::require_namespace(&state)?;
+        validate(&state, command)
+    }
+
+    pub fn namespace_generation(&self) -> u64 {
+        self.state
+            .lock()
+            .expect("local IMap state poisoned")
+            .namespace_generation
+    }
+
     pub fn execute(&self, command: ServiceCommand) -> Result<ServiceResult, MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
         state.requests = state.requests.saturating_add(1);

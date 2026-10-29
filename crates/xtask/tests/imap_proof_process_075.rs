@@ -1,6 +1,63 @@
 use std::process::Command;
 use std::time::Duration;
 use xtask::imap_proof_process_075::{execute, FailureKind, ProcessBounds};
+
+#[test]
+fn observed_process_runs_bounded_probes_and_preserves_cleanup_on_refusal() {
+    use xtask::imap_proof_process_075::execute_observed;
+    let mut saw_output = false;
+    let result = execute_observed(command("echo"), b"observed", bounds(), |observation| {
+        assert!(observation.pid > 0);
+        assert!(observation.stderr.is_empty());
+        assert!(observation.elapsed < bounds().timeout);
+        saw_output |= observation.stdout == b"observed";
+        Ok(())
+    })
+    .unwrap();
+    assert!(saw_output);
+    assert!(result.direct_child_reaped);
+    assert_eq!(result.remaining_live_members, 0);
+    let error = execute_observed(command("sleep"), &[], bounds(), |_| {
+        Err("probe refused".into())
+    })
+    .unwrap_err();
+    assert_eq!(error.kind, FailureKind::Observation);
+    assert_eq!(error.detail, "probe refused");
+    // An observer cannot make an expired run successful, including after root exit.
+    let mut short = bounds();
+    short.timeout = Duration::from_millis(10);
+    assert_eq!(
+        execute_observed(command("echo"), &[], short, |_| {
+            std::thread::sleep(Duration::from_millis(20));
+            Ok(())
+        })
+        .unwrap_err()
+        .kind,
+        FailureKind::Timeout
+    );
+}
+
+#[test]
+fn observer_refusal_after_a_real_descendant_is_announced_reaps_the_owned_tree() {
+    use xtask::imap_proof_process_075::execute_observed;
+    let temp = tempfile::tempdir().unwrap();
+    let file = temp.path().join("descendant");
+    let mut worker = command("hold_pipe");
+    worker.arg(&file);
+    let error = execute_observed(worker, &[], bounds(), |observation| {
+        if observation.stdout.starts_with(b"descendant:") {
+            return Err("reject announced descendant".into());
+        }
+        Ok(())
+    })
+    .unwrap_err();
+    assert_eq!(error.kind, FailureKind::Observation);
+    let pid = std::fs::read_to_string(file)
+        .unwrap()
+        .parse::<u32>()
+        .unwrap();
+    assert!(!live(pid));
+}
 fn command(mode: &str) -> Command {
     let mut c = Command::new(env!("CARGO_BIN_EXE_imap-proof-worker-075"));
     c.arg(mode);

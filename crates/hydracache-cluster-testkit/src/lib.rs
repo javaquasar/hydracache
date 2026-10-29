@@ -7,6 +7,7 @@
 pub mod canonical_key_075;
 pub mod client_surface_conformance;
 pub mod distributed_value_plane_075;
+pub mod imap_backend_contract_075;
 pub mod invariants;
 pub mod provisional_backend_075;
 pub mod reference_model;

@@ -109,7 +109,15 @@
       "authenticated_transfer_controls",
       "extended_concurrent_histories",
       "bounded_proof_process_lifecycle",
-      "exact_artifact_extended_receipts"
+      "exact_artifact_extended_receipts",
+      "ci_retained_history_checkout",
+      "development_backend_conformance_boundary",
+      "current_daemon_dispatch_characterization",
+      "existing_durable_storage_characterization",
+      "bounded_daemon_observation_harness",
+      "external_development_contract_consumers",
+      "official_hazelcast_diagnostic_adapter",
+      "pre074_preparation_producer_and_replay"
     ],
     "deferred": [
       "production_backend_and_partition_ownership",

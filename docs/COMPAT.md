@@ -119,6 +119,16 @@ evidence, not a product protocol, persistent service image or ship receipt.
 Typed entry views, helper futures, progress queries and scoped transfer controls remain runtime
 APIs; the 40 core operation IDs and production HC/1/HC/2 identities do not change.
 
+The separate development preparation receipt uses `hydracache.imap.pre074-preparation.v1`
+and `docs/testing/imap/0.75/schemas/pre074-preparation.schema.json`. Its only scope is
+`pre074_preparation`, with production disabled and all six predecessor/integration blockers
+retained. It binds clean source, current tooling/runtime, eleven fixed input artifacts, raw
+current-daemon, existing-v1-storage, packaged Java/Hazelcast and external Rust observations,
+workspace dependency metadata and two clean-directory Java package reproduction hashes. The
+verifier reexecutes trusted current probes and package reproduction; it never
+executes a receipt-selected command, binary or classpath. This is not W0 closure, a production
+SDK/durable/wire identity, supply-chain attestation, distributed qualification or release evidence.
+
 The 0.75 migration corpus uses `fixture_version = 1` for bounded development
 staging/dry-run readers only. Runtime replica images preserve logical incarnation
 within the test cluster and have no persisted reader or production transport

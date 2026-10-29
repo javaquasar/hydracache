@@ -220,6 +220,19 @@ evidence.
 
 ### Provisional safe-foundation progress
 
+The pre-0.74 preparation tranche repairs retained-history CI checkout and qualifies the existing
+proof worker on actual Linux lanes. A closed development backend boundary covers all 40 commands
+without becoming a production dependency. Current daemon HC1/RESP and HC2 process characterization,
+actual durable-v1 reopen/corruption/budget probes, external Rust/packaged Java consumers and a
+checksum-pinned official Hazelcast diagnostic adapter prepare integration independently of W0.
+The explicit Hazelcast profile is exclusive, sequential, eternal, BINARY, without TLS/backups or
+retained-identity retries; it cannot admit S2 or a numerical comparison. The machine-readable
+`pre074-integration-contract.json` retains production listener/security/readiness/drain/resource
+observations as required future adapter evidence. A separate preparation producer and verifier
+bind clean source, runtime, exact inputs and raw observations, and reexecute trusted current
+probes. See `docs/testing/imap/0.75/pre074-implementation.md` for work packages, concrete tests,
+commands and the remaining production boundary. These preparation results do not close W0.
+
 The bounded invocation/evidence tranche adds eight local slices: ordered batch entry views with
 usable incarnation-scoped tokens; clustered typed-helper futures; capacity-aware read/helper
 retry; read-only root/child helper progress; authenticated transfer abort/cleanup/restart;

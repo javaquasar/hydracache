@@ -205,6 +205,7 @@ public final class UnifiedIMapService {
   public Result execute(DomainCommand command) {
     return executeSnapshot(Objects.requireNonNull(command, "command").freeze());
   }
+  public long namespaceGeneration() { return generation; }
   public synchronized RequestSnapshot prepareRequest(DomainCommand command) {
     var snapshot = Objects.requireNonNull(command, "command").freeze();
     try { validate(snapshot.toBuilder(), true); }

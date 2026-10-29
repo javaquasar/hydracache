@@ -12,7 +12,7 @@ use std::process::Command;
 pub const RUST_VERSIONS: [&str; 2] = ["1.88.0", "1.94.0"];
 pub const JAVA_VERSIONS: [u32; 2] = [17, 21];
 const WORKFLOW: &str = ".github/workflows/imap-075.yml";
-const COMMANDS: [&str; 10] = [
+const COMMANDS: [&str; 11] = [
     "imap-distributed-correctness",
     "imap-capability-audit",
     "imap-migration-dry-run",
@@ -23,6 +23,7 @@ const COMMANDS: [&str; 10] = [
     "imap-cluster-chaos",
     "imap-extended-concurrent",
     "imap-extended-evidence",
+    "imap-pre074-preparation",
 ];
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -116,6 +117,16 @@ pub fn run_lane(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     if !tooling.success() {
         return Err("IMap tooling canaries failed".into());
     }
+    let output = std::path::Path::new(options.output.as_deref().ok_or("--output is required")?);
+    let preparation_dir = output
+        .parent()
+        .ok_or("CI output requires a parent")?
+        .join(format!(
+            "pre074-{}-{}-{}-{before}",
+            lane.rust, lane.java, lane.shard
+        ));
+    let preparation_receipt = crate::imap_pre074_075::produce(&root, &preparation_dir)?;
+    crate::imap_pre074_075::verify(&root, &preparation_receipt)?;
     let seeds = seeds_for(lane.shard)?;
     for seed in &seeds {
         crate::imap_api_differential::check_actual_at_root(&root, *seed, 128)?;
@@ -165,9 +176,10 @@ pub fn run_lane(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-/// Build the tooling gate without replacing this process's executable on Windows.
+/// Build tooling separately from the executing producer. Linux can unlink/replace a live
+/// executable too, which would invalidate the producer's exact tooling identity.
 #[doc(hidden)]
-pub fn tooling_command(root: &Path, windows: bool) -> Command {
+pub fn tooling_command(root: &Path, _windows: bool) -> Command {
     let mut command = Command::new("cargo");
     command
         .args([
@@ -201,12 +213,16 @@ pub fn tooling_command(root: &Path, windows: bool) -> Command {
             "imap_proof_process_075",
             "--test",
             "imap_extended_receipt_075",
+            "--test",
+            "imap_daemon_probe_075",
+            "--test",
+            "imap_storage_probe_075",
+            "--test",
+            "imap_pre074_075",
             "--locked",
         ])
         .current_dir(root);
-    if windows {
-        command.env("CARGO_TARGET_DIR", root.join("target/imap-075/tooling"));
-    }
+    command.env("CARGO_TARGET_DIR", root.join("target/imap-075/tooling"));
     command
 }
 
@@ -276,6 +292,8 @@ pub fn check_workflow(root: &Path) -> Result<(), Box<dyn Error>> {
         "crates/**",
         "sdks/java/**",
         "tests/java-imap-benchmark/**",
+        "tests/java-imap-hazelcast-075/**",
+        "tests/rust-imap-contract-consumer-075/**",
         "docs/testing/imap/**",
         "fuzz/**",
         ".github/workflows/ci.yml",

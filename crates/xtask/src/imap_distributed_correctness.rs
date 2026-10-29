@@ -20,6 +20,8 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "--test",
             "provisional_backend_075",
             "--test",
+            "imap_backend_contract_075",
+            "--test",
             "value_plane_admission_075",
             "--test",
             "value_plane_ack_075",
