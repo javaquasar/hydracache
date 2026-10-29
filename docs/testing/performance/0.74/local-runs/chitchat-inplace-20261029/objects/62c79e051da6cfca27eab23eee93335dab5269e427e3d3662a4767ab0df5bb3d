@@ -1,0 +1,6 @@
+{
+  "kind": "inert-source-reconstruction",
+  "reason": "extra terminal LF in accounting predecessor reconstruction",
+  "source_sha256": "62c25702755649b1a88c48ebc4c713e71250b4ef102316a9a01a42035f57cbbd",
+  "native_gate_replayed": false
+}

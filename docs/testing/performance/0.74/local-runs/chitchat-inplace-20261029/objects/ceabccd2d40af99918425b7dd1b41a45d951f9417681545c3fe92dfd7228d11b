@@ -1,0 +1,96 @@
+"""Byte retention only; never executes an archived producer."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import sys
+
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-inplace-20261029'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-inplace-20261029'
+sys.path.insert(0,str(ROOT/'tools/chitchat-inplace-074'))
+import common as c
+import analyze
+import run
+
+sha=lambda raw:hashlib.sha256(raw).hexdigest()
+
+for candidate in ('S','D','P'):
+    values=[]
+    for index in range(1,5):
+        folder=BASE/f'cohort-{candidate}-194-{index}'
+        assert json.loads((folder/'result.json').read_bytes())['complete']
+        value=json.loads((folder/'observations.json').read_bytes());run.semantics(value['rows']);values.append(value)
+    actual=analyze.reconcile(values,candidate)
+    assert actual==json.loads((BASE/f'analysis-{candidate}.json').read_bytes())
+for variant in ('B','S','D','P'):
+    image=json.loads((BASE/f'build-release-{variant}-194/artifact.json').read_bytes())
+    assert c.sha(Path(image['path']).read_bytes())==image['sha256']
+for compiler in ('194','188'):
+    for phase in ('build','focus','check','clippy'):
+        assert json.loads((BASE/f'{phase}-L3-{compiler}/result.json').read_bytes())['complete']
+    native=BASE/f'gnu-portable-{compiler}'
+    assert json.loads((native/'result.json').read_bytes())['complete']
+    for receipt in (native/'native').rglob('execution.json'):
+        value=json.loads(receipt.read_bytes());assert value['exit']==0 and value['retired'] and not value['errors']
+    for folder,total in ((BASE/f'focus-L3-{compiler}',119),(native/'native',118)):
+        cases=json.loads((folder/'cases.json').read_bytes());selected=[]
+        for index,row in enumerate(cases):
+            label=str(index) if total==119 else 'test-'+str(index)
+            raw=(folder/label/'stdout.log').read_text(encoding='utf8')
+            assert run.accounting(raw,len(row['names']),total)==row['counts']
+            selected+=row['names']
+            if row['prefix']=='delta::mtu_review::':run.semantics(run.diagnostic(raw,'HC074_SUPPORTED_DELTA:')['cases'])
+        assert len(selected)==len(set(selected))==73
+first=json.loads((BASE/'gnu-194/execution.json').read_bytes())
+assert first['classification']=='timeout' and first['exit']==124 and first['retired'] and not first['errors']
+assert not (BASE/'gnu-194/session-result.json').exists()
+assert json.loads((BASE/'controls-final/result.json').read_bytes())['complete']
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+
+
+def add(name,path):
+    raw=path.read_bytes();digest=sha(raw);dest=OUT/'objects'/digest
+    if dest.exists():assert dest.read_bytes()==raw
+    else:dest.write_bytes(raw)
+    assert name not in members;members[name]=dict(sha256=digest,bytes=len(raw))
+
+
+for path in sorted(BASE.rglob('*')):
+    if not path.is_file():continue
+    name=path.relative_to(BASE)
+    if name.parts[0] in ('targets','vendor','cargo-home'):continue
+    if name.name=='source.zip':continue  # All source bytes below; reconstruct from members.json.
+    add('capture/'+name.as_posix(),path)
+add('capture/cargo-home/config.toml',BASE/'cargo-home/config.toml')
+names=set(c.source())
+names.update(json.loads((BASE/'preparation/L3/result.json').read_bytes())['overlays'])
+names.update(p.relative_to(ROOT).as_posix() for p in (ROOT/'tools/windows-workspace-preflight-074').iterdir() if p.is_file())
+import zipfile
+for context in ('native-copy-prepare','native-copy-portable-prepare'):
+    capsule=json.loads((BASE/context/'members.json').read_bytes())
+    with zipfile.ZipFile(BASE/context/'source.zip') as archive:
+        for name,row in capsule.items():
+            raw=archive.read(name);assert len(raw)==row['bytes'] and sha(raw)==row['sha256']
+            digest=sha(raw);dest=OUT/'objects'/digest
+            if dest.exists():assert dest.read_bytes()==raw
+            else:dest.write_bytes(raw)
+            key=context+'-capsule/'+name;assert key not in members;members[key]=row
+for name in sorted(names):add('source/'+name,ROOT/name)
+for name in ('target/chitchat-native-copy-20261029.py','target/retain-chitchat-inplace-20261029.py',
+             'docs/testing/performance/0.74/chitchat-inplace-plan-20261029.md'):
+    add('source/'+name,ROOT/name)
+index=dict(schema='hc074-chitchat-inplace-v1',members=members,
+    source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+    original_source_index_sha256='d6fc98b961530fdc3b879018521500c80d65094e7f160263b7318fa8870d5dfe',
+    matched_release_cohorts=['B/S/S/B','B/D/D/B','B/P/P/B'],workload_cases=239,
+    S_regressions=71,D_regressions=9,P_regressions=0,Windows_L3_cases_per_compiler=73,
+    GNU_L3_source_copy_cases_per_compiler=73,CPU_qualified=False,C_allocations_qualified=False,
+    retained_memory_qualified=False,root_adopted=False,release_admitted=False,
+    first_inert_failure_raw_stream_gap=True,archived_code_executed_by_retainer=False,
+    excluded=['compiled targets/binaries','vendor caches','redundant zip container'])
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf8',newline='\n')
+for row in members.values():
+    raw=(OUT/'objects'/row['sha256']).read_bytes();assert sha(raw)==row['sha256'] and len(raw)==row['bytes']
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

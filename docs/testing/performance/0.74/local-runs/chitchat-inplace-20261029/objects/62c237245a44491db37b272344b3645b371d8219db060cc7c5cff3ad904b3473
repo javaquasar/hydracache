@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+    "-vV"
+  ],
+  "deadline": 143283.4031259,
+  "expected_exit": 0,
+  "retry": false
+}

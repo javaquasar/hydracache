@@ -1,0 +1,41 @@
+--- a/src/serialize.rs
++++ b/src/serialize.rs
+@@ -311,6 +311,7 @@
+ /// The stream gives the client an upperbound of what the overall payload length would
+ /// be if another item was appended.
+ /// This makes it possible to enforce a `mtu`.
++#[derive(Clone)]
+ pub struct CompressedStreamWriter {
+     output: Vec<u8>,
+     // temporary buffer used for block compression.
+@@ -340,13 +341,26 @@
+         let new_block_needed =
+             self.uncompressed_block.len() + new_item_serialized_len > self.block_threshold;
+         if new_block_needed {
+-            let num_blocks = (self.uncompressed_block.len() + new_item_serialized_len)
+-                .div_ceil(self.block_threshold);
+-            BLOCK_META_LEN * num_blocks
++            let previous_bound = BLOCK_META_LEN
+                 + self.output.len()
+                 + self.uncompressed_block.len()
++                + BLOCK_META_LEN
+                 + new_item_serialized_len
+-                + 1 // No more blocks tag.
++                + 1;
++            if self.uncompressed_block.len() + new_item_serialized_len
++                <= self.block_threshold * 2
++            {
++                previous_bound
++            } else {
++                assert!(self.block_threshold > 0, "positive block threshold");
++                // Internal Serializable implementations emit stable owned data.
++                // Keep old admission when its estimate already bounds the frame;
++                // otherwise account for every additional block. No original
++                // writer/builder state is changed by this local preview.
++                let mut preview = self.clone();
++                preview.append(item);
++                previous_bound.max(preview.finish().len())
++            }
+         } else {
+             BLOCK_META_LEN + self.output.len() + self.uncompressed_block.len() + new_item_serialized_len // current block
+                 + 1 // No more blocks tag.

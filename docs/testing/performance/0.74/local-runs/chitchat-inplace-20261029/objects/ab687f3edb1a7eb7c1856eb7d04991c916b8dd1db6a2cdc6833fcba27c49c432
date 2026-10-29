@@ -1,0 +1,52 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\bin\\rustfmt.exe",
+    "--edition",
+    "2024",
+    "--config",
+    "skip_children=true",
+    "--check",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-inplace-074\\allocation_tests.rs",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-inplace-074\\allocation_tests_portable.rs",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-inplace-074\\d_budget.rs",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-inplace-074\\l_regression.rs",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-inplace-074\\p_count.rs",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-inplace-074\\regression.rs"
+  ],
+  "artifact_sha256": "45aac101699af60aaae2f0d8686200a4f88756f29cc0c42a0a3e70256fd73372",
+  "bound": 1200,
+  "documents": {
+    "docs/articles/007-optimization-starts-with-measurement.md": "09ac20db1bc49ede34e472de1562585bd03b6c707fc71661fc823133e5aeb533",
+    "docs/testing/performance/0.74/README.md": "e675acf800a0a85d3d3f9600a1bce5bbf83d09ba99be9964a4ba899a4a25c8ad",
+    "docs/testing/performance/0.74/chitchat-inplace-plan-20261029.md": "3c54bb444d46989dc609247272a4ed5426add6cfc785b4f6caaac94d7b46cfcb",
+    "docs/testing/performance/0.74/chitchat-inplace-result-20261029.md": "45bcc21e4968519c92e97ca06c03e8d6cf78fda39fbffa627a297c02ff091829",
+    "docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": "d51d52705b3ee2a293cdba611cb96fcbadc6a5f697d114985a423f84acd14525"
+  },
+  "head": "09a5f4f458112b209940adbdd205c0384decb5af\n",
+  "retry": false,
+  "source": {
+    ".cargo/config.toml": "90f023744f969c176d98d811145b883b411da0fe8a294e930a0f965456ac49a3",
+    "Cargo.lock": "34d7a21d9833a180460e5a094f9ee7f1effe07dfb43a65d90865798963e0070c",
+    "Cargo.toml": "84b1986d8a2014be985460b3ecc4a809f3ae3e8f9822ef6c7134b3ecbe9af114",
+    "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "scripts/ci/watchdog_linux_group.py": "e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691",
+    "scripts/ci/watchdog_windows_job.py": "8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1",
+    "tools/chitchat-inplace-074/README.md": "ebff466a713c65a67901da16d4f7f91ddce60f8c09bf66c1d4248bdaba307c8d",
+    "tools/chitchat-inplace-074/allocation_tests.rs": "db0f793b2cd62b801924b6a978a11e0ff872bfcc4ca43a63faaa05fa798651ae",
+    "tools/chitchat-inplace-074/allocation_tests_portable.rs": "ab5cf5e12f5dfbb956ebcee59f8af554cf3030544eba07bd2e928ad2d0b109df",
+    "tools/chitchat-inplace-074/analyze.py": "c8f4c61c6e3f5ab14602d0d3a3e8eb348576bc9aeeccee581dc794a06b21ba68",
+    "tools/chitchat-inplace-074/common.py": "1d0140191eab460445575a94681eed06e97efddfe9e1a2d307c830a54f4ccc73",
+    "tools/chitchat-inplace-074/d_budget.rs": "d75a7b8fd9a9e231631153d5681320f59038ff51f0c875c2a59d19c21192272d",
+    "tools/chitchat-inplace-074/gnu.py": "8af353aec4efa689460aaec4a891c578514ed6707248c74b9ebd8225ad4145fe",
+    "tools/chitchat-inplace-074/l_regression.rs": "52e2cc2d765196c5aa6abd50bc4002530bc5056f53e38d421fa21ad934b2061a",
+    "tools/chitchat-inplace-074/p_count.rs": "07da8ffd0eea4802f31b675e75e37e9714be1ac7f25f9939a91f90e5617096e7",
+    "tools/chitchat-inplace-074/regression.rs": "ebf5e0ef3039b019d762855d28fed7381e2405c18440d85cc17613ac1afceea3",
+    "tools/chitchat-inplace-074/run.py": "c569b2fed835b3536fe4619c1e9e2e8063894e459e4f9f9e2ac9e0765786e46b",
+    "tools/chitchat-inplace-074/source_copy.py": "cab49d664b372a2bb0f162343cbb490fc49c575c99bd3932fb3e642bcb2aca6b",
+    "tools/chitchat-inplace-074/test_controls.py": "53296f195d97ba296ca4ba8a720358ce5ff07e7b978a28e0d7a12aeaedd700ba",
+    "tools/chitchat-preview-cost-074/cost_tests.rs": "ecfff40019b383eb5976e42fa16630ad9dc169904c17dd44598122cf2cd9341d",
+    "tools/dbus-source-package-074/package.py": "1b13c005abfbb96b1374e27fcc871ce0a14d87fe955e2097712a9cfb029fadf3",
+    "tools/windows-workspace-preflight-074/owned.py": "e7c5a3c0c4fea90f39772512c4ad96c60693fc0b482092a608dcf039e151eade"
+  }
+}

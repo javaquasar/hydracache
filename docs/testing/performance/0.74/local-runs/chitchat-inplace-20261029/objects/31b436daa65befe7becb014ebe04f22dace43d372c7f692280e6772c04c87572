@@ -1,0 +1,207 @@
+[
+  {
+    "counts": {
+      "failed": 0,
+      "filtered": 108,
+      "ignored": 0,
+      "passed": 10
+    },
+    "names": [
+      "serialize::tests::test_compressed_serialized_stream",
+      "serialize::tests::test_compressed_serialized_stream_len_when_there_are_no_compressed_blocks",
+      "serialize::tests::test_compressed_serialized_stream_with_random_data",
+      "serialize::tests::test_empty",
+      "serialize::tests::test_proptest_compressed_stream",
+      "serialize::tests::test_serialize_block_type",
+      "serialize::tests::test_serialize_bool",
+      "serialize::tests::test_serialize_chitchat_id",
+      "serialize::tests::test_serialize_heartbeat",
+      "serialize::tests::test_serialize_ip"
+    ],
+    "prefix": "serialize::tests::"
+  },
+  {
+    "counts": {
+      "failed": 0,
+      "filtered": 109,
+      "ignored": 0,
+      "passed": 9
+    },
+    "names": [
+      "delta::tests::test_delta_op_tag",
+      "delta::tests::test_delta_serialization_default",
+      "delta::tests::test_delta_serialization_exceed_mtu_on_add_kv",
+      "delta::tests::test_delta_serialization_exceed_mtu_on_add_node",
+      "delta::tests::test_delta_serialization_panic_if_add_after_exceed",
+      "delta::tests::test_delta_serialization_simple_foo",
+      "delta::tests::test_delta_serialization_simple_node",
+      "delta::tests::test_delta_serialization_simple_with_nodes_to_reset",
+      "delta::tests::test_delta_serialization_with_set_max_version"
+    ],
+    "prefix": "delta::tests::"
+  },
+  {
+    "counts": {
+      "failed": 0,
+      "filtered": 116,
+      "ignored": 0,
+      "passed": 2
+    },
+    "names": [
+      "digest::tests::test_digest_serialization",
+      "digest::tests::test_node_digest_serialization"
+    ],
+    "prefix": "digest::tests::"
+  },
+  {
+    "counts": {
+      "failed": 0,
+      "filtered": 114,
+      "ignored": 0,
+      "passed": 4
+    },
+    "names": [
+      "message::tests::test_ack",
+      "message::tests::test_bad_cluster",
+      "message::tests::test_syn",
+      "message::tests::test_syn_ack"
+    ],
+    "prefix": "message::tests::"
+  },
+  {
+    "counts": {
+      "failed": 0,
+      "filtered": 86,
+      "ignored": 0,
+      "passed": 32
+    },
+    "names": [
+      "state::tests::test_apply_delta_reset_does_not_violate_monotonic_property",
+      "state::tests::test_cluster_state_apply_delta",
+      "state::tests::test_cluster_state_apply_delta_last_gc_equal_max_does_not_reset",
+      "state::tests::test_cluster_state_compute_delta_depth_first_chitchat",
+      "state::tests::test_cluster_state_compute_delta_depth_first_single_node",
+      "state::tests::test_cluster_state_compute_delta_missing_node",
+      "state::tests::test_cluster_state_compute_delta_should_ignore_dead_nodes",
+      "state::tests::test_cluster_state_compute_delta_with_old_node_state_that_needs_reset",
+      "state::tests::test_cluster_state_compute_digest",
+      "state::tests::test_cluster_state_delete_after_ttl",
+      "state::tests::test_cluster_state_first_version_is_one",
+      "state::tests::test_cluster_state_gc_keys_marked_for_deletion",
+      "state::tests::test_cluster_state_missing_node",
+      "state::tests::test_cluster_state_set",
+      "state::tests::test_cluster_state_set_and_mark_for_deletion",
+      "state::tests::test_cluster_state_set_with_same_value_updates_version",
+      "state::tests::test_delta_accepted_when_sender_gc_equals_receiver_max",
+      "state::tests::test_iter_prefix",
+      "state::tests::test_node_apply_delta_different_last_gc_is_ok_if_below_max_version",
+      "state::tests::test_node_apply_delta_no_reset_if_older_version",
+      "state::tests::test_node_apply_delta_on_reset_fresher_version",
+      "state::tests::test_node_apply_delta_simple",
+      "state::tests::test_node_apply_same_value_different_version",
+      "state::tests::test_node_set_delete",
+      "state::tests::test_node_set_delete_after_ttl_set",
+      "state::tests::test_node_set_with_ttl",
+      "state::tests::test_node_skip_delta_from_the_future",
+      "state::tests::test_sorted_stale_nodes_empty",
+      "state::tests::test_sorted_stale_nodes_insert",
+      "state::tests::test_sorted_stale_nodes_into_iter",
+      "state::tests::test_sorted_stale_nodes_offer",
+      "state::tests::test_stale_node_iter_stale_key_values"
+    ],
+    "prefix": "state::tests::"
+  },
+  {
+    "counts": {
+      "failed": 0,
+      "filtered": 115,
+      "ignored": 0,
+      "passed": 3
+    },
+    "names": [
+      "serialize::mtu_review::all_stream_bounds_hold",
+      "serialize::mtu_review::minimal_bound_contract",
+      "serialize::mtu_review::observe_streams"
+    ],
+    "prefix": "serialize::mtu_review::"
+  },
+  {
+    "counts": {
+      "failed": 0,
+      "filtered": 117,
+      "ignored": 0,
+      "passed": 1
+    },
+    "names": [
+      "migration_review_074::snapshot"
+    ],
+    "prefix": "migration_review_074::snapshot"
+  },
+  {
+    "counts": {
+      "failed": 0,
+      "filtered": 117,
+      "ignored": 0,
+      "passed": 1
+    },
+    "names": [
+      "delta::mtu_review::supported_delta_operations"
+    ],
+    "prefix": "delta::mtu_review::"
+  },
+  {
+    "counts": {
+      "failed": 0,
+      "filtered": 117,
+      "ignored": 0,
+      "passed": 1
+    },
+    "names": [
+      "delta::oversize_review::oversized_rejection_preserves_writer"
+    ],
+    "prefix": "delta::oversize_review::"
+  },
+  {
+    "counts": {
+      "failed": 0,
+      "filtered": 112,
+      "ignored": 0,
+      "passed": 6
+    },
+    "names": [
+      "serialize::inplace_review::actual_predictor_matches_exact_reference",
+      "serialize::inplace_review::budget_matches_reference_without_losing_valid_admissions",
+      "serialize::inplace_review::independent_writers_do_not_share_scratch",
+      "serialize::inplace_review::old_budget_rejection_does_not_serialize_or_grow",
+      "serialize::inplace_review::prediction_restores_logical_state_and_bounds_capacity",
+      "serialize::inplace_review::unwind_restores_pending_prefix_and_scratch_length"
+    ],
+    "prefix": "serialize::inplace_review::"
+  },
+  {
+    "counts": {
+      "failed": 0,
+      "filtered": 117,
+      "ignored": 0,
+      "passed": 1
+    },
+    "names": [
+      "delta::cost_review::allocator_control"
+    ],
+    "prefix": "delta::cost_review::allocator_control"
+  },
+  {
+    "counts": {
+      "failed": 0,
+      "filtered": 115,
+      "ignored": 0,
+      "passed": 3
+    },
+    "names": [
+      "serialize::state_review::actual_helper_preserves_mixed_multiblock_streams",
+      "serialize::state_review::ambiguous_rejection_restores_state_and_records_retained_capacity",
+      "serialize::state_review::populated_scratch_and_pending_survive_prediction_and_unwind"
+    ],
+    "prefix": "serialize::state_review::"
+  }
+]

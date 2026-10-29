@@ -1,0 +1,41 @@
+"""One exact additional regression; preserve the original 105-test catalog."""
+from pathlib import Path
+import difflib,hashlib,json,shutil,sys
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-mtu-20261028'
+variant=sys.argv[1];assert variant in ('B2','G','R2')
+parent={'B2':'B','G':'R','R2':'G'}[variant]
+out=BASE/'preparation'/variant;out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def files(folder):return {p.relative_to(folder).as_posix():sha(p.read_bytes()) for p in sorted(folder.rglob('*')) if p.is_file()}
+if variant=='R2':
+ assert json.loads((BASE/'oversize-B2-194/result.json').read_bytes())['accounting']['test_pass']
+ assert json.loads((BASE/'oversize-G-194/result.json').read_bytes())['accounting']['failed']==1
+ assert b'item_len <= u16::MAX as usize' in (BASE/'oversize-G-194/stdout.log').read_bytes()
+prior=json.loads((BASE/'preparation'/parent/'result.json').read_bytes())
+source=BASE/'fixtures'/parent;assert files(source)==prior['files']
+dest=BASE/'fixtures'/variant;shutil.copytree(source,dest)
+overlay=ROOT/'tools/chitchat-mtu-review-074/oversize_tests.rs'
+before=(dest/'src/serialize.rs').read_text(encoding='utf-8')
+if variant in ('B2','G'):
+ append='\n#[cfg(test)]\n#[path = '+json.dumps(overlay.as_posix())+']\nmod oversize_review;\n'
+ (dest/'src/delta.rs').write_bytes((dest/'src/delta.rs').read_bytes()+append.encode())
+ after=before
+else:
+ old='''            if self.uncompressed_block.len() + new_item_serialized_len
+                <= self.block_threshold * 2'''
+ new='''            if new_item_serialized_len > u16::MAX as usize
+                || self.uncompressed_block.len() + new_item_serialized_len
+                    <= self.block_threshold * 2'''
+ assert before.count(old)==1;after=before.replace(old,new,1)
+ (dest/'src/serialize.rs').write_text(after,encoding='utf-8',newline='\n')
+patch=''.join(difflib.unified_diff(before.splitlines(True),after.splitlines(True),fromfile='a/src/serialize.rs',tofile='b/src/serialize.rs'))
+(out/'source.patch').write_text(patch,encoding='utf-8',newline='\n');(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+result=dict(prior,variant=variant,parent=parent,files=files(dest),overlays=dict(prior['overlays']),source_patch_sha256=sha((out/'source.patch').read_bytes()),targets={})
+result['overlays'][overlay.relative_to(ROOT).as_posix()]=sha(overlay.read_bytes())
+for compiler in ('194','188'):
+ identity=sha(json.dumps(dict(files=result['files'],overlays=result['overlays'],compiler=compiler),sort_keys=True).encode())
+ result['targets'][compiler]=str(BASE/'targets'/variant/compiler/identity)
+for name,digest in result['root_inputs'].items():assert sha((ROOT/name).read_bytes())==digest
+(out/'result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+print(json.dumps(dict(variant=variant,parent=parent,extra_test='oversized rejection',root_graph_changed=False)))

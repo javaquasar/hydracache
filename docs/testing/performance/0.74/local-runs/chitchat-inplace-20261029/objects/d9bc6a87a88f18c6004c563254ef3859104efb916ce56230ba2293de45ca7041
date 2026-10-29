@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.88.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+    "clippy",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-inplace-20261029\\fixtures\\L\\Cargo.toml",
+    "--target-dir",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-inplace-20261029\\targets\\L-188",
+    "--all-targets",
+    "--all-features",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "deadline": 143809.4506833,
+  "expected_exit": 0,
+  "retry": false
+}

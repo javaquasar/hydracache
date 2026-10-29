@@ -1,0 +1,18 @@
+
+running 1 test
+test delta::cost_review::allocator_control ... ok
+
+successes:
+
+---- delta::cost_review::allocator_control stdout ----
+
+thread 'delta::cost_review::allocator_control' (24792) panicked at src\..\..\..\..\..\tools\chitchat-inplace-074\allocation_tests.rs:168:53:
+controlled
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+successes:
+    delta::cost_review::allocator_control
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 118 filtered out; finished in 0.00s
+

@@ -1,0 +1,66 @@
+"""Retain exact tool-only append predecessors and final local gate ledger."""
+from pathlib import Path
+import hashlib,json
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-mtu-20261028'
+out=BASE/'ledger';out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def read(name):return json.loads((BASE/name).read_bytes())
+def observed(action,variant,marker):
+ folder=BASE/f'{action}-{variant}-194';r=json.loads((folder/'result.json').read_bytes())
+ assert r['exit']==0 and r['accounting']['test_pass']
+ lines=[l for l in (folder/'stdout.log').read_text(encoding='utf-8').splitlines() if l.startswith(marker)]
+ assert len(lines)==1
+ return json.loads(lines[0][len(marker):])
+assert read('comparison-R2/result.json')['actual_admission_and_wires_equal_baseline']
+for action,marker in (('observe','HC074_STREAM_BOUNDS:'),('delta','HC074_SUPPORTED_DELTA:'),('wide','HC074_ZSTD_SNAPSHOT:')):
+ assert observed(action,'S',marker)==observed(action,'R2',marker)
+expected_red={'minimal-B-194':101,'clippy-M-194':101,'oversize-G-194':101,'policy-R2-194':1}
+steps={};images=set();needed={}
+for folder in sorted(BASE.iterdir()):
+ if not folder.is_dir() or not (folder/'execution.json').is_file():continue
+ result=json.loads((folder/'result.json').read_bytes());intent=json.loads((folder/'intent.json').read_bytes());execution=json.loads((folder/'execution.json').read_bytes())
+ assert result['exit']==expected_red.get(folder.name,0),folder.name
+ assert result['source_unchanged'] and result['head_unchanged'] and result['fixture_inputs_unchanged']
+ assert execution['retired'] and not execution['errors']
+ assert (execution['bound_seconds'],execution['capacity_poll_seconds'],execution['cleanup_seconds'])==(1200,5,5)
+ steps[folder.name]=dict(exit=result['exit'],source_head=intent['head'],source_stable=True,
+  retired=True,accounting=result.get('accounting'),artifact=result.get('artifact'))
+ if folder.name.startswith('build-'):
+  artifact=result['artifact'];assert artifact['path'] not in images;images.add(artifact['path'])
+  assert sha(Path(artifact['path']).read_bytes())==artifact['sha256']
+ for name,digest in intent['source'].items():
+  if name.startswith('tools/chitchat-mtu-review-074/'):needed.setdefault(name,set()).add(digest)
+for label in ('check-S-194','clippy-S-194','policy-S-194','wide-S-188','oversize-S-188','state-S-188'):
+ assert steps[label]['exit']==0
+assert 'advisories ok, bans ok, licenses ok, sources ok' in (BASE/'policy-S-194/stdout.log').read_text(encoding='utf-8')
+assert read('policy-S-194/advisory-db-before.json')==read('policy-S-194/advisory-db-after.json')
+versions={}
+for name,digests in needed.items():
+ raw=(ROOT/name).read_bytes();options=[raw]
+ if name.endswith('/README.md'):
+  for marker in (b'\nThe M input',b'\nThe first preview'):
+   if marker in raw:options.extend([raw.split(marker,1)[0],raw.split(marker,1)[0]+b'\n'])
+ if name.endswith('/accounting.py'):
+  options.append(raw.split(b'\n\ndef extended_inventory',1)[0]+b'\n')
+ if name.endswith('/test_accounting.py'):
+  start=raw.index(b'    def test_extension_preserves_all_105_and_adds_only_named_regression')
+  end=raw.index(b'    def test_success_and_failure_are_both_complete_and_distinct',start)
+  options.append(raw[:start]+raw[end:])
+ candidates={sha(v):v for body in options for v in (body,body.replace(b'\r\n',b'\n'),body.replace(b'\r\n',b'\n').replace(b'\n',b'\r\n'))}
+ assert digests.issubset(candidates), (name,sorted(digests-candidates.keys()))
+ for digest in digests:
+  file=out/'source-versions'/digest;file.parent.mkdir(exist_ok=True)
+  if not file.exists():file.write_bytes(candidates[digest])
+ versions[name]=sorted(digests)
+for name,digest in read('preparation/S/result.json')['root_inputs'].items():assert sha((ROOT/name).read_bytes())==digest
+result=dict(steps=steps,tool_source_versions=versions,unique_build_image_paths=len(images),
+ final_variant='S',stream_cases=37,supported_operations=239,admission_and_wire_equal_baseline=True,
+ malformed_controls=7,context_controls=2,oversized_cases=3,
+ rust_194_selected_passed=sum(steps[n]['accounting']['passed'] for n in steps if n.endswith('-S-194') and steps[n]['accounting']),
+ rust_188_selected_passed=sum(steps[n]['accounting']['passed'] for n in steps if n.endswith('-S-188') and steps[n]['accounting']),
+ fixture_policy_pass=True,product_policy_replayed=False,root_dependencies_changed=False,
+ cost_attributed=False,gnu_qualified=False,published=False,release_admitted=False)
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+(out/'result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+print(json.dumps({k:v for k,v in result.items() if k not in ('steps','tool_source_versions')}))

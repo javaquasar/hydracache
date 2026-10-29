@@ -1,0 +1,9 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "complete source-copy first phase",
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-native-copy-20261029.py\", line 142, in main\n    c.need(child.returncode==execution['exit']==0 and execution['retired'] and not execution['errors'] and session['complete'],'complete source-copy first phase')\n    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-inplace-074\\common.py\", line 29, in need\n    if not value:raise ValueError(reason)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: complete source-copy first phase\n",
+    "type": "ValueError"
+  },
+  "release_admitted": false
+}

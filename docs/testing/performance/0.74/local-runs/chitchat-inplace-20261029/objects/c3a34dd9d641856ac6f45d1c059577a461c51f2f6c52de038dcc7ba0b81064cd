@@ -1,0 +1,9 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "D Rust formatting",
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-inplace-074\\run.py\", line 109, in session\n    if label in ('prepare','format','derive-D'):setup(label)\n                                                ~~~~~^^^^^^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-inplace-074\\run.py\", line 80, in setup\n    c.need(done.returncode==0,'D Rust formatting')\n    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-inplace-074\\common.py\", line 28, in need\n    if not value:raise ValueError(reason)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: D Rust formatting\n",
+    "type": "ValueError"
+  },
+  "release_admitted": false
+}

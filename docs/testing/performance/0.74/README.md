@@ -7521,3 +7521,23 @@ unchanged root policy after preserving/fixing the owned probe's missing license
 in a separate metadata-only fixture. The first offline index refusal remains too.
 This closes selected seekable/legacy/context coverage, not Root's three findings,
 the declined S preview, compatible MTU/distribution, or original execution/recovery.
+
+The [MTU in-place continuation](chitchat-inplace-result-20261029.md) retains three
+separate matched release cohorts. Budget-only D reduces S's 71 Rust allocation
+regressions to nine; P removes those nine by using existing pending/scratch in the
+ambiguous branch. All 239 admissions/wires remain exact and all measured Rust
+allocation/reallocation/requested/peak fields match the B counterfactual. This is
+a Rust allocation subgate, not CPU/C/RSS/retained qualification or Root adoption.
+Separate test-only successors preserve MSRV lint refusals; L2 passes 73 focused
+Windows cases and check/strict Clippy on Rust 1.94/1.88. The extra ambiguous-refusal
+control explicitly records retained capacity growth. Full distribution, native/
+product/workspace and original-execution/recovery gates remain open.
+
+Its final test-only successor L3 also fixes the observer's Windows-only Instant
+import for GNU. All four final Windows/GNU 1.94/1.88 peers pass 73 focused cases,
+check and strict all-target/all-feature Clippy. Thirteen inert/source-equivalence
+controls pass. The first `/mnt/c` GNU timeout, absent inner completion, adapter
+refusal and subsequent owned lint failure remain distinct from the passing native
+source-copy context. Guard rounds and deadlines stay exact. C/CPU/RSS/retained,
+distributable backport/public consumers, Root adoption and full release gates
+remain open; the primary product lock is unchanged.

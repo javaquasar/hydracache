@@ -1,0 +1,52 @@
+"""Final current-source checks under the unchanged local owned envelope."""
+from pathlib import Path
+import json
+import os
+import subprocess
+import sys
+import traceback
+
+ROOT=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(ROOT/'tools/chitchat-inplace-074'))
+import common as c
+import run
+
+BASE=c.BASE/'final-checks'
+DOCS=('docs/articles/007-optimization-starts-with-measurement.md',
+      'docs/testing/performance/0.74/README.md',
+      'docs/testing/performance/0.74/release-closure-execution-plan-20261026.md',
+      'docs/testing/performance/0.74/chitchat-inplace-plan-20261029.md',
+      'docs/testing/performance/0.74/chitchat-inplace-result-20261029.md')
+mode=sys.argv[1];c.need(mode in ('format-helpers','format-check','doc-check','performance-contract'),'fixed final check')
+tool,_=run.environment()
+if mode=='format-helpers':argv=[str(tool/'rustfmt.exe'),'--edition','2024','--config','skip_children=true',*[str(c.TOOLS/n) for n in ('d_budget.rs','p_count.rs')]]
+elif mode=='format-check':argv=[str(tool/'rustfmt.exe'),'--edition','2024','--config','skip_children=true','--check',*[str(p) for p in c.TOOLS.glob('*.rs')]]
+elif mode=='doc-check':argv=[str(ROOT/'target/debug/xtask.exe'),'doc-check']
+else:argv=[str(ROOT/'target/debug/xtask.exe'),'performance-contract-check','--release','0.74']
+out=BASE/mode
+if len(sys.argv)==3:
+    c.need(sys.argv[2]=='worker','one isolated worker')
+    result=c.owned._owned(c.owned.load_job().WindowsJob(),argv,str(ROOT),c.capacity,bound=1200)
+    c.write(out,'execution.json',result);raise SystemExit(result['exit'])
+out.mkdir(parents=True,exist_ok=False)
+with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+    (out/'producer.py').write_bytes(Path(__file__).read_bytes())
+    before=c.source();docs={n:c.sha((ROOT/n).read_bytes()) for n in DOCS};head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT)
+    artifact=c.sha(Path(argv[0]).read_bytes())
+    if mode=='format-helpers':
+        for n in ('d_budget.rs','p_count.rs'):(out/('before-'+n)).write_bytes((c.TOOLS/n).read_bytes())
+    c.write(out,'intent.json',dict(argv=argv,source=before,documents=docs,head=head.decode(),artifact_sha256=artifact,bound=1200,retry=False))
+    result=dict(complete=False,release_admitted=False)
+    try:
+        child=subprocess.run([sys.executable,'-B',str(Path(__file__)),mode,'worker'],cwd=ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,timeout=1210)
+        owned=json.loads((out/'execution.json').read_bytes());after=c.source()
+        changed={n for n in before.keys()|after.keys() if before.get(n)!=after.get(n)}
+        allowed={(c.TOOLS/n).relative_to(ROOT).as_posix() for n in ('d_budget.rs','p_count.rs')} if mode=='format-helpers' else set()
+        c.need(changed<=allowed,'unexpected source change')
+        c.need(docs=={n:c.sha((ROOT/n).read_bytes()) for n in DOCS} and head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT),'documents/HEAD drift')
+        c.need(artifact==c.sha(Path(argv[0]).read_bytes()),'held tool image drift')
+        c.need(child.returncode==owned['exit']==0 and owned['retired'] and not owned['errors'],'complete first check')
+        result.update(complete=True,changed=sorted(changed),source_after=after)
+    except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+    c.write(out,'result.json',result)
+print(json.dumps(dict(mode=mode,complete=result['complete'])));raise SystemExit(0 if result['complete'] else 1)

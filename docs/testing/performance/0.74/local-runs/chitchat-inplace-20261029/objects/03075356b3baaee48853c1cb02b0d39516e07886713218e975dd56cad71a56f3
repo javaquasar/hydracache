@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-inplace-20261029\\targets\\D-194-release\\release\\deps\\chitchat-ae92b47ffc266a62.exe",
+    "delta::cost_review::operation_allocation_observations",
+    "--exact",
+    "--test-threads=1",
+    "--show-output",
+    "--color=never"
+  ],
+  "deadline": 143149.282147,
+  "expected_exit": 0,
+  "retry": false
+}

@@ -427,6 +427,17 @@ check and strict Clippy. Source patches remain archived; no product dependency
 was adopted or reverted. GNU/consumer/distribution, D-Bus and the actual final
 package/workspace gates remain open; no new optimization hypothesis is opened.
 
+The [in-place MTU continuation](chitchat-inplace-result-20261029.md) preserves
+that S decline. Separate D/P cohorts reduce the 71 Rust-allocation regressions
+first to nine, then zero, with all 239 original admissions/wires exact. Final
+test-only L3 preserves P production bodies and passes 73 focused tests/check/
+strict Clippy on Windows/GNU 1.94/1.88; 13 accounting/source controls pass. First
+MSRV/GNU lint refusals, `/mnt/c` timeout and source-copy adapter refusal remain.
+The extra ambiguous-rejection control exposes retained capacity explicitly.
+This closes selected Rust allocation and cross-platform functional subgates,
+not C/CPU/RSS/retained behavior, distributable/public consumers, Root's three
+Zstd findings or actual complete package/workspace/original-execution gates.
+
 The [D-Bus MSRV preparation](dbus-msrv-backport-result-20261028.md) now retains
 the original declared-floor, transitive UUID and genuine Rust 1.88 E0716 refusals.
 Two inline-formatting source repairs pass the common regression against upstream

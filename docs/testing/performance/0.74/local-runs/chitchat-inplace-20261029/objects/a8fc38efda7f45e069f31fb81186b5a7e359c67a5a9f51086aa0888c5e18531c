@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-inplace-20261029\\targets\\P-188\\debug\\deps\\chitchat-c1b38706d5f696eb.exe",
+    "serialize::tests::",
+    "--test-threads=1",
+    "--show-output",
+    "--color=never"
+  ],
+  "deadline": 143356.7344791,
+  "expected_exit": 0,
+  "retry": false
+}

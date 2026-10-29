@@ -1,0 +1,35 @@
+{
+  "files": {
+    ".cargo_vcs_info.json": "7469f985e1a4f7739fd960cdc6af5b80d441ecfc3f08b3d8385e43224cd6735a",
+    "Cargo.lock": "89e7e80fceb5562ae4ffaf78093073770e1864ff31d7b443afcb9b9a4926d674",
+    "Cargo.toml": "182803284025223fc6b5b2fd58a84a21229c6fbf59fa30baf40591540e398958",
+    "Cargo.toml.orig": "b6f5762b2a03ffbfbb102dee2583818f1a0b6fbd7a1fa359f0e02f14bd9125ad",
+    "src/configuration.rs": "8818c37d1046a656c2fb03740f78561edaee989a4dd86e57ed5312bada211e14",
+    "src/delta.rs": "36273207b9aff4d29081c6ec1ca5744c14ddfd353e7b70840c5b55cefbfc72af",
+    "src/digest.rs": "3d66b262c2f69a1f2e769fc6cd2b23ec4a3bf29acc990bb1530c1007d7a7ce79",
+    "src/failure_detector.rs": "1230da150a8f023a81fdeef82e6bb186cdbf5818ab74b6f3baa4a30d2ccc889a",
+    "src/lib.rs": "0e2e66b2fcb42026332fe7cbd02c98bdc7d63f783c69af80f7c86f5f0d07b51a",
+    "src/listener.rs": "aa96611d3041e2cf5b0abb94fbd40d4eaa60a96739df4845ea8b45a33429dd11",
+    "src/message.rs": "d3d0b88558034a0da601b03bd48fbab89e62562bd23554f8f6dcb208fd0d51cc",
+    "src/serialize.rs": "0d1186bc41e78367e12bcb05773744a92c01c0fb718fe14df11431c9e35cbb86",
+    "src/server.rs": "03c3ddf34b503e8e30019abd434762547890ab0703e0e4741f2c13859a2c336a",
+    "src/state.rs": "6f078fb9b049fae017848cbee7e84346c9479942a56d2b7f6505b929ff31c406",
+    "src/transport/channel.rs": "6cc9dc23a3b6a1f282c6ae1ab20195f74b4116a9f036e2236bd47526e0fb2944",
+    "src/transport/mod.rs": "5f56d64b916df1e709e9c4f6e6a19fed83838ea24ce3a073c97c93fdf48ee850",
+    "src/transport/udp.rs": "62b4c9237240504e4329c8c6d54234e0ac90eb7b172a6b2bcd348a7889f89008",
+    "src/transport/utils.rs": "3538ecaea71dd0de9a1f339d564495710182b11a95ec38d23c4a6e70b6557c17",
+    "src/types.rs": "e2e5b4d0f66fdda1f684ae6a884273aa82868ca08e4fcdb09827c0f082b8cc80",
+    "tests/cluster_test.rs": "f92f8309ceb229e4be47812380cc15efb8546d69cd28ec6c0bc9d420e70251b7",
+    "tests/perf_test.rs": "450da32cf966ec8bbb0ac28be49623c18a20ff5fcbad505de674bc07eb7fc40c"
+  },
+  "overlays": {
+    "tools/chitchat-inplace-074/allocation_tests.rs": "db0f793b2cd62b801924b6a978a11e0ff872bfcc4ca43a63faaa05fa798651ae",
+    "tools/chitchat-inplace-074/regression.rs": "ebf5e0ef3039b019d762855d28fed7381e2405c18440d85cc17613ac1afceea3",
+    "tools/chitchat-mtu-review-074/delta_tests.rs": "5b6bba203adb1189f56b6dd9a4fda74d6f63f38c2b7d66b43c6e4358ab7489a7",
+    "tools/chitchat-mtu-review-074/oversize_tests.rs": "a0d8964cf91beb623e631e7182fe53bbdb85a4eb0986b6dae4ccfdf55fe73b78",
+    "tools/chitchat-mtu-review-074/stream_tests.rs": "5ce599c8d2ab3c484254ffc12f41866edf8aee014607a54269f428377dd9bc9d",
+    "tools/chitchat-zstd-review-074/fixture_tests.rs": "d9260be09a263bfa1b8ee0a75bd051c0c9e6ff44d289fda42d34f56e58dc6a86"
+  },
+  "root_adopted": false,
+  "source_identity": "D plus isolated existing-buffer predictor; old estimator test-only"
+}

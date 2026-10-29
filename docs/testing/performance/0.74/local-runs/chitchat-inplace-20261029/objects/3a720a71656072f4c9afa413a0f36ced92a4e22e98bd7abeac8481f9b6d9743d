@@ -1,0 +1,70 @@
+"""Reconcile the fixed release allocation cohort; never infer CPU/C/RSS results."""
+import json
+import sys
+
+import common as c
+
+FIELDS = ('allocs', 'reallocs', 'requested', 'peak')
+
+
+def reconcile(values, study):
+    c.need(len(values) == 4, 'exact B,candidate,candidate,B cohort')
+    for value in values:
+        c.need(value['seed'] == 0x0741028 and value['native_C_allocations_included'] is False,
+               'same seed and explicitly bounded allocator scope')
+        rows = value['rows']
+        c.need(len(rows) == 239 and len({(v['mtu'], v['value_len']) for v in rows}) == 239,
+               'complete unique original workload')
+        for row in rows:
+            c.need(len(row['records']) == 2 and row['records'][0] == row['records'][1],
+                   'exact within-process repeat')
+            counts = row['records'][0]['complete_counts']
+            c.need(set(counts) == set(FIELDS) | {'live'} and counts['live'] == 0,
+                   'whole-operation complete retirement')
+            c.need(all(type(counts[k]) is int and counts[k] >= 0 for k in FIELDS),
+                   'nonnegative integral allocator counters')
+            calls = row['records'][0]['actual_calls']
+            c.need(len(calls) == 4 and all(type(v) is int and v >= 0 for v in calls),
+                   'complete integral actual-path counters')
+    c.need(values[0] == values[3] and values[1] == values[2], 'same-image cross-process repeat')
+    differences = []
+    for old, new in zip(values[0]['rows'], values[1]['rows'], strict=True):
+        c.need(all(old[k] == new[k] for k in ('mtu', 'value_len', 'accepted', 'wire')),
+               'unchanged admission and exact wire in fixed order')
+        before = old['records'][0]
+        after = new['records'][0]
+        delta = {k: after['complete_counts'][k] - before['complete_counts'][k] for k in FIELDS}
+        if any(delta.values()) or before['actual_calls'] != after['actual_calls']:
+            differences.append(dict(mtu=old['mtu'], value_len=old['value_len'],
+                                    accepted=old['accepted'], delta=delta,
+                                    before=before, after=after))
+    regressions = [v for v in differences if any(n > 0 for n in v['delta'].values())]
+    return dict(study=study, complete=True, cases=239, processes=4, observations_per_case=4,
+                regressions=len(regressions), accepted_regressions=sum(v['accepted'] for v in regressions),
+                rejected_regressions=sum(not v['accepted'] for v in regressions),
+                differences=differences, rust_allocation_gate_pass=not regressions,
+                CPU_qualified=False, native_C_allocations_qualified=False, RSS_qualified=False,
+                retained_memory_qualified=False, root_adopted=False)
+
+
+def main(study):
+    c.need(study in ('S', 'D', 'P'), 'declared candidate')
+    import run
+    values = []
+    for index, variant in enumerate(('B', study, study, 'B'), 1):
+        folder = c.BASE / f'cohort-{study}-194-{index}'
+        c.need(json.loads((folder / 'result.json').read_bytes())['complete'], 'first phase complete')
+        image = json.loads((c.BASE / f'build-release-{variant}-194/artifact.json').read_bytes())
+        intent = json.loads((folder / 'allocation/intent.json').read_bytes())
+        c.need(intent['argv'][0] == image['path'], 'actual release image command')
+        value = json.loads((folder / 'observations.json').read_bytes())
+        run.semantics(value['rows'])
+        values.append(value)
+    result = reconcile(values, study)
+    c.write(c.BASE, f'analysis-{study}.json', result)
+    print(json.dumps({k: v for k, v in result.items() if k != 'differences'}))
+
+
+if __name__ == '__main__':
+    c.need(len(sys.argv) == 2, 'one fixed study')
+    main(sys.argv[1])

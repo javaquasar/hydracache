@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-chitchat-inplace/20261029/targets/194/debug/deps/chitchat-bcb9dc51ce611187",
+    "state::tests::",
+    "--test-threads=1",
+    "--show-output",
+    "--color=never"
+  ],
+  "deadline": 1255.588608863,
+  "retry": false
+}

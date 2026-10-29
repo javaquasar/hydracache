@@ -1,0 +1,40 @@
+"""Minimal patched LRU node; whole lock/edge review before Cargo validates it."""
+from pathlib import Path
+import difflib,hashlib,json,shutil,tomllib
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-mtu-20261028'
+out=BASE/'preparation/S';out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def files(folder):return {p.relative_to(folder).as_posix():sha(p.read_bytes()) for p in sorted(folder.rglob('*')) if p.is_file()}
+assert json.loads((BASE/'policy-R2-194/result.json').read_bytes())['exit']==1
+assert b'RUSTSEC-2026-0253' in (BASE/'policy-R2-194/stderr.log').read_bytes()
+prior=json.loads((BASE/'preparation/R2/result.json').read_bytes())
+source=BASE/'fixtures/R2';assert files(source)==prior['files']
+dest=BASE/'fixtures/S';shutil.copytree(source,dest)
+before=(dest/'Cargo.toml').read_text(encoding='utf-8')
+old='[dependencies.lru]\nversion = "0.17"';new='[dependencies.lru]\nversion = "=0.18.2"'
+assert before.count(old)==1;after=before.replace(old,new,1)
+(dest/'Cargo.toml').write_text(after,encoding='utf-8',newline='\n')
+lock_before=(dest/'Cargo.lock').read_bytes();rows=tomllib.loads(lock_before.decode())['package']
+entry=next(r for r in rows if r['name']=='lru');assert entry['version']=='0.17.0'
+review=json.loads((BASE/'lru-source/result.json').read_bytes());checksum=review['archive_sha256']
+assert checksum==review['metadata']['cksum']
+old_record=f'name = "lru"\nversion = "0.17.0"\nsource = "{entry["source"]}"\nchecksum = "{entry["checksum"]}"\n'.encode()
+new_record=old_record.replace(b'0.17.0',b'0.18.2',1).replace(entry['checksum'].encode(),checksum.encode(),1)
+assert lock_before.count(old_record)==1
+lock_after=lock_before.replace(old_record,new_record,1);(dest/'Cargo.lock').write_bytes(lock_after)
+new_rows=tomllib.loads(lock_after.decode())['package']
+assert len(rows)==len(new_rows)==92
+for a,b in zip(rows,new_rows):
+ if a['name']=='lru':assert dict(a,version='0.18.2',checksum=checksum)==b
+ else:assert a==b
+patch=''.join(difflib.unified_diff(before.splitlines(True),after.splitlines(True),fromfile='a/Cargo.toml',tofile='b/Cargo.toml'))
+(out/'source.patch').write_text(patch,encoding='utf-8',newline='\n');(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+(out/'lock-before.toml').write_bytes(lock_before);(out/'lock-after.toml').write_bytes(lock_after)
+result=dict(prior,variant='S',parent='R2',files=files(dest),source_patch_sha256=sha((out/'source.patch').read_bytes()),targets={})
+for compiler in ('194','188'):
+ identity=sha(json.dumps(dict(files=result['files'],overlays=result['overlays'],compiler=compiler),sort_keys=True).encode())
+ result['targets'][compiler]=str(BASE/'targets/S'/compiler/identity)
+for name,digest in result['root_inputs'].items():assert sha((ROOT/name).read_bytes())==digest
+(out/'result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+print(json.dumps(dict(variant='S',parent='R2',only_locked_node='lru 0.17.0 -> 0.18.2',root_graph_changed=False)))

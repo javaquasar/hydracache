@@ -1,0 +1,28 @@
+
+running 6 tests
+test serialize::inplace_review::actual_predictor_matches_exact_reference ... ok
+test serialize::inplace_review::budget_matches_reference_without_losing_valid_admissions ... ok
+test serialize::inplace_review::independent_writers_do_not_share_scratch ... ok
+test serialize::inplace_review::old_budget_rejection_does_not_serialize_or_grow ... ok
+test serialize::inplace_review::prediction_restores_logical_state_and_bounds_capacity ... ok
+test serialize::inplace_review::unwind_restores_pending_prefix_and_scratch_length ... ok
+
+successes:
+
+---- serialize::inplace_review::unwind_restores_pending_prefix_and_scratch_length stdout ----
+
+thread 'serialize::inplace_review::unwind_restores_pending_prefix_and_scratch_length' panicked at src\..\..\..\..\..\tools\chitchat-inplace-074\regression.rs:130:13:
+controlled serializer panic
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+successes:
+    serialize::inplace_review::actual_predictor_matches_exact_reference
+    serialize::inplace_review::budget_matches_reference_without_losing_valid_admissions
+    serialize::inplace_review::independent_writers_do_not_share_scratch
+    serialize::inplace_review::old_budget_rejection_does_not_serialize_or_grow
+    serialize::inplace_review::prediction_restores_logical_state_and_bounds_capacity
+    serialize::inplace_review::unwind_restores_pending_prefix_and_scratch_length
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 113 filtered out; finished in 2.58s
+

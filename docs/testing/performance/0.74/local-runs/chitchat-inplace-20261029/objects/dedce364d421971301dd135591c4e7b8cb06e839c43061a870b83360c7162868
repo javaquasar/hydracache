@@ -1,0 +1,118 @@
+"""Fixed local source/compile/native selections with bound artifact identities."""
+from pathlib import Path
+import json,os,re,shutil,subprocess,sys
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-mtu-20261028'
+sys.path.insert(0,str(ROOT/'tools/windows-workspace-preflight-074'))
+import owned,prepare as p
+a=p.load(ROOT/'tools/chitchat-mtu-review-074/accounting.py','hc074_mtu_accounting')
+label=sys.argv[1]
+special=label in ('controls','controls-final','doc-check')
+match=None if special else re.fullmatch(r'(build|list|minimal|observe|bounds|delta|wide|oversize|serialize|delta_up|message|digest|check|clippy|policy)-(B|M|L|Z|R|B2|G|R2)-(194|188)',label)
+p.require(special or match is not None,'fixed review selection')
+action,variant,compiler=(label,None,None) if special else match.groups()
+review=None;artifact=None;selection=None;exact=None
+if not special:
+ review=json.loads((BASE/'preparation'/variant/'result.json').read_bytes())
+ folder=BASE/'fixtures'/variant;target=Path(review['targets'][compiler])
+ p.require(target.resolve().is_relative_to(BASE/'targets'/variant/compiler),'disjoint target custody')
+ cargo=['cargo','+1.94.0' if compiler=='194' else '+1.88.0']
+ common=['--offline','--locked','--manifest-path',str(folder/'Cargo.toml'),'--target-dir',str(target)]
+ if action=='build':argv=cargo+['test',*common,'--lib','--features','testsuite','--no-run','--message-format=json']
+ elif action in ('check','clippy'):
+  argv=cargo+[action,*common,'--all-targets','--all-features']+(['--','-D','warnings'] if action=='clippy' else [])
+ elif action=='policy':
+  argv=cargo+['deny','--manifest-path',str(folder/'Cargo.toml'),'--offline','--locked','--all-features','check','--config',str(ROOT/'deny.toml')]
+ else:
+  build=json.loads((BASE/f'build-{variant}-{compiler}'/'result.json').read_bytes())
+  p.require(build['exit']==0 and build['source_unchanged'] and build['head_unchanged'] and build['fixture_inputs_unchanged'],'original successful build receipt')
+  artifact=build['artifact'];image=Path(artifact['path'])
+  p.require(image.resolve().is_relative_to(target) and not image.is_symlink() and not image.is_junction() and p.sha(image.read_bytes())==artifact['sha256'],'actual held build image')
+  if action=='list':argv=[str(image),'--list']
+  else:
+   listing=json.loads((BASE/f'list-{variant}-{compiler}'/'result.json').read_bytes())
+   p.require(listing['exit']==0 and listing['artifact']==artifact and listing['source_unchanged'] and listing['head_unchanged'] and listing['fixture_inputs_unchanged'],'exact listed original image')
+   choices={'minimal':('serialize::mtu_review::minimal_bound_contract',True),
+    'observe':('serialize::mtu_review::observe_streams',True),
+    'bounds':('serialize::mtu_review::all_stream_bounds_hold',True),
+    'delta':('delta::mtu_review::supported_delta_operations',True),
+    'wide':('migration_review_074::snapshot',True),
+    'oversize':('delta::oversize_review::oversized_rejection_preserves_writer',True),
+    'serialize':('serialize::tests::',False),'delta_up':('delta::tests::',False),
+    'message':('message::tests::',False),'digest':('digest::tests::',False)}
+   selection,exact=choices[action]
+   selected=[n for n in listing['inventory'] if n==selection] if exact else [n for n in listing['inventory'] if n.startswith(selection)]
+   p.require(len(selected)==({'serialize':10,'delta_up':9,'message':4,'digest':2}.get(action,1)),'complete fixed selection')
+   argv=[str(image),selection,*(['--exact'] if exact else []),'--test-threads=1' if exact else '--test-threads=4','--show-output']
+else:
+ argv=[sys.executable,'-B','-m','unittest','discover','-s','tools/chitchat-mtu-review-074','-p','test_*.py','-v'] if action.startswith('controls') else [str(ROOT/'target/debug/xtask.exe'),'doc-check']
+def fixture():return {n.relative_to(folder).as_posix():p.sha(n.read_bytes()) for n in sorted(folder.rglob('*')) if n.is_file()}
+def guard():
+ if review is None:return
+ p.require(fixture()==review['files'],'complete reviewed fixture source/lock')
+ p.require(all(p.sha((ROOT/n).read_bytes())==v for n,v in review['overlays'].items()),'exact external test overlays')
+ p.require(all(p.sha((ROOT/n).read_bytes())==v for n,v in review['root_inputs'].items()),'unchanged product inputs')
+def snapshot():
+ names=[n.decode() for n in subprocess.check_output(['git','ls-files','-z','--cached','--others','--exclude-standard','--','Cargo.toml','Cargo.lock','deny.toml','.cargo','crates','tools','scripts'],cwd=ROOT).split(b'\0') if n]
+ return {n:p.sha((ROOT/n).read_bytes()) for n in sorted(set(names))}
+out=BASE/label
+if len(sys.argv)>2:
+ p.require(sys.argv[2:]==['--worker'],'fixed worker invocation');guard()
+ def capacity():
+  if shutil.disk_usage(ROOT).free<p.FLOOR:raise owned.CapacityError('original 4 GiB floor')
+ result=owned._owned(owned.load_job().WindowsJob(),argv,str(ROOT),capacity,bound=1200)
+ p.write(out,'execution.json',result);raise SystemExit(result['exit'])
+out.mkdir(parents=True,exist_ok=False)
+# Retain streams and intent even for a local input preflight refusal.
+with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+ try:
+  before=snapshot();head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip()
+  p.write(out,'intent.json',dict(argv=argv,source=before,head=head,variant=variant,compiler=compiler,
+   artifact=artifact,source_sha256=p.sha(Path(__file__).read_bytes()),bound_seconds=1200,
+   retry=False,server=False,services=False,clocks=False,fixture_only=True,release_admitted=False))
+  (out/'launcher.py').write_bytes(Path(__file__).read_bytes());guard()
+  if action=='policy':
+   db=Path('C:/Users/ArturBuzov/.cargo/advisory-dbs/advisory-db-3157b0e258782691')
+   def db_observe():
+    return dict(head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=db).decode().strip(),
+     clean=not subprocess.check_output(['git','status','--porcelain'],cwd=db),per_lookup_seal=False)
+   db_before=db_observe();p.require(db_before['clean'],'clean observed advisory database')
+   p.write(out,'advisory-db-before.json',db_before)
+  process=subprocess.Popen([sys.executable,'-B',str(Path(__file__)),label,'--worker'],cwd=ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,
+   env=dict(os.environ,CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2',PROPTEST_RNG_SEED='7606312'))
+  try:code=process.wait(timeout=1210)
+  except subprocess.TimeoutExpired:
+   process.kill();process.wait(timeout=5);raise ValueError('original worker lost; no PID fallback')
+  after=snapshot();guard()
+  result=dict(exit=code,source_unchanged=before==after,head_unchanged=head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+   source_after=after,fixture_inputs_unchanged=True,release_admitted=False)
+  if action=='policy':
+   db_after=db_observe();p.write(out,'advisory-db-after.json',db_after)
+   p.require(db_before==db_after,'observed advisory database drift')
+   result['observed_advisory_db_unchanged']=True
+  if action=='build' and code==0:
+   messages=[json.loads(line) for line in (out/'stdout.log').read_bytes().splitlines()]
+   found=[m for m in messages if m.get('reason')=='compiler-artifact' and m['target']['kind']==['lib'] and m['target']['name']=='chitchat' and m['profile']['test'] and m.get('executable')]
+   p.require(len(found)==1 and [m['success'] for m in messages if m.get('reason')=='build-finished']==[True],'exact successful compiler artifact')
+   image=Path(found[0]['executable'])
+   p.require(image.resolve().is_relative_to(target) and Path(found[0]['target']['src_path']).resolve()==(folder/'src/lib.rs').resolve(),'exact library artifact/source path')
+   result['artifact']=dict(path=str(image),sha256=p.sha(image.read_bytes()),bytes=image.stat().st_size)
+  if artifact is not None:
+   p.require(p.sha(Path(artifact['path']).read_bytes())==artifact['sha256'],'original native image postflight')
+   result['artifact']=artifact
+  if action=='list' and code==0:
+   baseline=json.loads((BASE/'list-B-194/result.json').read_bytes())['inventory'] if variant!='B' or compiler!='194' else None
+   if variant in ('B2','G','R2'):
+    result['inventory']=a.extended_inventory((out/'stdout.log').read_bytes(),baseline)
+   else:
+    result['inventory']=a.inventory((out/'stdout.log').read_bytes())
+   if baseline is not None and variant not in ('B2','G','R2'):
+    p.require(result['inventory']==baseline,'complete unchanged original native catalog')
+  if selection is not None:
+   result['accounting']=a.account((out/'stdout.log').read_bytes(),listing['inventory'],selection,exact)
+   p.require((code==0)==result['accounting']['test_pass'],'native exit/accounting agreement')
+  p.write(out,'result.json',result)
+ except BaseException as error:
+  p.write(out,'refusal.json',dict(type=type(error).__name__,reason=str(error),release_admitted=False));raise
+print(json.dumps(dict(label=label,exit=code,source_unchanged=result['source_unchanged'])))
+raise SystemExit(code)

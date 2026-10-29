@@ -1,0 +1,31 @@
+from pathlib import Path,PurePosixPath
+import hashlib,io,json,tarfile,tomllib,urllib.request
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-mtu-20261028'
+out=BASE/'lru-source';out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+with urllib.request.urlopen('https://index.crates.io/3/l/lru',timeout=30) as response:index=response.read(4*1024*1024+1)
+assert len(index)<=4*1024*1024
+(out/'lru.index').write_bytes(index)
+metadata=next(r for r in map(json.loads,index.splitlines()) if r['vers']=='0.18.2')
+assert not metadata['yanked']
+with urllib.request.urlopen('https://static.crates.io/crates/lru/lru-0.18.2.crate',timeout=30) as response:raw=response.read(4*1024*1024+1)
+assert len(raw)<=4*1024*1024 and sha(raw)==metadata['cksum']
+(out/'lru-0.18.2.crate').write_bytes(raw)
+dest=out/'review-source';dest.mkdir();members={}
+with tarfile.open(fileobj=io.BytesIO(raw),mode='r:gz') as archive:
+ for member in archive:
+  path=PurePosixPath(member.name)
+  assert not path.is_absolute() and '..' not in path.parts and path.parts[0]=='lru-0.18.2'
+  assert member.isfile() or member.isdir()
+  if member.isdir():continue
+  assert member.size<=4*1024*1024
+  tail=Path(*path.parts[1:]);data=archive.extractfile(member).read()
+  file=dest/tail;file.parent.mkdir(parents=True,exist_ok=True);file.write_bytes(data)
+  members[tail.as_posix()]=dict(sha256=sha(data),bytes=len(data))
+manifest=tomllib.loads((dest/'Cargo.toml').read_text(encoding='utf-8'))
+assert manifest['package'].get('build') is False and not (dest/'build.rs').exists()
+result=dict(metadata=metadata,manifest=manifest,members=members,archive_sha256=sha(raw),source_code_executed=False)
+(out/'result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+print(json.dumps(dict(msrv=manifest['package'].get('rust-version'),dependencies=manifest.get('dependencies'),checksum=sha(raw))))

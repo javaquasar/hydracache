@@ -1,0 +1,15 @@
+
+running 1 test
+test serialize::mtu_review::minimal_bound_contract ... ok
+
+successes:
+
+---- serialize::mtu_review::minimal_bound_contract stdout ----
+HC074_MIN_BOUND:{"actual":13,"bound_held":true,"bounds":[13],"id":"one-byte","payload":["!"],"remaining":0,"threshold":1,"wire":"02010001020100000201002100"}
+
+
+successes:
+    serialize::mtu_review::minimal_bound_contract
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 105 filtered out; finished in 0.00s
+

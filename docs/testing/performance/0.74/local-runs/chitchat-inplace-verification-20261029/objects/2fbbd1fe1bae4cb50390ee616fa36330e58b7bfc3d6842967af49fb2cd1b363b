@@ -1,0 +1,1 @@
+{"complete": true, "members_verified": 3476, "objects_verified": 1130, "cohorts": {"S": {"cases": 239, "regressions": 71, "accepted_regressions": 23}, "D": {"cases": 239, "regressions": 9, "accepted_regressions": 9}, "P": {"cases": 239, "regressions": 0, "accepted_regressions": 0}}, "byte_raw_log_verification": true, "archived_code_executed": false, "root_adopted": false}

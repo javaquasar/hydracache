@@ -1,0 +1,14 @@
+--- a/src/serialize.rs
++++ b/src/serialize.rs
+@@ -347,8 +347,9 @@
+                 + BLOCK_META_LEN
+                 + new_item_serialized_len
+                 + 1;
+-            if self.uncompressed_block.len() + new_item_serialized_len
+-                <= self.block_threshold * 2
++            if new_item_serialized_len > u16::MAX as usize
++                || self.uncompressed_block.len() + new_item_serialized_len
++                    <= self.block_threshold * 2
+             {
+                 previous_bound
+             } else {

@@ -1,0 +1,25 @@
+
+running 3 tests
+test serialize::state_review::actual_helper_preserves_mixed_multiblock_streams ... ok
+test serialize::state_review::ambiguous_rejection_restores_state_and_records_retained_capacity ... ok
+test serialize::state_review::populated_scratch_and_pending_survive_prediction_and_unwind ... ok
+
+successes:
+
+---- serialize::state_review::ambiguous_rejection_restores_state_and_records_retained_capacity stdout ----
+HC074_PENDING_CAPACITY:{"before":64,"after":4099,"logical_len":3}
+
+---- serialize::state_review::populated_scratch_and_pending_survive_prediction_and_unwind stdout ----
+
+thread 'serialize::state_review::populated_scratch_and_pending_survive_prediction_and_unwind' (1946) panicked at src/../../../../../tools/chitchat-inplace-074/l_regression.rs:54:13:
+controlled populated-state panic
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+successes:
+    serialize::state_review::actual_helper_preserves_mixed_multiblock_streams
+    serialize::state_review::ambiguous_rejection_restores_state_and_records_retained_capacity
+    serialize::state_review::populated_scratch_and_pending_survive_prediction_and_unwind
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 115 filtered out; finished in 0.01s
+

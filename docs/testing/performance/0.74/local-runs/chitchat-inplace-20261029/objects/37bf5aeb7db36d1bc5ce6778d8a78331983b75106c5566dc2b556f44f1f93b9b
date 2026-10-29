@@ -1,0 +1,22 @@
+{
+  "changed": [],
+  "complete": true,
+  "head_unchanged": true,
+  "release_admitted": false,
+  "source_after": {
+    ".cargo/config.toml": "90f023744f969c176d98d811145b883b411da0fe8a294e930a0f965456ac49a3",
+    "Cargo.lock": "34d7a21d9833a180460e5a094f9ee7f1effe07dfb43a65d90865798963e0070c",
+    "Cargo.toml": "84b1986d8a2014be985460b3ecc4a809f3ae3e8f9822ef6c7134b3ecbe9af114",
+    "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "scripts/ci/watchdog_windows_job.py": "8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1",
+    "tools/chitchat-inplace-074/README.md": "645d06841c74f6983a1b065111821e54d895ea3edb141781aa57404cbccb0058",
+    "tools/chitchat-inplace-074/allocation_tests.rs": "1a93fe46a82e1ed4770b1ca951dd162ad42c25cc1d7f3949b2ade932a9e005f7",
+    "tools/chitchat-inplace-074/common.py": "5463354fbb87e35058460d056909610444947ad632d29c1e7c5a4755bee9d2b8",
+    "tools/chitchat-inplace-074/regression.rs": "30fd6c9d50e4a8261d5860e30826869342b99c6b0612e180c2a52870e07206ce",
+    "tools/chitchat-inplace-074/run.py": "202a30fff6e6e134db4a1b3f7c5a6fb7a1aa1068aecd4b6e0bf97dc777680b58",
+    "tools/chitchat-preview-cost-074/cost_tests.rs": "ecfff40019b383eb5976e42fa16630ad9dc169904c17dd44598122cf2cd9341d",
+    "tools/dbus-source-package-074/package.py": "1b13c005abfbb96b1374e27fcc871ce0a14d87fe955e2097712a9cfb029fadf3",
+    "tools/windows-workspace-preflight-074/owned.py": "e7c5a3c0c4fea90f39772512c4ad96c60693fc0b482092a608dcf039e151eade"
+  }
+}

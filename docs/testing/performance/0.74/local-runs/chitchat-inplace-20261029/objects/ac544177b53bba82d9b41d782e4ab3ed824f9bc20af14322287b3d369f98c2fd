@@ -1,0 +1,9 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "[Errno 2] No such file or directory: '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/chitchat-inplace-20261029/gnu-194/session-result.json'",
+    "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/chitchat-native-copy-20261029.py\", line 122, in linux_session\n    result.update(stage(out) if label=='native-copy-stage' else native_run(label,out))\n                                                                ^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/chitchat-native-copy-20261029.py\", line 97, in native_run\n    c.need(not json.loads((BASE/'gnu-194/session-result.json').read_bytes())['complete'],'original first outcome retained')\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1021, in read_bytes\n    with self.open(mode='rb') as f:\n         ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/chitchat-inplace-20261029/gnu-194/session-result.json'\n",
+    "type": "FileNotFoundError"
+  },
+  "release_admitted": false
+}

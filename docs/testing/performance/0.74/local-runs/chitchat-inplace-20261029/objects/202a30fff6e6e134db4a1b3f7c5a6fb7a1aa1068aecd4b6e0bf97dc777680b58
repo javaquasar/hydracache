@@ -1,0 +1,169 @@
+"""Fixed isolated baseline/candidate commands; original Windows Job primitive."""
+from pathlib import Path
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+import traceback
+
+import common as c
+
+GROUPS=['serialize::tests::','delta::tests::','digest::tests::','message::tests::','state::tests::',
+        'serialize::mtu_review::','fixture_review::snapshot','delta::mtu_review::','delta::oversize_review::',
+        'serialize::inplace_review::','delta::cost_review::allocator_control']
+
+
+def environment(compiler='194'):
+    version={'194':'1.94.0','188':'1.88.0'}[compiler]
+    tool=Path.home()/'.rustup/toolchains'/(version+'-x86_64-pc-windows-msvc')/'bin'
+    env=dict(os.environ,PATH=str(tool)+os.pathsep+os.environ['PATH'],RUSTC=str(tool/'rustc.exe'),
+        RUSTUP_TOOLCHAIN=version+'-x86_64-pc-windows-msvc',RUSTC_WRAPPER='',RUSTC_WORKSPACE_WRAPPER='',
+        CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2',PROPTEST_RNG_SEED='7606312')
+    if (c.BASE/'cargo-home').exists():env.update(CARGO_HOME=str(c.BASE/'cargo-home'),CARGO_NET_OFFLINE='true')
+    return tool,env
+
+
+def invoke(out,label,argv,env,deadline,variant,expected=0):
+    c.guard(variant);folder=out/label;folder.mkdir(exist_ok=False)
+    c.write(folder,'intent.json',dict(argv=argv,deadline=deadline,expected_exit=expected,retry=False))
+    with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+        child=subprocess.run([sys.executable,'-B',str(Path(__file__)),'command-worker',str(folder),variant],cwd=c.ROOT,
+            stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,
+            env=dict(env,HC074_INPLACE_ARGV=json.dumps(argv),HC074_INPLACE_DEADLINE=str(deadline)),
+            timeout=max(0,deadline-time.monotonic())+10)
+    execution=json.loads((folder/'execution.json').read_bytes())
+    c.need(child.returncode==execution['exit']==expected and execution['retired'] and not execution['errors'],'first actual owned outcome: '+label)
+    c.guard(variant);print(json.dumps(dict(step=label,exit=child.returncode)),flush=True)
+    return folder
+
+
+def expected_catalog():
+    raw=c.member('capture/list-S-194/stdout.log').decode()
+    old=[line[:-6] for line in raw.splitlines() if line.endswith(': test')]
+    c.need(len(old)==106,'original complete extended catalog')
+    from_extra=['allocator_control','allocation_observations','cpu_observations','operation_allocation_observations']
+    regression=re.findall(r'#\[test\]\s*fn (\w+)',(c.TOOLS/'regression.rs').read_text(encoding='utf8'))
+    c.need(len(regression)==6,'exact six added production-helper controls')
+    return sorted(old+['delta::cost_review::'+n for n in from_extra]+['serialize::inplace_review::'+n for n in regression])
+
+
+def accounting(raw,selected,total,failed=0):
+    rows=re.findall(r'test result: (?:ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;',raw)
+    c.need(len(rows)==1 and tuple(map(int,rows[0]))==(selected-failed,failed,0,0,total-selected),'complete native case accounting')
+    return dict(passed=selected-failed,failed=failed,ignored=0,filtered=total-selected)
+
+
+def setup(label):
+    if label=='prepare':c.prepare();return
+    c.need(label=='format','fixed setup phase')
+    tool,_=environment()
+    for variant in ('B','S'):
+        folder=c.BASE/'fixtures'/variant;save=c.BASE/'preparation'/variant/'before-format'
+        for path in sorted(folder.rglob('*')):
+            if path.is_file():
+                dest=save/path.relative_to(folder);dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(path.read_bytes())
+    save=c.BASE/'format/before-overlay';save.mkdir()
+    for name in ('regression.rs','allocation_tests.rs'):(save/name).write_bytes((c.TOOLS/name).read_bytes())
+    paths=[str(p) for v in ('B','S') for p in (c.BASE/'fixtures'/v).rglob('*.rs')]+[str(c.TOOLS/n) for n in ('regression.rs','allocation_tests.rs')]
+    argv=[str(tool/'rustfmt.exe'),'--edition','2024','--config','skip_children=true',*paths]
+    with (c.BASE/'format/rustfmt.stdout.log').open('xb') as stdout,(c.BASE/'format/rustfmt.stderr.log').open('xb') as stderr:
+        done=subprocess.run(argv,stdout=stdout,stderr=stderr,timeout=120)
+    c.need(done.returncode==0,'owned Rust formatting')
+    prior=json.loads(c.member('capture/preparation/S/result.json'))
+    overlays={n:c.sha((c.ROOT/n).read_bytes()) for n in prior['overlays']}
+    overlays.update({(c.TOOLS/n).relative_to(c.ROOT).as_posix():c.sha((c.TOOLS/n).read_bytes()) for n in ('regression.rs','allocation_tests.rs')})
+    for variant in ('B','S'):
+        c.write(c.BASE/'preparation'/variant,'result.json',dict(files=c.files(c.BASE/'fixtures'/variant),overlays=overlays,source_identity='same S graph; B bound-only counterfactual',root_adopted=False))
+
+
+def session(label):
+    out=c.BASE/label;deadline=time.monotonic()+1100
+    result=dict(complete=False,release_admitted=False)
+    try:
+        if label in ('prepare','format'):setup(label)
+        else:
+            match=re.fullmatch(r'(build|focus|check|clippy|alloc)-(B|S|D|P)-(194|188)(?:-([12]))?',label)
+            c.need(match is not None,'fixed phase')
+            action,variant,compiler,repeat=match.groups();tool,env=environment(compiler)
+            target=c.BASE/'targets'/(variant+'-'+compiler)
+            args=['--offline','--locked','--manifest-path',str(c.BASE/'fixtures'/variant/'Cargo.toml'),'--target-dir',str(target)]
+            if action=='build':
+                folder=invoke(out,'cargo',[str(tool/'cargo.exe'),'test',*args,'--lib','--features','testsuite','--no-run','--message-format=json'],env,deadline,variant)
+                images=[]
+                for line in (folder/'stdout.log').read_text(encoding='utf8').splitlines():
+                    row=json.loads(line)
+                    if row.get('reason')=='compiler-artifact' and row.get('profile',{}).get('test') and row.get('executable'):
+                        path=Path(row['executable']);c.need(path.resolve().is_relative_to(target) and Path(row['target']['src_path']).resolve()==(c.BASE/'fixtures'/variant/'src/lib.rs').resolve(),'actual image/source')
+                        images.append(dict(path=str(path),sha256=c.sha(path.read_bytes())))
+                c.need(len(images)==1,'one actual library image');image=images[0];c.write(out,'artifact.json',image)
+                folder=invoke(out,'list',[image['path'],'--list'],env,deadline,variant)
+                names=[v[:-6] for v in (folder/'stdout.log').read_text(encoding='utf8').splitlines() if v.endswith(': test')]
+                c.need(sorted(names)==expected_catalog() and len(names)==len(set(names))==116,'exact complete native catalog')
+                c.write(out,'catalog.json',names)
+            elif action in ('check','clippy'):
+                argv=[str(tool/'cargo.exe'),action,*args,'--all-targets','--all-features']
+                if action=='clippy':argv+=['--','-D','warnings']
+                invoke(out,'cargo',argv,env,deadline,variant)
+            else:
+                build=c.BASE/('build-'+variant+'-'+compiler)
+                image=json.loads((build/'artifact.json').read_bytes());names=json.loads((build/'catalog.json').read_bytes())
+                path=Path(image['path']);c.need(c.sha(path.read_bytes())==image['sha256'],'held built image')
+                if action=='focus':
+                    totals=[]
+                    for index,prefix in enumerate(GROUPS):
+                        selected=[v for v in names if v.startswith(prefix)];c.need(selected,'nonempty declared functional partition: '+prefix)
+                        failed=1 if variant=='S' and prefix=='serialize::inplace_review::' else 0
+                        folder=invoke(out,str(index),[str(path),prefix,'--test-threads=1','--show-output','--color=never'],env,deadline,variant,101 if failed else 0)
+                        raw=(folder/'stdout.log').read_text(encoding='utf8')
+                        counts=accounting(raw,len(selected),len(names),failed)
+                        if failed:c.need('old_budget_rejection_does_not_serialize_or_grow --- FAILED' in raw,'exact baseline fast-rejection failure')
+                        totals.append(dict(prefix=prefix,names=selected,counts=counts))
+                    c.write(out,'cases.json',totals)
+                else:
+                    c.need(repeat in ('1','2'),'fixed two allocation observations per image')
+                    prefix='delta::cost_review::operation_allocation_observations'
+                    folder=invoke(out,'allocation',[str(path),prefix,'--exact','--test-threads=1','--show-output','--color=never'],env,deadline,variant)
+                    raw=(folder/'stdout.log').read_text(encoding='utf8');accounting(raw,1,len(names))
+                    rows=[v[len('HC074_INPLACE_ALLOC:'):] for v in raw.splitlines() if v.startswith('HC074_INPLACE_ALLOC:')]
+                    c.need(len(rows)==1,'one actual allocation diagnostic');value=json.loads(rows[0])
+                    c.need(len(value['rows'])==239 and value['seed']==0x0741028,'complete original workload')
+                    c.write(out,'observations.json',value)
+                c.need(c.sha(path.read_bytes())==image['sha256'],'held image postflight')
+        c.need(time.monotonic()<deadline,'original complete session deadline')
+        result.update(complete=True,root_adopted=False,performance_claim=False)
+    except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+    c.write(out,'session-result.json',result);raise SystemExit(0 if result['complete'] else 1)
+
+
+def main(label):
+    c.need(label in ('prepare','format') or re.fullmatch(r'(build|focus|check|clippy|alloc)-(B|S|D|P)-(194|188)(?:-([12]))?',label),'one fixed phase')
+    out=c.BASE/label;out.mkdir(parents=True,exist_ok=False)
+    with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+        for path in c.TOOLS.iterdir():
+            if path.is_file():
+                save=out/'producer'/path.name;save.parent.mkdir(exist_ok=True);save.write_bytes(path.read_bytes())
+        before=c.source();head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=c.ROOT)
+        c.write(out,'intent.json',dict(source=before,head=head.decode(),retry=False,bound=1200,session=1100,server=False,services=False,clocks=False))
+        child=subprocess.run([sys.executable,'-B',str(Path(__file__)),label,'windows-worker'],cwd=c.ROOT,stdout=stdout,stderr=stderr,stdin=subprocess.DEVNULL,timeout=1210)
+        execution=json.loads((out/'execution.json').read_bytes());done=json.loads((out/'session-result.json').read_bytes())
+        after=c.source();changed={n for n in before.keys()|after.keys() if before.get(n)!=after.get(n)}
+        c.need(changed<=({(c.TOOLS/n).relative_to(c.ROOT).as_posix() for n in ('regression.rs','allocation_tests.rs')} if label=='format' else set()),'unexpected root/shared source change')
+        c.need(head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=c.ROOT),'HEAD drift')
+        c.need(child.returncode==execution['exit']==0 and execution['retired'] and not execution['errors'] and done['complete'],'complete first phase')
+        c.write(out,'result.json',dict(complete=True,source_after=after,head_unchanged=True,changed=sorted(changed),release_admitted=False))
+    print(json.dumps(dict(phase=label,complete=True)))
+
+
+if __name__=='__main__':
+    if len(sys.argv)==3 and sys.argv[1]=='session':session(sys.argv[2])
+    if len(sys.argv)==4 and sys.argv[1]=='command-worker':
+        folder=Path(sys.argv[2]);c.guard(sys.argv[3]);argv=json.loads(os.environ.pop('HC074_INPLACE_ARGV'));deadline=float(os.environ.pop('HC074_INPLACE_DEADLINE'))
+        value=c.owned._owned(c.owned.load_job().WindowsJob(),argv,str(c.ROOT),c.capacity,bound=1200,deadline=deadline)
+        c.write(folder,'execution.json',value);raise SystemExit(value['exit'])
+    if len(sys.argv)==3 and sys.argv[2]=='windows-worker':
+        label=sys.argv[1];c.source()
+        value=c.owned._owned(c.owned.load_job().WindowsJob(),[sys.executable,'-B',str(Path(__file__)),'session',label],str(c.ROOT),c.capacity,bound=1200)
+        c.write(c.BASE/label,'execution.json',value);raise SystemExit(value['exit'])
+    c.need(len(sys.argv)==2,'one fixed phase');main(sys.argv[1])

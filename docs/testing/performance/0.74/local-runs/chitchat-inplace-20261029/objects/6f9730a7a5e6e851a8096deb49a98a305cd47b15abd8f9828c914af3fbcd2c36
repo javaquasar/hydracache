@@ -1,0 +1,34 @@
+
+running 9 tests
+test delta::tests::test_delta_op_tag ... ok
+test delta::tests::test_delta_serialization_default ... ok
+test delta::tests::test_delta_serialization_exceed_mtu_on_add_kv ... ok
+test delta::tests::test_delta_serialization_exceed_mtu_on_add_node ... ok
+test delta::tests::test_delta_serialization_panic_if_add_after_exceed - should panic ... ok
+test delta::tests::test_delta_serialization_simple_foo ... ok
+test delta::tests::test_delta_serialization_simple_node ... ok
+test delta::tests::test_delta_serialization_simple_with_nodes_to_reset ... ok
+test delta::tests::test_delta_serialization_with_set_max_version ... ok
+
+successes:
+
+---- delta::tests::test_delta_serialization_panic_if_add_after_exceed stdout ----
+
+thread 'delta::tests::test_delta_serialization_panic_if_add_after_exceed' (1858) panicked at src/delta.rs:438:9:
+assertion failed: mtu >= 100
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+successes:
+    delta::tests::test_delta_op_tag
+    delta::tests::test_delta_serialization_default
+    delta::tests::test_delta_serialization_exceed_mtu_on_add_kv
+    delta::tests::test_delta_serialization_exceed_mtu_on_add_node
+    delta::tests::test_delta_serialization_panic_if_add_after_exceed
+    delta::tests::test_delta_serialization_simple_foo
+    delta::tests::test_delta_serialization_simple_node
+    delta::tests::test_delta_serialization_simple_with_nodes_to_reset
+    delta::tests::test_delta_serialization_with_set_max_version
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 109 filtered out; finished in 0.00s
+

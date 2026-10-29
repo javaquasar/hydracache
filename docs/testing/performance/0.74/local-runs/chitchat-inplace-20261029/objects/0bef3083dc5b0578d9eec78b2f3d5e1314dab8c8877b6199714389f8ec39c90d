@@ -1,0 +1,34 @@
+
+running 10 tests
+test serialize::tests::test_compressed_serialized_stream ... ok
+test serialize::tests::test_compressed_serialized_stream_len_when_there_are_no_compressed_blocks ... ok
+test serialize::tests::test_compressed_serialized_stream_with_random_data ... ok
+test serialize::tests::test_empty ... ok
+test serialize::tests::test_proptest_compressed_stream ... ok
+test serialize::tests::test_serialize_block_type ... ok
+test serialize::tests::test_serialize_bool ... ok
+test serialize::tests::test_serialize_chitchat_id ... ok
+test serialize::tests::test_serialize_heartbeat ... ok
+test serialize::tests::test_serialize_ip ... ok
+
+successes:
+
+---- serialize::tests::test_proptest_compressed_stream stdout ----
+proptest: Failed to find absolute path of source file '"src/serialize.rs"'. Ensure the test is being run from somewhere within the crate directory hierarchy.
+proptest: FileFailurePersistence::SourceParallel set, but no source file known
+
+
+successes:
+    serialize::tests::test_compressed_serialized_stream
+    serialize::tests::test_compressed_serialized_stream_len_when_there_are_no_compressed_blocks
+    serialize::tests::test_compressed_serialized_stream_with_random_data
+    serialize::tests::test_empty
+    serialize::tests::test_proptest_compressed_stream
+    serialize::tests::test_serialize_block_type
+    serialize::tests::test_serialize_bool
+    serialize::tests::test_serialize_chitchat_id
+    serialize::tests::test_serialize_heartbeat
+    serialize::tests::test_serialize_ip
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 108 filtered out; finished in 5.86s
+

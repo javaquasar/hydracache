@@ -1,0 +1,149 @@
+{
+  "archive_sha256": "5d2f2f9b4ba7e6b24d95e7e899329d35be83bcded72c8540cdd5368932d1d90a",
+  "manifest": {
+    "dependencies": {
+      "hashbrown": {
+        "optional": true,
+        "version": "0.17.0"
+      }
+    },
+    "dev-dependencies": {
+      "scoped_threadpool": {
+        "version": "0.1.*"
+      },
+      "stats_alloc": {
+        "version": "0.1.*"
+      }
+    },
+    "features": {
+      "default": [
+        "hashbrown"
+      ],
+      "nightly": [
+        "hashbrown",
+        "hashbrown/nightly"
+      ]
+    },
+    "lib": {
+      "name": "lru",
+      "path": "src/lib.rs"
+    },
+    "package": {
+      "authors": [
+        "Jerome Froelich <jeromefroelic@hotmail.com>"
+      ],
+      "autobenches": false,
+      "autobins": false,
+      "autoexamples": false,
+      "autolib": false,
+      "autotests": false,
+      "build": false,
+      "categories": [
+        "caching",
+        "no-std"
+      ],
+      "description": "A LRU cache implementation",
+      "documentation": "https://docs.rs/lru/",
+      "homepage": "https://github.com/jeromefroe/lru-rs",
+      "keywords": [
+        "LRU",
+        "cache"
+      ],
+      "license": "MIT",
+      "name": "lru",
+      "readme": "README.md",
+      "repository": "https://github.com/jeromefroe/lru-rs.git",
+      "rust-version": "1.85.0",
+      "version": "0.18.2"
+    }
+  },
+  "members": {
+    ".cargo_vcs_info.json": {
+      "bytes": 94,
+      "sha256": "3c49c3b1e4220384cf124a5b33e8f812a7b70d8a1c4502a80b78c44559d8296e"
+    },
+    ".github/workflows/main.yml": {
+      "bytes": 1021,
+      "sha256": "527ec312de8621a924b4f82bb9e111fdfc231ab60993e3ce86c150b2aca69c12"
+    },
+    ".gitignore": {
+      "bytes": 40,
+      "sha256": "4383056d94f7fad6003cdfe9197ac0bf0b4e0f595e6a2fa231bd2fca8d6da603"
+    },
+    "CHANGELOG.md": {
+      "bytes": 10021,
+      "sha256": "54597b01495eb98314dfb2b759296d059fbb60ac6066826bfc2f27f8edd1f141"
+    },
+    "Cargo.lock": {
+      "bytes": 1461,
+      "sha256": "09a3b4a310ef616c0aa2a45676d7876eecb472d5ceab6b263dcacda7b4ad2a5f"
+    },
+    "Cargo.toml": {
+      "bytes": 1306,
+      "sha256": "77f22971da80969ba1d5b81b141b4bd6d8df89d1fe626ae4341a4e7e63c52bb8"
+    },
+    "Cargo.toml.orig": {
+      "bytes": 631,
+      "sha256": "9797e165fb975d6949c427fa2c10067def0556b63ffa98a0edcf86f974b251c6"
+    },
+    "LICENSE": {
+      "bytes": 1071,
+      "sha256": "061dc50af2cd9340703daf61978af3200cf681b12ea67a323c33ba109a23a45e"
+    },
+    "README.md": {
+      "bytes": 1993,
+      "sha256": "2b2de17fdd9c5da775b0b7e6934b46b4675f9036afd5712a485cdd3ffe4b515e"
+    },
+    "src/lib.rs": {
+      "bytes": 104534,
+      "sha256": "c727efedbcc0d5e49ace6fa80c8b175d403862a28f8292a6e3bf7a2daf7c08dd"
+    }
+  },
+  "metadata": {
+    "cksum": "5d2f2f9b4ba7e6b24d95e7e899329d35be83bcded72c8540cdd5368932d1d90a",
+    "deps": [
+      {
+        "default_features": true,
+        "features": [],
+        "kind": "normal",
+        "name": "hashbrown",
+        "optional": true,
+        "req": "^0.17.0",
+        "target": null
+      },
+      {
+        "default_features": true,
+        "features": [],
+        "kind": "dev",
+        "name": "scoped_threadpool",
+        "optional": false,
+        "req": "0.1.*",
+        "target": null
+      },
+      {
+        "default_features": true,
+        "features": [],
+        "kind": "dev",
+        "name": "stats_alloc",
+        "optional": false,
+        "req": "0.1.*",
+        "target": null
+      }
+    ],
+    "features": {
+      "default": [
+        "hashbrown"
+      ],
+      "nightly": [
+        "hashbrown",
+        "hashbrown/nightly"
+      ]
+    },
+    "name": "lru",
+    "pubtime": "2026-08-03T14:04:08Z",
+    "rust_version": "1.85.0",
+    "vers": "0.18.2",
+    "yanked": false
+  },
+  "source_code_executed": false
+}

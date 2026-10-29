@@ -1,0 +1,233 @@
+"""Current-root guard and exact historical source data, never rebound old pins."""
+from pathlib import Path
+import hashlib
+import importlib.util
+import json
+import os
+import re
+import shutil
+import sys
+import tomllib
+
+ROOT=Path(__file__).resolve().parents[2]
+TOOLS=Path(__file__).resolve().parent
+BASE=ROOT/'target/chitchat-inplace-20261029'
+sys.path.insert(0,str(ROOT/'tools/windows-workspace-preflight-074'))
+import owned
+
+PINS={'Cargo.lock':'34d7a21d9833a180460e5a094f9ee7f1effe07dfb43a65d90865798963e0070c',
+      'deny.toml':'16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930',
+      'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+      'tools/windows-workspace-preflight-074/owned.py':'e7c5a3c0c4fea90f39772512c4ad96c60693fc0b482092a608dcf039e151eade',
+      'scripts/ci/watchdog_windows_job.py':'8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1',
+      'scripts/ci/watchdog_linux_group.py':'e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691',
+      'tools/dbus-source-package-074/package.py':'1b13c005abfbb96b1374e27fcc871ce0a14d87fe955e2097712a9cfb029fadf3',
+      'tools/chitchat-preview-cost-074/cost_tests.rs':'ecfff40019b383eb5976e42fa16630ad9dc169904c17dd44598122cf2cd9341d'}
+sha=lambda body:hashlib.sha256(body).hexdigest()
+
+def need(value,reason):
+    if not value:raise ValueError(reason)
+
+def write(folder,name,value):
+    with (folder/name).open('x',encoding='utf8',newline='\n') as out:json.dump(value,out,indent=2,sort_keys=True);out.write('\n')
+
+def files(folder):return {p.relative_to(folder).as_posix():sha(p.read_bytes()) for p in sorted(folder.rglob('*')) if p.is_file()}
+
+def source():
+    names=set(PINS)|{'Cargo.toml','.cargo/config.toml'}
+    names|={p.relative_to(ROOT).as_posix() for p in TOOLS.iterdir() if p.is_file()}
+    values={n:sha((ROOT/n).read_bytes()) for n in sorted(names)}
+    for name,digest in PINS.items():need(values[name]==digest,'current exact root/tool pin: '+name)
+    return values
+
+def member(name):
+    packet=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-mtu-backport-20261028'
+    raw=(packet/'index.json').read_bytes()
+    need(sha(raw)=='d6fc98b961530fdc3b879018521500c80d65094e7f160263b7318fa8870d5dfe','sealed original S source packet')
+    row=json.loads(raw)['members'][name];body=(packet/'objects'/row['sha256']).read_bytes()
+    need(sha(body)==row['sha256'] and len(body)==row['bytes'],'historical source member')
+    return body
+
+def capacity():
+    if shutil.disk_usage(ROOT).free<4*1024**3:raise owned.CapacityError('original four-GiB floor')
+
+def environment_review():
+    forbidden={'RUSTFLAGS','RUSTDOCFLAGS','CARGO_ENCODED_RUSTFLAGS','CARGO_BUILD_RUSTFLAGS','CC','CXX','AR','CFLAGS','CPPFLAGS','RUSTC_WRAPPER','RUSTC_WORKSPACE_WRAPPER'}
+    prefixes=('CARGO_PROFILE_','CARGO_TARGET_','CC_','CFLAGS_','CXXFLAGS','PKG_CONFIG_','ZSTD_')
+    need(not any(v and (k in forbidden or k.startswith(prefixes)) for k,v in os.environ.items()),'unreviewed compiler/native override')
+
+def guard(variant):
+    source();prepared=json.loads((BASE/'preparation'/variant/'result.json').read_bytes())
+    need(files(BASE/'fixtures'/variant)==prepared['files'],'complete frozen fixture: '+variant)
+    for name,digest in prepared['overlays'].items():need(sha((ROOT/name).read_bytes())==digest,'fixed shared overlay')
+    config=BASE/'cargo-home/config.toml'
+    windows_base=BASE.as_posix() if os.name=='nt' else 'C:/Workspace/prj/jq/cashe/hydracache-074/target/chitchat-inplace-20261029'
+    need(config.read_text(encoding='utf8')=='[source.crates-io]\nreplace-with="inplace-reviewed"\n[source.inplace-reviewed]\ndirectory="'+windows_base+'/vendor"\n','private offline Windows source config')
+    inventory=json.loads((BASE/'vendor-receipt.json').read_bytes())
+    for name,members in inventory.items():
+        folder=BASE/'vendor'/name
+        for relative,digest in members.items():need(sha((folder/relative).read_bytes())==digest,'fresh actual registry source')
+
+def prepare():
+    prior=json.loads(member('capture/preparation/S/result.json'))
+    for name,digest in prior['overlays'].items():need(sha((ROOT/name).read_bytes())==digest,'old shared test body unchanged')
+    fixture=BASE/'fixtures/S';fixture.mkdir(parents=True)
+    for name,digest in prior['files'].items():
+        body=member('capture/fixtures/S/'+name);need(sha(body)==digest,'exact S source')
+        path=fixture/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(body)
+    old_b=member('capture/fixtures/B/src/serialize.rs').decode()
+    start='    pub fn serialized_len_upperbound_after<'
+    stop='    /// Appends a new item'
+    original=old_b[old_b.index(start):old_b.index(stop)]
+    (BASE/'original-bound.rs').write_text(original,encoding='utf8',newline='\n')
+    for path in fixture.rglob('*.rs'):
+        body=path.read_text(encoding='utf8')
+        def relative(match):
+            target=Path(match[1]);need(target.resolve().is_relative_to(ROOT/'tools'),'old test-only path under tools')
+            return '#[path = "'+os.path.relpath(target,path.parent).replace('\\','/')+'"]'
+        body=re.sub(r'#\[path = "([^"]+)"\]',relative,body)
+        path.write_text(body,encoding='utf8',newline='\n')
+    path=fixture/'src/serialize.rs';body=path.read_text(encoding='utf8')
+    marker='pub fn serialized_len_upperbound_after<S: Serializable + ?Sized>(&self, item: &S) -> usize {'
+    need(body.count(marker)==1,'exact original estimator')
+    body=body.replace(marker,marker+'\n        #[cfg(test)]\n        inplace_review::record(0);')
+    adapter='''
+#[cfg(test)]
+impl CompressedStreamWriter {
+    fn counted_upperbound_after<S: Serializable + ?Sized>(&mut self, item: &S) -> usize { self.serialized_len_upperbound_after(item) }
+    fn fits_budget_after<S: Serializable + ?Sized>(&mut self, item: &S, budget: usize) -> bool { self.serialized_len_upperbound_after(item) <= budget }
+    pub(crate) fn cost_inventory(&self) -> ([usize; 3], usize) {
+        ([self.output.len(),self.uncompressed_block.len(),self.compressed_block.len()],self.block_threshold)
+    }
+}
+'''
+    relative_path=os.path.relpath(TOOLS/'regression.rs',path.parent).replace('\\','/')
+    body+=adapter+'\n#[cfg(test)]\n#[path="'+relative_path+'"]\npub(crate) mod inplace_review;\n'
+    path.write_text(body,encoding='utf8',newline='\n')
+    path=fixture/'src/delta.rs';path.write_bytes(path.read_bytes()+b'\n#[cfg(test)]\n#[path="../../../../../tools/chitchat-inplace-074/allocation_tests.rs"]\nmod cost_review;\n')
+    shutil.copytree(fixture,BASE/'fixtures/B')
+    path=BASE/'fixtures/B/src/serialize.rs';body=path.read_text(encoding='utf8')
+    body=body[:body.index(start)]+original.replace(marker,marker+'\n        #[cfg(test)]\n        inplace_review::record(0);')+body[body.index(stop):]
+    path.write_text(body,encoding='utf8',newline='\n')
+    source();overlays={n:sha((ROOT/n).read_bytes()) for n in prior['overlays']}
+    overlays.update({(TOOLS/n).relative_to(ROOT).as_posix():sha((TOOLS/n).read_bytes()) for n in ('regression.rs','allocation_tests.rs')})
+    for variant in ('B','S'):
+        out=BASE/'preparation'/variant;out.mkdir(parents=True)
+        write(out,'unformatted.json',dict(files=files(BASE/'fixtures'/variant),overlays=overlays))
+    # Exact fixed lock, no resolver refresh. Archive checksums come from that lock.
+    lock=tomllib.loads((fixture/'Cargo.lock').read_text(encoding='utf8'))
+    cache=Path.home()/'.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f'
+    input_root=BASE/'input';input_root.mkdir();(input_root/'archives').mkdir()
+    codec_spec=importlib.util.spec_from_file_location('inplace_source_codec',ROOT/'tools/dbus-source-package-074/package.py')
+    codec=importlib.util.module_from_spec(codec_spec);codec_spec.loader.exec_module(codec)
+    inventory={}
+    for row in lock['package']:
+        if not row.get('source','').startswith('registry+'):continue
+        capacity();name=row['name']+'-'+row['version'];raw=(cache/(name+'.crate')).read_bytes()
+        need(sha(raw)==row['checksum'],'fixed original registry identity: '+name)
+        (input_root/'archives'/(name+'.crate')).write_bytes(raw)
+        members=codec.unpack(raw,name);folder=BASE/'vendor'/name;folder.mkdir(parents=True)
+        for relative,body in members.items():
+            path=folder/relative;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(body)
+        hashes={name:sha(body) for name,body in members.items()};inventory[name]=hashes
+        write(folder,'.cargo-checksum.json',dict(package=row['checksum'],files=hashes))
+    write(BASE,'vendor-receipt.json',inventory)
+    (BASE/'cargo-home').mkdir()
+    (BASE/'cargo-home/config.toml').write_text('[source.crates-io]\nreplace-with="inplace-reviewed"\n[source.inplace-reviewed]\ndirectory="'+(BASE/'vendor').as_posix()+'"\n',encoding='utf8')
+
+
+def function_span(body, marker):
+    need(body.count(marker) == 1, 'one exact replaced function')
+    start = body.index(marker)
+    opening = body.index('{', start)
+    depth = 1
+    for end in range(opening + 1, len(body)):
+        depth += (body[end] == '{') - (body[end] == '}')
+        if depth == 0:
+            return start, end + 1
+    raise ValueError('unclosed replaced function')
+
+
+def derive_d():
+    analysis = json.loads((BASE/'analysis-S.json').read_bytes())
+    need(analysis['complete'] and analysis['regressions'] > 0, 'measured S refusal before D')
+    guard('S')
+    folder = BASE/'fixtures/D'
+    shutil.copytree(BASE/'fixtures/S', folder)
+    path = folder/'src/serialize.rs'
+    body = path.read_text(encoding='utf8')
+    start, end = function_span(body, '    fn fits_budget_after<')
+    body = body[:start] + body[end:] + '\n' + (TOOLS/'d_budget.rs').read_text(encoding='utf8')
+    path.write_text(body, encoding='utf8', newline='\n')
+    path = folder/'src/delta.rs'
+    body = path.read_text(encoding='utf8')
+    old = 'if self\n            .compressed_stream_writer\n            .serialized_len_upperbound_after(&delta_op)\n            > self.mtu'
+    need(body.count(old) == 1, 'one original production admission point')
+    body = body.replace(old, 'if !self.compressed_stream_writer.fits_budget_after(&delta_op, self.mtu)')
+    path.write_text(body, encoding='utf8', newline='\n')
+
+
+def derive_p():
+    analysis = json.loads((BASE/'analysis-D.json').read_bytes())
+    need(analysis['complete'] and analysis['regressions'] > 0, 'measured remaining D cost')
+    for label in ('focus-release-D-194','check-D-194','clippy-D-194'):
+        need(json.loads((BASE/label/'result.json').read_bytes())['complete'], 'D functional gate before P')
+    guard('D')
+    folder = BASE/'fixtures/P'
+    shutil.copytree(BASE/'fixtures/D', folder)
+    path = folder/'src/serialize.rs'
+    body = path.read_text(encoding='utf8')
+    start, end = function_span(body, '    fn counted_upperbound_after<')
+    body = body[:start] + body[end:]
+    marker = '    pub fn serialized_len_upperbound_after<'
+    need(body.count(marker) == 1, 'one immutable S test oracle')
+    body = body.replace(marker, '    // Immutable S reference only; not the production admission path.\n    #[cfg(test)]\n' + marker)
+    old = 'self.serialized_len_upperbound_after(item) <= budget'
+    need(body.count(old) == 1, 'one production ambiguous branch')
+    body = body.replace(old, 'self.counted_upperbound_after(item) <= budget')
+    body += '\n' + (TOOLS/'p_count.rs').read_text(encoding='utf8')
+    path.write_text(body, encoding='utf8', newline='\n')
+
+
+def derive_l():
+    need(json.loads((BASE/'analysis-P.json').read_bytes())['rust_allocation_gate_pass'], 'measured P before test-only successor')
+    refused=json.loads((BASE/'clippy-P-188/session-result.json').read_bytes())
+    need(not refused['complete'], 'preserved original MSRV lint refusal')
+    raw=(BASE/'clippy-P-188/cargo/stderr.log').read_text(encoding='utf8')
+    need(raw.count('error: variables can be used directly in the `format!` string')==7, 'exact seven upstream test lint findings')
+    guard('P')
+    folder=BASE/'fixtures/L';shutil.copytree(BASE/'fixtures/P', folder)
+    edits={'src/lib.rs': [('format!("k{}", i)', 'format!("k{i}")', 1), ('panic!("Expected SynAck, got {:?}", ack)', 'panic!("Expected SynAck, got {ack:?}")', 1)],
+           'tests/perf_test.rs': [('"Delay exceeded: {:?}",\n        delay', '"Delay exceeded: {delay:?}"', 5)]}
+    for name, changes in edits.items():
+        path=folder/name;body=path.read_text(encoding='utf8')
+        for before,after,count in changes:
+            need(body.count(before)==count, 'exact test-only lint correction: '+name)
+            body=body.replace(before,after)
+        path.write_text(body,encoding='utf8',newline='\n')
+    path=folder/'src/serialize.rs'
+    body=path.read_text(encoding='utf8')
+    relative=os.path.relpath(TOOLS/'l_regression.rs',path.parent).replace('\\','/')
+    body+='\n#[cfg(test)]\n#[path="'+relative+'"]\nmod state_review;\n'
+    path.write_text(body,encoding='utf8',newline='\n')
+
+
+def derive_l2():
+    guard('L')
+    need(not json.loads((BASE/'clippy-L-188/session-result.json').read_bytes())['complete'], 'preserved second MSRV lint refusal')
+    raw=(BASE/'clippy-L-188/cargo/stderr.log').read_text(encoding='utf8')
+    need(raw.count('error: variables can be used directly in the `format!` string')==8, 'exact eight additional integration test findings')
+    folder=BASE/'fixtures/L2';shutil.copytree(BASE/'fixtures/L',folder)
+    path=folder/'tests/cluster_test.rs';body=path.read_text(encoding='utf8')
+    changes=[('write!(f, "Key \'{}\' == \'{}\'", key, expected_value)', 'write!(f, "Key \'{key}\' == \'{expected_value}\'")'),
+        ('write!(f, "INS KV in node {:?}: ", chitchat_id)', 'write!(f, "INS KV in node {chitchat_id:?}: ")'),
+        ('write!(f, "({}={})", key, value)', 'write!(f, "({key}={value})")'),
+        ('write!(f, "DEL node {:?} key {}", chitchat_id, key)', 'write!(f, "DEL node {chitchat_id:?} key {key}")'),
+        ('write!(f, "WAIT {:?}", duration)', 'write!(f, "WAIT {duration:?}")'),
+        ('"Node {:?} assertion failed",\n                            expected_status,', '"Node {expected_status:?} assertion failed",'),
+        ('format!("node-{}", i)', 'format!("node-{i}")'),
+        ('format!("key_{}", idx)', 'format!("key_{idx}")')]
+    for before,after in changes:
+        need(body.count(before)==1, 'one exact additional test-only format correction')
+        body=body.replace(before,after)
+    path.write_text(body,encoding='utf8',newline='\n')

@@ -1,0 +1,22 @@
+
+running 1 test
+test delta::oversize_review::oversized_rejection_preserves_writer ... FAILED
+
+successes:
+
+successes:
+
+failures:
+
+---- delta::oversize_review::oversized_rejection_preserves_writer stdout ----
+
+thread 'delta::oversize_review::oversized_rejection_preserves_writer' (13648) panicked at src\serialize.rs:373:9:
+assertion failed: item_len <= u16::MAX as usize
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    delta::oversize_review::oversized_rejection_preserves_writer
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 105 filtered out; finished in 0.00s
+

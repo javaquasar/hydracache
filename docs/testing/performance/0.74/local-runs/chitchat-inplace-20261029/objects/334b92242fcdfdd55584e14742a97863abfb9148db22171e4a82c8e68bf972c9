@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-inplace-074",
+    "-p",
+    "test_*.py",
+    "-v"
+  ],
+  "deadline": 147887.6912494,
+  "expected_exit": 0,
+  "retry": false
+}

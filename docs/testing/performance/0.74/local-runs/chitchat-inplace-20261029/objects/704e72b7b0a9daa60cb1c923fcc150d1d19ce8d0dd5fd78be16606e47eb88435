@@ -1,0 +1,55 @@
+# Existing MTU backport: remove clone-preview cost
+
+Root remains on 09a5f4f45 / lock 34d7a21d…; all role/live checks, 300/60/10,
+5/10/45, 780/4800 and local 1200-second/4-GiB/five-second contracts stay exact.
+No product adoption, server/service/clock change, publication or new unrelated
+performance hypothesis. M's nine lost admissions and S's 71 allocation increases
+remain declined and immutable.
+
+Freeze shared tests, seed, original 37-stream/seven-malformed, 239-operation and
+three-oversize matrices before builds. Restore S's exact fixture from its sealed
+packet. Use the same S dependency graph (Zstd .14.3, safe 8.2, LRU .18.2) for all
+variants, relative test-only paths, and isolated targets. Historical root pins
+are historical data, never rebound to the current lock or bypassed in an old guard.
+
+Work sequentially, one hypothesis at a time:
+
+1. B is the matched attribution counterfactual using the original known-wrong
+   cheap bound; it is never an acceptable product repair. S is the declined
+   clone-preview baseline. Record original controls, its new fast-reject fault,
+   and matched allocation observations before implementing a successor.
+2. D adds budget guards only: reject on the old estimate if already over budget;
+   accept on a correct conservative all-block bound if within budget; otherwise
+   call the unchanged S exact predictor. Keep admission/wire unchanged. Qualify
+   functional gates and attribute the remaining expensive path before P.
+3. P replaces only that ambiguous path by serialization into the existing pending
+   Vec and compression/counting through existing scratch, with RAII restoration
+   of original pending prefix/length and scratch length on return/unwind. No
+   full writer/output clone, global scratch, lock or public trait change. The
+   internal production API is budget-aware. The old immutable S predictor stays
+   test-only as an explicitly labeled reference oracle; old tests are unchanged.
+   New tests must exercise the actual production helper, including panic, exact
+   oracle equivalence, rejection and independent concurrent writers. Original
+   wide tests which use the reference do not alone qualify P's new path.
+
+In-place prediction can grow pending capacity; record it rather than claiming
+purity. Old budget rejections must not serialize or change capacities. Accepted
+whole-operation allocation/reallocation/requested/peak records must not exceed
+the matched B records on any original supported case. The existing test-only
+bound observer remains a reference-oracle observation, not P production cost.
+Measure actual full operations separately with fresh writers; no shifting cost
+between regions or hiding requested live deltas. Preserve old allocator controls.
+Debug images qualify functional controls only. Allocation cohorts use separately
+bound release-profile images; never compare their counts with old debug images
+or splice previous S measurements into this new matched cohort.
+
+Use four allocation processes B,candidate,candidate,B, two observations per
+original case, only after original semantic/allocator controls pass. Reconcile
+all 239 cases/order/seed/admission/exact wire. Require repeat equality within and
+across the two same-image processes. No CPU timing cohort is scheduled: prior
+Windows quantization remains unqualified. Native C allocations, CPU, RSS and
+retained memory remain separate gates even if Rust counts improve.
+
+Stop on the first unexpected refusal; retain raw streams, exact producer/source/
+lock/catalog/artifact/retirement receipts. No retry-to-pass or threshold/corpus
+change. Product GNU/MSRV/distribution/full package/workspace gates remain required.

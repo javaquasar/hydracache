@@ -1,0 +1,79 @@
+"""Append-only successive local patch inputs; never edits the root graph."""
+from pathlib import Path
+import difflib,hashlib,json,shutil,sys
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-mtu-20261028'
+OLD=ROOT/'target/remaining-security-20261028'
+variant=sys.argv[1];assert variant in ('B','M','L','Z')
+out=BASE/'preparation'/variant;out.mkdir(parents=True,exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def files(folder):return {p.relative_to(folder).as_posix():sha(p.read_bytes()) for p in sorted(folder.rglob('*')) if p.is_file()}
+def write(name,value):(out/name).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+protected=('Cargo.toml','Cargo.lock','deny.toml','tools/long-run-supervisor-074/Cargo.toml','docs/testing/performance/0.74/qualification-manifest.toml')
+root_inputs={n:sha((ROOT/n).read_bytes()) for n in protected}
+write('intent.json',dict(variant=variant,root_inputs=root_inputs,producer_sha256=sha(Path(__file__).read_bytes()),local_only=True,retry=False))
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+parent={'B':None,'M':'B','L':'M','Z':'L'}[variant]
+if variant=='M':
+ row=json.loads((BASE/'minimal-B-194/result.json').read_bytes());assert row['exit']==101 and row['accounting']['failed']==1
+ assert b'"actual":13' in (BASE/'minimal-B-194/stdout.log').read_bytes()
+ for label in ('observe-B-194','delta-B-194'):
+  assert json.loads((BASE/label/'result.json').read_bytes())['accounting']['test_pass']
+if variant=='L':
+ row=json.loads((BASE/'clippy-M-194/result.json').read_bytes());assert row['exit']==101
+ assert (BASE/'clippy-M-194/stderr.log').read_bytes().count(b"error: hiding a lifetime that's elided elsewhere is confusing")==2
+ assert json.loads((BASE/'comparison-M/result.json').read_bytes())['bounds_fixed']
+if variant=='Z':
+ assert json.loads((BASE/'clippy-L-194/result.json').read_bytes())['exit']==0
+ assert json.loads((BASE/'comparison-L/result.json').read_bytes())['annotation_only_observations_equal']
+source=OLD/'fixtures-v2/baseline' if variant=='B' else BASE/'fixtures'/parent
+if variant=='B':
+ assert files(source)==json.loads((OLD/'fixture-review/result.json').read_bytes())['fixtures']['baseline']['files']
+else:assert files(source)==json.loads((BASE/'preparation'/parent/'result.json').read_bytes())['files']
+dest=BASE/'fixtures'/variant;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copytree(source,dest)
+patches={}
+if variant=='B':
+ for name,probe in (('src/serialize.rs','stream_tests.rs'),('src/delta.rs','delta_tests.rs')):
+  path=ROOT/'tools/chitchat-mtu-review-074'/probe
+  append='\n#[cfg(test)]\n#[path = '+json.dumps(path.as_posix())+']\nmod mtu_review;\n'
+  (dest/name).write_bytes((dest/name).read_bytes()+append.encode())
+elif variant=='M':
+ name='src/serialize.rs';raw=(dest/name).read_text(encoding='utf-8')
+ before='''            BLOCK_META_LEN + self.output.len() + self.uncompressed_block.len() + // current block
+                BLOCK_META_LEN + new_item_serialized_len // new block
+                + 1 // No more blocks tag.'''
+ after='''            let num_blocks = (self.uncompressed_block.len() + new_item_serialized_len)
+                .div_ceil(self.block_threshold);
+            BLOCK_META_LEN * num_blocks
+                + self.output.len()
+                + self.uncompressed_block.len()
+                + new_item_serialized_len
+                + 1 // No more blocks tag.'''
+ assert raw.count(before)==1;patches[name]=(raw,raw.replace(before,after,1))
+elif variant=='L':
+ for name,before,after in (
+  ('src/lib.rs','-> Option<KeyChangeEvent> {',"-> Option<KeyChangeEvent<'_>> {"),
+  ('src/delta.rs','fn as_ref(&self) -> DeltaOpRef {',"fn as_ref(&self) -> DeltaOpRef<'_> {")):
+  raw=(dest/name).read_text(encoding='utf-8');assert raw.count(before)==1
+  patches[name]=(raw,raw.replace(before,after,1))
+else:
+ name='Cargo.toml';raw=(dest/name).read_text(encoding='utf-8')
+ before='[dependencies.zstd]\nversion = "0.13"';after='[dependencies.zstd]\nversion = "0.14.3"'
+ assert raw.count(before)==1;patches[name]=(raw,raw.replace(before,after,1))
+ candidate_lock=(OLD/'fixtures-v2/candidate/Cargo.lock').read_bytes()
+ assert sha(candidate_lock)==json.loads((OLD/'fixture-review/result.json').read_bytes())['fixtures']['candidate']['files']['Cargo.lock']
+ (dest/'Cargo.lock').write_bytes(candidate_lock)
+diff=[]
+for name,(before,after) in patches.items():
+ (dest/name).write_text(after,encoding='utf-8',newline='\n')
+ diff.extend(difflib.unified_diff(before.splitlines(True),after.splitlines(True),fromfile='a/'+name,tofile='b/'+name))
+(out/'source.patch').write_text(''.join(diff),encoding='utf-8',newline='\n')
+overlays={n:sha((ROOT/n).read_bytes()) for n in ('tools/chitchat-zstd-review-074/fixture_tests.rs','tools/chitchat-mtu-review-074/stream_tests.rs','tools/chitchat-mtu-review-074/delta_tests.rs')}
+result=dict(variant=variant,parent=parent,files=files(dest),overlays=overlays,root_inputs=root_inputs,
+ source_patch_sha256=sha((out/'source.patch').read_bytes()),targets={})
+for compiler in ('194','188'):
+ identity=sha(json.dumps(dict(files=result['files'],overlays=overlays,compiler=compiler),sort_keys=True).encode())
+ result['targets'][compiler]=str(BASE/'targets'/variant/compiler/identity)
+assert root_inputs=={n:sha((ROOT/n).read_bytes()) for n in protected}
+write('result.json',result)
+print(json.dumps(dict(variant=variant,parent=parent,changed=list(patches),root_graph_changed=False)))

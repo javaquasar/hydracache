@@ -1,0 +1,15 @@
+test_admission_and_wire_change_cannot_pass (test_controls.Controls.test_admission_and_wire_change_cannot_pass) ... ok
+test_complete_equal_cohort_is_bounded_rust_result (test_controls.Controls.test_complete_equal_cohort_is_bounded_rust_result) ... ok
+test_cross_process_and_inner_repeats_must_be_exact (test_controls.Controls.test_cross_process_and_inner_repeats_must_be_exact) ... ok
+test_diagnostic_is_unique_and_complete (test_controls.Controls.test_diagnostic_is_unique_and_complete) ... ok
+test_each_allocation_field_can_independently_refuse (test_controls.Controls.test_each_allocation_field_can_independently_refuse) ... ok
+test_filtered_ignored_failed_or_partial_test_results_refuse (test_controls.Controls.test_filtered_ignored_failed_or_partial_test_results_refuse) ... ok
+test_live_and_invalid_counter_values_refuse (test_controls.Controls.test_live_and_invalid_counter_values_refuse) ... ok
+test_order_and_missing_case_cannot_pass (test_controls.Controls.test_order_and_missing_case_cannot_pass) ... ok
+test_original_semantic_oracle_rejects_different_payload (test_controls.Controls.test_original_semantic_oracle_rejects_different_payload) ... ok
+test_seed_and_allocator_scope_cannot_drift (test_controls.Controls.test_seed_and_allocator_scope_cannot_drift) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.158s
+
+OK

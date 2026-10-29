@@ -1,0 +1,2929 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "accepted_regressions": 23,
+  "cases": 239,
+  "complete": true,
+  "differences": [
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 148,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 10,
+          "requested": 99962
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 0,
+          "requested": 70921
+        }
+      },
+      "delta": {
+        "allocs": 129,
+        "peak": 0,
+        "reallocs": 10,
+        "requested": 29041
+      },
+      "mtu": 100,
+      "value_len": 4096
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 517,
+          "live": 0,
+          "peak": 76456,
+          "reallocs": 12,
+          "requested": 198383
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 0,
+          "requested": 83209
+        }
+      },
+      "delta": {
+        "allocs": 498,
+        "peak": 10401,
+        "reallocs": 12,
+        "requested": 115174
+      },
+      "mtu": 100,
+      "value_len": 16384
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 1006,
+          "live": 0,
+          "peak": 151772,
+          "reallocs": 13,
+          "requested": 329260
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 0,
+          "requested": 99525
+        }
+      },
+      "delta": {
+        "allocs": 987,
+        "peak": 85717,
+        "reallocs": 13,
+        "requested": 229735
+      },
+      "mtu": 100,
+      "value_len": 32700
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 1975,
+          "live": 0,
+          "peak": 301408,
+          "reallocs": 14,
+          "requested": 589449
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 0,
+          "requested": 131825
+        }
+      },
+      "delta": {
+        "allocs": 1956,
+        "peak": 235353,
+        "reallocs": 14,
+        "requested": 457624
+      },
+      "mtu": 100,
+      "value_len": 65000
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 112,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 9,
+          "requested": 95142
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 0,
+          "requested": 71081
+        }
+      },
+      "delta": {
+        "allocs": 93,
+        "peak": 0,
+        "reallocs": 9,
+        "requested": 24061
+      },
+      "mtu": 140,
+      "value_len": 4096
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 376,
+          "live": 0,
+          "peak": 68592,
+          "reallocs": 11,
+          "requested": 178702
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 0,
+          "requested": 83369
+        }
+      },
+      "delta": {
+        "allocs": 357,
+        "peak": 2537,
+        "reallocs": 11,
+        "requested": 95333
+      },
+      "mtu": 140,
+      "value_len": 16384
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 724,
+          "live": 0,
+          "peak": 135844,
+          "reallocs": 12,
+          "requested": 289738
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 0,
+          "requested": 99685
+        }
+      },
+      "delta": {
+        "allocs": 705,
+        "peak": 69789,
+        "reallocs": 12,
+        "requested": 190053
+      },
+      "mtu": 140,
+      "value_len": 32700
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 1417,
+          "live": 0,
+          "peak": 269352,
+          "reallocs": 13,
+          "requested": 510403
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 0,
+          "requested": 131985
+        }
+      },
+      "delta": {
+        "allocs": 1398,
+        "peak": 203297,
+        "reallocs": 13,
+        "requested": 378418
+      },
+      "mtu": 140,
+      "value_len": 65000
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 85,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 9,
+          "requested": 98375
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 0,
+          "requested": 71313
+        }
+      },
+      "delta": {
+        "allocs": 66,
+        "peak": 0,
+        "reallocs": 9,
+        "requested": 27062
+      },
+      "mtu": 198,
+      "value_len": 4096
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 274,
+          "live": 0,
+          "peak": 76306,
+          "reallocs": 11,
+          "requested": 191096
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 0,
+          "requested": 83601
+        }
+      },
+      "delta": {
+        "allocs": 255,
+        "peak": 10251,
+        "reallocs": 11,
+        "requested": 107495
+      },
+      "mtu": 198,
+      "value_len": 16384
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 520,
+          "live": 0,
+          "peak": 150982,
+          "reallocs": 12,
+          "requested": 314294
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 0,
+          "requested": 99917
+        }
+      },
+      "delta": {
+        "allocs": 501,
+        "peak": 84927,
+        "reallocs": 12,
+        "requested": 214377
+      },
+      "mtu": 198,
+      "value_len": 32700
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 1009,
+          "live": 0,
+          "peak": 299338,
+          "reallocs": 13,
+          "requested": 559283
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66061,
+          "reallocs": 0,
+          "requested": 132217
+        }
+      },
+      "delta": {
+        "allocs": 990,
+        "peak": 233277,
+        "reallocs": 13,
+        "requested": 427066
+      },
+      "mtu": 198,
+      "value_len": 65000
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 25,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 7,
+          "requested": 101237
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 0,
+          "requested": 74521
+        }
+      },
+      "delta": {
+        "allocs": 6,
+        "peak": 0,
+        "reallocs": 7,
+        "requested": 26716
+      },
+      "mtu": 1000,
+      "value_len": 4096
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 82413,
+          "reallocs": 9,
+          "requested": 192151
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 0,
+          "requested": 86809
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 16358,
+        "reallocs": 9,
+        "requested": 105342
+      },
+      "mtu": 1000,
+      "value_len": 16384
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 160161,
+          "reallocs": 10,
+          "requested": 315001
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 66055,
+          "reallocs": 0,
+          "requested": 103125
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 94106,
+        "reallocs": 10,
+        "requested": 211876
+      },
+      "mtu": 1000,
+      "value_len": 32700
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 25,
+          "live": 0,
+          "peak": 257652,
+          "reallocs": 10,
+          "requested": 445296
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 69269,
+          "reallocs": 0,
+          "requested": 135425
+        }
+      },
+      "delta": {
+        "allocs": 6,
+        "peak": 188383,
+        "reallocs": 10,
+        "requested": 309871
+      },
+      "mtu": 1000,
+      "value_len": 65000
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 331929,
+          "reallocs": 6,
+          "requested": 504240
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 130805,
+          "reallocs": 0,
+          "requested": 196961
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 201124,
+        "reallocs": 6,
+        "requested": 307279
+      },
+      "mtu": 16384,
+      "value_len": 65000
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 25,
+          "live": 0,
+          "peak": 207818,
+          "reallocs": 5,
+          "requested": 320513
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 98521,
+          "reallocs": 0,
+          "requested": 164677
+        }
+      },
+      "delta": {
+        "allocs": 6,
+        "peak": 109297,
+        "reallocs": 5,
+        "requested": 155836
+      },
+      "mtu": 32768,
+      "value_len": 32716
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 25,
+          "live": 0,
+          "peak": 207821,
+          "reallocs": 5,
+          "requested": 320517
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 98522,
+          "reallocs": 0,
+          "requested": 164678
+        }
+      },
+      "delta": {
+        "allocs": 6,
+        "peak": 109299,
+        "reallocs": 5,
+        "requested": 155839
+      },
+      "mtu": 32768,
+      "value_len": 32717
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 25,
+          "live": 0,
+          "peak": 207824,
+          "reallocs": 5,
+          "requested": 320521
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 98523,
+          "reallocs": 0,
+          "requested": 164679
+        }
+      },
+      "delta": {
+        "allocs": 6,
+        "peak": 109301,
+        "reallocs": 5,
+        "requested": 155842
+      },
+      "mtu": 32768,
+      "value_len": 32718
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 25,
+          "live": 0,
+          "peak": 207827,
+          "reallocs": 5,
+          "requested": 320525
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 98524,
+          "reallocs": 0,
+          "requested": 164680
+        }
+      },
+      "delta": {
+        "allocs": 6,
+        "peak": 109303,
+        "reallocs": 5,
+        "requested": 155845
+      },
+      "mtu": 32768,
+      "value_len": 32719
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 25,
+          "live": 0,
+          "peak": 207830,
+          "reallocs": 5,
+          "requested": 320529
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 98525,
+          "reallocs": 0,
+          "requested": 164681
+        }
+      },
+      "delta": {
+        "allocs": 6,
+        "peak": 109305,
+        "reallocs": 5,
+        "requested": 155848
+      },
+      "mtu": 32768,
+      "value_len": 32720
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 331929,
+          "reallocs": 6,
+          "requested": 504240
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 130805,
+          "reallocs": 0,
+          "requested": 196961
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 201124,
+        "reallocs": 6,
+        "requested": 307279
+      },
+      "mtu": 32768,
+      "value_len": 65000
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 256715,
+          "reallocs": 12,
+          "requested": 765011
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 188083,
+          "reallocs": 6,
+          "requested": 532949
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 68632,
+        "reallocs": 6,
+        "requested": 232062
+      },
+      "mtu": 40000,
+      "value_len": 39930
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 256722,
+          "reallocs": 12,
+          "requested": 765024
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 188084,
+          "reallocs": 6,
+          "requested": 532952
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 68638,
+        "reallocs": 6,
+        "requested": 232072
+      },
+      "mtu": 40000,
+      "value_len": 39931
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 256725,
+          "reallocs": 12,
+          "requested": 765029
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 188085,
+          "reallocs": 6,
+          "requested": 532954
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 68640,
+        "reallocs": 6,
+        "requested": 232075
+      },
+      "mtu": 40000,
+      "value_len": 39932
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 256728,
+          "reallocs": 12,
+          "requested": 765033
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 188086,
+          "reallocs": 6,
+          "requested": 532955
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 68642,
+        "reallocs": 6,
+        "requested": 232078
+      },
+      "mtu": 40000,
+      "value_len": 39933
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 256731,
+          "reallocs": 12,
+          "requested": 765038
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 188087,
+          "reallocs": 6,
+          "requested": 532957
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 68644,
+        "reallocs": 6,
+        "requested": 232081
+      },
+      "mtu": 40000,
+      "value_len": 39934
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 256734,
+          "reallocs": 12,
+          "requested": 765043
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 188088,
+          "reallocs": 6,
+          "requested": 532959
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 68646,
+        "reallocs": 6,
+        "requested": 232084
+      },
+      "mtu": 40000,
+      "value_len": 39935
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 256681,
+          "reallocs": 12,
+          "requested": 764936
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 188089,
+          "reallocs": 6,
+          "requested": 532947
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 68592,
+        "reallocs": 6,
+        "requested": 231989
+      },
+      "mtu": 40000,
+      "value_len": 39936
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 256684,
+          "reallocs": 12,
+          "requested": 764941
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 188090,
+          "reallocs": 6,
+          "requested": 532949
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 68594,
+        "reallocs": 6,
+        "requested": 231992
+      },
+      "mtu": 40000,
+      "value_len": 39937
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 256687,
+          "reallocs": 12,
+          "requested": 764946
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 188091,
+          "reallocs": 6,
+          "requested": 532951
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 68596,
+        "reallocs": 6,
+        "requested": 231995
+      },
+      "mtu": 40000,
+      "value_len": 39938
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 256690,
+          "reallocs": 12,
+          "requested": 764951
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 188092,
+          "reallocs": 6,
+          "requested": 532953
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 68598,
+        "reallocs": 6,
+        "requested": 231998
+      },
+      "mtu": 40000,
+      "value_len": 39939
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 256693,
+          "reallocs": 12,
+          "requested": 764955
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 188093,
+          "reallocs": 6,
+          "requested": 532954
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 68600,
+        "reallocs": 6,
+        "requested": 232001
+      },
+      "mtu": 40000,
+      "value_len": 39940
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 256696,
+          "reallocs": 6,
+          "requested": 403906
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 105746,
+          "reallocs": 0,
+          "requested": 171902
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 150950,
+        "reallocs": 6,
+        "requested": 232004
+      },
+      "mtu": 40000,
+      "value_len": 39941
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 256699,
+          "reallocs": 6,
+          "requested": 403910
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 105747,
+          "reallocs": 0,
+          "requested": 171903
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 150952,
+        "reallocs": 6,
+        "requested": 232007
+      },
+      "mtu": 40000,
+      "value_len": 39942
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 256702,
+          "reallocs": 6,
+          "requested": 403914
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 105748,
+          "reallocs": 0,
+          "requested": 171904
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 150954,
+        "reallocs": 6,
+        "requested": 232010
+      },
+      "mtu": 40000,
+      "value_len": 39943
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 256705,
+          "reallocs": 6,
+          "requested": 403918
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 105749,
+          "reallocs": 0,
+          "requested": 171905
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 150956,
+        "reallocs": 6,
+        "requested": 232013
+      },
+      "mtu": 40000,
+      "value_len": 39944
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 256708,
+          "reallocs": 6,
+          "requested": 403922
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 105750,
+          "reallocs": 0,
+          "requested": 171906
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 150958,
+        "reallocs": 6,
+        "requested": 232016
+      },
+      "mtu": 40000,
+      "value_len": 39945
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 256711,
+          "reallocs": 6,
+          "requested": 403926
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 105751,
+          "reallocs": 0,
+          "requested": 171907
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 150960,
+        "reallocs": 6,
+        "requested": 232019
+      },
+      "mtu": 40000,
+      "value_len": 39946
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 256714,
+          "reallocs": 6,
+          "requested": 403930
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 105752,
+          "reallocs": 0,
+          "requested": 171908
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 150962,
+        "reallocs": 6,
+        "requested": 232022
+      },
+      "mtu": 40000,
+      "value_len": 39947
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 256717,
+          "reallocs": 6,
+          "requested": 403934
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 105753,
+          "reallocs": 0,
+          "requested": 171909
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 150964,
+        "reallocs": 6,
+        "requested": 232025
+      },
+      "mtu": 40000,
+      "value_len": 39948
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 256720,
+          "reallocs": 6,
+          "requested": 403938
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 105754,
+          "reallocs": 0,
+          "requested": 171910
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 150966,
+        "reallocs": 6,
+        "requested": 232028
+      },
+      "mtu": 40000,
+      "value_len": 39949
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 256723,
+          "reallocs": 6,
+          "requested": 403942
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 105755,
+          "reallocs": 0,
+          "requested": 171911
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 150968,
+        "reallocs": 6,
+        "requested": 232031
+      },
+      "mtu": 40000,
+      "value_len": 39950
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 256726,
+          "reallocs": 6,
+          "requested": 403946
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 105756,
+          "reallocs": 0,
+          "requested": 171912
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 150970,
+        "reallocs": 6,
+        "requested": 232034
+      },
+      "mtu": 40000,
+      "value_len": 39951
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 256729,
+          "reallocs": 6,
+          "requested": 403950
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 105757,
+          "reallocs": 0,
+          "requested": 171913
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 150972,
+        "reallocs": 6,
+        "requested": 232037
+      },
+      "mtu": 40000,
+      "value_len": 39952
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 331929,
+          "reallocs": 6,
+          "requested": 504240
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 130805,
+          "reallocs": 0,
+          "requested": 196961
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 201124,
+        "reallocs": 6,
+        "requested": 307279
+      },
+      "mtu": 40000,
+      "value_len": 65000
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 331929,
+          "reallocs": 12,
+          "requested": 886139
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 213153,
+          "reallocs": 6,
+          "requested": 578860
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 118776,
+        "reallocs": 6,
+        "requested": 307279
+      },
+      "mtu": 65507,
+      "value_len": 65000
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 333240,
+          "reallocs": 12,
+          "requested": 888251
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 213590,
+          "reallocs": 6,
+          "requested": 579661
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 119650,
+        "reallocs": 6,
+        "requested": 308590
+      },
+      "mtu": 65507,
+      "value_len": 65437
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 333243,
+          "reallocs": 12,
+          "requested": 888256
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 213591,
+          "reallocs": 6,
+          "requested": 579663
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 119652,
+        "reallocs": 6,
+        "requested": 308593
+      },
+      "mtu": 65507,
+      "value_len": 65438
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 333246,
+          "reallocs": 12,
+          "requested": 888261
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 213592,
+          "reallocs": 6,
+          "requested": 579665
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 119654,
+        "reallocs": 6,
+        "requested": 308596
+      },
+      "mtu": 65507,
+      "value_len": 65439
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 333249,
+          "reallocs": 12,
+          "requested": 888265
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 213593,
+          "reallocs": 6,
+          "requested": 579666
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 119656,
+        "reallocs": 6,
+        "requested": 308599
+      },
+      "mtu": 65507,
+      "value_len": 65440
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 333252,
+          "reallocs": 12,
+          "requested": 888270
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 213594,
+          "reallocs": 6,
+          "requested": 579668
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 119658,
+        "reallocs": 6,
+        "requested": 308602
+      },
+      "mtu": 65507,
+      "value_len": 65441
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 333255,
+          "reallocs": 12,
+          "requested": 888275
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 213595,
+          "reallocs": 6,
+          "requested": 579670
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 119660,
+        "reallocs": 6,
+        "requested": 308605
+      },
+      "mtu": 65507,
+      "value_len": 65442
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 333258,
+          "reallocs": 12,
+          "requested": 888280
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 213596,
+          "reallocs": 6,
+          "requested": 579672
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 119662,
+        "reallocs": 6,
+        "requested": 308608
+      },
+      "mtu": 65507,
+      "value_len": 65443
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 333261,
+          "reallocs": 12,
+          "requested": 888284
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 213597,
+          "reallocs": 6,
+          "requested": 579673
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 119664,
+        "reallocs": 6,
+        "requested": 308611
+      },
+      "mtu": 65507,
+      "value_len": 65444
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 333264,
+          "reallocs": 12,
+          "requested": 888289
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 213598,
+          "reallocs": 6,
+          "requested": 579675
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 119666,
+        "reallocs": 6,
+        "requested": 308614
+      },
+      "mtu": 65507,
+      "value_len": 65445
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 333267,
+          "reallocs": 12,
+          "requested": 888294
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 213599,
+          "reallocs": 6,
+          "requested": 579677
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 119668,
+        "reallocs": 6,
+        "requested": 308617
+      },
+      "mtu": 65507,
+      "value_len": 65446
+    },
+    {
+      "accepted": true,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 17,
+          "live": 0,
+          "peak": 333270,
+          "reallocs": 12,
+          "requested": 888298
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 14,
+          "live": 0,
+          "peak": 213600,
+          "reallocs": 6,
+          "requested": 579678
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 119670,
+        "reallocs": 6,
+        "requested": 308620
+      },
+      "mtu": 65507,
+      "value_len": 65447
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 333273,
+          "reallocs": 6,
+          "requested": 506032
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 131253,
+          "reallocs": 0,
+          "requested": 197409
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 202020,
+        "reallocs": 6,
+        "requested": 308623
+      },
+      "mtu": 65507,
+      "value_len": 65448
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 333276,
+          "reallocs": 6,
+          "requested": 506036
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 131254,
+          "reallocs": 0,
+          "requested": 197410
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 202022,
+        "reallocs": 6,
+        "requested": 308626
+      },
+      "mtu": 65507,
+      "value_len": 65449
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 333279,
+          "reallocs": 6,
+          "requested": 506040
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 131255,
+          "reallocs": 0,
+          "requested": 197411
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 202024,
+        "reallocs": 6,
+        "requested": 308629
+      },
+      "mtu": 65507,
+      "value_len": 65450
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 333282,
+          "reallocs": 6,
+          "requested": 506044
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 131256,
+          "reallocs": 0,
+          "requested": 197412
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 202026,
+        "reallocs": 6,
+        "requested": 308632
+      },
+      "mtu": 65507,
+      "value_len": 65451
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 333285,
+          "reallocs": 6,
+          "requested": 506048
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 131257,
+          "reallocs": 0,
+          "requested": 197413
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 202028,
+        "reallocs": 6,
+        "requested": 308635
+      },
+      "mtu": 65507,
+      "value_len": 65452
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 333288,
+          "reallocs": 6,
+          "requested": 506052
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 131258,
+          "reallocs": 0,
+          "requested": 197414
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 202030,
+        "reallocs": 6,
+        "requested": 308638
+      },
+      "mtu": 65507,
+      "value_len": 65453
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 333291,
+          "reallocs": 6,
+          "requested": 506056
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 131259,
+          "reallocs": 0,
+          "requested": 197415
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 202032,
+        "reallocs": 6,
+        "requested": 308641
+      },
+      "mtu": 65507,
+      "value_len": 65454
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 333294,
+          "reallocs": 6,
+          "requested": 506060
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 131260,
+          "reallocs": 0,
+          "requested": 197416
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 202034,
+        "reallocs": 6,
+        "requested": 308644
+      },
+      "mtu": 65507,
+      "value_len": 65455
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 333297,
+          "reallocs": 6,
+          "requested": 506064
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 131261,
+          "reallocs": 0,
+          "requested": 197417
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 202036,
+        "reallocs": 6,
+        "requested": 308647
+      },
+      "mtu": 65507,
+      "value_len": 65456
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 333300,
+          "reallocs": 6,
+          "requested": 506068
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 131262,
+          "reallocs": 0,
+          "requested": 197418
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 202038,
+        "reallocs": 6,
+        "requested": 308650
+      },
+      "mtu": 65507,
+      "value_len": 65457
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 333303,
+          "reallocs": 6,
+          "requested": 506072
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 131263,
+          "reallocs": 0,
+          "requested": 197419
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 202040,
+        "reallocs": 6,
+        "requested": 308653
+      },
+      "mtu": 65507,
+      "value_len": 65458
+    },
+    {
+      "accepted": false,
+      "after": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 22,
+          "live": 0,
+          "peak": 333306,
+          "reallocs": 6,
+          "requested": 506076
+        }
+      },
+      "before": {
+        "actual_calls": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "complete_counts": {
+          "allocs": 19,
+          "live": 0,
+          "peak": 131264,
+          "reallocs": 0,
+          "requested": 197420
+        }
+      },
+      "delta": {
+        "allocs": 3,
+        "peak": 202042,
+        "reallocs": 6,
+        "requested": 308656
+      },
+      "mtu": 65507,
+      "value_len": 65459
+    }
+  ],
+  "native_C_allocations_qualified": false,
+  "observations_per_case": 4,
+  "processes": 4,
+  "regressions": 71,
+  "rejected_regressions": 48,
+  "retained_memory_qualified": false,
+  "root_adopted": false,
+  "rust_allocation_gate_pass": false,
+  "study": "S"
+}

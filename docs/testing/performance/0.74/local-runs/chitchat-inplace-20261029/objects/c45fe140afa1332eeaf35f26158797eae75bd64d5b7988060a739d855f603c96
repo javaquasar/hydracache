@@ -1,0 +1,16 @@
+    pub fn serialized_len_upperbound_after<S: Serializable + ?Sized>(&self, item: &S) -> usize {
+        let new_item_serialized_len = item.serialized_len();
+        assert!(new_item_serialized_len > 0);
+        const BLOCK_META_LEN: usize = 3;
+        let new_block_needed =
+            self.uncompressed_block.len() + new_item_serialized_len > self.block_threshold;
+        if new_block_needed {
+            BLOCK_META_LEN + self.output.len() + self.uncompressed_block.len() + // current block
+                BLOCK_META_LEN + new_item_serialized_len // new block
+                + 1 // No more blocks tag.
+        } else {
+            BLOCK_META_LEN + self.output.len() + self.uncompressed_block.len() + new_item_serialized_len // current block
+                + 1 // No more blocks tag.
+        }
+    }
+

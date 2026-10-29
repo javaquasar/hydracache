@@ -1,0 +1,140 @@
+"""Local source-copy successor. Never changes live predicates or their frequency."""
+from pathlib import Path
+import hashlib
+import importlib.util
+import json
+import os
+import shutil
+import subprocess
+import sys
+import traceback
+import zipfile
+
+ROOT=Path('C:/Workspace/prj/jq/cashe/hydracache-074') if os.name=='nt' else Path('/mnt/c/Workspace/prj/jq/cashe/hydracache-074')
+BASE=ROOT/'target/chitchat-inplace-20261029'
+NATIVE=Path('/home/artur/.cache/hydracache-074-chitchat-inplace/20261029')
+COPY=NATIVE/'source-root'
+sys.path.insert(0,str(ROOT/'tools/chitchat-inplace-074'))
+import common as c
+
+
+def load(path,name):
+    spec=importlib.util.spec_from_file_location(name,path)
+    value=importlib.util.module_from_spec(spec);spec.loader.exec_module(value);return value
+
+
+def native_capacity():
+    c.capacity()
+    if shutil.disk_usage(NATIVE).free<4*1024**3:raise c.owned.CapacityError('original native four-GiB floor')
+
+
+def inputs():
+    names=set(c.source())
+    names.update(json.loads((BASE/'preparation/L2/result.json').read_bytes())['overlays'])
+    names.update(p.relative_to(ROOT).as_posix() for p in (ROOT/'tools/windows-workspace-preflight-074').iterdir() if p.is_file())
+    names.update(p.relative_to(ROOT).as_posix() for p in (ROOT/'docs/testing/performance/0.74/local-runs/chitchat-mtu-backport-20261028').rglob('*') if p.is_file())
+    names.update(p.relative_to(ROOT).as_posix() for p in (BASE/'fixtures/L2').rglob('*') if p.is_file())
+    names.update((BASE/n).relative_to(ROOT).as_posix() for n in ('preparation/L2/result.json','vendor-receipt.json','cargo-home/config.toml'))
+    names.add(Path(__file__).relative_to(ROOT).as_posix())
+    return sorted(names)
+
+
+def prepare(out):
+    c.guard('L2');before=c.source();members={}
+    archive=out/'source.zip'
+    with zipfile.ZipFile(archive,'x',compression=zipfile.ZIP_DEFLATED) as bundle:
+        for name in inputs():
+            path=ROOT/name
+            c.need(path.is_file() and not path.is_symlink() and not path.is_junction(),'regular source-copy member')
+            raw=path.read_bytes();members[name]=dict(sha256=c.sha(raw),bytes=len(raw));bundle.writestr(name,raw)
+    c.write(out,'members.json',members)
+    c.need(before==c.source(),'source drift while packaging local copy')
+    return dict(complete=True,source_members=len(members),archive_sha256=c.sha(archive.read_bytes()),byte_copy_only=True)
+
+
+def stage(out):
+    native_capacity();c.need(os.getuid()==os.getgid()==1000,'fixed native source owner')
+    prep=BASE/'native-copy-prepare'
+    result=json.loads((prep/'result.json').read_bytes())
+    raw=(prep/'source.zip').read_bytes();c.need(c.sha(raw)==result['archive_sha256'],'exact prepared capsule')
+    members=json.loads((prep/'members.json').read_bytes())
+    COPY.mkdir(mode=0o700,exist_ok=False)
+    c.need(COPY.resolve()==COPY and COPY.stat().st_uid==1000,'private owned source root')
+    with zipfile.ZipFile(prep/'source.zip') as bundle:
+        c.need(len(bundle.namelist())==len(set(bundle.namelist())) and set(bundle.namelist())==set(members),'exact unique capsule inventory')
+        for name,row in members.items():
+            native_capacity();path=COPY/name
+            c.need(path.resolve().is_relative_to(COPY) and not path.exists(),'new contained capsule file')
+            body=bundle.read(name);c.need(c.sha(body)==row['sha256'] and len(body)==row['bytes'],'copied source member identity')
+            path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(body)
+    # Preserve the same complete registry checks, on the native copy actually read
+    # by native guards. Actual Cargo sources remain separately checked too.
+    dest=COPY/'target/chitchat-inplace-20261029/vendor'
+    shutil.copytree(NATIVE/'vendor',dest)
+    expected=json.loads((BASE/'vendor-receipt.json').read_bytes())
+    for name,hashes in expected.items():
+        actual=c.files(dest/name);checksum=actual.pop('.cargo-checksum.json')
+        c.need(actual==hashes and checksum==c.sha((BASE/'vendor'/name/'.cargo-checksum.json').read_bytes()),'exact native source mirror')
+    for name,row in members.items():c.need(c.sha((COPY/name).read_bytes())==row['sha256'],'post-copy source identity')
+    c.write(out,'copy-receipt.json',dict(source_members=members,source_root=str(COPY),byte_equal=True,registry_members=len(expected)))
+    return dict(complete=True,byte_equal=True,source_root=str(COPY))
+
+
+def native_run(label,out):
+    compiler=label.removeprefix('gnu-native-');c.need(compiler in ('194','188'),'fixed source-copy compiler')
+    # No overlapping original-source profile may share the held native targets.
+    c.need(not json.loads((BASE/'gnu-194/session-result.json').read_bytes())['complete'],'original first outcome retained')
+    native_capacity();receipt=json.loads((BASE/'native-copy-stage/copy-receipt.json').read_bytes())
+    for name,row in receipt['source_members'].items():c.need(c.sha((COPY/name).read_bytes())==row['sha256'],'fresh native copy producer identity')
+    session='gnu-'+compiler;folder=COPY/'target/chitchat-inplace-20261029'/session;folder.mkdir(exist_ok=False)
+    script=COPY/'tools/chitchat-inplace-074/gnu.py'
+    group=load(ROOT/'scripts/ci/watchdog_linux_group.py','inplace_source_copy_group').LinuxGroup()
+    execution=c.owned._owned(group,[sys.executable,'-B',str(script),'session',session],str(COPY),native_capacity,bound=1200)
+    c.write(out,'native-envelope.json',execution)
+    for path in sorted(folder.rglob('*')):
+        if path.is_file():
+            dest=out/'native'/path.relative_to(folder);dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(path.read_bytes())
+    c.need(execution['exit']==0 and execution['retired'] and not execution['errors'],'complete native copy envelope')
+    result=json.loads((folder/'session-result.json').read_bytes());c.need(result['complete'],'native copy first outcome')
+    return dict(complete=True,unchanged_gnu_producer=True,original_guards_count_order_preserved=True,root_adopted=False)
+
+
+def linux_session(label):
+    out=BASE/label;result=dict(complete=False,release_admitted=False)
+    try:
+        result.update(stage(out) if label=='native-copy-stage' else native_run(label,out))
+    except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+    c.write(out,'session-result.json',result);raise SystemExit(0 if result['complete'] else 1)
+
+
+def main(label):
+    c.need(os.name=='nt' and label in ('native-copy-prepare','native-copy-stage','gnu-native-194','gnu-native-188'),'one fixed copy phase')
+    out=BASE/label;out.mkdir(exist_ok=False);result=dict(complete=False,release_admitted=False)
+    with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+        (out/'producer.py').write_bytes(Path(__file__).read_bytes())
+        before=c.source();head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT)
+        c.write(out,'intent.json',dict(source=before,head=head.decode(),retry=False,bound=1200,session=1100,source_copy=True,services=False,clocks=False,server=False))
+        try:
+            if label=='native-copy-prepare':result.update(prepare(out))
+            else:
+                child=subprocess.run([sys.executable,'-B',str(Path(__file__)),'windows-worker',label],cwd=ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,timeout=1210)
+                execution=json.loads((out/'execution.json').read_bytes());session=json.loads((out/'session-result.json').read_bytes())
+                c.need(child.returncode==execution['exit']==0 and execution['retired'] and not execution['errors'] and session['complete'],'complete source-copy first phase')
+                result.update(session)
+            c.need(before==c.source() and head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT),'actual source/HEAD drift')
+            c.guard('L2');result['complete']=True
+        except BaseException as error:
+            result.update(complete=False,first_refusal=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc()))
+        c.write(out,'result.json',result)
+    print(json.dumps(dict(phase=label,**result)));raise SystemExit(0 if result['complete'] else 1)
+
+
+if __name__=='__main__':
+    if len(sys.argv)==3 and sys.argv[1]=='session':linux_session(sys.argv[2])
+    if len(sys.argv)==3 and sys.argv[1]=='windows-worker':
+        label=sys.argv[2]
+        argv=['wsl.exe','-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B',
+              '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/chitchat-native-copy-20261029.py','session',label]
+        value=c.owned._owned(c.owned.load_job().WindowsJob(),argv,str(ROOT),c.capacity,bound=1200)
+        c.write(BASE/label,'execution.json',value);raise SystemExit(value['exit'])
+    c.need(len(sys.argv)==2,'one copy phase');main(sys.argv[1])

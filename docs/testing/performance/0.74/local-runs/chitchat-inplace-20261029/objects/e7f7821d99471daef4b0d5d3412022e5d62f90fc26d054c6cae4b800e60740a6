@@ -1,0 +1,108 @@
+    Checking chitchat v0.11.1 (C:\Workspace\prj\jq\cashe\hydracache-074\target\chitchat-inplace-20261029\fixtures\L)
+error: variables can be used directly in the `format!` string
+  --> tests\cluster_test.rs:56:17
+   |
+56 |                 write!(f, "Key '{}' == '{}'", key, expected_value)
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+   = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+help: change this to
+   |
+56 -                 write!(f, "Key '{}' == '{}'", key, expected_value)
+56 +                 write!(f, "Key '{key}' == '{expected_value}'")
+   |
+
+error: variables can be used directly in the `format!` string
+  --> tests\cluster_test.rs:89:17
+   |
+89 |                 write!(f, "INS KV in node {:?}: ", chitchat_id)?;
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+   |
+89 -                 write!(f, "INS KV in node {:?}: ", chitchat_id)?;
+89 +                 write!(f, "INS KV in node {chitchat_id:?}: ")?;
+   |
+
+error: variables can be used directly in the `format!` string
+  --> tests\cluster_test.rs:91:21
+   |
+91 |                     write!(f, "({}={})", key, value)?;
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+   |
+91 -                     write!(f, "({}={})", key, value)?;
+91 +                     write!(f, "({key}={value})")?;
+   |
+
+error: variables can be used directly in the `format!` string
+  --> tests\cluster_test.rs:96:17
+   |
+96 |                 write!(f, "DEL node {:?} key {}", chitchat_id, key)
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+   |
+96 -                 write!(f, "DEL node {:?} key {}", chitchat_id, key)
+96 +                 write!(f, "DEL node {chitchat_id:?} key {key}")
+   |
+
+error: variables can be used directly in the `format!` string
+   --> tests\cluster_test.rs:130:17
+    |
+130 |                 write!(f, "WAIT {:?}", duration)
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+130 -                 write!(f, "WAIT {:?}", duration)
+130 +                 write!(f, "WAIT {duration:?}")
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tests\cluster_test.rs:313:25
+    |
+313 | /                         assert!(
+314 | |                             expected_status.check(&chitchat_guard, &chitchat_id),
+315 | |                             "Node {:?} assertion failed",
+316 | |                             expected_status,
+317 | |                         );
+    | |_________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+error: variables can be used directly in the `format!` string
+   --> tests\cluster_test.rs:839:47
+    |
+839 |         chitchat_ids.push(create_chitchat_id(&format!("node-{}", i)));
+    |                                               ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+839 -         chitchat_ids.push(create_chitchat_id(&format!("node-{}", i)));
+839 +         chitchat_ids.push(create_chitchat_id(&format!("node-{i}")));
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tests\cluster_test.rs:856:48
+    |
+856 |     let key_names: Vec<_> = (0..200).map(|idx| format!("key_{}", idx)).collect();
+    |                                                ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+856 -     let key_names: Vec<_> = (0..200).map(|idx| format!("key_{}", idx)).collect();
+856 +     let key_names: Vec<_> = (0..200).map(|idx| format!("key_{idx}")).collect();
+    |
+
+error: could not compile `chitchat` (test "cluster_test") due to 8 previous errors
+warning: build failed, waiting for other jobs to finish...

@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-inplace-20261029\\targets\\L3-194\\debug\\deps\\chitchat-c73cb9176d6472b6.exe",
+    "--list"
+  ],
+  "deadline": 147622.7265473,
+  "expected_exit": 0,
+  "retry": false
+}

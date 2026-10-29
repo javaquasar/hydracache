@@ -1,0 +1,73 @@
+
+running 32 tests
+test state::tests::test_apply_delta_reset_does_not_violate_monotonic_property ... ok
+test state::tests::test_cluster_state_apply_delta_last_gc_equal_max_does_not_reset ... ok
+test state::tests::test_cluster_state_apply_delta ... ok
+test state::tests::test_cluster_state_compute_delta_depth_first_single_node ... ok
+test state::tests::test_cluster_state_compute_delta_depth_first_chitchat ... ok
+test state::tests::test_cluster_state_compute_delta_should_ignore_dead_nodes ... ok
+test state::tests::test_cluster_state_compute_delta_missing_node ... ok
+test state::tests::test_cluster_state_compute_digest ... ok
+test state::tests::test_cluster_state_delete_after_ttl ... ok
+test state::tests::test_cluster_state_first_version_is_one ... ok
+test state::tests::test_cluster_state_missing_node ... ok
+test state::tests::test_cluster_state_gc_keys_marked_for_deletion ... ok
+test state::tests::test_cluster_state_compute_delta_with_old_node_state_that_needs_reset ... ok
+test state::tests::test_cluster_state_set ... ok
+test state::tests::test_cluster_state_set_with_same_value_updates_version ... ok
+test state::tests::test_delta_accepted_when_sender_gc_equals_receiver_max ... ok
+test state::tests::test_cluster_state_set_and_mark_for_deletion ... ok
+test state::tests::test_iter_prefix ... ok
+test state::tests::test_node_apply_delta_different_last_gc_is_ok_if_below_max_version ... ok
+test state::tests::test_node_apply_delta_no_reset_if_older_version ... ok
+test state::tests::test_node_apply_delta_on_reset_fresher_version ... ok
+test state::tests::test_node_apply_delta_simple ... ok
+test state::tests::test_node_apply_same_value_different_version ... ok
+test state::tests::test_node_set_delete ... ok
+test state::tests::test_node_set_with_ttl ... ok
+test state::tests::test_node_set_delete_after_ttl_set ... ok
+test state::tests::test_node_skip_delta_from_the_future ... ok
+test state::tests::test_sorted_stale_nodes_empty ... ok
+test state::tests::test_sorted_stale_nodes_insert ... ok
+test state::tests::test_sorted_stale_nodes_into_iter ... ok
+test state::tests::test_sorted_stale_nodes_offer ... ok
+test state::tests::test_stale_node_iter_stale_key_values ... ok
+
+successes:
+
+successes:
+    state::tests::test_apply_delta_reset_does_not_violate_monotonic_property
+    state::tests::test_cluster_state_apply_delta
+    state::tests::test_cluster_state_apply_delta_last_gc_equal_max_does_not_reset
+    state::tests::test_cluster_state_compute_delta_depth_first_chitchat
+    state::tests::test_cluster_state_compute_delta_depth_first_single_node
+    state::tests::test_cluster_state_compute_delta_missing_node
+    state::tests::test_cluster_state_compute_delta_should_ignore_dead_nodes
+    state::tests::test_cluster_state_compute_delta_with_old_node_state_that_needs_reset
+    state::tests::test_cluster_state_compute_digest
+    state::tests::test_cluster_state_delete_after_ttl
+    state::tests::test_cluster_state_first_version_is_one
+    state::tests::test_cluster_state_gc_keys_marked_for_deletion
+    state::tests::test_cluster_state_missing_node
+    state::tests::test_cluster_state_set
+    state::tests::test_cluster_state_set_and_mark_for_deletion
+    state::tests::test_cluster_state_set_with_same_value_updates_version
+    state::tests::test_delta_accepted_when_sender_gc_equals_receiver_max
+    state::tests::test_iter_prefix
+    state::tests::test_node_apply_delta_different_last_gc_is_ok_if_below_max_version
+    state::tests::test_node_apply_delta_no_reset_if_older_version
+    state::tests::test_node_apply_delta_on_reset_fresher_version
+    state::tests::test_node_apply_delta_simple
+    state::tests::test_node_apply_same_value_different_version
+    state::tests::test_node_set_delete
+    state::tests::test_node_set_delete_after_ttl_set
+    state::tests::test_node_set_with_ttl
+    state::tests::test_node_skip_delta_from_the_future
+    state::tests::test_sorted_stale_nodes_empty
+    state::tests::test_sorted_stale_nodes_insert
+    state::tests::test_sorted_stale_nodes_into_iter
+    state::tests::test_sorted_stale_nodes_offer
+    state::tests::test_stale_node_iter_stale_key_values
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 74 filtered out; finished in 0.00s
+

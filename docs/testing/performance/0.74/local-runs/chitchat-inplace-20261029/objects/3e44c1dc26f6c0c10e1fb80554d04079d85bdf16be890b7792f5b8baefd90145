@@ -1,0 +1,67 @@
+"""Inert per-patch differential review; never executes a fixture or a gate."""
+from pathlib import Path
+import hashlib,json,sys
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-mtu-20261028'
+variant=sys.argv[1];assert variant in ('M','L','Z')
+parent={'M':'B','L':'M','Z':'L'}[variant]
+out=BASE/('comparison-'+variant);out.mkdir(exist_ok=False)
+def sha(raw):return hashlib.sha256(raw).hexdigest()
+def read(name):return json.loads((BASE/name).read_bytes())
+def snapshot(action,v,marker):
+ label=f'{action}-{v}-194';row=read(label+'/result.json')
+ assert row['exit']==0 and row['source_unchanged'] and row['head_unchanged'] and row['fixture_inputs_unchanged']
+ assert row['accounting']['test_pass'] and row['accounting']['selected']==1
+ execution=read(label+'/execution.json');assert execution['retired'] and not execution['errors']
+ lines=[l for l in (BASE/label/'stdout.log').read_text(encoding='utf-8').splitlines() if l.startswith(marker)]
+ assert len(lines)==1
+ return json.loads(lines[0][len(marker):])
+old=snapshot('observe',parent,'HC074_STREAM_BOUNDS:');new=snapshot('observe',variant,'HC074_STREAM_BOUNDS:')
+ids=[f'{t}/{n}/{k}' for t in (16,200,1000,65535) for n in (0,1,100) for k in range(3)]+['max-string']
+assert old['seed']==new['seed']==0x0741028
+assert [r['id'] for r in old['cases']]==[r['id'] for r in new['cases']]==ids
+for left,right in zip(old['cases'],new['cases']):
+ assert {k:v for k,v in left.items() if k not in ('bounds','bound_held')}=={k:v for k,v in right.items() if k not in ('bounds','bound_held')}
+ assert len(left['bounds'])==len(right['bounds'])
+ assert all(b>=a for a,b in zip(left['bounds'],right['bounds']))
+ assert right['bound_held'] is True
+ if variant!='M':assert left==right
+assert variant!='M' or any(r['bound_held'] is False for r in old['cases'])
+old_delta=snapshot('delta',parent,'HC074_SUPPORTED_DELTA:');new_delta=snapshot('delta',variant,'HC074_SUPPORTED_DELTA:')
+expected=[]
+for mtu in (100,140,198,1000,16384,32768,40000,65507):
+ lengths=sorted({0,1,64,4096,16384,32700,65000}|{max(0,mtu-n) for n in range(48,71)})
+ expected.extend((mtu,n) for n in lengths)
+assert old_delta['seed']==new_delta['seed']==0x0741028
+assert [(r['mtu'],r['value_len']) for r in old_delta['cases']]==[(r['mtu'],r['value_len']) for r in new_delta['cases']]==expected
+changed=[]
+for before,after in zip(old_delta['cases'],new_delta['cases']):
+ assert after['bound']>=before['bound'] and before['remaining']==after['remaining']==0
+ assert before['actual']<=before['mtu'] and after['actual']<=after['mtu']
+ assert type(before['accepted']) is type(after['accepted']) is bool
+ if before['accepted']==after['accepted']:
+  assert before['wire']==after['wire'] and before['actual']==after['actual']
+ else:
+  assert variant=='M' and before['accepted'] and not after['accepted']
+  assert before['bound']<=before['mtu']<after['bound']
+  changed.append(dict(baseline=before,candidate=after))
+ if variant!='M':assert before==after
+if variant in ('L','Z'):assert old==new and old_delta==new_delta
+patch=read('preparation/'+variant+'/result.json')
+for name,digest in patch['root_inputs'].items():assert sha((ROOT/name).read_bytes())==digest
+result=dict(variant=variant,parent=parent,stream_cases=37,supported_operation_cases=len(expected),
+ bounds_fixed=True,accepted_stream_bytes_equal=True,tighter_admission_cases=changed,
+ admission_behavior_unchanged=not changed,annotation_only_observations_equal=variant=='L',
+ compression_only_observations_equal=variant=='Z',root_dependencies_changed=False,
+ product_adoption_admitted=False,release_admitted=False,performance_claim=False)
+if variant=='Z':
+ full=snapshot('wide','Z','HC074_ZSTD_SNAPSHOT:')
+ assert full['seed']==0x0741028 and len(full['cases'])==37 and len(full['faults'])==7
+ for actual,observed in zip(full['cases'],new['cases']):
+  assert actual=={k:v for k,v in observed.items() if k not in ('bounds','bound_held','actual')}|{'upperbounds':observed['bounds']}
+ assert [r['id'] for r in full['faults']]==list(range(7)) and all(r['accepted'] is False for r in full['faults'])
+ assert all(full[n]==dict(isolated=True,output=b'second job'.hex()) for n in ('encoder','decoder'))
+ result['original_wide_snapshot_pass']=True
+(out/'producer.py').write_bytes(Path(__file__).read_bytes())
+(out/'result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+print(json.dumps(dict(variant=variant,bounds_fixed=True,streams=37,supported_operations=len(expected),tighter_admissions=len(changed),product_adopted=False)))
