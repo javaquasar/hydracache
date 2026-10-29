@@ -3,7 +3,7 @@ import json
 import re
 import analyze as a
 
-EXPECTED='PENDING'
+EXPECTED='1366650e2145b9a671bc505a243aefb32e545ee35157cdaf0a53f7e71379ee08'
 PACKET=a.ROOT/'docs/testing/performance/0.74/local-runs/chitchat-cohort-r3-20261030'
 
 def main():
