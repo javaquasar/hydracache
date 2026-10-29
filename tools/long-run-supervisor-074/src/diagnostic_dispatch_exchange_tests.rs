@@ -2,7 +2,8 @@ use super::*;
 use std::fs::File;
 use std::io::Read;
 use std::os::fd::{AsRawFd, FromRawFd};
-use zbus::zvariant::{Fd, Value};
+use zbus::wire::{Fd, Variant as Value};
+use zbus6 as zbus;
 const MANAGER: &str = ":1.74";
 const CLIENT: &str = ":1.75";
 
@@ -35,32 +36,29 @@ fn request_kind(writers: [&File; 2], kind: &str) -> Message {
         if kind == "path" { "/foreign" } else { PATH },
         if kind == "member" { "StopUnit" } else { METHOD },
     )
-    .unwrap()
     .destination(if kind == "well-known" {
         "org.freedesktop.systemd1"
     } else {
         MANAGER
     })
-    .unwrap()
     .interface(if kind == "interface" {
         "org.example.Foreign"
     } else {
         INTERFACE
-    })
-    .unwrap();
+    });
     if kind == "sender" {
-        builder = builder.sender(CLIENT).unwrap();
+        builder = builder.sender(CLIENT);
     }
     if kind == "reply-serial" {
         builder = builder.reply_serial(Some(std::num::NonZeroU32::new(7).unwrap()));
     }
     for (name, flag) in [
-        ("no-reply", zbus::message::Flags::NoReplyExpected),
-        ("no-auto", zbus::message::Flags::NoAutoStart),
-        ("interactive", zbus::message::Flags::AllowInteractiveAuth),
+        ("no-reply", zbus::message::Flags::NO_REPLY_EXPECTED),
+        ("no-auto", zbus::message::Flags::NO_AUTO_START),
+        ("interactive", zbus::message::Flags::ALLOW_INTERACTIVE_AUTH),
     ] {
         if kind == name {
-            builder = builder.with_flags(flag).unwrap();
+            builder = builder.with_flags(flag);
         }
     }
     let mut props = vec![(
@@ -103,11 +101,8 @@ fn exchange() -> DispatchExchange {
 }
 fn reply(exchange: &DispatchExchange, path: &str) -> Message {
     Message::method_return(&exchange.request.header())
-        .unwrap()
         .sender(MANAGER)
-        .unwrap()
         .destination(CLIENT)
-        .unwrap()
         .build(&OwnedObjectPath::try_from(path).unwrap())
         .unwrap()
 }
@@ -145,9 +140,9 @@ fn dispatch_request_predicates_fail_without_releasing_owned_message() {
         let [_a, a] = pipe();
         let [_b, b] = pipe();
         let builder = if error {
-            Message::error(&original.request.header(), "org.example.Refused").unwrap()
+            Message::error(&original.request.header(), "org.example.Refused")
         } else {
-            Message::method_return(&original.request.header()).unwrap()
+            Message::method_return(&original.request.header())
         };
         let wrong_type = builder.build(&(Fd::from(&a), Fd::from(&b))).unwrap();
         assert!(DispatchExchange::prepare(wrong_type, MANAGER, CLIENT).is_err());
@@ -290,20 +285,16 @@ fn dispatch_reply_envelope_body_and_fd_predicates_are_exact() {
         "oversize",
     ] {
         let mut exchange = exchange();
-        let mut builder = Message::method_return(&exchange.request.header()).unwrap();
+        let mut builder = Message::method_return(&exchange.request.header());
         if kind != "no-sender" {
-            builder = builder
-                .sender(if kind == "sender" { ":1.99" } else { MANAGER })
-                .unwrap();
+            builder = builder.sender(if kind == "sender" { ":1.99" } else { MANAGER });
         }
         if kind != "no-destination" {
-            builder = builder
-                .destination(if kind == "destination" {
-                    ":1.98"
-                } else {
-                    CLIENT
-                })
-                .unwrap();
+            builder = builder.destination(if kind == "destination" {
+                ":1.98"
+            } else {
+                CLIENT
+            });
         }
         if kind == "serial" {
             builder = builder.reply_serial(Some(
@@ -323,18 +314,16 @@ fn dispatch_reply_envelope_body_and_fd_predicates_are_exact() {
             builder = builder.reply_serial(None);
         }
         if kind == "path" {
-            builder = builder.path("/foreign").unwrap();
+            builder = builder.path("/foreign");
         }
         if kind == "interface" {
-            builder = builder.interface("org.example.Foreign").unwrap();
+            builder = builder.interface("org.example.Foreign");
         }
         if kind == "member" {
-            builder = builder.member("Foreign").unwrap();
+            builder = builder.member("Foreign");
         }
         if kind == "flags" {
-            builder = builder
-                .with_flags(zbus::message::Flags::NoAutoStart)
-                .unwrap();
+            builder = builder.with_flags(zbus::message::Flags::NO_AUTO_START);
         }
         let path = OwnedObjectPath::try_from("/org/freedesktop/systemd1/job/1").unwrap();
         let file = tempfile::tempfile().unwrap();
@@ -368,11 +357,8 @@ fn dispatch_manager_error_is_retained_without_exposing_its_payload_or_retry() {
         &exchange.request.header(),
         "org.freedesktop.systemd1.UnitExists",
     )
-    .unwrap()
     .sender(MANAGER)
-    .unwrap()
     .destination(CLIENT)
-    .unwrap()
     .build(&"sensitive-manager-detail")
     .unwrap();
     exchange.arm().unwrap();

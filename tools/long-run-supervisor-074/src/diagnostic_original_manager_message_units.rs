@@ -1,7 +1,8 @@
 use super::*;
 use crate::systemd_unit::UnitProperty;
 use std::os::fd::FromRawFd;
-use zbus::zvariant::Value;
+use zbus::wire::Variant as Value;
+use zbus6 as zbus;
 const MANAGER: &str = ":1.74";
 const CLIENT: &str = ":1.75";
 fn pipe() -> [File; 2] {
@@ -44,9 +45,7 @@ fn altered(input: &Inputs<'_>, kind: &str) -> Message {
             canonical::METHOD
         },
     )
-    .unwrap()
     .interface(canonical::INTERFACE)
-    .unwrap()
     .destination(if kind == "well-known" {
         "org.freedesktop.systemd1"
     } else if kind == "manager" {
@@ -54,19 +53,16 @@ fn altered(input: &Inputs<'_>, kind: &str) -> Message {
     } else {
         MANAGER
     })
-    .unwrap()
     .serial(if kind == "serial" {
         NonZeroU32::new(input.legacy.primary_header().serial_num().get() + 1).unwrap()
     } else {
         input.legacy.primary_header().serial_num()
     });
     if kind == "sender" {
-        builder = builder.sender(CLIENT).unwrap();
+        builder = builder.sender(CLIENT);
     }
     if kind == "flags" {
-        builder = builder
-            .with_flags(zbus::message::Flags::NoReplyExpected)
-            .unwrap();
+        builder = builder.with_flags(zbus::message::Flags::NO_REPLY_EXPECTED);
     }
     builder.build(&(name, mode, props, auxiliary)).unwrap()
 }

@@ -1,14 +1,15 @@
 //! Typed wire forms, not a manager, transport or execution capability.
 use super::*;
 use zbus::message::{Builder, Flags};
+use zbus6 as zbus;
 
 fn with_flags(message: &Message, bits: u8) -> Builder<'_> {
     let mut header = message.header();
     let mut flags = header.primary().flags();
     for (bit, flag) in [
-        (1, Flags::NoReplyExpected),
-        (2, Flags::NoAutoStart),
-        (4, Flags::AllowInteractiveAuth),
+        (1, Flags::NO_REPLY_EXPECTED),
+        (2, Flags::NO_AUTO_START),
+        (4, Flags::ALLOW_INTERACTIVE_AUTH),
     ] {
         if bits & bit != 0 {
             flags |= flag;
@@ -22,15 +23,15 @@ fn returned(exchange: &DispatchExchange, bits: u8, kind: &str) -> Message {
     let seed = reply(exchange, "/org/freedesktop/systemd1/job/74");
     let mut builder = with_flags(&seed, bits);
     match kind {
-        "sender" => builder = builder.sender(":1.999").unwrap(),
-        "destination" => builder = builder.destination(":1.998").unwrap(),
+        "sender" => builder = builder.sender(":1.999"),
+        "destination" => builder = builder.destination(":1.998"),
         "serial" => {
             let serial = exchange.serial.get().wrapping_add(1).max(1);
             builder = builder.reply_serial(NonZeroU32::new(serial));
         }
-        "path" => builder = builder.path("/foreign").unwrap(),
-        "interface" => builder = builder.interface("org.example.Foreign").unwrap(),
-        "member" => builder = builder.member("Foreign").unwrap(),
+        "path" => builder = builder.path("/foreign"),
+        "interface" => builder = builder.interface("org.example.Foreign"),
+        "member" => builder = builder.member("Foreign"),
         _ => (),
     }
     let path = OwnedObjectPath::try_from("/org/freedesktop/systemd1/job/74").unwrap();
@@ -132,11 +133,8 @@ fn dispatch_reply_flags_do_not_change_error_classification_or_expose_body() {
             &held.request.header(),
             "org.freedesktop.systemd1.UnitExists",
         )
-        .unwrap()
         .sender(MANAGER)
-        .unwrap()
         .destination(CLIENT)
-        .unwrap()
         .build(&())
         .unwrap();
         let message = with_flags(&seed, bits)

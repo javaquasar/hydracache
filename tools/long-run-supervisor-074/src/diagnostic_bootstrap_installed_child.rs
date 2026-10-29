@@ -49,7 +49,7 @@ fn installed(s: &kernel::RoleStamp, c: &AssertedInstalledEntry) -> io::Result<()
     )?;
     // The unchanged old capture verifies the sealed reference's ELF shape/hash.
     // This separate bounded full hash binds the installed bytes to that reference.
-    let mut hash = Sha256::new();
+    let mut hash = ring::digest::Context::new(&ring::digest::SHA256);
     let mut buffer = [0; 65536];
     let mut at = 0;
     while at < c.installed_identity[2] {
@@ -62,7 +62,7 @@ fn installed(s: &kernel::RoleStamp, c: &AssertedInstalledEntry) -> io::Result<()
         hash.update(&buffer[..n as usize]);
         at += n as u64;
     }
-    need(<[u8; 32]>::from(hash.finalize()) == c.installed_sha256 && kernel::snapshot(s.fd)? == *s)
+    need(hash.finish().as_ref() == c.installed_sha256.as_slice() && kernel::snapshot(s.fd)? == *s)
 }
 #[derive(PartialEq, Eq)]
 pub(crate) struct ObservedInstalled {

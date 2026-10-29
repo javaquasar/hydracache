@@ -1,3 +1,4 @@
+use crate::diagnostic_blocking_v6::{Connection, Proxy};
 use crate::manifest::CampaignManifest;
 use crate::spawn::SpawnIntent;
 use crate::{canonical_json, sha256_hex, ProcessIdentity, Role};
@@ -6,8 +7,8 @@ use std::collections::BTreeMap;
 use std::path::{Component, Path};
 use std::time::{Duration, Instant};
 use thiserror::Error;
-use zbus::blocking::{Connection, Proxy};
-use zbus::zvariant::{OwnedObjectPath, Value};
+use zbus::wire::{OwnedObjectPath, Variant as Value};
+use zbus6 as zbus;
 
 const SYSTEMD_DESTINATION: &str = "org.freedesktop.systemd1";
 const SYSTEMD_MANAGER_PATH: &str = "/org/freedesktop/systemd1";

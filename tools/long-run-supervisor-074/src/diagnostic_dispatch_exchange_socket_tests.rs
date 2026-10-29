@@ -2,7 +2,8 @@ use super::*;
 use std::mem::{size_of, zeroed};
 use std::os::fd::{OwnedFd, RawFd};
 use std::os::unix::net::UnixDatagram;
-use zbus::zvariant::serialized::Data;
+use zbus::wire::serialized::Data;
+use zbus6 as zbus;
 
 fn pair() -> [UnixDatagram; 2] {
     let (a, b) = UnixDatagram::pair().unwrap();
@@ -173,11 +174,8 @@ fn dispatch_real_rights_roundtrip_correlates_job_without_starting_a_process() {
         );
     }
     let response = Message::method_return(&received.header())
-        .unwrap()
         .sender(MANAGER)
-        .unwrap()
         .destination(CLIENT)
-        .unwrap()
         .build(&OwnedObjectPath::try_from("/org/freedesktop/systemd1/job/74").unwrap())
         .unwrap();
     let response = transfer(&manager, &client, &response);

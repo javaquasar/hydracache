@@ -1,4 +1,6 @@
 [workspace]
+# Local dependencies are built through the unpublished supervisor.
+exclude = ["third_party/hc074-dbus/zbus", "third_party/hc074-dbus/zbus_macros", "third_party/hc074-dbus/zbus_utils"]
 members = [
     "crates/hydracache-cdc-postgres",
     "crates/hydracache-cache-sim",
@@ -150,3 +152,7 @@ utoipa = "5"
 utoipa-swagger-ui = { version = "10.0.2", default-features = false, features = ["axum", "vendored"] }
 wasm-bindgen = "0.2.122"
 wasm-bindgen-test = "0.3"
+
+[patch.crates-io]
+zbus_macros = { path = "third_party/hc074-dbus/zbus_macros" }
+zbus_utils = { path = "third_party/hc074-dbus/zbus_utils" }

@@ -1,4 +1,5 @@
 //! An unsent FD-bearing message, never a connection or start capability.
+use zbus6 as zbus;
 #[path = "diagnostic_original_grouped_preparation.rs"]
 pub mod grouped_preparation;
 #[cfg(test)]
@@ -9,7 +10,7 @@ use crate::systemd_unit::{TransientUnitSpec, UnitProperty};
 use std::fs::File;
 use std::os::fd::AsRawFd;
 use zbus::message::{Message, Type};
-use zbus::zvariant::{Fd, Value};
+use zbus::wire::{Fd, Variant as Value};
 
 const DESTINATION: &str = "org.freedesktop.systemd1";
 const PATH: &str = "/org/freedesktop/systemd1";
@@ -141,9 +142,9 @@ fn message(
     ));
     properties.push(("StandardErrorFileDescriptor", Value::from(Fd::from(stderr))));
     let auxiliary: Vec<(&str, Vec<(&str, Value<'_>)>)> = Vec::new();
-    Ok(Message::method_call(PATH, METHOD)?
-        .destination(DESTINATION)?
-        .interface(INTERFACE)?
+    Ok(Message::method_call(PATH, METHOD)
+        .destination(DESTINATION)
+        .interface(INTERFACE)
         .build(&(spec.unit_name.as_str(), "fail", properties, auxiliary))?)
 }
 

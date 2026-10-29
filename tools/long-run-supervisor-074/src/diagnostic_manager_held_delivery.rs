@@ -1,4 +1,5 @@
 //! Exact held message on the retained channel; no re-encoding or retry.
+use zbus6 as zbus;
 use super::*;
 use crate::diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::HeldRequest;
 use zbus::export::futures_core::Stream;

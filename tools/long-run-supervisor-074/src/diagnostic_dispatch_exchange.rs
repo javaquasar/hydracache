@@ -2,7 +2,8 @@
 use std::num::NonZeroU32;
 use std::os::fd::{AsRawFd, RawFd};
 use zbus::message::{Message, Type};
-use zbus::zvariant::OwnedObjectPath;
+use zbus::wire::OwnedObjectPath;
+use zbus6 as zbus;
 
 const PATH: &str = "/org/freedesktop/systemd1";
 const INTERFACE: &str = "org.freedesktop.systemd1.Manager";
@@ -162,7 +163,7 @@ impl ReplyState {
             || h.sender().map(|v| v.as_str()) != Some(self.manager.as_str())
             || h.destination().map(|v| v.as_str()) != Some(self.client.as_str())
             || reply.primary_header().flags().bits()
-                & !(zbus::message::Flags::NoReplyExpected as u8)
+                & !(zbus::message::Flags::NO_REPLY_EXPECTED.bits())
                 != 0
             || (reply.message_type() != Type::MethodReturn
                 && !reply.primary_header().flags().is_empty())

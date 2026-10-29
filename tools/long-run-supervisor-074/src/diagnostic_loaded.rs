@@ -6,7 +6,8 @@ use crate::diagnostic_unit::{build_diagnostic_unit_spec, diagnostic_start_intent
 use crate::systemd_unit::{TransientUnitSpec, UnitProperty};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
-use zbus::zvariant::OwnedValue;
+use zbus::wire::OwnedVariant as OwnedValue;
+use zbus6 as zbus;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -595,7 +596,7 @@ mod tests {
     }
     #[test]
     fn loaded_dbus_projection_requires_exact_types_and_ignores_only_command_status() {
-        use zbus::zvariant::Value;
+        use zbus6::wire::Variant as Value;
         let (_, good) = fixture(0);
         let expected = &good.settings.as_ref().unwrap().0;
         let mut service: HashMap<String, OwnedValue> = expected

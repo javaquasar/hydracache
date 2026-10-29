@@ -1,6 +1,7 @@
 use super::*;
 use crate::diagnostic_lease::{DiagnosticIdentity, DiagnosticStage};
 use std::io::{Read, Write};
+use zbus6 as zbus;
 
 #[test]
 fn original_pipe_message_rejects_envelope_body_names_and_missing_fd_table() {
@@ -38,26 +39,21 @@ fn original_pipe_message_rejects_envelope_body_names_and_missing_fd_table() {
             if kind == 0 { "/wrong" } else { PATH },
             if kind == 1 { "StopUnit" } else { METHOD },
         )
-        .unwrap()
         .destination(if kind == 2 {
             "org.example.Wrong"
         } else {
             DESTINATION
         })
-        .unwrap()
         .interface(if kind == 3 {
             "org.example.Wrong"
         } else {
             INTERFACE
-        })
-        .unwrap();
+        });
         if kind == 4 {
-            builder = builder
-                .with_flags(zbus::message::Flags::NoReplyExpected)
-                .unwrap();
+            builder = builder.with_flags(zbus::message::Flags::NO_REPLY_EXPECTED);
         }
         if kind == 5 {
-            builder = builder.sender(":1.74").unwrap();
+            builder = builder.sender(":1.74");
         }
         let msg = builder
             .build(&(
@@ -76,21 +72,15 @@ fn original_pipe_message_rejects_envelope_body_names_and_missing_fd_table() {
         );
     }
     let msg = Message::method_call(PATH, METHOD)
-        .unwrap()
         .destination(DESTINATION)
-        .unwrap()
         .interface(INTERFACE)
-        .unwrap()
         .build(&"malformed")
         .unwrap();
     assert!(inspect_message(&msg, &spec, &stdout.writer, &stderr.writer).is_err());
     // Both FD entries present but the body has the wrong signature.
     let msg = Message::method_call(PATH, METHOD)
-        .unwrap()
         .destination(DESTINATION)
-        .unwrap()
         .interface(INTERFACE)
-        .unwrap()
         .build(&(Fd::from(&stdout.writer), Fd::from(&stderr.writer)))
         .unwrap();
     assert!(matches!(

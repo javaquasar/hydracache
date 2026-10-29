@@ -3,6 +3,7 @@ use std::future::Future;
 use std::time::Duration;
 use tokio::runtime::{Builder, Runtime};
 use zbus::{Connection, Message};
+use zbus6 as zbus;
 #[path = "diagnostic_manager_channel_kernel.rs"]
 mod kernel;
 use kernel::{boot, clock, KernelPins, Operation, PathPins};
@@ -60,7 +61,7 @@ fn reply_shape(reply: &Message, client: &str, query: Query) -> Result<()> {
     let h = reply.header();
     if reply.message_type() != zbus::message::Type::MethodReturn
         || reply.data().bytes().len() > crate::protocol::MAX_PACKET_BYTES
-        || reply.primary_header().flags().bits() & !(zbus::message::Flags::NoReplyExpected as u8)
+        || reply.primary_header().flags().bits() & !(zbus::message::Flags::NO_REPLY_EXPECTED.bits())
             != 0
         || h.sender().map(|v| v.as_str()) != Some(BUS)
         || h.destination().map(|v| v.as_str()) != Some(client)
@@ -77,7 +78,7 @@ fn reply_shape(reply: &Message, client: &str, query: Query) -> Result<()> {
     }
     Ok(())
 }
-async fn query<R: for<'de> zbus::zvariant::DynamicDeserialize<'de>>(
+async fn query<R: for<'de> zbus::wire::DynamicDeserialize<'de>>(
     connection: &Connection,
     client: &str,
     kind: Query,
@@ -143,9 +144,9 @@ impl FixedManagerChannel {
                 if boot()? != initial_boot {
                     return Err(ChannelError::Changed);
                 }
-                let connection = zbus::connection::Builder::unix_stream(stream)
-                    .auth_mechanism(zbus::AuthMechanism::External)
-                    .max_queued(16)
+                let connection = zbus::connection::Builder::unix_stream(io(stream.into_std())?)
+                    .auth_mechanism(zbus::connection::AuthMechanism::External)
+                    .max_queued(std::num::NonZeroUsize::new(16).unwrap())
                     .method_timeout(Duration::from_millis(250))
                     .build()
                     .await

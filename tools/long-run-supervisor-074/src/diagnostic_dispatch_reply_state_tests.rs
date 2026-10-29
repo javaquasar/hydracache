@@ -1,5 +1,6 @@
 //! Borrowed state is reply data, never request custody or start authority.
 use super::*;
+use zbus6 as zbus;
 #[test]
 fn dispatch_reply_state_requires_the_borrowed_preparation_api() {
     let held = exchange();
@@ -12,11 +13,8 @@ fn dispatch_reply_state_does_not_keep_any_request_writer_alive() {
     let [mut err, err_w] = pipe();
     let request = request_kind([&out_w, &err_w], "ok");
     let response = Message::method_return(&request.header())
-        .unwrap()
         .sender(MANAGER)
-        .unwrap()
         .destination(CLIENT)
-        .unwrap()
         .build(&OwnedObjectPath::try_from("/org/freedesktop/systemd1/job/74").unwrap())
         .unwrap();
     let mut state = ReplyState::prepare(&request, MANAGER, CLIENT).unwrap();
@@ -161,16 +159,13 @@ fn response(held: &DispatchExchange, action: u64) -> Message {
             &held.request.header(),
             "org.freedesktop.systemd1.UnitExists",
         )
-        .unwrap()
         .sender(MANAGER)
-        .unwrap()
         .destination(CLIENT)
-        .unwrap()
     } else {
         zbus::message::Builder::from(good.header())
     };
     match action {
-        3 => builder = builder.sender(":1.999").unwrap(),
+        3 => builder = builder.sender(":1.999"),
         4 => {
             builder =
                 builder.reply_serial(NonZeroU32::new(held.serial.get().wrapping_add(1).max(1)))
@@ -179,15 +174,11 @@ fn response(held: &DispatchExchange, action: u64) -> Message {
             // The high-level builder rejects this bit on replies; construct the
             // interoperable wire form through Header, as in the old flag corpus.
             let mut header = good.header();
-            let flags = header.primary().flags() | zbus::message::Flags::NoReplyExpected;
+            let flags = header.primary().flags() | zbus::message::Flags::NO_REPLY_EXPECTED;
             header.primary_mut().set_flags(flags);
             builder = zbus::message::Builder::from(header);
         }
-        7 => {
-            builder = builder
-                .with_flags(zbus::message::Flags::NoAutoStart)
-                .unwrap()
-        }
+        7 => builder = builder.with_flags(zbus::message::Flags::NO_AUTO_START),
         _ => (),
     }
     if action == 5 || action == 8 {

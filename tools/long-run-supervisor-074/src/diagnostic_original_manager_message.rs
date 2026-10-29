@@ -1,4 +1,5 @@
 //! Unsent uniquely addressed original message, not dispatch authority.
+use zbus6 as zbus;
 use super::*;
 use crate::diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::starting::pipes::sinks::start_material::pipe_transport as canonical;
 use crate::systemd_unit::TransientUnitSpec;
@@ -56,9 +57,9 @@ fn encode(legacy: &Message, manager: &str, client: &str) -> Result<Message, Mess
         .deserialize()
         .map_err(canonical::OriginalPipeTransportError::from)?;
     let build = || -> zbus::Result<Message> {
-        Message::method_call(canonical::PATH, canonical::METHOD)?
-            .destination(manager)?
-            .interface(canonical::INTERFACE)?
+        Message::method_call(canonical::PATH, canonical::METHOD)
+            .destination(manager)
+            .interface(canonical::INTERFACE)
             .serial(legacy.primary_header().serial_num())
             .build(&body)
     };

@@ -8,8 +8,9 @@ use std::{
 };
 use zbus::{
     message::{Message, Type},
-    zvariant::{Fd, OwnedObjectPath, Value},
+    wire::{Fd, OwnedObjectPath, Variant as Value},
 };
+use zbus6 as zbus;
 mod exchange_imports {
     pub(super) use crate::diagnostic_kernel_admission::KernelError;
     pub(super) use crate::protocol::MAX_PACKET_BYTES;
@@ -209,7 +210,7 @@ impl HeldRequest {
             reply.message_type() == Type::MethodReturn
                 && reply.data().bytes().len() <= crate::protocol::MAX_PACKET_BYTES
                 && reply.primary_header().flags().bits()
-                    & !(zbus::message::Flags::NoReplyExpected as u8)
+                    & !(zbus::message::Flags::NO_REPLY_EXPECTED.bits())
                     == 0,
         )?;
         check(
@@ -337,9 +338,10 @@ fn build(
     props.push(("UnsetEnvironment", Value::from(activation::UNSET.to_vec())));
     let body: Body<'_> = (unit, "fail", props, vec![]);
     let message = Message::method_call(PATH, "StartTransientUnit")
-        .and_then(|b| b.destination(manager))
-        .and_then(|b| b.interface(INTERFACE))
-        .and_then(|b| b.serial(serial).build(&body))
+        .destination(manager)
+        .interface(INTERFACE)
+        .serial(serial)
+        .build(&body)
         .map_err(|_| denied())?;
     check(message.data().fds().len() == 18)?;
     let aliases = std::array::from_fn(|i| message.data().fds()[i].as_raw_fd());

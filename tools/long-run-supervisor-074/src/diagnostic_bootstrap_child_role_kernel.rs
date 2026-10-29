@@ -1,6 +1,5 @@
 //! Query-only descriptor checks. No role acquisition, repair, traffic or authority.
 use super::*;
-use sha2::{Digest, Sha256};
 #[path = "diagnostic_bootstrap_closed_inventory.rs"]
 mod inventory;
 pub(super) fn closed_inventory() -> io::Result<()> {
@@ -119,7 +118,7 @@ pub(super) fn regular(
                     .is_some_and(|end| end <= expected[2]),
         )?;
     }
-    let mut hash = Sha256::new();
+    let mut hash = ring::digest::Context::new(&ring::digest::SHA256);
     let mut buffer = [0; 65536];
     let mut at = 0;
     while at < expected[2] {
@@ -132,7 +131,7 @@ pub(super) fn regular(
         hash.update(&buffer[..n as usize]);
         at += n as u64;
     }
-    need(<[u8; 32]>::from(hash.finalize()) == digest && snapshot(s.fd)? == *s)
+    need(hash.finish().as_ref() == digest.as_slice() && snapshot(s.fd)? == *s)
 }
 pub(super) fn info(fd: i32) -> io::Result<String> {
     // Fixed thread-self fdinfo for this slot, never reopen a caller path/PID.
@@ -217,3 +216,7 @@ pub(super) fn alarm(s: &RoleStamp, deadline: u64) -> io::Result<()> {
     live(s.fd)?;
     need(snapshot(s.fd)? == *s)
 }
+
+#[cfg(test)]
+#[path = "diagnostic_bootstrap_hash_tests.rs"]
+mod hash_regression;

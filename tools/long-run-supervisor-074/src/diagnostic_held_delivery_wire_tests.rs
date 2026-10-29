@@ -24,11 +24,8 @@ fn fixture() -> (Vec<std::fs::File>, HeldRequest) {
 }
 fn reply(r: &HeldRequest, manager: &str, client: &str, path: &str) -> Message {
     Message::method_return(&r.message.header())
-        .unwrap()
         .sender(manager)
-        .unwrap()
         .destination(client)
-        .unwrap()
         .build(&OwnedObjectPath::try_from(path).unwrap())
         .unwrap()
 }

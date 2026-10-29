@@ -33,4 +33,11 @@ libc = "0.2"
 base64.workspace = true
 tokio.workspace = true
 ring = { version = "=0.17.14", default-features = false, features = ["alloc"] }
-zbus = { version = "5.19.0", default-features = false, features = ["blocking-api", "tokio"] }
+zbus6 = { package = "zbus", version = "=6.1.0", path = "../../third_party/hc074-dbus/zbus", default-features = false, features = ["tokio-multithread", "proxy", "p2p"] }
+
+[target.'cfg(target_os = "linux")'.dev-dependencies.zbus6]
+package = "zbus"
+version = "=6.1.0"
+path = "../../third_party/hc074-dbus/zbus"
+default-features = false
+features = ["hc074-unix-fixture"]

@@ -1,6 +1,7 @@
 use super::*;
 use std::os::fd::AsRawFd;
-use zbus::zvariant::Fd;
+use zbus::wire::Fd;
+use zbus6 as zbus;
 const CLIENT: &str = ":1.74";
 pub(super) fn trace_query(response: &zbus::Result<Message>, client: &str, kind: Query) {
     if std::env::var("HC074_PRIVATE_MANAGER_REPLY_TRACE").as_deref() != Ok("1") {
@@ -46,60 +47,50 @@ fn manager_channel_unique_names_are_bounded_not_well_known_claims() {
 }
 fn response(kind: &str) -> Message {
     let request = Message::method_call(BUS_PATH, "GetNameOwner")
-        .unwrap()
         .build(&())
         .unwrap();
     let seed = Message::method_return(&request.header())
-        .unwrap()
         .build(&())
         .unwrap();
     let mut header = seed.header();
     if matches!(kind, "no-reply" | "combined" | "uint-no-reply") {
         // The 5.19 builder helper rejects this flag on replies, although the
         // wire specification permits it. Use its safe typed header API.
-        let flags = header.primary().flags() | zbus::message::Flags::NoReplyExpected;
+        let flags = header.primary().flags() | zbus::message::Flags::NO_REPLY_EXPECTED;
         header.primary_mut().set_flags(flags);
     }
     let mut builder = if kind == "error" {
-        Message::error(&request.header(), "org.example.Refused").unwrap()
+        Message::error(&request.header(), "org.example.Refused")
     } else {
         zbus::message::Builder::from(header)
     };
     if kind != "no-sender" {
-        builder = builder
-            .sender(if kind == "sender" { ":1.999" } else { BUS })
-            .unwrap();
+        builder = builder.sender(if kind == "sender" { ":1.999" } else { BUS });
     }
     if kind != "no-destination" {
-        builder = builder
-            .destination(if kind == "destination" {
-                ":1.998"
-            } else {
-                CLIENT
-            })
-            .unwrap();
+        builder = builder.destination(if kind == "destination" {
+            ":1.998"
+        } else {
+            CLIENT
+        });
     }
     if kind == "no-serial" {
         builder = builder.reply_serial(None);
     }
     if kind == "path" {
-        builder = builder.path("/foreign").unwrap();
+        builder = builder.path("/foreign");
     }
     if kind == "interface" {
-        builder = builder.interface("org.example.Foreign").unwrap();
+        builder = builder.interface("org.example.Foreign");
     }
     if kind == "member" {
-        builder = builder.member("Foreign").unwrap();
+        builder = builder.member("Foreign");
     }
     if matches!(kind, "flags" | "combined") {
-        builder = builder
-            .with_flags(zbus::message::Flags::NoAutoStart)
-            .unwrap();
+        builder = builder.with_flags(zbus::message::Flags::NO_AUTO_START);
     }
     if kind == "interactive" {
-        builder = builder
-            .with_flags(zbus::message::Flags::AllowInteractiveAuth)
-            .unwrap();
+        builder = builder.with_flags(zbus::message::Flags::ALLOW_INTERACTIVE_AUTH);
     }
     let file = tempfile::tempfile().unwrap();
     match kind {

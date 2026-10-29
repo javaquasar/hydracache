@@ -619,3 +619,6 @@ fn sync_directory(path: &Path) -> Result<(), ChainError> {
 fn sync_directory(_path: &Path) -> Result<(), ChainError> {
     Ok(())
 }
+
+#[cfg(target_os = "linux")]
+mod diagnostic_blocking_v6;
