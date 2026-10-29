@@ -37,6 +37,14 @@ public final class HazelcastProbeMain075 {
       var command=new UnifiedIMapService.DomainCommand("put").key(key).value(value)
           .identity(new BoundedIMapApi.MutationIdentity("packaged-consumer",1));
       var result=port.execute(port.prepare(binding,command));
+      var helperPort=new DevelopmentHelperPort075(binding,
+          new DevelopmentHelperPort075.Grant(1,2,3,8,Set.of(DevelopmentHelperPort075.Right.values()),true,List.of()),
+          service,Runnable::run,()->0,2,DevelopmentBackendPort075.Mode.LOCAL_REFERENCE);
+      try(var invocation=helperPort.invoke(helperPort.prepare(binding,new BoundedIMapApi.MutationIdentity("packaged-consumer",2),
+          new IMapLocalHelper.EntryViews(List.of(key),4096,10)))) {
+        var views=invocation.result().toCompletableFuture().join().value().orElseThrow();
+        if(views.size()!=1||!views.get(0).value().orElseThrow().equals(value)) throw new IllegalStateException("packaged helper observation");
+      }
       var stored=service.execute(new UnifiedIMapService.DomainCommand("get").key(key)).value().orElseThrow();
       // Diagnostic samples are retained raw; they are not a paired product benchmark.
       com.hazelcast.map.IMap<byte[],byte[]> nativeMap=fixture.client().getMap(mapName);

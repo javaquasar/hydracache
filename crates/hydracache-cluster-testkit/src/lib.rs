@@ -8,6 +8,7 @@ pub mod canonical_key_075;
 pub mod client_surface_conformance;
 pub mod distributed_value_plane_075;
 pub mod imap_backend_contract_075;
+pub mod imap_backend_helper_contract_075;
 // Development probes reuse the existing daemon codec without changing the product lock.
 pub use hydracache_client_protocol as current_daemon_wire_075;
 pub mod invariants;

@@ -16,6 +16,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 #[serde(rename_all = "snake_case")]
 pub enum BuildStage {
     ServerTests,
+    HelperContractTests,
     RustConsumerTests,
     RustConsumerBuild,
     JavaContract,

@@ -389,28 +389,32 @@ public final class UnifiedIMapService {
   }
   BoundedIMapApi.Bounds semanticBounds() { return bounds; }
   /** Each entry has its own conditional decision; this receipt is not a transaction. */
+  private void validateVersionBulk(VersionAction action, List<VersionInput> entries, long time) {
+    Objects.requireNonNull(action);
+    if (entries.isEmpty() || entries.size() > limits.maxBatch()) invalid("invalid version batch size");
+    var keys = new HashSet<BytesValue>(); long requestBytes = 0, responseBytes = 0;
+    for (var entry : entries) {
+      if (!keys.add(entry.key())) invalid("duplicate key");
+      if (entry.key().size() > bounds.maxKeyBytes()) throw domain(IMapDomainException.Kind.KEY_TOO_LARGE, "key bound");
+      if ((action == VersionAction.REPLACE) != entry.value().isPresent()) invalid("version batch value shape");
+      if (entry.value().isPresent() && entry.value().orElseThrow().size() > bounds.maxValueBytes()) throw domain(IMapDomainException.Kind.VALUE_TOO_LARGE, "value bound");
+      if (action == VersionAction.SET_TTL && entry.ttl().kind() == TtlDirective.Kind.PRESERVE) invalid("set TTL requires explicit expiry");
+      if (entry.ttl().kind() == TtlDirective.Kind.EXPIRE_AFTER) {
+        try { Math.addExact(time, entry.ttl().ticks()); } catch (ArithmeticException overflow) { invalid("expiry overflow"); }
+      }
+      requestBytes += 32L + entry.key().size() + entry.value().map(BytesValue::size).orElse(0);
+      responseBytes += 17L + entry.key().size();
+    }
+    if (requestBytes > BoundedIMapApi.MAX_REQUEST_BYTES) throw domain(IMapDomainException.Kind.REQUEST_TOO_LARGE, "request bytes");
+    if (responseBytes > bounds.maxResponseBytes()) throw domain(IMapDomainException.Kind.RESPONSE_TOO_LARGE, "response bytes");
+  }
   public Result versionBulk(VersionAction action, List<VersionInput> input,
       BoundedIMapApi.MutationIdentity identity, long time, long deadline, boolean loseResponse) {
     try { synchronized (this) {
       requests++;
       Objects.requireNonNull(action); Objects.requireNonNull(identity);
       List<VersionInput> entries = List.copyOf(input);
-      if (entries.isEmpty() || entries.size() > limits.maxBatch()) invalid("invalid version batch size");
-      var keys = new HashSet<BytesValue>(); long requestBytes = 0, responseBytes = 0;
-      for (var entry : entries) {
-        if (!keys.add(entry.key())) invalid("duplicate key");
-        if (entry.key().size() > bounds.maxKeyBytes()) throw domain(IMapDomainException.Kind.KEY_TOO_LARGE, "key bound");
-        if ((action == VersionAction.REPLACE) != entry.value().isPresent()) invalid("version batch value shape");
-        if (entry.value().isPresent() && entry.value().orElseThrow().size() > bounds.maxValueBytes()) throw domain(IMapDomainException.Kind.VALUE_TOO_LARGE, "value bound");
-        if (action == VersionAction.SET_TTL && entry.ttl().kind() == TtlDirective.Kind.PRESERVE) invalid("set TTL requires explicit expiry");
-        if (entry.ttl().kind() == TtlDirective.Kind.EXPIRE_AFTER) {
-          try { Math.addExact(time, entry.ttl().ticks()); } catch (ArithmeticException overflow) { invalid("expiry overflow"); }
-        }
-        requestBytes += 32L + entry.key().size() + entry.value().map(BytesValue::size).orElse(0);
-        responseBytes += 17L + entry.key().size();
-      }
-      if (requestBytes > BoundedIMapApi.MAX_REQUEST_BYTES) throw domain(IMapDomainException.Kind.REQUEST_TOO_LARGE, "request bytes");
-      if (responseBytes > bounds.maxResponseBytes()) throw domain(IMapDomainException.Kind.RESPONSE_TOO_LARGE, "response bytes");
+      validateVersionBulk(action, entries, time);
       BytesValue digest = BoundedIMapApi.fingerprint("versionBulk|" + action + "|" + entries);
       Object prior = map.recoverService(identity, digest);
       if (prior instanceof Result result) return result;
@@ -548,6 +552,22 @@ public final class UnifiedIMapService {
     if (command instanceof IMapLocalHelper.Checkpoint) bytes += 256 + map.serviceValueOwnerBytes() + map.serviceOutcomeOwnerBytes();
     if (command instanceof IMapLocalHelper.RetireOutcomes request) bytes += request.client().getBytes(StandardCharsets.UTF_8).length;
     return bytes + IMapLocalHelper.identity(command).map(BoundedIMapApi::identityCost).orElse(0L);
+  }
+  /** Pure helper shape/budget validation: no clock advance, reservation or result lease. */
+  public synchronized void prepareHelperRequest(IMapLocalHelper.Command<?> command, long time) {
+    Objects.requireNonNull(command);
+    if (map.isDestroyed()) throw domain(IMapDomainException.Kind.MAP_DESTROYED, "map is destroyed");
+    helperOwnedBytes(command);
+    if (command instanceof IMapLocalHelper.VersionBulk request) validateVersionBulk(request.action(), request.entries(), time);
+    if (command instanceof IMapLocalHelper.QueryOutcomes request) {
+      if (request.identities().size() > limits.maxBatch()) invalid("outcome helper batch bound");
+      for (var identity : request.identities()) map.serviceQueryResultBytes(identity);
+    }
+    if (command instanceof IMapLocalHelper.ExpireStep request && request.maxWork() > bounds.maxScanItems()) invalid("expiry helper work bound");
+    if (command instanceof IMapLocalHelper.RetireOutcomes request) {
+      if (request.generation() != generation || request.client().isBlank()
+          || request.client().getBytes(StandardCharsets.UTF_8).length > 128) invalid("retirement helper identity");
+    }
   }
   private long helperReservation(IMapLocalHelper.Command<?> command) {
     if (command instanceof IMapLocalHelper.VersionBulk request) return 64 + request.entries().stream().mapToLong(entry -> 64L + entry.key().size()).sum();

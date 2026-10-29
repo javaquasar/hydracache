@@ -335,6 +335,24 @@ pub fn prepare_tools(
             "--locked",
         ],
     )?;
+    command(
+        &mut builds,
+        root,
+        BuildStage::HelperContractTests,
+        "cargo",
+        &[
+            "test",
+            "-p",
+            "hydracache-cluster-testkit",
+            "--test",
+            "imap_backend_contract_075",
+            "--test",
+            "imap_backend_helper_contract_075",
+            "--test",
+            "value_plane_service_async_075",
+            "--locked",
+        ],
+    )?;
     rust_consumer(root, &mut builds)?;
     let maven = if cfg!(windows) { "mvn.cmd" } else { "mvn" };
     command(
