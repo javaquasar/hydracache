@@ -13,7 +13,7 @@ import custody
 import owned
 import prepare as p
 
-CONTROL=p.ROOT/'target/yaml-security-20261028/runner-controls'
+CONTROL=p.ROOT/'target/workspace-dbus-20261029/runner-controls'
 
 
 def controls(root=p.ROOT):

@@ -8,6 +8,17 @@ import sys
 
 import prepare as p
 
+STATUS_PATHS = ('Cargo.toml','Cargo.lock','deny.toml','.cargo','crates','tools',
+                'scripts','console','.github','.gitattributes','third_party')
+
+
+def selected_sources(names):
+    return [n for n in names if (n.startswith(('crates/','tools/','scripts/','console/',
+        '.cargo/','.github/','docs/plans/','third_party/'))
+        or n in ('Cargo.toml','Cargo.lock','deny.toml','.gitattributes','docs/COMPAT.md',
+                 'docs/RULES.md','docs/GATES.md','docs/testing/performance/0.74/qualification-manifest.toml'))
+        and '/node_modules/' not in n]
+
 
 def git(root,*args):
     return subprocess.check_output(['git','--no-replace-objects',*args],cwd=root,timeout=30)
@@ -24,13 +35,10 @@ def frame(root=p.ROOT,*,clean=True):
     p.require(not any(k in os.environ for k in ('PYTHONPATH','PYTHONHOME')),'inherited Python overrides')
     review=p.source_review(root)
     environment=p.environment_review(root)  # Original executable/lazy Git controls before status.
-    status=git(root,'status','--porcelain','--untracked-files=all','--','Cargo.toml','Cargo.lock',
-        'deny.toml','.cargo','crates','tools','scripts','console','.github','.gitattributes')
+    status=git(root,'status','--porcelain','--untracked-files=all','--',*STATUS_PATHS)
     p.require(not clean or not status,'clean source/configuration required before Cargo')
     names=[n.decode() for n in git(root,'ls-files','-z').split(b'\0') if n]
-    selected=[n for n in names if (n.startswith(('crates/','tools/','scripts/','console/','.cargo/','.github/','docs/plans/'))
-        or n in ('Cargo.toml','Cargo.lock','deny.toml','.gitattributes','docs/COMPAT.md','docs/RULES.md','docs/GATES.md',
-                  'docs/testing/performance/0.74/qualification-manifest.toml')) and '/node_modules/' not in n]
+    selected=selected_sources(names)
     sources={}
     for name in selected:
         path=root/name

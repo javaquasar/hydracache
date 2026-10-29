@@ -13,6 +13,7 @@ import tomllib
 import security_lock
 import swagger_inputs
 import yaml_inputs
+import dbus_inputs
 
 from storage import now, write
 
@@ -124,7 +125,7 @@ def source_review(root):
     raw = checked(root, PACKET + '/objects/' + row['sha256'], row['sha256'])
     require(len(raw) == row['bytes'], 'syntax member size')
     review = load(root / 'tools/package-frontier-gate-074/review.py', 'hc074_prepared_source_review')
-    data = yaml_inputs.reviewed_inputs(root, review.inputs())
+    data = dbus_inputs.reviewed_inputs(root, review.inputs())
     context = review.load(root / 'tools/historical-blob-batch-074/module_context_v5.py',
                           'hc074_prepared_context', review.CONTEXT_SHA)
     result = review.source_review(root, data, json.loads(raw), context)
@@ -140,6 +141,10 @@ def source_review(root):
         historical_execution_receipts_unchanged=True)
     result['yaml_successor'] = dict(current={k: v[0] for k, v in yaml_inputs.BODIES.items()},
         dependency_source_review='docs/testing/performance/0.74/yaml-security-result-20261028.md',
+        historical_execution_receipts_unchanged=True)
+    result['dbus_successor'] = dict(current={k: v[0] for k, v in dbus_inputs.BODIES.items()},
+        rules_sha256=dbus_inputs.RULES_SHA,
+        dependency_source_review='docs/testing/performance/0.74/dbus-root-package-result-20261029.md',
         historical_execution_receipts_unchanged=True)
     return result
 
@@ -172,7 +177,7 @@ def prepare(out, root=ROOT):
         head = command_capture(out, 'head-before', ['git', 'rev-parse', 'HEAD'], root).decode().strip()
         status = command_capture(out, 'source-status', ['git', 'status', '--porcelain',
             '--untracked-files=all', '--', 'Cargo.toml', 'Cargo.lock', 'deny.toml',
-            '.cargo', 'crates', 'tools', 'scripts/ci', '.gitattributes'], root)
+            '.cargo', 'crates', 'tools', 'scripts/ci', '.gitattributes', 'third_party'], root)
         write(out, 'source-review.json', source_review(root))
         write(out, 'environment-review.json', environment_review(root))
         write(out, 'workspace-members.json', workspace_members(root))

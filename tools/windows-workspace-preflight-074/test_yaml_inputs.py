@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -11,6 +12,19 @@ import swagger_inputs
 import yaml_inputs as y
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def original_yaml_input(name):
+    # The versioned YAML API still tests its immutable input after root D-Bus adoption.
+    packet, digest = {
+        'Cargo.lock': ('dbus-root-integration-20261028', y.BODIES['Cargo.lock'][0]),
+        'Cargo.toml': ('dbus-root-integration-20261028', 'a494481b85fa84fd07e19a447c6d5fe7a49aa12557e0c0befc86fdea390d3bf2'),
+        'crates/xtask/Cargo.toml': ('yaml-security-20261028', '5f29059c1f8dcc7b925876565090e8133697fcffc76499f01c0fbeffb3356d50'),
+    }[name]
+    raw = (ROOT/'docs/testing/performance/0.74/local-runs'/packet/'objects'/digest).read_bytes()
+    if swagger_inputs.sha(raw) != digest:
+        raise ValueError('immutable original YAML input')
+    return raw
 
 
 def data():
@@ -23,7 +37,7 @@ def data():
 class YamlInputs(unittest.TestCase):
     def test_complete_predecessors_and_both_older_layers(self):
         for name, (_, previous, _) in y.BODIES.items():
-            raw = y.predecessor(name, (ROOT/name).read_bytes())
+            raw = y.predecessor(name, original_yaml_input(name))
             self.assertEqual(swagger_inputs.sha(raw), previous)
             if name == 'Cargo.lock':
                 raw = swagger_inputs.predecessor(name, raw)
@@ -31,12 +45,12 @@ class YamlInputs(unittest.TestCase):
 
     def test_same_inherited_lf_normalization(self):
         for name in y.BODIES:
-            raw = (ROOT/name).read_bytes().replace(b'\r\n', b'\n')
+            raw = original_yaml_input(name).replace(b'\r\n', b'\n')
             self.assertEqual(y.predecessor(name, raw), y.predecessor(name, raw.replace(b'\n', b'\r\n')))
 
     def test_complete_body_mutation_and_unknown_names_refuse(self):
         for name in y.BODIES:
-            for raw in ((ROOT/name).read_bytes()+b'\n', b'unknown'):
+            for raw in (original_yaml_input(name)+b'\n', b'unknown'):
                 with self.subTest(name=name), self.assertRaises(ValueError):
                     y.predecessor(name, raw)
         with self.assertRaises(ValueError):
@@ -52,7 +66,7 @@ class YamlInputs(unittest.TestCase):
             elif mutation == 'digest': row['previous_sha256'] = '0'*64
             else: row['patches'][-1]['offset'] = True
             with self.subTest(mutation=mutation), patch.object(y, 'rules', return_value=rows), self.assertRaises(ValueError):
-                y.predecessor('Cargo.lock', (ROOT/'Cargo.lock').read_bytes())
+                y.predecessor('Cargo.lock', original_yaml_input('Cargo.lock'))
 
     def test_rules_tampering_and_schema_mutation_refuse(self):
         with patch.object(Path, 'read_bytes', return_value=b'{}'), self.assertRaises(ValueError):
@@ -65,8 +79,13 @@ class YamlInputs(unittest.TestCase):
 
     def test_only_three_catalog_entries_change_without_git_reads(self):
         original = data(); before = copy.deepcopy(original)
-        with patch.object(subprocess, 'check_output', side_effect=AssertionError('no extra Git reads')):
-            result = y.reviewed_inputs(ROOT, original)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in ('Cargo.lock','Cargo.toml','crates/xtask/Cargo.toml'):
+                (root/name).parent.mkdir(parents=True, exist_ok=True)
+                (root/name).write_bytes(original_yaml_input(name))
+            with patch.object(subprocess, 'check_output', side_effect=AssertionError('no extra Git reads')):
+                result = y.reviewed_inputs(root, original)
         expected = copy.deepcopy(before)
         for name, (current, _, _) in y.BODIES.items(): expected['auxiliary'][name] = current
         expected['auxiliary']['Cargo.toml'] = swagger_inputs.BODIES['Cargo.toml'][0]
