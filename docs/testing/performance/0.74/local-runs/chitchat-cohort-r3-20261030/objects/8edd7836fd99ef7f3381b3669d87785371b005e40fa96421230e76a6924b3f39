@@ -1,0 +1,7 @@
+{
+  "case": "namespace-owner-kill",
+  "controls": false,
+  "plan_sha256": "7834ae9e6b21671f7f84806b02ba7a95eb2b843683dba67df1f1f63862c6bfc4",
+  "root": "/tmp/hc074-chitchat-cost-20261029.priewo_p",
+  "synthetic": true
+}

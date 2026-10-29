@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "ssh",
+    "-T",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ConnectTimeout=15",
+    "-o",
+    "ServerAliveInterval=5",
+    "-o",
+    "ServerAliveCountMax=2",
+    "hydracache-ax42",
+    "sudo -n /usr/bin/python3 -B -I /tmp/hc074-chitchat-r3-package-20261030.J6DM6W/stage.py context-start"
+  ],
+  "bound_seconds": 90,
+  "retry": false
+}

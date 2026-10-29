@@ -1,5 +1,10 @@
 # Exact Q numerical maintenance: first cohort incomplete, service restored
 
+Historical first result below is unchanged. The separately authorized
+[corrected complete matrix](chitchat-cohort-r3-result-20261030.md) now finishes
+all60 processes with automatic recovery; its bounded memory screen passes and
+CPU/wall non-regression gate refuses. None of that promotes this first attempt.
+
 The operator separately approved limited maintenance on 2026-10-29. The adapted
 controller passes three native fault controls and a complete B/P/Q worker smoke
 before stopping the stable supervisor. The first and only numerical attempt

@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/worker.py", line 63, in <module>
+    if __name__=='__main__':raise SystemExit(main())
+                                             ^^^^^^
+  File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/worker.py", line 39, in main
+    c.frame(p,root,m);adapter=load(root/'input/remote.py','hc074_writer_adapter')
+    ^^^^^^^^^^^^^^^^^
+  File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py", line 62, in frame
+    need({k:v for k,v in state.items() if k!='supervisor'}=={k:v for k,v in original.items() if k!='supervisor'},'original kernel/clock/mount/marker/source host frame')
+  File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py", line 17, in need
+    if not ok:raise RuntimeError(why)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: original kernel/clock/mount/marker/source host frame

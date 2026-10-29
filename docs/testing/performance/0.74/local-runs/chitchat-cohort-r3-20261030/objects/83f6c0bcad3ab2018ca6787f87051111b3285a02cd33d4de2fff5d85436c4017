@@ -1,0 +1,369 @@
+Failed to find real location of C:\Python313\python.exe
+Failed to find real location of C:\Python313\python.exe
+test_busy_original_fence_prevents_restoration (test_controls.Controls.test_busy_original_fence_prevents_restoration) ... ERROR
+test_denied_numeric_frame_does_not_block_proved_restoration (test_controls.Controls.test_denied_numeric_frame_does_not_block_proved_restoration) ... ERROR
+test_every_original_frame_predicate_order_and_count_stays (test_controls.Controls.test_every_original_frame_predicate_order_and_count_stays) ... ok
+test_fixture_only_readonly_remount_and_user_leaf_recovery (test_controls.Controls.test_fixture_only_readonly_remount_and_user_leaf_recovery) ... ok
+test_full_five_block_plan_and_frozen_bounds (test_controls.Controls.test_full_five_block_plan_and_frozen_bounds) ... ok
+test_healthy_post_restores_and_checks_both_frames (test_controls.Controls.test_healthy_post_restores_and_checks_both_frames) ... ERROR
+test_mismatched_namespace_fd_is_never_entered (test_controls.Controls.test_mismatched_namespace_fd_is_never_entered) ... ERROR
+test_namespace_join_opens_and_checks_original_fd (test_controls.Controls.test_namespace_join_opens_and_checks_original_fd) ... ERROR
+test_numerical_main_and_validator_stay_exact (test_controls.Controls.test_numerical_main_and_validator_stay_exact) ... ok
+test_populated_original_writer_prevents_restoration (test_controls.Controls.test_populated_original_writer_prevents_restoration) ... ERROR
+test_predecessor_reproduces_frame_denial_before_restore (test_controls.Controls.test_predecessor_reproduces_frame_denial_before_restore) ... ok
+test_protected_host_drift_prevents_restoration (test_controls.Controls.test_protected_host_drift_prevents_restoration) ... ERROR
+test_worker_is_byte_identical (test_controls.Controls.test_worker_is_byte_identical) ... ok
+
+======================================================================
+ERROR: test_busy_original_fence_prevents_restoration (test_controls.Controls.test_busy_original_fence_prevents_restoration)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Python313\Lib\pathlib\_local.py", line 722, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+FileNotFoundError: [WinError 3] The system cannot find the path specified: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmputt393db\\cg\\control'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 48, in exercise
+    root=Path(folder);g=root/'cg';(g/'control').mkdir(parents=True);(g/'writers-0').mkdir()
+                                  ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\pathlib\_local.py", line 726, in mkdir
+    self.parent.mkdir(parents=True, exist_ok=True)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\pathlib\_local.py", line 722, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmputt393db\\cg'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Python313\Lib\shutil.py", line 631, in _rmtree_unsafe
+    os.rmdir(path)
+    ~~~~~~~~^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmputt393db'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 72, in test_busy_original_fence_prevents_restoration
+    def test_busy_original_fence_prevents_restoration(self):self.exercise(denied=True,busy=True)
+                                                            ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 47, in exercise
+    with tempfile.TemporaryDirectory() as folder:
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Python313\Lib\tempfile.py", line 951, in __exit__
+    self.cleanup()
+    ~~~~~~~~~~~~^^
+  File "C:\Python313\Lib\tempfile.py", line 955, in cleanup
+    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 935, in _rmtree
+    _shutil.rmtree(name, onexc=onexc)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\shutil.py", line 790, in rmtree
+    return _rmtree_unsafe(path, onexc)
+  File "C:\Python313\Lib\shutil.py", line 635, in _rmtree_unsafe
+    onexc(os.rmdir, path, err)
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 907, in onexc
+    _resetperms(path)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 287, in _resetperms
+    _dont_follow_symlinks(_os.chmod, path, 0o700)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 276, in _dont_follow_symlinks
+    func(path, *args, follow_symlinks=False)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmputt393db'
+
+======================================================================
+ERROR: test_denied_numeric_frame_does_not_block_proved_restoration (test_controls.Controls.test_denied_numeric_frame_does_not_block_proved_restoration)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Python313\Lib\pathlib\_local.py", line 722, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+FileNotFoundError: [WinError 3] The system cannot find the path specified: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmp8pp_il_9\\cg\\control'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 48, in exercise
+    root=Path(folder);g=root/'cg';(g/'control').mkdir(parents=True);(g/'writers-0').mkdir()
+                                  ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\pathlib\_local.py", line 726, in mkdir
+    self.parent.mkdir(parents=True, exist_ok=True)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\pathlib\_local.py", line 722, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmp8pp_il_9\\cg'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Python313\Lib\shutil.py", line 631, in _rmtree_unsafe
+    os.rmdir(path)
+    ~~~~~~~~^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmp8pp_il_9'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 70, in test_denied_numeric_frame_does_not_block_proved_restoration
+    def test_denied_numeric_frame_does_not_block_proved_restoration(self):self.exercise(denied=True)
+                                                                          ~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 47, in exercise
+    with tempfile.TemporaryDirectory() as folder:
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Python313\Lib\tempfile.py", line 951, in __exit__
+    self.cleanup()
+    ~~~~~~~~~~~~^^
+  File "C:\Python313\Lib\tempfile.py", line 955, in cleanup
+    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 935, in _rmtree
+    _shutil.rmtree(name, onexc=onexc)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\shutil.py", line 790, in rmtree
+    return _rmtree_unsafe(path, onexc)
+  File "C:\Python313\Lib\shutil.py", line 635, in _rmtree_unsafe
+    onexc(os.rmdir, path, err)
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 907, in onexc
+    _resetperms(path)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 287, in _resetperms
+    _dont_follow_symlinks(_os.chmod, path, 0o700)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 276, in _dont_follow_symlinks
+    func(path, *args, follow_symlinks=False)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmp8pp_il_9'
+
+======================================================================
+ERROR: test_healthy_post_restores_and_checks_both_frames (test_controls.Controls.test_healthy_post_restores_and_checks_both_frames)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Python313\Lib\pathlib\_local.py", line 722, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+FileNotFoundError: [WinError 3] The system cannot find the path specified: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmpkdhxucrb\\cg\\control'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 48, in exercise
+    root=Path(folder);g=root/'cg';(g/'control').mkdir(parents=True);(g/'writers-0').mkdir()
+                                  ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\pathlib\_local.py", line 726, in mkdir
+    self.parent.mkdir(parents=True, exist_ok=True)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\pathlib\_local.py", line 722, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmpkdhxucrb\\cg'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Python313\Lib\shutil.py", line 631, in _rmtree_unsafe
+    os.rmdir(path)
+    ~~~~~~~~^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmpkdhxucrb'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 69, in test_healthy_post_restores_and_checks_both_frames
+    def test_healthy_post_restores_and_checks_both_frames(self):self.exercise()
+                                                                ~~~~~~~~~~~~~^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 47, in exercise
+    with tempfile.TemporaryDirectory() as folder:
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Python313\Lib\tempfile.py", line 951, in __exit__
+    self.cleanup()
+    ~~~~~~~~~~~~^^
+  File "C:\Python313\Lib\tempfile.py", line 955, in cleanup
+    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 935, in _rmtree
+    _shutil.rmtree(name, onexc=onexc)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\shutil.py", line 790, in rmtree
+    return _rmtree_unsafe(path, onexc)
+  File "C:\Python313\Lib\shutil.py", line 635, in _rmtree_unsafe
+    onexc(os.rmdir, path, err)
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 907, in onexc
+    _resetperms(path)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 287, in _resetperms
+    _dont_follow_symlinks(_os.chmod, path, 0o700)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 276, in _dont_follow_symlinks
+    func(path, *args, follow_symlinks=False)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmpkdhxucrb'
+
+======================================================================
+ERROR: test_mismatched_namespace_fd_is_never_entered (test_controls.Controls.test_mismatched_namespace_fd_is_never_entered)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 96, in test_mismatched_namespace_fd_is_never_entered
+    with self.assertRaises(RuntimeError):ns.join(Path('/tmp/owned'),dict(namespace=dict(pid=123,identity=[1,2])))
+                                         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\namespace.py", line 32, in join
+    fd=os.open('/proc/'+str(meta['pid'])+'/ns/mnt',os.O_RDONLY|os.O_CLOEXEC)
+                                                               ^^^^^^^^^^^^
+AttributeError: module 'os' has no attribute 'O_CLOEXEC'
+
+======================================================================
+ERROR: test_namespace_join_opens_and_checks_original_fd (test_controls.Controls.test_namespace_join_opens_and_checks_original_fd)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 92, in test_namespace_join_opens_and_checks_original_fd
+    ns.join(Path('/tmp/owned'),dict(namespace=meta));setns.assert_called_once_with(42,0);close.assert_called_once_with(42);self.assertEqual(live.call_count,2)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\namespace.py", line 32, in join
+    fd=os.open('/proc/'+str(meta['pid'])+'/ns/mnt',os.O_RDONLY|os.O_CLOEXEC)
+                                                               ^^^^^^^^^^^^
+AttributeError: module 'os' has no attribute 'O_CLOEXEC'
+
+======================================================================
+ERROR: test_populated_original_writer_prevents_restoration (test_controls.Controls.test_populated_original_writer_prevents_restoration)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Python313\Lib\pathlib\_local.py", line 722, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+FileNotFoundError: [WinError 3] The system cannot find the path specified: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmpuqr5lt_x\\cg\\control'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 48, in exercise
+    root=Path(folder);g=root/'cg';(g/'control').mkdir(parents=True);(g/'writers-0').mkdir()
+                                  ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\pathlib\_local.py", line 726, in mkdir
+    self.parent.mkdir(parents=True, exist_ok=True)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\pathlib\_local.py", line 722, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmpuqr5lt_x\\cg'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Python313\Lib\shutil.py", line 631, in _rmtree_unsafe
+    os.rmdir(path)
+    ~~~~~~~~^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmpuqr5lt_x'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 71, in test_populated_original_writer_prevents_restoration
+    def test_populated_original_writer_prevents_restoration(self):self.exercise(denied=True,populated=True)
+                                                                  ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 47, in exercise
+    with tempfile.TemporaryDirectory() as folder:
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Python313\Lib\tempfile.py", line 951, in __exit__
+    self.cleanup()
+    ~~~~~~~~~~~~^^
+  File "C:\Python313\Lib\tempfile.py", line 955, in cleanup
+    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 935, in _rmtree
+    _shutil.rmtree(name, onexc=onexc)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\shutil.py", line 790, in rmtree
+    return _rmtree_unsafe(path, onexc)
+  File "C:\Python313\Lib\shutil.py", line 635, in _rmtree_unsafe
+    onexc(os.rmdir, path, err)
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 907, in onexc
+    _resetperms(path)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 287, in _resetperms
+    _dont_follow_symlinks(_os.chmod, path, 0o700)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 276, in _dont_follow_symlinks
+    func(path, *args, follow_symlinks=False)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmpuqr5lt_x'
+
+======================================================================
+ERROR: test_protected_host_drift_prevents_restoration (test_controls.Controls.test_protected_host_drift_prevents_restoration)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Python313\Lib\pathlib\_local.py", line 722, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+FileNotFoundError: [WinError 3] The system cannot find the path specified: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmpgr8c73kc\\cg\\control'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 48, in exercise
+    root=Path(folder);g=root/'cg';(g/'control').mkdir(parents=True);(g/'writers-0').mkdir()
+                                  ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\pathlib\_local.py", line 726, in mkdir
+    self.parent.mkdir(parents=True, exist_ok=True)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\pathlib\_local.py", line 722, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmpgr8c73kc\\cg'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Python313\Lib\shutil.py", line 631, in _rmtree_unsafe
+    os.rmdir(path)
+    ~~~~~~~~^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmpgr8c73kc'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 73, in test_protected_host_drift_prevents_restoration
+    def test_protected_host_drift_prevents_restoration(self):self.exercise(denied=True,protected=True)
+                                                             ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-cohort-r2-074\test_controls.py", line 47, in exercise
+    with tempfile.TemporaryDirectory() as folder:
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Python313\Lib\tempfile.py", line 951, in __exit__
+    self.cleanup()
+    ~~~~~~~~~~~~^^
+  File "C:\Python313\Lib\tempfile.py", line 955, in cleanup
+    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 935, in _rmtree
+    _shutil.rmtree(name, onexc=onexc)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\shutil.py", line 790, in rmtree
+    return _rmtree_unsafe(path, onexc)
+  File "C:\Python313\Lib\shutil.py", line 635, in _rmtree_unsafe
+    onexc(os.rmdir, path, err)
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 907, in onexc
+    _resetperms(path)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 287, in _resetperms
+    _dont_follow_symlinks(_os.chmod, path, 0o700)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\tempfile.py", line 276, in _dont_follow_symlinks
+    func(path, *args, follow_symlinks=False)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\ArturBuzov\\AppData\\Local\\Packages\\sandbox.{612aab60-8311-41f7-972f-a3ea7f1bf6ee}\\AC\\Temp\\tmpgr8c73kc'
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.058s
+
+FAILED (errors=7)

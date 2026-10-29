@@ -1,0 +1,13 @@
+{
+  "disconnected_context_control_seconds": 20,
+  "first_partial_cohorts_spliced": false,
+  "full_context_unchanged": true,
+  "live_faults": 7,
+  "only_stable_service_maintenance": true,
+  "operator_approved_new_matrix": true,
+  "product_installation": false,
+  "product_workload": false,
+  "reviewed": true,
+  "unchanged_protocol": true,
+  "whole_worker_controls": 3
+}

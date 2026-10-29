@@ -1,0 +1,7 @@
+import pathlib,subprocess
+r=pathlib.Path('/tmp/hc074-chitchat-cost-20261029.7wpdw9n4')
+for x in ('4.retired.json','4.stderr.log','post-frame-refusal-0.json','post-frame-refusal-1.json'):
+ if (r/x).is_file():print(x+'\n'+(r/x).read_text())
+for unit in (r.name+'.service',r.name+'-namespace.service','hydracache-performance-supervisor-074.service'):
+ print(unit+'\n'+subprocess.check_output(['/usr/bin/systemctl','show',unit,'-p','MainPID','-p','ActiveState','-p','SubState','-p','Result','-p','ControlGroup'],text=True))
+print(subprocess.check_output(['/usr/bin/journalctl','--no-pager','-u',r.name+'.service','-n','70','-o','short-monotonic'],text=True))

@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/tmp/hc074-chitchat-r3-package-20261030.Q8pCaX/stage.py", line 179, in <module>
+    {'faults':faults,'worker-controls':worker_controls,'context-start':context_start,'context-check':context_check,'prepare':prepare_numeric,'launch':launch_numeric}[sys.argv[1]](package)
+  File "/tmp/hc074-chitchat-r3-package-20261030.Q8pCaX/stage.py", line 103, in faults
+    root,pin,_=build(package,True,case);m=load(root/'maintenance_base.py','hc074_fault_base');pmod=load(root/'plan.py','hc074_fault_plan')
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/hc074-chitchat-r3-package-20261030.Q8pCaX/stage.py", line 61, in build
+    meta=json.loads((root/'namespace-ready.json').read_bytes())
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/hc074-chitchat-cost-20261029.vogjaut3/namespace-ready.json'

@@ -1,0 +1,13 @@
+{
+  "original_identity": [
+    4,
+    4026532736
+  ],
+  "state": {
+    "ActiveState": "inactive",
+    "MainPID": "0",
+    "NRestarts": "0",
+    "SubState": "dead"
+  },
+  "unit": "hc074-chitchat-cost-20261029.5h2081ds-namespace.service"
+}

@@ -1,0 +1,13 @@
+{
+  "cohort_complete": false,
+  "deadline_units_retired": 10,
+  "durable_original_group_empty_proofs": 5,
+  "fence_identity": [
+    2306,
+    18101991
+  ],
+  "measurement_frame_pass": false,
+  "missing_cgroup_used_as_empty_proof": false,
+  "original_fence_acquired": true,
+  "original_processes_gone": 9
+}

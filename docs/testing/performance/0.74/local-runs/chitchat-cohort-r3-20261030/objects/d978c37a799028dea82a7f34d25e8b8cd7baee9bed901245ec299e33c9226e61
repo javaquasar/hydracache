@@ -1,0 +1,31 @@
+{
+  "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+  "clock_services": "MainPID=804\nId=systemd-timesyncd.service\nLoadState=loaded\nActiveState=active\n\nMainPID=0\nId=chrony.service\nLoadState=not-found\nActiveState=inactive\n\nMainPID=0\nId=ntp.service\nLoadState=not-found\nActiveState=inactive",
+  "kernel": "6.8.0-138-generic",
+  "leftovers": [],
+  "libc": "glibc 2.39",
+  "machine": "x86_64",
+  "manager": "systemd 255 (255.4-1ubuntu8.17)",
+  "markers": {
+    "campaign-lifecycle-smoke-v1.json": false,
+    "campaigns/.active-diagnostic.pending": false,
+    "campaigns/.diagnostic-requests.pending": false,
+    "campaigns/active-campaign": false,
+    "campaigns/active-diagnostic.json": false,
+    "campaigns/diagnostic-requests.json": false,
+    "controller-loss-smoke-v1.json": false,
+    "diagnostic-intents-074": false,
+    "worker-authority-074": false
+  },
+  "mounts": "62 61 9:2 / / rw,relatime - ext4 /dev/md2 rw\n63 62 0:5 / /dev rw,nosuid,relatime - devtmpfs udev rw,size=32384328k,nr_inodes=8096082,mode=755,inode64\n64 63 0:24 / /dev/pts rw,nosuid,noexec,relatime - devpts devpts rw,gid=5,mode=620,ptmxmode=000\n89 63 0:27 / /dev/shm rw,nosuid,nodev - tmpfs tmpfs rw,inode64\n90 63 0:20 / /dev/mqueue rw,nosuid,nodev,noexec,relatime - mqueue mqueue rw\n91 63 0:33 / /dev/hugepages rw,nosuid,nodev,relatime - hugetlbfs hugetlbfs rw,pagesize=2M\n92 62 0:25 / /run rw,nosuid,nodev,noexec,relatime - tmpfs tmpfs rw,size=6493212k,mode=755,inode64\n93 92 0:28 / /run/lock rw,nosuid,nodev,noexec,relatime - tmpfs tmpfs rw,size=5120k,inode64\n94 92 0:45 / /run/user/1001 rw,nosuid,nodev,relatime - tmpfs tmpfs rw,size=6493212k,nr_inodes=1623303,mode=700,uid=1001,gid=1001,inode64\n95 92 0:42 / /run/user/1000 rw,nosuid,nodev,relatime - tmpfs tmpfs rw,size=6493212k,nr_inodes=1623303,mode=700,uid=1000,gid=1000,inode64\n96 62 0:22 / /sys rw,nosuid,nodev,noexec,relatime - sysfs sysfs rw\n97 96 0:26 / /sys/firmware/efi/efivars rw,nosuid,nodev,noexec,relatime - efivarfs efivarfs rw\n98 96 0:6 / /sys/kernel/security rw,nosuid,nodev,noexec,relatime - securityfs securityfs rw\n100 96 0:29 / /sys/fs/cgroup rw,nosuid,nodev,noexec,relatime - cgroup2 cgroup2 rw,nsdelegate,memory_recursiveprot\n234 96 0:30 / /sys/fs/pstore rw,nosuid,nodev,noexec,relatime - pstore pstore rw\n237 96 0:31 / /sys/fs/bpf rw,nosuid,nodev,noexec,relatime - bpf bpf rw,mode=700\n238 96 0:7 / /sys/kernel/debug rw,nosuid,nodev,noexec,relatime - debugfs debugfs rw\n239 96 0:12 / /sys/kernel/tracing rw,nosuid,nodev,noexec,relatime - tracefs tracefs rw\n240 96 0:34 / /sys/fs/fuse/connections rw,nosuid,nodev,noexec,relatime - fusectl fusectl rw\n241 96 0:21 / /sys/kernel/config rw,nosuid,nodev,noexec,relatime - configfs configfs rw\n242 62 0:23 / /proc rw,relatime - proc proc rw\n243 242 0:32 / /proc/sys/fs/binfmt_misc rw,relatime - autofs systemd-1 rw,fd=32,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=1937\n244 243 0:35 / /proc/sys/fs/binfmt_misc rw,nosuid,nodev,noexec,relatime - binfmt_misc binfmt_misc rw\n329 62 9:1 / /boot rw,relatime - ext3 /dev/md1 rw\n330 329 259:2 / /boot/efi rw,relatime - vfat /dev/nvme1n1p1 rw,fmask=0077,dmask=0077,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro\n331 62 9:2 /tmp/hc074-chitchat-cost-20261029.5h2081ds/fixture-mount /tmp/hc074-chitchat-cost-20261029.5h2081ds/fixture-mount rw,relatime - ext4 /dev/md2 rw\n",
+  "namespaces": {
+    "mnt": "mnt:[4026531841]",
+    "user": "user:[4026531837]"
+  },
+  "page_size": 4096,
+  "protected": {
+    "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074": "f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62",
+    "/var/lib/hydracache-performance/provisioning-receipt-074.json": "b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525"
+  },
+  "supervisor": "MainPID=409364\nNRestarts=0\nActiveState=active\nSubState=running\nInvocationID=8d8bda12aa494debb3ae8311a77812d0"
+}

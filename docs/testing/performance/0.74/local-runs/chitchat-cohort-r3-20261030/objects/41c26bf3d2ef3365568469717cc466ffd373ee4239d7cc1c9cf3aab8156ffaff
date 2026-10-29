@@ -1,0 +1,4 @@
+import subprocess
+r='hc074-chitchat-cost-20261029.vogjaut3'
+print(subprocess.check_output(['/usr/bin/journalctl','--no-pager','-u',r+'-namespace.service','-n','50','-o','short-monotonic'],text=True))
+print(subprocess.check_output(['/usr/bin/systemctl','show','hydracache-performance-supervisor-074.service',r+'-standin.service','-p','MainPID','-p','ActiveState'],text=True))

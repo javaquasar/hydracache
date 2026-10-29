@@ -1,0 +1,7 @@
+{
+  "case": "owner-kill",
+  "controls": false,
+  "plan_sha256": "b285d0c73aec6bea8f4c3c2fc235b6281a50935727ab5e897de7cdb6853cd235",
+  "root": "/tmp/hc074-chitchat-cost-20261029.nsclwh46",
+  "synthetic": true
+}

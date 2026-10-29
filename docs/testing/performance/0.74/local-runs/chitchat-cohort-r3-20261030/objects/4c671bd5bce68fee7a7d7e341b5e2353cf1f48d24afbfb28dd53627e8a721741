@@ -1,0 +1,11 @@
+{
+  "first_partial_cohort_spliced": false,
+  "live_faults": 6,
+  "only_stable_service_maintenance": true,
+  "operator_approved_new_matrix": true,
+  "product_installation": false,
+  "product_workload": false,
+  "reviewed": true,
+  "unchanged_protocol": true,
+  "whole_worker_controls": 3
+}

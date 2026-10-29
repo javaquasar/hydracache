@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "/usr/bin/systemd-run",
+    "--quiet",
+    "--no-ask-password",
+    "--unit=hc074-chitchat-cost-20261029.rvfarl5i.service",
+    "--service-type=exec",
+    "--property=Delegate=yes",
+    "--property=DelegateSubgroup=control",
+    "--property=RuntimeMaxSec=30",
+    "--property=KillMode=control-group",
+    "--property=KillSignal=SIGKILL",
+    "--property=SendSIGKILL=yes",
+    "--property=Restart=no",
+    "--property=TimeoutStopSec=30",
+    "--property=NoNewPrivileges=yes",
+    "--property=Wants=hc074-chitchat-cost-20261029.rvfarl5i-standin.service",
+    "--property=After=hc074-chitchat-cost-20261029.rvfarl5i-standin.service",
+    "--property=ExecStopPost=/usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.rvfarl5i/coordinator.py post /tmp/hc074-chitchat-cost-20261029.rvfarl5i 799699e57b6e5e7b5274808ee3ed4b583afaa6497691955116a32fa29af731bf",
+    "/usr/bin/python3",
+    "-B",
+    "-I",
+    "/tmp/hc074-chitchat-cost-20261029.rvfarl5i/coordinator.py",
+    "main",
+    "/tmp/hc074-chitchat-cost-20261029.rvfarl5i",
+    "799699e57b6e5e7b5274808ee3ed4b583afaa6497691955116a32fa29af731bf"
+  ],
+  "retry": false
+}

@@ -1,0 +1,20 @@
+[2031441.794177] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Starting hc074-chitchat-cost-20261029.3gvrz5xq.service - /usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.3gvrz5xq/coordinator.py main /tmp/hc074-chitchat-cost-20261029.3gvrz5xq 86cdd0571e4f00f597e6c3e590065405acfb2a6fd0ef3a139722be9b3d71a6f0...
+[2031441.794689] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Started hc074-chitchat-cost-20261029.3gvrz5xq.service - /usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.3gvrz5xq/coordinator.py main /tmp/hc074-chitchat-cost-20261029.3gvrz5xq 86cdd0571e4f00f597e6c3e590065405acfb2a6fd0ef3a139722be9b3d71a6f0.
+[2031442.911952] Ubuntu-noble-latest-amd64-base.zst python3[413789]: Traceback (most recent call last):
+[2031442.911952] Ubuntu-noble-latest-amd64-base.zst python3[413789]:   File "/tmp/hc074-chitchat-cost-20261029.3gvrz5xq/coordinator.py", line 158, in <module>
+[2031442.912313] Ubuntu-noble-latest-amd64-base.zst python3[413789]:     if __name__=='__main__':entry()
+[2031442.912313] Ubuntu-noble-latest-amd64-base.zst python3[413789]:                             ^^^^^^^
+[2031442.912313] Ubuntu-noble-latest-amd64-base.zst python3[413789]:   File "/tmp/hc074-chitchat-cost-20261029.3gvrz5xq/coordinator.py", line 152, in entry
+[2031442.912313] Ubuntu-noble-latest-amd64-base.zst python3[413789]:     if mode=='main' and len(sys.argv)==4:main(p,root,m)
+[2031442.912313] Ubuntu-noble-latest-amd64-base.zst python3[413789]:                                          ^^^^^^^^^^^^^^
+[2031442.912313] Ubuntu-noble-latest-amd64-base.zst python3[413789]:   File "/tmp/hc074-chitchat-cost-20261029.3gvrz5xq/coordinator.py", line 118, in main
+[2031442.912313] Ubuntu-noble-latest-amd64-base.zst python3[413789]:     frame(p,root,m)
+[2031442.912313] Ubuntu-noble-latest-amd64-base.zst python3[413789]:   File "/tmp/hc074-chitchat-cost-20261029.3gvrz5xq/coordinator.py", line 62, in frame
+[2031442.912313] Ubuntu-noble-latest-amd64-base.zst python3[413789]:     need({k:v for k,v in state.items() if k!='supervisor'}=={k:v for k,v in original.items() if k!='supervisor'},'original kernel/clock/mount/marker/source host frame')
+[2031442.912313] Ubuntu-noble-latest-amd64-base.zst python3[413789]:   File "/tmp/hc074-chitchat-cost-20261029.3gvrz5xq/coordinator.py", line 17, in need
+[2031442.912313] Ubuntu-noble-latest-amd64-base.zst python3[413789]:     if not ok:raise RuntimeError(why)
+[2031442.912313] Ubuntu-noble-latest-amd64-base.zst python3[413789]:               ^^^^^^^^^^^^^^^^^^^^^^^
+[2031442.912313] Ubuntu-noble-latest-amd64-base.zst python3[413789]: RuntimeError: original kernel/clock/mount/marker/source host frame
+[2031442.921933] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.3gvrz5xq.service: Main process exited, code=exited, status=1/FAILURE
+[2031443.833971] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.3gvrz5xq.service: Failed with result 'exit-code'.
+[2031443.834241] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.3gvrz5xq.service: Consumed 1.631s CPU time.

@@ -1,0 +1,13 @@
+Failed to find real location of C:\Python313\python.exe
+Failed to find real location of C:\Python313\python.exe
+test_active_stable_service_prevents_external_fence_acquisition (test_maintenance_d3.Refusals.test_active_stable_service_prevents_external_fence_acquisition) ... ok
+test_deadline_is_absolute_not_a_fresh_relative_allowance (test_maintenance_d3.Refusals.test_deadline_is_absolute_not_a_fresh_relative_allowance) ... ok
+test_missing_or_replaced_cgroup_never_counts_as_empty (test_maintenance_d3.Refusals.test_missing_or_replaced_cgroup_never_counts_as_empty) ... ok
+test_populated_writer_refuses_retirement (test_maintenance_d3.Refusals.test_populated_writer_refuses_retirement) ... ok
+test_receipt_pins_and_missing_measurement_refuse (test_maintenance_d3.Refusals.test_receipt_pins_and_missing_measurement_refuse) ... ok
+test_timer_gc_is_typed_not_a_blanket_stop_exception (test_maintenance_d3.Refusals.test_timer_gc_is_typed_not_a_blanket_stop_exception) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.003s
+
+OK

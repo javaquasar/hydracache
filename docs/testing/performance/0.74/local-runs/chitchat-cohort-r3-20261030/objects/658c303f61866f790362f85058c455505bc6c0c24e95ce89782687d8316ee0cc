@@ -1,0 +1,6 @@
+{
+  "deadline_ns": 2032612799040074,
+  "outer_bound_seconds": 1200,
+  "rebased": false,
+  "session_bound_seconds": 1100
+}

@@ -1,5 +1,18 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [complete corrected Q matrix](chitchat-cohort-r3-result-20261030.md) now runs
+all60 original normal processes and restores the exact supervisor automatically
+(PID416408/NRestarts0). Seven real faults, a20-second disconnected context and
+B/P/Q worker controls pass first. All original frames/thresholds/deadlines remain;
+own mountpoint dentries retain the original private mount IDs/root inodes.
+Both earlier incomplete carriers and two refused bind preparations stay retained.
+The bounded memory-growth screen passes, but11/62 frozen CPU/wall upper95 bounds
+exceed1.03. Total CPU Q/B0.994850 [0.982782,1.007066] is not a confirmed speedup.
+Q remains experimental/unadopted; no retry, sample deletion or threshold change.
+Final25 new offline controls plus six original maintenance controls pass. The
+carrier execution/recovery work is closed; Root/security/workspace, maintained
+distribution, continuous retention and production execution/reconnect stay open.
+
 The [first exclusive Q CPU/RSS attempt](chitchat-cohort-result-20261029.md) is
 terminal and incomplete: four CPU images finish, a fifth worker refuses a changed
 user-tmpfs host frame before image spawn, and memory never starts. Three native

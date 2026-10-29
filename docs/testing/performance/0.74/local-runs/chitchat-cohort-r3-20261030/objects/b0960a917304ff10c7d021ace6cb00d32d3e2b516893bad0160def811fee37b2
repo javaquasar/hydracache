@@ -1,0 +1,23 @@
+{
+  "archived_code_executed": false,
+  "automatic_restoration_verified": false,
+  "complete": false,
+  "completed_cpu_images": 4,
+  "completed_memory_images": 0,
+  "continuous_retention_qualified": false,
+  "cpu_nonregression_gate_pass": false,
+  "estimator_applied": false,
+  "first_incomplete_result_unchanged": true,
+  "first_refusal": "entire /run/user/1000 mount record removed from private namespace",
+  "generic_component_gate_pass": false,
+  "manual_restoration_verified": true,
+  "memory_growth_screen_pass": false,
+  "release_admitted": false,
+  "restored_supervisor_pid": 411840,
+  "retry": false,
+  "root_adopted": false,
+  "synthetic_faults": 6,
+  "terminal_accounting_complete": true,
+  "worker_controls": 3,
+  "worker_intents": 5
+}

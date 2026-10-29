@@ -1,5 +1,13 @@
 # Approved corrected carrier and separate complete Q matrix
 
+Status: executed with first refusals retained. Recursive-private r2 still loses
+the user1000 mount record and remains incomplete after manual recovery. Both r3
+bind preparations refuse before numerical dispatch. The separately frozen
+[final private-move carrier](chitchat-cohort-r3-result-20261030.md) passes seven
+native faults/disconnect/worker controls and completes all60 numerical processes
+with autonomous restoration. CPU/wall admission remains negative (11/62 upper95
+bounds>1.03); memory growth screen passes. No Root adoption or unchanged retry.
+
 The operator authorized corrections and a new matrix after the
 [first incomplete result](chitchat-cohort-result-20261029.md). This plan preserves
 that result and the separate manual recovery. It authorizes no new product

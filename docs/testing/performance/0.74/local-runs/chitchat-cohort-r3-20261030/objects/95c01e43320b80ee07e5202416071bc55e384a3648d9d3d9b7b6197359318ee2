@@ -1,0 +1,32 @@
+Failed to find real location of C:\Python313\python.exe
+Failed to find real location of C:\Python313\python.exe
+test_body_drift_refused (test_analysis.Accounting.test_body_drift_refused) ... ok
+test_complete_matrix_retains_negative_cpu_gate (test_analysis.Accounting.test_complete_matrix_retains_negative_cpu_gate) ... ok
+test_deadline_rebase_refused (test_analysis.Accounting.test_deadline_rebase_refused) ... ok
+test_held_process_identity_drift_refused (test_analysis.Accounting.test_held_process_identity_drift_refused) ... ok
+test_lost_fence_proof_refused (test_analysis.Accounting.test_lost_fence_proof_refused) ... ok
+test_missing_sixtieth_result_cannot_be_filtered (test_analysis.Accounting.test_missing_sixtieth_result_cannot_be_filtered) ... ok
+test_plan_drift_refused (test_analysis.Accounting.test_plan_drift_refused) ... ok
+test_populated_group_refused (test_analysis.Accounting.test_populated_group_refused) ... ok
+test_public_source_drift_refused (test_analysis.Accounting.test_public_source_drift_refused) ... ok
+test_terminal_frame_refusal_cannot_be_promoted (test_analysis.Accounting.test_terminal_frame_refusal_cannot_be_promoted) ... ok
+test_busy_original_fence_prevents_restoration (test_controls.Controls.test_busy_original_fence_prevents_restoration) ... ok
+test_denied_numeric_frame_does_not_block_proved_restoration (test_controls.Controls.test_denied_numeric_frame_does_not_block_proved_restoration) ... ok
+test_every_original_frame_predicate_order_and_count_stays (test_controls.Controls.test_every_original_frame_predicate_order_and_count_stays) ... ok
+test_fixture_only_readonly_remount_and_user_leaf_recovery (test_controls.Controls.test_fixture_only_readonly_remount_and_user_leaf_recovery) ... ok
+test_full_five_block_plan_and_frozen_bounds (test_controls.Controls.test_full_five_block_plan_and_frozen_bounds) ... ok
+test_healthy_post_restores_and_checks_both_frames (test_controls.Controls.test_healthy_post_restores_and_checks_both_frames) ... ok
+test_mismatched_namespace_fd_is_never_entered (test_controls.Controls.test_mismatched_namespace_fd_is_never_entered) ... ok
+test_namespace_join_opens_and_checks_original_fd (test_controls.Controls.test_namespace_join_opens_and_checks_original_fd) ... ok
+test_numerical_main_and_validator_stay_exact (test_controls.Controls.test_numerical_main_and_validator_stay_exact) ... ok
+test_populated_original_writer_prevents_restoration (test_controls.Controls.test_populated_original_writer_prevents_restoration) ... ok
+test_predecessor_reproduces_frame_denial_before_restore (test_controls.Controls.test_predecessor_reproduces_frame_denial_before_restore) ... ok
+test_protected_host_drift_prevents_restoration (test_controls.Controls.test_protected_host_drift_prevents_restoration) ... ok
+test_recorded_leaf_disappearance_never_admits_measurement (test_controls.Controls.test_recorded_leaf_disappearance_never_admits_measurement) ... ok
+test_user_root_relocation_is_private_and_retains_fd (test_controls.Controls.test_user_root_relocation_is_private_and_retains_fd) ... ok
+test_worker_is_byte_identical (test_controls.Controls.test_worker_is_byte_identical) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 4.179s
+
+OK

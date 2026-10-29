@@ -1,0 +1,9 @@
+import json,pathlib,subprocess
+r=pathlib.Path('/tmp/hc074-chitchat-cost-20261029.28_aldrt');items={}
+for p in r.iterdir():
+ if p.is_file() and p.suffix in ('.py','.json'):items[p.name]=p.read_text()
+print(json.dumps(dict(root=str(r),items=items)))
+print('MOUNT_HELP\n'+subprocess.check_output(['/usr/bin/mount','--help'],text=True))
+u=r.name+'-standin.service';state=subprocess.check_output(['/usr/bin/systemctl','show',u,'-p','MainPID','-p','ActiveState'],text=True);print('OWN_STANDIN_BEFORE\n'+state)
+subprocess.run(['/usr/bin/systemctl','stop',u],check=True,timeout=15)
+print('OWN_STANDIN_AFTER\n'+subprocess.check_output(['/usr/bin/systemctl','show',u,'-p','MainPID','-p','ActiveState'],text=True))

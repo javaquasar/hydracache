@@ -1,0 +1,7 @@
+{
+  "case": "user-leaf-removal",
+  "controls": false,
+  "plan_sha256": "86cdd0571e4f00f597e6c3e590065405acfb2a6fd0ef3a139722be9b3d71a6f0",
+  "root": "/tmp/hc074-chitchat-cost-20261029.3gvrz5xq",
+  "synthetic": true
+}

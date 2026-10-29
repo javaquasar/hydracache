@@ -1,0 +1,25 @@
+[2031139.003179] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Starting hc074-chitchat-cost-20261029.vogjaut3-namespace.service - /usr/bin/unshare --mount --propagation private /usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.vogjaut3/namespace.py keeper /tmp/hc074-chitchat-cost-20261029.vogjaut3...
+[2031139.003692] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Started hc074-chitchat-cost-20261029.vogjaut3-namespace.service - /usr/bin/unshare --mount --propagation private /usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.vogjaut3/namespace.py keeper /tmp/hc074-chitchat-cost-20261029.vogjaut3.
+[2031139.025886] Ubuntu-noble-latest-amd64-base.zst unshare[412839]: mount: /run/user/1000: wrong fs type, bad option, bad superblock on /proc/self/fd/3, missing codepage or helper program, or other error.
+[2031139.025886] Ubuntu-noble-latest-amd64-base.zst unshare[412839]:        dmesg(1) may have more information after failed mount system call.
+[2031139.059878] Ubuntu-noble-latest-amd64-base.zst unshare[412835]: Traceback (most recent call last):
+[2031139.059878] Ubuntu-noble-latest-amd64-base.zst unshare[412835]:   File "/tmp/hc074-chitchat-cost-20261029.vogjaut3/namespace.py", line 101, in <module>
+[2031139.060122] Ubuntu-noble-latest-amd64-base.zst unshare[412835]:     need(len(sys.argv)==3 and sys.argv[1]=='keeper','fixed keeper invocation');keeper(Path(sys.argv[2]))
+[2031139.060122] Ubuntu-noble-latest-amd64-base.zst unshare[412835]:                                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^
+[2031139.060122] Ubuntu-noble-latest-amd64-base.zst unshare[412835]:   File "/tmp/hc074-chitchat-cost-20261029.vogjaut3/namespace.py", line 83, in keeper
+[2031139.060122] Ubuntu-noble-latest-amd64-base.zst unshare[412835]:     users=user_tree(root)
+[2031139.060122] Ubuntu-noble-latest-amd64-base.zst unshare[412835]:           ^^^^^^^^^^^^^^^
+[2031139.060122] Ubuntu-noble-latest-amd64-base.zst unshare[412835]:   File "/tmp/hc074-chitchat-cost-20261029.vogjaut3/namespace.py", line 71, in user_tree
+[2031139.060122] Ubuntu-noble-latest-amd64-base.zst unshare[412835]:     subprocess.run(['/usr/bin/mount','--internal-only','--no-canonicalize','--bind','/proc/self/fd/'+str(fd),str(target)],pass_fds=(fd,),check=True,timeout=10)
+[2031139.060122] Ubuntu-noble-latest-amd64-base.zst unshare[412835]:   File "/usr/lib/python3.12/subprocess.py", line 571, in run
+[2031139.060122] Ubuntu-noble-latest-amd64-base.zst unshare[412835]:     raise CalledProcessError(retcode, process.args,
+[2031139.060122] Ubuntu-noble-latest-amd64-base.zst unshare[412835]: subprocess.CalledProcessError: Command '['/usr/bin/mount', '--internal-only', '--no-canonicalize', '--bind', '/proc/self/fd/3', '/run/user/1000']' returned non-zero exit status 32.
+[2031139.068604] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.vogjaut3-namespace.service: Main process exited, code=exited, status=1/FAILURE
+[2031139.068719] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.vogjaut3-namespace.service: Failed with result 'exit-code'.
+
+MainPID=411840
+ActiveState=active
+
+MainPID=0
+ActiveState=inactive
+

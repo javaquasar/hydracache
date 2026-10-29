@@ -1,0 +1,27 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "bodies": [
+    {
+      "pid": 414216,
+      "semantic_rows": 30,
+      "start_ticks": 203156796,
+      "variant": "B"
+    },
+    {
+      "pid": 414240,
+      "semantic_rows": 30,
+      "start_ticks": 203156965,
+      "variant": "P"
+    },
+    {
+      "pid": 414264,
+      "semantic_rows": 30,
+      "start_ticks": 203157131,
+      "variant": "Q"
+    }
+  ],
+  "complete": true,
+  "root": "/tmp/hc074-chitchat-cost-20261029.91brnzra",
+  "stable_supervisor_unchanged": true
+}

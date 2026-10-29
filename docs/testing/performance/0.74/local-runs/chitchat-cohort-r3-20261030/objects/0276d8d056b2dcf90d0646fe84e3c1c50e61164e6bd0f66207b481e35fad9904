@@ -1,0 +1,13 @@
+import hashlib,importlib.util,json,pathlib,subprocess
+r=pathlib.Path('/tmp/hc074-chitchat-cost-20261029.s9h7onqq');raw=(r/'plan.json').read_bytes();assert hashlib.sha256(raw).hexdigest()=='3ec89973afa5be76c8ac2e96f26195f294d63e2530cefe5a3ee84e398a56f076';p=json.loads(raw)
+s=importlib.util.spec_from_file_location('host',r/'input/host.py');h=importlib.util.module_from_spec(s);s.loader.exec_module(h);host=h.snapshot();h.admit(host);assert 'MainPID=416408' in host['supervisor'] and 'NRestarts=0' in host['supervisor']
+pkg=pathlib.Path('/tmp/hc074-chitchat-r3-package-20261030.J6DM6W');roots=[r]+[pathlib.Path(x['root']) for x in json.loads((pkg/'faults-once/result.json').read_bytes())['cases']]+[pathlib.Path(json.loads((pkg/name).read_bytes())['root']) for name in ('context-once/result.json','worker-controls-once/result.json')];units={}
+for root in roots:
+ plan=json.loads((root/'plan.json').read_bytes());unit=plan['namespace_unit'];text=subprocess.check_output(['/usr/bin/systemctl','show',unit,'-p','MainPID','-p','LoadState','-p','ActiveState'],text=True);values=dict(x.split('=',1) for x in text.splitlines());assert values['MainPID']=='0' and values['ActiveState'] in ('inactive','failed');units[unit]=values
+fence=pathlib.Path('/var/lib/hydracache-performance/campaigns/.host-execution.lock').lstat();assert [fence.st_dev,fence.st_ino]==p['fence_identity']
+failed={}
+for name in ('hc074-chitchat-cost-20261029.28_aldrt','hc074-chitchat-cost-20261029.vogjaut3'):
+ root=pathlib.Path('/tmp')/name;failed[name]=dict(files={x.name:hashlib.sha256(x.read_bytes()).hexdigest() for x in root.iterdir() if x.is_file()},intent=json.loads((root/'namespace-intent.json').read_bytes()))
+print(json.dumps(dict(complete=True,read_only=True,host=host,original_fence_identity=[fence.st_dev,fence.st_ino],external_fence_acquired=False,retired_namespace_units=units,failed_preparation_roots=failed)))
+for root in (r,roots[-2]):
+ print('JOURNAL '+root.name+'\n'+subprocess.check_output(['/usr/bin/journalctl','--no-pager','-u',root.name+'.service','-n','80','-o','short-monotonic'],text=True))

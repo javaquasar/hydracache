@@ -1,0 +1,107 @@
+4.retired.json
+{
+  "all_original_writers_stopped": true,
+  "events": {
+    "frozen": "0",
+    "populated": "0"
+  },
+  "exit": 1
+}
+4.stderr.log
+Traceback (most recent call last):
+  File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/worker.py", line 63, in <module>
+    if __name__=='__main__':raise SystemExit(main())
+                                             ^^^^^^
+  File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/worker.py", line 39, in main
+    c.frame(p,root,m);adapter=load(root/'input/remote.py','hc074_writer_adapter')
+    ^^^^^^^^^^^^^^^^^
+  File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py", line 62, in frame
+    need({k:v for k,v in state.items() if k!='supervisor'}=={k:v for k,v in original.items() if k!='supervisor'},'original kernel/clock/mount/marker/source host frame')
+  File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py", line 17, in need
+    if not ok:raise RuntimeError(why)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: original kernel/clock/mount/marker/source host frame
+
+post-frame-refusal-0.json
+{
+  "full_measurement_frame_pass": false,
+  "reason": "original kernel/clock/mount/marker/source host frame",
+  "type": "RuntimeError"
+}
+hc074-chitchat-cost-20261029.7wpdw9n4.service
+MainPID=0
+Result=exit-code
+ControlGroup=
+ActiveState=failed
+SubState=failed
+
+hc074-chitchat-cost-20261029.7wpdw9n4-namespace.service
+MainPID=411160
+Result=success
+ControlGroup=/system.slice/hc074-chitchat-cost-20261029.7wpdw9n4-namespace.service
+ActiveState=active
+SubState=running
+
+hydracache-performance-supervisor-074.service
+MainPID=0
+Result=success
+ControlGroup=
+ActiveState=inactive
+SubState=dead
+
+[2030290.660232] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Starting hc074-chitchat-cost-20261029.7wpdw9n4.service - /usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py main /tmp/hc074-chitchat-cost-20261029.7wpdw9n4 d73710aa0fbb958db510c60f103bf25a0a9457f749746277fd6703cd3a53052e...
+[2030290.660730] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Started hc074-chitchat-cost-20261029.7wpdw9n4.service - /usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py main /tmp/hc074-chitchat-cost-20261029.7wpdw9n4 d73710aa0fbb958db510c60f103bf25a0a9457f749746277fd6703cd3a53052e.
+[2030301.440502] Ubuntu-noble-latest-amd64-base.zst python3[411276]: Traceback (most recent call last):
+[2030301.440502] Ubuntu-noble-latest-amd64-base.zst python3[411276]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py", line 158, in <module>
+[2030301.440821] Ubuntu-noble-latest-amd64-base.zst python3[411276]:     if __name__=='__main__':entry()
+[2030301.440821] Ubuntu-noble-latest-amd64-base.zst python3[411276]:                             ^^^^^^^
+[2030301.440821] Ubuntu-noble-latest-amd64-base.zst python3[411276]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py", line 152, in entry
+[2030301.440821] Ubuntu-noble-latest-amd64-base.zst python3[411276]:     if mode=='main' and len(sys.argv)==4:main(p,root,m)
+[2030301.440821] Ubuntu-noble-latest-amd64-base.zst python3[411276]:                                          ^^^^^^^^^^^^^^
+[2030301.440821] Ubuntu-noble-latest-amd64-base.zst python3[411276]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py", line 117, in main
+[2030301.440821] Ubuntu-noble-latest-amd64-base.zst python3[411276]:     need(code==0,'first child refusal '+str(seq)+': '+str(code)+'; no retry')
+[2030301.440821] Ubuntu-noble-latest-amd64-base.zst python3[411276]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py", line 17, in need
+[2030301.440821] Ubuntu-noble-latest-amd64-base.zst python3[411276]:     if not ok:raise RuntimeError(why)
+[2030301.440821] Ubuntu-noble-latest-amd64-base.zst python3[411276]:               ^^^^^^^^^^^^^^^^^^^^^^^
+[2030301.440821] Ubuntu-noble-latest-amd64-base.zst python3[411276]: RuntimeError: first child refusal 4: 1; no retry
+[2030301.451208] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.7wpdw9n4.service: Main process exited, code=exited, status=1/FAILURE
+[2030301.900838] Ubuntu-noble-latest-amd64-base.zst python3[411410]: Traceback (most recent call last):
+[2030301.900838] Ubuntu-noble-latest-amd64-base.zst python3[411410]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/recovery.py", line 45, in validation
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:     frame(plan,root,types_base(original))
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py", line 62, in frame
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:     need({k:v for k,v in state.items() if k!='supervisor'}=={k:v for k,v in original.items() if k!='supervisor'},'original kernel/clock/mount/marker/source host frame')
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py", line 17, in need
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:     if not ok:raise RuntimeError(why)
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:               ^^^^^^^^^^^^^^^^^^^^^^^
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]: RuntimeError: original kernel/clock/mount/marker/source host frame
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]: During handling of the above exception, another exception occurred:
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]: Traceback (most recent call last):
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py", line 158, in <module>
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:     if __name__=='__main__':entry()
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:                             ^^^^^^^
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py", line 153, in entry
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:     elif mode=='post' and len(sys.argv)==4:post(p,root,m,external)
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:                                            ^^^^^^^^^^^^^^^^^^^^^^^
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/coordinator.py", line 129, in post
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:     recovery.post(p,root,m,ns,frame,types_base,external)
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/recovery.py", line 56, in post
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:     m.post(p,root)
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/maintenance_base.py", line 333, in post
+[2030301.901146] Ubuntu-noble-latest-amd64-base.zst python3[411410]:     static_frame(plan)
+[2030301.901482] Ubuntu-noble-latest-amd64-base.zst python3[411410]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/recovery.py", line 53, in validation
+[2030301.901482] Ubuntu-noble-latest-amd64-base.zst python3[411410]:     core(plan,root,types_base(original),ns,external)
+[2030301.901482] Ubuntu-noble-latest-amd64-base.zst python3[411410]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/recovery.py", line 37, in core
+[2030301.901482] Ubuntu-noble-latest-amd64-base.zst python3[411410]:     mount_delta(expected['mounts'],actual['mounts'],target,p['synthetic'] and not external)
+[2030301.901482] Ubuntu-noble-latest-amd64-base.zst python3[411410]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/recovery.py", line 14, in mount_delta
+[2030301.901482] Ubuntu-noble-latest-amd64-base.zst python3[411410]:     a,old=parts(before);b,new=parts(after);need(a==b,'all other mount records remain exact')
+[2030301.901482] Ubuntu-noble-latest-amd64-base.zst python3[411410]:                               ^^^^^^^^^^^^
+[2030301.901482] Ubuntu-noble-latest-amd64-base.zst python3[411410]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/recovery.py", line 12, in parts
+[2030301.901482] Ubuntu-noble-latest-amd64-base.zst python3[411410]:     need(len(leaf)==1 and not any(x[4].startswith(target+'/') for x in records),'one leaf mount, no nested replacement')
+[2030301.901482] Ubuntu-noble-latest-amd64-base.zst python3[411410]:   File "/tmp/hc074-chitchat-cost-20261029.7wpdw9n4/recovery.py", line 7, in need
+[2030301.901482] Ubuntu-noble-latest-amd64-base.zst python3[411410]:     if not ok:raise RuntimeError(why)
+[2030301.901482] Ubuntu-noble-latest-amd64-base.zst python3[411410]:               ^^^^^^^^^^^^^^^^^^^^^^^
+[2030301.901482] Ubuntu-noble-latest-amd64-base.zst python3[411410]: RuntimeError: one leaf mount, no nested replacement
+[2030301.911130] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.7wpdw9n4.service: Control process exited, code=exited, status=1/FAILURE
+[2030301.911520] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.7wpdw9n4.service: Failed with result 'exit-code'.
+[2030301.911920] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.7wpdw9n4.service: Consumed 7.744s CPU time.
+

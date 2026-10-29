@@ -1,0 +1,6 @@
+Failed to stop hc074-chitchat-cost-20261029.28_aldrt-standin.service: Unit hc074-chitchat-cost-20261029.28_aldrt-standin.service not loaded.
+Traceback (most recent call last):
+  File "<stdin>", line 8, in <module>
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/usr/bin/systemctl', 'stop', 'hc074-chitchat-cost-20261029.28_aldrt-standin.service']' returned non-zero exit status 5.

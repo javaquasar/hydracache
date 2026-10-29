@@ -1,0 +1,6 @@
+Failed to find real location of C:\Python313\python.exe
+Failed to find real location of C:\Python313\python.exe
+tools\chitchat-cohort-r2-074\client.py:46: SyntaxWarning: invalid escape sequence '\.'
+  upload=(OUT/'upload-directory.stdout.log').read_text().strip();assert re.fullmatch('/tmp/hc074-chitchat-r2-upload-20261029\.[A-Za-z0-9]{6}',upload)
+tools\chitchat-cohort-r2-074\client.py:66: SyntaxWarning: invalid escape sequence '\.'
+  name=json.loads((OUT/'remote.json').read_bytes())['root'];assert re.fullmatch('/tmp/hc074-chitchat-r2-package-20261029\.[A-Za-z0-9]{6}',name);return name

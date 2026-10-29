@@ -1,0 +1,6 @@
+import importlib.util,json,os,pathlib
+r=pathlib.Path('/tmp/hc074-chitchat-cost-20261029.7wpdw9n4');p=json.loads((r/'plan.json').read_bytes())
+def load(path,name):
+ s=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
+h=load(r/'input/host.py','host');external=h.snapshot();n=load(r/'namespace.py','ns');n.join(r,p);actual=h.snapshot();expected=p['expected_host']
+print(json.dumps(dict(external_host=external,private_host=actual,differences={k:dict(expected=expected.get(k),actual=actual.get(k)) for k in set(expected)|set(actual) if k!='supervisor' and expected.get(k)!=actual.get(k)}),indent=2))

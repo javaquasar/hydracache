@@ -1,0 +1,14 @@
+{
+  "admission": false,
+  "external_recovery": false,
+  "frames": [
+    {
+      "full_measurement_frame_pass": true
+    },
+    {
+      "full_measurement_frame_pass": true
+    }
+  ],
+  "full_measurement_frames_pass": true,
+  "restoration_verified": true
+}

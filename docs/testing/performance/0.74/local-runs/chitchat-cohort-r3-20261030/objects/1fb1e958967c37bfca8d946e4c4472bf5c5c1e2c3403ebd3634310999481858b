@@ -1,0 +1,12 @@
+set -eu
+umask 077
+test "$(id -u):$(id -g)" = 0:0
+upload=/tmp/hc074-chitchat-r2-upload-20261029.ajq2ct
+test ! -L "$upload" && test "$(stat -c '%a:%u:%g' "$upload")" = 700:1000:1000
+root=$(mktemp -d /tmp/hc074-chitchat-r2-package-20261029.XXXXXX)
+install -m 400 "$upload/payload.tar.gz" "$root/payload.tar.gz"
+cd "$root"
+printf '%s  payload.tar.gz\n' '6dd7004a6b5369fdcc5730c6c7fa71ee832236f65f7a9e638d88b241512c8c0a' | sha256sum --check
+/usr/bin/python3 -B -c 'import tarfile;t=tarfile.open("payload.tar.gz");a=t.getmembers();assert len(a)==8 and len({x.name for x in a})==8 and all(x.isfile() and "/" not in x.name and x.name.endswith((".py",".json")) for x in a);t.extractall(".",members=a,filter="data")'
+find "$root" -type f -exec chmod 400 {} +
+printf 'ROOT=%s\n' "$root"

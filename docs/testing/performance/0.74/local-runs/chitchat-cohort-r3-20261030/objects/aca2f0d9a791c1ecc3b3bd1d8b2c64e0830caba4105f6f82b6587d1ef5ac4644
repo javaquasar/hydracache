@@ -1,0 +1,34 @@
+[2030942.071202] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Starting hc074-chitchat-cost-20261029.28_aldrt-namespace.service - /usr/bin/unshare --mount --propagation private /usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.28_aldrt/namespace.py keeper /tmp/hc074-chitchat-cost-20261029.28_aldrt...
+[2030942.071725] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Started hc074-chitchat-cost-20261029.28_aldrt-namespace.service - /usr/bin/unshare --mount --propagation private /usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.28_aldrt/namespace.py keeper /tmp/hc074-chitchat-cost-20261029.28_aldrt.
+[2030942.128059] Ubuntu-noble-latest-amd64-base.zst unshare[412321]: Traceback (most recent call last):
+[2030942.128059] Ubuntu-noble-latest-amd64-base.zst unshare[412321]:   File "/tmp/hc074-chitchat-cost-20261029.28_aldrt/namespace.py", line 101, in <module>
+[2030942.128390] Ubuntu-noble-latest-amd64-base.zst unshare[412321]:     need(len(sys.argv)==3 and sys.argv[1]=='keeper','fixed keeper invocation');keeper(Path(sys.argv[2]))
+[2030942.128390] Ubuntu-noble-latest-amd64-base.zst unshare[412321]:                                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^
+[2030942.128390] Ubuntu-noble-latest-amd64-base.zst unshare[412321]:   File "/tmp/hc074-chitchat-cost-20261029.28_aldrt/namespace.py", line 83, in keeper
+[2030942.128390] Ubuntu-noble-latest-amd64-base.zst unshare[412321]:     users=user_tree(root)
+[2030942.128390] Ubuntu-noble-latest-amd64-base.zst unshare[412321]:           ^^^^^^^^^^^^^^^
+[2030942.128390] Ubuntu-noble-latest-amd64-base.zst unshare[412321]:   File "/tmp/hc074-chitchat-cost-20261029.28_aldrt/namespace.py", line 72, in user_tree
+[2030942.128390] Ubuntu-noble-latest-amd64-base.zst unshare[412321]:     now=target.stat();need((now.st_dev,now.st_ino)==(original.st_dev,original.st_ino),'same held user filesystem root after relocation')
+[2030942.128390] Ubuntu-noble-latest-amd64-base.zst unshare[412321]:                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2030942.128390] Ubuntu-noble-latest-amd64-base.zst unshare[412321]:   File "/tmp/hc074-chitchat-cost-20261029.28_aldrt/namespace.py", line 12, in need
+[2030942.128390] Ubuntu-noble-latest-amd64-base.zst unshare[412321]:     if not ok:raise RuntimeError(why)
+[2030942.128390] Ubuntu-noble-latest-amd64-base.zst unshare[412321]:               ^^^^^^^^^^^^^^^^^^^^^^^
+[2030942.128390] Ubuntu-noble-latest-amd64-base.zst unshare[412321]: RuntimeError: same held user filesystem root after relocation
+[2030942.136825] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.28_aldrt-namespace.service: Main process exited, code=exited, status=1/FAILURE
+[2030942.136939] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.28_aldrt-namespace.service: Failed with result 'exit-code'.
+
+hc074-chitchat-cost-20261029.28_aldrt-namespace.service
+MainPID=0
+ActiveState=failed
+SubState=failed
+
+hc074-chitchat-cost-20261029.28_aldrt-standin.service
+MainPID=412319
+ActiveState=active
+SubState=running
+
+hydracache-performance-supervisor-074.service
+MainPID=411840
+ActiveState=active
+SubState=running
+

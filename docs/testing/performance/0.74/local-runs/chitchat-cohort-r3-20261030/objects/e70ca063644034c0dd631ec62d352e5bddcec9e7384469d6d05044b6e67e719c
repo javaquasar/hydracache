@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "ssh",
+    "-T",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ConnectTimeout=15",
+    "-o",
+    "ServerAliveInterval=5",
+    "-o",
+    "ServerAliveCountMax=2",
+    "hydracache-ax42",
+    "sudo -n /usr/bin/python3 -B -"
+  ],
+  "bound_seconds": 90,
+  "retry": false
+}

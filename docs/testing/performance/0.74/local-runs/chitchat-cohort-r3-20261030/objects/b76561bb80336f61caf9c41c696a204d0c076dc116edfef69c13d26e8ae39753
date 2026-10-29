@@ -1,0 +1,33 @@
+{
+  "actual_argv": [
+    "/usr/bin/python3",
+    "-B",
+    "-I",
+    "-c",
+    "import json,os,pathlib,subprocess,sys,time\nroot=pathlib.Path(sys.argv[1]);case=sys.argv[2];fd=int(sys.argv[3])\nassert os.getuid()==os.getgid()==0;copy=os.dup(fd)\nif case.startswith('frame-denial'):\n subprocess.run(['/usr/bin/mount','-o','remount,bind,ro',str(root/'fixture-mount')],check=True,timeout=5)\n with (root/'fault-mounted.json').open('x') as f:json.dump(dict(private_only=True),f);f.flush();os.fsync(f.fileno())\nos.fork();end=time.monotonic()+(.2 if case in ('healthy','frame-denial') else 90)\nwhile time.monotonic()<end:os.write(1,b'owned-writer\\n');time.sleep(.01)\nos._exit(0)\n",
+    "/tmp/hc074-chitchat-cost-20261029.7mgmgee0",
+    "frame-denial",
+    "3"
+  ],
+  "attempt": {
+    "argv": [
+      "/usr/bin/python3",
+      "-B",
+      "-I",
+      "-c",
+      "import json,os,pathlib,subprocess,sys,time\nroot=pathlib.Path(sys.argv[1]);case=sys.argv[2];fd=int(sys.argv[3])\nassert os.getuid()==os.getgid()==0;copy=os.dup(fd)\nif case.startswith('frame-denial'):\n subprocess.run(['/usr/bin/mount','-o','remount,bind,ro',str(root/'fixture-mount')],check=True,timeout=5)\n with (root/'fault-mounted.json').open('x') as f:json.dump(dict(private_only=True),f);f.flush();os.fsync(f.fileno())\nos.fork();end=time.monotonic()+(.2 if case in ('healthy','frame-denial') else 90)\nwhile time.monotonic()<end:os.write(1,b'owned-writer\\n');time.sleep(.01)\nos._exit(0)\n",
+      "/tmp/hc074-chitchat-cost-20261029.7mgmgee0",
+      "frame-denial",
+      "@FENCE_FD@"
+    ]
+  },
+  "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+  "deadline_ns": 2030278092886980,
+  "fence_fd": 3,
+  "group": "/sys/fs/cgroup/system.slice/hc074-chitchat-cost-20261029.7mgmgee0.service/writers-0",
+  "group_identity": [
+    29,
+    416003
+  ],
+  "quiet": null
+}

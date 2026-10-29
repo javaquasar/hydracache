@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "scp",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ConnectTimeout=15",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-cohort-r3-20261030\\payload.tar.gz",
+    "hydracache-ax42:/tmp/hc074-chitchat-r3-upload-20261030.fvfJ3i/payload.tar.gz"
+  ],
+  "bound_seconds": 45,
+  "retry": false
+}

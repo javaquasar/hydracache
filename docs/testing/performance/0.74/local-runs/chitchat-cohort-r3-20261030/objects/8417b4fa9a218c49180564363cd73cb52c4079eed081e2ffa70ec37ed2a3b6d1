@@ -1,0 +1,16 @@
+{
+  "archive_bytes": 18960,
+  "archive_sha256": "87575fae44664e5e935b15099f3df58e4c0ee5209b42a8e6c034020bec5b3189",
+  "files": {
+    "anchor.json": "b4ab4450ce373122c537e933151e4558c8ab9c7029269b604ab417c23a3d781c",
+    "coordinator.py": "8181dc39a33d0fe919d0ae95b78c0b863be4073449419acfbd245540587df146",
+    "maintenance_base.py": "fcb8a53eba5ebc7e1364cbfa0d2bcb9e0ad1098f75b4e53dae56b7503c02ed38",
+    "namespace.py": "02fff544a4d609fd848113c694050bcbf00b11d569f3a5d30d696b09eeb313a6",
+    "plan.py": "38b930314a903f77657a243eb276ed9b5b4ebcaa39b825a295905ac1458ba68d",
+    "recovery.py": "6129cc03d8e77d7fc59d008fc3cf6315da359951d6b00e065d0b33a8550725b3",
+    "stage.py": "919c6fba41a7c48b05af020151010d0e48e4806b296ed129ad5999fde6497fed",
+    "worker.py": "3806758d935d28fa19ec3750b780d808bc663e8593fd5f5b9b430bbcc503c765"
+  },
+  "operator_approved": true,
+  "protocol_sha256": "c4af483881219180b69b4db3db097d49ca4fbabe966f37898ffc69ebb11b4d89"
+}

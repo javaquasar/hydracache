@@ -1,0 +1,7 @@
+{
+  "case": "ssh-disconnect",
+  "controls": false,
+  "plan_sha256": "42133137b7ef6ecc8544a0d5d538ede0dc19f43e26879c9a43834c5bf9275702",
+  "root": "/tmp/hc074-chitchat-cost-20261029.scr9d7jb",
+  "synthetic": true
+}

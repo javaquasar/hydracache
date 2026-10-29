@@ -1,0 +1,7 @@
+{
+  "case": "frame-denial-owner-kill",
+  "controls": false,
+  "plan_sha256": "06d1f225ba5dfa8f58974edb365839a847d08db1491cde0758c3d18082d145c5",
+  "root": "/tmp/hc074-chitchat-cost-20261029.8hc4033g",
+  "synthetic": true
+}

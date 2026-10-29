@@ -1,0 +1,7 @@
+{
+  "case": "frame-denial",
+  "controls": false,
+  "plan_sha256": "6579276d9ca2e2fcb0198a911fd947691c63375259cef0096a324d26fcd9b79e",
+  "root": "/tmp/hc074-chitchat-cost-20261029.7mgmgee0",
+  "synthetic": true
+}

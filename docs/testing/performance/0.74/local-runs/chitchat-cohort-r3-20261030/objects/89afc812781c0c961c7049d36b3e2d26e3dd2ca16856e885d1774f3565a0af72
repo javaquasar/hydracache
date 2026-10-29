@@ -1,0 +1,35 @@
+{
+  "actual_argv": [
+    "/usr/bin/python3",
+    "-B",
+    "-I",
+    "/tmp/hc074-chitchat-cost-20261029.d7v98rkm/worker.py",
+    "/tmp/hc074-chitchat-cost-20261029.d7v98rkm",
+    "2",
+    "e0bb607b995254ae7102c6648750db6dfd2af171f9b70664298b929a290133b0",
+    "3"
+  ],
+  "attempt": {
+    "argv": [
+      "/usr/bin/python3",
+      "-B",
+      "-I",
+      "/tmp/hc074-chitchat-cost-20261029.d7v98rkm/worker.py",
+      "/tmp/hc074-chitchat-cost-20261029.d7v98rkm",
+      "2",
+      "@PLAN_SHA@",
+      "@FENCE_FD@"
+    ],
+    "mode": "control",
+    "variant": "Q"
+  },
+  "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+  "deadline_ns": 2030306373614547,
+  "fence_fd": 3,
+  "group": "/sys/fs/cgroup/system.slice/hc074-chitchat-cost-20261029.d7v98rkm.service/writers-2",
+  "group_identity": [
+    29,
+    417341
+  ],
+  "quiet": null
+}

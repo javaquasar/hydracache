@@ -1,0 +1,39 @@
+{
+  "actual_argv": [
+    "/usr/bin/python3",
+    "-B",
+    "-I",
+    "/tmp/hc074-chitchat-cost-20261029.s9h7onqq/worker.py",
+    "/tmp/hc074-chitchat-cost-20261029.s9h7onqq",
+    "51",
+    "3ec89973afa5be76c8ac2e96f26195f294d63e2530cefe5a3ee84e398a56f076",
+    "3"
+  ],
+  "attempt": {
+    "argv": [
+      "/usr/bin/python3",
+      "-B",
+      "-I",
+      "/tmp/hc074-chitchat-cost-20261029.s9h7onqq/worker.py",
+      "/tmp/hc074-chitchat-cost-20261029.s9h7onqq",
+      "51",
+      "@PLAN_SHA@",
+      "@FENCE_FD@"
+    ],
+    "mode": "memory",
+    "variant": "Q"
+  },
+  "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+  "deadline_ns": 2032731807560056,
+  "fence_fd": 3,
+  "group": "/sys/fs/cgroup/system.slice/hc074-chitchat-cost-20261029.s9h7onqq.service/writers-51",
+  "group_identity": [
+    29,
+    431838
+  ],
+  "quiet": {
+    "busy_percent": 0.0,
+    "maximum_percent": 10,
+    "sample_milliseconds": 500
+  }
+}

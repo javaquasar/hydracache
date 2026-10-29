@@ -1,0 +1,5 @@
+[2030223.384185] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Starting hc074-chitchat-cost-20261029.priewo_p.service - /usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.priewo_p/coordinator.py main /tmp/hc074-chitchat-cost-20261029.priewo_p 7834ae9e6b21671f7f84806b02ba7a95eb2b843683dba67df1f1f63862c6bfc4...
+[2030223.384678] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Started hc074-chitchat-cost-20261029.priewo_p.service - /usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.priewo_p/coordinator.py main /tmp/hc074-chitchat-cost-20261029.priewo_p 7834ae9e6b21671f7f84806b02ba7a95eb2b843683dba67df1f1f63862c6bfc4.
+[2030224.035100] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.priewo_p.service: Main process exited, code=killed, status=9/KILL
+[2030224.550274] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.priewo_p.service: Failed with result 'signal'.
+[2030224.550665] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.priewo_p.service: Consumed 1.034s CPU time, 22.8M memory peak, 0B memory swap peak.

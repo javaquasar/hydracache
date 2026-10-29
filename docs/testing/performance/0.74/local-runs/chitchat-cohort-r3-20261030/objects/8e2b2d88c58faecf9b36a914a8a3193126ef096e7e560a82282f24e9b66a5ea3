@@ -1,0 +1,7 @@
+{
+  "case": "healthy",
+  "controls": false,
+  "plan_sha256": "799699e57b6e5e7b5274808ee3ed4b583afaa6497691955116a32fa29af731bf",
+  "root": "/tmp/hc074-chitchat-cost-20261029.rvfarl5i",
+  "synthetic": true
+}

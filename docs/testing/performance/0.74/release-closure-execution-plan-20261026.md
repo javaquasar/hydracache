@@ -740,3 +740,24 @@ maintenance attempt; the first attempt cannot resume or receive replacement
 positions. CPU/RSS/continuous retention, maintained distribution/consumers,
 Root/security/workspace and original-execution/lifecycle/reconnect/trust gates
 remain open. No new optimization hypothesis or product/server qualification.
+
+The [corrected full Q matrix](chitchat-cohort-r3-result-20261030.md) now closes the
+bounded carrier execution/recovery task. The first private-propagation successor
+is still incomplete; two bind preparations refuse. A new own parent plus moves
+of the SAME private user mounts preserves held root inode and mount IDs. Seven
+native faults (including entire leaf disappearance), a20-second disconnected
+context and full B/P/Q worker controls pass before maintenance. All60 original
+positions then complete with full unchanged host frames, original group/fence/
+timer proofs and automatic restoration to PID416408/NRestarts0. No sample from
+either earlier prefix is reused; no deadline/threshold/workload/check is removed.
+
+The frozen numerical CPU/wall gate is negative:11 of62 upper95 bounds exceed
+1.03. Total CPU0.994850 [0.982782,1.007066] and RAW0.994124
+[0.980839,1.007589] include1; there is no confirmed speedup or demonstrated
+positive regression. The paired zero-extra-growth memory screen passes but does
+not qualify continuous retention. Preserve Q and all experiments as unadopted
+source/evidence; do not repair the admission result by a new unchanged run or
+looser estimator. Carry this negative admission into the maintained-backport/
+public-consumer decision. Root security/workspace, distribution, continuous
+retention and production original execution/lifecycle/reconnect/trust/enrollment
+remain separate gates. No new product hypothesis or costly qualification follows.

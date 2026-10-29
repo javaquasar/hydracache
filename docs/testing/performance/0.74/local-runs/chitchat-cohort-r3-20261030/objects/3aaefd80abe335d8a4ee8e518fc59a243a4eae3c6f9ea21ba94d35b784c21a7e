@@ -1,0 +1,5 @@
+{
+  "full_measurement_frame_pass": false,
+  "reason": "original mount namespace unavailable at terminal postflight",
+  "type": "RuntimeError"
+}

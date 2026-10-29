@@ -1,0 +1,18 @@
+{
+  "admission": false,
+  "external_recovery": false,
+  "frames": [
+    {
+      "full_measurement_frame_pass": false,
+      "reason": "original kernel/clock/mount/marker/source host frame",
+      "type": "RuntimeError"
+    },
+    {
+      "full_measurement_frame_pass": false,
+      "reason": "original kernel/clock/mount/marker/source host frame",
+      "type": "RuntimeError"
+    }
+  ],
+  "full_measurement_frames_pass": false,
+  "restoration_verified": true
+}

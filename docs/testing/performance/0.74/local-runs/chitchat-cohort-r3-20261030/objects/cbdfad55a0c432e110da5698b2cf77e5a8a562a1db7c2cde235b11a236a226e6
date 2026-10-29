@@ -1,0 +1,5 @@
+import subprocess
+root='hc074-chitchat-cost-20261029.28_aldrt'
+print(subprocess.check_output(['/usr/bin/journalctl','--no-pager','-u',root+'-namespace.service','-n','70','-o','short-monotonic'],text=True))
+for unit in (root+'-namespace.service',root+'-standin.service','hydracache-performance-supervisor-074.service'):
+ print(unit+'\n'+subprocess.check_output(['/usr/bin/systemctl','show',unit,'-p','ActiveState','-p','SubState','-p','MainPID'],text=True))

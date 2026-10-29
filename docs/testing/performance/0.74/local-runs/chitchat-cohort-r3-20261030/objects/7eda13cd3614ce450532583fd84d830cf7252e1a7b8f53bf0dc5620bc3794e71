@@ -1,0 +1,18 @@
+{
+  "admission": false,
+  "external_recovery": true,
+  "frames": [
+    {
+      "full_measurement_frame_pass": false,
+      "reason": "original mount namespace unavailable at terminal postflight",
+      "type": "RuntimeError"
+    },
+    {
+      "full_measurement_frame_pass": false,
+      "reason": "original mount namespace unavailable at terminal postflight",
+      "type": "RuntimeError"
+    }
+  ],
+  "full_measurement_frames_pass": false,
+  "restoration_verified": true
+}

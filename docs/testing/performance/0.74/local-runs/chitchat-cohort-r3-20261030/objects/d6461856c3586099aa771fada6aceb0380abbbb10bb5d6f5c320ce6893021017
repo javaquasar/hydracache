@@ -1,0 +1,14 @@
+{
+  "original_identity": [
+    4,
+    4026532736
+  ],
+  "owner_departed": true,
+  "state": {
+    "ActiveState": "failed",
+    "MainPID": "0",
+    "NRestarts": "0",
+    "SubState": "failed"
+  },
+  "unit": "hc074-chitchat-cost-20261029.priewo_p-namespace.service"
+}

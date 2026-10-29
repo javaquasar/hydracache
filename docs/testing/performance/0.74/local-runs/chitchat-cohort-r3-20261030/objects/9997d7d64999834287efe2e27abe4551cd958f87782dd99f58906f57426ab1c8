@@ -1,0 +1,10 @@
+{
+  "installation": false,
+  "supervisor": {
+    "ActiveState": "active",
+    "MainPID": "416408",
+    "NRestarts": "0",
+    "SubState": "running"
+  },
+  "verified": true
+}
