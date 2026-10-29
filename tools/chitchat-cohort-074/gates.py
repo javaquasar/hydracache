@@ -12,4 +12,6 @@ text=text.replace('c.need(mode in commands',"commands['controls-prepared']=comma
 text=text.replace('c.need(mode in commands',"commands['controls-worker']=commands['controls'];commands['syntax-worker']=commands['format']\nc.need(mode in commands")
 text=text.replace('c.need(mode in commands',"commands['controls-accounting']=commands['controls'];commands['syntax-final']=commands['format']\nc.need(mode in commands")
 text=text.replace('c.need(mode in commands',"commands['controls-final']=commands['controls']\nc.need(mode in commands")
+text=text.replace('c.need(mode in commands',"commands['controls-sealed']=commands['controls'];commands['syntax-sealed']=commands['format']\nc.need(mode in commands")
+text=text.replace('c.need(mode in commands',"commands['doc-check-sealed']=commands['doc-check']\nc.need(mode in commands")
 exec(compile(text,__file__+'[cohort-owned-offline-check]','exec'),globals())
