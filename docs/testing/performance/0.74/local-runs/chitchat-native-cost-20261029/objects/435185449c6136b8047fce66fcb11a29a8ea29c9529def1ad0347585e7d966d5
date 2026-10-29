@@ -1,0 +1,52 @@
+
+/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/targets/P/x86_64-unknown-linux-gnu/release/deps/chitchat-185f33873ca268c9:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.got:
+
+Disassembly of section .text:
+
+000000000016e550 <ZSTD_createCCtx>:
+  16e550:	f3 0f 1e fa          	endbr64
+  16e554:	55                   	push   %rbp
+  16e555:	be 01 00 00 00       	mov    $0x1,%esi
+  16e55a:	bf a0 14 00 00       	mov    $0x14a0,%edi
+  16e55f:	53                   	push   %rbx
+  16e560:	48 83 ec 08          	sub    $0x8,%rsp
+  16e564:	e8 d7 c4 1d 00       	call   34aa40 <__wrap_calloc>
+  16e569:	48 89 c5             	mov    %rax,%rbp
+  16e56c:	48 85 c0             	test   %rax,%rax
+  16e56f:	74 35                	je     16e5a6 <ZSTD_createCCtx+0x56>
+  16e571:	31 c0                	xor    %eax,%eax
+  16e573:	0f a2                	cpuid
+  16e575:	31 c9                	xor    %ecx,%ecx
+  16e577:	83 f8 06             	cmp    $0x6,%eax
+  16e57a:	77 34                	ja     16e5b0 <ZSTD_createCCtx+0x60>
+  16e57c:	89 4d 08             	mov    %ecx,0x8(%rbp)
+  16e57f:	48 89 ef             	mov    %rbp,%rdi
+  16e582:	e8 49 ff ff ff       	call   16e4d0 <ZSTD_clearAllDicts>
+  16e587:	48 8d 55 10          	lea    0x10(%rbp),%rdx
+  16e58b:	b9 1c 00 00 00       	mov    $0x1c,%ecx
+  16e590:	31 c0                	xor    %eax,%eax
+  16e592:	48 89 d7             	mov    %rdx,%rdi
+  16e595:	f3 48 ab             	rep stos %rax,%es:(%rdi)
+  16e598:	c7 45 3c 03 00 00 00 	movl   $0x3,0x3c(%rbp)
+  16e59f:	c7 45 30 01 00 00 00 	movl   $0x1,0x30(%rbp)
+  16e5a6:	48 83 c4 08          	add    $0x8,%rsp
+  16e5aa:	48 89 e8             	mov    %rbp,%rax
+  16e5ad:	5b                   	pop    %rbx
+  16e5ae:	5d                   	pop    %rbp
+  16e5af:	c3                   	ret
+  16e5b0:	b8 07 00 00 00       	mov    $0x7,%eax
+  16e5b5:	0f a2                	cpuid
+  16e5b7:	f7 d3                	not    %ebx
+  16e5b9:	31 c9                	xor    %ecx,%ecx
+  16e5bb:	81 e3 08 01 00 00    	and    $0x108,%ebx
+  16e5c1:	0f 94 c1             	sete   %cl
+  16e5c4:	eb b6                	jmp    16e57c <ZSTD_createCCtx+0x2c>
+
+Disassembly of section .fini:

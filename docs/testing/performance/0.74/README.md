@@ -7541,3 +7541,13 @@ refusal and subsequent owned lint failure remain distinct from the passing nativ
 source-copy context. Guard rounds and deadlines stay exact. C/CPU/RSS/retained,
 distributable backport/public consumers, Root adoption and full release gates
 remain open; the primary product lock is unchanged.
+
+The subsequent [native allocation attribution](chitchat-native-cost-result-20261029.md)
+declines P integration after one valid B/P/P/B cohort. All 239 admissions/wires
+and both Rust meters match, but nine accepted cases add six/eight native C
+allocations and 718374–1134561 requested bytes. C frees balance and peak stays
+equal; this is additional work, not a qualified leak/retention/CPU result. Seven
+C control groups, twelve selected native executions, ten inert/source controls and
+both all-target/all-feature check/strict Clippy gates pass. Host-link, panic-scope
+and optimized-away-control refusals remain. No CPU/RSS rescue cohort, replacement
+hypothesis, Root dependency or host admission follows.

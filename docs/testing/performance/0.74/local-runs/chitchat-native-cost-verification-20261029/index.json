@@ -1,0 +1,160 @@
+{
+  "archived_code_executed": false,
+  "controls": true,
+  "doc_check": true,
+  "formatting": true,
+  "independent_raw_log_verification": true,
+  "integration_decision": "declined-native-C-cost",
+  "members": {
+    "byte-verification/producer.py": {
+      "bytes": 3674,
+      "sha256": "536e7a98819d559e575d3bf5cdcb7c78e89e1545daa78f74c67a030ffd15de0d"
+    },
+    "byte-verification/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "byte-verification/stdout.log": {
+      "bytes": 292,
+      "sha256": "8e18e5290b43f61c40cab6d2177420c521576f68c41db1aa805c2fbd9cb1ab71"
+    },
+    "checks/controls/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "checks/controls/intent.json": {
+      "bytes": 6581,
+      "sha256": "524941e6802db316ec48be54149c8b1aae4f099d64c80e7a96c2716994045c6d"
+    },
+    "checks/controls/producer.py": {
+      "bytes": 2960,
+      "sha256": "94bfa79c9ff35340402600dff71fcd91b54f406bb24b754b6f0ca54e6b8c6d1f"
+    },
+    "checks/controls/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "checks/controls/stderr.log": {
+      "bytes": 1424,
+      "sha256": "fa9595b842f2814e5293868f1494addf8f02ec5472ca5c6f912bcb9a488bfa8d"
+    },
+    "checks/controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/doc-check/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "checks/doc-check/intent.json": {
+      "bytes": 6575,
+      "sha256": "6ceb4ad8029398c6ef3010f0233f1a9415f93ea579d56f6c0420b1b047e47736"
+    },
+    "checks/doc-check/producer.py": {
+      "bytes": 2960,
+      "sha256": "94bfa79c9ff35340402600dff71fcd91b54f406bb24b754b6f0ca54e6b8c6d1f"
+    },
+    "checks/doc-check/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "checks/doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "checks/format/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "checks/format/intent.json": {
+      "bytes": 6763,
+      "sha256": "54cfa02156a34cb1372671907850c6a0bb5ff06de20db669599c23a8e43516ff"
+    },
+    "checks/format/producer.py": {
+      "bytes": 2960,
+      "sha256": "94bfa79c9ff35340402600dff71fcd91b54f406bb24b754b6f0ca54e6b8c6d1f"
+    },
+    "checks/format/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "checks/format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/performance-contract/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "checks/performance-contract/intent.json": {
+      "bytes": 6505,
+      "sha256": "3405d2657fd76514be5a57a3428a524cb3940e67011ce244f16d89f2d14d57a6"
+    },
+    "checks/performance-contract/producer.py": {
+      "bytes": 2960,
+      "sha256": "94bfa79c9ff35340402600dff71fcd91b54f406bb24b754b6f0ca54e6b8c6d1f"
+    },
+    "checks/performance-contract/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "checks/performance-contract/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checks/performance-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "cleanup-negative-builds.json": {
+      "bytes": 386,
+      "sha256": "2fa30f8e01c9eecffe8ae4c6b1e62ec44096936abdb62eb3d559331540fc2754"
+    },
+    "documents/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1564003,
+      "sha256": "0b937f9e4f82230ea52440e090ccab3df913a274f2d8d382c43a62b89d0d2748"
+    },
+    "documents/docs/testing/performance/0.74/README.md": {
+      "bytes": 514579,
+      "sha256": "caf1cb48b11b1b2dd568e90d114f5a6fe84214da8a4ea3e79175359276600bb8"
+    },
+    "documents/docs/testing/performance/0.74/chitchat-inplace-result-20261029.md": {
+      "bytes": 11786,
+      "sha256": "df422f8dadb39f3b054df979ee5b51a18a072fdd635cca19acf5c5a1d6b8772a"
+    },
+    "documents/docs/testing/performance/0.74/chitchat-native-cost-result-20261029.md": {
+      "bytes": 8851,
+      "sha256": "e3d55dbfbbcda304411c17ca38a36e9e5729ef6b5a7468d600c6fab96019790d"
+    },
+    "documents/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 45871,
+      "sha256": "95503019859905255bb205bf403ef36cdfdbe3ed497aaf222958a7511351ff8f"
+    },
+    "primary-retainer/stderr.log": {
+      "bytes": 57,
+      "sha256": "6131ec95c0cbcbcd8eadb25d82a25ee78f8e4c44b3b761adc2e2b9a67d058a73"
+    },
+    "primary-retainer/stdout.log": {
+      "bytes": 119,
+      "sha256": "10ab8fef6e41d426d367a53d2c72b269c0d35bbb4ac4422a91d4ab0a74335c0c"
+    },
+    "source/target/retain-native-cost-checks-20261029.py": {
+      "bytes": 2741,
+      "sha256": "e7e5d8d2ca4bddc0a4a0be8978eb6b6cf60b62bb67392329887aa8a17f830f78"
+    }
+  },
+  "performance_contract": true,
+  "primary_index_sha256": "3550fa5293b3f61f3b6d06662e3090b17658a42c1ca87c97b32f0c20e6d6c489",
+  "release_admitted": false,
+  "root_adopted": false,
+  "schema": "hc074-native-cost-verification-v1",
+  "source_head_observation": "7bc4c4218acaf651d6a8d71edbde5ce12363d989"
+}

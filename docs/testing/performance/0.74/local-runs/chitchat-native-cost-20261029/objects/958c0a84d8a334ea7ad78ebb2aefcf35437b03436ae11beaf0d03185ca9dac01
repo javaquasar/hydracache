@@ -1,0 +1,75 @@
+"""Fault controls against the saved first cohort; never launches native code."""
+import copy
+import json
+import unittest
+
+import analyze as a
+import common as c
+
+
+class Accounting(unittest.TestCase):
+    def values(self):
+        return [json.loads((c.BASE/f'cohort-{i}/native/observations.json').read_bytes()) for i in range(1,5)]
+
+    def baseline(self):
+        original=self.values()[0]
+        return [copy.deepcopy(original) for _ in range(4)]
+
+    def mutate(self,values,fn):
+        for position in (1,2):
+            for record in values[position]['rows'][0]['records']:fn(record)
+
+    def test_actual_negative_is_repeatable_and_not_adopted(self):
+        result=a.reconcile(self.values())
+        self.assertFalse(result['native_C_dominance_pass'])
+        self.assertEqual((result['native_C_regressions'],result['accepted_regressions'],result['rejected_regressions']),(9,9,0))
+        self.assertEqual(result,json.loads((c.BASE/'analysis/result.json').read_bytes()))
+
+    def test_equal_counts_cannot_qualify_other_gates(self):
+        result=a.reconcile(self.baseline());self.assertTrue(result['native_C_dominance_pass'])
+        for key in ('CPU_qualified','RSS_qualified','retained_memory_qualified','root_adopted','release_admitted'):self.assertFalse(result[key])
+
+    def test_every_preregistered_metric_can_refuse_alone(self):
+        for field in a.DOMINANCE:
+            values=self.baseline();self.mutate(values,lambda r:r['native']['c'].__setitem__(field,r['native']['c'][field]+1))
+            result=a.reconcile(values)
+            self.assertFalse(result['native_C_dominance_pass']);self.assertEqual(result['native_C_regressions'],1)
+
+    def test_inner_and_cross_process_changes_refuse(self):
+        values=self.values();values[1]['rows'][0]['records'][0]['native']['c']['requested']+=1
+        with self.assertRaises(ValueError):a.reconcile(values)
+        values=self.values()
+        for record in values[1]['rows'][0]['records']:record['native']['c']['requested']+=1
+        with self.assertRaises(ValueError):a.reconcile(values)
+
+    def test_missing_duplicate_reordered_or_changed_wire_refuse(self):
+        for kind in ('missing','duplicate','order','wire','admission'):
+            values=self.values()
+            for i in (1,2):
+                rows=values[i]['rows']
+                if kind=='missing':rows.pop()
+                elif kind=='duplicate':rows[1]=copy.deepcopy(rows[0])
+                elif kind=='order':rows.reverse()
+                elif kind=='wire':rows[0]['wire']='00'
+                else:rows[0]['accepted']=not rows[0]['accepted']
+            with self.assertRaises(ValueError):a.reconcile(values)
+
+    def test_counter_refusals_and_malformed_types_are_never_zeroed(self):
+        for field,value in (('live',1),('external_frees',1),('failed',1),('requested',-1),('allocs',False),('peak',0.5)):
+            values=self.values();self.mutate(values,lambda r:r['native']['c'].__setitem__(field,value))
+            with self.assertRaises(ValueError):a.reconcile(values)
+        values=self.values();self.mutate(values,lambda r:r['native'].__setitem__('errors',1))
+        with self.assertRaises(ValueError):a.reconcile(values)
+
+    def test_seed_scope_and_qualification_cannot_drift(self):
+        for key,value in (('seed',1),('scope','whole-process-heap'),('CPU_qualified',True),('allocator_retention_qualified',True)):
+            values=self.values()
+            for i in (1,2):values[i][key]=value
+            with self.assertRaises(ValueError):a.reconcile(values)
+
+    def test_partial_or_duplicate_diagnostic_refuses(self):
+        for raw in ('','M:{}\nM:{}','M:{'):
+            with self.assertRaises(ValueError):c.diagnostic(raw,'M:')
+
+
+if __name__=='__main__':unittest.main()

@@ -1,0 +1,389 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "accepted_regressions": 9,
+  "cases": 239,
+  "complete": true,
+  "integration_decision": "declined-native-C-cost",
+  "logical_Rust_changes": [],
+  "native_C_changes": [
+    {
+      "accepted": true,
+      "after": {
+        "allocs": 18,
+        "calloc_calls": 9,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 18,
+        "live": 0,
+        "malloc_calls": 9,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 2155122
+      },
+      "before": {
+        "allocs": 12,
+        "calloc_calls": 6,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 12,
+        "live": 0,
+        "malloc_calls": 6,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 1436748
+      },
+      "delta": {
+        "allocs": 6,
+        "calloc_calls": 3,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 6,
+        "live": 0,
+        "malloc_calls": 3,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 718374
+      },
+      "mtu": 40000,
+      "value_len": 39938
+    },
+    {
+      "accepted": true,
+      "after": {
+        "allocs": 18,
+        "calloc_calls": 9,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 18,
+        "live": 0,
+        "malloc_calls": 9,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 2155134
+      },
+      "before": {
+        "allocs": 12,
+        "calloc_calls": 6,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 12,
+        "live": 0,
+        "malloc_calls": 6,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 1436756
+      },
+      "delta": {
+        "allocs": 6,
+        "calloc_calls": 3,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 6,
+        "live": 0,
+        "malloc_calls": 3,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 718378
+      },
+      "mtu": 40000,
+      "value_len": 39939
+    },
+    {
+      "accepted": true,
+      "after": {
+        "allocs": 18,
+        "calloc_calls": 9,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 18,
+        "live": 0,
+        "malloc_calls": 9,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 2155137
+      },
+      "before": {
+        "allocs": 12,
+        "calloc_calls": 6,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 12,
+        "live": 0,
+        "malloc_calls": 6,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 1436758
+      },
+      "delta": {
+        "allocs": 6,
+        "calloc_calls": 3,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 6,
+        "live": 0,
+        "malloc_calls": 3,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 718379
+      },
+      "mtu": 40000,
+      "value_len": 39940
+    },
+    {
+      "accepted": true,
+      "after": {
+        "allocs": 24,
+        "calloc_calls": 12,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 24,
+        "live": 0,
+        "malloc_calls": 12,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 3403650
+      },
+      "before": {
+        "allocs": 16,
+        "calloc_calls": 8,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 16,
+        "live": 0,
+        "malloc_calls": 8,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 2269100
+      },
+      "delta": {
+        "allocs": 8,
+        "calloc_calls": 4,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 8,
+        "live": 0,
+        "malloc_calls": 4,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 1134550
+      },
+      "mtu": 65507,
+      "value_len": 65442
+    },
+    {
+      "accepted": true,
+      "after": {
+        "allocs": 24,
+        "calloc_calls": 12,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 24,
+        "live": 0,
+        "malloc_calls": 12,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 3403662
+      },
+      "before": {
+        "allocs": 16,
+        "calloc_calls": 8,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 16,
+        "live": 0,
+        "malloc_calls": 8,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 2269108
+      },
+      "delta": {
+        "allocs": 8,
+        "calloc_calls": 4,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 8,
+        "live": 0,
+        "malloc_calls": 4,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 1134554
+      },
+      "mtu": 65507,
+      "value_len": 65443
+    },
+    {
+      "accepted": true,
+      "after": {
+        "allocs": 24,
+        "calloc_calls": 12,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 24,
+        "live": 0,
+        "malloc_calls": 12,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 3403665
+      },
+      "before": {
+        "allocs": 16,
+        "calloc_calls": 8,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 16,
+        "live": 0,
+        "malloc_calls": 8,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 2269110
+      },
+      "delta": {
+        "allocs": 8,
+        "calloc_calls": 4,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 8,
+        "live": 0,
+        "malloc_calls": 4,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 1134555
+      },
+      "mtu": 65507,
+      "value_len": 65444
+    },
+    {
+      "accepted": true,
+      "after": {
+        "allocs": 24,
+        "calloc_calls": 12,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 24,
+        "live": 0,
+        "malloc_calls": 12,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 3403668
+      },
+      "before": {
+        "allocs": 16,
+        "calloc_calls": 8,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 16,
+        "live": 0,
+        "malloc_calls": 8,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 2269112
+      },
+      "delta": {
+        "allocs": 8,
+        "calloc_calls": 4,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 8,
+        "live": 0,
+        "malloc_calls": 4,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 1134556
+      },
+      "mtu": 65507,
+      "value_len": 65445
+    },
+    {
+      "accepted": true,
+      "after": {
+        "allocs": 24,
+        "calloc_calls": 12,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 24,
+        "live": 0,
+        "malloc_calls": 12,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 3403671
+      },
+      "before": {
+        "allocs": 16,
+        "calloc_calls": 8,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 16,
+        "live": 0,
+        "malloc_calls": 8,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 2269114
+      },
+      "delta": {
+        "allocs": 8,
+        "calloc_calls": 4,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 8,
+        "live": 0,
+        "malloc_calls": 4,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 1134557
+      },
+      "mtu": 65507,
+      "value_len": 65446
+    },
+    {
+      "accepted": true,
+      "after": {
+        "allocs": 24,
+        "calloc_calls": 12,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 24,
+        "live": 0,
+        "malloc_calls": 12,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 3403683
+      },
+      "before": {
+        "allocs": 16,
+        "calloc_calls": 8,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 16,
+        "live": 0,
+        "malloc_calls": 8,
+        "peak": 283672,
+        "realloc_calls": 0,
+        "requested": 2269122
+      },
+      "delta": {
+        "allocs": 8,
+        "calloc_calls": 4,
+        "external_frees": 0,
+        "failed": 0,
+        "free_calls": 8,
+        "live": 0,
+        "malloc_calls": 4,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 1134561
+      },
+      "mtu": 65507,
+      "value_len": 65447
+    }
+  ],
+  "native_C_dominance_pass": false,
+  "native_C_regressions": 9,
+  "per_image_observations_per_case": 4,
+  "physical_tagged_Rust_changes": [],
+  "processes": 4,
+  "rejected_regressions": 0,
+  "release_admitted": false,
+  "retained_memory_qualified": false,
+  "root_adopted": false
+}

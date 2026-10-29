@@ -1,0 +1,13 @@
+{
+  "Removed": [
+    {
+      "Path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-inplace-20261029\\targets\\S-194-release",
+      "Bytes": 279283971.0
+    },
+    {
+      "Path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-inplace-20261029\\targets\\D-194-release",
+      "Bytes": 279284995.0
+    }
+  ],
+  "FreeBytes": 4855250944
+}

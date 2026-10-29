@@ -1,0 +1,56 @@
+"""Independent raw-log/byte verifier, with no archived imports or execution."""
+from pathlib import Path
+import hashlib,json
+ROOT=Path(__file__).resolve().parent.parent
+PACKET=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-native-cost-20261029'
+sha=lambda b:hashlib.sha256(b).hexdigest()
+raw=(PACKET/'index.json').read_bytes();assert sha(raw)=='3550fa5293b3f61f3b6d06662e3090b17658a42c1ca87c97b32f0c20e6d6c489'
+members=json.loads(raw)['members'];assert len(members)==1714
+for row in members.values():
+ body=(PACKET/'objects'/row['sha256']).read_bytes();assert len(body)==row['bytes'] and sha(body)==row['sha256']
+assert len({r['sha256'] for r in members.values()})==411
+def get(name):return (PACKET/'objects'/members[name]['sha256']).read_bytes()
+def diagnostic(body,marker):
+ rows=[v[len(marker):] for v in body.splitlines() if v.startswith(marker)]
+ assert len(rows)==1
+ return json.loads(rows[0])
+base='capture/chitchat-native-cost-opaque-20261029/'
+values=[];frames=[];flags=[]
+for index,variant in enumerate(('B','P','P','B'),1):
+ stem=base+f'cohort-{index}/'
+ assert json.loads(get(stem+'result.json'))['complete']
+ owned=json.loads(get(stem+'native/observation/execution.json'))
+ assert owned['exit']==0 and owned['retired'] and not owned['errors'] and owned['bound_seconds']==1200
+ image=json.loads(get(base+f'build-{variant}/native/artifact.json'))
+ intent=json.loads(get(stem+'native/observation/intent.json'));assert intent['argv'][0]==image['path'];frames.append(intent['frame'])
+ flags.append(json.loads(get(base+f'build-{variant}/native/flags.json')))
+ value=diagnostic(get(stem+'native/observation/stdout.log'),b'HC074_NATIVE_ALLOC:')
+ assert value==json.loads(get(stem+'native/observations.json'))
+ assert value['seed']==0x0741028 and len(value['rows'])==239 and sum(v['accepted'] for v in value['rows'])==136
+ assert len({(v['mtu'],v['value_len']) for v in value['rows']})==239
+ for row in value['rows']:
+  assert len(row['records'])==2 and row['records'][0]==row['records'][1]
+  r=row['records'][0];assert r['native']['errors']==r['rust']['live']==0
+  for who in ('c','rust'):assert all(r['native'][who][k]==0 for k in ('live','failed','external_frees'))
+ values.append(value)
+assert len(set(frames))==1 and flags.count(flags[0])==4
+assert values[0]==values[3] and values[1]==values[2]
+changes=[]
+for b,p in zip(values[0]['rows'],values[1]['rows'],strict=True):
+ assert all(b[k]==p[k] for k in ('mtu','value_len','accepted','wire'))
+ before=b['records'][0];after=p['records'][0]
+ assert before['rust']==after['rust'] and before['native']['rust']==after['native']['rust']
+ assert before['native']['c']['peak']==after['native']['c']['peak']
+ delta={k:after['native']['c'][k]-before['native']['c'][k] for k in ('allocs','realloc_calls','requested','peak')}
+ if any(v>0 for v in delta.values()):
+  assert p['accepted'] and after['actual_calls'][1]==1
+  changes.append((p['mtu'],p['value_len'],delta['allocs'],delta['requested']))
+assert changes==[(40000,39938,6,718374),(40000,39939,6,718378),(40000,39940,6,718379),
+ (65507,65442,8,1134550),(65507,65443,8,1134554),(65507,65444,8,1134555),
+ (65507,65445,8,1134556),(65507,65446,8,1134557),(65507,65447,8,1134561)]
+for context in ('target','scope','opaque'):
+ obj=get(f'capture/chitchat-native-cost-{context}-20261029/c-control/wrap.o')
+ assert sha(obj)=='62e161676d83d64c442300c013db751dc9d965336a971dfd7f490d139a560c6d'
+print(json.dumps(dict(complete=True,members_verified=1714,objects_verified=411,native_C_regressions=9,
+ accepted_regressions=9,logical_and_physical_Rust_equal=True,wire_equal=True,
+ integration_decision='declined-native-C-cost',archived_code_executed=False,root_adopted=False)))

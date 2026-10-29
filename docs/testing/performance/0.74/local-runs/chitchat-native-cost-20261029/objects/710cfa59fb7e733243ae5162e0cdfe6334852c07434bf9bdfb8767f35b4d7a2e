@@ -1,0 +1,14 @@
+Failed to find real location of C:\Python313\python.exe
+test_actual_negative_is_repeatable_and_not_adopted (test_analysis.Accounting.test_actual_negative_is_repeatable_and_not_adopted) ... ok
+test_counter_refusals_and_malformed_types_are_never_zeroed (test_analysis.Accounting.test_counter_refusals_and_malformed_types_are_never_zeroed) ... ok
+test_equal_counts_cannot_qualify_other_gates (test_analysis.Accounting.test_equal_counts_cannot_qualify_other_gates) ... ok
+test_every_preregistered_metric_can_refuse_alone (test_analysis.Accounting.test_every_preregistered_metric_can_refuse_alone) ... ok
+test_inner_and_cross_process_changes_refuse (test_analysis.Accounting.test_inner_and_cross_process_changes_refuse) ... ok
+test_missing_duplicate_reordered_or_changed_wire_refuse (test_analysis.Accounting.test_missing_duplicate_reordered_or_changed_wire_refuse) ... ok
+test_partial_or_duplicate_diagnostic_refuses (test_analysis.Accounting.test_partial_or_duplicate_diagnostic_refuses) ... ok
+test_seed_scope_and_qualification_cannot_drift (test_analysis.Accounting.test_seed_scope_and_qualification_cannot_drift) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 1.082s
+
+OK

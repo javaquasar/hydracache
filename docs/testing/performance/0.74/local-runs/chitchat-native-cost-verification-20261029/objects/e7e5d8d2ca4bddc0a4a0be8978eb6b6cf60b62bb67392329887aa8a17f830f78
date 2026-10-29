@@ -1,0 +1,39 @@
+"""Seal final current-source checks without replaying any native experiment."""
+from pathlib import Path
+import hashlib,json,subprocess
+ROOT=Path(__file__).resolve().parent.parent
+BASE=ROOT/'target/chitchat-native-cost-opaque-20261029'
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-native-cost-verification-20261029'
+sha=lambda b:hashlib.sha256(b).hexdigest()
+OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir();members={}
+def add(name,path):
+ body=path.read_bytes();digest=sha(body);dest=OUT/'objects'/digest
+ if dest.exists():assert dest.read_bytes()==body
+ else:dest.write_bytes(body)
+ assert name not in members;members[name]=dict(sha256=digest,bytes=len(body))
+for mode in ('controls','format','performance-contract','doc-check'):
+ folder=BASE/'final'/mode
+ assert json.loads((folder/'result.json').read_bytes())['complete']
+ owner=json.loads((folder/'execution.json').read_bytes());assert owner['exit']==0 and owner['retired'] and not owner['errors']
+ for path in folder.iterdir():
+  if path.is_file():add('checks/'+mode+'/'+path.name,path)
+docs=json.loads((BASE/'final/doc-check/intent.json').read_bytes())['documents']
+for name,digest in docs.items():
+ assert sha((ROOT/name).read_bytes())==digest;add('documents/'+name,ROOT/name)
+for path in (BASE/'byte-verify').iterdir():
+ if path.is_file():add('byte-verification/'+path.name,path)
+assert json.loads((BASE/'byte-verify/stdout.log').read_bytes())['complete']
+add('cleanup-negative-builds.json',BASE/'cleanup-negative-builds.json')
+add('source/target/retain-native-cost-checks-20261029.py',Path(__file__))
+for path in (ROOT/'target/chitchat-native-cost-retain-20261029').iterdir():
+ if path.is_file():add('primary-retainer/'+path.name,path)
+index=dict(schema='hc074-native-cost-verification-v1',members=members,
+ primary_index_sha256='3550fa5293b3f61f3b6d06662e3090b17658a42c1ca87c97b32f0c20e6d6c489',
+ source_head_observation=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+ controls=True,formatting=True,doc_check=True,performance_contract=True,independent_raw_log_verification=True,
+ integration_decision='declined-native-C-cost',root_adopted=False,release_admitted=False,archived_code_executed=False)
+(OUT/'index.json').write_text(json.dumps(index,indent=2,sort_keys=True)+'\n',encoding='utf8',newline='\n')
+(OUT/'.gitattributes').write_text('objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n',encoding='utf8',newline='\n')
+for row in members.values():
+ raw=(OUT/'objects'/row['sha256']).read_bytes();assert len(raw)==row['bytes'] and sha(raw)==row['sha256']
+print(json.dumps(dict(members=len(members),objects=len(list((OUT/'objects').iterdir())),index_sha256=sha((OUT/'index.json').read_bytes()))))

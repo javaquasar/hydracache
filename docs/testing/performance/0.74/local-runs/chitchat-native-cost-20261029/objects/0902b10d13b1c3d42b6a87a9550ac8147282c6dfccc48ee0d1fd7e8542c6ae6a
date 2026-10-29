@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/targets/P/x86_64-unknown-linux-gnu/release/deps/chitchat-185f33873ca268c9",
+    "delta::cost_review::native_operation_observations",
+    "--exact",
+    "--test-threads=1",
+    "--show-output",
+    "--color=never"
+  ],
+  "deadline": 1109.318211141,
+  "frame": "167b9c2e186646f4bf0d8c2e19ddc85eaa069ba969eec8882c9978fe2aae2919",
+  "retry": false
+}

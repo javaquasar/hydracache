@@ -438,6 +438,15 @@ This closes selected Rust allocation and cross-platform functional subgates,
 not C/CPU/RSS/retained behavior, distributable/public consumers, Root's three
 Zstd findings or actual complete package/workspace/original-execution gates.
 
+The [native allocation continuation](chitchat-native-cost-result-20261029.md)
+then declines P for integration: nine accepted cases add six/eight physical
+C/Zstd allocations despite equal logical/physical Rust counters and exact wire
+on the repeated original corpus. All counter/source/semantic controls and strict
+focused compiler gates pass, with all earlier observer refusals retained. CPU/
+RSS/retention qualification is not run after the predeclared C refusal. Keep
+the implementation/evidence, preserve Root's graph, and do not infer an accepted
+compatible security backport or open a replacement performance hypothesis here.
+
 The [D-Bus MSRV preparation](dbus-msrv-backport-result-20261028.md) now retains
 the original declared-floor, transitive UUID and genuine Rust 1.88 E0716 refusals.
 Two inline-formatting source repairs pass the common regression against upstream

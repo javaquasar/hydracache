@@ -181,3 +181,8 @@ retirement receipts are retained in
 Compiled binaries/build/vendor caches and redundant ZIP containers are excluded;
 ZIP member bytes are retained separately. Final current-source check receipts
 are retained in the adjacent verification directory.
+
+The subsequent [native C allocation gate](chitchat-native-cost-result-20261029.md)
+declines P integration: the same repeated 239-case corpus preserves wire and
+both Rust meters but adds six/eight C allocations in nine accepted cases. This
+Rust-only result remains valid within its scope; it is not overall acceptance.

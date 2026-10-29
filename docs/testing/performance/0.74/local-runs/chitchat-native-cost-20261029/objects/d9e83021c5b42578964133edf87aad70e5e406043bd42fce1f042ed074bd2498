@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "-vV"
+  ],
+  "deadline": 1102.767532994,
+  "frame": "167b9c2e186646f4bf0d8c2e19ddc85eaa069ba969eec8882c9978fe2aae2919",
+  "retry": false
+}

@@ -1,0 +1,27 @@
+
+running 1 test
+test delta::cost_review::native_rust_tag_control ... FAILED
+
+successes:
+
+successes:
+
+failures:
+
+---- delta::cost_review::native_rust_tag_control stdout ----
+
+thread 'delta::cost_review::native_rust_tag_control' (386) panicked at src/../../../observer.rs:169:53:
+controlled
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'delta::cost_review::native_rust_tag_control' (386) panicked at src/../../../observer.rs:380:9:
+assertion `left == right` failed: whole-operation allocation balance
+  left: 232
+ right: 0
+
+
+failures:
+    delta::cost_review::native_rust_tag_control
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 117 filtered out; finished in 0.00s
+

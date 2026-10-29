@@ -1,0 +1,1 @@
+{"complete": true, "members_verified": 1714, "objects_verified": 411, "native_C_regressions": 9, "accepted_regressions": 9, "logical_and_physical_Rust_equal": true, "wire_equal": true, "integration_decision": "declined-native-C-cost", "archived_code_executed": false, "root_adopted": false}

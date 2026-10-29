@@ -1,0 +1,4 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling chitchat v0.11.1 (/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-opaque/target/chitchat-native-cost-opaque-20261029/fixtures/B)
+    Finished `release` profile [optimized] target(s) in 10.30s

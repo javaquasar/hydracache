@@ -1,0 +1,260 @@
+
+/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/targets/P/x86_64-unknown-linux-gnu/release/deps/chitchat-185f33873ca268c9:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.got:
+
+Disassembly of section .text:
+
+0000000000098860 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E>:
+   98860:	41 57                	push   %r15
+   98862:	41 56                	push   %r14
+   98864:	41 55                	push   %r13
+   98866:	41 54                	push   %r12
+   98868:	53                   	push   %rbx
+   98869:	48 81 ec 00 01 00 00 	sub    $0x100,%rsp
+   98870:	ff 15 ea 96 3d 00    	call   *0x3d96ea(%rip)        # 471f60 <_GLOBAL_OFFSET_TABLE_+0x158>
+   98876:	89 44 24 58          	mov    %eax,0x58(%rsp)
+   9887a:	83 f8 01             	cmp    $0x1,%eax
+   9887d:	0f 85 fc 03 00 00    	jne    98c7f <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x41f>
+   98883:	64 80 3c 25 10 7e fe 	cmpb   $0x1,%fs:0xfffffffffffe7e10
+   9888a:	ff 01 
+   9888c:	0f 84 0a 04 00 00    	je     98c9c <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x43c>
+   98892:	66 0f ef c0          	pxor   %xmm0,%xmm0
+   98896:	64 f3 0f 7f 04 25 28 	movdqu %xmm0,%fs:0xfffffffffffe7e28
+   9889d:	7e fe ff 
+   988a0:	64 f3 0f 7f 04 25 18 	movdqu %xmm0,%fs:0xfffffffffffe7e18
+   988a7:	7e fe ff 
+   988aa:	64 48 c7 04 25 38 7e 	movq   $0x0,%fs:0xfffffffffffe7e38
+   988b1:	fe ff 00 00 00 00 
+   988b7:	64 c6 04 25 10 7e fe 	movb   $0x1,%fs:0xfffffffffffe7e10
+   988be:	ff 01 
+   988c0:	ff 15 1a a0 3d 00    	call   *0x3da01a(%rip)        # 4728e0 <_GLOBAL_OFFSET_TABLE_+0xad8>
+   988c6:	ff 15 ec b1 3d 00    	call   *0x3db1ec(%rip)        # 473ab8 <_GLOBAL_OFFSET_TABLE_+0x1cb0>
+   988cc:	64 80 3c 25 10 7e fe 	cmpb   $0x1,%fs:0xfffffffffffe7e10
+   988d3:	ff 01 
+   988d5:	0f 84 71 02 00 00    	je     98b4c <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x2ec>
+   988db:	ff 15 ff 9f 3d 00    	call   *0x3d9fff(%rip)        # 4728e0 <_GLOBAL_OFFSET_TABLE_+0xad8>
+   988e1:	ff 15 d1 b1 3d 00    	call   *0x3db1d1(%rip)        # 473ab8 <_GLOBAL_OFFSET_TABLE_+0x1cb0>
+   988e7:	64 80 3c 25 10 7e fe 	cmpb   $0x1,%fs:0xfffffffffffe7e10
+   988ee:	ff 01 
+   988f0:	0f 84 b9 02 00 00    	je     98baf <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x34f>
+   988f6:	ff 15 e4 9f 3d 00    	call   *0x3d9fe4(%rip)        # 4728e0 <_GLOBAL_OFFSET_TABLE_+0xad8>
+   988fc:	ff 15 b6 b1 3d 00    	call   *0x3db1b6(%rip)        # 473ab8 <_GLOBAL_OFFSET_TABLE_+0x1cb0>
+   98902:	64 80 3c 25 10 7e fe 	cmpb   $0x1,%fs:0xfffffffffffe7e10
+   98909:	ff 01 
+   9890b:	0f 84 04 03 00 00    	je     98c15 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x3b5>
+   98911:	ff 15 c9 9f 3d 00    	call   *0x3d9fc9(%rip)        # 4728e0 <_GLOBAL_OFFSET_TABLE_+0xad8>
+   98917:	ff 15 9b b1 3d 00    	call   *0x3db19b(%rip)        # 473ab8 <_GLOBAL_OFFSET_TABLE_+0x1cb0>
+   9891d:	64 80 3c 25 10 7e fe 	cmpb   $0x1,%fs:0xfffffffffffe7e10
+   98924:	ff 01 
+   98926:	75 48                	jne    98970 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x110>
+   98928:	64 48 8b 04 25 38 7e 	mov    %fs:0xfffffffffffe7e38,%rax
+   9892f:	fe ff 
+   98931:	64 48 ff 04 25 18 7e 	incq   %fs:0xfffffffffffe7e18
+   98938:	fe ff 
+   9893a:	64 f3 0f 6f 04 25 28 	movdqu %fs:0xfffffffffffe7e28,%xmm0
+   98941:	7e fe ff 
+   98944:	66 0f d4 05 24 29 2b 	paddq  0x2b2924(%rip),%xmm0        # 34b270 <anon.a8585cceb04315fbe896d8f23f3269cb.73.llvm.390217047269645021+0x80>
+   9894b:	00 
+   9894c:	66 0f 70 c8 ee       	pshufd $0xee,%xmm0,%xmm1
+   98951:	66 48 0f 7e c9       	movq   %xmm1,%rcx
+   98956:	48 39 c1             	cmp    %rax,%rcx
+   98959:	48 0f 4f c1          	cmovg  %rcx,%rax
+   9895d:	64 f3 0f 7f 04 25 28 	movdqu %xmm0,%fs:0xfffffffffffe7e28
+   98964:	7e fe ff 
+   98967:	64 48 89 04 25 38 7e 	mov    %rax,%fs:0xfffffffffffe7e38
+   9896e:	fe ff 
+   98970:	ff 15 6a 9f 3d 00    	call   *0x3d9f6a(%rip)        # 4728e0 <_GLOBAL_OFFSET_TABLE_+0xad8>
+   98976:	ff 15 3c b1 3d 00    	call   *0x3db13c(%rip)        # 473ab8 <_GLOBAL_OFFSET_TABLE_+0x1cb0>
+   9897c:	64 4c 8b 34 25 30 7e 	mov    %fs:0xfffffffffffe7e30,%r14
+   98983:	fe ff 
+   98985:	64 48 8b 1c 25 38 7e 	mov    %fs:0xfffffffffffe7e38,%rbx
+   9898c:	fe ff 
+   9898e:	64 80 3c 25 10 7e fe 	cmpb   $0x1,%fs:0xfffffffffffe7e10
+   98995:	ff 01 
+   98997:	75 1d                	jne    989b6 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x156>
+   98999:	49 83 c6 80          	add    $0xffffffffffffff80,%r14
+   9899d:	49 39 de             	cmp    %rbx,%r14
+   989a0:	49 0f 4f de          	cmovg  %r14,%rbx
+   989a4:	64 4c 89 34 25 30 7e 	mov    %r14,%fs:0xfffffffffffe7e30
+   989ab:	fe ff 
+   989ad:	64 48 89 1c 25 38 7e 	mov    %rbx,%fs:0xfffffffffffe7e38
+   989b4:	fe ff 
+   989b6:	64 c6 04 25 10 7e fe 	movb   $0x0,%fs:0xfffffffffffe7e10
+   989bd:	ff 00 
+   989bf:	64 4c 8b 2c 25 18 7e 	mov    %fs:0xfffffffffffe7e18,%r13
+   989c6:	fe ff 
+   989c8:	64 4c 8b 24 25 20 7e 	mov    %fs:0xfffffffffffe7e20,%r12
+   989cf:	fe ff 
+   989d1:	64 4c 8b 3c 25 28 7e 	mov    %fs:0xfffffffffffe7e28,%r15
+   989d8:	fe ff 
+   989da:	48 8d 7c 24 58       	lea    0x58(%rsp),%rdi
+   989df:	e8 2c ee ff ff       	call   97810 <_ZN8chitchat5delta11cost_review13native_finish17h0dcf87e2b2b17d81E.llvm.12758509189724969125>
+   989e4:	4c 89 2c 24          	mov    %r13,(%rsp)
+   989e8:	4c 89 64 24 08       	mov    %r12,0x8(%rsp)
+   989ed:	4c 89 7c 24 10       	mov    %r15,0x10(%rsp)
+   989f2:	4c 89 74 24 18       	mov    %r14,0x18(%rsp)
+   989f7:	48 89 5c 24 20       	mov    %rbx,0x20(%rsp)
+   989fc:	49 83 fd 02          	cmp    $0x2,%r13
+   98a00:	0f 85 af 02 00 00    	jne    98cb5 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x455>
+   98a06:	49 83 fc 01          	cmp    $0x1,%r12
+   98a0a:	0f 85 a5 02 00 00    	jne    98cb5 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x455>
+   98a10:	49 81 ff 00 02 00 00 	cmp    $0x200,%r15
+   98a17:	0f 85 98 02 00 00    	jne    98cb5 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x455>
+   98a1d:	4d 85 f6             	test   %r14,%r14
+   98a20:	0f 85 8f 02 00 00    	jne    98cb5 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x455>
+   98a26:	48 81 fb 00 01 00 00 	cmp    $0x100,%rbx
+   98a2d:	0f 85 82 02 00 00    	jne    98cb5 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x455>
+   98a33:	66 0f ef c0          	pxor   %xmm0,%xmm0
+   98a37:	66 0f 7f 44 24 40    	movdqa %xmm0,0x40(%rsp)
+   98a3d:	66 0f 7f 44 24 30    	movdqa %xmm0,0x30(%rsp)
+   98a43:	66 0f 7f 44 24 20    	movdqa %xmm0,0x20(%rsp)
+   98a49:	66 0f 7f 44 24 10    	movdqa %xmm0,0x10(%rsp)
+   98a4f:	66 0f 7f 04 24       	movdqa %xmm0,(%rsp)
+   98a54:	48 83 7c 24 58 00    	cmpq   $0x0,0x58(%rsp)
+   98a5a:	0f 85 07 02 00 00    	jne    98c67 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x407>
+   98a60:	48 83 7c 24 60 00    	cmpq   $0x0,0x60(%rsp)
+   98a66:	0f 85 fb 01 00 00    	jne    98c67 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x407>
+   98a6c:	48 83 7c 24 68 00    	cmpq   $0x0,0x68(%rsp)
+   98a72:	0f 85 ef 01 00 00    	jne    98c67 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x407>
+   98a78:	48 83 7c 24 70 00    	cmpq   $0x0,0x70(%rsp)
+   98a7e:	0f 85 e3 01 00 00    	jne    98c67 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x407>
+   98a84:	48 83 7c 24 78 00    	cmpq   $0x0,0x78(%rsp)
+   98a8a:	0f 85 d7 01 00 00    	jne    98c67 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x407>
+   98a90:	48 83 bc 24 80 00 00 	cmpq   $0x0,0x80(%rsp)
+   98a97:	00 00 
+   98a99:	0f 85 c8 01 00 00    	jne    98c67 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x407>
+   98a9f:	48 83 bc 24 88 00 00 	cmpq   $0x0,0x88(%rsp)
+   98aa6:	00 00 
+   98aa8:	0f 85 b9 01 00 00    	jne    98c67 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x407>
+   98aae:	48 83 bc 24 90 00 00 	cmpq   $0x0,0x90(%rsp)
+   98ab5:	00 00 
+   98ab7:	0f 85 aa 01 00 00    	jne    98c67 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x407>
+   98abd:	48 83 bc 24 98 00 00 	cmpq   $0x0,0x98(%rsp)
+   98ac4:	00 00 
+   98ac6:	0f 85 9b 01 00 00    	jne    98c67 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x407>
+   98acc:	48 83 bc 24 a0 00 00 	cmpq   $0x0,0xa0(%rsp)
+   98ad3:	00 00 
+   98ad5:	0f 85 8c 01 00 00    	jne    98c67 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x407>
+   98adb:	48 8b 94 24 b8 00 00 	mov    0xb8(%rsp),%rdx
+   98ae2:	00 
+   98ae3:	48 8b b4 24 c8 00 00 	mov    0xc8(%rsp),%rsi
+   98aea:	00 
+   98aeb:	48 8b 8c 24 d0 00 00 	mov    0xd0(%rsp),%rcx
+   98af2:	00 
+   98af3:	48 8b 84 24 f0 00 00 	mov    0xf0(%rsp),%rax
+   98afa:	00 
+   98afb:	48 89 34 24          	mov    %rsi,(%rsp)
+   98aff:	48 89 54 24 08       	mov    %rdx,0x8(%rsp)
+   98b04:	48 89 4c 24 10       	mov    %rcx,0x10(%rsp)
+   98b09:	48 89 44 24 18       	mov    %rax,0x18(%rsp)
+   98b0e:	48 83 fe 02          	cmp    $0x2,%rsi
+   98b12:	0f 85 b7 01 00 00    	jne    98ccf <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x46f>
+   98b18:	48 83 fa 01          	cmp    $0x1,%rdx
+   98b1c:	0f 85 ad 01 00 00    	jne    98ccf <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x46f>
+   98b22:	48 81 f9 00 02 00 00 	cmp    $0x200,%rcx
+   98b29:	0f 85 a0 01 00 00    	jne    98ccf <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x46f>
+   98b2f:	48 3d 00 01 00 00    	cmp    $0x100,%rax
+   98b35:	0f 85 94 01 00 00    	jne    98ccf <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x46f>
+   98b3b:	48 81 c4 00 01 00 00 	add    $0x100,%rsp
+   98b42:	5b                   	pop    %rbx
+   98b43:	41 5c                	pop    %r12
+   98b45:	41 5d                	pop    %r13
+   98b47:	41 5e                	pop    %r14
+   98b49:	41 5f                	pop    %r15
+   98b4b:	c3                   	ret
+   98b4c:	64 48 8b 04 25 38 7e 	mov    %fs:0xfffffffffffe7e38,%rax
+   98b53:	fe ff 
+   98b55:	64 48 ff 04 25 18 7e 	incq   %fs:0xfffffffffffe7e18
+   98b5c:	fe ff 
+   98b5e:	64 f3 0f 6f 04 25 28 	movdqu %fs:0xfffffffffffe7e28,%xmm0
+   98b65:	7e fe ff 
+   98b68:	66 0f d4 05 00 27 2b 	paddq  0x2b2700(%rip),%xmm0        # 34b270 <anon.a8585cceb04315fbe896d8f23f3269cb.73.llvm.390217047269645021+0x80>
+   98b6f:	00 
+   98b70:	66 0f 70 c8 ee       	pshufd $0xee,%xmm0,%xmm1
+   98b75:	66 48 0f 7e c9       	movq   %xmm1,%rcx
+   98b7a:	48 39 c1             	cmp    %rax,%rcx
+   98b7d:	48 0f 4f c1          	cmovg  %rcx,%rax
+   98b81:	64 f3 0f 7f 04 25 28 	movdqu %xmm0,%fs:0xfffffffffffe7e28
+   98b88:	7e fe ff 
+   98b8b:	64 48 89 04 25 38 7e 	mov    %rax,%fs:0xfffffffffffe7e38
+   98b92:	fe ff 
+   98b94:	ff 15 46 9d 3d 00    	call   *0x3d9d46(%rip)        # 4728e0 <_GLOBAL_OFFSET_TABLE_+0xad8>
+   98b9a:	ff 15 18 af 3d 00    	call   *0x3daf18(%rip)        # 473ab8 <_GLOBAL_OFFSET_TABLE_+0x1cb0>
+   98ba0:	64 80 3c 25 10 7e fe 	cmpb   $0x1,%fs:0xfffffffffffe7e10
+   98ba7:	ff 01 
+   98ba9:	0f 85 47 fd ff ff    	jne    988f6 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x96>
+   98baf:	64 48 8b 04 25 30 7e 	mov    %fs:0xfffffffffffe7e30,%rax
+   98bb6:	fe ff 
+   98bb8:	64 48 8b 0c 25 38 7e 	mov    %fs:0xfffffffffffe7e38,%rcx
+   98bbf:	fe ff 
+   98bc1:	48 83 e8 80          	sub    $0xffffffffffffff80,%rax
+   98bc5:	48 39 c8             	cmp    %rcx,%rax
+   98bc8:	48 0f 4f c8          	cmovg  %rax,%rcx
+   98bcc:	64 f3 0f 6f 04 25 20 	movdqu %fs:0xfffffffffffe7e20,%xmm0
+   98bd3:	7e fe ff 
+   98bd6:	66 0f d4 05 a2 26 2b 	paddq  0x2b26a2(%rip),%xmm0        # 34b280 <anon.a8585cceb04315fbe896d8f23f3269cb.73.llvm.390217047269645021+0x90>
+   98bdd:	00 
+   98bde:	64 f3 0f 7f 04 25 20 	movdqu %xmm0,%fs:0xfffffffffffe7e20
+   98be5:	7e fe ff 
+   98be8:	64 48 89 04 25 30 7e 	mov    %rax,%fs:0xfffffffffffe7e30
+   98bef:	fe ff 
+   98bf1:	64 48 89 0c 25 38 7e 	mov    %rcx,%fs:0xfffffffffffe7e38
+   98bf8:	fe ff 
+   98bfa:	ff 15 e0 9c 3d 00    	call   *0x3d9ce0(%rip)        # 4728e0 <_GLOBAL_OFFSET_TABLE_+0xad8>
+   98c00:	ff 15 b2 ae 3d 00    	call   *0x3daeb2(%rip)        # 473ab8 <_GLOBAL_OFFSET_TABLE_+0x1cb0>
+   98c06:	64 80 3c 25 10 7e fe 	cmpb   $0x1,%fs:0xfffffffffffe7e10
+   98c0d:	ff 01 
+   98c0f:	0f 85 fc fc ff ff    	jne    98911 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0xb1>
+   98c15:	64 48 8b 04 25 38 7e 	mov    %fs:0xfffffffffffe7e38,%rax
+   98c1c:	fe ff 
+   98c1e:	48 c7 c1 00 ff ff ff 	mov    $0xffffffffffffff00,%rcx
+   98c25:	64 48 03 0c 25 30 7e 	add    %fs:0xfffffffffffe7e30,%rcx
+   98c2c:	fe ff 
+   98c2e:	48 39 c1             	cmp    %rax,%rcx
+   98c31:	48 0f 4f c1          	cmovg  %rcx,%rax
+   98c35:	64 48 89 0c 25 30 7e 	mov    %rcx,%fs:0xfffffffffffe7e30
+   98c3c:	fe ff 
+   98c3e:	64 48 89 04 25 38 7e 	mov    %rax,%fs:0xfffffffffffe7e38
+   98c45:	fe ff 
+   98c47:	ff 15 93 9c 3d 00    	call   *0x3d9c93(%rip)        # 4728e0 <_GLOBAL_OFFSET_TABLE_+0xad8>
+   98c4d:	ff 15 65 ae 3d 00    	call   *0x3dae65(%rip)        # 473ab8 <_GLOBAL_OFFSET_TABLE_+0x1cb0>
+   98c53:	64 80 3c 25 10 7e fe 	cmpb   $0x1,%fs:0xfffffffffffe7e10
+   98c5a:	ff 01 
+   98c5c:	0f 84 c6 fc ff ff    	je     98928 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0xc8>
+   98c62:	e9 09 fd ff ff       	jmp    98970 <_ZN8chitchat5delta11cost_review23native_rust_tag_control17h3b574c3023a90052E+0x110>
+   98c67:	4c 8d 0d da ef 38 00 	lea    0x38efda(%rip),%r9        # 427c48 <anon.548510d1d299c4478a833f08efd9dbaa.88.llvm.12758509189724969125+0x138>
+   98c6e:	48 8d 74 24 58       	lea    0x58(%rsp),%rsi
+   98c73:	48 89 e2             	mov    %rsp,%rdx
+   98c76:	31 ff                	xor    %edi,%edi
+   98c78:	31 c9                	xor    %ecx,%ecx
+   98c7a:	e8 ff ed fc ff       	call   67a7e <_ZN4core9panicking13assert_failed17h873b5e8ab3dabfd0E>
+   98c7f:	48 8d 15 de eb 2b 00 	lea    0x2bebde(%rip),%rdx        # 357864 <anon.548510d1d299c4478a833f08efd9dbaa.76.llvm.12758509189724969125>
+   98c86:	4c 8d 0d 0b ee 38 00 	lea    0x38ee0b(%rip),%r9        # 427a98 <anon.548510d1d299c4478a833f08efd9dbaa.78.llvm.12758509189724969125>
+   98c8d:	48 8d 74 24 58       	lea    0x58(%rsp),%rsi
+   98c92:	31 ff                	xor    %edi,%edi
+   98c94:	31 c9                	xor    %ecx,%ecx
+   98c96:	ff 15 bc a3 3d 00    	call   *0x3da3bc(%rip)        # 473058 <_GLOBAL_OFFSET_TABLE_+0x1250>
+   98c9c:	48 8d 3d 2b 2b 2c 00 	lea    0x2c2b2b(%rip),%rdi        # 35b7ce <anon.64e05056b9ac103ffd93daab5ed2370e.94.llvm.13638929326812790651>
+   98ca3:	48 8d 15 a6 f7 38 00 	lea    0x38f7a6(%rip),%rdx        # 428450 <anon.64e05056b9ac103ffd93daab5ed2370e.96.llvm.13638929326812790651>
+   98caa:	be 1f 00 00 00       	mov    $0x1f,%esi
+   98caf:	ff 15 13 a7 3d 00    	call   *0x3da713(%rip)        # 4733c8 <_GLOBAL_OFFSET_TABLE_+0x15c0>
+   98cb5:	48 8d 15 2c 1d 2c 00 	lea    0x2c1d2c(%rip),%rdx        # 35a9e8 <anon.548510d1d299c4478a833f08efd9dbaa.86.llvm.12758509189724969125+0x2f>
+   98cbc:	4c 8d 0d 6d ef 38 00 	lea    0x38ef6d(%rip),%r9        # 427c30 <anon.548510d1d299c4478a833f08efd9dbaa.88.llvm.12758509189724969125+0x120>
+   98cc3:	48 89 e6             	mov    %rsp,%rsi
+   98cc6:	31 ff                	xor    %edi,%edi
+   98cc8:	31 c9                	xor    %ecx,%ecx
+   98cca:	e8 e5 ee fc ff       	call   67bb4 <_ZN4core9panicking13assert_failed17h9fb64fa295da7c98E>
+   98ccf:	48 8d 15 e2 1d 2c 00 	lea    0x2c1de2(%rip),%rdx        # 35aab8 <anon.548510d1d299c4478a833f08efd9dbaa.117.llvm.12758509189724969125>
+   98cd6:	4c 8d 0d 83 ef 38 00 	lea    0x38ef83(%rip),%r9        # 427c60 <anon.548510d1d299c4478a833f08efd9dbaa.88.llvm.12758509189724969125+0x150>
+   98cdd:	48 89 e6             	mov    %rsp,%rsi
+   98ce0:	31 ff                	xor    %edi,%edi
+   98ce2:	31 c9                	xor    %ecx,%ecx
+   98ce4:	e8 f3 e9 fc ff       	call   676dc <_ZN4core9panicking13assert_failed17h2c1111ea3b4e4272E>
+
+Disassembly of section .fini:

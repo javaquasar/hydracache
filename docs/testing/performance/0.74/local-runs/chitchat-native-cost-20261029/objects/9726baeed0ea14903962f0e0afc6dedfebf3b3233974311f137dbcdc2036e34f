@@ -1,0 +1,62 @@
+"""Read-only GNU profiler inventory under the original local ownership limits."""
+from pathlib import Path
+import hashlib
+import importlib.util
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+import traceback
+
+ROOT=Path('C:/Workspace/prj/jq/cashe/hydracache-074') if os.name=='nt' else Path('/mnt/c/Workspace/prj/jq/cashe/hydracache-074')
+OUT=ROOT/'target/chitchat-native-cost-20261029/inventory'
+
+
+def common():
+    sys.path.insert(0,str(ROOT/'tools/chitchat-inplace-074'))
+    import common as c
+    return c
+
+
+def query():
+    assert os.getuid()==os.getgid()==1000
+    result=dict(uid=os.getuid(),uname=list(os.uname()),tools={},versions={},affinity=sorted(os.sched_getaffinity(0)),
+                clocks=dict(thread_cpu_reported_resolution=time.clock_getres(time.CLOCK_THREAD_CPUTIME_ID)),read_only=True)
+    env=dict(HOME='/home/artur',USER='artur',LOGNAME='artur',LANG='C.UTF-8',PATH='/usr/local/bin:/usr/bin:/bin')
+    for name in ('heaptrack','valgrind','perf','ltrace','gcc','cc','ld','nm','readelf'):
+        path=shutil.which(name,path=env['PATH']);result['tools'][name]=path
+    for name,argv in (('libc',['/usr/bin/getconf','GNU_LIBC_VERSION']),('gcc',['/usr/bin/gcc','--version'])):
+        child=subprocess.run(argv,env=env,capture_output=True,stdin=subprocess.DEVNULL,timeout=30)
+        result['versions'][name]=dict(argv=argv,exit=child.returncode,stdout=child.stdout.decode(),stderr=child.stderr.decode())
+    print(json.dumps(result),flush=True)
+
+
+if len(sys.argv)==2 and sys.argv[1]=='query':query();raise SystemExit(0)
+if len(sys.argv)==2 and sys.argv[1]=='native-worker':
+    c=common();spec=importlib.util.spec_from_file_location('native_inventory_group',ROOT/'scripts/ci/watchdog_linux_group.py')
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    argv=[sys.executable,'-B',str(Path(__file__)),'query']
+    value=c.owned._owned(module.LinuxGroup(),argv,str(ROOT),c.capacity,bound=1200)
+    c.write(OUT,'native-execution.json',value);raise SystemExit(value['exit'])
+if len(sys.argv)==2 and sys.argv[1]=='windows-worker':
+    c=common();argv=['wsl.exe','-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B',
+        '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/chitchat-native-inventory-20261029.py','native-worker']
+    value=c.owned._owned(c.owned.load_job().WindowsJob(),argv,str(ROOT),c.capacity,bound=1200)
+    c.write(OUT,'execution.json',value);raise SystemExit(value['exit'])
+assert len(sys.argv)==1 and os.name=='nt'
+OUT.mkdir(parents=True,exist_ok=False)
+with (OUT/'stdout.log').open('xb') as stdout,(OUT/'stderr.log').open('xb') as stderr:
+    (OUT/'producer.py').write_bytes(Path(__file__).read_bytes());result=dict(complete=False,release_admitted=False)
+    try:
+        c=common();before=c.source();head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT)
+        c.write(OUT,'intent.json',dict(source=before,head=head.decode(),bound=1200,retry=False,services=False,server=False,clocks=False))
+        child=subprocess.run([sys.executable,'-B',str(Path(__file__)),'windows-worker'],cwd=ROOT,stdout=stdout,stderr=stderr,stdin=subprocess.DEVNULL,timeout=1210)
+        for name in ('execution.json','native-execution.json'):
+            value=json.loads((OUT/name).read_bytes());assert value['exit']==0 and value['retired'] and not value['errors']
+        assert child.returncode==0 and before==c.source() and head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT)
+        result['complete']=True
+    except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+    with (OUT/'result.json').open('x',encoding='utf8') as dest:json.dump(result,dest,indent=2)
+print(json.dumps(result));raise SystemExit(0 if result['complete'] else 1)
