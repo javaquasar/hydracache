@@ -1,0 +1,180 @@
+"""Exclusive fixed native allocation phases; no product/CPU workload dispatcher."""
+from pathlib import Path
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+import traceback
+
+import common as c
+
+WRAP='-Wl,--wrap=malloc,--wrap=calloc,--wrap=realloc,--wrap=free'
+ALLOWED={'prepare','format','stage','c-control','build-B','build-P','control-B','control-P',
+         'check-B','check-P','clippy-B','clippy-P','cohort-1','cohort-2','cohort-3','cohort-4'}
+
+
+def environment():
+    tool=Path.home()/'.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin'
+    flags=['-C','linker=/usr/bin/gcc','-C','link-arg=-fuse-ld=bfd','-C','link-arg='+str(c.NATIVE/'wrap.o'),'-C','link-arg='+WRAP]
+    env=dict(HOME='/home/artur',USER='artur',LOGNAME='artur',LANG='C.UTF-8',
+        PATH=str(tool)+':/usr/local/bin:/usr/bin:/bin',RUSTC=str(tool/'rustc'),
+        RUSTUP_TOOLCHAIN='1.94.0-x86_64-unknown-linux-gnu',CARGO_HOME=str(c.NATIVE/'cargo-home'),
+        CARGO_NET_OFFLINE='true',CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2',
+        CARGO_ENCODED_RUSTFLAGS='\x1f'.join(flags),HC074_NATIVE_FRAME=os.environ['HC074_NATIVE_FRAME'],PROPTEST_RNG_SEED='7606312')
+    return tool,env
+
+
+def invoke(out,name,argv,deadline,env=None,object_guard=True):
+    c.native_guard();before=c.source()
+    if object_guard:
+        obj=json.loads((c.BASE/'c-control/object.json').read_bytes())
+        c.need(c.sha((c.NATIVE/'wrap.o').read_bytes())==obj['sha256'],'held wrapper link object')
+    folder=out/name;folder.mkdir(exist_ok=False)
+    c.write(folder,'intent.json',dict(argv=argv,deadline=deadline,retry=False,frame=os.environ['HC074_NATIVE_FRAME']))
+    with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+        child=subprocess.run([sys.executable,'-B',str(Path(__file__)),'command',str(folder)],cwd=c.ROOT,
+            stdout=stdout,stderr=stderr,stdin=subprocess.DEVNULL,
+            env=dict(env or os.environ,HC074_NATIVE_ARGV=json.dumps(argv),HC074_NATIVE_DEADLINE=str(deadline)),timeout=max(0,deadline-time.monotonic())+10)
+    value=json.loads((folder/'execution.json').read_bytes())
+    c.need(child.returncode==value['exit']==0 and value['retired'] and not value['errors'],'first actual owned outcome: '+name)
+    c.native_guard();c.need(before==c.source(),'source drift within command')
+    return folder
+
+
+def accounting(raw,selected,total):
+    rows=re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;',raw)
+    c.need(len(rows)==1 and tuple(map(int,rows[0]))==(selected,0,0,0,total-selected),'complete case accounting')
+
+
+def session(label):
+    out=c.BASE/label;out.mkdir(parents=True,exist_ok=False) if not out.exists() else None
+    deadline=time.monotonic()+1100;result=dict(complete=False,root_adopted=False)
+    try:
+        if label=='stage':c.stage(os.environ['HC074_NATIVE_FRAME'])
+        else:
+            c.native_guard()
+            env=dict(HOME='/home/artur',USER='artur',LOGNAME='artur',LANG='C.UTF-8',PATH='/usr/bin:/bin',HC074_NATIVE_FRAME=os.environ['HC074_NATIVE_FRAME'])
+            if label=='c-control':
+                for name,argv in (('gcc',['/usr/bin/gcc','--version']),('ld',['/usr/bin/ld.bfd','--version'])):
+                    invoke(out,name,argv,deadline,env,False)
+                common=['/usr/bin/gcc','-std=c11','-O2','-g','-Wall','-Wextra','-Werror','-fno-builtin','-fno-lto']
+                held=json.loads((c.BASE/'input/reuse-object.json').read_bytes());c.need(c.sha((c.NATIVE/'wrap.o').read_bytes())==held['sha256'],'unchanged original C object')
+                c.write(out,'object.json',held)
+                invoke(out,'compile-control',[*common,str(c.TOOLS/'control.c'),str(c.NATIVE/'wrap.o'),WRAP,'-pthread','-o',str(c.NATIVE/'c-control-scope')],deadline,env)
+                folder=invoke(out,'control',[str(c.NATIVE/'c-control-scope')],deadline,env)
+                c.need(c.diagnostic((folder/'stdout.log').read_text(),'HC074_NATIVE_C_CONTROLS:')['complete'],'actual C controls')
+            else:
+                action,variant=label.split('-')
+                if action=='cohort':
+                    position=int(variant);variant=('B','P','P','B')[position-1];action='observe'
+                    if position>1:c.need(json.loads((c.BASE/f'cohort-{position-1}/session-result.json').read_bytes())['complete'],'no continuation after prior refusal')
+                tool,env=environment();target=c.NATIVE/'targets'/variant
+                args=['--offline','--locked','--release','--target','x86_64-unknown-linux-gnu','--manifest-path',str(c.BASE/'fixtures'/variant/'Cargo.toml'),'--target-dir',str(target)]
+                if action=='build':
+                    folder=invoke(out,'compiler',[str(tool/'rustc'),'-vV'],deadline,env)
+                    raw=(folder/'stdout.log').read_text();c.need('release: 1.94.0\n' in raw and 'host: x86_64-unknown-linux-gnu\n' in raw,'actual qualified compiler')
+                    folder=invoke(out,'cargo',[str(tool/'cargo'),'test',*args,'--lib','--features','testsuite','--no-run','--message-format=json'],deadline,env)
+                    images=[]
+                    for line in (folder/'stdout.log').read_text().splitlines():
+                        row=json.loads(line)
+                        if row.get('reason')=='compiler-artifact' and row.get('profile',{}).get('test') and row.get('executable'):
+                            path=Path(row['executable']);c.need(path.resolve().is_relative_to(target) and Path(row['target']['src_path']).resolve()==(c.BASE/'fixtures'/variant/'src/lib.rs').resolve(),'actual source/image')
+                            images.append(dict(path=str(path),sha256=c.sha(path.read_bytes())))
+                    c.need(len(images)==1,'one actual release image');image=images[0];c.write(out,'artifact.json',image)
+                    folder=invoke(out,'list',[image['path'],'--list'],deadline,env)
+                    names=[v[:-6] for v in (folder/'stdout.log').read_text().splitlines() if v.endswith(': test')]
+                    expected=json.loads((c.BASE/'input'/('catalog-'+variant+'.json')).read_bytes())
+                    c.need(sorted(names)==expected and len(names)==len(set(names)),'complete actual catalog');c.write(out,'catalog.json',names)
+                    # Default C allocator imports in the actual statically linked Zstd archive.
+                    archives=list(target.glob('x86_64-unknown-linux-gnu/release/build/zstd-sys-*/out/libzstd.a'));c.need(len(archives)==1,'one compiled Zstd archive')
+                    invoke(out,'zstd-imports',['/usr/bin/nm','-u',str(archives[0])],deadline,env)
+                    invoke(out,'linked-zstd',['/usr/bin/objdump','-d','--disassemble=ZSTD_createCCtx',image['path']],deadline,env)
+                    c.write(out,'flags.json',dict(encoded=env['CARGO_ENCODED_RUSTFLAGS'],object=json.loads((c.BASE/'c-control/object.json').read_bytes())))
+                elif action in ('check','clippy'):
+                    argv=[str(tool/'cargo'),action,*args,'--all-targets','--all-features']
+                    if action=='clippy':argv+=['--','-D','warnings']
+                    invoke(out,'cargo',argv,deadline,env)
+                else:
+                    built=c.BASE/('build-'+variant);image=json.loads((built/'artifact.json').read_bytes());names=json.loads((built/'catalog.json').read_bytes())
+                    c.need(c.sha(Path(image['path']).read_bytes())==image['sha256'],'held actual image')
+                    if action=='control':
+                        cases=[]
+                        for number,name in enumerate(('delta::cost_review::allocator_control','delta::cost_review::native_c_allocator_control',
+                                                      'delta::cost_review::native_rust_tag_control','delta::mtu_review::supported_delta_operations')):
+                            folder=invoke(out,str(number),[image['path'],name,'--exact','--test-threads=1','--show-output','--color=never'],deadline,env)
+                            raw=(folder/'stdout.log').read_text();accounting(raw,1,len(names));cases.append(name)
+                            if number==3:c.semantics(c.diagnostic(raw,'HC074_SUPPORTED_DELTA:')['cases'])
+                        c.write(out,'controls.json',dict(complete=True,cases=cases,image=image))
+                    else:
+                        control=json.loads((c.BASE/('control-'+variant)/'controls.json').read_bytes())
+                        c.need(control['complete'] and control['image']==image,'allocator/semantic controls on same image')
+                        folder=invoke(out,'observation',[image['path'],'delta::cost_review::native_operation_observations','--exact','--test-threads=1','--show-output','--color=never'],deadline,env)
+                        raw=(folder/'stdout.log').read_text();accounting(raw,1,len(names));value=c.diagnostic(raw,'HC074_NATIVE_ALLOC:');c.semantics(value['rows'])
+                        c.write(out,'observations.json',value)
+                    c.need(c.sha(Path(image['path']).read_bytes())==image['sha256'],'image postflight')
+        c.need(time.monotonic()<deadline,'original complete 1100-second session')
+        result.update(complete=True,CPU_qualified=False,retained_memory_qualified=False)
+    except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+    c.write(out,'session-result.json',result);raise SystemExit(0 if result['complete'] else 1)
+
+
+def main(label):
+    c.need(os.name=='nt' and label in ALLOWED,'one fixed local phase');out=c.BASE/label;out.mkdir(parents=True,exist_ok=False)
+    before=c.source();head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=c.ROOT)
+    result=dict(complete=False,release_admitted=False)
+    with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+        for path in c.TOOLS.iterdir():
+            if path.is_file():
+                dest=out/'producer'/path.name;dest.parent.mkdir(exist_ok=True);dest.write_bytes(path.read_bytes())
+        c.write(out,'intent.json',dict(source=before,head=head.decode(),retry=False,bound=1200))
+        try:
+            if label=='prepare':c.prepare()
+            elif label=='format':
+                tool=Path.home()/'.rustup/toolchains/1.94.0-x86_64-pc-windows-msvc/bin/rustfmt.exe'
+                argv=[str(tool),'--edition','2024','--config','skip_children=true',str(c.BASE/'observer.rs'),str(c.TOOLS/'native_tests.rs')]
+                c.write(out,'format-intent.json',dict(argv=argv));(out/'before-observer.rs').write_bytes((c.BASE/'observer.rs').read_bytes())
+                child=subprocess.run(argv,stdout=stdout,stderr=stderr,timeout=120);c.need(child.returncode==0,'owned observer formatting')
+                result.update(c.freeze())
+            else:
+                frozen=json.loads((c.BASE/'format/result.json').read_bytes());frame=frozen['frame_sha256']
+                child=subprocess.run([sys.executable,'-B',str(Path(__file__)),'windows-worker',label,frame],cwd=c.ROOT,
+                    stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,timeout=1210)
+                execution=json.loads((out/'execution.json').read_bytes());done=json.loads((out/'native-envelope.json').read_bytes())
+                session_out=out if label=='stage' else out/'native'
+                inner=json.loads((session_out/'session-result.json').read_bytes())
+                c.need(child.returncode==execution['exit']==done['exit']==0 and execution['retired'] and done['retired'] and not execution['errors'] and not done['errors'] and inner['complete'],'complete first owned native phase')
+            after=c.source();changed={n for n in before.keys()|after.keys() if before.get(n)!=after.get(n)}
+            c.need(changed<=({'tools/chitchat-native-cost-074/native_tests.rs'} if label=='format' else set()) and head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=c.ROOT),'root source/HEAD drift')
+            result.update(complete=True,root_adopted=False)
+        except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+        c.write(out,'result.json',result)
+    print(json.dumps(dict(phase=label,**result)));raise SystemExit(0 if result['complete'] else 1)
+
+
+if __name__=='__main__':
+    if len(sys.argv)==4 and sys.argv[1]=='session':
+        os.environ['HC074_NATIVE_FRAME']=sys.argv[3];session(sys.argv[2])
+    if len(sys.argv)==3 and sys.argv[1]=='command':
+        c.native_guard();folder=Path(sys.argv[2]);argv=json.loads(os.environ.pop('HC074_NATIVE_ARGV'));deadline=float(os.environ.pop('HC074_NATIVE_DEADLINE'))
+        group=c.load(c.ROOT/'scripts/ci/watchdog_linux_group.py','native_cost_original_group').LinuxGroup()
+        value=c.owned._owned(group,argv,str(c.ROOT),c.capacity,bound=1200,deadline=deadline)
+        c.write(folder,'execution.json',value);raise SystemExit(value['exit'])
+    if len(sys.argv)==4 and sys.argv[1]=='native-worker':
+        label,frame=sys.argv[2:];os.environ['HC074_NATIVE_FRAME']=frame
+        group=c.load(c.ROOT/'scripts/ci/watchdog_linux_group.py','native_cost_original_parent').LinuxGroup()
+        value=c.owned._owned(group,[sys.executable,'-B',str(Path(__file__)),'session',label,frame],str(c.ROOT),c.capacity,bound=1200)
+        real=c.REAL/c.RELBASE/label;c.write(real,'native-envelope.json',value)
+        if c.BASE.resolve()!=(c.REAL/c.RELBASE).resolve():
+            for path in sorted((c.BASE/label).rglob('*')):
+                if path.is_file():
+                    dest=real/'native'/path.relative_to(c.BASE/label);dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(path.read_bytes())
+            if label=='c-control':(real/'wrap.o').write_bytes((c.NATIVE/'wrap.o').read_bytes())
+        raise SystemExit(value['exit'])
+    if len(sys.argv)==4 and sys.argv[1]=='windows-worker':
+        label,frame=sys.argv[2:];root='/mnt/c/Workspace/prj/jq/cashe/hydracache-074' if label=='stage' else c.COPY.as_posix()
+        argv=['wsl.exe','-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B',root+'/tools/chitchat-native-cost-074/run.py','native-worker',label,frame]
+        value=c.owned._owned(c.owned.load_job().WindowsJob(),argv,str(c.ROOT),c.capacity,bound=1200)
+        c.write(c.BASE/label,'execution.json',value);raise SystemExit(value['exit'])
+    c.need(len(sys.argv)==2,'one phase');main(sys.argv[1])
