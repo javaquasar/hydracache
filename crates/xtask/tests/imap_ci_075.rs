@@ -384,6 +384,8 @@ fn tooling_isolates_the_live_producer_on_every_platform_and_preserves_gate_argum
                 "imap_native_probe_075",
                 "--test",
                 "imap_native_concurrent_075",
+                "--test",
+                "imap_native_recovery_075",
                 "--locked",
             ]
         );

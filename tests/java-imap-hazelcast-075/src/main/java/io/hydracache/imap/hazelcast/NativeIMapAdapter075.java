@@ -37,7 +37,7 @@ public final class NativeIMapAdapter075 implements AutoCloseable {
   NativeIMapAdapter075(HazelcastInstance client, String mapName, NativeIMapProfile075 profile, int queueCapacity) {
     this(officialMap(client, mapName), profile, queueCapacity);
   }
-  private static IMap<byte[], byte[]> officialMap(HazelcastInstance client, String mapName) {
+  static IMap<byte[], byte[]> officialMap(HazelcastInstance client, String mapName) {
     Objects.requireNonNull(client); HazelcastArtifactPin.verifyLoadedArtifact();
     if (mapName == null || !mapName.matches("imap075-[a-zA-Z0-9-]{1,80}")) throw new IllegalArgumentException("native fixture bounds");
     if (com.hazelcast.client.HazelcastClient.getHazelcastClientByName(client.getName()) != client) throw new IllegalArgumentException("official client required");

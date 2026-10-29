@@ -37,6 +37,7 @@ public final class HazelcastLoopback075 implements AutoCloseable {
       var cc = new ClientConfig().setClusterName(clientClusterOverride==null?config.getClusterName():clientClusterOverride);
       cc.getNetworkConfig().addAddress("127.0.0.1:"+port);
       cc.setProperty("hazelcast.logging.type","none");
+      cc.setProperty(com.hazelcast.client.properties.ClientProperty.INVOCATION_TIMEOUT_SECONDS.getName(), "5");
       cc.getConnectionStrategyConfig().getConnectionRetryConfig().setClusterConnectTimeoutMillis(3000);
       client = HazelcastClient.newHazelcastClient(cc);
     } catch (RuntimeException failure) { member.shutdown(); throw failure; }

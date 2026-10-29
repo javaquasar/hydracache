@@ -129,7 +129,7 @@ evidence, not a product protocol, persistent service image or ship receipt.
 Typed entry views, helper futures, progress queries and scoped transfer controls remain runtime
 APIs; the 40 core operation IDs and production HC/1/HC/2 identities do not change.
 
-The separate development preparation receipt uses `hydracache.imap.pre074-preparation.v3`
+The separate development preparation receipt uses `hydracache.imap.pre074-preparation.v4`
 and `docs/testing/imap/0.75/schemas/pre074-preparation.schema.json`. Its only scope is
 `pre074_preparation`, with production disabled and all six predecessor/integration blockers
 retained. It binds clean source, current tooling/runtime, eleven fixed input artifacts, raw
@@ -151,6 +151,14 @@ The reader independently normalizes/checks raw histories and reexecutes the trus
 current cohort, accepting legal nondeterministic interleavings only for the same
 program. Missing, duplicate, foreign, weakened or unknown fields/versions refuse.
 Search exhaustion is explicit failure. Current preparation readers reject v2.
+Version 4 requires `native-recovery.json`, schema `imap075-native-recovery-v1`.
+The recovery fixture admits only bounded, unique, eternal point-write tuples behind
+its own writer gate. Exact received callback correlation is required before replacing
+the listener and comparing a bounded baseline to owned state. Local registration
+generations never claim a native server watermark or production atomic cut. Duplicate,
+missing, foreign, cancelled, over-budget or unsupported profile observations refuse
+recovery. Native client calls have a five-second invocation timeout; managed probes
+have a separate forty-second process envelope. Current readers reject v3/future versions.
 
 The 0.75 migration corpus uses `fixture_version = 1` for bounded development
 staging/dry-run readers only. Runtime replica images preserve logical incarnation

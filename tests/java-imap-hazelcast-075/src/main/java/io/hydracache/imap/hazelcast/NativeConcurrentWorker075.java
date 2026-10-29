@@ -37,6 +37,7 @@ public final class NativeConcurrentWorker075 {
     if (fixture.member().getCluster().getMembers().size() != 1) throw new IllegalStateException("native cohort topology changed");
     var config = new ClientConfig().setClusterName(fixture.member().getConfig().getClusterName());
     config.setProperty("hazelcast.logging.type", "none");
+    config.setProperty(com.hazelcast.client.properties.ClientProperty.INVOCATION_TIMEOUT_SECONDS.getName(), "5");
     config.getNetworkConfig().addAddress("127.0.0.1:" + member.getAddress().getPort());
     config.getConnectionStrategyConfig().getConnectionRetryConfig().setClusterConnectTimeoutMillis(3000);
     var second = HazelcastClient.newHazelcastClient(config);

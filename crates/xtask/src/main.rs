@@ -78,6 +78,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("imap-pre074-tools") => xtask::imap_pre074_075::run(args.collect(), "tools")?,
         Some("imap-native-observation") => xtask::imap_native_probe_075::run(args.collect())?,
         Some("imap-native-concurrent") => xtask::imap_native_concurrent_075::run(args.collect())?,
+        Some("imap-native-listener-recovery") => {
+            xtask::imap_native_recovery_075::run(args.collect())?
+        }
         Some("imap-pre074-evidence") => xtask::imap_pre074_075::run(args.collect(), "produce")?,
         Some("imap-pre074-evidence-check") => {
             xtask::imap_pre074_075::run(args.collect(), "verify")?
