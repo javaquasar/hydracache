@@ -138,6 +138,9 @@ proof/tooling execution with unchanged clean source. The aggregate gate rejects 
 mixed-source or undeclared lanes. Failure diagnostics are kept separately from matrix receipts.
 Scheduled/default-branch execution and remote matrix results remain separate from local tests of
 the workflow contract.
+Both evidence jobs check out complete, unfiltered Git history: retained compatibility and
+predecessor closure tests read pinned ancestor objects. A real shallow-clone regression proves
+that restoring history recovers those objects; workflow canaries reject a weakened checkout.
 On Windows, nested tooling tests build in `target/imap-075/tooling` to avoid replacing the running `xtask.exe`.
 
 The integrated runtime additionally connects `new_clustered` namespace registries to the

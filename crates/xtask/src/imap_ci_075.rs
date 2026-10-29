@@ -316,6 +316,25 @@ pub fn check_workflow(root: &Path) -> Result<(), Box<dyn Error>> {
         let steps = jobs[name]["steps"]
             .as_sequence()
             .ok_or("CI job requires steps")?;
+        if matches!(name, "qualification" | "complete") {
+            let checkouts = steps
+                .iter()
+                .filter(|step| {
+                    step["uses"]
+                        .as_str()
+                        .is_some_and(|action| action.starts_with("actions/checkout@"))
+                })
+                .collect::<Vec<_>>();
+            if checkouts.len() != 1
+                || checkouts[0]["with"]["fetch-depth"].as_u64() != Some(0)
+                || !checkouts[0]["with"]["filter"].is_null()
+                || !checkouts[0]["with"]["sparse-checkout"].is_null()
+            {
+                return Err(
+                    "IMap evidence jobs require one complete, unfiltered history checkout".into(),
+                );
+            }
+        }
         for step in steps {
             if !step["continue-on-error"].is_null()
                 && step["continue-on-error"] != serde_yaml::Value::Bool(false)

@@ -139,6 +139,102 @@ fn workflow_canaries_reject_unpinned_actions_ignored_failures_and_missing_comple
         assert!(check_workflow(temp.path()).is_err());
     }
 }
+
+#[test]
+fn both_evidence_jobs_require_complete_unfiltered_history() {
+    for job in ["qualification", "complete"] {
+        for weakened in [
+            serde_yaml::Value::Null,
+            serde_yaml::from_str("fetch-depth: 1").unwrap(),
+            serde_yaml::from_str("fetch-depth: 0\nfilter: blob:none").unwrap(),
+            serde_yaml::from_str("fetch-depth: 0\nsparse-checkout: crates").unwrap(),
+        ] {
+            let mut workflow: serde_yaml::Value = serde_yaml::from_str(WORKFLOW).unwrap();
+            workflow["jobs"][job]["steps"][0]["with"] = weakened;
+            let temp = tempfile::tempdir().unwrap();
+            fs::create_dir_all(temp.path().join(".github/workflows")).unwrap();
+            fs::write(
+                temp.path().join(".github/workflows/imap-075.yml"),
+                serde_yaml::to_string(&workflow).unwrap(),
+            )
+            .unwrap();
+            assert!(check_workflow(temp.path()).is_err(), "{job}");
+        }
+    }
+}
+
+#[test]
+fn retained_evidence_is_missing_in_a_real_shallow_checkout_and_restored_with_history() {
+    fn git(directory: &Path, args: &[&str]) -> String {
+        let output = Command::new("git")
+            .current_dir(directory)
+            .args(args)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{args:?}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        String::from_utf8(output.stdout).unwrap().trim().to_owned()
+    }
+    let temp = tempfile::tempdir().unwrap();
+    let origin = temp.path().join("origin");
+    fs::create_dir(&origin).unwrap();
+    git(&origin, &["init", "-b", "retained-history"]);
+    fs::write(
+        origin.join("evidence.txt"),
+        "accepted historical evidence\n",
+    )
+    .unwrap();
+    git(&origin, &["add", "evidence.txt"]);
+    let commit = [
+        "-c",
+        "user.name=IMap fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "commit",
+        "-m",
+        "retain evidence",
+    ];
+    git(&origin, &commit);
+    let retained = git(&origin, &["rev-parse", "HEAD"]);
+    fs::write(origin.join("evidence.txt"), "current candidate\n").unwrap();
+    git(&origin, &["add", "evidence.txt"]);
+    git(&origin, &commit);
+    git(
+        temp.path(),
+        &[
+            "clone",
+            "--no-local",
+            "--depth",
+            "1",
+            origin.to_str().unwrap(),
+            "checkout",
+        ],
+    );
+    let checkout = temp.path().join("checkout");
+    assert_eq!(
+        git(&checkout, &["rev-parse", "--is-shallow-repository"]),
+        "true"
+    );
+    assert!(!Command::new("git")
+        .current_dir(&checkout)
+        .args(["cat-file", "-e", &format!("{retained}^{{commit}}")])
+        .output()
+        .unwrap()
+        .status
+        .success());
+    git(&checkout, &["fetch", "--unshallow", "origin"]);
+    assert_eq!(
+        git(&checkout, &["rev-parse", "--is-shallow-repository"]),
+        "false"
+    );
+    assert_eq!(
+        git(&checkout, &["show", &format!("{retained}:evidence.txt")]),
+        "accepted historical evidence"
+    );
+}
 #[test]
 fn receipt_writes_are_bounded_idempotent_and_never_overwrite_conflicting_evidence() {
     let temp = tempfile::tempdir().unwrap();
