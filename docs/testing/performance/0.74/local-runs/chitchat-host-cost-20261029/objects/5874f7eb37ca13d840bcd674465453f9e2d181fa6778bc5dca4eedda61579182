@@ -1,0 +1,45 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "cohort_dispatched": false,
+  "complete": true,
+  "continuous_retention_qualified": false,
+  "controls": [
+    {
+      "mono_ns": 494181,
+      "pid": 406829,
+      "raw_ns": 494200,
+      "relative_clock_discrepancy": 3.8445973290165926e-05,
+      "semantic_rows": 30,
+      "start_ticks": 201973530,
+      "variant": "B"
+    },
+    {
+      "mono_ns": 592389,
+      "pid": 406843,
+      "raw_ns": 592401,
+      "relative_clock_discrepancy": 2.025654919556179e-05,
+      "semantic_rows": 30,
+      "start_ticks": 201973720,
+      "variant": "P"
+    },
+    {
+      "mono_ns": 487091,
+      "pid": 406857,
+      "raw_ns": 487131,
+      "relative_clock_discrepancy": 8.211343560561738e-05,
+      "semantic_rows": 30,
+      "start_ticks": 201973910,
+      "variant": "Q"
+    }
+  ],
+  "exclusive_host": false,
+  "first_WSL_refusal_unchanged": true,
+  "first_carrier_refusal_retained": true,
+  "generic_component_gate_pass": false,
+  "host_control_gate_pass": true,
+  "release_admitted": false,
+  "root_adopted": false,
+  "successful_control_semantic_rows": 90,
+  "supervisor_unchanged": true
+}

@@ -1,0 +1,26 @@
+test_complete_native_control_only (test_analysis.Accounting.test_complete_native_control_only) ... ok
+test_deadline_rebase (test_analysis.Accounting.test_deadline_rebase) ... ok
+test_first_refusal_cannot_be_promoted (test_analysis.Accounting.test_first_refusal_cannot_be_promoted) ... ok
+test_host_or_supervisor_change (test_analysis.Accounting.test_host_or_supervisor_change) ... ok
+test_missing_semantic_row (test_analysis.Accounting.test_missing_semantic_row) ... ok
+test_no_scope_promotion (test_analysis.Accounting.test_no_scope_promotion) ... ok
+test_parent_graph_mutation (test_analysis.Accounting.test_parent_graph_mutation) ... ok
+test_retirement_missing (test_analysis.Accounting.test_retirement_missing) ... ok
+test_wrong_image (test_analysis.Accounting.test_wrong_image) ... ok
+test_campaign_and_context_refusals (test_controls.Controls.test_campaign_and_context_refusals) ... ok
+test_carrier_keeps_limits_no_service_or_lock_mutation (test_controls.Controls.test_carrier_keeps_limits_no_service_or_lock_mutation) ... ok
+test_complete_healthy_body_covers_validator_global_closure (test_controls.Controls.test_complete_healthy_body_covers_validator_global_closure) ... ok
+test_current_read_only_admission (test_controls.Controls.test_current_read_only_admission) ... ok
+test_dispatch_latches_and_detached_owner_are_fixed (test_controls.Controls.test_dispatch_latches_and_detached_owner_are_fixed) ... ok
+test_exact_functions_without_rewrite (test_controls.Controls.test_exact_functions_without_rewrite) ... ok
+test_first_receipt_never_overwritten (test_controls.Controls.test_first_receipt_never_overwritten) ... ok
+test_fixed_control_no_numerical_dispatch (test_controls.Controls.test_fixed_control_no_numerical_dispatch) ... ok
+test_host_pins_abi_supervisor (test_controls.Controls.test_host_pins_abi_supervisor) ... ok
+test_input_inventory_mutations (test_controls.Controls.test_input_inventory_mutations) ... ok
+test_same_clock_refusal_is_not_rescued_by_host_adapter (test_controls.Controls.test_same_clock_refusal_is_not_rescued_by_host_adapter) ... ok
+test_validator_globals_are_only_complete_literal_data (test_controls.Controls.test_validator_globals_are_only_complete_literal_data) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 0.127s
+
+OK

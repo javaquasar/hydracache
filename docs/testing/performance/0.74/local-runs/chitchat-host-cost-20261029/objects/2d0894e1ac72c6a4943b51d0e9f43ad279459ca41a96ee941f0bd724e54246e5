@@ -1,0 +1,19 @@
+set -eu
+test "$(id -u):$(id -g)" = 0:0
+umask 077
+upload=/tmp/hc074-chitchat-control-upload-20261029.Fk1871
+test ! -L "$upload"
+test "$(stat -c '%a:%u:%g' "$upload")" = 700:1000:1000
+test -f "$upload/payload.tar.gz" && test ! -L "$upload/payload.tar.gz"
+root=$(mktemp -d /tmp/hc074-chitchat-control-root-20261029.XXXXXX)
+install -m 400 "$upload/payload.tar.gz" "$root/payload.tar.gz"
+cd "$root"
+printf '%s  payload.tar.gz\n' '86da447e91d201efda43f268b17419d2673a6df66eaf634fa6926916f1f9174c' | sha256sum --check
+/usr/bin/python3 -B -c 'import tarfile; t=tarfile.open("payload.tar.gz"); a=t.getmembers(); assert len(a)==5743 and len({x.name for x in a})==len(a) and all(x.isfile() and x.name.startswith("input/") and ".." not in x.name.split("/") for x in a); t.extractall(".",members=a,filter="data")'
+find "$root/input" -type f -exec chmod 400 {} +
+chmod 500 "$root/input/images/B" "$root/input/images/P" "$root/input/images/Q"
+printf '%s  input/remote.py\n' '5f9c94a7c0d4bc5c192ff7c0c5c0305744fef2f2f311462e86c06906aead130e' | sha256sum --check
+printf '%s  input/inputs.json\n' '1035ac3ca8f7cbb88e9573961f66acf33115d83c1491ad1214cf5d10d7eb212f' | sha256sum --check
+printf 'ROOT=%s\n' "$root"
+nohup /usr/bin/env -i PATH=/usr/bin:/bin LANG=C.UTF-8 /usr/bin/python3 -B -I "$root/input/remote.py" owner 1035ac3ca8f7cbb88e9573961f66acf33115d83c1491ad1214cf5d10d7eb212f >"$root/live.stdout.log" 2>"$root/live.stderr.log" </dev/null &
+printf 'OWNER_PID=%s\n' "$!"

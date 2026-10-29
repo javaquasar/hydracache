@@ -1,0 +1,11 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "cohort_dispatched": false,
+  "complete": false,
+  "exclusive_host": false,
+  "first_refusal": {
+    "reason": "name 'FIELDS' is not defined",
+    "type": "NameError"
+  }
+}

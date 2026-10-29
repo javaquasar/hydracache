@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "ssh",
+    "-T",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ConnectTimeout=15",
+    "-o",
+    "ServerAliveInterval=5",
+    "-o",
+    "ServerAliveCountMax=2",
+    "hydracache-ax42",
+    "umask 077; mktemp -d /tmp/hc074-chitchat-control-upload-20261029.XXXXXX"
+  ],
+  "bound_seconds": 45,
+  "retry": false
+}

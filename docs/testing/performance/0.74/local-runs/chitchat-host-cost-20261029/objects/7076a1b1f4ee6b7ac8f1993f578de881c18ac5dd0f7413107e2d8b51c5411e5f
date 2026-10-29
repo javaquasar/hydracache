@@ -1,0 +1,20 @@
+set -eu
+test "$(id -u):$(id -g)" = 0:0
+umask 077
+upload=/tmp/hc074-chitchat-control-upload-20261029.QXMYwa
+old=/tmp/hc074-chitchat-control-root-20261029.64qpNg
+test ! -L "$upload" && test "$(stat -c '%a:%u:%g' "$upload")" = 700:1000:1000
+test ! -L "$old" && test "$(stat -c '%a:%u:%g' "$old")" = 700:0:0
+printf '%s  %s/input/inputs.json\n' '1035ac3ca8f7cbb88e9573961f66acf33115d83c1491ad1214cf5d10d7eb212f' "$old" | sha256sum --check
+/usr/bin/python3 -B -c 'import json,sys; from pathlib import Path; r=Path(sys.argv[1]); a=json.loads((r/"result.json").read_bytes()); e=json.loads((r/"execution.json").read_bytes()); assert not a["complete"] and a["postflight_passed"] and e["retired"] and not e["errors"]' "$old"
+root=$(mktemp -d /tmp/hc074-chitchat-control-root-20261029.XXXXXX)
+cp -a "$old/input" "$root/input"
+install -m 400 "$upload/patch.tar.gz" "$root/patch.tar.gz"
+cd "$root"
+printf '%s  patch.tar.gz\n' '66c5fee74a9f52c4f246e04ca5a7f639f2ecd25553139ce1d3dcd6ba3c93997b' | sha256sum --check
+/usr/bin/python3 -B -c 'import os,sys,tarfile; from pathlib import Path; old=Path(sys.argv[1]); a=tarfile.open("patch.tar.gz"); m=a.getmembers(); assert {x.name for x in m}=={"input/remote.py","input/inputs.json"} and len(m)==2 and all(x.isfile() for x in m); assert all(os.stat(x.name).st_ino!=os.stat(old/x.name).st_ino for x in m); a.extractall(".",members=m,filter="data")' "$old"
+chmod 400 "$root/input/remote.py" "$root/input/inputs.json"
+printf '%s  input/inputs.json\n' '90057ac9679be66d141a0f3b573fa6d911d8287365051fc10e379479ffb26c20' | sha256sum --check
+printf 'ROOT=%s\n' "$root"
+nohup /usr/bin/env -i PATH=/usr/bin:/bin LANG=C.UTF-8 /usr/bin/python3 -B -I "$root/input/remote.py" owner 90057ac9679be66d141a0f3b573fa6d911d8287365051fc10e379479ffb26c20 >"$root/live.stdout.log" 2>"$root/live.stderr.log" </dev/null &
+printf 'OWNER_PID=%s\n' "$!"

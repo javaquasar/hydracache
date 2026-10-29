@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/usr/bin/env",
+    "-i",
+    "PATH=/usr/bin:/bin",
+    "LANG=C.UTF-8",
+    "HOME=/nonexistent",
+    "/tmp/hc074-chitchat-control-root-20261029.64qpNg/input/images/B",
+    "control"
+  ],
+  "bound": 1200,
+  "deadline": 2020423.478224716,
+  "image_sha256": "0bcca84ff005884d1b80c8b90e640f3a380091820070c0d4b061e464282fc986",
+  "manifest_sha256": "1035ac3ca8f7cbb88e9573961f66acf33115d83c1491ad1214cf5d10d7eb212f",
+  "retry": false
+}

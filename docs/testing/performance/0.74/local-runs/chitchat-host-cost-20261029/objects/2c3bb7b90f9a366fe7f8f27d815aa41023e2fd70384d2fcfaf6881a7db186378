@@ -1,0 +1,72 @@
+"""Reuse byte-pinned Windows Job/LinuxGroup dispatcher; clean fixed phases."""
+from pathlib import Path
+import hashlib
+
+old=Path(__file__).resolve().parents[1]/'chitchat-compat-074/run.py'
+raw=old.read_bytes();assert hashlib.sha256(raw).hexdigest()=='3be704c64b5c9616f39b6f3dcd9c7588d15d2fc88951eaba8f075759b0d93f7f'
+text=raw.decode()
+start=text.index('def session(');end=text.index('\ndef main(',start)
+text=text[:start]+'''
+def session(label,frame):
+    out=c.BASE/label
+    if not out.exists():out.mkdir(parents=True,exist_ok=False)
+    deadline=time.monotonic()+1100;result=dict(complete=False,root_adopted=False)
+    try:
+        if label=='stage':c.stage(frame)
+        else:
+            guard(frame);tool,env,version,host=environment('gnu-194',frame)
+            c.need(os.name!='nt' and host=='x86_64-unknown-linux-gnu','native clean diagnostic only')
+            action,variant=label.split('-')
+            if action in ('cpu','memory'):
+                pos=int(variant);variant=('B','P','Q','Q','P','B')[(pos-1)%6]
+                if pos>1:c.need(json.loads((c.BASE/f'{action}-{pos-1}/session-result.json').read_bytes())['complete'],'no continuation after execution refusal')
+            target=c.NATIVE/'clean-cost-targets'/variant
+            args=['--offline','--locked','--release','--target',host,'--manifest-path',str(c.BASE/'fixtures'/variant/'Cargo.toml'),'--target-dir',str(target)]
+            c.write(out,'environment.json',dict(compiler=version,host=host,names=sorted(env),value_sha256={k:c.sha(v.encode()) for k,v in env.items()},allocation_wrapper=False))
+            if action=='build':
+                folder=invoke(out,'compiler',[str(tool/'rustc'),'-vV'],env,deadline,frame)
+                compiler=(folder/'stdout.log').read_text();c.need('release: 1.94.0\\n' in compiler and 'host: '+host+'\\n' in compiler,'actual qualified compiler')
+                folder=invoke(out,'cargo',[str(tool/'cargo'),'build',*args,'--bin','hc074-clean-cost','--features','testsuite','--message-format=json'],env,deadline,frame)
+                images=[]
+                for line in (folder/'stdout.log').read_text().splitlines():
+                    row=json.loads(line)
+                    if row.get('reason')=='compiler-artifact' and row.get('executable'):
+                        path=Path(row['executable']);c.need(not row['profile']['test'] and path.resolve().is_relative_to(target) and Path(row['target']['src_path']).resolve()==(c.BASE/'fixtures'/variant/'cost-main.rs').resolve(),'actual clean normal binary')
+                        images.append(dict(path=str(path),sha256=c.sha(path.read_bytes())))
+                c.need(len(images)==1,'one normal clean image');c.write(out,'artifact.json',images[0])
+                folder=invoke(out,'imports',['/usr/bin/nm',images[0]['path']],env,deadline,frame)
+                symbols=(folder/'stdout.log').read_text()
+                c.need('__wrap_malloc' not in symbols and 'cost_review' not in symbols and 'q_review' not in symbols and 'stateful_review' not in symbols,'no allocation wrapper/test hooks linked')
+            elif action in ('check','clippy'):
+                argv=[str(tool/'cargo'),action,*args,'--all-targets','--all-features']
+                if action=='clippy':argv+=['--','-D','warnings']
+                invoke(out,'cargo',argv,env,deadline,frame)
+            else:
+                built=c.BASE/('build-'+variant);image=json.loads((built/'artifact.json').read_bytes())
+                c.need(c.sha(Path(image['path']).read_bytes())==image['sha256'],'original clean image')
+                if action!='control':
+                    control=json.loads((c.BASE/('control-'+variant)/'observation.json').read_bytes())
+                    c.need(control['mode']=='control' and control['variant']==variant,'same image premeasurement controls')
+                    for phase in ('check','clippy'):c.need(json.loads((c.BASE/(phase+'-'+variant)/'session-result.json').read_bytes())['complete'],'complete compiler gate before any cohort')
+                folder=invoke(out,'observation',[image['path'],action],env,deadline,frame)
+                value=c.diagnostic((folder/'stdout.log').read_text(),'HC074_CLEAN_COST:')
+                reviewer=c.load(c.TOOLS/'analyze.py','clean_cost_actual_body');reviewer.validate(value,variant,action)
+                c.write(out,'observation.json',value)
+                c.need(c.sha(Path(image['path']).read_bytes())==image['sha256'],'clean image postflight')
+        c.need(time.monotonic()<deadline,'original 1100-second full native session')
+        result.update(complete=True,performance_claim=False,CPU_qualified=False,RSS_qualified=False)
+    except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+    c.write(out,'session-result.json',result);raise SystemExit(0 if result['complete'] else 1)
+
+''' + text[end:]
+before="PHASES=PEERS|{'prepare','format','stage'}"
+after="PHASES={'prepare','format','stage'}|{a+'-'+v for a in ('build','control','check','clippy') for v in ('B','P','Q')}|{a+'-'+str(i) for a in ('cpu','memory') for i in range(1,31)}"
+assert text.count(before)==1;text=text.replace(before,after)
+before="str(c.BASE/'fixtures/Q/src/delta.rs'),str(c.TOOLS/'semantic_export.rs')"
+after="str(c.TOOLS/'probe.rs'),*[str(c.BASE/('probe-'+v+'.rs')) for v in ('B','P','Q')],*[str(c.BASE/'fixtures'/v/'src/delta.rs') for v in ('B','P','Q')]"
+assert text.count(before)==1;text=text.replace(before,after)
+text=text.replace("{'tools/chitchat-compat-074/semantic_export.rs'}","{'tools/chitchat-cost-074/probe.rs'}")
+text=text.replace("root+'/tools/chitchat-compat-074/run.py'","root+'/tools/chitchat-cost-074/run.py'")
+assert text.count('result.update(c.freeze())')==1
+text=text.replace('result.update(c.freeze())',"c.write(c.BASE,'complete-input-names.json',sorted(set(json.loads((c.BASE/'input-names.json').read_bytes()))|set(c.source())))\n                (c.BASE/'input-names.json').write_bytes((c.BASE/'complete-input-names.json').read_bytes())\n                result.update(c.freeze())")
+exec(compile(text,__file__+'[clean-owned-derivative]','exec'),globals())

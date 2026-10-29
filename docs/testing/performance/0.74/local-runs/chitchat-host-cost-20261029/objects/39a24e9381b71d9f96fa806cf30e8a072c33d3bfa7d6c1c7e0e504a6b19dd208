@@ -1,0 +1,23 @@
+def validate(row,variant,mode):
+    p=c.protocol();c.need(row['variant']==variant and row['mode']==mode and row['seed']==p['seed'],'fixed identity')
+    c.need(row['rows']==json.loads((c.BASE/'input/expected-caller.json').read_bytes()),'complete original full caller input/admission/wire')
+    c.need(row['test_cfg'] is False and row['allocation_wrapper'] is False,'actual clean normal image')
+    for key in ('cpu_repetitions','memory_epochs','warm_sweeps'):c.need(row[key]==p[key],'fixed work '+key)
+    c.need(row['memory_sweeps']==p['memory_sweeps_per_epoch'],'fixed memory work')
+    c.need(type(row['pid']) is int and row['pid']>0 and type(row['start_ticks']) is int and row['start_ticks']>0 and len(row['boot_id'])==36,'same lifetime identity')
+    c.need(len(row['resolutions_ns'])==4 and all(type(v) is int and 0<v<=1_000_000 for v in row['resolutions_ns']),'qualified clocks')
+    samples=[row['elapsed']]+row['timings']
+    c.need(len(row['timings'])==(30 if mode=='cpu' else 0),'complete timing cell count')
+    for stamp in samples:
+        c.need(set(stamp)=={'raw','mono','boot','cpu'} and all(type(v) is int and v>=0 for v in stamp.values()),'complete clock samples')
+        c.need(stamp['raw']>100*row['resolutions_ns'][0] and stamp['cpu']>100*row['resolutions_ns'][3],'positive resolved CPU/wall')
+        c.need(stamp['cpu']<=stamp['raw']*1.1,'one-thread CPU/wall sanity')
+    # Whole-window drift only: adjacent tiny-cell clock reads have finite skew.
+    stamp=row['elapsed']
+    for key in ('mono','boot'):c.need(abs(stamp[key]-stamp['raw'])<=p['monotonic_raw_drift_fraction']*stamp['raw'],'no suspend/raw-clock discrepancy')
+    c.need(len(row['memory'])==7,'full memory buffer')
+    if mode in ('memory','control'):
+        for snap in row['memory'][:7 if mode=='memory' else 2]:
+            c.need(snap['threads']==1 and all(type(snap[k]) is int and snap[k]>=0 for k in FIELDS),'single-thread whole-process memory')
+            c.need(set(snap['heap'])==set(HEAP) and all(type(v) is int and v>=0 for v in snap['heap'].values()),'complete glibc telemetry')
+            c.need(snap['rss']>=snap['pss']>0 and snap['heap']['arena']>=snap['heap']['uordblks'],'nonempty sane memory')

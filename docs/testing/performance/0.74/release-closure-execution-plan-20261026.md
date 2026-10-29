@@ -703,3 +703,17 @@ Next review the exact source/ownership/host reservation adaptation and admit one
 eligible-Linux control before the frozen numerical cohort. Do not replay WSL,
 adjust clocks, widen limits, promote memory snapshots or reopen new hypotheses.
 Root adoption/security/full gates and execution/recovery/enrollment stay open.
+
+The [native paid-host control continuation](chitchat-host-cost-result-20261029.md)
+now admits all three unchanged normal images. Same303-source/91-registry graph,
+all30 semantic rows per image, clock/telemetry predicates and complete ownership
+pass. Supervisor PID/invocation/restart/image/receipt and original host frame
+remain exact. The first missing-validator-global carrier refusal is preserved;
+the separate revision adds literal-data bindings only. Final21 offline checks,
+syntax, byte/doc and non-promotable contracts pass. No CPU/memory cohort or
+service mutation follows. Next use the [finite exclusive-host scope](chitchat-cost-exclusive-host-plan-20261029.md):
+review/check the numerical controller, obtain the distinct supervisor-maintenance
+agreement, then run the frozen60-process matrix with original cgroup/fence/
+watchdog/retirement/restoration controls. Do not seize the common lock while the
+supervisor is active or silently reuse GET-owner's previous maintenance consent.
+Root/security/full gates and original execution/lifecycle/reconnect/trust remain.

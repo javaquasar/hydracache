@@ -1,0 +1,88 @@
+# Existing MTU backport: remove clone-preview cost
+
+Root remains on 09a5f4f45 / lock 34d7a21d…; all role/live checks, 300/60/10,
+5/10/45, 780/4800 and local 1200-second/4-GiB/five-second contracts stay exact.
+No product adoption, server/service/clock change, publication or new unrelated
+performance hypothesis. M's nine lost admissions and S's 71 allocation increases
+remain declined and immutable.
+
+Freeze shared tests, seed, original 37-stream/seven-malformed, 239-operation and
+three-oversize matrices before builds. Restore S's exact fixture from its sealed
+packet. Use the same S dependency graph (Zstd .14.3, safe 8.2, LRU .18.2) for all
+variants, relative test-only paths, and isolated targets. Historical root pins
+are historical data, never rebound to the current lock or bypassed in an old guard.
+
+Work sequentially, one hypothesis at a time:
+
+1. B is the matched attribution counterfactual using the original known-wrong
+   cheap bound; it is never an acceptable product repair. S is the declined
+   clone-preview baseline. Record original controls, its new fast-reject fault,
+   and matched allocation observations before implementing a successor.
+2. D adds budget guards only: reject on the old estimate if already over budget;
+   accept on a correct conservative all-block bound if within budget; otherwise
+   call the unchanged S exact predictor. Keep admission/wire unchanged. Qualify
+   functional gates and attribute the remaining expensive path before P.
+3. P replaces only that ambiguous path by serialization into the existing pending
+   Vec and compression/counting through existing scratch, with RAII restoration
+   of original pending prefix/length and scratch length on return/unwind. No
+   full writer/output clone, global scratch, lock or public trait change. The
+   internal production API is budget-aware. The old immutable S predictor stays
+   test-only as an explicitly labeled reference oracle; old tests are unchanged.
+   New tests must exercise the actual production helper, including panic, exact
+   oracle equivalence, rejection and independent concurrent writers. Original
+   wide tests which use the reference do not alone qualify P's new path.
+
+In-place prediction can grow pending capacity; record it rather than claiming
+purity. Old budget rejections must not serialize or change capacities. Accepted
+whole-operation allocation/reallocation/requested/peak records must not exceed
+the matched B records on any original supported case. The existing test-only
+bound observer remains a reference-oracle observation, not P production cost.
+Measure actual full operations separately with fresh writers; no shifting cost
+between regions or hiding requested live deltas. Preserve old allocator controls.
+Debug images qualify functional controls only. Allocation cohorts use separately
+bound release-profile images; never compare their counts with old debug images
+or splice previous S measurements into this new matched cohort.
+
+Use four allocation processes B,candidate,candidate,B, two observations per
+original case, only after original semantic/allocator controls pass. Reconcile
+all 239 cases/order/seed/admission/exact wire. Require repeat equality within and
+across the two same-image processes. No CPU timing cohort is scheduled: prior
+Windows quantization remains unqualified. Native C allocations, CPU, RSS and
+retained memory remain separate gates even if Rust counts improve.
+
+Stop on the first unexpected refusal; retain raw streams, exact producer/source/
+lock/catalog/artifact/retirement receipts. No retry-to-pass or threshold/corpus
+change. Product GNU/MSRV/distribution/full package/workspace gates remain required.
+
+Observed sequence: S retains 71 Rust-allocation regressions, D nine, P zero, with
+all 239 admissions/wires exact. The result is tied to the release P image. L/L2
+fix 15 MSRV inline-format findings in tests and add three stateful controls. L3
+fixes only this owned observer's GNU-unused Instant import in a separate overlay;
+the original measured overlay remains immutable. Final offline controls compare
+P/L3 predictor, admission, append/flush/finish and manifest/lock bodies exactly.
+L3 passes 73 focused tests plus all-target/all-feature check/strict Clippy on
+Windows/GNU, Rust 1.94/1.88. The 119 Windows / 118 GNU catalogs have 46/45 other
+cases explicitly unexecuted by the focused gate.
+
+The first GNU `/mnt/c` source-guard profile retains an outer 1200-second timeout,
+60 passing cases with completed owned receipts and no inner completion. The first source-copy adapter refuses
+that missing inner result before executing tests. Its corrected successor then
+passes 73 GNU cases/check and preserves the Instant lint refusal. The portable
+successor keeps all guard rounds/order and 1100/1200 bounds, using a byte-checked
+source copy on native storage; only its private cache-root constant is adjusted
+and independently reversed/verified. Actual Cargo registry sources are checked
+separately. Root Windows source/HEAD are checked before/after the parent phase.
+This is a different source context, not a replay relabeled as a passing first run.
+Availability observations are read-only and never a production all-writer proof.
+
+All phase directories are exclusive. `run.py` accepts only its fixed setup,
+build/focus/check/clippy/control and four-position cohort labels. `source_copy.py`
+accepts only `native-copy-portable-prepare`, `native-copy-portable-stage`,
+`gnu-portable-194` and `gnu-portable-188`; it preserves all earlier contexts and
+refuses overlapping original-source work. Reconstruct historical data as bytes;
+do not blindly execute archived scripts. No same-label retries are supported.
+
+The extra ambiguous-rejection test records pending capacity 64 -> 4099 bytes,
+with logical length restored to three. Whole-operation live=0 after drop does
+not qualify retained memory while the writer is alive. CPU, native C allocation,
+RSS, source distribution/public consumers and Root gates remain open.

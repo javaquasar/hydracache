@@ -1,0 +1,14 @@
+{
+  "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+  "clock_changes": false,
+  "cohort_dispatched": false,
+  "controls_only": true,
+  "exclusive_host": false,
+  "installation": false,
+  "manifest_sha256": "90057ac9679be66d141a0f3b573fa6d911d8287365051fc10e379479ffb26c20",
+  "owner_pid": 406810,
+  "owner_start_ticks": "201973240",
+  "product_workload": false,
+  "retry": false,
+  "service_changes": false
+}

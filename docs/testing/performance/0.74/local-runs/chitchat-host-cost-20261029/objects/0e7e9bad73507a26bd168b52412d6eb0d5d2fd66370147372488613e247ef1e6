@@ -1,0 +1,27 @@
+{
+  "clock_changes": false,
+  "controls_only": true,
+  "exclusive_host": false,
+  "frame_sha256": "818dcf2cca31ee308e41e962de491bc24666b0fb5582bd918cebf65ccc30d1b4",
+  "images": {
+    "B": {
+      "path": "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/clean-cost-targets/B/x86_64-unknown-linux-gnu/release/hc074-clean-cost",
+      "sha256": "0bcca84ff005884d1b80c8b90e640f3a380091820070c0d4b061e464282fc986"
+    },
+    "P": {
+      "path": "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/clean-cost-targets/P/x86_64-unknown-linux-gnu/release/hc074-clean-cost",
+      "sha256": "8dd1cf8a396b4964623447cba0e22d48fe6a36b0d30cc2738acea7609f9bd217"
+    },
+    "Q": {
+      "path": "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/clean-cost-targets/Q/x86_64-unknown-linux-gnu/release/hc074-clean-cost",
+      "sha256": "fcd461da19210a63406049a53a4938d58f792df674ae943617e3e2bb06a3d777"
+    }
+  },
+  "original_functions_unmodified": true,
+  "predecessor": "9589ebd9014f7b2be15aa8cfedec635e06d042a4b81fe92da3894fdea1008462",
+  "product": false,
+  "registry_crates": 91,
+  "service_changes": false,
+  "source_files": 303,
+  "zip_sha256": "45ceed5b833e009028b22755f57733bfd91dabe9cef716c9ad8e246743c18aee"
+}

@@ -7606,3 +7606,16 @@ P/Q controls and every CPU/RSS cohort position remain undispatched. One short
 unequally ordered read window does not establish a clock root cause or candidate
 regression. CPU/RSS/retention remain blocked; preserve the first control and
 review an eligible-host continuation, with no threshold/workload change or retry.
+
+The [dedicated-host B/P/Q control admission](chitchat-host-cost-result-20261029.md)
+now passes all three exact normal images on native Linux/glibc2.39. All90 original
+semantic row checks and the unchanged1% clock/telemetry predicates pass; host/
+supervisor/image/receipt/clock-service/mount/campaign pre/postflight is exact.
+The first carrier's missing FIELDS binding remains a negative session; an isolated
+two-file revision binds only original literal globals and retains all first data.
+Final21 offline controls, syntax, byte/doc and local contracts pass. No numerical
+cohort, host-lock seizure, service mutation, installation or product workload is
+performed. The [separate finite maintenance plan](chitchat-cost-exclusive-host-plan-20261029.md)
+is the next boundary for an exclusive60-process CPU/RSS matrix, with an owned
+cgroup/watchdog/fence and proved supervisor restoration. CPU/RSS/retention and
+Root/security/full/execution/recovery/enrollment gates remain open.
