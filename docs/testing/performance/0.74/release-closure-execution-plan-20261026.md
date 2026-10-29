@@ -675,3 +675,17 @@ are unchanged. GNU 1.94 checks/strict Clippy and eight offline controls pass. Th
 general component gate stays negative; no Root adoption or CPU/RSS/retention claim.
 Next finish GNU MSRV/Windows on the same source, remaining cost/retention and
 maintained distribution, then actual Root policy/package/workspace gates.
+
+The [exact Q GNU/Windows/MSRV continuation](chitchat-compat-result-20261029.md)
+now closes functional compatibility: four complete peers on 1.94/1.88, 85 selected
+cases each, identical original 239/30 semantic bodies, four complete check/strict
+Clippy pairs. Complete catalogs distinguish the remaining 47/48 diagnostic cases.
+Original 1.88 outer timeouts during recorded lid-triggered Modern Standby remain
+refusals; their inner output is never promoted. Only those failed peers run once
+after confirmed wake in a separately bound, byte-identical source context. All
+ownership/deadline/floor contracts remain; 17 offline controls and byte/doc/format/
+local contract checks pass. No Root adoption or CPU/RSS/native-C compatibility
+qualification follows. Next finish the same candidate's CPU/end-to-end and RSS/
+allocator retention, maintained package/public-consumer boundaries, then actual
+Root security/package/workspace gates. The general stateful resource refusal and
+original execution/lifecycle/reconnect/trust/host blockers remain unchanged.

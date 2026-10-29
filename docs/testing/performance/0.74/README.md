@@ -7581,3 +7581,16 @@ both are corrected before any performance cohort, with coverage/input controls.
 All three check/strict-Clippy peers, eight offline controls and local contracts
 pass. The generic component gate stays negative. GNU MSRV/Windows, CPU/RSS,
 distribution/Root/security/full gates and original-execution/recovery remain open.
+
+The [exact Q compatibility gate](chitchat-compat-result-20261029.md) now passes
+GNU/Windows x Rust 1.94/1.88: 85 identical selected cases per peer, 340 executions,
+four all-target/all-feature checks and four strict Clippy gates. All original
+239 semantics and 30 fixed-caller input/admission/wire rows match. The complete
+catalogs retain 47/48 unselected cases. Both first 1.88 outer timeouts during
+confirmed laptop Modern Standby remain negative; only those two peers run once
+in a distinct context after wake, with byte-identical fixtures and unchanged
+bounds. No old inner result is promoted. Seventeen offline source/fault controls,
+format, byte/doc and local contract checks pass; the first offline import error
+is retained. This closes this candidate's functional MSRV/Windows subgate only.
+CPU/end-to-end, RSS/allocator retention, maintained distribution/public consumers,
+Root/security/full gates and execution/recovery/enrollment/host admission remain.

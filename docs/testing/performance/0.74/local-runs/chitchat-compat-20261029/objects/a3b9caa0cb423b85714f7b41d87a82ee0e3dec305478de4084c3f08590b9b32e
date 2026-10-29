@@ -1,0 +1,54 @@
+"""Original ownership/source primitives; one portable compatibility-only Q copy."""
+from pathlib import Path
+import hashlib
+
+_old=Path(__file__).resolve().parents[1]/'chitchat-native-cost-074/common.py'
+_raw=_old.read_bytes();assert hashlib.sha256(_raw).hexdigest()=='730ea6a12376cd72eaa0e6543685a443241ab0a12e0bb039ab02543961840a96'
+exec(compile(_raw,str(_old),'exec'),globals())
+TOOLS=ROOT/'tools/chitchat-compat-074';RELBASE='target/chitchat-compat-20261029-r1';BASE=ROOT/RELBASE
+COPY=NATIVE/'source-root-compat-r1';WIN_VENDOR=REAL/'target/chitchat-inplace-20261029/vendor'
+TABLE_SHA='4a3308a82d014fb58df808a9f3984922537a80c02219610cdf5ee6fa1ec4a1f9'
+_inherited_source=source
+
+
+def source():
+    result=_inherited_source()
+    for name in ('chitchat-native-cost-074','chitchat-inplace-074','chitchat-commit-074','chitchat-stateful-074','chitchat-caller-074'):
+        for p in (ROOT/'tools'/name).iterdir():
+            if p.is_file():result[p.relative_to(ROOT).as_posix()]=sha(p.read_bytes())
+    return result
+
+
+def environment_review():
+    forbidden={'RUSTFLAGS','RUSTDOCFLAGS','CARGO_ENCODED_RUSTFLAGS','CARGO_BUILD_RUSTFLAGS','CC','CXX','AR','CFLAGS','CPPFLAGS','RUSTC_WRAPPER','RUSTC_WORKSPACE_WRAPPER'}
+    prefixes=('CARGO_PROFILE_','CARGO_TARGET_','CC_','CFLAGS_','CXXFLAGS','PKG_CONFIG_','ZSTD_')
+    need(not any(v and (k in forbidden or k.startswith(prefixes)) for k,v in os.environ.items()),'unreviewed compiler/native override')
+
+
+def windows_configuration():
+    return '[source.crates-io]\nreplace-with="compat-reviewed"\n[source.compat-reviewed]\ndirectory="'+WIN_VENDOR.as_posix()+'"\n'
+
+
+def windows_guard(frame):
+    capacity();raw=(BASE/'frame.json').read_bytes();need(sha(raw)==frame,'externally held source frame')
+    for name,digest in json.loads(raw).items():need(sha((ROOT/name).read_bytes())==digest,'fresh actual source '+name)
+    need((BASE/'cargo-home/config.toml').read_text(encoding='utf8')==windows_configuration(),'exact private Windows offline config')
+    windows_registry_guard()
+
+
+def windows_registry_guard():
+    lock=tomllib.loads((BASE/'fixtures/Q/Cargo.lock').read_text(encoding='utf8'))['package']
+    checks={p['name']+'-'+p['version']:p['checksum'] for p in lock if p.get('source','').startswith('registry+')}
+    inventory=json.loads((BASE/'input/vendor.json').read_bytes());need(set(checks)==set(inventory),'complete locked registry set')
+    for name,hashes in inventory.items():
+        expected=dict(hashes);expected['.cargo-checksum.json']=sha((json.dumps(dict(package=checks[name],files=hashes),indent=2,sort_keys=True)+'\n').encode())
+        need(files(WIN_VENDOR/name)==expected,'fresh complete actual Windows registry '+name)
+
+
+def prepare():load(TOOLS/'prepare.py','compat_exact_preparation').main()
+
+
+# Same complete native guard; this compatibility fixture contains only Q.
+_text=_raw.decode().split('def native_guard():',1)[1].split('\n\ndef stage(',1)[0]
+need(_text.count("BASE/'fixtures/P/Cargo.lock'")==1,'one fixed lock selector')
+exec(compile('def native_guard():'+_text.replace("BASE/'fixtures/P/Cargo.lock'","BASE/'fixtures/Q/Cargo.lock'"),str(_old)+'[Q-lock]','exec'),globals())

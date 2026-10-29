@@ -1,0 +1,184 @@
+"""Four fixed functional peers under original Windows Job/LinuxGroup custody."""
+from pathlib import Path
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+import traceback
+import common as c
+
+PEERS={'gnu-194','gnu-188','windows-194','windows-188'}
+PHASES=PEERS|{'prepare','format','stage'}
+GROUPS=['serialize::tests::','delta::tests::','digest::tests::','message::tests::','state::tests::',
+    'serialize::mtu_review::','migration_review_074::snapshot','delta::mtu_review::','delta::oversize_review::',
+    'serialize::inplace_review::','serialize::state_review::','serialize::q_review::']
+EXACT=['delta::cost_review::allocator_control','serialize::stateful_review::stateful_semantics_control',
+    'serialize::stateful_review::stateful_capacity_control',
+    'delta::cost_review::actual_caller::fixed_caller_semantics_control',
+    'delta::cost_review::actual_caller::fixed_caller_capacity_control',
+    'delta::cost_review::actual_caller::compatibility_semantic_export']
+
+
+def guard(frame):
+    if os.name=='nt':c.windows_guard(frame)
+    else:
+        os.environ['HC074_NATIVE_FRAME']=frame;c.native_guard()
+
+
+def environment(label,frame):
+    compiler=label.split('-')[-1];version={'194':'1.94.0','188':'1.88.0'}[compiler]
+    windows=label.startswith('windows-');host='x86_64-pc-windows-msvc' if windows else 'x86_64-unknown-linux-gnu'
+    c.need(windows==(os.name=='nt'),'fixed platform process')
+    tool=Path.home()/'.rustup/toolchains'/(version+'-'+host)/'bin'
+    if windows:
+        keys={'SYSTEMROOT','WINDIR','TEMP','TMP','COMSPEC','USERPROFILE','HOMEDRIVE','HOMEPATH','PROGRAMFILES',
+            'PROGRAMFILES(X86)','PROGRAMDATA','LOCALAPPDATA','APPDATA','PATHEXT','PATH','NUMBER_OF_PROCESSORS',
+            'PROCESSOR_ARCHITECTURE','VCTOOLSINSTALLDIR','VCINSTALLDIR','VSINSTALLDIR','WINDOWSSDKDIR',
+            'UCRTVERSION','UNIVERSALCRTSDKDIR','WINDOWSSDKLIBVERSION','WINDOWSSDKVERSION','INCLUDE','LIB','LIBPATH',
+            'VSCMD_ARG_HOST_ARCH','VSCMD_ARG_TGT_ARCH','VSCMD_VER','RUSTUP_HOME'}
+        env={k:v for k,v in os.environ.items() if k.upper() in keys}
+        env.update(PATH=str(tool)+os.pathsep+os.environ.get('PATH',''),CARGO_HOME=str(c.BASE/'cargo-home'))
+    else:
+        env=dict(HOME='/home/artur',USER='artur',LOGNAME='artur',LANG='C.UTF-8',
+            PATH=str(tool)+':/usr/local/bin:/usr/bin:/bin',CARGO_HOME=str(c.NATIVE/'cargo-home'),HC074_NATIVE_FRAME=frame)
+    env.update(RUSTC=str(tool/('rustc.exe' if windows else 'rustc')),RUSTUP_TOOLCHAIN=version+'-'+host,
+        RUSTC_WRAPPER='',RUSTC_WORKSPACE_WRAPPER='',CARGO_NET_OFFLINE='true',CARGO_INCREMENTAL='0',
+        CARGO_BUILD_JOBS='2',PROPTEST_RNG_SEED='7606312',HC074_COMPAT_FRAME=frame)
+    return tool,env,version,host
+
+
+def invoke(out,name,argv,env,deadline,frame):
+    guard(frame);before=c.source();folder=out/name;folder.mkdir(exist_ok=False)
+    image=c.sha(Path(argv[0]).read_bytes())
+    c.write(folder,'intent.json',dict(argv=argv,deadline=deadline,frame=frame,retry=False,image_sha256=image))
+    with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+        child=subprocess.run([sys.executable,'-B',str(Path(__file__)),'command',str(folder),frame],cwd=c.ROOT,
+            stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,
+            env=dict(env,HC074_COMPAT_ARGV=json.dumps(argv),HC074_COMPAT_DEADLINE=str(deadline)),timeout=max(0,deadline-time.monotonic())+10)
+    owner=json.loads((folder/'execution.json').read_bytes())
+    c.need(child.returncode==owner['exit']==0 and owner['retired'] and not owner['errors'],'first complete owned command '+name)
+    guard(frame);c.need(before==c.source() and image==c.sha(Path(argv[0]).read_bytes()),'source/image drift in command')
+    return folder
+
+
+def verify_body(raw):
+    c.semantics(c.diagnostic(raw,'HC074_SUPPORTED_DELTA:')['cases'])
+    body=c.diagnostic(raw,'HC074_COMPAT_CALLER:')
+    c.need(body['seed']==0x0741028 and body['variant']=='Q' and body['table_sha256']==c.TABLE_SHA,'original caller/table identity')
+    c.need(all(body[k] is False for k in ('observer_active','native_C_qualified','CPU_qualified','resources_qualified')),'semantic-only export cannot promote resource data')
+    c.need(body['rows']==json.loads((c.BASE/'input/expected-caller.json').read_bytes()),'original complete 30 request/admission/wire rows')
+    return body
+
+
+def session(label,frame):
+    out=c.BASE/label
+    if not out.exists():out.mkdir(parents=True,exist_ok=False)
+    deadline=time.monotonic()+1100;result=dict(complete=False,root_adopted=False)
+    try:
+        if label=='stage':c.stage(frame)
+        else:
+            c.need(label in PEERS,'one fixed compatibility peer');guard(frame)
+            tool,env,version,host=environment(label,frame);suffix='.exe' if os.name=='nt' else ''
+            c.write(out,'environment.json',dict(names=sorted(env),value_sha256={k:c.sha(v.encode()) for k,v in env.items()},
+                compiler=version,host=host,native_C_available=False,resource_cohort=False))
+            folder=invoke(out,'compiler',[str(tool/('rustc'+suffix)),'-vV'],env,deadline,frame)
+            raw=(folder/'stdout.log').read_text(encoding='utf8')
+            c.need('release: '+version+'\n' in raw and 'host: '+host+'\n' in raw,'qualified compiler/host')
+            target=c.BASE/'windows-targets'/label if os.name=='nt' else c.NATIVE/'compat-r1-targets'/label
+            args=['--offline','--locked','--release','--target',host,'--manifest-path',str(c.BASE/'fixtures/Q/Cargo.toml'),'--target-dir',str(target)]
+            folder=invoke(out,'build',[str(tool/('cargo'+suffix)),'test',*args,'--lib','--features','testsuite','--no-run','--message-format=json'],env,deadline,frame)
+            images=[]
+            for line in (folder/'stdout.log').read_text(encoding='utf8').splitlines():
+                row=json.loads(line)
+                if row.get('reason')=='compiler-artifact' and row.get('profile',{}).get('test') and row.get('executable'):
+                    path=Path(row['executable'])
+                    c.need(path.resolve().is_relative_to(target) and Path(row['target']['src_path']).resolve()==(c.BASE/'fixtures/Q/src/lib.rs').resolve(),'actual source/target image')
+                    images.append(dict(path=str(path),sha256=c.sha(path.read_bytes())))
+            c.need(len(images)==1,'one actual library image');image=images[0];c.write(out,'artifact.json',image)
+            folder=invoke(out,'list',[image['path'],'--list'],env,deadline,frame)
+            catalog=[line[:-6] for line in (folder/'stdout.log').read_text(encoding='utf8').splitlines() if line.endswith(': test')]
+            expected=json.loads((c.BASE/'input'/('catalog-windows.json' if os.name=='nt' else 'catalog-gnu.json')).read_bytes())
+            c.need(sorted(catalog)==expected and len(catalog)==len(set(catalog)),'complete actual catalog');c.write(out,'catalog.json',catalog)
+            selected=sorted(n for n in catalog if n in EXACT or any(n.startswith(prefix) for prefix in GROUPS))
+            c.need(len(selected)==85 and not any('observations' in n for n in selected),'fixed functional selection excludes measurement tests')
+            folder=invoke(out,'tests',[image['path'],*GROUPS,*EXACT,'--test-threads=1','--show-output','--color=never'],env,deadline,frame)
+            raw=(folder/'stdout.log').read_text(encoding='utf8')
+            summaries=re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;',raw)
+            c.need(summaries==[('85','0','0','0',str(len(catalog)-85))],'complete selected test accounting')
+            c.write(out,'semantic-export.json',verify_body(raw));c.write(out,'cases.json',dict(selected=selected,passed=85,failed=0,ignored=0,catalog=len(catalog),filtered=len(catalog)-85))
+            for action in ('check','clippy'):
+                argv=[str(tool/('cargo'+suffix)),action,*args,'--all-targets','--all-features']
+                if action=='clippy':argv+=['--','-D','warnings']
+                invoke(out,action,argv,env,deadline,frame)
+            c.need(image['sha256']==c.sha(Path(image['path']).read_bytes()),'actual image postflight')
+        c.need(time.monotonic()<deadline,'original complete 1100-second session')
+        result.update(complete=True,performance_claim=False,native_C_qualified=False,CPU_qualified=False,RSS_qualified=False)
+    except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+    c.write(out,'session-result.json',result);raise SystemExit(0 if result['complete'] else 1)
+
+
+def main(label):
+    c.need(os.name=='nt' and label in PHASES,'fixed Windows coordinator phase');out=c.BASE/label;out.mkdir(parents=True,exist_ok=False)
+    with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+        result=dict(complete=False,root_adopted=False)
+        for p in c.TOOLS.iterdir():
+            if p.is_file():dest=out/'producer'/p.name;dest.parent.mkdir(exist_ok=True);dest.write_bytes(p.read_bytes())
+        before=c.source();head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=c.ROOT)
+        c.write(out,'intent.json',dict(source=before,head=head.decode(),bound=1200,session_bound=1100,retry=False))
+        try:
+            c.capacity();c.environment_review()
+            if label=='prepare':c.prepare()
+            elif label=='format':
+                tool=Path.home()/'.rustup/toolchains/1.94.0-x86_64-pc-windows-msvc/bin/rustfmt.exe'
+                argv=[str(tool),'--edition','2024','--config','skip_children=true',str(c.BASE/'observer.rs'),str(c.BASE/'caller.rs'),str(c.BASE/'fixtures/Q/src/delta.rs'),str(c.TOOLS/'semantic_export.rs')]
+                c.write(out,'format-intent.json',dict(argv=argv,bound=120));(out/'before-observer.rs').write_bytes((c.BASE/'observer.rs').read_bytes())
+                child=subprocess.run([sys.executable,'-B',str(Path(__file__)),'format-worker'],cwd=c.ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,env=dict(os.environ,HC074_COMPAT_ARGV=json.dumps(argv)),timeout=130)
+                owner=json.loads((out/'execution.json').read_bytes());c.need(child.returncode==owner['exit']==0 and owner['retired'] and not owner['errors'],'first owned formatting')
+                result.update(c.freeze())
+            else:
+                frame=json.loads((c.BASE/'format/result.json').read_bytes())['frame_sha256']
+                c.windows_guard(frame)
+                child=subprocess.run([sys.executable,'-B',str(Path(__file__)),'windows-worker',label,frame],cwd=c.ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,timeout=1210)
+                owner=json.loads((out/'execution.json').read_bytes())
+                inner=out/'session-result.json' if label.startswith('windows-') or label=='stage' else out/'native/session-result.json'
+                c.need(child.returncode==owner['exit']==0 and owner['retired'] and not owner['errors'] and json.loads(inner.read_bytes())['complete'],'complete first owned compatibility phase')
+                if not label.startswith('windows-'):
+                    native=json.loads((out/'native-envelope.json').read_bytes());c.need(native['exit']==0 and native['retired'] and not native['errors'],'retired original LinuxGroup')
+            after=c.source();changed={n for n in before.keys()|after.keys() if before.get(n)!=after.get(n)}
+            c.need(changed<=({'tools/chitchat-compat-074/semantic_export.rs'} if label=='format' else set()) and head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=c.ROOT),'source/HEAD drift')
+            result.update(complete=True)
+        except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+        c.write(out,'result.json',result)
+    print(json.dumps(dict(phase=label,**result)));raise SystemExit(0 if result['complete'] else 1)
+
+
+if __name__=='__main__':
+    if len(sys.argv)==2 and sys.argv[1]=='format-worker':
+        argv=json.loads(os.environ.pop('HC074_COMPAT_ARGV'));value=c.owned._owned(c.owned.load_job().WindowsJob(),argv,str(c.ROOT),c.capacity,bound=120)
+        c.write(c.BASE/'format','execution.json',value);raise SystemExit(value['exit'])
+    if len(sys.argv)==4 and sys.argv[1]=='session':session(sys.argv[2],sys.argv[3])
+    if len(sys.argv)==4 and sys.argv[1]=='command':
+        folder=Path(sys.argv[2]);frame=sys.argv[3];guard(frame)
+        argv=json.loads(os.environ.pop('HC074_COMPAT_ARGV'));deadline=float(os.environ.pop('HC074_COMPAT_DEADLINE'))
+        owner=c.owned.load_job().WindowsJob() if os.name=='nt' else c.load(c.ROOT/'scripts/ci/watchdog_linux_group.py','compat_original_group').LinuxGroup()
+        value=c.owned._owned(owner,argv,str(c.ROOT),c.capacity,bound=1200,deadline=deadline)
+        c.write(folder,'execution.json',value);raise SystemExit(value['exit'])
+    if len(sys.argv)==4 and sys.argv[1]=='native-worker':
+        label,frame=sys.argv[2:];group=c.load(c.ROOT/'scripts/ci/watchdog_linux_group.py','compat_original_parent').LinuxGroup()
+        value=c.owned._owned(group,[sys.executable,'-B',str(Path(__file__)),'session',label,frame],str(c.ROOT),c.capacity,bound=1200)
+        real=c.REAL/c.RELBASE/label;c.write(real,'native-envelope.json',value)
+        if c.BASE.resolve()!=(c.REAL/c.RELBASE).resolve():
+            for path in sorted((c.BASE/label).rglob('*')):
+                if path.is_file():dest=real/'native'/path.relative_to(c.BASE/label);dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(path.read_bytes())
+        raise SystemExit(value['exit'])
+    if len(sys.argv)==4 and sys.argv[1]=='windows-worker':
+        label,frame=sys.argv[2:]
+        if label.startswith('windows-'):argv=[sys.executable,'-B',str(Path(__file__)),'session',label,frame]
+        else:
+            root='/mnt/c/Workspace/prj/jq/cashe/hydracache-074' if label=='stage' else c.COPY.as_posix()
+            argv=['wsl.exe','-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B',root+'/tools/chitchat-compat-074/run.py','native-worker',label,frame]
+        value=c.owned._owned(c.owned.load_job().WindowsJob(),argv,str(c.ROOT),c.capacity,bound=1200)
+        c.write(c.BASE/label,'execution.json',value);raise SystemExit(value['exit'])
+    c.need(len(sys.argv)==2,'one fixed phase');main(sys.argv[1])

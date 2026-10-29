@@ -1,0 +1,53 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "caller_rows": 30,
+  "compatibility_gate_pass": true,
+  "first_outer_timeouts_retained": 2,
+  "generic_component_gate_pass": false,
+  "native_C_qualified": false,
+  "old_inner_results_promoted": false,
+  "peers": [
+    {
+      "catalog": 132,
+      "compiler": "1.94.0",
+      "context": "chitchat-compat-20261029",
+      "filtered": 47,
+      "label": "gnu-194",
+      "platform": "x86_64-unknown-linux-gnu",
+      "tests": 85
+    },
+    {
+      "catalog": 133,
+      "compiler": "1.94.0",
+      "context": "chitchat-compat-20261029",
+      "filtered": 48,
+      "label": "windows-194",
+      "platform": "x86_64-pc-windows-msvc",
+      "tests": 85
+    },
+    {
+      "catalog": 132,
+      "compiler": "1.88.0",
+      "context": "chitchat-compat-20261029-r1",
+      "filtered": 47,
+      "label": "gnu-188",
+      "platform": "x86_64-unknown-linux-gnu",
+      "tests": 85
+    },
+    {
+      "catalog": 133,
+      "compiler": "1.88.0",
+      "context": "chitchat-compat-20261029-r1",
+      "filtered": 48,
+      "label": "windows-188",
+      "platform": "x86_64-pc-windows-msvc",
+      "tests": 85
+    }
+  ],
+  "release_admitted": false,
+  "root_adopted": false,
+  "semantic_rows": 239,
+  "test_executions": 340,
+  "unique_tests": 85
+}

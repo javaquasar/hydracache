@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-compat-20261029\\windows-targets\\windows-194\\x86_64-pc-windows-msvc\\release\\deps\\chitchat-495cdadcd16051ad.exe",
+    "serialize::tests::",
+    "delta::tests::",
+    "digest::tests::",
+    "message::tests::",
+    "state::tests::",
+    "serialize::mtu_review::",
+    "migration_review_074::snapshot",
+    "delta::mtu_review::",
+    "delta::oversize_review::",
+    "serialize::inplace_review::",
+    "serialize::state_review::",
+    "serialize::q_review::",
+    "delta::cost_review::allocator_control",
+    "serialize::stateful_review::stateful_semantics_control",
+    "serialize::stateful_review::stateful_capacity_control",
+    "delta::cost_review::actual_caller::fixed_caller_semantics_control",
+    "delta::cost_review::actual_caller::fixed_caller_capacity_control",
+    "delta::cost_review::actual_caller::compatibility_semantic_export",
+    "--test-threads=1",
+    "--show-output",
+    "--color=never"
+  ],
+  "deadline": 174803.6340001,
+  "frame": "65d0fd2b7de4d85fd387844790484dd238b0e1a157035534a402101d9a3d92d8",
+  "image_sha256": "d09eb74a633fec782bc65c6c865f5f242aad321859e7723f5112be49a9f9bb79",
+  "retry": false
+}

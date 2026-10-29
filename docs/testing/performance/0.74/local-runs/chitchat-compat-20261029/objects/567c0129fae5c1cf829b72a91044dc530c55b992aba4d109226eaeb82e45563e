@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/compat-targets/gnu-188/x86_64-unknown-linux-gnu/release/deps/chitchat-759a91da9d2eb0ae",
+    "serialize::tests::",
+    "delta::tests::",
+    "digest::tests::",
+    "message::tests::",
+    "state::tests::",
+    "serialize::mtu_review::",
+    "migration_review_074::snapshot",
+    "delta::mtu_review::",
+    "delta::oversize_review::",
+    "serialize::inplace_review::",
+    "serialize::state_review::",
+    "serialize::q_review::",
+    "delta::cost_review::allocator_control",
+    "serialize::stateful_review::stateful_semantics_control",
+    "serialize::stateful_review::stateful_capacity_control",
+    "delta::cost_review::actual_caller::fixed_caller_semantics_control",
+    "delta::cost_review::actual_caller::fixed_caller_capacity_control",
+    "delta::cost_review::actual_caller::compatibility_semantic_export",
+    "--test-threads=1",
+    "--show-output",
+    "--color=never"
+  ],
+  "deadline": 10746.600583662,
+  "frame": "65d0fd2b7de4d85fd387844790484dd238b0e1a157035534a402101d9a3d92d8",
+  "image_sha256": "2bca706e5edbadce79d797fe105287c5784903ffe25fa7169f2133634baf08ca",
+  "retry": false
+}

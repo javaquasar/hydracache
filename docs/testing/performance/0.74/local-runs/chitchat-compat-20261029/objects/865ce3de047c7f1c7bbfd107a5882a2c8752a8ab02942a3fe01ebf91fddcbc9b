@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.88.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+    "test",
+    "--offline",
+    "--locked",
+    "--release",
+    "--target",
+    "x86_64-pc-windows-msvc",
+    "--manifest-path",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-compat-20261029\\fixtures\\Q\\Cargo.toml",
+    "--target-dir",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-compat-20261029\\windows-targets\\windows-188",
+    "--lib",
+    "--features",
+    "testsuite",
+    "--no-run",
+    "--message-format=json"
+  ],
+  "deadline": 175149.0681265,
+  "frame": "65d0fd2b7de4d85fd387844790484dd238b0e1a157035534a402101d9a3d92d8",
+  "image_sha256": "d9d1f16c0438e0e5e820b2bb40846e3cc6a023e0a835505c5c4b25664e46c3be",
+  "retry": false
+}

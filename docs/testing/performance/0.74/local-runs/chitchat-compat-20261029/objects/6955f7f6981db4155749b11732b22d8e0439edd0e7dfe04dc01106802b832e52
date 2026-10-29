@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\bin\\rustfmt.exe",
+    "--edition",
+    "2024",
+    "--config",
+    "skip_children=true",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-compat-20261029\\observer.rs",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-compat-20261029\\caller.rs",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-compat-20261029\\fixtures\\Q\\src\\delta.rs",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-compat-074\\semantic_export.rs"
+  ],
+  "bound": 120
+}

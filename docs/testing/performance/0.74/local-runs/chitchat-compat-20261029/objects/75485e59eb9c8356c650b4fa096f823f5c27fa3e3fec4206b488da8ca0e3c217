@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-compat-20261029-r1\\windows-targets\\windows-188\\x86_64-pc-windows-msvc\\release\\deps\\chitchat-897a3c2c946d02da.exe",
+    "--list"
+  ],
+  "deadline": 179335.7333234,
+  "frame": "551354dfe1754b6bbfab7071a747b1c39584903a585a87f83e23e0452c01f63c",
+  "image_sha256": "c1dc54fb25e43f7766083ab13751eeee42fc69cce79e1129c6edbf8a86e81ebd",
+  "retry": false
+}

@@ -1,0 +1,10 @@
+{
+  "bounds_extended": false,
+  "environment_change": "confirmed Modern Standby exit",
+  "old_inner_results_promoted": false,
+  "only_failed_peers_dispatched": true,
+  "original_outcome_sha256": {
+    "gnu-188": "04c99c4abf6ac08bb12d417e62dff85a0f67280ca3f66590e9ff86ebe85da67d",
+    "windows-188": "04c99c4abf6ac08bb12d417e62dff85a0f67280ca3f66590e9ff86ebe85da67d"
+  }
+}

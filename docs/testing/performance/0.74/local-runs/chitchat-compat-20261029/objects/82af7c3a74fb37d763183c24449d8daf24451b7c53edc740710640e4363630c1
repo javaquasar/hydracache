@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.88.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+    "-vV"
+  ],
+  "deadline": 179335.7333234,
+  "frame": "551354dfe1754b6bbfab7071a747b1c39584903a585a87f83e23e0452c01f63c",
+  "image_sha256": "17e7448d6f213cdd41d1e4d8385a403e364c2b09c55b2b645f1afaf404adf1a6",
+  "retry": false
+}

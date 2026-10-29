@@ -1,0 +1,220 @@
+{
+  "artifacts": {
+    "Cargo.lock": {
+      "current_sha256": "76d4ab3b38c1b259c0784e66dd620a5f61d45cde1760a9533c4d6c7db061b207",
+      "patches": [
+        {
+          "current": "",
+          "offset": 6066,
+          "previous": "name = \"async-recursion\"\nversion = \"1.2.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"4f8abc12baad266b1c8cec146854c195b5864b4221d4b2ca7296a7ae82d9e451\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn 3.0.6\",\n]\n\n[[package]]\n"
+        },
+        {
+          "current": "version = \"2.13.2\"\n",
+          "offset": 11243,
+          "previous": "version = \"2.13.0\"\n"
+        },
+        {
+          "current": "checksum = \"3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06\"\n",
+          "offset": 11327,
+          "previous": "checksum = \"b4388bee8683e3d04af747c73422af53102d2bd24d9eadb6cbc100baef4b43f8\"\n"
+        },
+        {
+          "current": " \"bitflags 2.13.2\",\n",
+          "offset": 12116,
+          "previous": " \"bitflags 2.13.0\",\n"
+        },
+        {
+          "current": "",
+          "offset": 34810,
+          "previous": "name = \"enumflags2\"\nversion = \"0.7.12\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"1027f7680c853e056ebcec683615fb6fbbc07dbaa13b4d5d9442b146ded4ecef\"\ndependencies = [\n \"enumflags2_derive\",\n \"serde\",\n]\n\n[[package]]\nname = \"enumflags2_derive\"\nversion = \"0.7.12\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"67c78a4d8fdf9953a5c9d458f9efe940fd97a0cab0941c075a813ac594733827\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn 2.0.118\",\n]\n\n[[package]]\n"
+        },
+        {
+          "current": "version = \"0.3.34\"\n",
+          "offset": 41351,
+          "previous": "version = \"0.3.32\"\n"
+        },
+        {
+          "current": "checksum = \"92d699e522242e69e3003b94ecc1f960f3a5e015aa7c5d7486e65ad01dd94f5e\"\n",
+          "offset": 41435,
+          "previous": "checksum = \"7e3450815272ef58cec6d564423f6e755e25379b217b0bc688e295ba24df6b1d\"\n"
+        },
+        {
+          "current": "version = \"0.3.34\"\n",
+          "offset": 42090,
+          "previous": "version = \"0.3.32\"\n"
+        },
+        {
+          "current": "checksum = \"53c0fa8157de1303bfffdaa1cc2a673bfffb60102f76b0ef4441659124373fed\"\n",
+          "offset": 42174,
+          "previous": "checksum = \"cecba35d7ad927e23624b22ad55235f2239cfa44fd10428eecbeba6d6a717718\"\n\n[[package]]\nname = \"futures-lite\"\nversion = \"2.6.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f78e10609fe0e0b3f4157ffab1876319b5b0db102a2c60dc4626306dc46b44ad\"\ndependencies = [\n \"fastrand\",\n \"futures-core\",\n \"futures-io\",\n \"parking\",\n \"pin-project-lite\",\n]\n"
+        },
+        {
+          "current": " \"bitflags 2.13.2\",\n",
+          "offset": 75818,
+          "previous": " \"bitflags 2.13.0\",\n"
+        },
+        {
+          "current": " \"bitflags 2.13.2\",\n",
+          "offset": 95411,
+          "previous": " \"bitflags 2.13.0\",\n"
+        },
+        {
+          "current": " \"bitflags 2.13.2\",\n",
+          "offset": 100159,
+          "previous": " \"bitflags 2.13.0\",\n"
+        },
+        {
+          "current": " \"bitflags 2.13.2\",\n",
+          "offset": 107789,
+          "previous": " \"bitflags 2.13.0\",\n"
+        },
+        {
+          "current": " \"bitflags 2.13.2\",\n",
+          "offset": 108025,
+          "previous": " \"bitflags 2.13.0\",\n"
+        },
+        {
+          "current": " \"bitflags 2.13.2\",\n",
+          "offset": 111754,
+          "previous": " \"bitflags 2.13.0\",\n"
+        },
+        {
+          "current": " \"bitflags 2.13.2\",\n",
+          "offset": 112050,
+          "previous": " \"bitflags 2.13.0\",\n"
+        },
+        {
+          "current": " \"bitflags 2.13.2\",\n",
+          "offset": 118264,
+          "previous": " \"bitflags 2.13.0\",\n"
+        },
+        {
+          "current": "version = \"0.6.5\"\n",
+          "offset": 125486,
+          "previous": "version = \"0.6.4\"\n"
+        },
+        {
+          "current": "checksum = \"c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4\"\n",
+          "offset": 125569,
+          "previous": "checksum = \"52d1cfed4120b4d927bf7c0f86d2087a4a7d6027c906d9f9d525a80573b9be51\"\n"
+        },
+        {
+          "current": " \"bitflags 2.13.2\",\n",
+          "offset": 128515,
+          "previous": " \"bitflags 2.13.0\",\n"
+        },
+        {
+          "current": "",
+          "offset": 138688,
+          "previous": " \"tracing\",\n"
+        },
+        {
+          "current": " \"bitflags 2.13.2\",\n",
+          "offset": 143496,
+          "previous": " \"bitflags 2.13.0\",\n"
+        },
+        {
+          "current": "version = \"6.1.0\"\n",
+          "offset": 168735,
+          "previous": "version = \"5.19.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"5db4be7c075cb421e4b7ee645541604239bd243ba7c357511f4ff3a74b555907\"\n"
+        },
+        {
+          "current": "",
+          "offset": 168770,
+          "previous": " \"async-broadcast\",\n \"async-recursion\",\n"
+        },
+        {
+          "current": " \"bitflags 2.13.2\",\n \"endi\",\n",
+          "offset": 168786,
+          "previous": " \"enumflags2\",\n \"event-listener\",\n"
+        },
+        {
+          "current": "",
+          "offset": 168832,
+          "previous": " \"futures-lite\",\n"
+        },
+        {
+          "current": " \"socket2\",\n",
+          "offset": 168910,
+          "previous": ""
+        },
+        {
+          "current": "",
+          "offset": 168932,
+          "previous": " \"tracing\",\n"
+        },
+        {
+          "current": " \"zbus_utils\",\n \"zcheapstr\",\n \"zruntime\",\n",
+          "offset": 169007,
+          "previous": " \"zbus_names\",\n \"zvariant\",\n"
+        },
+        {
+          "current": "version = \"6.1.0\"\n",
+          "offset": 169085,
+          "previous": "version = \"5.19.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"2990635d09ade6df1868f72f8cac69a876a90981e8bd3c40b1be413f8dc88f40\"\n"
+        },
+        {
+          "current": "",
+          "offset": 169120,
+          "previous": " \"proc-macro-crate\",\n"
+        },
+        {
+          "current": " \"zbus_utils\",\n",
+          "offset": 169160,
+          "previous": " \"zbus_names\",\n \"zvariant\",\n \"zvariant_utils\",\n"
+        },
+        {
+          "current": "name = \"zbus_utils\"\nversion = \"6.0.0\"\n",
+          "offset": 169190,
+          "previous": "name = \"zbus_names\"\nversion = \"4.3.4\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"d8bf88b4a3ff53e883001e0e0115b297a9d53c31b9c1edd2bfdd853e3428624e\"\n"
+        },
+        {
+          "current": " \"proc-macro2\",\n \"quote\",\n",
+          "offset": 169245,
+          "previous": ""
+        },
+        {
+          "current": " \"syn 3.0.6\",\n",
+          "offset": 169281,
+          "previous": ""
+        },
+        {
+          "current": "",
+          "offset": 169306,
+          "previous": " \"zvariant\",\n"
+        },
+        {
+          "current": "name = \"zruntime\"\nversion = \"0.2.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"467fd80a2014d186319f14b81aef027aa466712f355c90158a0e6b39de60726d\"\ndependencies = [\n \"futures-core\",\n \"futures-io\",\n]\n\n[[package]]\n",
+          "offset": 172423,
+          "previous": ""
+        },
+        {
+          "current": "",
+          "offset": 173344,
+          "previous": "\n[[package]]\nname = \"zvariant\"\nversion = \"5.15.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"c1d34c27cc6cdd1f458427519dd6b8612f7b7e3f7b9a0b2355d041dda9869147\"\ndependencies = [\n \"endi\",\n \"enumflags2\",\n \"serde\",\n \"winnow\",\n \"zcheapstr\",\n \"zvariant_derive\",\n \"zvariant_utils\",\n]\n\n[[package]]\nname = \"zvariant_derive\"\nversion = \"5.15.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"864155e69b4352db0c7f374917bf45d1e0c8d17659c8b3dbf9795f3673f8c497\"\ndependencies = [\n \"proc-macro-crate\",\n \"proc-macro2\",\n \"quote\",\n \"syn 3.0.6\",\n \"zvariant_utils\",\n]\n\n[[package]]\nname = \"zvariant_utils\"\nversion = \"4.2.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"bad0294361a320b694a328460dc73add56c306150f5cb6bfafc44446120008a3\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"serde\",\n \"syn 3.0.6\",\n \"winnow\",\n]\n"
+        }
+      ],
+      "previous_sha256": "9efeffabd8726a961a84d23b7a8e5f2ce74e0e313698f064eed603ea79062a7c"
+    },
+    "Cargo.toml": {
+      "current_sha256": "29118852fb21a5b3d9fc091bea2bb9e4240f47fee75ea8a538f29c0dae56858d",
+      "patches": [
+        {
+          "current": "# Local dependencies are built through the unpublished supervisor.\nexclude = [\"third_party/hc074-dbus/zbus\", \"third_party/hc074-dbus/zbus_macros\", \"third_party/hc074-dbus/zbus_utils\"]\n",
+          "offset": 12,
+          "previous": ""
+        },
+        {
+          "current": "\n[patch.crates-io]\nzbus_macros = { path = \"third_party/hc074-dbus/zbus_macros\" }\nzbus_utils = { path = \"third_party/hc074-dbus/zbus_utils\" }\n",
+          "offset": 7198,
+          "previous": ""
+        }
+      ],
+      "previous_sha256": "fd57accedc5029f0024c45e72f3c3ef66501d670eaa8776cf293553ff8d5a1ad"
+    }
+  },
+  "package_review_sha256": "33cfe7ec5061690fa0f03ab5d81df4a598d7a8a810ffc4ae7457fb4bc97d24d9",
+  "previous_revision": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+  "schema": "hc074-reviewed-dbus-inputs-v1",
+  "source_review_sha256": "149698f228bba92ece4c5454db982977093899bfc8da6cf5e50c9405c2708ca9"
+}

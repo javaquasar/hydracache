@@ -1,0 +1,31 @@
+test_bounds_and_poll_unchanged (test_analysis.Accounting.test_bounds_and_poll_unchanged) ... ok
+test_complete_matrix (test_analysis.Accounting.test_complete_matrix) ... ok
+test_missing_test (test_analysis.Accounting.test_missing_test) ... ok
+test_no_deadline_reset (test_analysis.Accounting.test_no_deadline_reset) ... ok
+test_no_resource_promotion (test_analysis.Accounting.test_no_resource_promotion) ... ok
+test_nonzero (test_analysis.Accounting.test_nonzero) ... ok
+test_original_inner_pass_cannot_replace_timeout (test_analysis.Accounting.test_original_inner_pass_cannot_replace_timeout) ... ok
+test_original_selectors_unchanged (test_analysis.Accounting.test_original_selectors_unchanged) ... ok
+test_original_source_derivation (test_analysis.Accounting.test_original_source_derivation) ... ERROR
+test_original_timeout_immutable (test_analysis.Accounting.test_original_timeout_immutable) ... ok
+test_owner_error (test_analysis.Accounting.test_owner_error) ... ok
+test_ownership_retirement (test_analysis.Accounting.test_ownership_retirement) ... ok
+test_raw_semantics_and_qualifiers (test_analysis.Accounting.test_raw_semantics_and_qualifiers) ... ok
+test_raw_test_accounting (test_analysis.Accounting.test_raw_test_accounting) ... ok
+test_whole_peer_required (test_analysis.Accounting.test_whole_peer_required) ... ok
+test_wrong_built_image (test_analysis.Accounting.test_wrong_built_image) ... ok
+test_wrong_catalog (test_analysis.Accounting.test_wrong_catalog) ... ok
+
+======================================================================
+ERROR: test_original_source_derivation (test_analysis.Accounting.test_original_source_derivation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-compat-074\test_analysis.py", line 81, in test_original_source_derivation
+    members,get=prepare.packet();context=c.ROOT/'target'/a.R1
+                ^^^^^^^^^^^^^^
+AttributeError: module 'prepare' has no attribute 'packet'
+
+----------------------------------------------------------------------
+Ran 17 tests in 7.440s
+
+FAILED (errors=1)

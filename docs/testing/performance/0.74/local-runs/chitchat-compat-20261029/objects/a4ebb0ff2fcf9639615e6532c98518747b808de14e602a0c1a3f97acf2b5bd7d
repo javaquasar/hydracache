@@ -1,0 +1,9 @@
+{
+  "read_only": true,
+  "start_utc": "2026-10-29T17:15:19.3896082Z",
+  "end_utc": "2026-10-29T17:19:06.4326976Z",
+  "standby_events": [],
+  "settings_changed": false,
+  "clocks_changed": false,
+  "services_changed": false
+}
