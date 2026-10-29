@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use sha2::{Digest, Sha256};
 
-use crate::value_plane_model_075::MutationIdentity;
+use crate::value_plane_model_075::{identity_blank, MutationIdentity};
 
 #[path = "value_plane_collection_delta_075.rs"]
 mod replica_delta;
@@ -1202,7 +1202,7 @@ impl ReferenceCollectionMap {
         &self,
         identity: &MutationIdentity,
     ) -> Result<(), CollectionError> {
-        if identity.client.trim().is_empty() || identity.sequence == 0 {
+        if identity_blank(&identity.client) || identity.sequence == 0 {
             return Err(CollectionError::InvalidMutationIdentity);
         }
         self.check_bound("client_identity_bytes", 128, identity.client.len())

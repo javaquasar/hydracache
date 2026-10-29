@@ -5,7 +5,7 @@ use crate::value_plane_collection_075::CollectionBounds;
 use crate::value_plane_loopback_075::{
     LoopbackError, LoopbackFault, LoopbackFrame, LoopbackTransport,
 };
-use crate::value_plane_model_075::MutationIdentity;
+use crate::value_plane_model_075::{identity_blank, MutationIdentity};
 use crate::value_plane_service_075::*;
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
@@ -22,6 +22,9 @@ pub use transfer::*;
 #[path = "value_plane_service_cluster_runtime_hooks_075.rs"]
 mod runtime_hooks;
 pub use runtime_hooks::*;
+#[path = "value_plane_service_cluster_helpers_075.rs"]
+mod helpers;
+pub use helpers::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ServiceOperationScope {
@@ -438,6 +441,15 @@ impl ServiceClusterHarness {
         &mut self,
         command: &ServiceCommand,
     ) -> Result<bool, ServiceClusterError> {
+        let result = self.cancel_pending_inner(command);
+        self.capture_online_changes();
+        self.signal_subscriptions();
+        result
+    }
+    fn cancel_pending_inner(
+        &mut self,
+        command: &ServiceCommand,
+    ) -> Result<bool, ServiceClusterError> {
         let identity = command
             .identity
             .as_ref()
@@ -491,7 +503,7 @@ impl ServiceClusterHarness {
         if self.runtime.draining.contains(entry_node) {
             return Err(ServiceClusterError::NodeUnavailable);
         }
-        self.preflight_transfer_call(&command)?;
+        self.reserve_transfer_call(&command)?;
         let result = self.execute_inner(entry_node, command, call);
         self.capture_online_changes();
         self.signal_subscriptions();
@@ -941,6 +953,9 @@ impl ServiceClusterHarness {
         client: &str,
         through: u64,
     ) -> Result<(), ServiceClusterError> {
+        if identity_blank(client) || client.len() > 128 || through == 0 {
+            return Err(MapServiceError::InvalidArgument.into());
+        }
         for partition in 0..self.bounds.partitions {
             let route = self.assignments[partition as usize].route.clone();
             for journal in [false, true] {
@@ -959,6 +974,25 @@ impl ServiceClusterHarness {
                 }
             }
         }
+        let mut credits = BTreeMap::new();
+        for partition in 0..self.bounds.partitions {
+            let route = &self.assignments[partition as usize].route;
+            let data_client =
+                data_identity(&MutationIdentity::new(client, through), partition).client;
+            credits.insert(
+                partition,
+                [
+                    self.service(&route.owner, partition, false)?
+                        .retirement_delta_credit(&data_client, through)?,
+                    self.service(&route.owner, partition, true)?
+                        .retirement_delta_credit(client, through)?,
+                ],
+            );
+        }
+        self.reserve_transfer_credits(
+            Sha256::digest(format!("retire:{client}:{through}").as_bytes()).into(),
+            &credits,
+        )?;
         for partition in 0..self.bounds.partitions {
             let route = self.assignments[partition as usize].route.clone();
             for journal in [false, true] {

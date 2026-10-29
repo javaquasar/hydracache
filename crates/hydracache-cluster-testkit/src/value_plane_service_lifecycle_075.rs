@@ -584,7 +584,7 @@ pub(super) fn bulk_version(
     state.requests = state.requests.saturating_add(1);
     if entries.is_empty()
         || entries.len() > state.limits.max_batch
-        || identity.client.trim().is_empty()
+        || identity_blank(&identity.client)
         || identity.client.len() > 128
         || identity.sequence == 0
     {
@@ -812,7 +812,7 @@ pub(super) fn retire_locked(
         return Err(CollectionError::MapDestroyed.into());
     }
     if generation != state.namespace_generation
-        || client.trim().is_empty()
+        || identity_blank(client)
         || client.len() > 128
         || through == 0
         || state

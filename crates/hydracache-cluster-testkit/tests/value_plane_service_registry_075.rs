@@ -1561,7 +1561,7 @@ fn tenant_partition_and_snapshot_quotas_remain_tied_to_actual_owners() {
         .listener_source(&handle, &context, listener_options())
         .unwrap();
     assert!(
-        matches!(registry.listener_source(&handle, &context, ServiceListenerOptions { max_value_bytes: 65, ..listener_options() }), Err(RegistryError::Service(error)) if error.kind() == "invalid_argument")
+        matches!(registry.listener_source(&handle, &context, ServiceListenerOptions { max_value_bytes: 129, ..listener_options() }), Err(RegistryError::Service(error)) if error.kind() == "invalid_argument")
     );
     assert!(matches!(
         registry.resync_listener(

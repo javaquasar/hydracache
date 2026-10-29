@@ -197,6 +197,86 @@ fn measure_delta(
 }
 
 impl UnifiedIMapService {
+    pub fn retirement_delta_credit(
+        &self,
+        client: &str,
+        through: u64,
+    ) -> Result<usize, MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
+        let bytes = state.map.service_retirement_delta_bytes(client, through);
+        if bytes == 0 {
+            return Ok(0);
+        }
+        bytes
+            .checked_mul(8)
+            .and_then(|n| n.checked_add(2_048))
+            .ok_or(MapServiceError::Capacity)
+    }
+    /// Conservative sparse decision credit, measured without cloning values or advancing time.
+    pub fn command_delta_credit(
+        &self,
+        command: &ServiceCommand,
+        maximum: usize,
+    ) -> Result<usize, MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
+        validate(&state, command)?;
+        let mutation = mutating(&command.operation);
+        if mutation {
+            let identity = command
+                .identity
+                .as_ref()
+                .ok_or(MapServiceError::InvalidArgument)?;
+            lifecycle::check_identity(&state, identity)?;
+            if !matches!(
+                state
+                    .map
+                    .service_lookup(identity, Some(command_digest(command)))?,
+                ServiceRetainedOutcome::Unknown
+            ) || command.cancelled
+                || command.now >= command.deadline
+            {
+                return Ok(0);
+            }
+        } else if command.now == state.now && !state.map.service_expiry_pending(command.now) {
+            return Ok(0);
+        }
+        let request = command.test_transport_size(maximum)?;
+        let response = if mutation {
+            lifecycle::preflight_command(
+                &state,
+                command,
+                command
+                    .identity
+                    .as_ref()
+                    .expect("validated mutation identity"),
+            )?
+        } else {
+            0
+        };
+        let expired_keys = state.map.service_expiry_delta_key_bytes(
+            command.now,
+            state.limits.expiry_work,
+            command,
+        );
+        let map_wide = if matches!(
+            command.operation.as_str(),
+            "destroy" | "clear_detailed" | "evict_all_detailed"
+        ) {
+            let used = lifecycle::usage(&state);
+            used.values.saturating_add(used.outcomes)
+        } else {
+            0
+        };
+        let credit = 2_048usize
+            .checked_add(request.checked_mul(2).ok_or(MapServiceError::Capacity)?)
+            .and_then(|n| n.checked_add(response.checked_mul(16)?))
+            .and_then(|n| n.checked_add(expired_keys.checked_mul(8)?))
+            .and_then(|n| n.checked_add(map_wide.checked_mul(16)?))
+            .ok_or(MapServiceError::Capacity)?;
+        Ok(credit)
+    }
     /// Check both image and metadata-cursor leases before either snapshot allocation.
     pub fn preflight_replica_snapshot_with_cursor(
         &self,

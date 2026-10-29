@@ -435,6 +435,7 @@ impl ServiceClusterHarness {
         {
             return Err(MapServiceError::InvalidArgument.into());
         }
+        self.reserve_transfer_call(command)?;
         let p = self.coordinator_for(&identity);
         let route = self.assignments[p as usize].route.clone();
         self.require_live(&route.owner)?;
@@ -499,6 +500,7 @@ impl ServiceClusterHarness {
                 None,
                 &payload,
             )?;
+            cluster.reserve_transfer_call(command)?;
             cluster.reserve_operation(identity, command)
         });
         self.runtime.invocation = previous;

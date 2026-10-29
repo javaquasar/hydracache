@@ -617,6 +617,51 @@ impl UnifiedIMapService {
     }
 
     /// Coordinator receipts use the same bounded ledger as ordinary service mutations.
+    pub(crate) fn external_reservation_credit(
+        &self,
+        identity: &MutationIdentity,
+        digest: [u8; 32],
+        maximum_result_bytes: usize,
+    ) -> Result<[usize; 2], MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
+        lifecycle::check_identity(&state, identity)?;
+        if !matches!(
+            state.map.service_lookup(identity, Some(digest))?,
+            ServiceRetainedOutcome::Unknown
+        ) {
+            return Ok([0, 0]);
+        }
+        if maximum_result_bytes < 64 {
+            return Err(MapServiceError::InvalidArgument);
+        }
+        require_replication_capacity(&state)?;
+        let used = lifecycle::usage(&state);
+        let pending = identity
+            .client
+            .len()
+            .checked_add(48)
+            .ok_or(MapServiceError::Capacity)?;
+        let outcomes = pending
+            .checked_add(maximum_result_bytes)
+            .ok_or(MapServiceError::Capacity)?;
+        budget(
+            "pending",
+            state.limits.pending_bytes,
+            used.pending
+                .checked_add(pending)
+                .ok_or(MapServiceError::Capacity)?,
+        )?;
+        budget(
+            "outcomes",
+            state.limits.outcome_bytes,
+            used.outcomes
+                .checked_add(outcomes)
+                .ok_or(MapServiceError::Capacity)?,
+        )?;
+        Ok([outcomes, pending])
+    }
+
     pub fn admit_external_operation(
         &self,
         identity: MutationIdentity,

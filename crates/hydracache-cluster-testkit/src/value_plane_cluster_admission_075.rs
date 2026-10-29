@@ -572,6 +572,14 @@ impl ClusterAdmission {
         }
         seen
     }
+    pub fn credit_usage(&self, ticket: u64) -> Option<(usize, usize)> {
+        self.state
+            .lock()
+            .unwrap()
+            .jobs
+            .get(&ticket)
+            .map(|job| (job.work.bytes, job.work.replica_bytes))
+    }
 }
 fn check(
     actual: usize,

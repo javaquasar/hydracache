@@ -15,9 +15,11 @@ pub enum ClusterInvocationPhase {
     Dispatching,
     Finished,
 }
-struct Control {
-    phase: ClusterInvocationPhase,
-    cancelled: bool,
+pub(super) struct Control {
+    pub(super) mutating: bool,
+    pub(super) attempts: u8,
+    pub(super) phase: ClusterInvocationPhase,
+    pub(super) cancelled: bool,
     waker: Option<Waker>,
     error: Option<RegistryError>,
 }
@@ -36,16 +38,20 @@ impl ClusterInvocationHandle {
     pub fn last_error(&self) -> Option<RegistryError> {
         self.control.lock().unwrap().error.clone()
     }
+    pub fn attempts(&self) -> u8 {
+        self.control.lock().unwrap().attempts
+    }
     pub fn cancel(&self) -> CancellationDisposition {
         let mut control = self.control.lock().unwrap();
         if control.phase == ClusterInvocationPhase::Finished {
             return CancellationDisposition::AlreadyFinished;
         }
         control.cancelled = true;
-        let outcome = if matches!(
-            control.phase,
-            ClusterInvocationPhase::Queued | ClusterInvocationPhase::Claimed
-        ) {
+        let outcome = if !control.mutating
+            || matches!(
+                control.phase,
+                ClusterInvocationPhase::Queued | ClusterInvocationPhase::Claimed
+            ) {
             CancellationDisposition::NotApplied
         } else {
             CancellationDisposition::OutcomeUnknown
@@ -59,6 +65,8 @@ impl ClusterInvocationHandle {
     }
 }
 pub struct RegistryClusterInvocation {
+    mutating: bool,
+    retry: ClusterRetryPolicy,
     registry: UnifiedServiceRegistry,
     handle: RegistryHandle,
     authenticated: AuthenticatedNamespace,
@@ -68,6 +76,21 @@ pub struct RegistryClusterInvocation {
     permit: Option<ClusterPermit>,
     reserved: bool,
     finished: bool,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ClusterRetryPolicy {
+    maximum_attempts: u8,
+}
+impl ClusterRetryPolicy {
+    pub const DISABLED: Self = Self {
+        maximum_attempts: 1,
+    };
+    pub fn new(maximum_attempts: u8) -> Result<Self, RegistryError> {
+        if !(1..=16).contains(&maximum_attempts) {
+            return Err(RegistryError::InvalidBound("retry_attempts"));
+        }
+        Ok(Self { maximum_attempts })
+    }
 }
 impl UnifiedServiceRegistry {
     pub fn cluster_invocation(
@@ -81,6 +104,71 @@ impl UnifiedServiceRegistry {
         if !is_mutating_operation(&command.operation) || command.identity.is_none() {
             return Err(MapServiceError::InvalidArgument.into());
         }
+        self.start_cluster_invocation(
+            handle,
+            authenticated,
+            surface,
+            command,
+            options,
+            ClusterRetryPolicy::DISABLED,
+        )
+    }
+    pub fn cluster_read_invocation(
+        &self,
+        handle: &RegistryHandle,
+        authenticated: &AuthenticatedNamespace,
+        surface: SurfaceId,
+        command: ServiceCommand,
+        options: RuntimeCallOptions,
+    ) -> Result<(RegistryClusterInvocation, ClusterInvocationHandle), RegistryError> {
+        if !matches!(
+            command.operation.as_str(),
+            "get"
+                | "get_all"
+                | "contains_key"
+                | "contains_entry"
+                | "remaining_ttl"
+                | "get_or_default"
+                | "get_entry_view"
+                | "query_operation_outcome"
+                | "local_statistics"
+                | "capability_descriptor"
+        ) {
+            return Err(MapServiceError::InvalidArgument.into());
+        }
+        self.start_cluster_invocation(
+            handle,
+            authenticated,
+            surface,
+            command,
+            options,
+            ClusterRetryPolicy::DISABLED,
+        )
+    }
+    pub fn cluster_invocation_with_retry(
+        &self,
+        handle: &RegistryHandle,
+        authenticated: &AuthenticatedNamespace,
+        surface: SurfaceId,
+        command: ServiceCommand,
+        options: RuntimeCallOptions,
+        retry: ClusterRetryPolicy,
+    ) -> Result<(RegistryClusterInvocation, ClusterInvocationHandle), RegistryError> {
+        if !is_mutating_operation(&command.operation) || command.identity.is_none() {
+            return Err(MapServiceError::InvalidArgument.into());
+        }
+        self.start_cluster_invocation(handle, authenticated, surface, command, options, retry)
+    }
+    fn start_cluster_invocation(
+        &self,
+        handle: &RegistryHandle,
+        authenticated: &AuthenticatedNamespace,
+        surface: SurfaceId,
+        command: ServiceCommand,
+        options: RuntimeCallOptions,
+        retry: ClusterRetryPolicy,
+    ) -> Result<(RegistryClusterInvocation, ClusterInvocationHandle), RegistryError> {
+        let mutating = is_mutating_operation(&command.operation);
         if command.operation == "destroy" {
             return Err(RegistryError::SafetyLaneRequired);
         }
@@ -94,7 +182,15 @@ impl UnifiedServiceRegistry {
                 return Err(ServiceClusterError::UnsupportedScope.into());
             }
         }
-        let ticket = self.enqueue_kind(
+        let control = Arc::new(Mutex::new(Control {
+            mutating,
+            attempts: 1,
+            phase: ClusterInvocationPhase::Queued,
+            cancelled: false,
+            waker: None,
+            error: None,
+        }));
+        let ticket = self.enqueue_with_control(
             handle,
             authenticated,
             JobKind::Execute {
@@ -103,15 +199,12 @@ impl UnifiedServiceRegistry {
                 command,
                 options: Some(options),
             },
+            Some(Arc::downgrade(&control)),
         )?;
-        let control = Arc::new(Mutex::new(Control {
-            phase: ClusterInvocationPhase::Queued,
-            cancelled: false,
-            waker: None,
-            error: None,
-        }));
         Ok((
             RegistryClusterInvocation {
+                mutating,
+                retry,
                 registry: self.clone(),
                 handle: handle.clone(),
                 authenticated: authenticated.clone(),
@@ -183,7 +276,17 @@ impl RegistryClusterInvocation {
             .expect("claimed registry job");
         state.active_invocations.insert(
             self.ticket.0,
-            (job.handle.address.clone(), job.bytes, job.growth),
+            ActiveInvocation {
+                address: job.handle.address.clone(),
+                bytes: job.bytes,
+                growth: job.growth,
+                deadline: self.authenticated.deadline.min(match &job.kind {
+                    JobKind::Execute { command, .. } => command.deadline,
+                    _ => self.authenticated.deadline,
+                }),
+                admission,
+                control: Arc::downgrade(&self.control),
+            },
         );
         self.job = Some(job);
         self.permit = Some(permit);
@@ -259,9 +362,9 @@ impl RegistryClusterInvocation {
             state.queued_bytes -= job.bytes;
             state.reserved_growth -= job.growth;
         }
-        if let Some((_, bytes, growth)) = state.active_invocations.remove(&self.ticket.0) {
-            state.queued_bytes -= bytes;
-            state.reserved_growth -= growth;
+        if let Some(owner) = state.active_invocations.remove(&self.ticket.0) {
+            state.queued_bytes -= owner.bytes;
+            state.reserved_growth -= owner.growth;
         }
         let scheduler = state.cluster_admission.clone();
         drop(state);
@@ -291,6 +394,9 @@ impl RegistryClusterInvocation {
         &mut self,
         reason: InvocationRejection,
     ) -> AsyncOutcome<ServiceClusterExecution, RegistryError> {
+        if !self.mutating {
+            return AsyncOutcome::NotApplied(reason);
+        }
         match self.command().and_then(|(command, _)| {
             let runtime = self.runtime()?;
             Ok((
@@ -387,7 +493,8 @@ impl Future for RegistryClusterInvocation {
                 return this.complete(AsyncOutcome::Completed(Err(error)));
             }
         };
-        let result = if phase == ClusterInvocationPhase::Claimed {
+        let reserving = this.mutating && phase == ClusterInvocationPhase::Claimed;
+        let result = if reserving {
             this.reserved = true;
             this.control.lock().unwrap().phase = ClusterInvocationPhase::Reserving;
             runtime
@@ -413,8 +520,14 @@ impl Future for RegistryClusterInvocation {
         this.wake_scheduler();
         match result {
             Err(error) => {
-                this.control.lock().unwrap().error = Some(error.into());
-                this.complete(AsyncOutcome::OutcomeUnknown)
+                this.control.lock().unwrap().error = Some(error.clone().into());
+                if this.retry_failure(&error, options.as_ref(), reserving, context) {
+                    Poll::Pending
+                } else if this.mutating {
+                    this.complete(AsyncOutcome::OutcomeUnknown)
+                } else {
+                    this.complete(AsyncOutcome::Completed(Err(error.into())))
+                }
             }
             Ok(None) => {
                 this.control.lock().unwrap().phase = ClusterInvocationPhase::Reserved;
@@ -422,14 +535,58 @@ impl Future for RegistryClusterInvocation {
                 Poll::Pending
             }
             Ok(Some(execution))
-                if execution.result.kind == "outcome_unknown"
-                    || execution.failure.is_some()
-                    || !execution.backup_proved =>
+                if this.mutating
+                    && (execution.result.kind == "outcome_unknown"
+                        || execution.failure.is_some()
+                        || !execution.backup_proved) =>
             {
-                this.complete(AsyncOutcome::OutcomeUnknown)
+                let error = execution
+                    .failure
+                    .as_ref()
+                    .unwrap_or(&ServiceClusterError::ReplicaNotProved);
+                this.control.lock().unwrap().error = Some(error.clone().into());
+                if this.retry_failure(error, options.as_ref(), false, context) {
+                    Poll::Pending
+                } else {
+                    this.complete(AsyncOutcome::OutcomeUnknown)
+                }
             }
             Ok(Some(execution)) => this.complete(AsyncOutcome::Completed(Ok(execution))),
         }
+    }
+}
+impl RegistryClusterInvocation {
+    fn retry_failure(
+        &mut self,
+        error: &ServiceClusterError,
+        options: Option<&RuntimeCallOptions>,
+        reserving: bool,
+        context: &Context<'_>,
+    ) -> bool {
+        let allowed = matches!(
+            error,
+            ServiceClusterError::NodeUnavailable
+                | ServiceClusterError::ReplicaNotProved
+                | ServiceClusterError::TransportTimeout
+                | ServiceClusterError::TransferBackpressure
+        ) || (matches!(
+            error,
+            ServiceClusterError::StaleEpoch | ServiceClusterError::StaleOwner
+        ) && options
+            .is_none_or(|options| options.call.expected_epoch.is_none()));
+        let mut control = self.control.lock().unwrap();
+        if !allowed || control.cancelled || control.attempts >= self.retry.maximum_attempts {
+            return false;
+        }
+        control.attempts += 1;
+        control.phase = if reserving {
+            ClusterInvocationPhase::Claimed
+        } else {
+            ClusterInvocationPhase::Reserved
+        };
+        drop(control);
+        context.waker().wake_by_ref();
+        true
     }
 }
 impl Drop for RegistryClusterInvocation {

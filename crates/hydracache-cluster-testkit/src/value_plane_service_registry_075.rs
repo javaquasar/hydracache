@@ -20,6 +20,7 @@ use crate::value_plane_cluster_admission_075::{
 };
 use crate::value_plane_cluster_health_075::{MaintenanceResult, RuntimeHealth, RuntimeMaintenance};
 use crate::value_plane_cluster_runtime_075::{
+    ClusterHelperCommand, ClusterHelperExecution, ClusterHelperPreflight, ClusterHelperRequest,
     ClusterNamespaceRuntime, ClusterRuntimeConfig, RuntimeCallOptions,
 };
 use crate::value_plane_collection_075::{CollectionBounds, ScanProjection};
@@ -47,6 +48,9 @@ static NEXT_REGISTRY: AtomicU64 = AtomicU64::new(1);
 #[path = "value_plane_service_registry_invocation_075.rs"]
 mod invocation;
 pub use invocation::*;
+#[path = "value_plane_service_registry_diagnostics_075.rs"]
+mod diagnostics;
+pub use diagnostics::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RegistryBounds {
@@ -280,7 +284,10 @@ impl AuthenticatedNamespace {
                 | "put_if_absent"
                 | "remove_all_detailed"
         ) {
-            grant.authorize(GrantOperation::Read, &runtime_command_keys(command), false)?;
+            grant.authorize(GrantOperation::Read, &[], false)?;
+            for key in borrowed_command_keys(command) {
+                grant.authorize(GrantOperation::Read, std::slice::from_ref(key), false)?;
+            }
         }
         if command.operation == "entry_listener" {
             let filter = command.expected.as_ref().unwrap_or(&command.key);
@@ -308,7 +315,10 @@ impl AuthenticatedNamespace {
                     | "local_statistics"
                     | "remove_entry_listener"
             );
-            grant.authorize(operation, &runtime_command_keys(command), map_wide)?;
+            grant.authorize(operation, &[], map_wide)?;
+            for key in borrowed_command_keys(command) {
+                grant.authorize(operation, std::slice::from_ref(key), false)?;
+            }
         }
         Ok(())
     }
@@ -377,6 +387,7 @@ pub struct NamespaceCleanup {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RegistryResult {
+    ClusterHelper(ClusterHelperExecution),
     Command(ServiceResult),
     ClusterCommand(ServiceClusterExecution),
     Maintenance(MaintenanceResult),
@@ -413,6 +424,8 @@ pub struct RegistryUsage {
 }
 
 struct NamespaceOwner {
+    last_admission: u64,
+    policy_epoch: Option<u64>,
     lifecycle: NamespaceLifecycle,
     service: NamespaceBackend,
 }
@@ -422,6 +435,16 @@ enum NamespaceBackend {
     Cluster(ClusterNamespaceRuntime),
 }
 impl NamespaceBackend {
+    fn helper_preflight(
+        &self,
+        authenticated: &AuthenticatedNamespace,
+        request: &ClusterHelperRequest,
+    ) -> Result<ClusterHelperPreflight, RegistryError> {
+        match self {
+            Self::Cluster(runtime) => Ok(runtime.helper_preflight(authenticated, request)?),
+            _ => Err(ServiceClusterError::UnsupportedScope.into()),
+        }
+    }
     fn logical_time(&self) -> u64 {
         match self {
             Self::Local(service) => service.logical_time(),
@@ -571,16 +594,39 @@ impl NamespaceBackend {
             Self::Cluster(service) => Ok(service.command_replica_bound(command)?),
         }
     }
-    fn maintenance_growth(&self, operation: &RuntimeMaintenance) -> usize {
+    fn maintenance_growth(&self, operation: &RuntimeMaintenance) -> Result<usize, RegistryError> {
+        if matches!(
+            operation,
+            RuntimeMaintenance::RepairStep { .. } | RuntimeMaintenance::DrainOnlineStep { .. }
+        ) {
+            let runtime = match self {
+                Self::Cluster(runtime) => runtime,
+                _ => return Err(ServiceClusterError::UnsupportedScope.into()),
+            };
+            return usage_bytes(self.resource_usage())
+                .checked_add(
+                    runtime
+                        .maintenance_replica_bound(operation)?
+                        .checked_mul(3)
+                        .ok_or(RegistryError::InvalidBound("maintenance_growth"))?,
+                )
+                .and_then(|bytes| bytes.checked_add(4096))
+                .ok_or(RegistryError::InvalidBound("maintenance_growth"));
+        }
         if operation.repair_lane() {
-            usage_bytes(self.resource_usage()).saturating_add(512)
+            Ok(usage_bytes(self.resource_usage()).saturating_add(512))
         } else {
-            0
+            Ok(0)
         }
     }
 }
 #[derive(Clone)]
 enum JobKind {
+    Helper {
+        surface: SurfaceId,
+        request: ClusterHelperRequest,
+        options: RuntimeCallOptions,
+    },
     Execute {
         cooperative: bool,
         surface: SurfaceId,
@@ -594,6 +640,7 @@ enum JobKind {
 }
 #[derive(Clone)]
 struct QueuedJob {
+    invocation: Option<Weak<Mutex<invocation::Control>>>,
     handle: RegistryHandle,
     authenticated: AuthenticatedNamespace,
     kind: JobKind,
@@ -602,7 +649,7 @@ struct QueuedJob {
     admission: Option<u64>,
 }
 struct RegistryState {
-    active_invocations: BTreeMap<u64, (NamespaceAddress, usize, usize)>,
+    active_invocations: BTreeMap<u64, ActiveInvocation>,
     policy_epoch: Option<u64>,
     id: u64,
     bounds: RegistryBounds,
@@ -624,6 +671,14 @@ struct RegistryState {
     cluster_config: Option<ClusterRuntimeConfig>,
     cluster_admission: Option<ClusterAdmission>,
 }
+struct ActiveInvocation {
+    address: NamespaceAddress,
+    bytes: usize,
+    growth: usize,
+    deadline: u64,
+    admission: u64,
+    control: Weak<Mutex<invocation::Control>>,
+}
 
 #[derive(Clone)]
 pub struct UnifiedServiceRegistry {
@@ -632,6 +687,24 @@ pub struct UnifiedServiceRegistry {
 }
 
 impl UnifiedServiceRegistry {
+    pub fn enqueue_helper(
+        &self,
+        handle: &RegistryHandle,
+        authenticated: &AuthenticatedNamespace,
+        surface: SurfaceId,
+        request: ClusterHelperRequest,
+        options: RuntimeCallOptions,
+    ) -> Result<RequestTicket, RegistryError> {
+        self.enqueue_kind(
+            handle,
+            authenticated,
+            JobKind::Helper {
+                surface,
+                request,
+                options,
+            },
+        )
+    }
     /// Select strict policy mode, or revoke every older epoch. This cannot revert to legacy mode.
     pub fn advance_policy_epoch(&self, next: u64) -> Result<(), RegistryError> {
         let _dispatch = self
@@ -639,7 +712,13 @@ impl UnifiedServiceRegistry {
             .try_lock()
             .map_err(|_| RegistryError::DispatcherBusy)?;
         let mut state = self.state.lock().unwrap();
-        if next == 0 || state.policy_epoch.is_some_and(|epoch| next <= epoch) {
+        if next == 0
+            || state.policy_epoch.is_some_and(|epoch| next <= epoch)
+            || state
+                .maps
+                .values()
+                .any(|owner| owner.policy_epoch.is_some_and(|epoch| next <= epoch))
+        {
             return Err(SecurityError::PolicyEpochMismatch.into());
         }
         let services = state
@@ -659,14 +738,17 @@ impl UnifiedServiceRegistry {
         state.queued_bytes = state
             .active_invocations
             .values()
-            .map(|(_, bytes, _)| *bytes)
+            .map(|owner| owner.bytes)
             .sum();
         state.reserved_growth = state
             .active_invocations
             .values()
-            .map(|(_, _, growth)| *growth)
+            .map(|owner| owner.growth)
             .sum();
         state.policy_epoch = Some(next);
+        for owner in state.maps.values_mut() {
+            owner.policy_epoch = None;
+        }
         let scheduler = state.cluster_admission.clone();
         for service in &services {
             if let NamespaceBackend::Cluster(runtime) = service {
@@ -681,6 +763,58 @@ impl UnifiedServiceRegistry {
         for service in services {
             service.wake_listener_waiters();
         }
+        Ok(())
+    }
+    pub fn advance_namespace_policy_epoch(
+        &self,
+        handle: &RegistryHandle,
+        authenticated: &AuthenticatedNamespace,
+        next: u64,
+    ) -> Result<(), RegistryError> {
+        let dispatch = self
+            .dispatching
+            .try_lock()
+            .map_err(|_| RegistryError::DispatcherBusy)?;
+        let mut state = self.state.lock().unwrap();
+        validate_handle(&state, handle, authenticated, false)?;
+        authenticated.authorize(GrantOperation::Admin, &[], true)?;
+        let current = effective_policy_epoch(&state, &handle.address)
+            .ok_or(SecurityError::PolicyEpochMismatch)?;
+        if next <= current {
+            return Err(SecurityError::PolicyEpochMismatch.into());
+        }
+        let service = state.maps[&address_key(&handle.address)].service.clone();
+        if let NamespaceBackend::Cluster(runtime) = &service {
+            runtime.authentication.set_policy_epoch(next)?;
+        }
+        state
+            .maps
+            .get_mut(&address_key(&handle.address))
+            .expect("policy owner")
+            .policy_epoch = Some(next);
+        let ids = state
+            .jobs
+            .iter()
+            .filter(|(_, job)| job.handle.address == handle.address)
+            .map(|(id, _)| *id)
+            .collect::<Vec<_>>();
+        for id in ids {
+            let job = state.jobs.remove(&id).expect("targeted revocation");
+            if let (Some(scheduler), Some(ticket)) = (&state.cluster_admission, job.admission) {
+                scheduler.cancel(ticket)?;
+            } else {
+                state.queue.cancel_request(id);
+            }
+            state.queued_bytes -= job.bytes;
+            state.reserved_growth -= job.growth;
+        }
+        let scheduler = state.cluster_admission.clone();
+        drop(state);
+        drop(dispatch);
+        if let Some(scheduler) = scheduler {
+            scheduler.wake_waiters();
+        }
+        service.wake_listener_waiters();
         Ok(())
     }
     pub fn new(
@@ -861,6 +995,8 @@ impl UnifiedServiceRegistry {
         state.maps.insert(
             key,
             NamespaceOwner {
+                last_admission: 0,
+                policy_epoch: None,
                 lifecycle: NamespaceLifecycle::new(requested.generation)?,
                 service,
             },
@@ -1183,7 +1319,16 @@ impl UnifiedServiceRegistry {
         &self,
         handle: &RegistryHandle,
         authenticated: &AuthenticatedNamespace,
+        kind: JobKind,
+    ) -> Result<RequestTicket, RegistryError> {
+        self.enqueue_with_control(handle, authenticated, kind, None)
+    }
+    fn enqueue_with_control(
+        &self,
+        handle: &RegistryHandle,
+        authenticated: &AuthenticatedNamespace,
         mut kind: JobKind,
+        invocation: Option<Weak<Mutex<invocation::Control>>>,
     ) -> Result<RequestTicket, RegistryError> {
         let mut state = self.state.lock().expect("registry poisoned");
         let safety = matches!(kind, JobKind::BeginDelete | JobKind::Reclaim(_))
@@ -1197,6 +1342,19 @@ impl UnifiedServiceRegistry {
         authorize_job(authenticated, &kind)?;
         let owner = &state.maps[&address_key(&handle.address)];
         let (bytes, growth, partition) = match &mut kind {
+            JobKind::Helper { request, .. } => {
+                request.now = state.now;
+                request.deadline = request.deadline.min(authenticated.deadline);
+                let preflight = owner.service.helper_preflight(authenticated, request)?;
+                (
+                    preflight.request_bytes,
+                    preflight.growth,
+                    *preflight
+                        .partitions
+                        .first()
+                        .ok_or(RegistryError::InvalidBound("helper_partitions"))?,
+                )
+            }
             JobKind::Execute { command, .. } | JobKind::Reserve(command) => {
                 command.now = state.now;
                 let bytes = command_bytes(command);
@@ -1220,10 +1378,12 @@ impl UnifiedServiceRegistry {
             }
             JobKind::Maintenance(operation) => {
                 let name = match operation {
-                    RuntimeMaintenance::Repair { backup, .. } => Some(&*backup),
+                    RuntimeMaintenance::Repair { backup, .. }
+                    | RuntimeMaintenance::RepairStep { backup, .. } => Some(&*backup),
                     RuntimeMaintenance::SetNodeLive { node, .. }
                     | RuntimeMaintenance::BeginDrain { node }
                     | RuntimeMaintenance::DrainStep { node, .. } => Some(&*node),
+                    RuntimeMaintenance::DrainOnlineStep { node, .. } => Some(&*node),
                     _ => None,
                 };
                 if name.is_some_and(|name| name.is_empty() || name.len() > 128) {
@@ -1231,7 +1391,7 @@ impl UnifiedServiceRegistry {
                 }
                 (
                     128 + name.map_or(0, |name| name.len()),
-                    owner.service.maintenance_growth(operation),
+                    owner.service.maintenance_growth(operation)?,
                     operation.partition(),
                 )
             }
@@ -1247,7 +1407,12 @@ impl UnifiedServiceRegistry {
             let data_bytes = state
                 .jobs
                 .values()
-                .filter(|job| matches!(job.kind, JobKind::Execute { .. } | JobKind::Reserve(_)))
+                .filter(|job| {
+                    matches!(
+                        job.kind,
+                        JobKind::Execute { .. } | JobKind::Reserve(_) | JobKind::Helper { .. }
+                    )
+                })
                 .fold(0usize, |sum, job| sum.saturating_add(job.bytes));
             quota(
                 "queued_bytes",
@@ -1264,10 +1429,23 @@ impl UnifiedServiceRegistry {
             .ok_or(RegistryError::InvalidBound("request_identity"))?;
         let admission = if let Some(scheduler) = &state.cluster_admission {
             let key = match &kind {
+                JobKind::Helper { request, .. } => owner
+                    .service
+                    .helper_preflight(authenticated, request)?
+                    .keys
+                    .into_iter()
+                    .next()
+                    .unwrap_or_default(),
                 JobKind::Execute { command, .. } | JobKind::Reserve(command) => command.key.clone(),
                 _ => Vec::new(),
             };
             let affected = match &kind {
+                JobKind::Helper { request, .. } => {
+                    owner
+                        .service
+                        .helper_preflight(authenticated, request)?
+                        .partitions
+                }
                 JobKind::Execute { command, .. } | JobKind::Reserve(command) => {
                     owner.service.partitions(command, state.bounds.partitions)
                 }
@@ -1275,6 +1453,8 @@ impl UnifiedServiceRegistry {
             };
             let lane = if safety {
                 ClusterLane::Safety
+            } else if let JobKind::Helper { request, .. } = &kind {
+                request.lane()
             } else if matches!(&kind, JobKind::Maintenance(operation) if operation.repair_lane()) {
                 ClusterLane::Repair
             } else {
@@ -1282,6 +1462,12 @@ impl UnifiedServiceRegistry {
             };
             let replica_bytes =
                 match &kind {
+                    JobKind::Helper { request, .. } => {
+                        owner
+                            .service
+                            .helper_preflight(authenticated, request)?
+                            .replica_bytes
+                    }
                     JobKind::Execute {
                         command,
                         cooperative,
@@ -1331,6 +1517,9 @@ impl UnifiedServiceRegistry {
                 partition
             };
             let resources = match &kind {
+                JobKind::Helper { request, .. } => {
+                    owner.service.helper_preflight(authenticated, request)?.keys
+                }
                 JobKind::Execute { command, .. } | JobKind::Reserve(command) => {
                     runtime_command_keys(command)
                 }
@@ -1370,6 +1559,7 @@ impl UnifiedServiceRegistry {
         state.jobs.insert(
             ticket,
             QueuedJob {
+                invocation,
                 handle: handle.clone(),
                 authenticated: authenticated.clone(),
                 kind,
@@ -1378,6 +1568,11 @@ impl UnifiedServiceRegistry {
                 admission,
             },
         );
+        state
+            .maps
+            .get_mut(&address_key(&handle.address))
+            .expect("admitted namespace owner")
+            .last_admission = ticket;
         state.next_request = next;
         state.queued_bytes += bytes;
         state.reserved_growth += growth;
@@ -1445,10 +1640,9 @@ impl UnifiedServiceRegistry {
         drop(state);
         drop(_dispatch);
         drop(permit);
-        let surface = if let JobKind::Execute { surface, .. } = &job.kind {
-            Some(*surface)
-        } else {
-            None
+        let surface = match &job.kind {
+            JobKind::Execute { surface, .. } | JobKind::Helper { surface, .. } => Some(*surface),
+            _ => None,
         };
         Ok(Some(DispatchRecord {
             ticket: RequestTicket(id),
@@ -1523,10 +1717,11 @@ impl UnifiedServiceRegistry {
             || state
                 .active_invocations
                 .values()
-                .any(|(address, _, _)| address_key(address) == key)
+                .any(|owner| address_key(&owner.address) == key)
         {
             return Err(MapServiceError::ActiveOwners.into());
         }
+        let policy_epoch = owner.policy_epoch;
         let mut lifecycle = owner.lifecycle.clone();
         let generation = lifecycle.recreate()?;
         let service = match &owner.service {
@@ -1547,12 +1742,20 @@ impl UnifiedServiceRegistry {
                 state.trust,
             )?),
         };
-        if let (Some(epoch), NamespaceBackend::Cluster(runtime)) = (state.policy_epoch, &service) {
+        if let (Some(epoch), NamespaceBackend::Cluster(runtime)) =
+            (policy_epoch.or(state.policy_epoch), &service)
+        {
             runtime.authentication.set_policy_epoch(epoch)?;
         }
-        state
-            .maps
-            .insert(key, NamespaceOwner { lifecycle, service });
+        state.maps.insert(
+            key,
+            NamespaceOwner {
+                lifecycle,
+                service,
+                policy_epoch,
+                last_admission: 0,
+            },
+        );
         Ok(RegistryHandle {
             registry: state.id,
             address: NamespaceAddress {
@@ -1771,6 +1974,31 @@ fn dispatch(
     authorize_job(&job.authenticated, &job.kind)?;
     let key = address_key(&job.handle.address);
     match &job.kind {
+        JobKind::Helper {
+            request, options, ..
+        } => {
+            let runtime = match &state.maps[&key].service {
+                NamespaceBackend::Cluster(runtime) => runtime.clone(),
+                _ => return Err(ServiceClusterError::UnsupportedScope.into()),
+            };
+            let mut request = request.clone();
+            request.now = state.now;
+            request.deadline = request.deadline.min(job.authenticated.deadline);
+            let preflight = runtime.helper_preflight(&job.authenticated, &request)?;
+            check_owned_growth(
+                &state,
+                &job.handle.address.tenant,
+                preflight.growth,
+                Some(id),
+            )?;
+            drop(state);
+            Ok(RegistryResult::ClusterHelper(runtime.execute_helper(
+                &job.authenticated,
+                permit.ok_or(ServiceClusterError::Authorization("admission_binding"))?,
+                request,
+                Some(options),
+            )?))
+        }
         JobKind::Execute { command, .. } | JobKind::Reserve(command) => {
             // Every admitted surface deliberately resolves the very same owner. SurfaceId
             // is provenance only; this dev harness makes no production routing claim.
@@ -1824,7 +2052,7 @@ fn dispatch(
                 + state
                     .active_invocations
                     .values()
-                    .filter(|(address, _, _)| address_key(address) == key)
+                    .filter(|owner| address_key(&owner.address) == key)
                     .count();
             let owner = state.maps.get_mut(&key).expect("validated owner");
             let owners = owner.service.namespace_owners();
@@ -1857,7 +2085,7 @@ fn dispatch(
         }
         JobKind::Maintenance(operation) => {
             let backend = &state.maps[&key].service;
-            let growth = backend.maintenance_growth(operation);
+            let growth = backend.maintenance_growth(operation)?;
             check_owned_growth(&state, &job.handle.address.tenant, growth, Some(id))?;
             let runtime = match backend {
                 NamespaceBackend::Cluster(runtime) => runtime.clone(),
@@ -1878,7 +2106,10 @@ fn validate_auth(
     authenticated: &AuthenticatedNamespace,
     requested: &NamespaceAddress,
 ) -> Result<(), RegistryError> {
-    match (state.policy_epoch, authenticated.policy_epoch()) {
+    match (
+        effective_policy_epoch(state, requested),
+        authenticated.policy_epoch(),
+    ) {
         (None, None) => {}
         (Some(expected), Some(actual)) if expected == actual => {}
         _ => return Err(SecurityError::PolicyEpochMismatch.into()),
@@ -1914,12 +2145,38 @@ fn validate_auth(
     )?;
     Ok(())
 }
+fn effective_policy_epoch(state: &RegistryState, address: &NamespaceAddress) -> Option<u64> {
+    state
+        .maps
+        .get(&address_key(address))
+        .and_then(|owner| owner.policy_epoch)
+        .or(state.policy_epoch)
+}
 
 fn authorize_job(
     authenticated: &AuthenticatedNamespace,
     job: &JobKind,
 ) -> Result<(), RegistryError> {
     match job {
+        JobKind::Helper { request, .. } => match &request.command {
+            ClusterHelperCommand::VersionBulk { entries, .. } => {
+                if entries.len() > 256 {
+                    return Err(MapServiceError::InvalidArgument.into());
+                }
+                for entry in entries {
+                    authenticated.authorize(
+                        GrantOperation::Write,
+                        std::slice::from_ref(&entry.key),
+                        false,
+                    )?;
+                }
+                Ok(())
+            }
+            ClusterHelperCommand::QueryOutcomes { .. } => {
+                authenticated.authorize(GrantOperation::Read, &[], true)
+            }
+            _ => authenticated.authorize(GrantOperation::Admin, &[], true),
+        },
         JobKind::Execute { command, .. } | JobKind::Reserve(command) => {
             authenticated.authorize_command(command)
         }
@@ -2079,7 +2336,7 @@ fn check_owned_growth(
                 .active_invocations
                 .iter()
                 .filter(|(id, _)| exclude != Some(**id))
-                .map(|(_, (_, _, growth))| *growth)
+                .map(|(_, owner)| owner.growth)
                 .sum::<usize>(),
         );
     let tenant_reserved = reservations
@@ -2089,8 +2346,8 @@ fn check_owned_growth(
             state
                 .active_invocations
                 .iter()
-                .filter(|(id, (address, _, _))| exclude != Some(**id) && address.tenant == tenant)
-                .map(|(_, (_, _, growth))| *growth)
+                .filter(|(id, owner)| exclude != Some(**id) && owner.address.tenant == tenant)
+                .map(|(_, owner)| owner.growth)
                 .sum::<usize>(),
         );
     let global_transient = state.transient.as_ref().map_or(0, |(_, bytes)| *bytes);
@@ -2138,6 +2395,20 @@ fn command_bytes(command: &ServiceCommand) -> usize {
                 .saturating_add(entry.value.len())
         },
     )
+}
+fn borrowed_command_keys(command: &ServiceCommand) -> impl Iterator<Item = &Vec<u8>> {
+    let point = command.entries.is_empty()
+        && command.keys.is_empty()
+        && !matches!(
+            command.operation.as_str(),
+            "get_all" | "put_all_detailed" | "remove_all_detailed" | "replace_all_detailed"
+        );
+    command
+        .entries
+        .iter()
+        .map(|entry| &entry.key)
+        .chain(command.keys.iter().filter(|_| command.entries.is_empty()))
+        .chain(std::iter::once(&command.key).filter(move |_| point))
 }
 pub(crate) fn runtime_command_keys(command: &ServiceCommand) -> Vec<Vec<u8>> {
     if !command.entries.is_empty() {
@@ -2372,3 +2643,7 @@ impl Drop for RegistryClusterListenerSource {
         self.close();
     }
 }
+
+#[cfg(test)]
+#[path = "value_plane_service_registry_quota_tests_075.rs"]
+mod quota_tests;

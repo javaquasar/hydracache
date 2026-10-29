@@ -15,6 +15,10 @@ use crate::value_plane_service_075::*;
 use crate::value_plane_service_cluster_075::*;
 use crate::value_plane_service_registry_075::{AuthenticatedNamespace, NamespaceAddress};
 
+#[path = "value_plane_cluster_helpers_075.rs"]
+mod helpers;
+pub use helpers::*;
+
 #[derive(Debug, Clone)]
 pub struct ClusterRuntimeConfig {
     pub cluster: String,

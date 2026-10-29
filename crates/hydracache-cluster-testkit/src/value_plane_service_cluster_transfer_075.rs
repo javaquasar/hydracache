@@ -16,6 +16,19 @@ pub enum OnlineTransferPhase {
     Aborted,
     RestartRequired,
 }
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OnlineTransferPurpose {
+    OwnerMove,
+    BackupRepair,
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OnlineTransferStep {
+    pub transfer: Option<u64>,
+    pub work: usize,
+    pub phase: OnlineTransferPhase,
+    pub complete: bool,
+    pub waiting_for_quiescence: bool,
+}
 #[derive(Debug, Clone, Copy)]
 pub struct OnlineTransferOptions {
     pub chunk_bytes: usize,
@@ -109,10 +122,14 @@ pub(super) struct OnlineTransferState {
     applied: VecDeque<(u64, [u8; 32])>,
     next_delta: u64,
     restart_reason: Option<&'static str>,
+    held: BTreeMap<[u8; 32], [usize; 2]>,
+    purpose: OnlineTransferPurpose,
+    unacked_chunk: Option<(TransferComponent, usize)>,
+    unacked_delta: Option<(u64, [u8; 32])>,
 }
 impl OnlineTransferState {
     pub(super) fn owned_bytes(&self) -> usize {
-        let mut bytes = 256usize;
+        let mut bytes = 384usize;
         for part in self.components.values() {
             let usage = part.staging.resource_usage();
             bytes = bytes
@@ -133,7 +150,13 @@ impl OnlineTransferState {
         bytes = self.deltas.iter().fold(bytes, |sum, delta| {
             sum.saturating_add(192).saturating_add(delta.payload.len())
         });
-        bytes.saturating_add(self.applied.len().saturating_mul(48))
+        bytes
+            .saturating_add(self.applied.len().saturating_mul(48))
+            .saturating_add(self.held.values().fold(0usize, |sum, credit| {
+                sum.saturating_add(credit[0])
+                    .saturating_add(credit[1])
+                    .saturating_add(64)
+            }))
     }
     fn delta_bytes(&self) -> usize {
         self.deltas
@@ -162,11 +185,27 @@ impl OnlineTransferState {
             OnlineTransferPhase::Snapshot | OnlineTransferPhase::Delta | OnlineTransferPhase::Ready
         )
     }
+    fn component_credit(&self, component: TransferComponent) -> usize {
+        self.held
+            .values()
+            .map(|credit| credit[component as usize])
+            .sum()
+    }
+    fn release_component_credit(&mut self, component: TransferComponent) {
+        for credit in self.held.values_mut() {
+            credit[component as usize] = 0;
+        }
+        self.held
+            .retain(|_, credit| credit[0] != 0 || credit[1] != 0);
+    }
     fn restart(&mut self, reason: &'static str) {
         self.phase = OnlineTransferPhase::RestartRequired;
         self.restart_reason = Some(reason);
         self.deltas.clear();
         self.components.clear();
+        self.held.clear();
+        self.unacked_chunk = None;
+        self.unacked_delta = None;
     }
     fn readiness(&self) -> OnlineTransferReadiness {
         OnlineTransferReadiness {
@@ -184,6 +223,255 @@ impl OnlineTransferState {
 }
 
 impl ServiceClusterHarness {
+    pub fn online_maintenance_step(
+        &mut self,
+        partition: u32,
+        target: &str,
+        purpose: OnlineTransferPurpose,
+        maximum_work: usize,
+        faults: ServiceLinkFaults,
+    ) -> Result<OnlineTransferStep, ServiceClusterError> {
+        if maximum_work == 0 || maximum_work > 4_096 {
+            return Err(ServiceClusterError::InvalidBound);
+        }
+        let existing = self
+            .runtime
+            .transfers
+            .iter()
+            .find(|(_, state)| {
+                state.manifest.partition == partition
+                    && state.manifest.target == target
+                    && state.purpose == purpose
+                    && !matches!(
+                        state.phase,
+                        OnlineTransferPhase::Aborted | OnlineTransferPhase::Committed
+                    )
+            })
+            .map(|(id, _)| *id);
+        let id = if let Some(id) = existing {
+            id
+        } else {
+            let started = self.begin_online_transfer_for(
+                partition,
+                target,
+                OnlineTransferOptions::default(),
+                purpose,
+            );
+            match started {
+                Ok(id) => id,
+                Err(ServiceClusterError::Model(MapServiceError::ActiveOwners)) => {
+                    return Ok(OnlineTransferStep {
+                        transfer: None,
+                        work: 0,
+                        phase: OnlineTransferPhase::Snapshot,
+                        complete: false,
+                        waiting_for_quiescence: true,
+                    })
+                }
+                Err(error) => return Err(error),
+            }
+        };
+        self.online_transfer_step(id, maximum_work, faults)
+    }
+
+    pub fn online_transfer_step(
+        &mut self,
+        id: u64,
+        maximum_work: usize,
+        faults: ServiceLinkFaults,
+    ) -> Result<OnlineTransferStep, ServiceClusterError> {
+        self.ensure_namespace()?;
+        if maximum_work == 0 || maximum_work > 4_096 {
+            return Err(ServiceClusterError::InvalidBound);
+        }
+        let mut work = 0;
+        let mut waiting = false;
+        while work < maximum_work {
+            let state = self
+                .runtime
+                .transfers
+                .get(&id)
+                .ok_or(ServiceClusterError::UnknownTransfer)?;
+            let partition = state.manifest.partition;
+            match state.phase {
+                OnlineTransferPhase::Snapshot => {
+                    let next = state.unacked_chunk.or_else(|| {
+                        state.components.iter().find_map(|(component, snapshot)| {
+                            (0..snapshot.manifest.chunk_count)
+                                .find(|index| !snapshot.accepted.contains_key(index))
+                                .map(|index| (*component, index))
+                        })
+                    });
+                    if let Some((component, index)) = next {
+                        let chunk_size = state.options.chunk_bytes;
+                        let used = self
+                            .runtime
+                            .transfers
+                            .values()
+                            .map(OnlineTransferState::resident_bytes)
+                            .sum::<usize>();
+                        if used
+                            .saturating_add(chunk_size.saturating_mul(2))
+                            .saturating_add(32)
+                            > self.runtime.limits.max_transfer_bytes
+                        {
+                            return Err(MapServiceError::ResourceBudget("transfer_step").into());
+                        }
+                        let chunk = self.online_transfer_chunk(id, component, index)?;
+                        work += 1;
+                        let delivered = self.transmit(
+                            partition,
+                            "online_chunk",
+                            chunk.bytes.clone(),
+                            faults.replica,
+                        );
+                        match delivered {
+                            Ok(0) => break,
+                            Ok(_) => {}
+                            Err(error) => {
+                                self.runtime
+                                    .transfers
+                                    .get_mut(&id)
+                                    .expect("held transfer")
+                                    .restart("transport_corrupt");
+                                return Err(error);
+                            }
+                        }
+                        let checksum = chunk.checksum;
+                        self.accept_online_transfer_chunk(id, chunk)?;
+                        self.runtime
+                            .transfers
+                            .get_mut(&id)
+                            .expect("held transfer")
+                            .unacked_chunk = Some((component, index));
+                        if self.transmit(
+                            partition,
+                            "online_chunk_ack",
+                            checksum.to_vec(),
+                            faults.ack,
+                        )? == 0
+                        {
+                            break;
+                        }
+                        self.runtime
+                            .transfers
+                            .get_mut(&id)
+                            .expect("held transfer")
+                            .unacked_chunk = None;
+                    } else {
+                        self.finish_online_snapshot(id)?;
+                        work += 1;
+                    }
+                }
+                OnlineTransferPhase::Delta => {
+                    if let Some((sequence, checksum)) = state.unacked_delta {
+                        work += 1;
+                        self.apply_online_delta(id, sequence, checksum)?;
+                        if self.transmit(
+                            partition,
+                            "online_delta_ack",
+                            checksum.to_vec(),
+                            faults.ack,
+                        )? == 0
+                        {
+                            break;
+                        }
+                        self.runtime
+                            .transfers
+                            .get_mut(&id)
+                            .expect("held transfer")
+                            .unacked_delta = None;
+                    } else if let Some(delta) = state.deltas.front() {
+                        let used = self
+                            .runtime
+                            .transfers
+                            .values()
+                            .map(OnlineTransferState::resident_bytes)
+                            .sum::<usize>();
+                        if used.saturating_add(delta.payload.len())
+                            > self.runtime.limits.max_transfer_bytes
+                        {
+                            return Err(MapServiceError::ResourceBudget("transfer_step").into());
+                        }
+                        let sequence = delta.descriptor.sequence;
+                        let checksum = delta.descriptor.checksum;
+                        let payload = delta.payload.clone();
+                        work += 1;
+                        match self.transmit(partition, "online_delta", payload, faults.replica) {
+                            Ok(0) => break,
+                            Ok(_) => {}
+                            Err(error) => {
+                                self.runtime
+                                    .transfers
+                                    .get_mut(&id)
+                                    .expect("held transfer")
+                                    .restart("transport_corrupt");
+                                return Err(error);
+                            }
+                        }
+                        self.apply_online_delta(id, sequence, checksum)?;
+                        self.runtime
+                            .transfers
+                            .get_mut(&id)
+                            .expect("held transfer")
+                            .unacked_delta = Some((sequence, checksum));
+                        if self.transmit(
+                            partition,
+                            "online_delta_ack",
+                            checksum.to_vec(),
+                            faults.ack,
+                        )? == 0
+                        {
+                            break;
+                        }
+                        self.runtime
+                            .transfers
+                            .get_mut(&id)
+                            .expect("held transfer")
+                            .unacked_delta = None;
+                    } else {
+                        work += 1;
+                        match self.ready_online_transfer(id) {
+                            Ok(_) => {}
+                            Err(ServiceClusterError::Model(MapServiceError::ActiveOwners)) => {
+                                waiting = true;
+                                break;
+                            }
+                            Err(error) => return Err(error),
+                        }
+                    }
+                }
+                OnlineTransferPhase::Ready => {
+                    let purpose = state.purpose;
+                    work += 1;
+                    match self.commit_online_decisions(id, purpose, faults) {
+                        Ok(_) => break,
+                        Err(ServiceClusterError::TransportTimeout) => break,
+                        Err(ServiceClusterError::Model(MapServiceError::ActiveOwners)) => {
+                            waiting = true;
+                            break;
+                        }
+                        Err(error) => return Err(error),
+                    }
+                }
+                OnlineTransferPhase::Committed => break,
+                _ => return Err(ServiceClusterError::TransferState),
+            }
+        }
+        let phase = self
+            .runtime
+            .transfers
+            .get(&id)
+            .ok_or(ServiceClusterError::UnknownTransfer)?
+            .phase;
+        Ok(OnlineTransferStep {
+            transfer: Some(id),
+            work,
+            phase,
+            complete: phase == OnlineTransferPhase::Committed,
+            waiting_for_quiescence: waiting,
+        })
+    }
     pub(super) fn has_active_transfer(&self, partition: u32) -> bool {
         self.runtime
             .transfers
@@ -195,6 +483,23 @@ impl ServiceClusterHarness {
         p: u32,
         target: &str,
         options: OnlineTransferOptions,
+    ) -> Result<u64, ServiceClusterError> {
+        self.begin_online_transfer_for(p, target, options, OnlineTransferPurpose::OwnerMove)
+    }
+    pub fn begin_online_backup_repair(
+        &mut self,
+        p: u32,
+        target: &str,
+        options: OnlineTransferOptions,
+    ) -> Result<u64, ServiceClusterError> {
+        self.begin_online_transfer_for(p, target, options, OnlineTransferPurpose::BackupRepair)
+    }
+    fn begin_online_transfer_for(
+        &mut self,
+        p: u32,
+        target: &str,
+        options: OnlineTransferOptions,
+        purpose: OnlineTransferPurpose,
     ) -> Result<u64, ServiceClusterError> {
         self.ensure_namespace()?;
         self.require_live(target)?;
@@ -231,7 +536,7 @@ impl ServiceClusterHarness {
             .values()
             .map(OnlineTransferState::resident_bytes)
             .sum::<usize>();
-        let mut admission = 256usize;
+        let mut admission = 384usize;
         for component in [TransferComponent::Data, TransferComponent::Journal] {
             let source = self.service(&route.owner, p, component == TransferComponent::Journal)?;
             source.replica_stamp()?;
@@ -303,6 +608,10 @@ impl ServiceClusterHarness {
             applied: VecDeque::new(),
             next_delta: 1,
             restart_reason: None,
+            held: BTreeMap::new(),
+            purpose,
+            unacked_chunk: None,
+            unacked_delta: None,
         };
         let used = self
             .runtime
@@ -657,6 +966,28 @@ impl ServiceClusterHarness {
         &mut self,
         id: u64,
     ) -> Result<ServicePartitionAssignment, ServiceClusterError> {
+        self.commit_online_decisions(
+            id,
+            OnlineTransferPurpose::OwnerMove,
+            ServiceLinkFaults::default(),
+        )
+    }
+    pub fn commit_online_backup_repair(
+        &mut self,
+        id: u64,
+    ) -> Result<ServicePartitionAssignment, ServiceClusterError> {
+        self.commit_online_decisions(
+            id,
+            OnlineTransferPurpose::BackupRepair,
+            ServiceLinkFaults::default(),
+        )
+    }
+    fn commit_online_decisions(
+        &mut self,
+        id: u64,
+        purpose: OnlineTransferPurpose,
+        faults: ServiceLinkFaults,
+    ) -> Result<ServicePartitionAssignment, ServiceClusterError> {
         self.ensure_namespace()?;
         self.capture_online_changes();
         let mut state = self
@@ -666,7 +997,10 @@ impl ServiceClusterHarness {
             .ok_or(ServiceClusterError::UnknownTransfer)?;
         let result = (|| {
             self.validate_transfer_route(&state)?;
-            if state.phase != OnlineTransferPhase::Ready || !state.deltas.is_empty() {
+            if state.purpose != purpose
+                || state.phase != OnlineTransferPhase::Ready
+                || !state.deltas.is_empty()
+            {
                 return Err(ServiceClusterError::TransferState);
             }
             let other = self
@@ -691,11 +1025,15 @@ impl ServiceClusterHarness {
                 return Err(MapServiceError::ResourceBudget("transfer_commit_image").into());
             }
             let p = state.manifest.partition;
-            let epoch = state
-                .manifest
-                .source_epoch
-                .checked_add(1)
-                .ok_or(ServiceClusterError::InvalidBound)?;
+            let epoch = if purpose == OnlineTransferPurpose::OwnerMove {
+                state
+                    .manifest
+                    .source_epoch
+                    .checked_add(1)
+                    .ok_or(ServiceClusterError::InvalidBound)?
+            } else {
+                state.manifest.source_epoch
+            };
             for component in [TransferComponent::Data, TransferComponent::Journal] {
                 let source = self.service(
                     &state.manifest.source,
@@ -717,6 +1055,9 @@ impl ServiceClusterHarness {
                     Some(expected),
                     &payload,
                 )?;
+                if self.transmit(p, "online_final_image", payload, faults.replica)? == 0 {
+                    return Err(ServiceClusterError::TransportTimeout);
+                }
                 self.service(
                     &state.manifest.target,
                     p,
@@ -731,13 +1072,26 @@ impl ServiceClusterHarness {
                     Some(expected),
                     &expected.digest,
                 )?;
+                if self.transmit(p, "online_final_ack", expected.digest.to_vec(), faults.ack)? == 0
+                {
+                    return Err(ServiceClusterError::TransportTimeout);
+                }
             }
             let assignment = &mut self.assignments[p as usize];
-            assignment.route = ServicePartitionAssignment {
-                partition: p,
-                epoch,
-                owner: state.manifest.target.clone(),
-                backup: state.manifest.source.clone(),
+            assignment.route = if purpose == OnlineTransferPurpose::OwnerMove {
+                ServicePartitionAssignment {
+                    partition: p,
+                    epoch,
+                    owner: state.manifest.target.clone(),
+                    backup: state.manifest.source.clone(),
+                }
+            } else {
+                ServicePartitionAssignment {
+                    partition: p,
+                    epoch,
+                    owner: state.manifest.source.clone(),
+                    backup: state.manifest.target.clone(),
+                }
             };
             assignment.required_data = state.components[&TransferComponent::Data]
                 .staging
@@ -751,6 +1105,7 @@ impl ServiceClusterHarness {
             state.phase = OnlineTransferPhase::Committed;
             state.components.clear();
             state.applied.clear();
+            state.held.clear();
             self.refresh_subscriptions();
             Ok(committed)
         })();
@@ -769,6 +1124,7 @@ impl ServiceClusterHarness {
         }
         state.phase = OnlineTransferPhase::Aborted;
         state.components.clear();
+        state.held.clear();
         state.deltas.clear();
         state.applied.clear();
         Ok(())
@@ -802,34 +1158,159 @@ impl ServiceClusterHarness {
         }
         Ok(())
     }
-    pub(super) fn preflight_transfer_call(
-        &self,
+    pub(super) fn reserve_transfer_call(
+        &mut self,
         command: &ServiceCommand,
     ) -> Result<(), ServiceClusterError> {
         self.validate_request(command)?;
-        if !is_mutating_operation(&command.operation) {
+        if self.runtime.transfers.values().all(|state| !state.active()) {
             return Ok(());
         }
+        let mutation = is_mutating_operation(&command.operation);
+        if mutation && (command.cancelled || command.now >= command.deadline) {
+            return Ok(());
+        }
+        let groups = self.groups(
+            command,
+            service_operation_scope(&command.operation)
+                .ok_or(ServiceClusterError::UnsupportedScope)?,
+        )?;
+        let mut credits = BTreeMap::<u32, [usize; 2]>::new();
+        let mut response = 64usize;
+        for (partition, mut group, _) in groups {
+            if mutation {
+                group.identity = command
+                    .identity
+                    .as_ref()
+                    .map(|id| data_identity(id, partition));
+            }
+            let source = self.service(
+                &self.assignments[partition as usize].route.owner,
+                partition,
+                false,
+            )?;
+            let credit = source.command_delta_credit(&group, self.bounds.max_frame_bytes)?;
+            credits.entry(partition).or_default()[0] = credit;
+            if mutation {
+                let bound = match source.recover_command(
+                    &group,
+                    group
+                        .identity
+                        .as_ref()
+                        .ok_or(MapServiceError::InvalidArgument)?,
+                )? {
+                    ServiceRecovery::Completed(result) => service_result_bytes(&result),
+                    ServiceRecovery::Pending => 64,
+                    ServiceRecovery::Unknown => source.command_result_bound(&group)?,
+                };
+                response = response
+                    .checked_add(bound.saturating_sub(64))
+                    .ok_or(ServiceClusterError::InvalidBound)?;
+            }
+        }
+        if mutation {
+            let identity = command
+                .identity
+                .as_ref()
+                .ok_or(MapServiceError::InvalidArgument)?;
+            let partition = self.coordinator_for(identity);
+            let journal = self.service(
+                &self.assignments[partition as usize].route.owner,
+                partition,
+                true,
+            )?;
+            if !matches!(
+                journal.recover_external_operation(identity, request_digest(command))?,
+                ServiceRecovery::Completed(_)
+            ) {
+                credits.entry(partition).or_default()[1] = response
+                    .checked_mul(16)
+                    .and_then(|n| n.checked_add(2_048))
+                    .ok_or(ServiceClusterError::InvalidBound)?;
+            }
+        }
+        let mut hash = Sha256::new();
+        hash.update(request_digest(command));
+        if let Some(identity) = &command.identity {
+            hash.update(identity.client.as_bytes());
+            hash.update(identity.sequence.to_le_bytes());
+        } else {
+            hash.update(command.now.to_le_bytes());
+        }
+        self.reserve_transfer_credits(hash.finalize().into(), &credits)
+    }
+
+    pub(super) fn preflight_transfer_credits(
+        &self,
+        key: [u8; 32],
+        credits: &BTreeMap<u32, [usize; 2]>,
+    ) -> Result<usize, ServiceClusterError> {
+        let mut additional = 0usize;
         for state in self
             .runtime
             .transfers
             .values()
             .filter(|state| state.active())
         {
-            let touches = self
-                .groups(
-                    command,
-                    service_operation_scope(&command.operation)
-                        .ok_or(ServiceClusterError::UnsupportedScope)?,
-                )?
-                .iter()
-                .any(|(p, _, _)| *p == state.manifest.partition)
-                || command
-                    .identity
-                    .as_ref()
-                    .is_some_and(|id| self.coordinator_for(id) == state.manifest.partition);
-            if touches && state.deltas.len().saturating_add(2) > state.options.max_delta_images {
+            let Some(credit) = credits.get(&state.manifest.partition) else {
+                continue;
+            };
+            if credit[0] == 0 && credit[1] == 0 {
+                continue;
+            }
+            let existing = state.held.get(&key).copied().unwrap_or_default();
+            let needed = credit[0]
+                .saturating_sub(existing[0])
+                .checked_add(credit[1].saturating_sub(existing[1]))
+                .ok_or(ServiceClusterError::InvalidBound)?;
+            let records = usize::from(credit[0] != 0) + usize::from(credit[1] != 0);
+            if state.deltas.len().saturating_add(records) > state.options.max_delta_images
+                || state.held.len() >= state.options.max_delta_images
+                    && !state.held.contains_key(&key)
+                || state
+                    .delta_bytes()
+                    .saturating_add(state.component_credit(TransferComponent::Data))
+                    .saturating_add(state.component_credit(TransferComponent::Journal))
+                    .saturating_add(needed)
+                    > state.options.max_delta_bytes
+            {
                 return Err(ServiceClusterError::TransferBackpressure);
+            }
+            additional = additional
+                .checked_add(needed)
+                .and_then(|n| n.checked_add(if state.held.contains_key(&key) { 0 } else { 64 }))
+                .ok_or(ServiceClusterError::InvalidBound)?;
+        }
+        let used = self
+            .runtime
+            .transfers
+            .values()
+            .map(OnlineTransferState::resident_bytes)
+            .sum::<usize>();
+        if used.saturating_add(additional) > self.runtime.limits.max_transfer_bytes {
+            return Err(ServiceClusterError::TransferBackpressure);
+        }
+        Ok(additional)
+    }
+    pub(super) fn reserve_transfer_credits(
+        &mut self,
+        key: [u8; 32],
+        credits: &BTreeMap<u32, [usize; 2]>,
+    ) -> Result<(), ServiceClusterError> {
+        self.preflight_transfer_credits(key, credits)?;
+        for state in self
+            .runtime
+            .transfers
+            .values_mut()
+            .filter(|state| state.active())
+        {
+            if let Some(credit) = credits
+                .get(&state.manifest.partition)
+                .filter(|credit| credit[0] != 0 || credit[1] != 0)
+            {
+                let held = state.held.entry(key).or_default();
+                held[0] = held[0].max(credit[0]);
+                held[1] = held[1].max(credit[1]);
             }
         }
         Ok(())
@@ -866,6 +1347,7 @@ impl ServiceClusterHarness {
                         };
                         let base = state.captured[&component];
                         if actual == base {
+                            state.release_component_credit(component);
                             continue;
                         }
                         let measured = match source.preflight_replica_delta(
@@ -887,7 +1369,11 @@ impl ServiceClusterHarness {
                             .map(OnlineTransferState::resident_bytes)
                             .sum::<usize>();
                         if used
-                            .saturating_add(state.resident_bytes())
+                            .saturating_add(
+                                state
+                                    .resident_bytes()
+                                    .saturating_sub(state.component_credit(component)),
+                            )
                             .saturating_add(predicted)
                             .saturating_add(measured.owned_bytes)
                             .saturating_add(measured.cursor_growth)
@@ -952,6 +1438,7 @@ impl ServiceClusterHarness {
                             checksum: Sha256::digest(&payload).into(),
                         };
                         state.next_delta = next;
+                        state.release_component_credit(component);
                         state.captured.insert(component, actual);
                         state.deltas.push_back(DecisionDelta {
                             descriptor,
@@ -988,4 +1475,147 @@ fn chunk_checksum(id: u64, component: TransferComponent, index: usize, bytes: &[
     digest.update(index.to_be_bytes());
     digest.update(bytes);
     digest.finalize().into()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    struct Allow;
+    impl ServiceMessageGuard for Allow {
+        fn authorize(&self, _: &ServiceMessageContext) -> Result<(), ServiceClusterError> {
+            Ok(())
+        }
+    }
+    fn cluster() -> ServiceClusterHarness {
+        ServiceClusterHarness::new(
+            &["a", "b", "c"],
+            ServiceClusterBounds {
+                partitions: 1,
+                ..ServiceClusterBounds::default()
+            },
+            CollectionBounds::default(),
+            ServiceLimits::default(),
+            1,
+        )
+        .unwrap()
+    }
+    fn usage_bytes(usage: ServiceResourceUsage) -> usize {
+        [
+            usage.values,
+            usage.outcomes,
+            usage.pending,
+            usage.listeners,
+            usage.streams,
+            usage.resync,
+        ]
+        .into_iter()
+        .sum()
+    }
+
+    #[test]
+    fn helper_delta_holds_bind_distinct_identities_and_forecast_actual_aggregate_growth() {
+        let mut cluster = cluster();
+        let mut put = ServiceCommand::point("put", b"key");
+        put.value = Some(b"old".to_vec());
+        put.identity = Some(MutationIdentity::new("values", 1));
+        cluster
+            .execute("c", put, ServiceClusterCall::default())
+            .unwrap();
+        let token = cluster
+            .execute(
+                "c",
+                ServiceCommand::point("get_entry_view", b"key"),
+                ServiceClusterCall::default(),
+            )
+            .unwrap()
+            .result
+            .token
+            .unwrap();
+        let transfer = cluster
+            .begin_online_transfer(0, "c", OnlineTransferOptions::default())
+            .unwrap();
+        for sequence in 1..=2 {
+            let request = ClusterHelperRequest::new(
+                MutationIdentity::new("same-command", sequence),
+                ClusterHelperCommand::VersionBulk {
+                    operation: VersionBulkOperation::Replace,
+                    entries: vec![VersionBulkEntry {
+                        key: b"key".to_vec(),
+                        token,
+                        value: Some(b"new".to_vec()),
+                        ttl: ServiceTtl::Preserve,
+                    }],
+                },
+            );
+            let forecast = cluster.cluster_helper_preflight(&request).unwrap();
+            let before = usage_bytes(cluster.aggregate_resource_usage());
+            let mut call = ServiceClusterCall::default();
+            call.faults.coordinator.ack = LoopbackFault::Drop;
+            let result = cluster
+                .execute_cluster_helper_guarded("c", request, call, Arc::new(Allow))
+                .unwrap();
+            assert!(!result.backup_proved);
+            assert!(
+                matches!(result.result, ClusterHelperResult::Versions(result) if result.items[0].kind == "outcome_unknown")
+            );
+            let after = usage_bytes(cluster.aggregate_resource_usage());
+            assert!(after.saturating_sub(before) <= forecast.growth);
+            let state = &cluster.runtime.transfers[&transfer];
+            assert_eq!(state.held.len(), sequence as usize);
+            assert!(state
+                .held
+                .values()
+                .all(|credit| credit[0] == 0 && credit[1] > 0));
+        }
+        assert_eq!(cluster.aggregate_namespace_owners().pending, 4);
+        assert_eq!(
+            cluster.diagnostic_node_snapshot("a", 0, 0).unwrap()[0].value,
+            b"old"
+        );
+        cluster.abort_online_transfer(transfer).unwrap();
+        cluster.cleanup_online_transfer(transfer).unwrap();
+        assert_eq!(cluster.aggregate_namespace_owners().resync_leases, 0);
+    }
+
+    #[test]
+    fn cancelled_pending_root_captures_terminal_decision_and_releases_holds_immediately() {
+        let mut cluster = cluster();
+        let transfer = cluster
+            .begin_online_transfer(0, "c", OnlineTransferOptions::default())
+            .unwrap();
+        let mut original = ServiceCommand::point("put", b"key");
+        original.value = Some(b"v".to_vec());
+        original.identity = Some(MutationIdentity::new("cancel", 1));
+        cluster
+            .reserve_operation(original.identity.clone().unwrap(), &original)
+            .unwrap();
+        assert!(!cluster.runtime.transfers[&transfer].held.is_empty());
+        let held =
+            cluster.runtime.transfers[&transfer].component_credit(TransferComponent::Journal);
+        cluster.set_node_live("a", false).unwrap();
+        assert_eq!(
+            cluster.cancel_pending(&original).unwrap_err(),
+            ServiceClusterError::NodeUnavailable
+        );
+        assert_eq!(
+            cluster.runtime.transfers[&transfer].component_credit(TransferComponent::Journal),
+            held
+        );
+        assert_eq!(cluster.aggregate_namespace_owners().pending, 2);
+        cluster.set_node_live("a", true).unwrap();
+        assert!(cluster.cancel_pending(&original).unwrap());
+        let state = &cluster.runtime.transfers[&transfer];
+        assert!(state.held.is_empty());
+        assert!(state
+            .deltas
+            .iter()
+            .any(|delta| delta.descriptor.component == TransferComponent::Journal));
+        assert_eq!(cluster.aggregate_namespace_owners().pending, 0);
+        assert!(cluster
+            .diagnostic_node_snapshot("a", 0, 0)
+            .unwrap()
+            .is_empty());
+        cluster.abort_online_transfer(transfer).unwrap();
+        cluster.cleanup_online_transfer(transfer).unwrap();
+    }
 }

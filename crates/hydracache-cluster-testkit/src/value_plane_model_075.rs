@@ -7,6 +7,11 @@
 use std::collections::BTreeMap;
 use std::fmt;
 
+/// Matches Java Character.isWhitespace/String.isBlank for shared local identity semantics.
+pub(crate) fn identity_blank(value: &str) -> bool {
+    value.chars().all(|character| matches!(character, '\u{0009}'..='\u{000d}' | '\u{001c}'..='\u{0020}' | '\u{1680}' | '\u{2000}'..='\u{2006}' | '\u{2008}'..='\u{200a}' | '\u{2028}' | '\u{2029}' | '\u{205f}' | '\u{3000}'))
+}
+
 /// Explicit limits for every retained collection and request shape in the model.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ValuePlaneBounds {

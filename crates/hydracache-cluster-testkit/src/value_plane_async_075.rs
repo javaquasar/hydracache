@@ -12,7 +12,7 @@ use crate::value_plane_collection_075::{
     CollectionError, EntryView, ReferenceCollectionMap, ReplacementEntry, ReplacementReceipt,
     ScanCursor, ScanPage, ScanProjection, TimedMutationOptions, TimedMutationOutcome,
 };
-use crate::value_plane_model_075::MutationIdentity;
+use crate::value_plane_model_075::{identity_blank, MutationIdentity};
 
 /// Only explicit logical signals advance invocation deadlines in this reference facade.
 #[derive(Debug, Default)]
@@ -249,9 +249,7 @@ impl<B: AsyncMapBackend> AsyncIMapFacade<B> {
         deadline: u64,
         command: B::Command,
     ) -> StartedInvocation<B::Output, B::Error> {
-        if identity.client.trim().is_empty()
-            || identity.client.len() > 128
-            || identity.sequence == 0
+        if identity_blank(&identity.client) || identity.client.len() > 128 || identity.sequence == 0
         {
             return Err(InvocationRejection::InvalidIdentity);
         }

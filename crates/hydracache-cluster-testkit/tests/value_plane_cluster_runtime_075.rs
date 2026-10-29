@@ -594,6 +594,162 @@ fn readiness_and_bounded_drain_follow_actual_backup_and_owner_state() {
     );
 }
 
+#[test]
+fn stepped_maintenance_retains_transfer_progress_under_repair_permits() {
+    use hydracache_cluster_testkit::value_plane_loopback_075::LoopbackFault;
+    let registry = registry(config());
+    let (context, handle) = open(&registry, "tenant-a", "stepped");
+    let first = run(&registry, &handle, &context, command("put", 1)).unwrap();
+    let partition = first.routes[0].partition;
+    let before = registry
+        .cluster_health(&handle, &context)
+        .unwrap()
+        .partitions[partition as usize]
+        .clone();
+    let mut transfer = None;
+    let mut repaired = false;
+    let mut wrote = false;
+    for index in 0..64 {
+        registry
+            .enqueue_maintenance(
+                &handle,
+                &context,
+                RuntimeMaintenance::RepairStep {
+                    partition,
+                    backup: "c".into(),
+                    faults: if index == 0 {
+                        ServiceLinkFaults {
+                            ack: LoopbackFault::Drop,
+                            ..ServiceLinkFaults::default()
+                        }
+                    } else {
+                        ServiceLinkFaults::default()
+                    },
+                    maximum_work: 1,
+                },
+            )
+            .unwrap();
+        let RegistryResult::Maintenance(MaintenanceResult::Online(step)) =
+            registry.run_next().unwrap().unwrap().result.unwrap()
+        else {
+            panic!("online repair result")
+        };
+        assert!(step.work <= 1);
+        if let Some(id) = transfer {
+            assert_eq!(step.transfer, Some(id));
+        } else {
+            transfer = step.transfer;
+        }
+        let health = registry.cluster_health(&handle, &context).unwrap();
+        assert_eq!(health.partitions[partition as usize].epoch, before.epoch);
+        if !step.complete {
+            assert!(health.reasons.contains(&ReadinessReason::TransferPending));
+        }
+        let admission = registry.cluster_admission_observations().unwrap();
+        assert_eq!(admission.inflight, [0; 3]);
+        assert_eq!(admission.owned_bytes, [0; 3]);
+        if index == 1 {
+            let mut put = command("put", 2);
+            put.value = Some(b"foreground".to_vec());
+            put.ttl = ServiceTtl::ExpireAfter(20);
+            assert!(
+                run(&registry, &handle, &context, put)
+                    .unwrap()
+                    .backup_proved
+            );
+            wrote = true;
+        }
+        if step.complete {
+            assert!(health.partitions[partition as usize].backup_proved);
+            repaired = true;
+            break;
+        }
+    }
+    assert!(transfer.is_some() && repaired && wrote);
+    registry
+        .enqueue_maintenance(&handle, &context, RuntimeMaintenance::Promote { partition })
+        .unwrap();
+    registry.run_next().unwrap().unwrap().result.unwrap();
+    assert_eq!(
+        run(&registry, &handle, &context, command("get", 0))
+            .unwrap()
+            .result
+            .value
+            .as_deref(),
+        Some(b"foreground".as_slice())
+    );
+    registry
+        .enqueue_maintenance(
+            &handle,
+            &context,
+            RuntimeMaintenance::BeginDrain { node: "b".into() },
+        )
+        .unwrap();
+    registry.run_next().unwrap().unwrap().result.unwrap();
+    let mut drained = false;
+    for _ in 0..128 {
+        registry
+            .enqueue_maintenance(
+                &handle,
+                &context,
+                RuntimeMaintenance::DrainOnlineStep {
+                    node: "b".into(),
+                    maximum_partitions: 1,
+                    maximum_reclaim: 1,
+                    maximum_transfer_work: 1,
+                },
+            )
+            .unwrap();
+        let RegistryResult::Maintenance(MaintenanceResult::Drain(progress)) =
+            registry.run_next().unwrap().unwrap().result.unwrap()
+        else {
+            panic!("online drain result")
+        };
+        assert!(progress.moved <= 1 && progress.reclaimed <= 1);
+        assert_eq!(
+            registry.cluster_admission_observations().unwrap().inflight,
+            [0; 3]
+        );
+        if progress.complete {
+            drained = true;
+            break;
+        }
+    }
+    assert!(drained);
+    assert_eq!(registry.usage().reserved_growth, 0);
+    assert_eq!(
+        run(&registry, &handle, &context, command("get", 0))
+            .unwrap()
+            .result
+            .value
+            .as_deref(),
+        Some(b"foreground".as_slice())
+    );
+    for operation in [
+        RuntimeMaintenance::RepairStep {
+            partition,
+            backup: "c".into(),
+            faults: ServiceLinkFaults::default(),
+            maximum_work: 0,
+        },
+        RuntimeMaintenance::DrainOnlineStep {
+            node: "b".into(),
+            maximum_partitions: 1,
+            maximum_reclaim: 1,
+            maximum_transfer_work: 0,
+        },
+    ] {
+        registry
+            .enqueue_maintenance(&handle, &context, operation)
+            .unwrap();
+        assert!(registry.run_next().unwrap().unwrap().result.is_err());
+        assert_eq!(
+            registry.cluster_admission_observations().unwrap().inflight,
+            [0; 3]
+        );
+    }
+}
+
 fn rotated_members() -> Vec<RuntimeMember> {
     config()
         .members
@@ -2004,5 +2160,473 @@ fn cancelled_retained_retry_cannot_turn_a_missing_coordinator_ack_into_success()
         Poll::Ready(AsyncOutcome::OutcomeUnknown)
     ));
     assert_eq!(registry.diagnostics(&handle, &context).unwrap(), before);
+    assert_eq!(registry.usage().reserved_growth, 0);
+}
+
+fn run_typed_helper(
+    registry: &UnifiedServiceRegistry,
+    handle: &RegistryHandle,
+    context: &AuthenticatedNamespace,
+    request: ClusterHelperRequest,
+) -> Result<ClusterHelperExecution, RegistryError> {
+    let ticket = registry.enqueue_helper(
+        handle,
+        context,
+        SurfaceId::Hc2Rust,
+        request,
+        RuntimeCallOptions::default(),
+    )?;
+    let record = registry.run_next()?.expect("typed helper dispatch");
+    assert_eq!(record.ticket, ticket);
+    match record.result? {
+        RegistryResult::ClusterHelper(execution) => Ok(execution),
+        other => panic!("unexpected typed helper result {other:?}"),
+    }
+}
+
+#[test]
+fn typed_outcome_query_ignores_unrelated_down_root_and_expired_query_keeps_outcome_ownership() {
+    let setup = config();
+    // This independent harness is used only to select identity partitions. Values and all
+    // query results below come exclusively from the actual registry owner graph.
+    let routing = ServiceClusterHarness::new(
+        &["a", "b", "c"],
+        setup.bounds,
+        collection(),
+        ServiceLimits::default(),
+        1,
+    )
+    .unwrap();
+    let existing = (1..=64)
+        .map(|n| MutationIdentity::new("queried", n))
+        .find(|id| routing.coordinator_for(id) == 0)
+        .unwrap();
+    let unrelated = (1..=64)
+        .map(|n| MutationIdentity::new("query-request", n))
+        .find(|id| routing.coordinator_for(id) == 1)
+        .unwrap();
+    let registry = registry(setup);
+    let (context, handle) = open(&registry, "tenant-a", "map");
+    let mut put = command("put", 1);
+    put.identity = Some(existing.clone());
+    let original = run(&registry, &handle, &context, put).unwrap().result;
+    registry
+        .enqueue_maintenance(
+            &handle,
+            &context,
+            RuntimeMaintenance::SetNodeLive {
+                node: "b".into(),
+                live: false,
+            },
+        )
+        .unwrap();
+    registry.run_next().unwrap().unwrap().result.unwrap();
+    let before = registry.diagnostics(&handle, &context).unwrap();
+    let query = ClusterHelperRequest::new(
+        unrelated.clone(),
+        ClusterHelperCommand::QueryOutcomes {
+            identities: vec![existing.clone()],
+            max_bytes: 4096,
+        },
+    );
+    let execution = run_typed_helper(&registry, &handle, &context, query.clone()).unwrap();
+    assert!(!execution.replayed);
+    assert!(execution.failure.is_none());
+    assert!(execution.routes.iter().all(|route| route.partition == 0));
+    let ClusterHelperResult::Outcomes(outcomes) = execution.result else {
+        panic!("read-only outcome query");
+    };
+    assert_eq!(
+        outcomes,
+        vec![OperationOutcomeQuery::Completed(Box::new(original))]
+    );
+    let after = registry.diagnostics(&handle, &context).unwrap();
+    assert_eq!(
+        after.statistics.retained_outcomes,
+        before.statistics.retained_outcomes
+    );
+    assert_eq!(after.resources, before.resources);
+    assert_eq!(after.owners, before.owners);
+    registry.advance_clock(1).unwrap();
+    let mut expired = query;
+    expired.deadline = 1;
+    let refused = run_typed_helper(&registry, &handle, &context, expired).unwrap();
+    assert_eq!(refused.result, ClusterHelperResult::NotApplied);
+    assert!(refused.routes.is_empty());
+    assert_eq!(
+        registry
+            .diagnostics(&handle, &context)
+            .unwrap()
+            .statistics
+            .retained_outcomes,
+        before.statistics.retained_outcomes
+    );
+    assert_eq!(registry.usage().queued_requests, 0);
+    assert_eq!(registry.usage().reserved_growth, 0);
+    registry
+        .enqueue_maintenance(
+            &handle,
+            &context,
+            RuntimeMaintenance::SetNodeLive {
+                node: "b".into(),
+                live: true,
+            },
+        )
+        .unwrap();
+    registry.run_next().unwrap().unwrap().result.unwrap();
+    let query_request = run_typed_helper(
+        &registry,
+        &handle,
+        &context,
+        ClusterHelperRequest::new(
+            MutationIdentity::new("observer", 1),
+            ClusterHelperCommand::QueryOutcomes {
+                identities: vec![unrelated],
+                max_bytes: 4096,
+            },
+        ),
+    )
+    .unwrap();
+    assert_eq!(
+        query_request.result,
+        ClusterHelperResult::Outcomes(vec![OperationOutcomeQuery::Unknown])
+    );
+}
+
+#[test]
+fn typed_helpers_enforce_per_key_write_map_wide_read_and_admin_grants_before_queue_admission() {
+    let registry = registry(config());
+    registry.advance_policy_epoch(1).unwrap();
+    let admin = granted(1, GrantRights::ALL, GrantKeys::All);
+    let handle = registry.open(&admin, admin.address()).unwrap();
+    let mut put = command("put", 1);
+    put.key = b"a".to_vec();
+    run(&registry, &handle, &admin, put).unwrap();
+    let mut view = command("get_entry_view", 0);
+    view.key = b"a".to_vec();
+    let token = run(&registry, &handle, &admin, view)
+        .unwrap()
+        .result
+        .token
+        .unwrap();
+    let writer = admin
+        .attenuate(
+            GrantRights {
+                write: true,
+                ..GrantRights::default()
+            },
+            GrantKeys::Prefixes(vec![b"a".to_vec()]),
+        )
+        .unwrap();
+    let reader = admin
+        .attenuate(
+            GrantRights {
+                read: true,
+                ..GrantRights::default()
+            },
+            GrantKeys::All,
+        )
+        .unwrap();
+    let scoped_reader = admin
+        .attenuate(
+            GrantRights {
+                read: true,
+                ..GrantRights::default()
+            },
+            GrantKeys::Prefixes(vec![b"a".to_vec()]),
+        )
+        .unwrap();
+    let administrator = admin
+        .attenuate(
+            GrantRights {
+                admin: true,
+                ..GrantRights::default()
+            },
+            GrantKeys::All,
+        )
+        .unwrap();
+    let allowed = VersionBulkEntry {
+        key: b"a".to_vec(),
+        token,
+        value: Some(b"changed".to_vec()),
+        ttl: ServiceTtl::Preserve,
+    };
+    let version = ClusterHelperRequest::new(
+        MutationIdentity::new("version-helper", 1),
+        ClusterHelperCommand::VersionBulk {
+            operation: VersionBulkOperation::Replace,
+            entries: vec![allowed.clone()],
+        },
+    );
+    let mut forbidden_key = allowed.clone();
+    forbidden_key.key = b"b".to_vec();
+    let denied_bulk = ClusterHelperRequest::new(
+        MutationIdentity::new("version-helper", 2),
+        ClusterHelperCommand::VersionBulk {
+            operation: VersionBulkOperation::Replace,
+            entries: vec![allowed, forbidden_key],
+        },
+    );
+    let query = ClusterHelperRequest::new(
+        MutationIdentity::new("query-helper", 1),
+        ClusterHelperCommand::QueryOutcomes {
+            identities: vec![MutationIdentity::new("client", 1)],
+            max_bytes: 4096,
+        },
+    );
+    let expiry = ClusterHelperRequest::new(
+        MutationIdentity::new("expiry-helper", 1),
+        ClusterHelperCommand::ExpireStep { max_work: 1 },
+    );
+    let retirement = ClusterHelperRequest::new(
+        MutationIdentity::new("retire-helper", 1),
+        ClusterHelperCommand::RetireOutcomes {
+            client: "unused-client".into(),
+            through: 1,
+        },
+    );
+    let before = registry.usage();
+    let owners = registry.diagnostics(&handle, &admin).unwrap();
+    for (principal, request) in [
+        (&reader, version.clone()),
+        (&writer, denied_bulk),
+        (&scoped_reader, query.clone()),
+        (&writer, query.clone()),
+        (&administrator, query.clone()),
+        (&reader, expiry.clone()),
+        (&writer, expiry.clone()),
+        (&reader, retirement.clone()),
+        (&writer, retirement.clone()),
+    ] {
+        assert!(matches!(
+            registry.enqueue_helper(
+                &handle,
+                principal,
+                SurfaceId::Resp,
+                request,
+                RuntimeCallOptions::default()
+            ),
+            Err(RegistryError::Security(SecurityError::PermissionDenied))
+        ));
+        assert_eq!(registry.usage(), before);
+        assert_eq!(registry.diagnostics(&handle, &admin).unwrap(), owners);
+    }
+    let changed = run_typed_helper(&registry, &handle, &writer, version).unwrap();
+    let ClusterHelperResult::Versions(receipt) = changed.result else {
+        panic!("version helper receipt");
+    };
+    assert_eq!(receipt.items.len(), 1);
+    assert_eq!(receipt.items[0].kind, "replaced");
+    assert!(receipt.items[0].value.is_none());
+    assert!(matches!(
+        run_typed_helper(&registry, &handle, &reader, query)
+            .unwrap()
+            .result,
+        ClusterHelperResult::Outcomes(_)
+    ));
+    assert!(matches!(
+        run_typed_helper(&registry, &handle, &administrator, expiry)
+            .unwrap()
+            .result,
+        ClusterHelperResult::Expiry(_)
+    ));
+    assert!(matches!(
+        run_typed_helper(&registry, &handle, &administrator, retirement)
+            .unwrap()
+            .result,
+        ClusterHelperResult::Retirement(_)
+    ));
+    let mut get = command("get", 0);
+    get.key = b"a".to_vec();
+    assert_eq!(
+        run(&registry, &handle, &admin, get).unwrap().result.value,
+        Some(b"changed".to_vec())
+    );
+    assert_eq!(registry.usage().queued_requests, 0);
+    assert_eq!(registry.usage().reserved_growth, 0);
+}
+
+#[test]
+fn malformed_typed_helper_limits_and_shapes_cannot_charge_queue_growth_or_create_outcomes() {
+    let registry = registry(config());
+    let (context, handle) = open(&registry, "tenant-a", "map");
+    run(&registry, &handle, &context, command("put", 1)).unwrap();
+    let token = run(&registry, &handle, &context, command("get_entry_view", 0))
+        .unwrap()
+        .result
+        .token
+        .unwrap();
+    let entry = VersionBulkEntry {
+        key: vec![0, 255],
+        token,
+        value: Some(b"new".to_vec()),
+        ttl: ServiceTtl::Preserve,
+    };
+    let mut missing = entry.clone();
+    missing.value = None;
+    let invalid = vec![
+        ClusterHelperCommand::VersionBulk {
+            operation: VersionBulkOperation::Replace,
+            entries: vec![],
+        },
+        ClusterHelperCommand::VersionBulk {
+            operation: VersionBulkOperation::Replace,
+            entries: vec![entry.clone(), entry.clone()],
+        },
+        ClusterHelperCommand::VersionBulk {
+            operation: VersionBulkOperation::Replace,
+            entries: vec![entry.clone(); 257],
+        },
+        ClusterHelperCommand::VersionBulk {
+            operation: VersionBulkOperation::Replace,
+            entries: vec![missing.clone()],
+        },
+        ClusterHelperCommand::VersionBulk {
+            operation: VersionBulkOperation::Remove,
+            entries: vec![entry],
+        },
+        ClusterHelperCommand::VersionBulk {
+            operation: VersionBulkOperation::SetTtl,
+            entries: vec![missing],
+        },
+        ClusterHelperCommand::QueryOutcomes {
+            identities: vec![],
+            max_bytes: 4096,
+        },
+        ClusterHelperCommand::QueryOutcomes {
+            identities: vec![MutationIdentity::new("client", 1)],
+            max_bytes: 0,
+        },
+        ClusterHelperCommand::QueryOutcomes {
+            identities: vec![MutationIdentity::new("client", 1)],
+            max_bytes: ServiceLimits::default().query_bytes + 1,
+        },
+        ClusterHelperCommand::ExpireStep { max_work: 0 },
+        ClusterHelperCommand::ExpireStep {
+            max_work: collection().max_scan_items + 1,
+        },
+        ClusterHelperCommand::RetireOutcomes {
+            client: "".into(),
+            through: 1,
+        },
+        ClusterHelperCommand::RetireOutcomes {
+            client: "client".into(),
+            through: 0,
+        },
+    ];
+    let before = registry.usage();
+    let owners = registry.diagnostics(&handle, &context).unwrap();
+    for (index, command) in invalid.into_iter().enumerate() {
+        let request = ClusterHelperRequest::new(
+            MutationIdentity::new("bad-helper", index as u64 + 1),
+            command,
+        );
+        assert!(registry
+            .enqueue_helper(
+                &handle,
+                &context,
+                SurfaceId::Hc2Java,
+                request,
+                RuntimeCallOptions::default()
+            )
+            .is_err());
+        assert_eq!(registry.usage(), before);
+        assert_eq!(registry.diagnostics(&handle, &context).unwrap(), owners);
+    }
+    let self_retirement = ClusterHelperRequest::new(
+        MutationIdentity::new("same-client", 1),
+        ClusterHelperCommand::RetireOutcomes {
+            client: "same-client".into(),
+            through: 1,
+        },
+    );
+    assert!(registry
+        .enqueue_helper(
+            &handle,
+            &context,
+            SurfaceId::Resp,
+            self_retirement,
+            RuntimeCallOptions::default()
+        )
+        .is_err());
+    assert_eq!(registry.usage(), before);
+    assert_eq!(registry.diagnostics(&handle, &context).unwrap(), owners);
+}
+
+#[test]
+fn retirement_helper_preflights_shared_root_and_child_outcome_budget_before_any_fence() {
+    let setup = config();
+    let routing = ServiceClusterHarness::new(
+        &["a", "b", "c"],
+        setup.bounds,
+        collection(),
+        ServiceLimits::default(),
+        1,
+    )
+    .unwrap();
+    let identity = (1..=64)
+        .map(|sequence| MutationIdentity::new("retirement-request", sequence))
+        .find(|identity| routing.coordinator_for(identity) == 1)
+        .unwrap();
+    // A data retirement group fits (374 bytes), and a journal group fits (315).
+    // The journal group at the root must also own the 130-byte root reservation;
+    // together they exceed 425. All groups must be refused before the first fence.
+    let registry = UnifiedServiceRegistry::new_clustered(
+        RegistryBounds {
+            max_cleanup_work: 64,
+            ..RegistryBounds::default()
+        },
+        collection(),
+        ServiceLimits {
+            outcome_bytes: 425,
+            ..ServiceLimits::default()
+        },
+        security(),
+        TrustEpochWindow::new(1, 3).unwrap(),
+        setup,
+    )
+    .unwrap();
+    let (context, handle) = open(&registry, "tenant-a", "map");
+    let before = registry.diagnostics(&handle, &context).unwrap();
+    let usage = registry.usage();
+    let request = ClusterHelperRequest::new(
+        identity.clone(),
+        ClusterHelperCommand::RetireOutcomes {
+            client: "unused-client".into(),
+            through: 1,
+        },
+    );
+    assert!(matches!(
+        run_typed_helper(&registry, &handle, &context, request),
+        Err(RegistryError::Cluster(ServiceClusterError::Model(
+            MapServiceError::ResourceBudget(_)
+        )))
+    ));
+    assert_eq!(registry.diagnostics(&handle, &context).unwrap(), before);
+    assert_eq!(registry.usage(), usage);
+    let root = run_typed_helper(
+        &registry,
+        &handle,
+        &context,
+        ClusterHelperRequest::new(
+            MutationIdentity::new("query-after-refusal", 1),
+            ClusterHelperCommand::QueryOutcomes {
+                identities: vec![identity],
+                max_bytes: 4096,
+            },
+        ),
+    )
+    .unwrap();
+    assert_eq!(
+        root.result,
+        ClusterHelperResult::Outcomes(vec![OperationOutcomeQuery::Unknown])
+    );
+    let mut old_identity = command("put", 1);
+    old_identity.identity = Some(MutationIdentity::new("unused-client", 1));
+    let applied = run(&registry, &handle, &context, old_identity).unwrap();
+    assert_eq!(applied.result.kind, "inserted");
+    assert!(applied.backup_proved);
+    assert!(applied.failure.is_none());
+    assert_eq!(registry.usage().queued_requests, 0);
     assert_eq!(registry.usage().reserved_growth, 0);
 }

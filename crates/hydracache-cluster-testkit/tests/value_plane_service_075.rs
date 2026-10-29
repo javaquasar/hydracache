@@ -39,6 +39,119 @@ fn view(service: &UnifiedIMapService) -> ServiceResult {
 }
 
 #[test]
+fn listener_value_budget_bounds_the_combined_old_and_new_payload() {
+    let service = UnifiedIMapService::new(
+        CollectionBounds {
+            max_value_bytes: 4_096,
+            ..CollectionBounds::default()
+        },
+        1,
+    )
+    .unwrap();
+    let listener = service
+        .register_listener(ServiceListenerOptions {
+            include_value: true,
+            max_value_bytes: 8_192,
+            ..ServiceListenerOptions::default()
+        })
+        .unwrap();
+    put(&service, 1, &vec![1; 4_096]);
+    listener.drain().unwrap();
+    put(&service, 2, &vec![2; 4_096]);
+    let events = listener.drain().unwrap();
+    assert_eq!(events.len(), 1);
+    assert_eq!(events[0].kind, "updated");
+    assert_eq!(
+        events[0].old_value.as_ref().unwrap().len() + events[0].value.as_ref().unwrap().len(),
+        8_192
+    );
+    assert!(matches!(
+        service.register_listener(ServiceListenerOptions {
+            max_value_bytes: 8_193,
+            ..ServiceListenerOptions::default()
+        }),
+        Err(MapServiceError::InvalidArgument)
+    ));
+}
+
+#[test]
+fn mutation_clients_follow_shared_java_blankness_without_changing_binary_keys() {
+    let service = service();
+    for client in ["\u{00a0}", "\u{0085}", "\u{2007}", "\u{202f}"] {
+        let mut original = ServiceCommand::point("put", client.as_bytes());
+        original.identity = Some(MutationIdentity::new(client, 1));
+        original.value = Some(b"v".to_vec());
+        let applied = service.execute(original.clone()).unwrap();
+        assert_eq!(service.execute(original).unwrap(), applied);
+        let mut view = ServiceCommand::point("get_entry_view", client.as_bytes());
+        let token = service.execute(view.clone()).unwrap().token.unwrap();
+        let result = service
+            .bulk_version_conditional(
+                VersionBulkOperation::Replace,
+                &[VersionBulkEntry {
+                    key: client.as_bytes().to_vec(),
+                    token,
+                    value: Some(b"next".to_vec()),
+                    ttl: ServiceTtl::Preserve,
+                }],
+                MutationIdentity::new(client, 2),
+                0,
+                10,
+                false,
+            )
+            .unwrap();
+        assert_eq!(result.items[0].kind, "replaced");
+        view.operation = "put".into();
+        view.value = Some(b"reserved".to_vec());
+        view.identity = Some(MutationIdentity::new(client, 3));
+        service
+            .reserve_operation(view.identity.clone().unwrap(), &view)
+            .unwrap();
+        service.execute_reserved(view).unwrap();
+        assert_eq!(service.retire_outcomes(client, 1, 3).unwrap().removed, 3);
+    }
+    let before = service.resource_usage();
+    for client in ["", "\t", "\u{001c}", "\u{2003}", "\u{3000}"] {
+        let mut command = ServiceCommand::point("put", b"rejected");
+        command.value = Some(b"v".to_vec());
+        command.identity = Some(MutationIdentity::new(client, 1));
+        assert_eq!(
+            service.execute(command).unwrap_err(),
+            MapServiceError::InvalidArgument
+        );
+    }
+    assert_eq!(service.resource_usage(), before);
+}
+
+#[test]
+fn explicit_listener_gap_is_real_sticky_and_resync_clears_the_cut() {
+    let service = service();
+    let listener = service
+        .register_listener(ServiceListenerOptions {
+            queue_capacity: 1,
+            ..ServiceListenerOptions::default()
+        })
+        .unwrap();
+    put(&service, 1, b"one");
+    put(&service, 2, b"two");
+    let before = listener.drain().unwrap().remove(0);
+    assert_eq!(before.kind, "gap");
+    service.signal_listener_gap(listener.id()).unwrap();
+    let explicit = listener.drain().unwrap().remove(0);
+    assert_eq!(explicit.kind, "gap");
+    assert_eq!(explicit.watermark, before.watermark + 1);
+    put(&service, 3, b"three");
+    assert!(listener.drain().unwrap().is_empty());
+    drop(service.resync_listener(listener.id(), 0, 8, 1_024).unwrap());
+    put(&service, 4, b"four");
+    assert_eq!(listener.drain().unwrap()[0].kind, "updated");
+    assert_eq!(
+        service.signal_listener_gap(u64::MAX).unwrap_err(),
+        MapServiceError::UnknownListener
+    );
+}
+
+#[test]
 fn conflicting_cancelled_and_expired_commands_cannot_abandon_another_pending_request() {
     for reserved in [false, true] {
         for cancelled in [false, true] {

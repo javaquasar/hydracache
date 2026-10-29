@@ -13,7 +13,7 @@ use crate::value_plane_collection_075::{
     BoundedMatch, CollectionBounds, CollectionError, EntryView, ReferenceCollectionMap,
     ReplacementEntry, ScanCursor, ScanProjection, ServiceRetainedOutcome,
 };
-use crate::value_plane_model_075::MutationIdentity;
+use crate::value_plane_model_075::{identity_blank, MutationIdentity};
 use crate::value_plane_stream_075::{BatchPoll, BoundedStreamSource};
 
 #[path = "value_plane_service_lifecycle_075.rs"]
@@ -717,6 +717,46 @@ impl UnifiedIMapService {
         removed
     }
 
+    pub fn signal_listener_gap(&self, id: u64) -> Result<(), MapServiceError> {
+        let mut state = self.state.lock().expect("local IMap state poisoned");
+        lifecycle::require_namespace(&state)?;
+        let epoch = state
+            .listeners
+            .get(&id)
+            .ok_or(MapServiceError::UnknownListener)?
+            .delivery_epoch
+            .checked_add(1)
+            .ok_or(MapServiceError::Capacity)?;
+        let watermark = state
+            .watermark
+            .checked_add(1)
+            .ok_or(MapServiceError::Capacity)?;
+        cluster_hooks::require_replication_capacity(&state)?;
+        let version = state.map.revision();
+        state.watermark = watermark;
+        let listener = state
+            .listeners
+            .get_mut(&id)
+            .ok_or(MapServiceError::UnknownListener)?;
+        listener.delivery_epoch = epoch;
+        listener.queue.clear();
+        listener.gap = true;
+        listener.queue.push_back(ServiceEvent {
+            kind: "gap".into(),
+            key: Vec::new(),
+            old_value: None,
+            value: None,
+            version,
+            watermark,
+        });
+        let wake = listener.waker.take();
+        drop(state);
+        if let Some(wake) = wake {
+            wake.wake();
+        }
+        Ok(())
+    }
+
     pub fn repair_listener(&self, id: u64) -> Result<(), MapServiceError> {
         let mut state = self.state.lock().expect("local IMap state poisoned");
         lifecycle::require_namespace(&state)?;
@@ -940,9 +980,7 @@ fn validate(state: &ServiceState, command: &ServiceCommand) -> Result<(), MapSer
         return Err(MapServiceError::InvalidArgument);
     }
     if let Some(identity) = &command.identity {
-        if identity.client.trim().is_empty()
-            || identity.client.len() > 128
-            || identity.sequence == 0
+        if identity_blank(&identity.client) || identity.client.len() > 128 || identity.sequence == 0
         {
             return Err(MapServiceError::InvalidArgument);
         }
@@ -1760,7 +1798,11 @@ fn register(
     let bounds = state.map.service_bounds();
     if options.queue_capacity == 0
         || options.queue_capacity > 1_024
-        || options.max_value_bytes > bounds.max_value_bytes
+        || options.max_value_bytes
+            > bounds
+                .max_value_bytes
+                .checked_mul(2)
+                .ok_or(MapServiceError::Capacity)?
         || options.key_prefix.len() > bounds.max_key_bytes
         || options
             .exact_key

@@ -89,6 +89,59 @@ fn command_bytes(command: &RetainedCommand) -> usize {
 }
 
 impl ReferenceCollectionMap {
+    pub(crate) fn service_retirement_delta_bytes(&self, client: &str, through: u64) -> usize {
+        let removed = self
+            .retained
+            .keys()
+            .filter(|identity| identity.client == client && identity.sequence <= through)
+            .fold(0usize, |sum, identity| {
+                sum.saturating_add(24).saturating_add(identity.client.len())
+            });
+        if removed == 0 && self.retirement_fences.get(client) == Some(&through) {
+            0
+        } else {
+            removed.saturating_add(128).saturating_add(client.len())
+        }
+    }
+    pub(crate) fn service_entry_metadata(
+        &self,
+        key: &[u8],
+        now: u64,
+    ) -> Option<(u64, Option<u64>)> {
+        self.entries
+            .get(key)
+            .filter(|entry| entry.expires_at.is_none_or(|at| at > now))
+            .map(|entry| (entry.version, entry.expires_at))
+    }
+    pub(crate) fn service_expiry_delta_key_bytes(
+        &self,
+        now: u64,
+        work: usize,
+        command: &crate::value_plane_service_075::ServiceCommand,
+    ) -> usize {
+        let maintenance = self
+            .expiry_index
+            .iter()
+            .take_while(|(at, _)| *at <= now)
+            .take(work)
+            .fold(0usize, |sum, (_, key)| {
+                sum.saturating_add(32).saturating_add(key.len())
+            });
+        std::iter::once(&command.key)
+            .chain(command.keys.iter())
+            .chain(command.entries.iter().map(|entry| &entry.key))
+            .fold(maintenance, |sum, key| {
+                if self
+                    .entries
+                    .get(key)
+                    .is_some_and(|entry| entry.expires_at.is_some_and(|at| at <= now))
+                {
+                    sum.saturating_add(32).saturating_add(key.len())
+                } else {
+                    sum
+                }
+            })
+    }
     pub(crate) fn service_cursor_bytes(&self) -> usize {
         let entries = self.entries.keys().fold(128usize, |sum, key| {
             sum.saturating_add(48).saturating_add(key.len())
@@ -341,7 +394,7 @@ impl ReferenceCollectionMap {
             }
         }
         for (client, through) in &patch.fences {
-            if client.trim().is_empty()
+            if identity_blank(client)
                 || client.len() > 128
                 || *through == 0
                 || self

@@ -2,7 +2,9 @@
 
 use crate::value_plane_cluster_runtime_075::ClusterNamespaceRuntime;
 use crate::value_plane_service_075::NamespaceOwners;
-use crate::value_plane_service_cluster_075::{ServiceClusterError, ServiceLinkFaults};
+use crate::value_plane_service_cluster_075::{
+    OnlineTransferPurpose, OnlineTransferStep, ServiceClusterError, ServiceLinkFaults,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ReadinessReason {
@@ -57,6 +59,18 @@ pub struct DrainProgress {
 
 #[derive(Debug, Clone)]
 pub enum RuntimeMaintenance {
+    RepairStep {
+        partition: u32,
+        backup: String,
+        faults: ServiceLinkFaults,
+        maximum_work: usize,
+    },
+    DrainOnlineStep {
+        node: String,
+        maximum_partitions: usize,
+        maximum_reclaim: usize,
+        maximum_transfer_work: usize,
+    },
     Repair {
         partition: u32,
         backup: String,
@@ -80,11 +94,19 @@ pub enum RuntimeMaintenance {
 }
 impl RuntimeMaintenance {
     pub fn repair_lane(&self) -> bool {
-        matches!(self, Self::Repair { .. } | Self::DrainStep { .. })
+        matches!(
+            self,
+            Self::Repair { .. }
+                | Self::DrainStep { .. }
+                | Self::RepairStep { .. }
+                | Self::DrainOnlineStep { .. }
+        )
     }
     pub fn partition(&self) -> u32 {
         match self {
-            Self::Repair { partition, .. } | Self::Promote { partition } => *partition,
+            Self::Repair { partition, .. }
+            | Self::RepairStep { partition, .. }
+            | Self::Promote { partition } => *partition,
             _ => 0,
         }
     }
@@ -93,6 +115,7 @@ impl RuntimeMaintenance {
 pub enum MaintenanceResult {
     Completed,
     Drain(DrainProgress),
+    Online(OnlineTransferStep),
 }
 
 impl ClusterNamespaceRuntime {
@@ -230,6 +253,38 @@ impl ClusterNamespaceRuntime {
             return Err(ServiceClusterError::Authorization("replica_credit"));
         }
         match operation {
+            RuntimeMaintenance::RepairStep {
+                partition,
+                backup,
+                faults,
+                maximum_work,
+            } => self
+                .with_cluster_wakes(|cluster| {
+                    cluster.with_message_guard(guard, |cluster| {
+                        cluster.online_maintenance_step(
+                            *partition,
+                            backup,
+                            OnlineTransferPurpose::BackupRepair,
+                            *maximum_work,
+                            *faults,
+                        )
+                    })
+                })
+                .map(MaintenanceResult::Online),
+            RuntimeMaintenance::DrainOnlineStep {
+                node,
+                maximum_partitions,
+                maximum_reclaim,
+                maximum_transfer_work,
+            } => self
+                .drain_online_step_guarded(
+                    node,
+                    *maximum_partitions,
+                    *maximum_reclaim,
+                    *maximum_transfer_work,
+                    Some(guard),
+                )
+                .map(MaintenanceResult::Drain),
             RuntimeMaintenance::Repair {
                 partition,
                 backup,
@@ -271,13 +326,15 @@ impl ClusterNamespaceRuntime {
     ) -> Result<usize, ServiceClusterError> {
         let cluster = self.cluster.lock().unwrap();
         match operation {
-            RuntimeMaintenance::Repair { partition, .. } => {
+            RuntimeMaintenance::Repair { partition, .. }
+            | RuntimeMaintenance::RepairStep { partition, .. } => {
                 cluster.partition_replica_bound(*partition)
             }
-            RuntimeMaintenance::DrainStep { .. } => (0..cluster.partition_count())
-                .try_fold(0usize, |maximum, partition| {
+            RuntimeMaintenance::DrainStep { .. } | RuntimeMaintenance::DrainOnlineStep { .. } => {
+                (0..cluster.partition_count()).try_fold(0usize, |maximum, partition| {
                     Ok(maximum.max(cluster.partition_replica_bound(partition)?))
-                }),
+                })
+            }
             _ => Ok(0),
         }
     }
@@ -288,6 +345,132 @@ impl ClusterNamespaceRuntime {
         maximum_reclaim: usize,
     ) -> Result<DrainProgress, ServiceClusterError> {
         self.drain_step_guarded(node, maximum_partitions, maximum_reclaim, None)
+    }
+    pub fn drain_online_step(
+        &self,
+        node: &str,
+        maximum_partitions: usize,
+        maximum_reclaim: usize,
+        maximum_transfer_work: usize,
+    ) -> Result<DrainProgress, ServiceClusterError> {
+        self.drain_online_step_guarded(
+            node,
+            maximum_partitions,
+            maximum_reclaim,
+            maximum_transfer_work,
+            None,
+        )
+    }
+    fn drain_online_step_guarded(
+        &self,
+        node: &str,
+        maximum_partitions: usize,
+        maximum_reclaim: usize,
+        maximum_transfer_work: usize,
+        guard: Option<
+            std::sync::Arc<dyn crate::value_plane_service_cluster_075::ServiceMessageGuard>,
+        >,
+    ) -> Result<DrainProgress, ServiceClusterError> {
+        if maximum_partitions == 0
+            || maximum_partitions > self.config.bounds.partitions as usize
+            || maximum_reclaim == 0
+            || maximum_transfer_work == 0
+            || maximum_transfer_work > 4_096
+        {
+            return Err(ServiceClusterError::InvalidBound);
+        }
+        self.with_cluster_wakes(|cluster| {
+            if !cluster.node_is_draining(node) {
+                return Err(ServiceClusterError::InvalidBound);
+            }
+            let mut moved = 0;
+            let mut remaining_work = maximum_transfer_work;
+            for partition in 0..cluster.partition_count() {
+                if moved == maximum_partitions || remaining_work == 0 {
+                    break;
+                }
+                let route = cluster
+                    .assignment(partition)
+                    .ok_or(ServiceClusterError::InvalidBound)?;
+                if route.owner != node && route.backup != node {
+                    continue;
+                }
+                let candidates = cluster
+                    .node_ids()
+                    .into_iter()
+                    .filter(|candidate| {
+                        candidate != node
+                            && cluster.node_is_live(candidate).unwrap_or(false)
+                            && !cluster.node_is_draining(candidate)
+                    })
+                    .collect::<Vec<_>>();
+                if candidates.len() < 2 {
+                    return Err(ServiceClusterError::NodeUnavailable);
+                }
+                let purpose = if route.owner == node {
+                    OnlineTransferPurpose::OwnerMove
+                } else {
+                    OnlineTransferPurpose::BackupRepair
+                };
+                let target = candidates
+                    .iter()
+                    .find(|candidate| **candidate != route.owner)
+                    .ok_or(ServiceClusterError::NodeUnavailable)?;
+                let step = if let Some(guard) = &guard {
+                    cluster.with_message_guard(std::sync::Arc::clone(guard), |cluster| {
+                        cluster.online_maintenance_step(
+                            partition,
+                            target,
+                            purpose,
+                            remaining_work,
+                            ServiceLinkFaults::default(),
+                        )
+                    })?
+                } else {
+                    cluster.online_maintenance_step(
+                        partition,
+                        target,
+                        purpose,
+                        remaining_work,
+                        ServiceLinkFaults::default(),
+                    )?
+                };
+                remaining_work = remaining_work.saturating_sub(step.work);
+                if step.complete {
+                    moved += 1;
+                    if let Some(id) = step.transfer {
+                        cluster.cleanup_online_transfer(id)?;
+                    }
+                }
+                if step.waiting_for_quiescence {
+                    break;
+                }
+            }
+            let remaining_roles = (0..cluster.partition_count())
+                .filter(|partition| {
+                    cluster
+                        .assignment(*partition)
+                        .is_some_and(|route| route.owner == node || route.backup == node)
+                })
+                .count();
+            let progress = if remaining_roles == 0 {
+                Some(cluster.reclaim_drained_node_step(node, maximum_reclaim)?)
+            } else {
+                None
+            };
+            Ok(DrainProgress {
+                moved,
+                reclaimed: progress.as_ref().map_or(0, |progress| progress.reclaimed),
+                remaining_roles,
+                blocked_owners: progress
+                    .as_ref()
+                    .map_or(0, |progress| progress.blocked_owners),
+                complete: remaining_roles == 0
+                    && progress.is_some_and(|progress| {
+                        progress.remaining == 0 && progress.blocked_owners == 0
+                    }),
+            })
+        })
     }
     fn drain_step_guarded(
         &self,

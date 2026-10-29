@@ -267,7 +267,7 @@ fn online_transfer_backpressure_never_drops_a_source_write_or_early_cutover() {
 }
 
 #[test]
-fn byte_overflow_requires_explicit_restart_and_keeps_confirmed_source_state() {
+fn byte_budget_exhaustion_is_resumable_before_any_source_write() {
     let mut cluster = cluster();
     let id = cluster
         .begin_online_transfer(
@@ -279,19 +279,25 @@ fn byte_overflow_requires_explicit_restart_and_keeps_confirmed_source_state() {
             },
         )
         .unwrap();
-    assert_eq!(run(&mut cluster, command(b"a", 1)).result.kind, "inserted");
+    assert_eq!(
+        cluster
+            .execute("c", command(b"a", 1), ServiceClusterCall::default())
+            .unwrap_err(),
+        ServiceClusterError::TransferBackpressure
+    );
     let readiness = cluster
         .transfer_readiness()
         .into_iter()
         .find(|state| state.id == id)
         .unwrap();
-    assert_eq!(readiness.phase, OnlineTransferPhase::RestartRequired);
-    assert!(readiness.restart_reason.is_some());
+    assert_eq!(readiness.phase, OnlineTransferPhase::Snapshot);
+    assert!(readiness.restart_reason.is_none());
     assert!(cluster.commit_online_transfer(id).is_err());
     assert_eq!(
         cluster.diagnostic_node_snapshot("a", 0, 0).unwrap().len(),
-        1
+        0
     );
+    cluster.abort_online_transfer(id).unwrap();
     cluster.cleanup_online_transfer(id).unwrap();
     let next = cluster
         .begin_online_transfer(0, "c", OnlineTransferOptions::default())
@@ -301,8 +307,166 @@ fn byte_overflow_requires_explicit_restart_and_keeps_confirmed_source_state() {
     cluster.commit_online_transfer(next).unwrap();
     assert_eq!(
         cluster.diagnostic_node_snapshot("c", 0, 0).unwrap().len(),
-        1
+        0
     );
+    cluster.cleanup_online_transfer(next).unwrap();
+}
+
+#[test]
+fn delta_credits_reserve_before_journal_and_resume_after_apply() {
+    let mut cluster = cluster();
+    let transfer = cluster
+        .begin_online_transfer(
+            0,
+            "c",
+            OnlineTransferOptions {
+                max_delta_bytes: 16 * 1_024,
+                max_delta_images: 64,
+                ..OnlineTransferOptions::default()
+            },
+        )
+        .unwrap();
+    snapshot(&mut cluster, transfer);
+    let mut refused = None;
+    for sequence in 1..32 {
+        let request = command(&[sequence as u8], sequence);
+        let before = cluster.diagnostic_node_snapshot("a", 0, 0).unwrap();
+        let usage = cluster.aggregate_resource_usage();
+        match cluster.execute("c", request.clone(), ServiceClusterCall::default()) {
+            Ok(result) => assert!(result.backup_proved),
+            Err(ServiceClusterError::TransferBackpressure) => {
+                assert_eq!(cluster.diagnostic_node_snapshot("a", 0, 0).unwrap(), before);
+                assert_eq!(cluster.aggregate_resource_usage(), usage);
+                assert_eq!(
+                    cluster
+                        .query_operation_outcome(request.identity.as_ref().unwrap())
+                        .unwrap(),
+                    OperationOutcomeQuery::Unknown
+                );
+                refused = Some(request);
+                break;
+            }
+            other => panic!("unexpected result {other:?}"),
+        }
+    }
+    let refused = refused.expect("byte budget must backpressure before 64 delta records");
+    let readiness = cluster
+        .transfer_readiness()
+        .into_iter()
+        .find(|state| state.id == transfer)
+        .unwrap();
+    assert_eq!(readiness.phase, OnlineTransferPhase::Delta);
+    assert!(readiness.restart_reason.is_none());
+    assert!(readiness.pending_deltas < 64);
+    deltas(&mut cluster, transfer);
+    assert!(run(&mut cluster, refused).backup_proved);
+    deltas(&mut cluster, transfer);
+    cluster.ready_online_transfer(transfer).unwrap();
+    cluster.commit_online_transfer(transfer).unwrap();
+    cluster.cleanup_online_transfer(transfer).unwrap();
+    assert_eq!(cluster.aggregate_namespace_owners().resync_leases, 0);
+}
+
+#[test]
+fn pending_root_delta_credit_is_idempotent_and_released_by_resumed_decisions() {
+    let mut cluster = cluster();
+    let transfer = cluster
+        .begin_online_transfer(
+            0,
+            "c",
+            OnlineTransferOptions {
+                max_delta_bytes: 16 * 1_024,
+                ..OnlineTransferOptions::default()
+            },
+        )
+        .unwrap();
+    snapshot(&mut cluster, transfer);
+    let original = command(b"reserved", 1);
+    let before = cluster
+        .transfer_readiness()
+        .into_iter()
+        .find(|state| state.id == transfer)
+        .unwrap()
+        .staged_bytes;
+    cluster
+        .reserve_operation(original.identity.clone().unwrap(), &original)
+        .unwrap();
+    let held = cluster
+        .transfer_readiness()
+        .into_iter()
+        .find(|state| state.id == transfer)
+        .unwrap()
+        .staged_bytes;
+    assert!(held > before);
+    assert_eq!(cluster.aggregate_namespace_owners().pending, 2);
+    assert!(cluster
+        .diagnostic_node_snapshot("a", 0, 0)
+        .unwrap()
+        .is_empty());
+    cluster
+        .reserve_operation(original.identity.clone().unwrap(), &original)
+        .unwrap();
+    assert_eq!(
+        cluster
+            .transfer_readiness()
+            .into_iter()
+            .find(|state| state.id == transfer)
+            .unwrap()
+            .staged_bytes,
+        held
+    );
+    assert!(cluster.ready_online_transfer(transfer).is_err());
+    assert!(run(&mut cluster, original).backup_proved);
+    assert_eq!(cluster.aggregate_namespace_owners().pending, 0);
+    deltas(&mut cluster, transfer);
+    cluster.ready_online_transfer(transfer).unwrap();
+    cluster.commit_online_transfer(transfer).unwrap();
+    cluster.cleanup_online_transfer(transfer).unwrap();
+    assert_eq!(cluster.aggregate_namespace_owners().resync_leases, 0);
+}
+
+#[test]
+fn retirement_delta_credit_rejects_before_receipts_and_fences_change() {
+    let mut cluster = cluster();
+    let original = command(b"key", 1);
+    let applied = run(&mut cluster, original.clone()).result;
+    let transfer = cluster
+        .begin_online_transfer(
+            0,
+            "c",
+            OnlineTransferOptions {
+                max_delta_bytes: 1,
+                ..OnlineTransferOptions::default()
+            },
+        )
+        .unwrap();
+    let before = cluster.aggregate_resource_usage();
+    assert_eq!(
+        cluster.retire_outcomes("transfer", 1).unwrap_err(),
+        ServiceClusterError::TransferBackpressure
+    );
+    assert_eq!(cluster.aggregate_resource_usage(), before);
+    assert_eq!(
+        cluster
+            .query_operation_outcome(original.identity.as_ref().unwrap())
+            .unwrap(),
+        OperationOutcomeQuery::Completed(Box::new(applied))
+    );
+    cluster.abort_online_transfer(transfer).unwrap();
+    cluster.cleanup_online_transfer(transfer).unwrap();
+    cluster.retire_outcomes("transfer", 1).unwrap();
+    let next = cluster
+        .begin_online_transfer(
+            0,
+            "c",
+            OnlineTransferOptions {
+                max_delta_bytes: 1,
+                ..OnlineTransferOptions::default()
+            },
+        )
+        .unwrap();
+    cluster.retire_outcomes("transfer", 1).unwrap();
+    cluster.abort_online_transfer(next).unwrap();
     cluster.cleanup_online_transfer(next).unwrap();
 }
 

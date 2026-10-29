@@ -138,7 +138,7 @@ fn helper_bound(
             generation,
             through,
         } => {
-            if client.trim().is_empty()
+            if identity_blank(client)
                 || client.len() > 128
                 || *generation != state.namespace_generation
                 || *through == 0
@@ -262,6 +262,260 @@ fn recover_projection(
 }
 
 impl UnifiedIMapService {
+    pub(crate) fn local_helper_delta_credit(
+        &self,
+        command: &LocalHelperCommand,
+        identity: &MutationIdentity,
+        now: u64,
+    ) -> Result<usize, MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        let (request, response) = helper_bound(&state, command)?;
+        check_identity(&state, identity)?;
+        if !matches!(
+            state
+                .map
+                .service_lookup(identity, Some(helper_digest(command)))?,
+            ServiceRetainedOutcome::Unknown
+        ) {
+            return Ok(0);
+        }
+        let observation = ServiceCommand::point("get", b"");
+        let work = if let LocalHelperCommand::ExpireStep { max_work } = command {
+            *max_work
+        } else {
+            state.limits.expiry_work
+        };
+        let mut extra = state
+            .map
+            .service_expiry_delta_key_bytes(now, work, &observation);
+        if let LocalHelperCommand::VersionBulk { operation, entries } = command {
+            for entry in entries {
+                extra = extra.saturating_add(32).saturating_add(entry.key.len());
+                if *operation == VersionBulkOperation::SetTtl
+                    && state
+                        .map
+                        .service_entry_metadata(&entry.key, now)
+                        .is_some_and(|(version, _)| {
+                            entry.token.namespace_generation == state.namespace_generation
+                                && entry.token.map_id == state.map.service_map_id()
+                                && entry.token.version == version
+                        })
+                {
+                    extra =
+                        extra.saturating_add(state.map.service_physical_entry_bytes(&entry.key));
+                }
+            }
+        }
+        request
+            .checked_add(response)
+            .and_then(|n| n.checked_mul(16))
+            .and_then(|n| n.checked_add(extra.checked_mul(8)?))
+            .and_then(|n| n.checked_add(4_096))
+            .ok_or(MapServiceError::Capacity)
+    }
+    pub(crate) fn preflight_retire_client_domains(
+        &self,
+        clients: &[String],
+        generation: u64,
+        through: u64,
+        identity: &MutationIdentity,
+        digest: [u8; 32],
+        additional: [usize; 2],
+    ) -> Result<usize, MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        retirement_domains_preflight(
+            &state, clients, generation, through, identity, digest, additional,
+        )
+    }
+    pub(crate) fn retire_client_domains(
+        &self,
+        clients: &[String],
+        generation: u64,
+        through: u64,
+        identity: MutationIdentity,
+        digest: [u8; 32],
+    ) -> Result<RetirementReceipt, MapServiceError> {
+        let mut state = self.state.lock().expect("local IMap state poisoned");
+        retirement_domains_preflight(
+            &state,
+            clients,
+            generation,
+            through,
+            &identity,
+            digest,
+            [0, 0],
+        )?;
+        if let ServiceRetainedOutcome::Completed(value) =
+            state.map.service_lookup(&identity, Some(digest))?
+        {
+            return Ok(RetirementReceipt {
+                removed: ServiceResult::from_retained(&value)?.number as usize,
+                through,
+            });
+        }
+        state.map.service_reserve(identity.clone(), digest, 64)?;
+        let removed = clients
+            .iter()
+            .map(|client| state.map.service_retire(client.clone(), through))
+            .sum::<usize>();
+        let mut result = ServiceResult::new("helper_retired");
+        result.number = removed as u64;
+        state
+            .map
+            .service_complete(&identity, result.retained_json());
+        Ok(RetirementReceipt { removed, through })
+    }
+    pub fn local_helper_preflight(
+        &self,
+        command: &LocalHelperCommand,
+        identity: &MutationIdentity,
+        now: u64,
+    ) -> Result<(usize, usize, usize), MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        let (request, response) = helper_bound(&state, command)?;
+        if !mutating_helper(command) {
+            return Ok((request, response, 0));
+        }
+        check_identity(&state, identity)?;
+        if !matches!(
+            state
+                .map
+                .service_lookup(identity, Some(helper_digest(command)))?,
+            ServiceRetainedOutcome::Unknown
+        ) {
+            return Ok((request, response, 0));
+        }
+        if state.map.is_destroyed() {
+            return Err(CollectionError::MapDestroyed.into());
+        }
+        if now < state.now {
+            return Err(MapServiceError::ClockRegressed);
+        }
+        cluster_hooks::require_replication_capacity(&state)?;
+        let used = lifecycle::usage(&state);
+        let owner = identity.client.len().saturating_add(48);
+        budget(
+            "pending",
+            state.limits.pending_bytes,
+            used.pending.saturating_add(owner),
+        )?;
+        let mut outcomes = used.outcomes.saturating_add(owner).saturating_add(response);
+        let mut values = used.values;
+        let mut changed = 0usize;
+        match command {
+            LocalHelperCommand::VersionBulk { operation, entries } => {
+                check_bound(
+                    "response_bytes",
+                    state.map.service_bounds().max_response_bytes,
+                    entries.iter().map(|entry| 17 + entry.key.len()).sum(),
+                )?;
+                for entry in entries {
+                    if let Some((version, _)) = state
+                        .map
+                        .service_entry_metadata(&entry.key, now)
+                        .filter(|(version, _)| {
+                            entry.token.namespace_generation == state.namespace_generation
+                                && entry.token.map_id == state.map.service_map_id()
+                                && entry.token.version == *version
+                        })
+                    {
+                        let _ = version;
+                        changed += 1;
+                        if let ServiceTtl::ExpireAfter(ttl) = entry.ttl {
+                            now.checked_add(ttl).ok_or(MapServiceError::Capacity)?;
+                        }
+                        if *operation == VersionBulkOperation::Replace {
+                            values = values
+                                .saturating_sub(state.map.service_physical_entry_bytes(&entry.key))
+                                .saturating_add(24)
+                                .saturating_add(entry.key.len())
+                                .saturating_add(
+                                    entry.value.as_ref().expect("validated replacement").len(),
+                                );
+                            budget("values", state.limits.value_bytes, values)?;
+                        }
+                    }
+                }
+                state.map.service_reserve_versions(
+                    changed + usize::from(now > state.now && state.map.service_expiry_pending(now)),
+                )?;
+            }
+            LocalHelperCommand::RetireOutcomes {
+                client, through, ..
+            } => {
+                if state.map.service_pending_before(client, *through)
+                    || (client == &identity.client && identity.sequence <= *through)
+                {
+                    return Err(MapServiceError::PendingOperation);
+                }
+                if state
+                    .map
+                    .service_fences()
+                    .get(client)
+                    .is_some_and(|old| through < old)
+                {
+                    return Err(MapServiceError::InvalidArgument);
+                }
+                if !state.map.service_fences().contains_key(client) {
+                    budget(
+                        "retirement_clients",
+                        state.limits.max_clients,
+                        state.map.service_fences().len().saturating_add(1),
+                    )?;
+                    outcomes = outcomes.saturating_add(24).saturating_add(client.len());
+                }
+                outcomes =
+                    outcomes.saturating_sub(state.map.service_retirement_credit(client, *through));
+            }
+            LocalHelperCommand::ExpireStep { max_work } => {
+                changed = *max_work;
+                state.map.service_reserve_versions(usize::from(
+                    now > state.now && state.map.service_expiry_pending(now),
+                ))?;
+            }
+            _ => {}
+        }
+        budget("outcomes", state.limits.outcome_bytes, outcomes)?;
+        let events = state
+            .listeners
+            .len()
+            .saturating_mul(changed.saturating_add(state.limits.expiry_work))
+            .saturating_mul(
+                64usize
+                    .saturating_add(state.map.service_bounds().max_key_bytes)
+                    .saturating_add(state.map.service_bounds().max_value_bytes.saturating_mul(2)),
+            )
+            .min(state.limits.listener_bytes.saturating_sub(used.listeners));
+        Ok((
+            request,
+            response,
+            owner
+                .saturating_add(response)
+                .saturating_add(values.saturating_sub(used.values))
+                .saturating_add(events),
+        ))
+    }
+
+    pub fn outcome_query_response_bytes(
+        &self,
+        identities: &[MutationIdentity],
+    ) -> Result<usize, MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
+        identities.iter().try_fold(0usize, |sum, id| {
+            let result = state.map.service_query_result_bytes(id)?;
+            sum.checked_add(64)
+                .and_then(|n| n.checked_add(id.client.len()))
+                .and_then(|n| n.checked_add(result))
+                .ok_or(MapServiceError::Capacity)
+        })
+    }
+
+    pub fn expiry_backlog(&self, now: u64) -> Result<bool, MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
+        Ok(state.map.service_expiry_pending(now))
+    }
     pub fn reserve_local_helper_credit(
         &self,
         command: &LocalHelperCommand,
@@ -467,6 +721,87 @@ impl UnifiedIMapService {
         }
         result
     }
+}
+
+fn retirement_domains_preflight(
+    state: &ServiceState,
+    clients: &[String],
+    generation: u64,
+    through: u64,
+    identity: &MutationIdentity,
+    digest: [u8; 32],
+    additional: [usize; 2],
+) -> Result<usize, MapServiceError> {
+    require_namespace(state)?;
+    check_identity(state, identity)?;
+    match state.map.service_lookup(identity, Some(digest))? {
+        ServiceRetainedOutcome::Completed(_) => return Ok(0),
+        ServiceRetainedOutcome::Pending => return Err(MapServiceError::PendingOperation),
+        ServiceRetainedOutcome::Unknown => {}
+    }
+    if state.map.is_destroyed() {
+        return Err(CollectionError::MapDestroyed.into());
+    }
+    if generation != state.namespace_generation
+        || through == 0
+        || clients.is_empty()
+        || clients.len() > 4
+    {
+        return Err(MapServiceError::InvalidArgument);
+    }
+    let mut seen = BTreeSet::new();
+    let mut credit = 0usize;
+    let mut new_clients = 0usize;
+    let mut fences = 0usize;
+    for client in clients {
+        if identity_blank(client)
+            || client.len() > 128
+            || !seen.insert(client)
+            || state
+                .map
+                .service_fences()
+                .get(client)
+                .is_some_and(|old| through < *old)
+        {
+            return Err(MapServiceError::InvalidArgument);
+        }
+        if state.map.service_pending_before(client, through)
+            || (client == &identity.client && identity.sequence <= through)
+        {
+            return Err(MapServiceError::PendingOperation);
+        }
+        if !state.map.service_fences().contains_key(client) {
+            new_clients += 1;
+            fences = fences.saturating_add(24).saturating_add(client.len());
+        }
+        credit = credit.saturating_add(state.map.service_retirement_credit(client, through));
+    }
+    cluster_hooks::require_replication_capacity(state)?;
+    let used = lifecycle::usage(state);
+    let owner = identity.client.len().saturating_add(48);
+    budget(
+        "retirement_clients",
+        state.limits.max_clients,
+        state.map.service_fences().len().saturating_add(new_clients),
+    )?;
+    budget(
+        "pending",
+        state.limits.pending_bytes,
+        used.pending
+            .saturating_add(owner)
+            .saturating_add(additional[1]),
+    )?;
+    budget(
+        "outcomes",
+        state.limits.outcome_bytes,
+        used.outcomes
+            .saturating_sub(credit)
+            .saturating_add(fences)
+            .saturating_add(owner)
+            .saturating_add(64)
+            .saturating_add(additional[0]),
+    )?;
+    Ok(fences.saturating_add(owner).saturating_add(64))
 }
 
 #[cfg(test)]

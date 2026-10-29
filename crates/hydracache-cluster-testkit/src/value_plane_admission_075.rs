@@ -133,6 +133,49 @@ impl FairAdmissionQueue {
         Some(WorkItem::Data(work))
     }
 
+    /// Cancel one queued request without resetting other tenants' round-robin position.
+    pub fn cancel_request(&mut self, request_id: u64) -> bool {
+        if let Some(index) = self.safety.iter().position(|work| matches!(work, WorkItem::Safety { operation } if operation == &request_id.to_string())) { self.safety.remove(index); return true; }
+        let Some(tenant) = self
+            .tenant_order
+            .iter()
+            .find(|tenant| {
+                self.tenants[*tenant]
+                    .iter()
+                    .any(|work| work.request_id == request_id)
+            })
+            .cloned()
+        else {
+            return false;
+        };
+        let queue = self
+            .tenants
+            .get_mut(&tenant)
+            .expect("active cancellation tenant");
+        let index = queue
+            .iter()
+            .position(|work| work.request_id == request_id)
+            .expect("queued cancellation request");
+        queue.remove(index);
+        self.data_len -= 1;
+        if queue.is_empty() {
+            self.tenants.remove(&tenant);
+            let position = self
+                .tenant_order
+                .iter()
+                .position(|name| name == &tenant)
+                .expect("active cancellation order");
+            self.tenant_order.remove(position);
+            if position < self.cursor {
+                self.cursor -= 1;
+            }
+            if self.cursor >= self.tenant_order.len() {
+                self.cursor = 0;
+            }
+        }
+        true
+    }
+
     pub fn len(&self) -> usize {
         self.data_len + self.safety.len()
     }
