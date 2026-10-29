@@ -45,35 +45,43 @@ def current(p):
     need([state.st_dev,state.st_ino]==meta['identity'],'same original private mount namespace')
 
 def user_tree(root):
-    """Pin user filesystem roots beneath OWN dentries before freezing context.
+    """Move the SAME private user mounts under own mountpoint dentries.
 
-    Recursive-private propagation alone did not keep the original user mount
-    attached. Do not retain its original shared-/run mountpoint dentries. Open
-    roots first, detach only their private copies, create an own tmpfs parent,
-    and bind each held root to an own new directory. The host tree is untouched.
+    Keep each original filesystem-root FD throughout setup. MS_MOVE relocates
+    an attached private mount object; its kernel mount ID and root inode must
+    remain identical. No detached-FD bind, file copy or global mount operation.
     """
     parent=Path('/run/user');held=[]
-    records=Path('/proc/self/mountinfo').read_text().splitlines()
+    def mounts():
+        return {x.split()[4]:x.split() for x in Path('/proc/self/mountinfo').read_text().splitlines()}
+    records=mounts()
     try:
         for child in sorted(parent.iterdir()):
             need(child.name.isdigit() and child.is_dir() and not child.is_symlink(),'bounded numeric user directory')
+            need(str(child) in records and records[str(child)][3]=='/','each admitted user root is its own filesystem mount')
             state=child.stat();fd=os.open(child,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)
             opened=os.fstat(fd);need((opened.st_dev,opened.st_ino)==(state.st_dev,state.st_ino),'held original user root')
-            held.append((child.name,fd,state))
-        descendants=[x.split()[4] for x in records if x.split()[4].startswith('/run/user/')]
-        need(all(x.count('/')==3 and x.split('/')[-1].isdigit() for x in descendants),'no nested or unknown user mounts')
-        for target in sorted(descendants,reverse=True):subprocess.run(['/usr/bin/umount','--lazy','--',target],check=True,timeout=10)
+            staging=root/('user-root-'+child.name);staging.mkdir(mode=0o700)
+            held.append((child.name,fd,state,staging,records[str(child)][0]))
+            subprocess.run(['/usr/bin/mount','--move',str(child),str(staging)],check=True,timeout=10)
+            moved=staging.stat();need((moved.st_dev,moved.st_ino)==(opened.st_dev,opened.st_ino),'same original root after first private mount move')
+            need(mounts()[str(staging)][0]==records[str(child)][0],'same kernel mount ID after first private move')
+        need(not any(x.startswith('/run/user/') for x in mounts()),'all original user mounts relocated before own parent creation')
         state=parent.stat()
         subprocess.run(['/usr/bin/mount','-t','tmpfs','-o','mode='+oct(state.st_mode&0o777)[2:]+',uid='+str(state.st_uid)+',gid='+str(state.st_gid)+',nosuid,nodev','hc074-private-user-parent',str(parent)],check=True,timeout=10)
         receipt=[]
-        for name,fd,original in held:
+        for name,fd,original,staging,mount_id in held:
             target=parent/name;target.mkdir(mode=original.st_mode&0o777);os.chown(target,original.st_uid,original.st_gid)
-            subprocess.run(['/usr/bin/mount','--internal-only','--no-canonicalize','--bind','/proc/self/fd/'+str(fd),str(target)],pass_fds=(fd,),check=True,timeout=10)
-            now=target.stat();need((now.st_dev,now.st_ino)==(original.st_dev,original.st_ino),'same held user filesystem root after relocation')
-            receipt.append(dict(user=name,root_identity=[now.st_dev,now.st_ino]))
+            subprocess.run(['/usr/bin/mount','--move',str(staging),str(target)],check=True,timeout=10)
+            now=target.stat();held_state=os.fstat(fd)
+            need((now.st_dev,now.st_ino)==(held_state.st_dev,held_state.st_ino)==(original.st_dev,original.st_ino),'same held user filesystem root after relocation')
+            need(mounts()[str(target)][0]==mount_id,'same original kernel mount ID after final private move')
+            staging.rmdir()
+            receipt.append(dict(user=name,root_identity=[now.st_dev,now.st_ino],original_private_mount_id=mount_id,final_private_mount_id=mounts()[str(target)][0]))
         return receipt
     finally:
-        for _,fd,_ in held:os.close(fd)
+        for _,fd,_,_,_ in held:os.close(fd)
+
 
 def keeper(root):
     need(os.getuid()==os.getgid()==0,'private namespace owner root')

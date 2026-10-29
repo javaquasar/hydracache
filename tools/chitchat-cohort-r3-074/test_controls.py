@@ -101,9 +101,10 @@ class Controls(unittest.TestCase):
 
     def test_user_root_relocation_is_private_and_retains_fd(self):
         text=inspect.getsource(ns.keeper);self.assertLess(text.index('own private namespace'),text.index('user_tree'))
-        text=inspect.getsource(ns.user_tree);self.assertLess(text.index('os.open(child'),text.index("'/usr/bin/umount'"))
-        self.assertIn("'--lazy'",text);self.assertIn('pass_fds=(fd,)',text);self.assertIn('same held user filesystem root',text)
-        self.assertIn("'--no-canonicalize'",text);self.assertIn("'--internal-only'",text)
+        text=inspect.getsource(ns.user_tree);self.assertLess(text.index('os.open(child'),text.index("'--move'"))
+        self.assertEqual(text.count("'--move'"),2);self.assertIn('same held user filesystem root',text)
+        self.assertIn('same original kernel mount ID after final private move',text)
+        self.assertNotIn("'--bind'",text);self.assertNotIn("'--lazy'",text)
 
     def test_namespace_join_opens_and_checks_original_fd(self):
         meta=dict(pid=123,start_ticks='7',identity=[1,2],deadline_ns=100)
