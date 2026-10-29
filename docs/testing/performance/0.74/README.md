@@ -7594,3 +7594,15 @@ format, byte/doc and local contract checks pass; the first offline import error
 is retained. This closes this candidate's functional MSRV/Windows subgate only.
 CPU/end-to-end, RSS/allocator retention, maintained distribution/public consumers,
 Root/security/full gates and execution/recovery/enrollment/host admission remain.
+
+The [clean Q cost continuation](chitchat-cost-result-20261029.md) implements a
+normal non-test GNU binary without allocation wrappers or test-only counters.
+Same B/P/Q runtime/table, three builds/checks/strict-Clippy pairs and eight final
+offline source/fault controls pass. The first clean compile's cfg(test)-helper
+error is preserved and corrected in a separate source context. Its first actual
+B control matches all 30 caller semantics but refuses cross-clock admission:
+RAW/MONOTONIC differ 5.124% against the frozen1% limit. All processes are retired;
+P/Q controls and every CPU/RSS cohort position remain undispatched. One short
+unequally ordered read window does not establish a clock root cause or candidate
+regression. CPU/RSS/retention remain blocked; preserve the first control and
+review an eligible-host continuation, with no threshold/workload change or retry.

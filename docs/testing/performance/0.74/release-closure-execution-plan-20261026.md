@@ -689,3 +689,17 @@ qualification follows. Next finish the same candidate's CPU/end-to-end and RSS/
 allocator retention, maintained package/public-consumer boundaries, then actual
 Root security/package/workspace gates. The general stateful resource refusal and
 original execution/lifecycle/reconnect/trust/host blockers remain unchanged.
+
+The [clean CPU/memory continuation](chitchat-cost-result-20261029.md) now builds
+the same B/P/Q runtime as normal GNU binaries, outside cfg(test), allocation
+wrappers and diagnostic counters. All three builds/check/strict-Clippy phases and
+eight offline source/fault controls pass. Preserve the first cfg(test)-constructor
+compile refusal. The separate corrected context's first actual B control matches
+all 30 semantics but fails the fixed cross-clock admission limit (5.124% vs1%).
+All ownership envelopes retire; no P/Q control or CPU/memory cohort is dispatched.
+Saved short-window deltas cannot identify clock-rate drift versus read/scheduler
+skew. This blocks cost qualification, not a demonstrated Q performance refusal.
+Next review the exact source/ownership/host reservation adaptation and admit one
+eligible-Linux control before the frozen numerical cohort. Do not replay WSL,
+adjust clocks, widen limits, promote memory snapshots or reopen new hypotheses.
+Root adoption/security/full gates and execution/recovery/enrollment stay open.

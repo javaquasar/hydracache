@@ -1,0 +1,25 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "allocator_retention_qualified": false,
+  "attribution": "one short unequal-read window; saved deltas cannot distinguish clock-rate drift from read-order/scheduling skew",
+  "classification": "blocked-first-cross-clock-control",
+  "clock_control_pass": false,
+  "cohort_processes_dispatched": 0,
+  "complete": true,
+  "discrepancy_limit": 0.01,
+  "elapsed_ns": {
+    "boot": 2634583,
+    "cpu": 1286932,
+    "mono": 2634582,
+    "raw": 2776883
+  },
+  "first_control_retained": true,
+  "generic_component_gate_pass": false,
+  "raw_minus_monotonic_ns": 142301,
+  "relative_discrepancy": 0.051244866996556934,
+  "release_admitted": false,
+  "root_adopted": false,
+  "semantic_rows_matched": 30,
+  "successful_build_check_clippy_phases": 9
+}

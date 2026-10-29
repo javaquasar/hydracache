@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "clippy",
+    "--offline",
+    "--locked",
+    "--release",
+    "--target",
+    "x86_64-unknown-linux-gnu",
+    "--manifest-path",
+    "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-clean-cost-r1/target/chitchat-cost-20261029-r1/fixtures/P/Cargo.toml",
+    "--target-dir",
+    "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/clean-cost-targets/P",
+    "--all-targets",
+    "--all-features",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "deadline": 16916.420978310998,
+  "frame": "818dcf2cca31ee308e41e962de491bc24666b0fb5582bd918cebf65ccc30d1b4",
+  "image_sha256": "77f14b761b02b47e6747473f556b3bc9f98f7e4525b7c3b8d74898ff816e4636",
+  "retry": false
+}

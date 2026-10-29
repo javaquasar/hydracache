@@ -1,0 +1,11 @@
+test_clock_refusals (test_analysis.Method.test_clock_refusals) ... ok
+test_estimator_and_no_deletion (test_analysis.Method.test_estimator_and_no_deletion) ... ok
+test_exact_runtime_derivation (test_analysis.Method.test_exact_runtime_derivation) ... ok
+test_memory_refusals (test_analysis.Method.test_memory_refusals) ... ok
+test_semantic_and_scope_refusals (test_analysis.Method.test_semantic_and_scope_refusals) ... ok
+test_valid_controls (test_analysis.Method.test_valid_controls) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 1.226s
+
+OK

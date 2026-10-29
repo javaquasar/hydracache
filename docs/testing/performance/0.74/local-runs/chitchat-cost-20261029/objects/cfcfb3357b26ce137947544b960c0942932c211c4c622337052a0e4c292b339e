@@ -1,0 +1,4 @@
+[source.crates-io]
+replace-with="compat-reviewed"
+[source.compat-reviewed]
+directory="C:/Workspace/prj/jq/cashe/hydracache-074/target/chitchat-inplace-20261029/vendor"

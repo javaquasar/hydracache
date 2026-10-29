@@ -1,0 +1,61 @@
+{
+  "predecessor": "874ba6355b98229cbeab11c5b0742e439cbced847e6954478234e10e92d7ef56",
+  "protocol": {
+    "blocks": 5,
+    "capacity_floor_bytes": 4294967296,
+    "capacity_poll_seconds": 5,
+    "cleanup_seconds": 5,
+    "cpu_repetitions": 32,
+    "cpu_wall_ratio_upper_95": 1.03,
+    "estimator": "five block log ratios of Q mean / B mean; Student t df4 two-sided 95%; no sample deletion",
+    "generic_component_gate_pass": false,
+    "growth_increase_bytes_allowed": 0,
+    "memory_epochs": 6,
+    "memory_scope": "same-process post-warm RSS/PSS and main-arena mallinfo2 deltas; no allocator tuning/trim; not continuous release retention",
+    "memory_sweeps_per_epoch": 8,
+    "minimum_clock_resolution_quanta": 100,
+    "monotonic_raw_drift_fraction": 0.01,
+    "order_per_block": [
+      "B",
+      "P",
+      "Q",
+      "Q",
+      "P",
+      "B"
+    ],
+    "outer_bound_seconds": 1200,
+    "root_adopted": false,
+    "schema": "hc074-fixed-caller-clean-cost-v1",
+    "seed": 7606312,
+    "session_bound_seconds": 1100,
+    "table_sha256": "4a3308a82d014fb58df808a9f3984922537a80c02219610cdf5ee6fa1ec4a1f9",
+    "warm_sweeps": 4
+  },
+  "root_adopted": false,
+  "variants": {
+    "B": {
+      "append": {
+        "Cargo.toml": "\n[[bin]]\nname=\"hc074-clean-cost\"\npath=\"cost-main.rs\"\n",
+        "src/delta.rs": "\n#[cfg(not(test))]\n#[path=\"../../../probe.rs\"]\npub mod cost_probe;\n",
+        "src/lib.rs": "\n#[cfg(not(test))]\n#[doc(hidden)]\npub use delta::cost_probe::main as cost_probe_main;\n"
+      },
+      "serde_json_dependency_kind_only": true
+    },
+    "P": {
+      "append": {
+        "Cargo.toml": "\n[[bin]]\nname=\"hc074-clean-cost\"\npath=\"cost-main.rs\"\n",
+        "src/delta.rs": "\n#[cfg(not(test))]\n#[path=\"../../../probe.rs\"]\npub mod cost_probe;\n",
+        "src/lib.rs": "\n#[cfg(not(test))]\n#[doc(hidden)]\npub use delta::cost_probe::main as cost_probe_main;\n"
+      },
+      "serde_json_dependency_kind_only": true
+    },
+    "Q": {
+      "append": {
+        "Cargo.toml": "\n[[bin]]\nname=\"hc074-clean-cost\"\npath=\"cost-main.rs\"\n",
+        "src/delta.rs": "\n#[cfg(not(test))]\n#[path=\"../../../probe.rs\"]\npub mod cost_probe;\n",
+        "src/lib.rs": "\n#[cfg(not(test))]\n#[doc(hidden)]\npub use delta::cost_probe::main as cost_probe_main;\n"
+      },
+      "serde_json_dependency_kind_only": true
+    }
+  }
+}

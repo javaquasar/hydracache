@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "/usr/bin/nm",
+    "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/clean-cost-targets/Q/x86_64-unknown-linux-gnu/release/hc074-clean-cost"
+  ],
+  "deadline": 16842.349522867,
+  "frame": "818dcf2cca31ee308e41e962de491bc24666b0fb5582bd918cebf65ccc30d1b4",
+  "image_sha256": "910ad8a63896f722374fdf22951d2a436c74e3ac9677511cc56378296bdf86cc",
+  "retry": false
+}
