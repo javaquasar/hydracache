@@ -28,6 +28,8 @@ Current HC1 dispatch evaluates its existing envelope deadline against logical or
 characterization records positive/zero behavior explicitly; the daemon probe claims only the
 zero-deadline refusal. A general current-wall-clock deadline claim is not introduced. Durable v1
 does not atomically store IMap TTL, incarnation/generation and retained invocation outcomes.
+The daemon probe reuses the existing codec through the development-only testkit; this preparation
+adds no direct protocol dependency to xtask and preserves the preceding product lock bytes.
 
 ## Commands and step gates
 

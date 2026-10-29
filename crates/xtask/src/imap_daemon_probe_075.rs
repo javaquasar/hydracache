@@ -6,7 +6,7 @@ use std::path::Path;
 use std::process::Command;
 use std::time::Duration;
 
-use hydracache_client_protocol::{
+use hydracache_cluster_testkit::current_daemon_wire_075::{
     ClientErrorCode, ClientFrame, ClientRequest, ClientRequestEnvelope, ClientResponse,
     ClientWireMessage, Namespace, StructuredKey,
 };
@@ -167,8 +167,13 @@ fn envelope(id: &str, request: ClientRequest) -> Result<Vec<u8>, Box<dyn Error>>
 }
 fn decode(
     body: &[u8],
-) -> Result<Result<ClientResponse, hydracache_client_protocol::ClientErrorEnvelope>, Box<dyn Error>>
-{
+) -> Result<
+    Result<
+        ClientResponse,
+        hydracache_cluster_testkit::current_daemon_wire_075::ClientErrorEnvelope,
+    >,
+    Box<dyn Error>,
+> {
     match ClientFrame::decode(body, MAX_RESPONSE)?.decode_message()? {
         ClientWireMessage::Response(response) => Ok(response.result),
         _ => Err("non-response frame".into()),
