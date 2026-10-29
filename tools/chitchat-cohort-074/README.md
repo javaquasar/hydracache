@@ -43,3 +43,12 @@ Numerical analysis uses all five blocks and unchanged CPU3%/clock1%/zero-extra-
 growth predicates. Incomplete/invalid data are retained without claims or splicing.
 The generic stateful refusal remains negative and Root adoption/full release/
 continuous retention/original-execution admission remain separate gates.
+
+First fault preparation refuses before any fixture/unit is created: the SSH
+process is intentionally pinned to controller CPUs0,5--7. Treating its current
+affinity as whole-host availability was the wrong domain. Read-only diagnosis
+records online0--7 and system.slice effective cpuset0--7; no host/SSH affinity
+is changed. A separate r1 source/package checks those kernel availability sets,
+pins them in the plan and revalidates them in every frame. Exact controller and
+worker per-process placement remain required. First refusal/source/transport
+are preserved; no numerical observation or stable-service stop occurred.

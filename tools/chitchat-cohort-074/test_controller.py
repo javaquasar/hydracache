@@ -87,5 +87,17 @@ class Controller(unittest.TestCase):
         self.assertLess(text.index("'numerical-launch-once.json'"),text.index("d.call('remote-'+mode"))
         self.assertIn("'stage-once.json'",text)
 
+    def test_kernel_cpuset_not_ssh_process_affinity_owns_admission(self):
+        with patch.object(Path,'read_text',side_effect=['0-7','0-7']),patch.object(c.os,'sched_getaffinity',side_effect=AssertionError('SSH process affinity is not availability'),create=True):
+            self.assertEqual(c.cpu_profile(),dict(online='0-7',system_slice_effective='0-7'))
+        for raw in ('0,5-7','0-3'):
+            with patch.object(Path,'read_text',side_effect=['0-7',raw]):
+                with self.assertRaises(RuntimeError):c.cpu_profile()
+
+    def test_kernel_cpu_list_parser_refusals(self):
+        self.assertEqual(c.parse_cpus('0,1-4,7'),{0,1,2,3,4,7})
+        for raw in ('','7-0','0-x','-1','1-2-3'):
+            with self.assertRaises(RuntimeError):c.parse_cpus(raw)
+
 
 if __name__=='__main__':unittest.main()

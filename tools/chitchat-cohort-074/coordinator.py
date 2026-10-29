@@ -21,6 +21,22 @@ def load(path,name):
     spec=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m
 
 
+def parse_cpus(raw):
+    result=set()
+    for part in raw.strip().split(','):
+        values=part.split('-');need(len(values) in (1,2) and all(v.isdigit() for v in values),'kernel CPU-list syntax')
+        low=int(values[0]);high=int(values[-1]);need(low<=high,'ordered kernel CPU range')
+        result.update(range(low,high+1))
+    return result
+
+
+def cpu_profile():
+    online=Path('/sys/devices/system/cpu/online').read_text().strip()
+    effective=Path('/sys/fs/cgroup/system.slice/cpuset.cpus.effective').read_text().strip()
+    need({0,1,2,3,4,5,6,7}<=parse_cpus(online)&parse_cpus(effective),'online/system.slice CPUs support frozen placement')
+    return dict(online=online,system_slice_effective=effective)
+
+
 def read_plan(root,pin):
     need(root.parent==Path('/tmp') and root.name.startswith('hc074-chitchat-cost-20261029.'),'exact temporary numerical/fixture root')
     s=root.lstat();need(s.st_uid==s.st_gid==0 and s.st_mode&0o7777==0o700 and not root.is_symlink(),'root-only original directory')
@@ -39,6 +55,7 @@ def backend(root):
 
 def frame(p,root,m):
     m.static_frame(p)
+    need(cpu_profile()==p['cpu_profile'],'original online/effective CPU profile')
     need(shutil.disk_usage(root).free>=4*1024**3,'original four-GiB floor')
     h=load(root/'input/host.py','hc074_numerical_host');state=h.snapshot();original=p['expected_host']
     need({k:v for k,v in state.items() if k!='supervisor'}=={k:v for k,v in original.items() if k!='supervisor'},'original kernel/clock/mount/marker/source host frame')
@@ -73,7 +90,7 @@ def main(p,root,m):
     inactive=m.service_state(p['supervisor']);need(inactive['ActiveState']=='inactive' and inactive['MainPID']=='0','inactive before common fence')
     m.publish(root,'inactive.json',inactive);fence=m.open_fence(p)
     try:
-        frame(p,root,m);os.sched_setaffinity(0,{0,5,6,7})
+        frame(p,root,m);os.sched_setaffinity(0,{0,5,6,7});need(set(os.sched_getaffinity(0))=={0,5,6,7},'exact controller placement')
         for seq,attempt in enumerate(p['attempts']):
             frame(p,root,m);need(m.service_state(p['supervisor'])['ActiveState']=='inactive','supervisor remains inactive')
             quiet=None if p['synthetic'] else m.quiet_guard()

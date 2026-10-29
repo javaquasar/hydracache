@@ -39,7 +39,7 @@ def original():
     adapter=load(PARENT/'input/remote.py','hc074_original_control');manifest=json.loads((PARENT/'input/inputs.json').read_bytes())
     adapter.verify(PARENT,manifest);host=load(PARENT/'input/host.py','hc074_original_host');state=host.snapshot();host.admit(state)
     assert state==manifest['expected_host']
-    assert {0,1,2,3,4,5,6,7}<=set(os.sched_getaffinity(0))
+    load(Path(__file__).parent/'coordinator.py','hc074_kernel_cpu_admission').cpu_profile()
     assert os.statvfs('/tmp').f_bavail*os.statvfs('/tmp').f_frsize>=4*1024**3
     return state
 
@@ -75,6 +75,7 @@ os._exit(0)
     files={str(p):sha(p) for p in sorted((root/'input').rglob('*')) if p.is_file()}
     files.update({str(root/n):sha(root/n) for n in NAMES})
     plan=pmod.make(root,fake,files,fence,[s.st_dev,s.st_ino],synthetic,case,argv)
+    plan['cpu_profile']=load(root/'coordinator.py','hc074_original_cpu_profile').cpu_profile()
     if synthetic:plan['expected_host']=state
     put(root/'plan.json',plan);(root/'plan.json').chmod(0o400);pin=sha(root/'plan.json')
     put(root/'prepared.json',dict(plan_sha256=pin,root=str(root),synthetic=synthetic,case=case))
