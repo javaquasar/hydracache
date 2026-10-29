@@ -129,7 +129,7 @@ evidence, not a product protocol, persistent service image or ship receipt.
 Typed entry views, helper futures, progress queries and scoped transfer controls remain runtime
 APIs; the 40 core operation IDs and production HC/1/HC/2 identities do not change.
 
-The separate development preparation receipt uses `hydracache.imap.pre074-preparation.v4`
+The separate development preparation receipt uses `hydracache.imap.pre074-preparation.v5`
 and `docs/testing/imap/0.75/schemas/pre074-preparation.schema.json`. Its only scope is
 `pre074_preparation`, with production disabled and all six predecessor/integration blockers
 retained. It binds clean source, current tooling/runtime, eleven fixed input artifacts, raw
@@ -159,6 +159,21 @@ generations never claim a native server watermark or production atomic cut. Dupl
 missing, foreign, cancelled, over-budget or unsupported profile observations refuse
 recovery. Native client calls have a five-second invocation timeout; managed probes
 have a separate forty-second process envelope. Current readers reject v3/future versions.
+Version 5 requires three continuous smoke report/transcript pairs for reference,
+native and current local-daemon cohorts. `imap075-soak-profile-v1`,
+`imap075-soak-frame-v1`, `imap075-soak-report-v1` and `imap075-soak-identity-v1`
+are bounded local development formats. They bind exact source, current producer,
+runtime, artifacts, seed, worker PID/platform birth/incarnation, logical progress,
+cohort-specific resource units and terminal cleanup. Unknown fields/versions fail.
+Unavailable resource samples remain null. Reference outcome bytes include the fixed
+28-byte retirement fence; temporary leases/queues must be released at each round.
+Native generations remain local listener identities. Daemon resource scope proves
+protocol quiescence only and does not invent unavailable IMap owner counters.
+Restart always creates a new segment; live prior workers cannot transfer ownership.
+An interrupted controller checkpoint can never become completed duration evidence.
+Short proof workers retain their 60-second cap; a closed separate soak policy allows
+at most 26 hours with explicit host eligibility and cleanup budget. Current preparation
+readers reject v4. Implemented hour/6-hour/24-hour profiles do not claim those runs occurred.
 
 The 0.75 migration corpus uses `fixture_version = 1` for bounded development
 staging/dry-run readers only. Runtime replica images preserve logical incarnation

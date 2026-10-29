@@ -228,6 +228,8 @@ pub fn tooling_command(root: &Path, _windows: bool) -> Command {
             "imap_native_concurrent_075",
             "--test",
             "imap_native_recovery_075",
+            "--test",
+            "imap_soak_075",
             "--locked",
         ])
         .current_dir(root);

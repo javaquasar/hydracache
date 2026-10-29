@@ -18,6 +18,8 @@ const JOB_CLASSES: [&str; 5] = [
 const FROZEN_TOPOLOGY: &str = "docs/testing/memory/0.71/ci-topology.json";
 const IMAP_EXTENSION: &str = "docs/testing/imap/0.75/ci-topology-extension.json";
 const IMAP_WORKFLOW: &str = ".github/workflows/imap-075.yml";
+const IMAP_SOAK_EXTENSION: &str = "docs/testing/imap/0.75/soak-ci-topology-extension.json";
+const IMAP_SOAK_WORKFLOW: &str = ".github/workflows/imap-soak-075.yml";
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -125,24 +127,32 @@ pub fn check_with_path(root: &Path, release: &str, path: &Path) -> Result<(), Bo
         .map_err(|error| format!("failed to read topology {}: {error}", path.display()))?;
     let mut topology: CiTopology = serde_json::from_slice(&bytes)
         .map_err(|error| format!("invalid topology JSON {}: {error}", path.display()))?;
-    // Exactly one registered additive workflow. Unknown workflow paths still fail inventory
-    // equality below, and the 0.75 checker independently verifies its actual bounded matrix.
-    if root.join(IMAP_EXTENSION).exists() {
-        let extension: WorkflowContract = serde_json::from_slice(
-            &crate::imap_qualification_075::read_relative(root, IMAP_EXTENSION, 64 * 1024)?,
-        )?;
-        if extension.path != IMAP_WORKFLOW
-            || topology
-                .workflows
-                .iter()
-                .any(|entry| entry.path == extension.path)
-        {
-            return Err(
-                "IMap topology extension must register exactly its unique 0.75 workflow".into(),
-            );
+    // Closed 0.75 additions; the frozen 0.71 measurement input stays byte-identical.
+    for (registry, workflow) in [
+        (IMAP_EXTENSION, IMAP_WORKFLOW),
+        (IMAP_SOAK_EXTENSION, IMAP_SOAK_WORKFLOW),
+    ] {
+        if root.join(registry).exists() {
+            let extension: WorkflowContract = serde_json::from_slice(
+                &crate::imap_qualification_075::read_relative(root, registry, 64 * 1024)?,
+            )?;
+            if extension.path != workflow
+                || topology
+                    .workflows
+                    .iter()
+                    .any(|entry| entry.path == extension.path)
+            {
+                return Err(
+                    "IMap topology extension must register exactly its unique 0.75 workflow".into(),
+                );
+            }
+            if workflow == IMAP_WORKFLOW {
+                crate::imap_ci_075::check_workflow(root)?;
+            } else {
+                crate::imap_soak_075::check_manual_workflow(root)?;
+            }
+            topology.workflows.push(extension);
         }
-        crate::imap_ci_075::check_workflow(root)?;
-        topology.workflows.push(extension);
     }
     let mut errors = Vec::new();
 

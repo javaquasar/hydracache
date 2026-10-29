@@ -148,7 +148,7 @@ fn preparation_header_cannot_be_promoted_to_production_or_mixed_source_evidence(
         sha256: "a".repeat(64),
     };
     let receipt = PreparationReceipt {
-        schema: "hydracache.imap.pre074-preparation.v4".into(),
+        schema: "hydracache.imap.pre074-preparation.v5".into(),
         release: "0.75".into(),
         scope: "pre074_preparation".into(),
         source_sha: "a".repeat(40),
@@ -175,6 +175,7 @@ fn preparation_header_cannot_be_promoted_to_production_or_mixed_source_evidence(
         native_extended: a.clone(),
         native_histories: a.clone(),
         native_recovery: a.clone(),
+        soak_reports: vec![a.clone(); 3],
         rust: a.clone(),
         workspace_metadata: a,
         blocked_until_074: contract().blocked_until_074,

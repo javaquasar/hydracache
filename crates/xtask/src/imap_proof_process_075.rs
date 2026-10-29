@@ -77,18 +77,21 @@ impl ProcessBounds {
 pub(crate) enum ExecutionPolicy {
     Proof,
     Build,
+    Soak,
 }
 impl ExecutionPolicy {
     fn maximum_duration(self) -> Duration {
         Duration::from_secs(match self {
             Self::Proof => 60,
             Self::Build => 2 * 60 * 60,
+            Self::Soak => 26 * 60 * 60,
         })
     }
     fn maximum_output(self) -> usize {
         match self {
             Self::Proof => 16 * 1024 * 1024,
             Self::Build => 64 * 1024 * 1024,
+            Self::Soak => 8 * 1024 * 1024,
         }
     }
 }

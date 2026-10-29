@@ -11,7 +11,7 @@ Release 0.75 remains planned; W0 and production IMap remain blocked by 0.74.
 | P3 native observation | Implemented | Native Maven suite, strict independent Rust verifier, preparation v2 artifact/replay; actual managed packaged probe passed |
 | P4 native histories | Implemented | Two real official clients; seeds 117/118 with actual overlap; Java and independent Rust DFS, strict raw/normalized binding, replay and bounded shrinking; preparation v3 artifact |
 | P5 listener recovery | Implemented | Controlled writer gate and exact callback tuples; 29 native suite tests; actual packaged recovery probe independently checked, preparation v4 artifact/replay |
-| P6 continuous soak | Pending | No 6/24-hour execution claimed |
+| P6 continuous soak | Validation in progress | Reference process defects and native/daemon integrated smoke passed; preparation v5 and manual local-archive workflow wired; no 6/24-hour execution claimed |
 | P7 development SBOM | Pending | Inventory and dependency-policy results must remain separate |
 | P8 scoped coverage | Pending | No Rust coverage percentage claimed |
 

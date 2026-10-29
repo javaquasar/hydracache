@@ -135,6 +135,7 @@ fn imap_inventory_fixture(label: &str) -> TempDir {
     for relative in [
         "docs/testing/memory/0.71/ci-topology.json",
         "docs/testing/imap/0.75/ci-topology-extension.json",
+        "docs/testing/imap/0.75/soak-ci-topology-extension.json",
     ] {
         let destination = temp.path().join(relative);
         fs::create_dir_all(destination.parent().unwrap()).unwrap();

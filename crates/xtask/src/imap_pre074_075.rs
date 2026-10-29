@@ -354,6 +354,20 @@ pub fn prepare_tools(
         ],
     )?;
     rust_consumer(root, &mut builds)?;
+    command(
+        &mut builds,
+        root,
+        BuildStage::SoakWorkerBuild,
+        "cargo",
+        &[
+            "build",
+            "-p",
+            "xtask",
+            "--bin",
+            "imap-soak-worker-075",
+            "--locked",
+        ],
+    )?;
     let maven = if cfg!(windows) { "mvn.cmd" } else { "mvn" };
     command(
         &mut builds,
@@ -595,6 +609,7 @@ pub struct PreparationReceipt {
     pub native_extended: Artifact,
     pub native_histories: Artifact,
     pub native_recovery: Artifact,
+    pub soak_reports: Vec<Artifact>,
     pub rust: Artifact,
     pub workspace_metadata: Artifact,
     pub blocked_until_074: Vec<String>,
@@ -712,8 +727,9 @@ pub fn produce(root: &Path, output: &Path) -> Result<PathBuf, Box<dyn Error>> {
     let observed_rust = rust_probe(root)?;
     validate_rust_probe(&observed_rust)?;
     let workspace_metadata = metadata(root)?;
+    let soak_reports = crate::imap_soak_075::preparation_smoke(root, &source, &directory)?;
     let receipt = PreparationReceipt {
-        schema: "hydracache.imap.pre074-preparation.v4".into(),
+        schema: "hydracache.imap.pre074-preparation.v5".into(),
         release: "0.75".into(),
         scope: "pre074_preparation".into(),
         source_sha: source.clone(),
@@ -738,6 +754,7 @@ pub fn produce(root: &Path, output: &Path) -> Result<PathBuf, Box<dyn Error>> {
         native_extended: retain(root, &directory, "native-extended.json", &native_extended)?,
         native_histories: retain(root, &directory, "native-histories.json", &native_histories)?,
         native_recovery: retain(root, &directory, "native-recovery.json", &native_recovery)?,
+        soak_reports,
         rust: retain(root, &directory, "rust.json", &observed_rust)?,
         workspace_metadata: retain(
             root,
@@ -774,7 +791,7 @@ pub fn validate_receipt_header(
     receipt: &PreparationReceipt,
     source: &str,
 ) -> Result<(), Box<dyn Error>> {
-    if receipt.schema != "hydracache.imap.pre074-preparation.v4"
+    if receipt.schema != "hydracache.imap.pre074-preparation.v5"
         || receipt.release != "0.75"
         || receipt.scope != "pre074_preparation"
         || receipt.source_sha != source
@@ -782,6 +799,7 @@ pub fn validate_receipt_header(
         || receipt.production_enabled
         || receipt.blocked_until_074 != BLOCKERS
         || receipt.inputs.len() != 11
+        || receipt.soak_reports.len() != 3
         || !receipt.runtime.rust_fingerprint.starts_with("rustc ")
         || receipt.runtime.rust_fingerprint.len() > 4096
         || receipt.runtime.java_fingerprint.is_empty()
@@ -847,6 +865,29 @@ pub fn verify(root: &Path, path: &Path) -> Result<PreparationReceipt, Box<dyn Er
             return Err("preparation artifacts are missing, aliased or foreign".into());
         }
     }
+    for (reference, cohort) in receipt
+        .soak_reports
+        .iter()
+        .zip(["reference", "native", "daemon"])
+    {
+        if reference.path
+            != directory
+                .join(format!("soak-{cohort}/report.json"))
+                .to_string_lossy()
+                .replace('\\', "/")
+        {
+            return Err("preparation soak report path differs".into());
+        }
+        read_artifact(root, reference)?;
+        let report = crate::imap_soak_075::check_saved(root, Path::new(&reference.path))?;
+        if report.terminal != crate::imap_soak_075::Terminal::Complete
+            || report.profile.bounds.active_ms != 200
+        {
+            return Err("preparation soak incomplete/foreign profile".into());
+        }
+    }
+    let fresh_soak = tempfile::tempdir_in(root.join("target/imap-075"))?;
+    crate::imap_soak_075::preparation_smoke(root, &source, fresh_soak.path())?;
     let observed_daemon: DaemonProbe =
         serde_json::from_slice(&read_artifact(root, &receipt.daemon)?)?;
     let observed_storage: crate::imap_storage_probe_075::StorageProbe =

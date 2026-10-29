@@ -60,6 +60,9 @@ public final class NativeListenerRecovery075 implements AutoCloseable {
   public int expectedCallbacks() { synchronized (monitor) { return expected.size(); } }
   public int observedCallbacks() { synchronized (monitor) { return observedCallbacks; } }
   public int removedSubscriptions() { synchronized (monitor) { return removedSubscriptions; } }
+  public int queuedEvents() { synchronized (monitor) { return queue.size(); } }
+  public int ownedKeys() { writerGate.lock(); try { return owned.size(); } finally { writerGate.unlock(); } }
+  public int ownedSubscriptions() { writerGate.lock(); try { return listener == null ? 0 : 1; } finally { writerGate.unlock(); } }
   public boolean waitingForCallbacks() { synchronized (monitor) { return waitingForCallbacks; } }
   private void open() { if (state == State.CLOSED || closeRequested.get()) throw new IllegalStateException("native listener closed"); }
   private void fail(Reason cause) { synchronized (monitor) { if (state != State.CLOSED) { state = State.GAP; reason = cause; monitor.notifyAll(); } } }

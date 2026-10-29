@@ -82,6 +82,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             xtask::imap_native_recovery_075::run(args.collect())?
         }
         Some("imap-pre074-evidence") => xtask::imap_pre074_075::run(args.collect(), "produce")?,
+        Some("imap-soak") => xtask::imap_soak_075::run(args.collect())?,
+        Some("imap-soak-cancel") => xtask::imap_soak_075::run_cancel(args.collect())?,
         Some("imap-pre074-evidence-check") => {
             xtask::imap_pre074_075::run(args.collect(), "verify")?
         }

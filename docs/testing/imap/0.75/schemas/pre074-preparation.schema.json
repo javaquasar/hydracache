@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:hydracache:imap:pre074-preparation:v4",
+  "$id": "urn:hydracache:imap:pre074-preparation:v5",
   "title": "HydraCache 0.75 pre-0.74 preparation receipt",
   "type": "object",
   "additionalProperties": false,
@@ -19,6 +19,7 @@
     "native_extended",
     "native_histories",
     "native_recovery",
+    "soak_reports",
     "rust",
     "workspace_metadata",
     "blocked_until_074",
@@ -26,7 +27,7 @@
   ],
   "properties": {
     "schema": {
-      "const": "hydracache.imap.pre074-preparation.v4"
+      "const": "hydracache.imap.pre074-preparation.v5"
     },
     "release": {
       "const": "0.75"
@@ -95,6 +96,7 @@
     "native_recovery": {
       "$ref": "#/$defs/artifact"
     },
+    "soak_reports": {"type":"array","minItems":3,"maxItems":3,"items":{"$ref":"#/$defs/artifact"}},
     "rust": {
       "$ref": "#/$defs/artifact"
     },

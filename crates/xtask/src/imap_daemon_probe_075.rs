@@ -443,3 +443,124 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     );
     Ok(())
 }
+
+pub(crate) struct SoakDaemon {
+    pub command: Command,
+    pub addrs: [SocketAddr; 3],
+    pub storage: tempfile::TempDir,
+}
+pub(crate) fn soak_command(binary: &Path, scratch: &Path) -> Result<SoakDaemon, Box<dyn Error>> {
+    let storage = tempfile::tempdir_in(scratch)?;
+    let sockets = [
+        TcpListener::bind("127.0.0.1:0")?,
+        TcpListener::bind("127.0.0.1:0")?,
+        TcpListener::bind("127.0.0.1:0")?,
+    ];
+    let addrs = [
+        sockets[0].local_addr()?,
+        sockets[1].local_addr()?,
+        sockets[2].local_addr()?,
+    ];
+    let mut command = Command::new(binary);
+    command.env_clear();
+    for name in ["SystemRoot", "TEMP", "TMP", "PATH"] {
+        if let Some(value) = std::env::var_os(name) {
+            command.env(name, value);
+        }
+    }
+    command
+        .env("HYDRACACHE_ROLE", "local")
+        .env("HYDRACACHE_CLIENT_API_ENABLED", "true")
+        .env("HYDRACACHE_LISTEN_ADDR", addrs[0].to_string())
+        .env("HYDRACACHE_ADMIN_API_ENABLED", "true")
+        .env("HYDRACACHE_ADMIN_ADDR", addrs[1].to_string())
+        .env("HYDRACACHE_REDIS_API_ENABLED", "true")
+        .env("HYDRACACHE_REDIS_ADDR", addrs[2].to_string())
+        .env("HYDRACACHE_STORAGE_DIR", storage.path().join("data"));
+    drop(sockets);
+    Ok(SoakDaemon {
+        command,
+        addrs,
+        storage,
+    })
+}
+pub(crate) fn soak_ready(addrs: &[SocketAddr; 3]) -> Result<(), Box<dyn Error>> {
+    step(0, addrs).map(|_| ())
+}
+pub(crate) fn soak_drain(addrs: &[SocketAddr; 3]) -> Result<(), Box<dyn Error>> {
+    step(10, addrs).map(|_| ())
+}
+pub fn soak_round(addrs: &[SocketAddr; 3], seed: u64, position: u64) -> Result<(), Box<dyn Error>> {
+    let ns = Namespace::new("redis")?;
+    let first = (seed ^ position).to_be_bytes();
+    let second = (seed ^ position ^ 0x8000_0000_0000_0000).to_be_bytes();
+    let request = |id: &str, body: ClientRequest| -> Result<_, Box<dyn Error>> {
+        let raw = roundtrip(
+            addrs[0],
+            &http_request(
+                "POST",
+                "/client/v1/data",
+                &envelope(id, body)?,
+                Some("redis"),
+            ),
+        )?;
+        let (status, body) = http_response(&raw)?;
+        require(status == 200, "soak HTTP request refused")?;
+        decode(body)
+    };
+    require(
+        matches!(
+            request(
+                "soak-put",
+                ClientRequest::Put {
+                    ns: ns.clone(),
+                    key: key(b"a"),
+                    value: first.to_vec(),
+                    ttl_ms: None,
+                    dimensions: vec![]
+                }
+            )?,
+            Ok(ClientResponse::Stored)
+        ),
+        "soak HC1 put failed",
+    )?;
+    let response = roundtrip(
+        addrs[2],
+        b"*2\r\n$3\r\nGET\r\n$1\r\na\r\n*1\r\n$4\r\nQUIT\r\n",
+    )?;
+    let mut expected = b"$8\r\n".to_vec();
+    expected.extend_from_slice(&first);
+    expected.extend_from_slice(b"\r\n+OK\r\n");
+    require(response == expected, "soak RESP did not observe HC1 value")?;
+    let mut set = b"*3\r\n$3\r\nSET\r\n$1\r\na\r\n$8\r\n".to_vec();
+    set.extend_from_slice(&second);
+    set.extend_from_slice(b"\r\n*1\r\n$4\r\nQUIT\r\n");
+    require(
+        roundtrip(addrs[2], &set)? == b"+OK\r\n+OK\r\n",
+        "soak RESP set failed",
+    )?;
+    require(
+        matches!(request("soak-get",ClientRequest::Get{ns:ns.clone(),key:key(b"a")})?,Ok(ClientResponse::Value{value:Some(value)}) if value==second),
+        "soak HC1 did not observe RESP value",
+    )?;
+    require(
+        matches!(
+            request(
+                "soak-remove",
+                ClientRequest::Invalidate {
+                    ns: ns.clone(),
+                    key: key(b"a")
+                }
+            )?,
+            Ok(ClientResponse::Invalidated)
+        ),
+        "soak invalidation failed",
+    )?;
+    require(
+        matches!(
+            request("soak-absent", ClientRequest::Get { ns, key: key(b"a") })?,
+            Ok(ClientResponse::Value { value: None })
+        ),
+        "soak quiescent key remains",
+    )
+}

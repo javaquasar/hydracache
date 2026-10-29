@@ -50,6 +50,8 @@ pub mod imap_pre074_075;
 pub mod imap_proof_process_075;
 pub mod imap_qualification_075;
 pub mod imap_semantic_audit075;
+pub mod imap_soak_075;
+pub mod imap_soak_worker_075;
 pub mod imap_storage_probe_075;
 pub mod imap_value_plane_model;
 pub mod long_run_campaign;

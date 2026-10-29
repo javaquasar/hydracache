@@ -17,6 +17,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 pub enum BuildStage {
     ServerTests,
     HelperContractTests,
+    SoakWorkerBuild,
     RustConsumerTests,
     RustConsumerBuild,
     JavaContract,
