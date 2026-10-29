@@ -68,7 +68,7 @@ def user_tree(root):
         receipt=[]
         for name,fd,original in held:
             target=parent/name;target.mkdir(mode=original.st_mode&0o777);os.chown(target,original.st_uid,original.st_gid)
-            subprocess.run(['/usr/bin/mount','--bind','/proc/self/fd/'+str(fd),str(target)],pass_fds=(fd,),check=True,timeout=10)
+            subprocess.run(['/usr/bin/mount','--internal-only','--no-canonicalize','--bind','/proc/self/fd/'+str(fd),str(target)],pass_fds=(fd,),check=True,timeout=10)
             now=target.stat();need((now.st_dev,now.st_ino)==(original.st_dev,original.st_ino),'same held user filesystem root after relocation')
             receipt.append(dict(user=name,root_identity=[now.st_dev,now.st_ino]))
         return receipt

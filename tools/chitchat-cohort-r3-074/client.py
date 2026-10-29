@@ -9,7 +9,7 @@ import subprocess
 import sys
 import tarfile
 
-ROOT=Path(__file__).resolve().parents[2];HERE=Path(__file__).resolve().parent;OUT=ROOT/'target/chitchat-cohort-r3-20261030'
+ROOT=Path(__file__).resolve().parents[2];HERE=Path(__file__).resolve().parent;OUT=ROOT/'target/chitchat-cohort-r3-20261030-r1'
 sys.path.insert(0,str(ROOT/'tools/chitchat-host-cost-074'));import dispatch as d;import remote
 d.OUT=OUT
 NAMES=('coordinator.py','worker.py','plan.py','stage.py','namespace.py','recovery.py')
