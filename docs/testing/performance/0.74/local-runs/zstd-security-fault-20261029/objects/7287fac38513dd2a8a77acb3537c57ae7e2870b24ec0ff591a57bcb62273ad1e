@@ -1,0 +1,157 @@
+//! Extracted decoder only; no Git transport, current-file read or admission API.
+//! SHA256 reference pins are independently supplied by a control, not this stream.
+use sha2::{Digest, Sha256};
+
+pub const MAX_RECORDS: usize = 512;
+pub const MAX_STREAM: usize = 16 * 1024 * 1024;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Kind {
+    Blob,
+    Tree,
+    Commit,
+    Tag,
+}
+impl Kind {
+    fn name(self) -> &'static str {
+        match self {
+            Self::Blob => "blob",
+            Self::Tree => "tree",
+            Self::Commit => "commit",
+            Self::Tag => "tag",
+        }
+    }
+}
+
+/// A separate reference observation. Constructing this type is not authority.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Expected {
+    Object {
+        oid: String,
+        kind: Kind,
+        bytes: usize,
+        sha256: [u8; 32],
+    },
+    Missing {
+        spec: String,
+    },
+    /// Explicit legacy-query syntax, not expansion to immutable identity.
+    ShortMissing {
+        spec: String,
+    },
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum Record<'a> {
+    Object { kind: Kind, bytes: &'a [u8] },
+    Missing,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum Refusal {
+    Budget,
+    Reference,
+    Header,
+    Truncated,
+    Content,
+    Extra,
+}
+
+fn oid(value: &str) -> bool {
+    value.len() == 40
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+}
+
+fn missing_spec(spec: &str, short: bool) -> bool {
+    spec.split_once(':').is_some_and(|(id, path)| {
+        (if short {
+            (4..40).contains(&id.len())
+                && id
+                    .bytes()
+                    .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        } else {
+            oid(id)
+        }) && !path.is_empty()
+            && path.len() <= 4096
+            && !path
+                .bytes()
+                .any(|b| matches!(b, b'\0' | b'\r' | b'\n' | b'\\'))
+            && path.split('/').all(|part| !matches!(part, "" | "." | ".."))
+    })
+}
+
+fn valid_reference(reference: &Expected) -> bool {
+    match reference {
+        Expected::Object { oid: id, bytes, .. } => oid(id) && *bytes <= MAX_STREAM,
+        Expected::Missing { spec } => missing_spec(spec, false),
+        Expected::ShortMissing { spec } => missing_spec(spec, true),
+    }
+}
+
+/// Consume every expected record in order or return no records at all.
+/// Does not derive a pin from the observed bytes, resolve refs or drop duplicates.
+pub fn decode<'a>(stream: &'a [u8], reference: &[Expected]) -> Result<Vec<Record<'a>>, Refusal> {
+    if stream.len() > MAX_STREAM || reference.len() > MAX_RECORDS {
+        return Err(Refusal::Budget);
+    }
+    validate(reference)?;
+    let mut offset = 0;
+    let mut records = Vec::with_capacity(reference.len());
+    for expected in reference {
+        let tail = &stream[offset..];
+        let header_len = tail
+            .iter()
+            .take(4096 + 100)
+            .position(|b| *b == b'\n')
+            .ok_or(Refusal::Header)?;
+        let header = &tail[..header_len];
+        offset += header_len + 1;
+        match expected {
+            Expected::Missing { spec } | Expected::ShortMissing { spec } => {
+                if header != format!("{spec} missing").as_bytes() {
+                    return Err(Refusal::Header);
+                }
+                records.push(Record::Missing);
+            }
+            Expected::Object {
+                oid,
+                kind,
+                bytes,
+                sha256,
+            } => {
+                if header != format!("{oid} {} {bytes}", kind.name()).as_bytes() {
+                    return Err(Refusal::Header);
+                }
+                let end = offset.checked_add(*bytes).ok_or(Refusal::Budget)?;
+                if stream.get(end) != Some(&b'\n') {
+                    return Err(Refusal::Truncated);
+                }
+                let content = &stream[offset..end];
+                if Sha256::digest(content).as_slice() != sha256 {
+                    return Err(Refusal::Content);
+                }
+                records.push(Record::Object {
+                    kind: *kind,
+                    bytes: content,
+                });
+                offset = end + 1;
+            }
+        }
+    }
+    if offset != stream.len() {
+        return Err(Refusal::Extra);
+    }
+    Ok(records)
+}
+
+pub fn validate(reference: &[Expected]) -> Result<(), Refusal> {
+    if reference.len() > MAX_RECORDS {
+        return Err(Refusal::Budget);
+    }
+    if !reference.iter().all(valid_reference) {
+        return Err(Refusal::Reference);
+    }
+    Ok(())
+}

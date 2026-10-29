@@ -1,0 +1,156 @@
+//! Missing public security contracts only; no product/performance hypothesis.
+#[cfg(test)]
+mod tests {
+    use std::io::{Cursor, Read, Write};
+    use zstd_safe::{seekable::Seekable, seekable::SeekableCStream, InBuffer, OutBuffer};
+
+    const CORRUPT: [u8; 6] = [0x27, 0xb5, 0x2f, 0xfd, 0x08, 0x00];
+    const DATA: &[u8] = b"HydraCache isolated seekable security payload across multiple frames.";
+
+    fn seekable_archive() -> Vec<u8> {
+        let mut stream = SeekableCStream::create();
+        stream.init(3, true, 16).unwrap();
+        let mut input = InBuffer::around(DATA);
+        let mut bytes = Vec::with_capacity(4096);
+        let mut output = OutBuffer::around(&mut bytes);
+        while input.pos() < DATA.len() {
+            stream.compress_stream(&mut output, &mut input).unwrap();
+        }
+        while stream.end_stream(&mut output).unwrap() != 0 {}
+        assert!(output.pos() < 4096);
+        bytes
+    }
+
+    fn offsets(mut decompress: impl FnMut(&mut Vec<u8>, u64) -> zstd_safe::SafeResult) {
+        let end = DATA.len() as u64;
+        for offset in [0, 1, end - 1, end, end + 1, end + 4096, u64::MAX - 9, u64::MAX] {
+            for capacity in [0usize, 1, 7, 256] {
+                let mut bytes = Vec::with_capacity(capacity);
+                let actual_capacity = bytes.capacity();
+                let count = decompress(&mut bytes, offset).unwrap();
+                let expected = if offset >= end { &[][..] } else {
+                    &DATA[offset as usize..][..actual_capacity.min((end - offset) as usize)]
+                };
+                assert!(count <= actual_capacity);
+                assert_eq!(bytes.len(), count);
+                assert_eq!(bytes, expected);
+                println!("HC074-ZSTD-OFFSET offset={offset} capacity={actual_capacity} written={count}");
+            }
+        }
+    }
+
+    #[test]
+    fn seekable_buffer_offsets_never_extend_past_capacity() {
+        let archive = seekable_archive();
+        let mut reader = Seekable::create();
+        reader.init_buff(&archive).unwrap();
+        offsets(|bytes, offset| reader.decompress(bytes, offset));
+    }
+
+    #[test]
+    fn seekable_callback_offsets_never_extend_past_capacity() {
+        let archive = seekable_archive();
+        let mut reader = Seekable::create().init_advanced(Box::new(Cursor::new(archive))).unwrap();
+        offsets(|bytes, offset| reader.decompress(bytes, offset));
+    }
+
+    #[test]
+    fn abandoned_encoder_job_does_not_enter_the_next_frame() {
+        for length in [1usize, 128, 4096, 131072] {
+            let mut context = zstd_safe::CCtx::create();
+            zstd::stream::write::Encoder::with_context(Vec::new(), &mut context)
+                .write_all(&vec![b'a'; length]).unwrap();
+            let mut next = zstd::stream::write::Encoder::with_context(Vec::new(), &mut context);
+            next.write_all(b"second job").unwrap();
+            let frame = next.finish().unwrap();
+            assert_eq!(zstd::decode_all(&frame[..]).unwrap(), b"second job");
+        }
+    }
+
+    #[test]
+    fn abandoned_decoder_job_does_not_enter_the_next_output() {
+        for length in [128usize, 4096, 131072] {
+            let first = zstd::encode_all(&vec![b'a'; length][..], 1).unwrap();
+            let second = zstd::encode_all(&b"second job"[..], 1).unwrap();
+            let mut context = zstd_safe::DCtx::create();
+            zstd::stream::read::Decoder::with_context(&first[..], &mut context)
+                .read_exact(&mut [0; 5]).unwrap();
+            let mut result = Vec::new();
+            zstd::stream::read::Decoder::with_context(&second[..], &mut context)
+                .read_to_end(&mut result).unwrap();
+            assert_eq!(result, b"second job");
+        }
+    }
+
+    #[test]
+    fn corrupt_legacy_failure_preserves_positions_and_requires_reset() {
+        let mut context = zstd_safe::DCtx::create();
+        let mut bytes = Vec::with_capacity(1024);
+        let mut input = InBuffer::around(&CORRUPT);
+        let mut output = OutBuffer::around(&mut bytes);
+        assert!(context.decompress_stream(&mut output, &mut input).is_err());
+        assert_eq!(input.pos(), 0);
+        assert_eq!(output.pos(), 0);
+        assert!(bytes.is_empty());
+        let valid = zstd::encode_all(DATA, 1).unwrap();
+        let mut input = InBuffer::around(&valid);
+        let mut output = OutBuffer::around(&mut bytes);
+        assert!(context.decompress_stream(&mut output, &mut input).is_err());
+        assert_eq!(input.pos(), 0);
+        assert_eq!(output.pos(), 0);
+        context.reset(zstd_safe::ResetDirective::SessionOnly).unwrap();
+        context.decompress_stream(&mut output, &mut input).unwrap();
+        assert_eq!(&bytes, DATA);
+    }
+
+    #[test]
+    fn corrupt_legacy_writer_flush_and_drop_expose_no_output() {
+        for mode in 0..3 {
+            let mut sink = Vec::new();
+            let mut callback_count = 0;
+            {
+                let mut decoder = zstd::stream::write::Decoder::new(&mut sink).unwrap();
+                assert!(decoder.write_all(&CORRUPT).is_err());
+                let _ = decoder.flush();
+                assert!(decoder.get_ref().is_empty());
+                match mode {
+                    0 => drop(decoder),
+                    1 => drop(decoder.auto_flush()),
+                    _ => drop(decoder.on_flush(|_| callback_count += 1)),
+                }
+            }
+            assert!(sink.is_empty());
+            assert_eq!(callback_count, usize::from(mode == 2));
+        }
+    }
+
+    #[test]
+    fn corrupt_legacy_fragmentation_cannot_flush_stale_output() {
+        for split in 0..=CORRUPT.len() {
+            let mut sink = Vec::new();
+            {
+                let mut decoder = zstd::stream::write::Decoder::new(&mut sink).unwrap();
+                let first = decoder.write_all(&CORRUPT[..split]);
+                let failed = first.is_err() || decoder.write_all(&CORRUPT[split..]).is_err();
+                assert!(failed);
+                let _ = decoder.flush();
+                drop(decoder.auto_flush());
+            }
+            assert!(sink.is_empty());
+        }
+    }
+
+    #[test]
+    fn modern_roundtrips_preserve_exact_payloads() {
+        for length in [0usize, 1, 127, 16384, 65535] {
+            let bytes: Vec<_> = (0..length).map(|i| (i % 251) as u8).collect();
+            let encoded = zstd::encode_all(&bytes[..], 1).unwrap();
+            assert_eq!(zstd::decode_all(&encoded[..]).unwrap(), bytes);
+            let mut sink = Vec::new();
+            let mut decoder = zstd::stream::write::Decoder::new(&mut sink).unwrap();
+            decoder.write_all(&encoded).unwrap();
+            decoder.finish().unwrap();
+            assert_eq!(sink, bytes);
+        }
+    }
+}

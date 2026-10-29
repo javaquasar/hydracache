@@ -1,0 +1,9 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "complete original owned command: deny",
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\zstd-security-fault-074\\run.py\", line 92, in session\n    folder=invoke(out,'deny',policy_command(kind,tool,suffix),env,deadline)\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\zstd-security-fault-074\\run.py\", line 40, in invoke\n    c.need(worker.returncode==result['exit']==0 and result['retired'] and not result['errors'],'complete original owned command: '+label)\n    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\zstd-security-fault-074\\common.py\", line 39, in need\n    if not value:raise ValueError(reason)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: complete original owned command: deny\n",
+    "type": "ValueError"
+  },
+  "release_admitted": false
+}

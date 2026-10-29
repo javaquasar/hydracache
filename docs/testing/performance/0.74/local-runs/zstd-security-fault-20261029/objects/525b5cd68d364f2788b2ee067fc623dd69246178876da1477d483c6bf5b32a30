@@ -1,0 +1,6 @@
+    Updating crates.io index
+     Locking 4 packages to latest compatible versions
+      Adding bindgen v0.73.2
+      Adding cexpr v0.6.0
+      Adding clang-sys v1.9.1
+      Adding libloading v0.8.9

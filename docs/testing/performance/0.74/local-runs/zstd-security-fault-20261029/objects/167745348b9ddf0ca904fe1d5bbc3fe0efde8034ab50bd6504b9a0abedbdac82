@@ -1,0 +1,16 @@
+{
+  "declined_S": "51b3a9de6e09754d617e4a036837b5ef1cbcb4dbbfa01c257a32b3252239a8ab",
+  "prior_workspace": "913735b0aad4b31945f03525ee584d2781e03ee66fa6aa238dcbca61df30a433",
+  "root": {
+    "Cargo.lock": "34d7a21d9833a180460e5a094f9ee7f1effe07dfb43a65d90865798963e0070c",
+    "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc",
+    "scripts/ci/watchdog_linux_group.py": "e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691",
+    "scripts/ci/watchdog_windows_job.py": "8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1",
+    "tools/chitchat-mtu-review-074/patches/tested-fixture.lock": "89e7e80fceb5562ae4ffaf78093073770e1864ff31d7b443afcb9b9a4926d674",
+    "tools/dbus-source-package-074/package.py": "1b13c005abfbb96b1374e27fcc871ce0a14d87fe955e2097712a9cfb029fadf3",
+    "tools/windows-workspace-preflight-074/owned.py": "e7c5a3c0c4fea90f39772512c4ad96c60693fc0b482092a608dcf039e151eade"
+  },
+  "root_adoption": false,
+  "unsafe_old_calls_executed": false
+}

@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+    "fetch",
+    "--locked",
+    "--manifest-path",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\zstd-security-fault-20261029\\fixtures\\upstream\\Cargo.toml"
+  ],
+  "retry": false
+}

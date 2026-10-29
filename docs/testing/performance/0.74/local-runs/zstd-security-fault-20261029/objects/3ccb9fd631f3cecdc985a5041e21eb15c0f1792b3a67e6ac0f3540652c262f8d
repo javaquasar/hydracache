@@ -1,0 +1,168 @@
+"""Fixed security test commands, original owned bounds, exclusive first outputs."""
+from pathlib import Path
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+import traceback
+
+import common as c
+
+
+def environment(compiler):
+    version={'194':'1.94.0','188':'1.88.0'}[compiler]
+    host='x86_64-pc-windows-msvc' if os.name=='nt' else 'x86_64-unknown-linux-gnu'
+    tool=Path.home()/'.rustup/toolchains'/(version+'-'+host)/'bin'
+    suffix='.exe' if os.name=='nt' else ''
+    env=dict(os.environ) if os.name=='nt' else dict(HOME='/home/artur',USER='artur',LOGNAME='artur',LANG='C.UTF-8')
+    env.update(PATH=str(tool)+os.pathsep+(env.get('PATH','') if os.name=='nt' else '/usr/local/bin:/usr/bin:/bin'),
+        RUSTC=str(tool/('rustc'+suffix)),RUSTUP_TOOLCHAIN=version+'-'+host,
+        RUSTC_WRAPPER='',RUSTC_WORKSPACE_WRAPPER='',CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2')
+    if c.vendor_root().exists():
+        c.vendor_configuration()
+        env.update(CARGO_HOME=str(c.vendor_root()/'cargo-home'),CARGO_NET_OFFLINE='true')
+    return tool,suffix,env
+
+
+def invoke(out,label,argv,env,deadline,*,registry=True):
+    c.need(time.monotonic()<deadline,'original whole session deadline')
+    folder=out/label;folder.mkdir(exist_ok=False);before=c.source()
+    if registry:c.frozen_inputs();c.vendor_configuration();c.registry()
+    c.write(folder,'intent.json',dict(argv=argv,source=before,deadline=deadline,retry=False))
+    with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+        worker=subprocess.run([sys.executable,'-B',str(Path(__file__)),'command-worker',str(folder)],cwd=c.ROOT,
+            stdout=stdout,stderr=stderr,stdin=subprocess.DEVNULL,
+            env=dict(env,HC074_ZSTD_ARGV=json.dumps(argv),HC074_ZSTD_DEADLINE=str(deadline)),
+            timeout=max(0,deadline-time.monotonic())+10)
+    result=json.loads((folder/'execution.json').read_bytes())
+    c.need(worker.returncode==result['exit']==0 and result['retired'] and not result['errors'],'complete original owned command: '+label)
+    if registry:c.frozen_inputs();c.vendor_configuration();c.registry()
+    c.need(before==c.source(),'source/fixture drift within command')
+    print(json.dumps(dict(phase=label,exit=worker.returncode)),flush=True)
+    return folder
+
+
+def selected(kind,action,tool,suffix,compiler):
+    target=(c.BASE/'targets' if os.name=='nt' else c.NATIVE/'targets')/(kind+'-'+compiler)
+    args=['--manifest-path',str(c.BASE/'fixtures'/kind/'Cargo.toml'),'--target-dir',str(target),'--offline','--locked']
+    features=['--features','std,seekable'] if kind=='upstream' else []
+    argv=[str(tool/('cargo'+suffix)),action,*args,*features]
+    if action=='test':argv+=['--lib','--no-run','--message-format=json']
+    elif kind=='probe':argv+=['--all-targets','--all-features']
+    else:argv+=['--lib']
+    if action=='clippy':argv+=['--','-D','warnings']
+    return argv,target
+
+
+def session(label):
+    out=c.BASE/label;deadline=time.monotonic()+1100;result=dict(complete=False,release_admitted=False)
+    boot=Path('/proc/sys/kernel/random/boot_id').read_bytes() if os.name!='nt' else None
+    try:
+        if label=='prepare':c.prepare()
+        elif label in ('seed','seed-windows'):c.seed();c.vendor_configuration();c.registry()
+        elif label=='format':
+            tool,suffix,env=environment('194')
+            (out/'probe-before.rs').write_bytes((c.TOOLS/'probe.rs').read_bytes())
+            folder=out/'rustfmt';folder.mkdir()
+            argv=[str(tool/('rustfmt'+suffix)),'--edition','2021',str(c.TOOLS/'probe.rs')]
+            c.write(folder,'intent.json',dict(argv=argv,retry=False))
+            with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+                process=subprocess.run(argv,stdout=stdout,stderr=stderr,timeout=60)
+            c.need(process.returncode==0,'owned Rust formatting')
+            (out/'probe-after.rs').write_bytes((c.TOOLS/'probe.rs').read_bytes())
+        elif label.startswith('resolve-'):
+            kind=label.removeprefix('resolve-');c.need(kind in ('probe','upstream'),'fixed fixture')
+            tool,suffix,env=environment('194')
+            argv=[str(tool/('cargo'+suffix)),'metadata','--offline','--manifest-path',str(c.BASE/'fixtures'/kind/'Cargo.toml'),'--format-version','1']
+            # Resolution changes this owned fixture lock only, before build freeze.
+            folder=out/'metadata';folder.mkdir()
+            c.write(folder,'intent.json',dict(argv=argv,retry=False))
+            with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+                process=subprocess.run(argv,stdout=stdout,stderr=stderr,env=env,timeout=300)
+            c.need(process.returncode==0,'first offline metadata outcome')
+            c.archives(kind)
+        else:
+            platform,compiler=label.split('-');c.need(platform in ('windows','gnu'),'fixed platform')
+            c.need((os.name=='nt')==(platform=='windows'),'actual platform')
+            tool,suffix,env=environment(compiler);before=c.source()
+            folder=invoke(out,'version',[str(tool/('rustc'+suffix)),'-vV'],env,deadline)
+            raw=(folder/'stdout.log').read_text(encoding='utf8');version={'194':'1.94.0','188':'1.88.0'}[compiler]
+            host='x86_64-pc-windows-msvc' if os.name=='nt' else 'x86_64-unknown-linux-gnu'
+            c.need('release: '+version+'\n' in raw and 'host: '+host+'\n' in raw,'actual compiler and host')
+            cases={}
+            for kind in ('probe','upstream'):
+                argv,target=selected(kind,'test',tool,suffix,compiler)
+                folder=invoke(out,kind+'-build',argv,env,deadline)
+                images=[]
+                for line in (folder/'stdout.log').read_text(encoding='utf8').splitlines():
+                    row=json.loads(line)
+                    if row.get('reason')=='compiler-artifact' and row.get('profile',{}).get('test') and row.get('executable'):
+                        path=Path(row['executable'])
+                        expected=c.TOOLS/'probe.rs' if kind=='probe' else c.BASE/'fixtures/upstream/src/lib.rs'
+                        c.need(Path(row['target']['src_path']).resolve()==expected.resolve() and path.resolve().is_relative_to(target),'actual security image/source')
+                        images.append(dict(path=str(path),sha256=c.sha(path.read_bytes())))
+                c.need(len(images)==1,'one full native library image');image=images[0];c.write(out,kind+'-artifact.json',image)
+                path=Path(image['path']);folder=invoke(out,kind+'-list',[str(path),'--list'],env,deadline)
+                names=c.inventory((folder/'stdout.log').read_text(encoding='utf8'),kind)
+                c.need(c.sha(path.read_bytes())==image['sha256'],'fresh held image')
+                folder=invoke(out,kind+'-test',[str(path),'--test-threads=1','--nocapture','--color=never'],env,deadline)
+                counts=c.accounting((folder/'stdout.log').read_text(encoding='utf8'),names)
+                c.need(c.sha(path.read_bytes())==image['sha256'],'held image postflight')
+                cases[kind]=dict(names=names,counts=counts)
+                for action in ('check','clippy'):
+                    argv,_=selected(kind,action,tool,suffix,compiler);invoke(out,kind+'-'+action,argv,env,deadline)
+            c.need(before==c.source(),'whole native session source postflight')
+            c.write(out,'cases.json',cases)
+        c.need(time.monotonic()<deadline,'original 1100-second session deadline')
+        if boot is not None:c.need(boot==Path('/proc/sys/kernel/random/boot_id').read_bytes(),'native boot unchanged')
+        result.update(complete=True,root_adopted=False,performance_claim=False)
+    except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+    c.write(out,'session-result.json',result)
+    raise SystemExit(0 if result['complete'] else 1)
+
+
+def main(label):
+    allowed={'prepare','format','resolve-probe','resolve-upstream','seed','seed-windows','windows-194','windows-188','gnu-194','gnu-188'}
+    c.need(label in allowed,'fixed phase; no custom commands or retries')
+    out=c.BASE/label;out.mkdir(parents=True,exist_ok=False)
+    for path in c.TOOLS.iterdir():
+        if path.is_file():
+            dest=out/'producer'/path.name;dest.parent.mkdir(exist_ok=True);dest.write_bytes(path.read_bytes())
+    before=c.source();head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=c.ROOT)
+    c.write(out,'intent.json',dict(source=before,head=head.decode(),bound=1200,session=1100,retry=False,server=False,services=False,clocks=False))
+    with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+        child=subprocess.run([sys.executable,'-B',str(Path(__file__)),label,'windows-worker'],cwd=c.ROOT,
+            stdout=stdout,stderr=stderr,stdin=subprocess.DEVNULL,timeout=1210)
+    execution=json.loads((out/'execution.json').read_bytes());result=json.loads((out/'session-result.json').read_bytes())
+    after=c.source();changed={n for n in before.keys()|after.keys() if before.get(n)!=after.get(n)}
+    if label=='prepare':c.need(all(n not in before and ('/fixtures/' in n or '/input/' in n) for n in changed),'only new owned prepared inputs')
+    elif label=='format':c.need(changed<={'tools/zstd-security-fault-074/probe.rs'},'only owned Rust format')
+    elif label.startswith('resolve-'):
+        kind=label.removeprefix('resolve-')
+        c.need(all(n=='target/zstd-security-fault-20261029/fixtures/'+kind+'/Cargo.lock' or n not in before and '/input/' in n for n in changed),'only owned resolution inputs')
+    else:c.need(not changed,'source drift across owned parent')
+    c.need(head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=c.ROOT),'HEAD drift')
+    c.need(child.returncode==execution['exit']==0 and execution['retired'] and not execution['errors'] and result['complete'],'complete bounded security phase')
+    c.write(out,'result.json',dict(complete=True,source_after=after,changed=sorted(changed),head_unchanged=True,retired=True,release_admitted=False))
+    print(json.dumps(dict(phase=label,complete=True)))
+
+
+if __name__=='__main__':
+    if len(sys.argv)==3 and sys.argv[1]=='session':session(sys.argv[2])
+    if len(sys.argv)==3 and sys.argv[1]=='command-worker':
+        folder=Path(sys.argv[2]);c.source()
+        argv=json.loads(os.environ.pop('HC074_ZSTD_ARGV'));deadline=float(os.environ.pop('HC074_ZSTD_DEADLINE'))
+        group=c.owned.load_job().WindowsJob() if os.name=='nt' else c.load(c.ROOT/'scripts/ci/watchdog_linux_group.py','zstd_fault_original_group').LinuxGroup()
+        value=c.owned._owned(group,argv,str(c.ROOT),c.capacity,bound=1200,deadline=deadline)
+        c.write(folder,'execution.json',value);raise SystemExit(value['exit'])
+    if len(sys.argv)==3 and sys.argv[2]=='windows-worker':
+        label=sys.argv[1];c.source()
+        if label=='seed' or label.startswith('gnu-'):
+            argv=['wsl.exe','-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B',
+                '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/zstd-security-fault-074/run.py','session',label]
+        else:argv=[sys.executable,'-B',str(Path(__file__)),'session',label]
+        value=c.owned._owned(c.owned.load_job().WindowsJob(),argv,str(c.ROOT),c.capacity,bound=1200)
+        c.write(c.BASE/label,'execution.json',value);raise SystemExit(value['exit'])
+    c.need(len(sys.argv)==2,'one fixed security phase');main(sys.argv[1])

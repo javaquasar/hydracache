@@ -1,0 +1,7 @@
+{
+  "complete": false,
+  "kind": "offline-retention",
+  "reason": "Expected every negative exit1; actual saved cargo-deny license refusal has exit4",
+  "original_producer_sha256": "086f0c16b388b485c9dc159901c1e0277af820ad1a626df3b4e8095c38098a93",
+  "native_or_policy_rerun": false
+}

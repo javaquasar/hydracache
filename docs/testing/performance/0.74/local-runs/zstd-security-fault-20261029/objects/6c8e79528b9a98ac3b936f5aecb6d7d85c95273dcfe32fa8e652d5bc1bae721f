@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\zstd-security-fault-074\run.py", line 208, in <module>
+    c.need(len(sys.argv)==2,'one fixed security phase');main(sys.argv[1])
+                                                        ~~~~^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\zstd-security-fault-074\run.py", line 187, in main
+    c.need(child.returncode==execution['exit']==0 and execution['retired'] and not execution['errors'] and result['complete'],'complete bounded security phase')
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\zstd-security-fault-074\common.py", line 39, in need
+    if not value:raise ValueError(reason)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: complete bounded security phase

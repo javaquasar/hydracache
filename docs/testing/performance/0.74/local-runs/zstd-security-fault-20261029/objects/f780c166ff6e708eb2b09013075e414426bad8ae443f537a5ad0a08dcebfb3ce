@@ -1,0 +1,149 @@
+{
+  "schema": "hc074-bootstrap-doc-reader-v1",
+  "baseline": "181c077abdfbae5a8c4dfe67cee6f1c95519d529",
+  "rows": [
+    {
+      "path": "crates/xtask/tests/bootstrap_build_owner_074.rs",
+      "before_sha256": "10c91cceb895b3516703404e540afc11e3e1c130144c3c5c80f7c2bd3672c4dd",
+      "after_sha256": "61b2a36945b470de67c57da90c2a85169c88fd1c626fad5b076f38353e2046bc",
+      "edits": [
+        {
+          "before": "std::fs::read_to_string",
+          "after": "bootstrap_docs::read_to_string",
+          "count": 1
+        }
+      ],
+      "append": "\n#[path = \"../../../tools/bootstrap-doc-reader-074/io.rs\"]\nmod bootstrap_docs;\n"
+    },
+    {
+      "path": "crates/xtask/tests/bootstrap_child_boundary_074.rs",
+      "before_sha256": "ce6db3b318f32bac8adebf3105ac3694fe4aca663cd80d83662d18075e8ccbcd",
+      "after_sha256": "2fdb8eccff508532bb30173ea5b1cd8cb7fb12b1c52a3f9b2ba61626e6c7a739",
+      "edits": [
+        {
+          "before": "std::fs::read_to_string",
+          "after": "bootstrap_docs::read_to_string",
+          "count": 2
+        }
+      ],
+      "append": "\n#[path = \"../../../tools/bootstrap-doc-reader-074/io.rs\"]\nmod bootstrap_docs;\n"
+    },
+    {
+      "path": "crates/xtask/tests/bootstrap_child_census_074.rs",
+      "before_sha256": "e9cb88ce9eace5c1ba3b20c9fb186524ed1dc2b75260c14bbd48212bda5ff8e3",
+      "after_sha256": "74ab14264aece844010f5ccdc82c99b06c07be3b3fcafc3d7285d438cd08f204",
+      "edits": [
+        {
+          "before": "std::fs::read_to_string",
+          "after": "bootstrap_docs::read_to_string",
+          "count": 3
+        }
+      ],
+      "append": "\n#[path = \"../../../tools/bootstrap-doc-reader-074/io.rs\"]\nmod bootstrap_docs;\n"
+    },
+    {
+      "path": "crates/xtask/tests/bootstrap_child_reader_074.rs",
+      "before_sha256": "66d5ca82cf8837f86db9bb1f0577eb68e831ef0b15a9c536e163a7f706079fff",
+      "after_sha256": "88a89f705032085c50906c7e06f60411c1cdd91f029ef140ebe42157465f8523",
+      "edits": [
+        {
+          "before": "std::fs::read_to_string",
+          "after": "bootstrap_docs::read_to_string",
+          "count": 3
+        }
+      ],
+      "append": "\n#[path = \"../../../tools/bootstrap-doc-reader-074/io.rs\"]\nmod bootstrap_docs;\n"
+    },
+    {
+      "path": "crates/xtask/tests/bootstrap_current_image_074.rs",
+      "before_sha256": "95e309e7f3be196d38977ad2acd45d365e2e334cba7c943e5f17bfcdad5c9e7c",
+      "after_sha256": "435cc579ba5fdd856dae104835e5c298232fd4dbdb03a88b39ee812646b625e3",
+      "edits": [
+        {
+          "before": "std::fs::read_to_string",
+          "after": "bootstrap_docs::read_to_string",
+          "count": 1
+        }
+      ],
+      "append": "\n#[path = \"../../../tools/bootstrap-doc-reader-074/io.rs\"]\nmod bootstrap_docs;\n"
+    },
+    {
+      "path": "crates/xtask/tests/bootstrap_enrollment_074.rs",
+      "before_sha256": "bb7b7f64f5a2c51b48c0bf18eccfefcbe15df0d6e29f5aa93305abf171ffbb6e",
+      "after_sha256": "0fc78fc37c7c98d45cf878ffac6a4dcbac2601ec0f92563e9430c9b051a6fb9a",
+      "edits": [
+        {
+          "before": "std::fs::read_to_string",
+          "after": "bootstrap_docs::read_to_string",
+          "count": 1
+        }
+      ],
+      "append": "\n#[path = \"../../../tools/bootstrap-doc-reader-074/io.rs\"]\nmod bootstrap_docs;\n"
+    },
+    {
+      "path": "crates/xtask/tests/bootstrap_entry_binding_074.rs",
+      "before_sha256": "d9dfbfcd379e6870272d58f5ebacfb27187c348c58042a4f0bd9688506926c7c",
+      "after_sha256": "d1e1018fa96cc863e72610a38d8e67a91ea50e75a55e77c4ae11369ff2423140",
+      "edits": [
+        {
+          "before": "std::fs::read_to_string",
+          "after": "bootstrap_docs::read_to_string",
+          "count": 3
+        }
+      ],
+      "append": "\n#[path = \"../../../tools/bootstrap-doc-reader-074/io.rs\"]\nmod bootstrap_docs;\n"
+    },
+    {
+      "path": "crates/xtask/tests/bootstrap_image_census_074.rs",
+      "before_sha256": "423ce467d263aa322278bdfe8aa2526a955163984292644f0122eb811ea3d09f",
+      "after_sha256": "d1a654883f3ad9d906c79dbc1a13637816e5cd7c5354c536329e7603cd7b2953",
+      "edits": [
+        {
+          "before": "std::fs::read_to_string",
+          "after": "bootstrap_docs::read_to_string",
+          "count": 2
+        }
+      ],
+      "append": "\n#[path = \"../../../tools/bootstrap-doc-reader-074/io.rs\"]\nmod bootstrap_docs;\n"
+    },
+    {
+      "path": "crates/xtask/tests/bootstrap_installed_origin_074.rs",
+      "before_sha256": "0396712e97cf26f9378293607883a3ccc692626add945cd36a8a9a4dcabaec42",
+      "after_sha256": "1913c9a0dc47701b999b8077ac55fc302b4c9264d21c48f79a530c385224d21d",
+      "edits": [
+        {
+          "before": "std::fs::read_to_string",
+          "after": "bootstrap_docs::read_to_string",
+          "count": 1
+        }
+      ],
+      "append": "\n#[path = \"../../../tools/bootstrap-doc-reader-074/installed_io.rs\"]\nmod bootstrap_docs;\n"
+    },
+    {
+      "path": "crates/xtask/tests/owned_case_074.rs",
+      "before_sha256": "4bfc0062cbab2bc8ef0ba0bc2eceac2495a1281874ed1468083d1fbfb58536dc",
+      "after_sha256": "6161ee41edfbe03b2390a33fc0d7783ec3509f98a52a1f013a914f467e650120",
+      "edits": [
+        {
+          "before": "    let expected = format!(\"{imports}{}\", old.replacen(before, after, 1));",
+          "after": "    let expected = format!(\"{imports}{}\", old.replacen(before, after, 1));\n    let expected = bootstrap_phase::installed(&expected);",
+          "count": 1
+        }
+      ],
+      "append": "\n#[path = \"../../../tools/bootstrap-doc-reader-074/proof.rs\"]\nmod bootstrap_phase;\n"
+    },
+    {
+      "path": "crates/xtask/tests/authority_reader_phase_074.rs",
+      "before_sha256": "e7c5f4170478da127674f29978874434f615ace7deff524a711011876dacf593",
+      "after_sha256": "04b3d1c95ec0a5ecfedf89a880e01c9a4a9cd843bdbf5118ce8fcb2f1da248f4",
+      "edits": [
+        {
+          "before": "fn raw(path: &str) -> String {\n    std::fs::read_to_string(runtime::root().join(path))\n        .unwrap()\n        .replace(\"\\r\\n\", \"\\n\")\n}",
+          "after": "fn raw(path: &str) -> String {\n    let raw = std::fs::read_to_string(runtime::root().join(path))\n        .unwrap()\n        .replace(\"\\r\\n\", \"\\n\");\n    bootstrap_phase_reader::read(path, raw)\n}",
+          "count": 1
+        }
+      ],
+      "append": "\n#[path = \"../../../tools/bootstrap-doc-reader-074/reader.rs\"]\nmod bootstrap_phase_reader;\n"
+    }
+  ]
+}

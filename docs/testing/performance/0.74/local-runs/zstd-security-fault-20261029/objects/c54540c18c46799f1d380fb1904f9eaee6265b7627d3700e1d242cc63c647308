@@ -1,0 +1,53 @@
+# Full original-owner type closure, no fabricated context
+
+This is a temporary, unpublished two-major library-only compile fixture. It copies
+the complete current supervisor source and its literal include assets. Baseline
+remains byte-exact. A second module attaches the migrated fixed read-only zbus 6
+channel to actual KernelPacket/Origin/OriginalReceiverBinding and the actual ten-
+lifetime OriginalEnrollmentFrame. The existing zbus 5 path remains for unmigrated
+messages. Both majors in this diagnostic fixture are not a product design or a
+security/dependency acceptance. Root code, lock and qualification stay untouched.
+
+ReceiverPin's source is restored unchanged. The corrected second KernelPins copy
+changes only the receiver module filename so Clippy does not see the same file
+loaded twice; all kernel predicates remain exact.
+The new join keeps its original checks and consuming constructor; only the added
+fixture constructor name differs to coexist with the original inherent method.
+No fake frame, fake Origin, context trait stub, unchecked conversion, public
+constructor/getter or receiver claim is supplied. Unnamed constant function-item
+anchors retain private type-check reachability without invoking the functions.
+Original message-owner/held-delivery migration remains explicitly outside the
+second module. All original source/test files remain in the baseline tree.
+
+The commands are fixed exclusive preparations: prepare.py prepare, resolve.py
+resolve-baseline, prepare.py candidate, resolve.py resolve-fd, freeze.py, run.py.
+The first candidate checks but strict Clippy refuses duplicate_mod and a complex
+compile-only anchor signature. Those first sources/streams remain. The separate
+prepare.py lint-fixed and run.py lint-fixed correction uses another private root,
+copies the receiver bytes under a distinct module path and simplifies only the
+anchor signature. It reuses the four passing unchanged baseline phases.
+The resolver uses offline metadata and preserves all product inputs. Freeze accepts
+only checksum identities already present in the exact product or 95-case backport
+graphs and copies their held registry archives for native offline builds. No fetch,
+new registry release, service/bus/clock action, installation or product load occurs.
+
+All 545 original src Rust files are copied, not necessarily compiled under the
+selected cfg. Twenty of 21 literal include assets remain exact; the isolated
+workspace Cargo.lock is intentionally resolved. Its original test include is
+inventoried but integration tests are not compiled or executed. The first inert
+control incorrectly required that lock to stay exact and also exposed a command
+whitelist checked after parent receipt reads. Both refusals remain. The corrected
+assertion distinguishes the workspace lock; invalid actions now fail before any
+parent runtime-receipt read. Nine offline source/graph/command controls pass.
+
+The native gate runs only --lib check and strict Clippy, --all-features, on baseline
+and candidate under GNU Rust 1.94 and 1.88. It does not execute a test or create an
+OriginalEnrollmentFrame. The same pinned CI process owner retains original
+1200-second outer/1100-second inner absolute origins, 4 GiB floors and five-second
+capacity/retirement controls. No increase to live 300/60/10, package 780 or workspace
+4800 limits occurs. Compile-only closure never grants original-start, all-writer,
+reconnect, host or release admission.
+
+Baseline and corrected candidate check/strict Clippy pass on both compilers.
+The scope is library/type compatibility only. Root zbus 5 is still unchanged and
+does not receive a fresh security approval from this temporary two-major fixture.

@@ -1,0 +1,9 @@
+   Compiling libc v0.2.186
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.9
+   Compiling pkg-config v0.3.33
+   Compiling zstd-safe v8.2.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/zstd-security-fault-20261029/fixtures/upstream)
+   Compiling jobserver v0.1.34
+   Compiling cc v1.2.65
+   Compiling zstd-sys v2.1.2+zstd.1.5.7
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.20s

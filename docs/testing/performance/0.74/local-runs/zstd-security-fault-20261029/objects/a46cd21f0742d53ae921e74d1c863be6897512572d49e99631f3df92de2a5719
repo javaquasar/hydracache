@@ -1,0 +1,31 @@
+{
+  "complete": true,
+  "canonical_upstream_members_except_fixture_lock": 18,
+  "canonical_rust_unmodified": true,
+  "only_manifest_overlay": "empty workspace isolation table",
+  "fixture_lock_records": {
+    "probe": 15,
+    "upstream": 33
+  },
+  "registry_archive_count": 34,
+  "new_upstream_archives": {
+    "zstd-0.14.3": "db3ae9bf90af6e40197bef767eeefc46ad6397420fe873830bd85e5fbbfb3c70",
+    "zstd-safe-8.2.0": "ded520f16b29e1a9b771c722221b2b0a0398c2316d9bb3c42b458a5414d7434b"
+  },
+  "root_inputs": {
+    "Cargo.lock": "34d7a21d9833a180460e5a094f9ee7f1effe07dfb43a65d90865798963e0070c",
+    "Cargo.toml": "84b1986d8a2014be985460b3ecc4a809f3ae3e8f9822ef6c7134b3ecbe9af114",
+    "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "root_adoption": false,
+  "first_offline_refusal_preserved": true,
+  "optional_index_download_is_not_optional_code_execution": true,
+  "minimum_tested_rust": "1.88.0",
+  "new_upstream_licenses": {
+    "zstd": "BSD-3-Clause",
+    "zstd-safe": "BSD-3-Clause"
+  },
+  "old_unsafe_apis_executed": false,
+  "MTU_allocation_cpu_RSS_retained_memory_qualified": false
+}

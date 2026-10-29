@@ -1,0 +1,6 @@
+syntax = "proto3";
+package hydracache.breaking.canary;
+message DuplicateFieldNumber {
+  string first = 1;
+  string second = 1;
+}

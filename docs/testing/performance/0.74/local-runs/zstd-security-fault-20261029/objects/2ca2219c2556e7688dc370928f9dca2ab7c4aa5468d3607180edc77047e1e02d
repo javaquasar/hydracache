@@ -1,0 +1,5 @@
+error: query_cache_policy tag_segments expects nested segment groups like [[...], [...]]
+ --> tests/policy/fail_flat_tag_segments.rs:7:25
+  |
+7 |         tag_segments = ["tenant", tenant_id],
+  |                         ^^^^^^^^

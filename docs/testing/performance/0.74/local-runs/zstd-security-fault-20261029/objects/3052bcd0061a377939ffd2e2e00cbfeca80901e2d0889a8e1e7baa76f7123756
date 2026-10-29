@@ -1,0 +1,90 @@
+{
+  "MTU_or_allocation_gate_closed": false,
+  "catalogs_identical": true,
+  "complete": true,
+  "features": {
+    "probe": {
+      "zstd": [
+        "arrays",
+        "default",
+        "legacy",
+        "zdict_builder"
+      ],
+      "zstd_safe": [
+        "arrays",
+        "default",
+        "legacy",
+        "seekable",
+        "std",
+        "zdict_builder"
+      ],
+      "zstd_sys": [
+        "legacy",
+        "seekable",
+        "std",
+        "zdict_builder"
+      ]
+    },
+    "upstream": {
+      "zstd_safe": [
+        "arrays",
+        "default",
+        "legacy",
+        "seekable",
+        "std",
+        "zdict_builder"
+      ],
+      "zstd_sys": [
+        "legacy",
+        "seekable",
+        "std",
+        "zdict_builder"
+      ]
+    }
+  },
+  "matrix": {
+    "gnu-188": {
+      "check": true,
+      "filtered": 0,
+      "ignored": 0,
+      "offset_observations": 64,
+      "public_cases": 8,
+      "strict_clippy": true,
+      "upstream_cases": 20
+    },
+    "gnu-194": {
+      "check": true,
+      "filtered": 0,
+      "ignored": 0,
+      "offset_observations": 64,
+      "public_cases": 8,
+      "strict_clippy": true,
+      "upstream_cases": 20
+    },
+    "windows-188": {
+      "check": true,
+      "filtered": 0,
+      "ignored": 0,
+      "offset_observations": 64,
+      "public_cases": 8,
+      "strict_clippy": true,
+      "upstream_cases": 20
+    },
+    "windows-194": {
+      "check": true,
+      "filtered": 0,
+      "ignored": 0,
+      "offset_observations": 64,
+      "public_cases": 8,
+      "strict_clippy": true,
+      "upstream_cases": 20
+    }
+  },
+  "offsets_identical": true,
+  "old_unsafe_apis_executed": false,
+  "original_refusals_retained": true,
+  "performance_claim": false,
+  "release_admitted": false,
+  "root_adopted": false,
+  "workspace_pass": false
+}

@@ -116,3 +116,9 @@ fixture green. Compatible security source/distribution, the independent Rust 1.8
 D-Bus repair, actual consumer/GNU/package gates and original execution/recovery
 remain open. Native Zstd retained memory and clean CPU attribution are explicitly
 unclosed; no new live or measurement cohort is authorized by this report alone.
+
+The later [Zstd security fault gate](zstd-security-fault-result-20261029.md)
+adds selected public context/seekable/legacy coverage and exact upstream library
+tests on Windows/GNU 1.94/1.88. It does not rerun this cost cohort, change S,
+reverse its decline or qualify allocation/CPU/native retained memory. Root
+integration and compatible MTU/source distribution remain open.

@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "name": "lost-drain-after-compact-and-leader-restart",
+      "schedule": {
+        "seed": 2,
+        "operations": [
+          {
+            "operation_id": "op-0000000000000002-0000",
+            "command_id": "cmd-0000000000000002-0000",
+            "invoke_observation_id": "obs-0000000000000002-0000-invoke",
+            "complete_observation_id": "obs-0000000000000002-0000-complete",
+            "actions": [
+              { "kind": "compact_follower" },
+              { "kind": "observe" }
+            ]
+          },
+          {
+            "operation_id": "op-0000000000000002-0001",
+            "command_id": "cmd-0000000000000002-0001",
+            "invoke_observation_id": "obs-0000000000000002-0001-invoke",
+            "complete_observation_id": "obs-0000000000000002-0001-complete",
+            "actions": [
+              { "kind": "kill_leader" },
+              { "kind": "observe" },
+              { "kind": "restart_last_killed" },
+              { "kind": "observe" }
+            ]
+          },
+          {
+            "operation_id": "op-0000000000000002-0002",
+            "command_id": "cmd-0000000000000002-0002",
+            "invoke_observation_id": "obs-0000000000000002-0002-invoke",
+            "complete_observation_id": "obs-0000000000000002-0002-complete",
+            "actions": [
+              { "kind": "drain_follower" },
+              { "kind": "observe" }
+            ]
+          }
+        ]
+      },
+      "defect": { "kind": "lose_committed_drain" },
+      "expected_violations": ["nemesis_drain_commit_visible"]
+    },
+    {
+      "name": "lost-drain-with-minimal-composed-operation",
+      "schedule": {
+        "seed": 3,
+        "operations": [
+          {
+            "operation_id": "op-0000000000000003-0000",
+            "command_id": "cmd-0000000000000003-0000",
+            "invoke_observation_id": "obs-0000000000000003-0000-invoke",
+            "complete_observation_id": "obs-0000000000000003-0000-complete",
+            "actions": [
+              { "kind": "drain_follower" },
+              { "kind": "observe" }
+            ]
+          }
+        ]
+      },
+      "defect": { "kind": "lose_committed_drain" },
+      "expected_violations": ["nemesis_drain_commit_visible"]
+    }
+  ]
+}

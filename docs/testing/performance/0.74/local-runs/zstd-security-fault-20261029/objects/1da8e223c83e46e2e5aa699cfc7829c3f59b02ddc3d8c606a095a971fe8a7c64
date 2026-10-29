@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "C:\\Python313\\python.exe",
+    "-B",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\zstd-security-fault-074\\run.py",
+    "policy-probe"
+  ],
+  "retry": false
+}

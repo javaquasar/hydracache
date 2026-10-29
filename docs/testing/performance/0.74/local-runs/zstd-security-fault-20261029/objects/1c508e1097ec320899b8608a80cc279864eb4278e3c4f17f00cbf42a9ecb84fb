@@ -1,0 +1,3 @@
+patches/objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof
+patches/recipe.json -text
+*.patch -text whitespace=-blank-at-eol

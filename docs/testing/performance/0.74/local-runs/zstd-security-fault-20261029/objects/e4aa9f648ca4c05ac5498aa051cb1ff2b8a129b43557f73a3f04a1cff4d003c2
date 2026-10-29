@@ -1,0 +1,10 @@
+fn read(path: &str) -> String {
+    let raw = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .join(path),
+    )
+    .unwrap()
+    .replace('\r', "");
+    crate::hc074_authority_name_capacity_view!(path, &raw)
+}

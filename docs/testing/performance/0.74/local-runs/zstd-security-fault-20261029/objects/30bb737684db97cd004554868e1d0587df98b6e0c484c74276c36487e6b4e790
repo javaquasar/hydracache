@@ -1,0 +1,191 @@
+"""Fixed local security fixtures; no product graph or lifecycle authority."""
+from pathlib import Path
+import hashlib
+import importlib.util
+import json
+import os
+import shutil
+import sys
+
+ROOT=Path(__file__).resolve().parents[2]
+TOOLS=Path(__file__).resolve().parent
+BASE=ROOT/'target/zstd-security-fault-20261029'
+NATIVE=Path('/home/artur/.cache/hydracache-074-zstd-fault/20261029')
+def vendor_root():return BASE/'windows-vendor' if os.name=='nt' else NATIVE
+sys.path.insert(0,str(ROOT/'tools/windows-workspace-preflight-074'))
+import owned
+
+PINNED={
+    'tools/chitchat-mtu-review-074/patches/tested-fixture.lock':'89e7e80fceb5562ae4ffaf78093073770e1864ff31d7b443afcb9b9a4926d674',
+    'Cargo.lock':'34d7a21d9833a180460e5a094f9ee7f1effe07dfb43a65d90865798963e0070c',
+    'deny.toml':'16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930',
+    'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+    'tools/windows-workspace-preflight-074/owned.py':'e7c5a3c0c4fea90f39772512c4ad96c60693fc0b482092a608dcf039e151eade',
+    'scripts/ci/watchdog_windows_job.py':'8b392811e106eb7e692e21ee5b55cd04ea8ac421cad015edb66ce736b08c2ab1',
+    'scripts/ci/watchdog_linux_group.py':'e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691',
+    'tools/dbus-source-package-074/package.py':'1b13c005abfbb96b1374e27fcc871ce0a14d87fe955e2097712a9cfb029fadf3',
+}
+PROBE_TESTS=sorted('tests::'+name for name in (
+    'seekable_buffer_offsets_never_extend_past_capacity','seekable_callback_offsets_never_extend_past_capacity',
+    'abandoned_encoder_job_does_not_enter_the_next_frame','abandoned_decoder_job_does_not_enter_the_next_output',
+    'corrupt_legacy_failure_preserves_positions_and_requires_reset','corrupt_legacy_writer_flush_and_drop_expose_no_output',
+    'corrupt_legacy_fragmentation_cannot_flush_stale_output','modern_roundtrips_preserve_exact_payloads'))
+UPSTREAM_REQUIRED={'tests::test_seekable_cycle','tests::test_failed_legacy_stream_reports_no_output',
+                   'tests::test_context_poisoned_by_an_error','tests::test_one_shot_decompression_resets_the_stream'}
+sha=lambda body:hashlib.sha256(body).hexdigest()
+
+
+def need(value,reason):
+    if not value:raise ValueError(reason)
+
+
+def write(folder,name,value):
+    with (folder/name).open('x',encoding='utf8',newline='\n') as out:
+        json.dump(value,out,indent=2,sort_keys=True);out.write('\n')
+
+
+def load(path,name):
+    spec=importlib.util.spec_from_file_location(name,path)
+    value=importlib.util.module_from_spec(spec);spec.loader.exec_module(value);return value
+
+
+def source():
+    names=set(PINNED)|{'Cargo.toml','.cargo/config.toml'}
+    names|={p.relative_to(ROOT).as_posix() for p in TOOLS.iterdir() if p.is_file()}
+    names|={p.relative_to(ROOT).as_posix() for p in (BASE/'fixtures').rglob('*') if p.is_file()}
+    names|={p.relative_to(ROOT).as_posix() for p in (BASE/'input').rglob('*') if p.is_file()}
+    values={}
+    for name in sorted(names):
+        path=ROOT/name
+        need(path.is_file() and not path.is_symlink() and not getattr(path,'is_junction',lambda:False)(),'regular held source: '+name)
+        values[name]=sha(path.read_bytes())
+    for name,digest in PINNED.items():need(values[name]==digest,'original root/tool pin: '+name)
+    return values
+
+
+def capacity():
+    if shutil.disk_usage(ROOT).free<4*1024**3 or NATIVE.exists() and shutil.disk_usage(NATIVE).free<4*1024**3:
+        raise owned.CapacityError('original physical/native four-GiB floors')
+
+
+def inventory(raw,kind):
+    lines=raw.splitlines();names=[v[:-6] for v in lines if v.endswith(': test')]
+    need(names and len(names)==len(set(names)) and lines[-1]==str(len(names))+' tests, 0 benchmarks','complete actual native catalog')
+    if kind=='probe':need(sorted(names)==PROBE_TESTS,'exact eight public controls')
+    else:need(UPSTREAM_REQUIRED<=set(names) and all(v.startswith('tests::test_') for v in names),'original selected-feature upstream inventory')
+    return names
+
+
+def accounting(raw,names):
+    import re
+    rows=re.findall(r'test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;',raw)
+    need(len(rows)==1,'one complete test result')
+    counts=tuple(map(int,rows[0]))
+    need(counts==(len(names),0,0,0,0),'unfiltered/unignored complete native result')
+    return dict(passed=counts[0],failed=0,ignored=0,filtered=0)
+
+
+def prepare():
+    import tomllib
+    out=BASE/'preparation';out.mkdir(exist_ok=False)
+    write(out,'baseline.json',dict(root={name:sha((ROOT/name).read_bytes()) for name in PINNED},
+        prior_workspace='913735b0aad4b31945f03525ee584d2781e03ee66fa6aa238dcbca61df30a433',
+        declined_S='51b3a9de6e09754d617e4a036837b5ef1cbcb4dbbfa01c257a32b3252239a8ab',
+        unsafe_old_calls_executed=False,root_adoption=False))
+    codec=load(ROOT/'tools/dbus-source-package-074/package.py','zstd_fault_safe_codec')
+    cache=Path.home()/'.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f'
+    before=tomllib.loads((ROOT/'Cargo.lock').read_text(encoding='utf8'))
+    # Source identities for new versions come from the already frozen S lock.
+    prior=tomllib.loads((ROOT/'tools/chitchat-mtu-review-074/patches/tested-fixture.lock').read_text(encoding='utf8'))
+    checks={p['name']+'-'+p['version']:p['checksum'] for p in prior['package'] if p.get('source','').startswith('registry+')}
+    inputs=BASE/'input';inputs.mkdir();archives=inputs/'archives';archives.mkdir()
+    sources={}
+    for name in ('zstd-0.14.3','zstd-safe-8.2.0'):
+        body=(cache/(name+'.crate')).read_bytes();need(sha(body)==checks[name],'prior official archive: '+name)
+        (archives/(name+'.crate')).write_bytes(body)
+        sources[name]=codec.unpack(body,name)
+    upstream=BASE/'fixtures/upstream';upstream.mkdir(parents=True)
+    for name,body in sources['zstd-safe-8.2.0'].items():
+        path=upstream/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(body)
+    for name in ('Cargo.toml','Cargo.lock'):
+        path=upstream/name
+        if path.exists():(out/('packaged-safe-'+name)).write_bytes(path.read_bytes())
+    manifest=upstream/'Cargo.toml';manifest.write_bytes(manifest.read_bytes()+b'\n[workspace]\n')
+    probe=BASE/'fixtures/probe';probe.mkdir(parents=True)
+    (probe/'Cargo.toml').write_text('[package]\nname="hc074-zstd-security-fault-probe"\nversion="0.0.0"\nedition="2021"\nrust-version="1.88"\npublish=false\n[lib]\npath="../../../../tools/zstd-security-fault-074/probe.rs"\n[dependencies]\nzstd="=0.14.3"\nzstd-safe={version="=8.2.0",features=["std","seekable"]}\n[workspace]\n',encoding='utf8')
+    for folder in (probe,upstream):(folder/'Cargo.lock').write_bytes((ROOT/'Cargo.lock').read_bytes())
+    write(out,'official-sources.json',{name:{member:sha(body) for member,body in members.items()} for name,members in sources.items()})
+    need(len(before['package'])==683,'unchanged root package set')
+
+
+def archives(kind):
+    import tomllib
+    lock=tomllib.loads((BASE/'fixtures'/kind/'Cargo.lock').read_text(encoding='utf8'))
+    cache=Path.home()/'.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f'
+    ledger={}
+    for row in lock['package']:
+        if not row.get('source','').startswith('registry+'):continue
+        name=row['name']+'-'+row['version'];body=(cache/(name+'.crate')).read_bytes()
+        need(sha(body)==row['checksum'],'whole resolved official archive: '+name)
+        path=BASE/'input/archives'/(name+'.crate')
+        if path.exists():need(path.read_bytes()==body,'unchanged existing archive')
+        else:path.write_bytes(body)
+        ledger[name]=row['checksum']
+    write(BASE/'input','registry-'+kind+'.json',ledger)
+
+
+def registry():
+    codec=load(ROOT/'tools/dbus-source-package-074/package.py','zstd_fault_registry_codec')
+    for path in (BASE/'input').glob('registry-*.json'):
+        for name,digest in json.loads(path.read_bytes()).items():
+            body=(BASE/'input/archives'/(name+'.crate')).read_bytes()
+            need(sha(body)==digest,'whole held registry archive')
+            directory=vendor_root()/'vendor'/name
+            for relative,raw in codec.unpack(body,name).items():
+                member=directory/relative
+                need(not member.is_symlink() and member.read_bytes()==raw,'fresh actual registry source: '+name+'/'+relative)
+
+
+def seed():
+    root=vendor_root()
+    if os.name!='nt':
+        need(os.getuid()==os.getgid()==1000,'fixed nonroot native operator')
+        root.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
+        need(root.parent.resolve()==root.parent and root.parent.stat().st_uid==1000,'private native parent')
+    root.mkdir(mode=0o700,exist_ok=False)
+    codec=load(ROOT/'tools/dbus-source-package-074/package.py','zstd_fault_native_codec')
+    ledger={}
+    for path in (BASE/'input').glob('registry-*.json'):
+        for name,digest in json.loads(path.read_bytes()).items():
+            need(name not in ledger or ledger[name]==digest,'identical union source identity');ledger[name]=digest
+    need(ledger,'nonempty native registry')
+    for name,digest in ledger.items():
+        capacity();body=(BASE/'input/archives'/(name+'.crate')).read_bytes();need(sha(body)==digest,'native official archive')
+        members=codec.unpack(body,name);folder=root/'vendor'/name;folder.mkdir(parents=True)
+        for relative,raw in members.items():
+            path=folder/relative;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(raw)
+        write(folder,'.cargo-checksum.json',dict(package=digest,files={n:sha(raw) for n,raw in members.items()}))
+    (root/'cargo-home').mkdir(mode=0o700)
+    (root/'cargo-home/config.toml').write_text(configuration(),encoding='utf8')
+
+
+def configuration():
+    return '[source.crates-io]\nreplace-with="reviewed-zstd"\n[source.reviewed-zstd]\ndirectory="'+vendor_root().joinpath('vendor').as_posix()+'"\n'
+
+
+def vendor_configuration():
+    need((vendor_root()/'cargo-home/config.toml').read_text(encoding='utf8')==configuration(),'exact private offline registry configuration')
+
+
+def frozen_inputs():
+    prepared=json.loads((BASE/'prepare/result.json').read_bytes())['source_after']
+    formatted=json.loads((BASE/'format/result.json').read_bytes())['source_after']
+    expected={n:d for n,d in prepared.items() if '/fixtures/' in n and not n.endswith('/Cargo.lock')}
+    for kind in ('probe','upstream'):
+        resolved=json.loads((BASE/('supply-upstream' if kind=='upstream' else 'resolve-probe')/'result.json').read_bytes())
+        need(resolved['complete'],'complete first resolution')
+        expected.update({n:d for n,d in resolved['source_after'].items() if '/input/' in n or n.endswith('/fixtures/'+kind+'/Cargo.lock')})
+    expected['tools/zstd-security-fault-074/probe.rs']=formatted['tools/zstd-security-fault-074/probe.rs']
+    current=source()
+    need({n for n in current if '/fixtures/' in n}=={n for n in expected if '/fixtures/' in n},'complete frozen fixture set')
+    for name,digest in expected.items():need(current[name]==digest,'frozen security input: '+name)

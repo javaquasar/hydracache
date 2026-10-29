@@ -1,0 +1,31 @@
+"""Open raw streams before importing any worker or performing its preflight."""
+from pathlib import Path
+import json
+import subprocess
+import sys
+
+ROOT=Path(__file__).resolve().parents[2]
+BASE=ROOT/'target/zstd-security-fault-20261029'
+ALLOWED={'prepare','prepare-license','format','resolve-probe','resolve-upstream','supply-upstream','seed','seed-windows','controls','analysis-controls','final-controls','policy-probe','policy-probe-licensed','policy-upstream',
+         'windows-194','windows-188','gnu-194','gnu-188'}
+
+
+def main():
+    if len(sys.argv)!=2 or sys.argv[1] not in ALLOWED:raise ValueError('one fixed phase')
+    label=sys.argv[1];folder=BASE/('launch-'+label);folder.mkdir(parents=True,exist_ok=False)
+    argv=[sys.executable,'-B',str(Path(__file__).with_name('run.py')),label]
+    result=dict(complete=False,retry=False,release_admitted=False)
+    with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+        (folder/'producer.py').write_bytes(Path(__file__).read_bytes())
+        (folder/'intent.json').write_text(json.dumps(dict(argv=argv,retry=False),indent=2)+'\n',encoding='utf8')
+        try:
+            process=subprocess.run(argv,cwd=ROOT,stdout=stdout,stderr=stderr,stdin=subprocess.DEVNULL,timeout=1215)
+            result.update(exit=process.returncode,complete=process.returncode==0)
+        except BaseException as error:
+            result['first_refusal']=dict(type=type(error).__name__,reason=str(error))
+        (folder/'result.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf8')
+    print(json.dumps(dict(phase=label,**result)))
+    raise SystemExit(0 if result['complete'] else 1)
+
+
+if __name__=='__main__':main()

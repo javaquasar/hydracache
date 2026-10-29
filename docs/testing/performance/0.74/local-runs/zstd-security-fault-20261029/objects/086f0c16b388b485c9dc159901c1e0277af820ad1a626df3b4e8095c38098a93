@@ -1,0 +1,72 @@
+"""Retain selected security controls; never promote the unchanged product graph."""
+from pathlib import Path
+import hashlib
+import json
+
+ROOT=Path(__file__).resolve().parents[2]
+BASE=Path(__file__).resolve().parent
+OUT=ROOT/'docs/testing/performance/0.74/local-runs/zstd-security-fault-20261029'
+sha=lambda body:hashlib.sha256(body).hexdigest()
+def load(name):return json.loads((BASE/name).read_bytes())
+def main():
+    analysis=load('analysis/result.json');assert analysis['complete'] and analysis['catalogs_identical'] and analysis['offsets_identical']
+    for peer in ('windows-194','windows-188','gnu-194','gnu-188'):
+        assert analysis['matrix'][peer]==dict(public_cases=8,upstream_cases=20,ignored=0,filtered=0,offset_observations=64,check=True,strict_clippy=True)
+        assert load(peer+'/result.json')['complete'] and not load(peer+'/result.json')['changed']
+    for phase in ('policy-upstream','policy-probe-licensed','final-controls','doc-zstd'):
+        assert load(phase+'/result.json').get('complete',load(phase+'/result.json').get('exit')==0)
+    assert 'Ran 14 tests' in (BASE/'final-controls/unittest/stderr.log').read_text(encoding='utf8')
+    assert not load('resolve-upstream/session-result.json')['complete']
+    assert not load('policy-probe/session-result.json')['complete']
+    raw={}
+    for path in BASE.rglob('*'):
+        if path.is_file():
+            name=path.relative_to(BASE).as_posix()
+            if name.split('/')[0] not in ('targets','windows-vendor'):raw['capture/'+name]=path.read_bytes()
+    for path in (ROOT/'tools/zstd-security-fault-074').iterdir():
+        if path.is_file():raw['current-producer/'+path.name]=path.read_bytes()
+    raw['validated-windows-config.toml']=(BASE/'windows-vendor/cargo-home/config.toml').read_bytes()
+    wanted=set()
+    for name,body in list(raw.items()):
+        if name.endswith('/intent.json'):
+            value=json.loads(body)
+            for path,digest in value.get('source',{}).items():
+                if isinstance(digest,str) and len(digest)==64:wanted.add((path,digest))
+        if name.endswith('/execution.json'):
+            value=json.loads(body)
+            assert value['retired'] and not value['errors']
+            if value['exit']!=0:assert value['exit']==1 and ('/policy-probe/' in name or '/resolve-upstream/' in name)
+    available={sha(body):body for body in raw.values()};missing=[]
+    for name,digest in sorted(wanted):
+        path=ROOT/name
+        if digest not in available and path.is_file():
+            body=path.read_bytes()
+            if sha(body)==digest:available[digest]=body
+        if digest in available:raw['recorded-source/'+digest+'/'+name]=available[digest]
+        else:missing.append(dict(name=name,sha256=digest))
+    assert not missing,missing
+    for name,digest in {
+        'Cargo.lock':'34d7a21d9833a180460e5a094f9ee7f1effe07dfb43a65d90865798963e0070c',
+        'deny.toml':'16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930',
+        'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',
+    }.items():assert sha((ROOT/name).read_bytes())==digest
+    OUT.mkdir(exist_ok=False);objects=OUT/'objects';objects.mkdir();members={}
+    for name,body in sorted(raw.items()):
+        digest=sha(body);path=objects/digest
+        if not path.exists():path.write_bytes(body)
+        members[name]=dict(sha256=digest,bytes=len(body))
+    index=dict(schema_version=1,files=members,analysis=analysis,source_worktree_uncommitted=True,
+        baseline_head='27d51d666979b56d4790d210a404c05384abf281',
+        primary_archive_count=34,source_bodies_missing=[],preformat_source_retained=True,
+        final_inert_controls=14,native_test_executions=112,old_unsafe_api_executed=False,
+        standalone_policies=['upstream-all-features','owned-license-only-probe-all-features'],
+        licensed_successor_is_metadata_only=True,first_offline_and_unlicensed_refusals_retained=True,
+        root_graph_policy_qualification_unchanged=True,root_adopted=False,product_gate_pass=False,
+        MTU_allocation_CPU_RSS_retained_memory_qualified=False,
+        server=False,services=False,clocks=False,publication=False,performance_claim=False,
+        release_admitted=False,binaries_and_vendor_caches_excluded=True,
+        original_limits_and_live_checks_unchanged=True)
+    body=(json.dumps(index,indent=2,sort_keys=True)+'\n').encode();(OUT/'index.json').write_bytes(body)
+    (OUT/'.gitattributes').write_text('objects/* -text -diff\nindex.json -text\n',encoding='ascii',newline='\n')
+    print(json.dumps(dict(index_sha256=sha(body),members=len(members),objects=len(list(objects.iterdir())))))
+if __name__=='__main__':main()

@@ -1,0 +1,5 @@
+    Checking zstd-sys v2.1.2+zstd.1.5.7
+    Checking zstd-safe v8.2.0
+    Checking zstd v0.14.3
+    Checking hc074-zstd-security-fault-probe v0.0.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\zstd-security-fault-20261029\fixtures\probe)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.58s

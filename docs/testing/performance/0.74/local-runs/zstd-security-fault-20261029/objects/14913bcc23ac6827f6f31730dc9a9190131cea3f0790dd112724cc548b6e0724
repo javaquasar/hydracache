@@ -1,0 +1,23 @@
+First pre-freeze development cohort is retained raw under
+target/authority-rust-history-development/first.log and first.json, and will be
+copied into the sealed packet. Exit 101 from cargo tests; six of eight new
+controls passed and two refused before the prior storage-source binary ran.
+
+The preceding rustfmt command also refused E0753: the prepended module declaration
+was before held_preparation_cost_074's inner //! documentation. Other files were
+formatted, moving their existing guard module before the new history module;
+the exact expected patch still put history first. Full-file checks refused that
+module order. Both failures concern the specified module insertion, not runtime
+checks. The repair inserts after leading inner documentation or the existing
+guard declaration. All original module order and source assertions stay intact.
+The raw first log contains the cargo output; rustfmt's E0753 output was in chat,
+not redirected into that cargo log.
+
+The next pre-freeze canaries-first.log ran old source binaries and then refused
+one of nine new controls. The added AST IO-call counter observed two of three
+Git constructions in sample_boot_inline_074: syn's default visitor does not
+parse macro argument token streams. The third is a real call inside an assert_eq
+block, not a string literal. The repair visits successfully parsed expression
+arguments, including blocks, without expanding macros or parsing literal text.
+Neither the old assertion nor its IO transformation changes. This first refusal
+remains separate from later complete-source-cohort success.

@@ -1,0 +1,5 @@
+error: unsupported hydracache option; expected entity, collection, or id
+ --> tests/derive/fail_unknown_option.rs:4:41
+  |
+4 | #[hydracache(entity = "user", id = i64, table = "users")]
+  |                                         ^^^^^

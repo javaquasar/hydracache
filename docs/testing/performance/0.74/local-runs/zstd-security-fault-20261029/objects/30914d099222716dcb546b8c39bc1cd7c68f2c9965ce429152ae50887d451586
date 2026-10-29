@@ -1,0 +1,12 @@
+[package]
+name="hc074-zstd-security-fault-probe"
+version="0.0.0"
+edition="2021"
+rust-version="1.88"
+publish=false
+[lib]
+path="../../../../tools/zstd-security-fault-074/probe.rs"
+[dependencies]
+zstd="=0.14.3"
+zstd-safe={version="=8.2.0",features=["std","seekable"]}
+[workspace]

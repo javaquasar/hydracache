@@ -1,0 +1,61 @@
+{
+  "complete": true,
+  "license_successor_only_owned_license": true,
+  "project_license": "Apache-2.0",
+  "dependency_lock_and_rust_path_identical": true,
+  "license_successor_not_new_runtime_qualification": true,
+  "first_probe_license_refusal_retained": true,
+  "policies": {
+    "policy-upstream": {
+      "before": {
+        "observations": [
+          {
+            "head": "40f5be6fb12ed93fc591bf4ab23b7d793b3f2239\n",
+            "path": "C:\\Users\\ArturBuzov\\.cargo\\advisory-dbs\\advisory-db-3157b0e258782691",
+            "status": ""
+          }
+        ],
+        "readonly": true,
+        "sealed_per_lookup": false
+      },
+      "after": {
+        "observations": [
+          {
+            "head": "40f5be6fb12ed93fc591bf4ab23b7d793b3f2239\n",
+            "path": "C:\\Users\\ArturBuzov\\.cargo\\advisory-dbs\\advisory-db-3157b0e258782691",
+            "status": ""
+          }
+        ],
+        "readonly": true,
+        "sealed_per_lookup": false
+      }
+    },
+    "policy-probe-licensed": {
+      "before": {
+        "observations": [
+          {
+            "head": "40f5be6fb12ed93fc591bf4ab23b7d793b3f2239\n",
+            "path": "C:\\Users\\ArturBuzov\\.cargo\\advisory-dbs\\advisory-db-3157b0e258782691",
+            "status": ""
+          }
+        ],
+        "readonly": true,
+        "sealed_per_lookup": false
+      },
+      "after": {
+        "observations": [
+          {
+            "head": "40f5be6fb12ed93fc591bf4ab23b7d793b3f2239\n",
+            "path": "C:\\Users\\ArturBuzov\\.cargo\\advisory-dbs\\advisory-db-3157b0e258782691",
+            "status": ""
+          }
+        ],
+        "readonly": true,
+        "sealed_per_lookup": false
+      }
+    }
+  },
+  "final_unique_inert_controls": 14,
+  "root_policy_changed": false,
+  "product_policy_pass": false
+}

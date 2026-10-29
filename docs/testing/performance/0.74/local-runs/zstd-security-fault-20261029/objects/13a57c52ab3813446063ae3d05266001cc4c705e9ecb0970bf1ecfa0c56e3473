@@ -1,0 +1,19 @@
+[workspace]
+
+[package]
+name = "management-overhead-profile-073"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+async-trait = "0.1"
+axum = "0.8"
+hydracache-observability = { path = "../../crates/hydracache-observability" }
+hydracache-server = { path = "../../crates/hydracache-server" }
+hydracache-client-transport-axum = { path = "../../crates/hydracache-client-transport-axum" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
+tower = { version = "0.5", features = ["util"] }
+windows-sys = { version = "0.61", features = ["Win32_System_ProcessStatus", "Win32_System_Threading"] }

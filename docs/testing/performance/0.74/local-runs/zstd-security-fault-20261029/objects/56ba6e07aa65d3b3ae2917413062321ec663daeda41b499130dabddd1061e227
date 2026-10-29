@@ -1,0 +1,694 @@
+#!/usr/bin/env node
+
+import { createRequire } from "node:module";
+import { spawn } from "node:child_process";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import process from "node:process";
+import { fileURLToPath } from "node:url";
+
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(scriptDir, "..");
+
+const defaultArticle = "docs/articles/001-why-rust-needs-cache-semantics.md";
+const defaultProfile = ".playwright/medium-profile";
+
+function printUsage() {
+  console.log(`Usage:
+  node scripts/medium-draft.mjs [--article <path>] [--profile <path>] [--channel <name>] [--url <url>]
+
+Creates a Medium draft from a Markdown article and stops before publishing.
+
+Options:
+  --article <path>   Markdown article path. Defaults to ${defaultArticle}
+  --profile <path>   Persistent browser profile. Defaults to ${defaultProfile}
+  --channel <name>    Browser channel: chromium, chrome, or msedge. Defaults to chromium.
+  --url <url>         Editor URL. Defaults to https://medium.com/new-story
+  --clipboard         Copy the article as rich HTML to the Windows clipboard and exit.
+  --clipboard-title   Copy only the article title as plain text to the Windows clipboard and exit.
+  --clipboard-body    Copy only the body as rich HTML, excluding title and leading cover image.
+  --dry-run          Parse the article and print the title/body preview only.
+  --help             Show this help.
+
+First-time local setup, if Playwright is not already installed:
+  npm --prefix console install
+  npx --prefix console playwright install chromium
+`);
+}
+
+function parseArgs(argv) {
+  const options = {
+    article: defaultArticle,
+    profile: defaultProfile,
+    channel: "chromium",
+    url: "https://medium.com/new-story",
+    clipboard: false,
+    clipboardTitle: false,
+    clipboardBody: false,
+    dryRun: false
+  };
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+
+    if (arg === "--help" || arg === "-h") {
+      options.help = true;
+    } else if (arg === "--clipboard") {
+      options.clipboard = true;
+    } else if (arg === "--clipboard-title") {
+      options.clipboardTitle = true;
+    } else if (arg === "--clipboard-body") {
+      options.clipboardBody = true;
+    } else if (arg === "--dry-run") {
+      options.dryRun = true;
+    } else if (arg === "--article") {
+      options.article = requiredValue(argv, index, arg);
+      index += 1;
+    } else if (arg === "--profile") {
+      options.profile = requiredValue(argv, index, arg);
+      index += 1;
+    } else if (arg === "--channel") {
+      options.channel = requiredValue(argv, index, arg);
+      index += 1;
+    } else if (arg === "--url") {
+      options.url = requiredValue(argv, index, arg);
+      index += 1;
+    } else {
+      throw new Error(`Unknown argument: ${arg}`);
+    }
+  }
+
+  if (!["chromium", "chrome", "msedge"].includes(options.channel)) {
+    throw new Error(`Unsupported browser channel: ${options.channel}`);
+  }
+  const clipboardModes = [options.clipboard, options.clipboardTitle, options.clipboardBody].filter(Boolean).length;
+  if (clipboardModes > 1) {
+    throw new Error("Use only one clipboard mode at a time.");
+  }
+
+  return options;
+}
+
+function requiredValue(argv, index, arg) {
+  const value = argv[index + 1];
+  if (!value || value.startsWith("--")) {
+    throw new Error(`${arg} requires a value`);
+  }
+  return value;
+}
+
+async function loadPlaywright() {
+  try {
+    return await import("playwright");
+  } catch {
+    // Fall through to repo-local package locations.
+  }
+
+  const packageRoots = [
+    path.join(repoRoot, "console", "package.json"),
+    path.join(repoRoot, "demo", "package.json")
+  ];
+
+  for (const packageJson of packageRoots) {
+    try {
+      const requireFromPackage = createRequire(packageJson);
+      return requireFromPackage("playwright");
+    } catch {
+      // Try the next known package root.
+    }
+  }
+
+  throw new Error(
+    "Playwright is not installed. Run: npm --prefix console install && npx --prefix console playwright install chromium"
+  );
+}
+
+async function readArticle(articlePath) {
+  const absolutePath = path.resolve(repoRoot, articlePath);
+  const markdown = await readFile(absolutePath, "utf8");
+  const { title, bodyMarkdown } = splitMarkdownArticle(markdown);
+  const baseDir = path.dirname(absolutePath);
+  const bodyMarkdownWithoutCover = removeLeadingImages(bodyMarkdown);
+
+  return {
+    absolutePath,
+    title,
+    bodyMarkdown,
+    bodyText: stripMarkdownComments(bodyMarkdown).trim(),
+    bodyHtml: await markdownToHtml(bodyMarkdown, baseDir),
+    bodyTextWithoutCover: stripMarkdownComments(bodyMarkdownWithoutCover).trim(),
+    bodyHtmlWithoutCover: await markdownToHtml(bodyMarkdownWithoutCover, baseDir)
+  };
+}
+
+function stripMarkdownComments(markdown) {
+  return markdown
+    .replace(/^\s*<!--.*-->\s*$/gm, "")
+    .replace(/\n{3,}/g, "\n\n");
+}
+
+function splitMarkdownArticle(markdown) {
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  const firstHeadingIndex = lines.findIndex((line) => /^#\s+/.test(line));
+
+  if (firstHeadingIndex === -1) {
+    const fallbackTitle = path.basename(defaultArticle, ".md");
+    return {
+      title: fallbackTitle,
+      bodyMarkdown: markdown
+    };
+  }
+
+  const rawTitle = lines[firstHeadingIndex].replace(/^#\s+/, "").trim();
+  const title = rawTitle.replace(/^\d{3}\s+-\s+/, "");
+  const bodyMarkdown = [
+    ...lines.slice(0, firstHeadingIndex),
+    ...lines.slice(firstHeadingIndex + 1)
+  ].join("\n");
+
+  return { title, bodyMarkdown };
+}
+
+function removeLeadingImages(markdown) {
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  let index = 0;
+  while (index < lines.length && lines[index].trim() === "") {
+    index += 1;
+  }
+
+  while (index < lines.length && /^!\[[^\]]*]\([^)]+\)\s*$/.test(lines[index].trim())) {
+    lines.splice(index, 1);
+    while (index < lines.length && lines[index].trim() === "") {
+      lines.splice(index, 1);
+    }
+  }
+
+  return lines.join("\n");
+}
+
+async function markdownToHtml(markdown, baseDir) {
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  const html = [];
+  let paragraph = [];
+  let list = null;
+  let inCode = false;
+  let codeLines = [];
+  let codeLang = "";
+
+  const flushParagraph = () => {
+    if (paragraph.length === 0) {
+      return;
+    }
+    html.push(`<p>${formatInline(paragraph.join(" "))}</p>`);
+    paragraph = [];
+  };
+
+  const flushList = () => {
+    if (!list) {
+      return;
+    }
+    html.push(`<${list.type}>${list.items.map((item) => `<li>${formatInline(item)}</li>`).join("")}</${list.type}>`);
+    list = null;
+  };
+
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const line = lines[lineIndex];
+    const fence = line.match(/^```([A-Za-z0-9_-]*)\s*$/);
+    if (fence && !inCode) {
+      flushParagraph();
+      flushList();
+      inCode = true;
+      codeLang = fence[1] || "";
+      codeLines = [];
+      continue;
+    }
+
+    if (fence && inCode) {
+      html.push(codeBlockToHtml(codeLines, codeLang));
+      inCode = false;
+      codeLang = "";
+      codeLines = [];
+      continue;
+    }
+
+    if (inCode) {
+      codeLines.push(line);
+      continue;
+    }
+
+    const table = parseMarkdownTable(lines, lineIndex);
+    if (table) {
+      flushParagraph();
+      flushList();
+      html.push(table.html);
+      lineIndex = table.endIndex - 1;
+      continue;
+    }
+
+    if (/^\s*$/.test(line)) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    if (/^<!--.*-->$/.test(line.trim())) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    const heading = line.match(/^(#{2,6})\s+(.+)$/);
+    if (heading) {
+      flushParagraph();
+      flushList();
+      const level = heading[1].length;
+      html.push(`<h${level}>${formatInline(heading[2].trim())}</h${level}>`);
+      continue;
+    }
+
+    const image = line.match(/^!\[([^\]]*)\]\(([^)\s]+)\)\s*$/);
+    if (image) {
+      flushParagraph();
+      flushList();
+      html.push(await imageToHtml(image[2], image[1], baseDir));
+      continue;
+    }
+
+    const unorderedItem = line.match(/^\s*-\s+(.+)$/);
+    if (unorderedItem) {
+      flushParagraph();
+      if (!list || list.type !== "ul") {
+        flushList();
+        list = { type: "ul", items: [] };
+      }
+      list.items.push(unorderedItem[1].trim());
+      continue;
+    }
+
+    const orderedItem = line.match(/^\s*\d+\.\s+(.+)$/);
+    if (orderedItem) {
+      flushParagraph();
+      if (!list || list.type !== "ol") {
+        flushList();
+        list = { type: "ol", items: [] };
+      }
+      list.items.push(orderedItem[1].trim());
+      continue;
+    }
+
+    flushList();
+    paragraph.push(line.trim());
+  }
+
+  if (inCode) {
+    html.push(codeBlockToHtml(codeLines, codeLang));
+  }
+  flushParagraph();
+  flushList();
+
+  return html.join("\n");
+}
+
+function parseMarkdownTable(lines, startIndex) {
+  if (startIndex + 2 >= lines.length) {
+    return null;
+  }
+
+  const headers = parseMarkdownTableRow(lines[startIndex]);
+  const separator = parseMarkdownTableRow(lines[startIndex + 1]);
+  if (!headers || !separator || headers.length !== separator.length || headers.length < 2) {
+    return null;
+  }
+  if (!separator.every((cell) => /^:?-{3,}:?$/.test(cell))) {
+    return null;
+  }
+
+  const rows = [];
+  let endIndex = startIndex + 2;
+  while (endIndex < lines.length) {
+    const row = parseMarkdownTableRow(lines[endIndex]);
+    if (!row || row.length !== headers.length) {
+      break;
+    }
+    rows.push(row);
+    endIndex += 1;
+  }
+
+  if (rows.length === 0) {
+    return null;
+  }
+
+  return {
+    endIndex,
+    html: markdownTableToListHtml(headers, rows)
+  };
+}
+
+function parseMarkdownTableRow(line) {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith("|") || !trimmed.endsWith("|")) {
+    return null;
+  }
+  return trimmed
+    .slice(1, -1)
+    .split("|")
+    .map((cell) => cell.trim());
+}
+
+function markdownTableToListHtml(headers, rows) {
+  const items = rows.map((row) => {
+    if (headers.length === 2) {
+      return `<li><strong>${formatInline(row[0])}</strong> — ${formatInline(row[1])}</li>`;
+    }
+
+    const subject = `<strong>${formatInline(headers[0])}: ${formatInline(row[0])}</strong>`;
+    const details = headers
+      .slice(1)
+      .map((header, index) => `<strong>${formatInline(header)}:</strong> ${formatInline(row[index + 1])}`)
+      .join("; ");
+    return `<li>${subject} — ${details}</li>`;
+  });
+  return `<ul>${items.join("")}</ul>`;
+}
+
+function codeBlockToHtml(codeLines, codeLang) {
+  const langClass = codeLang ? ` class="language-${escapeAttribute(codeLang)}"` : "";
+  const codeHtml = escapeHtml(codeLines.join("\n")).replaceAll("\n", "<br>");
+  return `<pre><code${langClass}>${codeHtml}</code></pre>`;
+}
+
+async function imageToHtml(reference, alt, baseDir) {
+  const src = await imageSource(reference, baseDir);
+  const altText = escapeAttribute(alt);
+  return `<figure><img src="${src}" alt="${altText}"></figure>`;
+}
+
+async function imageSource(reference, baseDir) {
+  if (/^https?:\/\//.test(reference)) {
+    return escapeAttribute(reference);
+  }
+
+  const imagePath = path.resolve(baseDir, reference);
+  const bytes = await readFile(imagePath);
+  const mimeType = imageMimeType(imagePath);
+  return `data:${mimeType};base64,${bytes.toString("base64")}`;
+}
+
+function imageMimeType(imagePath) {
+  const extension = path.extname(imagePath).toLowerCase();
+  if (extension === ".jpg" || extension === ".jpeg") {
+    return "image/jpeg";
+  }
+  if (extension === ".png") {
+    return "image/png";
+  }
+  if (extension === ".webp") {
+    return "image/webp";
+  }
+  if (extension === ".gif") {
+    return "image/gif";
+  }
+
+  throw new Error(`Unsupported article image type: ${imagePath}`);
+}
+
+function formatInline(value) {
+  const placeholders = [];
+  let escaped = escapeHtml(value);
+
+  escaped = escaped.replace(/`([^`]+)`/g, (_match, code) => {
+    const token = `@@CODE_${placeholders.length}@@`;
+    placeholders.push(`<code>${code}</code>`);
+    return token;
+  });
+
+  escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, (_match, label, url) => {
+    const token = `@@LINK_${placeholders.length}@@`;
+    placeholders.push(`<a href="${url}">${label}</a>`);
+    return token;
+  });
+  escaped = escaped.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, (_match, prefix, url) => {
+    const trailing = url.match(/[.,;:!?]+$/)?.[0] ?? "";
+    const cleanUrl = trailing ? url.slice(0, -trailing.length) : url;
+    return `${prefix}<a href="${cleanUrl}">${cleanUrl}</a>${trailing}`;
+  });
+  escaped = escaped.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  escaped = escaped.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+
+  for (const [index, replacement] of placeholders.entries()) {
+    escaped = escaped.replace(`@@CODE_${index}@@`, replacement);
+    escaped = escaped.replace(`@@LINK_${index}@@`, replacement);
+  }
+
+  return escaped;
+}
+
+function escapeHtml(value) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value).replaceAll("'", "&#39;");
+}
+
+async function copyArticleToClipboard(article) {
+  if (process.platform !== "win32") {
+    throw new Error("--clipboard currently supports Windows only.");
+  }
+
+  const fragment = `<h1>${escapeHtml(article.title)}</h1>\n${article.bodyHtml}`;
+  const plainText = `${article.title}\n\n${article.bodyText}`;
+  await copyRichHtmlToClipboard(fragment, plainText);
+}
+
+async function copyBodyToClipboard(article) {
+  if (process.platform !== "win32") {
+    throw new Error("--clipboard-body currently supports Windows only.");
+  }
+
+  await copyRichHtmlToClipboard(article.bodyHtmlWithoutCover, article.bodyTextWithoutCover);
+}
+
+async function copyTitleToClipboard(article) {
+  if (process.platform !== "win32") {
+    throw new Error("--clipboard-title currently supports Windows only.");
+  }
+
+  await copyRichHtmlToClipboard(escapeHtml(article.title), article.title);
+}
+
+async function copyRichHtmlToClipboard(fragment, plainText) {
+  const clipboardHtml = toClipboardHtml(fragment);
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), "hydracache-article-"));
+  const htmlPath = path.join(tempDir, "article.cfhtml");
+  const textPath = path.join(tempDir, "article.txt");
+
+  try {
+    await writeFile(htmlPath, clipboardHtml, "utf8");
+    await writeFile(textPath, plainText, "utf8");
+    await setWindowsClipboard(htmlPath, textPath);
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
+  }
+}
+
+function toClipboardHtml(fragment) {
+  const htmlPrefix = "<html><body><!--StartFragment-->";
+  const htmlSuffix = "<!--EndFragment--></body></html>";
+  const html = `${htmlPrefix}${fragment}${htmlSuffix}`;
+  const headerTemplate = [
+    "Version:0.9",
+    "StartHTML:0000000000",
+    "EndHTML:0000000000",
+    "StartFragment:0000000000",
+    "EndFragment:0000000000",
+    ""
+  ].join("\r\n");
+
+  const startHtml = Buffer.byteLength(headerTemplate, "utf8");
+  const startFragment = startHtml + Buffer.byteLength(htmlPrefix, "utf8");
+  const endFragment = startFragment + Buffer.byteLength(fragment, "utf8");
+  const endHtml = startHtml + Buffer.byteLength(html, "utf8");
+
+  const header = [
+    "Version:0.9",
+    `StartHTML:${padClipboardOffset(startHtml)}`,
+    `EndHTML:${padClipboardOffset(endHtml)}`,
+    `StartFragment:${padClipboardOffset(startFragment)}`,
+    `EndFragment:${padClipboardOffset(endFragment)}`,
+    ""
+  ].join("\r\n");
+
+  return `${header}${html}`;
+}
+
+function padClipboardOffset(value) {
+  return String(value).padStart(10, "0");
+}
+
+async function setWindowsClipboard(htmlPath, textPath) {
+  const command = `
+Add-Type -AssemblyName System.Windows.Forms
+$html = Get-Content -LiteralPath $env:HYDRACACHE_CLIPBOARD_HTML -Raw
+$text = Get-Content -LiteralPath $env:HYDRACACHE_CLIPBOARD_TEXT -Raw
+$data = New-Object System.Windows.Forms.DataObject
+$data.SetData([System.Windows.Forms.DataFormats]::Html, $html)
+$data.SetData([System.Windows.Forms.DataFormats]::UnicodeText, $text)
+[System.Windows.Forms.Clipboard]::SetDataObject($data, $true)
+`;
+
+  await runProcess("powershell.exe", ["-NoProfile", "-Sta", "-Command", command], {
+    ...process.env,
+    HYDRACACHE_CLIPBOARD_HTML: htmlPath,
+    HYDRACACHE_CLIPBOARD_TEXT: textPath
+  });
+}
+
+async function runProcess(command, args, env) {
+  await new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      env,
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true
+    });
+
+    let stderr = "";
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code === 0) {
+        resolve();
+        return;
+      }
+      reject(new Error(stderr.trim() || `${command} exited with code ${code}`));
+    });
+  });
+}
+
+async function waitForMediumEditor(page) {
+  console.log("Waiting for the Medium editor. Log in in the browser if Medium asks for it.");
+
+  const editor = page.locator('[contenteditable="true"]').first();
+  await editor.waitFor({ state: "visible", timeout: 10 * 60 * 1000 });
+
+  return editor;
+}
+
+async function pasteHtml(page, html, text) {
+  const dispatched = await page.evaluate(
+    ({ html: htmlValue, text: textValue }) => {
+      const target = document.activeElement;
+      if (!target) {
+        return false;
+      }
+
+      const dataTransfer = new DataTransfer();
+      dataTransfer.setData("text/html", htmlValue);
+      dataTransfer.setData("text/plain", textValue);
+
+      const event = new ClipboardEvent("paste", {
+        bubbles: true,
+        cancelable: true,
+        clipboardData: dataTransfer
+      });
+
+      target.dispatchEvent(event);
+      return true;
+    },
+    { html, text }
+  );
+
+  if (!dispatched) {
+    await page.keyboard.insertText(text);
+  }
+}
+
+async function fillMediumDraft(page, article) {
+  const firstEditor = await waitForMediumEditor(page);
+
+  await firstEditor.click();
+  await page.keyboard.insertText(article.title);
+  await page.keyboard.press("Enter");
+
+  const editors = page.locator('[contenteditable="true"]');
+  const editorCount = await editors.count();
+  if (editorCount > 1) {
+    await editors.nth(1).click();
+  }
+
+  await pasteHtml(page, article.bodyHtml, article.bodyText);
+}
+
+async function main() {
+  const options = parseArgs(process.argv.slice(2));
+  if (options.help) {
+    printUsage();
+    return;
+  }
+
+  const article = await readArticle(options.article);
+
+  if (options.dryRun) {
+    console.log(`Article: ${article.absolutePath}`);
+    console.log(`Title: ${article.title}`);
+    console.log("");
+    console.log(article.bodyText.slice(0, 1200));
+    return;
+  }
+
+  if (options.clipboard) {
+    await copyArticleToClipboard(article);
+    console.log("Article copied to the Windows clipboard as rich HTML.");
+    console.log("Open the Medium editor in your signed-in browser, click the title field, and press Ctrl+V.");
+    return;
+  }
+
+  if (options.clipboardTitle) {
+    await copyTitleToClipboard(article);
+    console.log("Article title copied to the Windows clipboard.");
+    console.log("Click the Medium title field and press Ctrl+V.");
+    return;
+  }
+
+  if (options.clipboardBody) {
+    await copyBodyToClipboard(article);
+    console.log("Article body copied to the Windows clipboard as rich HTML, excluding title and cover image.");
+    console.log("Click the Medium body field and press Ctrl+V. Upload the cover image separately.");
+    return;
+  }
+
+  const { chromium } = await loadPlaywright();
+  const profilePath = path.resolve(repoRoot, options.profile);
+  await mkdir(profilePath, { recursive: true });
+
+  const context = await chromium.launchPersistentContext(profilePath, {
+    ...(options.channel === "chromium" ? {} : { channel: options.channel }),
+    headless: false,
+    viewport: { width: 1440, height: 1000 }
+  });
+
+  const page = context.pages()[0] ?? (await context.newPage());
+  await page.goto(options.url, { waitUntil: "domcontentloaded" });
+  await fillMediumDraft(page, article);
+
+  console.log("");
+  console.log("Draft content has been inserted into Medium.");
+  console.log("Review formatting in the browser and publish manually when ready.");
+  console.log("This script intentionally does not click Publish.");
+  console.log("");
+  console.log("Press Ctrl+C in this terminal when you are done.");
+
+  await new Promise(() => {});
+}
+
+main().catch((error) => {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exitCode = 1;
+});

@@ -1,0 +1,42 @@
+# Remaining Zstd security controls
+
+Qualify missing security behavior of the already reviewed upstream zstd 0.14.3 /
+zstd-safe 8.2.0 candidate. This is not another compression/MTU algorithm or a
+performance cohort. Root lock, deny policy, Rust 1.88 and qualification identity
+remain exact. Existing M/S declines, original wide/239-case/oversize contracts
+and first failures are not replaced. No adoption, publication, service, clock,
+server, supervisor or product workload is involved.
+
+Freeze the current root and the existing primary source archives before tests.
+Review RUSTSEC-2026-0391/0398/0403 at the observed advisory DB revision. Do not run
+known unsafe seekable/legacy old APIs merely to manufacture a native baseline.
+Their source evidence and earlier context refusal remain; the candidate gets
+explicit positive fault assertions. No paired old/new exploit or leak is claimed.
+
+Two disjoint fixtures: (1) eight owned public-API controls; (2) exact upstream
+zstd-safe library tests, with std + seekable and its original default features.
+The latter is a selected-feature library gate, not all upstream integrations or
+all optional features. Probe all-target/all-feature check/strict Clippy cannot
+enable arbitrary dependency features; do not claim bindgen/cmake/Rust allocator
+coverage. Keep those optional feature branches unqualified.
+
+Public controls cover abandoned encoder/decoder jobs, both seekable readers with
+end/past-end/u64::MAX offsets and zero/small capacities, failed legacy call
+positions and reset, write/flush/normal drop/auto-flush/on-flush, all split points
+of the exact six-byte upstream corrupt v0.7 frame, and valid modern roundtrips.
+Source and exact diagnostic rows, not timing or heap samples, define the gate.
+Bind actual compiler artifacts, complete native test listings, unchanged source/
+lock/registry/HEAD and successful owned retirement. No filtering or ignored cases
+may be hidden in totals. Confirm identical selected-feature catalogs on Windows
+and GNU Rust 1.94 / 1.88 where cfg permits; report differences explicitly.
+
+Original local review envelope: 1200 seconds, physical/native floor 4 GiB,
+capacity polling/cleanup 5 seconds. GNU sessions keep 1100 seconds inside the
+Windows owner. Streams precede preflight; output roots are exclusive and first
+refusals remain. All production live checks and 300/60/10, test 5/10/45,
+package/workspace 780/4800 contracts remain unchanged.
+
+Security controls alone cannot accept S, erase MTU underestimation or establish
+allocation/CPU/RSS/retained-memory non-regression. A distributable compatible
+Chitchat package, real product/GNU/package/workspace gates and original execution/
+recovery remain separate prerequisites.

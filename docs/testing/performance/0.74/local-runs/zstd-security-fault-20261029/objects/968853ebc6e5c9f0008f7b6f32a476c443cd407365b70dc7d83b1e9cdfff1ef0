@@ -1,0 +1,13 @@
+test_complete_probe_catalog_and_all_foreign_missing_duplicate_refusals (test_controls.Controls.test_complete_probe_catalog_and_all_foreign_missing_duplicate_refusals) ... ok
+test_filtered_ignored_failed_zero_duplicate_and_missing_totals_refuse (test_controls.Controls.test_filtered_ignored_failed_zero_duplicate_and_missing_totals_refuse) ... ok
+test_fixed_profile_argv_and_no_unrequested_dependency_features (test_controls.Controls.test_fixed_profile_argv_and_no_unrequested_dependency_features) ... ok
+test_frozen_fixture_code_lock_and_probe_changes_refuse (test_controls.Controls.test_frozen_fixture_code_lock_and_probe_changes_refuse) ... ok
+test_native_build_and_compiler_overrides_refuse (test_controls.Controls.test_native_build_and_compiler_overrides_refuse) ... ok
+test_private_vendor_configuration_changes_refuse (test_controls.Controls.test_private_vendor_configuration_changes_refuse) ... ok
+test_root_and_original_owner_pins_cannot_silently_advance (test_controls.Controls.test_root_and_original_owner_pins_cannot_silently_advance) ... ok
+test_upstream_requires_original_security_cases (test_controls.Controls.test_upstream_requires_original_security_cases) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.051s
+
+OK

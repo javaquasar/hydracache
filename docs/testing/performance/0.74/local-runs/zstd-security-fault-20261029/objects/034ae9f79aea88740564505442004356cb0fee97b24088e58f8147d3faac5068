@@ -1,0 +1,12 @@
+[package]
+name = "hc074-proc-document-baseline"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.88"
+publish = false
+
+[lib]
+path = "probe.rs"
+
+# Separate synthetic test image, never linked into a workspace product or tool.
+[workspace]

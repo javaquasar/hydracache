@@ -1,0 +1,4 @@
+[source.crates-io]
+replace-with="reviewed-zstd"
+[source.reviewed-zstd]
+directory="C:/Workspace/prj/jq/cashe/hydracache-074/target/zstd-security-fault-20261029/windows-vendor/vendor"

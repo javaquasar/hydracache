@@ -1,0 +1,585 @@
+use std::collections::BTreeMap;
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::Duration;
+
+use xtask::evidence_run::{EvidenceOutcome, EvidenceReceipt};
+
+static NEXT_TEMP: AtomicU64 = AtomicU64::new(0);
+const CHILD_ENV: &str = "HYDRACACHE_EVIDENCE_CHILD";
+
+#[test]
+fn windows_nested_cargo_uses_an_unlocked_deterministic_target_dir() {
+    let root = Path::new("C:/repo");
+    let mut command = xtask::gated_tests::CommandSpec {
+        program: "cargo.exe".to_owned(),
+        args: vec!["test".to_owned()],
+        env: BTreeMap::new(),
+        cwd: ".".to_owned(),
+        platform: "any".to_owned(),
+    };
+    assert_eq!(
+        xtask::evidence_run::cargo_target_dir_override(root, &command, true),
+        Some(root.join("target/evidence-run-cargo"))
+    );
+    assert_eq!(
+        xtask::evidence_run::cargo_build_jobs_override(&command, true),
+        Some("1")
+    );
+    assert!(xtask::evidence_run::cargo_target_dir_override(root, &command, false).is_none());
+
+    command.program = "target/release/hydracache-loadgen".to_owned();
+    assert!(xtask::evidence_run::cargo_target_dir_override(root, &command, true).is_none());
+    assert!(xtask::evidence_run::cargo_build_jobs_override(&command, true).is_none());
+
+    command.program = "cargo".to_owned();
+    command
+        .env
+        .insert("CARGO_TARGET_DIR".to_owned(), "custom-target".to_owned());
+    assert!(xtask::evidence_run::cargo_target_dir_override(root, &command, true).is_none());
+
+    command.env.remove("CARGO_TARGET_DIR");
+    command
+        .env
+        .insert("CARGO_BUILD_JOBS".to_owned(), "2".to_owned());
+    assert!(xtask::evidence_run::cargo_build_jobs_override(&command, true).is_none());
+}
+
+#[test]
+fn evidence_provenance_requires_valid_shas_and_the_tested_checkout() {
+    let source = "0123456789abcdef0123456789abcdef01234567";
+    let valid = BTreeMap::from([
+        ("HYDRACACHE_EVIDENCE_BASE_SHA".to_owned(), source.to_owned()),
+        ("HYDRACACHE_EVIDENCE_HEAD_SHA".to_owned(), source.to_owned()),
+        (
+            "HYDRACACHE_EVIDENCE_TESTED_SHA".to_owned(),
+            source.to_owned(),
+        ),
+    ]);
+    assert!(xtask::evidence_run::evidence_provenance_problem(source, &valid).is_none());
+
+    let partial = BTreeMap::from([(
+        "HYDRACACHE_EVIDENCE_TESTED_SHA".to_owned(),
+        source.to_owned(),
+    )]);
+    assert!(
+        xtask::evidence_run::evidence_provenance_problem(source, &partial)
+            .unwrap()
+            .contains("missing evidence provenance")
+    );
+
+    let github_without_provenance =
+        BTreeMap::from([("GITHUB_ACTIONS".to_owned(), "true".to_owned())]);
+    assert!(
+        xtask::evidence_run::evidence_provenance_problem(source, &github_without_provenance)
+            .unwrap()
+            .contains("missing evidence provenance")
+    );
+
+    let mut wrong = valid.clone();
+    wrong.insert("HYDRACACHE_EVIDENCE_TESTED_SHA".to_owned(), "f".repeat(40));
+    assert!(
+        xtask::evidence_run::evidence_provenance_problem(source, &wrong)
+            .unwrap()
+            .contains("does not match checkout")
+    );
+
+    let mut malformed = valid;
+    malformed.insert(
+        "HYDRACACHE_EVIDENCE_HEAD_SHA".to_owned(),
+        "short".to_owned(),
+    );
+    assert!(
+        xtask::evidence_run::evidence_provenance_problem(source, &malformed)
+            .unwrap()
+            .contains("invalid evidence provenance")
+    );
+}
+
+#[test]
+#[allow(clippy::zombie_processes)] // The fixture deliberately exits before its descendant.
+fn evidence_child_helper() {
+    match std::env::var(CHILD_ENV).as_deref() {
+        Ok("pass") => println!("logical pass"),
+        Ok("assert-no-provenance") => {
+            for name in [
+                "HYDRACACHE_EVIDENCE_BASE_SHA",
+                "HYDRACACHE_EVIDENCE_HEAD_SHA",
+                "HYDRACACHE_EVIDENCE_TESTED_SHA",
+            ] {
+                assert!(std::env::var_os(name).is_none(), "leaked {name} into gate");
+            }
+            println!("logical pass without outer provenance");
+        }
+        Ok("fail") => panic!("intentional evidence failure"),
+        Ok("timeout") => std::thread::sleep(Duration::from_secs(10)),
+        Ok(mode @ ("inherited-pipe-parent" | "null-pipe-parent")) => {
+            let mut command = Command::new(std::env::current_exe().unwrap());
+            command
+                .args(["--exact", "evidence_child_helper", "--nocapture"])
+                .env(CHILD_ENV, "inherited-pipe-descendant");
+            if mode == "null-pipe-parent" {
+                command
+                    .stdout(std::process::Stdio::null())
+                    .stderr(std::process::Stdio::null());
+            }
+            let descendant = command.spawn().unwrap();
+            println!("parent leaving inherited pipes open");
+            // Intentionally model a tool that exits while its child retains stdout/stderr.
+            // Reaping happens outside this short-lived helper process.
+            drop(descendant);
+        }
+        Ok("inherited-pipe-descendant") => {
+            println!("descendant holds inherited pipes");
+            std::thread::sleep(Duration::from_secs(4));
+            fs::write("target/descendant-survived", b"must be terminated").unwrap();
+        }
+        Ok(mode @ ("tree-parent" | "tree-middle")) => {
+            let descendant = Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", "evidence_child_helper", "--nocapture"])
+                .env(
+                    CHILD_ENV,
+                    if mode == "tree-parent" {
+                        "tree-middle"
+                    } else {
+                        "inherited-pipe-descendant"
+                    },
+                )
+                .spawn()
+                .unwrap();
+            std::thread::sleep(Duration::from_secs(10));
+            drop(descendant);
+        }
+        Ok("large-output") => {
+            println!("large stdout {}", "x".repeat(128 * 1024));
+            eprintln!("large stderr {}", "y".repeat(128 * 1024));
+            println!("Unicode tail: Гидра α");
+        }
+        _ => {}
+    }
+}
+
+#[test]
+fn evidence_executor_does_not_leak_outer_provenance_into_gate_process() {
+    let root = temp_root("provenance-isolation");
+    write_registry(&root, "assert-no-provenance", 5, vec![]);
+    let registry_path = root.join(xtask::gated_tests::REGISTRY_PATH);
+    let mut registry: xtask::gated_tests::GatedTestRegistry =
+        toml::from_str(&fs::read_to_string(&registry_path).unwrap()).unwrap();
+    for name in [
+        "HYDRACACHE_EVIDENCE_BASE_SHA",
+        "HYDRACACHE_EVIDENCE_HEAD_SHA",
+        "HYDRACACHE_EVIDENCE_TESTED_SHA",
+    ] {
+        registry.gate[0]
+            .command
+            .env
+            .insert(name.to_owned(), "f".repeat(40));
+    }
+    fs::write(&registry_path, toml::to_string_pretty(&registry).unwrap()).unwrap();
+    run(&root, "git", &["add", "."]);
+    run(
+        &root,
+        "git",
+        &["commit", "-q", "-m", "add inherited provenance fixture"],
+    );
+
+    let result = execute_test_gate(
+        &root,
+        "0.64",
+        "test.assert-no-provenance",
+        Path::new("target/receipts"),
+    )
+    .unwrap();
+
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Pass);
+    assert!(result
+        .receipt
+        .stdout
+        .contains("logical pass without outer provenance"));
+    fs::remove_dir_all(root).unwrap();
+}
+
+fn temp_root(name: &str) -> PathBuf {
+    let serial = NEXT_TEMP.fetch_add(1, Ordering::Relaxed);
+    let root = std::env::temp_dir().join(format!(
+        "hydracache-evidence-{name}-{}-{serial}",
+        std::process::id()
+    ));
+    fs::create_dir_all(root.join("docs/testing")).unwrap();
+    fs::create_dir_all(root.join("target/receipts")).unwrap();
+    run(&root, "git", &["init", "-q"]);
+    run(
+        &root,
+        "git",
+        &["config", "user.email", "evidence@example.invalid"],
+    );
+    run(&root, "git", &["config", "user.name", "Evidence Test"]);
+    root
+}
+
+fn run(root: &Path, program: &str, args: &[&str]) {
+    let status = Command::new(program)
+        .args(args)
+        .current_dir(root)
+        .status()
+        .unwrap();
+    assert!(status.success(), "{program} {args:?} failed");
+}
+
+fn execute_test_gate(
+    root: &Path,
+    release: &str,
+    gate_id: &str,
+    receipts_dir: &Path,
+) -> Result<xtask::evidence_run::ExecutionResult, Box<dyn std::error::Error>> {
+    xtask::evidence_run::execute_gate_with_identity(
+        root,
+        release,
+        gate_id,
+        receipts_dir,
+        BTreeMap::new(),
+    )
+}
+
+fn write_registry(root: &Path, mode: &str, timeout_seconds: u64, artifacts: Vec<String>) {
+    let mut env = BTreeMap::new();
+    env.insert(CHILD_ENV.to_owned(), mode.to_owned());
+    let registry = xtask::gated_tests::GatedTestRegistry {
+        schema_version: 1,
+        release: "0.64.0".to_owned(),
+        gate: vec![xtask::gated_tests::GateEntry {
+            id: format!("test.{mode}"),
+            kind: xtask::gated_tests::GateKind::CfgTestTarget,
+            source: "tests/evidence_run.rs".to_owned(),
+            package: "xtask".to_owned(),
+            target: "evidence_run".to_owned(),
+            test: "evidence_child_helper".to_owned(),
+            cfg: String::new(),
+            env: String::new(),
+            reason: "executor fixture".to_owned(),
+            tier: xtask::gated_tests::GateTier::Fast,
+            required_features: vec![],
+            required_env: vec![],
+            required_tools: vec![],
+            timeout_seconds,
+            owner_release: "0.64.0".to_owned(),
+            ship_mandatory: true,
+            artifacts,
+            ci: xtask::gated_tests::CiRegistration {
+                workflow: ".github/workflows/ci.yml".to_owned(),
+                job: "evidence".to_owned(),
+                step: "run".to_owned(),
+            },
+            command: xtask::gated_tests::CommandSpec {
+                program: std::env::current_exe()
+                    .unwrap()
+                    .to_string_lossy()
+                    .into_owned(),
+                args: vec![
+                    "--exact".to_owned(),
+                    "evidence_child_helper".to_owned(),
+                    "--nocapture".to_owned(),
+                ],
+                env,
+                cwd: ".".to_owned(),
+                platform: "any".to_owned(),
+            },
+        }],
+    };
+    fs::write(
+        root.join(xtask::gated_tests::REGISTRY_PATH),
+        toml::to_string_pretty(&registry).unwrap(),
+    )
+    .unwrap();
+    run(root, "git", &["add", "."]);
+    run(root, "git", &["commit", "-q", "-m", "fixture"]);
+}
+
+fn execute(mode: &str, timeout_seconds: u64) -> (PathBuf, xtask::evidence_run::ExecutionResult) {
+    let root = temp_root(mode);
+    write_registry(&root, mode, timeout_seconds, vec![]);
+    let result = execute_test_gate(
+        &root,
+        "0.64",
+        &format!("test.{mode}"),
+        Path::new("target/receipts"),
+    )
+    .unwrap();
+    (root, result)
+}
+
+#[test]
+fn evidence_registry_baseline_can_execute_a_later_release() {
+    let root = temp_root("forward-release");
+    write_registry(&root, "pass", 5, vec![]);
+    let result =
+        execute_test_gate(&root, "0.65", "test.pass", Path::new("target/receipts")).unwrap();
+    assert_eq!(result.receipt.release, "0.65.0");
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Pass);
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn evidence_registry_digest_is_stable_across_lf_and_crlf_checkouts() {
+    let root = temp_root("registry-line-endings");
+    write_registry(&root, "pass", 5, vec![]);
+    let registry_path = root.join(xtask::gated_tests::REGISTRY_PATH);
+    let registry: xtask::gated_tests::GatedTestRegistry =
+        toml::from_str(&fs::read_to_string(&registry_path).unwrap()).unwrap();
+    let lf = xtask::evidence_run::expected_digests(&root, &registry.gate[0]).unwrap();
+
+    let lf_bytes = fs::read(&registry_path).unwrap();
+    assert!(!lf_bytes.windows(2).any(|pair| pair == b"\r\n"));
+    let crlf_bytes = String::from_utf8(lf_bytes)
+        .unwrap()
+        .replace('\n', "\r\n")
+        .into_bytes();
+    fs::write(&registry_path, crlf_bytes).unwrap();
+    let crlf = xtask::evidence_run::expected_digests(&root, &registry.gate[0]).unwrap();
+
+    assert_eq!(crlf.command, lf.command);
+    assert_eq!(crlf.registry, lf.registry);
+    assert_eq!(crlf.input, lf.input);
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn evidence_executor_writes_atomic_receipts_for_success_failure_and_timeout() {
+    for (mode, expected) in [
+        ("pass", EvidenceOutcome::Pass),
+        ("fail", EvidenceOutcome::Fail),
+        ("timeout", EvidenceOutcome::Timeout),
+    ] {
+        let (root, result) = execute(mode, 1);
+        assert_eq!(result.receipt.outcome, expected);
+        assert!(result.receipt_path.is_file());
+        assert!(!result.receipt.dirty_worktree);
+        assert_eq!(result.receipt.source_commit.len(), 40);
+        assert_eq!(result.receipt.command_digest.len(), 64);
+        assert_eq!(result.receipt.registry_digest.len(), 64);
+        assert_eq!(result.receipt.input_digest.len(), 64);
+        let parsed: EvidenceReceipt =
+            serde_json::from_slice(&fs::read(&result.receipt_path).unwrap()).unwrap();
+        assert_eq!(parsed.outcome, expected);
+        assert!(fs::read_dir(root.join("target/receipts"))
+            .unwrap()
+            .all(|entry| !entry
+                .unwrap()
+                .file_name()
+                .to_string_lossy()
+                .ends_with(".tmp")));
+        fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[test]
+fn evidence_executor_propagates_child_exit_and_captures_output() {
+    let (pass_root, pass) = execute("pass", 5);
+    assert_eq!(xtask::evidence_run::exit_code_for(&pass.receipt), 0);
+    assert!(pass.receipt.stdout.contains("logical pass"));
+    assert!(xtask::evidence_run::failure_diagnostics(&pass.receipt).is_none());
+    fs::remove_dir_all(pass_root).unwrap();
+
+    let (fail_root, fail) = execute("fail", 5);
+    assert_ne!(xtask::evidence_run::exit_code_for(&fail.receipt), 0);
+    assert!(fail.receipt.stderr.contains("intentional evidence failure"));
+    let diagnostics = xtask::evidence_run::failure_diagnostics(&fail.receipt).unwrap();
+    assert!(diagnostics.contains("--- stderr ---"));
+    assert!(diagnostics.contains("intentional evidence failure"));
+    fs::remove_dir_all(fail_root).unwrap();
+
+    let (timeout_root, timeout) = execute("timeout", 1);
+    assert_eq!(xtask::evidence_run::exit_code_for(&timeout.receipt), 124);
+    fs::remove_dir_all(timeout_root).unwrap();
+}
+
+#[cfg(windows)]
+#[test]
+fn evidence_executor_bounds_inherited_pipe_capture_after_parent_exit() {
+    let (root, result) = execute("inherited-pipe-parent", 1);
+    println!(
+        "Windows inherited-pipe fixture: {:?}, {} ms",
+        result.receipt.outcome, result.receipt.duration_ms
+    );
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Timeout);
+    assert!(
+        result.receipt.duration_ms < 3_000,
+        "a one-second gate must not wait for the four-second descendant: {} ms",
+        result.receipt.duration_ms
+    );
+    assert!(result
+        .receipt
+        .stdout
+        .contains("parent leaving inherited pipes open"));
+    std::thread::sleep(Duration::from_secs(4));
+    assert!(!root.join("target/descendant-survived").exists());
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[cfg(windows)]
+#[test]
+fn evidence_executor_waits_for_descendants_without_inherited_pipes() {
+    let (root, result) = execute("null-pipe-parent", 1);
+    println!(
+        "Windows null-pipe fixture: {:?}, {} ms",
+        result.receipt.outcome, result.receipt.duration_ms
+    );
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Timeout);
+    assert!(result.receipt.duration_ms < 3_000);
+    std::thread::sleep(Duration::from_secs(4));
+    assert!(!root.join("target/descendant-survived").exists());
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[cfg(windows)]
+#[test]
+fn evidence_executor_terminates_live_three_generation_tree() {
+    let (root, result) = execute("tree-parent", 1);
+    println!(
+        "Windows three-generation fixture: {:?}, {} ms",
+        result.receipt.outcome, result.receipt.duration_ms
+    );
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Timeout);
+    assert!(result.receipt.duration_ms < 3_000);
+    assert!(result
+        .receipt
+        .stdout
+        .contains("descendant holds inherited pipes"));
+    std::thread::sleep(Duration::from_secs(4));
+    assert!(!root.join("target/descendant-survived").exists());
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn evidence_executor_drains_large_stdout_and_stderr_without_truncation() {
+    let (root, result) = execute("large-output", 5);
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Pass);
+    assert!(result
+        .receipt
+        .stdout
+        .contains(&format!("large stdout {}", "x".repeat(128 * 1024))));
+    assert!(result
+        .receipt
+        .stderr
+        .contains(&format!("large stderr {}", "y".repeat(128 * 1024))));
+    assert!(result.receipt.stdout.contains("Unicode tail: Гидра α"));
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn evidence_executor_rejects_a_stale_declared_artifact() {
+    let root = temp_root("stale-artifact");
+    let declared = "target/test-evidence/stale.json";
+    fs::write(root.join(".gitignore"), "target/\n").unwrap();
+    write_registry(&root, "pass", 5, vec![declared.to_owned()]);
+
+    let artifact_path = root.join(declared);
+    fs::create_dir_all(artifact_path.parent().unwrap()).unwrap();
+    fs::write(&artifact_path, br#"{"stale":true}"#).unwrap();
+
+    let result =
+        execute_test_gate(&root, "0.64", "test.pass", Path::new("target/receipts")).unwrap();
+
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Fail);
+    assert!(result.receipt.artifacts.is_empty());
+    assert_eq!(result.receipt.missing_artifacts, vec![declared]);
+    assert!(!artifact_path.exists());
+    assert!(result.receipt.stderr.contains("missing declared artifact"));
+    assert!(!result.receipt.dirty_worktree);
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn evidence_executor_rejects_shells_path_traversal_and_artifacts_outside_target() {
+    let root = temp_root("unsafe");
+    write_registry(&root, "unsafe", 1, vec!["../secret".to_owned()]);
+    let error =
+        execute_test_gate(&root, "0.64", "test.unsafe", Path::new("target/receipts")).unwrap_err();
+    assert!(error.to_string().contains("path traversal"));
+
+    let registry_path = root.join(xtask::gated_tests::REGISTRY_PATH);
+    let mut registry: xtask::gated_tests::GatedTestRegistry =
+        toml::from_str(&fs::read_to_string(&registry_path).unwrap()).unwrap();
+    registry.gate[0].artifacts = vec!["docs/not-an-artifact.json".to_owned()];
+    fs::write(&registry_path, toml::to_string_pretty(&registry).unwrap()).unwrap();
+    let error =
+        execute_test_gate(&root, "0.64", "test.unsafe", Path::new("target/receipts")).unwrap_err();
+    assert!(error.to_string().contains("target directory"));
+
+    registry.gate[0].artifacts.clear();
+    registry.gate[0].command.program = "cmd.exe".to_owned();
+    fs::write(&registry_path, toml::to_string_pretty(&registry).unwrap()).unwrap();
+    let error =
+        execute_test_gate(&root, "0.64", "test.unsafe", Path::new("target/receipts")).unwrap_err();
+    assert!(error.to_string().contains("shell program is forbidden"));
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn evidence_executor_runs_a_registered_fast_suite_without_shell_indirection() {
+    let root = temp_root("fast-suite");
+    let gated = xtask::gated_tests::GatedTestRegistry {
+        schema_version: 1,
+        release: "0.64.0".to_owned(),
+        gate: vec![],
+    };
+    fs::write(
+        root.join(xtask::gated_tests::REGISTRY_PATH),
+        toml::to_string_pretty(&gated).unwrap(),
+    )
+    .unwrap();
+    let mut env = BTreeMap::new();
+    env.insert(CHILD_ENV.to_owned(), "pass".to_owned());
+    let fast = xtask::fast_suite::FastSuiteRegistry {
+        schema_version: 1,
+        release: "0.64.0".to_owned(),
+        nextest_version: "0.9.137".to_owned(),
+        aggregate_budget_seconds: 1_500,
+        suite: vec![xtask::fast_suite::FastSuiteEntry {
+            id: "fast.fixture".to_owned(),
+            work_items: vec!["W1".to_owned()],
+            timeout_seconds: 5,
+            budget_seconds: 5,
+            deterministic: false,
+            artifacts: vec![],
+            logical_digest_artifact: String::new(),
+            baseline: xtask::fast_suite::Baseline {
+                status: xtask::fast_suite::BaselineStatus::Unmeasured,
+                commit: String::new(),
+                toolchain: String::new(),
+                linux_ci_median_seconds: 0,
+                noise_allowance_seconds: 0,
+            },
+            command: xtask::gated_tests::CommandSpec {
+                program: std::env::current_exe()
+                    .unwrap()
+                    .to_string_lossy()
+                    .into_owned(),
+                args: vec![
+                    "--exact".to_owned(),
+                    "evidence_child_helper".to_owned(),
+                    "--nocapture".to_owned(),
+                ],
+                env,
+                cwd: ".".to_owned(),
+                platform: "any".to_owned(),
+            },
+        }],
+    };
+    fs::write(
+        root.join(xtask::fast_suite::REGISTRY_PATH),
+        toml::to_string_pretty(&fast).unwrap(),
+    )
+    .unwrap();
+    run(&root, "git", &["add", "."]);
+    run(&root, "git", &["commit", "-q", "-m", "fast fixture"]);
+
+    let result =
+        execute_test_gate(&root, "0.64", "fast.fixture", Path::new("target/receipts")).unwrap();
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Pass);
+    assert!(result.receipt.stdout.contains("logical pass"));
+    fs::remove_dir_all(root).unwrap();
+}

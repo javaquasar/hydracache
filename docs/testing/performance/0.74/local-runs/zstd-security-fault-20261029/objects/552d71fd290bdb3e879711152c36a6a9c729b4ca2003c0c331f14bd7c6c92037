@@ -1,0 +1,22 @@
+tests::test_around_pos_past_initialized_data: test
+tests::test_cctx_cycle: test
+tests::test_checksum: test
+tests::test_context_poisoned_by_an_error: test
+tests::test_cursor_empty_write_truncates: test
+tests::test_dictionary: test
+tests::test_failed_legacy_stream_reports_no_output: test
+tests::test_one_shot_compression_resets_the_stream: test
+tests::test_one_shot_decompression_resets_the_stream: test
+tests::test_one_shot_decompression_without_a_stream: test
+tests::test_poison_tracking: test
+tests::test_seekable_advanced_cycle: test
+tests::test_seekable_advanced_panic: test
+tests::test_seekable_cstream_input_pos_out_of_bounds: test
+tests::test_seekable_cycle: test
+tests::test_seekable_seek_table: test
+tests::test_seekable_uninitialized: test
+tests::test_simple_cycle: test
+tests::test_train_from_buffer_overflowing_sizes: test
+tests::test_writebuf: test
+
+20 tests, 0 benchmarks

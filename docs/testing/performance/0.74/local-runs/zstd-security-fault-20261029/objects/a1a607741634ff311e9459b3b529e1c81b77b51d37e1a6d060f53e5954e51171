@@ -1,0 +1,39 @@
+    fn inventory(&self) -> Result<usize, AuthorityError> {
+        let mut seen = BTreeSet::new();
+        for entry in fs::read_dir(format!("/proc/self/fd/{}", self.leaf.as_raw_fd()))? {
+            let entry = entry?;
+            let name = entry
+                .file_name()
+                .into_string()
+                .map_err(|_| AuthorityError::Invalid)?;
+            if !seen.insert(name) || seen.len() > MAX_GENERATIONS * 2 {
+                return Err(AuthorityError::Budget);
+            }
+        }
+        if seen.len() % 2 != 0 {
+            return Err(AuthorityError::Invalid);
+        }
+        let generations = seen.len() / 2;
+        if !Self::expected_inventory(&seen, generations) {
+            return Err(AuthorityError::Invalid);
+        }
+        Ok(generations)
+    }
+
+    fn expected_inventory(seen: &BTreeSet<String>, generations: usize) -> bool {
+        let mut observed = seen.iter();
+        for revision in 1..=generations {
+            for suffix in ["commit", "json"] {
+                let mut expected = std::io::Cursor::new([0_u8; 23]);
+                write!(&mut expected, "{revision:016x}.{suffix}")
+                    .expect("bounded journal name fits 23 bytes");
+                let length = expected.position() as usize;
+                if observed.next().map(|name| name.as_bytes())
+                    != Some(&expected.get_ref()[..length])
+                {
+                    return false;
+                }
+            }
+        }
+        observed.next().is_none()
+    }

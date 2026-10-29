@@ -1,0 +1,10 @@
+tests::abandoned_decoder_job_does_not_enter_the_next_output: test
+tests::abandoned_encoder_job_does_not_enter_the_next_frame: test
+tests::corrupt_legacy_failure_preserves_positions_and_requires_reset: test
+tests::corrupt_legacy_fragmentation_cannot_flush_stale_output: test
+tests::corrupt_legacy_writer_flush_and_drop_expose_no_output: test
+tests::modern_roundtrips_preserve_exact_payloads: test
+tests::seekable_buffer_offsets_never_extend_past_capacity: test
+tests::seekable_callback_offsets_never_extend_past_capacity: test
+
+8 tests, 0 benchmarks

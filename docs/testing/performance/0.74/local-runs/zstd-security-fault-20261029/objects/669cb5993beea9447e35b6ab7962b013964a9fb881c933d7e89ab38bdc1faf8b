@@ -1,0 +1,25 @@
+
+running 20 tests
+test tests::test_around_pos_past_initialized_data ... ok
+test tests::test_cctx_cycle ... ok
+test tests::test_checksum ... ok
+test tests::test_context_poisoned_by_an_error ... ok
+test tests::test_cursor_empty_write_truncates ... ok
+test tests::test_dictionary ... ok
+test tests::test_failed_legacy_stream_reports_no_output ... ok
+test tests::test_one_shot_compression_resets_the_stream ... ok
+test tests::test_one_shot_decompression_resets_the_stream ... ok
+test tests::test_one_shot_decompression_without_a_stream ... ok
+test tests::test_poison_tracking ... ok
+test tests::test_seekable_advanced_cycle ... ok
+test tests::test_seekable_advanced_panic ... ok
+test tests::test_seekable_cstream_input_pos_out_of_bounds ... ok
+test tests::test_seekable_cycle ... ok
+test tests::test_seekable_seek_table ... ok
+test tests::test_seekable_uninitialized ... ok
+test tests::test_simple_cycle ... ok
+test tests::test_train_from_buffer_overflowing_sizes - should panic ... ok
+test tests::test_writebuf ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+

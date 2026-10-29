@@ -1,0 +1,21 @@
+
+thread 'tests::test_seekable_advanced_panic' (1444) panicked at src/tests.rs:464:17:
+seek
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'tests::test_seekable_advanced_panic' (1444) panicked at src/tests.rs:464:17:
+read
+
+thread 'tests::test_seekable_advanced_panic' (1444) panicked at src/tests.rs:464:17:
+seek
+
+thread 'tests::test_seekable_advanced_panic' (1444) panicked at src/tests.rs:464:17:
+read
+
+thread 'tests::test_seekable_cstream_input_pos_out_of_bounds' (1445) panicked at src/lib.rs:2643:13:
+Given position outside of the buffer bounds.
+
+thread 'tests::test_train_from_buffer_overflowing_sizes' (1450) panicked at src/lib.rs:3037:5:
+assertion `left == right` failed: sample sizes don't add up to the samples buffer length
+  left: Some(100)
+ right: None

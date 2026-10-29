@@ -1,0 +1,77 @@
+
+running 8 tests
+test tests::abandoned_decoder_job_does_not_enter_the_next_output ... ok
+test tests::abandoned_encoder_job_does_not_enter_the_next_frame ... ok
+test tests::corrupt_legacy_failure_preserves_positions_and_requires_reset ... ok
+test tests::corrupt_legacy_fragmentation_cannot_flush_stale_output ... ok
+test tests::corrupt_legacy_writer_flush_and_drop_expose_no_output ... ok
+test tests::modern_roundtrips_preserve_exact_payloads ... ok
+test tests::seekable_buffer_offsets_never_extend_past_capacity ... HC074-ZSTD-OFFSET offset=0 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=0 capacity=1 written=1
+HC074-ZSTD-OFFSET offset=0 capacity=7 written=7
+HC074-ZSTD-OFFSET offset=0 capacity=256 written=69
+HC074-ZSTD-OFFSET offset=1 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=1 capacity=1 written=1
+HC074-ZSTD-OFFSET offset=1 capacity=7 written=7
+HC074-ZSTD-OFFSET offset=1 capacity=256 written=68
+HC074-ZSTD-OFFSET offset=68 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=68 capacity=1 written=1
+HC074-ZSTD-OFFSET offset=68 capacity=7 written=1
+HC074-ZSTD-OFFSET offset=68 capacity=256 written=1
+HC074-ZSTD-OFFSET offset=69 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=69 capacity=1 written=0
+HC074-ZSTD-OFFSET offset=69 capacity=7 written=0
+HC074-ZSTD-OFFSET offset=69 capacity=256 written=0
+HC074-ZSTD-OFFSET offset=70 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=70 capacity=1 written=0
+HC074-ZSTD-OFFSET offset=70 capacity=7 written=0
+HC074-ZSTD-OFFSET offset=70 capacity=256 written=0
+HC074-ZSTD-OFFSET offset=4165 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=4165 capacity=1 written=0
+HC074-ZSTD-OFFSET offset=4165 capacity=7 written=0
+HC074-ZSTD-OFFSET offset=4165 capacity=256 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551606 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551606 capacity=1 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551606 capacity=7 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551606 capacity=256 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551615 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551615 capacity=1 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551615 capacity=7 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551615 capacity=256 written=0
+ok
+test tests::seekable_callback_offsets_never_extend_past_capacity ... HC074-ZSTD-OFFSET offset=0 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=0 capacity=1 written=1
+HC074-ZSTD-OFFSET offset=0 capacity=7 written=7
+HC074-ZSTD-OFFSET offset=0 capacity=256 written=69
+HC074-ZSTD-OFFSET offset=1 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=1 capacity=1 written=1
+HC074-ZSTD-OFFSET offset=1 capacity=7 written=7
+HC074-ZSTD-OFFSET offset=1 capacity=256 written=68
+HC074-ZSTD-OFFSET offset=68 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=68 capacity=1 written=1
+HC074-ZSTD-OFFSET offset=68 capacity=7 written=1
+HC074-ZSTD-OFFSET offset=68 capacity=256 written=1
+HC074-ZSTD-OFFSET offset=69 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=69 capacity=1 written=0
+HC074-ZSTD-OFFSET offset=69 capacity=7 written=0
+HC074-ZSTD-OFFSET offset=69 capacity=256 written=0
+HC074-ZSTD-OFFSET offset=70 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=70 capacity=1 written=0
+HC074-ZSTD-OFFSET offset=70 capacity=7 written=0
+HC074-ZSTD-OFFSET offset=70 capacity=256 written=0
+HC074-ZSTD-OFFSET offset=4165 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=4165 capacity=1 written=0
+HC074-ZSTD-OFFSET offset=4165 capacity=7 written=0
+HC074-ZSTD-OFFSET offset=4165 capacity=256 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551606 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551606 capacity=1 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551606 capacity=7 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551606 capacity=256 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551615 capacity=0 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551615 capacity=1 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551615 capacity=7 written=0
+HC074-ZSTD-OFFSET offset=18446744073709551615 capacity=256 written=0
+ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

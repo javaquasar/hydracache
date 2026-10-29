@@ -1,0 +1,171 @@
+"""Separate fixed default-Windows review; never refreshes V7 or dispatches tests.
+
+The retained V7 receipt is data. Project Python is imported only after all its
+inherited auxiliary bytes are checked. No pin-learning or filter CLI exists.
+"""
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import tomllib
+
+REVIEWED_AST_SHA256 = '68339f045870a9a106058c2e12c6403ac32bab4ee9ee220c12aceddf82528c81'
+PREVIOUS_AST_SHA256 = '95441e92c2072e08c34e73b4dcfe59d66ae7fe6728b014d54f3c7c15dc4be8f7'
+PREVIOUS_SYNTAX = 'docs/testing/performance/0.74/local-runs/package-review-v7-20261026/objects/f83be32c93a8d52ac397f5a339d3ba997c1eac81e2a66c89ac89ee2b3804ed8f'
+PREVIOUS_PACKET = 'docs/testing/performance/0.74/local-runs/package-review-v7-20261026'
+PREVIOUS_INDEX_SHA256 = 'a077a808e1bd756eb7fceef27e2852791f206dcd9b225d224e86d3af8369d0cf'
+PREVIOUS_GATE_SHA256 = '112083f23d82a0140f22305c241c5b8799d7fed9037e0ab2d82d842acd52374f'
+CHANGED = {
+    'crates/xtask/tests/security_input_view_074.rs': '3949cb1c59b0226f284c30fb7925798334db1611116387938606aa19c1004486',
+    'tools/source-successor-view-074/contract.rs': 'c836ea22544a49d7eec577868f230bcc3152a7f4906c33ffa0fc0e681d768e7c',
+}
+ADDED = {
+    'tools/roots-lock-view-074/contract.rs': '376c77730d946c98028a1860fc42ac4b2b32adc92e71d76431644ccc45f97d0a',
+    'crates/xtask/tests/roots_lock_view_074.rs': '4f7cf4dd250d916214df1f601a18ffc3fd2c9291fea78db05919ff83e490fc53',
+}
+AUXILIARY_SUCCESSORS = {
+    'Cargo.lock': 'e385c45d47050299da7e79a5133d5ec71ca3ea77f6bafbc36744968dff2d28b5',
+}
+EXTRA_AUXILIARY = {
+    'tools/roots-lock-view-074/rules.json': 'd7ec7bf6240b74130719ed8be061f744c783710ecb5486c1de2ad86492544ba5',
+    'tools/roots-lock-view-074/.gitattributes': '560b146a47d770e5037b322e115de067a24ea3fca2ffce60155446cbdc2023af',
+    'crates/hydracache-redis-compat/Cargo.toml': 'b188f9eeef837b115841f8bba5a5cab12bc37f5681657766e5d07e6b056d9379',
+}
+DELTA_REVIEW = {
+    'roots_view': 'One exact Cargo.lock path: complete current SHA before six fixed inverse edits, complete accepted pre-roots SHA after. No filesystem, Git, clock, environment or process APIs. Only immutable compiled rules are cached. Stale pre-roots input refuses; no fallback admission.',
+    'entry': 'One pure roots call precedes the existing diagnostic/security chain. Existing rule bodies, fresh IO helpers, conditional read order and live validation frequency remain unchanged. Rustfmt orders declarations, not observations.',
+    'existing_tests': 'The seven existing security tests still execute every assertion. Their raw reader validates each fresh current body through the new roots boundary before the unchanged security view. The exact entry-body oracle admits only the reviewed import/call insertion; no archived Rust is executed.',
+    'new_target': 'Seven ordinary tests: fixed read-only historical Git through the inherited helpers, direct fresh source reads, bounded inverse/mutation controls and a fixed-seed 24-case in-memory byte mutation corpus. No manager, worker, privileged fixture, shell, clock, service or server operation.',
+    'dependency_graph': 'Exactly the operator-approved two 1.0.10 public catalogs plus three dev-only representation/shim test edges and the qualified legacy parent reference. RESP floors are exact =1.0.10; runtime Rust, other versions/features, MSRV and deny policy are unchanged. Separate roots audit/Windows/MSRV/GNU/RESP/server evidence remains required, not inferred from this review.',
+    'inherited': '370 complete Rust source/AST rows and 50 prior auxiliary bodies are identical to V7. Three new inert/build inputs are explicitly pinned. Existing diagnostic children stay default-off; the heartbeat and both companions retain exact bytes and inherited scope.',
+    'scope': 'Default Windows --lib --tests, 148 targets, four threads, 780 seconds including compilation. No ignored/filter/diagnostic opt-in, compiler expansion, performance claim, GNU/all-feature admission, original execution, server operation or qualification.',
+}
+
+
+def require(value, reason):
+    if not value:
+        raise ValueError(reason)
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def decode(raw):
+    def pairs(items):
+        value = {}
+        for key, item in items:
+            require(key not in value, 'duplicate JSON key')
+            value[key] = item
+        return value
+    return json.loads(raw, object_pairs_hook=pairs)
+
+
+def document_digest(document):
+    return sha(json.dumps(document, sort_keys=True, separators=(',', ':')).encode())
+
+
+def read_inside(root, name):
+    relative = Path(name)
+    require(not relative.is_absolute() and '..' not in relative.parts, 'nonrelative review input')
+    path = (root / relative).resolve(strict=True)
+    require(path.is_relative_to(root), 'review input outside repository')
+    return path.read_bytes()
+
+
+def previous_gate(root):
+    raw = read_inside(root, PREVIOUS_PACKET + '/index.json')
+    require(sha(raw) == PREVIOUS_INDEX_SHA256, 'V7 index drift')
+    row = decode(raw)['members']['review/gate.json']
+    require(row['sha256'] == PREVIOUS_GATE_SHA256, 'V7 gate pointer drift')
+    raw = read_inside(root, PREVIOUS_PACKET + '/objects/' + PREVIOUS_GATE_SHA256)
+    require(len(raw) == row['bytes'] and sha(raw) == PREVIOUS_GATE_SHA256, 'V7 gate bytes drift')
+    gate = decode(raw)
+    require((len(gate['sources']), len(gate['auxiliary']), len(gate['targets'])) == (372, 51, 147),
+            'V7 inventory drift')
+    return gate
+
+
+def checked_auxiliary(root):
+    old = previous_gate(root)['auxiliary']
+    require(set(AUXILIARY_SUCCESSORS) <= old.keys() and not old.keys() & EXTRA_AUXILIARY.keys(),
+            'auxiliary delta classification drift')
+    expected = {**old, **AUXILIARY_SUCCESSORS, **EXTRA_AUXILIARY}
+    actual = {name: sha(read_inside(root, name)) for name in expected}
+    require(actual == expected and len(actual) == 54, 'reviewed auxiliary input drift')
+    return actual
+
+
+def load_context(root):
+    # Called only after checked_auxiliary has checked this and all legacy Python.
+    path = root / 'tools/historical-blob-batch-074/module_context_v5.py'
+    spec = importlib.util.spec_from_file_location('hc074_checked_context_v8', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def target_catalog(root):
+    manifest = tomllib.loads(read_inside(root, 'crates/xtask/Cargo.toml').decode())
+    require(manifest['package']['name'] == 'xtask' and manifest['package'].get('autotests', True)
+            and 'test' not in manifest, 'default package discovery drift')
+    return ['unittests src/lib.rs', 'unittests src/main.rs'] + sorted(
+        'tests/' + path.name for path in (root / 'crates/xtask/tests').glob('*.rs'))
+
+
+def source_review(root, document):
+    root = root.resolve(strict=True)
+    require(document_digest(document) == REVIEWED_AST_SHA256, 'unreviewed v8 syntax/source inventory')
+    require(document['executed_input_code'] is False and document['compiler_expansion'] is False,
+            'source-only inventory scope')
+    rows = {row['source']: row for row in document['sources']}
+    require(len(rows) == len(document['sources']) == 374, 'duplicate or changed source count')
+    constructors = []
+    for name, row in rows.items():
+        require(Path(name).suffix == '.rs' and sha(read_inside(root, name)) == row['sha256'],
+                'source bytes/path drift')
+        for site in row['sites']:
+            require(site['kind'] != 'include', 'unexpanded include edge')
+            if site['kind'] in ('command-constructor', 'macro-command-constructor'):
+                require(site['detail'] not in {'literal:ssh', 'literal:systemctl', 'literal:systemd-run',
+                                              'literal:wsl', 'literal:timedatectl'}, 'host/service constructor')
+                constructors.append(dict(source=name, **site))
+    raw = read_inside(root, PREVIOUS_SYNTAX)
+    require(sha(raw) == Path(PREVIOUS_SYNTAX).name, 'V7 syntax bytes drift')
+    old_document = decode(raw)
+    require(document_digest(old_document) == PREVIOUS_AST_SHA256, 'V7 AST drift')
+    old = {row['source']: row for row in old_document['sources']}
+    prior = previous_gate(root)
+    require({name: row['sha256'] for name, row in old.items()} == prior['sources']
+            and not old.keys() - rows.keys(), 'old source removal/mismatch')
+    changed = {name for name in old if old[name] != rows[name]}
+    added = rows.keys() - old.keys()
+    require({name: rows[name]['sha256'] for name in changed} == CHANGED and len(changed) == 2,
+            'manual changed source/AST delta drift')
+    require({name: rows[name]['sha256'] for name in added} == ADDED and len(added) == 2,
+            'manual added source/AST delta drift')
+    auxiliary = checked_auxiliary(root)
+    additions, unresolved = load_context(root).module_edges(root, document)
+    require(not additions and not unresolved, 'module graph not closed')
+    discovered = {p.relative_to(root).as_posix() for folder in ('crates/xtask/src', 'crates/xtask/tests')
+                  for p in (root / folder).rglob('*.rs')}
+    require(discovered <= rows.keys(), 'new uncensused Rust source')
+    targets = target_catalog(root)
+    expected = prior['targets'][:2] + sorted(prior['targets'][2:] +
+                ['tests/roots_lock_view_074.rs'])
+    require(targets == expected and len(set(targets)) == len(targets) == 148, 'default target catalog drift')
+    return dict(schema='hc074-package-effect-review-v8', reviewed_ast_sha256=REVIEWED_AST_SHA256,
+                previous_ast_sha256=PREVIOUS_AST_SHA256, sources={n: r['sha256'] for n, r in rows.items()},
+                auxiliary=auxiliary, targets=targets, constructors=constructors,
+                changed_sources=sorted(changed), added_sources=sorted(added), delta_review=DELTA_REVIEW,
+                inherited_review={k: v for k, v in prior.items() if 'review' in k},
+                source_effect_review_complete=True, formal_whole_program_proof=False,
+                package_dispatched=False, package_pass=False, linux_or_all_features_cleared=False,
+                original_execution_or_product_or_qualification_admission=False)
+
+
+def environment_preflight(root):
+    checked_auxiliary(root)
+    # All imported project bodies retain their independently sealed V7 pins.
+    import package_effects_review_v2
+    return package_effects_review_v2.environment_preflight(root)

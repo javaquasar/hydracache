@@ -7511,3 +7511,13 @@ is gone. All 36 workspace members are covered by the identical pre/post frame.
 Eleven stages pass; policy refuses exactly the three remaining Zstd findings,
 leaving nine stages unstarted. Original bounds/retirement/capacity checks remain
 unchanged and pass; no workspace/release/server admission follows.
+
+The [remaining Zstd security controls](zstd-security-fault-result-20261029.md)
+now pass on Windows/GNU Rust 1.94 and MSRV 1.88: per peer, eight public controls
+plus 20 exact upstream library cases, zero ignored/filtered, and 64 identical
+seekable observations. Actual legacy/seekable features are active. Check/strict
+Clippy and 14 final inert controls pass. Both standalone policy fixtures pass
+unchanged root policy after preserving/fixing the owned probe's missing license
+in a separate metadata-only fixture. The first offline index refusal remains too.
+This closes selected seekable/legacy/context coverage, not Root's three findings,
+the declined S preview, compatible MTU/distribution, or original execution/recovery.

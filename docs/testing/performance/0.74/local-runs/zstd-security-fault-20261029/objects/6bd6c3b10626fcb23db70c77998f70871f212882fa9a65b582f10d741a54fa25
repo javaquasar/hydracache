@@ -1,0 +1,32 @@
+[package]
+name = "hydracache-sim"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Deterministic simulation harness for HydraCache cluster behavior."
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+# Not published to crates.io: internal deterministic simulation/test harness, not part of the
+# curated public publish set (scripts/verify-release-readiness.ps1, package-publishable.ps1).
+publish = false
+
+[dependencies]
+hydracache = { workspace = true }
+rand_chacha = { workspace = true }
+rand_core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+hydracache-cluster-raft = { workspace = true }
+protobuf = { workspace = true }
+raft = { workspace = true }
+slog = { workspace = true }
+
+[dev-dependencies]
+hydracache-cluster-testkit = { workspace = true }

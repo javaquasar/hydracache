@@ -1,0 +1,5 @@
+error: no matching package named `bindgen` found
+location searched: crates.io index
+required by package `zstd-sys v2.1.2+zstd.1.5.7`
+    ... which satisfies dependency `zstd-sys = "^2.1.2"` (locked to 2.1.2+zstd.1.5.7) of package `zstd-safe v8.2.0 (C:\Workspace\prj\jq\cashe\hydracache-074\target\zstd-security-fault-20261029\fixtures\upstream)`
+As a reminder, you're using offline mode (--offline) which can sometimes cause surprising resolution failures, if this error is too confusing you may wish to retry without `--offline`.

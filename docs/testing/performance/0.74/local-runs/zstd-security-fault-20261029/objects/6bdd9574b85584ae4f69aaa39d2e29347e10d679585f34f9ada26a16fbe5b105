@@ -1,0 +1,50 @@
+{
+  "probe": {
+    "counts": {
+      "failed": 0,
+      "filtered": 0,
+      "ignored": 0,
+      "passed": 8
+    },
+    "names": [
+      "tests::abandoned_decoder_job_does_not_enter_the_next_output",
+      "tests::abandoned_encoder_job_does_not_enter_the_next_frame",
+      "tests::corrupt_legacy_failure_preserves_positions_and_requires_reset",
+      "tests::corrupt_legacy_fragmentation_cannot_flush_stale_output",
+      "tests::corrupt_legacy_writer_flush_and_drop_expose_no_output",
+      "tests::modern_roundtrips_preserve_exact_payloads",
+      "tests::seekable_buffer_offsets_never_extend_past_capacity",
+      "tests::seekable_callback_offsets_never_extend_past_capacity"
+    ]
+  },
+  "upstream": {
+    "counts": {
+      "failed": 0,
+      "filtered": 0,
+      "ignored": 0,
+      "passed": 20
+    },
+    "names": [
+      "tests::test_around_pos_past_initialized_data",
+      "tests::test_cctx_cycle",
+      "tests::test_checksum",
+      "tests::test_context_poisoned_by_an_error",
+      "tests::test_cursor_empty_write_truncates",
+      "tests::test_dictionary",
+      "tests::test_failed_legacy_stream_reports_no_output",
+      "tests::test_one_shot_compression_resets_the_stream",
+      "tests::test_one_shot_decompression_resets_the_stream",
+      "tests::test_one_shot_decompression_without_a_stream",
+      "tests::test_poison_tracking",
+      "tests::test_seekable_advanced_cycle",
+      "tests::test_seekable_advanced_panic",
+      "tests::test_seekable_cstream_input_pos_out_of_bounds",
+      "tests::test_seekable_cycle",
+      "tests::test_seekable_seek_table",
+      "tests::test_seekable_uninitialized",
+      "tests::test_simple_cycle",
+      "tests::test_train_from_buffer_overflowing_sizes",
+      "tests::test_writebuf"
+    ]
+  }
+}

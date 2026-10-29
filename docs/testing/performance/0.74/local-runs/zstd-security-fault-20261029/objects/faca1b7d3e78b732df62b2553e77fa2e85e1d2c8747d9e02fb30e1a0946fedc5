@@ -1,0 +1,480 @@
+name: Publish Crates
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to re-qualify and publish
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: crates-release-${{ github.event.workflow_run.head_sha || inputs.tag || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Resolve and validate release candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      eligible: ${{ steps.resolve.outputs.eligible }}
+      version: ${{ steps.resolve.outputs.version }}
+      tag: ${{ steps.resolve.outputs.tag }}
+      source_sha: ${{ steps.resolve.outputs.source_sha }}
+      metadata_artifact: ${{ steps.resolve.outputs.metadata_artifact }}
+
+    steps:
+      - name: Checkout candidate commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.tag) || github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Resolve tag, CI result, versions, and publish order
+        id: resolve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion || '' }}
+          WORKFLOW_RUN_SHA: ${{ github.event.workflow_run.head_sha || '' }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id || '' }}
+          WORKFLOW_RUN_REF: ${{ github.event.workflow_run.head_branch || '' }}
+          INPUT_TAG: ${{ inputs.tag || '' }}
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == "workflow_run" ]]; then
+            if [[ "$WORKFLOW_RUN_CONCLUSION" != "success" && "$WORKFLOW_RUN_CONCLUSION" != "failure" ]]; then
+              echo "CI conclusion is $WORKFLOW_RUN_CONCLUSION; publication is not eligible."
+              echo "eligible=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            source_sha="$WORKFLOW_RUN_SHA"
+            git fetch --force --tags origin
+            mapfile -t tags < <(git tag --points-at "$source_sha" --list 'v*.*.*')
+            if [[ "${#tags[@]}" -eq 0 ]]; then
+              echo "CI run $source_sha has no release tag; nothing to publish."
+              echo "eligible=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            if [[ "${#tags[@]}" -ne 1 ]]; then
+              printf 'Expected one release tag at %s, found: %s\n' "$source_sha" "${tags[*]}" >&2
+              exit 1
+            fi
+            release_tag="${tags[0]}"
+          else
+            release_tag="$INPUT_TAG"
+            if [[ ! "$release_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+              echo "Input tag must be a SemVer tag such as v0.65.0, got: $release_tag" >&2
+              exit 1
+            fi
+            git fetch --force --tags origin
+            if ! git rev-parse -q --verify "refs/tags/$release_tag" >/dev/null; then
+              echo "Tag $release_tag does not exist." >&2
+              exit 1
+            fi
+            source_sha="$(git rev-list -n1 "$release_tag")"
+            ci_runs="$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$source_sha&per_page=100")"
+            if ! printf '%s' "$ci_runs" | jq -e --arg sha "$source_sha" '[.workflow_runs[] | select(.head_sha == $sha and .conclusion == "success")] | length > 0' >/dev/null; then
+              echo "No successful CI run exists for $release_tag at $source_sha." >&2
+              exit 1
+            fi
+          fi
+
+          version="${release_tag#v}"
+
+          if [[ "$version" == 0.71.* ]]; then
+            if [[ "$EVENT_NAME" == "workflow_run" && "$WORKFLOW_RUN_REF" != "$release_tag" ]]; then
+              echo "CI ref $WORKFLOW_RUN_REF is not release tag $release_tag; nothing to publish."
+              echo "eligible=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            # The source commit already has a complete green main-branch CI run.
+            # The tag run adds one exact-tag 0.71 admission; unrelated legacy or
+            # nightly jobs may fail without changing that release decision.
+            ci_runs="$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$source_sha&status=completed&per_page=100")"
+            if ! printf '%s' "$ci_runs" | jq -e --arg sha "$source_sha" \
+              '[.workflow_runs[] | select(.head_sha == $sha and .event == "push" and .head_branch == "main" and .conclusion == "success")] | length > 0' >/dev/null; then
+              echo "No complete successful main CI run exists at measured source $source_sha." >&2
+              exit 1
+            fi
+            if [[ "$EVENT_NAME" == "workflow_run" ]]; then
+              candidate_run_ids=("$WORKFLOW_RUN_ID")
+            else
+              mapfile -t candidate_run_ids < <(
+                printf '%s' "$ci_runs" | jq -r --arg sha "$source_sha" --arg tag "$release_tag" \
+                  '.workflow_runs[] | select(.head_sha == $sha and .event == "push" and .head_branch == $tag and (.conclusion == "success" or .conclusion == "failure")) | .id'
+              )
+            fi
+            designated_admission=false
+            for run_id in "${candidate_run_ids[@]}"; do
+              if gh api --paginate \
+                "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/jobs?per_page=100" \
+                --jq '.jobs[] | select(.name == "Release 0.71 CI Admission" and .conclusion == "success") | .id' \
+                | grep -q .; then
+                designated_admission=true
+                break
+              fi
+            done
+            if [[ "$designated_admission" != "true" ]]; then
+              echo "No designated Release 0.71 CI Admission exists for $release_tag at $source_sha." >&2
+              exit 1
+            fi
+          elif [[ "$EVENT_NAME" == "workflow_run" && "$WORKFLOW_RUN_CONCLUSION" != "success" ]]; then
+            echo "CI conclusion is $WORKFLOW_RUN_CONCLUSION; publication is not eligible."
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git fetch --force origin main
+          if ! git merge-base --is-ancestor "$source_sha" origin/main; then
+            echo "$release_tag does not point to a commit reachable from origin/main." >&2
+            exit 1
+          fi
+
+          if [[ "$version" == "0.68.0" ]]; then
+            hosted_admission=false
+            for attempt in $(seq 1 30); do
+              hc2_runs="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/hc2-client-plane.yml/runs?head_sha=$source_sha&status=completed&per_page=100")"
+              mapfile -t hc2_run_ids < <(
+                printf '%s' "$hc2_runs" | jq -r --arg sha "$source_sha" \
+                  '.workflow_runs[] | select(.head_sha == $sha and .conclusion == "success") | .id'
+              )
+              for hc2_run_id in "${hc2_run_ids[@]}"; do
+                if gh api --paginate \
+                  "repos/$GITHUB_REPOSITORY/actions/runs/$hc2_run_id/jobs?per_page=100" \
+                  --jq '.jobs[] | select(.name == "HC/2 Hosted Release Admission" and .conclusion == "success") | .id' \
+                  | grep -q .; then
+                  hosted_admission=true
+                  break
+                fi
+              done
+              if [[ "$hosted_admission" == "true" ]]; then
+                break
+              fi
+              if [[ "$attempt" -lt 30 ]]; then
+                echo "Waiting for HC/2 hosted admission at $source_sha (attempt $attempt/30)."
+                sleep 60
+              fi
+            done
+            if [[ "$hosted_admission" != "true" ]]; then
+              echo "No successful HC/2 Hosted Release Admission exists for 0.68.0 at $source_sha." >&2
+              echo "Java/Python SDK promotion is separate and still requires the deferred fixed-host admission." >&2
+              exit 1
+            fi
+          fi
+
+          python - "$version" "$release_tag" "$source_sha" <<'PY'
+          import json
+          import pathlib
+          import re
+          import subprocess
+          import sys
+
+          version, release_tag, source_sha = sys.argv[1:]
+          metadata = json.loads(
+              subprocess.check_output(
+                  ["cargo", "metadata", "--locked", "--format-version", "1"],
+                  text=True,
+              )
+          )
+          packages = metadata["packages"]
+          publishable = [
+              package
+              for package in packages
+              if package.get("source") is None and package.get("publish") is None
+          ]
+          versions = {package["version"] for package in publishable}
+          if versions != {version}:
+              raise SystemExit(
+                  f"publishable package versions {sorted(versions)} do not match tag {version}"
+              )
+
+          # Runtime packages come from the measured tag, while finalization
+          # documentation is committed afterwards on main. The ancestry check
+          # above binds the two without silently retagging unmeasured code.
+          manifest = subprocess.check_output(
+              ["git", "show", "origin/main:docs/plans/releases.toml"], text=True
+          )
+          blocks = re.split(r"(?m)^\[\[release\]\]\s*$", manifest)
+          matching = None
+          for block in blocks:
+              if re.search(rf'(?m)^\s*version\s*=\s*"{re.escape(version)}"\s*$', block):
+                  matching = block
+                  break
+          if matching is None:
+              raise SystemExit(f"release {version} is missing from docs/plans/releases.toml")
+          status = re.search(r'(?m)^\s*status\s*=\s*"([^"]+)"\s*$', matching)
+          if status is None or status.group(1) != "shipped":
+              actual = status.group(1) if status else "missing"
+              raise SystemExit(f"release {version} has status {actual!r}, expected shipped")
+
+          release_notes = pathlib.Path(f"docs/releases/{version}.md")
+          try:
+              notes_text = subprocess.check_output(
+                  ["git", "show", f"origin/main:{release_notes}"], text=True
+              )
+          except subprocess.CalledProcessError as exc:
+              raise SystemExit(f"missing release notes on main: {release_notes}") from exc
+
+          by_id = {package["id"]: package["name"] for package in packages}
+          publishable_ids = {package["id"] for package in publishable}
+          dependencies = {package["name"]: set() for package in publishable}
+          for node in metadata["resolve"]["nodes"]:
+              if node["id"] not in publishable_ids:
+                  continue
+              name = by_id[node["id"]]
+              for dependency in node["deps"]:
+                  dependency_id = dependency["pkg"]
+                  # Cargo resolves every packaged dependency kind during
+                  # `cargo publish`, including dev, build, and target-specific
+                  # dependencies. They must all precede the dependent crate.
+                  if dependency_id in publishable_ids:
+                      dependencies[name].add(by_id[dependency_id])
+
+          order = []
+          while dependencies:
+              ready = sorted(name for name, deps in dependencies.items() if not deps)
+              if not ready:
+                  raise SystemExit("publishable workspace dependency graph contains a cycle")
+              for name in ready:
+                  order.append(name)
+                  del dependencies[name]
+              for deps in dependencies.values():
+                  deps.difference_update(ready)
+
+          output = pathlib.Path("target/release-publish")
+          output.mkdir(parents=True, exist_ok=True)
+          (output / "release-notes.md").write_text(notes_text, encoding="utf-8")
+          (output / "release.env").write_text(
+              f"VERSION={version}\nTAG={release_tag}\nSOURCE_SHA={source_sha}\n",
+              encoding="utf-8",
+          )
+          (output / "packages.txt").write_text("\n".join(order) + "\n", encoding="utf-8")
+          print(f"release candidate: {release_tag} at {source_sha}")
+          print(f"publishable packages: {len(order)}")
+          print("dependency order:")
+          print("\n".join(f"  {index}: {name}" for index, name in enumerate(order, 1)))
+          PY
+
+          echo "eligible=true" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$release_tag" >> "$GITHUB_OUTPUT"
+          echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
+          echo "metadata_artifact=release-publish-metadata-${GITHUB_RUN_ID}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload release metadata
+        if: steps.resolve.outputs.eligible == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ steps.resolve.outputs.metadata_artifact }}
+          path: target/release-publish
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: Publish crates.io packages
+    needs: resolve
+    if: needs.resolve.outputs.eligible == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: release
+    env:
+      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+    steps:
+      - name: Checkout candidate commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.resolve.outputs.source_sha }}
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Download release metadata
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.resolve.outputs.metadata_artifact }}
+          path: target/release-publish
+
+      - name: Publish dependency-aware and idempotently
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${CARGO_REGISTRY_TOKEN:-}" ]]; then
+            echo "CARGO_REGISTRY_TOKEN is missing from the release environment." >&2
+            exit 1
+          fi
+
+          # crates.io versions are immutable. An exact existing version is a safe
+          # retry; every other registry response is treated as a release failure.
+          : > target/release-publish/publication-results.tsv
+          version="${{ needs.resolve.outputs.version }}"
+
+          crates_io_status() {
+            local package="$1"
+            local url="https://crates.io/api/v1/crates/$package/$version"
+            local status=""
+
+            for attempt in $(seq 1 5); do
+              if status="$(curl \
+                --silent \
+                --show-error \
+                --connect-timeout 15 \
+                --max-time 30 \
+                --user-agent "hydracache-release-workflow/$version (+https://github.com/$GITHUB_REPOSITORY)" \
+                --output /dev/null \
+                --write-out '%{http_code}' \
+                "$url")"; then
+                case "$status" in
+                  200|404)
+                    printf '%s' "$status"
+                    return 0
+                    ;;
+                  429|5??)
+                    ;;
+                  *)
+                    printf '%s' "$status"
+                    return 0
+                    ;;
+                esac
+              fi
+
+              if [[ "$attempt" -lt 5 ]]; then
+                echo "Transient crates.io probe failure for $package@$version (status ${status:-transport-error}, attempt $attempt/5)." >&2
+                sleep "$((attempt * 2))"
+              fi
+            done
+
+            if [[ -n "$status" && "$status" != "000" ]]; then
+              printf '%s' "$status"
+              return 0
+            fi
+            return 1
+          }
+
+          wait_for_registry_package() {
+            local package="$1"
+            for attempt in $(seq 1 30); do
+              if cargo info "$package@$version" >/dev/null 2>&1; then
+                return 0
+              fi
+              echo "Waiting for $package@$version in the crates.io index ($attempt/30)..."
+              sleep 10
+            done
+            return 1
+          }
+
+          while IFS= read -r package; do
+            [[ -z "$package" ]] && continue
+            if ! status="$(crates_io_status "$package")"; then
+              echo "Could not query crates.io for $package@$version after 5 attempts." >&2
+              exit 1
+            fi
+            case "$status" in
+              200)
+                if ! wait_for_registry_package "$package"; then
+                  echo "$package@$version exists in the API but not in the Cargo index." >&2
+                  exit 1
+                fi
+                printf '%s\t%s\n' "$package" "already-published" | tee -a target/release-publish/publication-results.tsv
+                continue
+                ;;
+              404)
+                cargo publish --package "$package" --locked --dry-run
+                cargo publish --package "$package" --locked
+                ;;
+              *)
+                echo "Unexpected crates.io response $status for $package@$version." >&2
+                exit 1
+                ;;
+            esac
+
+            if ! wait_for_registry_package "$package"; then
+              echo "Timed out waiting for $package@$version to appear in the Cargo index." >&2
+              exit 1
+            fi
+            printf '%s\t%s\n' "$package" "published" | tee -a target/release-publish/publication-results.tsv
+          done < target/release-publish/packages.txt
+
+      - name: Upload publication evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: crates-publication-${{ needs.resolve.outputs.version }}
+          path: target/release-publish/publication-results.tsv
+          if-no-files-found: error
+          retention-days: 30
+
+  consumer-verification:
+    name: Verify published crates from crates.io
+    needs: [resolve, publish]
+    if: needs.resolve.outputs.eligible == 'true' && needs.publish.result == 'success'
+    uses: ./.github/workflows/post-publish.yml
+    with:
+      version: ${{ needs.resolve.outputs.version }}
+      metadata_artifact: ${{ needs.resolve.outputs.metadata_artifact }}
+    permissions:
+      contents: read
+
+  github-release:
+    name: Create GitHub Release after publication
+    needs: [resolve, publish, consumer-verification]
+    if: needs.resolve.outputs.eligible == 'true' && needs.publish.result == 'success' && needs.consumer-verification.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - name: Checkout candidate commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.resolve.outputs.source_sha }}
+          fetch-depth: 0
+
+      - name: Download validated release metadata and notes
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ needs.resolve.outputs.metadata_artifact }}
+          path: target/release-publish
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.resolve.outputs.version }}
+          RELEASE_TAG: ${{ needs.resolve.outputs.tag }}
+          RELEASE_NOTES: target/release-publish/release-notes.md
+        shell: bash
+        run: |
+          set -euo pipefail
+          title="HydraCache $RELEASE_VERSION"
+          prerelease_flag=()
+          if [[ "$RELEASE_VERSION" == *-* ]]; then
+            prerelease_flag=(--prerelease)
+          fi
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release edit "$RELEASE_TAG" \
+              --title "$title" \
+              --notes-file "$RELEASE_NOTES" \
+              "${prerelease_flag[@]}"
+          else
+            gh release create "$RELEASE_TAG" \
+              --title "$title" \
+              --notes-file "$RELEASE_NOTES" \
+              --verify-tag \
+              "${prerelease_flag[@]}"
+          fi

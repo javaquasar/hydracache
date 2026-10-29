@@ -1,0 +1,42 @@
+//! Fixed source constructors only; cannot enroll or execute a runtime.
+use sha2::{Digest, Sha256};
+pub const BASE: &str = "52abf7ab0efd35557eb3117a45c253e0ebe76469";
+pub const HISTORY: &str = "crates/xtask/tests/authority_rust_history_074.rs";
+pub fn digest(raw: &str) -> String {
+    Sha256::digest(raw.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+pub fn rules() -> &'static serde_json::Value {
+    static VALUE: std::sync::OnceLock<serde_json::Value> = std::sync::OnceLock::new();
+    VALUE.get_or_init(|| {
+        let raw = include_str!("rules.json");
+        assert_eq!(
+            digest(raw),
+            "188763c292af6f6f603414ace264926009c59d7795cea1047084867609c77023"
+        );
+        let value: serde_json::Value = serde_json::from_str(raw).unwrap();
+        assert_eq!(value["schema"], "hc074-history-status-readers-v1");
+        assert_eq!(value["baseline"], BASE);
+        assert_eq!(value["rows"].as_array().unwrap().len(), 3);
+        assert_eq!(value["rows"][0]["path"], HISTORY);
+        value
+    })
+}
+pub fn current(path: &str, previous: &str) -> Option<String> {
+    let row = rules()["rows"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["path"] == path)?;
+    let previous = previous.replace("\r\n", "\n");
+    assert_eq!(digest(&previous), row["before_sha256"].as_str().unwrap());
+    let before = row["before"].as_str().unwrap();
+    assert!(!before.is_empty());
+    assert_eq!(previous.matches(before).count(), 1);
+    let mut result = previous.replace(before, row["after"].as_str().unwrap());
+    result.push_str(row["append"].as_str().unwrap());
+    assert_eq!(digest(&result), row["after_sha256"].as_str().unwrap());
+    Some(result)
+}

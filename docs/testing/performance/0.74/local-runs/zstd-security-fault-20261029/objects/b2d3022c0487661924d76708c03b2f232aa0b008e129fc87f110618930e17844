@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\bin\\rustfmt.exe",
+    "--edition",
+    "2021",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\zstd-security-fault-074\\probe.rs"
+  ],
+  "retry": false
+}

@@ -1,0 +1,69 @@
+"""Fixed local review commands using the unchanged 1200-second CI review Job."""
+from pathlib import Path
+import json
+import os
+import shutil
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[2]
+BASE = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT/'tools/windows-workspace-preflight-074'))
+import owned
+import prepare as p
+
+COMMANDS = {
+    'doc-zstd': ['cargo','xtask','doc-check'],
+    'doc-final': ['cargo','xtask','doc-check'],
+    'doc-check': ['cargo','xtask','doc-check'],
+    'runner-controls-final': [sys.executable,'-B','-m','unittest','discover','-s',
+        'tools/windows-workspace-preflight-074','-p','test_*.py','-v'],
+    'markdown-controls': [sys.executable,'-B','-m','unittest','discover','-s',
+        'tools/markdown-security-review-074','-p','test_*.py','-v'],
+    'root-metadata': ['cargo','metadata','--offline','--locked','--all-features','--format-version','1'],
+    'coverage-controls': [sys.executable,'-B','-m','unittest','discover','-s',
+        'tools/windows-workspace-preflight-074','-p','test_*.py','-v'],
+    'runner-controls': [sys.executable,'-B','-m','unittest','discover','-s',
+        'tools/windows-workspace-preflight-074','-p','test_*.py','-v'],
+    'source-review': [sys.executable,'-B',str(ROOT/'tools/windows-workspace-preflight-074/prepare.py'),
+        str(BASE/'source-review-data')],
+}
+
+
+def snapshot():
+    raw = subprocess.check_output(['git','ls-files','-z','--cached','--others','--exclude-standard','--',
+        'Cargo.toml','Cargo.lock','deny.toml','.cargo','crates','tools','scripts','third_party','fuzz','tests/post-publish-consumer','console','.github','.gitattributes'], cwd=ROOT)
+    return {n:p.sha((ROOT/n).read_bytes()) for n in sorted({v.decode() for v in raw.split(b'\0') if v})}
+
+
+label = sys.argv[1]
+p.require(label in COMMANDS, 'fixed review command')
+out = BASE/label
+if sys.argv[2:] == ['worker']:
+    def capacity():
+        if shutil.disk_usage(ROOT).free < p.FLOOR:
+            raise owned.CapacityError('original local four-GiB floor')
+    execution = owned._owned(owned.load_job().WindowsJob(), COMMANDS[label], str(ROOT), capacity, bound=1200)
+    p.write(out, 'execution.json', execution)
+    raise SystemExit(execution['exit'])
+p.require(len(sys.argv) == 2, 'one original bounded review command')
+out.mkdir(exist_ok=False)
+(out/'launcher.py').write_bytes(Path(__file__).read_bytes())
+with (out/'stdout.log').open('xb') as stdout, (out/'stderr.log').open('xb') as stderr:
+    before = snapshot()
+    head = subprocess.check_output(['git','rev-parse','HEAD'], cwd=ROOT).decode().strip()
+    p.write(out, 'intent.json', dict(argv=COMMANDS[label],source=before,head=head,bound_seconds=1200,
+        source_sha256=p.sha(Path(__file__).read_bytes()),retry=False,server=False,services=False,clocks=False))
+    child = subprocess.run([sys.executable,'-B',str(Path(__file__)),label,'worker'], cwd=ROOT,
+        stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,timeout=1210,
+        env=dict(os.environ,CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2'))
+    after = snapshot()
+    execution = json.loads((out/'execution.json').read_bytes())
+    result = dict(exit=child.returncode,source_unchanged=before==after,source_after=after,
+        changed=[n for n in before.keys()|after.keys() if before.get(n)!=after.get(n)],
+        head_unchanged=head==subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+        retired=execution['retired'],release_admitted=False)
+    p.write(out,'result.json',result)
+p.require(child.returncode==0 and result['source_unchanged'] and result['head_unchanged']
+          and execution['retired'] and not execution['errors'], 'complete fixed review command')
+print(json.dumps(dict(label=label,passed=True)))
