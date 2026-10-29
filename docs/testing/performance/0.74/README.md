@@ -7571,3 +7571,13 @@ does not establish a production regression: the actual DeltaSerializer has a fix
 MTU and stop-on-false, and cached continuation under the same budget is rejected
 by the existing early floor. Q remains unadopted; preserve both results and finish
 the separate exact fixed-caller applicability gate before any acceptance/CPU/RSS.
+
+The separate [actual fixed-MTU caller gate](chitchat-caller-result-20261029.md)
+now passes one B/P/Q/Q/P/B cohort on 30 canonical cells. All admissions/wires,
+Q/B Rust/native-C fields and checkpoint capacities match. P's large-sequence
+compression calls 9/14 become Q's 6/10, equal to B, including final serialization.
+The initial metadata-boundary error and first B canonical-input assertion remain;
+both are corrected before any performance cohort, with coverage/input controls.
+All three check/strict-Clippy peers, eight offline controls and local contracts
+pass. The generic component gate stays negative. GNU MSRV/Windows, CPU/RSS,
+distribution/Root/security/full gates and original-execution/recovery remain open.

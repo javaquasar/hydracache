@@ -1,0 +1,17 @@
+{
+  "cases": [
+    "delta::cost_review::allocator_control",
+    "delta::cost_review::native_c_allocator_control",
+    "delta::cost_review::native_rust_tag_control",
+    "delta::mtu_review::supported_delta_operations",
+    "serialize::stateful_review::stateful_semantics_control",
+    "serialize::stateful_review::stateful_capacity_control",
+    "delta::cost_review::actual_caller::fixed_caller_semantics_control",
+    "delta::cost_review::actual_caller::fixed_caller_capacity_control"
+  ],
+  "complete": true,
+  "image": {
+    "path": "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/caller-r2-targets/P/x86_64-unknown-linux-gnu/release/deps/chitchat-185f33873ca268c9",
+    "sha256": "d90b7610c7d9abfebb15b9f1f58f172143147b1c977e175067b6205a9c899b5b"
+  }
+}

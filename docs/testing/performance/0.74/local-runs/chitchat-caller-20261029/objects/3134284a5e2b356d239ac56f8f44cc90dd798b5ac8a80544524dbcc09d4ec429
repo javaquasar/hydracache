@@ -1,0 +1,11 @@
+
+running 1 test
+test delta::cost_review::actual_caller::fixed_caller_capacity_control ... ok
+
+successes:
+
+successes:
+    delta::cost_review::actual_caller::fixed_caller_capacity_control
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 133 filtered out; finished in 0.00s
+

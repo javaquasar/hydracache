@@ -1,0 +1,61 @@
+"""Restore unchanged actual variants and add only diagnostic caller entrypoints."""
+import json
+import os
+import re
+import common as c
+
+INDEX='0b195601989e9109725812ef5f8da76b3b2c9b4b42aed57e8e7992b6a25f35fa'
+
+
+def packet():
+    folder=c.ROOT/'docs/testing/performance/0.74/local-runs/chitchat-stateful-20261029'
+    raw=(folder/'index.json').read_bytes();c.need(c.sha(raw)==INDEX,'sealed generic refusal retained')
+    members=json.loads(raw)['members']
+    def get(name):
+        row=members[name];body=(folder/'objects'/row['sha256']).read_bytes()
+        c.need(c.sha(body)==row['sha256'] and len(body)==row['bytes'],'exact source member '+name);return body
+    return members,get
+
+
+def change(text,before,after):
+    c.need(text.count(before)==1,'one exact test-only anchor '+before[:80]);return text.replace(before,after)
+
+
+def main():
+    members,get=packet();(c.BASE/'input').mkdir()
+    observer=get('capture/observer.rs').decode()
+    relative=os.path.relpath(c.TOOLS/'caller.rs',c.BASE).replace('\\','/')
+    observer+='\n#[path="'+relative+'"]\npub(crate) mod actual_caller;\n'
+    (c.BASE/'observer.rs').write_text(observer,encoding='utf8',newline='\n')
+    for variant in ('B','P','Q'):
+        prefix='capture/fixtures/'+variant+'/';folder=c.BASE/'fixtures'/variant
+        for name in members:
+            if name.startswith(prefix):
+                path=folder/name[len(prefix):];path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(get(name))
+        path=folder/'src/delta.rs';text=path.read_text(encoding='utf8')
+        relative=os.path.relpath(c.BASE/'observer.rs',path.parent).replace('\\','/')
+        text=re.sub(r'(?<=#\[path = ")[^"\n]+(?="\]\npub\(crate\) mod cost_review;)',relative,text)
+        text+='\n#[cfg(test)]\nconst CALLER_VARIANT:&str="'+variant+'";\n';path.write_text(text,encoding='utf8',newline='\n')
+        path=folder/'src/serialize.rs';text=path.read_text(encoding='utf8')
+        text=change(text,'    stateful_review::record();','    stateful_review::record();\n    #[cfg(test)]\n    crate::delta::cost_review::actual_caller::record_compression();')
+        cache='self.tail_cache' if variant=='Q' else 'None'
+        text+='\n#[cfg(test)]\nimpl CompressedStreamWriter {\npub(crate) fn caller_inventory(&self)->([usize;3],[usize;3],Option<usize>) {\n'
+        text+='([self.output.len(),self.uncompressed_block.len(),self.compressed_block.len()],[self.output.capacity(),self.uncompressed_block.capacity(),self.compressed_block.capacity()],'+cache+')\n}\n}\n'
+        path.write_text(text,encoding='utf8',newline='\n')
+        catalog=json.loads(get('capture/build-'+variant+'/native/catalog.json'))
+        added=['delta::cost_review::actual_caller::'+n for n in ('fixed_caller_semantics_control','fixed_caller_capacity_control','fixed_caller_observations')]
+        c.write(c.BASE/'input','catalog-'+variant+'.json',sorted(catalog+added))
+    for name in members:
+        if name.startswith('capture/input/') and '/catalog-' not in name:
+            dest=c.BASE/name.removeprefix('capture/');dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(get(name))
+    names=set(c.source());frame=json.loads(get('capture/frame.json'))
+    for name,digest in frame.items():
+        if name.startswith('tools/') and name.endswith('.rs'):
+            c.need(c.sha((c.ROOT/name).read_bytes())==digest,'unchanged previous Rust observer '+name);names.add(name)
+    for folder in (c.BASE/'fixtures',c.BASE/'input'):
+        names|={p.relative_to(c.ROOT).as_posix() for p in folder.rglob('*') if p.is_file()}
+    names.add((c.BASE/'observer.rs').relative_to(c.ROOT).as_posix());c.write(c.BASE,'input-names.json',sorted(names))
+    c.write(c.BASE,'derivation.json',dict(predecessor=INDEX,table_sha256=c.TABLE_SHA,production_methods_changed=False,generic_resource_gate_remains_negative=True,root_adopted=False))
+
+
+if __name__=='__main__':main()

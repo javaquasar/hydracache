@@ -1,0 +1,150 @@
+{
+  "archived_code_executed": false,
+  "members": {
+    "capture/byte-verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/byte-verify/intent.json": {
+      "bytes": 11472,
+      "sha256": "a9a56152dd347c2d166b652c3c5c9c8599f659047913adb71a077f0c1e64fe8c"
+    },
+    "capture/byte-verify/producer.py": {
+      "bytes": 690,
+      "sha256": "315ca8507f219fa0baa5fa9abc8d44e198188ded3cffd1442cceb74a923d6d33"
+    },
+    "capture/byte-verify/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/byte-verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/byte-verify/stdout.log": {
+      "bytes": 220,
+      "sha256": "0b6551a942016cd8803a65743a33d9e9baf047d9e5605b9c74e812522195a6ad"
+    },
+    "capture/doc-check/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/doc-check/intent.json": {
+      "bytes": 11322,
+      "sha256": "02c9ad1ffce0e0703de79fdb81ac7259dd347d684acff7157873684c1fdd03f1"
+    },
+    "capture/doc-check/producer.py": {
+      "bytes": 690,
+      "sha256": "315ca8507f219fa0baa5fa9abc8d44e198188ded3cffd1442cceb74a923d6d33"
+    },
+    "capture/doc-check/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "documents/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1574547,
+      "sha256": "9230fdd1ee7dce26df70c9316c0c111fd6c6e88ebe15907eef61d41081e6ab4c"
+    },
+    "documents/docs/testing/performance/0.74/README.md": {
+      "bytes": 516776,
+      "sha256": "cb698e1b5d7dd4d0e073c41887af5b1d7a192e0197e51225ded20554f9da16f0"
+    },
+    "documents/docs/testing/performance/0.74/chitchat-caller-result-20261029.md": {
+      "bytes": 7240,
+      "sha256": "00161d6fd99158b14bf1e9047e2ea0e44338a64b1f42af8a1cd800347667dd8b"
+    },
+    "documents/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 47869,
+      "sha256": "114b4c8eb0738fd76a9f0891258bf6336c5a496383665e166b5729a35b4b784d"
+    },
+    "source/tools/chitchat-caller-074/.gitattributes": {
+      "bytes": 57,
+      "sha256": "aba13cd704b3933b443a1fb29071933f086bc95e968f15e5d2707c263b473cfb"
+    },
+    "source/tools/chitchat-caller-074/README.md": {
+      "bytes": 4413,
+      "sha256": "4cbbc1de6a6b44bae4927abdfcbf57404ec3ae35d2c3e337e4f7fb3979bd9115"
+    },
+    "source/tools/chitchat-caller-074/analyze.py": {
+      "bytes": 7875,
+      "sha256": "a2a554b423c094e142584f2cb91643afe0ffdde5a9043d712e50c68cff96db2f"
+    },
+    "source/tools/chitchat-caller-074/caller.rs": {
+      "bytes": 5708,
+      "sha256": "235499f1627ab07a176f1b6a8700b1dbf5625340bd20fa2a2cc7ec4ee78f21f4"
+    },
+    "source/tools/chitchat-caller-074/cases-r1.json": {
+      "bytes": 399366,
+      "sha256": "4580414a4f645d2e29bf2cc1f33beac321791f28a2f5bc2b0dc6fec77b6531dc"
+    },
+    "source/tools/chitchat-caller-074/cases-r2.json": {
+      "bytes": 399168,
+      "sha256": "4a3308a82d014fb58df808a9f3984922537a80c02219610cdf5ee6fa1ec4a1f9"
+    },
+    "source/tools/chitchat-caller-074/cases.json": {
+      "bytes": 399450,
+      "sha256": "abe9b000b60c1e646902084dc18e95ca1e4d77d03165ec49efff84633206eead"
+    },
+    "source/tools/chitchat-caller-074/common.py": {
+      "bytes": 1083,
+      "sha256": "5372a039cbda88098639410d40910df8773dfb021d55fdad1a59039276368346"
+    },
+    "source/tools/chitchat-caller-074/gates.py": {
+      "bytes": 690,
+      "sha256": "315ca8507f219fa0baa5fa9abc8d44e198188ded3cffd1442cceb74a923d6d33"
+    },
+    "source/tools/chitchat-caller-074/generate_table.py": {
+      "bytes": 1569,
+      "sha256": "4bc339ed6e947eeb786b19dcb7e943426fe7ff51f868df066513103148f58224"
+    },
+    "source/tools/chitchat-caller-074/launch.py": {
+      "bytes": 1338,
+      "sha256": "ede303d83e6b178fcae5c4a943b28cca8c76c1774f9f903330ead845e67d2f57"
+    },
+    "source/tools/chitchat-caller-074/prepare.py": {
+      "bytes": 4052,
+      "sha256": "4102b3887001767da84307859cc1e541aaa0e1edb4b5bba7850438978c1422d7"
+    },
+    "source/tools/chitchat-caller-074/retain.py": {
+      "bytes": 2948,
+      "sha256": "5befacb9124d6915744629e4e1c128107786a89665dfb83463928e9bc11c5f7e"
+    },
+    "source/tools/chitchat-caller-074/retain_verification.py": {
+      "bytes": 921,
+      "sha256": "253692808a9994ceeff081ec63dbad6c54670b3833cb0f68150602407d32bb9a"
+    },
+    "source/tools/chitchat-caller-074/review_table.py": {
+      "bytes": 1831,
+      "sha256": "121047def94d6b6087eb542d5d867986027d2702edbc3b2702eb0123ca1b192c"
+    },
+    "source/tools/chitchat-caller-074/run.py": {
+      "bytes": 2597,
+      "sha256": "c100ecd720fa60488370919922c8e79452939fc44d4d9e05230fa67a2a4f8f94"
+    },
+    "source/tools/chitchat-caller-074/test_analysis.py": {
+      "bytes": 6114,
+      "sha256": "9db9cf835ac08544e5dc405601b8985331f2a6dd9f0d7bf654bfb65338348f1d"
+    },
+    "source/tools/chitchat-caller-074/validate_table.py": {
+      "bytes": 2369,
+      "sha256": "892eac99a353bd524d31df19624a254f761f9472adeb28ea637ff9d54c2291fe"
+    },
+    "source/tools/chitchat-caller-074/verify.py": {
+      "bytes": 3460,
+      "sha256": "a50bcd039b55b126a98c83b66b08d1dee9a30d3c1e22980b892ba07afd3acd51"
+    }
+  },
+  "predecessor_index_sha256": "874ba6355b98229cbeab11c5b0742e439cbced847e6954478234e10e92d7ef56",
+  "release_admitted": false,
+  "root_adopted": false,
+  "schema": "hc074-chitchat-caller-verification-v1",
+  "source_head_observation": "1ba2bc5d08929af420600fd6779dca92602ef7db"
+}

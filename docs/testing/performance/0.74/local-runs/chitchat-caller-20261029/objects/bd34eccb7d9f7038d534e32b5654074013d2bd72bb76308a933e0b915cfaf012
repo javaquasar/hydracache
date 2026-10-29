@@ -1,0 +1,13 @@
+test_ambiguous_branch_and_stop_on_false_are_required (test_analysis.Accounting.test_ambiguous_branch_and_stop_on_false_are_required) ... ok
+test_complete_runtime_bodies_and_observer_prefix_are_unchanged (test_analysis.Accounting.test_complete_runtime_bodies_and_observer_prefix_are_unchanged) ... ok
+test_each_capacity_growth_refuses (test_analysis.Accounting.test_each_capacity_growth_refuses) ... ok
+test_every_allocation_field_refuses_individually (test_analysis.Accounting.test_every_allocation_field_refuses_individually) ... ok
+test_exact_actual_positive_does_not_erase_component_negative (test_analysis.Accounting.test_exact_actual_positive_does_not_erase_component_negative) ... ok
+test_first_fixture_refusals_and_current_canonical_table_remain (test_analysis.Accounting.test_first_fixture_refusals_and_current_canonical_table_remain) ... ok
+test_observer_errors_nonrepeatability_and_scope_refuse (test_analysis.Accounting.test_observer_errors_nonrepeatability_and_scope_refuse) ... ok
+test_order_payload_budget_or_semantics_cannot_drift (test_analysis.Accounting.test_order_payload_budget_or_semantics_cannot_drift) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 3.101s
+
+OK

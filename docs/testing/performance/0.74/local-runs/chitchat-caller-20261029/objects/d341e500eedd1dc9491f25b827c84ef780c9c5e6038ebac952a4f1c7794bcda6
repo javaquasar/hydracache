@@ -1,0 +1,54 @@
+# Exact DeltaSerializer resource applicability for Q
+
+Continue the existing Q, not a new optimization. Keep the generic stateful gate
+negative (0b195601989e9109725812ef5f8da76b3b2c9b4b42aed57e8e7992b6a25f35fa)
+and the original 239-case subgate positive. The former changes budgets and continues
+after false, outside the real caller's fixed-MTU/stop-on-false contract. Its source-
+bound applicability audit establishes this before the current cohort is prepared.
+
+Freeze cases-r2.json before execution using generate_table.py: six MTUs 100,198,1000,
+16384,40000,65507; five sequence families; seed 0x0741028; complete keys, values,
+node IDs/ports and versions. Actual DeltaSerializer::with_mtu chooses the threshold.
+Every method uses the same private MTU and the driver stops on its first false.
+Include real constructor, node/KV/max-version/DeltaBuilder work, finish and final
+Delta::serialize_to_vec, then drop all owned data. The final serialization's extra
+compression pass must remain inside measurement. No Blob or forced cache branch.
+
+Use unchanged B/P/Q production methods, test-only visibility/counter/inventory,
+qualified original C object/default allocator and fixed offline graph. One
+B/P/Q/Q/P/B cohort, two observations/cell/process. All actual-image controls must
+pass first. Require complete P/Q wire/admissions, exact source/table/body joins,
+inner/cross-process repetition and zero failed/external/live/errors. Compare B/Q
+only on equal work; keep any unsafe B discrepancy explicit. Never change inputs
+after observing Q. Require no increase in all twelve allocation fields and summed
+Vec capacities per comparable checkpoint. Pointwise failure blocks this caller;
+no rescue/retry-to-pass or threshold change. Passing only qualifies this caller,
+never changes the negative generic gate, and does not adopt Root or qualify CPU,
+RSS/allocator retention, MSRV/Windows, distribution or full release/host gates.
+
+Use bounded stack/TLS diagnostics; table decode, JSON/hex and invariant controls
+are outside measured regions. Native release Rust 1.94, local 1200/native 1100
+seconds, backing/native four-GiB floors and five-second poll/retirement remain.
+No product live checks/windows, services, clocks, server, install or product load.
+Exclusive phases prepare/format/stage/c-control, build/control B/P/Q, cohort-1..6,
+check/clippy B/P/Q. Preserve first outcomes. No subagents or new infrastructure.
+
+Before any cohort or P/Q build, source review refuses initial table abe9b000...:
+the longer node-a/large identities add six serialized bytes to the original
+node/k fixture, making the supposed large-admission old floor MTU+4. Initial
+prepare/compiler/control-object receipts and source capsule are retained. The
+separate r1 context restores original node/k identities, retains all numerical
+MTUs/payload lengths and freezes table
+4580414a4f645d2e29bf2cc1f33beac321791f28a2f5bc2b0dc6fec77b6531dc.
+The new baseline/actual-image control requires large admissions and P/Q ambiguous
+path coverage before any observation. This is a premeasurement methodology fix,
+not a change after seeing a Q performance result or a claim from unexercised code.
+
+The first r1 B semantic control then refuses final wire length 50 != stored 60.
+Its multi-node recipe incorrectly sets max-version after adding KV, violating
+NodeDelta's canonical invariant and the actual compute_delta empty-node branch.
+Preserve this first failure and all r1 B/P/Q compiler receipts; no P/Q controls or
+cohort ran. The separate r2 table uses max-version only on empty nodes, keeps all
+MTUs/other sequence families/boundary payloads and freezes SHA-256
+4a3308a82d014fb58df808a9f3984922537a80c02219610cdf5ee6fa1ec4a1f9.
+Independent canonical-input preflight precedes preparation and semantic controls.

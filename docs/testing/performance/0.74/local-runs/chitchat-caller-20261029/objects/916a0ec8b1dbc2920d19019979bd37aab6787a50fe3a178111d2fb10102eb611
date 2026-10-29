@@ -1,0 +1,56 @@
+{
+  "complete": true,
+  "initial_table_refused": true,
+  "Q_data_observed": false,
+  "cohort_dispatched": false,
+  "source": {
+    "src/serialize.rs": "d21a51e2908a11843bad9920671e474f2afc611a5a25d0f56dce5812634d78e0",
+    "src/delta.rs": "316fd2edbb30c90e9826a9dd6f08e2d04f05f1a2484dc04842596ff4195f9c17"
+  },
+  "tables": [
+    {
+      "file": "cases.json",
+      "sha256": "abe9b000b60c1e646902084dc18e95ca1e4d77d03165ec49efff84633206eead",
+      "observations": [
+        {
+          "name": "40000/large-then-small",
+          "node_bytes": 40,
+          "item_bytes": 39957,
+          "old_floor": 40004,
+          "mtu": 40000,
+          "admitted_by_floor": false
+        },
+        {
+          "name": "65507/large-then-small",
+          "node_bytes": 40,
+          "item_bytes": 65464,
+          "old_floor": 65511,
+          "mtu": 65507,
+          "admitted_by_floor": false
+        }
+      ]
+    },
+    {
+      "file": "cases-r1.json",
+      "sha256": "4580414a4f645d2e29bf2cc1f33beac321791f28a2f5bc2b0dc6fec77b6531dc",
+      "observations": [
+        {
+          "name": "40000/large-then-small",
+          "node_bytes": 38,
+          "item_bytes": 39953,
+          "old_floor": 39998,
+          "mtu": 40000,
+          "admitted_by_floor": true
+        },
+        {
+          "name": "65507/large-then-small",
+          "node_bytes": 38,
+          "item_bytes": 65460,
+          "old_floor": 65505,
+          "mtu": 65507,
+          "admitted_by_floor": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "first actual owned outcome: 6",
+    "traceback": "Traceback (most recent call last):\n  File \"/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-caller-r1/tools/chitchat-caller-074/run.py[owned-derivative]\", line 106, in session\n  File \"/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-caller-r1/tools/chitchat-caller-074/run.py[owned-derivative]\", line 41, in invoke\n  File \"/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-caller-r1/tools/chitchat-native-cost-074/common.py\", line 34, in need\n    if not value:raise ValueError(reason)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: first actual owned outcome: 6\n",
+    "type": "ValueError"
+  },
+  "root_adopted": false
+}

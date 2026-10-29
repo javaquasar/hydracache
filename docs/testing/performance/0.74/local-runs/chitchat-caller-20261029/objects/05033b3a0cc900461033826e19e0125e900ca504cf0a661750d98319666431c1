@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "/usr/bin/gcc",
+    "-std=c11",
+    "-O2",
+    "-g",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-fno-builtin",
+    "-fno-lto",
+    "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-caller-r1/tools/chitchat-native-cost-074/control.c",
+    "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/wrap.o",
+    "-Wl,--wrap=malloc,--wrap=calloc,--wrap=realloc,--wrap=free",
+    "-pthread",
+    "-o",
+    "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/c-control-caller-r1"
+  ],
+  "deadline": 3898.276618732,
+  "frame": "6651dad3f4ac6e1e2a303a9ccf6cce7a9c98a4ef3e2f80df8ff4512a0641b24a",
+  "retry": false
+}

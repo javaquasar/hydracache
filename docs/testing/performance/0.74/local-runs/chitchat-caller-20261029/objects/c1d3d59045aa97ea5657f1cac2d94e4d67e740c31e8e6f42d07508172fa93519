@@ -1,0 +1,11 @@
+{
+  "first_table_refusal": "max-version is for an empty node: 100/multiple-nodes",
+  "complete": true,
+  "cohort_dispatched": false,
+  "current_Q_performance_observed": false,
+  "first_failure_stdout_sha256": "ffe610b3825a19ed0d13abf55ee59f2e637f54317705e2ff666d0532a07f1e6b",
+  "source": {
+    "delta.rs": "316fd2edbb30c90e9826a9dd6f08e2d04f05f1a2484dc04842596ff4195f9c17",
+    "state.rs": "6f078fb9b049fae017848cbee7e84346c9479942a56d2b7f6505b929ff31c406"
+  }
+}

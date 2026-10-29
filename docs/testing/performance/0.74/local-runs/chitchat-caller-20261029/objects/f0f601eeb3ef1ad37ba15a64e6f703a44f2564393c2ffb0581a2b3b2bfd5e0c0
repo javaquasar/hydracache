@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/caller-r1-targets/Q/x86_64-unknown-linux-gnu/release/deps/chitchat-185f33873ca268c9",
+    "--list"
+  ],
+  "deadline": 3952.865582339,
+  "frame": "6651dad3f4ac6e1e2a303a9ccf6cce7a9c98a4ef3e2f80df8ff4512a0641b24a",
+  "retry": false
+}

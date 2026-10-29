@@ -665,3 +665,13 @@ stop-on-false caller and proves same-budget cached continuation hits the existin
 early rejection floor. No actual-caller regression/pass is inferred. Next freeze
 and qualify that exact real-caller request table/closure; do not open a replacement
 hypothesis or CPU rescue, adopt Q, waive the component result or rerun old inputs.
+
+The [exact DeltaSerializer caller continuation](chitchat-caller-result-20261029.md)
+now closes the frozen 30-cell fixed-MTU resource subgate: Q/B admissions, complete
+wires, both Rust/native-C fields and buffer capacities match in B/P/Q/Q/P/B.
+Large-sequence P/Q compression counts are 9/6 and 14/10. Both premeasurement
+fixture errors and the first B assertion stay retained; runtime methods/thresholds
+are unchanged. GNU 1.94 checks/strict Clippy and eight offline controls pass. The
+general component gate stays negative; no Root adoption or CPU/RSS/retention claim.
+Next finish GNU MSRV/Windows on the same source, remaining cost/retention and
+maintained distribution, then actual Root policy/package/workspace gates.

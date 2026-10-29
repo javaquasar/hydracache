@@ -1,0 +1,34 @@
+# Exact DeltaSerializer resource applicability for Q
+
+Continue the existing Q, not a new optimization. Keep the generic stateful gate
+negative (0b195601989e9109725812ef5f8da76b3b2c9b4b42aed57e8e7992b6a25f35fa)
+and the original 239-case subgate positive. The former changes budgets and continues
+after false, outside the real caller's fixed-MTU/stop-on-false contract. Its source-
+bound applicability audit establishes this before the current cohort is prepared.
+
+Freeze cases.json before execution using generate_table.py: six MTUs 100,198,1000,
+16384,40000,65507; five sequence families; seed 0x0741028; complete keys, values,
+node IDs/ports and versions. Actual DeltaSerializer::with_mtu chooses the threshold.
+Every method uses the same private MTU and the driver stops on its first false.
+Include real constructor, node/KV/max-version/DeltaBuilder work, finish and final
+Delta::serialize_to_vec, then drop all owned data. The final serialization's extra
+compression pass must remain inside measurement. No Blob or forced cache branch.
+
+Use unchanged B/P/Q production methods, test-only visibility/counter/inventory,
+qualified original C object/default allocator and fixed offline graph. One
+B/P/Q/Q/P/B cohort, two observations/cell/process. All actual-image controls must
+pass first. Require complete P/Q wire/admissions, exact source/table/body joins,
+inner/cross-process repetition and zero failed/external/live/errors. Compare B/Q
+only on equal work; keep any unsafe B discrepancy explicit. Never change inputs
+after observing Q. Require no increase in all twelve allocation fields and summed
+Vec capacities per comparable checkpoint. Pointwise failure blocks this caller;
+no rescue/retry-to-pass or threshold change. Passing only qualifies this caller,
+never changes the negative generic gate, and does not adopt Root or qualify CPU,
+RSS/allocator retention, MSRV/Windows, distribution or full release/host gates.
+
+Use bounded stack/TLS diagnostics; table decode, JSON/hex and invariant controls
+are outside measured regions. Native release Rust 1.94, local 1200/native 1100
+seconds, backing/native four-GiB floors and five-second poll/retirement remain.
+No product live checks/windows, services, clocks, server, install or product load.
+Exclusive phases prepare/format/stage/c-control, build/control B/P/Q, cohort-1..6,
+check/clippy B/P/Q. Preserve first outcomes. No subagents or new infrastructure.

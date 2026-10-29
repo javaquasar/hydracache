@@ -1,0 +1,48 @@
+{
+  "CPU_qualified": false,
+  "MSRV_qualified": false,
+  "RSS_qualified": false,
+  "Windows_qualified": false,
+  "allocation_changes": [
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -718374
+      },
+      "name": "40000/large-then-small",
+      "peer": "P",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": -8,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -1134556
+      },
+      "name": "65507/large-then-small",
+      "peer": "P",
+      "scope": "c"
+    }
+  ],
+  "allocation_regressions": [],
+  "allocator_retention_qualified": false,
+  "buffer_capacity_regressions": [],
+  "cases": 30,
+  "comparisons": {
+    "B": 30,
+    "P": 30
+  },
+  "complete": true,
+  "excluded_unsafe_B": [],
+  "fixed_caller_resource_gate_pass": true,
+  "generic_component_gate_pass": false,
+  "integration_decision": "fixed-caller-resource-subgate-only",
+  "observations_per_case_per_image": 4,
+  "processes": 6,
+  "release_admitted": false,
+  "root_adopted": false,
+  "table_sha256": "4a3308a82d014fb58df808a9f3984922537a80c02219610cdf5ee6fa1ec4a1f9"
+}
