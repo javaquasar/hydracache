@@ -91,6 +91,15 @@ def phase(mode):
     print((OUT/('remote-'+mode+'.stdout.log')).read_text())
 
 
+def worker_controls():
+    root=package();expected=json.loads((OUT/'prepared.json').read_bytes())['files']['stage.py']
+    code=(HERE/'worker_control.py').read_bytes()
+    (OUT/'worker-controls-producer.py').write_bytes(code)
+    d.call('worker-controls',d.SSH+['sudo -n /usr/bin/python3 -B - '+shlex.quote(root)+' '+expected],data=code,bound=90)
+    result=json.loads((OUT/'worker-controls.stdout.log').read_bytes());assert result['complete'] and result['stable_supervisor_unchanged']
+    print(json.dumps(result))
+
+
 def collect(mode):
     root=package();script='''import io,json,os,pathlib,sys,tarfile
 p=pathlib.Path(PACKAGE)
@@ -101,6 +110,7 @@ else:
  roots=[p]
  if (p/'faults-once/result.json').is_file():roots += [pathlib.Path(x['root']) for x in json.loads((p/'faults-once/result.json').read_bytes())['cases']]
  if (p/'numerical.json').is_file():roots.append(pathlib.Path(json.loads((p/'numerical.json').read_bytes())['root']))
+ if (p/'worker-controls-once/result.json').is_file():roots.append(pathlib.Path(json.loads((p/'worker-controls-once/result.json').read_bytes())['root']))
  with tarfile.open(fileobj=sys.stdout.buffer,mode='w|') as t:
   for root in roots:
    for folder,dirs,names in os.walk(root):
@@ -130,6 +140,7 @@ if __name__=='__main__':
     action=sys.argv[1]
     if action=='prepare':prepare()
     elif action=='stage':stage()
+    elif action=='worker-controls':worker_controls()
     elif action in ('faults','numeric-prepare','launch'):phase('prepare' if action=='numeric-prepare' else action)
     elif action in ('status','collect'):collect(action)
     else:raise ValueError('fixed modes only')

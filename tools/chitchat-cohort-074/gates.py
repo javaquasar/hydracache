@@ -9,4 +9,5 @@ text=text[:start]+"    'format':[sys.executable,'-B','-c',\"import ast,pathlib; 
 text=text.replace('chitchat-stateful-result-20261029.md','chitchat-cohort-result-20261029.md')
 text=text.replace('c.need(mode in commands',"commands['base-controls']=[sys.executable,'-B','-m','unittest','discover','-s','tools/get-owner-scheduled-controls-074','-p','test_maintenance_d3.py','-v']\nc.need(mode in commands")
 text=text.replace('c.need(mode in commands',"commands['controls-prepared']=commands['controls'];commands['syntax-prepared']=commands['format']\nc.need(mode in commands")
+text=text.replace('c.need(mode in commands',"commands['controls-worker']=commands['controls'];commands['syntax-worker']=commands['format']\nc.need(mode in commands")
 exec(compile(text,__file__+'[cohort-owned-offline-check]','exec'),globals())
