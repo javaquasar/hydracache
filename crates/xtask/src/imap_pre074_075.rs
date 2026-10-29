@@ -527,9 +527,13 @@ fn runtime() -> Result<PreparationRuntime, Box<dyn Error>> {
     if fs::metadata(&java)?.len() > 64 * 1024 * 1024 {
         return Err("Java launcher byte bound".into());
     }
+    let mut java_version = Command::new(&java);
+    // Version probes start a JVM too. Ergonomic heap sizing can exceed the
+    // managed process envelope before the launcher prints its fingerprint.
+    java_version.args(["-Xms16m", "-Xmx64m"]);
     Ok(PreparationRuntime {
         rust_fingerprint: fingerprint(Command::new("rustc"))?,
-        java_fingerprint: fingerprint(Command::new(&java))?,
+        java_fingerprint: fingerprint(java_version)?,
         java_launcher_sha256: daemon::binary_digest(&java)?,
     })
 }
@@ -883,6 +887,20 @@ pub fn run(args: Vec<String>, mode: &str) -> Result<(), Box<dyn Error>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn runtime_fingerprint_launches_real_java_within_the_managed_memory_envelope() {
+        let observed = runtime().unwrap();
+        assert!(observed.rust_fingerprint.starts_with("rustc "));
+        assert!(
+            observed.java_fingerprint.starts_with("java ")
+                || observed.java_fingerprint.starts_with("openjdk ")
+        );
+        assert!(crate::imap_qualification_075::hex(
+            &observed.java_launcher_sha256,
+            64
+        ));
+    }
+
     #[test]
     fn artifact_writes_are_bounded_non_overwriting_and_tamper_evident() {
         let root = tempfile::tempdir().unwrap();
