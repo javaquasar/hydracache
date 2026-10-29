@@ -43,7 +43,7 @@ def stage():
     for n in NAMES:assert sha(HERE/n)==p['files'][n]
     remote.put(OUT/'stage-once.json',dict(head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),retry=False))
     d.call('upload-directory',d.SSH+['umask 077; mktemp -d /tmp/hc074-chitchat-r2-upload-20261029.XXXXXX'])
-    upload=(OUT/'upload-directory.stdout.log').read_text().strip();assert re.fullmatch('/tmp/hc074-chitchat-r2-upload-20261029\.[A-Za-z0-9]{6}',upload)
+    upload=(OUT/'upload-directory.stdout.log').read_text().strip();assert re.fullmatch(r'/tmp/hc074-chitchat-r2-upload-20261029\.[A-Za-z0-9]{6}',upload)
     d.call('upload',d.SCP+[str(OUT/'payload.tar.gz'),'hydracache-ax42:'+upload+'/payload.tar.gz'])
     script='''set -eu
 umask 077
@@ -63,7 +63,7 @@ printf 'ROOT=%s\\n' "$root"
     remote.put(OUT/'remote.json',dict(root=matches[0],retry=False));print(matches[0])
 
 def package():
-    name=json.loads((OUT/'remote.json').read_bytes())['root'];assert re.fullmatch('/tmp/hc074-chitchat-r2-package-20261029\.[A-Za-z0-9]{6}',name);return name
+    name=json.loads((OUT/'remote.json').read_bytes())['root'];assert re.fullmatch(r'/tmp/hc074-chitchat-r2-package-20261029\.[A-Za-z0-9]{6}',name);return name
 
 def phase(mode):
     assert mode in ('faults','worker-controls','prepare','launch')
