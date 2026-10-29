@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "ssh",
+    "-T",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ConnectTimeout=15",
+    "-o",
+    "ServerAliveInterval=5",
+    "-o",
+    "ServerAliveCountMax=2",
+    "hydracache-ax42",
+    "sudo -n /usr/bin/python3 -B - /tmp/hc074-chitchat-cohort-package-20261029.oO3u1l 164c2cb908b2cb3872260ffc234b29a70e1a1dfa658a6524b6e580d6aa113dc8"
+  ],
+  "bound_seconds": 90,
+  "retry": false
+}

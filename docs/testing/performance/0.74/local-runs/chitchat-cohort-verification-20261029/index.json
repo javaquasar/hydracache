@@ -1,0 +1,236 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "archived_code_executed": false,
+  "automatic_postflight_pass": false,
+  "manual_supervisor_restored": true,
+  "members": {
+    "capture/byte-verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/byte-verify/intent.json": {
+      "bytes": 7243,
+      "sha256": "87bb77c7a14ded8f4be6e3c6ad9edb95b0b6221c761df81338d93a807acc2e4a"
+    },
+    "capture/byte-verify/producer.py": {
+      "bytes": 1643,
+      "sha256": "e27d9a8d5e90ee7740bfeb9468480cab1dffabdef9fbcd29581bb1d018c3a134"
+    },
+    "capture/byte-verify/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/byte-verify/stderr.log": {
+      "bytes": 112,
+      "sha256": "9e1de5d8e10208b56eaa8476717259cab41cbe7ff9f91743213198c63fdd66ac"
+    },
+    "capture/byte-verify/stdout.log": {
+      "bytes": 356,
+      "sha256": "d433c1ca625f8d9390ea1b692be47c804705ce2f9a9e303b9335aff795c3f427"
+    },
+    "capture/controls-sealed/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/controls-sealed/intent.json": {
+      "bytes": 7445,
+      "sha256": "2b43ec3744e2399baeaf1ed8f99d458cbb8964e96eb9e84e95e57a633ce8d12c"
+    },
+    "capture/controls-sealed/producer.py": {
+      "bytes": 1809,
+      "sha256": "d469ef1c57548a3b35e6f52deec99aa9548ab99f01117886e3a448f2a5862873"
+    },
+    "capture/controls-sealed/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/controls-sealed/stderr.log": {
+      "bytes": 3898,
+      "sha256": "076298879ba08ecde8726a7188f2b95ba55084a20478f071e2c09c27463e7dc0"
+    },
+    "capture/controls-sealed/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/doc-check-sealed/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/doc-check-sealed/intent.json": {
+      "bytes": 7328,
+      "sha256": "1bf89cc7633328e723a6e5df6c14615a6f6485340b27f2d279b44a8286020a16"
+    },
+    "capture/doc-check-sealed/producer.py": {
+      "bytes": 1932,
+      "sha256": "9c517fe694ab38b8f5be986c07c3c4f2d86ed7e707bb0ca7998f16dc0391528b"
+    },
+    "capture/doc-check-sealed/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/doc-check-sealed/stderr.log": {
+      "bytes": 56,
+      "sha256": "629c0a3acecd60580f96b89db47c23092d645ee5395eded32849758366c4d0a2"
+    },
+    "capture/doc-check-sealed/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "capture/performance-contract/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/performance-contract/intent.json": {
+      "bytes": 7250,
+      "sha256": "a6f7eaa402d5d38d5867f9b7c3f4dac2a349e2936d53c1a6d8d43826c4bc7ef2"
+    },
+    "capture/performance-contract/producer.py": {
+      "bytes": 1643,
+      "sha256": "e27d9a8d5e90ee7740bfeb9468480cab1dffabdef9fbcd29581bb1d018c3a134"
+    },
+    "capture/performance-contract/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/performance-contract/stderr.log": {
+      "bytes": 56,
+      "sha256": "629c0a3acecd60580f96b89db47c23092d645ee5395eded32849758366c4d0a2"
+    },
+    "capture/performance-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "capture/syntax-sealed/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/syntax-sealed/intent.json": {
+      "bytes": 7420,
+      "sha256": "0709996245c6f25859ba40a973bc28210f5c358e57fe16851619f2e9d0b8a7b4"
+    },
+    "capture/syntax-sealed/producer.py": {
+      "bytes": 1809,
+      "sha256": "d469ef1c57548a3b35e6f52deec99aa9548ab99f01117886e3a448f2a5862873"
+    },
+    "capture/syntax-sealed/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/syntax-sealed/stderr.log": {
+      "bytes": 112,
+      "sha256": "9e1de5d8e10208b56eaa8476717259cab41cbe7ff9f91743213198c63fdd66ac"
+    },
+    "capture/syntax-sealed/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "documents/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1595151,
+      "sha256": "9b7bc90a373319756301a82489364b7f99248e0f9b03cca515ad250785576e59"
+    },
+    "documents/docs/testing/performance/0.74/README.md": {
+      "bytes": 520465,
+      "sha256": "0f02ea1654044c0e538b985155d6ad7815628507c7f395b6b9d7aefb70e56dc3"
+    },
+    "documents/docs/testing/performance/0.74/chitchat-cohort-result-20261029.md": {
+      "bytes": 9556,
+      "sha256": "ee468554cc8e1f7f9ba574021330513bcd454b2e640cde0febdbe5fa8211e5c4"
+    },
+    "documents/docs/testing/performance/0.74/chitchat-cost-exclusive-host-plan-20261029.md": {
+      "bytes": 5090,
+      "sha256": "c580db7329e67f3c71c56fe485ea1cc30616ed027292972141ad96deff193c4b"
+    },
+    "documents/docs/testing/performance/0.74/chitchat-host-cost-result-20261029.md": {
+      "bytes": 8803,
+      "sha256": "71aeb2cb363bd4979cb98215e861460834546fddd5f0b9db657252dba4c13add"
+    },
+    "documents/docs/testing/performance/0.74/qualification-manifest.toml": {
+      "bytes": 2979,
+      "sha256": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+    },
+    "documents/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 52704,
+      "sha256": "5eaeed6815f0e683819a79771160bcdffceed541171a008c34ae6d7aabc03769"
+    },
+    "source/tools/chitchat-cohort-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/tools/chitchat-cohort-074/README.md": {
+      "bytes": 5458,
+      "sha256": "44b56fd6ee98dbc9743bd841528c65f4cc15f6f5934ac4e6a16c6645e2776828"
+    },
+    "source/tools/chitchat-cohort-074/analyze.py": {
+      "bytes": 12840,
+      "sha256": "a3b05bfd19f35b23c2df89b323accdc116c3adf980fa00b0e6b3c0d0246bbded"
+    },
+    "source/tools/chitchat-cohort-074/client.py": {
+      "bytes": 9664,
+      "sha256": "82c1ac35a8f0abff720b6eb35e61c33d70dec36ac00cc619ceca89f075bf36ad"
+    },
+    "source/tools/chitchat-cohort-074/common.py": {
+      "bytes": 1018,
+      "sha256": "5d3703645901705c8e82dc09b6ba3848ff1cb449b36d1c0c6110c857bce39efd"
+    },
+    "source/tools/chitchat-cohort-074/coordinator.py": {
+      "bytes": 8530,
+      "sha256": "3af3295cd850ca17c0a40da2752b5fd1ba3e01b59ba54caad0425f525e4befe5"
+    },
+    "source/tools/chitchat-cohort-074/gates.py": {
+      "bytes": 1932,
+      "sha256": "9c517fe694ab38b8f5be986c07c3c4f2d86ed7e707bb0ca7998f16dc0391528b"
+    },
+    "source/tools/chitchat-cohort-074/plan.py": {
+      "bytes": 2709,
+      "sha256": "dcb31222842b93a52b7ee0f260718a17f30c39ad8b86810bdfb1467d57f89f7e"
+    },
+    "source/tools/chitchat-cohort-074/recover.py": {
+      "bytes": 8109,
+      "sha256": "de04b16306d80380f32f83bfc34bfd5236368493ff6b5582559d320cb0cd7c33"
+    },
+    "source/tools/chitchat-cohort-074/retain.py": {
+      "bytes": 3620,
+      "sha256": "3c7795d8d6bc03550988ae06782d9d44877e87a2ae9713a257b3b3e73fc86218"
+    },
+    "source/tools/chitchat-cohort-074/retain_verification.py": {
+      "bytes": 3199,
+      "sha256": "99a9707fb0b5767215fd1e8b6a6573dae6781fe0768d07bfc5044ac3c5f4f33f"
+    },
+    "source/tools/chitchat-cohort-074/stage.py": {
+      "bytes": 7527,
+      "sha256": "164c2cb908b2cb3872260ffc234b29a70e1a1dfa658a6524b6e580d6aa113dc8"
+    },
+    "source/tools/chitchat-cohort-074/test_analysis.py": {
+      "bytes": 3192,
+      "sha256": "3e2812b2ff401b0e5838e9f29ec5be5e2dfec03451433658d39297024f99f388"
+    },
+    "source/tools/chitchat-cohort-074/test_controller.py": {
+      "bytes": 6312,
+      "sha256": "c4e2d11222625de54210291ddb65fa789c831a720ac339e7837ab677f05857ef"
+    },
+    "source/tools/chitchat-cohort-074/test_recover.py": {
+      "bytes": 2064,
+      "sha256": "5f9f1967b00a7ce5a97ea67c312ae140cb581f7d762a9f1017eaedb7f4242435"
+    },
+    "source/tools/chitchat-cohort-074/verify.py": {
+      "bytes": 2943,
+      "sha256": "74173d92ae0348bef3ae30fa1d3a207bd25a399a5231c496ad2e48865e7803db"
+    },
+    "source/tools/chitchat-cohort-074/worker.py": {
+      "bytes": 3277,
+      "sha256": "3806758d935d28fa19ec3750b780d808bc663e8593fd5f5b9b430bbcc503c765"
+    },
+    "source/tools/chitchat-cohort-074/worker_control.py": {
+      "bytes": 3326,
+      "sha256": "187691e27689bf7e03ecb2b66792f83524da925d9eb5dde66ba807f12d9e9066"
+    }
+  },
+  "numerical_complete": false,
+  "predecessor_index_sha256": "5e4b0f0282d3cd7e329a25f2abe236201d023d6e3a682a79915bcbd9abdde1fa",
+  "release_admitted": false,
+  "root_adopted": false,
+  "schema": "hc074-chitchat-cohort-verification-v1",
+  "source_head_observation": "cbfa7b663319d0379e2fe054f3d3b97e289b4b68",
+  "terminal_accounting_complete": true
+}

@@ -1,0 +1,9 @@
+import hashlib,importlib.util,json,pathlib,subprocess
+r=pathlib.Path('/tmp/hc074-chitchat-cost-20261029.er47i8gp');p=json.loads((r/'plan.json').read_bytes());s=importlib.util.spec_from_file_location('host',r/'input/host.py');h=importlib.util.module_from_spec(s);s.loader.exec_module(h);a=h.snapshot();b=p['expected_host']
+print(json.dumps(dict(host=a,differences={k:dict(expected=b.get(k),actual=a.get(k)) for k in set(a)|set(b) if a.get(k)!=b.get(k)},plan_sha256=hashlib.sha256((r/'plan.json').read_bytes()).hexdigest()),indent=2))
+print('JOURNAL\n'+subprocess.check_output(['/usr/bin/journalctl','--no-pager','-u',r.name+'.service','-n','100','-o','short-monotonic'],text=True))
+print('INTENTS/RETIREMENTS')
+for f in sorted(r.glob('[0-9]*.retired.json')):print(f.name+' '+f.read_text())
+print('GROUPS')
+g=pathlib.Path('/sys/fs/cgroup/system.slice')/(r.name+'.service')
+for f in sorted(g.glob('*/cgroup.events')):print(str(f)+' '+f.read_text())

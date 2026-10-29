@@ -1,0 +1,80 @@
+{"retired": 5, "intents": 5, "completed": {"cohort-complete.json": false, "all-writers-stopped.json": false, "restored.json": false, "host-postflight.json": false}}
+0.execution.json
+{
+  "bound_seconds": 1200,
+  "capacity_poll_seconds": 5,
+  "classification": "success",
+  "cleanup_seconds": 5,
+  "errors": [],
+  "exit": 0,
+  "observed_child_exit": 0,
+  "production_writer_authority": false,
+  "retired": true
+}
+0.retired.json
+{
+  "all_original_writers_stopped": true,
+  "events": {
+    "frozen": "0",
+    "populated": "0"
+  },
+  "exit": 0
+}
+0.intent.json
+{
+  "actual_argv": [
+    "/usr/bin/python3",
+    "-B",
+    "-I",
+    "/tmp/hc074-chitchat-cost-20261029.er47i8gp/worker.py",
+    "/tmp/hc074-chitchat-cost-20261029.er47i8gp",
+    "0",
+    "c38d5aa3712ad53b8f42aa706d8b4086258eb0b085d5cc46d7473491218e47f0",
+    "3"
+  ],
+  "attempt": {
+    "argv": [
+      "/usr/bin/python3",
+      "-B",
+      "-I",
+      "/tmp/hc074-chitchat-cost-20261029.er47i8gp/worker.py",
+      "/tmp/hc074-chitchat-cost-20261029.er47i8gp",
+      "0",
+      "@PLAN_SHA@",
+      "@FENCE_FD@"
+    ],
+    "mode": "cpu",
+    "variant": "B"
+  },
+  "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+  "deadline_ns": 2025002767723938,
+  "fence_fd": 3,
+  "group": "/sys/fs/cgroup/system.slice/hc074-chitchat-cost-20261029.er47i8gp.service/writers-0",
+  "group_identity": [
+    29,
+    410037
+  ],
+  "quiet": {
+    "busy_percent": 0.0,
+    "maximum_percent": 10,
+    "sample_milliseconds": 500
+  }
+}
+MainPID=0
+Result=exit-code
+ActiveState=failed
+SubState=failed
+
+[2023913.985716] Ubuntu-noble-latest-amd64-base.zst python3[408932]:   File "/tmp/hc074-chitchat-cost-20261029.er47i8gp/coordinator.py", line 128, in <lambda>
+[2023913.985716] Ubuntu-noble-latest-amd64-base.zst python3[408932]:     m.static_frame=lambda plan:frame(plan,root,types_base(original))
+[2023913.985716] Ubuntu-noble-latest-amd64-base.zst python3[408932]:                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2023913.985716] Ubuntu-noble-latest-amd64-base.zst python3[408932]:   File "/tmp/hc074-chitchat-cost-20261029.er47i8gp/coordinator.py", line 61, in frame
+[2023913.985716] Ubuntu-noble-latest-amd64-base.zst python3[408932]:     need({k:v for k,v in state.items() if k!='supervisor'}=={k:v for k,v in original.items() if k!='supervisor'},'original kernel/clock/mount/marker/source host frame')
+[2023913.985716] Ubuntu-noble-latest-amd64-base.zst python3[408932]:   File "/tmp/hc074-chitchat-cost-20261029.er47i8gp/coordinator.py", line 17, in need
+[2023913.985716] Ubuntu-noble-latest-amd64-base.zst python3[408932]:     if not ok:raise RuntimeError(why)
+[2023913.985716] Ubuntu-noble-latest-amd64-base.zst python3[408932]:               ^^^^^^^^^^^^^^^^^^^^^^^
+[2023913.985716] Ubuntu-noble-latest-amd64-base.zst python3[408932]: RuntimeError: original kernel/clock/mount/marker/source host frame
+[2023913.995231] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.er47i8gp.service: Control process exited, code=exited, status=1/FAILURE
+[2023913.995619] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.er47i8gp.service: Failed with result 'exit-code'.
+[2023913.996036] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.er47i8gp.service: Consumed 7.561s CPU time.
+

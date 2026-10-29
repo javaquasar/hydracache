@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--cd",
+    "/",
+    "--exec",
+    "/usr/bin/python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-cohort-074",
+    "-p",
+    "test_*.py",
+    "-v"
+  ],
+  "bound_seconds": 45,
+  "retry": false
+}

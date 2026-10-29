@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "/usr/bin/systemd-run",
+    "--quiet",
+    "--no-ask-password",
+    "--unit=hc074-chitchat-cost-20261029.oe1yn5uv.service",
+    "--service-type=exec",
+    "--property=Delegate=yes",
+    "--property=DelegateSubgroup=control",
+    "--property=RuntimeMaxSec=30",
+    "--property=KillMode=control-group",
+    "--property=KillSignal=SIGKILL",
+    "--property=SendSIGKILL=yes",
+    "--property=Restart=no",
+    "--property=TimeoutStopSec=30",
+    "--property=NoNewPrivileges=yes",
+    "--property=Wants=hc074-chitchat-cost-20261029.oe1yn5uv-standin.service",
+    "--property=After=hc074-chitchat-cost-20261029.oe1yn5uv-standin.service",
+    "--property=ExecStopPost=/usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.oe1yn5uv/coordinator.py post /tmp/hc074-chitchat-cost-20261029.oe1yn5uv 40380ccdf4b07b3b3dcc26e2fb5a055d18f03753663ea31558e603f24f62f822",
+    "/usr/bin/python3",
+    "-B",
+    "-I",
+    "/tmp/hc074-chitchat-cost-20261029.oe1yn5uv/coordinator.py",
+    "main",
+    "/tmp/hc074-chitchat-cost-20261029.oe1yn5uv",
+    "40380ccdf4b07b3b3dcc26e2fb5a055d18f03753663ea31558e603f24f62f822"
+  ],
+  "case": "deadline",
+  "retry": false
+}

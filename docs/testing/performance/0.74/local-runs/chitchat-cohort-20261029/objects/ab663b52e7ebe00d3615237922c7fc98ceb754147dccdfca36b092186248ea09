@@ -1,0 +1,31 @@
+{
+  "actual_argv": [
+    "/usr/bin/python3",
+    "-B",
+    "-I",
+    "-c",
+    "import os,sys,time\np=sys.argv[1];fd=[]\nfor n in os.listdir('/proc/self/fd'):\n try:\n  if os.readlink('/proc/self/fd/'+n)==p:fd.append(int(n))\n except FileNotFoundError:pass\nassert len(fd)==1 and os.getuid()==os.getgid()==0\ncopy=os.dup(fd[0]);pid=os.fork()\nend=time.monotonic()+(.2 if sys.argv[2]=='healthy' else 90)\nwhile time.monotonic()<end:os.write(1,b'owned-writer\\n');time.sleep(.01)\nos._exit(0)\n",
+    "/tmp/hc074-chitchat-cost-20261029.7h1whfj7/private.lock",
+    "healthy"
+  ],
+  "attempt": {
+    "argv": [
+      "/usr/bin/python3",
+      "-B",
+      "-I",
+      "-c",
+      "import os,sys,time\np=sys.argv[1];fd=[]\nfor n in os.listdir('/proc/self/fd'):\n try:\n  if os.readlink('/proc/self/fd/'+n)==p:fd.append(int(n))\n except FileNotFoundError:pass\nassert len(fd)==1 and os.getuid()==os.getgid()==0\ncopy=os.dup(fd[0]);pid=os.fork()\nend=time.monotonic()+(.2 if sys.argv[2]=='healthy' else 90)\nwhile time.monotonic()<end:os.write(1,b'owned-writer\\n');time.sleep(.01)\nos._exit(0)\n",
+      "/tmp/hc074-chitchat-cost-20261029.7h1whfj7/private.lock",
+      "healthy"
+    ]
+  },
+  "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+  "deadline_ns": 2023312795918297,
+  "fence_fd": 3,
+  "group": "/sys/fs/cgroup/system.slice/hc074-chitchat-cost-20261029.7h1whfj7.service/writers-0",
+  "group_identity": [
+    29,
+    407696
+  ],
+  "quiet": null
+}

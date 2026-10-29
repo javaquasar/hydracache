@@ -1,0 +1,1 @@
+{"offline_only":true,"measurements_repeated":false,"command":"gates.py controls-accounting","first_refusal":"fixed nonmeasurement mode","cause":"new final gate alias had not yet been added; refusal occurred before gate directory or worker creation"}

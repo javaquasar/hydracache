@@ -1,0 +1,1666 @@
+{
+  "archived_code_executed": false,
+  "compiled_images_excluded": true,
+  "members": {
+    "capture/chitchat-cohort-20261029-r1/analysis/first-refusal.json": {
+      "bytes": 277,
+      "sha256": "0dd2be5628e4c368430d9f69093cd85b6ac125e16daeee9589ac684e66a9cb98"
+    },
+    "capture/chitchat-cohort-20261029-r1/analysis/offline-command-refusal.json": {
+      "bytes": 250,
+      "sha256": "84ac4bf546dd44baaa4b0df7b9d98d19739e7de88cc9ac288b757702c50ab048"
+    },
+    "capture/chitchat-cohort-20261029-r1/analysis/result.json": {
+      "bytes": 793,
+      "sha256": "c0a339ca48a9ea1fc0f730358b1e10e12709de1d95188fa8f06b44651fd15344"
+    },
+    "capture/chitchat-cohort-20261029-r1/analysis/second-refusal.json": {
+      "bytes": 249,
+      "sha256": "8cf8b8be2ca64cc4e13ece7de8d0d16f42f6a7b59c6b1085c61529891bff5513"
+    },
+    "capture/chitchat-cohort-20261029-r1/collect-intent.json": {
+      "bytes": 328,
+      "sha256": "891b23c171c13cee5a3257c926b86d1bec35e957f1b0d7a398f7149f7abad48d"
+    },
+    "capture/chitchat-cohort-20261029-r1/collect-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/collect.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cohort-package-20261029.oO3u1l/coordinator.py": {
+      "bytes": 8530,
+      "sha256": "3af3295cd850ca17c0a40da2752b5fd1ba3e01b59ba54caad0425f525e4befe5"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cohort-package-20261029.oO3u1l/faults-once/result.json": {
+      "bytes": 439,
+      "sha256": "6e8124595913d12c06560cd28108bb8e25eb3b9b6dbba26663d535eb64fd6c82"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cohort-package-20261029.oO3u1l/maintenance_base.py": {
+      "bytes": 18754,
+      "sha256": "fcb8a53eba5ebc7e1364cbfa0d2bcb9e0ad1098f75b4e53dae56b7503c02ed38"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cohort-package-20261029.oO3u1l/numerical.json": {
+      "bytes": 184,
+      "sha256": "be7431d6970b7dffc059c80dba0536c9558b1023a32564894b297e295ba36d29"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cohort-package-20261029.oO3u1l/plan.py": {
+      "bytes": 2709,
+      "sha256": "dcb31222842b93a52b7ee0f260718a17f30c39ad8b86810bdfb1467d57f89f7e"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cohort-package-20261029.oO3u1l/stage.py": {
+      "bytes": 7527,
+      "sha256": "164c2cb908b2cb3872260ffc234b29a70e1a1dfa658a6524b6e580d6aa113dc8"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cohort-package-20261029.oO3u1l/worker-controls-once/result.json": {
+      "bytes": 529,
+      "sha256": "7066344f2654945ed9bab8eae8fed27e5b748b79ca6b298bd8957e7596505462"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cohort-package-20261029.oO3u1l/worker.py": {
+      "bytes": 3277,
+      "sha256": "3806758d935d28fa19ec3750b780d808bc663e8593fd5f5b9b430bbcc503c765"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/0.child.json": {
+      "bytes": 66,
+      "sha256": "255bfbaa06500b1017140845deab8b863c903bea229f1eb4b64994920b4730bd"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/0.intent.json": {
+      "bytes": 1445,
+      "sha256": "ab663b52e7ebe00d3615237922c7fc98ceb754147dccdfca36b092186248ea09"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/0.retired.json": {
+      "bytes": 114,
+      "sha256": "8768dba60b350952ec8893b3f2e7dcfc79c182254431cd79c245b011e53a16ee"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/0.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/0.stdout.log": {
+      "bytes": 520,
+      "sha256": "b1c9cba9483c157a96b38f380d72de6f28b2196dfddf21408e05708881c28789"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/all-writers-stopped.json": {
+      "bytes": 97,
+      "sha256": "a1b85a75894335541a90004c286a8072b31b1fab0664a050f032b8bc1c795ee5"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/before-stop.json": {
+      "bytes": 97,
+      "sha256": "e3210878283e03b6401eda38ded98e974cfa98024ec25cd5b4bb4019bd3ef2e7"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/cohort-complete.json": {
+      "bytes": 61,
+      "sha256": "ff22130322c4f534e7eb72dc06563f2d3b2689d0e4c0e25832c894929e9cf2c2"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/coordinator.py": {
+      "bytes": 8530,
+      "sha256": "3af3295cd850ca17c0a40da2752b5fd1ba3e01b59ba54caad0425f525e4befe5"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/host-postflight.json": {
+      "bytes": 3977,
+      "sha256": "a758ba3d1d6d56f5ff28cb87e7d60c95271cb311fbfffdd0de13279f84bab0fc"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/inactive.json": {
+      "bytes": 91,
+      "sha256": "f210b2e90649a398864a05331d935c386f1c73a5c8f7088289b7f8d54027f947"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/journal.log": {
+      "bytes": 907,
+      "sha256": "5be193860c2c2c31d1f79881ba4852b6202a6b92c4d5a031f1dff8652f2687a4"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/launch-intent.json": {
+      "bytes": 1160,
+      "sha256": "4ab2d408630c829bf9fbc1508e8e3a417581e91a73f1d250a0fc81c760427eaa"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/maintenance_base.py": {
+      "bytes": 18754,
+      "sha256": "fcb8a53eba5ebc7e1364cbfa0d2bcb9e0ad1098f75b4e53dae56b7503c02ed38"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/plan.json": {
+      "bytes": 1001924,
+      "sha256": "eb384ae677bb1e085b55d9065f67f71e632a8bf517137c7d597b835603d58a0e"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/plan.py": {
+      "bytes": 2709,
+      "sha256": "dcb31222842b93a52b7ee0f260718a17f30c39ad8b86810bdfb1467d57f89f7e"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/prepared.json": {
+      "bytes": 185,
+      "sha256": "c5d7ddd82cd933c770a6400bc2bc45ea54a0be7b10baa84f415ca403b908e4f9"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/private.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/restored.json": {
+      "bytes": 172,
+      "sha256": "b065e1f5733134f27e2cbf36c454c7cf2eec668cb4395a5e7dc303366dd8e6a2"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/session-deadline.json": {
+      "bytes": 121,
+      "sha256": "941824f0222a94beb6f6fececf1a11b7d6ff58163a00224d712d8f00dbc78ce9"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/stage.py": {
+      "bytes": 7527,
+      "sha256": "164c2cb908b2cb3872260ffc234b29a70e1a1dfa658a6524b6e580d6aa113dc8"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.7h1whfj7/worker.py": {
+      "bytes": 3277,
+      "sha256": "3806758d935d28fa19ec3750b780d808bc663e8593fd5f5b9b430bbcc503c765"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/0.body.json": {
+      "bytes": 620909,
+      "sha256": "cc96664ec9c386ece3721fad236ef0cf4604ba58d8ca7469ee6753a8e9beeab8"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/0.child.json": {
+      "bytes": 66,
+      "sha256": "bd6c63cbea8902b265158fb8f21bac3aba7078c51ec7e1d33d5356da3c803fb0"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/0.execution.json": {
+      "bytes": 228,
+      "sha256": "ceef535df5b40e0feea6b5828fb3375dbb0b546c05421f3e9582547220c5227c"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/0.intent.json": {
+      "bytes": 909,
+      "sha256": "532490444abdecf2a8387cd7bc855b207ba5798b976661a65f18d00d2b8b25c9"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/0.retired.json": {
+      "bytes": 114,
+      "sha256": "8768dba60b350952ec8893b3f2e7dcfc79c182254431cd79c245b011e53a16ee"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/0.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/0.stdout.log": {
+      "bytes": 602361,
+      "sha256": "3a6e53f57d649ddf7625ba425ab0dfab87517e3012c94560347da44ecafcce32"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/0.worker-child.json": {
+      "bytes": 49,
+      "sha256": "da1e86499728a1e63e3b10f9ebd33caf3176064e62f827495987634c95cf0af9"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/1.body.json": {
+      "bytes": 620905,
+      "sha256": "9104a8175c10160eec1568f58a409d7fb18c6dc5b912f9028b3324fa1a6e5efd"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/1.child.json": {
+      "bytes": 66,
+      "sha256": "0f56b2b820ea2d7d56d7d47550a14203ddd4ccbdf6c8c855d18cee12e1a73652"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/1.execution.json": {
+      "bytes": 228,
+      "sha256": "ceef535df5b40e0feea6b5828fb3375dbb0b546c05421f3e9582547220c5227c"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/1.intent.json": {
+      "bytes": 909,
+      "sha256": "ab60d7bfdc313edea8e14fd173f34a3f843f6d144e9635ff7ab7b84b707886db"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/1.retired.json": {
+      "bytes": 114,
+      "sha256": "8768dba60b350952ec8893b3f2e7dcfc79c182254431cd79c245b011e53a16ee"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/1.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/1.stdout.log": {
+      "bytes": 602357,
+      "sha256": "329aa1015b9cbbb4fb2a6d722514bb0c72906180d10c06dee823788aba0b1f8a"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/1.worker-child.json": {
+      "bytes": 49,
+      "sha256": "f71c7f0467417dd8bfc45f56c7a7d0517cb1bcbe6bdd2eb43ad3701b7561a80e"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/2.body.json": {
+      "bytes": 620909,
+      "sha256": "9f957afb7fcc15c3c93e577ddf31f17e65b4875ae040c94a2e57b4be709453a0"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/2.child.json": {
+      "bytes": 66,
+      "sha256": "e42150b9f253c38237d79dafc7527e25254670e1edbe248a92b099109c912823"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/2.execution.json": {
+      "bytes": 228,
+      "sha256": "ceef535df5b40e0feea6b5828fb3375dbb0b546c05421f3e9582547220c5227c"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/2.intent.json": {
+      "bytes": 909,
+      "sha256": "49922ff5ca844a6011bc63a972f1684eaa3ca4ecf7dcfedcf1823d79e26a876a"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/2.retired.json": {
+      "bytes": 114,
+      "sha256": "8768dba60b350952ec8893b3f2e7dcfc79c182254431cd79c245b011e53a16ee"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/2.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/2.stdout.log": {
+      "bytes": 602361,
+      "sha256": "6aac392a4cc04dd19ce8a0fe449a5ff8b9b84ecdadd4496734c94987efb4d4fb"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/2.worker-child.json": {
+      "bytes": 49,
+      "sha256": "ff76b590e68696324cd23057b0671b7b5b1ee0cc8f52d39a7507637bafbe0801"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/3.body.json": {
+      "bytes": 620909,
+      "sha256": "d81907ff9d0274300d34f10f3e830f0dc5b869210c809f4e4c2369e1598e4827"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/3.child.json": {
+      "bytes": 66,
+      "sha256": "5c5bbce54218fe23851a0d96a4c00b3928dc7b5a2a79d88175372cf992aac8e5"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/3.execution.json": {
+      "bytes": 228,
+      "sha256": "ceef535df5b40e0feea6b5828fb3375dbb0b546c05421f3e9582547220c5227c"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/3.intent.json": {
+      "bytes": 909,
+      "sha256": "a2e9abbec4f4c482ac5567d320a1c22c031a9b7156319d3c709991f8cda2debf"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/3.retired.json": {
+      "bytes": 114,
+      "sha256": "8768dba60b350952ec8893b3f2e7dcfc79c182254431cd79c245b011e53a16ee"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/3.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/3.stdout.log": {
+      "bytes": 602361,
+      "sha256": "0f1acb501b40e506d57d797dfce2e6f65b9e006504393e5af16401c09f3ffb13"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/3.worker-child.json": {
+      "bytes": 49,
+      "sha256": "b6dd9746cb9e9498c1788eb7aaa937d0b49ee117b173cab0f9fe74c7f1d6003f"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/4.child.json": {
+      "bytes": 66,
+      "sha256": "96ee171270ae7e50d2bdcdef70e9d437111ced4aa05d21125110c5843f22247b"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/4.intent.json": {
+      "bytes": 909,
+      "sha256": "b2b99aa42fadcfc34aa9d6da6798b2ba5eafb77444cf7a69284fe409d821ea30"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/4.retired.json": {
+      "bytes": 114,
+      "sha256": "d1f44598d6bcea6b1ade439456654a6d354d6fd65c0b41343e343fc48c3f812e"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/4.stderr.log": {
+      "bytes": 891,
+      "sha256": "01367fd56ecfc9ed7844e0f39e6887a1419c8a889fbb7c7f085916d5e4e46166"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/4.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/before-stop.json": {
+      "bytes": 97,
+      "sha256": "c17322929ba542aa0dd08d036a176af33c3e5513636a79bf7a553c667673ff80"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/coordinator.py": {
+      "bytes": 8530,
+      "sha256": "3af3295cd850ca17c0a40da2752b5fd1ba3e01b59ba54caad0425f525e4befe5"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/inactive.json": {
+      "bytes": 91,
+      "sha256": "f210b2e90649a398864a05331d935c386f1c73a5c8f7088289b7f8d54027f947"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/launch-intent.json": {
+      "bytes": 1014,
+      "sha256": "e6b91ca607f74f21b8ed54e0764b8e7f72383c2304db8f2fd2c797487e1c837e"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/maintenance_base.py": {
+      "bytes": 18754,
+      "sha256": "fcb8a53eba5ebc7e1364cbfa0d2bcb9e0ad1098f75b4e53dae56b7503c02ed38"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/manual-recovery-fence.json": {
+      "bytes": 305,
+      "sha256": "deb938ca4784ef6a6bbb8977858fa0eaed71b1e8eaa28d6a197da309320ffc9b"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/manual-recovery-intent.json": {
+      "bytes": 12668,
+      "sha256": "1864833352ec21010a85813cc00d86b7be16c59497c4aad4af3148a73eefec4a"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/manual-restored.json": {
+      "bytes": 4375,
+      "sha256": "99a4a7a5e3e563f27cfafa1b9ab169ab78bf79827b1321c969b381b456b69134"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/plan.json": {
+      "bytes": 1020047,
+      "sha256": "c38d5aa3712ad53b8f42aa706d8b4086258eb0b085d5cc46d7473491218e47f0"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/plan.py": {
+      "bytes": 2709,
+      "sha256": "dcb31222842b93a52b7ee0f260718a17f30c39ad8b86810bdfb1467d57f89f7e"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/prepared.json": {
+      "bytes": 181,
+      "sha256": "eea9474ee3e14a507c437bc12df6936ba15e029ef8910fa057c6391044e2a79c"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/session-deadline.json": {
+      "bytes": 121,
+      "sha256": "655c2938db90318e005f971ba8c2b4271d76730e72ab4ec53e7fc08bf5d4dfc0"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/stage.py": {
+      "bytes": 7527,
+      "sha256": "164c2cb908b2cb3872260ffc234b29a70e1a1dfa658a6524b6e580d6aa113dc8"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.er47i8gp/worker.py": {
+      "bytes": 3277,
+      "sha256": "3806758d935d28fa19ec3750b780d808bc663e8593fd5f5b9b430bbcc503c765"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/0.child.json": {
+      "bytes": 66,
+      "sha256": "d07c08ab76b96cb41be83cb9567f3c249feda3d00aba522f932f557ae984e7a6"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/0.intent.json": {
+      "bytes": 1451,
+      "sha256": "884ef87805b30c2e0d1974bd3a2cb5d2c22d05518ca975593bd9b4b81df7d811"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/0.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/0.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/all-writers-stopped.json": {
+      "bytes": 98,
+      "sha256": "c44f0c7930772cb1d9abebe589d3b28de3055a5f78cf503d713db6db68aa0fa1"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/before-stop.json": {
+      "bytes": 97,
+      "sha256": "742d10c74a01d6573a0c41c4a9c30124bca9cd979e31dffdb755dcb4723f9148"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/coordinator.py": {
+      "bytes": 8530,
+      "sha256": "3af3295cd850ca17c0a40da2752b5fd1ba3e01b59ba54caad0425f525e4befe5"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/host-postflight.json": {
+      "bytes": 3977,
+      "sha256": "a758ba3d1d6d56f5ff28cb87e7d60c95271cb311fbfffdd0de13279f84bab0fc"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/inactive.json": {
+      "bytes": 91,
+      "sha256": "f210b2e90649a398864a05331d935c386f1c73a5c8f7088289b7f8d54027f947"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/journal.log": {
+      "bytes": 792,
+      "sha256": "bcb72265807654808a2f4495e3354c18b7ca8fd5c3af3dc375eff9492974b994"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/launch-intent.json": {
+      "bytes": 1163,
+      "sha256": "c5983492b854397b4b8880fa9807974cce8d3ff611553369ddb7aef290bac42f"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/maintenance_base.py": {
+      "bytes": 18754,
+      "sha256": "fcb8a53eba5ebc7e1364cbfa0d2bcb9e0ad1098f75b4e53dae56b7503c02ed38"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/plan.json": {
+      "bytes": 1001927,
+      "sha256": "bccc2f8d0130be83050cf8e5a285731aa5fafdc8a71aaf6f62cdabb8adcb3168"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/plan.py": {
+      "bytes": 2709,
+      "sha256": "dcb31222842b93a52b7ee0f260718a17f30c39ad8b86810bdfb1467d57f89f7e"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/prepared.json": {
+      "bytes": 188,
+      "sha256": "3ed6e33cd5efc8effbf648ed22d1e9b6c3189080a9b8149e8e4995fbe685d910"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/private.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/restored.json": {
+      "bytes": 172,
+      "sha256": "872be267ec2c3d97d3e6949dcb2ba1e245e6bd04d40e188465e08d8c0d2539c0"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/session-deadline.json": {
+      "bytes": 121,
+      "sha256": "291cda4af7840d4e81300da90aaf39ed0db387bd1866394d2b1e9283a205e86e"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/stage.py": {
+      "bytes": 7527,
+      "sha256": "164c2cb908b2cb3872260ffc234b29a70e1a1dfa658a6524b6e580d6aa113dc8"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.kezzk82h/worker.py": {
+      "bytes": 3277,
+      "sha256": "3806758d935d28fa19ec3750b780d808bc663e8593fd5f5b9b430bbcc503c765"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/0.child.json": {
+      "bytes": 66,
+      "sha256": "099293511477acef7d3800f3a074213347c0f2830f84063a6c95cf66f66ad5d8"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/0.deadline.json": {
+      "bytes": 57,
+      "sha256": "a6b19f12832a0acb46cd0b25540bae0bb5355a483934314b66ae912821008d8c"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/0.intent.json": {
+      "bytes": 1447,
+      "sha256": "2795b392b89b507babe3a6a6b91ae38ee8aef6193651f64b84a646aa4437c66d"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/0.retired.json": {
+      "bytes": 115,
+      "sha256": "d553c8a673d6c06aeeba3d32ff447350dc6a359f76165148b78e5ba03267061c"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/0.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/0.stdout.log": {
+      "bytes": 5174,
+      "sha256": "621a129036a0a902dd4555387c1a7d1f2913952eba310ddaea1ec9918c6dc523"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/all-writers-stopped.json": {
+      "bytes": 98,
+      "sha256": "c44f0c7930772cb1d9abebe589d3b28de3055a5f78cf503d713db6db68aa0fa1"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/before-stop.json": {
+      "bytes": 97,
+      "sha256": "ba4778f32eab30df7fe64c85d511a8959054c56a8051105a4ad099b090cd2b64"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/coordinator.py": {
+      "bytes": 8530,
+      "sha256": "3af3295cd850ca17c0a40da2752b5fd1ba3e01b59ba54caad0425f525e4befe5"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/host-postflight.json": {
+      "bytes": 3977,
+      "sha256": "a758ba3d1d6d56f5ff28cb87e7d60c95271cb311fbfffdd0de13279f84bab0fc"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/inactive.json": {
+      "bytes": 91,
+      "sha256": "f210b2e90649a398864a05331d935c386f1c73a5c8f7088289b7f8d54027f947"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/journal.log": {
+      "bytes": 2743,
+      "sha256": "88b3dd8e23cfed68660f7640d02402ce83b591431b4f0813e2d6808c284849f3"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/launch-intent.json": {
+      "bytes": 1161,
+      "sha256": "646394b6a133ed79834ee76d8d072ff6de6e604041a9cb1038523f65c0ccd11f"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/maintenance_base.py": {
+      "bytes": 18754,
+      "sha256": "fcb8a53eba5ebc7e1364cbfa0d2bcb9e0ad1098f75b4e53dae56b7503c02ed38"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/plan.json": {
+      "bytes": 1001924,
+      "sha256": "40380ccdf4b07b3b3dcc26e2fb5a055d18f03753663ea31558e603f24f62f822"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/plan.py": {
+      "bytes": 2709,
+      "sha256": "dcb31222842b93a52b7ee0f260718a17f30c39ad8b86810bdfb1467d57f89f7e"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/prepared.json": {
+      "bytes": 186,
+      "sha256": "7ee20a94e598b4a3520f8eea1a6282f6ec101b79fec39aa7328c847f377ca479"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/private.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/restored.json": {
+      "bytes": 172,
+      "sha256": "eed1b326c30bb49e0dd84a1f7c289460fed65bc8191cba35a07f4a7e0da38540"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/session-deadline.json": {
+      "bytes": 121,
+      "sha256": "a1a70744ee2ca8c11814467c73535e2f45d70f2d33ca0d918b31a48f2254617e"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/stage.py": {
+      "bytes": 7527,
+      "sha256": "164c2cb908b2cb3872260ffc234b29a70e1a1dfa658a6524b6e580d6aa113dc8"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.oe1yn5uv/worker.py": {
+      "bytes": 3277,
+      "sha256": "3806758d935d28fa19ec3750b780d808bc663e8593fd5f5b9b430bbcc503c765"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/0.child.json": {
+      "bytes": 66,
+      "sha256": "b31418b1a2d7e15c3b18c406097db9345f0c973b00cf741f482c7ff6d1f77a29"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/0.execution.json": {
+      "bytes": 228,
+      "sha256": "ceef535df5b40e0feea6b5828fb3375dbb0b546c05421f3e9582547220c5227c"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/0.intent.json": {
+      "bytes": 829,
+      "sha256": "17a745c74592aeb2c04ae3bb6264bbaeae917ca7e9394ea32872ca3f3b70fd9d"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/0.retired.json": {
+      "bytes": 114,
+      "sha256": "8768dba60b350952ec8893b3f2e7dcfc79c182254431cd79c245b011e53a16ee"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/0.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/0.stdout.log": {
+      "bytes": 600802,
+      "sha256": "cb3ff56902da5cdca6056bf4826abe1decc2e315843485bdbe4635e4f446c4e8"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/0.worker-child.json": {
+      "bytes": 49,
+      "sha256": "e26db9d4ec148e64b2ea24a728c16a62e83cca5ba06ccb4feb8ccfe08f87dd17"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/1.child.json": {
+      "bytes": 66,
+      "sha256": "8808e39a1f0d43e6269b6f6c24998d4d555c3e0716a4555a82e81f6fac1af79c"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/1.execution.json": {
+      "bytes": 228,
+      "sha256": "ceef535df5b40e0feea6b5828fb3375dbb0b546c05421f3e9582547220c5227c"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/1.intent.json": {
+      "bytes": 829,
+      "sha256": "c0b0ffc77a4e78d73c5e8ff5f2710a22088767736307947dcc495adcc027bb71"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/1.retired.json": {
+      "bytes": 114,
+      "sha256": "8768dba60b350952ec8893b3f2e7dcfc79c182254431cd79c245b011e53a16ee"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/1.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/1.stdout.log": {
+      "bytes": 600802,
+      "sha256": "f8561eabc5b094c65a98bb85ca86bca50281be91643b50468687c9e997d85feb"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/1.worker-child.json": {
+      "bytes": 49,
+      "sha256": "623b1bbb6e3b463c1bba4217eb4c9da00b6fd96b060a9a47ae7d17adc7e45f24"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/2.child.json": {
+      "bytes": 66,
+      "sha256": "bf9371304335d2cd205a4efc9d055fe1a7c191af6daa691ebeb6d2a921c2ee97"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/2.execution.json": {
+      "bytes": 228,
+      "sha256": "ceef535df5b40e0feea6b5828fb3375dbb0b546c05421f3e9582547220c5227c"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/2.intent.json": {
+      "bytes": 829,
+      "sha256": "5258a92d75732dfe0884e786147b6d27d670a2c0546c5d155e8aa8623ca621bd"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/2.retired.json": {
+      "bytes": 114,
+      "sha256": "8768dba60b350952ec8893b3f2e7dcfc79c182254431cd79c245b011e53a16ee"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/2.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/2.stdout.log": {
+      "bytes": 600802,
+      "sha256": "c40806109a91c7f973c111a87b1b22b188755a2ad236a90df61d7a01b60fc7d0"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/2.worker-child.json": {
+      "bytes": 49,
+      "sha256": "7de6c2c710b4ec222932f55128e4e83c629000beca78ac4288cd26614f5fed95"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/all-writers-stopped.json": {
+      "bytes": 97,
+      "sha256": "a1b85a75894335541a90004c286a8072b31b1fab0664a050f032b8bc1c795ee5"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/before-stop.json": {
+      "bytes": 97,
+      "sha256": "9970682666216f38e32343d3707e94a0df7898c4a2250a63c0936d5d4cac1f4b"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/cohort-complete.json": {
+      "bytes": 61,
+      "sha256": "a8e25b941d807aba21ee435ef2f45efcea02dea54012d4f43cfaf0d36decf2a7"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/coordinator.py": {
+      "bytes": 8530,
+      "sha256": "3af3295cd850ca17c0a40da2752b5fd1ba3e01b59ba54caad0425f525e4befe5"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/host-postflight.json": {
+      "bytes": 3977,
+      "sha256": "a758ba3d1d6d56f5ff28cb87e7d60c95271cb311fbfffdd0de13279f84bab0fc"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/inactive.json": {
+      "bytes": 91,
+      "sha256": "f210b2e90649a398864a05331d935c386f1c73a5c8f7088289b7f8d54027f947"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/journal.log": {
+      "bytes": 907,
+      "sha256": "186f4aa0ecdbdd37b70059ef0826cb01c69c60c6711907290e345b6b976f11d3"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/maintenance_base.py": {
+      "bytes": 18754,
+      "sha256": "fcb8a53eba5ebc7e1364cbfa0d2bcb9e0ad1098f75b4e53dae56b7503c02ed38"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/plan.json": {
+      "bytes": 1002250,
+      "sha256": "fc18f6da0a805f4f28fa721e35081256da8b6fb9147e5aa1c432f6cf642455b9"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/plan.py": {
+      "bytes": 2709,
+      "sha256": "dcb31222842b93a52b7ee0f260718a17f30c39ad8b86810bdfb1467d57f89f7e"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/prepared.json": {
+      "bytes": 185,
+      "sha256": "29c9ce57a0066e74ebe350ff1a63b25880d63233dfd080d079ac84484dc9dade"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/private.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/restored.json": {
+      "bytes": 172,
+      "sha256": "6f3d1474888f8ed370815b264608c79919b3b38d0538bb28fbe80ac8e4a65736"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/session-deadline.json": {
+      "bytes": 121,
+      "sha256": "7e651aee2df01a1cca064122d483eca473051026920958eec02c0b8efb88d1e5"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/stage.py": {
+      "bytes": 7527,
+      "sha256": "164c2cb908b2cb3872260ffc234b29a70e1a1dfa658a6524b6e580d6aa113dc8"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/unused-synthetic-plan.json": {
+      "bytes": 1001924,
+      "sha256": "5bca81272ce2bc862b1b77bc748e69d2b9e15daa216bd978007bdc4d7f8770df"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/worker-launch-intent.json": {
+      "bytes": 1164,
+      "sha256": "605fb0ca58d2aaf857e8bd79627aaade2c82f28fca827d71a644f1091b92f6e8"
+    },
+    "capture/chitchat-cohort-20261029-r1/collection/hc074-chitchat-cost-20261029.qv1yctbx/worker.py": {
+      "bytes": 3277,
+      "sha256": "3806758d935d28fa19ec3750b780d808bc663e8593fd5f5b9b430bbcc503c765"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/base-controls/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/base-controls/intent.json": {
+      "bytes": 6359,
+      "sha256": "4baeb15c8548f8bccd915072ae875f4793e445f612cdbf0165366ee315074977"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/base-controls/producer.py": {
+      "bytes": 1188,
+      "sha256": "0688b821afc4f3429ca8175ec30c63f132e3c82db185b0480363c4d81d64fbd9"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/base-controls/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/base-controls/stderr.log": {
+      "bytes": 969,
+      "sha256": "1f8ad58d0f2b826d80e1782a8c58e647bb7aefba2fe4d6ffdb20980e34173919"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/base-controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-accounting/execution.json": {
+      "bytes": 234,
+      "sha256": "1c28ec8cc786b10ecf97de744d85ce49bf40c00ce6ceb0bce83c3a24a42231c1"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-accounting/intent.json": {
+      "bytes": 6959,
+      "sha256": "10567ff2daa8858a7540b4d2260d0fe222a009825d92e09459dc281dfe29553b"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-accounting/producer.py": {
+      "bytes": 1523,
+      "sha256": "2e8764ed5c32c315ee8a88cd1ae343e453635cdc5d71a65ba2e34cad4a13c860"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-accounting/result.json": {
+      "bytes": 601,
+      "sha256": "8e2c5f58d04dc36f6eacefa0220c859a7bbc439638b42289de1551301d8058fc"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-accounting/stderr.log": {
+      "bytes": 5899,
+      "sha256": "b23e355a2a74d5054ab76b6ac5816836e239b6c3812b5ebf246cecc9b10701bc"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-accounting/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-final/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-final/intent.json": {
+      "bytes": 6959,
+      "sha256": "5f74fb342189a29d1f91d2dbe89fb1aba89c8c607acc2247a69b29998175c64b"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-final/producer.py": {
+      "bytes": 1643,
+      "sha256": "e27d9a8d5e90ee7740bfeb9468480cab1dffabdef9fbcd29581bb1d018c3a134"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-final/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-final/stderr.log": {
+      "bytes": 3898,
+      "sha256": "025ed914c239f18d95e092f4830065734bf7a9feca9667ceddede021bc2ab17d"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-final/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-prepared/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-prepared/intent.json": {
+      "bytes": 6381,
+      "sha256": "3d746b3038ceda3a4ffbe7d31c562fd1db34db74bf891a77c5e2515caba6cf18"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-prepared/producer.py": {
+      "bytes": 1188,
+      "sha256": "0688b821afc4f3429ca8175ec30c63f132e3c82db185b0480363c4d81d64fbd9"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-prepared/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-prepared/stderr.log": {
+      "bytes": 1698,
+      "sha256": "8feaa6ff39930a03eca08920c11a6b25b272c13580d0c268c4609dad63677b71"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-prepared/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-worker/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-worker/intent.json": {
+      "bytes": 6500,
+      "sha256": "12492de604c78a487f40ccbf4c5ba3231794a36f98400e97792674c5fff0e14e"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-worker/producer.py": {
+      "bytes": 1354,
+      "sha256": "8f62cddb648c8982959adb99d9e6df55ff36f63455f91366dfcf879e37447bbe"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-worker/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-worker/stderr.log": {
+      "bytes": 1698,
+      "sha256": "8feaa6ff39930a03eca08920c11a6b25b272c13580d0c268c4609dad63677b71"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls-worker/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls/execution.json": {
+      "bytes": 234,
+      "sha256": "1c28ec8cc786b10ecf97de744d85ce49bf40c00ce6ceb0bce83c3a24a42231c1"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls/intent.json": {
+      "bytes": 6381,
+      "sha256": "42875be4ebbce0c0aa54e7f743ec35a37ae3e9b679496962ec6cf1f17cfcd413"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls/producer.py": {
+      "bytes": 1188,
+      "sha256": "0688b821afc4f3429ca8175ec30c63f132e3c82db185b0480363c4d81d64fbd9"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls/result.json": {
+      "bytes": 601,
+      "sha256": "52e1f773585d395a94b2511cd4277ecb6afd2728a751c0148fba61b2744f46d7"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls/stderr.log": {
+      "bytes": 2987,
+      "sha256": "9a7c1cb05105133197272c2fdcfbeac328fe554fa643255a98053058bf499357"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/format/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/format/intent.json": {
+      "bytes": 6356,
+      "sha256": "5452e82de78cbaf09c26072dad89b50bb69f896ed0c4e25fc23300874532c3e7"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/format/producer.py": {
+      "bytes": 1188,
+      "sha256": "0688b821afc4f3429ca8175ec30c63f132e3c82db185b0480363c4d81d64fbd9"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/format/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/syntax-final/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/syntax-final/intent.json": {
+      "bytes": 6934,
+      "sha256": "ad975962b11a2f01d21e61cc28234e6c0afac16f2a890f98ff84f84b430796d8"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/syntax-final/producer.py": {
+      "bytes": 1643,
+      "sha256": "e27d9a8d5e90ee7740bfeb9468480cab1dffabdef9fbcd29581bb1d018c3a134"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/syntax-final/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/syntax-final/stderr.log": {
+      "bytes": 112,
+      "sha256": "9e1de5d8e10208b56eaa8476717259cab41cbe7ff9f91743213198c63fdd66ac"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/syntax-final/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/syntax-worker/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/syntax-worker/intent.json": {
+      "bytes": 6475,
+      "sha256": "01e2524676d19d07f3342aac180c24340bbd94ee5051bba6f4b3df2195371b45"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/syntax-worker/producer.py": {
+      "bytes": 1354,
+      "sha256": "8f62cddb648c8982959adb99d9e6df55ff36f63455f91366dfcf879e37447bbe"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/syntax-worker/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/syntax-worker/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/final/syntax-worker/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/host-refusal-intent.json": {
+      "bytes": 328,
+      "sha256": "891b23c171c13cee5a3257c926b86d1bec35e957f1b0d7a398f7149f7abad48d"
+    },
+    "capture/chitchat-cohort-20261029-r1/host-refusal-producer.py": {
+      "bytes": 955,
+      "sha256": "c9e9177e22f98edb26b6bba979cc925b9acb5d4aa382c6a76e0227a73d44c604"
+    },
+    "capture/chitchat-cohort-20261029-r1/host-refusal-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/host-refusal.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/host-refusal.stdout.log": {
+      "bytes": 15923,
+      "sha256": "e977fc5436116057a0653496326ccea00fa8b45665b1524b25f172b61d9459bd"
+    },
+    "capture/chitchat-cohort-20261029-r1/linux-static-controls-intent.json": {
+      "bytes": 358,
+      "sha256": "eed99a31b0681d1e13c065a41f8f830e24afbb22fb48b426ab95b2f284122ae1"
+    },
+    "capture/chitchat-cohort-20261029-r1/linux-static-controls-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/linux-static-controls.stderr.log": {
+      "bytes": 1681,
+      "sha256": "c8ad7d0e77b0fbf69a0cd27e5cca635a0a0c63ea42346c4c2ac0f6e853d71cf0"
+    },
+    "capture/chitchat-cohort-20261029-r1/linux-static-controls.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/manual-recovery-intent.json": {
+      "bytes": 328,
+      "sha256": "e70ca063644034c0dd631ec62d352e5bddcec9e7384469d6d05044b6e67e719c"
+    },
+    "capture/chitchat-cohort-20261029-r1/manual-recovery-producer.py": {
+      "bytes": 8109,
+      "sha256": "de04b16306d80380f32f83bfc34bfd5236368493ff6b5582559d320cb0cd7c33"
+    },
+    "capture/chitchat-cohort-20261029-r1/manual-recovery-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/manual-recovery.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/manual-recovery.stdout.log": {
+      "bytes": 214,
+      "sha256": "c51f4f48c9f2df29ff837c47760048cb0efe8d5c1639fc9c44e36eb42c8885c3"
+    },
+    "capture/chitchat-cohort-20261029-r1/numeric-plan-intent.json": {
+      "bytes": 366,
+      "sha256": "d151111052596ca352b20573898e82b5d2cf73cfab665f86e7553e2948564603"
+    },
+    "capture/chitchat-cohort-20261029-r1/numeric-plan-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/numeric-plan.json": {
+      "bytes": 1020047,
+      "sha256": "c38d5aa3712ad53b8f42aa706d8b4086258eb0b085d5cc46d7473491218e47f0"
+    },
+    "capture/chitchat-cohort-20261029-r1/numeric-plan.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/numeric-plan.stdout.log": {
+      "bytes": 1020047,
+      "sha256": "c38d5aa3712ad53b8f42aa706d8b4086258eb0b085d5cc46d7473491218e47f0"
+    },
+    "capture/chitchat-cohort-20261029-r1/numerical-launch-once.json": {
+      "bytes": 135,
+      "sha256": "23db91fe01f23a36354e108c72e5051042ed90596f9c2b6ea922dca574e904bd"
+    },
+    "capture/chitchat-cohort-20261029-r1/numerical.json": {
+      "bytes": 203,
+      "sha256": "47f7a7e63a221d4330421cd2cdea46f66d4087f334b7c0d79d51f138bc18866a"
+    },
+    "capture/chitchat-cohort-20261029-r1/payload/coordinator.py": {
+      "bytes": 8530,
+      "sha256": "3af3295cd850ca17c0a40da2752b5fd1ba3e01b59ba54caad0425f525e4befe5"
+    },
+    "capture/chitchat-cohort-20261029-r1/payload/maintenance_base.py": {
+      "bytes": 18754,
+      "sha256": "fcb8a53eba5ebc7e1364cbfa0d2bcb9e0ad1098f75b4e53dae56b7503c02ed38"
+    },
+    "capture/chitchat-cohort-20261029-r1/payload/plan.py": {
+      "bytes": 2709,
+      "sha256": "dcb31222842b93a52b7ee0f260718a17f30c39ad8b86810bdfb1467d57f89f7e"
+    },
+    "capture/chitchat-cohort-20261029-r1/payload/stage.py": {
+      "bytes": 7527,
+      "sha256": "164c2cb908b2cb3872260ffc234b29a70e1a1dfa658a6524b6e580d6aa113dc8"
+    },
+    "capture/chitchat-cohort-20261029-r1/payload/worker.py": {
+      "bytes": 3277,
+      "sha256": "3806758d935d28fa19ec3750b780d808bc663e8593fd5f5b9b430bbcc503c765"
+    },
+    "capture/chitchat-cohort-20261029-r1/preflight-intent.json": {
+      "bytes": 328,
+      "sha256": "891b23c171c13cee5a3257c926b86d1bec35e957f1b0d7a398f7149f7abad48d"
+    },
+    "capture/chitchat-cohort-20261029-r1/preflight-producer.py": {
+      "bytes": 3720,
+      "sha256": "93c233d6f6517e91192cb96210ec14880de29d451f190dc28c731ed53ef5bb54"
+    },
+    "capture/chitchat-cohort-20261029-r1/preflight-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/preflight.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/preflight.stdout.log": {
+      "bytes": 4044,
+      "sha256": "a20e4e464e7d0fa89d564396bd2371fb58ad05dd0c8a6e6b9c4db0f0ad02855e"
+    },
+    "capture/chitchat-cohort-20261029-r1/prelaunch-review.json": {
+      "bytes": 569,
+      "sha256": "17018854892e90361be46508a71088ec36f7839b70a8e69bbd6fca185e43c8c7"
+    },
+    "capture/chitchat-cohort-20261029-r1/prepared.json": {
+      "bytes": 750,
+      "sha256": "eb80fe5d680dfba2174de86632ca00c140a7493e6bf7ceb966a6b28c0d940dd2"
+    },
+    "capture/chitchat-cohort-20261029-r1/read-status-1-intent.json": {
+      "bytes": 328,
+      "sha256": "891b23c171c13cee5a3257c926b86d1bec35e957f1b0d7a398f7149f7abad48d"
+    },
+    "capture/chitchat-cohort-20261029-r1/read-status-1-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/read-status-1.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/read-status-1.stdout.log": {
+      "bytes": 3306,
+      "sha256": "da565ea82617fc8c57a4fe2e6d4d98529dc49eeb6bf01b2df9d2f5ce5caf31a9"
+    },
+    "capture/chitchat-cohort-20261029-r1/read-status-producer.py": {
+      "bytes": 761,
+      "sha256": "93516ec52ee538de16f57ca0ece47c52e4099f4d68d824df5b12acce43411ff8"
+    },
+    "capture/chitchat-cohort-20261029-r1/recovery-preflight-intent.json": {
+      "bytes": 328,
+      "sha256": "891b23c171c13cee5a3257c926b86d1bec35e957f1b0d7a398f7149f7abad48d"
+    },
+    "capture/chitchat-cohort-20261029-r1/recovery-preflight-producer.py": {
+      "bytes": 923,
+      "sha256": "8bcdf71add5d50fa63cdbb1eaa7b9a78782f3705ebf821aeb9d18aa8eb1b6585"
+    },
+    "capture/chitchat-cohort-20261029-r1/recovery-preflight-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/recovery-preflight.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/recovery-preflight.stdout.log": {
+      "bytes": 2583,
+      "sha256": "5992cc7a7be3fa5c00d446f9e3a8bfbf8a2aa71a0fa9510eb9b39217add0b950"
+    },
+    "capture/chitchat-cohort-20261029-r1/remote-faults-intent.json": {
+      "bytes": 396,
+      "sha256": "899eeaeb3e849daa21ba85c4ad37ee960de93d28aec60038b952f313aa520fc6"
+    },
+    "capture/chitchat-cohort-20261029-r1/remote-faults-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/remote-faults.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/remote-faults.stdout.log": {
+      "bytes": 344,
+      "sha256": "52ab81c5722d2cfa6fa66f7ad71e176ba61f6ff331ebad735112038041118ca7"
+    },
+    "capture/chitchat-cohort-20261029-r1/remote-launch-intent.json": {
+      "bytes": 396,
+      "sha256": "f5ef5c98792236386a7ffa0f595668472e39b8da2a5114a8d98bba3265f9d0c0"
+    },
+    "capture/chitchat-cohort-20261029-r1/remote-launch-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/remote-launch.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/remote-launch.stdout.log": {
+      "bytes": 161,
+      "sha256": "0e103329c503a89b76699a916b712361f60d8eb97462518026852acdbd8636df"
+    },
+    "capture/chitchat-cohort-20261029-r1/remote-prepare-intent.json": {
+      "bytes": 397,
+      "sha256": "f90545ca5c1fd199a11ab84b2b6c6743cd77f834763b923728fd2775b7d93838"
+    },
+    "capture/chitchat-cohort-20261029-r1/remote-prepare-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/remote-prepare.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/remote-prepare.stdout.log": {
+      "bytes": 191,
+      "sha256": "71b040c87bca51f76d76492aa0f5ffbc2cfd8a5a14b1361bf443618278766c2b"
+    },
+    "capture/chitchat-cohort-20261029-r1/remote.json": {
+      "bytes": 85,
+      "sha256": "9ff1eda0f0939c245788723042949c46d39144d5852e8d33260622db9fb27a1a"
+    },
+    "capture/chitchat-cohort-20261029-r1/review-before-launch.py": {
+      "bytes": 2717,
+      "sha256": "505049ff50c661c106155d0dd6097c5fe1fd2986581d49ee8f7e67f30dbca31b"
+    },
+    "capture/chitchat-cohort-20261029-r1/review-first-refusal.json": {
+      "bytes": 277,
+      "sha256": "df7437b4753b6c5f249d69369d1942aa08aafcb46e0e58c9938b8cedfa1603ce"
+    },
+    "capture/chitchat-cohort-20261029-r1/stage-intent.json": {
+      "bytes": 317,
+      "sha256": "f7b0c4afefa8b3438b2609ac9063346bf647442a93181e10f1abc5045fbb0f3a"
+    },
+    "capture/chitchat-cohort-20261029-r1/stage-once.json": {
+      "bytes": 75,
+      "sha256": "b17485585b81682c9d1619555c408f1243ba38e0e2a2e5f04429f02e5727c589"
+    },
+    "capture/chitchat-cohort-20261029-r1/stage-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/stage.sh": {
+      "bytes": 778,
+      "sha256": "8464157d9879bcfffe3420c970d03944c9a68e3a5408434956584b607ab52af4"
+    },
+    "capture/chitchat-cohort-20261029-r1/stage.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/stage.stdout.log": {
+      "bytes": 75,
+      "sha256": "4fbd1b2c55e84e0670aef0cb3e0285d6949fbafbd2b13ea5aa4536a43ba2d155"
+    },
+    "capture/chitchat-cohort-20261029-r1/upload-directory-intent.json": {
+      "bytes": 369,
+      "sha256": "7e07c5d0f9adad568bb588f8bba7338e970d613f01e2dc730f03596fa9bd13e5"
+    },
+    "capture/chitchat-cohort-20261029-r1/upload-directory-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/upload-directory.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/upload-directory.stdout.log": {
+      "bytes": 50,
+      "sha256": "545383d09cf4d34e6ff87c6b06af92de651da52d1233f50ffdef44deb031a3b6"
+    },
+    "capture/chitchat-cohort-20261029-r1/upload-intent.json": {
+      "bytes": 374,
+      "sha256": "a443bf0d9b111e7b2e93e189bb8a9dfbe8b5c5677c1721e5d4496e07c2e98b1e"
+    },
+    "capture/chitchat-cohort-20261029-r1/upload-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/upload.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/upload.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/worker-controls-intent.json": {
+      "bytes": 444,
+      "sha256": "ed03f2559cb69ef402e1eab5ec17b75216e58a574d9fcb77c6f1e45c47a26e47"
+    },
+    "capture/chitchat-cohort-20261029-r1/worker-controls-producer.py": {
+      "bytes": 3326,
+      "sha256": "187691e27689bf7e03ecb2b66792f83524da925d9eb5dde66ba807f12d9e9066"
+    },
+    "capture/chitchat-cohort-20261029-r1/worker-controls-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029-r1/worker-controls.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029-r1/worker-controls.stdout.log": {
+      "bytes": 410,
+      "sha256": "2adc58d3ab282827aae1a81af7e9541fafe96f40232ff3a0810a844498851bd8"
+    },
+    "capture/chitchat-cohort-20261029/cpu-readonly-diagnosis-intent.json": {
+      "bytes": 328,
+      "sha256": "891b23c171c13cee5a3257c926b86d1bec35e957f1b0d7a398f7149f7abad48d"
+    },
+    "capture/chitchat-cohort-20261029/cpu-readonly-diagnosis-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029/cpu-readonly-diagnosis.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029/cpu-readonly-diagnosis.stdout.log": {
+      "bytes": 435,
+      "sha256": "a273256f623c8c5e6a800062fe37f7d6e5b733eeddb7d00c0b6f6ba89bd136c3"
+    },
+    "capture/chitchat-cohort-20261029/final/base-controls/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/chitchat-cohort-20261029/final/base-controls/intent.json": {
+      "bytes": 6359,
+      "sha256": "00ad76cfd3e618c26338024667b349bcbcd626519c5c1f4c8154b9b1b698a829"
+    },
+    "capture/chitchat-cohort-20261029/final/base-controls/producer.py": {
+      "bytes": 1018,
+      "sha256": "d28e4557efe26e44f263c480328055ece7f13b9383dffb5476d61747346984db"
+    },
+    "capture/chitchat-cohort-20261029/final/base-controls/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/chitchat-cohort-20261029/final/base-controls/stderr.log": {
+      "bytes": 969,
+      "sha256": "197c726826679489d6d4c5e8e0149c9439348781be4e49aea3aa2fbb3f81d941"
+    },
+    "capture/chitchat-cohort-20261029/final/base-controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029/final/controls-prepared/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/chitchat-cohort-20261029/final/controls-prepared/intent.json": {
+      "bytes": 6381,
+      "sha256": "fb36798634760294e587a95ae0c5ce82891335c467fc71c2020f5007698ba685"
+    },
+    "capture/chitchat-cohort-20261029/final/controls-prepared/producer.py": {
+      "bytes": 1188,
+      "sha256": "0688b821afc4f3429ca8175ec30c63f132e3c82db185b0480363c4d81d64fbd9"
+    },
+    "capture/chitchat-cohort-20261029/final/controls-prepared/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/chitchat-cohort-20261029/final/controls-prepared/stderr.log": {
+      "bytes": 1432,
+      "sha256": "a6ffd2fbcc4510af5d12a2e0838d87b7318d50689b3e0092591d829397713422"
+    },
+    "capture/chitchat-cohort-20261029/final/controls-prepared/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029/final/controls/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/chitchat-cohort-20261029/final/controls/intent.json": {
+      "bytes": 6381,
+      "sha256": "7c45bd3cbb9e28bfa6eee1f505b30c2c312e292162e300afd32cbd840fd92b27"
+    },
+    "capture/chitchat-cohort-20261029/final/controls/producer.py": {
+      "bytes": 1018,
+      "sha256": "d28e4557efe26e44f263c480328055ece7f13b9383dffb5476d61747346984db"
+    },
+    "capture/chitchat-cohort-20261029/final/controls/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/chitchat-cohort-20261029/final/controls/stderr.log": {
+      "bytes": 1274,
+      "sha256": "7e27317838c6e06effceaa764ce04690cbac2a7bbd6fd4cf7b820da5a24e2991"
+    },
+    "capture/chitchat-cohort-20261029/final/controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029/final/format/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/chitchat-cohort-20261029/final/format/intent.json": {
+      "bytes": 6356,
+      "sha256": "925e13c4c653a819b219a6491cb5057877795a45a723d41e6f39d10fe1eb4451"
+    },
+    "capture/chitchat-cohort-20261029/final/format/producer.py": {
+      "bytes": 1018,
+      "sha256": "d28e4557efe26e44f263c480328055ece7f13b9383dffb5476d61747346984db"
+    },
+    "capture/chitchat-cohort-20261029/final/format/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/chitchat-cohort-20261029/final/format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029/final/format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029/final/syntax-prepared/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/chitchat-cohort-20261029/final/syntax-prepared/intent.json": {
+      "bytes": 6356,
+      "sha256": "82ad2e73d6244459faa288f0f92a988f07827030520d8a82fc67519a66937ad7"
+    },
+    "capture/chitchat-cohort-20261029/final/syntax-prepared/producer.py": {
+      "bytes": 1188,
+      "sha256": "0688b821afc4f3429ca8175ec30c63f132e3c82db185b0480363c4d81d64fbd9"
+    },
+    "capture/chitchat-cohort-20261029/final/syntax-prepared/result.json": {
+      "bytes": 52,
+      "sha256": "3d1abf7dcdd31f54dd4458be7b213911650eeb9c548540c8d9f5024698eab433"
+    },
+    "capture/chitchat-cohort-20261029/final/syntax-prepared/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029/final/syntax-prepared/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029/linux-static-controls-intent.json": {
+      "bytes": 358,
+      "sha256": "eed99a31b0681d1e13c065a41f8f830e24afbb22fb48b426ab95b2f284122ae1"
+    },
+    "capture/chitchat-cohort-20261029/linux-static-controls-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029/linux-static-controls.stderr.log": {
+      "bytes": 1417,
+      "sha256": "e408e972f97a571a49bc9aea3f0919e78d4de7eebccf1a17bbcd032d3ef85435"
+    },
+    "capture/chitchat-cohort-20261029/linux-static-controls.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029/payload/coordinator.py": {
+      "bytes": 7654,
+      "sha256": "abb1b30f512d7deecfe1699257102b1b67f1533a0d25e12c6b39ee261b5bc6fd"
+    },
+    "capture/chitchat-cohort-20261029/payload/maintenance_base.py": {
+      "bytes": 18754,
+      "sha256": "fcb8a53eba5ebc7e1364cbfa0d2bcb9e0ad1098f75b4e53dae56b7503c02ed38"
+    },
+    "capture/chitchat-cohort-20261029/payload/plan.py": {
+      "bytes": 2709,
+      "sha256": "dcb31222842b93a52b7ee0f260718a17f30c39ad8b86810bdfb1467d57f89f7e"
+    },
+    "capture/chitchat-cohort-20261029/payload/stage.py": {
+      "bytes": 7399,
+      "sha256": "9ccc1418c9952ea15b948fac6eb8157d6e07f0bcffc946ebb1407db2cc924aec"
+    },
+    "capture/chitchat-cohort-20261029/payload/worker.py": {
+      "bytes": 3277,
+      "sha256": "3806758d935d28fa19ec3750b780d808bc663e8593fd5f5b9b430bbcc503c765"
+    },
+    "capture/chitchat-cohort-20261029/preflight-intent.json": {
+      "bytes": 328,
+      "sha256": "891b23c171c13cee5a3257c926b86d1bec35e957f1b0d7a398f7149f7abad48d"
+    },
+    "capture/chitchat-cohort-20261029/preflight-producer.py": {
+      "bytes": 3720,
+      "sha256": "93c233d6f6517e91192cb96210ec14880de29d451f190dc28c731ed53ef5bb54"
+    },
+    "capture/chitchat-cohort-20261029/preflight-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029/preflight.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029/preflight.stdout.log": {
+      "bytes": 4044,
+      "sha256": "a20e4e464e7d0fa89d564396bd2371fb58ad05dd0c8a6e6b9c4db0f0ad02855e"
+    },
+    "capture/chitchat-cohort-20261029/prepared.json": {
+      "bytes": 750,
+      "sha256": "3bde59ff821698e0b6bca8e46b9b342c6341da63b27e643a9ff136356e28e05a"
+    },
+    "capture/chitchat-cohort-20261029/remote-faults-intent.json": {
+      "bytes": 396,
+      "sha256": "b406e154d2032b43bc8a4e718f6ab42a9f6b3a566149e385c81709efd85dfec3"
+    },
+    "capture/chitchat-cohort-20261029/remote-faults-result.json": {
+      "bytes": 55,
+      "sha256": "0731c893985dbdb9733556d8946aa10db70b795fc53902dfc2062f0161ffbd63"
+    },
+    "capture/chitchat-cohort-20261029/remote-faults.stderr.log": {
+      "bytes": 684,
+      "sha256": "4ac5bccf898013239b24368a3e628aabbe150ab5d38daf3e5a5fc7036cd6aed9"
+    },
+    "capture/chitchat-cohort-20261029/remote-faults.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029/remote.json": {
+      "bytes": 85,
+      "sha256": "e986fec282e663d263cc6a186e94b7601a2b4a82b3d00151ec404a3773befbc2"
+    },
+    "capture/chitchat-cohort-20261029/stage-intent.json": {
+      "bytes": 317,
+      "sha256": "f7b0c4afefa8b3438b2609ac9063346bf647442a93181e10f1abc5045fbb0f3a"
+    },
+    "capture/chitchat-cohort-20261029/stage-once.json": {
+      "bytes": 75,
+      "sha256": "f477f8659e19d36c4570be436186d113ad5973048e413fa61580ff3bfc86ee87"
+    },
+    "capture/chitchat-cohort-20261029/stage-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029/stage.sh": {
+      "bytes": 778,
+      "sha256": "240a72cb88d987e810b15f538676241d58f8b23c4fe650f3e1f954fe99a1d53c"
+    },
+    "capture/chitchat-cohort-20261029/stage.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029/stage.stdout.log": {
+      "bytes": 75,
+      "sha256": "14e839daba6f4d87cf3ee0c62640ac49b75a89dd97eea2dce40c7f40ca48b7bd"
+    },
+    "capture/chitchat-cohort-20261029/upload-directory-intent.json": {
+      "bytes": 369,
+      "sha256": "7e07c5d0f9adad568bb588f8bba7338e970d613f01e2dc730f03596fa9bd13e5"
+    },
+    "capture/chitchat-cohort-20261029/upload-directory-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029/upload-directory.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029/upload-directory.stdout.log": {
+      "bytes": 50,
+      "sha256": "810a834c4f4278b561f3519a5d5b25f46eed644ef91018b097770ae07ce6597f"
+    },
+    "capture/chitchat-cohort-20261029/upload-intent.json": {
+      "bytes": 371,
+      "sha256": "ac0ed2f7159e4744d53a9a76c77860fac3faddc6b35a991658a89eaa098dc60a"
+    },
+    "capture/chitchat-cohort-20261029/upload-result.json": {
+      "bytes": 54,
+      "sha256": "9bc961f91fb702d95a1fb3216d12483f9aeef7be80ff2feac35b2b0f6a3fccd0"
+    },
+    "capture/chitchat-cohort-20261029/upload.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/chitchat-cohort-20261029/upload.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "original-producer/chitchat-cohort-20261029-r1/tools/chitchat-cohort-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "original-producer/chitchat-cohort-20261029-r1/tools/chitchat-cohort-074/README.md": {
+      "bytes": 3583,
+      "sha256": "2d192037b7b9feabc6f4ab411407a36e2b95f137647174cfe4c76c1a08f4e8c9"
+    },
+    "original-producer/chitchat-cohort-20261029-r1/tools/chitchat-cohort-074/client.py": {
+      "bytes": 8940,
+      "sha256": "b3b02a34712d4eebad612fc96c1a632b796b0fd9a3b11a95dda96158dd0b20c9"
+    },
+    "original-producer/chitchat-cohort-20261029-r1/tools/chitchat-cohort-074/common.py": {
+      "bytes": 1018,
+      "sha256": "5d3703645901705c8e82dc09b6ba3848ff1cb449b36d1c0c6110c857bce39efd"
+    },
+    "original-producer/chitchat-cohort-20261029-r1/tools/chitchat-cohort-074/coordinator.py": {
+      "bytes": 8530,
+      "sha256": "3af3295cd850ca17c0a40da2752b5fd1ba3e01b59ba54caad0425f525e4befe5"
+    },
+    "original-producer/chitchat-cohort-20261029-r1/tools/chitchat-cohort-074/gates.py": {
+      "bytes": 1188,
+      "sha256": "0688b821afc4f3429ca8175ec30c63f132e3c82db185b0480363c4d81d64fbd9"
+    },
+    "original-producer/chitchat-cohort-20261029-r1/tools/chitchat-cohort-074/plan.py": {
+      "bytes": 2709,
+      "sha256": "dcb31222842b93a52b7ee0f260718a17f30c39ad8b86810bdfb1467d57f89f7e"
+    },
+    "original-producer/chitchat-cohort-20261029-r1/tools/chitchat-cohort-074/stage.py": {
+      "bytes": 7527,
+      "sha256": "164c2cb908b2cb3872260ffc234b29a70e1a1dfa658a6524b6e580d6aa113dc8"
+    },
+    "original-producer/chitchat-cohort-20261029-r1/tools/chitchat-cohort-074/test_controller.py": {
+      "bytes": 6312,
+      "sha256": "c4e2d11222625de54210291ddb65fa789c831a720ac339e7837ab677f05857ef"
+    },
+    "original-producer/chitchat-cohort-20261029-r1/tools/chitchat-cohort-074/worker.py": {
+      "bytes": 3277,
+      "sha256": "3806758d935d28fa19ec3750b780d808bc663e8593fd5f5b9b430bbcc503c765"
+    },
+    "original-producer/chitchat-cohort-20261029/tools/chitchat-cohort-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "original-producer/chitchat-cohort-20261029/tools/chitchat-cohort-074/README.md": {
+      "bytes": 2960,
+      "sha256": "888729e81043f6109777677e2c534fb15b26a5802309c4c1fa4125dc027b7b66"
+    },
+    "original-producer/chitchat-cohort-20261029/tools/chitchat-cohort-074/client.py": {
+      "bytes": 8937,
+      "sha256": "7aaebb43825c1291484bf566b477e4b3429e86385bba0dd26817a2ff30ad6815"
+    },
+    "original-producer/chitchat-cohort-20261029/tools/chitchat-cohort-074/common.py": {
+      "bytes": 1015,
+      "sha256": "91c42161a447eb7c559c412617bd183a264b3255881ddf2fffc45302e286f859"
+    },
+    "original-producer/chitchat-cohort-20261029/tools/chitchat-cohort-074/coordinator.py": {
+      "bytes": 7654,
+      "sha256": "abb1b30f512d7deecfe1699257102b1b67f1533a0d25e12c6b39ee261b5bc6fd"
+    },
+    "original-producer/chitchat-cohort-20261029/tools/chitchat-cohort-074/gates.py": {
+      "bytes": 1188,
+      "sha256": "0688b821afc4f3429ca8175ec30c63f132e3c82db185b0480363c4d81d64fbd9"
+    },
+    "original-producer/chitchat-cohort-20261029/tools/chitchat-cohort-074/plan.py": {
+      "bytes": 2709,
+      "sha256": "dcb31222842b93a52b7ee0f260718a17f30c39ad8b86810bdfb1467d57f89f7e"
+    },
+    "original-producer/chitchat-cohort-20261029/tools/chitchat-cohort-074/stage.py": {
+      "bytes": 7399,
+      "sha256": "9ccc1418c9952ea15b948fac6eb8157d6e07f0bcffc946ebb1407db2cc924aec"
+    },
+    "original-producer/chitchat-cohort-20261029/tools/chitchat-cohort-074/test_controller.py": {
+      "bytes": 5538,
+      "sha256": "73ba7018b63f38c98830e6ab49d3d944535d8123e87378e9b33b23a787f61809"
+    },
+    "original-producer/chitchat-cohort-20261029/tools/chitchat-cohort-074/worker.py": {
+      "bytes": 3277,
+      "sha256": "3806758d935d28fa19ec3750b780d808bc663e8593fd5f5b9b430bbcc503c765"
+    },
+    "original-worker-control/client.py": {
+      "bytes": 9664,
+      "sha256": "82c1ac35a8f0abff720b6eb35e61c33d70dec36ac00cc619ceca89f075bf36ad"
+    },
+    "original-worker-control/worker_control.py": {
+      "bytes": 3326,
+      "sha256": "187691e27689bf7e03ecb2b66792f83524da925d9eb5dde66ba807f12d9e9066"
+    },
+    "source/tools/chitchat-cohort-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/tools/chitchat-cohort-074/README.md": {
+      "bytes": 5458,
+      "sha256": "44b56fd6ee98dbc9743bd841528c65f4cc15f6f5934ac4e6a16c6645e2776828"
+    },
+    "source/tools/chitchat-cohort-074/analyze.py": {
+      "bytes": 12840,
+      "sha256": "a3b05bfd19f35b23c2df89b323accdc116c3adf980fa00b0e6b3c0d0246bbded"
+    },
+    "source/tools/chitchat-cohort-074/client.py": {
+      "bytes": 9664,
+      "sha256": "82c1ac35a8f0abff720b6eb35e61c33d70dec36ac00cc619ceca89f075bf36ad"
+    },
+    "source/tools/chitchat-cohort-074/common.py": {
+      "bytes": 1018,
+      "sha256": "5d3703645901705c8e82dc09b6ba3848ff1cb449b36d1c0c6110c857bce39efd"
+    },
+    "source/tools/chitchat-cohort-074/coordinator.py": {
+      "bytes": 8530,
+      "sha256": "3af3295cd850ca17c0a40da2752b5fd1ba3e01b59ba54caad0425f525e4befe5"
+    },
+    "source/tools/chitchat-cohort-074/gates.py": {
+      "bytes": 1643,
+      "sha256": "e27d9a8d5e90ee7740bfeb9468480cab1dffabdef9fbcd29581bb1d018c3a134"
+    },
+    "source/tools/chitchat-cohort-074/plan.py": {
+      "bytes": 2709,
+      "sha256": "dcb31222842b93a52b7ee0f260718a17f30c39ad8b86810bdfb1467d57f89f7e"
+    },
+    "source/tools/chitchat-cohort-074/recover.py": {
+      "bytes": 8109,
+      "sha256": "de04b16306d80380f32f83bfc34bfd5236368493ff6b5582559d320cb0cd7c33"
+    },
+    "source/tools/chitchat-cohort-074/retain.py": {
+      "bytes": 3620,
+      "sha256": "3c7795d8d6bc03550988ae06782d9d44877e87a2ae9713a257b3b3e73fc86218"
+    },
+    "source/tools/chitchat-cohort-074/stage.py": {
+      "bytes": 7527,
+      "sha256": "164c2cb908b2cb3872260ffc234b29a70e1a1dfa658a6524b6e580d6aa113dc8"
+    },
+    "source/tools/chitchat-cohort-074/test_analysis.py": {
+      "bytes": 3192,
+      "sha256": "3e2812b2ff401b0e5838e9f29ec5be5e2dfec03451433658d39297024f99f388"
+    },
+    "source/tools/chitchat-cohort-074/test_controller.py": {
+      "bytes": 6312,
+      "sha256": "c4e2d11222625de54210291ddb65fa789c831a720ac339e7837ab677f05857ef"
+    },
+    "source/tools/chitchat-cohort-074/test_recover.py": {
+      "bytes": 2064,
+      "sha256": "5f9f1967b00a7ce5a97ea67c312ae140cb581f7d762a9f1017eaedb7f4242435"
+    },
+    "source/tools/chitchat-cohort-074/verify.py": {
+      "bytes": 2793,
+      "sha256": "85cfe73e592da0a805b72a155a9395fc1d39e224306da537eacc0befa3d8eb8f"
+    },
+    "source/tools/chitchat-cohort-074/worker.py": {
+      "bytes": 3277,
+      "sha256": "3806758d935d28fa19ec3750b780d808bc663e8593fd5f5b9b430bbcc503c765"
+    },
+    "source/tools/chitchat-cohort-074/worker_control.py": {
+      "bytes": 3326,
+      "sha256": "187691e27689bf7e03ecb2b66792f83524da925d9eb5dde66ba807f12d9e9066"
+    }
+  },
+  "original_plan_sha256": "c38d5aa3712ad53b8f42aa706d8b4086258eb0b085d5cc46d7473491218e47f0",
+  "original_source_registry_graph_retained_in_predecessor": true,
+  "predecessor_index_sha256": "134607dd8e6f8dced2bb1f0f1eb1b594f1ccc70c802a8c7d601bd64b2cf7e670",
+  "schema": "hc074-chitchat-cohort-terminal-v1",
+  "source_head_observation": "f567bc39945e98b91a79010371158426a4be88c5",
+  "terminal_result": {
+    "CPU_qualified": false,
+    "RSS_qualified": false,
+    "archived_code_executed": false,
+    "automatic_postflight_pass": false,
+    "complete": false,
+    "completed_cpu_images": 4,
+    "completed_memory_images": 0,
+    "continuous_retention_qualified": false,
+    "controls": 3,
+    "cpu_nonregression_gate_pass": false,
+    "estimator_applied": false,
+    "first_refusal": "unrelated /run/user/1000 tmpfs identity changed",
+    "generic_component_gate_pass": false,
+    "manual_supervisor_restored": true,
+    "memory_growth_screen_pass": false,
+    "planned_processes": 60,
+    "release_admitted": false,
+    "restored_pid": 409364,
+    "retired_worker_groups": 5,
+    "retry": false,
+    "root_adopted": false,
+    "synthetic_faults": 3,
+    "terminal_accounting_complete": true,
+    "worker_intents": 5
+  },
+  "vendor_copies_excluded": true
+}

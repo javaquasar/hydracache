@@ -1,5 +1,17 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [first exclusive Q CPU/RSS attempt](chitchat-cohort-result-20261029.md) is
+terminal and incomplete: four CPU images finish, a fifth worker refuses a changed
+user-tmpfs host frame before image spawn, and memory never starts. Three native
+fault controls and all B/P/Q whole-worker controls pass first. Automatic
+postflight also refuses the changed frame; exact terminal recovery proves all
+five writer retirements and fence custody, then restores the approved supervisor
+(PID409364/NRestarts0). No estimator, Q/B claim or unchanged retry follows.
+Thirty final offline controls pass. Next fix automatic recovery on environmental
+denial and establish the full mount lifetime across SSH loss without weakening
+checks; another numerical attempt needs a distinct reviewed context/admission.
+Root/security/workspace and original-execution/lifecycle/recovery gates stay open.
+
 The [applied-root package gate](dbus-root-package-result-20261029.md) now passes
 full GNU formatting, GNU Rust 1.94/MSRV 1.88 all-target/all-feature check, strict
 Clippy and both complete default catalogs: 2,105 passed / 136 ignored across 90

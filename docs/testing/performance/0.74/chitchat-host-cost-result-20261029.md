@@ -1,5 +1,10 @@
 # Exact B/P/Q native-host control admission
 
+Historical control-only result below. The separately authorized subsequent
+[numerical maintenance](chitchat-cohort-result-20261029.md) starts once but remains
+incomplete after mount-frame refusal. Its supervisor restoration is recorded
+separately; no CPU/RSS qualification or update to this original control verdict.
+
 All three exact normal executables pass the complete premeasurement control on
 the dedicated Linux host. **The host control gate passes; CPU/RSS qualification
 and an exclusive numerical cohort remain undispatched.** Supervisor PID,

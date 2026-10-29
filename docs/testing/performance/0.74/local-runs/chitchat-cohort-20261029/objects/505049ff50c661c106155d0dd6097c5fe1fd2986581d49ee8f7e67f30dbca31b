@@ -1,0 +1,24 @@
+import hashlib,json,pathlib
+r=pathlib.Path(__file__).resolve().parents[2];out=pathlib.Path(__file__).resolve().parent
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+p=json.loads((out/'numeric-plan.json').read_bytes());prepared=json.loads((out/'prepared.json').read_bytes());pre=json.loads((out/'preflight.stdout.log').read_bytes())
+worker=json.loads((out/'worker-controls.stdout.log').read_bytes());fault=json.loads((out/'remote-faults.stdout.log').read_bytes())
+root=pathlib.PurePosixPath(json.loads((out/'numerical.json').read_bytes())['root']);pin=sha(out/'numeric-plan.json')
+assert p['operator_approved'] and not p['synthetic'] and not p['runtime_methods_changed'] and not p['release_installation']
+assert p['fence_identity']==pre['fence_identity']==[2306,18101991] and p['expected_host']==pre['host']
+assert p['supervisor']=='hydracache-performance-supervisor-074.service' and p['cpu_profile']=={'online':'0-7','system_slice_effective':'0-7'}
+assert len(p['attempts'])==60 and [(x['mode'],x['variant']) for x in p['attempts']]==[(m,v) for m in ('cpu','memory') for v in ('B','P','Q','Q','P','B')*5]
+for i,a in enumerate(p['attempts']):assert a['argv']==['/usr/bin/python3','-B','-I',str(root/'worker.py'),str(root),str(i),'@PLAN_SHA@','@FENCE_FD@']
+assert p['child_env']=={'PATH':'/usr/bin:/bin','LANG':'C.UTF-8','HOME':'/nonexistent'}
+assert [p[k] for k in ('outer_bound_seconds','session_bound_seconds','capacity_poll_seconds','cleanup_seconds')]==[1200,1100,5,5]
+# 5742 manifest-listed input files + original manifest itself + five controller files.
+assert len(p['inputs'])==5748
+assert p['inputs'][str(root/'input/inputs.json')]=='90057ac9679be66d141a0f3b573fa6d911d8287365051fc10e379479ffb26c20'
+for name,digest in prepared['files'].items():assert p['inputs'][str(root/name)]==digest
+for name in ('coordinator.py','worker.py','stage.py','plan.py'):assert sha(r/'tools/chitchat-cohort-074'/name)==prepared['files'][name]
+assert p['protocol_sha256']==sha(r/'tools/chitchat-cost-074/protocol.json')
+assert worker['complete'] and worker['stable_supervisor_unchanged'] and len(worker['bodies'])==3
+assert fault['complete'] and fault['stable_supervisor_unchanged'] and len(fault['cases'])==3 and all(x['passed'] for x in fault['cases'])
+v=dict(reviewed=True,plan_sha256=pin,root=str(root),input_files=len(p['inputs']),processes=60,first_faults_preserved=True,worker_controls_pass=True,synthetic_retirement_pass=True,only_service=p['supervisor'],original_deadline_seconds=1100,outer_seconds=1200,protocol_unchanged=True,source_payload_matches=True,CPU_qualified=False,RSS_qualified=False)
+with (out/'prelaunch-review.json').open('x') as f:json.dump(v,f,indent=2,sort_keys=True)
+print(json.dumps(v))

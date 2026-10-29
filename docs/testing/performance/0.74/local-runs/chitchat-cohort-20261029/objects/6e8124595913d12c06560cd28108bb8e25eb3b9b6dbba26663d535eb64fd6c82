@@ -1,0 +1,21 @@
+{
+  "cases": [
+    {
+      "case": "healthy",
+      "passed": true,
+      "root": "/tmp/hc074-chitchat-cost-20261029.7h1whfj7"
+    },
+    {
+      "case": "deadline",
+      "passed": true,
+      "root": "/tmp/hc074-chitchat-cost-20261029.oe1yn5uv"
+    },
+    {
+      "case": "owner-kill",
+      "passed": true,
+      "root": "/tmp/hc074-chitchat-cost-20261029.kezzk82h"
+    }
+  ],
+  "complete": true,
+  "stable_supervisor_unchanged": true
+}

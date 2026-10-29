@@ -1,0 +1,37 @@
+Failed to find real location of C:\Python313\python.exe
+Failed to find real location of C:\Python313\python.exe
+test_absent_group_cannot_be_called_empty (test_analysis.Accounting.test_absent_group_cannot_be_called_empty) ... ok
+test_changed_deadline_refused (test_analysis.Accounting.test_changed_deadline_refused) ... ok
+test_incomplete_is_terminal_and_never_estimated (test_analysis.Accounting.test_incomplete_is_terminal_and_never_estimated) ... ok
+test_later_intent_cannot_be_spliced (test_analysis.Accounting.test_later_intent_cannot_be_spliced) ... ok
+test_lost_empty_proof_refused (test_analysis.Accounting.test_lost_empty_proof_refused) ... ok
+test_measurement_admission_cannot_be_granted_by_recovery (test_analysis.Accounting.test_measurement_admission_cannot_be_granted_by_recovery) ... ok
+test_missing_fence_proof_refused (test_analysis.Accounting.test_missing_fence_proof_refused) ... ok
+test_original_child_identity_mismatch_refused (test_analysis.Accounting.test_original_child_identity_mismatch_refused) ... ok
+test_original_clock_predicate_stays_active (test_analysis.Accounting.test_original_clock_predicate_stays_active) ... ok
+test_original_plan_drift_refused (test_analysis.Accounting.test_original_plan_drift_refused) ... ok
+test_partial_cohort_cannot_be_promoted (test_analysis.Accounting.test_partial_cohort_cannot_be_promoted) ... ok
+test_protected_host_change_refused (test_analysis.Accounting.test_protected_host_change_refused) ... ok
+test_absolute_timer_carries_same_plan_pin (test_controller.Controller.test_absolute_timer_carries_same_plan_pin) ... ok
+test_actual_spawn_keeps_fence_copy (test_controller.Controller.test_actual_spawn_keeps_fence_copy) ... ok
+test_closed_or_second_spawn_is_refused (test_controller.Controller.test_closed_or_second_spawn_is_refused) ... ok
+test_dispatch_requires_current_payload_and_one_shot_latches (test_controller.Controller.test_dispatch_requires_current_payload_and_one_shot_latches) ... ok
+test_exact_five_counterbalanced_blocks_per_mode (test_controller.Controller.test_exact_five_counterbalanced_blocks_per_mode) ... ok
+test_kernel_cpu_list_parser_refusals (test_controller.Controller.test_kernel_cpu_list_parser_refusals) ... ok
+test_kernel_cpuset_not_ssh_process_affinity_owns_admission (test_controller.Controller.test_kernel_cpuset_not_ssh_process_affinity_owns_admission) ... ok
+test_original_base_source_is_unchanged (test_controller.Controller.test_original_base_source_is_unchanged) ... ok
+test_post_uses_exact_original_body_and_restores_binding (test_controller.Controller.test_post_uses_exact_original_body_and_restores_binding) ... ok
+test_spawn_only_adds_original_fence_inheritance (test_controller.Controller.test_spawn_only_adds_original_fence_inheritance) ... ok
+test_stop_precedes_fence_and_retirement_precedes_validation (test_controller.Controller.test_stop_precedes_fence_and_retirement_precedes_validation) ... ok
+test_unit_has_autonomous_post_and_finite_kill_scope (test_controller.Controller.test_unit_has_autonomous_post_and_finite_kill_scope) ... ok
+test_exact_observed_leaf_replacement_retains_failed_frame (test_recover.Recovery.test_exact_observed_leaf_replacement_retains_failed_frame) ... ok
+test_missing_duplicate_unchanged_mount_refused (test_recover.Recovery.test_missing_duplicate_unchanged_mount_refused) ... ok
+test_options_parent_path_nested_or_type_change_refused (test_recover.Recovery.test_options_parent_path_nested_or_type_change_refused) ... ok
+test_other_mount_change_refused (test_recover.Recovery.test_other_mount_change_refused) ... ok
+test_protected_host_drift_refused (test_recover.Recovery.test_protected_host_drift_refused) ... ok
+test_running_or_restartable_unit_refused (test_recover.Recovery.test_running_or_restartable_unit_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 30 tests in 0.887s
+
+OK

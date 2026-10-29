@@ -1,7 +1,11 @@
 # Exact Q numerical host continuation: finite maintenance scope
 
-Status: prepared scope, not dispatched and not operator-approved for service
-mutation by the preceding control session. The [native control result](chitchat-host-cost-result-20261029.md)
+Status: separately operator-approved on2026-10-29 and dispatched once. The
+[first numerical result](chitchat-cohort-result-20261029.md) is incomplete after
+a host mount-frame refusal; automatic postflight also refuses. The exact stable
+supervisor is restored through separately recorded terminal recovery. No
+numerical retry or CPU/RSS qualification follows. The preceding native control
+session itself authorized no service mutation. The [native control result](chitchat-host-cost-result-20261029.md)
 admits the ordinary B/P/Q executables on the paid host; it gives no exclusivity,
 CPU/RSS qualification, original-delivery admission or release installation.
 
@@ -40,7 +44,7 @@ and its `test_active_stable_service_prevents_external_fence_acquisition`
 [fault control](../../../../tools/get-owner-scheduled-controls-074/test_maintenance_d3.py).
 The new B/P/Q control carrier cannot stop the service or take this fence.
 
-The proposed separately authorized numerical stage will:
+The separately authorized numerical stage retains these requirements:
 
 1. Revalidate the exact current boot, supervisor PID/invocation, image/receipt,
    marker absence and immutable source/protocol/image inputs. Refuse any active

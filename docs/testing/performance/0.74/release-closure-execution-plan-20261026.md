@@ -717,3 +717,26 @@ agreement, then run the frozen60-process matrix with original cgroup/fence/
 watchdog/retirement/restoration controls. Do not seize the common lock while the
 supervisor is active or silently reuse GET-owner's previous maintenance consent.
 Root/security/full gates and original execution/lifecycle/reconnect/trust remain.
+
+The separately approved [first exclusive numerical maintenance](chitchat-cohort-result-20261029.md)
+is now terminal and incomplete. Three real stand-in healthy/deadline/owner-kill
+faults and the full B/P/Q worker controls pass before stable-service maintenance.
+The one60-position cohort completes four CPU images; worker4 refuses the changed
+/run/user/1000 tmpfs identity before image spawn. No memory phase or partial-set
+estimator follows. Automatic postflight refuses the same measurement frame and
+does not restore. Exact separately reviewed recovery verifies five prior original
+empty-group proofs, nine departed processes, ten retired deadline units and the
+original fence, then restores supervisor PID409364/NRestarts0 with original
+image/receipt. Missing cgroups are not treated as empty, and manual recovery
+does not close the automatic-recovery or numerical gate. All first results stay.
+Thirty final offline controls pass; original checks/count/order/frequency,
+deadlines, CPU/clock/memory thresholds and Root remain unchanged.
+
+Next repair and fault-test terminal automatic recovery on a measurement-frame
+denial and establish the complete mount-context lifetime across SSH loss. Keep
+all numerical observations rather than filtering/rebasing the volatile mount.
+Only a separately reviewed/admitted changed carrier may open another bounded
+maintenance attempt; the first attempt cannot resume or receive replacement
+positions. CPU/RSS/continuous retention, maintained distribution/consumers,
+Root/security/workspace and original-execution/lifecycle/reconnect/trust gates
+remain open. No new optimization hypothesis or product/server qualification.

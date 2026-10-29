@@ -1,0 +1,61 @@
+4.stdout.log
+
+4.stderr.log
+Traceback (most recent call last):
+  File "/tmp/hc074-chitchat-cost-20261029.er47i8gp/worker.py", line 63, in <module>
+    if __name__=='__main__':raise SystemExit(main())
+                                             ^^^^^^
+  File "/tmp/hc074-chitchat-cost-20261029.er47i8gp/worker.py", line 39, in main
+    c.frame(p,root,m);adapter=load(root/'input/remote.py','hc074_writer_adapter')
+    ^^^^^^^^^^^^^^^^^
+  File "/tmp/hc074-chitchat-cost-20261029.er47i8gp/coordinator.py", line 61, in frame
+    need({k:v for k,v in state.items() if k!='supervisor'}=={k:v for k,v in original.items() if k!='supervisor'},'original kernel/clock/mount/marker/source host frame')
+  File "/tmp/hc074-chitchat-cost-20261029.er47i8gp/coordinator.py", line 17, in need
+    if not ok:raise RuntimeError(why)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: original kernel/clock/mount/marker/source host frame
+
+4.child.json
+{
+  "fence_fd": 3,
+  "pid": 408922,
+  "start_ticks": "202391339"
+}
+session-deadline.json
+{
+  "deadline_ns": 2025002767723938,
+  "outer_bound_seconds": 1200,
+  "rebased": false,
+  "session_bound_seconds": 1100
+}
+hc074-chitchat-cost-20261029.er47i8gp.service
+Restart=no
+MainPID=0
+Result=exit-code
+ExecMainCode=1
+ExecMainStatus=1
+ExecStopPost={ path=/usr/bin/python3 ; argv[]=/usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.er47i8gp/coordinator.py post /tmp/hc074-chitchat-cost-20261029.er47i8gp c38d5aa3712ad53b8f42aa706d8b4086258eb0b085d5cc46d7473491218e47f0 ; ignore_errors=no ; start_time=[Thu 2026-10-29 22:22:52 CET] ; stop_time=[Thu 2026-10-29 22:22:52 CET] ; pid=408932 ; code=exited ; status=1 }
+ControlGroup=
+KillMode=control-group
+ActiveState=failed
+SubState=failed
+
+hydracache-performance-supervisor-074.service
+Restart=on-failure
+MainPID=0
+Result=success
+ExecMainCode=2
+ExecMainStatus=15
+ControlGroup=
+KillMode=process
+ActiveState=inactive
+SubState=dead
+
+/proc/1/mountinfo USER MOUNTS
+309 28 0:45 / /run/user/1001 rw,nosuid,nodev,relatime shared:185 - tmpfs tmpfs rw,size=6493212k,nr_inodes=1623303,mode=700,uid=1001,gid=1001,inode64
+53 28 0:42 / /run/user/1000 rw,nosuid,nodev,relatime shared:149 - tmpfs tmpfs rw,size=6493212k,nr_inodes=1623303,mode=700,uid=1000,gid=1000,inode64
+/proc/self/mountinfo USER MOUNTS
+309 28 0:45 / /run/user/1001 rw,nosuid,nodev,relatime shared:185 - tmpfs tmpfs rw,size=6493212k,nr_inodes=1623303,mode=700,uid=1001,gid=1001,inode64
+53 28 0:42 / /run/user/1000 rw,nosuid,nodev,relatime shared:149 - tmpfs tmpfs rw,size=6493212k,nr_inodes=1623303,mode=700,uid=1000,gid=1000,inode64
+OWN DEADLINE UNITS
+

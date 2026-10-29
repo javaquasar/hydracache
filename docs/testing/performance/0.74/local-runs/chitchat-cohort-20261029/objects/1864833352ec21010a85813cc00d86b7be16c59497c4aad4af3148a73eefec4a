@@ -1,0 +1,352 @@
+{
+  "host": {
+    "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+    "clock_services": "MainPID=804\nId=systemd-timesyncd.service\nLoadState=loaded\nActiveState=active\n\nMainPID=0\nId=chrony.service\nLoadState=not-found\nActiveState=inactive\n\nMainPID=0\nId=ntp.service\nLoadState=not-found\nActiveState=inactive",
+    "kernel": "6.8.0-138-generic",
+    "leftovers": [],
+    "libc": "glibc 2.39",
+    "machine": "x86_64",
+    "manager": "systemd 255 (255.4-1ubuntu8.17)",
+    "markers": {
+      "campaign-lifecycle-smoke-v1.json": false,
+      "campaigns/.active-diagnostic.pending": false,
+      "campaigns/.diagnostic-requests.pending": false,
+      "campaigns/active-campaign": false,
+      "campaigns/active-diagnostic.json": false,
+      "campaigns/diagnostic-requests.json": false,
+      "controller-loss-smoke-v1.json": false,
+      "diagnostic-intents-074": false,
+      "worker-authority-074": false
+    },
+    "mounts": "24 30 0:22 / /sys rw,nosuid,nodev,noexec,relatime shared:7 - sysfs sysfs rw\n25 30 0:23 / /proc rw,relatime shared:13 - proc proc rw\n26 30 0:5 / /dev rw,nosuid,relatime shared:2 - devtmpfs udev rw,size=32384328k,nr_inodes=8096082,mode=755,inode64\n27 26 0:24 / /dev/pts rw,nosuid,noexec,relatime shared:3 - devpts devpts rw,gid=5,mode=620,ptmxmode=000\n28 30 0:25 / /run rw,nosuid,nodev,noexec,relatime shared:5 - tmpfs tmpfs rw,size=6493212k,mode=755,inode64\n29 24 0:26 / /sys/firmware/efi/efivars rw,nosuid,nodev,noexec,relatime shared:8 - efivarfs efivarfs rw\n30 1 9:2 / / rw,relatime shared:1 - ext4 /dev/md2 rw\n31 24 0:6 / /sys/kernel/security rw,nosuid,nodev,noexec,relatime shared:9 - securityfs securityfs rw\n32 26 0:27 / /dev/shm rw,nosuid,nodev shared:4 - tmpfs tmpfs rw,inode64\n33 28 0:28 / /run/lock rw,nosuid,nodev,noexec,relatime shared:6 - tmpfs tmpfs rw,size=5120k,inode64\n34 24 0:29 / /sys/fs/cgroup rw,nosuid,nodev,noexec,relatime shared:10 - cgroup2 cgroup2 rw,nsdelegate,memory_recursiveprot\n35 24 0:30 / /sys/fs/pstore rw,nosuid,nodev,noexec,relatime shared:11 - pstore pstore rw\n36 24 0:31 / /sys/fs/bpf rw,nosuid,nodev,noexec,relatime shared:12 - bpf bpf rw,mode=700\n37 25 0:32 / /proc/sys/fs/binfmt_misc rw,relatime shared:14 - autofs systemd-1 rw,fd=32,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=1937\n38 26 0:20 / /dev/mqueue rw,nosuid,nodev,noexec,relatime shared:15 - mqueue mqueue rw\n39 24 0:7 / /sys/kernel/debug rw,nosuid,nodev,noexec,relatime shared:16 - debugfs debugfs rw\n40 24 0:12 / /sys/kernel/tracing rw,nosuid,nodev,noexec,relatime shared:17 - tracefs tracefs rw\n41 26 0:33 / /dev/hugepages rw,nosuid,nodev,relatime shared:18 - hugetlbfs hugetlbfs rw,pagesize=2M\n42 24 0:34 / /sys/fs/fuse/connections rw,nosuid,nodev,noexec,relatime shared:19 - fusectl fusectl rw\n43 24 0:21 / /sys/kernel/config rw,nosuid,nodev,noexec,relatime shared:20 - configfs configfs rw\n45 30 9:1 / /boot rw,relatime shared:30 - ext3 /dev/md1 rw\n47 45 259:2 / /boot/efi rw,relatime shared:46 - vfat /dev/nvme1n1p1 rw,fmask=0077,dmask=0077,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro\n49 37 0:35 / /proc/sys/fs/binfmt_misc rw,nosuid,nodev,noexec,relatime shared:48 - binfmt_misc binfmt_misc rw\n309 28 0:45 / /run/user/1001 rw,nosuid,nodev,relatime shared:185 - tmpfs tmpfs rw,size=6493212k,nr_inodes=1623303,mode=700,uid=1001,gid=1001,inode64\n53 28 0:42 / /run/user/1000 rw,nosuid,nodev,relatime shared:149 - tmpfs tmpfs rw,size=6493212k,nr_inodes=1623303,mode=700,uid=1000,gid=1000,inode64\n",
+    "namespaces": {
+      "mnt": "mnt:[4026531841]",
+      "user": "user:[4026531837]"
+    },
+    "page_size": 4096,
+    "protected": {
+      "/opt/hydracache-perf/bin/hydracache-long-run-supervisor-074": "f797629f65385ebfd4d94577a43a2d1d020f71c1e841028dad7d02a51b47ad62",
+      "/var/lib/hydracache-performance/provisioning-receipt-074.json": "b314953d4deedaeaade3e24468da4844b7f13d348a5d77b8e8f41c672ff44525"
+    },
+    "supervisor": "MainPID=0\nNRestarts=0\nActiveState=inactive\nSubState=dead\nInvocationID=4aeadf5db20f45688cd92408f3c42abf"
+  },
+  "installation": false,
+  "measurement_frame_pass": false,
+  "missing_cgroup_used_as_empty_proof": false,
+  "mount_refusal": {
+    "after": "53 28 0:42 / /run/user/1000 rw,nosuid,nodev,relatime shared:149 - tmpfs tmpfs rw,size=6493212k,nr_inodes=1623303,mode=700,uid=1000,gid=1000,inode64",
+    "before": "54 28 0:47 / /run/user/1000 rw,nosuid,nodev,relatime shared:186 - tmpfs tmpfs rw,size=6493212k,nr_inodes=1623303,mode=700,uid=1000,gid=1000,inode64",
+    "measurement_frame_pass": false
+  },
+  "numerical_replay": false,
+  "original_plan_sha256": "c38d5aa3712ad53b8f42aa706d8b4086258eb0b085d5cc46d7473491218e47f0",
+  "original_processes_gone": [
+    {
+      "fence_fd": 3,
+      "name": "0.child.json",
+      "pid": 408817,
+      "start_ticks": "202390387"
+    },
+    {
+      "name": "0.worker-child.json",
+      "pid": 408824,
+      "start_ticks": "202390451"
+    },
+    {
+      "fence_fd": 3,
+      "name": "1.child.json",
+      "pid": 408843,
+      "start_ticks": "202390626"
+    },
+    {
+      "name": "1.worker-child.json",
+      "pid": 408848,
+      "start_ticks": "202390689"
+    },
+    {
+      "fence_fd": 3,
+      "name": "2.child.json",
+      "pid": 408867,
+      "start_ticks": "202390864"
+    },
+    {
+      "name": "2.worker-child.json",
+      "pid": 408872,
+      "start_ticks": "202390927"
+    },
+    {
+      "fence_fd": 3,
+      "name": "3.child.json",
+      "pid": 408891,
+      "start_ticks": "202391101"
+    },
+    {
+      "name": "3.worker-child.json",
+      "pid": 408896,
+      "start_ticks": "202391164"
+    },
+    {
+      "fence_fd": 3,
+      "name": "4.child.json",
+      "pid": 408922,
+      "start_ticks": "202391339"
+    }
+  ],
+  "prior_retirement_receipts": [
+    {
+      "intent": {
+        "actual_argv": [
+          "/usr/bin/python3",
+          "-B",
+          "-I",
+          "/tmp/hc074-chitchat-cost-20261029.er47i8gp/worker.py",
+          "/tmp/hc074-chitchat-cost-20261029.er47i8gp",
+          "0",
+          "c38d5aa3712ad53b8f42aa706d8b4086258eb0b085d5cc46d7473491218e47f0",
+          "3"
+        ],
+        "attempt": {
+          "argv": [
+            "/usr/bin/python3",
+            "-B",
+            "-I",
+            "/tmp/hc074-chitchat-cost-20261029.er47i8gp/worker.py",
+            "/tmp/hc074-chitchat-cost-20261029.er47i8gp",
+            "0",
+            "@PLAN_SHA@",
+            "@FENCE_FD@"
+          ],
+          "mode": "cpu",
+          "variant": "B"
+        },
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "deadline_ns": 2025002767723938,
+        "fence_fd": 3,
+        "group": "/sys/fs/cgroup/system.slice/hc074-chitchat-cost-20261029.er47i8gp.service/writers-0",
+        "group_identity": [
+          29,
+          410037
+        ],
+        "quiet": {
+          "busy_percent": 0.0,
+          "maximum_percent": 10,
+          "sample_milliseconds": 500
+        }
+      },
+      "retired": {
+        "all_original_writers_stopped": true,
+        "events": {
+          "frozen": "0",
+          "populated": "0"
+        },
+        "exit": 0
+      }
+    },
+    {
+      "intent": {
+        "actual_argv": [
+          "/usr/bin/python3",
+          "-B",
+          "-I",
+          "/tmp/hc074-chitchat-cost-20261029.er47i8gp/worker.py",
+          "/tmp/hc074-chitchat-cost-20261029.er47i8gp",
+          "1",
+          "c38d5aa3712ad53b8f42aa706d8b4086258eb0b085d5cc46d7473491218e47f0",
+          "3"
+        ],
+        "attempt": {
+          "argv": [
+            "/usr/bin/python3",
+            "-B",
+            "-I",
+            "/tmp/hc074-chitchat-cost-20261029.er47i8gp/worker.py",
+            "/tmp/hc074-chitchat-cost-20261029.er47i8gp",
+            "1",
+            "@PLAN_SHA@",
+            "@FENCE_FD@"
+          ],
+          "mode": "cpu",
+          "variant": "P"
+        },
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "deadline_ns": 2025002767723938,
+        "fence_fd": 3,
+        "group": "/sys/fs/cgroup/system.slice/hc074-chitchat-cost-20261029.er47i8gp.service/writers-1",
+        "group_identity": [
+          29,
+          410055
+        ],
+        "quiet": {
+          "busy_percent": 0.0,
+          "maximum_percent": 10,
+          "sample_milliseconds": 500
+        }
+      },
+      "retired": {
+        "all_original_writers_stopped": true,
+        "events": {
+          "frozen": "0",
+          "populated": "0"
+        },
+        "exit": 0
+      }
+    },
+    {
+      "intent": {
+        "actual_argv": [
+          "/usr/bin/python3",
+          "-B",
+          "-I",
+          "/tmp/hc074-chitchat-cost-20261029.er47i8gp/worker.py",
+          "/tmp/hc074-chitchat-cost-20261029.er47i8gp",
+          "2",
+          "c38d5aa3712ad53b8f42aa706d8b4086258eb0b085d5cc46d7473491218e47f0",
+          "3"
+        ],
+        "attempt": {
+          "argv": [
+            "/usr/bin/python3",
+            "-B",
+            "-I",
+            "/tmp/hc074-chitchat-cost-20261029.er47i8gp/worker.py",
+            "/tmp/hc074-chitchat-cost-20261029.er47i8gp",
+            "2",
+            "@PLAN_SHA@",
+            "@FENCE_FD@"
+          ],
+          "mode": "cpu",
+          "variant": "Q"
+        },
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "deadline_ns": 2025002767723938,
+        "fence_fd": 3,
+        "group": "/sys/fs/cgroup/system.slice/hc074-chitchat-cost-20261029.er47i8gp.service/writers-2",
+        "group_identity": [
+          29,
+          410073
+        ],
+        "quiet": {
+          "busy_percent": 0.0,
+          "maximum_percent": 10,
+          "sample_milliseconds": 500
+        }
+      },
+      "retired": {
+        "all_original_writers_stopped": true,
+        "events": {
+          "frozen": "0",
+          "populated": "0"
+        },
+        "exit": 0
+      }
+    },
+    {
+      "intent": {
+        "actual_argv": [
+          "/usr/bin/python3",
+          "-B",
+          "-I",
+          "/tmp/hc074-chitchat-cost-20261029.er47i8gp/worker.py",
+          "/tmp/hc074-chitchat-cost-20261029.er47i8gp",
+          "3",
+          "c38d5aa3712ad53b8f42aa706d8b4086258eb0b085d5cc46d7473491218e47f0",
+          "3"
+        ],
+        "attempt": {
+          "argv": [
+            "/usr/bin/python3",
+            "-B",
+            "-I",
+            "/tmp/hc074-chitchat-cost-20261029.er47i8gp/worker.py",
+            "/tmp/hc074-chitchat-cost-20261029.er47i8gp",
+            "3",
+            "@PLAN_SHA@",
+            "@FENCE_FD@"
+          ],
+          "mode": "cpu",
+          "variant": "Q"
+        },
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "deadline_ns": 2025002767723938,
+        "fence_fd": 3,
+        "group": "/sys/fs/cgroup/system.slice/hc074-chitchat-cost-20261029.er47i8gp.service/writers-3",
+        "group_identity": [
+          29,
+          410091
+        ],
+        "quiet": {
+          "busy_percent": 0.0,
+          "maximum_percent": 10,
+          "sample_milliseconds": 500
+        }
+      },
+      "retired": {
+        "all_original_writers_stopped": true,
+        "events": {
+          "frozen": "0",
+          "populated": "0"
+        },
+        "exit": 0
+      }
+    },
+    {
+      "intent": {
+        "actual_argv": [
+          "/usr/bin/python3",
+          "-B",
+          "-I",
+          "/tmp/hc074-chitchat-cost-20261029.er47i8gp/worker.py",
+          "/tmp/hc074-chitchat-cost-20261029.er47i8gp",
+          "4",
+          "c38d5aa3712ad53b8f42aa706d8b4086258eb0b085d5cc46d7473491218e47f0",
+          "3"
+        ],
+        "attempt": {
+          "argv": [
+            "/usr/bin/python3",
+            "-B",
+            "-I",
+            "/tmp/hc074-chitchat-cost-20261029.er47i8gp/worker.py",
+            "/tmp/hc074-chitchat-cost-20261029.er47i8gp",
+            "4",
+            "@PLAN_SHA@",
+            "@FENCE_FD@"
+          ],
+          "mode": "cpu",
+          "variant": "P"
+        },
+        "boot": "e81671d6-bf23-4ebf-b8fe-5dad1f45866f",
+        "deadline_ns": 2025002767723938,
+        "fence_fd": 3,
+        "group": "/sys/fs/cgroup/system.slice/hc074-chitchat-cost-20261029.er47i8gp.service/writers-4",
+        "group_identity": [
+          29,
+          410151
+        ],
+        "quiet": {
+          "busy_percent": 0.0,
+          "maximum_percent": 10,
+          "sample_milliseconds": 500
+        }
+      },
+      "retired": {
+        "all_original_writers_stopped": true,
+        "events": {
+          "frozen": "0",
+          "populated": "0"
+        },
+        "exit": 1
+      }
+    }
+  ],
+  "retry": false,
+  "unit": {
+    "ActiveState": "failed",
+    "ControlGroup": "",
+    "ExecMainStatus": "1",
+    "KillMode": "control-group",
+    "MainPID": "0",
+    "Restart": "no",
+    "SubState": "failed"
+  }
+}

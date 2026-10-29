@@ -1,0 +1,17 @@
+test_absolute_timer_carries_same_plan_pin (test_controller.Controller.test_absolute_timer_carries_same_plan_pin) ... ok
+test_actual_spawn_keeps_fence_copy (test_controller.Controller.test_actual_spawn_keeps_fence_copy) ... ok
+test_closed_or_second_spawn_is_refused (test_controller.Controller.test_closed_or_second_spawn_is_refused) ... ok
+test_dispatch_requires_current_payload_and_one_shot_latches (test_controller.Controller.test_dispatch_requires_current_payload_and_one_shot_latches) ... ok
+test_exact_five_counterbalanced_blocks_per_mode (test_controller.Controller.test_exact_five_counterbalanced_blocks_per_mode) ... ok
+test_kernel_cpu_list_parser_refusals (test_controller.Controller.test_kernel_cpu_list_parser_refusals) ... ok
+test_kernel_cpuset_not_ssh_process_affinity_owns_admission (test_controller.Controller.test_kernel_cpuset_not_ssh_process_affinity_owns_admission) ... ok
+test_original_base_source_is_unchanged (test_controller.Controller.test_original_base_source_is_unchanged) ... ok
+test_post_uses_exact_original_body_and_restores_binding (test_controller.Controller.test_post_uses_exact_original_body_and_restores_binding) ... ok
+test_spawn_only_adds_original_fence_inheritance (test_controller.Controller.test_spawn_only_adds_original_fence_inheritance) ... ok
+test_stop_precedes_fence_and_retirement_precedes_validation (test_controller.Controller.test_stop_precedes_fence_and_retirement_precedes_validation) ... ok
+test_unit_has_autonomous_post_and_finite_kill_scope (test_controller.Controller.test_unit_has_autonomous_post_and_finite_kill_scope) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.006s
+
+OK

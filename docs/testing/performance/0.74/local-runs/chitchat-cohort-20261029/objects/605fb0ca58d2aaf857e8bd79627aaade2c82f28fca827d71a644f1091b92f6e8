@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "/usr/bin/systemd-run",
+    "--quiet",
+    "--no-ask-password",
+    "--unit=hc074-chitchat-cost-20261029.qv1yctbx.service",
+    "--service-type=exec",
+    "--property=Delegate=yes",
+    "--property=DelegateSubgroup=control",
+    "--property=RuntimeMaxSec=30",
+    "--property=KillMode=control-group",
+    "--property=KillSignal=SIGKILL",
+    "--property=SendSIGKILL=yes",
+    "--property=Restart=no",
+    "--property=TimeoutStopSec=30",
+    "--property=NoNewPrivileges=yes",
+    "--property=Wants=hc074-chitchat-cost-20261029.qv1yctbx-standin.service",
+    "--property=After=hc074-chitchat-cost-20261029.qv1yctbx-standin.service",
+    "--property=ExecStopPost=/usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.qv1yctbx/coordinator.py post /tmp/hc074-chitchat-cost-20261029.qv1yctbx fc18f6da0a805f4f28fa721e35081256da8b6fb9147e5aa1c432f6cf642455b9",
+    "/usr/bin/python3",
+    "-B",
+    "-I",
+    "/tmp/hc074-chitchat-cost-20261029.qv1yctbx/coordinator.py",
+    "main",
+    "/tmp/hc074-chitchat-cost-20261029.qv1yctbx",
+    "fc18f6da0a805f4f28fa721e35081256da8b6fb9147e5aa1c432f6cf642455b9"
+  ],
+  "controls_only": true,
+  "retry": false
+}

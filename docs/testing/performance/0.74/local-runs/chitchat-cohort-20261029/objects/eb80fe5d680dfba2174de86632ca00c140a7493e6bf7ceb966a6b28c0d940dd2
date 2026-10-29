@@ -1,0 +1,14 @@
+{
+  "approval": "2026-10-29 limited maintenance user consent",
+  "archive_bytes": 12907,
+  "archive_sha256": "8e5333191251af181637075885d32ddb5461615daf09c04d0a030bc55cc46a67",
+  "files": {
+    "coordinator.py": "3af3295cd850ca17c0a40da2752b5fd1ba3e01b59ba54caad0425f525e4befe5",
+    "maintenance_base.py": "fcb8a53eba5ebc7e1364cbfa0d2bcb9e0ad1098f75b4e53dae56b7503c02ed38",
+    "plan.py": "dcb31222842b93a52b7ee0f260718a17f30c39ad8b86810bdfb1467d57f89f7e",
+    "stage.py": "164c2cb908b2cb3872260ffc234b29a70e1a1dfa658a6524b6e580d6aa113dc8",
+    "worker.py": "3806758d935d28fa19ec3750b780d808bc663e8593fd5f5b9b430bbcc503c765"
+  },
+  "operator_approved": true,
+  "protocol_sha256": "c4af483881219180b69b4db3db097d49ca4fbabe966f37898ffc69ebb11b4d89"
+}

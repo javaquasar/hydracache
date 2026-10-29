@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/tmp/hc074-chitchat-cohort-package-20261029.07PaTE/stage.py", line 137, in <module>
+    {'faults':faults,'prepare':prepare_numeric,'launch':launch_numeric}[sys.argv[1]](package)
+  File "/tmp/hc074-chitchat-cohort-package-20261029.07PaTE/stage.py", line 85, in faults
+    record=package/'faults-once';record.mkdir();cases=[];before=original()
+                                                                ^^^^^^^^^^
+  File "/tmp/hc074-chitchat-cohort-package-20261029.07PaTE/stage.py", line 42, in original
+    assert {0,1,2,3,4,5,6,7}<=set(os.sched_getaffinity(0))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

@@ -1,0 +1,17 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "first_faults_preserved": true,
+  "input_files": 5748,
+  "only_service": "hydracache-performance-supervisor-074.service",
+  "original_deadline_seconds": 1100,
+  "outer_seconds": 1200,
+  "plan_sha256": "c38d5aa3712ad53b8f42aa706d8b4086258eb0b085d5cc46d7473491218e47f0",
+  "processes": 60,
+  "protocol_unchanged": true,
+  "reviewed": true,
+  "root": "/tmp/hc074-chitchat-cost-20261029.er47i8gp",
+  "source_payload_matches": true,
+  "synthetic_retirement_pass": true,
+  "worker_controls_pass": true
+}

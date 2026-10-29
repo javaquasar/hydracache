@@ -1,0 +1,18 @@
+[2023254.791173] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Starting hc074-chitchat-cost-20261029.oe1yn5uv.service - /usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.oe1yn5uv/coordinator.py main /tmp/hc074-chitchat-cost-20261029.oe1yn5uv 40380ccdf4b07b3b3dcc26e2fb5a055d18f03753663ea31558e603f24f62f822...
+[2023254.791698] Ubuntu-noble-latest-amd64-base.zst systemd[1]: Started hc074-chitchat-cost-20261029.oe1yn5uv.service - /usr/bin/python3 -B -I /tmp/hc074-chitchat-cost-20261029.oe1yn5uv/coordinator.py main /tmp/hc074-chitchat-cost-20261029.oe1yn5uv 40380ccdf4b07b3b3dcc26e2fb5a055d18f03753663ea31558e603f24f62f822.
+[2023257.506226] Ubuntu-noble-latest-amd64-base.zst python3[408195]: Traceback (most recent call last):
+[2023257.506226] Ubuntu-noble-latest-amd64-base.zst python3[408195]:   File "/tmp/hc074-chitchat-cost-20261029.oe1yn5uv/coordinator.py", line 149, in <module>
+[2023257.506575] Ubuntu-noble-latest-amd64-base.zst python3[408195]:     if __name__=='__main__':entry()
+[2023257.506575] Ubuntu-noble-latest-amd64-base.zst python3[408195]:                             ^^^^^^^
+[2023257.506575] Ubuntu-noble-latest-amd64-base.zst python3[408195]:   File "/tmp/hc074-chitchat-cost-20261029.oe1yn5uv/coordinator.py", line 143, in entry
+[2023257.506575] Ubuntu-noble-latest-amd64-base.zst python3[408195]:     if mode=='main' and len(sys.argv)==4:main(p,root,m)
+[2023257.506575] Ubuntu-noble-latest-amd64-base.zst python3[408195]:                                          ^^^^^^^^^^^^^^
+[2023257.506575] Ubuntu-noble-latest-amd64-base.zst python3[408195]:   File "/tmp/hc074-chitchat-cost-20261029.oe1yn5uv/coordinator.py", line 116, in main
+[2023257.506575] Ubuntu-noble-latest-amd64-base.zst python3[408195]:     need(code==0,'first child refusal '+str(seq)+': '+str(code)+'; no retry')
+[2023257.506575] Ubuntu-noble-latest-amd64-base.zst python3[408195]:   File "/tmp/hc074-chitchat-cost-20261029.oe1yn5uv/coordinator.py", line 17, in need
+[2023257.506575] Ubuntu-noble-latest-amd64-base.zst python3[408195]:     if not ok:raise RuntimeError(why)
+[2023257.506575] Ubuntu-noble-latest-amd64-base.zst python3[408195]:               ^^^^^^^^^^^^^^^^^^^^^^^
+[2023257.506575] Ubuntu-noble-latest-amd64-base.zst python3[408195]: RuntimeError: first child refusal 0: -9; no retry
+[2023257.516370] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.oe1yn5uv.service: Main process exited, code=exited, status=1/FAILURE
+[2023258.016761] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.oe1yn5uv.service: Failed with result 'exit-code'.
+[2023258.017042] Ubuntu-noble-latest-amd64-base.zst systemd[1]: hc074-chitchat-cost-20261029.oe1yn5uv.service: Consumed 1.071s CPU time.

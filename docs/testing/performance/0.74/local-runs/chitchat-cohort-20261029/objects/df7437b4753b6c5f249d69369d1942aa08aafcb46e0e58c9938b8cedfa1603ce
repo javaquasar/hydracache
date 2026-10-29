@@ -1,0 +1,1 @@
+{"review_only":true,"numeric_launched":false,"first_refusal":"AssertionError: reviewer expected 5747 plan inputs, omitted input/inputs.json itself","actual":5748,"breakdown":{"manifest_listed":5742,"manifest_itself":1,"controller_files":5},"runtime_or_protocol_changes":false}

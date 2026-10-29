@@ -1,0 +1,6 @@
+import json,pathlib,subprocess
+r=pathlib.Path('/tmp/hc074-chitchat-cost-20261029.er47i8gp');ns=('cohort-complete.json','all-writers-stopped.json','restored.json','host-postflight.json');print(json.dumps(dict(retired=len(list(r.glob('[0-9]*.retired.json'))),intents=len(list(r.glob('[0-9]*.intent.json'))),completed={n:(r/n).is_file() for n in ns})))
+for x in ('0.execution.json','0.retired.json','0.intent.json'):
+ if (r/x).is_file():print(x+'\n'+(r/x).read_text())
+print(subprocess.check_output(['/usr/bin/systemctl','show',r.name+'.service','-p','ActiveState','-p','SubState','-p','MainPID','-p','Result'],text=True))
+print(subprocess.check_output(['/usr/bin/journalctl','--no-pager','-u',r.name+'.service','-n','12','-o','short-monotonic'],text=True))

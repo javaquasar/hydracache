@@ -1,0 +1,9 @@
+import json,pathlib,subprocess
+r=pathlib.Path('/tmp/hc074-chitchat-cost-20261029.er47i8gp')
+for n in ('4.stdout.log','4.stderr.log','4.child.json','4.execution.json','4.worker-child.json','session-deadline.json'):
+ if (r/n).is_file():print(n+'\n'+(r/n).read_text())
+for u in (r.name+'.service','hydracache-performance-supervisor-074.service'):
+ print(u+'\n'+subprocess.check_output(['/usr/bin/systemctl','show',u,'-p','MainPID','-p','ActiveState','-p','SubState','-p','Result','-p','ControlGroup','-p','Restart','-p','KillMode','-p','ExecMainCode','-p','ExecMainStatus','-p','ExecStopPost'],text=True))
+for f in ('/proc/1/mountinfo','/proc/self/mountinfo'):
+ print(f+' USER MOUNTS\n'+'\n'.join(s for s in pathlib.Path(f).read_text().splitlines() if ' /run/user/' in s))
+print('OWN DEADLINE UNITS\n'+subprocess.check_output(['/usr/bin/systemctl','list-units','--all','--no-legend',r.name+'-deadline-*'],text=True))
