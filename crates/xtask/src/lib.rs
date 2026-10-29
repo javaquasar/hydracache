@@ -42,6 +42,7 @@ pub mod imap_foundation_evidence;
 pub mod imap_foundation_generate;
 pub mod imap_hazelcast_source;
 pub mod imap_migration_dry_run;
+pub mod imap_native_probe_075;
 pub mod imap_package_reproduction_075;
 pub mod imap_pre074_075;
 pub mod imap_proof_process_075;

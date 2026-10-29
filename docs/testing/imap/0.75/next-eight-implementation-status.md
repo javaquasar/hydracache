@@ -8,7 +8,7 @@ Release 0.75 remains planned; W0 and production IMap remain blocked by 0.74.
 | --- | --- | --- |
 | P1 managed builds | Implemented | 8 process-controller tests, 9 CI contract tests, 10 existing process tests; all-target check and strict Clippy; real Cargo/Maven preparation and package reproduction |
 | P2 helper ports | Implemented | 7 helper variants in Rust/Java ports and external consumers; core/helper/async tests, all-target check, strict Clippy and unchanged Java coverage ratchet |
-| P3 native observation | In progress | Closed native profile specified in `native-observation-profile.md` |
+| P3 native observation | Implemented | Native Maven suite, strict independent Rust verifier, preparation v2 artifact/replay; actual managed packaged probe passed |
 | P4 native histories | Pending | — |
 | P5 listener recovery | Pending | — |
 | P6 continuous soak | Pending | No 6/24-hour execution claimed |
