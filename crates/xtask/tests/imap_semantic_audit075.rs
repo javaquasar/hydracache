@@ -9,6 +9,11 @@ const TESTS: &str = include_str!("../../../tests/java-imap-benchmark/src/test/ja
 const SIGNATURES: &str = include_str!("../../../tests/java-imap-benchmark/src/test/java/io/hydracache/imap/semantic/IMapSemanticCompatibilityTest.java");
 const JAVA: &str = include_str!("../../../tests/java-imap-benchmark/src/main/java/io/hydracache/imap/semantic/UnifiedIMapService.java");
 const RUST: &str = include_str!("../../hydracache-cluster-testkit/src/value_plane_service_075.rs");
+const RUST_ENTRY_VIEWS: &str =
+    include_str!("../../hydracache-cluster-testkit/src/value_plane_service_entry_views_075.rs");
+const JAVA_ENTRY_VIEW_TESTS: &str = include_str!("../../../tests/java-imap-benchmark/src/test/java/io/hydracache/imap/semantic/BatchEntryViewsTest.java");
+const RUST_ENTRY_VIEW_TESTS: &str =
+    include_str!("../../hydracache-cluster-testkit/tests/value_plane_entry_views_075.rs");
 fn sources() -> SemanticSources<'static> {
     SemanticSources {
         ledger: LEDGER,
@@ -19,6 +24,9 @@ fn sources() -> SemanticSources<'static> {
         signature_tests: SIGNATURES,
         java_service: JAVA,
         rust_service: RUST,
+        rust_entry_views: RUST_ENTRY_VIEWS,
+        java_entry_view_tests: JAVA_ENTRY_VIEW_TESTS,
+        rust_entry_view_tests: RUST_ENTRY_VIEW_TESTS,
     }
 }
 
@@ -46,6 +54,11 @@ fn semantic_guard_rejects_missing_rows_fake_owners_filter_drift_and_abi_overclai
         "signature",
         "borrowed",
         "filter",
+        "entry_row",
+        "entry_shape",
+        "entry_method",
+        "entry_java_test",
+        "entry_rust_test",
     ] {
         let mut s = sources();
         let changed;
@@ -88,6 +101,37 @@ fn semantic_guard_rejects_missing_rows_fake_owners_filter_drift_and_abi_overclai
                 changed =
                     BORROWED.replace("a9ce2a02ac17f88fcd38869ac698e56e613dc40c", &"b".repeat(40));
                 s.borrowed = &changed;
+            }
+            "entry_row" => {
+                changed = LEDGER.replace(
+                    "| helper:bounded_batch_entry_views |",
+                    "| helper:unregistered_entry_views |",
+                );
+                s.ledger = &changed;
+            }
+            "entry_shape" => {
+                changed = RUST_ENTRY_VIEWS
+                    .replace("pub token: Option<VersionToken>", "pub token: Option<u64>");
+                s.rust_entry_views = &changed;
+            }
+            "entry_method" => {
+                changed =
+                    RUST_ENTRY_VIEWS.replace("pub fn entry_views(", "pub fn removed_entry_views(");
+                s.rust_entry_views = &changed;
+            }
+            "entry_java_test" => {
+                changed = JAVA_ENTRY_VIEW_TESTS.replace(
+                    "fullBatchBudgetsRejectBeforeTimeEventsAndOwnersChange",
+                    "missingBudgetTest",
+                );
+                s.java_entry_view_tests = &changed;
+            }
+            "entry_rust_test" => {
+                changed = RUST_ENTRY_VIEW_TESTS.replace(
+                    "batch_entry_views_preserve_order_absence_duplicates_ttl_and_full_tokens",
+                    "missingOrderedViewsTest",
+                );
+                s.rust_entry_view_tests = &changed;
             }
             _ => {
                 changed = RUST.replace(

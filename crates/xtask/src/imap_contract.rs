@@ -161,6 +161,7 @@ struct ApiExtensions {
     cluster_integration: ClusterIntegrationContract,
     runtime_evolution: ClusterIntegrationContract,
     cluster_evolution: ClusterIntegrationContract,
+    bounded_evolution: ClusterIntegrationContract,
 }
 
 #[derive(Debug, Deserialize)]
@@ -682,6 +683,7 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         "bounded_batch_outcome_query",
         "incremental_expiry_cleanup",
         "runtime_service_checkpoint_restore",
+        "bounded_batch_entry_views",
         "concurrent_cross_language_qualification",
         "testkit_service_cluster_bridge",
         "runtime_replica_state_transfer",
@@ -699,6 +701,13 @@ pub fn check_contract_dir(dir: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         "actual_cluster_history_chaos",
         "cluster_health_and_drain",
         "unified_semantic_compatibility",
+        "cluster_helper_futures",
+        "capacity_aware_read_and_helper_retry",
+        "read_only_helper_progress",
+        "authenticated_transfer_controls",
+        "extended_concurrent_histories",
+        "bounded_proof_process_lifecycle",
+        "exact_artifact_extended_receipts",
     ] {
         if !implemented.contains(required) {
             problems.push(format!(
@@ -827,6 +836,14 @@ fn validate_test_registry(
         operations
             .api_extensions
             .cluster_evolution
+            .test_ids
+            .iter()
+            .map(String::as_str),
+    );
+    claimed.extend(
+        operations
+            .api_extensions
+            .bounded_evolution
             .test_ids
             .iter()
             .map(String::as_str),
@@ -1111,7 +1128,55 @@ fn validate_operations(
     validate_cluster_integration(&contract.api_extensions.cluster_integration, problems);
     validate_runtime_evolution(&contract.api_extensions.runtime_evolution, problems);
     validate_cluster_evolution(&contract.api_extensions.cluster_evolution, problems);
+    validate_bounded_evolution(&contract.api_extensions.bounded_evolution, problems);
     operation_ids
+}
+
+fn validate_bounded_evolution(contract: &ClusterIntegrationContract, problems: &mut Vec<String>) {
+    let expected = [
+        ("entry_views","ordered_indexed_full_tokens_duplicates_absence_ttl_whole_response_preflight"),
+        ("helper_futures","actual_root_child_receipts_cancellation_drop_and_monotonic_certainty"),
+        ("retry","read_helper_retry_parks_physical_permits_retains_identity_deadline_epoch_grants"),
+        ("helper_progress","read_only_exact_digest_root_child_outcomes_proofs_bounded_safety_lane"),
+        ("transfer_controls","authenticated_scoped_abort_cleanup_restart_with_epoch_and_owner_fences"),
+        ("histories","independent_legal_partial_order_search_with_actual_process_canaries"),
+        ("processes","shared_io_deadline_nonblocking_pipes_platform_scoped_limits_and_owned_cleanup"),
+        ("receipts","self_contained_snapshots_bound_to_trusted_current_runners_source_runtime_and_replayed_controls"),
+    ].into_iter().map(|(key,value)|(key.to_owned(),value.to_owned())).collect::<BTreeMap<_,_>>();
+    let required = [
+        "imap075::batch_views::full_tokens",
+        "imap075::batch_views_java::token_scope",
+        "imap075::helper_futures::certainty",
+        "imap075::capacity_read_retry::park",
+        "imap075::capacity_helper_retry::receipt",
+        "imap075::helper_progress::readonly",
+        "imap075::transfer_controls::scoped",
+        "imap075::extended_histories::workers",
+        "imap075::extended_histories_java::legal_orders",
+        "imap075::extended_history_canary::broken_owner",
+        "imap075::proof_process::descendants",
+        "imap075::proof_process_deadline::io",
+        "imap075::proof_process_count::explicit_capability",
+        "imap075::extended_receipts::actual_replay",
+    ]
+    .into_iter()
+    .collect::<BTreeSet<_>>();
+    let actual = contract
+        .test_ids
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    if contract.scope != "local_actual_owners_and_process_evidence"
+        || contract.properties != expected
+    {
+        problems.push("IMap bounded evolution must preserve all eight local contracts and platform-scoped process limits".into());
+    }
+    if actual != required || actual.len() != contract.test_ids.len() {
+        problems.push(
+            "IMap bounded evolution requires distinct named executable proofs for all eight items"
+                .into(),
+        );
+    }
 }
 
 fn validate_cluster_evolution(contract: &ClusterIntegrationContract, problems: &mut Vec<String>) {

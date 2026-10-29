@@ -4,6 +4,10 @@ use super::*;
 
 #[derive(Debug)]
 pub enum LocalHelperCommand {
+    EntryViews {
+        keys: Vec<Vec<u8>>,
+        max_bytes: usize,
+    },
     VersionBulk {
         operation: VersionBulkOperation,
         entries: Vec<VersionBulkEntry>,
@@ -29,6 +33,7 @@ pub enum LocalHelperCommand {
 }
 #[derive(Debug)]
 pub enum LocalHelperResult {
+    EntryViews(Vec<VersionedEntryView>),
     Versions(ServiceResult),
     Outcomes(Vec<OperationOutcomeQuery>),
     Snapshot(ListenerSnapshot),
@@ -61,6 +66,12 @@ fn helper_bound(
     let bounds = state.map.service_bounds();
     let mut request = 304usize;
     let response = match command {
+        LocalHelperCommand::EntryViews { keys, max_bytes } => {
+            request = request
+                .checked_add(entry_views::input_bound(state, keys, *max_bytes)?)
+                .ok_or(MapServiceError::Capacity)?;
+            *max_bytes
+        }
         LocalHelperCommand::VersionBulk { operation, entries } => {
             if entries.is_empty() || entries.len() > state.limits.max_batch {
                 return Err(MapServiceError::InvalidArgument);
@@ -165,6 +176,10 @@ fn helper_bound(
     Ok((request, response))
 }
 
+pub(crate) fn typed_helper_digest(command: &LocalHelperCommand) -> [u8; 32] {
+    helper_digest(command)
+}
+
 fn helper_digest(command: &LocalHelperCommand) -> [u8; 32] {
     if let LocalHelperCommand::VersionBulk { operation, entries } = command {
         return lifecycle::version_digest(*operation, entries);
@@ -176,7 +191,9 @@ fn helper_digest(command: &LocalHelperCommand) -> [u8; 32] {
 fn mutating_helper(command: &LocalHelperCommand) -> bool {
     !matches!(
         command,
-        LocalHelperCommand::QueryOutcomes { .. } | LocalHelperCommand::Checkpoint
+        LocalHelperCommand::QueryOutcomes { .. }
+            | LocalHelperCommand::EntryViews { .. }
+            | LocalHelperCommand::Checkpoint
     )
 }
 
@@ -584,6 +601,11 @@ impl UnifiedIMapService {
         deadline: u64,
     ) -> Result<LocalHelperResult, MapServiceError> {
         match command {
+            LocalHelperCommand::EntryViews { keys, max_bytes } => {
+                return self
+                    .entry_views(keys, now, *max_bytes)
+                    .map(LocalHelperResult::EntryViews)
+            }
             LocalHelperCommand::QueryOutcomes {
                 identities,
                 max_bytes,

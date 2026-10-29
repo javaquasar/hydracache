@@ -14,7 +14,7 @@ final class IMapCapabilityAuditTest {
     var bounded = IMapCapabilityDescriptor.local(bounds); var unified = IMapCapabilityDescriptor.unified(bounds);
     var sdk = IMapCapabilityDescriptor.sdkActual();
     assertEquals(21, bounded.operations().size()); assertEquals(40, unified.operations().size());
-    assertEquals(7, unified.interfaceFeatures().size()); assertEquals("unified_reference", unified.scope());
+    assertEquals(8, unified.interfaceFeatures().size()); assertEquals("unified_reference", unified.scope());
     assertTrue(unified.operations().containsAll(bounded.operations())); assertTrue(bounded.interfaceFeatures().isEmpty());
     assertEquals(11, sdk.operations().size()); assertTrue(sdk.supports("IMap.put")); assertFalse(sdk.supports("get_all"));
     assertEquals("sdk_existing_narrow", sdk.scope()); assertFalse(sdk.productionEnabled()); assertFalse(unified.productionEnabled());

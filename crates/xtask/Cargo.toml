@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 publish = false
 description = "HydraCache repository automation tasks."
+default-run = "xtask"
 
 [dependencies]
 flate2 = "1.1.2"
@@ -26,6 +27,7 @@ syn = { version = "2.0", features = ["full", "visit"] }
 tar = "0.4.44"
 time = { version = "0.3.36", features = ["formatting", "parsing"] }
 toml.workspace = true
+tempfile = "3"
 
 [lints]
 workspace = true
@@ -35,4 +37,7 @@ hydracache-long-run-supervisor-074 = { path = "../../tools/long-run-supervisor-0
 tempfile = "3"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Storage_FileSystem"] }
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Storage_FileSystem", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_System_Diagnostics_ToolHelp", "Win32_System_Pipes"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = "0.2"

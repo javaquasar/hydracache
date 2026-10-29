@@ -269,6 +269,37 @@ impl ServiceResult {
 }
 
 impl UnifiedIMapService {
+    pub(crate) fn retained_operation_bytes(
+        &self,
+        identity: &MutationIdentity,
+        digest: [u8; 32],
+    ) -> Result<usize, MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
+        lifecycle::check_identity(&state, identity)?;
+        Ok(state.map.service_lookup_response_bytes(identity, digest)?)
+    }
+
+    pub(crate) fn replica_matches_readonly(
+        &self,
+        expected: ReplicaStamp,
+    ) -> Result<bool, MapServiceError> {
+        let state = self.state.lock().expect("local IMap state poisoned");
+        require_namespace(&state)?;
+        let actual = stamp(
+            &state.map,
+            state.namespace_generation,
+            state.now,
+            state.watermark,
+        );
+        Ok(state.map.service_index_valid()
+            && state.replica_sequence == expected.sequence
+            && state.replica_digest == Some(expected.digest)
+            && actual.map_id == expected.map_id
+            && actual.namespace_generation == expected.namespace_generation
+            && actual.revision == expected.revision
+            && actual.digest == expected.digest)
+    }
     pub fn replica_transport_size(&self, maximum: usize) -> Result<usize, MapServiceError> {
         let state = self.state.lock().expect("local IMap state poisoned");
         require_namespace(&state)?;

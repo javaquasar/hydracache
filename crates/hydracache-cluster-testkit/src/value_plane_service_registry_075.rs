@@ -597,7 +597,9 @@ impl NamespaceBackend {
     fn maintenance_growth(&self, operation: &RuntimeMaintenance) -> Result<usize, RegistryError> {
         if matches!(
             operation,
-            RuntimeMaintenance::RepairStep { .. } | RuntimeMaintenance::DrainOnlineStep { .. }
+            RuntimeMaintenance::RepairStep { .. }
+                | RuntimeMaintenance::DrainOnlineStep { .. }
+                | RuntimeMaintenance::RestartTransfer { .. }
         ) {
             let runtime = match self {
                 Self::Cluster(runtime) => runtime,
@@ -623,6 +625,7 @@ impl NamespaceBackend {
 #[derive(Clone)]
 enum JobKind {
     Helper {
+        cooperative: bool,
         surface: SurfaceId,
         request: ClusterHelperRequest,
         options: RuntimeCallOptions,
@@ -672,6 +675,7 @@ struct RegistryState {
     cluster_admission: Option<ClusterAdmission>,
 }
 struct ActiveInvocation {
+    helper: bool,
     address: NamespaceAddress,
     bytes: usize,
     growth: usize,
@@ -699,6 +703,7 @@ impl UnifiedServiceRegistry {
             handle,
             authenticated,
             JobKind::Helper {
+                cooperative: false,
                 surface,
                 request,
                 options,
@@ -1332,7 +1337,9 @@ impl UnifiedServiceRegistry {
     ) -> Result<RequestTicket, RegistryError> {
         let mut state = self.state.lock().expect("registry poisoned");
         let safety = matches!(kind, JobKind::BeginDelete | JobKind::Reclaim(_))
-            || matches!(&kind, JobKind::Maintenance(operation) if !operation.repair_lane());
+            || matches!(&kind, JobKind::Maintenance(operation) if !operation.repair_lane())
+            || matches!(&kind, JobKind::Helper { request, .. } if matches!(request.command, ClusterHelperCommand::QueryProgress { .. }));
+        let observation = matches!(&kind, JobKind::Helper { request, .. } if matches!(request.command, ClusterHelperCommand::QueryProgress { .. }));
         validate_handle(
             &state,
             handle,
@@ -1384,6 +1391,7 @@ impl UnifiedServiceRegistry {
                     | RuntimeMaintenance::BeginDrain { node }
                     | RuntimeMaintenance::DrainStep { node, .. } => Some(&*node),
                     RuntimeMaintenance::DrainOnlineStep { node, .. } => Some(&*node),
+                    RuntimeMaintenance::RestartTransfer { target, .. } => Some(&*target),
                     _ => None,
                 };
                 if name.is_some_and(|name| name.is_empty() || name.len() > 128) {
@@ -1420,7 +1428,7 @@ impl UnifiedServiceRegistry {
                 data_bytes.saturating_add(bytes),
             )?;
         }
-        if !safety {
+        if !safety || observation {
             check_owned_growth(&state, &handle.address.tenant, growth, None)?;
         }
         let ticket = state.next_request;
@@ -1462,11 +1470,22 @@ impl UnifiedServiceRegistry {
             };
             let replica_bytes =
                 match &kind {
-                    JobKind::Helper { request, .. } => {
-                        owner
+                    JobKind::Helper {
+                        request,
+                        cooperative,
+                        ..
+                    } => {
+                        let bytes = owner
                             .service
                             .helper_preflight(authenticated, request)?
-                            .replica_bytes
+                            .replica_bytes;
+                        if *cooperative {
+                            bytes
+                                .checked_mul(2)
+                                .ok_or(RegistryError::InvalidBound("invocation_replica_bytes"))?
+                        } else {
+                            bytes
+                        }
                     }
                     JobKind::Execute {
                         command,
@@ -1534,11 +1553,16 @@ impl UnifiedServiceRegistry {
                         lane,
                         bytes: bytes
                             .saturating_add(handle.address.tenant.len())
-                            .saturating_add(if lane == ClusterLane::Repair {
-                                growth.max(replica_bytes)
-                            } else {
-                                0
-                            }),
+                            .saturating_add(
+                                if lane == ClusterLane::Repair
+                                    || observation
+                                    || invocation.is_some()
+                                {
+                                    growth.max(replica_bytes)
+                                } else {
+                                    0
+                                },
+                            ),
                         replica_bytes,
                     },
                     &affected,
@@ -1595,15 +1619,7 @@ impl UnifiedServiceRegistry {
                 let excluded = state
                     .jobs
                     .values()
-                    .filter(|job| {
-                        matches!(
-                            &job.kind,
-                            JobKind::Execute {
-                                cooperative: true,
-                                ..
-                            }
-                        )
-                    })
+                    .filter(|job| job.invocation.is_some())
                     .filter_map(|job| job.admission)
                     .collect::<Vec<_>>();
                 let Some(permit) = scheduler.pop_except(&excluded)? else {
@@ -1634,9 +1650,9 @@ impl UnifiedServiceRegistry {
         // is never held while a service can wake downstream code.
         let result = dispatch(&self.state, id, &job, permit.as_ref());
         let mut state = self.state.lock().expect("registry poisoned");
-        state.jobs.remove(&id).expect("dispatched registry request");
-        state.queued_bytes -= job.bytes;
-        state.reserved_growth -= job.growth;
+        let completed = state.jobs.remove(&id).expect("dispatched registry request");
+        state.queued_bytes -= completed.bytes;
+        state.reserved_growth -= completed.growth;
         drop(state);
         drop(_dispatch);
         drop(permit);
@@ -1985,11 +2001,12 @@ fn dispatch(
             request.now = state.now;
             request.deadline = request.deadline.min(job.authenticated.deadline);
             let preflight = runtime.helper_preflight(&job.authenticated, &request)?;
-            check_owned_growth(
-                &state,
+            refresh_job_growth(
+                &mut state,
+                id,
                 &job.handle.address.tenant,
                 preflight.growth,
-                Some(id),
+                permit,
             )?;
             drop(state);
             Ok(RegistryResult::ClusterHelper(runtime.execute_helper(
@@ -2002,12 +2019,11 @@ fn dispatch(
         JobKind::Execute { command, .. } | JobKind::Reserve(command) => {
             // Every admitted surface deliberately resolves the very same owner. SurfaceId
             // is provenance only; this dev harness makes no production routing claim.
-            let owner = &state.maps[&key];
+            let service = state.maps[&key].service.clone();
             let mut command = command.clone();
             command.now = state.now;
-            let growth = owner.service.preflight_registry_growth(&command)?;
-            check_owned_growth(&state, &job.handle.address.tenant, growth, Some(id))?;
-            let service = owner.service.clone();
+            let growth = service.preflight_registry_growth(&command)?;
+            refresh_job_growth(&mut state, id, &job.handle.address.tenant, growth, permit)?;
             drop(state);
             if matches!(job.kind, JobKind::Reserve(_)) {
                 let identity = command
@@ -2175,6 +2191,32 @@ fn authorize_job(
             ClusterHelperCommand::QueryOutcomes { .. } => {
                 authenticated.authorize(GrantOperation::Read, &[], true)
             }
+            ClusterHelperCommand::EntryViews { keys, .. } => {
+                if keys.len() > 256 {
+                    return Err(MapServiceError::InvalidArgument.into());
+                }
+                authenticated.authorize(GrantOperation::Read, keys, false)
+            }
+            ClusterHelperCommand::QueryProgress { original, .. } => match &original.command {
+                ClusterHelperCommand::VersionBulk { entries, .. } => {
+                    if entries.len() > 256 {
+                        return Err(MapServiceError::InvalidArgument.into());
+                    }
+                    for entry in entries {
+                        authenticated.authorize(
+                            GrantOperation::Read,
+                            std::slice::from_ref(&entry.key),
+                            false,
+                        )?;
+                    }
+                    Ok(())
+                }
+                ClusterHelperCommand::RetireOutcomes { .. }
+                | ClusterHelperCommand::ExpireStep { .. } => {
+                    authenticated.authorize(GrantOperation::Read, &[], true)
+                }
+                _ => Err(MapServiceError::InvalidArgument.into()),
+            },
             _ => authenticated.authorize(GrantOperation::Admin, &[], true),
         },
         JobKind::Execute { command, .. } | JobKind::Reserve(command) => {
@@ -2321,6 +2363,42 @@ fn owned_bytes(state: &RegistryState, tenant: Option<&str>) -> usize {
             sum.saturating_add(usage_bytes(owner.service.resource_usage()))
         })
 }
+fn refresh_job_growth(
+    state: &mut RegistryState,
+    id: u64,
+    tenant: &str,
+    growth: usize,
+    permit: Option<&ClusterPermit>,
+) -> Result<(), RegistryError> {
+    let job = state.jobs.get(&id).ok_or(RegistryError::UnknownNamespace)?;
+    let old = job.growth;
+    // Ordinary synchronous Data owns request bytes only. Repair and observation
+    // permits additionally own a fixed growth peak which cannot be enlarged here.
+    if let Some(permit) = permit {
+        if permit.work().lane != ClusterLane::Data {
+            let overhead = job
+                .bytes
+                .checked_add(tenant.len())
+                .ok_or(RegistryError::InvalidBound("dispatch_growth_credit"))?;
+            let credit = permit
+                .work()
+                .bytes
+                .checked_sub(overhead)
+                .ok_or(RegistryError::InvalidBound("dispatch_growth_credit"))?;
+            quota("dispatch_growth_credit", credit, growth)?;
+        }
+    }
+    let peak = old.max(growth);
+    check_owned_growth(state, tenant, peak, Some(id))?;
+    let next = state
+        .reserved_growth
+        .checked_add(peak - old)
+        .ok_or(RegistryError::InvalidBound("dispatch_growth_credit"))?;
+    state.jobs.get_mut(&id).expect("queued dispatch").growth = peak;
+    state.reserved_growth = next;
+    Ok(())
+}
+
 fn check_owned_growth(
     state: &RegistryState,
     tenant: &str,

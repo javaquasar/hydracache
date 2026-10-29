@@ -3,7 +3,8 @@
 use crate::value_plane_cluster_runtime_075::ClusterNamespaceRuntime;
 use crate::value_plane_service_075::NamespaceOwners;
 use crate::value_plane_service_cluster_075::{
-    OnlineTransferPurpose, OnlineTransferStep, ServiceClusterError, ServiceLinkFaults,
+    OnlineTransferOptions, OnlineTransferPurpose, OnlineTransferStep, ServiceClusterError,
+    ServiceLinkFaults, TransferControlProgress, TransferScope,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -59,6 +60,18 @@ pub struct DrainProgress {
 
 #[derive(Debug, Clone)]
 pub enum RuntimeMaintenance {
+    AbortTransfer {
+        scope: TransferScope,
+    },
+    CleanupTransfer {
+        scope: TransferScope,
+    },
+    RestartTransfer {
+        scope: TransferScope,
+        expected_current_epoch: u64,
+        target: String,
+        options: OnlineTransferOptions,
+    },
     RepairStep {
         partition: u32,
         backup: String,
@@ -96,7 +109,8 @@ impl RuntimeMaintenance {
     pub fn repair_lane(&self) -> bool {
         matches!(
             self,
-            Self::Repair { .. }
+            Self::RestartTransfer { .. }
+                | Self::Repair { .. }
                 | Self::DrainStep { .. }
                 | Self::RepairStep { .. }
                 | Self::DrainOnlineStep { .. }
@@ -104,6 +118,9 @@ impl RuntimeMaintenance {
     }
     pub fn partition(&self) -> u32 {
         match self {
+            Self::AbortTransfer { scope }
+            | Self::CleanupTransfer { scope }
+            | Self::RestartTransfer { scope, .. } => scope.partition,
             Self::Repair { partition, .. }
             | Self::RepairStep { partition, .. }
             | Self::Promote { partition } => *partition,
@@ -113,6 +130,7 @@ impl RuntimeMaintenance {
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MaintenanceResult {
+    Transfer(TransferControlProgress),
     Completed,
     Drain(DrainProgress),
     Online(OnlineTransferStep),
@@ -217,6 +235,22 @@ impl ClusterNamespaceRuntime {
                 true,
             )
             .map_err(|_| ServiceClusterError::Authorization("operation_policy"))?;
+        if let RuntimeMaintenance::AbortTransfer { scope }
+        | RuntimeMaintenance::CleanupTransfer { scope }
+        | RuntimeMaintenance::RestartTransfer { scope, .. } = operation
+        {
+            if scope.transfer == 0
+                || scope.partition >= self.config.bounds.partitions
+                || scope.source_epoch == 0
+            {
+                return Err(ServiceClusterError::InvalidBound);
+            }
+        }
+        if let RuntimeMaintenance::RestartTransfer { target, .. } = operation {
+            if target.is_empty() || target.len() > 128 {
+                return Err(ServiceClusterError::InvalidBound);
+            }
+        }
         let lane = if operation.repair_lane() {
             crate::value_plane_cluster_admission_075::ClusterLane::Repair
         } else {
@@ -253,6 +287,29 @@ impl ClusterNamespaceRuntime {
             return Err(ServiceClusterError::Authorization("replica_credit"));
         }
         match operation {
+            RuntimeMaintenance::AbortTransfer { scope } => self
+                .with_cluster_wakes(|cluster| cluster.abort_transfer_scoped(*scope))
+                .map(MaintenanceResult::Transfer),
+            RuntimeMaintenance::CleanupTransfer { scope } => self
+                .with_cluster_wakes(|cluster| cluster.cleanup_transfer_scoped(*scope))
+                .map(MaintenanceResult::Transfer),
+            RuntimeMaintenance::RestartTransfer {
+                scope,
+                expected_current_epoch,
+                target,
+                options,
+            } => self
+                .with_cluster_wakes(|cluster| {
+                    cluster.with_message_guard(guard, |cluster| {
+                        cluster.restart_transfer_scoped(
+                            *scope,
+                            *expected_current_epoch,
+                            target,
+                            *options,
+                        )
+                    })
+                })
+                .map(MaintenanceResult::Transfer),
             RuntimeMaintenance::RepairStep {
                 partition,
                 backup,
@@ -326,6 +383,9 @@ impl ClusterNamespaceRuntime {
     ) -> Result<usize, ServiceClusterError> {
         let cluster = self.cluster.lock().unwrap();
         match operation {
+            RuntimeMaintenance::RestartTransfer { scope, .. } => {
+                cluster.partition_replica_bound(scope.partition)
+            }
             RuntimeMaintenance::Repair { partition, .. }
             | RuntimeMaintenance::RepairStep { partition, .. } => {
                 cluster.partition_replica_bound(*partition)

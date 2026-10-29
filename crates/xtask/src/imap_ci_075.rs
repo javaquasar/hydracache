@@ -12,7 +12,7 @@ use std::process::Command;
 pub const RUST_VERSIONS: [&str; 2] = ["1.88.0", "1.94.0"];
 pub const JAVA_VERSIONS: [u32; 2] = [17, 21];
 const WORKFLOW: &str = ".github/workflows/imap-075.yml";
-const COMMANDS: [&str; 8] = [
+const COMMANDS: [&str; 10] = [
     "imap-distributed-correctness",
     "imap-capability-audit",
     "imap-migration-dry-run",
@@ -21,6 +21,8 @@ const COMMANDS: [&str; 8] = [
     "imap-tooling-tests",
     "imap-semantic-audit",
     "imap-cluster-chaos",
+    "imap-extended-concurrent",
+    "imap-extended-evidence",
 ];
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -117,6 +119,18 @@ pub fn run_lane(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let seeds = seeds_for(lane.shard)?;
     for seed in &seeds {
         crate::imap_api_differential::check_actual_at_root(&root, *seed, 128)?;
+        crate::imap_extended_concurrent_075::check_actual(&root, i64::try_from(*seed)?, 15)?;
+        let output = std::path::Path::new(options.output.as_deref().ok_or("--output is required")?);
+        let evidence_dir = output
+            .parent()
+            .ok_or("CI output requires a parent")?
+            .join(format!(
+                "extended-{}-{}-{}-{}-{}",
+                lane.rust, lane.java, lane.shard, seed, before
+            ));
+        let receipt =
+            crate::imap_extended_receipt_075::produce(&root, &evidence_dir, i64::try_from(*seed)?)?;
+        crate::imap_extended_receipt_075::verify(&root, &receipt)?;
         println!(
             "{}",
             crate::imap_cluster_campaign_075::check_at_root(&root, *seed, 3)?
@@ -160,6 +174,7 @@ pub fn tooling_command(root: &Path, windows: bool) -> Command {
             "test",
             "-p",
             "xtask",
+            "--lib",
             "--test",
             "imap_contract_075",
             "--test",
@@ -180,6 +195,12 @@ pub fn tooling_command(root: &Path, windows: bool) -> Command {
             "imap_foundation_generate_075",
             "--test",
             "imap_extended_differential_075",
+            "--test",
+            "imap_extended_concurrent_075",
+            "--test",
+            "imap_proof_process_075",
+            "--test",
+            "imap_extended_receipt_075",
             "--locked",
         ])
         .current_dir(root);

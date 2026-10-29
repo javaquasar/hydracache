@@ -2,11 +2,9 @@
 
 use sha2::{Digest, Sha256};
 use std::error::Error;
-use std::io::{Read, Write};
+use std::io::Write;
 use std::path::Path;
-use std::process::{Command, Stdio};
-use std::thread;
-use std::time::{Duration, Instant};
+use std::process::Command;
 
 use hydracache_cluster_testkit::value_plane_concurrent_075::{
     execute_concurrent_rust, generated_schedule, parse_histories, shrink_schedule,
@@ -18,8 +16,6 @@ use hydracache_cluster_testkit::value_plane_differential_075::{
 };
 
 const MAX_OUTPUT_BYTES: usize = 4 * 1024 * 1024;
-const MAX_STDERR_BYTES: usize = 64 * 1024;
-const PROCESS_TIMEOUT: Duration = Duration::from_secs(15);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DifferentialReport {
@@ -213,14 +209,7 @@ pub(crate) fn execute_java_bounded(
             format!("compiled {runner} is missing; run the Java semantic build first").into(),
         );
     }
-    let java = std::env::var_os("JAVA_HOME")
-        .map(|path| {
-            std::path::PathBuf::from(path)
-                .join("bin")
-                .join(if cfg!(windows) { "java.exe" } else { "java" })
-        })
-        .filter(|path| path.is_file())
-        .unwrap_or_else(|| "java".into());
+    let java = java_executable();
     let mut command = Command::new(java);
     command
         .arg("-Xmx128m")
@@ -231,61 +220,38 @@ pub(crate) fn execute_java_bounded(
     execute_process_bounded(command, input, maximum)
 }
 
+pub(crate) fn java_executable() -> std::path::PathBuf {
+    std::env::var_os("JAVA_HOME")
+        .map(|path| {
+            std::path::PathBuf::from(path)
+                .join("bin")
+                .join(if cfg!(windows) { "java.exe" } else { "java" })
+        })
+        .filter(|path| path.is_file())
+        .or_else(|| {
+            std::env::var_os("PATH").and_then(|paths| {
+                std::env::split_paths(&paths)
+                    .map(|dir| dir.join(if cfg!(windows) { "java.exe" } else { "java" }))
+                    .find(|path| path.is_file())
+            })
+        })
+        .unwrap_or_else(|| "java".into())
+}
+
 pub(crate) fn execute_process_bounded(
-    mut command: Command,
+    command: Command,
     input: String,
     maximum: usize,
 ) -> Result<Vec<u8>, Box<dyn Error>> {
-    command
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
-    let mut child = command.spawn()?;
-    let stdout = child.stdout.take().ok_or("missing Java stdout")?;
-    let stderr = child.stderr.take().ok_or("missing Java stderr")?;
-    let out_thread = thread::spawn(move || bounded_read(stdout, maximum));
-    let err_thread = thread::spawn(move || bounded_read(stderr, MAX_STDERR_BYTES));
-    let mut stdin = child.stdin.take().ok_or("missing Java stdin")?;
-    let in_thread = thread::spawn(move || stdin.write_all(input.as_bytes()));
-    let started = Instant::now();
-    let (status, timed_out) = loop {
-        if let Some(status) = child.try_wait()? {
-            break (status, false);
-        }
-        if started.elapsed() >= PROCESS_TIMEOUT {
-            child.kill()?;
-            break (child.wait()?, true);
-        }
-        thread::sleep(Duration::from_millis(5));
-    };
-    let output = out_thread.join().map_err(|_| "Java output reader panicked");
-    let errors = err_thread.join().map_err(|_| "Java stderr reader panicked");
-    let input = in_thread.join().map_err(|_| "Java input writer panicked");
-    if timed_out {
-        return Err("Java differential process exceeded 15-second bound".into());
-    }
-    let output = output??;
-    let errors = errors??;
-    input??;
-    if !status.success() {
-        return Err(format!(
-            "Java differential process failed ({status}): {}",
-            String::from_utf8_lossy(&errors)
-        )
-        .into());
-    }
-    Ok(output)
-}
-
-fn bounded_read(source: impl Read, maximum: usize) -> Result<Vec<u8>, std::io::Error> {
-    let mut output = Vec::new();
-    source.take(maximum as u64 + 1).read_to_end(&mut output)?;
-    if output.len() > maximum {
-        return Err(std::io::Error::other(
-            "Java differential output exceeds bound",
-        ));
-    }
-    Ok(output)
+    let output = crate::imap_proof_process_075::execute(
+        command,
+        input.as_bytes(),
+        crate::imap_proof_process_075::ProcessBounds {
+            stdout_bytes: maximum,
+            ..crate::imap_proof_process_075::ProcessBounds::default()
+        },
+    )?;
+    Ok(output.stdout)
 }
 
 pub fn parse_observations(output: &[u8], expected: usize) -> Result<Vec<String>, Box<dyn Error>> {
@@ -401,9 +367,10 @@ pub fn parse_args(args: &[String]) -> Result<(u64, usize), Box<dyn Error>> {
 mod tests {
     use super::*;
     #[test]
-    fn subprocess_readers_bound_output_before_unbounded_retention() {
-        assert_eq!(bounded_read("small".as_bytes(), 5).unwrap(), b"small");
-        assert!(bounded_read("oversized".as_bytes(), 4).is_err());
+    fn previews_and_observation_parser_refuse_truncation() {
+        assert_eq!(parse_observations(b"small\n", 1).unwrap(), vec!["small"]);
+        assert!(parse_observations(b"small\n", 2).is_err());
+        assert!(parse_observations(&vec![b'x'; 64 * 1024 + 1], 1).is_err());
         assert_eq!(bounded_preview("same", 4), "same");
         assert_eq!(bounded_preview("longer", 4), "long<truncated>");
     }

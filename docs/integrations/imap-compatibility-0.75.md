@@ -78,6 +78,7 @@ protobuf, gRPC transport type or application closure in these local signatures.
 | helper:atomic_listener_resynchronization | `resync_listener(id,now,max_items,max_bytes)` | `snapshotListener(id,maxItems,maxBytes,now)` | bounded snapshot/watermark cutover, closeable lease, prefetched older events fenced |
 | helper:version_conditional_bulk_api | `bulk_version_conditional(action,entries,id,now,deadline,lost)` | `versionBulk(action,List<VersionInput>,id,now,deadline,lost)` | ordered per-item decisions, exact retained receipt, no cross-key transaction |
 | helper:bounded_batch_outcome_query | `query_operation_outcomes(ids,max_bytes)` | `queryOutcomes(List<MutationIdentity>,maxBytes)` | exact pending/completed/unknown in input order; Java adds index/identity wrapper |
+| helper:bounded_batch_entry_views | `entry_views(keys,now,max_bytes)` | `entryViews(List<BytesValue>,now,maxBytes)` | ordered indexed live value/full-token/TTL or explicit absence; duplicate keys retained; whole-response preflight before expiry or output allocation |
 | helper:incremental_expiry_cleanup | `expire_step(now,max_work)` | `expireStep(now,maxWork)` | bounded examined work; expired entries invisible before cleanup; event once |
 | helper:runtime_service_checkpoint_restore | `checkpoint()/restore(checkpoint)` | `checkpoint()/restore(RuntimeCheckpoint)` | quiescent runtime-only image, exact receipts/fences/TTL, fresh instance; old tokens/cursors rejected |
 
@@ -89,6 +90,21 @@ listener option fields and Result/Item/OperationStatus optional containers rejec
 dispatch or construction; malformed field values return `invalid_argument`.
 This is semantic/type-shape parity, not identical language syntax. It is not a final binary ABI
 guarantee.
+
+These eight typed local helper families leave the 40 core operation IDs unchanged. Batch entry
+views are observations of the existing owner, with a generation/instance/version token for every
+present item. They retain input order and duplicate keys; absent items carry neither value, token
+nor TTL. The bounded async helper freezes its key list and creates no retained mutation receipt.
+This adds no production SDK method or protocol operation.
+
+Entry-view evidence is executable in
+`BatchEntryViewsTest.orderedViewsIncludeAbsentDuplicateEntriesAndUsableFullTokens`,
+`BatchEntryViewsTest.fullBatchBudgetsRejectBeforeTimeEventsAndOwnersChange`, and
+`BatchEntryViewsTest.asynchronousViewsFreezeKeysAndRemainReadHelpersWithoutMutationIdentity`.
+The Rust counterparts in `tests/value_plane_entry_views_075.rs` are
+`batch_entry_views_preserve_order_absence_duplicates_ttl_and_full_tokens`,
+`batch_entry_view_bounds_reject_before_clock_expiry_events_or_receipts_change`, and
+`async_entry_views_are_lazy_bounded_read_helpers_without_retained_receipts`.
 
 TTL time is logical: Preserve requires an existing live entry for inserting/swap operations;
 Eternal removes expiry; ExpireAfter requires positive ticks. TTL updates require an explicit
@@ -172,3 +188,30 @@ Run `cargo xtask imap-semantic-audit --release 0.75` for the bounded ledger/sour
 then the shared local correctness gate for Java reflection/adapter and actual cross-language
 execution. Neither result replaces packaged 0.75 SDK consumers, real production daemon interop,
 official Hazelcast qualification, 0.74 baseline receipts or W0 closure.
+
+## Cluster helper invocation and diagnostic controls
+
+These additions are runtime/testkit APIs. They allocate no canonical core operation, SDK, HC/1,
+HC/2 or durable identifier and leave the 40-operation production boundary unchanged.
+
+| Local family | Surface | Contract |
+| --- | --- | --- |
+| Cluster batch views | `ClusterHelperCommand::EntryViews` | ordered full-token/value/TTL or absence; duplicates preserved; all response bytes preflighted |
+| Cluster helper Future | `cluster_helper_invocation[_with_retry]` | actual retained root/child decisions; cancellation/drop preserve admission certainty and release actual attempt owners |
+| Read/helper retry | `cluster_read_invocation_with_retry`, `ClusterRetryPolicy` | opt-in bounded attempts, fixed original request/receipt/deadline/epoch/grant; physical permits park while logical payload stays charged |
+| Helper progress | `ClusterHelperCommand::QueryProgress` | exact digest, bounded Safety-lane Read authorization; actual retained outcomes/proofs; no dispatch, time or proof refresh |
+| Transfer controls | `AbortTransfer`, `CleanupTransfer`, `RestartTransfer` | Admin authorization, namespace/partition/original epoch scope; Safety cleanup, Repair restart and current-epoch fencing |
+
+Helper read futures never allocate a mutation journal. A cancellation after an earlier reservation
+attempt remains uncertain across a parked retry; it cannot become NotApplied merely because the
+current phase returned to Claimed. Exact completed receipts take priority over caller cancellation
+only when the required owner/backup proof is still valid. Partial bulk retry reuses child receipts
+and cannot reevaluate confirmed conditional decisions.
+
+Extended concurrent qualification records real worker intervals and checks legal histories with
+an independent Java model; it does not require an identical overlapping winner or invent bulk
+transaction atomicity. Its process controls and self-contained extended receipts are development
+evidence. Process capabilities are platform-specific: Windows Job count/commit limits differ from
+Linux inherited process groups and per-process address-space limits. Unknown formats, resource
+bounds, absent runtime capabilities and source/artifact/runtime mismatch fail explicitly. Neither
+local process evidence nor these typed APIs qualify production routing or close W0.

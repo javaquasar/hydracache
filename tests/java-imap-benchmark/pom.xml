@@ -86,6 +86,7 @@
                     <include>io.hydracache.imap.semantic.SemanticScenarioFingerprint*</include>
                     <include>io.hydracache.imap.semantic.IMapLocalHelper*</include>
                     <include>io.hydracache.imap.semantic.ExtendedSemantic*</include>
+                    <include>io.hydracache.imap.semantic.ExtendedConcurrent*</include>
                     <include>io.hydracache.imap.semantic.UnifiedIMapExtendedSemanticAdapter*</include>
                   </includes>
                   <limits>

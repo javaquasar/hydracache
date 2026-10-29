@@ -220,6 +220,26 @@ evidence.
 
 ### Provisional safe-foundation progress
 
+The bounded invocation/evidence tranche adds eight local slices: ordered batch entry views with
+usable incarnation-scoped tokens; clustered typed-helper futures; capacity-aware read/helper
+retry; read-only root/child helper progress; authenticated transfer abort/cleanup/restart;
+independent extended concurrent histories; managed proof-process lifecycle; and exact-artifact
+extended receipts. `api_extensions.bounded_evolution` freezes these eight properties and maps
+them to named Rust/Java tests. Parked retries release physical permits while retaining charged
+request/receipt owners. A later cancellation cannot report NotApplied after an earlier reservation
+attempt. Progress observations use bounded Safety-lane credits and cannot advance time, refresh
+proofs or reapply a conditional. Transfer controls retain namespace/partition/epoch fences.
+
+Concurrent qualification accepts legal partial orders, including per-item bulk interleaving,
+rather than requiring the same overlapping winner. Proof workers share execution/pipe deadlines,
+bounded output and owned descendant cleanup. Windows enforces Job process/memory limits; Linux
+uses an inherited process group and per-process address-space limit, explicitly refusing a
+requested process-count cap. Linux runtime execution is not available in this workspace; its
+implementation is not reported as a locally passed lane. Retained receipts include runner/class
+snapshots, bind them to trusted current peers, and reexecute only those current peers, defect
+controls and bounded shrinking against exact clean source and runtime bindings. These are local owner/process diagnostics, not production daemon,
+network, SDK, durable, performance or release qualification. W0 remains open.
+
 The clustered API evolution tranche adds read futures without mutation reservations, typed
 version-bulk/query/retirement/expiry dispatch through actual owners, bounded opt-in retries,
 namespace-specific revocation, stepped online Repair/Drain, delta credits before mutation and

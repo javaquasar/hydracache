@@ -78,6 +78,7 @@ pub const LIFECYCLE_FEATURES: &[&str] = &[
     "bounded_batch_outcome_query",
     "incremental_expiry_cleanup",
     "runtime_service_checkpoint_restore",
+    "bounded_batch_entry_views",
 ];
 pub const SDK_OPERATIONS: &[&str] = &[
     "IMap.get",

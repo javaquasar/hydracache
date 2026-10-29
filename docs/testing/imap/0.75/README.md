@@ -119,7 +119,7 @@ to drain/reclamation. A deleted generation fences old handles before reuse; regi
 uses its reserved safety lane. Registry callbacks run outside its metadata lock.
 
 Capability audit separates the 21-operation bounded reference, the 40-operation unified reference
-and seven local lifecycle families, and the existing SDK's eleven capability tokens. The existing
+and eight local lifecycle families, and the existing SDK's eleven capability tokens. The existing
 SDK keeps its narrow production behavior; these descriptors do not activate the 0.75 backend.
 Migration fixtures exercise bounded staging, codec/TTL/count/digest checks and cold repopulation
 dry-runs. See `docs/integrations/hazelcast-to-hydracache-0.75.md`.
@@ -288,3 +288,69 @@ cargo build -p hydracache-cluster-testkit --bin imap-extended-owner-075 --locked
 cargo xtask imap-extended-differential --release 0.75 --seed 117
 cargo xtask imap-extended-differential --release 0.75 --script target/imap-075/differential-failures/<retained-script>.tsv
 ```
+
+## Bounded invocation and evidence APIs
+
+The local registry exposes `cluster_helper_invocation` and its opt-in retry constructor for
+version bulk, outcome queries, retirement, expiry, batch entry views and helper progress. Read
+helpers allocate no mutation root. Cancellation before admission can return NotApplied;
+after a reservation attempt it remains Unknown unless an existing exact receipt and required
+backup proofs establish completion. Drop closes actual attempt owners. Retry preserves the
+original identity, digest, deadline, explicit epoch and grant. Waiting releases physical running
+permits and replica capacity while the logical request/receipt payload remains charged. Polling
+without a capacity notification neither dispatches again nor consumes the remaining retry budget.
+Cooperative Data admission also charges a fixed growth/replica peak to its signed lane bytes.
+Later phases can raise the visible global reservation only within that original held peak and
+only after an atomic quota check. Larger workloads must declare adequate admission bounds;
+the defaults can refuse them before owner dispatch.
+
+`QueryProgress` is a bounded read of the exact original helper identity/digest. It reports retained
+root/child Pending, Completed or Unknown results and exact proof observations; missing history
+never proves NotApplied. It uses bounded Safety-lane response credits so a paused data helper
+cannot block its own observation. It performs no owner execution, clock advance, expiry,
+proof refresh or conditional reevaluation. Original-key Read grants and current policy epochs
+are checked before cloning receipts. Admin-only scoped transfer abort/cleanup use Safety permits;
+restart uses Repair permits, a fresh transfer ID and an explicit current epoch. Failed restart
+keeps the previous terminal attempt, and committed ownership is never rolled back by abort.
+
+The extended concurrent runner uses two real workers across bulk ABA, bulk expiry, pending
+retirement, listener cut and checkpoint-lease families. The independent Java oracle searches
+legal partial orders, including bulk item interleavings; search exhaustion fails qualification.
+Actual Rust/Java owner defects must be detected, and retained schedules support bounded deletion
+shrinking and replay. This is local owner/process qualification, not production network execution.
+
+Managed proof processes have one execution/pipe deadline, bounded input/stdout/stderr, no I/O
+threads and owned descendant cleanup. Java option/classpath and native-loader injection variables
+are removed before launch (`JAVA_TOOL_OPTIONS`, `JDK_JAVA_OPTIONS`, `_JAVA_OPTIONS`, `CLASSPATH`,
+`LD_PRELOAD`, `LD_AUDIT`, `LD_LIBRARY_PATH`). Windows starts suspended, assigns a kill-on-close Job,
+and enforces process commit/count limits before resuming. Linux uses an inherited process group
+and per-process address-space limit; it records no process-count capability and refuses a
+requested nonzero count cap. This Linux scope does not contain descendants that deliberately
+leave the inherited process group. All eight Windows process cases have passed, including the
+environment-scrub regression. A Linux runtime is unavailable in this workspace,
+so no local Linux pass is claimed. The Java semantic
+suite has passed 171 tests and covered 267 of 267 changed lines in the latest focused run;
+final current-source gate results remain separate from this count.
+
+Extended evidence is retained in a new directory under `target/`. The bounded receipt includes
+corpus, all three transcripts, eight defects, shrink inputs/results/consumption, copied Rust
+executable and complete Java classpath manifests, clean source SHA and runtime bindings. The
+verifier binds those snapshots to trusted current binaries/classes and reruns only the trusted
+current peers for observations, every defect and the same bounded shrink. Receipt-selected
+executables are never launched. It rejects missing, changed, aliased, foreign or out-of-root artifacts,
+source/runtime mismatch, and incomplete replay. The Java runtime itself must match its recorded
+fingerprint and launcher digest. Pre/post hashes detect changed files; source/build writers must
+remain stable during proof execution. This is not sealing against hostile transient replacement
+or a general sandbox. An existing evidence directory is never overwritten.
+
+```powershell
+cargo build -p hydracache-cluster-testkit --bin imap-extended-owner-075 --bin imap-extended-concurrent-owner-075 --locked
+cargo xtask imap-extended-concurrent --release 0.75 --seed 117 --rounds 15
+cargo xtask imap-extended-evidence --release 0.75 --seed 117 --output target/imap-075/extended-evidence-seed117
+cargo xtask imap-extended-evidence-check --release 0.75 --receipt target/imap-075/extended-evidence-seed117/receipt.json
+```
+
+Receipt production requires clean source and compiled Java peers. Tests create an isolated clean
+Git fixture to exercise production/verification code; those fixtures are not product evidence.
+`api_extensions.bounded_evolution` records eight strict properties and named executable proof
+IDs. Production remains disabled, W0 is open, and these receipts cannot satisfy ship admission.

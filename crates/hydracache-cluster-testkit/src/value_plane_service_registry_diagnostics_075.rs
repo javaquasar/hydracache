@@ -18,6 +18,7 @@ pub enum InvocationWaitReason {
     RootReservation,
     Dispatch,
     CancellationRequested,
+    Capacity,
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LeaseBlockReason {
@@ -76,7 +77,7 @@ impl fmt::Write for HashWriter {
 
 fn control_fields(
     control: Option<&Weak<Mutex<invocation::Control>>>,
-) -> Option<(bool, ClusterInvocationPhase, u8, bool)> {
+) -> Option<(bool, ClusterInvocationPhase, u8, bool, bool)> {
     let control = control?.upgrade()?;
     let control = control.lock().unwrap();
     Some((
@@ -84,6 +85,7 @@ fn control_fields(
         control.phase,
         control.attempts,
         control.cancelled,
+        control.waiting_for_capacity,
     ))
 }
 struct RowCredit {
@@ -112,6 +114,8 @@ fn make_row(
     let cancelled = observed.is_some_and(|value| value.3);
     let reason = if cancelled {
         InvocationWaitReason::CancellationRequested
+    } else if observed.is_some_and(|value| value.4) {
+        InvocationWaitReason::Capacity
     } else {
         match phase {
             ClusterInvocationPhase::Queued => InvocationWaitReason::Queued,
@@ -199,7 +203,7 @@ fn visit_rows(
                 .as_ref()
                 .and_then(|scheduler| scheduler.credit_usage(owner.admission))
                 .map_or(0, |(_, replica)| replica);
-            visit(make_row(
+            let mut row = make_row(
                 *ticket,
                 None,
                 Some(&owner.control),
@@ -210,7 +214,11 @@ fn visit_rows(
                     growth: owner.growth,
                     replica: replica_bytes,
                 },
-            ));
+            );
+            if owner.helper {
+                row.class = InvocationClass::TypedHelper;
+            }
+            visit(row);
         }
     }
 }

@@ -40,6 +40,12 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "--test",
             "value_plane_extended_075",
             "--test",
+            "value_plane_entry_views_075",
+            "--test",
+            "value_plane_cluster_helper_invocation_075",
+            "--test",
+            "value_plane_extended_concurrent_075",
+            "--test",
             "value_plane_cluster_evolution_075",
             "--test",
             "value_plane_cluster_helpers_075",
@@ -103,6 +109,10 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     }
     let differential = crate::imap_api_differential::check_actual_at_root(&root, 117, 128)?;
     println!("imap-api-differential: {differential:?}");
+    println!(
+        "imap-extended-concurrent: {:?}",
+        crate::imap_extended_concurrent_075::check_actual(&root, 117, 15)?
+    );
     let contract_problems = crate::imap_contract::check_at_root(&root, RELEASE)?;
     if !contract_problems.is_empty() {
         return Err(format!("IMap contract problems: {contract_problems:?}").into());

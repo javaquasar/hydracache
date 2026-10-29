@@ -14,6 +14,12 @@ pub struct ExtendedReport {
     pub process_canaries: usize,
 }
 
+#[derive(Debug)]
+pub struct ObservationRun {
+    pub observations: Vec<Value>,
+    pub transcript: Vec<u8>,
+}
+
 pub fn generate(root: &Path, seed: i64, steps: usize) -> Result<ExtendedCorpus, Box<dyn Error>> {
     if steps == 0 || steps > 256 {
         return Err("extended generation step bound".into());
@@ -36,6 +42,15 @@ pub fn execute_java(
     expected: bool,
     fault: Option<&str>,
 ) -> Result<Vec<Value>, Box<dyn Error>> {
+    Ok(execute_java_record(root, corpus, expected, fault)?.observations)
+}
+
+pub fn execute_java_record(
+    root: &Path,
+    corpus: &ExtendedCorpus,
+    expected: bool,
+    fault: Option<&str>,
+) -> Result<ObservationRun, Box<dyn Error>> {
     if expected && fault.is_some() {
         return Err("oracle cannot inject actual-owner faults".into());
     }
@@ -53,7 +68,11 @@ pub fn execute_java(
         &args,
         MAX_OUTPUT,
     )?;
-    parse_observations(&output, corpus, expected)
+    let observations = parse_observations(&output, corpus, expected)?;
+    Ok(ObservationRun {
+        observations,
+        transcript: output,
+    })
 }
 
 pub fn execute_rust_process(
@@ -61,6 +80,10 @@ pub fn execute_rust_process(
     corpus: &ExtendedCorpus,
     fault: bool,
 ) -> Result<Vec<Value>, Box<dyn Error>> {
+    Ok(execute_rust_record(root, corpus, fault)?.observations)
+}
+
+pub(crate) fn rust_peer_path(root: &Path) -> Result<std::path::PathBuf, Box<dyn Error>> {
     let target = std::env::var_os("CARGO_TARGET_DIR")
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|| root.join("target"));
@@ -77,6 +100,15 @@ pub fn execute_rust_process(
     if !path.is_file() {
         return Err("compiled actual Rust v2 owner peer is missing; build testkit integration targets first".into());
     }
+    Ok(path)
+}
+
+pub fn execute_rust_record(
+    root: &Path,
+    corpus: &ExtendedCorpus,
+    fault: bool,
+) -> Result<ObservationRun, Box<dyn Error>> {
+    let path = rust_peer_path(root)?;
     let mut command = std::process::Command::new(path);
     command.current_dir(root);
     if fault {
@@ -87,7 +119,11 @@ pub fn execute_rust_process(
         corpus.encode()?,
         MAX_OUTPUT,
     )?;
-    parse_observations(&output, corpus, false)
+    let observations = parse_observations(&output, corpus, false)?;
+    Ok(ObservationRun {
+        observations,
+        transcript: output,
+    })
 }
 
 /// Closed schemas and fixed depth reject partial, recursive or unrelated process output.

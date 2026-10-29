@@ -7,8 +7,12 @@ import java.util.Optional;
 /** Typed, bounded local helper requests. These types allocate no SDK or protocol operation IDs. */
 public final class IMapLocalHelper {
   private IMapLocalHelper() {}
-  public sealed interface Command<T> permits VersionBulk, QueryOutcomes, ListenerSnapshot, RetireOutcomes, ExpireStep, Checkpoint {
+  public sealed interface Command<T> permits VersionBulk, QueryOutcomes, EntryViews, ListenerSnapshot, RetireOutcomes, ExpireStep, Checkpoint {
     long deadline();
+  }
+  public record EntryViews(List<BytesValue> keys, long maxBytes, long deadline)
+      implements Command<List<UnifiedIMapService.VersionedEntryView>> {
+    public EntryViews { bounded(keys.size()); keys = List.copyOf(keys); positive(maxBytes); }
   }
   public record VersionBulk(UnifiedIMapService.VersionAction action, List<UnifiedIMapService.VersionInput> entries,
       BoundedIMapApi.MutationIdentity identity, long deadline, boolean loseResponse) implements Command<UnifiedIMapService.Result> {

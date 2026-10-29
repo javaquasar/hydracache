@@ -2,9 +2,21 @@
 //! they do not form a transaction and backups install decisions rather than reevaluate conditions.
 use super::*;
 use crate::value_plane_cluster_admission_075::ClusterLane;
+#[path = "value_plane_service_cluster_helper_progress_075.rs"]
+mod progress;
+pub use progress::*;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ClusterHelperCommand {
+    EntryViews {
+        keys: Vec<Vec<u8>>,
+        max_bytes: usize,
+    },
+    QueryProgress {
+        original: Box<ClusterHelperRequest>,
+        original_digest: [u8; 32],
+        max_bytes: usize,
+    },
     VersionBulk {
         operation: VersionBulkOperation,
         entries: Vec<VersionBulkEntry>,
@@ -29,6 +41,14 @@ pub struct ClusterHelperRequest {
     pub deadline: u64,
 }
 impl ClusterHelperRequest {
+    pub fn is_mutating(&self) -> bool {
+        matches!(
+            self.command,
+            ClusterHelperCommand::VersionBulk { .. }
+                | ClusterHelperCommand::RetireOutcomes { .. }
+                | ClusterHelperCommand::ExpireStep { .. }
+        )
+    }
     fn credit_key(&self) -> [u8; 32] {
         let mut hash = Sha256::new();
         hash.update(self.request_digest());
@@ -47,6 +67,7 @@ impl ClusterHelperRequest {
     }
     pub fn lane(&self) -> ClusterLane {
         match self.command {
+            ClusterHelperCommand::QueryProgress { .. } => ClusterLane::Safety,
             ClusterHelperCommand::RetireOutcomes { .. }
             | ClusterHelperCommand::ExpireStep { .. } => ClusterLane::Repair,
             _ => ClusterLane::Data,
@@ -54,6 +75,8 @@ impl ClusterHelperRequest {
     }
     pub fn keys(&self) -> Vec<Vec<u8>> {
         match &self.command {
+            ClusterHelperCommand::EntryViews { keys, .. } => keys.clone(),
+            ClusterHelperCommand::QueryProgress { original, .. } => original.keys(),
             ClusterHelperCommand::VersionBulk { entries, .. } => {
                 entries.iter().map(|entry| entry.key.clone()).collect()
             }
@@ -117,6 +140,8 @@ pub struct ClusterHelperPreflight {
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ClusterHelperResult {
+    EntryViews(Vec<VersionedEntryView>),
+    Progress(Box<ClusterHelperProgress>),
     Versions(Box<ServiceResult>),
     Outcomes(Vec<OperationOutcomeQuery>),
     Retirement(RetirementReceipt),
@@ -223,6 +248,33 @@ fn decode(
 }
 
 impl ServiceClusterHarness {
+    fn entry_view_transfer_credits(
+        &self,
+        request: &ClusterHelperRequest,
+    ) -> Result<BTreeMap<u32, [usize; 2]>, ServiceClusterError> {
+        let ClusterHelperCommand::EntryViews { keys, .. } = &request.command else {
+            return Err(MapServiceError::InvalidArgument.into());
+        };
+        let mut credits = BTreeMap::new();
+        for partition in keys
+            .iter()
+            .map(|key| self.partition_for(key))
+            .collect::<BTreeSet<_>>()
+        {
+            let mut observation = ServiceCommand::point("get", b"");
+            observation.now = request.now;
+            let owner = &self.assignments[partition as usize].route.owner;
+            credits.insert(
+                partition,
+                [
+                    self.service(owner, partition, false)?
+                        .command_delta_credit(&observation, self.bounds.max_frame_bytes)?,
+                    0,
+                ],
+            );
+        }
+        Ok(credits)
+    }
     fn helper_transfer_credits(
         &self,
         request: &ClusterHelperRequest,
@@ -290,6 +342,45 @@ impl ServiceClusterHarness {
         }
         let mut bytes = 256usize;
         match &request.command {
+            ClusterHelperCommand::EntryViews { keys, max_bytes } => {
+                if keys.is_empty()
+                    || keys.len()
+                        > self
+                            .service_limits
+                            .max_batch
+                            .min(self.bounds.max_bulk_items)
+                    || *max_bytes == 0
+                    || *max_bytes > self.service_limits.query_bytes.min(self.max_response_bytes)
+                {
+                    return Err(MapServiceError::InvalidArgument.into());
+                }
+                for key in keys {
+                    if key.len() > self.collection.max_key_bytes {
+                        return Err(MapServiceError::InvalidArgument.into());
+                    }
+                    bytes = bytes
+                        .checked_add(16 + key.len())
+                        .ok_or(ServiceClusterError::InvalidBound)?;
+                }
+            }
+            ClusterHelperCommand::QueryProgress {
+                original,
+                original_digest,
+                max_bytes,
+            } => {
+                if !original.is_mutating()
+                    || *max_bytes == 0
+                    || *max_bytes > self.service_limits.query_bytes
+                {
+                    return Err(MapServiceError::InvalidArgument.into());
+                }
+                bytes = bytes
+                    .checked_add(self.validate_cluster_helper(original)?)
+                    .ok_or(ServiceClusterError::InvalidBound)?;
+                if original.request_digest() != *original_digest {
+                    return Err(MapServiceError::from(crate::value_plane_collection_075::CollectionError::MutationIdentityConflict).into());
+                }
+            }
             ClusterHelperCommand::VersionBulk { entries, operation } => {
                 if entries.is_empty()
                     || entries.len()
@@ -443,6 +534,83 @@ impl ServiceClusterHarness {
         request: &ClusterHelperRequest,
     ) -> Result<ClusterHelperPreflight, ServiceClusterError> {
         let request_bytes = self.validate_cluster_helper(request)?;
+        if let ClusterHelperCommand::QueryProgress {
+            original,
+            max_bytes,
+            ..
+        } = &request.command
+        {
+            let partitions = self
+                .helper_domains(original)?
+                .into_iter()
+                .map(|(partition, _)| partition)
+                .collect::<BTreeSet<_>>();
+            let indices = match &original.command {
+                ClusterHelperCommand::VersionBulk { entries, .. } => entries.len(),
+                ClusterHelperCommand::RetireOutcomes { .. }
+                | ClusterHelperCommand::ExpireStep { .. } => 0,
+                _ => return Err(MapServiceError::InvalidArgument.into()),
+            };
+            // Existing exact child-digest derivation builds JSON Values and their encoded string.
+            // Reserve their conservative peak before grouping or inspecting retained payloads.
+            let growth = request_bytes
+                .checked_mul(64)
+                .and_then(|bytes| bytes.checked_add(*max_bytes))
+                .and_then(|bytes| bytes.checked_add(partitions.len().checked_mul(1_024)?))
+                .and_then(|bytes| bytes.checked_add(indices.checked_mul(8)?))
+                .ok_or(ServiceClusterError::InvalidBound)?;
+            return Ok(ClusterHelperPreflight {
+                keys: request.keys(),
+                partitions: partitions.into_iter().collect(),
+                request_bytes,
+                growth,
+                replica_bytes: 0,
+            });
+        }
+        if let ClusterHelperCommand::EntryViews { keys, max_bytes } = &request.command {
+            let mut partitions = BTreeSet::new();
+            let mut total = 0usize;
+            for key in keys {
+                let partition = self.partition_for(key);
+                partitions.insert(partition);
+                let route = &self.assignments[partition as usize].route;
+                total = total
+                    .checked_add(
+                        self.service(&route.owner, partition, false)?
+                            .entry_views_response_bytes(
+                                std::slice::from_ref(key),
+                                request.now,
+                                *max_bytes,
+                            )?,
+                    )
+                    .ok_or(ServiceClusterError::InvalidBound)?;
+            }
+            if total > *max_bytes {
+                return Err(MapServiceError::ResourceBudget("entry_views_response").into());
+            }
+            let mut replica_bytes = request_bytes
+                .saturating_mul(8)
+                .saturating_add(total.saturating_mul(16))
+                .saturating_add(2_048);
+            for partition in &partitions {
+                replica_bytes = replica_bytes
+                    .checked_add(self.partition_replica_bound(*partition)?)
+                    .ok_or(ServiceClusterError::InvalidBound)?;
+            }
+            let growth = total.saturating_add(replica_bytes).saturating_add(
+                self.preflight_transfer_credits(
+                    request.credit_key(),
+                    &self.entry_view_transfer_credits(request)?,
+                )?,
+            );
+            return Ok(ClusterHelperPreflight {
+                keys: request.keys(),
+                partitions: partitions.into_iter().collect(),
+                request_bytes,
+                growth,
+                replica_bytes,
+            });
+        }
         let mut partitions = BTreeSet::new();
         let mut growth = 0usize;
         let mut response = 64usize;
@@ -583,6 +751,21 @@ impl ServiceClusterHarness {
         guard: Arc<dyn ServiceMessageGuard>,
     ) -> Result<ClusterHelperExecution, ServiceClusterError> {
         let preflight = self.cluster_helper_preflight(&request)?;
+        if let ClusterHelperCommand::QueryProgress {
+            original,
+            original_digest,
+            max_bytes,
+        } = &request.command
+        {
+            let progress = self.helper_progress(original, *original_digest, *max_bytes)?;
+            return Ok(ClusterHelperExecution {
+                backup_proved: progress.proofs.iter().all(|proof| proof.proved),
+                result: ClusterHelperResult::Progress(Box::new(progress)),
+                replayed: false,
+                routes: Vec::new(),
+                failure: None,
+            });
+        }
         let previous = self.runtime.invocation.replace(runtime_hooks::Invocation {
             digest: request.request_digest(),
             identity: Some(request.identity.clone()),
@@ -599,7 +782,7 @@ impl ServiceClusterHarness {
                     let partition = execution.routes.first().map_or(0, |route| route.partition);
                     if !matches!(self.transmit(partition, "helper_response", payload, call.faults.response), Ok(delivered) if delivered > 0)
                     {
-                        if matches!(request.command, ClusterHelperCommand::QueryOutcomes { .. }) {
+                        if !request.is_mutating() {
                             result = Err(ServiceClusterError::TransportTimeout);
                         } else {
                             execution.result = ClusterHelperResult::OutcomeUnknown;
@@ -626,6 +809,73 @@ impl ServiceClusterHarness {
             return Err(ServiceClusterError::NodeUnavailable);
         }
         let payload = request.payload(self.bounds.max_frame_bytes)?;
+        if let ClusterHelperCommand::EntryViews { keys, max_bytes } = &request.command {
+            if request.now >= request.deadline {
+                return Ok(ClusterHelperExecution {
+                    result: ClusterHelperResult::NotApplied,
+                    replayed: false,
+                    backup_proved: false,
+                    routes: Vec::new(),
+                    failure: None,
+                });
+            }
+            self.reserve_transfer_credits(
+                request.credit_key(),
+                &self.entry_view_transfer_credits(request)?,
+            )?;
+            let mut groups = BTreeMap::<u32, (Vec<Vec<u8>>, Vec<usize>)>::new();
+            for (index, key) in keys.iter().enumerate() {
+                let group = groups.entry(self.partition_for(key)).or_default();
+                group.0.push(key.clone());
+                group.1.push(index);
+            }
+            let mut result = Vec::with_capacity(keys.len());
+            let mut routes = Vec::new();
+            let mut proved = true;
+            for (partition, (keys, indices)) in groups {
+                let route = self.route(entry, partition, call)?;
+                self.authorize_message(
+                    ServiceMessageKind::Request,
+                    entry,
+                    &route.owner,
+                    partition,
+                    None,
+                    &payload,
+                )?;
+                let faults = call
+                    .faults
+                    .partitions
+                    .get(&partition)
+                    .copied()
+                    .unwrap_or(call.faults.data);
+                if self.transmit(
+                    partition,
+                    "helper_entry_views",
+                    payload.clone(),
+                    faults.request,
+                )? == 0
+                {
+                    return Err(ServiceClusterError::TransportTimeout);
+                }
+                let owner = self.service(&route.owner, partition, false)?;
+                let mut views = owner.entry_views(&keys, request.now, *max_bytes)?;
+                self.assignments[partition as usize].required_data = owner.replica_stamp()?;
+                proved &= self.replicate(partition, false, faults).unwrap_or(false);
+                for view in &mut views {
+                    view.index = indices[view.index];
+                }
+                result.extend(views);
+                routes.push(route);
+            }
+            result.sort_by_key(|view| view.index);
+            return Ok(ClusterHelperExecution {
+                result: ClusterHelperResult::EntryViews(result),
+                replayed: false,
+                backup_proved: proved,
+                routes,
+                failure: None,
+            });
+        }
         if let ClusterHelperCommand::QueryOutcomes { identities, .. } = &request.command {
             if request.now >= request.deadline {
                 return Ok(ClusterHelperExecution {

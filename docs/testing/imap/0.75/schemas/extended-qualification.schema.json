@@ -1,0 +1,270 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hydracache.imap.extended-qualification.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "release",
+    "scope",
+    "source_sha",
+    "corpus_format",
+    "observation_format",
+    "seed",
+    "steps",
+    "corpus",
+    "rust_peer",
+    "java_classpath",
+    "java_classes",
+    "runtime",
+    "expected",
+    "java_actual",
+    "rust_actual",
+    "canaries",
+    "shrink",
+    "passed",
+    "production_enabled"
+  ],
+  "properties": {
+    "schema": {
+      "const": "hydracache.imap.extended-qualification.v1"
+    },
+    "release": {
+      "const": "0.75"
+    },
+    "scope": {
+      "const": "local_actual_owner_qualification"
+    },
+    "source_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "corpus_format": {
+      "const": "imap-extended-semantic-v2"
+    },
+    "observation_format": {
+      "const": "imap-extended-observations-v2"
+    },
+    "seed": {
+      "type": "integer"
+    },
+    "steps": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 256
+    },
+    "corpus": {
+      "$ref": "#/$defs/artifact"
+    },
+    "rust_peer": {
+      "$ref": "#/$defs/artifact"
+    },
+    "java_classpath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "java_classes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 512,
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    },
+    "runtime": {
+      "$ref": "#/$defs/runtime"
+    },
+    "expected": {
+      "$ref": "#/$defs/stream"
+    },
+    "java_actual": {
+      "$ref": "#/$defs/stream"
+    },
+    "rust_actual": {
+      "$ref": "#/$defs/stream"
+    },
+    "canaries": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "observed"
+        ],
+        "properties": {
+          "id": {
+            "enum": [
+              "java_drop_event",
+              "java_wrong_ttl",
+              "java_reverse_bulk",
+              "java_reuse_token",
+              "java_wrong_owners",
+              "java_wrong_clock",
+              "java_wrong_cut",
+              "rust_drop_event"
+            ]
+          },
+          "observed": {
+            "$ref": "#/$defs/stream"
+          }
+        }
+      }
+    },
+    "shrink": {
+      "$ref": "#/$defs/shrink"
+    },
+    "passed": {
+      "const": true
+    },
+    "production_enabled": {
+      "const": false
+    }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "bytes",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 67108864
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "stream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact",
+        "normalized_sha256"
+      ],
+      "properties": {
+        "artifact": {
+          "$ref": "#/$defs/artifact"
+        },
+        "normalized_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rust_fingerprint",
+        "java_fingerprint",
+        "java_launcher_sha256",
+        "process_scope",
+        "process_timeout_ms",
+        "process_memory_bytes",
+        "process_count_limit"
+      ],
+      "properties": {
+        "rust_fingerprint": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "java_fingerprint": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "java_launcher_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "process_scope": {
+          "enum": [
+            "windows_job_kill_on_close_process_commit_limit",
+            "linux_inherited_process_group_per_process_address_space_limit"
+          ]
+        },
+        "process_timeout_ms": {
+          "const": 15000
+        },
+        "process_memory_bytes": {
+          "type": "integer",
+          "minimum": 16777216,
+          "maximum": 17179869184
+        },
+        "process_count_limit": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 32
+            }
+          ]
+        }
+      }
+    },
+    "shrink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maximum_replays",
+        "maximum_work",
+        "replays",
+        "work",
+        "budget_exhausted",
+        "corpus",
+        "expected",
+        "broken_rust"
+      ],
+      "properties": {
+        "maximum_replays": {
+          "const": 16
+        },
+        "maximum_work": {
+          "const": 4096
+        },
+        "replays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16
+        },
+        "work": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096
+        },
+        "budget_exhausted": {
+          "type": "boolean"
+        },
+        "corpus": {
+          "$ref": "#/$defs/artifact"
+        },
+        "expected": {
+          "$ref": "#/$defs/stream"
+        },
+        "broken_rust": {
+          "$ref": "#/$defs/stream"
+        }
+      }
+    }
+  }
+}

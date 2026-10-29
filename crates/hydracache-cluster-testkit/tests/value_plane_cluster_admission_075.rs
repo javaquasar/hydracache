@@ -1,4 +1,198 @@
 use hydracache_cluster_testkit::value_plane_cluster_admission_075::*;
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc,
+};
+use std::task::{Wake, Waker};
+
+struct CapacityWake {
+    queue: ClusterAdmission,
+    calls: AtomicUsize,
+}
+impl Wake for CapacityWake {
+    fn wake(self: Arc<Self>) {
+        self.calls.fetch_add(1, Ordering::SeqCst);
+        // Reentering a notification must run after the admission mutex is released.
+        self.queue.wake_waiters();
+    }
+}
+
+#[test]
+fn capacity_waiter_cut_is_atomic_bounded_and_reentrant_progress_is_not_lost() {
+    let queue = ClusterAdmission::new(Default::default()).unwrap();
+    let ticket = queue
+        .admit(work("a", 0, b"key", ClusterLane::Data))
+        .unwrap();
+    let permit = queue.pop_for(ticket).unwrap().unwrap();
+    let wake = Arc::new(CapacityWake {
+        queue: queue.clone(),
+        calls: AtomicUsize::new(0),
+    });
+    let waker = Waker::from(Arc::clone(&wake));
+    let observed = queue.notification_epoch();
+    assert!(queue.wait_for_change(ticket, observed, &waker));
+    assert!(!queue.wait_for_change(u64::MAX, observed, &waker));
+    let cut = queue.notify_waiters();
+    assert_eq!(wake.calls.load(Ordering::SeqCst), 1);
+    assert!(queue.notification_epoch() > cut);
+    assert!(!queue.wait_for_change(ticket, cut, &waker));
+    let observed = queue.notification_epoch();
+    assert!(queue.wait_for_change(ticket, observed, &waker));
+    drop(permit);
+    assert_eq!(
+        wake.calls.load(Ordering::SeqCst),
+        1,
+        "the released ticket's own waiter is removed"
+    );
+    assert!(!queue.wait_for_change(ticket, queue.notification_epoch(), &waker));
+}
+
+#[test]
+fn parked_receipt_keeps_logical_owners_but_repair_can_make_progress_before_resume() {
+    let queue = ClusterAdmission::new(ClusterAdmissionBounds {
+        repair_permits: 1,
+        ..Default::default()
+    })
+    .unwrap();
+    let id = queue
+        .admit(work("a", 0, b"repair", ClusterLane::Repair))
+        .unwrap();
+    let permit = queue.pop_for(id).unwrap().unwrap();
+    let binding = AdmissionBinding {
+        namespace: "map".into(),
+        namespace_generation: 1,
+        request_digest: [7; 32],
+        identity: None,
+        deadline: 100,
+        grant_digest: None,
+    };
+    let attempt = permit.begin_invocation(binding.clone()).unwrap();
+    assert_eq!(
+        permit.park(),
+        Err(ClusterAdmissionError::InvocationInFlight)
+    );
+    assert_eq!(
+        permit.try_resume(),
+        Err(ClusterAdmissionError::InvocationInFlight)
+    );
+    drop(attempt);
+    permit.park().unwrap();
+    assert_eq!(permit.park(), Err(ClusterAdmissionError::PermitParked));
+    assert!(matches!(
+        permit.begin_invocation(binding.clone()),
+        Err(ClusterAdmissionError::PermitParked)
+    ));
+    assert!(
+        !queue.cancel(id).unwrap(),
+        "a held logical receipt cannot be cancelled behind its owner"
+    );
+    assert!(
+        queue.pop().unwrap().is_none(),
+        "parked work cannot acquire a second permit"
+    );
+    assert_eq!(queue.observations().owned_bytes[2], 128);
+    assert_eq!(queue.observations().inflight[2], 0);
+    let repair = queue
+        .admit(work("a", 1, b"progress", ClusterLane::Repair))
+        .unwrap();
+    let physical = queue.pop_for(repair).unwrap().unwrap();
+    assert!(!permit.try_resume().unwrap());
+    drop(physical);
+    assert!(permit.try_resume().unwrap());
+    assert!(permit.try_resume().unwrap());
+    let mut changed = binding.clone();
+    changed.request_digest = [8; 32];
+    assert!(matches!(
+        permit.begin_invocation(changed),
+        Err(ClusterAdmissionError::ReceiptConflict)
+    ));
+    drop(permit.begin_invocation(binding).unwrap());
+    drop(permit);
+    assert_eq!(queue.observations().released, 2);
+    assert_eq!(queue.observations().owned_bytes, [0; 3]);
+}
+
+#[test]
+fn parked_data_resume_honors_partition_and_replica_capacity_without_duplicate_leases() {
+    let queue = ClusterAdmission::new(ClusterAdmissionBounds {
+        data_permits: 2,
+        max_replica_bytes: 64,
+        ..Default::default()
+    })
+    .unwrap();
+    let first = queue
+        .admit(work("a", 0, b"first", ClusterLane::Data))
+        .unwrap();
+    let permit = queue.pop_for(first).unwrap().unwrap();
+    permit.park().unwrap();
+    let cold = queue
+        .admit(work("b", 1, b"cold", ClusterLane::Data))
+        .unwrap();
+    let held = queue.pop_for(cold).unwrap().unwrap();
+    assert!(
+        !permit.try_resume().unwrap(),
+        "actual replica capacity is held by cold partition"
+    );
+    let same = queue
+        .admit(work("a", 0, b"same", ClusterLane::Data))
+        .unwrap();
+    assert!(
+        queue.pop_for(same).unwrap().is_none(),
+        "older parked logical request retains partition FIFO"
+    );
+    drop(held);
+    assert!(permit.try_resume().unwrap());
+    assert!(queue.pop_for(same).unwrap().is_none());
+    drop(permit);
+    queue.pop_for(same).unwrap().unwrap().finish();
+    assert_eq!(queue.observations().released, 3);
+}
+
+#[test]
+fn excluded_cooperative_jobs_do_not_block_safety_or_cold_data_but_keep_partition_fifo() {
+    let queue = ClusterAdmission::new(Default::default()).unwrap();
+    let paused = queue
+        .admit(work("a", 0, b"paused", ClusterLane::Data))
+        .unwrap();
+    let first_safety = queue
+        .admit(work("a", 0, b"safety", ClusterLane::Safety))
+        .unwrap();
+    let permit = queue.pop().unwrap().unwrap();
+    assert_eq!(permit.ticket(), first_safety);
+    drop(permit);
+    let next_safety = queue
+        .admit(work("a", 0, b"delete", ClusterLane::Safety))
+        .unwrap();
+    let permit = queue
+        .pop_except(&[paused])
+        .unwrap()
+        .expect("excluded data cannot block another reserved lane");
+    assert_eq!(permit.ticket(), next_safety);
+    drop(permit);
+    let later_same = queue
+        .admit(work("a", 0, b"later", ClusterLane::Data))
+        .unwrap();
+    let cold = queue
+        .admit(work("b", 1, b"cold", ClusterLane::Data))
+        .unwrap();
+    let permit = queue
+        .pop_except(&[paused])
+        .unwrap()
+        .expect("unrelated partition must remain eligible");
+    assert_eq!(permit.ticket(), cold);
+    drop(permit);
+    assert!(
+        queue.pop_except(&[paused]).unwrap().is_none(),
+        "later data cannot overtake the paused partition front"
+    );
+    assert!(
+        queue.pop_for(later_same).unwrap().is_none(),
+        "explicit selection still preserves scheduler fairness"
+    );
+    queue.pop_for(paused).unwrap().unwrap().finish();
+    queue.pop_for(later_same).unwrap().unwrap().finish();
+    assert_eq!(queue.observations().released, 5);
+}
 
 fn work(tenant: &str, partition: u32, key: &[u8], lane: ClusterLane) -> ClusterWork {
     ClusterWork {

@@ -82,6 +82,7 @@ pub enum ClusterAdmissionError {
     Exhausted(&'static str),
     ReceiptConflict,
     InvocationInFlight,
+    PermitParked,
 }
 impl fmt::Display for ClusterAdmissionError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -107,9 +108,11 @@ struct Job {
     keys: Arc<[[u8; 32]]>,
     admitted: u64,
     running: bool,
+    leased: bool,
 }
 struct State {
     waiters: BTreeMap<u64, Waker>,
+    notification_epoch: u64,
     bounds: ClusterAdmissionBounds,
     jobs: BTreeMap<u64, Job>,
     next: u64,
@@ -160,6 +163,7 @@ impl Drop for PermitCredits {
             state.released = state.released.saturating_add(1);
         }
         state.waiters.remove(&self.ticket);
+        state.notification_epoch = state.notification_epoch.saturating_add(1);
         let wakes = std::mem::take(&mut state.waiters);
         drop(state);
         for wake in wakes.into_values() {
@@ -184,6 +188,96 @@ impl ClusterPermit {
     pub fn finish(self) {
         drop(self);
     }
+    /// Release only physical concurrency credits; request bytes and its exact receipt stay owned.
+    pub fn park(&self) -> Result<u64, ClusterAdmissionError> {
+        let attempt = self.credits.attempt.lock().unwrap();
+        if attempt.1 {
+            return Err(ClusterAdmissionError::InvocationInFlight);
+        }
+        let mut state = self.credits.state.lock().unwrap();
+        let job = state
+            .jobs
+            .get_mut(&self.ticket())
+            .ok_or(ClusterAdmissionError::InvalidWork)?;
+        if !job.running {
+            return Err(ClusterAdmissionError::PermitParked);
+        }
+        job.running = false;
+        state.notification_epoch = state.notification_epoch.saturating_add(1);
+        let epoch = state.notification_epoch;
+        state.waiters.remove(&self.ticket());
+        let wakes = std::mem::take(&mut state.waiters);
+        drop(state);
+        drop(attempt);
+        for wake in wakes.into_values() {
+            wake.wake();
+        }
+        Ok(epoch)
+    }
+    /// Reacquire physical credits without replacing the bound logical admission receipt.
+    pub fn try_resume(&self) -> Result<bool, ClusterAdmissionError> {
+        let attempt = self.credits.attempt.lock().unwrap();
+        if attempt.1 {
+            return Err(ClusterAdmissionError::InvocationInFlight);
+        }
+        let mut state = self.credits.state.lock().unwrap();
+        let job = state
+            .jobs
+            .get(&self.ticket())
+            .ok_or(ClusterAdmissionError::InvalidWork)?;
+        if job.running {
+            return Ok(true);
+        }
+        let lane = job.work.lane.index();
+        let limit = [
+            state.bounds.safety_permits,
+            state.bounds.data_permits,
+            state.bounds.repair_permits,
+        ][lane];
+        if state
+            .jobs
+            .values()
+            .filter(|other| other.running && other.work.lane.index() == lane)
+            .count()
+            >= limit
+        {
+            return Ok(false);
+        }
+        if job.work.lane == ClusterLane::Data {
+            let running = state
+                .jobs
+                .values()
+                .filter(|other| other.running && other.work.lane == ClusterLane::Data);
+            if running.clone().any(|other| {
+                other
+                    .partitions
+                    .iter()
+                    .any(|partition| job.partitions.contains(partition))
+            }) || running
+                .map(|other| other.work.replica_bytes)
+                .sum::<usize>()
+                .saturating_add(job.work.replica_bytes)
+                > state.bounds.max_replica_bytes
+                || state.jobs.iter().any(|(id, other)| {
+                    *id < self.ticket()
+                        && !other.running
+                        && other.work.lane == ClusterLane::Data
+                        && other
+                            .partitions
+                            .iter()
+                            .any(|partition| job.partitions.contains(partition))
+                })
+            {
+                return Ok(false);
+            }
+        }
+        state
+            .jobs
+            .get_mut(&self.ticket())
+            .expect("owned permit")
+            .running = true;
+        Ok(true)
+    }
     pub fn begin_invocation(
         &self,
         binding: AdmissionBinding,
@@ -199,6 +293,17 @@ impl ClusterPermit {
             return Err(ClusterAdmissionError::InvalidWork);
         }
         let mut state = self.credits.attempt.lock().unwrap();
+        if self
+            .credits
+            .state
+            .lock()
+            .unwrap()
+            .jobs
+            .get(&self.ticket())
+            .is_none_or(|job| !job.running)
+        {
+            return Err(ClusterAdmissionError::PermitParked);
+        }
         if state
             .0
             .as_ref()
@@ -275,6 +380,7 @@ impl ClusterAdmission {
         Ok(Self {
             state: Arc::new(Mutex::new(State {
                 waiters: BTreeMap::new(),
+                notification_epoch: 0,
                 bounds,
                 jobs: BTreeMap::new(),
                 next: 1,
@@ -395,6 +501,7 @@ impl ClusterAdmission {
                 keys: keys.into(),
                 admitted: tick,
                 running: false,
+                leased: false,
             },
         );
         Ok(ticket)
@@ -417,11 +524,33 @@ impl ClusterAdmission {
             state.waiters.insert(ticket, waker.clone());
         }
     }
+    /// Atomically arm a bounded existing-ticket waiter against actual capacity notifications.
+    /// A caller which observes a changed epoch must retry its predicate before sleeping.
+    pub fn wait_for_change(&self, ticket: u64, observed: u64, waker: &Waker) -> bool {
+        let mut state = self.state.lock().unwrap();
+        if state.notification_epoch != observed || !state.jobs.contains_key(&ticket) {
+            return false;
+        }
+        state.waiters.insert(ticket, waker.clone());
+        true
+    }
+    pub fn notification_epoch(&self) -> u64 {
+        self.state.lock().unwrap().notification_epoch
+    }
     pub fn wake_waiters(&self) {
-        let wakes = std::mem::take(&mut self.state.lock().unwrap().waiters);
+        self.notify_waiters();
+    }
+    /// Returns the notification cut before callbacks run, closing reentrant progress races.
+    pub fn notify_waiters(&self) -> u64 {
+        let mut state = self.state.lock().unwrap();
+        state.notification_epoch = state.notification_epoch.saturating_add(1);
+        let epoch = state.notification_epoch;
+        let wakes = std::mem::take(&mut state.waiters);
+        drop(state);
         for wake in wakes.into_values() {
             wake.wake();
         }
+        epoch
     }
     fn pop_selected(
         &self,
@@ -454,7 +583,7 @@ impl ClusterAdmission {
                 .jobs
                 .iter()
                 .filter(|(id, job)| {
-                    if job.running || job.work.lane.index() != lane {
+                    if job.leased || excluded.contains(id) || job.work.lane.index() != lane {
                         return false;
                     }
                     if lane != ClusterLane::Data.index() {
@@ -515,12 +644,13 @@ impl ClusterAdmission {
         let Some((ticket, lane)) = selected else {
             return Ok(None);
         };
-        if expected.is_some_and(|expected| expected != ticket) || excluded.contains(&ticket) {
+        if expected.is_some_and(|expected| expected != ticket) {
             return Ok(None);
         }
         let tick = state.tick;
         let job = state.jobs.get_mut(&ticket).unwrap();
         job.running = true;
+        job.leased = true;
         let waited = tick - job.admitted;
         let work = job.work.clone();
         let partitions = job.partitions.clone();
@@ -541,7 +671,7 @@ impl ClusterAdmission {
     }
     pub fn cancel(&self, ticket: u64) -> Result<bool, ClusterAdmissionError> {
         let mut state = self.state.lock().unwrap();
-        if state.jobs.get(&ticket).is_none_or(|job| job.running) {
+        if state.jobs.get(&ticket).is_none_or(|job| job.leased) {
             return Ok(false);
         }
         state.jobs.remove(&ticket);

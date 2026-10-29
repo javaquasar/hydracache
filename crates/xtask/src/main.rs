@@ -56,6 +56,15 @@ fn main() -> Result<(), Box<dyn Error>> {
             xtask::imap_extended_differential_075::run(args.collect())?
         }
         Some("imap-capability-audit") => xtask::imap_capability_audit::run(args.collect())?,
+        Some("imap-extended-concurrent") => {
+            xtask::imap_extended_concurrent_075::run(args.collect())?
+        }
+        Some("imap-extended-evidence") => {
+            xtask::imap_extended_receipt_075::run(args.collect(), false)?
+        }
+        Some("imap-extended-evidence-check") => {
+            xtask::imap_extended_receipt_075::run(args.collect(), true)?
+        }
         Some("imap-migration-dry-run") => xtask::imap_migration_dry_run::run(args.collect())?,
         Some("imap-comparison-check") => {
             xtask::imap_qualification_075::comparison_run(args.collect())?
@@ -169,6 +178,9 @@ fn print_usage() {
          cargo xtask imap-contract-check --release 0.75  # validate the provisional Extended IMap W0 contracts\n  \
          cargo xtask imap-api-differential --release 0.75 [--seed <u64>] [--steps <n>]  # compare real Rust and Java local IMap execution traces\n  \
          cargo xtask imap-extended-differential --release 0.75 [--seed <i64>] [--script <path>]  # compare actual Rust/Java v2 peers against independent model\n  \
+         cargo xtask imap-extended-concurrent --release 0.75 [--seed <i64>] [--rounds <n>]  # independently check real Rust/Java worker histories\n  \
+         cargo xtask imap-extended-evidence --release 0.75 --output <new-target-dir> [--seed <i64>]\n  \
+         cargo xtask imap-extended-evidence-check --release 0.75 --receipt <path>  # strict local exact-artifact replay\n  \
          cargo xtask imap-capability-audit --release 0.75  # compare actual reference and existing SDK claims\n  \
          cargo xtask imap-migration-dry-run --release 0.75 [--fixtures <path>] [--output <path>]\n  \
          cargo xtask imap-comparison-check --release 0.75 [--require-ready]\n  \

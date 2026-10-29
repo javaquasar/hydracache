@@ -37,7 +37,7 @@ function is executed on a member.
 replacements under aggregate request/response byte bounds; the identity-retaining variant returns
 the same receipt on replay and rejects conflicting identities or exhausted retained-outcome
 capacity. Scope-specific descriptors distinguish 21 actual `BoundedIMapApi` operations, 40 actual
-`UnifiedIMapService` operations with seven local lifecycle families, and the existing SDK's eleven
+`UnifiedIMapService` operations with eight local lifecycle families, and the existing SDK's eleven
 capability tokens. Planned surface projections remain separate. The expanded 0.75 production
 capability stays disabled; existing narrow SDK behavior remains available under its own contract.
 
@@ -84,7 +84,7 @@ boundary and reports an unknown-scope empty-key GAP. Preserve cannot insert an a
 TTL-update operations require Eternal or a positive ExpireAfter directive.
 
 The provisional [method compatibility ledger](../../docs/integrations/imap-compatibility-0.75.md)
-separates core operations, seven typed helper families and existing SDK projections. Java
+separates core operations, eight typed helper families and existing SDK projections. Java
 reflection/DTO tests and the Rust/Java process differential cover nonempty binary prefix AND
 optional exact-key listener filters. The old Java exact-key constructor remains available.
 `cargo xtask imap-semantic-audit --release 0.75` checks ledger/source evidence; it is a bounded

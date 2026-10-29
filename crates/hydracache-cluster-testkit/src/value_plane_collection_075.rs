@@ -775,6 +775,20 @@ impl ReferenceCollectionMap {
         })
     }
 
+    pub(crate) fn service_lookup_response_bytes(
+        &self,
+        identity: &MutationIdentity,
+        digest: [u8; 32],
+    ) -> Result<usize, CollectionError> {
+        self.validate_mutation_identity(identity)?;
+        if let Some((command, _)) = self.retained.get(identity) {
+            if command != &RetainedCommand::Service(digest) {
+                return Err(CollectionError::MutationIdentityConflict);
+            }
+        }
+        self.service_query_result_bytes(identity)
+    }
+
     pub(crate) fn service_reserve(
         &mut self,
         identity: MutationIdentity,

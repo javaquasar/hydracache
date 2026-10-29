@@ -46,6 +46,13 @@ public final class UnifiedIMapService {
   }
   public record SnapshotEntry(BytesValue key, BytesValue value, long version,
       OptionalLong remainingTtl) {}
+  public record VersionedEntryView(int index, BytesValue key, Optional<BytesValue> value,
+      Optional<VersionToken> token, OptionalLong remainingTtl) {
+    public VersionedEntryView {
+      Objects.requireNonNull(key); Objects.requireNonNull(value); Objects.requireNonNull(token); Objects.requireNonNull(remainingTtl);
+      if (index < 0 || value.isPresent() != token.isPresent() || value.isEmpty() && remainingTtl.isPresent()) invalid("entry view shape");
+    }
+  }
   public record Statistics(long liveEntries, long valueBytes, long retainedOutcomes,
       long listeners, long queuedEvents, long inflight, long rejections, long cancellations,
       long requests, long activeStreams, long activeCursors) {}
@@ -172,6 +179,7 @@ public final class UnifiedIMapService {
   private final Set<Runnable> pendingWake = new java.util.LinkedHashSet<>();
   private long now, watermark, requests, rejections, cancellations, activeStreams, activeCursors;
   private long streamBytes, resyncBytes;
+  private int resyncLeases;
 
   public UnifiedIMapService(BoundedIMapApi.Bounds bounds, long namespaceGeneration) {
     this(new BoundedIMapApi(bounds), namespaceGeneration);
@@ -354,6 +362,26 @@ public final class UnifiedIMapService {
     for (int index = 0; index < identities.size(); index++) result.add(new OutcomeItem(index, identities.get(index), queryOperationOutcome(identities.get(index))));
     return List.copyOf(result);
   }
+  private long entryViewsInputBytes(List<BytesValue> keys, long maxBytes) {
+    if (map.isDestroyed()) throw domain(IMapDomainException.Kind.MAP_DESTROYED, "map is destroyed");
+    if (keys.isEmpty() || keys.size() > limits.maxBatch() || maxBytes <= 0 || maxBytes > Math.min(limits.queryBytes(), bounds.maxResponseBytes())) invalid("entry view batch bound");
+    long bytes = 0;
+    for (var key : keys) { Objects.requireNonNull(key); if (key.size() > bounds.maxKeyBytes()) throw domain(IMapDomainException.Kind.KEY_TOO_LARGE, "key bound"); bytes = Math.addExact(bytes, 16L + key.size()); }
+    if (bytes > BoundedIMapApi.MAX_REQUEST_BYTES) throw domain(IMapDomainException.Kind.REQUEST_TOO_LARGE, "request bytes");
+    return bytes;
+  }
+  public List<VersionedEntryView> entryViews(List<BytesValue> input, long time, long maxBytes) {
+    try { synchronized (this) { synchronized (map) {
+      entryViewsInputBytes(input, maxBytes); checkTime(time);
+      var keys = List.copyOf(input); long bytes = 0;
+      for (var key : keys) { var entry = map.serviceEntryView(key, time); bytes = Math.addExact(bytes, 64L + key.size() + entry.map(value -> 24L + value.value().size()).orElse(0L)); budget(bytes, maxBytes); }
+      advance(time);
+      var result = new ArrayList<VersionedEntryView>(keys.size());
+      for (int index = 0; index < keys.size(); index++) { var key = keys.get(index); var entry = map.serviceEntryView(key, time); result.add(new VersionedEntryView(index, key, entry.map(BoundedIMapApi.EntryView::value), entry.map(this::token), entry.isPresent() ? entry.orElseThrow().remainingTtl() : OptionalLong.empty())); }
+      return List.copyOf(result);
+    } } } catch (RuntimeException failure) { throw IMapDomainException.translate(failure); }
+    finally { wakeListeners(); }
+  }
   public synchronized ResourceUsage resourceUsage() {
     return new ResourceUsage(map.serviceValueOwnerBytes(), map.serviceOutcomeOwnerBytes(),
         map.servicePendingOwnerBytes(), listenerBytes(), streamBytes, resyncBytes);
@@ -452,6 +480,7 @@ public final class UnifiedIMapService {
         long namespaceGeneration, long incarnation, long revision, boolean includeValue) {
       this.entries = List.copyOf(entries); this.watermark = watermark; this.bytes = bytes;
       this.namespaceGeneration = namespaceGeneration; this.incarnation = incarnation; this.revision = revision; this.includeValue = includeValue;
+      resyncLeases++;
     }
     public List<ResyncEntry> entries() { return entries; }
     public long watermark() { return watermark; }
@@ -459,7 +488,7 @@ public final class UnifiedIMapService {
     public long mapId() { return incarnation; }
     public long revision() { return revision; }
     public boolean includeValue() { return includeValue; }
-    @Override public void close() { synchronized (UnifiedIMapService.this) { if (!closed) { resyncBytes -= bytes; closed = true; } } }
+    @Override public void close() { synchronized (UnifiedIMapService.this) { if (!closed) { resyncBytes -= bytes; resyncLeases--; closed = true; } } }
   }
   public SnapshotLease snapshotListener(long id, int maxItems, long maxBytes, long time) {
     try { synchronized (this) { return snapshotListenerLocked(id, maxItems, maxBytes, time); } }
@@ -467,6 +496,7 @@ public final class UnifiedIMapService {
     finally { wakeListeners(); }
   }
   private SnapshotLease snapshotListenerLocked(long id, int maxItems, long maxBytes, long time) {
+      if (resyncLeases >= bounds.maxEntries()) throw domain(IMapDomainException.Kind.CAPACITY, "snapshot lease capacity");
       if (map.isDestroyed()) throw domain(IMapDomainException.Kind.MAP_DESTROYED, "map is destroyed");
       ListenerState state = listeners.get(id);
       if (state == null) throw domain(IMapDomainException.Kind.UNKNOWN_LISTENER, "unknown listener");
@@ -505,6 +535,7 @@ public final class UnifiedIMapService {
   synchronized void releaseAsyncBytes(long bytes) { streamBytes -= bytes; }
   synchronized long helperOwnedBytes(IMapLocalHelper.Command<?> command) {
     long bytes = 128 + helperReservation(command);
+    if (command instanceof IMapLocalHelper.EntryViews request) bytes += entryViewsInputBytes(request.keys(), request.maxBytes()) + request.maxBytes();
     if (command instanceof IMapLocalHelper.VersionBulk request) for (var entry : request.entries()) {
       bytes += 64L + entry.key().size() + entry.value().map(BytesValue::size).orElse(0);
     }
@@ -553,6 +584,9 @@ public final class UnifiedIMapService {
     }
     try { synchronized (this) {
       var prior = recoverLocalHelper(command); if (prior.isPresent()) return prior.orElseThrow();
+      if (command instanceof IMapLocalHelper.EntryViews request) {
+        @SuppressWarnings("unchecked") T result = (T) entryViews(request.keys(), time, request.maxBytes()); return result;
+      }
       if (command instanceof IMapLocalHelper.QueryOutcomes request) {
         @SuppressWarnings("unchecked") T result = (T) queryOutcomes(request.identities(), request.maxBytes()); return result;
       }
@@ -585,6 +619,7 @@ public final class UnifiedIMapService {
     if (command instanceof IMapLocalHelper.VersionBulk) return (T) receipt;
     if (command instanceof IMapLocalHelper.RetireOutcomes request) return (T) new RetirementReceipt(request.client(), request.generation(), request.through(), Math.toIntExact(receipt.number()));
     if (command instanceof IMapLocalHelper.ExpireStep) return (T) new ExpiryProgress(Math.toIntExact(receipt.number()), Math.toIntExact(receipt.version().orElseThrow()), receipt.flag());
+    if (resyncLeases >= bounds.maxEntries()) throw domain(IMapDomainException.Kind.CAPACITY, "snapshot lease capacity");
     var entries = receipt.items().stream().map(item -> new ResyncEntry(item.key(), item.value(), item.version().orElseThrow(), item.remainingTtl())).toList();
     long bytes = entries.stream().mapToLong(entry -> 32L + entry.key().size() + entry.value().map(BytesValue::size).orElse(0)).sum();
     budget(resyncBytes + bytes, limits.resync()); resyncBytes += bytes;
@@ -600,11 +635,12 @@ public final class UnifiedIMapService {
     private RuntimeCheckpoint(UnifiedIMapService owner, BoundedIMapApi snapshot, long bytes) {
       this.owner = owner; this.snapshot = snapshot; this.bytes = bytes;
       limits = owner.limits; generation = owner.generation; now = owner.now; watermark = owner.watermark;
+      owner.resyncLeases++;
     }
-    @Override public void close() { synchronized (owner) { if (!closed) { owner.resyncBytes -= bytes; closed = true; } } }
+    @Override public void close() { synchronized (owner) { if (!closed) { owner.resyncBytes -= bytes; owner.resyncLeases--; closed = true; } } }
   }
   public synchronized RuntimeCheckpoint checkpoint() {
-    if (map.servicePendingCount() != 0 || !listeners.isEmpty() || activeStreams != 0) throw domain(IMapDomainException.Kind.CHECKPOINT_BUSY, "checkpoint_busy");
+    if (map.servicePendingCount() != 0 || !listeners.isEmpty() || activeStreams != 0 || resyncLeases != 0) throw domain(IMapDomainException.Kind.CHECKPOINT_BUSY, "checkpoint_busy");
     long bytes = 256 + map.serviceValueOwnerBytes() + map.serviceOutcomeOwnerBytes();
     budget(resyncBytes + bytes, limits.resync());
     var snapshot = map.checkpointCopy(); resyncBytes += bytes;

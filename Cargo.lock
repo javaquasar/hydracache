@@ -7103,6 +7103,7 @@ dependencies = [
  "hydracache-loadgen",
  "hydracache-long-run-supervisor-074",
  "jsonschema",
+ "libc",
  "proc-macro2",
  "prost",
  "prost-types",

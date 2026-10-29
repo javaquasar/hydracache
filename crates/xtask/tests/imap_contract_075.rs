@@ -877,3 +877,96 @@ fn cluster_evolution_rejects_weakened_reads_retry_scope_transfer_credit_diagnost
     });
     assert!(xtask::imap_contract::check_contract_dir(temp.path()).is_err());
 }
+
+#[test]
+fn bounded_evolution_rejects_weakened_helper_certainty_capacity_progress_and_evidence() {
+    for field in [
+        "entry_views",
+        "helper_futures",
+        "retry",
+        "helper_progress",
+        "transfer_controls",
+        "histories",
+        "processes",
+        "receipts",
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |contract| {
+            contract["api_extensions"]["bounded_evolution"]["properties"][field] =
+                serde_json::json!("unbounded_or_unproved");
+        });
+        assert!(
+            problems(&temp)
+                .iter()
+                .any(|problem| problem.starts_with("IMap bounded evolution")),
+            "{field}"
+        );
+    }
+    for (field, value) in [
+        ("scope", serde_json::json!("production")),
+        ("test_ids", serde_json::json!([])),
+        (
+            "test_ids",
+            serde_json::json!([
+                "imap075::helper_futures::certainty",
+                "imap075::helper_futures::certainty"
+            ]),
+        ),
+        (
+            "properties",
+            serde_json::json!({"helper_futures":"actual_root_child_receipts_cancellation_drop_and_monotonic_certainty"}),
+        ),
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |contract| {
+            contract["api_extensions"]["bounded_evolution"][field] = value;
+        });
+        assert!(
+            problems(&temp)
+                .iter()
+                .any(|problem| problem.starts_with("IMap bounded evolution")),
+            "{field}"
+        );
+    }
+    let temp = fixture();
+    edit(&temp.path().join("operation-contract.json"), |contract| {
+        contract["api_extensions"]
+            .as_object_mut()
+            .unwrap()
+            .remove("bounded_evolution");
+    });
+    assert!(xtask::imap_contract::check_contract_dir(temp.path()).is_err());
+    let temp = fixture();
+    edit(&temp.path().join("operation-contract.json"), |contract| {
+        contract["api_extensions"]["bounded_evolution"]["future_field"] = serde_json::json!(true);
+    });
+    assert!(xtask::imap_contract::check_contract_dir(temp.path()).is_err());
+}
+
+#[test]
+fn bounded_evolution_status_requires_every_new_slice_without_admitting_production() {
+    for feature in [
+        "bounded_batch_entry_views",
+        "cluster_helper_futures",
+        "capacity_aware_read_and_helper_retry",
+        "read_only_helper_progress",
+        "authenticated_transfer_controls",
+        "extended_concurrent_histories",
+        "bounded_proof_process_lifecycle",
+        "exact_artifact_extended_receipts",
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("status.json"), |status| {
+            status["safe_foundation"]["implemented"]
+                .as_array_mut()
+                .unwrap()
+                .retain(|item| item.as_str() != Some(feature));
+        });
+        assert!(
+            problems(&temp)
+                .iter()
+                .any(|problem| problem.contains(feature)),
+            "{feature}"
+        );
+    }
+}

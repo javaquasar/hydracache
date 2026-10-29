@@ -895,6 +895,15 @@ fn retry_exhaustion_and_authorization_failures_release_each_actual_admission_onc
         .unwrap();
     assert!(Pin::new(&mut exhausted).poll(&mut cx).is_pending());
     assert!(Pin::new(&mut exhausted).poll(&mut cx).is_pending());
+    for _ in 0..8 {
+        assert!(Pin::new(&mut exhausted).poll(&mut cx).is_pending());
+    }
+    assert_eq!(
+        control.attempts(),
+        2,
+        "polling without progress cannot consume retries"
+    );
+    registry.advance_clock(1).unwrap();
     assert!(matches!(
         Pin::new(&mut exhausted).poll(&mut cx),
         Poll::Ready(AsyncOutcome::OutcomeUnknown)

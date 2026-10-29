@@ -16,7 +16,10 @@ fn actual_capabilities_keep_reference_owners_and_existing_sdk_separate() {
     assert_eq!(bounded.operations.len(), 21);
     assert_eq!(unified.operations.len(), 40);
     assert_eq!(sdk.operations.len(), 11);
-    assert_eq!(unified.interface_features.len(), 7);
+    assert_eq!(unified.interface_features.len(), 8);
+    assert!(unified
+        .interface_features
+        .contains("bounded_batch_entry_views"));
     assert!(bounded.interface_features.is_empty());
     assert!(sdk.interface_features.is_empty());
     assert!(bounded.operations.is_subset(&unified.operations));

@@ -101,7 +101,15 @@
       "stepped_online_repair_and_drain",
       "pre_mutation_delta_credit_backpressure",
       "paginated_redacted_invocation_diagnostics",
-      "common_v2_rust_java_actual_owner_corpus"
+      "common_v2_rust_java_actual_owner_corpus",
+      "bounded_batch_entry_views",
+      "cluster_helper_futures",
+      "capacity_aware_read_and_helper_retry",
+      "read_only_helper_progress",
+      "authenticated_transfer_controls",
+      "extended_concurrent_histories",
+      "bounded_proof_process_lifecycle",
+      "exact_artifact_extended_receipts"
     ],
     "deferred": [
       "production_backend_and_partition_ownership",

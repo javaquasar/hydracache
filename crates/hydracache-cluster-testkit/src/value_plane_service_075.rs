@@ -28,6 +28,9 @@ pub use replica_delta::*;
 #[path = "value_plane_service_helpers_075.rs"]
 mod helpers;
 pub use helpers::*;
+#[path = "value_plane_service_entry_views_075.rs"]
+mod entry_views;
+pub use entry_views::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ServiceTtl {

@@ -47,6 +47,219 @@ fn deltas(cluster: &mut ServiceClusterHarness, id: u64) {
     }
 }
 
+fn scope(cluster: &ServiceClusterHarness, transfer: u64) -> TransferScope {
+    let manifest = cluster.online_transfer_manifest(transfer).unwrap();
+    TransferScope {
+        transfer,
+        partition: manifest.partition,
+        source_epoch: manifest.source_epoch,
+    }
+}
+
+#[test]
+fn scoped_transfer_abort_cleanup_and_restart_release_actual_staging_without_losing_writes() {
+    let mut cluster = cluster();
+    let original = run(&mut cluster, command(b"original", 1)).result;
+    let baseline = cluster.aggregate_resource_usage();
+    let id = cluster
+        .begin_online_transfer(0, "c", OnlineTransferOptions::default())
+        .unwrap();
+    let cut = scope(&cluster, id);
+    let chunk = cluster
+        .online_transfer_chunk(id, TransferComponent::Data, 0)
+        .unwrap();
+    cluster
+        .accept_online_transfer_chunk(id, chunk.clone())
+        .unwrap();
+    run(&mut cluster, command(b"during", 2));
+    let active = cluster.transfer_diagnostic(cut).unwrap();
+    assert_eq!(active.scope, cut);
+    assert!(active.staged_bytes > 384 && active.pending_deltas > 0);
+    let before = cluster.aggregate_resource_usage();
+    assert_eq!(
+        cluster.cleanup_transfer_scoped(cut).unwrap_err(),
+        ServiceClusterError::TransferState
+    );
+    assert_eq!(
+        cluster
+            .restart_transfer_scoped(cut, cut.source_epoch, "c", OnlineTransferOptions::default())
+            .unwrap_err(),
+        ServiceClusterError::TransferState
+    );
+    let wrong = TransferScope {
+        source_epoch: cut.source_epoch + 1,
+        ..cut
+    };
+    assert_eq!(
+        cluster.abort_transfer_scoped(wrong).unwrap_err(),
+        ServiceClusterError::StaleEpoch
+    );
+    assert_eq!(
+        cluster.cleanup_transfer_scoped(wrong).unwrap_err(),
+        ServiceClusterError::StaleEpoch
+    );
+    assert_eq!(cluster.aggregate_resource_usage(), before);
+    let aborted = cluster.abort_transfer_scoped(cut).unwrap().current.unwrap();
+    assert_eq!(aborted.phase, OnlineTransferPhase::Aborted);
+    assert_eq!(
+        (
+            aborted.pending_deltas,
+            aborted.held_bytes,
+            aborted.unacknowledged,
+            aborted.remaining_chunks,
+            aborted.staged_bytes
+        ),
+        (0, 0, 0, 0, 384)
+    );
+    assert_eq!(cluster.aggregate_namespace_owners().resync_leases, 1);
+    assert_eq!(
+        cluster.aggregate_resource_usage().resync,
+        baseline.resync + 384
+    );
+    assert!(cluster.accept_online_transfer_chunk(id, chunk).is_err());
+    assert!(cluster.transfer_diagnostics(0).is_err());
+    assert_eq!(
+        cluster.transfer_diagnostics(1).unwrap(),
+        vec![aborted.clone()]
+    );
+    assert_eq!(
+        cluster
+            .restart_transfer_scoped(
+                cut,
+                cut.source_epoch + 1,
+                "c",
+                OnlineTransferOptions::default()
+            )
+            .unwrap_err(),
+        ServiceClusterError::StaleEpoch
+    );
+    assert_eq!(
+        cluster
+            .restart_transfer_scoped(
+                cut,
+                cut.source_epoch,
+                "c",
+                OnlineTransferOptions {
+                    chunk_bytes: 0,
+                    ..OnlineTransferOptions::default()
+                }
+            )
+            .unwrap_err(),
+        ServiceClusterError::InvalidBound
+    );
+    assert_eq!(cluster.transfer_diagnostic(cut).unwrap(), aborted);
+    let restarted = cluster
+        .restart_transfer_scoped(cut, cut.source_epoch, "c", OnlineTransferOptions::default())
+        .unwrap();
+    assert!(restarted.removed);
+    assert_eq!(restarted.previous, cut);
+    let next = restarted.current.unwrap().scope;
+    assert!(next.transfer > id);
+    assert_eq!(next.source_epoch, cut.source_epoch);
+    assert_eq!(
+        cluster.transfer_diagnostic(cut).unwrap_err(),
+        ServiceClusterError::UnknownTransfer
+    );
+    assert!(!cluster.cleanup_transfer_scoped(cut).unwrap().removed);
+    snapshot(&mut cluster, next.transfer);
+    run(&mut cluster, command(b"after", 3));
+    deltas(&mut cluster, next.transfer);
+    cluster.ready_online_transfer(next.transfer).unwrap();
+    cluster.commit_online_transfer(next.transfer).unwrap();
+    assert_eq!(
+        cluster.diagnostic_node_snapshot("c", 0, 0).unwrap().len(),
+        3
+    );
+    assert_eq!(
+        cluster
+            .query_operation_outcome(&MutationIdentity::new("transfer", 1))
+            .unwrap(),
+        OperationOutcomeQuery::Completed(Box::new(original))
+    );
+    assert!(cluster.cleanup_transfer_scoped(next).unwrap().removed);
+    assert_eq!(cluster.aggregate_namespace_owners().resync_leases, 0);
+    assert_eq!(cluster.aggregate_resource_usage().resync, baseline.resync);
+}
+
+#[test]
+fn scoped_restart_keeps_terminal_attempt_when_pending_or_fencing_blocks_a_fresh_snapshot() {
+    let mut cluster = cluster();
+    let id = cluster
+        .begin_online_transfer(0, "c", OnlineTransferOptions::default())
+        .unwrap();
+    let cut = scope(&cluster, id);
+    cluster.abort_transfer_scoped(cut).unwrap();
+    let pending = command(b"pending", 1);
+    cluster
+        .reserve_operation(pending.identity.clone().unwrap(), &pending)
+        .unwrap();
+    let before = cluster.transfer_diagnostic(cut).unwrap();
+    let resources = cluster.aggregate_resource_usage();
+    assert_eq!(before.pending_owners, 1);
+    assert!(matches!(
+        cluster.restart_transfer_scoped(
+            cut,
+            cut.source_epoch,
+            "c",
+            OnlineTransferOptions::default()
+        ),
+        Err(ServiceClusterError::Model(MapServiceError::ActiveOwners))
+    ));
+    assert_eq!(cluster.transfer_diagnostic(cut).unwrap(), before);
+    assert_eq!(cluster.aggregate_resource_usage(), resources);
+    assert!(cluster
+        .cancel_pending_identity(pending.identity.as_ref().unwrap())
+        .unwrap());
+    cluster.promote_backup(0).unwrap();
+    let current_epoch = cluster.assignment(0).unwrap().epoch;
+    assert!(current_epoch > cut.source_epoch);
+    assert_eq!(
+        cluster
+            .restart_transfer_scoped(cut, cut.source_epoch, "c", OnlineTransferOptions::default())
+            .unwrap_err(),
+        ServiceClusterError::StaleEpoch
+    );
+    let next = cluster
+        .restart_transfer_scoped(cut, current_epoch, "c", OnlineTransferOptions::default())
+        .unwrap()
+        .current
+        .unwrap()
+        .scope;
+    assert!(next.transfer > id);
+    assert_eq!(next.source_epoch, current_epoch);
+    assert!(cluster
+        .abort_transfer_scoped(TransferScope {
+            transfer: 0,
+            ..next
+        })
+        .is_err());
+    assert!(cluster
+        .cleanup_transfer_scoped(TransferScope {
+            partition: 1,
+            ..next
+        })
+        .is_err());
+    let _ = cluster.fence_namespace_deferred();
+    cluster.abort_transfer_scoped(next).unwrap();
+    assert_eq!(
+        cluster
+            .restart_transfer_scoped(
+                next,
+                next.source_epoch,
+                "c",
+                OnlineTransferOptions::default()
+            )
+            .unwrap_err(),
+        ServiceClusterError::Model(MapServiceError::NamespaceDeleted)
+    );
+    assert!(cluster.cleanup_transfer_scoped(next).unwrap().removed);
+    assert!(cluster.transfer_diagnostics(1).unwrap().is_empty());
+    assert_eq!(
+        cluster.transfer_diagnostic(next).unwrap_err(),
+        ServiceClusterError::UnknownTransfer
+    );
+}
+
 #[test]
 fn sparse_online_deltas_exclude_unchanged_payload_and_preserve_decisions() {
     let mut cluster = cluster();

@@ -49,7 +49,7 @@ public record IMapCapabilityDescriptor(
 
   public static Set<String> lifecycleFeatures() {
     return Set.of("safe_outcome_retirement", "aggregate_payload_budgets", "atomic_listener_resynchronization",
-        "version_conditional_bulk_api", "bounded_batch_outcome_query", "incremental_expiry_cleanup", "runtime_service_checkpoint_restore");
+        "version_conditional_bulk_api", "bounded_batch_outcome_query", "incremental_expiry_cleanup", "runtime_service_checkpoint_restore", "bounded_batch_entry_views");
   }
 
   public static IMapCapabilityDescriptor local(BoundedIMapApi.Bounds bounds) {

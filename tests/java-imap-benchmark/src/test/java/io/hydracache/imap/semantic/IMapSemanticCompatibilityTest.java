@@ -27,6 +27,8 @@ final class IMapSemanticCompatibilityTest {
     signature("snapshotListener", "UnifiedIMapService$SnapshotLease", long.class, int.class, long.class, long.class);
     signature("versionBulk", "UnifiedIMapService$Result", UnifiedIMapService.VersionAction.class, List.class, BoundedIMapApi.MutationIdentity.class, long.class, long.class, boolean.class);
     signature("queryOutcomes", "java.util.List<UnifiedIMapService$OutcomeItem>", List.class, long.class);
+    signature("entryViews", "java.util.List<UnifiedIMapService$VersionedEntryView>", List.class, long.class, long.class);
+    assertEquals("java.util.List<io.hydracache.imap.semantic.BytesValue>", UnifiedIMapService.class.getDeclaredMethod("entryViews", List.class, long.class, long.class).getGenericParameterTypes()[0].getTypeName());
     assertEquals("java.util.List<io.hydracache.imap.semantic.UnifiedIMapService$VersionInput>", UnifiedIMapService.class.getDeclaredMethod("versionBulk", UnifiedIMapService.VersionAction.class, List.class, BoundedIMapApi.MutationIdentity.class, long.class, long.class, boolean.class).getGenericParameterTypes()[1].getTypeName());
     assertEquals("java.util.List<io.hydracache.imap.semantic.BoundedIMapApi$MutationIdentity>", UnifiedIMapService.class.getDeclaredMethod("queryOutcomes", List.class, long.class).getGenericParameterTypes()[0].getTypeName());
     signature("expireStep", "UnifiedIMapService$ExpiryProgress", long.class, int.class);
@@ -35,6 +37,9 @@ final class IMapSemanticCompatibilityTest {
     signature("pages", "IMapFlowPublisher<BoundedIMapApi$ScanItem>", BoundedIMapApi.Projection.class, int.class, LongSupplier.class);
     signature("events", "IMapFlowPublisher<UnifiedIMapService$Event>", UnifiedIMapService.ListenerHandle.class);
     assertEquals(List.of("namespaceGeneration", "mapId", "version"), Arrays.stream(UnifiedIMapService.VersionToken.class.getRecordComponents()).map(java.lang.reflect.RecordComponent::getName).toList());
+    assertEquals(List.of("index", "key", "value", "token", "remainingTtl"), Arrays.stream(UnifiedIMapService.VersionedEntryView.class.getRecordComponents()).map(java.lang.reflect.RecordComponent::getName).toList());
+    assertEquals(List.of("keys", "maxBytes", "deadline"), Arrays.stream(IMapLocalHelper.EntryViews.class.getRecordComponents()).map(java.lang.reflect.RecordComponent::getName).toList());
+    assertTrue(IMapLocalHelper.Command.class.isAssignableFrom(IMapLocalHelper.EntryViews.class));
     assertEquals(List.of("includeValue", "maxValueBytes", "queueCapacity", "keyPrefix", "exactKey", "kinds"), Arrays.stream(UnifiedIMapService.ListenerOptions.class.getRecordComponents()).map(java.lang.reflect.RecordComponent::getName).toList());
     for (var method : UnifiedIMapService.class.getMethods()) {
       String types = method.getGenericReturnType() + Arrays.toString(method.getGenericParameterTypes());

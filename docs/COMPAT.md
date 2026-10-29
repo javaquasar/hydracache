@@ -92,6 +92,30 @@ The Rust and Java peers execute real local owners; expected observations come
 only from the separate Java model. Bounded shrinking preserves valid references,
 retains replayable source and does not claim an unconditional minimal result.
 
+Extended concurrency uses separate development headers `imap-extended-schedule-v1`,
+`imap-extended-history-v1` and `imap-extended-verdict-v1`. Schedules admit at most 32 rounds,
+two workers, five fixed helper/lifecycle families and three checkpoint orders; histories retain
+real invocation intervals. Readers refuse unknown families/versions, duplicate fields or IDs,
+impossible intervals and byte/work limits. A legal partial order is required; search exhaustion
+is a distinct failure, and overlapping executions need not choose identical winners.
+
+The local extended qualification receipt uses schema
+`hydracache.imap.extended-qualification.v1` and
+`docs/testing/imap/0.75/schemas/extended-qualification.schema.json`. It is limited to 256 KiB
+and explicit `local_actual_owner_qualification` scope with production disabled. It binds clean
+source, bounded corpus/transcripts, copied Rust executable and Java classpath artifacts, runtime
+fingerprints/Java launcher hash, eight process defects and deterministic shrink consumption.
+Verification binds retained snapshots to trusted current runners/classes and reexecutes only
+those trusted current peers and controls, never receipt-selected executables. Changed, aliased,
+missing or out-of-root artifacts fail. Windows process-count capability is explicit; the Linux inherited
+process-group scope records a null process-count limit and refuses a requested nonzero cap.
+Proof launch removes inherited Java/native-loader injection options; source/build writers must
+remain stable while pre/post artifact identities are checked. These are scoped local controls,
+not sealing against hostile transient replacement or a general sandbox. This is development
+evidence, not a product protocol, persistent service image or ship receipt.
+Typed entry views, helper futures, progress queries and scoped transfer controls remain runtime
+APIs; the 40 core operation IDs and production HC/1/HC/2 identities do not change.
+
 The 0.75 migration corpus uses `fixture_version = 1` for bounded development
 staging/dry-run readers only. Runtime replica images preserve logical incarnation
 within the test cluster and have no persisted reader or production transport

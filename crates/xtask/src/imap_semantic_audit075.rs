@@ -16,6 +16,9 @@ pub struct SemanticSources<'a> {
     pub signature_tests: &'a str,
     pub java_service: &'a str,
     pub rust_service: &'a str,
+    pub rust_entry_views: &'a str,
+    pub java_entry_view_tests: &'a str,
+    pub rust_entry_view_tests: &'a str,
 }
 
 pub fn run(args: Vec<String>) -> Result<()> {
@@ -26,7 +29,7 @@ pub fn run(args: Vec<String>) -> Result<()> {
     if !problems.is_empty() {
         return Err(problems.join("; ").into());
     }
-    println!("imap-semantic-audit 0.75: OK (40 local operations, 7 helper families, 8 adapted map expectations; provisional shape guard, not SDK/ABI/production admission)");
+    println!("imap-semantic-audit 0.75: OK (40 local operations, 8 helper families, 8 adapted map expectations; provisional shape guard, not SDK/ABI/production admission)");
     Ok(())
 }
 pub fn check_at_root(root: &Path, release: &str) -> Result<Vec<String>> {
@@ -46,6 +49,11 @@ pub fn check_at_root(root: &Path, release: &str) -> Result<Vec<String>> {
     let signatures = read("tests/java-imap-benchmark/src/test/java/io/hydracache/imap/semantic/IMapSemanticCompatibilityTest.java")?;
     let java = read("tests/java-imap-benchmark/src/main/java/io/hydracache/imap/semantic/UnifiedIMapService.java")?;
     let rust = read("crates/hydracache-cluster-testkit/src/value_plane_service_075.rs")?;
+    let rust_entry_views =
+        read("crates/hydracache-cluster-testkit/src/value_plane_service_entry_views_075.rs")?;
+    let java_entry_view_tests = read("tests/java-imap-benchmark/src/test/java/io/hydracache/imap/semantic/BatchEntryViewsTest.java")?;
+    let rust_entry_view_tests =
+        read("crates/hydracache-cluster-testkit/tests/value_plane_entry_views_075.rs")?;
     check_sources(&SemanticSources {
         ledger: &ledger,
         operations: &operations,
@@ -55,6 +63,9 @@ pub fn check_at_root(root: &Path, release: &str) -> Result<Vec<String>> {
         signature_tests: &signatures,
         java_service: &java,
         rust_service: &rust,
+        rust_entry_views: &rust_entry_views,
+        java_entry_view_tests: &java_entry_view_tests,
+        rust_entry_view_tests: &rust_entry_view_tests,
     })
 }
 pub fn check_sources(s: &SemanticSources<'_>) -> Result<Vec<String>> {
@@ -67,6 +78,9 @@ pub fn check_sources(s: &SemanticSources<'_>) -> Result<Vec<String>> {
         s.signature_tests,
         s.java_service,
         s.rust_service,
+        s.rust_entry_views,
+        s.java_entry_view_tests,
+        s.rust_entry_view_tests,
     ]
     .iter()
     .any(|source| source.len() > 512 * 1024)
@@ -112,7 +126,14 @@ pub fn check_sources(s: &SemanticSources<'_>) -> Result<Vec<String>> {
     if rows(s.ledger, "core:")? != ids {
         problems.push("core method ledger differs from operation contract".into());
     }
-    if rows(s.ledger, "helper:")? != LIFECYCLE_FEATURES.iter().map(|id| (*id).into()).collect() {
+    let helpers = LIFECYCLE_FEATURES
+        .iter()
+        .map(|id| (*id).into())
+        .collect::<BTreeSet<String>>();
+    if helpers.len() != 8
+        || !helpers.contains("bounded_batch_entry_views")
+        || rows(s.ledger, "helper:")? != helpers
+    {
         problems.push("typed helper ledger differs from actual local families".into());
     }
     let adapter = crate::imap_capability_audit::clean(s.adapter)?;
@@ -142,6 +163,9 @@ pub fn check_sources(s: &SemanticSources<'_>) -> Result<Vec<String>> {
         "io.grpc",
         "filtersAndTypedHelpersPreserveBinaryPrefixExactAndNullRules",
         "ttlUpdatePreserveIsRejectedBeforeExpiryAndRetainedIdentityAdmission",
+        "entryViews",
+        "UnifiedIMapService.VersionedEntryView.class.getRecordComponents()",
+        "IMapLocalHelper.EntryViews.class.getRecordComponents()",
     ] {
         if !signatures.contains(marker) {
             problems.push(format!("missing executable shape/semantic check {marker}"));
@@ -195,6 +219,67 @@ pub fn check_sources(s: &SemanticSources<'_>) -> Result<Vec<String>> {
         for marker in markers {
             if !source.contains(marker) {
                 problems.push(format!("{language} listener filter shape drift: {marker}"));
+            }
+        }
+    }
+    let java_entry_views = java.split_whitespace().collect::<String>();
+    let rust_entry_views = crate::imap_capability_audit::clean(s.rust_entry_views)?
+        .split_whitespace()
+        .collect::<String>();
+    for (language, source, markers) in [
+        (
+            "Java",
+            java_entry_views.as_str(),
+            [
+                "publicList<VersionedEntryView>entryViews(",
+                "publicrecordVersionedEntryView",
+                "Optional<VersionToken>token",
+            ],
+        ),
+        (
+            "Rust",
+            rust_entry_views.as_str(),
+            [
+                "pubfnentry_views(",
+                "pubstructVersionedEntryView",
+                "pubtoken:Option<VersionToken>",
+            ],
+        ),
+    ] {
+        for marker in markers {
+            if !source.contains(marker) {
+                problems.push(format!(
+                    "{language} bounded entry-view shape drift: {marker}"
+                ));
+            }
+        }
+    }
+    for (language, source, names) in [
+        (
+            "Java",
+            s.java_entry_view_tests,
+            [
+                "orderedViewsIncludeAbsentDuplicateEntriesAndUsableFullTokens",
+                "fullBatchBudgetsRejectBeforeTimeEventsAndOwnersChange",
+                "asynchronousViewsFreezeKeysAndRemainReadHelpersWithoutMutationIdentity",
+            ],
+        ),
+        (
+            "Rust",
+            s.rust_entry_view_tests,
+            [
+                "batch_entry_views_preserve_order_absence_duplicates_ttl_and_full_tokens",
+                "batch_entry_view_bounds_reject_before_clock_expiry_events_or_receipts_change",
+                "async_entry_views_are_lazy_bounded_read_helpers_without_retained_receipts",
+            ],
+        ),
+    ] {
+        let source = crate::imap_capability_audit::clean(source)?;
+        for name in names {
+            if !source.contains(name) || !s.ledger.contains(name) {
+                problems.push(format!(
+                    "missing {language} bounded entry-view evidence {name}"
+                ));
             }
         }
     }

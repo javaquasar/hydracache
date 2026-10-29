@@ -1,6 +1,9 @@
 //! Online, runtime-only transfer of actual owner decisions. The initial snapshot is followed
 //! by sparse record, outcome and retirement decisions, never reevaluated commands.
 use super::*;
+#[path = "value_plane_service_cluster_transfer_controls_075.rs"]
+mod controls;
+pub use controls::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TransferComponent {
@@ -256,6 +259,7 @@ impl ServiceClusterHarness {
                 target,
                 OnlineTransferOptions::default(),
                 purpose,
+                0,
             );
             match started {
                 Ok(id) => id,
@@ -484,7 +488,7 @@ impl ServiceClusterHarness {
         target: &str,
         options: OnlineTransferOptions,
     ) -> Result<u64, ServiceClusterError> {
-        self.begin_online_transfer_for(p, target, options, OnlineTransferPurpose::OwnerMove)
+        self.begin_online_transfer_for(p, target, options, OnlineTransferPurpose::OwnerMove, 0)
     }
     pub fn begin_online_backup_repair(
         &mut self,
@@ -492,7 +496,7 @@ impl ServiceClusterHarness {
         target: &str,
         options: OnlineTransferOptions,
     ) -> Result<u64, ServiceClusterError> {
-        self.begin_online_transfer_for(p, target, options, OnlineTransferPurpose::BackupRepair)
+        self.begin_online_transfer_for(p, target, options, OnlineTransferPurpose::BackupRepair, 0)
     }
     fn begin_online_transfer_for(
         &mut self,
@@ -500,6 +504,7 @@ impl ServiceClusterHarness {
         target: &str,
         options: OnlineTransferOptions,
         purpose: OnlineTransferPurpose,
+        rollback_bytes: usize,
     ) -> Result<u64, ServiceClusterError> {
         self.ensure_namespace()?;
         self.require_live(target)?;
@@ -535,7 +540,9 @@ impl ServiceClusterHarness {
             .transfers
             .values()
             .map(OnlineTransferState::resident_bytes)
-            .sum::<usize>();
+            .sum::<usize>()
+            .checked_add(rollback_bytes)
+            .ok_or(ServiceClusterError::InvalidBound)?;
         let mut admission = 384usize;
         for component in [TransferComponent::Data, TransferComponent::Journal] {
             let source = self.service(&route.owner, p, component == TransferComponent::Journal)?;
@@ -618,7 +625,9 @@ impl ServiceClusterHarness {
             .transfers
             .values()
             .map(OnlineTransferState::resident_bytes)
-            .sum::<usize>();
+            .sum::<usize>()
+            .checked_add(rollback_bytes)
+            .ok_or(ServiceClusterError::InvalidBound)?;
         if used.saturating_add(state.resident_bytes()) > self.runtime.limits.max_transfer_bytes {
             return Err(MapServiceError::ResourceBudget("transfer_staging").into());
         }
@@ -1127,6 +1136,8 @@ impl ServiceClusterHarness {
         state.held.clear();
         state.deltas.clear();
         state.applied.clear();
+        state.unacked_chunk = None;
+        state.unacked_delta = None;
         Ok(())
     }
     pub fn cleanup_online_transfer(&mut self, id: u64) -> Result<bool, ServiceClusterError> {

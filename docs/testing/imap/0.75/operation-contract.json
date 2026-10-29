@@ -17,6 +17,35 @@
       {"id":"cursor_iterator_adapters","cancellation":"stop_fetching_and_release_buffer","test_ids":["imap075::iterator_rust::lazy_stale_cursor","imap075::iterator_java::lazy_stale_cursor"]}
     ],
     "unsupported_families": ["remote_entry_processor","remote_predicate","remote_interceptor","distributed_transaction","unbounded_scan"],
+    "bounded_evolution": {
+      "scope": "local_actual_owners_and_process_evidence",
+      "properties": {
+        "entry_views": "ordered_indexed_full_tokens_duplicates_absence_ttl_whole_response_preflight",
+        "helper_futures": "actual_root_child_receipts_cancellation_drop_and_monotonic_certainty",
+        "retry": "read_helper_retry_parks_physical_permits_retains_identity_deadline_epoch_grants",
+        "helper_progress": "read_only_exact_digest_root_child_outcomes_proofs_bounded_safety_lane",
+        "transfer_controls": "authenticated_scoped_abort_cleanup_restart_with_epoch_and_owner_fences",
+        "histories": "independent_legal_partial_order_search_with_actual_process_canaries",
+        "processes": "shared_io_deadline_nonblocking_pipes_platform_scoped_limits_and_owned_cleanup",
+        "receipts": "self_contained_snapshots_bound_to_trusted_current_runners_source_runtime_and_replayed_controls"
+      },
+      "test_ids": [
+        "imap075::batch_views::full_tokens",
+        "imap075::batch_views_java::token_scope",
+        "imap075::helper_futures::certainty",
+        "imap075::capacity_read_retry::park",
+        "imap075::capacity_helper_retry::receipt",
+        "imap075::helper_progress::readonly",
+        "imap075::transfer_controls::scoped",
+        "imap075::extended_histories::workers",
+        "imap075::extended_histories_java::legal_orders",
+        "imap075::extended_history_canary::broken_owner",
+        "imap075::proof_process::descendants",
+        "imap075::proof_process_deadline::io",
+        "imap075::proof_process_count::explicit_capability",
+        "imap075::extended_receipts::actual_replay"
+      ]
+    },
     "cluster_evolution": {
       "scope":"local_actual_cluster_and_java_reference",
       "properties": {
