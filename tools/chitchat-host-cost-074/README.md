@@ -48,3 +48,18 @@ source/effects and commit the caller. After completion, collect the same attempt
 retain raw pre/postflight/command/ownership/body evidence, update the report,
 README/closure/article and run byte/doc/performance-contract checks. No automatic
 deletion, retry-to-pass, 6h/24h qualification or product-performance claim.
+
+The first native B child exits0 and returns all30 original semantic rows, but
+the carrier session refuses NameError(FIELDS): the extracted unchanged validate
+function's field-set globals were not bound. Preserve that first root/result and
+postflight; do not promote its body to a whole-session pass. The r1 carrier binds
+only FIELDS/HEAP literal tuples from the already hash-pinned original analyzer
+source. It does not execute that source module or change any predicate/limit.
+Full healthy-body and incomplete/nonliteral/duplicate-global controls cover the
+previously missed branch; the WSL clock refusal remains a refusal.
+
+revise.py prepares a separate manifest/root and a two-file patch (runner+manifest).
+It copies the original immutable input graph into a new private root, proves
+the patched inodes differ, preserves the first source and logs, and reuses only
+exact binary/source/vendor bytes. A fresh preflight and one new dispatch latch
+are required; there is no same-root retry or substitution of prior results.

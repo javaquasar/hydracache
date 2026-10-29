@@ -86,5 +86,17 @@ class Controls(unittest.TestCase):
         self.assertNotIn('systemctl stop',raw);self.assertNotIn('clock_settime',raw)
         self.assertNotIn('retry=True',raw)
 
+    def test_complete_healthy_body_covers_validator_global_closure(self):
+        body=json.loads((prepare.OUT/'collection/control-B/raw-body.json').read_bytes())
+        remote.validator(prepare.OUT/'prepared')(body,'B','control')
+        self.assertFalse(json.loads((prepare.OUT/'collection/result.json').read_bytes())['complete'])
+        self.assertEqual(json.loads((prepare.OUT/'collection/session-result.json').read_bytes())['first_refusal']['reason'],"name 'FIELDS' is not defined")
+
+    def test_validator_globals_are_only_complete_literal_data(self):
+        raw=(ROOT/'tools/chitchat-cost-074/analyze.py').read_bytes();values=remote.validation_constants(raw)
+        self.assertEqual(set(values),{'FIELDS','HEAP'});self.assertEqual(len(values['FIELDS']),4);self.assertEqual(len(values['HEAP']),10)
+        for bad in (b'FIELDS=("rss",)',b'FIELDS=("rss",)\nHEAP=__import__("os").system("false")',b'FIELDS=("rss",)\nHEAP=("arena",)\nFIELDS=("pss",)'):
+            with self.assertRaises((ValueError,TypeError)):remote.validation_constants(bad)
+
 
 if __name__=='__main__':unittest.main()

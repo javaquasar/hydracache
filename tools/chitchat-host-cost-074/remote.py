@@ -1,5 +1,6 @@
 """One autonomous dedicated-host CONTROL session; no numerical dispatcher."""
 import hashlib
+import ast
 import importlib.util
 import json
 import math
@@ -82,9 +83,21 @@ def stable(root,manifest,host):
     return state
 
 
+def validation_constants(raw):
+    result={}
+    for node in ast.parse(raw).body:
+        if isinstance(node,ast.Assign) and len(node.targets)==1 and isinstance(node.targets[0],ast.Name) and node.targets[0].id in ('FIELDS','HEAP'):
+            name=node.targets[0].id;need(name not in result,'unique validator global')
+            value=ast.literal_eval(node.value)
+            need(type(value) is tuple and value and all(type(v) is str for v in value) and len(value)==len(set(value)),'literal original field names')
+            result[name]=value
+    need(set(result)=={'FIELDS','HEAP'},'complete original validator global closure');return result
+
+
 def validator(root):
     namespace=dict(json=json,c=types.SimpleNamespace(BASE=root/'input/semantics',need=need,
         protocol=lambda:json.loads((root/'input/protocol.json').read_bytes())))
+    namespace.update(validation_constants((root/'input/source/tools/chitchat-cost-074/analyze.py').read_bytes()))
     exec(compile((root/'input/validate_function.py').read_bytes(),'validate_function.py','exec'),namespace)
     return namespace['validate']
 
