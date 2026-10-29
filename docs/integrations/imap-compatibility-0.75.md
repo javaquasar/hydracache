@@ -136,6 +136,14 @@ unknown token labels and unsupported capabilities are rejected before executing 
 Actual dropped-event, reordered-bulk, wrong-TTL/token/time/owner canaries must fail. Snapshot
 handles have explicit hold/close actions; an adapter restore requires them to be closed.
 
+The bounded `imap-extended-semantic-v2` interchange now runs this grammar through separate
+Rust and Java actual-owner executable peers. Both transcripts are compared to the independent
+Java model, including every result/state/TTL/event/token relation and retained-owner count.
+Seven Java adapter defects and a Rust drained-event defect must fail the process checker;
+the Rust defect additionally exercises bounded shrink, content-addressed retention and replay.
+Use `cargo xtask imap-extended-differential --release 0.75 --script <retained.tsv>` to replay.
+These are development process controls, not real-daemon cluster qualification.
+
 Canonical semantic fingerprints use `v2:<sha256>`, including TTL, length framing, counts and
 optional-value presence. Legacy identities require explicit migration with the original bounded
 scenario; no silent reader fallback is allowed. See `docs/COMPAT.md` for the exact development

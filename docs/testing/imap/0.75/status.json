@@ -93,7 +93,15 @@
       "bounded_authenticated_replay_window",
       "typed_local_and_cluster_async",
       "sparse_runtime_replica_deltas",
-      "extended_independent_semantic_oracle"
+      "extended_independent_semantic_oracle",
+      "clustered_read_futures",
+      "authenticated_cluster_typed_helpers",
+      "bounded_opt_in_cluster_retry",
+      "namespace_policy_revocation",
+      "stepped_online_repair_and_drain",
+      "pre_mutation_delta_credit_backpressure",
+      "paginated_redacted_invocation_diagnostics",
+      "common_v2_rust_java_actual_owner_corpus"
     ],
     "deferred": [
       "production_backend_and_partition_ownership",

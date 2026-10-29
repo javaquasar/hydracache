@@ -220,6 +220,14 @@ evidence.
 
 ### Provisional safe-foundation progress
 
+The clustered API evolution tranche adds read futures without mutation reservations, typed
+version-bulk/query/retirement/expiry dispatch through actual owners, bounded opt-in retries,
+namespace-specific revocation, stepped online Repair/Drain, delta credits before mutation and
+redacted paginated invocation diagnostics. A common bounded v2 corpus runs actual Rust and Java
+peers against the independent Java model, with process defects, signed-clock/Unicode boundary
+fixtures and bounded valid-reference shrink/replay. Its eight local contracts have distinct
+executable anchors in `api_extensions.cluster_evolution`; production routing stays disabled.
+
 The next request-evolution tranche adds framed semantic fingerprints and bounded shrinking,
 immutable Java requests, invocation-bound permits, scoped operation policy, fenced replay-window
 retirement, typed local/cluster async lifecycles, sparse decision deltas and an independent
@@ -235,7 +243,7 @@ extend the independent proofs. Rust/Java prefix/exact filters, typed preconditio
 Java semantic SPI now use the actual unified owner. These remain local/runtime foundations;
 none closes the production D4-D16 gates or supplies process/network/durable qualification.
 
-As of 2026-10-28, branch `feat/0.75-distributed-imap-foundation` contains only work that is
+As of 2026-10-29, branch `feat/0.75-distributed-imap-foundation` contains only work that is
 independent of the unfinished 0.74 production shape:
 
 - a provisional, machine-checked W0 registry for operations, results, errors, TTL, bounds, surface

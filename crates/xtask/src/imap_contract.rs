@@ -160,6 +160,7 @@ struct ApiExtensions {
     release_preparation: ReleasePreparationContract,
     cluster_integration: ClusterIntegrationContract,
     runtime_evolution: ClusterIntegrationContract,
+    cluster_evolution: ClusterIntegrationContract,
 }
 
 #[derive(Debug, Deserialize)]
@@ -823,6 +824,14 @@ fn validate_test_registry(
             .map(String::as_str),
     );
     claimed.extend(
+        operations
+            .api_extensions
+            .cluster_evolution
+            .test_ids
+            .iter()
+            .map(String::as_str),
+    );
+    claimed.extend(
         surfaces
             .surfaces
             .iter()
@@ -1101,7 +1110,52 @@ fn validate_operations(
     validate_release_preparation(&contract.api_extensions.release_preparation, problems);
     validate_cluster_integration(&contract.api_extensions.cluster_integration, problems);
     validate_runtime_evolution(&contract.api_extensions.runtime_evolution, problems);
+    validate_cluster_evolution(&contract.api_extensions.cluster_evolution, problems);
     operation_ids
+}
+
+fn validate_cluster_evolution(contract: &ClusterIntegrationContract, problems: &mut Vec<String>) {
+    let expected = [
+        ("reads","authenticated_read_futures_without_mutation_reservations"),
+        ("helpers","actual_owners_ordered_typed_receipts_and_backup_proofs"),
+        ("retry","bounded_opt_in_same_identity_receipt_deadline_preserves_explicit_epoch"),
+        ("policy","namespace_scoped_monotonic_revocation_without_cross_namespace_cancellation"),
+        ("maintenance","repair_drain_permits_retain_bounded_online_transfer_progress"),
+        ("backpressure","delta_byte_and_count_credit_before_owner_or_journal_mutation_resumable_after_apply"),
+        ("diagnostics","authenticated_redacted_bounded_pages_with_scope_revision_fences"),
+        ("corpus","bounded_common_v2_actual_rust_java_against_independent_java_oracle_and_process_canaries"),
+    ].into_iter().map(|(k,v)|(k.to_owned(),v.to_owned())).collect::<BTreeMap<_,_>>();
+    let required = [
+        "imap075::cluster_reads::no_reservation",
+        "imap075::cluster_helpers::owners",
+        "imap075::cluster_retry::certainty",
+        "imap075::namespace_revocation::isolation",
+        "imap075::stepped_maintenance::progress",
+        "imap075::delta_backpressure::before_apply",
+        "imap075::invocation_diagnostics::redaction",
+        "imap075::extended_corpus_rust::canonical",
+        "imap075::extended_corpus_java::oracle",
+        "imap075::extended_process::canaries",
+    ]
+    .into_iter()
+    .collect::<BTreeSet<_>>();
+    let actual = contract
+        .test_ids
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    if contract.scope != "local_actual_cluster_and_java_reference"
+        || contract.properties != expected
+    {
+        problems.push(
+            "IMap cluster evolution must preserve all eight bounded local-only contracts".into(),
+        );
+    }
+    if actual != required || actual.len() != contract.test_ids.len() {
+        problems.push(
+            "IMap cluster evolution requires distinct executable proofs for all eight items".into(),
+        );
+    }
 }
 
 fn validate_runtime_evolution(contract: &ClusterIntegrationContract, problems: &mut Vec<String>) {

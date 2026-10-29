@@ -824,3 +824,56 @@ fn runtime_evolution_rejects_weakened_identity_policy_async_delta_and_oracle_con
     });
     assert!(xtask::imap_contract::check_contract_dir(temp.path()).is_err());
 }
+
+#[test]
+fn cluster_evolution_rejects_weakened_reads_retry_scope_transfer_credit_diagnostics_and_corpus() {
+    for field in [
+        "reads",
+        "helpers",
+        "retry",
+        "policy",
+        "maintenance",
+        "backpressure",
+        "diagnostics",
+        "corpus",
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |contract| {
+            contract["api_extensions"]["cluster_evolution"]["properties"][field] =
+                serde_json::json!("unbounded_or_unproved")
+        });
+        assert!(
+            problems(&temp)
+                .iter()
+                .any(|p| p.starts_with("IMap cluster evolution")),
+            "{field}"
+        );
+    }
+    for (field, value) in [
+        ("scope", serde_json::json!("production")),
+        ("test_ids", serde_json::json!([])),
+        (
+            "test_ids",
+            serde_json::json!([
+                "imap075::cluster_reads::no_reservation",
+                "imap075::cluster_reads::no_reservation"
+            ]),
+        ),
+    ] {
+        let temp = fixture();
+        edit(&temp.path().join("operation-contract.json"), |c| {
+            c["api_extensions"]["cluster_evolution"][field] = value
+        });
+        assert!(problems(&temp)
+            .iter()
+            .any(|p| p.starts_with("IMap cluster evolution")));
+    }
+    let temp = fixture();
+    edit(&temp.path().join("operation-contract.json"), |c| {
+        c["api_extensions"]
+            .as_object_mut()
+            .unwrap()
+            .remove("cluster_evolution");
+    });
+    assert!(xtask::imap_contract::check_contract_dir(temp.path()).is_err());
+}

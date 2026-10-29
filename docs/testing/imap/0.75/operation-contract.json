@@ -17,6 +17,20 @@
       {"id":"cursor_iterator_adapters","cancellation":"stop_fetching_and_release_buffer","test_ids":["imap075::iterator_rust::lazy_stale_cursor","imap075::iterator_java::lazy_stale_cursor"]}
     ],
     "unsupported_families": ["remote_entry_processor","remote_predicate","remote_interceptor","distributed_transaction","unbounded_scan"],
+    "cluster_evolution": {
+      "scope":"local_actual_cluster_and_java_reference",
+      "properties": {
+        "reads":"authenticated_read_futures_without_mutation_reservations",
+        "helpers":"actual_owners_ordered_typed_receipts_and_backup_proofs",
+        "retry":"bounded_opt_in_same_identity_receipt_deadline_preserves_explicit_epoch",
+        "policy":"namespace_scoped_monotonic_revocation_without_cross_namespace_cancellation",
+        "maintenance":"repair_drain_permits_retain_bounded_online_transfer_progress",
+        "backpressure":"delta_byte_and_count_credit_before_owner_or_journal_mutation_resumable_after_apply",
+        "diagnostics":"authenticated_redacted_bounded_pages_with_scope_revision_fences",
+        "corpus":"bounded_common_v2_actual_rust_java_against_independent_java_oracle_and_process_canaries"
+      },
+      "test_ids":["imap075::cluster_reads::no_reservation","imap075::cluster_helpers::owners","imap075::cluster_retry::certainty","imap075::namespace_revocation::isolation","imap075::stepped_maintenance::progress","imap075::delta_backpressure::before_apply","imap075::invocation_diagnostics::redaction","imap075::extended_corpus_rust::canonical","imap075::extended_corpus_java::oracle","imap075::extended_process::canaries"]
+    },
     "runtime_evolution": {
       "scope":"local_testkit_and_java_reference",
       "properties": {

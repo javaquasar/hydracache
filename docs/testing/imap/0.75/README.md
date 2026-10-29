@@ -159,8 +159,9 @@ owner decisions reach staging. A bounded cursor retains key/record/receipt finge
 fences; deltas carry only changed stored records, deletes, original outcomes, retirement fences
 and authoritative TTL/version metadata. Borrowed preflight measures the sparse payload before
 cloning. Checksum/order/resume and source/staging stamp
-equality fence final cutover. Pending roots or exhausted capture bounds require backpressure
-or explicit restart; a confirmed source write is never silently dropped.
+equality fence final cutover. Pending roots pause unsafe cuts; exhausted count/byte credits
+backpressure before source mutation and resume after delta application. Epoch/corruption
+failures require explicit restart; a confirmed source write is never silently dropped.
 
 The request-evolution tranche keeps one immutable Java `RequestSnapshot` from validation through
 digest/admission and execution; builders remain caller-thread-confined. Held cluster permits bind
@@ -257,3 +258,33 @@ cargo xtask imap-hazelcast-source-check --release 0.75
 Passing these gates means only that the foundation is internally consistent. Production routing,
 backend activation, final protocol identities, performance claims, and release admission remain
 blocked by the dependencies recorded in `status.json`.
+
+## Clustered API evolution
+
+The same authenticated registry now offers cooperative read futures without mutation-root
+reservations, actual-cluster typed version bulk/outcome/retirement/expiry helpers and bounded
+opt-in mutation retries. Retry attempts retain the original command identity, admission receipt
+and deadline; an explicit expected epoch is never refreshed. Namespace policy epochs revoke
+queued calls, active attempts and streams in that namespace without cancelling another map.
+The global revocation API remains available and must advance beyond every effective epoch.
+
+Repair and online drain can advance bounded chunks/deltas under Repair-lane permits and retain
+their staging/progress between steps. Delta count and byte credits are reserved before owner
+or journal mutation. Applying acknowledged deltas frees credit for a later foreground retry;
+epoch changes or corrupt state still require explicit restart. Pending roots block an unsafe
+snapshot cut. Invocation diagnostics page real phases, remaining deadlines, owned credits and
+fixed blocking reasons; opaque cursors bind scope, generation, policy and observed state. They
+require Admin authorization and expose no key/value/client/tenant credentials.
+
+The shared v2 corpus executes all 23 extended actions on actual Rust and Java services against
+the independent Java model, including pending roots, stale tokens, ordered mixed bulk results,
+retirement, listener leases and restore. Normal correctness/CI runs include this check and eight
+real process fault controls. DTO preflight, process time/output bounds, closed JSON shapes and
+bounded reference-preserving shrink/replay are mandatory. Retained scripts live under
+`target/imap-075/differential-failures` and are content-addressed without overwriting conflicts.
+
+```powershell
+cargo build -p hydracache-cluster-testkit --bin imap-extended-owner-075 --locked
+cargo xtask imap-extended-differential --release 0.75 --seed 117
+cargo xtask imap-extended-differential --release 0.75 --script target/imap-075/differential-failures/<retained-script>.tsv
+```
