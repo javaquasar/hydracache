@@ -1,0 +1,47 @@
+[package]
+name = "chitchat"
+version = "0.11.1"
+edition = "2024"
+license = "MIT"
+authors = ["Quickwit, Inc. <hello@quickwit.io>"]
+description = "Cluster membership library using gossip with Scuttlebutt reconciliation."
+repository = "https://github.com/quickwit-oss/chitchat"
+rust-version = "1.86"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.51"
+async-trait = "0.1"
+bytes = "1"
+itertools = "0.14"
+lru = "0.17"
+rand = "0.10"
+serde = { version = "1", features = ["derive", "rc"] }
+tokio = { version = "1.28.0", features = [
+    "net",
+    "sync",
+    "rt-multi-thread",
+    "macros",
+    "time",
+] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", optional = true }
+zstd = "0.13"
+
+[dev-dependencies]
+assert-json-diff = "2"
+chitchat = { path = ".", features = ["testsuite"] }
+proptest = "1.4"
+tokio = { version = "1.28.0", features = [
+    "net",
+    "sync",
+    "rt-multi-thread",
+    "macros",
+    "test-util",
+    "time",
+] }
+
+[features]
+testsuite = ["tracing-subscriber"]

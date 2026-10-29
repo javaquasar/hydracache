@@ -1,0 +1,13 @@
+test_actual_negative_preserves_scope_and_first_result (test_analysis.Accounting.test_actual_negative_preserves_scope_and_first_result) ... ok
+test_equal_component_counts_do_not_promote_other_gates (test_analysis.Accounting.test_equal_component_counts_do_not_promote_other_gates) ... ok
+test_every_predeclared_allocation_field_refuses (test_analysis.Accounting.test_every_predeclared_allocation_field_refuses) ... ok
+test_individual_capacity_growth_refuses (test_analysis.Accounting.test_individual_capacity_growth_refuses) ... ok
+test_partial_reordered_payload_budget_or_semantics_refuse (test_analysis.Accounting.test_partial_reordered_payload_budget_or_semantics_refuse) ... ok
+test_production_methods_and_old_observer_are_unchanged (test_analysis.Accounting.test_production_methods_and_old_observer_are_unchanged) ... ok
+test_repeatability_and_observer_failures_refuse (test_analysis.Accounting.test_repeatability_and_observer_failures_refuse) ... ok
+test_same_budget_after_exact_tail_must_reject_at_old_floor (test_analysis.Accounting.test_same_budget_after_exact_tail_must_reject_at_old_floor) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 1.218s
+
+OK

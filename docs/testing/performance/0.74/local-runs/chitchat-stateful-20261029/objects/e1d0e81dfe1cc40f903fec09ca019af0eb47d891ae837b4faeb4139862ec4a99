@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "check",
+    "--offline",
+    "--locked",
+    "--release",
+    "--target",
+    "x86_64-unknown-linux-gnu",
+    "--manifest-path",
+    "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/source-root-stateful/target/chitchat-stateful-20261029/fixtures/P/Cargo.toml",
+    "--target-dir",
+    "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/stateful-targets/P",
+    "--all-targets",
+    "--all-features"
+  ],
+  "deadline": 2046.2840431089999,
+  "frame": "97db89d219cdc9fbdfdcb10deabfebb3ba313f9d839d8a7d7cea56c617c777e0",
+  "retry": false
+}

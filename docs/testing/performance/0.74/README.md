@@ -7561,3 +7561,13 @@ check/strict Clippy peers and six offline controls pass. Q is allocation-subgate
 cached multi-append retention, MSRV/Windows, CPU/RSS, distribution/Root adoption
 and the existing execution/recovery/enrollment/rehearsal gates remain open. Both
 first runner refusals and P's prior negative result are preserved.
+
+The [Q stateful component gate](chitchat-stateful-result-20261029.md) is negative:
+one B/P/Q/Q/P/B cohort repeats all nine scenarios, but four comparable budget-changing
+continuations add a compression pass and two refusal paths retain greater output
+capacity than P. Runtime bodies and old tests remain unchanged; 24 native selected
+executions, three check/strict-Clippy pairs and eight offline controls pass. This
+does not establish a production regression: the actual DeltaSerializer has a fixed
+MTU and stop-on-false, and cached continuation under the same budget is rejected
+by the existing early floor. Q remains unadopted; preserve both results and finish
+the separate exact fixed-caller applicability gate before any acceptance/CPU/RSS.

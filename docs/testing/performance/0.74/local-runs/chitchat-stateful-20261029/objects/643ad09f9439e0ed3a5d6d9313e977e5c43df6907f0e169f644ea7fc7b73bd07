@@ -1,0 +1,452 @@
+{
+  "CPU_qualified": false,
+  "MSRV_qualified": false,
+  "RSS_qualified": false,
+  "Windows_qualified": false,
+  "allocation_changes": [
+    {
+      "delta": {
+        "allocs": 2,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 26512
+      },
+      "name": "continue-roomy",
+      "peer": "B",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": 2,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 26512
+      },
+      "name": "cheap-refusal-continue",
+      "peer": "B",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": 2,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 26512
+      },
+      "name": "continue-tight-twice",
+      "peer": "B",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": 2,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 26512
+      },
+      "name": "repeated-cheap-refusal",
+      "peer": "B",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 0,
+        "reallocs": 0,
+        "requested": -158
+      },
+      "name": "immediate-exact-tail",
+      "peer": "P",
+      "scope": "logical"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -158
+      },
+      "name": "immediate-exact-tail",
+      "peer": "P",
+      "scope": "physical"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -79776
+      },
+      "name": "immediate-exact-tail",
+      "peer": "P",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 0,
+        "reallocs": 0,
+        "requested": -158
+      },
+      "name": "continue-roomy",
+      "peer": "P",
+      "scope": "logical"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -158
+      },
+      "name": "continue-roomy",
+      "peer": "P",
+      "scope": "physical"
+    },
+    {
+      "delta": {
+        "allocs": -4,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -53264
+      },
+      "name": "continue-roomy",
+      "peer": "P",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 0,
+        "reallocs": 0,
+        "requested": -158
+      },
+      "name": "cheap-refusal-continue",
+      "peer": "P",
+      "scope": "logical"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -158
+      },
+      "name": "cheap-refusal-continue",
+      "peer": "P",
+      "scope": "physical"
+    },
+    {
+      "delta": {
+        "allocs": -4,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -53264
+      },
+      "name": "cheap-refusal-continue",
+      "peer": "P",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 7936,
+        "reallocs": 5,
+        "requested": 15714
+      },
+      "name": "effectful-refusal-continue",
+      "peer": "P",
+      "scope": "logical"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 7936,
+        "realloc_calls": 5,
+        "requested": 15714
+      },
+      "name": "effectful-refusal-continue",
+      "peer": "P",
+      "scope": "physical"
+    },
+    {
+      "delta": {
+        "allocs": -4,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -53264
+      },
+      "name": "effectful-refusal-continue",
+      "peer": "P",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 0,
+        "reallocs": 0,
+        "requested": -158
+      },
+      "name": "continue-tight-twice",
+      "peer": "P",
+      "scope": "logical"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -158
+      },
+      "name": "continue-tight-twice",
+      "peer": "P",
+      "scope": "physical"
+    },
+    {
+      "delta": {
+        "allocs": -4,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -53264
+      },
+      "name": "continue-tight-twice",
+      "peer": "P",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 0,
+        "reallocs": 0,
+        "requested": -158
+      },
+      "name": "repeated-cheap-refusal",
+      "peer": "P",
+      "scope": "logical"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -158
+      },
+      "name": "repeated-cheap-refusal",
+      "peer": "P",
+      "scope": "physical"
+    },
+    {
+      "delta": {
+        "allocs": -4,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -53264
+      },
+      "name": "repeated-cheap-refusal",
+      "peer": "P",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": -3,
+        "peak": 0,
+        "reallocs": 0,
+        "requested": -79
+      },
+      "name": "accepted-multiblock",
+      "peer": "P",
+      "scope": "logical"
+    },
+    {
+      "delta": {
+        "allocs": -3,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -79
+      },
+      "name": "accepted-multiblock",
+      "peer": "P",
+      "scope": "physical"
+    },
+    {
+      "delta": {
+        "allocs": -10,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": -194433
+      },
+      "name": "accepted-multiblock",
+      "peer": "P",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": 0,
+        "peak": 192,
+        "reallocs": 2,
+        "requested": 384
+      },
+      "name": "effectful-refusal-no-cache",
+      "peer": "P",
+      "scope": "logical"
+    },
+    {
+      "delta": {
+        "allocs": 0,
+        "peak": 192,
+        "realloc_calls": 2,
+        "requested": 384
+      },
+      "name": "effectful-refusal-no-cache",
+      "peer": "P",
+      "scope": "physical"
+    }
+  ],
+  "allocation_regressions": [
+    {
+      "delta": {
+        "allocs": 2,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 26512
+      },
+      "name": "continue-roomy",
+      "peer": "B",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": 2,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 26512
+      },
+      "name": "cheap-refusal-continue",
+      "peer": "B",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": 2,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 26512
+      },
+      "name": "continue-tight-twice",
+      "peer": "B",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": 2,
+        "peak": 0,
+        "realloc_calls": 0,
+        "requested": 26512
+      },
+      "name": "repeated-cheap-refusal",
+      "peer": "B",
+      "scope": "c"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 7936,
+        "reallocs": 5,
+        "requested": 15714
+      },
+      "name": "effectful-refusal-continue",
+      "peer": "P",
+      "scope": "logical"
+    },
+    {
+      "delta": {
+        "allocs": -6,
+        "peak": 7936,
+        "realloc_calls": 5,
+        "requested": 15714
+      },
+      "name": "effectful-refusal-continue",
+      "peer": "P",
+      "scope": "physical"
+    },
+    {
+      "delta": {
+        "allocs": 0,
+        "peak": 192,
+        "reallocs": 2,
+        "requested": 384
+      },
+      "name": "effectful-refusal-no-cache",
+      "peer": "P",
+      "scope": "logical"
+    },
+    {
+      "delta": {
+        "allocs": 0,
+        "peak": 192,
+        "realloc_calls": 2,
+        "requested": 384
+      },
+      "name": "effectful-refusal-no-cache",
+      "peer": "P",
+      "scope": "physical"
+    }
+  ],
+  "allocator_retention_qualified": false,
+  "buffer_capacity_regressions": [
+    {
+      "after": 12384,
+      "before": 4448,
+      "checkpoint": 2,
+      "name": "effectful-refusal-continue",
+      "peer": "P"
+    },
+    {
+      "after": 12384,
+      "before": 4448,
+      "checkpoint": 3,
+      "name": "effectful-refusal-continue",
+      "peer": "P"
+    },
+    {
+      "after": 404,
+      "before": 212,
+      "checkpoint": 2,
+      "name": "effectful-refusal-no-cache",
+      "peer": "P"
+    },
+    {
+      "after": 404,
+      "before": 212,
+      "checkpoint": 3,
+      "name": "effectful-refusal-no-cache",
+      "peer": "P"
+    }
+  ],
+  "comparisons": {
+    "B": 7,
+    "P": 9
+  },
+  "complete": true,
+  "component_resource_gate_pass": false,
+  "excluded_semantics": [
+    {
+      "name": "effectful-refusal-continue",
+      "peer": "B",
+      "reason": "unsafe B admission; incomparable work"
+    },
+    {
+      "name": "effectful-refusal-no-cache",
+      "peer": "B",
+      "reason": "unsafe B admission; incomparable work"
+    }
+  ],
+  "fixed_MTU_caller_qualified": false,
+  "integration_decision": "blocked-general-stream-resource-gate",
+  "observations_per_scenario_per_image": 4,
+  "processes": 6,
+  "production_regression_proved": false,
+  "release_admitted": false,
+  "root_adopted": false,
+  "scenarios": 9
+}

@@ -1,0 +1,15 @@
+{
+  "cases": [
+    "delta::cost_review::allocator_control",
+    "delta::cost_review::native_c_allocator_control",
+    "delta::cost_review::native_rust_tag_control",
+    "delta::mtu_review::supported_delta_operations",
+    "serialize::stateful_review::stateful_semantics_control",
+    "serialize::stateful_review::stateful_capacity_control"
+  ],
+  "complete": true,
+  "image": {
+    "path": "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/stateful-targets/Q/x86_64-unknown-linux-gnu/release/deps/chitchat-185f33873ca268c9",
+    "sha256": "e9c62e555a9b3c477e0890da739371bc47e2d5c6754faa185a5b1e71ebf917f9"
+  }
+}

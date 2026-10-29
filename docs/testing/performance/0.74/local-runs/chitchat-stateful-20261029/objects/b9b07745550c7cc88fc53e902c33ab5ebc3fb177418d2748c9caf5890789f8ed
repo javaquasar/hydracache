@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-chitchat-c-native-target/20261029/stateful-targets/B/x86_64-unknown-linux-gnu/release/deps/chitchat-185f33873ca268c9",
+    "serialize::stateful_review::stateful_capacity_control",
+    "--exact",
+    "--test-threads=1",
+    "--show-output",
+    "--color=never"
+  ],
+  "deadline": 1294.716870796,
+  "frame": "97db89d219cdc9fbdfdcb10deabfebb3ba313f9d839d8a7d7cea56c617c777e0",
+  "retry": false
+}

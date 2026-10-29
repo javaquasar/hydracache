@@ -656,3 +656,12 @@ and every Rust/native-C allocation field. GNU 1.94 check/strict Clippy pass. Thi
 does not adopt Root or close the three Zstd findings. Next establish cached
 multi-append retained costs, MSRV/Windows and CPU/RSS before maintained package
 distribution, actual Root policy/package/workspace gates and host admission.
+
+The next [stateful Q component gate](chitchat-stateful-result-20261029.md) records
+a resource refusal on general stream sequences: cached continuation costs and
+temporary output capacity after refusal. Both this first result and the old
+239-case pass remain. The applicability audit binds the real fixed-MTU,
+stop-on-false caller and proves same-budget cached continuation hits the existing
+early rejection floor. No actual-caller regression/pass is inferred. Next freeze
+and qualify that exact real-caller request table/closure; do not open a replacement
+hypothesis or CPU rescue, adopt Q, waive the component result or rerun old inputs.
