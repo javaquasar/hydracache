@@ -13,6 +13,7 @@ commands={
     'format':[str(rustfmt),'--edition','2024','--check','--config','skip_children=true',str(c.TOOLS/'stateful.rs'),str(c.BASE/'observer.rs'),*[str(p) for p in sorted((c.BASE/'fixtures').glob('*/src/serialize.rs'))],*[str(p) for p in sorted((c.BASE/'fixtures').glob('*/src/delta.rs'))]],
     'doc-check':[str(c.ROOT/'target/debug/xtask.exe'),'doc-check'],
     'performance-contract':[str(c.ROOT/'target/debug/xtask.exe'),'performance-contract-check','--release','0.74'],
+    'byte-verify':[sys.executable,'-B',str(c.TOOLS/'verify.py')],
 }
 c.need(mode in commands,'fixed nonmeasurement mode');argv=commands[mode]
 if len(sys.argv)==3:
