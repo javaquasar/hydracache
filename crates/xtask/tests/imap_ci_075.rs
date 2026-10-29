@@ -153,7 +153,17 @@ fn both_evidence_jobs_require_complete_unfiltered_history() {
             serde_yaml::from_str("fetch-depth: 0\nsparse-checkout: crates").unwrap(),
         ] {
             let mut workflow: serde_yaml::Value = serde_yaml::from_str(WORKFLOW).unwrap();
-            workflow["jobs"][job]["steps"][0]["with"] = weakened;
+            let checkout = workflow["jobs"][job]["steps"]
+                .as_sequence_mut()
+                .unwrap()
+                .iter_mut()
+                .find(|step| {
+                    step["uses"]
+                        .as_str()
+                        .is_some_and(|action| action.starts_with("actions/checkout@"))
+                })
+                .expect("the evidence job must contain a checkout");
+            checkout["with"] = weakened;
             let temp = tempfile::tempdir().unwrap();
             fs::create_dir_all(temp.path().join(".github/workflows")).unwrap();
             fs::write(
@@ -163,6 +173,40 @@ fn both_evidence_jobs_require_complete_unfiltered_history() {
             .unwrap();
             assert!(check_workflow(temp.path()).is_err(), "{job}");
         }
+    }
+}
+
+#[test]
+fn build_deadline_cannot_be_removed_extended_or_started_after_checkout() {
+    for mode in 0..3 {
+        let mut workflow: serde_yaml::Value = serde_yaml::from_str(WORKFLOW).unwrap();
+        let steps = workflow["jobs"]["qualification"]["steps"]
+            .as_sequence_mut()
+            .unwrap();
+        let at = steps
+            .iter()
+            .position(|step| step["name"].as_str() == Some("Qualification budget"))
+            .unwrap();
+        match mode {
+            0 => {
+                steps.remove(at);
+            }
+            1 => {
+                steps[at]["run"] = serde_yaml::Value::String("echo unbounded".into());
+            }
+            _ => {
+                let step = steps.remove(at);
+                steps.push(step);
+            }
+        }
+        let root = tempfile::tempdir().unwrap();
+        fs::create_dir_all(root.path().join(".github/workflows")).unwrap();
+        fs::write(
+            root.path().join(".github/workflows/imap-075.yml"),
+            serde_yaml::to_string(&workflow).unwrap(),
+        )
+        .unwrap();
+        assert!(check_workflow(root.path()).is_err());
     }
 }
 
@@ -327,6 +371,8 @@ fn tooling_isolates_the_live_producer_on_every_platform_and_preserves_gate_argum
                 "--test",
                 "imap_proof_process_075",
                 "--test",
+            "imap_build_process_075",
+            "--test",
                 "imap_extended_receipt_075",
                 "--test",
                 "imap_daemon_probe_075",

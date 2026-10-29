@@ -52,6 +52,16 @@ they are persisted or transmitted across processes.
 | Simulator snapshot JSON schema | `5` | `hydracache-sim` and `hydracache-sim-wasm` | Readers accept the current schema only and reject unknown future versions. Version `1` carried seed, step, logical time, nodes, links, sampled keys, real invariant verdict, and progress. Version `2` adds the 0.53 W1 election/formation fields: `formation_phase`, `election_source`, `election_disclosure`, and per-node `vote_state`, `voted_for`, `votes_received`. Version `3` adds typed `in_flight` network/election messages plus `over_budget.in_flight_summarized` for bounded rendering. Version `4` adds manual-mode `clients`, `subscribers`, and `sync_progress`. Version `5` adds topology/mode state: per-node `disabled`, top-level `rebalance`, `mode`, `active_scenario`, and `intervention_count`. | Strict readers reject unknown future schema versions before rendering or replaying a shared seed. The demo must not synthesize a green verdict outside `InvariantChecker`; `election_source = "sim-model"` must be presented as a teaching model, not a production consensus claim. In-flight render summaries and subscriber buffer drops must fail loud through over-budget/drop counters instead of silently dropping evidence. |
 | `ReplayScriptV1` simulator control artifact | `1` | `hydracache-sim`, `hydracache-sim-wasm`, sandbox `/sim/control`, and browser share/replay surfaces | Version `1` carries `seed`, `mode`, optional `scenario`, and ordered `ControlActionV1` actions (`step`, topology verbs, `push_event`, `subscribe`, `mode_change`) with logical `at_step`. Readers accept version `1` only and reject oversized scripts above `MAX_REPLAY_ACTIONS`. | Unknown future replay versions and over-budget action lists are rejected before execution. Topology actions not implemented by the current work item fail loud rather than being ignored or emulated. |
 
+## 0.75 development managed build diagnostics
+
+`imap_build_process_075::{BuildEvent,BuildReport}` are local development diagnostics,
+version 1, never production protocol or release admission evidence. Readers use the
+current producer's strict field set and reject unknown fields. Each controller owns
+a fresh bounded directory under `target/imap-075/builds`; reports distinguish complete
+logs from prefixes, cleanup failures, cancellation and deadline exhaustion. Absolute
+log paths are local diagnostics and cannot select commands or qualify another build.
+The CI deadline environment value bounds harness execution only, never map authority.
+
 ## 0.75 development IMap differential inputs
 
 The isolated testkit/JVM tools exchange bounded development inputs headed by

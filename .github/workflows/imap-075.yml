@@ -44,6 +44,9 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
+      - name: Qualification budget
+        shell: bash
+        run: echo "HYDRACACHE_IMAP075_BUILD_DEADLINE_MS=$(( ($(date +%s) + 43 * 60) * 1000 ))" >> "$GITHUB_ENV"
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
           fetch-depth: 0
@@ -77,6 +80,7 @@ jobs:
           if-no-files-found: error
           path: |
             target/imap-075/ci/
+            target/imap-075/builds/
             target/imap-075/differential-failures/
             target/imap-075/cluster-failures/
             tests/java-imap-benchmark/target/surefire-reports/

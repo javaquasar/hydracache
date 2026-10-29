@@ -176,19 +176,23 @@ pub fn check_contract(root: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn command(root: &Path, program: &str, args: &[&str]) -> Result<(), Box<dyn Error>> {
-    if !Command::new(program)
-        .current_dir(root)
-        .args(args)
-        .status()?
-        .success()
-    {
-        return Err(format!("preparation step failed: {program} {}", args.join(" ")).into());
-    }
+fn command(
+    builds: &mut crate::imap_build_process_075::BuildController,
+    root: &Path,
+    stage: crate::imap_build_process_075::BuildStage,
+    program: &str,
+    args: &[&str],
+) -> Result<(), Box<dyn Error>> {
+    let mut invocation = Command::new(program);
+    invocation.current_dir(root).args(args);
+    builds.run(stage, invocation)?;
     Ok(())
 }
 
-fn rust_consumer(root: &Path) -> Result<(), Box<dyn Error>> {
+fn rust_consumer(
+    root: &Path,
+    builds: &mut crate::imap_build_process_075::BuildController,
+) -> Result<(), Box<dyn Error>> {
     let scratch = root.join("target/imap-075");
     fs::create_dir_all(&scratch)?;
     let temp = tempfile::tempdir_in(&scratch)?;
@@ -215,9 +219,14 @@ fn rust_consumer(root: &Path) -> Result<(), Box<dyn Error>> {
         if action == "build" {
             invocation.arg("--locked");
         }
-        if !invocation.status()?.success() {
-            return Err("external Rust development consumer failed".into());
-        }
+        builds.run(
+            if action == "test" {
+                crate::imap_build_process_075::BuildStage::RustConsumerTests
+            } else {
+                crate::imap_build_process_075::BuildStage::RustConsumerBuild
+            },
+            invocation,
+        )?;
         validate_consumer_lock(
             &fs::read_to_string(root.join("Cargo.lock"))?,
             &fs::read_to_string(temp.path().join("Cargo.lock"))?,
@@ -306,10 +315,14 @@ pub fn prepare_tools(
     root: &Path,
 ) -> Result<Vec<crate::imap_package_reproduction_075::JavaPackageProof>, Box<dyn Error>> {
     check_contract(root)?;
+    use crate::imap_build_process_075::{BuildController, BuildStage};
+    let mut builds = BuildController::new(root)?;
     // Cargo's integration-test build provides CARGO_BIN_EXE_hydracache-server for
     // hc2_daemon_process; avoid a separate build with a different dev-feature union.
     command(
+        &mut builds,
         root,
+        BuildStage::ServerTests,
         "cargo",
         &[
             "test",
@@ -322,15 +335,19 @@ pub fn prepare_tools(
             "--locked",
         ],
     )?;
-    rust_consumer(root)?;
+    rust_consumer(root, &mut builds)?;
     let maven = if cfg!(windows) { "mvn.cmd" } else { "mvn" };
     command(
+        &mut builds,
         root,
+        BuildStage::JavaContract,
         maven,
         &["-B", "-f", "tests/java-imap-benchmark/pom.xml", "install"],
     )?;
     command(
+        &mut builds,
         root,
+        BuildStage::NativeJava,
         maven,
         &[
             "-B",
@@ -340,7 +357,9 @@ pub fn prepare_tools(
         ],
     )?;
     command(
+        &mut builds,
         root,
+        BuildStage::NativeDependencyJar,
         maven,
         &[
             "-B",
@@ -353,7 +372,9 @@ pub fn prepare_tools(
         ],
     )?;
     command(
+        &mut builds,
         root,
+        BuildStage::NativeDependencyPom,
         maven,
         &[
             "-B",
@@ -364,7 +385,7 @@ pub fn prepare_tools(
             "-DoutputDirectory=target/dependencies",
         ],
     )?;
-    crate::imap_package_reproduction_075::reproduce(root)
+    crate::imap_package_reproduction_075::reproduce_with_controller(root, &mut builds)
 }
 
 fn binary(root: &Path, name: &str) -> PathBuf {

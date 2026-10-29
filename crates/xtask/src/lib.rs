@@ -26,6 +26,7 @@ pub mod feature_leak;
 pub mod gated_tests;
 pub mod host_attestation;
 pub mod imap_api_differential;
+pub mod imap_build_process_075;
 pub mod imap_capability_audit;
 pub mod imap_ci_075;
 pub mod imap_cluster_campaign_075;

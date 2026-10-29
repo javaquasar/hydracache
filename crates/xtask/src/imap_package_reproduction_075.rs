@@ -65,6 +65,13 @@ fn copy_sources(source: &Path, destination: &Path) -> Result<(), Box<dyn Error>>
 }
 
 pub fn reproduce(root: &Path) -> Result<Vec<JavaPackageProof>, Box<dyn Error>> {
+    let mut builds = crate::imap_build_process_075::BuildController::new(root)?;
+    reproduce_with_controller(root, &mut builds)
+}
+pub fn reproduce_with_controller(
+    root: &Path,
+    builds: &mut crate::imap_build_process_075::BuildController,
+) -> Result<Vec<JavaPackageProof>, Box<dyn Error>> {
     let scratch = root.join("target/imap-075");
     fs::create_dir_all(&scratch)?;
     let temp = tempfile::tempdir_in(scratch)?;
@@ -79,17 +86,21 @@ pub fn reproduce(root: &Path) -> Result<Vec<JavaPackageProof>, Box<dyn Error>> {
         copy_sources(&source.join("pom.xml"), &destination.join("pom.xml"))?;
         copy_sources(&source.join("src"), &destination.join("src"))?;
         let maven = if cfg!(windows) { "mvn.cmd" } else { "mvn" };
-        if !Command::new(maven)
+        let mut invocation = Command::new(maven);
+        invocation
             .current_dir(root)
             .arg("-B")
             .arg("-f")
             .arg(destination.join("pom.xml"))
-            .arg("package")
-            .status()?
-            .success()
-        {
-            return Err("clean Java package reproduction/tests failed".into());
-        }
+            .arg("package");
+        builds.run(
+            if module == "java-imap-benchmark" {
+                crate::imap_build_process_075::BuildStage::ReproduceContract
+            } else {
+                crate::imap_build_process_075::BuildStage::ReproduceNative
+            },
+            invocation,
+        )?;
         let artifact = format!("target/{name}-0.75.0-SNAPSHOT.jar");
         let original = crate::imap_daemon_probe_075::binary_digest(&source.join(&artifact))?;
         let rebuilt = crate::imap_daemon_probe_075::binary_digest(&destination.join(&artifact))?;

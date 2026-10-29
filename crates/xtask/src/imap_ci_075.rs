@@ -12,6 +12,7 @@ use std::process::Command;
 pub const RUST_VERSIONS: [&str; 2] = ["1.88.0", "1.94.0"];
 pub const JAVA_VERSIONS: [u32; 2] = [17, 21];
 const WORKFLOW: &str = ".github/workflows/imap-075.yml";
+const BUILD_BUDGET_COMMAND: &str = r#"echo "HYDRACACHE_IMAP075_BUILD_DEADLINE_MS=$(( ($(date +%s) + 43 * 60) * 1000 ))" >> "$GITHUB_ENV""#;
 const COMMANDS: [&str; 11] = [
     "imap-distributed-correctness",
     "imap-capability-audit",
@@ -113,10 +114,10 @@ pub fn run_lane(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     crate::imap_qualification_075::comparison_run(vec!["--release".into(), "0.75".into()])?;
     crate::imap_qualification_075::release_run(vec!["--release".into(), "0.75".into()])?;
     crate::imap_semantic_audit075::run(vec!["--release".into(), "0.75".into()])?;
-    let tooling = tooling_command(&root, cfg!(windows)).status()?;
-    if !tooling.success() {
-        return Err("IMap tooling canaries failed".into());
-    }
+    crate::imap_build_process_075::BuildController::new(&root)?.run(
+        crate::imap_build_process_075::BuildStage::ToolingTests,
+        tooling_command(&root, cfg!(windows)),
+    )?;
     let output = std::path::Path::new(options.output.as_deref().ok_or("--output is required")?);
     let preparation_dir = output
         .parent()
@@ -211,6 +212,8 @@ pub fn tooling_command(root: &Path, _windows: bool) -> Command {
             "imap_extended_concurrent_075",
             "--test",
             "imap_proof_process_075",
+            "--test",
+            "imap_build_process_075",
             "--test",
             "imap_extended_receipt_075",
             "--test",
@@ -334,6 +337,31 @@ pub fn check_workflow(root: &Path) -> Result<(), Box<dyn Error>> {
         let steps = jobs[name]["steps"]
             .as_sequence()
             .ok_or("CI job requires steps")?;
+        if name == "qualification" {
+            let budgets = steps
+                .iter()
+                .enumerate()
+                .filter(|(_, step)| step["name"].as_str() == Some("Qualification budget"))
+                .collect::<Vec<_>>();
+            let checkout = steps
+                .iter()
+                .position(|step| {
+                    step["uses"]
+                        .as_str()
+                        .is_some_and(|v| v.starts_with("actions/checkout@"))
+                })
+                .ok_or("missing qualification checkout")?;
+            if budgets.len() != 1
+                || budgets[0].0 >= checkout
+                || budgets[0].1["shell"].as_str() != Some("bash")
+                || budgets[0].1["run"].as_str().map(str::trim) != Some(BUILD_BUDGET_COMMAND)
+            {
+                return Err(
+                    "qualification must establish its bounded outer build deadline before checkout"
+                        .into(),
+                );
+            }
+        }
         if matches!(name, "qualification" | "complete") {
             let checkouts = steps
                 .iter()

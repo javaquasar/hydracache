@@ -43,17 +43,20 @@ impl Default for ProcessBounds {
 }
 impl ProcessBounds {
     fn validate(self) -> Result<(), ProcessFailure> {
+        self.validate_policy(ExecutionPolicy::Proof)
+    }
+    fn validate_policy(self, policy: ExecutionPolicy) -> Result<(), ProcessFailure> {
         if cfg!(target_os = "linux") && self.maximum_processes != 0 {
             return Err(ProcessFailure::new(FailureKind::UnsupportedPlatform,"Linux process-count isolation is unavailable; zero explicitly declares no count cap"));
         }
         if self.timeout.is_zero()
-            || self.timeout > Duration::from_secs(60)
+            || self.timeout > policy.maximum_duration()
             || self.cleanup_timeout.is_zero()
             || self.cleanup_timeout > Duration::from_secs(5)
             || self.input_bytes == 0
             || self.input_bytes > 2 * 1024 * 1024
             || self.stdout_bytes == 0
-            || self.stdout_bytes > 16 * 1024 * 1024
+            || self.stdout_bytes > policy.maximum_output()
             || self.stderr_bytes == 0
             || self.stderr_bytes > 1024 * 1024
             || self.memory_bytes < 16 * 1024 * 1024
@@ -66,6 +69,27 @@ impl ProcessBounds {
             ));
         }
         Ok(())
+    }
+}
+
+/// Internal, closed policies. Public proof calls always retain their 60-second cap.
+#[derive(Clone, Copy)]
+pub(crate) enum ExecutionPolicy {
+    Proof,
+    Build,
+}
+impl ExecutionPolicy {
+    fn maximum_duration(self) -> Duration {
+        Duration::from_secs(match self {
+            Self::Proof => 60,
+            Self::Build => 2 * 60 * 60,
+        })
+    }
+    fn maximum_output(self) -> usize {
+        match self {
+            Self::Proof => 16 * 1024 * 1024,
+            Self::Build => 64 * 1024 * 1024,
+        }
     }
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -87,13 +111,22 @@ pub enum FailureKind {
 pub struct ProcessFailure {
     pub kind: FailureKind,
     pub detail: String,
+    pub direct_child_reaped: bool,
+    pub remaining_live_members: Option<usize>,
 }
 impl ProcessFailure {
     fn new(kind: FailureKind, detail: impl Into<String>) -> Self {
         Self {
             kind,
             detail: detail.into(),
+            direct_child_reaped: false,
+            remaining_live_members: None,
         }
+    }
+    fn cleaned(mut self, remaining: usize) -> Self {
+        self.direct_child_reaped = true;
+        self.remaining_live_members = Some(remaining);
+        self
     }
 }
 impl fmt::Display for ProcessFailure {
@@ -135,12 +168,24 @@ pub fn execute(
 
 #[cfg(any(windows, target_os = "linux"))]
 pub fn execute_observed(
+    command: Command,
+    input: &[u8],
+    bounds: ProcessBounds,
+    observe: impl FnMut(ProcessObservation<'_>) -> Result<(), String>,
+) -> Result<ProcessOutput, ProcessFailure> {
+    bounds.validate()?;
+    execute_managed(command, input, bounds, ExecutionPolicy::Proof, observe)
+}
+
+#[cfg(any(windows, target_os = "linux"))]
+pub(crate) fn execute_managed(
     mut command: Command,
     input: &[u8],
     bounds: ProcessBounds,
+    policy: ExecutionPolicy,
     mut observe: impl FnMut(ProcessObservation<'_>) -> Result<(), String>,
 ) -> Result<ProcessOutput, ProcessFailure> {
-    bounds.validate()?;
+    bounds.validate_policy(policy)?;
     if input.len() > bounds.input_bytes {
         return Err(ProcessFailure::new(
             FailureKind::InputLimit,
@@ -195,8 +240,8 @@ pub fn execute_observed(
     let preparation =
         platform::prepare_pipe(&stdout).and_then(|()| platform::prepare_pipe(&stderr));
     if let Err(error) = preparation {
-        let _ = cleanup(&mut tree, &mut child, bounds.cleanup_timeout);
-        return Err(io_error(FailureKind::Containment, error));
+        let remaining = cleanup(&mut tree, &mut child, bounds.cleanup_timeout)?;
+        return Err(io_error(FailureKind::Containment, error).cleaned(remaining));
     }
     let (mut out, mut err) = (Vec::new(), Vec::new());
     let (mut out_closed, mut err_closed) = (false, false);
@@ -265,14 +310,15 @@ pub fn execute_observed(
     // Every return after spawn kills inherited descendants and reaps our direct child.
     // I/O uses nonblocking polls; there are no reader/writer threads to detach or join.
     let remaining = cleanup(&mut tree, &mut child, bounds.cleanup_timeout)?;
-    outcome?;
+    outcome.map_err(|failure| failure.cleaned(remaining))?;
     let status = status
         .ok_or_else(|| ProcessFailure::new(FailureKind::Cleanup, "missing child exit status"))?;
     if !status.success() {
         return Err(ProcessFailure::new(
             FailureKind::Exit,
             format!("{status}: {}", String::from_utf8_lossy(&err)),
-        ));
+        )
+        .cleaned(remaining));
     }
     Ok(ProcessOutput {
         stdout: out,
@@ -297,6 +343,18 @@ pub fn execute_observed(
         FailureKind::UnsupportedPlatform,
         "proof containment supports Windows Job Objects and Linux inherited process groups",
     ))
+}
+
+#[cfg(not(any(windows, target_os = "linux")))]
+pub(crate) fn execute_managed(
+    command: Command,
+    input: &[u8],
+    bounds: ProcessBounds,
+    policy: ExecutionPolicy,
+    observe: impl FnMut(ProcessObservation<'_>) -> Result<(), String>,
+) -> Result<ProcessOutput, ProcessFailure> {
+    bounds.validate_policy(policy)?;
+    execute_observed(command, input, bounds, observe)
 }
 
 #[cfg(any(windows, target_os = "linux"))]
