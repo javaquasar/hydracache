@@ -105,6 +105,9 @@ The local extended qualification receipt uses schema
 and explicit `local_actual_owner_qualification` scope with production disabled. It binds clean
 source, bounded corpus/transcripts, copied Rust executable and Java classpath artifacts, runtime
 fingerprints/Java launcher hash, eight process defects and deterministic shrink consumption.
+Retained owner executables are bounded to 512 MiB to include Linux ELF development debug data;
+their hashes, snapshots and verification stream in fixed chunks. The Java launcher stays bounded
+to 64 MiB; individual Java classes and transcript limits remain independently enforced.
 Verification binds retained snapshots to trusted current runners/classes and reexecutes only
 those trusted current peers and controls, never receipt-selected executables. Changed, aliased,
 missing or out-of-root artifacts fail. Windows process-count capability is explicit; the Linux inherited

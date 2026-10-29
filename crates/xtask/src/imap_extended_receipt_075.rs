@@ -16,7 +16,9 @@ use std::path::{Component, Path, PathBuf};
 
 pub const SCHEMA: &str = "hydracache.imap.extended-qualification.v1";
 const MAX_RECEIPT: usize = 256 * 1024;
-const MAX_BINARY: usize = 64 * 1024 * 1024;
+// ELF development executables retain DWARF in the file; Windows keeps PDBs separately.
+// Stream hashing/snapshot validation so this finite disk bound is not a heap reservation.
+const MAX_BINARY: usize = 512 * 1024 * 1024;
 const FAULTS: [&str; 8] = [
     "java_drop_event",
     "java_wrong_ttl",
@@ -139,8 +141,13 @@ pub fn artifact(root: &Path, path: &Path, maximum: usize) -> Result<Artifact, Bo
 }
 fn file_digest(path: &Path, maximum: usize) -> Result<(u64, String), Box<dyn Error>> {
     let mut input = fs::File::open(path)?;
-    if !input.metadata()?.is_file() || input.metadata()?.len() > maximum as u64 {
-        return Err("receipt artifact size/type bound".into());
+    let metadata = input.metadata()?;
+    if !metadata.is_file() || metadata.len() > maximum as u64 {
+        return Err(format!(
+            "receipt artifact size/type bound: {} bytes, maximum {maximum}",
+            metadata.len()
+        )
+        .into());
     }
     let mut hash = Sha256::new();
     let mut bytes = 0u64;
@@ -162,13 +169,8 @@ fn file_digest(path: &Path, maximum: usize) -> Result<(u64, String), Box<dyn Err
     ))
 }
 fn read(root: &Path, reference: &Artifact, maximum: usize) -> Result<Vec<u8>, Box<dyn Error>> {
-    if !hex(&reference.sha256, 64) || reference.bytes > maximum as u64 {
-        return Err("invalid artifact identity/bound".into());
-    }
+    verify_artifact(root, reference, maximum)?;
     let path = checked_path(root, &reference.path)?;
-    if artifact(root, &path, maximum)? != *reference {
-        return Err("artifact digest/size/path mismatch".into());
-    }
     let mut bytes = Vec::new();
     fs::File::open(&path)?
         .take(maximum as u64 + 1)
@@ -177,6 +179,20 @@ fn read(root: &Path, reference: &Artifact, maximum: usize) -> Result<Vec<u8>, Bo
         return Err("artifact changed while reading".into());
     }
     Ok(bytes)
+}
+fn verify_artifact(
+    root: &Path,
+    reference: &Artifact,
+    maximum: usize,
+) -> Result<(), Box<dyn Error>> {
+    if !hex(&reference.sha256, 64) || reference.bytes > maximum as u64 {
+        return Err("invalid artifact identity/bound".into());
+    }
+    let path = checked_path(root, &reference.path)?;
+    if artifact(root, &path, maximum)? != *reference {
+        return Err("artifact digest/size/path mismatch".into());
+    }
+    Ok(())
 }
 fn store(root: &Path, path: &Path, bytes: &[u8]) -> Result<Artifact, Box<dyn Error>> {
     if bytes.len() > MAX_OUTPUT {
@@ -458,7 +474,7 @@ fn runtime() -> Result<RuntimeBinding, Box<dyn Error>> {
         Ok(String::from_utf8(output.stdout)?.trim().into())
     }
     let java = crate::imap_api_differential::java_executable();
-    let (_, launcher) = file_digest(&java, MAX_BINARY)?;
+    let (_, launcher) = file_digest(&java, 64 * 1024 * 1024)?;
     let bounds = crate::imap_proof_process_075::ProcessBounds::default();
     Ok(RuntimeBinding {
         rust_fingerprint: fingerprint("rustc", &["--version"])?,
@@ -707,7 +723,7 @@ pub fn validate(root: &Path, receipt: &ExtendedReceipt) -> Result<(), Box<dyn Er
         };
         cursor += index + 1;
     }
-    read(root, &receipt.rust_peer, MAX_BINARY)?;
+    verify_artifact(root, &receipt.rust_peer, MAX_BINARY)?;
     checked_path(root, &receipt.java_classpath)?;
     if receipt.java_classes.is_empty() || receipt.java_classes.len() > 512 {
         return Err("Java class manifest bound".into());
@@ -911,5 +927,23 @@ mod tests {
         fs::write(&source, b"changed").unwrap();
         assert!(snapshot(fixture.path(), &identity, &output.join("changed"), 100).is_err());
         assert!(snapshot(fixture.path(), &identity, &output.join("bounded"), 1).is_err());
+    }
+
+    #[test]
+    fn development_elf_size_budget_is_streamed_and_remains_finite() {
+        let fixture = tempfile::tempdir().unwrap();
+        let path = fixture.path().join("development-owner");
+        let file = fs::File::create(&path).unwrap();
+        file.set_len(64 * 1024 * 1024 + 1).unwrap();
+        drop(file);
+        assert!(artifact(fixture.path(), &path, 64 * 1024 * 1024).is_err());
+        let retained = artifact(fixture.path(), &path, MAX_BINARY).unwrap();
+        verify_artifact(fixture.path(), &retained, MAX_BINARY).unwrap();
+        assert_eq!(retained.bytes, 64 * 1024 * 1024 + 1);
+        let file = fs::OpenOptions::new().write(true).open(&path).unwrap();
+        file.set_len(MAX_BINARY as u64 + 1).unwrap();
+        drop(file);
+        assert!(artifact(fixture.path(), &path, MAX_BINARY).is_err());
+        assert!(verify_artifact(fixture.path(), &retained, MAX_BINARY).is_err());
     }
 }
