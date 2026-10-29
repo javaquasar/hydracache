@@ -10,6 +10,12 @@ characterization, closed development backend ports, external consumers, an isola
 Hazelcast diagnostic adapter, clean Java package reproduction and preparation receipts. The
 default product adapters and production release admission remain fail-closed.
 
+The next eight preparation packages are specified in
+[`pre074-next-eight-implementation-plan.md`](pre074-next-eight-implementation-plan.md).
+This supplementary implementation plan covers build control, typed helper ports, expanded native
+observations, concurrent histories, listener recovery, soak control, development SBOM and coverage
+gates. Its packages are planned and do not close W0 or change release status.
+
 Run the bounded authority model and validate its exact-source receipt:
 
 ```powershell
