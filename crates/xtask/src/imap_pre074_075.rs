@@ -593,6 +593,7 @@ pub struct PreparationReceipt {
     pub storage: Artifact,
     pub java: Artifact,
     pub native_extended: Artifact,
+    pub native_histories: Artifact,
     pub rust: Artifact,
     pub workspace_metadata: Artifact,
     pub blocked_until_074: Vec<String>,
@@ -705,11 +706,12 @@ pub fn produce(root: &Path, output: &Path) -> Result<PathBuf, Box<dyn Error>> {
     let parsed_java: JavaProbe = serde_json::from_slice(&observed_java)?;
     validate_java_probe(&parsed_java)?;
     let native_extended = crate::imap_native_probe_075::observe(root)?;
+    let native_histories = crate::imap_native_concurrent_075::observe(root)?;
     let observed_rust = rust_probe(root)?;
     validate_rust_probe(&observed_rust)?;
     let workspace_metadata = metadata(root)?;
     let receipt = PreparationReceipt {
-        schema: "hydracache.imap.pre074-preparation.v2".into(),
+        schema: "hydracache.imap.pre074-preparation.v3".into(),
         release: "0.75".into(),
         scope: "pre074_preparation".into(),
         source_sha: source.clone(),
@@ -732,6 +734,7 @@ pub fn produce(root: &Path, output: &Path) -> Result<PathBuf, Box<dyn Error>> {
         )?,
         java: retain(root, &directory, "java.json", &observed_java)?,
         native_extended: retain(root, &directory, "native-extended.json", &native_extended)?,
+        native_histories: retain(root, &directory, "native-histories.json", &native_histories)?,
         rust: retain(root, &directory, "rust.json", &observed_rust)?,
         workspace_metadata: retain(
             root,
@@ -768,7 +771,7 @@ pub fn validate_receipt_header(
     receipt: &PreparationReceipt,
     source: &str,
 ) -> Result<(), Box<dyn Error>> {
-    if receipt.schema != "hydracache.imap.pre074-preparation.v2"
+    if receipt.schema != "hydracache.imap.pre074-preparation.v3"
         || receipt.release != "0.75"
         || receipt.scope != "pre074_preparation"
         || receipt.source_sha != source
@@ -831,6 +834,7 @@ pub fn verify(root: &Path, path: &Path) -> Result<PreparationReceipt, Box<dyn Er
         (&receipt.storage, "storage.json"),
         (&receipt.java, "java.json"),
         (&receipt.native_extended, "native-extended.json"),
+        (&receipt.native_histories, "native-histories.json"),
         (&receipt.rust, "rust.json"),
         (&receipt.workspace_metadata, "workspace-metadata.json"),
     ];
@@ -853,6 +857,11 @@ pub fn verify(root: &Path, path: &Path) -> Result<PreparationReceipt, Box<dyn Er
     if native != fresh_native {
         return Err("native extended replay differs".into());
     }
+    let histories: crate::imap_native_concurrent_075::Histories =
+        serde_json::from_slice(&read_artifact(root, &receipt.native_histories)?)?;
+    let fresh_histories =
+        serde_json::from_slice(&crate::imap_native_concurrent_075::observe(root)?)?;
+    crate::imap_native_concurrent_075::replay(&histories, &fresh_histories)?;
     let observed_rust = read_artifact(root, &receipt.rust)?;
     validate_rust_probe(&observed_rust)?;
     let observed_metadata: Value =

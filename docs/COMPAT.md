@@ -129,7 +129,7 @@ evidence, not a product protocol, persistent service image or ship receipt.
 Typed entry views, helper futures, progress queries and scoped transfer controls remain runtime
 APIs; the 40 core operation IDs and production HC/1/HC/2 identities do not change.
 
-The separate development preparation receipt uses `hydracache.imap.pre074-preparation.v2`
+The separate development preparation receipt uses `hydracache.imap.pre074-preparation.v3`
 and `docs/testing/imap/0.75/schemas/pre074-preparation.schema.json`. Its only scope is
 `pre074_preparation`, with production disabled and all six predecessor/integration blockers
 retained. It binds clean source, current tooling/runtime, eleven fixed input artifacts, raw
@@ -144,6 +144,13 @@ future versions. Historical v1 receipts remain development archives for their or
 source/tooling and cannot qualify a v2 producer. The native profile requires the closed
 raw-return/final-digest/native-events field set. Native versions/TTL are retained in
 native units and never mapped to Hydra owner tokens, logical clocks or watermarks.
+Version 3 additionally requires `native-histories.json` with `imap075-native-histories-v1`:
+two bounded fixed-seed programs, actual raw invocation/return stamps, native result
+types, quiescent final entries/digest, separate callbacks and bounded-checker witness.
+The reader independently normalizes/checks raw histories and reexecutes the trusted
+current cohort, accepting legal nondeterministic interleavings only for the same
+program. Missing, duplicate, foreign, weakened or unknown fields/versions refuse.
+Search exhaustion is explicit failure. Current preparation readers reject v2.
 
 The 0.75 migration corpus uses `fixture_version = 1` for bounded development
 staging/dry-run readers only. Runtime replica images preserve logical incarnation

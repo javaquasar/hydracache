@@ -224,6 +224,8 @@ pub fn tooling_command(root: &Path, _windows: bool) -> Command {
             "imap_pre074_075",
             "--test",
             "imap_native_probe_075",
+            "--test",
+            "imap_native_concurrent_075",
             "--locked",
         ])
         .current_dir(root);
