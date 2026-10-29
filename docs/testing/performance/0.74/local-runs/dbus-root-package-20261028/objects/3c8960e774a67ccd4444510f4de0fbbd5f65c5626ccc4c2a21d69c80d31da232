@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::loss::tests::truncated_ancillary_rights_close_every_delivered_or_truncated_writer",
+  "passed": 1
+}

@@ -1,0 +1,102 @@
+"""Fresh Linux source reads with kernel-enforced relative, non-symlink traversal.
+
+This is CI source custody only. It does not change a runtime validation frame,
+read a product clock, or grant start/send authority. There is no cached digest.
+"""
+from pathlib import Path
+import ctypes
+import hashlib
+import os
+import platform
+import stat
+import tempfile
+import unittest
+
+
+class OpenHow(ctypes.Structure):
+    _fields_ = [('flags', ctypes.c_uint64), ('mode', ctypes.c_uint64),
+                ('resolve', ctypes.c_uint64)]
+
+
+def hashes(root, names):
+    if platform.system() != 'Linux' or platform.machine() != 'x86_64':
+        raise ValueError('qualified Linux x86_64 source-custody helper only')
+    root = Path(root)
+    if root.resolve(strict=True) != root.absolute():
+        raise ValueError('no aliased source root')
+    lib = ctypes.CDLL(None, use_errno=True)
+    lib.syscall.restype = ctypes.c_long
+    directory = os.open(root, os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW)
+    try:
+        result = {}
+        for name in names:
+            if (not isinstance(name, str) or not name or '\\' in name or '\0' in name
+                    or any(p in ('', '.', '..') for p in name.split('/'))):
+                raise ValueError('canonical relative source member')
+            # RESOLVE_BENEATH | RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS.
+            # Every member performs a new kernel traversal and a new full read.
+            how = OpenHow(os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK, 0, 0x0e)
+            fd = lib.syscall(ctypes.c_long(437), ctypes.c_int(directory),
+                             ctypes.c_char_p(os.fsencode(name)), ctypes.byref(how),
+                             ctypes.c_size_t(ctypes.sizeof(how)))
+            if fd < 0:
+                value = ctypes.get_errno()
+                raise OSError(value, os.strerror(value), name)
+            try:
+                if not stat.S_ISREG(os.fstat(fd).st_mode):
+                    raise ValueError('regular source member required')
+                digest = hashlib.sha256()
+                with os.fdopen(fd, 'rb', closefd=False) as stream:
+                    while body := stream.read(1024 * 1024):
+                        digest.update(body)
+                result[name] = digest.hexdigest()
+            finally:
+                os.close(fd)
+        return result
+    finally:
+        os.close(directory)
+
+
+class Controls(unittest.TestCase):
+    def test_fresh_bytes_order_missing_and_replacement(self):
+        with tempfile.TemporaryDirectory() as name:
+            root = Path(name)
+            (root / 'a').write_bytes(b'first')
+            (root / 'b').write_bytes(b'second')
+            expected = {n: hashlib.sha256((root/n).read_bytes()).hexdigest() for n in ('b', 'a')}
+            self.assertEqual(list(hashes(root, ['b', 'a'])), ['b', 'a'])
+            self.assertEqual(hashes(root, expected), expected)
+            (root / 'a').write_bytes(b'changed')
+            self.assertNotEqual(hashes(root, expected), expected)
+            (root / 'new').write_bytes(b'replaced')
+            os.replace(root / 'new', root / 'a')
+            self.assertEqual(hashes(root, ['a'])['a'], hashlib.sha256(b'replaced').hexdigest())
+            with self.assertRaises(FileNotFoundError):
+                hashes(root, ['missing'])
+
+    def test_no_parent_leaf_alias_escape_directory_or_fifo(self):
+        with tempfile.TemporaryDirectory() as name:
+            root = Path(name)
+            (root / 'dir').mkdir()
+            (root / 'dir/file').write_bytes(b'original')
+            (root / 'leaf').symlink_to('dir/file')
+            (root / 'parent').symlink_to('dir', target_is_directory=True)
+            (root / 'outside').symlink_to('/etc/passwd')
+            os.mkfifo(root / 'fifo')
+            for member in ('leaf', 'parent/file', 'outside', 'dir', 'fifo', '../escape', '/etc/passwd', 'dir//file'):
+                with self.assertRaises((OSError, ValueError), msg=member):
+                    hashes(root, [member])
+            with self.assertRaises(ValueError):
+                hashes(root / 'parent', ['file'])
+            self.assertEqual(hashes(root, ['dir/file'])['dir/file'], hashlib.sha256(b'original').hexdigest())
+
+    def test_same_held_root_bytes_without_a_compiler_or_live_round(self):
+        root = Path(__file__).resolve().parents[2]
+        names = ['Cargo.toml', 'Cargo.lock', 'deny.toml',
+                 'tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs']
+        expected = {n: hashlib.sha256((root/n).read_bytes()).hexdigest() for n in names}
+        self.assertEqual(hashes(root, names), expected)
+
+
+if __name__ == '__main__':
+    unittest.main()

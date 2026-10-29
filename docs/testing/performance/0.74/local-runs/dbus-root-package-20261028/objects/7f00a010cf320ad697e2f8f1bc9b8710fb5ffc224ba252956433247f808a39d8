@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-root-package-074\run.py", line 46, in main
+    c.need(execution['retired'] and not execution['errors'],'original package Job retirement')
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-root-package-074\apply.py", line 22, in need
+    raise ValueError(why)
+ValueError: original package Job retirement

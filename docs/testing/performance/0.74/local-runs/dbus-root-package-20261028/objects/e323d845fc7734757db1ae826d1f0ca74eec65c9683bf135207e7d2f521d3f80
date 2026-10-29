@@ -1,0 +1,5 @@
+exact_peer_principal_and_signature_are_required_together: test
+read_only_host_observation_has_no_signature_but_keeps_peer_admission: test
+read_only_status_has_no_signed_document_but_still_checks_peer_and_principal: test
+
+3 tests, 0 benchmarks

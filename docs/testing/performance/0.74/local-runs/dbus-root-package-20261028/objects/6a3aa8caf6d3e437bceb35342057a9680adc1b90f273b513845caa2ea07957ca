@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_two_phase_launch::root_enrollment::kernel::guardian::creator::root_creator_victim ... ignored, external local root creator SIGKILL harness only; no service or product
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

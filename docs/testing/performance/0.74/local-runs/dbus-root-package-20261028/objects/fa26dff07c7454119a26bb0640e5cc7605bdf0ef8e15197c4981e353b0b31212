@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "systemd_spawn::tests::startup_is_pending_but_extra_executor_and_identity_drift_are_terminal",
+  "passed": 1
+}

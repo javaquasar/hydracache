@@ -1,0 +1,8 @@
+{
+  "after_source_and_freeze": true,
+  "context_reexecuted": false,
+  "failed_operation": "final informational receipt only",
+  "raw_outer_streams_retained": false,
+  "reason": "Strings must be encoded before hashing",
+  "type": "TypeError"
+}

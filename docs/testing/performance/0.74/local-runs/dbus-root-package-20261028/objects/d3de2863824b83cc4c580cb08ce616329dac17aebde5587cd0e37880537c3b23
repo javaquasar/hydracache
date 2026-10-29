@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_controller_producer::linux::tests::retained::retained_producer_public_entry_keeps_controller_pin_and_exclusive_output ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.06s
+

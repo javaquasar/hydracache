@@ -1,0 +1,32 @@
+{
+  "catalog": 6,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 6,
+  "rows": [
+    [
+      "roles_wrong_soname_and_missing_dependencies_refuse",
+      "ok"
+    ],
+    [
+      "scripts_short_oversized_abi_and_interpreter_refuse",
+      "ok"
+    ],
+    [
+      "search_paths_duplicate_needed_writable_exec_and_unknown_tags_refuse",
+      "ok"
+    ],
+    [
+      "seeded_mutations_do_not_panic_and_independent_readers_agree",
+      "ok"
+    ],
+    [
+      "synthetic_catalog_binds_each_role_and_bytes_without_authority",
+      "ok"
+    ],
+    [
+      "unchanged_declarations_still_record_changed_bytes",
+      "ok"
+    ]
+  ]
+}

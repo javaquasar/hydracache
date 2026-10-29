@@ -1,0 +1,8 @@
+digest_identity_and_frozen_field_drift_fail_closed: test
+exact_canonical_prepared_manifest_is_accepted: test
+execution_identity_and_nested_unknown_fields_fail_closed: test
+persistent_manifest_reconstructs_the_exact_frozen_identity: test
+start_evidence_is_validated_then_atomically_imported_once: test
+unknown_float_secret_value_and_oversize_fail_closed: test
+
+6 tests, 0 benchmarks

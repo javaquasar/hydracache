@@ -1,0 +1,6 @@
+
+running 1 test
+test host_execution::short_fence_tests::short_fence_raw_close_negative_control_retains_inherited_lock ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

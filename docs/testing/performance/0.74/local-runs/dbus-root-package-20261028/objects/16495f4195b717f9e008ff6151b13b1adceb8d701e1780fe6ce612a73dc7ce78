@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_manager::tests::reply_origin_and_error_name_are_checked_before_absence_or_body_decode",
+  "passed": 1
+}

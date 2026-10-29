@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_two_phase_launch::root_enrollment::kernel::guardian::original::projection::held_unit_projection_guardian_views_require_armed_original_and_keep_order ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

@@ -1,0 +1,14 @@
+
+running 9 tests
+test bounded_accept_rejects_zero_and_excessive_timeouts ... ok
+test bounded_accept_returns_a_ready_connection_without_waiting_for_deadline ... ok
+test bounded_accept_returns_none_without_a_connection ... ok
+test bounded_receive_rejects_zero_and_excessive_timeouts ... ok
+test bounded_receive_times_out_and_preserves_the_next_packet ... ok
+test diagnostic_kernel_receive_uses_message_sender_and_kernel_time ... ok
+test enforces_packet_limit_socket_mode_and_exclusive_path ... ok
+test preserves_packet_boundaries_and_reports_exact_peer_credentials ... ok
+test rejects_overlong_socket_path_before_creating_any_file ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+

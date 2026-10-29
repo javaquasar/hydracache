@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::tests::missing_pipe_eof_preserves_root_until_quiescence_is_proved",
+  "passed": 1
+}

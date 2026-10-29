@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::reservation_publication_tests::reservation_publication_named_replacement_or_writer_drift_is_sticky",
+  "passed": 1
+}

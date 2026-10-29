@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_receipts::tests::strict_json_rejects_nested_duplicates_and_depth_without_tail_repair",
+  "passed": 1
+}

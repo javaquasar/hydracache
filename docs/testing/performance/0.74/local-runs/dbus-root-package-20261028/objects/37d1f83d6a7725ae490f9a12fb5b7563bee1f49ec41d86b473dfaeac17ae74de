@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::custody_tests::original_collector_custody_has_one_owner_and_latches_repeat_refusal",
+  "passed": 1
+}

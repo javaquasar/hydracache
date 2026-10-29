@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_output_preparation::recovery::tests::fixture_recovery_each_interrupted_stage_and_unacknowledged_ipc_refuses",
+  "passed": 1
+}

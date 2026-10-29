@@ -1,0 +1,16 @@
+{
+  "boot_after": "dc2bf138-c4b8-45b7-bf03-2b695d604d7c",
+  "boot_before": "dc2bf138-c4b8-45b7-bf03-2b695d604d7c",
+  "boot_unchanged": true,
+  "clocks_changed": false,
+  "first_refusal": {
+    "reason": "first root package refusal: complete-test-batch",
+    "type": "ValueError"
+  },
+  "passed": false,
+  "phase": "tests-194",
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

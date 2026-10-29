@@ -1,0 +1,56 @@
+
+running 51 tests
+test root::launch::handoff::tests::attempt_and_event_budgets_are_sticky_without_a_transport_success ... ok
+test root::launch::handoff::tests::datagram_lengths_and_duplicate_packets_do_not_pass_as_empty_or_eof ... ok
+test root::launch::handoff::tests::dispatch_latch_rejects_early_duplicate_and_failed_send_reuse ... ok
+test root::launch::handoff::tests::failure_drain_uses_actual_record_length_and_keeps_the_48_byte_limit ... ok
+test root::launch::handoff::tests::fixed_native_protocol_entry_rejects_every_argument_class_change ... ok
+test root::launch::handoff::tests::only_the_expected_fault_classes_may_have_received_the_public_dummy ... ok
+test root::launch::handoff::tests::original_endpoint_and_read_write_nonblock_cloexec_are_mandatory ... ok
+test root::launch::handoff::tests::selectors_are_closed_and_child_modes_cannot_select_parent_controls ... ok
+test root::launch::handoff::tests::send_window_terminal_refuses_unknown_modes_and_live_peer_zero_records ... ok
+test root::launch::handoff::tests::startup_finite_allowlist_rejects_channel_io_replacement_and_mutating_prctl ... ok
+test root::launch::handoff::tests::transfer_cut_counters_refuse_wrong_step_attempt_send_and_close ... ok
+test root::launch::handoff::tests::unread_dummy_requires_exact_reset_prefix_and_then_real_eof ... ok
+test root::launch::handoff::tests::untraced_ack_requires_exact_single_packet_not_duplicate_or_missing ... ok
+test root::launch::isolation::tests::fixed_install_order_duplicate_entry_missing_exit_and_failed_syscall_refuse ... ok
+test root::launch::isolation::tests::kernel_filter_state_requires_single_bounded_consistent_pair ... ok
+test root::launch::isolation::tests::original_stopped_child_memory_header_policy_and_seeded_mutations_are_bounded ... ok
+test root::launch::isolation::tests::retained_directory_decoder_refuses_noncanonical_duplicate_and_malformed_records ... ok
+test root::launch::isolation::tests::retained_proc_readers_require_original_procfs_cloexec_and_no_foreign_replacement ... ok
+test root::launch::isolation::tests::syscall_decoder_rejects_short_foreign_abi_unknown_operation_and_exit_shape ... ok
+test root::launch::loss::tests::channel_rejects_missing_credentials_wrong_gate_and_malformed_requests ... ok
+test root::launch::loss::tests::channel_uses_kernel_credentials_cloexec_and_fixed_packet_budget ... ok
+test root::launch::loss::tests::fixed_frames_reject_every_non_pid_bit_and_unregistered_modes ... ok
+test root::launch::loss::tests::inherited_cloexec_writer_blocks_eof_until_original_child_exit ... ok
+test root::launch::loss::tests::isolated_child_with_no_selected_test_is_rejected ... ok
+test root::launch::loss::tests::original_pipe_identity_rejects_unrelated_pipe_and_wrong_access ... ok
+test root::launch::loss::tests::original_socket_endpoints_require_each_original_not_equal_peer_inodes ... ok
+test root::launch::loss::tests::received_writer_control_prevents_false_eof ... ok
+test root::launch::loss::tests::rejected_rights_are_closed_even_for_foreign_credentials_or_truncation ... ok
+test root::launch::loss::tests::scalar_fields_refuse_duplicates_signs_overflow_and_non_decimal ... ok
+test root::launch::loss::tests::stopped_negative_requires_detachment_and_never_accepts_running_as_stopped ... ok
+test root::launch::loss::tests::tree_drop_preserves_original_names_without_quiescence ... ok
+test root::launch::loss::tests::truncated_ancillary_rights_close_every_delivered_or_truncated_writer ... ok
+test root::launch::tests::actual_root_transition_drift_and_synthetic_nonshim_image_refuse ... ok
+test root::launch::tests::bounded_maps_require_selected_inodes_roles_offsets_paths_and_private_permissions ... ok
+test root::launch::tests::initial_drop_and_wrong_phase_kill_reap_original_before_root_cleanup ... ok
+test root::launch::tests::missing_pipe_eof_preserves_root_until_quiescence_is_proved ... ok
+test root::launch::tests::original_sigkill_and_drop_at_rooted_and_exec_boundaries_reap_before_cleanup ... ok
+test root::launch::tests::seeded_map_mutations_never_panic_and_known_identity_mutations_refuse ... ok
+test root::launch::tests::status_duplicates_missing_identity_and_capability_drift_refuse ... ok
+test root::tests::collision_is_not_adopted_or_deleted ... ok
+test root::tests::copied_content_mode_and_hardlink_drift_refuse ... ok
+test root::tests::equal_bytes_replacement_refuses_cleanup_without_mutating_foreign_file ... ok
+test root::tests::every_owned_partial_construction_prefix_cleans_only_known_names ... ok
+test root::tests::foreign_symlink_and_extra_entry_never_removed_by_cleanup ... ok
+test root::tests::four_independent_builders_keep_distinct_originals ... ok
+test root::tests::lost_cloexec_and_source_path_replacement_never_recapture_originals ... ok
+test root::tests::original_source_content_and_mode_drift_refuse_stickily ... ok
+test root::tests::replaced_root_name_preserves_foreign_and_original_trees ... ok
+test root::tests::roundtrip_retains_original_sources_and_readonly_copies_then_removes_exact_tree ... ok
+test root::tests::sha256_matches_known_vectors_and_seeded_image_boundaries ... ok
+test root::tests::source_size_type_permissions_and_unknown_graph_refuse_before_root_creation ... ok
+
+test result: ok. 51 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+

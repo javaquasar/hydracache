@@ -1,0 +1,32 @@
+{
+  "catalog": 6,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 6,
+  "rows": [
+    [
+      "active_recovery_returns_the_validated_marker_identity_under_the_host_lock",
+      "ok"
+    ],
+    [
+      "host_marker_is_released_only_after_a_clean_complete_seal",
+      "ok"
+    ],
+    [
+      "one_campaign_claim_survives_restart_and_blocks_every_other_campaign",
+      "ok"
+    ],
+    [
+      "recovery_never_creates_a_missing_active_campaign_marker",
+      "ok"
+    ],
+    [
+      "symlink_and_hardlink_markers_are_rejected",
+      "ok"
+    ],
+    [
+      "unsafe_marker_lock_and_campaign_identity_fail_closed",
+      "ok"
+    ]
+  ]
+}

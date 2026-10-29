@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "watchdog::autonomous::tests::autonomous_release_requires_both_eof_and_every_terminal_without_refusal",
+  "passed": 1
+}

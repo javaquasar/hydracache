@@ -1,0 +1,9 @@
+
+running 4 tests
+test completed_measurement_failure_recovers_marker_without_repeating_effect ... ok
+test future_measurement_observation_fails_before_intent_or_backend ... ok
+test interrupted_backend_recovers_exact_measurement_cause_once ... ok
+test measurement_loss_commits_cause_stops_and_releases_after_completion ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+

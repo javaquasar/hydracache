@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_lease::transition_tests::transition_publisher_refuses_invalid_candidate_before_any_write",
+  "passed": 1
+}

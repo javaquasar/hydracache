@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::loss::tests::fixed_frames_reject_every_non_pid_bit_and_unregistered_modes",
+  "passed": 1
+}

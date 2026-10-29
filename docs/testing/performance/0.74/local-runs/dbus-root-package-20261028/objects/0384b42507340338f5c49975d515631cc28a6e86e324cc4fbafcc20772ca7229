@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_two_phase_launch::root_enrollment::kernel::tests::fault::cgroup_root_kernel_fault_matrix ... ignored, manual local root cgroup2 fixtures; no service, original start or product
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

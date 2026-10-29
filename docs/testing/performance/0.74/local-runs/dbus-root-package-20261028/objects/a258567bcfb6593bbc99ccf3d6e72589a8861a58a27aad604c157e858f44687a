@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_ipc::validation_trace_tests::validation_trace_first_time_facts_are_not_replaced_or_authority",
+  "passed": 1
+}

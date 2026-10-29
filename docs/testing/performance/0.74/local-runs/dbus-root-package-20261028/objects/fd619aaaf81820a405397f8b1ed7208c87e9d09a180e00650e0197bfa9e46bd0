@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_signer_bundle::tests::signer_bundle_in_place_write_metadata_or_namespace_drift_cannot_be_repaired",
+  "passed": 1
+}

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_canonical_empty_short_and_overlength_differential",
+  "passed": 1
+}

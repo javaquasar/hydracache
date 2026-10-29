@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_output_preparation::intent_journal::tests::intent_journal_created_record_replacement_is_not_adopted",
+  "passed": 1
+}

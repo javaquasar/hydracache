@@ -1,0 +1,9 @@
+
+running 4 tests
+test accepted_attach_commits_event_before_state_and_replays_exact_response ... ok
+test recovery_finishes_state_commit_after_event_sync_crash_window ... ok
+test rejected_attach_is_durable_and_does_not_change_state ... ok
+test same_revision_snapshot_drift_is_never_repaired_from_a_copy ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+

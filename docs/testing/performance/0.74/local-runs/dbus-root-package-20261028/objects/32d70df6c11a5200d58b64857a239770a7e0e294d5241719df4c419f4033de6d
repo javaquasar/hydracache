@@ -1,0 +1,36 @@
+{
+  "catalog": 7,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 7,
+  "rows": [
+    [
+      "four_independent_normal_preparations_leave_parent_context_unchanged",
+      "ok"
+    ],
+    [
+      "nonutf8_environment_writable_hardlinked_and_oversize_self_refuse",
+      "ok"
+    ],
+    [
+      "normal_original_root_exec_observes_selected_runtime_then_reaps",
+      "ok"
+    ],
+    [
+      "normal_original_root_one_shot_dummy_handoff",
+      "ok"
+    ],
+    [
+      "normal_private_stripped_self_and_real_gnu_runtime_prepare_and_cleanup",
+      "ok"
+    ],
+    [
+      "repeated_original_root_execs_leave_parent_context_unchanged",
+      "ok"
+    ],
+    [
+      "root_exec_rejects_environment_extra_descriptors_and_ignored_sigchld",
+      "ok"
+    ]
+  ]
+}

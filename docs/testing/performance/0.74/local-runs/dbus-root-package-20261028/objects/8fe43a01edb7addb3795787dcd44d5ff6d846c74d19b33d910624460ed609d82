@@ -1,0 +1,31 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--cd",
+    "/",
+    "--exec",
+    "/usr/bin/python3",
+    "-B",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-root-package-074/native.py",
+    "session",
+    "spool-194"
+  ],
+  "bound": 1200,
+  "floor": 4294967296,
+  "freeze_sha256": "998cd130aa73ccebb1a4bf64dbe49941fc02788c9424c997910288ebc9b754b1",
+  "poll": 5,
+  "release_admitted": false,
+  "retirement": 5,
+  "retry": false,
+  "server": false,
+  "session_bound": 1100,
+  "source": {
+    "head": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+    "tracked": " M Cargo.lock\n M Cargo.toml\n M tools/long-run-supervisor-074/Cargo.toml\n M tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_role_kernel.rs\n M tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_child.rs\n M tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs\n M tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs\n M tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs\n M tools/long-run-supervisor-074/src/diagnostic_dispatch_negotiated_tests.rs\n M tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_flags_tests.rs\n M tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs\n M tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire.rs\n M tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire_tests.rs\n M tools/long-run-supervisor-074/src/diagnostic_loaded.rs\n M tools/long-run-supervisor-074/src/diagnostic_manager.rs\n M tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs\n M tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs\n M tools/long-run-supervisor-074/src/diagnostic_manager_held_delivery.rs\n M tools/long-run-supervisor-074/src/diagnostic_manager_sandbox_query.rs\n M tools/long-run-supervisor-074/src/diagnostic_original_manager_message.rs\n M tools/long-run-supervisor-074/src/diagnostic_original_manager_message_units.rs\n M tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs\n M tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs\n M tools/long-run-supervisor-074/src/lib.rs\n M tools/long-run-supervisor-074/src/systemd_unit.rs\n M tools/long-run-supervisor-074/tests/diagnostic_spool.rs\n"
+  },
+  "source_worktree_uncommitted": true
+}

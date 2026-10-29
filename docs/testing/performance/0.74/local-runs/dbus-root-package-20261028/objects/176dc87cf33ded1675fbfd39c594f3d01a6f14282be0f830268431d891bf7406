@@ -1,0 +1,44 @@
+{
+  "catalog": 9,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 9,
+  "rows": [
+    [
+      "bounded_accept_rejects_zero_and_excessive_timeouts",
+      "ok"
+    ],
+    [
+      "bounded_accept_returns_a_ready_connection_without_waiting_for_deadline",
+      "ok"
+    ],
+    [
+      "bounded_accept_returns_none_without_a_connection",
+      "ok"
+    ],
+    [
+      "bounded_receive_rejects_zero_and_excessive_timeouts",
+      "ok"
+    ],
+    [
+      "bounded_receive_times_out_and_preserves_the_next_packet",
+      "ok"
+    ],
+    [
+      "diagnostic_kernel_receive_uses_message_sender_and_kernel_time",
+      "ok"
+    ],
+    [
+      "enforces_packet_limit_socket_mode_and_exclusive_path",
+      "ok"
+    ],
+    [
+      "preserves_packet_boundaries_and_reports_exact_peer_credentials",
+      "ok"
+    ],
+    [
+      "rejects_overlong_socket_path_before_creating_any_file",
+      "ok"
+    ]
+  ]
+}

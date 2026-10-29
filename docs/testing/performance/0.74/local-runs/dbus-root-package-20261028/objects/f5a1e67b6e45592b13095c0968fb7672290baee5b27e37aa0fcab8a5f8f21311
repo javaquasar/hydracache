@@ -1,0 +1,28 @@
+{
+  "catalog": 5,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 5,
+  "rows": [
+    [
+      "worker_context_actual_reader_roundtrip_keeps_original_policy_healthy",
+      "ok"
+    ],
+    [
+      "worker_context_independent_concurrent_readers_keep_thread_local_refusal",
+      "ok"
+    ],
+    [
+      "worker_context_seeded_valid_namespace_mutations_cannot_choose_new_pins",
+      "ok"
+    ],
+    [
+      "worker_context_trust_and_envelope_failure_latch_through_drop",
+      "ok"
+    ],
+    [
+      "worker_context_valid_resigned_foreign_context_refuses_original_policy",
+      "ok"
+    ]
+  ]
+}

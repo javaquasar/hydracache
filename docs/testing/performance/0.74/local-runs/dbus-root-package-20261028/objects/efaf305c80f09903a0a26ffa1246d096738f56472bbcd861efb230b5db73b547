@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_output_preparation::intent_journal::tests::intent_journal_corrupt_schema_chain_marker_and_metadata_stay_retained",
+  "passed": 1
+}

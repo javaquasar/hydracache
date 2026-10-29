@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::loss::tests::tree_drop_preserves_original_names_without_quiescence",
+  "passed": 1
+}

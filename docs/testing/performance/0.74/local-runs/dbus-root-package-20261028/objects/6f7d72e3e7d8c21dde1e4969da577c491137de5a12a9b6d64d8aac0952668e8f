@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::tests::empty_reservation_fence_seeded_between_scan_context_is_seen_and_retained",
+  "passed": 1
+}

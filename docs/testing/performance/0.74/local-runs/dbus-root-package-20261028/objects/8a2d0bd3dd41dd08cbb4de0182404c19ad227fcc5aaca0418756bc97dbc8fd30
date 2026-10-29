@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_named_output::tests::parallel_named_readers_allow_append_and_ignore_unrelated_ancestor_entries",
+  "passed": 1
+}

@@ -1,0 +1,902 @@
+[
+  {
+    "bytes": 6267208,
+    "kind": [
+      "bin"
+    ],
+    "name": "diagnostic_builder",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_builder-867b2ad38eac0551",
+    "sha256": "2bdf448c3838e57e613eceff0176331a8fbfbd061ae1508a68295c66daac22a6",
+    "src": "tools/long-run-supervisor-074/src/bin/diagnostic_builder.rs"
+  },
+  {
+    "bytes": 6267224,
+    "kind": [
+      "bin"
+    ],
+    "name": "diagnostic_controller",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_controller-43a581079b2d8b7d",
+    "sha256": "e81a99b4507b664d6a3a8e440ef03809640cd52272ded1db49df57f3f2125e72",
+    "src": "tools/long-run-supervisor-074/src/bin/diagnostic_controller.rs"
+  },
+  {
+    "bytes": 89335160,
+    "kind": [
+      "bin"
+    ],
+    "name": "diagnostic_held_bootstrap",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_held_bootstrap-fc9b10791d1b1001",
+    "sha256": "482f5ad1d9f5d6f82ff7342e2198f714f6a20c69f2c5102b4638f36e98b4b146",
+    "src": "tools/long-run-supervisor-074/src/bin/diagnostic_held_bootstrap.rs"
+  },
+  {
+    "bytes": 87217416,
+    "kind": [
+      "bin"
+    ],
+    "name": "diagnostic_held_launcher",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_held_launcher-348bc710bcf22d51",
+    "sha256": "75edc498138854497d0aacbfdf201641ca62010171147b6cc7c9004d5b2695fb",
+    "src": "tools/long-run-supervisor-074/src/bin/diagnostic_held_launcher.rs"
+  },
+  {
+    "bytes": 6267312,
+    "kind": [
+      "bin"
+    ],
+    "name": "diagnostic_signer_isolation_probe",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_isolation_probe-5ca69eeeaadbf5d9",
+    "sha256": "23d800ada59a00a273661598f0efb0e2477ac857faa8b4050864a0bab273165a",
+    "src": "tools/long-run-supervisor-074/src/bin/diagnostic_signer_isolation_probe.rs"
+  },
+  {
+    "bytes": 88060816,
+    "kind": [
+      "bin"
+    ],
+    "name": "diagnostic_signer_owned_probe",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_owned_probe-ed04886d7699f56e",
+    "sha256": "7858af7a621e62d5e1c75a440ac66fb6d81a2e16c04c3e7768c10812564397fe",
+    "src": "tools/long-run-supervisor-074/src/bin/diagnostic_signer_owned_probe.rs"
+  },
+  {
+    "bytes": 91656376,
+    "kind": [
+      "bin"
+    ],
+    "name": "diagnostic_signer_root_probe",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_root_probe-52871154be043d1f",
+    "sha256": "47f9654f831f24b409ee8a720119f5b46e5d15a19be24f1bb540229cf0e02cea",
+    "src": "tools/long-run-supervisor-074/src/bin/diagnostic_signer_root_probe.rs"
+  },
+  {
+    "bytes": 6267256,
+    "kind": [
+      "bin"
+    ],
+    "name": "hydracache-long-run-supervisor-074",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/hydracache_long_run_supervisor_074-ef35d9b621cfd1e0",
+    "sha256": "4b48c3984797d1748a6661edf7b0d655b2a6410e408f1b8527bf131cb232af5d",
+    "src": "tools/long-run-supervisor-074/src/main.rs"
+  },
+  {
+    "bytes": 6267248,
+    "kind": [
+      "example"
+    ],
+    "name": "inspect_root_owned_input",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/examples/inspect_root_owned_input-e63de8773c0429f6",
+    "sha256": "edf604c57f9bc2bd82629f48cbe593d61e74cfd39c39137500188027e84fa874",
+    "src": "tools/long-run-supervisor-074/examples/inspect_root_owned_input.rs"
+  },
+  {
+    "bytes": 87260688,
+    "kind": [
+      "example"
+    ],
+    "name": "inspect_signer_gnu_catalog",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/examples/inspect_signer_gnu_catalog-8f5208aa8b761cef",
+    "sha256": "4ded8b79f54c193913b7aa87ddeef618f29c1a5fa505aff43ed48b81421842d6",
+    "src": "tools/long-run-supervisor-074/examples/inspect_signer_gnu_catalog.rs"
+  },
+  {
+    "bytes": 6267256,
+    "kind": [
+      "example"
+    ],
+    "name": "prepare_unsigned_prebuilt",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/examples/prepare_unsigned_prebuilt-0949a1de1594cac5",
+    "sha256": "707356b5d44ad4ea5102fae7be43489c92ead53dc48c96d5566704e72212f834",
+    "src": "tools/long-run-supervisor-074/examples/prepare_unsigned_prebuilt.rs"
+  },
+  {
+    "bytes": 12075456,
+    "kind": [
+      "example"
+    ],
+    "name": "verify_signer_issuer_public",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/examples/verify_signer_issuer_public-4b3050b4273b5eef",
+    "sha256": "0bf34349e618e28bb1b95c1aa24d7143097dc89d4bfb15244f0a9c17acdbfdb8",
+    "src": "tools/long-run-supervisor-074/examples/verify_signer_issuer_public.rs"
+  },
+  {
+    "bytes": 195771984,
+    "kind": [
+      "lib"
+    ],
+    "name": "hydracache_long_run_supervisor_074",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/hydracache_long_run_supervisor_074-289ec81dfbc503eb",
+    "sha256": "bf9f5e530d8cb3275fdf60ea6c5573e2cabdb833d7819d088c0bf998c329bbfb",
+    "src": "tools/long-run-supervisor-074/src/lib.rs"
+  },
+  {
+    "bytes": 89785880,
+    "kind": [
+      "test"
+    ],
+    "name": "abort_lifecycle",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/abort_lifecycle-ed0d8c272e1a6e75",
+    "sha256": "9cc3106600f5ebeb60fb6b01549e92f668c2b42054340c577b07900932538f0b",
+    "src": "tools/long-run-supervisor-074/tests/abort_lifecycle.rs"
+  },
+  {
+    "bytes": 90107264,
+    "kind": [
+      "test"
+    ],
+    "name": "archive",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/archive-fbc8560c0145c093",
+    "sha256": "17c7a01d3d88594f4445fcac8c64b9bd540f9a76f5b57d3caa273a4b4d92cda5",
+    "src": "tools/long-run-supervisor-074/tests/archive.rs"
+  },
+  {
+    "bytes": 87821568,
+    "kind": [
+      "test"
+    ],
+    "name": "authorization",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/authorization-04dc7e211f8a66f2",
+    "sha256": "e250f8827e02e15b20aff4cba8d779d560e4b2862861bdb7b0cd352ac10aafcb",
+    "src": "tools/long-run-supervisor-074/tests/authorization.rs"
+  },
+  {
+    "bytes": 87394416,
+    "kind": [
+      "test"
+    ],
+    "name": "bootstrap_child_census",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/bootstrap_child_census-7750c03eefbf5844",
+    "sha256": "743b907eefd4a831c333aad023c14d2d7057a4492a66bbb7a751c7478a38d489",
+    "src": "tools/long-run-supervisor-074/tests/bootstrap_child_census.rs"
+  },
+  {
+    "bytes": 86889504,
+    "kind": [
+      "test"
+    ],
+    "name": "bootstrap_child_reader",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/bootstrap_child_reader-3b9e5aa08fb46996",
+    "sha256": "c8b62237b8a7ef98b37f56c930b3f0b405ebb007698170dce1dc106f2eead58c",
+    "src": "tools/long-run-supervisor-074/tests/bootstrap_child_reader.rs"
+  },
+  {
+    "bytes": 88800464,
+    "kind": [
+      "test"
+    ],
+    "name": "bootstrap_current_image",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/bootstrap_current_image-2c5bb5ca492f1494",
+    "sha256": "2fb71c6c233cdff29a94e26c0c23a0f40fd1d99050a8b6490be8404828a406d3",
+    "src": "tools/long-run-supervisor-074/tests/bootstrap_current_image.rs"
+  },
+  {
+    "bytes": 88526296,
+    "kind": [
+      "test"
+    ],
+    "name": "chain",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/chain-571688967c27035d",
+    "sha256": "97514907817f3651d0d6a67e6253168ebbe4039a69637a34907eb0ae549b966b",
+    "src": "tools/long-run-supervisor-074/tests/chain.rs"
+  },
+  {
+    "bytes": 88666704,
+    "kind": [
+      "test"
+    ],
+    "name": "checkpoint_evidence",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/checkpoint_evidence-e113a966f30da2ff",
+    "sha256": "6d62c278df8543bd34906293452b3c9d861fe7cf6f8952381f6cce64d6338eb3",
+    "src": "tools/long-run-supervisor-074/tests/checkpoint_evidence.rs"
+  },
+  {
+    "bytes": 88136352,
+    "kind": [
+      "test"
+    ],
+    "name": "config",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/config-008c03a0d9fe5c12",
+    "sha256": "fc4d00b3d37354d9d28f5f319f705e37d866bd255890dc3e05f82021752cfa57",
+    "src": "tools/long-run-supervisor-074/tests/config.rs"
+  },
+  {
+    "bytes": 92240104,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_artifacts",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_artifacts-7b2ff9a2db1cd8df",
+    "sha256": "5625c8bce0c7c2bb56395602eb50298387448b071843c9147dfe5122fa861347",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_artifacts.rs"
+  },
+  {
+    "bytes": 6622144,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_boot_buffer_allocations",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_boot_buffer_allocations-e72cd4650ca0201a",
+    "sha256": "828ce3713b68d9abdea7a19c291771596275d3caaa535bdfef55d4f722cd4918",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_boot_buffer_allocations.rs"
+  },
+  {
+    "bytes": 87722320,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_collector",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_collector-4b24301428b686dd",
+    "sha256": "74da7e861061263aab703d978f301811c4e18549cf97b8af38faef37ab3381e3",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_collector.rs"
+  },
+  {
+    "bytes": 8239352,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_collector_starting_publication",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_collector_starting_publication-8f9f420162d031f1",
+    "sha256": "3a06ec7990a14d903972a2e6bb8d1fecad9248f389b2a85414ad946006fc620a",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_collector_starting_publication.rs"
+  },
+  {
+    "bytes": 87927368,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_collector_starting_record",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_collector_starting_record-d189419a5ad9c71e",
+    "sha256": "1f649d37f4f744a4bbb4ad77c05c0a4dce152b72ae9ce31fae01be79554d1f77",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_collector_starting_record.rs"
+  },
+  {
+    "bytes": 89199536,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_context_files",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_context_files-3c38f865a5f2c770",
+    "sha256": "07d9379b3c24ef0ad54204abf88a1ae2cf1cd92388e60f22868228c5c26b5a6d",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_context_files.rs"
+  },
+  {
+    "bytes": 8239424,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_fixed_grouped_preparation",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_fixed_grouped_preparation-c0938bcd6a0a811d",
+    "sha256": "35c24ad023ecedc55c16bf6101348add8bdea0280efdc4db6ad1e5a221a976fb",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_fixed_grouped_preparation.rs"
+  },
+  {
+    "bytes": 89820864,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_intent_projection",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_intent_projection-81c50130454640f7",
+    "sha256": "ba874eed6c1eb9df9d4d89e268f008f5df8558a0c3812211033bdf98127dfd6f",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_intent_projection.rs"
+  },
+  {
+    "bytes": 90453208,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_ipc",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_ipc-41833d47cd1eaf47",
+    "sha256": "a90e59e48bf1581e775725afb11a82619b032998c8f0baff20ab7619cd659d2c",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_ipc.rs"
+  },
+  {
+    "bytes": 88789744,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_lease",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_lease-dc83d4ae16404127",
+    "sha256": "d4600e3528a13f483e2912fb8d84ddbf366de7a1962a98d761768668c429f47c",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_lease.rs"
+  },
+  {
+    "bytes": 87247040,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_manager",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_manager-ed0a5b4848df6fbb",
+    "sha256": "476a248a9a8cdf48cfd96526381475004bd6f031a8a7afd406ce18b99031ffcd",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_manager.rs"
+  },
+  {
+    "bytes": 8239184,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_original_collector_pipes",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_original_collector_pipes-2f89e52bb133a9fc",
+    "sha256": "5a0e434bfad69b8ce34c9e903b16eccd3145ed44c3bf132a0c04662cf065ef85",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_original_collector_pipes.rs"
+  },
+  {
+    "bytes": 86760960,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_original_fence",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_original_fence-72f0f4879e8bcbaa",
+    "sha256": "1183ce9f02d8ffb1a550c0ac3b2dd03bbb4e5fa7d3424c229b7d23d722d12cf7",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_original_fence.rs"
+  },
+  {
+    "bytes": 8239976,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_original_output_join",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_original_output_join-5d833f71caf1ba9e",
+    "sha256": "a69c25455294c7e781cf7aeb36d38696261523d8eca75d266d89b1ad585a6d23",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_original_output_join.rs"
+  },
+  {
+    "bytes": 8239320,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_original_pipe_transport",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_original_pipe_transport-c20d9bb4f33a97dc",
+    "sha256": "c37ef1a3915307302ead126aba909c3403375815a92090e51a61ed517c780740",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_original_pipe_transport.rs"
+  },
+  {
+    "bytes": 8240104,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_original_start_material",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_original_start_material-c7a2ef7b958a401a",
+    "sha256": "3662101dfbb7b04229681f186dd96c5ed1fdfcd61cda3c2461a0819f60088bc3",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_original_start_material.rs"
+  },
+  {
+    "bytes": 87533200,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_prebuilt_copy",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_prebuilt_copy-706eed3f7dd78999",
+    "sha256": "62ce72f4f67c6c64b44214786cbeaafd447750c8ca6b9100aa8aaeb10d7b128d",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_prebuilt_copy.rs"
+  },
+  {
+    "bytes": 8239128,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_preconsent_frame",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_preconsent_frame-01e2ed91cdc35d57",
+    "sha256": "b4d22c782fadd162940584c92f1eb8930a87c22649d01bdecd1b29cf7d448974",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_preconsent_frame.rs"
+  },
+  {
+    "bytes": 91763968,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_receipts",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_receipts-aec54d9fed903de6",
+    "sha256": "e13543a6db592c82228b807ba494e22ccada3ebbf4afba410adc4341c2a768d9",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_receipts.rs"
+  },
+  {
+    "bytes": 88576984,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_reviewed_trust",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_reviewed_trust-e54ed5ef348498d9",
+    "sha256": "7a6819ac2ec60a8cfaff786cc4425d44263575509c68a028eddeeb03effa4c19",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_reviewed_trust.rs"
+  },
+  {
+    "bytes": 87502264,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_root_owned_input",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_root_owned_input-200c55b89f312171",
+    "sha256": "0fb581b653a3cccc0a645f75b9a19dc55befb31186e78281ce492c7079ad94df",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_root_owned_input.rs"
+  },
+  {
+    "bytes": 88769128,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_signer_bootstrap_context",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_bootstrap_context-8cf8c8face6e0975",
+    "sha256": "a8f2ca6382cf095670932215d5e5f860abc43f75f2bed3b38350adcf7b01b412",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_signer_bootstrap_context.rs"
+  },
+  {
+    "bytes": 89164648,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_signer_build",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_build-2e392f3d5dbf1a3e",
+    "sha256": "eb23fd1dde420dea51b47f5c8b73c049ded1437672e28e083b603c7c3e3e351a",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_signer_build.rs"
+  },
+  {
+    "bytes": 6928616,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_signer_child_entry",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_child_entry-6097461ca3a055f9",
+    "sha256": "c48ecd8714e0aac1acf05b2ca6c9415f94b1339b727ee2c775c696c8f6040ae0",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_signer_child_entry.rs"
+  },
+  {
+    "bytes": 87867232,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_signer_gnu",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_gnu-c0d36b00735882b6",
+    "sha256": "37aa7f84cc6516e21bac8f04b6403b8394fc54fe8c884aa336ab46223c4c81e0",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_signer_gnu.rs"
+  },
+  {
+    "bytes": 87001704,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_signer_isolation",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_isolation-024fa990593103d2",
+    "sha256": "fab035c6c5b29fa681d8faf6fb32e6407da774ce763fae7e488cc55855bd9af5",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_signer_isolation.rs"
+  },
+  {
+    "bytes": 88297944,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_signer_issuer",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_issuer-bfaf356953fc9b83",
+    "sha256": "efa5f491c9f8b7d0cefd13d3b1a1ee18c0c0de7f78967d084108d083ab553033",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_signer_issuer.rs"
+  },
+  {
+    "bytes": 6539824,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_signer_owned_cli",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_owned_cli-1bf0c882ed1647a7",
+    "sha256": "d9853769b895b9b56e05acd2b0addf7193e4eb04c0a5b620bb91921e3b53b92e",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_signer_owned_cli.rs"
+  },
+  {
+    "bytes": 9205432,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_signer_owned_probe",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_owned_probe-c311221aac3c876a",
+    "sha256": "20442ebaf3589c9520c33fea7184bb2656d48b70adae797501e17f2c1f61f57e",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_signer_owned_probe.rs"
+  },
+  {
+    "bytes": 6550488,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_signer_root_cli",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_root_cli-4016457ff1b8ffab",
+    "sha256": "c64fb1f3af18364c8eeb4e15f872a99ba9f3a6ac7e0716314b19ad0f3b2617db",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_signer_root_cli.rs"
+  },
+  {
+    "bytes": 6884320,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_signer_root_guard",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_root_guard-5c1ee616934629cd",
+    "sha256": "1c192be3049e99886443b7919b6479839e5fe04f937555fdd9b942b8083a4c7a",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_signer_root_guard.rs"
+  },
+  {
+    "bytes": 9682008,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_signer_root_probe",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_root_probe-2b224103fdcf1d19",
+    "sha256": "8a8bc7e59c0409591f23a68e0181e1ff340081f9649544b95a605439760d5173",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_signer_root_probe.rs"
+  },
+  {
+    "bytes": 20428168,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_signer_runtime_input",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_signer_runtime_input-59dbaed48b4ceea7",
+    "sha256": "de11388e3c8803b159aaa72f6679991fb03f827f232d1b309411bccbbfed3dab",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_signer_runtime_input.rs"
+  },
+  {
+    "bytes": 91542816,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_spool",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_spool-bd23a2f512a84d1c",
+    "sha256": "ed80d2fac3da68336e3cc19f1f54811979c57c165f64709461b4e63f0c6adca9",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_spool.rs"
+  },
+  {
+    "bytes": 89120720,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_start_consent",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_start_consent-f6ba66c149792a6e",
+    "sha256": "4798778ded225f4889e37231cef0e5c21d79110bf9be9cd4f3a759b758e1e4d5",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_start_consent.rs"
+  },
+  {
+    "bytes": 86825376,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_task_api",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_task_api-43787508a3492997",
+    "sha256": "18da0ecc16be60a7d8b579fb377dbba3b08f54a24e25eab3265f574b4449a06c",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_task_api.rs"
+  },
+  {
+    "bytes": 88253352,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_tree",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_tree-f3be593c8738730b",
+    "sha256": "7f9ea6096eb9c940957fbce7baf016a969fda71f9194f96af88bc85a393ecf94",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_tree.rs"
+  },
+  {
+    "bytes": 8489096,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_worker_account",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_worker_account-0891d28a7eccf2f9",
+    "sha256": "32b57ec9a643a9738aac1b75d18c92dc4ba32461645b82953badece06f39964c",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_worker_account.rs"
+  },
+  {
+    "bytes": 88274408,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_worker_context",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_worker_context-3d20c4c6c925fad5",
+    "sha256": "156ca0b9de7ad2cc0109deb274ab5875148a5008ac588ae1ecc1c67414cca5a8",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_worker_context.rs"
+  },
+  {
+    "bytes": 89430696,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_worker_files",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_worker_files-52fec3acfee18a7f",
+    "sha256": "2ce667b9c561d499f14a59a5a77542161c044ce0aa4b3854c35b9ce59de483f4",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_worker_files.rs"
+  },
+  {
+    "bytes": 88768064,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_worker_kernel_binding",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_worker_kernel_binding-8e29ce7e7e7890c9",
+    "sha256": "727ae9e644ba0e83fdd4dd0a6c2d60841451108d77645147656f6321010fee80",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_worker_kernel_binding.rs"
+  },
+  {
+    "bytes": 89032664,
+    "kind": [
+      "test"
+    ],
+    "name": "diagnostic_worker_policy",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/diagnostic_worker_policy-130d1e1a2bd3dc87",
+    "sha256": "fae8ef4177f1942a13df821c4ff29aa747e08e58d9a54b5af19f413162ae649c",
+    "src": "tools/long-run-supervisor-074/tests/diagnostic_worker_policy.rs"
+  },
+  {
+    "bytes": 89337672,
+    "kind": [
+      "test"
+    ],
+    "name": "event_journal",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/event_journal-8dc2ae4a0f7adc5a",
+    "sha256": "efd34b718a551eea51b10166d63098c472c3c733cfc219f4b87f82ce5c860852",
+    "src": "tools/long-run-supervisor-074/tests/event_journal.rs"
+  },
+  {
+    "bytes": 91432512,
+    "kind": [
+      "test"
+    ],
+    "name": "held_build",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/held_build-ec361c2e242eec98",
+    "sha256": "f830be83b122b6fa1f3c8b71b4e6e4c2ba95e3b1fdc0507159ad746ea5d5b987",
+    "src": "tools/long-run-supervisor-074/tests/held_build.rs"
+  },
+  {
+    "bytes": 88505808,
+    "kind": [
+      "test"
+    ],
+    "name": "held_launcher",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/held_launcher-9ad048a5a4277728",
+    "sha256": "ec2598ab1bbba504b0dea3997a900474864c9eb6367ecb73efcd82b0a72fa452",
+    "src": "tools/long-run-supervisor-074/tests/held_launcher.rs"
+  },
+  {
+    "bytes": 88204712,
+    "kind": [
+      "test"
+    ],
+    "name": "host_execution",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/host_execution-de0a9827b08ebd76",
+    "sha256": "b1c8a7116bd70004216dff6d8a642f90990b4cc0fe39ff31ccc1ed4ddab94c07",
+    "src": "tools/long-run-supervisor-074/tests/host_execution.rs"
+  },
+  {
+    "bytes": 89485008,
+    "kind": [
+      "test"
+    ],
+    "name": "lease_expiry",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/lease_expiry-9fa221953309ef0c",
+    "sha256": "0c1a78b391bd8dd5a51ed0b2077e15999d9c24edb725c13df6d96a1f0645d29a",
+    "src": "tools/long-run-supervisor-074/tests/lease_expiry.rs"
+  },
+  {
+    "bytes": 89505088,
+    "kind": [
+      "test"
+    ],
+    "name": "manifest",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/manifest-45658da2a92fa16d",
+    "sha256": "33a8e8f1606bb361aaa28517135860bdd61d2e3a8d9cfd19fb3d1b4db011bdae",
+    "src": "tools/long-run-supervisor-074/tests/manifest.rs"
+  },
+  {
+    "bytes": 89533152,
+    "kind": [
+      "test"
+    ],
+    "name": "measurement_loss",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/measurement_loss-4a6e9350aca5a30e",
+    "sha256": "b544b4f7211a83e471ee505e8e0168d8537ecfa598c3244d5ac8dd19c31a4bab",
+    "src": "tools/long-run-supervisor-074/tests/measurement_loss.rs"
+  },
+  {
+    "bytes": 89316184,
+    "kind": [
+      "test"
+    ],
+    "name": "mutation",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/mutation-9fd2eaff512469c2",
+    "sha256": "c9264e6d3a452ed13110aeb359380f19b697b0c0446e97a7afcb8ddea2826ee5",
+    "src": "tools/long-run-supervisor-074/tests/mutation.rs"
+  },
+  {
+    "bytes": 86897472,
+    "kind": [
+      "test"
+    ],
+    "name": "process_identity",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/process_identity-ffe42d1f7257ef99",
+    "sha256": "ccb852265431bdcbe4636c6d55a066cb2b658735eabc40042add11dbda8e6da7",
+    "src": "tools/long-run-supervisor-074/tests/process_identity.rs"
+  },
+  {
+    "bytes": 89519872,
+    "kind": [
+      "test"
+    ],
+    "name": "progress_loss",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/progress_loss-5e1413ae1d2f68a2",
+    "sha256": "5c67c3a37acb32edfa37096bd4890144c55dca4456a6adcb002c0a51e22772e2",
+    "src": "tools/long-run-supervisor-074/tests/progress_loss.rs"
+  },
+  {
+    "bytes": 87722496,
+    "kind": [
+      "test"
+    ],
+    "name": "protocol",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/protocol-913b17a6994ac92e",
+    "sha256": "92230d5538977dc84d57e1c86c466d9417a85eb069fcbc636e8df862fa7ed1d4",
+    "src": "tools/long-run-supervisor-074/tests/protocol.rs"
+  },
+  {
+    "bytes": 6509192,
+    "kind": [
+      "test"
+    ],
+    "name": "provisioning",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/provisioning-baabff748c02dd94",
+    "sha256": "012e6afc4252e98ef45f0edde336546ca960769cb415d248abe7a41164317332",
+    "src": "tools/long-run-supervisor-074/tests/provisioning.rs"
+  },
+  {
+    "bytes": 88663216,
+    "kind": [
+      "test"
+    ],
+    "name": "request_builder",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/request_builder-8681ea46ef6b5acf",
+    "sha256": "1c89606d8d74bcf5b3773734aed5c9878c126f95ef875017f98cc9306a6ec7d6",
+    "src": "tools/long-run-supervisor-074/tests/request_builder.rs"
+  },
+  {
+    "bytes": 91166832,
+    "kind": [
+      "test"
+    ],
+    "name": "seal_artifact",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/seal_artifact-14829dbfa26b19e3",
+    "sha256": "272c10842a4f96191fec83a22f602675a928ca38c94237e47fc962765b527643",
+    "src": "tools/long-run-supervisor-074/tests/seal_artifact.rs"
+  },
+  {
+    "bytes": 90244632,
+    "kind": [
+      "test"
+    ],
+    "name": "seal_input",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/seal_input-d8f3cd8bc83ba4b6",
+    "sha256": "19be2437ba7856f2260175cda3c09200eac81cadc488016eb361de18204a24f5",
+    "src": "tools/long-run-supervisor-074/tests/seal_input.rs"
+  },
+  {
+    "bytes": 93787376,
+    "kind": [
+      "test"
+    ],
+    "name": "seal_lifecycle",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/seal_lifecycle-6081bfa29d0774bf",
+    "sha256": "b940759c2eacc76271a2adc2aea04d1ba8d23854decf38fe4e060a4313206147",
+    "src": "tools/long-run-supervisor-074/tests/seal_lifecycle.rs"
+  },
+  {
+    "bytes": 104565600,
+    "kind": [
+      "test"
+    ],
+    "name": "server",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/server-ec7e6e62f93f11db",
+    "sha256": "3a4a3b5b837c2b5803619d7bf362c28d6c2f3bc5429cc02e1d1b1a51b00dd7b0",
+    "src": "tools/long-run-supervisor-074/tests/server.rs"
+  },
+  {
+    "bytes": 88010504,
+    "kind": [
+      "test"
+    ],
+    "name": "service",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/service-d8e6c4a03f28bb25",
+    "sha256": "20cd19b211bea6ce0825c64835310337edaccf9465028d60a35ee95863c81853",
+    "src": "tools/long-run-supervisor-074/tests/service.rs"
+  },
+  {
+    "bytes": 88189232,
+    "kind": [
+      "test"
+    ],
+    "name": "spawn",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/spawn-abcdb83599cd406c",
+    "sha256": "1ba4e75fb10dafb9f782d06e5305c61b26eac7f9c211bb655bce662ac62f41b3",
+    "src": "tools/long-run-supervisor-074/tests/spawn.rs"
+  },
+  {
+    "bytes": 89830920,
+    "kind": [
+      "test"
+    ],
+    "name": "start_lifecycle",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/start_lifecycle-8a015feadaac01c3",
+    "sha256": "79c2077ff45d41f9d749dd0aff4d927f21c9a6323f21945e2219ea81b4f0ac17",
+    "src": "tools/long-run-supervisor-074/tests/start_lifecycle.rs"
+  },
+  {
+    "bytes": 86910720,
+    "kind": [
+      "test"
+    ],
+    "name": "state_machine",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/state_machine-936aaaffc1bd8f20",
+    "sha256": "3ddb274e5a9d5afe5bf4f55a4bdc272c03e25cd19429f33b265c3ef20d107bd7",
+    "src": "tools/long-run-supervisor-074/tests/state_machine.rs"
+  },
+  {
+    "bytes": 87926384,
+    "kind": [
+      "test"
+    ],
+    "name": "state_store",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/state_store-26017e9fe9340d42",
+    "sha256": "514843e22967d7d65f2ea402acb7ee800f503b757754341bb0dd2916643c5c87",
+    "src": "tools/long-run-supervisor-074/tests/state_store.rs"
+  },
+  {
+    "bytes": 87261216,
+    "kind": [
+      "test"
+    ],
+    "name": "systemd_notify",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/systemd_notify-cccc3ee6d9dc1e9e",
+    "sha256": "d0cc9884b3325b1481955eb74bd7b6ad69b7f89a2eef4a1314a3d6734f19cba0",
+    "src": "tools/long-run-supervisor-074/tests/systemd_notify.rs"
+  },
+  {
+    "bytes": 93620712,
+    "kind": [
+      "test"
+    ],
+    "name": "systemd_unit",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/systemd_unit-809e6851ef2b737d",
+    "sha256": "284efd8373576506946666a25da2b71171105112078a157ced35331322d9beef",
+    "src": "tools/long-run-supervisor-074/tests/systemd_unit.rs"
+  },
+  {
+    "bytes": 87790680,
+    "kind": [
+      "test"
+    ],
+    "name": "unix_transport",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/unix_transport-84a8675126a87796",
+    "sha256": "ff52b6d04a1d2e6d10f45936bf2b3b139d3533f026d86c5c18cb11b82f96ec22",
+    "src": "tools/long-run-supervisor-074/tests/unix_transport.rs"
+  },
+  {
+    "bytes": 87147464,
+    "kind": [
+      "test"
+    ],
+    "name": "watchdog",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/watchdog-46b4af0b1bb5cd48",
+    "sha256": "b746e5d209404cfd8bac8264b29edc2197ba21e588f2431ad1628fe4379d2539",
+    "src": "tools/long-run-supervisor-074/tests/watchdog.rs"
+  }
+]

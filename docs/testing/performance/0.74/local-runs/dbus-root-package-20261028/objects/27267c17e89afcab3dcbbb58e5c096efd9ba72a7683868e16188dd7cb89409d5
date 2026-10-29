@@ -1,0 +1,6 @@
+
+running 1 test
+test bootstrap_child_forged_but_canonical_sealed_record_reaches_only_closed_authentication ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.05s
+

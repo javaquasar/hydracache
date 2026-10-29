@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_artifacts::linux::projection::role_census::held_complete_census_bundle_provider_uses_only_original_worker_and_poisoned_failures_stay_refused",
+  "passed": 1
+}

@@ -1,0 +1,26 @@
+"""Read-only refusal census before replacing the local CI helper context."""
+from pathlib import Path
+import json
+import os
+
+
+if __name__ == '__main__':
+    if os.getuid() != 1000 or os.getgid() != 1000:
+        raise ValueError('fixed local nonroot census')
+    prefix = '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-root-package-074/'
+    native = '/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/'
+    active = []
+    for path in Path('/proc').iterdir():
+        if not path.name.isdigit() or int(path.name) == os.getpid():
+            continue
+        try:
+            if path.stat().st_uid != 1000:
+                continue
+            argv = (path/'cmdline').read_bytes().decode().strip('\0').split('\0')
+            if any(v in (prefix+'native.py', prefix+'batch.py', prefix+'isolated.py') or native in v for v in argv):
+                active.append(dict(pid=int(path.name), argv=argv))
+        except (FileNotFoundError, ProcessLookupError, PermissionError):
+            continue
+    print(json.dumps(dict(active=active, readonly=True,
+        boot=Path('/proc/sys/kernel/random/boot_id').read_text().strip())))
+    raise SystemExit(bool(active))

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::boot_buffer_tests::boot_buffer_every_single_byte_mutation_matches_old_decoder",
+  "passed": 1
+}

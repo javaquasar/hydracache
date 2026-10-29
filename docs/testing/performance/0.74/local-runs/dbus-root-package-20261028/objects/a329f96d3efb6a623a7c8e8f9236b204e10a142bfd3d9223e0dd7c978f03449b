@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_manager::account::namespace_binding::tests::namespace_binding_owned_first_and_second_account_drift_latch_after_drop",
+  "passed": 1
+}

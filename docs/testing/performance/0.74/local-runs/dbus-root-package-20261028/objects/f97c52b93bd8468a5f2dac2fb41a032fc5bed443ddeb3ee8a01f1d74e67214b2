@@ -1,0 +1,14 @@
+{
+  "boot_after": "1b6e5444-1a81-4a18-8104-8ce67d4098f5",
+  "boot_before": "1b6e5444-1a81-4a18-8104-8ce67d4098f5",
+  "boot_unchanged": true,
+  "clocks_changed": false,
+  "passed": true,
+  "phase": "seed-reuse",
+  "release_admitted": false,
+  "reused_from": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-root-package-20261028\\seed\\native-result.json",
+  "reused_sha256": "abe55203e2d4862ad5256b8a84039673adcff576960a5f25a51637698d837bac",
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

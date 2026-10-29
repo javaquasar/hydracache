@@ -1,0 +1,6 @@
+
+running 1 test
+test root::launch::handoff::tests::send_window_terminal_refuses_unknown_modes_and_live_peer_zero_records ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 50 filtered out; finished in 0.00s
+

@@ -1,0 +1,28 @@
+{
+  "catalog": 5,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 5,
+  "rows": [
+    [
+      "accounts_directories_and_unresolved_key_fail_closed",
+      "ok"
+    ],
+    [
+      "private_storage_is_checked_before_installation_without_metadata_repair",
+      "ok"
+    ],
+    [
+      "role_overhead_does_not_expand_the_fixed_root_entrypoint",
+      "ok"
+    ],
+    [
+      "service_is_detached_confined_and_exposes_no_workflow_shell",
+      "ok"
+    ],
+    [
+      "sudo_boundary_exposes_only_the_fixed_signed_bundle_installer",
+      "ok"
+    ]
+  ]
+}

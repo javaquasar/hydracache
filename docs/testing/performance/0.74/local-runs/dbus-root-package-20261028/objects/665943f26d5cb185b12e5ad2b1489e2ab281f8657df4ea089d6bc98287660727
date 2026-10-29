@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 11,
+  "name": "owned::tests::loss::owned_probe_loss_report_mutations_refuse_without_pid_adoption",
+  "passed": 1
+}

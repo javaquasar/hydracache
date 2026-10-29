@@ -1,0 +1,24 @@
+{
+  "catalog": 4,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 4,
+  "rows": [
+    [
+      "c74_plan_combines_explicit_inventories_and_binds_durable_i74_digest",
+      "ok"
+    ],
+    [
+      "final_plan_rejects_missing_or_tampered_continuation_result",
+      "ok"
+    ],
+    [
+      "i74_plan_is_derived_only_from_the_strict_role_inventory",
+      "ok"
+    ],
+    [
+      "inventory_drift_unknown_fields_and_cross_role_paths_fail_closed",
+      "ok"
+    ]
+  ]
+}

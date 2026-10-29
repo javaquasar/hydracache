@@ -1,0 +1,91 @@
+"""Local package-gate custody and the unchanged original CI process mechanisms."""
+from pathlib import Path
+import hashlib
+import importlib.util
+import json
+import os
+import shutil
+import subprocess
+import sys
+
+import apply as app
+
+ROOT, PKG = app.ROOT, app.PKG
+BASE = ROOT / 'target/dbus-root-package-20261029-resource6'
+need, sha, write = app.need, app.sha, app.write
+NATIVE = '/home/artur/.cache/hydracache-074-root-package/20261028-a1'
+_owned = None
+
+
+def load(path, name):
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def owned():
+    global _owned
+    if _owned is None:
+        path = ROOT / 'tools/windows-workspace-preflight-074/owned.py'
+        need(sha(path.read_bytes()) == 'e7c5a3c0c4fea90f39772512c4ad96c60693fc0b482092a608dcf039e151eade',
+             'original CI process owner')
+        sys.path.insert(0, str(path.parent))
+        import prepare
+        need(sha(Path(prepare.__file__).read_bytes()) == 'c7f35ef9f497f548cf3de4c11fd6bff833621b2ba3a498621a57a7402af1224b',
+             'original CI owner context')
+        _owned = load(path, 'root_package_unchanged_ci_owner')
+    return _owned
+
+
+def capacity(native=None):
+    if shutil.disk_usage(ROOT).free < 4*1024**3 or native is not None and shutil.disk_usage(native).free < 4*1024**3:
+        raise owned().CapacityError('original physical/native 4 GiB floors')
+
+
+def git_snapshot():
+    return dict(head=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT).decode().strip(),
+        tracked=subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=no'], cwd=ROOT).decode())
+
+
+def source_names():
+    # Root members are preserved by the reviewed manifest; all tracked member data stays.
+    import tomllib
+    members = tomllib.loads((ROOT/'Cargo.toml').read_text())['workspace']['members']
+    names = subprocess.check_output(['git', 'ls-files', '-z', '--', *members], cwd=ROOT).split(b'\0')
+    names = {p.decode() for p in names if p}
+    recipe = json.loads(app.member('candidate/fileset.json'))
+    names |= {v['path'] for v in recipe['operations']}
+    names |= {'Cargo.toml','Cargo.lock','deny.toml','.cargo/config.toml',
+              'docs/testing/performance/0.74/qualification-manifest.toml'}
+    return sorted(names)
+
+
+def hashes(names):
+    if os.name == 'posix':
+        import source_guard
+        return source_guard.hashes(ROOT, names)
+    result = {}
+    for name in names:
+        path = ROOT/name
+        need(path.resolve().is_relative_to(ROOT.resolve()) and not path.is_symlink() and not path.is_junction(),
+             'regular actual root source')
+        result[name] = sha(path.read_bytes())
+    return result
+
+
+def guard(receipt):
+    need(hashes(receipt['source']) == receipt['source'], 'actual root source drift')
+    need(hashes(receipt['helpers']) == receipt['helpers'], 'package helper drift')
+
+
+def windows_environment():
+    toolchain = Path(r'C:/Users/ArturBuzov/.rustup/toolchains/1.94.0-x86_64-pc-windows-msvc/bin')
+    env = {k:os.environ[k] for k in ('SystemRoot','WINDIR','COMSPEC','TEMP','TMP','USERPROFILE',
+                                   'APPDATA','LOCALAPPDATA','USERNAME') if k in os.environ}
+    env.update(PATH=str(toolchain)+os.pathsep+str(Path(os.environ['SystemRoot'])/'System32'),
+        CARGO_HOME=str(Path(os.environ['USERPROFILE'])/'.cargo'), CARGO_NET_OFFLINE='true',
+        RUSTC=str(toolchain/'rustc.exe'), RUSTC_WRAPPER='', RUSTC_WORKSPACE_WRAPPER='',
+        RUSTFMT=str(toolchain/'rustfmt.exe'), RUSTUP_TOOLCHAIN='1.94.0-x86_64-pc-windows-msvc',
+        CARGO_INCREMENTAL='0', CARGO_BUILD_JOBS='2')
+    return toolchain, env

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_loaded::tests::loaded_wire_refuses_schema_unknown_duplicate_noncanonical_and_budget",
+  "passed": 1
+}

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 5,
+  "name": "activation::tests::activation_ingress_unknown_missing_duplicate_and_noncanonical_fields_refuse",
+  "passed": 1
+}

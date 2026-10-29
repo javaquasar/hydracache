@@ -1,0 +1,82 @@
+param([Parameter(Mandatory=$true)][string]$Receipt)
+$ErrorActionPreference = 'Stop'
+$taskRoot = (Get-Item -LiteralPath 'C:\Workspace\prj\jq\cashe\hydracache-074' -Force).FullName
+$scopes = @('target\chitchat-mtu-20261028\targets','target\dbus-runtime-20261028\targets',
+    'target\remaining-security-20261028\targets','target\tests\trybuild')
+$extensions = @('.rlib','.rmeta','.o','.obj','.a','.lib','.pdb')
+try {
+    $active = @(Get-CimInstance Win32_Process | Where-Object {
+        $_.Name -in @('cargo.exe','rustc.exe','clippy-driver.exe','link.exe','lld-link.exe')
+    })
+    if ($active.Count -ne 0) {
+        @{removed=0;skipped=$true;reason='Windows compiler active';active_count=$active.Count} |
+            ConvertTo-Json | Set-Content -LiteralPath (Join-Path $Receipt 'result.json')
+        exit 0
+    }
+    $markers = @()
+    foreach ($scope in $scopes) {
+        $absolute = [IO.Path]::GetFullPath((Join-Path $taskRoot $scope))
+        if (-not $absolute.StartsWith(($taskRoot+'\target\'),[StringComparison]::OrdinalIgnoreCase)) {
+            throw 'Old cache scope escaped the intended target directory'
+        }
+        foreach ($marker in Get-ChildItem -LiteralPath $absolute -File -Filter 'CACHEDIR.TAG' -Recurse -Force) {
+            if ((Get-Content -LiteralPath $marker.FullName -TotalCount 1) -ne 'Signature: 8a477f597d28d172789f06886806bc55') {
+                throw 'Unexpected Cargo marker body'
+            }
+            $markers += $marker.Directory.FullName
+        }
+    }
+    if ($markers.Count -ne 21) { throw 'Unexpected old Cargo target inventory' }
+    $selected = @{}
+    $parents = @{}
+    foreach ($cache in $markers) {
+        foreach ($entry in Get-ChildItem -LiteralPath $cache -File -Recurse -Force) {
+            if ($entry.Extension -notin $extensions) { continue }
+            if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Aliased object file' }
+            $absolute = [IO.Path]::GetFullPath($entry.FullName)
+            if (-not $absolute.StartsWith(($cache+'\'),[StringComparison]::OrdinalIgnoreCase) -or
+                -not $absolute.StartsWith(($taskRoot+'\target\'),[StringComparison]::OrdinalIgnoreCase)) {
+                throw 'Object path escaped verified old Cargo target'
+            }
+            $parent = $entry.Directory
+            while ($parent -and $parent.FullName.StartsWith($taskRoot,[StringComparison]::OrdinalIgnoreCase)) {
+                if (-not $parents.ContainsKey($parent.FullName)) {
+                    $metadata = Get-Item -LiteralPath $parent.FullName -Force
+                    if ($metadata.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Aliased object ancestor' }
+                    $parents[$parent.FullName] = $true
+                }
+                if ($parent.FullName -eq $taskRoot) { break }
+                $parent = $parent.Parent
+            }
+            $selected[$absolute] = $entry
+        }
+    }
+    $items = @($selected.Values | Sort-Object FullName)
+    $active = @(Get-CimInstance Win32_Process | Where-Object {
+        $_.Name -in @('cargo.exe','rustc.exe','clippy-driver.exe','link.exe','lld-link.exe')
+    })
+    if ($active.Count -ne 0) { throw 'Windows compiler appeared after preflight; preserve objects' }
+    $before = (Get-PSDrive -Name C).Free
+    $markers | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $Receipt 'cargo-roots.json')
+    @($items | Select-Object FullName,Length,LastWriteTimeUtc) | ConvertTo-Json -Depth 4 |
+        Set-Content -LiteralPath (Join-Path $Receipt 'files.json')
+    $removed = 0
+    $bytes = 0L
+    foreach ($entry in $items) {
+        $now = Get-Item -LiteralPath $entry.FullName -Force
+        if ($now.Length -ne $entry.Length -or $now.LastWriteTimeUtc -ne $entry.LastWriteTimeUtc -or
+            ($now.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'Object changed after preflight' }
+        Remove-Item -LiteralPath $now.FullName -Force
+        $removed++
+        $bytes += $entry.Length
+    }
+    $result = [ordered]@{removed=$removed;bytes=$bytes;free_before=$before;free_after=(Get-PSDrive -Name C).Free;
+        cargo_target_roots=$markers.Count;sources_preserved=$true;evidence_preserved=$true;
+        executables_preserved=$true;other_worktrees_untouched=$true}
+    $result | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $Receipt 'result.json')
+    $result | ConvertTo-Json -Compress
+} catch {
+    @{type=$_.Exception.GetType().Name;reason=$_.Exception.Message;removed=$removed;bytes=$bytes} |
+        ConvertTo-Json | Set-Content -LiteralPath (Join-Path $Receipt 'refusal.json')
+    throw
+}

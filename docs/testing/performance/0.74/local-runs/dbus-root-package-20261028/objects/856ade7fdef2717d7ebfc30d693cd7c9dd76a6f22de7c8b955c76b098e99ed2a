@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 38,
+  "name": "reader::current_image::tests::identical_bytes_at_another_inode_do_not_identify_the_same_image",
+  "passed": 1
+}

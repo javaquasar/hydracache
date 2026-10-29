@@ -1,0 +1,9 @@
+
+running 4 tests
+test c74_complete_seal_releases_host_claim_and_replays_after_release ... ok
+test terminal_artifact_sealed_response_is_durable_and_exactly_replayed ... ok
+test terminal_event_ahead_of_state_is_reconciled_before_artifact_creation ... ok
+test terminal_unit_drift_fails_before_state_or_artifact_mutation ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+

@@ -1,0 +1,25 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::dispatch_exchange::tests::negotiated_tests::dispatch_negotiated_private_bus_fault_matrix ... ok
+
+successes:
+
+---- diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::dispatch_exchange::tests::negotiated_tests::dispatch_negotiated_private_bus_fault_matrix stdout ----
+HC074-NATIVE-FD-FAULT native_cloexec=true loss_injected=true guard_refused=true restored=true
+HC074-NEGOTIATED case=bare-receiver result=ok accepted=false cloexec=false retry=false original=false
+HC074-NEGOTIATED case=healthy result=ok sends=1 retry=false retained_writer=true original=false
+HC074-NEGOTIATED case=atomic-adapter result=ok sends=1 retry=false retained_writer=true original=false
+HC074-NEGOTIATED case=fragmented result=ok sends=1 retry=false retained_writer=true original=false
+HC074-NEGOTIATED case=lost-ack result=ok sends=1 retry=false retained_writer=true original=false
+HC074-NEGOTIATED case=foreign-sender result=ok sends=1 retry=false retained_writer=true original=false
+HC074-NEGOTIATED case=wrong-serial result=ok sends=1 retry=false retained_writer=true original=false
+HC074-NEGOTIATED case=disconnect result=ok sends=1 retry=false retained_writer=true original=false
+HC074-NEGOTIATED case=manager-error result=ok sends=1 retry=false retained_writer=true original=false
+HC074-NEGOTIATED case=no-capability result=ok sends=0 retry=false original=false
+
+
+successes:
+    diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::dispatch_exchange::tests::negotiated_tests::dispatch_negotiated_private_bus_fault_matrix
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.41s
+

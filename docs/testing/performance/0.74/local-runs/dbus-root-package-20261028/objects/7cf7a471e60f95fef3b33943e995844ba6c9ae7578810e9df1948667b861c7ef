@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_manager::account::binding::tests::binding_every_failure_preserves_first_error_and_stops_the_bracket",
+  "passed": 1
+}

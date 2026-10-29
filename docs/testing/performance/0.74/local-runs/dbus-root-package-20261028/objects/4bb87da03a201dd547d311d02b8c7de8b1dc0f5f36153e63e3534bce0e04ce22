@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_two_phase_launch::tests::held_placement::held_placement_versions_and_signature_domains_do_not_upgrade_old_claims",
+  "passed": 1
+}

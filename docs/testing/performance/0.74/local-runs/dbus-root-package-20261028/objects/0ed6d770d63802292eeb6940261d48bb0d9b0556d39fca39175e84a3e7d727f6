@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_manager::account::tests::fixed_account_request_refuses_selectors_schema_duplicates_and_trailing_bytes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

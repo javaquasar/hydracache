@@ -1,0 +1,5 @@
+error: field #[hydracache(id)] does not accept a value; put id = Type on the struct or use #[hydracache(id)] on one named field
+ --> tests/derive/fail_field_id_value.rs:6:18
+  |
+6 |     #[hydracache(id = i64)]
+  |                  ^^

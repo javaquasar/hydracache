@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 11,
+  "name": "owned::tests::loss::owned_probe_parent_loss_role",
+  "passed": 1
+}

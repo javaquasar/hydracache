@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::tests::equal_bytes_replacement_refuses_cleanup_without_mutating_foreign_file",
+  "passed": 1
+}

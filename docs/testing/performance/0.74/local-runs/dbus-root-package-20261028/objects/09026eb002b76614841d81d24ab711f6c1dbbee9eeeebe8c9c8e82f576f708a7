@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_controller_producer::linux::tests::retained::retained_producer_public_entry_keeps_controller_pin_and_exclusive_output",
+  "passed": 1
+}

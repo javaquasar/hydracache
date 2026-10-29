@@ -1,0 +1,9 @@
+{
+  "correction": "restore exact held preimage then use original workspace edition 2021",
+  "first_owned_formatter_exit": 0,
+  "raw_outer_streams_retained": false,
+  "reason": "standalone formatter used edition 2024 instead of workspace edition 2021; strict source-equivalence control refused",
+  "runtime_changed": false,
+  "source_after_retained": true,
+  "source_before_retained": true
+}

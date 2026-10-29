@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_process::io::tests::observed_shrink_budget_and_exit_are_sticky",
+  "passed": 1
+}

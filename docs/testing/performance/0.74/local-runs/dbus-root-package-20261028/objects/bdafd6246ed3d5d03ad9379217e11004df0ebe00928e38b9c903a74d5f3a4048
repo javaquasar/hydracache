@@ -1,0 +1,44 @@
+{
+  "catalog": 9,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 9,
+  "rows": [
+    [
+      "accepted_start_response_is_durable_and_replayed_without_touching_backend",
+      "ok"
+    ],
+    [
+      "c74_accepted_response_is_durable_and_lost_side_effect_response_is_adopted",
+      "ok"
+    ],
+    [
+      "c74_rejects_unsealed_or_stale_predecessor_without_backend_effect",
+      "ok"
+    ],
+    [
+      "c74_starts_only_from_exact_i74_seal_and_has_independent_spawn_evidence",
+      "ok"
+    ],
+    [
+      "drives_prepared_start_to_running_once_and_replays_without_backend_calls",
+      "ok"
+    ],
+    [
+      "durable_intent_without_side_effect_fails_incomplete_and_never_starts_on_recovery",
+      "ok"
+    ],
+    [
+      "lost_backend_response_is_adopted_before_recording_success_response",
+      "ok"
+    ],
+    [
+      "recovers_event_ahead_of_missing_or_stale_state_before_spawning",
+      "ok"
+    ],
+    [
+      "recovers_starting_event_ahead_of_prepared_snapshot_before_spawning",
+      "ok"
+    ]
+  ]
+}

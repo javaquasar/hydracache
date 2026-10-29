@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "campaign_smoke::tests::lifecycle_resume_switches_only_after_the_frozen_lease_deadline",
+  "passed": 1
+}

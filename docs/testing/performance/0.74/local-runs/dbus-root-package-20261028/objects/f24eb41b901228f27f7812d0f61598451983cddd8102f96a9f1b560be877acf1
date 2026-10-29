@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_two_phase_launch::held_barrier::prearmed::tests::prearmed_thread_drift_refuses_before_any_enrollment_send",
+  "passed": 1
+}

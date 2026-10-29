@@ -1,0 +1,6 @@
+
+running 1 test
+test watchdog::autonomous::tests::autonomous_writer_fence_matrix ... ignored, manual nonroot isolated kernel fault mechanics, no product workload
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

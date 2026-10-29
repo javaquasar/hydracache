@@ -1,0 +1,1761 @@
+{
+  "compiler_gate_complete": false,
+  "head": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+  "local_application_authorized": true,
+  "operations": [
+    {
+      "after_sha256": "76d4ab3b38c1b259c0784e66dd620a5f61d45cde1760a9533c4d6c7db061b207",
+      "before_sha256": "9efeffabd8726a961a84d23b7a8e5f2ce74e0e313698f064eed603ea79062a7c",
+      "bytes": 173344,
+      "path": "Cargo.lock"
+    },
+    {
+      "after_sha256": "84b1986d8a2014be985460b3ecc4a809f3ae3e8f9822ef6c7134b3ecbe9af114",
+      "before_sha256": "a494481b85fa84fd07e19a447c6d5fe7a49aa12557e0c0befc86fdea390d3bf2",
+      "bytes": 7491,
+      "path": "Cargo.toml"
+    },
+    {
+      "after_sha256": "7ed91444881a0889e2cbe6d08c933e190d52f3340b489adc0f5b5f0f674c9bf1",
+      "before_sha256": null,
+      "bytes": 98,
+      "path": "third_party/hc074-dbus/zbus/.cargo_vcs_info.json"
+    },
+    {
+      "after_sha256": "1ff4d8665a71b59d3e3584f18ad1963f172f2a5ece8f46d17ab1d41cfcc7e5ac",
+      "before_sha256": null,
+      "bytes": 929,
+      "path": "third_party/hc074-dbus/zbus/BACKPORT074.json"
+    },
+    {
+      "after_sha256": "93a9030606bd17def10aa0bf607ba9c37835d13f26aa232552a24569d367f230",
+      "before_sha256": null,
+      "bytes": 13220,
+      "path": "third_party/hc074-dbus/zbus/CHANGELOG.md"
+    },
+    {
+      "after_sha256": "251467a1767ef3aeeced3a709169792c1395962148fa57254f9329803481cb9f",
+      "before_sha256": null,
+      "bytes": 49561,
+      "path": "third_party/hc074-dbus/zbus/Cargo.lock"
+    },
+    {
+      "after_sha256": "eab7ebb034bd6e97a25231e6114037a18fa18793adf85044b4378aa105206828",
+      "before_sha256": null,
+      "bytes": 8138,
+      "path": "third_party/hc074-dbus/zbus/Cargo.toml"
+    },
+    {
+      "after_sha256": "eab7ebb034bd6e97a25231e6114037a18fa18793adf85044b4378aa105206828",
+      "before_sha256": null,
+      "bytes": 8138,
+      "path": "third_party/hc074-dbus/zbus/Cargo.toml.orig"
+    },
+    {
+      "after_sha256": "260e4ff3fc493695880c90774283eb1e3d018f898fabe655bbd52dd2cbd2fcad",
+      "before_sha256": null,
+      "bytes": 1080,
+      "path": "third_party/hc074-dbus/zbus/LICENSE"
+    },
+    {
+      "after_sha256": "0e5d1c7b4d4766f2249cb98b29e250c56d750bebfdbef2f06a2088e86ddb095d",
+      "before_sha256": null,
+      "bytes": 9393,
+      "path": "third_party/hc074-dbus/zbus/README.md"
+    },
+    {
+      "after_sha256": "f46ad8ea6da860ae8c2ce52ff73c2e4cc5cb8948e74ac1425e4b5c774374fc96",
+      "before_sha256": null,
+      "bytes": 3859,
+      "path": "third_party/hc074-dbus/zbus/benches/benchmarks.rs"
+    },
+    {
+      "after_sha256": "c9c3c395fccc8af649d01b52e4a0bb4ecf389352291cacf32fd9b974bc0fca14",
+      "before_sha256": null,
+      "bytes": 2011,
+      "path": "third_party/hc074-dbus/zbus/benches/names.rs"
+    },
+    {
+      "after_sha256": "7c2a0dee7d8adaeb8fd7967d3353d2006484728c9cf647978f3caeb25e55a9b6",
+      "before_sha256": null,
+      "bytes": 2193,
+      "path": "third_party/hc074-dbus/zbus/benches/runtime.rs"
+    },
+    {
+      "after_sha256": "fd106e71bee564ccb01bcf29d855f2832b30c503e2bde310e78c183baa4e47d7",
+      "before_sha256": null,
+      "bytes": 5368,
+      "path": "third_party/hc074-dbus/zbus/benches/wire.rs"
+    },
+    {
+      "after_sha256": "a2fb0a13ade2b6f67e02598e897179cea756168712e6dbdb313350de44abb80d",
+      "before_sha256": null,
+      "bytes": 1180,
+      "path": "third_party/hc074-dbus/zbus/examples/screen-brightness.rs"
+    },
+    {
+      "after_sha256": "39aaf487cd3dc8bfc628538d635e6184e8c4e22a4a6f02c18bf988b6edb03df7",
+      "before_sha256": null,
+      "bytes": 1674,
+      "path": "third_party/hc074-dbus/zbus/examples/watch-systemd-jobs.rs"
+    },
+    {
+      "after_sha256": "1d0ab8a3a9e07b7faa3bd731f9aeb7fe3dd1d60210074d1e0f3506eabd3dc3c2",
+      "before_sha256": null,
+      "bytes": 17963,
+      "path": "third_party/hc074-dbus/zbus/src/address/mod.rs"
+    },
+    {
+      "after_sha256": "55e1b03ac8610d71f24dc2cb0c98bd77f8a3b1f0f9328840202fc40e5624fb33",
+      "before_sha256": null,
+      "bytes": 2475,
+      "path": "third_party/hc074-dbus/zbus/src/address/transport/autolaunch.rs"
+    },
+    {
+      "after_sha256": "90400033fde554f96083911cbce20f9b3d87d68ed26ff625df47f6c89082118f",
+      "before_sha256": null,
+      "bytes": 4063,
+      "path": "third_party/hc074-dbus/zbus/src/address/transport/ibus.rs"
+    },
+    {
+      "after_sha256": "166445b88a0226a4fda38a00878315604f788da65bf7846abe1bf3de1865ca47",
+      "before_sha256": null,
+      "bytes": 1856,
+      "path": "third_party/hc074-dbus/zbus/src/address/transport/launchd.rs"
+    },
+    {
+      "after_sha256": "b0d9421e17cbd80b0d45413e9a045e747bdc3936008ce9f12723701771f32f0c",
+      "before_sha256": null,
+      "bytes": 8728,
+      "path": "third_party/hc074-dbus/zbus/src/address/transport/mod.rs"
+    },
+    {
+      "after_sha256": "68ea72dccf39bfcf10085e7989bd31d15616f93eb45a2fb85e398acd4187a9d6",
+      "before_sha256": null,
+      "bytes": 9005,
+      "path": "third_party/hc074-dbus/zbus/src/address/transport/tcp.rs"
+    },
+    {
+      "after_sha256": "9fbb2da5a6400344d0dfef8e7c6d2e6148f7050d35d746126db98d468aa75ae7",
+      "before_sha256": null,
+      "bytes": 6333,
+      "path": "third_party/hc074-dbus/zbus/src/address/transport/unix.rs"
+    },
+    {
+      "after_sha256": "ba545e1163ce5b6a0a30a4f9921e37979f964ad086bc314dc88fb8f9c7aa129e",
+      "before_sha256": null,
+      "bytes": 5709,
+      "path": "third_party/hc074-dbus/zbus/src/address/transport/unixexec.rs"
+    },
+    {
+      "after_sha256": "1ecc2871ba0ad93602c9028b8ab10378ab8caacb0104863e9703e5042a085c7b",
+      "before_sha256": null,
+      "bytes": 1980,
+      "path": "third_party/hc074-dbus/zbus/src/connection/activity_listener.rs"
+    },
+    {
+      "after_sha256": "00e190e31b5363d281a4ba3c2c6ac81a6661ce580192b0462894df90fddc9346",
+      "before_sha256": null,
+      "bytes": 31899,
+      "path": "third_party/hc074-dbus/zbus/src/connection/builder.rs"
+    },
+    {
+      "after_sha256": "686eee8beb962e90e8bfc713f5cc75b161de0553e7ea52cbfadb659f6297df88",
+      "before_sha256": null,
+      "bytes": 1977,
+      "path": "third_party/hc074-dbus/zbus/src/connection/handshake/auth_mechanism.rs"
+    },
+    {
+      "after_sha256": "3884b5161166b5d7103360b90f211f5050c061e5762da55641678195b9aeea60",
+      "before_sha256": null,
+      "bytes": 8579,
+      "path": "third_party/hc074-dbus/zbus/src/connection/handshake/client.rs"
+    },
+    {
+      "after_sha256": "8a6c5d85ab7bc7c55e9115f8394ea74b93e0c2694198100f659cd55986205bde",
+      "before_sha256": null,
+      "bytes": 3524,
+      "path": "third_party/hc074-dbus/zbus/src/connection/handshake/command.rs"
+    },
+    {
+      "after_sha256": "e97ff5a9ffd1845e76f7895d6bb52bf9e3c44d144259d1f9e735b8abe24bd4db",
+      "before_sha256": null,
+      "bytes": 6068,
+      "path": "third_party/hc074-dbus/zbus/src/connection/handshake/common.rs"
+    },
+    {
+      "after_sha256": "c72998ad1b264ac0fba0589db78876779077d2b8c712e07920baa80836e49feb",
+      "before_sha256": null,
+      "bytes": 12603,
+      "path": "third_party/hc074-dbus/zbus/src/connection/handshake/mod.rs"
+    },
+    {
+      "after_sha256": "de4699767520a5fa16b1a48e99c8665694f6f7cb2ef7b5b53ad04cfbee795ce8",
+      "before_sha256": null,
+      "bytes": 8689,
+      "path": "third_party/hc074-dbus/zbus/src/connection/handshake/server.rs"
+    },
+    {
+      "after_sha256": "9cafce21471655aae2dc1d76fd7d60c101e24f73e91680c0f078c50821ae0ae6",
+      "before_sha256": null,
+      "bytes": 75043,
+      "path": "third_party/hc074-dbus/zbus/src/connection/mod.rs"
+    },
+    {
+      "after_sha256": "fafd8230264322710e182b71927a1a2081cac566836955fc89a884efb7817347",
+      "before_sha256": null,
+      "bytes": 5306,
+      "path": "third_party/hc074-dbus/zbus/src/connection/pending_method_calls.rs"
+    },
+    {
+      "after_sha256": "96f8c53a9791c4829f54a8de3f047826216e204885d4e3638e1658acee768ecf",
+      "before_sha256": null,
+      "bytes": 4261,
+      "path": "third_party/hc074-dbus/zbus/src/connection/socket/channel.rs"
+    },
+    {
+      "after_sha256": "889c82d7447ed9b89c606a0c40e42544bd2f3ab3d87ed9edbcafdf27063499bd",
+      "before_sha256": null,
+      "bytes": 20110,
+      "path": "third_party/hc074-dbus/zbus/src/connection/socket/mod.rs"
+    },
+    {
+      "after_sha256": "af67db0f9dd761bc1eee30971fae9d6f9cab0bd88e2817d6f97fe23c6de1a468",
+      "before_sha256": null,
+      "bytes": 1235,
+      "path": "third_party/hc074-dbus/zbus/src/connection/socket/split.rs"
+    },
+    {
+      "after_sha256": "fe9ee64e3622ccb818f2c040ff6152ed4c332b5dcbdfb5e34244fea994860343",
+      "before_sha256": null,
+      "bytes": 9122,
+      "path": "third_party/hc074-dbus/zbus/src/connection/socket_reader.rs"
+    },
+    {
+      "after_sha256": "97df2c7f76b428e1b8bc300c302aefae8afc8016e38a8a607fefd6e8fe2b3544",
+      "before_sha256": null,
+      "bytes": 2920,
+      "path": "third_party/hc074-dbus/zbus/src/dbus_error.rs"
+    },
+    {
+      "after_sha256": "9354a9ba49779727d35d0ea623bf11b2b4e0fb5c7dd6fea0b44e8086ed652faa",
+      "before_sha256": null,
+      "bytes": 20222,
+      "path": "third_party/hc074-dbus/zbus/src/error.rs"
+    },
+    {
+      "after_sha256": "9499c009e49bf376b99e3e6a978e8a0674937f667a63f554232655f50a1fe678",
+      "before_sha256": null,
+      "bytes": 21196,
+      "path": "third_party/hc074-dbus/zbus/src/fdo/dbus.rs"
+    },
+    {
+      "after_sha256": "00e7a5aeaf20a59a553026d70198be66d296589926233d2de1b325ac319a1311",
+      "before_sha256": null,
+      "bytes": 5732,
+      "path": "third_party/hc074-dbus/zbus/src/fdo/error.rs"
+    },
+    {
+      "after_sha256": "1b82b3f51a09a5fcd956f302161922b6d95da67e27d11ea4877858b685c9dba2",
+      "before_sha256": null,
+      "bytes": 1853,
+      "path": "third_party/hc074-dbus/zbus/src/fdo/introspectable.rs"
+    },
+    {
+      "after_sha256": "ac0c590b217fb49d16e16be1f1718a12d5491f2a400be9b596bf34deca309a29",
+      "before_sha256": null,
+      "bytes": 12732,
+      "path": "third_party/hc074-dbus/zbus/src/fdo/mod.rs"
+    },
+    {
+      "after_sha256": "ec2892855e71af3315981cfe684669b8d266f68a15ce4c55266e251c5e60ff26",
+      "before_sha256": null,
+      "bytes": 1747,
+      "path": "third_party/hc074-dbus/zbus/src/fdo/monitoring.rs"
+    },
+    {
+      "after_sha256": "939b5a92dd26c148cb62949fe325dcac8af96a985cbf75338fe8c33e92567f55",
+      "before_sha256": null,
+      "bytes": 7661,
+      "path": "third_party/hc074-dbus/zbus/src/fdo/object_manager.rs"
+    },
+    {
+      "after_sha256": "b36c50c98026a4250624ca6b869c332e45246d61c4a7ffdfa9e0f2c88125ccd5",
+      "before_sha256": null,
+      "bytes": 10295,
+      "path": "third_party/hc074-dbus/zbus/src/fdo/peer.rs"
+    },
+    {
+      "after_sha256": "a127ce901fd23fea18f542a6c22f5bca55a3fab53bea9c5bd95c61168359256d",
+      "before_sha256": null,
+      "bytes": 6150,
+      "path": "third_party/hc074-dbus/zbus/src/fdo/properties.rs"
+    },
+    {
+      "after_sha256": "b58bd63a4cbe6d0fa1662697ee85a51f8123d0a26e25fab4a0da59e654283ab2",
+      "before_sha256": null,
+      "bytes": 11329,
+      "path": "third_party/hc074-dbus/zbus/src/fdo/stats.rs"
+    },
+    {
+      "after_sha256": "d5d968eebc282185bd7defff7d8ace5f6f47e06f558cc7ad77bafc9d3af50be0",
+      "before_sha256": null,
+      "bytes": 6547,
+      "path": "third_party/hc074-dbus/zbus/src/guid.rs"
+    },
+    {
+      "after_sha256": "8268c3d7d85ef55d464e188fe56910029f3aadffcab79e0d02dff315e190f2ef",
+      "before_sha256": null,
+      "bytes": 5337,
+      "path": "third_party/hc074-dbus/zbus/src/lib.rs"
+    },
+    {
+      "after_sha256": "622013636636a5cc08ba23be5e4be3d1a1fc46b262c6e0d0d0dad8d6d90b87c5",
+      "before_sha256": null,
+      "bytes": 2488,
+      "path": "third_party/hc074-dbus/zbus/src/log.rs"
+    },
+    {
+      "after_sha256": "53e6e273a2e5f6a80eef898e51393d9dcc694fc3855d1deeb925ffdb1ca6b4bd",
+      "before_sha256": null,
+      "bytes": 26442,
+      "path": "third_party/hc074-dbus/zbus/src/match_rule/builder.rs"
+    },
+    {
+      "after_sha256": "d1d03b21bd74d7ebbca6cda290b85ec6cc8bdaeed2016c6149db9759ff4512ad",
+      "before_sha256": null,
+      "bytes": 28572,
+      "path": "third_party/hc074-dbus/zbus/src/match_rule/mod.rs"
+    },
+    {
+      "after_sha256": "1f534eb3a69d68edf3fc167e6652c5b9cf6617b75d74d6a7c8dc84394b6f16db",
+      "before_sha256": null,
+      "bytes": 2124,
+      "path": "third_party/hc074-dbus/zbus/src/message/body.rs"
+    },
+    {
+      "after_sha256": "d2e77fec62f99f542b6e568773fcc065ab84612b52c045cadfbcd92a0e740706",
+      "before_sha256": null,
+      "bytes": 13864,
+      "path": "third_party/hc074-dbus/zbus/src/message/builder.rs"
+    },
+    {
+      "after_sha256": "cacc1883ce41dd4d982b75c4ba6285ca0ffc97e94ed4eed43726ea25e2976c89",
+      "before_sha256": null,
+      "bytes": 1449,
+      "path": "third_party/hc074-dbus/zbus/src/message/field_code.rs"
+    },
+    {
+      "after_sha256": "7d2dac5741a3970eb99a2dc12b5fb63f2ec9426951fc453fcac9a6a9f7994e83",
+      "before_sha256": null,
+      "bytes": 9861,
+      "path": "third_party/hc074-dbus/zbus/src/message/fields.rs"
+    },
+    {
+      "after_sha256": "7db91f7d3761a5630777072bcb3274e6cb503d3df0c8f120d9a59d7471f34bb7",
+      "before_sha256": null,
+      "bytes": 14425,
+      "path": "third_party/hc074-dbus/zbus/src/message/header.rs"
+    },
+    {
+      "after_sha256": "0af0e03285b17cbca064c0400255accc4c533daca7fdc24a8fb44881c56e7fd4",
+      "before_sha256": null,
+      "bytes": 13170,
+      "path": "third_party/hc074-dbus/zbus/src/message/mod.rs"
+    },
+    {
+      "after_sha256": "1b5955be7e20e9599aa3392acba0c63f527e7a0d4e751ac0cd1c2d80a3924478",
+      "before_sha256": null,
+      "bytes": 14831,
+      "path": "third_party/hc074-dbus/zbus/src/message_stream.rs"
+    },
+    {
+      "after_sha256": "d64218124411960be2292d1e367b64131b360fcc86155d5416064857fc3312f3",
+      "before_sha256": null,
+      "bytes": 14867,
+      "path": "third_party/hc074-dbus/zbus/src/names/bus_name.rs"
+    },
+    {
+      "after_sha256": "52bf391c0aab3cb3bed3dba5f9983ddf6597c82825e1ff9e19ddd1b823b0e746",
+      "before_sha256": null,
+      "bytes": 1666,
+      "path": "third_party/hc074-dbus/zbus/src/names/error_name.rs"
+    },
+    {
+      "after_sha256": "8dfe95f3d68d23a7f605f82613bbda2667dd0f9f08c6992494e299e5bd7bd442",
+      "before_sha256": null,
+      "bytes": 1694,
+      "path": "third_party/hc074-dbus/zbus/src/names/interface_name.rs"
+    },
+    {
+      "after_sha256": "64dc35c6fe83ab553bcf74666ef5648d51584eca2bf54d6218aeb289cdc4f727",
+      "before_sha256": null,
+      "bytes": 1472,
+      "path": "third_party/hc074-dbus/zbus/src/names/member_name.rs"
+    },
+    {
+      "after_sha256": "baa62518e536c0d044539dd827a7a3a313c29c1405a2cb05eb21fe3e242be4c7",
+      "before_sha256": null,
+      "bytes": 2015,
+      "path": "third_party/hc074-dbus/zbus/src/names/mod.rs"
+    },
+    {
+      "after_sha256": "b899869b2d199ac99c89dd3efe5e31fa4485d7ee8f08c8183537379ef115835b",
+      "before_sha256": null,
+      "bytes": 1279,
+      "path": "third_party/hc074-dbus/zbus/src/names/property_name.rs"
+    },
+    {
+      "after_sha256": "b6e9a417c635794f5be4e7a644d28ebaa8a60ce6f6f8b40d2ba079be9df5996e",
+      "before_sha256": null,
+      "bytes": 5967,
+      "path": "third_party/hc074-dbus/zbus/src/names/unique_name.rs"
+    },
+    {
+      "after_sha256": "cac3b08c6c38affda9196b545abe67a42f5e560eec024fae80d522ca3d35b345",
+      "before_sha256": null,
+      "bytes": 14442,
+      "path": "third_party/hc074-dbus/zbus/src/names/utils.rs"
+    },
+    {
+      "after_sha256": "eedcbcd70b6cb7c6a04fbf395496db531da9f23c5aba041ddce5f79942dbdd28",
+      "before_sha256": null,
+      "bytes": 1555,
+      "path": "third_party/hc074-dbus/zbus/src/names/well_known_name.rs"
+    },
+    {
+      "after_sha256": "4ed51ab5f33edb414b9aa5d38576b1b254dc6fbce02f0f9f778a1ec5bd6cf30c",
+      "before_sha256": null,
+      "bytes": 3325,
+      "path": "third_party/hc074-dbus/zbus/src/object_server/dispatch_notifier.rs"
+    },
+    {
+      "after_sha256": "db30513f0212ac72fa8fb895569bcb67675a6de366411fd586dd06a8ffa504cb",
+      "before_sha256": null,
+      "bytes": 2813,
+      "path": "third_party/hc074-dbus/zbus/src/object_server/interface/dispatch_result.rs"
+    },
+    {
+      "after_sha256": "bc35ecb53a70c8401e56d5c98a385ec98478d31e646be2160533bb704109f359",
+      "before_sha256": null,
+      "bytes": 1217,
+      "path": "third_party/hc074-dbus/zbus/src/object_server/interface/interface_deref.rs"
+    },
+    {
+      "after_sha256": "b49b0090b28574f5086c5ad24a3fbbe701e5607a69fb4c01d8fe3e70a74bb5c7",
+      "before_sha256": null,
+      "bytes": 3317,
+      "path": "third_party/hc074-dbus/zbus/src/object_server/interface/interface_ref.rs"
+    },
+    {
+      "after_sha256": "a11b41b7d25e222a992f89397873ec5c3f19c4847c5805a6369644ec10e20617",
+      "before_sha256": null,
+      "bytes": 7422,
+      "path": "third_party/hc074-dbus/zbus/src/object_server/interface/mod.rs"
+    },
+    {
+      "after_sha256": "752c8c86e311b70a407b1dcf0d21d6a6836ed2f859ce3fb92a642bfc23a791b2",
+      "before_sha256": null,
+      "bytes": 20943,
+      "path": "third_party/hc074-dbus/zbus/src/object_server/mod.rs"
+    },
+    {
+      "after_sha256": "2dd4b82db498356002ce4be4cc5936bfc5dcb0bcac63a6f962552c24dcb731fc",
+      "before_sha256": null,
+      "bytes": 12734,
+      "path": "third_party/hc074-dbus/zbus/src/object_server/node.rs"
+    },
+    {
+      "after_sha256": "105250c7dc07cbf450eab66fb9da8da1d3615e52c54f9830917faf67a55e1641",
+      "before_sha256": null,
+      "bytes": 3292,
+      "path": "third_party/hc074-dbus/zbus/src/object_server/signal_emitter.rs"
+    },
+    {
+      "after_sha256": "dd003a4b1410e026dea25df62e4140b51340275e75aae1884a70de712790296d",
+      "before_sha256": null,
+      "bytes": 8554,
+      "path": "third_party/hc074-dbus/zbus/src/proxy/builder.rs"
+    },
+    {
+      "after_sha256": "aaa5bf9940fcd07020b723a40643b2e237222972fcdce20c01612548d9ffef06",
+      "before_sha256": null,
+      "bytes": 1286,
+      "path": "third_party/hc074-dbus/zbus/src/proxy/defaults.rs"
+    },
+    {
+      "after_sha256": "0847d645241640928b4907f1e2cf98f61cfb60b5371677ded235d2883d8266ae",
+      "before_sha256": null,
+      "bytes": 59328,
+      "path": "third_party/hc074-dbus/zbus/src/proxy/mod.rs"
+    },
+    {
+      "after_sha256": "6e2ad9b3d6617a3286ff491273f584015a17e3caf1714acefe722596774a678f",
+      "before_sha256": null,
+      "bytes": 870,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/async_drop.rs"
+    },
+    {
+      "after_sha256": "409dc520b7b6ff41b8836dc22a13e2cf2f7ee130fc4462233056714d510d325a",
+      "before_sha256": null,
+      "bytes": 11786,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/erased.rs"
+    },
+    {
+      "after_sha256": "e6654360c7111ec43624dca5dd4549748df0c6be188bce0c7950df1a31bdc60d",
+      "before_sha256": null,
+      "bytes": 1758,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/io/connect.rs"
+    },
+    {
+      "after_sha256": "18bf7429ee2734fcd9f418461ac7a0191e36ac173d68e449d62ead0cdf6956b1",
+      "before_sha256": null,
+      "bytes": 15229,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/io/mod.rs"
+    },
+    {
+      "after_sha256": "c4142352608b9e4be0d1b9aedbdfff640c296177761ecd0cb417cb0fdb78fe38",
+      "before_sha256": null,
+      "bytes": 1387,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/io/pipe.rs"
+    },
+    {
+      "after_sha256": "9ce9fcd11f6cb0a63ec14690ed0f787591339573c8501fa57622abe9aec1b28a",
+      "before_sha256": null,
+      "bytes": 2711,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/io/tcp.rs"
+    },
+    {
+      "after_sha256": "e5c8bde9760da554c46731fe7bf8345ea71eb5d01a70d528a1aa5f01762b5596",
+      "before_sha256": null,
+      "bytes": 21645,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/io/tests.rs"
+    },
+    {
+      "after_sha256": "f54f8160a3cdb0c9cdd68189a462079d94d4d46c6821458eaf544609bb933588",
+      "before_sha256": null,
+      "bytes": 16118,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/io/unix.rs"
+    },
+    {
+      "after_sha256": "f14933061cfd6267df669404eb0f4335fd350efd27e9c77253fb1c386454e4be",
+      "before_sha256": null,
+      "bytes": 2523,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/io_source.rs"
+    },
+    {
+      "after_sha256": "8f75750e6169a01b61d964f41e02b67eaaaf458a44bcaf31f76f462c692e5e81",
+      "before_sha256": null,
+      "bytes": 746,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/locks.rs"
+    },
+    {
+      "after_sha256": "9ba4411270039c07d97f98ec9db9afa3bb07f2276826d68438d2a7d7fd14bca1",
+      "before_sha256": null,
+      "bytes": 9981,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/mod.rs"
+    },
+    {
+      "after_sha256": "bff83624e87afe5183052fc7b7884c252da9208d5ddebb75fc51be57b2b728e3",
+      "before_sha256": null,
+      "bytes": 18166,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/process.rs"
+    },
+    {
+      "after_sha256": "c68379c26a58e00bb00363e753b65609b74c79cf29007f9c3676cceb8038c4b1",
+      "before_sha256": null,
+      "bytes": 884,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/process_table.rs"
+    },
+    {
+      "after_sha256": "43d65542067acecd464a922da04c488c1ce7482f6eb14f17319cda7670f87f04",
+      "before_sha256": null,
+      "bytes": 1784,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/task.rs"
+    },
+    {
+      "after_sha256": "caf7d650e483686184de1fb9ff169dad3f9f0545cad63597a5058069630156e8",
+      "before_sha256": null,
+      "bytes": 21689,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/test_runtime.rs"
+    },
+    {
+      "after_sha256": "f3002873d2bf0f401dd4fd1d0af7d83722238e58f6142df4ecf06c903fe62923",
+      "before_sha256": null,
+      "bytes": 13719,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/tests.rs"
+    },
+    {
+      "after_sha256": "2a57d4437da8b2db0725c5c0276e6d6bf0b52f70a511310148f4ffcba334a19a",
+      "before_sha256": null,
+      "bytes": 2940,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/timeout.rs"
+    },
+    {
+      "after_sha256": "2fa701fb928152f6fdcf14f7e12ce9ecc86d28e937f6154b62e0f4aca3502b6c",
+      "before_sha256": null,
+      "bytes": 27536,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/tokio_rt.rs"
+    },
+    {
+      "after_sha256": "a12ace869fa49b5fae71144bcd213946a076f317f4319672b95a5074af854371",
+      "before_sha256": null,
+      "bytes": 15522,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/traits.rs"
+    },
+    {
+      "after_sha256": "e11f63e579ccbbf68945130ac5f9c4bbb7fbe7d7202502229833b520121d5121",
+      "before_sha256": null,
+      "bytes": 8840,
+      "path": "third_party/hc074-dbus/zbus/src/runtime/zruntime.rs"
+    },
+    {
+      "after_sha256": "482f02e58fae185b47086dcbe540fe535ad9df15f027ae228409653c61f612c3",
+      "before_sha256": null,
+      "bytes": 9517,
+      "path": "third_party/hc074-dbus/zbus/src/utils.rs"
+    },
+    {
+      "after_sha256": "6c9ebabb9fa104d93ee1f7b1ec2d4454ed69654b8f90ee58229d9df97be33805",
+      "before_sha256": null,
+      "bytes": 10812,
+      "path": "third_party/hc074-dbus/zbus/src/win32.rs"
+    },
+    {
+      "after_sha256": "6cf33328a41840443a85a7d9b4a0630b397943405e39bba454cf2e534dc6b47f",
+      "before_sha256": null,
+      "bytes": 9543,
+      "path": "third_party/hc074-dbus/zbus/src/wire/array.rs"
+    },
+    {
+      "after_sha256": "1be8743fc35356804c6e9abc8edffe1aa4d319582446a7cb0138505d6f576373",
+      "before_sha256": null,
+      "bytes": 6723,
+      "path": "third_party/hc074-dbus/zbus/src/wire/as_variant/deserialize.rs"
+    },
+    {
+      "after_sha256": "0e9f9a6e8377ae34d8be9c435ce1b7f42438f9a539bad7ecf2fff63fb64903e1",
+      "before_sha256": null,
+      "bytes": 904,
+      "path": "third_party/hc074-dbus/zbus/src/wire/as_variant/mod.rs"
+    },
+    {
+      "after_sha256": "6728a413119b71892ea4d80c54e00023f0de6263a9d640da255edc5fd2a5c1fa",
+      "before_sha256": null,
+      "bytes": 35490,
+      "path": "third_party/hc074-dbus/zbus/src/wire/as_variant/property.rs"
+    },
+    {
+      "after_sha256": "e3519dfd2acc98bf7e738272491645f2934116b8c8648bfa87e46a6cd4d0da44",
+      "before_sha256": null,
+      "bytes": 2130,
+      "path": "third_party/hc074-dbus/zbus/src/wire/as_variant/serialize.rs"
+    },
+    {
+      "after_sha256": "3dc6ad9ae7cbda9db4f32fecf59504db51314804736a6354fe389e3e72d066a6",
+      "before_sha256": null,
+      "bytes": 26023,
+      "path": "third_party/hc074-dbus/zbus/src/wire/as_variant/variant_serializer.rs"
+    },
+    {
+      "after_sha256": "980a7b7536315c2b96d72c35f3b984db842974ad273ce06aeff7e6c445b0a3fc",
+      "before_sha256": null,
+      "bytes": 12243,
+      "path": "third_party/hc074-dbus/zbus/src/wire/basic.rs"
+    },
+    {
+      "after_sha256": "7f9826cea03a2b819c940849b4408f20d4d17c76a63e06301483234dfb8cc295",
+      "before_sha256": null,
+      "bytes": 1431,
+      "path": "third_party/hc074-dbus/zbus/src/wire/container_depths.rs"
+    },
+    {
+      "after_sha256": "dd2424524ddfa2fc537b3305f7c3bc4fa4f4a5367a6e995753422aed14da5362",
+      "before_sha256": null,
+      "bytes": 22497,
+      "path": "third_party/hc074-dbus/zbus/src/wire/dbus/de.rs"
+    },
+    {
+      "after_sha256": "48193cf0154467486c8e9809d376a6d9e4639a6b474bbd2164eab3a7fcc80f5b",
+      "before_sha256": null,
+      "bytes": 1799,
+      "path": "third_party/hc074-dbus/zbus/src/wire/dbus/mod.rs"
+    },
+    {
+      "after_sha256": "66c5fadc85ddb4e31139eb3288fc5e780ec8c9fc8022fad7100ba5ae222f0161",
+      "before_sha256": null,
+      "bytes": 22292,
+      "path": "third_party/hc074-dbus/zbus/src/wire/dbus/ser.rs"
+    },
+    {
+      "after_sha256": "060f62c70148d5ced52fdcd4d3237f07e4889f775196d35cff419f2c9c99d08f",
+      "before_sha256": null,
+      "bytes": 8420,
+      "path": "third_party/hc074-dbus/zbus/src/wire/de.rs"
+    },
+    {
+      "after_sha256": "626ea2703d0beefa2592290a1f2753a4d1130528cdbb87139a4f34d5074f20f0",
+      "before_sha256": null,
+      "bytes": 9764,
+      "path": "third_party/hc074-dbus/zbus/src/wire/dict.rs"
+    },
+    {
+      "after_sha256": "310a8b7f26ab32fcd88a5bf4073c15c5b658383c060fddf524a4702660201081",
+      "before_sha256": null,
+      "bytes": 6346,
+      "path": "third_party/hc074-dbus/zbus/src/wire/fd.rs"
+    },
+    {
+      "after_sha256": "267cd1caeaa73bb8e556b0cbe24bc65b7c04dbb19fde7c90957d625ab22247fd",
+      "before_sha256": null,
+      "bytes": 10514,
+      "path": "third_party/hc074-dbus/zbus/src/wire/file_path.rs"
+    },
+    {
+      "after_sha256": "65d0f15127dbc0ea75fd0c54545fbb480664a46d43e3c1333288545086ec4616",
+      "before_sha256": null,
+      "bytes": 6146,
+      "path": "third_party/hc074-dbus/zbus/src/wire/from_variant.rs"
+    },
+    {
+      "after_sha256": "7cf2d5e242fb1aa06094e77733887b9b02c69d274b12979c252c8285210bb495",
+      "before_sha256": null,
+      "bytes": 4002,
+      "path": "third_party/hc074-dbus/zbus/src/wire/into_variant.rs"
+    },
+    {
+      "after_sha256": "9e9230179d12aea49fa2531b947576a86a62345c4484f2a32db7d094fcfaaeab",
+      "before_sha256": null,
+      "bytes": 10576,
+      "path": "third_party/hc074-dbus/zbus/src/wire/mod.rs"
+    },
+    {
+      "after_sha256": "e20ebbc8ce280bef57597d49aaa1cd4131a549efb2793b7178d11f9bdb95727b",
+      "before_sha256": null,
+      "bytes": 9443,
+      "path": "third_party/hc074-dbus/zbus/src/wire/object_path.rs"
+    },
+    {
+      "after_sha256": "c3658f893e603f65f7a2c921ffd2183bd7208db93faedde742fabb0c7b2d7ad9",
+      "before_sha256": null,
+      "bytes": 6053,
+      "path": "third_party/hc074-dbus/zbus/src/wire/optional.rs"
+    },
+    {
+      "after_sha256": "71379cc96d6e52e642f72b6cbc0bafdf050423e76cdf5cb37c94d4abc09e77f3",
+      "before_sha256": null,
+      "bytes": 8773,
+      "path": "third_party/hc074-dbus/zbus/src/wire/owned_variant.rs"
+    },
+    {
+      "after_sha256": "8523393836cb15d2908f985db9aca0abd80033ea55986eb6260a9ca7a3a9662e",
+      "before_sha256": null,
+      "bytes": 8342,
+      "path": "third_party/hc074-dbus/zbus/src/wire/ser.rs"
+    },
+    {
+      "after_sha256": "7b9c972dd02a3f19bdaea696959277495dfd8cf98261396a50882b8a3ec9b8de",
+      "before_sha256": null,
+      "bytes": 2001,
+      "path": "third_party/hc074-dbus/zbus/src/wire/serialized/context.rs"
+    },
+    {
+      "after_sha256": "7efde0cf9f76dbb5d20833c9dead63a879754c426a3c10dfc21f87f217871d67",
+      "before_sha256": null,
+      "bytes": 11197,
+      "path": "third_party/hc074-dbus/zbus/src/wire/serialized/data.rs"
+    },
+    {
+      "after_sha256": "51d03e25d0ef5c4eb0fc54085506f8efeb19e24e0a5626a2a60606e293f3f002",
+      "before_sha256": null,
+      "bytes": 624,
+      "path": "third_party/hc074-dbus/zbus/src/wire/serialized/mod.rs"
+    },
+    {
+      "after_sha256": "fc29d6a223c088afe215baa7f65ee82c0c4c55356b4ed54ccd6c6b114f9b8d22",
+      "before_sha256": null,
+      "bytes": 1380,
+      "path": "third_party/hc074-dbus/zbus/src/wire/serialized/size.rs"
+    },
+    {
+      "after_sha256": "cc63e2bfb00311a8b1bcac475825451aef1806f16097028a19cc9396bff14ed1",
+      "before_sha256": null,
+      "bytes": 1673,
+      "path": "third_party/hc074-dbus/zbus/src/wire/serialized/written.rs"
+    },
+    {
+      "after_sha256": "31c011b50cf720b3a303d2784d09483169d8a0c13a61fb2ba2050513e5406ab5",
+      "before_sha256": null,
+      "bytes": 691,
+      "path": "third_party/hc074-dbus/zbus/src/wire/signature.rs"
+    },
+    {
+      "after_sha256": "38c9a891dd836b2936289b4db61c3ba31b626b9057084e8263aaf2b6aef94ca5",
+      "before_sha256": null,
+      "bytes": 438,
+      "path": "third_party/hc074-dbus/zbus/src/wire/str.rs"
+    },
+    {
+      "after_sha256": "a3e215770b1eaa680290bf17815050ce677081c12c8054e92e4b4a8b4a4a8f0b",
+      "before_sha256": null,
+      "bytes": 13149,
+      "path": "third_party/hc074-dbus/zbus/src/wire/structure.rs"
+    },
+    {
+      "after_sha256": "63c8006b54c24006da971bf71a9de75546de4782ab5d3a78ed2c79f5e810d97f",
+      "before_sha256": null,
+      "bytes": 5721,
+      "path": "third_party/hc074-dbus/zbus/src/wire/tuple.rs"
+    },
+    {
+      "after_sha256": "c1135a4badfd9fa111acbbc32f547410fce62c985026d0bf45d32ee89a20db8a",
+      "before_sha256": null,
+      "bytes": 282,
+      "path": "third_party/hc074-dbus/zbus/src/wire/type/bytes.rs"
+    },
+    {
+      "after_sha256": "350376615e6530538d73ce51320d93503729815e8cc4a6c92f85d7c3b3bcd22d",
+      "before_sha256": null,
+      "bytes": 2294,
+      "path": "third_party/hc074-dbus/zbus/src/wire/type/dynamic.rs"
+    },
+    {
+      "after_sha256": "4fc222cb301cfc53548d7e556e9e1f9f9068f3141780b4c0bb67150a111730f6",
+      "before_sha256": null,
+      "bytes": 9346,
+      "path": "third_party/hc074-dbus/zbus/src/wire/type/libstd.rs"
+    },
+    {
+      "after_sha256": "5d853117a187380efe59d99daef632c5e365743c40a28b6d85ff2914788d9668",
+      "before_sha256": null,
+      "bytes": 6636,
+      "path": "third_party/hc074-dbus/zbus/src/wire/type/mod.rs"
+    },
+    {
+      "after_sha256": "73b7f5859671a94de2024f4e7c897ca9d0f32aee18af2a2a451fa8423e3f90b0",
+      "before_sha256": null,
+      "bytes": 1646,
+      "path": "third_party/hc074-dbus/zbus/src/wire/type/net.rs"
+    },
+    {
+      "after_sha256": "9e59f1a3c113d8aafbe3611d1e107929a7d468ed501f93ce97ad6ee36f6bad77",
+      "before_sha256": null,
+      "bytes": 257,
+      "path": "third_party/hc074-dbus/zbus/src/wire/type/paths.rs"
+    },
+    {
+      "after_sha256": "e4defc069929631dacd81cb3af164f5e805944434d3eca2296a6f31a1338592b",
+      "before_sha256": null,
+      "bytes": 6381,
+      "path": "third_party/hc074-dbus/zbus/src/wire/type/time.rs"
+    },
+    {
+      "after_sha256": "a50ffaac2ab88bdeb7c7b97fac69a00c88560e218d6a575eb7d6eec12408742c",
+      "before_sha256": null,
+      "bytes": 284,
+      "path": "third_party/hc074-dbus/zbus/src/wire/type/uuid.rs"
+    },
+    {
+      "after_sha256": "95eb7955d12b116afd7212cb921374be4c4f6f6ad742516436088d2f02e806b3",
+      "before_sha256": null,
+      "bytes": 3096,
+      "path": "third_party/hc074-dbus/zbus/src/wire/utils.rs"
+    },
+    {
+      "after_sha256": "6a65d951bb47282c940ff0e6191b921ff08f7910372bd2266132738092a65cbd",
+      "before_sha256": null,
+      "bytes": 39601,
+      "path": "third_party/hc074-dbus/zbus/src/wire/variant.rs"
+    },
+    {
+      "after_sha256": "ada9b605a2961cd906b84d2fdf28d70c70b7e6a2db8e7640ccba4fa1d525643a",
+      "before_sha256": null,
+      "bytes": 14330,
+      "path": "third_party/hc074-dbus/zbus/src/zvariant.rs"
+    },
+    {
+      "after_sha256": "eba44ab81c2b26f92a2aeff0c30a36b36507b617a363988a7abec94901dcda1e",
+      "before_sha256": null,
+      "bytes": 8554,
+      "path": "third_party/hc074-dbus/zbus/tests/basic.rs"
+    },
+    {
+      "after_sha256": "4684a34f4c22e3b2c4dae043a37977701db90d8429193402f08af2ca57c0ae4b",
+      "before_sha256": null,
+      "bytes": 716,
+      "path": "third_party/hc074-dbus/zbus/tests/builder_feature_additivity.rs"
+    },
+    {
+      "after_sha256": "09b3880b81cee716449b27464d7cac7863d82b503d01cc030239bfb22a1d20bb",
+      "before_sha256": null,
+      "bytes": 2699,
+      "path": "third_party/hc074-dbus/zbus/tests/builder_message_stream.rs"
+    },
+    {
+      "after_sha256": "321b371915ed4b65a4ee7072b4da13502259e5071e0e52d81e9b790a5a92554f",
+      "before_sha256": null,
+      "bytes": 2384,
+      "path": "third_party/hc074-dbus/zbus/tests/connection_closed.rs"
+    },
+    {
+      "after_sha256": "0416c8aaff95c6f2006f4ef42df01862a52bbbb37a431a6471cd619e1cfeebe7",
+      "before_sha256": null,
+      "bytes": 7507,
+      "path": "third_party/hc074-dbus/zbus/tests/e2e.rs"
+    },
+    {
+      "after_sha256": "67899cab46ccdb161b7cc55b5246bf818efc27079b77255e11c38bac36a5c3a4",
+      "before_sha256": null,
+      "bytes": 20831,
+      "path": "third_party/hc074-dbus/zbus/tests/iface_and_proxy/client.rs"
+    },
+    {
+      "after_sha256": "65dcf7d973108c141889baf7114e0c82a3aef2233b4008d3d05c5e742c8056cf",
+      "before_sha256": null,
+      "bytes": 671,
+      "path": "third_party/hc074-dbus/zbus/tests/iface_and_proxy/helpers.rs"
+    },
+    {
+      "after_sha256": "89ffdc884a348ebdfaeff872168dc5d6f1e4de1ebb7474a9c3c3239b6c20cb60",
+      "before_sha256": null,
+      "bytes": 19167,
+      "path": "third_party/hc074-dbus/zbus/tests/iface_and_proxy/iface.rs"
+    },
+    {
+      "after_sha256": "33ac8419b5ebbeacecd2bf044d416f78999606e19007515b99b0c6cff58c0508",
+      "before_sha256": null,
+      "bytes": 63,
+      "path": "third_party/hc074-dbus/zbus/tests/iface_and_proxy/mod.rs"
+    },
+    {
+      "after_sha256": "47300c554708ea728c9a9e3d0fb4aa89e18190ea9cd4ad8cb6daf8c0a9fc66e2",
+      "before_sha256": null,
+      "bytes": 1342,
+      "path": "third_party/hc074-dbus/zbus/tests/iface_and_proxy/types.rs"
+    },
+    {
+      "after_sha256": "63964b9ff0c0278b8a9566713919c7e39cd504e5fe7c140cc0827fc0d155d00f",
+      "before_sha256": null,
+      "bytes": 1306,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_1003.rs"
+    },
+    {
+      "after_sha256": "144b6668846b9089291cc4c5622fea295ea982e6e6c87c84259efcab35b6d37f",
+      "before_sha256": null,
+      "bytes": 1201,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_1015.rs"
+    },
+    {
+      "after_sha256": "efc1086ced81f1c1985c2db61fb299147c36638c41ff4f131adcd5852c784632",
+      "before_sha256": null,
+      "bytes": 2263,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_104.rs"
+    },
+    {
+      "after_sha256": "f9a58f30dc3d1f4f81a2c0d10dbb1a8126c408e0057a90528ee7a0b6f685458e",
+      "before_sha256": null,
+      "bytes": 601,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_121.rs"
+    },
+    {
+      "after_sha256": "5115599468eb63146e2771a368196197b22106a7e859df8f6e9a8e6259a0aaa2",
+      "before_sha256": null,
+      "bytes": 1926,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_1478.rs"
+    },
+    {
+      "after_sha256": "d89307bd2d9c4d072e1ea882ff7d810e4400111286a9586f4409236d36d1335a",
+      "before_sha256": null,
+      "bytes": 2697,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_173.rs"
+    },
+    {
+      "after_sha256": "cc83f97139d99a1d6b87daae98f9784fcff4c02c9e37f244957556d739f95ea7",
+      "before_sha256": null,
+      "bytes": 6406,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_1916.rs"
+    },
+    {
+      "after_sha256": "71027c23f149a7b61d14295eeef769fd7cccf012cedd6a01ee3296115e426f20",
+      "before_sha256": null,
+      "bytes": 1498,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_260.rs"
+    },
+    {
+      "after_sha256": "a884303b058f7f09e410a2bd107ffd6057109a8fba46003c9c6d7af7cbd9b0c6",
+      "before_sha256": null,
+      "bytes": 1082,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_279.rs"
+    },
+    {
+      "after_sha256": "90eff26e25fd4b84d84a27ef1e24fcdc4456fb455b6c0f96d5acb150b48094fa",
+      "before_sha256": null,
+      "bytes": 2725,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_310.rs"
+    },
+    {
+      "after_sha256": "1b4d2e11781aaa132150ebcbbf68e8f285a07edf79c2f8bff941949e6222f61c",
+      "before_sha256": null,
+      "bytes": 2207,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_356.rs"
+    },
+    {
+      "after_sha256": "6c4b33bb4304c294389ff34640193682106cfe28455153c916d4a5f351e51a1e",
+      "before_sha256": null,
+      "bytes": 351,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_466.rs"
+    },
+    {
+      "after_sha256": "66683c49dd5dbbcf8cf987d78661b4acf8a146a192811ab15fc16af7b8a504af",
+      "before_sha256": null,
+      "bytes": 1468,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_68.rs"
+    },
+    {
+      "after_sha256": "61103f6cd762e1389f08464d701b9797180caeebf81542648fece5c2833c1fea",
+      "before_sha256": null,
+      "bytes": 1717,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_799.rs"
+    },
+    {
+      "after_sha256": "7ad39c8094e4fd47330f939086f48ee6bdc1f8c3e22b8399f1bc92a0957af656",
+      "before_sha256": null,
+      "bytes": 574,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_81.rs"
+    },
+    {
+      "after_sha256": "864817ccafa6064a9d1aabc9d05bf1c22ec8b6e27a6f4f1116f49104da8c6dc9",
+      "before_sha256": null,
+      "bytes": 4313,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/issue_813.rs"
+    },
+    {
+      "after_sha256": "0c2f8fb1269b5dc41374f5bd53b6303e9f15cbe17cdd081b364e17697a7d3e63",
+      "before_sha256": null,
+      "bytes": 974,
+      "path": "third_party/hc074-dbus/zbus/tests/issue/mod.rs"
+    },
+    {
+      "after_sha256": "09e91286e5adf9a74b570d93e8866bb73b4da283f5f16fc5887c1a2e9abe7555",
+      "before_sha256": null,
+      "bytes": 207,
+      "path": "third_party/hc074-dbus/zbus/tests/issues.rs"
+    },
+    {
+      "after_sha256": "8781e5e8aae6fedf376d7a2c48f569df8a80cbd3e2f5c54afd2f85765cb39d67",
+      "before_sha256": null,
+      "bytes": 3713,
+      "path": "third_party/hc074-dbus/zbus/tests/polling_runtime/connect.rs"
+    },
+    {
+      "after_sha256": "c89d17b25ff2527eae7d455bcb9c2fb0df74758a81f91c282e0070a1efff8bb1",
+      "before_sha256": null,
+      "bytes": 7586,
+      "path": "third_party/hc074-dbus/zbus/tests/polling_runtime/lifecycle.rs"
+    },
+    {
+      "after_sha256": "97538abb19e3f238f88f69d24b4792cbf9aa336b5ce265a1ae43463769977732",
+      "before_sha256": null,
+      "bytes": 1145,
+      "path": "third_party/hc074-dbus/zbus/tests/polling_runtime/main.rs"
+    },
+    {
+      "after_sha256": "5b13572fa2d0a41f42fb0c138c36803ad05010b9c095a98492c0aff4757fd9cd",
+      "before_sha256": null,
+      "bytes": 2406,
+      "path": "third_party/hc074-dbus/zbus/tests/polling_runtime/process.rs"
+    },
+    {
+      "after_sha256": "3f0ad1c93ac64f0dfa972b193dd06962f9d96120a1d3684382f7a73f923cf8ab",
+      "before_sha256": null,
+      "bytes": 3890,
+      "path": "third_party/hc074-dbus/zbus/tests/polling_runtime/runtime/connect.rs"
+    },
+    {
+      "after_sha256": "cdd2b9fa40a442e229468e729f39ae6e48cb9508b3bb94ce55f16c457384bbcf",
+      "before_sha256": null,
+      "bytes": 4297,
+      "path": "third_party/hc074-dbus/zbus/tests/polling_runtime/runtime/io.rs"
+    },
+    {
+      "after_sha256": "f561fd93f9606b2b5b519467b30f70ac8741e50c84e2c0e7e7844dc8652ad03f",
+      "before_sha256": null,
+      "bytes": 12246,
+      "path": "third_party/hc074-dbus/zbus/tests/polling_runtime/runtime/mod.rs"
+    },
+    {
+      "after_sha256": "5a90feff499de62c97815746eefe64adf35db6b78043241d5b7287dde8faf377",
+      "before_sha256": null,
+      "bytes": 3580,
+      "path": "third_party/hc074-dbus/zbus/tests/polling_runtime/runtime/process.rs"
+    },
+    {
+      "after_sha256": "22a6b18aaa5243db28fc7bf2a5a3da482c5db683378738f027e63c619c60d8a0",
+      "before_sha256": null,
+      "bytes": 2158,
+      "path": "third_party/hc074-dbus/zbus/tests/polling_runtime/runtime/task.rs"
+    },
+    {
+      "after_sha256": "53fd11e531dbeccf8ae6169e1d0badacd9faf9194d08a0a149cbaa9a572ba685",
+      "before_sha256": null,
+      "bytes": 2668,
+      "path": "third_party/hc074-dbus/zbus/tests/polling_runtime/runtime/timer.rs"
+    },
+    {
+      "after_sha256": "be542795d83f528efa7d83ed2e78dff393736448d75454a6df2aff9df51246af",
+      "before_sha256": null,
+      "bytes": 6114,
+      "path": "third_party/hc074-dbus/zbus/tests/polling_runtime/teardown.rs"
+    },
+    {
+      "after_sha256": "22ff41391bb0b778caa98bce0d2b8ce23279414bcd49332cb04a01bb642c257b",
+      "before_sha256": null,
+      "bytes": 3534,
+      "path": "third_party/hc074-dbus/zbus/tests/polling_runtime/timeout.rs"
+    },
+    {
+      "after_sha256": "e53b0b4a4b1c2a84112ddb51db3bf14d0e43407b208f90272cde17ba1865f4de",
+      "before_sha256": null,
+      "bytes": 6418,
+      "path": "third_party/hc074-dbus/zbus/tests/uncached_propert.rs"
+    },
+    {
+      "after_sha256": "2cbbb0be1a8a4f86c83409edf7b2740a21245ece8a8194d78eb8ea8e0d9f349d",
+      "before_sha256": null,
+      "bytes": 3317,
+      "path": "third_party/hc074-dbus/zbus/tests/unixexec.rs"
+    },
+    {
+      "after_sha256": "6da8991b24b25de902a93557825ad039a187ed0384018465cf4e854971fbad23",
+      "before_sha256": null,
+      "bytes": 476,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/array_string_value.rs"
+    },
+    {
+      "after_sha256": "18d02e5d7c2c8203ac1b37cf69c4dc2a728c8c06c98ad11ec7bc5c5e26f3b1f3",
+      "before_sha256": null,
+      "bytes": 7682,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/array_value.rs"
+    },
+    {
+      "after_sha256": "8340d9a7f48ef25548f72874c3de294d0c79362845752f03f1c34a1af6adf4e9",
+      "before_sha256": null,
+      "bytes": 5504,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/bitflags_value.rs"
+    },
+    {
+      "after_sha256": "625352233fd513c9393fc4193a1de51eaf2233ba34ba9bff65becfeb0b45d995",
+      "before_sha256": null,
+      "bytes": 4637,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/common.rs"
+    },
+    {
+      "after_sha256": "46665a638ed3e851034763f98efcaac94cdee2fed0daad1a743d22a95884cc3f",
+      "before_sha256": null,
+      "bytes": 5070,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/dbus_maybe_rejection.rs"
+    },
+    {
+      "after_sha256": "dd3cab276ba0b8673247939afa82d4309f0b456132ae15c18cf15ba32c64c105",
+      "before_sha256": null,
+      "bytes": 5965,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/derive.rs"
+    },
+    {
+      "after_sha256": "a024b33e1c0beb4aa3830e4925dc5f6a2888c993b2934e856c4cda03390a6fb7",
+      "before_sha256": null,
+      "bytes": 588,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/dict_compare.rs"
+    },
+    {
+      "after_sha256": "4b163cf33aa142c0969025835e51dae7cec0dac7a587cd70c93ee1e55ee39760",
+      "before_sha256": null,
+      "bytes": 15586,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/dict_value.rs"
+    },
+    {
+      "after_sha256": "eb57917b9bb019f13edffd0da39df5fa41fca2862dfc479cac4e0246158fcbd7",
+      "before_sha256": null,
+      "bytes": 3164,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/enums.rs"
+    },
+    {
+      "after_sha256": "2a6305c446c1bae9dba1549c5c71b830f45656a5cc0efe54a7f88c2d508ac79c",
+      "before_sha256": null,
+      "bytes": 216,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/fd_value.rs"
+    },
+    {
+      "after_sha256": "12977e1075457192eb69fcddaf2520583752493f130d0e590c16f6fd7f24fa40",
+      "before_sha256": null,
+      "bytes": 437,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/heapless_string_value.rs"
+    },
+    {
+      "after_sha256": "73732f139709ed32eed1d2fcadec4d129f8215a9b088d06af1ceb0812a0a41c6",
+      "before_sha256": null,
+      "bytes": 741,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/issue/issue_1145.rs"
+    },
+    {
+      "after_sha256": "c324fda945e58f17d44042ae68dc295b72a8406e00cab663abcb65bc3165c4f3",
+      "before_sha256": null,
+      "bytes": 1331,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/issue/issue_1819.rs"
+    },
+    {
+      "after_sha256": "e9e0295713b7807de3ddae2015e49e9258714a3e99143d0ac39f0a69860df62e",
+      "before_sha256": null,
+      "bytes": 362,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/issue/issue_59.rs"
+    },
+    {
+      "after_sha256": "e7464ffa7ccf586f48274b76198e8bad609bef5546c179d30b573a138ff0cefb",
+      "before_sha256": null,
+      "bytes": 46,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/issue/mod.rs"
+    },
+    {
+      "after_sha256": "d790c2f632f81f9922c0df4ee3af2d5f173338c3a438d6c9af042584269d3d57",
+      "before_sha256": null,
+      "bytes": 470,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/main.rs"
+    },
+    {
+      "after_sha256": "e304d606f4aa4b4ea37c936d26cbbf3441fa8fbcbd93cfed4d37b4087703cef3",
+      "before_sha256": null,
+      "bytes": 150,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/number/bool_value.rs"
+    },
+    {
+      "after_sha256": "f7ed92befeddd477fa638f94e842c31eaa4c7861d5675fc1e1a282015741ffda",
+      "before_sha256": null,
+      "bytes": 2058,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/number/f64_value.rs"
+    },
+    {
+      "after_sha256": "aab526364c6a64c9ba51f8eb6fb9b5fa4a7a218f01b221d6b4a664059ecbb385",
+      "before_sha256": null,
+      "bytes": 176,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/number/i16_value.rs"
+    },
+    {
+      "after_sha256": "757dcb1105231afc0508d5f8182bb8d35c5aa73ac095752230cd2aa384d5c687",
+      "before_sha256": null,
+      "bytes": 187,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/number/i32_value.rs"
+    },
+    {
+      "after_sha256": "d816505495c60f0988cded7d049084a19828a72a79c6d8aba946bb447b0bc92a",
+      "before_sha256": null,
+      "bytes": 208,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/number/i64_value.rs"
+    },
+    {
+      "after_sha256": "db3eef3aecc5553a52968996d0954d2b4134a69e90ee6f443af999872b33edcd",
+      "before_sha256": null,
+      "bytes": 90,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/number/i8_value.rs"
+    },
+    {
+      "after_sha256": "6fcc9a2e0f054660b7756d99aefad02b35e827746e53f857aba87f1237dc1115",
+      "before_sha256": null,
+      "bytes": 134,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/number/mod.rs"
+    },
+    {
+      "after_sha256": "e38039cbf9da9c5cb2ffb862ec37dbb63a82aabf3c9ba3cdc16477cbf95ba318",
+      "before_sha256": null,
+      "bytes": 153,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/number/u16_value.rs"
+    },
+    {
+      "after_sha256": "0f006df8fb9ccf438e7cd42943c49157246406ee355d401b375824784c0f7982",
+      "before_sha256": null,
+      "bytes": 158,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/number/u32_value.rs"
+    },
+    {
+      "after_sha256": "e3ce8a189724c7447aa7293d5db8ec37cf0c10c9fde88f07aed77f088c92d8f3",
+      "before_sha256": null,
+      "bytes": 145,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/number/u8_value.rs"
+    },
+    {
+      "after_sha256": "058fe32a57e8dae46bd24411ef7bf177e7507d81810c6bed96f0e2c69fa85531",
+      "before_sha256": null,
+      "bytes": 498,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/object_path_value.rs"
+    },
+    {
+      "after_sha256": "d1d72c7abbd38973f3479dcfd4e54edae525e5510a8a37dde51ce662af210254",
+      "before_sha256": null,
+      "bytes": 1824,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/recursion_limits.rs"
+    },
+    {
+      "after_sha256": "80cc7915d63ad9a312da4c928187ea7b19a8944d04cab25dcc98b79e2e8ee696",
+      "before_sha256": null,
+      "bytes": 1029,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/serde_bytes.rs"
+    },
+    {
+      "after_sha256": "b339960522fb1c9d6b3ae985b53d18ed205940db10ad42592755934a8bb78db3",
+      "before_sha256": null,
+      "bytes": 645,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/serialized_size.rs"
+    },
+    {
+      "after_sha256": "bb7ed4a6444d5b5a03e2e249a9958829a6161953c9de874841a6620783537f20",
+      "before_sha256": null,
+      "bytes": 508,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/signature.rs"
+    },
+    {
+      "after_sha256": "64886aa41a054e2846d392d4468bf8fe5f145c0d9b52be3f8abb73cd8882d5ce",
+      "before_sha256": null,
+      "bytes": 1032,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/str_value.rs"
+    },
+    {
+      "after_sha256": "2b869167d03d32b3ed70da0c646e0281f51d0efb90fef9368be701b8820cac59",
+      "before_sha256": null,
+      "bytes": 796,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/struct_byte_array.rs"
+    },
+    {
+      "after_sha256": "4f897f207913f5b82dac219ac19d578b8ef6a43f431961725e8b5a4639ea04df",
+      "before_sha256": null,
+      "bytes": 279,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/struct_ref.rs"
+    },
+    {
+      "after_sha256": "b7f7e2b4b7a9028ec064314593f049426dc7403483ca6a400abe58ed784014ee",
+      "before_sha256": null,
+      "bytes": 2068,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/struct_value.rs"
+    },
+    {
+      "after_sha256": "516c6793e328434e4a8c47dbb30dbec39d9ccc74247d773c035b3c5e83156496",
+      "before_sha256": null,
+      "bytes": 629,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/struct_with_hashmap.rs"
+    },
+    {
+      "after_sha256": "854f63024bca460c0603c4d705d56a42575c1bffdbed1133a1a14c6396a36479",
+      "before_sha256": null,
+      "bytes": 345,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/unit.rs"
+    },
+    {
+      "after_sha256": "26a063902c151147c059f1a32aa92935c59c448275b9b8e416b8cf37b7cd59c4",
+      "before_sha256": null,
+      "bytes": 366,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/unit_fds.rs"
+    },
+    {
+      "after_sha256": "5e90e8848e68929e165507777f043bd25d0534727125be83e49bbce5b5932836",
+      "before_sha256": null,
+      "bytes": 2864,
+      "path": "third_party/hc074-dbus/zbus/tests/wire/value_value.rs"
+    },
+    {
+      "after_sha256": "ef5793cc4a3856f696b629aa20b4e041693e9db14eb69c8e99f19308b4a16ddf",
+      "before_sha256": null,
+      "bytes": 5559,
+      "path": "third_party/hc074-dbus/zbus/tests/zvariant_compat.rs"
+    },
+    {
+      "after_sha256": "e9e8c6f21c6d78bda80a33638698abb47414d71929c6421203b519ae3f7b07a9",
+      "before_sha256": null,
+      "bytes": 105,
+      "path": "third_party/hc074-dbus/zbus_macros/.cargo_vcs_info.json"
+    },
+    {
+      "after_sha256": "20d04a2efdd22bfec91ae2c1c8198c12a28d49909490a22f4347e57ffe3df7da",
+      "before_sha256": null,
+      "bytes": 733,
+      "path": "third_party/hc074-dbus/zbus_macros/BACKPORT074.json"
+    },
+    {
+      "after_sha256": "36791b6522743b5db3dcb9523e718c2ca6f68de7e432a9643be59f08aa8ee600",
+      "before_sha256": null,
+      "bytes": 4363,
+      "path": "third_party/hc074-dbus/zbus_macros/CHANGELOG.md"
+    },
+    {
+      "after_sha256": "93203842be195a78f587ae88b8bc85f23074ce179ead3bdcfd573e342d786e44",
+      "before_sha256": null,
+      "bytes": 3689,
+      "path": "third_party/hc074-dbus/zbus_macros/Cargo.lock"
+    },
+    {
+      "after_sha256": "5967973f19795cbc04c5279ccab1eb5be3b93031aea09e4a1bf7df5b75f32753",
+      "before_sha256": null,
+      "bytes": 2213,
+      "path": "third_party/hc074-dbus/zbus_macros/Cargo.toml"
+    },
+    {
+      "after_sha256": "5967973f19795cbc04c5279ccab1eb5be3b93031aea09e4a1bf7df5b75f32753",
+      "before_sha256": null,
+      "bytes": 2213,
+      "path": "third_party/hc074-dbus/zbus_macros/Cargo.toml.orig"
+    },
+    {
+      "after_sha256": "260e4ff3fc493695880c90774283eb1e3d018f898fabe655bbd52dd2cbd2fcad",
+      "before_sha256": null,
+      "bytes": 1080,
+      "path": "third_party/hc074-dbus/zbus_macros/LICENSE"
+    },
+    {
+      "after_sha256": "2cd84596f0b599a5357f72293fe0b5c47e0e6e9e3caaff6ca69cac40b30a197c",
+      "before_sha256": null,
+      "bytes": 520,
+      "path": "third_party/hc074-dbus/zbus_macros/README.md"
+    },
+    {
+      "after_sha256": "4d5b08673b4ddfc088c0248518558f93fbb46542ab034e71634cc1fa36149c8d",
+      "before_sha256": null,
+      "bytes": 9588,
+      "path": "third_party/hc074-dbus/zbus_macros/src/error.rs"
+    },
+    {
+      "after_sha256": "ad396f6ece6ed084bc4c8b662907ca04088cedeb7f3d0698a429a58887484463",
+      "before_sha256": null,
+      "bytes": 66375,
+      "path": "third_party/hc074-dbus/zbus_macros/src/iface.rs"
+    },
+    {
+      "after_sha256": "4c3a141e5f2951e54d50ab978b17e5f9290b1176c188ce20a78ef5c46a83aefa",
+      "before_sha256": null,
+      "bytes": 42549,
+      "path": "third_party/hc074-dbus/zbus_macros/src/lib.rs"
+    },
+    {
+      "after_sha256": "6cc3d911624a8ebfcb500d77568c5ce987b7e2cbb192b518e8a5fa92472b724c",
+      "before_sha256": null,
+      "bytes": 40783,
+      "path": "third_party/hc074-dbus/zbus_macros/src/proxy.rs"
+    },
+    {
+      "after_sha256": "c41d3c01a1eae65babf15e6abbf205abc4c3fbeba4a3641d20577d0fb0e7e670",
+      "before_sha256": null,
+      "bytes": 4037,
+      "path": "third_party/hc074-dbus/zbus_macros/src/utils.rs"
+    },
+    {
+      "after_sha256": "16bc46cffc47f139b250e4e821e1a0b0e431a55134d5cce7ada410017a6244a5",
+      "before_sha256": null,
+      "bytes": 4178,
+      "path": "third_party/hc074-dbus/zbus_macros/tests/derives.rs"
+    },
+    {
+      "after_sha256": "e424c55b9f87900f1a3ed028b01f962e3414f109bcaae85df4dd5916ab1acba5",
+      "before_sha256": null,
+      "bytes": 1383,
+      "path": "third_party/hc074-dbus/zbus_macros/tests/missing_docs.rs"
+    },
+    {
+      "after_sha256": "023651318ac7765fdbad982bc0bdc37a6235287e7a7f57f242e11ca047e868f4",
+      "before_sha256": null,
+      "bytes": 888,
+      "path": "third_party/hc074-dbus/zbus_macros/tests/no_prelude.rs"
+    },
+    {
+      "after_sha256": "726091c0326cc7711b1707db57b4cbca2166ef920714563cc65e2cdeb2381190",
+      "before_sha256": null,
+      "bytes": 18246,
+      "path": "third_party/hc074-dbus/zbus_macros/tests/tests.rs"
+    },
+    {
+      "after_sha256": "4b11bd2a4a0c674d3b26983e87fba1632296c54c666edd197a2dfb0394c3acac",
+      "before_sha256": null,
+      "bytes": 104,
+      "path": "third_party/hc074-dbus/zbus_utils/.cargo_vcs_info.json"
+    },
+    {
+      "after_sha256": "42e440105d5cd146a3da2fda9d8713eca3d619644f72b156ac143d86e9c352e8",
+      "before_sha256": null,
+      "bytes": 732,
+      "path": "third_party/hc074-dbus/zbus_utils/BACKPORT074.json"
+    },
+    {
+      "after_sha256": "46f71a71df7e6aa3de21659245ef5179b21c228840428d4d2a83a57ac1e882b8",
+      "before_sha256": null,
+      "bytes": 2434,
+      "path": "third_party/hc074-dbus/zbus_utils/CHANGELOG.md"
+    },
+    {
+      "after_sha256": "e7fa48c540796b18500ce847749e7f8172ff14d14bf14e52bf407963e2e73f80",
+      "before_sha256": null,
+      "bytes": 2270,
+      "path": "third_party/hc074-dbus/zbus_utils/Cargo.lock"
+    },
+    {
+      "after_sha256": "33146eab8d52612f2b85093d790caccb7afa705d95a85f0b67b8d75bfb350140",
+      "before_sha256": null,
+      "bytes": 1756,
+      "path": "third_party/hc074-dbus/zbus_utils/Cargo.toml"
+    },
+    {
+      "after_sha256": "33146eab8d52612f2b85093d790caccb7afa705d95a85f0b67b8d75bfb350140",
+      "before_sha256": null,
+      "bytes": 1756,
+      "path": "third_party/hc074-dbus/zbus_utils/Cargo.toml.orig"
+    },
+    {
+      "after_sha256": "260e4ff3fc493695880c90774283eb1e3d018f898fabe655bbd52dd2cbd2fcad",
+      "before_sha256": null,
+      "bytes": 1080,
+      "path": "third_party/hc074-dbus/zbus_utils/LICENSE"
+    },
+    {
+      "after_sha256": "8596fd9d05c153e4943bd58ce27ab88096473a519d3502f463ff8be8ff2ad3a9",
+      "before_sha256": null,
+      "bytes": 743,
+      "path": "third_party/hc074-dbus/zbus_utils/README.md"
+    },
+    {
+      "after_sha256": "26f782e1c57ba1dc4b87bfd6648b6b0be56fc1a92b054ba2f3dbc65490600bbd",
+      "before_sha256": null,
+      "bytes": 2913,
+      "path": "third_party/hc074-dbus/zbus_utils/src/case.rs"
+    },
+    {
+      "after_sha256": "882609857d78ac2019ddf882e3b2cd1207a3021a9ef3b2719d1796e2f8da1cce",
+      "before_sha256": null,
+      "bytes": 2067,
+      "path": "third_party/hc074-dbus/zbus_utils/src/derive/attrs.rs"
+    },
+    {
+      "after_sha256": "f5501e7e8af5dace2b35636e5b16037916ffabbc93069b77a69dcbaed5a4dc24",
+      "before_sha256": null,
+      "bytes": 10070,
+      "path": "third_party/hc074-dbus/zbus_utils/src/derive/dict.rs"
+    },
+    {
+      "after_sha256": "4810ed550ddd31b8e3b5e8e4a5f3341cc1cf8e3b19f2652563b24e86040ae360",
+      "before_sha256": null,
+      "bytes": 1089,
+      "path": "third_party/hc074-dbus/zbus_utils/src/derive/mod.rs"
+    },
+    {
+      "after_sha256": "314c2983e814050b122e0b326fa7291fc249e1f67f17ca507c367698a4a70a3c",
+      "before_sha256": null,
+      "bytes": 5614,
+      "path": "third_party/hc074-dbus/zbus_utils/src/derive/signature.rs"
+    },
+    {
+      "after_sha256": "86a6f7c8d7bd9e5aa91cdcee2b4cdf79c52daf98d50af526492f887692ecac05",
+      "before_sha256": null,
+      "bytes": 6265,
+      "path": "third_party/hc074-dbus/zbus_utils/src/derive/type.rs"
+    },
+    {
+      "after_sha256": "b2850bbcf73c8dc79a89f0d1c81e9e610589f394d21aef0970a976dcfa572449",
+      "before_sha256": null,
+      "bytes": 18053,
+      "path": "third_party/hc074-dbus/zbus_utils/src/derive/variant.rs"
+    },
+    {
+      "after_sha256": "c7475ccc1fbcb6d42573e5fe30f27654031d5254bc0e46e088fdba6bc030f492",
+      "before_sha256": null,
+      "bytes": 236,
+      "path": "third_party/hc074-dbus/zbus_utils/src/lib.rs"
+    },
+    {
+      "after_sha256": "5f8730c5f7d48776eef7bfed5e033b9985340ebdaaeb03dbdffcfe1b014cff9b",
+      "before_sha256": null,
+      "bytes": 20800,
+      "path": "third_party/hc074-dbus/zbus_utils/src/macros.rs"
+    },
+    {
+      "after_sha256": "ba94eb73ee905c14a5823b96a3de7c1d93ad54163df6c35812368a59db167987",
+      "before_sha256": null,
+      "bytes": 13921,
+      "path": "third_party/hc074-dbus/zbus_utils/src/names.rs"
+    },
+    {
+      "after_sha256": "df02ec4b9f5e204da525a3cb12c164f07c0425480068a218ce89fdd9afdf5a45",
+      "before_sha256": null,
+      "bytes": 1626,
+      "path": "third_party/hc074-dbus/zbus_utils/src/object_path.rs"
+    },
+    {
+      "after_sha256": "0ce0226739dc55284809694180051b97f8b1fa24b073ac88cb9e8617b549a1dd",
+      "before_sha256": null,
+      "bytes": 1209,
+      "path": "third_party/hc074-dbus/zbus_utils/src/signature/child.rs"
+    },
+    {
+      "after_sha256": "a406075d747c9ace8b1df380531fba11a96bd548c7177d43bac43986c8582663",
+      "before_sha256": null,
+      "bytes": 390,
+      "path": "third_party/hc074-dbus/zbus_utils/src/signature/error.rs"
+    },
+    {
+      "after_sha256": "500e070a3300409f1caba4118f458f731cb03418ed08916cd0b7b0ecbd29fe98",
+      "before_sha256": null,
+      "bytes": 2344,
+      "path": "third_party/hc074-dbus/zbus_utils/src/signature/fields.rs"
+    },
+    {
+      "after_sha256": "74f7f1a46cb31d2fa3722f960b69b7d55fd2361316c6d32d82c9d8a136a10bb1",
+      "before_sha256": null,
+      "bytes": 30336,
+      "path": "third_party/hc074-dbus/zbus_utils/src/signature/mod.rs"
+    },
+    {
+      "after_sha256": "fa473710f322bff84fd51a0567544857ffb0250dad53333fac49fc3e603fefaf",
+      "before_sha256": null,
+      "bytes": 7417,
+      "path": "third_party/hc074-dbus/zbus_utils/src/signature/tests.rs"
+    },
+    {
+      "after_sha256": "04bfe87051697d84b54a3ed0ee8a4c2d3dbe4c39107d2eb0b9f14116c7d49c61",
+      "before_sha256": "f38fc2c3e40b71fbac2aa2c54ed545828177860bed060d4c43981af796fd73e1",
+      "bytes": 1191,
+      "path": "tools/long-run-supervisor-074/Cargo.toml"
+    },
+    {
+      "after_sha256": "fed2df16003914249d2974c643cfc11c4a8da3fc0099f1b2abc8c17dc17f00b4",
+      "before_sha256": null,
+      "bytes": 4415,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_blocking_v6.rs"
+    },
+    {
+      "after_sha256": "8a34c96a926bb4df3488cc770417d7b43a5b8fd2cfb709c0c46580292cf0dea0",
+      "before_sha256": "3a10d18ef079e33da17e7e48dc28b34e43c11fcc315985bdc91f82d3bcd1ddbf",
+      "bytes": 8972,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs"
+    },
+    {
+      "after_sha256": "a7cc09119434976ed292c1162aa2b8ec08ca67a047174123ed220502966d550a",
+      "before_sha256": "fbc7ce7072957d5543e9bbe8815127fb781b4a567996315f920ff75b0b2c6905",
+      "bytes": 8185,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs"
+    },
+    {
+      "after_sha256": "19ce6034425053736f41e8892e21b096d6f6d662c49d2fa5d5da99601219f0a9",
+      "before_sha256": "32668eb8d87dd62a71c9c677c16e9d1146bf447ff1a44144f33eaef7fa50470b",
+      "bytes": 14158,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs"
+    },
+    {
+      "after_sha256": "9ea1c7baf05b4e4f5485eb723b3bbddfdb0dc2784dece1b74fc8c43391e0079d",
+      "before_sha256": "a9c1b3caa736074e78d5ac67934472a1f53e126cf5d0c77030370bf3bb80895f",
+      "bytes": 18685,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_negotiated_tests.rs"
+    },
+    {
+      "after_sha256": "376922a8a9480f30a805507467d6d513fccfb380f6b807f815516d0c1a16e2ee",
+      "before_sha256": "2a931adae40f43147c5ee7050354e62afc54c05120c18a730a01bbf69c84b7cc",
+      "bytes": 6135,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_flags_tests.rs"
+    },
+    {
+      "after_sha256": "a297d55ce8b099d323cea4c56ea08ddaa90a6b3e5ea85b93cad3c6de069a9fbb",
+      "before_sha256": "d1d970db92b60c0c474932f55210b29c0eaf632d5ad15636763dfe8034a07116",
+      "bytes": 9232,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs"
+    },
+    {
+      "after_sha256": "514d67b5069f0ee68afbf9b95512c11b915709510748fc84d4a41662388dff9b",
+      "before_sha256": "57e1758273e0116dc4b5288cb6f05618ecc50222f5a84935985095254ff27059",
+      "bytes": 13117,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire.rs"
+    },
+    {
+      "after_sha256": "d453e39b9e52c5e2ff2a00af3963a42c095c1007f0cfa7275e54e1c477f10b62",
+      "before_sha256": "0df6c2e23e9c2b9cd866dc819cbdae72130ff496bbc5af80890906db84363580",
+      "bytes": 5180,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire_tests.rs"
+    },
+    {
+      "after_sha256": "e45304d9c5ac699be40667961898d5b7debd046fbec4306c9fd3a87e243acea0",
+      "before_sha256": "dedbee622bc143a7177c7edb660d115338c14cb9e845a7c891bc086e0ae974eb",
+      "bytes": 24689,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_loaded.rs"
+    },
+    {
+      "after_sha256": "bbecccbe0879219ac18e84e9b7a47c54c08557a99a3eebb782245c4704b285cc",
+      "before_sha256": "7950deead36bcc6514f1c2f73be3cbce126a6e7a3bff3d1a55d11eac0be674db",
+      "bytes": 44429,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_manager.rs"
+    },
+    {
+      "after_sha256": "0e28136c80da65b9367fdb361edce4f2e5ad590fd6baee2a19daf99f230361e2",
+      "before_sha256": "1110a742d1806279a69a568a70399f9a0dfce9868ccd9da70550005c4d81c27d",
+      "bytes": 9468,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs"
+    },
+    {
+      "after_sha256": "595d521d0cac9e2572fa076e5945c459939a3ef3593c85d743dbd01e2c6c735b",
+      "before_sha256": "3d6567947ff6073ea76f95bbf8916a91f3d7d6560a22ad51686208d1259cb3f6",
+      "bytes": 8469,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs"
+    },
+    {
+      "after_sha256": "6574b36bc2c38ecabb29b0d89a6ff1b4ff3e142b1c1603c69538c43bfcb406dc",
+      "before_sha256": "b6c341382843857204ca8dc10edde89f4aa0ecb2417d3eafee642964dd7499e5",
+      "bytes": 1960,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_manager_held_delivery.rs"
+    },
+    {
+      "after_sha256": "6dfc41482b0be06a2a117ced2cdfbe6832099c7a45e6ba65ad220d3694661306",
+      "before_sha256": "f8f52fa47e09d9b7ee977c3595cf2269ed80228a0df24bb566d300a50a2612ba",
+      "bytes": 8459,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_manager_sandbox_query.rs"
+    },
+    {
+      "after_sha256": "611924b823d500a52b3874f03c461e3fcfa115edcf8c9860536a3662b4ad6b4b",
+      "before_sha256": null,
+      "bytes": 4159,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_negotiated_credentials_adapter.rs"
+    },
+    {
+      "after_sha256": "a7df52503859378904d635e8fe3bb9d30f0c4c8416b948357dbdd6f1d9659924",
+      "before_sha256": "95ba07f143ead7683c2c3d20b178560f6d086d2643f09f030f690b45fd9b17da",
+      "bytes": 13181,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message.rs"
+    },
+    {
+      "after_sha256": "6134a793136d84ad46470463a6eaee3d3a8d647f4fa1cfc318ce726239ce2281",
+      "before_sha256": "0e57912330b92230885f15eaee932dc303a51bf78b47a0835ab40cbbf1334d1f",
+      "bytes": 8343,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_manager_message_units.rs"
+    },
+    {
+      "after_sha256": "4090e81df17aa49ccce8ac49bccc92db892d922065a1fd3478015bdb60df6ac3",
+      "before_sha256": "e761ec070542dca7268ecacd3dbd43d09cb6f5ed05bc19933a35e1589a109a1b",
+      "bytes": 16151,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs"
+    },
+    {
+      "after_sha256": "94340f2271807d305575e3ab8d4f12be184973511580e7751064fdbcc60070f9",
+      "before_sha256": "f88e0f99f22380c37617300e6bb1074668a2064e37e4195fdda8b332fb5bd10f",
+      "bytes": 10124,
+      "path": "tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs"
+    },
+    {
+      "after_sha256": "04e78717be1ad1840850df82a10d190560dfd20254fc2c82c6e583ff7f9ca083",
+      "before_sha256": "1dab14929bf0d2094c754e57228dbd5cb4761c233097831e513807614cfbfac2",
+      "bytes": 19903,
+      "path": "tools/long-run-supervisor-074/src/lib.rs"
+    },
+    {
+      "after_sha256": "d460aa01d0ecd7f137f271415a03ab67ecf8511ecc2786a068a3e362029a721c",
+      "before_sha256": "4b8f35e341b489f5928206b2df3f09525abb081b937e35cefd5c1ca1bad01cac",
+      "bytes": 24218,
+      "path": "tools/long-run-supervisor-074/src/systemd_unit.rs"
+    }
+  ],
+  "packet_sha256": "149698f228bba92ece4c5454db982977093899bfc8da6cf5e50c9405c2708ca9",
+  "protected": {
+    "deny.toml": "16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930",
+    "docs/testing/performance/0.74/qualification-manifest.toml": "11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc"
+  },
+  "release_admitted": false,
+  "server": false,
+  "source": "explicit user request to apply prepared root candidate"
+}

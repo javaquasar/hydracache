@@ -1,0 +1,3 @@
+{"phase": "build", "exit": 0}
+{"phase": "bootstrap-list", "exit": 0}
+{"phase": "bootstrap-full", "exit": 101}

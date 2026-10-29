@@ -1,0 +1,32 @@
+{
+  "catalog": 6,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 6,
+  "rows": [
+    [
+      "append_refuses_to_write_after_a_torn_tail_without_explicit_recovery",
+      "ok"
+    ],
+    [
+      "append_syncs_chain_and_exact_head",
+      "ok"
+    ],
+    [
+      "complete_json_without_terminal_newline_is_still_a_torn_record",
+      "ok"
+    ],
+    [
+      "refuses_replaying_a_sequence_or_reusing_a_stale_head",
+      "ok"
+    ],
+    [
+      "rejects_middle_corruption_sequence_gap_hash_break_and_identity_drift",
+      "ok"
+    ],
+    [
+      "verifies_complete_chain_and_recovers_only_incomplete_tail",
+      "ok"
+    ]
+  ]
+}

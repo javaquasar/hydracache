@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::tests::document_scratch::document_scratch_sender_preserves_fresh_counts_and_original_refusals",
+  "passed": 1
+}

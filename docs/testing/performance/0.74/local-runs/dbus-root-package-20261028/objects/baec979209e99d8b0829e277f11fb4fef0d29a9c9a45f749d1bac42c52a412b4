@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_signer_joined_fixture::tests::signer_joined_phase_replay_and_stack_range_inputs_refuse",
+  "passed": 1
+}

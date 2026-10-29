@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_signer_root_fixture::tests::signer_root_sigkill_and_healthy_drop_reap_only_original_and_prevent_reuse",
+  "passed": 1
+}

@@ -1,0 +1,12 @@
+{
+  "catalog": 1,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 1,
+  "rows": [
+    [
+      "original_start_material_consumes_outputs_without_replacement_inputs",
+      "ok"
+    ]
+  ]
+}

@@ -1,0 +1,11 @@
+
+running 6 tests
+test active_recovery_returns_the_validated_marker_identity_under_the_host_lock ... ok
+test host_marker_is_released_only_after_a_clean_complete_seal ... ok
+test one_campaign_claim_survives_restart_and_blocks_every_other_campaign ... ok
+test recovery_never_creates_a_missing_active_campaign_marker ... ok
+test symlink_and_hardlink_markers_are_rejected ... ok
+test unsafe_marker_lock_and_campaign_identity_fail_closed ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

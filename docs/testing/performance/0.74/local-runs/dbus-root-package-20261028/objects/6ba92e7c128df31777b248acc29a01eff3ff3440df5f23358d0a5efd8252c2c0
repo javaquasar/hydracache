@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 6,
+  "name": "exact_identity_mismatch_quarantine_is_aborted_and_claim_is_released",
+  "passed": 1
+}

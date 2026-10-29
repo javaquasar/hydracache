@@ -1,0 +1,36 @@
+{
+  "catalog": 7,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 7,
+  "rows": [
+    [
+      "attach_fails_closed_for_host_process_checkpoint_lease_and_failure_drift",
+      "ok"
+    ],
+    [
+      "controller_resilience_expected_red_canary",
+      "ok"
+    ],
+    [
+      "exact_attach_only_changes_controller_revision_and_lease",
+      "ok"
+    ],
+    [
+      "future_useful_progress_timestamp_cannot_bypass_staleness",
+      "ok"
+    ],
+    [
+      "lease_expiry_is_terminal_and_never_restarts",
+      "ok"
+    ],
+    [
+      "request_replay_is_idempotent_only_for_identical_digest",
+      "ok"
+    ],
+    [
+      "state_machine_cannot_skip_roles_or_restart_terminal_work",
+      "ok"
+    ]
+  ]
+}

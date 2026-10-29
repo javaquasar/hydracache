@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "start_evidence::tests::symlink_and_hardlink_inputs_are_rejected",
+  "passed": 1
+}

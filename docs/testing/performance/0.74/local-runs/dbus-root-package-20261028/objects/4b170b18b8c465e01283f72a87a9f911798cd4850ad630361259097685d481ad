@@ -1,0 +1,12 @@
+{
+  "catalog": 1,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 1,
+  "rows": [
+    [
+      "collector_starting_publication_consumes_only_original_frame",
+      "ok"
+    ]
+  ]
+}

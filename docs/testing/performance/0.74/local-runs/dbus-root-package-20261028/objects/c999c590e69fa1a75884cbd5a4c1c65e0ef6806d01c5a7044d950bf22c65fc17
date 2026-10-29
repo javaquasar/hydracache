@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::tests::kernel_oidc_original_clock_sampler_preserves_context_and_prior_refusal",
+  "passed": 1
+}

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::loss::tests::original_pipe_identity_rejects_unrelated_pipe_and_wrong_access",
+  "passed": 1
+}

@@ -1,0 +1,12 @@
+{
+  "boot_after": "dd23c97b-406f-41b8-91fd-68a500597097",
+  "boot_before": "dd23c97b-406f-41b8-91fd-68a500597097",
+  "boot_unchanged": true,
+  "clocks_changed": false,
+  "passed": true,
+  "phase": "checks",
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

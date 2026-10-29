@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_process::terminal::tests::terminal_process_sequence_preserves_first_error_without_late_reads",
+  "passed": 1
+}

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::tests::every_owned_partial_construction_prefix_cleans_only_known_names",
+  "passed": 1
+}

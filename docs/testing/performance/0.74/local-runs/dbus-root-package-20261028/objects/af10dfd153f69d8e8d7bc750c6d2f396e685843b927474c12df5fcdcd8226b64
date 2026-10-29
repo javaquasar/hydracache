@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_lease::transition_tests::transition_original_inode_and_stop_reason_are_sticky ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.01s
+

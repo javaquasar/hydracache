@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 38,
+  "name": "reader::roles::kernel::inventory::tests::bootstrap_inventory_parser_exact_bounded_set_and_own_descriptor",
+  "passed": 1
+}

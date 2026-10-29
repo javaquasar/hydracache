@@ -1,0 +1,44 @@
+{
+  "catalog": 9,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 9,
+  "rows": [
+    [
+      "each_supplied_artifact_requires_exact_nonempty_bytes_and_length",
+      "ok"
+    ],
+    [
+      "every_statement_field_is_selected_and_even_valid_resigning_cannot_change_it",
+      "ok"
+    ],
+    [
+      "malformed_selection_profile_source_and_artifact_limits_refuse_before_verification",
+      "ok"
+    ],
+    [
+      "old_observer_and_new_signer_receipts_have_no_shared_reader_or_role",
+      "ok"
+    ],
+    [
+      "old_reviewed_key_roles_and_weak_issuer_cannot_select_signer_build_purpose",
+      "ok"
+    ],
+    [
+      "seeded_content_corruption_and_four_independent_concurrent_models",
+      "ok"
+    ],
+    [
+      "strict_json_canonical_lf_schema_duplicates_and_budget_refuse",
+      "ok"
+    ],
+    [
+      "synthetic_signature_and_supplied_bytes_match_without_attesting_build_or_runtime",
+      "ok"
+    ],
+    [
+      "wrong_issuer_domain_and_all_signature_positions_refuse",
+      "ok"
+    ]
+  ]
+}

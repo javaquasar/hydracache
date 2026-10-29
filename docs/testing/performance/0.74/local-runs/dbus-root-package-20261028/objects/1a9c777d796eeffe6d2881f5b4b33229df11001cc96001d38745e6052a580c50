@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_seeded_signature_mutations_refuse_even_with_new_signed_hash ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 2.05s
+

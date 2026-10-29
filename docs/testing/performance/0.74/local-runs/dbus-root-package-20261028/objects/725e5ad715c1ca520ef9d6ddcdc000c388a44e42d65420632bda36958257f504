@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_manager::account::tests::seeded_account_snapshot_mutations_cannot_adopt_another_identity ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.01s
+

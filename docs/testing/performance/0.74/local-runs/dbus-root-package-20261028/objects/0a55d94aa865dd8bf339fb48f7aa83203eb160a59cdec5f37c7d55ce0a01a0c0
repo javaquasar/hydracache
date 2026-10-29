@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_two_phase_launch::tests::held_placement::held_placement_roundtrip_exact_root_and_data_only_scope",
+  "passed": 1
+}

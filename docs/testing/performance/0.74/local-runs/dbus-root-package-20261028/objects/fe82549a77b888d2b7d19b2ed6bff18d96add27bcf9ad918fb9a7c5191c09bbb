@@ -1,0 +1,6 @@
+syntax = "proto3";
+package hydracache.breaking.canary;
+message ReservedFieldReuse {
+  reserved 2;
+  string reused = 2;
+}

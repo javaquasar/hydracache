@@ -1,0 +1,10 @@
+linux::contradictory_recursive_events_and_duplicate_pids_fail_closed: test
+linux::empty_and_populated_without_pids_are_distinct_observations: test
+linux::independent_parallel_readers_keep_identical_fixture_snapshots: test
+linux::node_depth_pid_entry_and_document_bounds_are_enforced: test
+linux::recursive_child_membership_survives_empty_leader_list: test
+linux::retained_root_child_and_document_descriptors_detect_drift: test
+linux::strict_documents_refuse_missing_unknown_duplicate_and_numeric_drift: test
+linux::unsafe_paths_links_special_files_ownership_and_modes_are_refused: test
+
+8 tests, 0 benchmarks

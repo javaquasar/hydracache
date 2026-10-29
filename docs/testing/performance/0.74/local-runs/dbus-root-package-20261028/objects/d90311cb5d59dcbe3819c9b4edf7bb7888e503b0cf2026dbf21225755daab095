@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::handoff::tests::untraced_ack_requires_exact_single_packet_not_duplicate_or_missing",
+  "passed": 1
+}

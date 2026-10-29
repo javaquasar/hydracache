@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_builder::bootstrap_build::tests::bootstrap_build_sealed_image_requires_exact_original_object_and_metadata ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.03s
+

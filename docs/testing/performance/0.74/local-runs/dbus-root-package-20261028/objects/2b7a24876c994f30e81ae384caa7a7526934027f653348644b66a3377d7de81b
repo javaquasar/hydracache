@@ -1,0 +1,12 @@
+
+running 7 tests
+test abort_commits_intent_runs_effect_once_and_replays_exact_response ... ok
+test backend_failure_retains_abort_intent_and_identical_retry_finishes ... ok
+test duplicate_executor_quarantine_remains_fail_closed ... ok
+test exact_identity_mismatch_quarantine_is_aborted_and_claim_is_released ... ok
+test fresh_signed_abort_reauthorizes_a_durable_quarantine_retry ... ok
+test quarantine_backend_failure_retains_intent_and_exact_retry_completes ... ok
+test stale_or_unauthorized_abort_does_not_record_intent_or_call_backend ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+

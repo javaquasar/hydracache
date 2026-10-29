@@ -1,0 +1,6 @@
+
+running 1 test
+test systemd_smoke::tests::controller_loss_spec_is_long_enough_to_outlive_its_caller_and_stays_non_product ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

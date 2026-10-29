@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 1,
+  "local_filtered": 1592,
+  "name": "diagnostic_two_phase_launch::root_enrollment::kernel::tests::fault::guardians::original_adapter::root_guardian_original_kernel_controls",
+  "passed": 0
+}

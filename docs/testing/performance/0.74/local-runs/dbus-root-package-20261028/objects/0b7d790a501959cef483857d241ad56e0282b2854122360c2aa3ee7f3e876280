@@ -1,0 +1,3 @@
+collector_requires_both_kernel_eofs_before_byte_receipt: test
+
+1 test, 0 benchmarks

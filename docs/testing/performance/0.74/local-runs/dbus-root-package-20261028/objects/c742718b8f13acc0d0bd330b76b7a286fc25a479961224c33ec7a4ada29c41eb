@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-root-package-074\run.py", line 50, in main
+    c.need(result['passed'] and result['source_unchanged'] and result['boot_unchanged'] and execution['exit']==0,
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           'complete first package phase: '+phase)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-root-package-074\apply.py", line 22, in need
+    raise ValueError(why)
+ValueError: complete first package phase: focus-188

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::namespace_open_tests::namespace_open_full_methods_keep_live_observation_counts_and_identity",
+  "passed": 1
+}

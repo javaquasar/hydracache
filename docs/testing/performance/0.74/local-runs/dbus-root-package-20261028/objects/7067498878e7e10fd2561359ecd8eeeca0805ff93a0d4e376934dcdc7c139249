@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_process::user_namespace::tests::namespace_real_wrong_type_and_ordinary_files_refuse",
+  "passed": 1
+}

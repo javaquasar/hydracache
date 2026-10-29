@@ -1,0 +1,24 @@
+{
+  "catalog": 4,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 4,
+  "rows": [
+    [
+      "completed_measurement_failure_recovers_marker_without_repeating_effect",
+      "ok"
+    ],
+    [
+      "future_measurement_observation_fails_before_intent_or_backend",
+      "ok"
+    ],
+    [
+      "interrupted_backend_recovers_exact_measurement_cause_once",
+      "ok"
+    ],
+    [
+      "measurement_loss_commits_cause_stops_and_releases_after_completion",
+      "ok"
+    ]
+  ]
+}

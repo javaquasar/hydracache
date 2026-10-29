@@ -1,0 +1,11 @@
+a_live_writer_is_would_block_not_eof_or_an_unbounded_read: test
+an_io_error_preserves_only_the_preceding_prefix: test
+eof_and_byte_cap_are_distinct: test
+missing_and_invalid_handles_refuse_capture_without_reading: test
+nonzero_exit_is_returned_not_promoted_or_retried: test
+repeated_eintr_consumes_the_fixed_read_budget: test
+seeded_binary_prefixes_never_overread_or_claim_unobserved_eof: test
+successful_exit_keeps_exact_streams_and_status: test
+timeout_reports_original_kill_reap_and_public_output: test
+
+9 tests, 0 benchmarks

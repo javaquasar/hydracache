@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_process::credentials::tests::status_projection_ignores_nonutf8_name_but_checks_all_credentials",
+  "passed": 1
+}

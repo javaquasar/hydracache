@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::loss::tests::channel_uses_kernel_credentials_cloexec_and_fixed_packet_budget",
+  "passed": 1
+}

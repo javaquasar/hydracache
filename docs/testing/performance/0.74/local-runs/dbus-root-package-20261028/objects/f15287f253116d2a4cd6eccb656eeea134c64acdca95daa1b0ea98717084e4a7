@@ -1,0 +1,7 @@
+initializes_and_compare_and_swaps_with_previous_snapshot: test
+lock_is_exclusive_and_path_traversal_is_rejected: test
+malformed_and_oversized_state_fail_closed: test
+prepared_state_persists_without_placeholder_process_or_checkpoint_identity: test
+stale_revision_and_identity_drift_do_not_mutate_state: test
+
+5 tests, 0 benchmarks

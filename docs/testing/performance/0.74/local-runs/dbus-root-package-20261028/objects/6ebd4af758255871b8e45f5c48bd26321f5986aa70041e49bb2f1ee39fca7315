@@ -1,0 +1,6 @@
+
+running 1 test
+test installed_controls::held_controls::ancillary::tests::kernel_ancillary_bounded_malformed_headers_refuse_without_panic ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.00s
+

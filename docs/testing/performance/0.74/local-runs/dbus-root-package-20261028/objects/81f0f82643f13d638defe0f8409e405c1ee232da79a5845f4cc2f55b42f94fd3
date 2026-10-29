@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_two_phase_launch::held_barrier::tests::two_phase_barrier_absolute_alarm_refuses_past_and_out_of_range",
+  "passed": 1
+}

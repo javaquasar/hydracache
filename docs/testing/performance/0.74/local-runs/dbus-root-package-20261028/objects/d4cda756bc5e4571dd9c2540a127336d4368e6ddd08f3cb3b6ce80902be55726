@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 1,
+  "local_filtered": 1592,
+  "name": "diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::privileged_fixed_slice_readonly_anchors",
+  "passed": 0
+}

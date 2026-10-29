@@ -1,0 +1,6 @@
+
+running 1 test
+test image_entry::tests::image_mode_requires_explicit_argument_and_unmodified_activation_assertions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 38 filtered out; finished in 0.00s
+

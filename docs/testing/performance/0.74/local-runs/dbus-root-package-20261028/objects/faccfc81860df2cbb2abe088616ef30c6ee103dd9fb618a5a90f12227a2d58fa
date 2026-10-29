@@ -1,0 +1,9 @@
+test_complete_original_frozen_source_inventory (__main__.Controls.test_complete_original_frozen_source_inventory) ... ok
+test_fresh_bytes_order_missing_and_replacement (__main__.Controls.test_fresh_bytes_order_missing_and_replacement) ... ok
+test_no_parent_leaf_alias_escape_directory_or_fifo (__main__.Controls.test_no_parent_leaf_alias_escape_directory_or_fifo) ... ok
+test_same_held_root_bytes_without_a_compiler_or_live_round (__main__.Controls.test_same_held_root_bytes_without_a_compiler_or_live_round) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 9.144s
+
+OK

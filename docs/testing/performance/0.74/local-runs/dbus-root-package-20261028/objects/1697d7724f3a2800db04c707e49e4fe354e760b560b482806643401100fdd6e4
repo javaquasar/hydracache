@@ -1,0 +1,10 @@
+
+running 5 tests
+test worker_context_actual_reader_roundtrip_keeps_original_policy_healthy ... ok
+test worker_context_independent_concurrent_readers_keep_thread_local_refusal ... ok
+test worker_context_seeded_valid_namespace_mutations_cannot_choose_new_pins ... ok
+test worker_context_trust_and_envelope_failure_latch_through_drop ... ok
+test worker_context_valid_resigned_foreign_context_refuses_original_policy ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.54s
+

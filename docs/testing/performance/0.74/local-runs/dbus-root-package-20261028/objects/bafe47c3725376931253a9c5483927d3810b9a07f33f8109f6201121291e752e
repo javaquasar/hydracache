@@ -1,0 +1,8 @@
+
+running 3 tests
+test backend_failure_retains_identity_and_retry_completes_same_cause ... ok
+test completed_state_recovers_marker_release_without_repeating_effect ... ok
+test deadline_commits_intent_stops_and_releases_only_after_completion ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+

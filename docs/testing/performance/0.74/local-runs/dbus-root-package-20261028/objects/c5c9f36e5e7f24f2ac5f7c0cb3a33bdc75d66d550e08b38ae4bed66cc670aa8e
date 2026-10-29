@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 5,
+  "name": "kernel::tests::malformed_time_and_duplicate_fdinfo_refuse",
+  "passed": 1
+}

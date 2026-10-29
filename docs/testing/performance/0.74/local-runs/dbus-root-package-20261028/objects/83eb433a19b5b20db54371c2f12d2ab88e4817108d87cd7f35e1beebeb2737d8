@@ -1,0 +1,10 @@
+
+running 5 tests
+test drain_and_intentional_idle_use_distinct_progress_signals ... ok
+test identity_phase_sequence_and_counter_drift_fail_closed ... ok
+test measured_heartbeat_does_not_reset_the_useful_progress_deadline ... ok
+test measured_work_requires_operations_surface_accounting_and_cpu_to_advance ... ok
+test reconciliation_accepts_owner_convergence_in_either_direction ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

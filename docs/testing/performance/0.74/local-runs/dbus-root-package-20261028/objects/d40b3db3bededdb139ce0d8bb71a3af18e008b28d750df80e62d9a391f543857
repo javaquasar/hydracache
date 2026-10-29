@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_artifacts::linux::io_binding_tests::fixture_execution_entry_refuses_before_manager_and_latches_all_original_inputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.34s
+

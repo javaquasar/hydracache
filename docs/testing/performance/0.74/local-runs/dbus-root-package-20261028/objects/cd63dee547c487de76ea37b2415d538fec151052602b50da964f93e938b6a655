@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_output_preparation::intent_journal::tests::signed_history_seeded_plausibility_never_proves_completion ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 8.67s
+

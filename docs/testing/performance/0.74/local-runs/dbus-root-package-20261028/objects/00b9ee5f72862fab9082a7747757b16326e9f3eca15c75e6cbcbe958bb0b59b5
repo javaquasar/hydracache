@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_process::credentials::namespace_checked::tests::namespace_credentials_namespace_substitution_latches_credentials_too ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.01s
+

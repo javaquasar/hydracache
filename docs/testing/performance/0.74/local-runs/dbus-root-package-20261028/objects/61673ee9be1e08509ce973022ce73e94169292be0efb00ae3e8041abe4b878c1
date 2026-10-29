@@ -1,0 +1,16 @@
+{
+  "catalog": 2,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 2,
+  "rows": [
+    [
+      "empty_nul_and_overlong_notifications_are_rejected",
+      "ok"
+    ],
+    [
+      "readiness_message_uses_one_bounded_unix_datagram",
+      "ok"
+    ]
+  ]
+}

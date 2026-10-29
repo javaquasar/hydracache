@@ -1,0 +1,286 @@
+use hydracache_long_run_supervisor_074::state::{
+    apply_attach, controller_lease_authorizes, evaluate_attach, transition, AttachFailure,
+    AttachRequest, CampaignState, CheckpointHead, DurableCampaignState, FrozenIdentity,
+    ReplayDecision, ReplayMap, Transition,
+};
+use hydracache_long_run_supervisor_074::ProcessIdentity;
+
+fn hash(byte: char) -> String {
+    byte.to_string().repeat(64)
+}
+
+fn process(pid: u32) -> ProcessIdentity {
+    ProcessIdentity {
+        boot_id: "boot-a".to_owned(),
+        pid,
+        start_ticks: pid as u64 * 100,
+        process_group: 10,
+        cgroup_path: "/hc/a".to_owned(),
+        cgroup_inode: 50,
+        unit_name: "hc-a.service".to_owned(),
+    }
+}
+
+fn identity() -> FrozenIdentity {
+    FrozenIdentity {
+        campaign_id: hash('a'),
+        manifest_sha256: hash('b'),
+        contract_sha256: hash('c'),
+        scenario_sha256: hash('d'),
+        tooling_sha256: hash('e'),
+        source_bundle_sha256: hash('f'),
+        binary_bundle_sha256: hash('1'),
+        workload_bundle_sha256: hash('2'),
+        machine_id: "machine-a".to_owned(),
+        boot_id: "boot-a".to_owned(),
+        host_receipt_sha256: hash('3'),
+        mount_identity: "dev=1;opts=rw".to_owned(),
+        isolated_cpuset: "2-7".to_owned(),
+        housekeeping_cpuset: "0-1".to_owned(),
+        command_environment_sha256: hash('4'),
+        lease_id: "lease-a".to_owned(),
+        lease_deadline_unix_seconds: 10_000,
+    }
+}
+
+fn state() -> DurableCampaignState {
+    DurableCampaignState {
+        revision: 7,
+        campaign_state: CampaignState::I74Running,
+        identity: identity(),
+        harness: Some(process(100)),
+        daemon: Some(process(101)),
+        checkpoint: Some(CheckpointHead {
+            sequence: 8,
+            record_sha256: hash('5'),
+            useful_progress_unix_seconds: 1_000,
+        }),
+        controller_lease: None,
+        recorded_failure: false,
+        duplicate_executor: false,
+        durable_history_corrupt: false,
+    }
+}
+
+fn request(state: &DurableCampaignState) -> AttachRequest {
+    AttachRequest {
+        request_id: "request-a".to_owned(),
+        request_sha256: hash('6'),
+        expected_revision: state.revision,
+        authorization_sha256: hash('7'),
+        repository_id: 10,
+        run_id: 20,
+        actor_id: 30,
+        identity: state.identity.clone(),
+        harness: state.harness.clone().unwrap(),
+        daemon: state.daemon.clone().unwrap(),
+        checkpoint: state.checkpoint.clone().unwrap(),
+        now_unix_seconds: 1_010,
+        requested_controller_lease_seconds: 60,
+    }
+}
+
+#[test]
+fn exact_attach_only_changes_controller_revision_and_lease() {
+    let state = state();
+    let request = request(&state);
+    let next = apply_attach(&state, &request, 180).unwrap();
+    assert_eq!(next.revision, state.revision + 1);
+    assert_eq!(next.campaign_state, state.campaign_state);
+    assert_eq!(next.harness, state.harness);
+    assert_eq!(next.daemon, state.daemon);
+    assert_eq!(next.checkpoint, state.checkpoint);
+    assert_eq!(
+        next.controller_lease.as_ref().unwrap().holder_request_id,
+        request.request_id
+    );
+    assert!(controller_lease_authorizes(
+        &next,
+        10,
+        20,
+        30,
+        request.now_unix_seconds
+    ));
+    assert!(!controller_lease_authorizes(
+        &next,
+        10,
+        21,
+        30,
+        request.now_unix_seconds
+    ));
+    assert!(!controller_lease_authorizes(
+        &next,
+        10,
+        20,
+        30,
+        next.controller_lease.as_ref().unwrap().expires_unix_seconds + 1
+    ));
+}
+
+#[test]
+fn attach_fails_closed_for_host_process_checkpoint_lease_and_failure_drift() {
+    let state = state();
+    let mut request = request(&state);
+    request.expected_revision += 1;
+    request.identity.boot_id = "boot-b".to_owned();
+    request.harness.start_ticks += 1;
+    request.checkpoint.sequence += 1;
+    request.now_unix_seconds = 20_000;
+    let mut state = state;
+    state.recorded_failure = true;
+    state.duplicate_executor = true;
+    state.durable_history_corrupt = true;
+    let decision = evaluate_attach(&state, &request, 180);
+    assert!(!decision.admitted);
+    for failure in [
+        AttachFailure::StaleRevision,
+        AttachFailure::CampaignIdentityDrift,
+        AttachFailure::HostOrBootDrift,
+        AttachFailure::ProcessIdentityDrift,
+        AttachFailure::CheckpointDrift,
+        AttachFailure::CheckpointStale,
+        AttachFailure::ProductLeaseExpired,
+        AttachFailure::RecordedFailure,
+        AttachFailure::DuplicateExecutor,
+        AttachFailure::CorruptHistory,
+    ] {
+        assert!(decision.failures.contains(&failure), "missing {failure:?}");
+    }
+}
+
+#[test]
+fn future_useful_progress_timestamp_cannot_bypass_staleness() {
+    let mut state = state();
+    let mut request = request(&state);
+    state
+        .checkpoint
+        .as_mut()
+        .unwrap()
+        .useful_progress_unix_seconds = request.now_unix_seconds + 1;
+    request.checkpoint = state.checkpoint.clone().unwrap();
+    let decision = evaluate_attach(&state, &request, 180);
+    assert!(!decision.admitted);
+    assert!(decision.failures.contains(&AttachFailure::CheckpointDrift));
+}
+
+#[test]
+fn state_machine_cannot_skip_roles_or_restart_terminal_work() {
+    let state = transition(CampaignState::Prepared, Transition::StartI74).unwrap();
+    let state = transition(state, Transition::MarkI74Running).unwrap();
+    let state = transition(state, Transition::MarkI74Terminal).unwrap();
+    let state = transition(state, Transition::SealI74).unwrap();
+    let state = transition(state, Transition::StartC74).unwrap();
+    let state = transition(state, Transition::MarkC74Running).unwrap();
+    let state = transition(state, Transition::MarkC74Terminal).unwrap();
+    assert_eq!(
+        transition(state, Transition::SealComplete).unwrap(),
+        CampaignState::CompleteSealed
+    );
+    assert!(transition(CampaignState::Prepared, Transition::StartC74).is_err());
+    assert!(transition(CampaignState::I74Terminal, Transition::StartI74).is_err());
+    assert!(transition(CampaignState::CompleteSealed, Transition::StartI74).is_err());
+}
+
+#[test]
+fn request_replay_is_idempotent_only_for_identical_digest() {
+    let mut replay = ReplayMap::default();
+    assert_eq!(replay.observe("request-a", &hash('a')), ReplayDecision::New);
+    assert_eq!(
+        replay.observe("request-a", &hash('a')),
+        ReplayDecision::Idempotent
+    );
+    assert_eq!(
+        replay.observe("request-a", &hash('b')),
+        ReplayDecision::DigestConflict
+    );
+}
+
+#[test]
+fn lease_expiry_is_terminal_and_never_restarts() {
+    let expired = transition(CampaignState::C74Running, Transition::ExpireLease).unwrap();
+    assert_eq!(expired, CampaignState::LeaseExpiredIncomplete);
+    assert!(transition(expired, Transition::StartC74).is_err());
+}
+
+#[test]
+fn controller_resilience_expected_red_canary() {
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() != Ok("PERF74-W11") {
+        return;
+    }
+
+    // Model each forbidden weak policy from the W11 contract. The real attach
+    // predicate binds complete process, host, lease, campaign and checkpoint
+    // identities; every weak predicate below would admit evidence it rejects.
+    let current = state();
+    let current_checkpoint = current.checkpoint.as_ref().unwrap();
+
+    let mut pid_reuse = request(&current);
+    pid_reuse.harness.start_ticks += 1;
+    pid_reuse.daemon.start_ticks += 1;
+    pid_reuse.daemon.cgroup_inode += 1;
+    let weak_pid_only_policy = pid_reuse.harness.pid == current.harness.as_ref().unwrap().pid
+        && pid_reuse.daemon.pid == current.daemon.as_ref().unwrap().pid;
+    assert!(
+        weak_pid_only_policy,
+        "PID-only liveness mutant was not activated"
+    );
+    assert!(!evaluate_attach(&current, &pid_reuse, 180).admitted);
+
+    let mut restarted = request(&current);
+    restarted.harness = process(200);
+    restarted.daemon = process(201);
+    let weak_restart_from_checkpoint = &restarted.checkpoint == current_checkpoint;
+    assert!(
+        weak_restart_from_checkpoint,
+        "restart-from-checkpoint mutant was not activated"
+    );
+    assert!(!evaluate_attach(&current, &restarted, 180).admitted);
+
+    let mut broken_hash_chain = request(&current);
+    broken_hash_chain.checkpoint.record_sha256 = hash('9');
+    let weak_sequence_only_checkpoint =
+        broken_hash_chain.checkpoint.sequence == current_checkpoint.sequence;
+    assert!(
+        weak_sequence_only_checkpoint,
+        "sequence-only checkpoint mutant was not activated"
+    );
+    assert!(!evaluate_attach(&current, &broken_hash_chain, 180).admitted);
+
+    let mut mixed_attempt = request(&current);
+    mixed_attempt.identity.manifest_sha256 = hash('8');
+    mixed_attempt.identity.tooling_sha256 = hash('9');
+    let weak_process_only_attempt = &mixed_attempt.harness == current.harness.as_ref().unwrap()
+        && &mixed_attempt.daemon == current.daemon.as_ref().unwrap()
+        && &mixed_attempt.checkpoint == current_checkpoint;
+    assert!(
+        weak_process_only_attempt,
+        "mixed-attempt identity mutant was not activated"
+    );
+    assert!(!evaluate_attach(&current, &mixed_attempt, 180).admitted);
+
+    let mut expired_lease = request(&current);
+    expired_lease.now_unix_seconds = current.identity.lease_deadline_unix_seconds + 1;
+    let weak_liveness_ignores_lease = expired_lease.harness.pid
+        == current.harness.as_ref().unwrap().pid
+        && &expired_lease.checkpoint == current_checkpoint;
+    assert!(
+        weak_liveness_ignores_lease,
+        "lease-expiry mutant was not activated"
+    );
+    assert!(!evaluate_attach(&current, &expired_lease, 180).admitted);
+
+    let mut duplicate = current.clone();
+    duplicate.duplicate_executor = true;
+    let weak_duplicate_blind_policy = &request(&duplicate).checkpoint == current_checkpoint;
+    assert!(
+        weak_duplicate_blind_policy,
+        "duplicate-executor mutant was not activated"
+    );
+    assert!(!evaluate_attach(&duplicate, &request(&duplicate), 180).admitted);
+    assert!(transition(CampaignState::I74Terminal, Transition::StartI74).is_err());
+    assert!(transition(CampaignState::LeaseExpiredIncomplete, Transition::StartC74).is_err());
+
+    panic!(
+        "HC-CANARY-RED:PERF74-W11: PID-only/restart/PID-reuse/hash/mixed-attempt/lease/duplicate acceptance must stay red"
+    );
+}

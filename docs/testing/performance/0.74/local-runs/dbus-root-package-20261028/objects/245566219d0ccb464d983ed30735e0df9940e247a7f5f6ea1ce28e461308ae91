@@ -1,0 +1,17 @@
+Failed to find real location of C:\Python313\python.exe
+test_traversal_foreign_directories_and_policy_changes_are_not_candidate_paths (test_apply.Application.test_traversal_foreign_directories_and_policy_changes_are_not_candidate_paths) ... ok
+test_whole_approved_packet_and_original_payloads_are_bound (test_apply.Application.test_whole_approved_packet_and_original_payloads_are_bound) ... ok
+test_wrong_preimage_existing_new_source_and_payload_refuse (test_apply.Application.test_wrong_preimage_existing_new_source_and_payload_refuse) ... ok
+test_expiry_prevents_even_creation_of_a_case_output (test_batch.Batch.test_expiry_prevents_even_creation_of_a_case_output) ... ok
+test_full_catalog_and_zero_case_target_remain_unfiltered (test_batch.Batch.test_full_catalog_and_zero_case_target_remain_unfiltered) ... ok
+test_every_original_case_once_with_four_separate_commands (test_isolated.Isolated.test_every_original_case_once_with_four_separate_commands) ... ok
+test_selection_accounting_rejects_missing_duplicate_wrong_filtered_failed_or_foreign (test_isolated.Isolated.test_selection_accounting_rejects_missing_duplicate_wrong_filtered_failed_or_foreign) ... ok
+test_all_target_checks_and_clippy_keep_exact_flags_and_explicit_compilers (test_native.Package.test_all_target_checks_and_clippy_keep_exact_flags_and_explicit_compilers) ... ok
+test_expired_seed_or_expired_preflight_cannot_start_an_effect (test_native.Package.test_expired_seed_or_expired_preflight_cannot_start_an_effect) ... ok
+test_full_accounting_refuses_wrong_duplicate_filtered_failed_or_missing_cases (test_native.Package.test_full_accounting_refuses_wrong_duplicate_filtered_failed_or_missing_cases) ... ok
+test_only_actual_test_profile_artifacts_are_runnable_and_all_targets_are_accounted (test_native.Package.test_only_actual_test_profile_artifacts_are_runnable_and_all_targets_are_accounted) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 3.420s
+
+OK

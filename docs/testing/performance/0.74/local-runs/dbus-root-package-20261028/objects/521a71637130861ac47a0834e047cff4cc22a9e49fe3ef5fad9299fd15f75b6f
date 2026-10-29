@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::local_files::tests::account_positional_read_refuses_short_overrun_error_and_midread_drift",
+  "passed": 1
+}

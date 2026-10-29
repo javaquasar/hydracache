@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::loss::tests::channel_rejects_missing_credentials_wrong_gate_and_malformed_requests",
+  "passed": 1
+}

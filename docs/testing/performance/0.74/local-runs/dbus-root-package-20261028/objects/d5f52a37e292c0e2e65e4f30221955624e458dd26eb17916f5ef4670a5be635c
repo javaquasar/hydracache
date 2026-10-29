@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_unsafe_linked_special_and_oversized_records_refuse ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.13s
+

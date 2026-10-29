@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::tests::kernel_refusal_capture_seeded_clock_and_namespace_classification",
+  "passed": 1
+}

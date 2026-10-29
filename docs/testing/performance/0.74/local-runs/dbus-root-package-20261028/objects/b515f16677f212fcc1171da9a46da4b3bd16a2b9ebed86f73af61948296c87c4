@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_artifacts::linux::held_role_census::tests::held_complete_census_missing_duplicate_wrong_order_and_repair_after_failure_refuse",
+  "passed": 1
+}

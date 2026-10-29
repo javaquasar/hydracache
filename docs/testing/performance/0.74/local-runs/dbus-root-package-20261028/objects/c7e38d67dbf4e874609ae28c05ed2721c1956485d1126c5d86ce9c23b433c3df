@@ -1,0 +1,14 @@
+
+running 9 tests
+test a_live_writer_is_would_block_not_eof_or_an_unbounded_read ... ok
+test an_io_error_preserves_only_the_preceding_prefix ... ok
+test eof_and_byte_cap_are_distinct ... ok
+test missing_and_invalid_handles_refuse_capture_without_reading ... ok
+test nonzero_exit_is_returned_not_promoted_or_retried ... ok
+test repeated_eintr_consumes_the_fixed_read_budget ... ok
+test seeded_binary_prefixes_never_overread_or_claim_unobserved_eof ... ok
+test successful_exit_keeps_exact_streams_and_status ... ok
+test timeout_reports_original_kill_reap_and_public_output ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.02s
+

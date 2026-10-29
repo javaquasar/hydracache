@@ -1,0 +1,8 @@
+Failed to find real location of C:\Python313\python.exe
+test_expiry_prevents_even_creation_of_a_case_output (test_batch.Batch.test_expiry_prevents_even_creation_of_a_case_output) ... ok
+test_full_catalog_and_zero_case_target_remain_unfiltered (test_batch.Batch.test_full_catalog_and_zero_case_target_remain_unfiltered) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.084s
+
+OK

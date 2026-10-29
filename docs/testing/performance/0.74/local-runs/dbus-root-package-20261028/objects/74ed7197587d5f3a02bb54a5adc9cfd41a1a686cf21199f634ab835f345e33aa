@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_process::mount_namespace::tests::mount_namespace_identity_drift_never_adopts_device_or_inode",
+  "passed": 1
+}

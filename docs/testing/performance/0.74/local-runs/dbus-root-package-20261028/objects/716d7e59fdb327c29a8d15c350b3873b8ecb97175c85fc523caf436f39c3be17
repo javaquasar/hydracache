@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 6,
+  "name": "stale_or_unauthorized_abort_does_not_record_intent_or_call_backend",
+  "passed": 1
+}

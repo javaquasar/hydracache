@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::trusted_input::tests::worker_trust_input_source_drift_refuses_policy_and_authority_without_refresh",
+  "passed": 1
+}

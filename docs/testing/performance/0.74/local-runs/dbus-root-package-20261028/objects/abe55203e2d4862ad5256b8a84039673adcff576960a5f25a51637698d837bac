@@ -1,0 +1,12 @@
+{
+  "boot_after": "1b6e5444-1a81-4a18-8104-8ce67d4098f5",
+  "boot_before": "1b6e5444-1a81-4a18-8104-8ce67d4098f5",
+  "boot_unchanged": true,
+  "clocks_changed": false,
+  "passed": true,
+  "phase": "seed",
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

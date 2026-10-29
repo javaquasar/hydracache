@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\xtask.exe",
+    "doc-check",
+    "--root",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074"
+  ],
+  "binary_sha256": "b7a6cc3e1dc61bb610c0e7948aa692fe74123f7a9957c5850883d6822cf3c8ce",
+  "release_admitted": false,
+  "server": false,
+  "source": "unchanged xtask doc-check implementation; existing local binary"
+}

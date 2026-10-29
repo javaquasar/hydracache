@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::tests::projection_cost::projection_fields_differential_seeded_boundaries_duplicates_and_error_order",
+  "passed": 1
+}

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "abort_backend::tests::progress_loss_diagnostic_is_cause_bound_and_exactly_replayed",
+  "passed": 1
+}

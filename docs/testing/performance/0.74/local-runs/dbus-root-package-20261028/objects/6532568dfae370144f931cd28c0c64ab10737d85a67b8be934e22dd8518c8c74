@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 11,
+  "name": "owned::tests::owned_probe_sigkill_and_drop_at_both_original_stops_reap_only_owned_child",
+  "passed": 1
+}

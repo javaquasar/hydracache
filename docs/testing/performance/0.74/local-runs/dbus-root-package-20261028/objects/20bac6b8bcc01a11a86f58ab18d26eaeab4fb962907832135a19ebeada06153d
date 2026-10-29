@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 38,
+  "name": "reader::roles::installed::tests::bootstrap_installed_child_record_seals_flags_lengths_shape_and_offset_refuse",
+  "passed": 1
+}

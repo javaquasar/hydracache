@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_real_proc_and_filesystem_failures_match",
+  "passed": 1
+}

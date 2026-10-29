@@ -1,0 +1,4 @@
+linux::manager_scope_has_only_fixed_diagnostic_units: test
+linux::scope_wire_refuses_future_unknown_duplicate_and_noncanonical_input: test
+
+2 tests, 0 benchmarks

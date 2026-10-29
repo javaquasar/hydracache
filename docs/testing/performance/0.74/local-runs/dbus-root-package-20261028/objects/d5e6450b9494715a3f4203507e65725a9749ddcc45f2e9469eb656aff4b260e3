@@ -1,0 +1,7 @@
+accounts_directories_and_unresolved_key_fail_closed: test
+private_storage_is_checked_before_installation_without_metadata_repair: test
+role_overhead_does_not_expand_the_fixed_root_entrypoint: test
+service_is_detached_confined_and_exposes_no_workflow_shell: test
+sudo_boundary_exposes_only_the_fixed_signed_bundle_installer: test
+
+5 tests, 0 benchmarks

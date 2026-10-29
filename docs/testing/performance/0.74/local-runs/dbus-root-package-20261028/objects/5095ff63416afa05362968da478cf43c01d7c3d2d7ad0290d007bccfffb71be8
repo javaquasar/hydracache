@@ -1,0 +1,1 @@
+HC074-KERNEL-FIRST-REFUSAL Event { phase: "unwind", site: "unwinding", file: "tools/long-run-supervisor-074/src/diagnostic_kernel_refusal_trace.rs", line: 103, clock: [0, 0, 0, 0, 0, 0] }

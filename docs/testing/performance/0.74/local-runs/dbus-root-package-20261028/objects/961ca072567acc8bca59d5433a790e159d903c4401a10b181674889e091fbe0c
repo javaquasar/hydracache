@@ -1,0 +1,7 @@
+{
+  "case": "diagnostic_signer_root_fixture::rooted_exec::namespace::tests::signer_namespace_exec_denials_and_actual_alternate_abi_sigsys",
+  "completed": 666,
+  "reason": "exact per-image owned retirement",
+  "retry": false,
+  "type": "ValueError"
+}

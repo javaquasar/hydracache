@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::tests::kernel_time_original_proc_boot_and_namespace_drift_refuse",
+  "passed": 1
+}

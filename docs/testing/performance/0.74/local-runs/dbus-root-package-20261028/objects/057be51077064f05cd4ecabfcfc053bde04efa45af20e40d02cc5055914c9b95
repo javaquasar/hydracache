@@ -1,0 +1,21 @@
+"""Inert byte/text whole-preimage controls; no Cargo or fixture execution."""
+import unittest
+
+import spool_context as s
+
+
+class Preimage(unittest.TestCase):
+    def test_byte_and_text_preimages_preserve_every_other_byte(self):
+        for prefix, before, after, suffix in ((b'\r\n', b'old', b'new', b'\n'),
+                                              ('\n', 'old', 'new', '\r\n')):
+            self.assertEqual(s.replace(prefix+before+suffix, before, after), prefix+after+suffix)
+
+    def test_missing_or_duplicate_preimage_refuses_before_any_write(self):
+        for body in (b'none', b'oldold', 'none', 'oldold'):
+            before = b'old' if isinstance(body, bytes) else 'old'
+            with self.assertRaises(ValueError):
+                s.replace(body, before, before)
+
+
+if __name__ == '__main__':
+    unittest.main()

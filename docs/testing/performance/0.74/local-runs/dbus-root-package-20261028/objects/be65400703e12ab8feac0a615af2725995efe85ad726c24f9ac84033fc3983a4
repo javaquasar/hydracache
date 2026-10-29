@@ -1,0 +1,8 @@
+active_recovery_returns_the_validated_marker_identity_under_the_host_lock: test
+host_marker_is_released_only_after_a_clean_complete_seal: test
+one_campaign_claim_survives_restart_and_blocks_every_other_campaign: test
+recovery_never_creates_a_missing_active_campaign_marker: test
+symlink_and_hardlink_markers_are_rejected: test
+unsafe_marker_lock_and_campaign_identity_fail_closed: test
+
+6 tests, 0 benchmarks

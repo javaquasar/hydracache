@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_named_output::tests::fixed_fixture_names_accept_append_without_reading_or_seeking ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.01s
+

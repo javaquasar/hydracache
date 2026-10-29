@@ -1,0 +1,82 @@
+"""Capture the first format verdict, then format only the reviewed Rust migration."""
+from pathlib import Path
+import json
+import os
+import subprocess
+import sys
+import time
+import traceback
+
+import common as c
+
+ACTIONS = ('initial', 'apply', 'final')
+
+
+def files():
+    recipe = json.loads(c.app.member('candidate/fileset.json'))
+    selected = [v['path'] for v in recipe['operations'] if v['path'].startswith(c.PKG+'/src/') and v['path'].endswith('.rs')]
+    c.need(len(selected) == 22, 'exact 22 qualified Rust files')
+    return sorted(selected)
+
+
+def command(action):
+    c.need(action in ACTIONS, 'fixed formatting actions')
+    toolchain, env = c.windows_environment()
+    if action == 'apply':
+        argv = [str(toolchain/'rustfmt.exe'), '--edition', '2021', '--config', 'skip_children=true',
+                *[str(c.ROOT/name) for name in files()]]
+    else:
+        argv = [str(toolchain/'cargo.exe'), 'fmt', '--all', '--manifest-path', str(c.ROOT/'Cargo.toml'), '--', '--check']
+    return argv, env
+
+
+def worker(action):
+    folder = c.BASE/'format'/action
+    argv, env = command(action)
+    # Dedicated child only; no shared process environment is changed.
+    os.environ.clear()
+    os.environ.update(env)
+    owner = c.owned()
+    execution = owner._owned(owner.load_job().WindowsJob(), argv, str(c.ROOT), c.capacity,
+                              bound=1200, deadline=time.monotonic()+1100)
+    c.write(folder, 'execution.json', execution)
+    raise SystemExit(execution['exit'])
+
+
+def main(action):
+    c.need(action in ACTIONS, 'one exact format phase')
+    folder = c.BASE/'format'/action
+    folder.mkdir(parents=True, exist_ok=False)
+    (folder/'producer.py').write_bytes(Path(__file__).read_bytes())
+    with (folder/'stdout.log').open('xb') as stdout, (folder/'stderr.log').open('xb') as stderr:
+        try:
+            before = c.hashes(c.source_names())
+            argv, env = command(action)
+            c.write(folder,'intent.json',dict(argv=argv, environment=env, source=before,
+                head=c.git_snapshot()['head'], bound=1200, session_bound=1100, floor=4*1024**3,
+                poll=5,retirement=5,retry=False,formatting_only=True))
+            child = subprocess.Popen([sys.executable,'-B',str(Path(__file__)), '--worker', action],
+                cwd=c.ROOT,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr)
+            child.wait(timeout=1210)
+            execution = json.loads((folder/'execution.json').read_bytes())
+            c.need(execution['retired'] and not execution['errors'], 'original format process retirement')
+            after = c.hashes(before)
+            changed = sorted(k for k in before if before[k] != after[k])
+            c.need(set(changed).issubset(files()) if action=='apply' else not changed,
+                   'only reviewed Rust formatting may change source')
+            c.write(folder,'result.json',dict(exit=execution['exit'], changed=changed, before=before, after=after,
+                original_first_result_retained=True, compiler_executed=False, release_admitted=False))
+            if action != 'initial':
+                c.need(execution['exit']==0, 'exact format phase refusal')
+        except BaseException as error:
+            stderr.write(traceback.format_exc().encode())
+            c.write(folder,'refusal.json',dict(type=type(error).__name__,reason=str(error)))
+            raise
+    print(json.dumps(dict(action=action,exit=execution['exit'],changed=len(changed))))
+
+
+if __name__=='__main__':
+    if len(sys.argv)==3 and sys.argv[1]=='--worker': worker(sys.argv[2])
+    else:
+        c.need(len(sys.argv)==2, 'one fixed format action')
+        main(sys.argv[1])

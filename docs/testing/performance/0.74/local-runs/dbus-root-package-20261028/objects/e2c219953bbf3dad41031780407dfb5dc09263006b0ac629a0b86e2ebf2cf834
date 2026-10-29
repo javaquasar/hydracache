@@ -1,0 +1,5 @@
+cpuset_is_bound_to_the_live_process_status: test
+current_process_snapshot_has_stable_kernel_identity_fields: test
+verifier_reports_every_changed_kernel_identity_field: test
+
+3 tests, 0 benchmarks

@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_kernel_admission::origin::document_scratch_tests::document_scratch_single_read_seeded_short_poison_error_and_budget ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.01s
+

@@ -1,5 +1,22 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [applied-root package gate](dbus-root-package-result-20261029.md) now passes
+full GNU formatting, GNU Rust 1.94/MSRV 1.88 all-target/all-feature check, strict
+Clippy and both complete default catalogs: 2,105 passed / 136 ignored across 90
+targets per compiler. Both unfiltered 17-case bootstrap and seven-case spool
+focuses pass, as does the additional ten-scenario private-bus matrix. The earlier
+291-operation root candidate is applied with its exact 266 reviewed vendor bodies.
+One necessary leaf keeps every fresh complete-image read/check and SHA-256 output
+while using the already pinned ring backend; one synthetic spool input now uses
+the existing exact historical worker lock. Runtime pins, validation frequency,
+all original windows and first refusals remain. Full package compatibility is
+proved locally; broader workspace/security and authenticated original execution,
+all-writer cessation, lifecycle/recovery and compatible-host admission remain open.
+The [plan](dbus-root-package-plan-20261028.md) and
+[article](../../../articles/007-optimization-starts-with-measurement.md) distinguish
+the completed gates from the single nonqualifying attribution and make no product
+performance or server-admission claim.
+
 The [whole legacy caller join](dbus-legacy-integration-result-20261028.md) now
 passes paired GNU 1.94/1.88 check, strict library/test-cfg Clippy and 64 exact
 original cases per compiler. Full catalogs agree at 1,593, with 1,529 filtered.

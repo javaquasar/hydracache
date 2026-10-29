@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/hydracache_long_run_supervisor_074-289ec81dfbc503eb",
+    "--exact",
+    "diagnostic_signer_root_fixture::rooted_exec::handoff::loss::tests::signer_tracer_loss_installed_original_sigkill_reaps_original_child",
+    "--test-threads=1"
+  ],
+  "bound": 1200,
+  "deadline": 1463.5774953569999,
+  "environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_HOME": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/cargo-home",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_OFFLINE": "true",
+    "HOME": "/home/artur",
+    "LANG": "C.UTF-8",
+    "LOGNAME": "artur",
+    "PATH": "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin:/usr/local/bin:/usr/bin:/bin",
+    "RUSTC": "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTC_WORKSPACE_WRAPPER": "",
+    "RUSTC_WRAPPER": "",
+    "RUSTUP_TOOLCHAIN": "1.94.0-x86_64-unknown-linux-gnu",
+    "USER": "artur"
+  },
+  "floor": 4294967296,
+  "poll": 5,
+  "retirement": 5,
+  "retry": false,
+  "session_bound": 1100
+}

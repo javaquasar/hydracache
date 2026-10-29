@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::actual_original_packet_namespace_and_policy_faults_poison_both_borrows",
+  "passed": 1
+}

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_loaded::tests::loaded_settings_bind_four_cells_and_nonzero_original_invocation",
+  "passed": 1
+}

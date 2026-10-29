@@ -1,0 +1,6 @@
+archive_bytes_and_headers_are_deterministic: test
+archive_replay_verification_rejects_digest_and_extra_file_drift: test
+create_new_limits_and_output_placement_fail_closed: test
+hardlinked_input_is_rejected_without_creating_an_archive: test
+
+4 tests, 0 benchmarks

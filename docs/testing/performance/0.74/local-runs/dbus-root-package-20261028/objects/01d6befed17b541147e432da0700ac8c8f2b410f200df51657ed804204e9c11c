@@ -1,0 +1,8 @@
+
+running 3 tests
+test digest_signature_and_request_binding_tamper_fail_closed ... ok
+test exact_signed_authorization_is_accepted ... ok
+test repository_actor_and_time_window_are_enforced ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+

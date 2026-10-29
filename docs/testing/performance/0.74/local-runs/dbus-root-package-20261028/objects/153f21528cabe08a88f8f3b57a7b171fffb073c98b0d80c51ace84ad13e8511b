@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "host_execution::fixed_admission_tests::fixed_admission_production_nonroot_refuses_and_fixture_route_stays_distinct",
+  "passed": 1
+}

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_signer_first_exec_fixture::tests::signer_first_exec_unexpected_signal_and_output_overflow_cross_refuse",
+  "passed": 1
+}

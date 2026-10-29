@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::operation_cost::operation_observer_unwind_clears_only_its_scope_and_preserves_panic",
+  "passed": 1
+}

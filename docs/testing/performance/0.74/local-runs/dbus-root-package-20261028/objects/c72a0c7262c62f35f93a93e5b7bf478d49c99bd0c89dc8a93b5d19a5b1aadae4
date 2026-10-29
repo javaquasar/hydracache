@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::tests::bounded_maps_require_selected_inodes_roles_offsets_paths_and_private_permissions",
+  "passed": 1
+}

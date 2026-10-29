@@ -1,0 +1,12 @@
+{
+  "executed_again": false,
+  "from_context": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-root-package-20261029-hash5",
+  "live_authority_reused": false,
+  "receipt_sha256": {
+    "execution.json": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f",
+    "intent.json": "db88789ba5bfe5064ccb77e52eaaa5fdc509975216468cf56f313d7bbc96e686",
+    "native-result.json": "d3051b427d73225eb86a9777e1f02293923da9c7bc9261a73b99290b67205bf0",
+    "result.json": "df9264e4ec5cb1746e6fc343f8d2afafa25371f944cc05af946fd5b65717fe1b"
+  },
+  "same_product_source": true
+}

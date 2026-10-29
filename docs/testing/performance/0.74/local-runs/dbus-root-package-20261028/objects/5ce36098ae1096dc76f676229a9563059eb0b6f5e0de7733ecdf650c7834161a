@@ -1,0 +1,25 @@
+{
+  "acceptance_pass": false,
+  "attribution_complete": true,
+  "boot_after": "51f5cd84-2a33-4350-9946-e35f33fb3af8",
+  "boot_before": "51f5cd84-2a33-4350-9946-e35f33fb3af8",
+  "bootstrap_images": [
+    {
+      "bytes": 85685104,
+      "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/diagnostic_held_bootstrap",
+      "sha256": "067eca98fd8051376870c1ed58b6088731fc0feaecd6ed5699cd371bc3df73c3"
+    }
+  ],
+  "clocks_changed": false,
+  "observation_errors": [],
+  "original_activation_seconds": 10,
+  "original_owned_case_seconds": 45,
+  "original_wait_seconds": 5,
+  "performance_claim": false,
+  "rows": 884,
+  "server": false,
+  "services": false,
+  "source_unchanged": true,
+  "test_exit": 101,
+  "ticks_per_second": 100
+}

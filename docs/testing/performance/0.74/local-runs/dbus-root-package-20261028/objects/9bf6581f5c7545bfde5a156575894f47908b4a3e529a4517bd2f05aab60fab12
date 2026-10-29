@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_signer_bundle::tests::signer_bundle_original_positive_cloexec_and_drop_release_owned_descriptors",
+  "passed": 1
+}

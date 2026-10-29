@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_ipc::validation_trace::round_cost::round_cost_inactive_and_nested_captures_do_not_leak",
+  "passed": 1
+}

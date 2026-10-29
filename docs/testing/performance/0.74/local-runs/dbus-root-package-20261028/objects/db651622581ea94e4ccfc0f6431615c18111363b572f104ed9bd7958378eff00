@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_artifacts::linux::projection::role_census::held_complete_census_bundle_provider_uses_only_original_worker_and_poisoned_failures_stay_refused ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.01s
+

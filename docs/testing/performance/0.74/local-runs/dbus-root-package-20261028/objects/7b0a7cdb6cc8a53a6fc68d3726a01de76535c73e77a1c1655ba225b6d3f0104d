@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_artifacts::linux::held_role_census::tests::held_complete_census_records_same_worker_and_live_pidfds_without_copy_or_position_change",
+  "passed": 1
+}

@@ -1,0 +1,151 @@
+"""One confirmed-cost leaf: existing ring SHA-256, identical fresh complete reads."""
+from pathlib import Path
+import json
+import os
+import re
+import subprocess
+import sys
+
+import common as c
+
+OLD = c.ROOT/'target/dbus-root-package-20261028-caller4'
+NEW = c.ROOT/'target/dbus-root-package-20261029-hash5'
+TOOLS = Path(__file__).parent
+KERNEL = c.PKG+'/src/diagnostic_bootstrap_child_role_kernel.rs'
+INSTALLED = c.PKG+'/src/diagnostic_bootstrap_installed_child.rs'
+TEST = c.PKG+'/src/diagnostic_bootstrap_hash_tests.rs'
+
+
+def replace(body, before, after):
+    c.need(body.count(before)==1,'exact leaf/helper preimage: '+before[:60])
+    return body.replace(before,after)
+
+
+def formatter():
+    _,env = c.windows_environment()
+    tool = Path(env['RUSTFMT'])
+    os.environ.clear()
+    os.environ.update(env)
+    value = c.owned()
+    result = value._owned(value.load_job().WindowsJob(),
+        [str(tool),'--edition','2024','--config','skip_children=true',str(c.ROOT/TEST)],
+        str(c.ROOT),c.capacity,bound=60)
+    c.write(OLD/'hash-leaf-preparation','format-execution.json',result)
+    raise SystemExit(result['exit'])
+
+
+def main():
+    c.need(c.BASE==OLD and not NEW.exists(),'one separately retained hash leaf context')
+    review = json.loads((OLD/'freeze/runtime-reviewed.json').read_bytes())
+    c.guard(review)
+    for compiler in ('194','188'):
+        folder = OLD/('focus-'+compiler)
+        native = json.loads((folder/'native-result.json').read_bytes())
+        execution = json.loads((folder/'execution.json').read_bytes())
+        raw = (folder/'bootstrap-full/stdout.log').read_text()
+        c.need(not native['passed'] and native['source_unchanged'] and native['boot_unchanged']
+               and execution['retired'] and not execution['errors']
+               and re.findall(r'^test result: FAILED\. (\d+) passed; (\d+) failed; 0 ignored; 0 measured; 0 filtered out;',raw,re.M)==[('10','7')],
+               'unchanged first full original-caller baseline on both compilers')
+    attribution = json.loads((OLD/'held-startup-attribution/native-result.json').read_bytes())
+    c.need(attribution['attribution_complete'] and not attribution['acceptance_pass']
+           and attribution['source_unchanged'] and attribution['test_exit']==101
+           and len(attribution['bootstrap_images'])==1,'retained nonqualifying CPU/read attribution')
+    census = subprocess.run(['wsl.exe','-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B',
+        '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-root-package-074/retirement.py'],
+        stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=20)
+    c.need(census.returncode==0 and not json.loads(census.stdout)['active'],'no existing native gate')
+    out = OLD/'hash-leaf-preparation'
+    out.mkdir(exist_ok=False)
+    (out/'before').mkdir()
+    (out/'producer.py').write_bytes(Path(__file__).read_bytes())
+    (out/'regression-template.rs').write_bytes((TOOLS/'hash_regression.rs.in').read_bytes())
+    for name in review['helpers']:
+        if name.startswith('tools/dbus-root-package-074/'):
+            folder = out/'old-helpers'
+            folder.mkdir(exist_ok=True)
+            (folder/Path(name).name).write_bytes((c.ROOT/name).read_bytes())
+    changes = {}
+    for name, expected in ((KERNEL,'digest'),(INSTALLED,'c.installed_sha256')):
+        raw = (c.ROOT/name).read_bytes()
+        (out/'before'/Path(name).name).write_bytes(raw)
+        before = raw.decode().replace('\r\n','\n')
+        after = replace(before,'let mut hash = Sha256::new();',
+            'let mut hash = ring::digest::Context::new(&ring::digest::SHA256);')
+        after = replace(after,'<[u8; 32]>::from(hash.finalize()) == '+expected,
+            'hash.finish().as_ref() == '+expected+'.as_slice()')
+        if name==KERNEL:
+            after = replace(after,'use sha2::{Digest, Sha256};\n','')
+            after += '\n#[cfg(test)]\n#[path = "diagnostic_bootstrap_hash_tests.rs"]\nmod hash_regression;\n'
+        # No read/chunk/order/limit/predicate or metadata-check change.
+        loop_before = before[before.index('    let mut buffer = [0; 65536];'):before.index('    need(<[u8; 32]>::from(hash.finalize())')]
+        loop_after = after[after.index('    let mut buffer = [0; 65536];'):after.index('    need(hash.finish()')]
+        c.need(loop_before==loop_after,'identical fresh pread loop, update order and byte count')
+        changes[name] = after.encode()
+    c.need(not (c.ROOT/TEST).exists(),'preserve existing untracked source')
+    for name,body in changes.items():
+        (c.ROOT/name).write_bytes(body)
+    (c.ROOT/TEST).write_bytes((TOOLS/'hash_regression.rs.in').read_bytes())
+    with (out/'format.stdout.log').open('xb') as stdout,(out/'format.stderr.log').open('xb') as stderr:
+        code = subprocess.call([sys.executable,'-B',str(Path(__file__)),'format-worker'],
+            cwd=c.ROOT,stdout=stdout,stderr=stderr)
+    execution = json.loads((out/'format-execution.json').read_bytes())
+    c.need(code==0 and execution['retired'] and not execution['errors'],'qualified new-test formatter')
+    common = replace((TOOLS/'common.py').read_text(),
+        "BASE = ROOT / 'target/dbus-root-package-20261028-caller4'",
+        "BASE = ROOT / 'target/dbus-root-package-20261029-hash5'")
+    old_phases = "('seed','checks','focus-194','focus-188','tests-194','tests-188')"
+    new_phases = "('seed','format','checks','focus-194','focus-188','tests-194','tests-188')"
+    native = replace((TOOLS/'native.py').read_text(),old_phases,new_phases)
+    native = replace(native,"    elif action=='check':argv=", 
+        "    elif action=='format':argv=[str(toolchain/'cargo'),'fmt','--manifest-path',str(c.ROOT/'Cargo.toml'),'--all','--','--check']\n    elif action=='check':argv=")
+    native = replace(native,"            if phase=='checks':", 
+        "            if phase=='format':invoke(out,'fmt',*cargo_command('194','format'),review,deadline)\n            elif phase=='checks':")
+    run = replace((TOOLS/'run.py').read_text(),old_phases,new_phases)
+    test_native = replace((TOOLS/'test_native.py').read_text(),old_phases,new_phases)
+    retention = replace((TOOLS/'retain.py').read_text(),
+        "for phase in ('checks','focus-194','focus-188','tests-194','tests-188'):",
+        "for phase in ('format','checks','focus-194','focus-188','tests-194','tests-188'):")
+    retention = replace(retention,"(c.BASE, 'caller4')):",
+        "(c.ROOT/'target/dbus-root-package-20261028-caller4', 'caller-first'), (c.BASE, 'hash5')):")
+    for name,body in (('common.py',common),('native.py',native),('run.py',run),('test_native.py',test_native),('retain.py',retention)):
+        (TOOLS/name).write_text(body,encoding='utf8',newline='\n')
+    source = dict(review['source'])
+    for name,body in changes.items():
+        source[name] = c.sha(body)
+    source[TEST] = c.sha((c.ROOT/TEST).read_bytes())
+    c.need(c.hashes(source)==source and len(source)==2246,'only the declared two digest consumers plus regression source changed')
+    NEW.mkdir(exist_ok=False)
+    (NEW/'freeze').mkdir()
+    (NEW/'seed').mkdir()
+    (NEW/'retirement-census.json').write_bytes(census.stdout)
+    for name in ('result.json','native-result.json'):
+        original = c.ROOT/'target/dbus-root-package-20261028/seed'/name
+        value = json.loads(original.read_bytes())
+        c.need(value['passed'],'immutable content seed only')
+        value.update(reused_from=str(original),reused_sha256=c.sha(original.read_bytes()),phase='seed-reuse')
+        c.write(NEW/'seed',name,value)
+    names = set(review['helpers']) | {p.relative_to(c.ROOT).as_posix() for p in TOOLS.iterdir() if p.is_file()}
+    helpers = {name:c.sha((c.ROOT/name).read_bytes()) for name in sorted(names)}
+    receipt = dict(review,source=source,helpers=helpers,
+        previous_freeze_sha256=c.sha((OLD/'freeze/runtime-reviewed.json').read_bytes()),
+        leaf='same SHA-256 through existing ring for both complete-image digest consumers',
+        modified_product_files=sorted(changes),added_regression_file=TEST,
+        fresh_read_loops_equal=True,digest_cache=False,dependencies_changed=False,profiles_changed=False,
+        runtime_live_checks_changed=False,qualification_windows_changed=False,product_checks_changed=False,
+        source_changed=True,partial_tests_reused=False,
+        phases=['seed','format','checks','focus-194','focus-188','tests-194','tests-188'])
+    c.write(NEW/'freeze','runtime-reviewed.json',receipt)
+    c.write(out,'result.json',dict(applied=True,source_files=len(source),modified_files=sorted(changes),
+        regression_file=TEST,same_algorithm=True,fresh_read_loops_equal=True,performance_claim=False,
+        original_wait_seconds=5,original_activation_seconds=10,original_owned_case_seconds=45,
+        original_windows_seconds=[300,60,10],server=False,release_admitted=False))
+    print(json.dumps(dict(context=str(NEW),source_files=len(source),same_algorithm=True,performance_claim=False)))
+
+
+if __name__=='__main__':
+    if sys.argv[1:]==['format-worker']:
+        formatter()
+    else:
+        c.need(not sys.argv[1:],'one preimage-bound hash leaf')
+        main()

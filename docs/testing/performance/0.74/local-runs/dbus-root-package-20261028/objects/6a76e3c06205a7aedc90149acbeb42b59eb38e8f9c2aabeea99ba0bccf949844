@@ -1,0 +1,5 @@
+error: missing #[hydracache(entity = "...")]
+ --> tests/derive/fail_missing_entity.rs:5:8
+  |
+5 | struct User;
+  |        ^^^^

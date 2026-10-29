@@ -1,0 +1,22 @@
+{
+  "applied": true,
+  "fresh_read_loops_equal": true,
+  "modified_files": [
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_child_role_kernel.rs",
+    "tools/long-run-supervisor-074/src/diagnostic_bootstrap_installed_child.rs"
+  ],
+  "original_activation_seconds": 10,
+  "original_owned_case_seconds": 45,
+  "original_wait_seconds": 5,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "performance_claim": false,
+  "regression_file": "tools/long-run-supervisor-074/src/diagnostic_bootstrap_hash_tests.rs",
+  "release_admitted": false,
+  "same_algorithm": true,
+  "server": false,
+  "source_files": 2246
+}

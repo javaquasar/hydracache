@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "systemd_spawn::tests::pending_observation_never_hides_a_terminal_unit_mismatch",
+  "passed": 1
+}

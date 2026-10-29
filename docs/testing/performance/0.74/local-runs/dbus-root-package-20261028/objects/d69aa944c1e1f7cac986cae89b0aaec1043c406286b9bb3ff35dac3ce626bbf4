@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_process::terminal::tests::terminal_process_late_boot_drift_and_unknown_poll_never_become_exit",
+  "passed": 1
+}

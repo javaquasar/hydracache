@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::trusted_input::tests::worker_trust_input_foreign_policy_host_and_refused_authority_latch",
+  "passed": 1
+}

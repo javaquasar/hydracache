@@ -1,0 +1,28 @@
+{
+  "catalog": 5,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 5,
+  "rows": [
+    [
+      "empty_fenced_intent_public_entries_require_original_guard_borrows",
+      "ok"
+    ],
+    [
+      "empty_reservation_fence_public_entry_has_no_caller_selected_origin",
+      "ok"
+    ],
+    [
+      "initial_consumption_entry_requires_owned_runtime_publication",
+      "ok"
+    ],
+    [
+      "original_fence_public_entry_has_no_caller_selected_origin",
+      "ok"
+    ],
+    [
+      "reservation_publication_entry_requires_fixed_original_intent_and_owned_fence",
+      "ok"
+    ]
+  ]
+}

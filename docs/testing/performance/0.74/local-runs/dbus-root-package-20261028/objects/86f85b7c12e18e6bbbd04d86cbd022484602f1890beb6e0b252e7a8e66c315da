@@ -1,0 +1,12 @@
+{
+  "catalog": 1,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 1,
+  "rows": [
+    [
+      "original_output_join_is_consuming_without_asserted_inputs",
+      "ok"
+    ]
+  ]
+}

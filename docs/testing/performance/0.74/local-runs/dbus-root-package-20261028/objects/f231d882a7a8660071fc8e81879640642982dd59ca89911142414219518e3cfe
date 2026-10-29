@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::fixed_slice_retained_snapshot_detects_every_anchor_identity_security_change",
+  "passed": 1
+}

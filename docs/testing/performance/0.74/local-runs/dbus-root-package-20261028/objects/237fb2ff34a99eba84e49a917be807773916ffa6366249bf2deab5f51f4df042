@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_manager::account::tests::fixed_account_request_refuses_selectors_schema_duplicates_and_trailing_bytes",
+  "passed": 1
+}

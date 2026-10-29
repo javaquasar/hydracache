@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "host_receipt::tests::live_observation_ignores_only_namespace_local_mount_id",
+  "passed": 1
+}

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::authority_registry::fixture::owners_controls::authority_owners_leaf_read_and_revalidate_match_bytes_stamps_and_refusals",
+  "passed": 1
+}

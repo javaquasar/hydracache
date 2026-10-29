@@ -1,0 +1,40 @@
+{
+  "catalog": 8,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 8,
+  "rows": [
+    [
+      "host_observation_is_revision_zero_unsigned_and_pathless",
+      "ok"
+    ],
+    [
+      "manifest_path_validation_is_structural_and_configuration_independent",
+      "ok"
+    ],
+    [
+      "rejects_oversized_truncated_unknown_duplicate_and_invalid_utf8_packets",
+      "ok"
+    ],
+    [
+      "rejects_path_traversal_and_cross_operation_fields",
+      "ok"
+    ],
+    [
+      "response_digest_excludes_only_its_own_field",
+      "ok"
+    ],
+    [
+      "strict_protocol_accepts_allowlisted_operations",
+      "ok"
+    ],
+    [
+      "subsequent_role_start_is_revision_bound_and_has_no_staging_path",
+      "ok"
+    ],
+    [
+      "wire_envelope_requires_authorization_only_for_mutating_operations",
+      "ok"
+    ]
+  ]
+}

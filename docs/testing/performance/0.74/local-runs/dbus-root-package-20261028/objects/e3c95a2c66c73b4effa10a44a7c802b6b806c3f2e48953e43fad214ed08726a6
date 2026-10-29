@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 1,
+  "local_filtered": 1592,
+  "name": "diagnostic_process::terminal::tests::terminal_process_owned_leader_exit_does_not_stop_descendant_writer",
+  "passed": 0
+}

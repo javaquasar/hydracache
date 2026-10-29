@@ -1,0 +1,16 @@
+{
+  "boot_after": "889bef8d-1709-4912-a634-4bebb0b49abf",
+  "boot_before": "889bef8d-1709-4912-a634-4bebb0b49abf",
+  "boot_unchanged": true,
+  "clocks_changed": false,
+  "first_refusal": {
+    "reason": "first root package refusal: bootstrap-full",
+    "type": "ValueError"
+  },
+  "passed": false,
+  "phase": "focus-194",
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

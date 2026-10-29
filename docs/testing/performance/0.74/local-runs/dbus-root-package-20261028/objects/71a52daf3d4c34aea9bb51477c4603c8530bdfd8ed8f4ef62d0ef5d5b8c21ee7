@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_signer_runtime_input::tests::equal_byte_replacement_of_each_role_refuses_all_originals_and_cannot_restore",
+  "passed": 1
+}

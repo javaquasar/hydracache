@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_signer_first_exec_fixture::tests::signer_first_exec_cloexec_and_drop_clean_exact_owned_child",
+  "passed": 1
+}

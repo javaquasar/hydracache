@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_manager::tests::deadline_is_checked_inside_unending_output_drain",
+  "passed": 1
+}

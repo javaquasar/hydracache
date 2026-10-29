@@ -1,0 +1,110 @@
+"""Correct one stale synthetic input after retaining its complete first refusal."""
+from pathlib import Path
+import json
+import subprocess
+
+import common as c
+
+OLD = c.ROOT/'target/dbus-root-package-20261029-resource6'
+NEW = c.ROOT/'target/dbus-root-package-20261029-spool7'
+TOOLS = Path(__file__).parent
+TEST = c.PKG+'/tests/diagnostic_spool.rs'
+
+
+def replace(body, before, after):
+    c.need(body.count(before) == 1, 'exact spool/helper preimage: '+before[:60])
+    return body.replace(before, after)
+
+
+def main():
+    c.need(c.BASE == OLD and not NEW.exists(), 'one corrected synthetic spool context')
+    review = json.loads((OLD/'freeze/runtime-reviewed.json').read_bytes())
+    c.guard(review)
+    folder = OLD/'tests-194'
+    result = json.loads((folder/'native-result.json').read_bytes())
+    execution = json.loads((folder/'execution.json').read_bytes())
+    raw = (folder/'target-055-test/stdout.log').read_text()
+    c.need(not result['passed'] and result['source_unchanged'] and result['boot_unchanged']
+           and execution['retired'] and not execution['errors']
+           and '1 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out;' in raw
+           and 'diagnostic_spool.rs:102:10' in raw,
+           'exact first six stale-fixture refusals; never promote partial accounting')
+    original = (c.ROOT/(c.PKG+'/tests/fixtures/diagnostic-pilot-root-Cargo.lock')).read_bytes()
+    c.need(c.sha(original) == 'be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19'
+           and len(original) == 175300, 'existing exact worker-source fixture, independent of current root')
+    out = OLD/'spool-fixture-preparation'
+    out.mkdir(exist_ok=False)
+    (out/'producer.py').write_bytes(Path(__file__).read_bytes())
+    census = subprocess.run(['wsl.exe','-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B',
+        '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-root-package-074/retirement.py'],
+        stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=20)
+    (out/'census.stdout.log').write_bytes(census.stdout)
+    (out/'census.stderr.log').write_bytes(census.stderr)
+    c.write(out, 'census-exit.json', dict(exit=census.returncode))
+    c.need(census.returncode == 0 and not json.loads(census.stdout)['active'], 'old native attempt retired')
+    before = (c.ROOT/TEST).read_bytes()
+    (out/'diagnostic_spool.before.rs').write_bytes(before)
+    old_helpers = out/'old-helpers'
+    old_helpers.mkdir()
+    for name in review['helpers']:
+        if name.startswith('tools/dbus-root-package-074/'):
+            (old_helpers/Path(name).name).write_bytes((c.ROOT/name).read_bytes())
+    after = replace(before, b'include_bytes!("../../../Cargo.lock")',
+                    b'include_bytes!("fixtures/diagnostic-pilot-root-Cargo.lock")')
+    (c.ROOT/TEST).write_bytes(after)
+    changes = {}
+    changes['common.py'] = replace((TOOLS/'common.py').read_text(),
+        "BASE = ROOT / 'target/dbus-root-package-20261029-resource6'",
+        "BASE = ROOT / 'target/dbus-root-package-20261029-spool7'")
+    old_phases = "('seed','format','checks','focus-194','focus-188','tests-194','tests-188')"
+    new_phases = "('seed','format','checks','focus-194','focus-188','spool-194','spool-188','tests-194','tests-188')"
+    native = replace((TOOLS/'native.py').read_text(), old_phases, new_phases)
+    native = replace(native, 'def focus(compiler,review,out,deadline):',
+                     "def focus(compiler,review,out,deadline,name='bootstrap_current_image',size=17):")
+    native = replace(native, "v['name']=='bootstrap_current_image'", "v['name']==name")
+    native = replace(native, "len(catalog)==len(set(catalog))==17", "len(catalog)==len(set(catalog))==size")
+    native = replace(native, "                else:\n                    for compiler in ('194','188'):",
+        "                elif phase.startswith('spool-'):result['tests']=focus(phase.split('-')[1],review,out,deadline,'diagnostic_spool',7)\n                else:\n                    for compiler in ('194','188'):")
+    before = "                        c.need(json.loads((c.BASE/('focus-'+compiler)/'native-result.json').read_bytes())['passed'],'both original-caller bootstrap focuses before full catalogs')"
+    native = replace(native, before, before+"\n                        c.need(json.loads((c.BASE/('spool-'+compiler)/'native-result.json').read_bytes())['passed'],'both corrected spool focuses before full catalogs')")
+    changes['native.py'] = native
+    changes['run.py'] = replace((TOOLS/'run.py').read_text(), old_phases, new_phases)
+    changes['test_native.py'] = replace((TOOLS/'test_native.py').read_text(), old_phases, new_phases)
+    retention = replace((TOOLS/'retain.py').read_text(),
+        "for phase in ('format','checks','focus-194','focus-188','tests-194','tests-188'):",
+        "for phase in ('format','checks','focus-194','focus-188','spool-194','spool-188','tests-194','tests-188'):")
+    retention = replace(retention, "(c.BASE, 'resource6')):",
+        "(c.ROOT/'target/dbus-root-package-20261029-resource6', 'resource-first'), (c.BASE, 'spool7')):")
+    changes['retain.py'] = retention
+    for name, body in changes.items():
+        (TOOLS/name).write_text(body, encoding='utf8', newline='\n')
+    source = dict(review['source'])
+    source[TEST] = c.sha(after)
+    c.need(c.hashes(source) == source and len(source) == 2246, 'one test input only; unchanged runtime and pins')
+    NEW.mkdir(exist_ok=False)
+    (NEW/'freeze').mkdir()
+    (NEW/'seed').mkdir()
+    (NEW/'retirement-census.json').write_bytes(census.stdout)
+    for name in ('result.json','native-result.json'):
+        original = c.ROOT/'target/dbus-root-package-20261028/seed'/name
+        value = json.loads(original.read_bytes())
+        c.need(value['passed'], 'verified immutable content seed only')
+        value.update(reused_from=str(original), reused_sha256=c.sha(original.read_bytes()), phase='seed-reuse')
+        c.write(NEW/'seed', name, value)
+    names = set(review['helpers']) | {p.relative_to(c.ROOT).as_posix() for p in TOOLS.iterdir() if p.is_file()}
+    helpers = {name:c.sha((c.ROOT/name).read_bytes()) for name in sorted(names)}
+    receipt = dict(review, source=source, helpers=helpers, complete_gate_reuse={},
+        previous_freeze_sha256=c.sha((OLD/'freeze/runtime-reviewed.json').read_bytes()),
+        fixture_correction=TEST, changed_runtime_files=[], trust_pins_changed=False,
+        checks_reused=False, format_reused=False, focuses_reused=False, partial_tests_reused=False,
+        product_source_changed=False, qualification_windows_changed=False,
+        phases=['seed','format','checks','focus-194','focus-188','spool-194','spool-188','tests-194','tests-188'])
+    c.write(NEW/'freeze', 'runtime-reviewed.json', receipt)
+    c.write(out, 'result.json', dict(test=TEST, before_sha256=c.sha(before), after_sha256=c.sha(after),
+        runtime_changed=False, trust_pins_changed=False, assertions_removed=False,
+        original_windows_seconds=[300,60,10], partial_tests_reused=False, release_admitted=False))
+    print(json.dumps(dict(context=str(NEW), changed_test_inputs=1, runtime_changed=False)))
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_signer_runtime_fixture::tests::signer_runtime_file_modes_types_links_and_root_refuse",
+  "passed": 1
+}

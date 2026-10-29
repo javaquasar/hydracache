@@ -1,0 +1,8 @@
+Failed to find real location of C:\Python313\python.exe
+test_every_original_case_once_with_four_separate_commands (test_isolated.Isolated.test_every_original_case_once_with_four_separate_commands) ... ok
+test_selection_accounting_rejects_missing_duplicate_wrong_filtered_failed_or_foreign (test_isolated.Isolated.test_selection_accounting_rejects_missing_duplicate_wrong_filtered_failed_or_foreign) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.049s
+
+OK

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_two_phase_launch::root_enrollment::kernel::guardian::original::projection::held_unit_projection_guardian_views_require_armed_original_and_keep_order",
+  "passed": 1
+}

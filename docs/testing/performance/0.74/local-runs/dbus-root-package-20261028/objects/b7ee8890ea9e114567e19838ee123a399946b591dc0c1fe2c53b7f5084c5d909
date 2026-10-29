@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_two_phase_launch::tests::held_placement::held_placement_unknown_duplicate_noncanonical_budget_and_hex_refuse ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.02s
+

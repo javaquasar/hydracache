@@ -1,0 +1,6 @@
+
+running 1 test
+test reader::roles::installed::tests::bootstrap_installed_child_record_same_bytes_other_inode_and_metadata_change_differ ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 38 filtered out; finished in 0.00s
+

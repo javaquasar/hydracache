@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 38,
+  "name": "image_entry::tests::image_mode_requires_explicit_argument_and_unmodified_activation_assertions",
+  "passed": 1
+}

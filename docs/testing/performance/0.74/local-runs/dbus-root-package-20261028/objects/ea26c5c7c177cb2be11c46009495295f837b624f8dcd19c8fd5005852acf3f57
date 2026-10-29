@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_builder::bootstrap_build::tests::bootstrap_build_cargo_log_rejects_wrong_targets_features_duplicates_and_completion",
+  "passed": 1
+}

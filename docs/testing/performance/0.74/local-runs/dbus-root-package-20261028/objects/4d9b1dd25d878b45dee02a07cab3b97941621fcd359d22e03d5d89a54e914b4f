@@ -1,0 +1,34 @@
+{
+  "argv": [
+    "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "fmt",
+    "--all",
+    "--manifest-path",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/Cargo.toml",
+    "--",
+    "--check"
+  ],
+  "bound": 1200,
+  "deadline": 1102.797216517,
+  "environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_HOME": "/home/artur/.cargo",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_OFFLINE": "true",
+    "HOME": "/home/artur",
+    "LANG": "C.UTF-8",
+    "LOGNAME": "artur",
+    "PATH": "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin:/usr/local/bin:/usr/bin:/bin",
+    "RUSTC": "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTC_WORKSPACE_WRAPPER": "",
+    "RUSTC_WRAPPER": "",
+    "RUSTFMT": "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+    "RUSTUP_TOOLCHAIN": "1.94.0-x86_64-unknown-linux-gnu",
+    "USER": "artur"
+  },
+  "floor": 4294967296,
+  "poll": 5,
+  "retirement": 5,
+  "retry": false,
+  "session_bound": 1100
+}

@@ -1,0 +1,48 @@
+Failed to find real location of C:\Python313\python.exe
+test_case_command_cannot_be_mistaken_for_owned_case_internal_child (test_caller_contract.Caller.test_case_command_cannot_be_mistaken_for_owned_case_internal_child) ... FAIL
+test_integration_uses_original_unfiltered_harness_instead_of_internal_entry (test_caller_contract.Caller.test_integration_uses_original_unfiltered_harness_instead_of_internal_entry) ... FAIL
+
+======================================================================
+FAIL: test_case_command_cannot_be_mistaken_for_owned_case_internal_child (test_caller_contract.Caller.test_case_command_cannot_be_mistaken_for_owned_case_internal_child)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-root-package-074\test_caller_contract.py", line 33, in test_case_command_cannot_be_mistaken_for_owned_case_internal_child
+    self.assertEqual(seen, [[str(path),'--exact','caller','--test-threads=1','--color=never']])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [['C:[78 chars]ed', '--exact', 'caller', '--test-threads=1']] != [['C:[78 chars]ed', '--exact', 'caller', '--test-threads=1', '--color=never']]
+
+First differing element 0:
+['C:\[76 chars]ted', '--exact', 'caller', '--test-threads=1']
+['C:\[76 chars]ted', '--exact', 'caller', '--test-threads=1', '--color=never']
+
+  [['C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\tmpczrdxouj\\never-executed',
+    '--exact',
+    'caller',
+-   '--test-threads=1']]
+?                     ^^
+
++   '--test-threads=1',
+?                     ^
+
++   '--color=never']]
+
+======================================================================
+FAIL: test_integration_uses_original_unfiltered_harness_instead_of_internal_entry (test_caller_contract.Caller.test_integration_uses_original_unfiltered_harness_instead_of_internal_entry)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\dbus-root-package-074\test_caller_contract.py", line 74, in test_integration_uses_original_unfiltered_harness_instead_of_internal_entry
+    self.assertEqual(strategies,[['lib']])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [['lib'], ['test']] != [['lib']]
+
+First list contains 1 additional elements.
+First extra element 1:
+['test']
+
+- [['lib'], ['test']]
++ [['lib']]
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.088s
+
+FAILED (failures=2)

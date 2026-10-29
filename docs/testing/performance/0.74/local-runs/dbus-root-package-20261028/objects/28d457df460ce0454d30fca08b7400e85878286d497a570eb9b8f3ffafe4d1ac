@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::authority_registry::fixture::fixed::tests::authority_fixed_modeled_publication_faults_do_not_repair_partial_tail",
+  "passed": 1
+}

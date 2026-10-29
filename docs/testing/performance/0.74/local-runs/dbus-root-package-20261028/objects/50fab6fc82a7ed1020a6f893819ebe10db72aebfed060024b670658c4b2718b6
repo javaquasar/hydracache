@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_manager::tests::invalid_input_and_spawn_failure_do_not_adopt_a_helper",
+  "passed": 1
+}

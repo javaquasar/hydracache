@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 1,
+  "local_filtered": 1592,
+  "name": "diagnostic_collector::crash_tests::collector_owned_sigkill_matrix_retains_without_replay",
+  "passed": 0
+}

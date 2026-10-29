@@ -1,0 +1,27 @@
+{
+  "acceptance_pass": false,
+  "argv": [
+    "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/bootstrap_current_image-2c5bb5ca492f1494",
+    "--exact",
+    "installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker",
+    "--test-threads=1",
+    "--color=never"
+  ],
+  "attribution_only": true,
+  "bound": 60,
+  "cwd": "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074",
+  "image": {
+    "bytes": 88800464,
+    "kind": [
+      "test"
+    ],
+    "name": "bootstrap_current_image",
+    "path": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/bootstrap_current_image-2c5bb5ca492f1494",
+    "sha256": "2fb71c6c233cdff29a94e26c0c23a0f40fd1d99050a8b6490be8404828a406d3",
+    "src": "tools/long-run-supervisor-074/tests/bootstrap_current_image.rs"
+  },
+  "original_activation_seconds": 10,
+  "original_owned_case_seconds": 45,
+  "original_wait_seconds": 5,
+  "retry": false
+}

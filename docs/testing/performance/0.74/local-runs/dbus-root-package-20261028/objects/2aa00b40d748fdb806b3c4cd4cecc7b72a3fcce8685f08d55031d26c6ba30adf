@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::trusted_input::controller_input::held_runtime::bootstrap_enrollment::selected_build::tests::bootstrap_selected_build_signature_document_or_budget_failure_poison_is_shared",
+  "passed": 1
+}

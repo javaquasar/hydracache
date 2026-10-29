@@ -1,0 +1,84 @@
+{
+  "catalog": 19,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 19,
+  "rows": [
+    [
+      "abort_dispatch_reports_committed_intent_and_identical_retry_completes",
+      "ok"
+    ],
+    [
+      "attach_guard_rejection_is_durable_and_exactly_replayed",
+      "ok"
+    ],
+    [
+      "authorized_role_starts_import_evidence_execute_once_and_replay_exact_responses",
+      "ok"
+    ],
+    [
+      "diagnostic_only_reservation_skips_campaign_maintenance_without_busy_or_backend_calls",
+      "ok"
+    ],
+    [
+      "disconnected_partial_upload_does_not_kill_the_next_start_request",
+      "ok"
+    ],
+    [
+      "host_observation_failure_is_bounded_and_does_not_poison_the_next_request",
+      "ok"
+    ],
+    [
+      "host_observation_rejects_an_active_campaign_before_collecting",
+      "ok"
+    ],
+    [
+      "host_observation_returns_digest_bound_receipt_without_campaign_mutation",
+      "ok"
+    ],
+    [
+      "maintenance_expires_the_active_campaign_without_a_controller_request",
+      "ok"
+    ],
+    [
+      "maintenance_fails_stalled_progress_from_the_live_checkpoint_chain",
+      "ok"
+    ],
+    [
+      "maintenance_fails_startup_that_never_publishes_a_first_checkpoint",
+      "ok"
+    ],
+    [
+      "measurement_maintenance_distinguishes_healthy_terminal_and_lost_processes",
+      "ok"
+    ],
+    [
+      "measurement_maintenance_recovers_committed_intent_before_lease_expiry",
+      "ok"
+    ],
+    [
+      "new_start_revalidates_host_before_claim_while_exact_replay_skips_live_observation",
+      "ok"
+    ],
+    [
+      "revision_zero_start_uploads_evidence_through_the_privileged_supervisor",
+      "ok"
+    ],
+    [
+      "revision_zero_upload_rejects_tampered_receipt_before_staging_or_spawn",
+      "ok"
+    ],
+    [
+      "seal_dispatch_composes_observation_inventory_and_durable_lifecycle",
+      "ok"
+    ],
+    [
+      "seal_dispatch_fails_closed_before_dbus_or_host_claim_on_missing_evidence",
+      "ok"
+    ],
+    [
+      "status_round_trips_exact_durable_state_and_rejects_stale_revision",
+      "ok"
+    ]
+  ]
+}

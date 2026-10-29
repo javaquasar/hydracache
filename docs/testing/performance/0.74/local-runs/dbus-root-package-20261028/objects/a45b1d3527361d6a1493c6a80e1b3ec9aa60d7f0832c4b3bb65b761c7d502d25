@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "host_receipt::tests::partition_and_fixed_probe_set_are_fail_closed",
+  "passed": 1
+}

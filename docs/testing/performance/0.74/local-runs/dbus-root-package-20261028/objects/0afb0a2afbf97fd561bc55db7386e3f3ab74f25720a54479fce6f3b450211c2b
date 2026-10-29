@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_process::tests::stat_identity_handles_comm_bytes_and_ignores_changing_counters",
+  "passed": 1
+}

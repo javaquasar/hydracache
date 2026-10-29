@@ -1,0 +1,40 @@
+{
+  "catalog": 8,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 8,
+  "rows": [
+    [
+      "appends_and_verifies_a_durable_event_chain",
+      "ok"
+    ],
+    [
+      "detects_middle_corruption_and_a_mismatched_head",
+      "ok"
+    ],
+    [
+      "lifecycle_transitions_share_the_chain_without_consuming_request_replay_identity",
+      "ok"
+    ],
+    [
+      "rejects_invalid_response_binding_and_outcome",
+      "ok"
+    ],
+    [
+      "rejects_request_id_reuse_with_different_request_bytes",
+      "ok"
+    ],
+    [
+      "reports_a_torn_final_record_and_refuses_to_append_over_it",
+      "ok"
+    ],
+    [
+      "returns_the_original_response_for_an_identical_request_without_appending",
+      "ok"
+    ],
+    [
+      "treats_a_complete_json_record_without_its_newline_as_a_torn_write",
+      "ok"
+    ]
+  ]
+}

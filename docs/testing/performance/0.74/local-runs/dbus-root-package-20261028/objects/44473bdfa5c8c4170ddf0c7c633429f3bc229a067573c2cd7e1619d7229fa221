@@ -1,0 +1,44 @@
+impl Leaf {
+    fn open(
+        dir: &File,
+        name: String,
+        uid: u32,
+        gid: u32,
+        budget: usize,
+    ) -> Result<Self, AuthorityError> {
+        let mut file = open_at(dir, &name, false)?;
+        let before = file.metadata()?;
+        regular(&before, uid, gid, 0o400)?;
+        if before.dev() != dir.metadata()?.dev() || before.len() > budget as u64 {
+            return Err(AuthorityError::Budget);
+        }
+        let stamp = Stamp::of(&before);
+        let mut raw = Vec::with_capacity(before.len() as usize);
+        (&mut file).take(budget as u64 + 1).read_to_end(&mut raw)?;
+        if Stamp::of(&file.metadata()?) != stamp || raw.len() as u64 != stamp.len {
+            return Err(AuthorityError::Invalid);
+        }
+        Ok(Self {
+            file,
+            stamp,
+            raw,
+            name,
+        })
+    }
+    fn revalidate(
+        &self,
+        dir: &File,
+        uid: u32,
+        gid: u32,
+        budget: usize,
+    ) -> Result<(), AuthorityError> {
+        if Stamp::of(&self.file.metadata()?) != self.stamp {
+            return Err(AuthorityError::Invalid);
+        }
+        let named = Self::open(dir, self.name.clone(), uid, gid, budget)?;
+        if named.stamp != self.stamp || named.raw != self.raw {
+            return Err(AuthorityError::Invalid);
+        }
+        Ok(())
+    }
+}

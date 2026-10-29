@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_process::credentials::tests::every_observation_failure_stops_and_preserves_first_error ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

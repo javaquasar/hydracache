@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_output_preparation::tests::fixture_preparation_directory_and_lock_replacement_refuse_after_cell",
+  "passed": 1
+}

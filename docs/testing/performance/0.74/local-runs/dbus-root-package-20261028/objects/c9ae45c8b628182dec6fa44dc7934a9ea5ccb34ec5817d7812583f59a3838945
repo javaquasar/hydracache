@@ -1,0 +1,19 @@
+
+running 1 test
+test installed_controls::held_controls::held_entry_old_equal_name_assertions_refuse_without_weakening_exchange ... FAILED
+
+failures:
+
+---- installed_controls::held_controls::held_entry_old_equal_name_assertions_refuse_without_weakening_exchange stdout ----
+held-entry child stderr: 
+
+thread 'installed_controls::held_controls::held_entry_old_equal_name_assertions_refuse_without_weakening_exchange' (14193) panicked at tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs:175:5:
+bounded child timeout; first result: 
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    installed_controls::held_controls::held_entry_old_equal_name_assertions_refuse_without_weakening_exchange
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 6.64s
+

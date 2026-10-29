@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::authority_registry::tests::authority_registry_rejects_malformed_future_duplicate_noncanonical_and_oversized_records",
+  "passed": 1
+}

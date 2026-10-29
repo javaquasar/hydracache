@@ -1,0 +1,6 @@
+
+running 1 test
+test quarantine_backend_failure_retains_intent_and_exact_retry_completes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.10s
+

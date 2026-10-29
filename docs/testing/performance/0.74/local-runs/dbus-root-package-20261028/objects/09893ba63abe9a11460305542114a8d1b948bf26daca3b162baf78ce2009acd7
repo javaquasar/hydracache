@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_collector::crash_tests::collector_owned_sigkill_matrix_retains_without_replay ... ignored, manual nonroot Linux actual owned collector SIGKILL; single-flight; no live service
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

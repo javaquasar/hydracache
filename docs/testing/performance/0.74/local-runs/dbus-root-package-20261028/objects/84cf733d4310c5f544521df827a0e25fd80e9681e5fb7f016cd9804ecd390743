@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_two_phase_launch::tests::two_phase_launch_inherits_old_consent_bounds_without_new_clock_or_renewal",
+  "passed": 1
+}

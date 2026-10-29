@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::tests::signed_tasks_signed_revocation_and_account_restore_cannot_recover ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.12s
+

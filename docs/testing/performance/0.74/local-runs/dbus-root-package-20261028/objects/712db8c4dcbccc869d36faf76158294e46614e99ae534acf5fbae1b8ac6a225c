@@ -1,0 +1,40 @@
+{
+  "catalog": 8,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 8,
+  "rows": [
+    [
+      "reviewed_trust_controller_check_requires_exact_repository_and_key",
+      "ok"
+    ],
+    [
+      "reviewed_trust_empty_oversized_noncanonical_and_future_fields_refuse",
+      "ok"
+    ],
+    [
+      "reviewed_trust_existing_public_policy_matches_independent_pins",
+      "ok"
+    ],
+    [
+      "reviewed_trust_independent_concurrent_verifiers_keep_fixed_pins",
+      "ok"
+    ],
+    [
+      "reviewed_trust_policy_mutations_and_shared_keys_never_choose_trust",
+      "ok"
+    ],
+    [
+      "reviewed_trust_retained_hosted_receipt_signature_verifies_without_execution",
+      "ok"
+    ],
+    [
+      "reviewed_trust_separate_worker_issuer_selfcheck_is_not_a_policy_or_enrollment",
+      "ok"
+    ],
+    [
+      "reviewed_trust_signature_mutation_refuses_even_with_recomputed_receipt_pin",
+      "ok"
+    ]
+  ]
+}

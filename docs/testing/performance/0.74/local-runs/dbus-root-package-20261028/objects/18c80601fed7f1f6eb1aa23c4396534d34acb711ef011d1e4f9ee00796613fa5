@@ -1,0 +1,12 @@
+{
+  "catalog": 1,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 1,
+  "rows": [
+    [
+      "fixed_root_cli_has_no_caller_selected_inputs",
+      "ok"
+    ]
+  ]
+}

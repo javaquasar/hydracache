@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::reservation_fence::attempt_storage::collector_reservation_storage::starting_storage::tests::collector_starting_storage_exclusive_create_and_fd_mutations_refuse ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.09s
+

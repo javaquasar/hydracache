@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::privileged_fixed_slice_readonly_anchors ... ignored, manual read-only local cgroup2 anchor check; no root creation or admission
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

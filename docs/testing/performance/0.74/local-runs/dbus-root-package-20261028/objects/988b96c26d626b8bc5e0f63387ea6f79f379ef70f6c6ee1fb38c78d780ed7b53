@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::intent_projection::tests::typed_projection_preserves_all_variants_and_array_order",
+  "passed": 1
+}

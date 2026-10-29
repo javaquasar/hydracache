@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_process::credentials::tests::every_observation_failure_stops_and_preserves_first_error",
+  "passed": 1
+}

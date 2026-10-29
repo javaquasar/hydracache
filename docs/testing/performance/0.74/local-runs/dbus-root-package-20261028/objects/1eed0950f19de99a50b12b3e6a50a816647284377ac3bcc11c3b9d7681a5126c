@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_output_preparation::fixed_intent_storage::reserved_state::tests::reserved_state_invalid_initial_assertion_refuses_without_revoking_storage",
+  "passed": 1
+}

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::boot_comparison_tests::boot_comparison_byte_mutations_lengths_and_original_failure_sites",
+  "passed": 1
+}

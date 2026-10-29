@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::fenced_state_tests::fenced_intent_already_refused_join_latches_counterpart_without_io ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.22s
+

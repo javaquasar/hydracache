@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_manager::account::tests::account_two_complete_rounds_bind_forward_reverse_and_memberships",
+  "passed": 1
+}

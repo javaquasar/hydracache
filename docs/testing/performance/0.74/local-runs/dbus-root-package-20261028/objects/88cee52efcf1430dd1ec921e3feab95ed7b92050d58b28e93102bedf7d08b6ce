@@ -1,0 +1,226 @@
+
+running 17 tests
+test current_image_extra_descriptor_and_wrong_assertion_cannot_bypass_old_census ... ok
+test current_image_identical_bytes_at_different_inode_refuse_before_authority_boundary ... ok
+test current_image_matching_sealed_inode_still_cannot_authenticate_forged_context ... ok
+test installed_controls::held_controls::ancillary::tests::kernel_ancillary_bounded_malformed_headers_refuse_without_panic ... ok
+test installed_controls::held_controls::ancillary::tests::kernel_ancillary_model_rejects_unknown_flags_and_duplicate_tags_without_fd_leaks ... ok
+test installed_controls::held_controls::held_entry_activation_and_census_faults_refuse_without_ack ... ok
+test installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse ... FAILED
+test installed_controls::held_controls::held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold ... FAILED
+test installed_controls::held_controls::held_entry_old_equal_name_assertions_refuse_without_weakening_exchange ... FAILED
+test installed_controls::held_controls::held_entry_original_alarm_expires_without_rearming ... FAILED
+test installed_controls::held_controls::held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution ... FAILED
+test installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker ... FAILED
+test installed_controls::held_controls::held_entry_wrong_kernel_sender_and_malformed_packet_refuse ... FAILED
+test installed_controls::installed_child_busy_inode_is_shell_refusal_not_reader_evidence ... ok
+test installed_controls::installed_child_extra_missing_offset_hash_and_embedded_old_record_refuse ... ok
+test installed_controls::installed_child_filesystem_inode_matches_but_forged_context_still_refuses_authentication ... ok
+test installed_controls::installed_child_same_bytes_other_executable_inode_cannot_authenticate ... ok
+
+failures:
+
+---- installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse stdout ----
+
+thread 'installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse' (451) panicked at tools/long-run-supervisor-074/tests/../../owned-case-074/library.rs:227:5:
+owned case installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse: Some("child-failed")
+
+running 1 test
+test installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse ... FAILED
+
+failures:
+
+---- installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse stdout ----
+held-entry child stderr: 
+
+thread 'installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse' (453) panicked at tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs:175:5:
+bounded child timeout; first result: 
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 6.33s
+
+
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- installed_controls::held_controls::held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold stdout ----
+
+thread 'installed_controls::held_controls::held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold' (457) panicked at tools/long-run-supervisor-074/tests/../../owned-case-074/library.rs:227:5:
+owned case installed_controls::held_controls::held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold: Some("child-failed")
+
+running 1 test
+test installed_controls::held_controls::held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold ... FAILED
+
+failures:
+
+---- installed_controls::held_controls::held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold stdout ----
+held-entry before ACK stderr: 
+
+thread 'installed_controls::held_controls::held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold' (459) panicked at tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs:260:5:
+assertion `left == right` failed: 
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    installed_controls::held_controls::held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 6.39s
+
+
+
+
+---- installed_controls::held_controls::held_entry_old_equal_name_assertions_refuse_without_weakening_exchange stdout ----
+
+thread 'installed_controls::held_controls::held_entry_old_equal_name_assertions_refuse_without_weakening_exchange' (463) panicked at tools/long-run-supervisor-074/tests/../../owned-case-074/library.rs:227:5:
+owned case installed_controls::held_controls::held_entry_old_equal_name_assertions_refuse_without_weakening_exchange: Some("child-failed")
+
+running 1 test
+test installed_controls::held_controls::held_entry_old_equal_name_assertions_refuse_without_weakening_exchange ... FAILED
+
+failures:
+
+---- installed_controls::held_controls::held_entry_old_equal_name_assertions_refuse_without_weakening_exchange stdout ----
+held-entry child stderr: 
+
+thread 'installed_controls::held_controls::held_entry_old_equal_name_assertions_refuse_without_weakening_exchange' (465) panicked at tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs:175:5:
+bounded child timeout; first result: 
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    installed_controls::held_controls::held_entry_old_equal_name_assertions_refuse_without_weakening_exchange
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 6.34s
+
+
+
+
+---- installed_controls::held_controls::held_entry_original_alarm_expires_without_rearming stdout ----
+
+thread 'installed_controls::held_controls::held_entry_original_alarm_expires_without_rearming' (469) panicked at tools/long-run-supervisor-074/tests/../../owned-case-074/library.rs:227:5:
+owned case installed_controls::held_controls::held_entry_original_alarm_expires_without_rearming: Some("child-failed")
+
+running 1 test
+test installed_controls::held_controls::held_entry_original_alarm_expires_without_rearming ... FAILED
+
+failures:
+
+---- installed_controls::held_controls::held_entry_original_alarm_expires_without_rearming stdout ----
+held-entry before ACK stderr: 
+
+thread 'installed_controls::held_controls::held_entry_original_alarm_expires_without_rearming' (471) panicked at tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs:260:5:
+assertion `left == right` failed: 
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    installed_controls::held_controls::held_entry_original_alarm_expires_without_rearming
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 6.36s
+
+
+
+
+---- installed_controls::held_controls::held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution stdout ----
+
+thread 'installed_controls::held_controls::held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution' (475) panicked at tools/long-run-supervisor-074/tests/../../owned-case-074/library.rs:227:5:
+owned case installed_controls::held_controls::held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution: Some("child-failed")
+
+running 1 test
+test installed_controls::held_controls::held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution ... FAILED
+
+failures:
+
+---- installed_controls::held_controls::held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution stdout ----
+held-entry child stderr: 
+held-entry lost-ACK stderr: 
+
+thread 'installed_controls::held_controls::held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution' (477) panicked at tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs:444:13:
+assertion `left == right` failed: first lost-ACK observation: 
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    installed_controls::held_controls::held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 7.67s
+
+
+
+
+---- installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker stdout ----
+
+thread 'installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker' (484) panicked at tools/long-run-supervisor-074/tests/../../owned-case-074/library.rs:227:5:
+owned case installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker: Some("child-failed")
+
+running 1 test
+test installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker ... FAILED
+
+failures:
+
+---- installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker stdout ----
+held-entry before ACK stderr: 
+
+thread 'installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker' (486) panicked at tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs:260:5:
+assertion `left == right` failed: 
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 6.32s
+
+
+
+
+---- installed_controls::held_controls::held_entry_wrong_kernel_sender_and_malformed_packet_refuse stdout ----
+
+thread 'installed_controls::held_controls::held_entry_wrong_kernel_sender_and_malformed_packet_refuse' (490) panicked at tools/long-run-supervisor-074/tests/../../owned-case-074/library.rs:227:5:
+owned case installed_controls::held_controls::held_entry_wrong_kernel_sender_and_malformed_packet_refuse: Some("child-failed")
+
+running 1 test
+test installed_controls::held_controls::held_entry_wrong_kernel_sender_and_malformed_packet_refuse ... FAILED
+
+failures:
+
+---- installed_controls::held_controls::held_entry_wrong_kernel_sender_and_malformed_packet_refuse stdout ----
+held-entry child stderr: 
+
+thread 'installed_controls::held_controls::held_entry_wrong_kernel_sender_and_malformed_packet_refuse' (492) panicked at tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs:175:5:
+bounded child timeout; first result: 
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    installed_controls::held_controls::held_entry_wrong_kernel_sender_and_malformed_packet_refuse
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 6.34s
+
+
+
+
+
+failures:
+    installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse
+    installed_controls::held_controls::held_entry_guardian_loss_and_peer_disconnect_stop_nonexecuting_hold
+    installed_controls::held_controls::held_entry_old_equal_name_assertions_refuse_without_weakening_exchange
+    installed_controls::held_controls::held_entry_original_alarm_expires_without_rearming
+    installed_controls::held_controls::held_entry_sigkill_before_and_after_unconsumed_ack_is_not_reexecution
+    installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker
+    installed_controls::held_controls::held_entry_wrong_kernel_sender_and_malformed_packet_refuse
+
+test result: FAILED. 10 passed; 7 failed; 0 ignored; 0 measured; 0 filtered out; finished in 94.02s
+

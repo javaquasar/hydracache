@@ -1,0 +1,13 @@
+
+running 8 tests
+test appends_and_verifies_a_durable_event_chain ... ok
+test detects_middle_corruption_and_a_mismatched_head ... ok
+test lifecycle_transitions_share_the_chain_without_consuming_request_replay_identity ... ok
+test rejects_invalid_response_binding_and_outcome ... ok
+test rejects_request_id_reuse_with_different_request_bytes ... ok
+test reports_a_torn_final_record_and_refuses_to_append_over_it ... ok
+test returns_the_original_response_for_an_identical_request_without_appending ... ok
+test treats_a_complete_json_record_without_its_newline_as_a_torn_write ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

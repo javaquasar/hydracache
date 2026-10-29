@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::operation_cost::operation_observer_selects_once_and_rejects_nested_capture_without_replacement",
+  "passed": 1
+}

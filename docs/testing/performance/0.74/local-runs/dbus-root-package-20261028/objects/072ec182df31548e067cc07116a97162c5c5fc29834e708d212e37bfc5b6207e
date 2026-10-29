@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_manager::account::tests::seeded_account_snapshot_mutations_cannot_adopt_another_identity",
+  "passed": 1
+}

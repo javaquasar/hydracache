@@ -1,0 +1,9 @@
+cargo 1.88.0 (873a06493 2025-05-10)
+release: 1.88.0
+commit-hash: 873a0649350c486caf67be772828a4f36bb4734c
+commit-date: 2025-05-10
+host: x86_64-unknown-linux-gnu
+libgit2: 1.9.0 (sys:0.20.0 vendored)
+libcurl: 8.12.1-DEV (sys:0.4.80+curl-8.12.1 vendored ssl:OpenSSL/3.4.1)
+ssl: OpenSSL 3.4.1 11 Feb 2025
+os: Ubuntu 24.4.0 (noble) [64-bit]

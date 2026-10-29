@@ -1,0 +1,24 @@
+{
+  "catalog": 4,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 4,
+  "rows": [
+    [
+      "backend_failure_retains_progress_cause_and_retry_completes_once",
+      "ok"
+    ],
+    [
+      "completed_progress_failure_recovers_marker_release_without_repeating_effect",
+      "ok"
+    ],
+    [
+      "progress_deadline_commits_intent_stops_and_releases_only_after_completion",
+      "ok"
+    ],
+    [
+      "startup_deadline_recovers_durable_cause_without_a_first_checkpoint",
+      "ok"
+    ]
+  ]
+}

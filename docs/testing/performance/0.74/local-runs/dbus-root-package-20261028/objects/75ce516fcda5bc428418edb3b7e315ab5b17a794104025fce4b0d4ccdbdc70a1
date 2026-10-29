@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_output_preparation::fixed_intent_storage::reserved_state::original_fence::tests::original_fence_same_legacy_lock_blocks_both_campaign_entry_points",
+  "passed": 1
+}

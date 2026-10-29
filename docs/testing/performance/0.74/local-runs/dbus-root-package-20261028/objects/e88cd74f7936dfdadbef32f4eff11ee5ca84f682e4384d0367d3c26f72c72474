@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_manager::account::binding::tests::public_binding_mapping_mismatch_latches_both_original_inputs",
+  "passed": 1
+}

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "host_execution::short_fence_tests::claim_construction::claim_constructor_active_errors_release_original",
+  "passed": 1
+}

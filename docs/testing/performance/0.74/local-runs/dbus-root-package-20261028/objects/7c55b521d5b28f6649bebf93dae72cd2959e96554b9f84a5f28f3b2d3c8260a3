@@ -1,0 +1,534 @@
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_blocking_v6.rs:1:
+ //! Local shadow of the two callers' used blocking API. Not integrated/authorized IO.
+-use zbus6 as zbus;
+-use serde::{Serialize, de::DeserializeOwned};
++use serde::{de::DeserializeOwned, Serialize};
+ use std::time::Duration;
+ use zbus::{
+-    Error, Message, Result,
+     names::{BusName, InterfaceName, MemberName},
++    Error, Message, Result,
+ };
++use zbus6 as zbus;
+ 
+ #[derive(Debug, Clone)]
+ pub struct Connection(zbus::Connection);
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_blocking_v6.rs:18:
+     pub fn inner(&self) -> &zbus::Connection {
+         &self.0
+     }
+-
+ }
+ 
+ pub struct ConnectionBuilder(zbus::connection::Builder<'static>);
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs:1:
+ //! Private message mechanics, not an authenticated original-start capability.
+-use zbus6 as zbus;
+ use std::num::NonZeroU32;
+ use std::os::fd::{AsRawFd, RawFd};
+ use zbus::message::{Message, Type};
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs:6:
+ use zbus::wire::OwnedObjectPath;
++use zbus6 as zbus;
+ 
+ const PATH: &str = "/org/freedesktop/systemd1";
+ const INTERFACE: &str = "org.freedesktop.systemd1.Manager";
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs:1:
+-use zbus6 as zbus;
+ use super::*;
+ use std::mem::{size_of, zeroed};
+ use std::os::fd::{OwnedFd, RawFd};
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs:5:
+ use std::os::unix::net::UnixDatagram;
+ use zbus::wire::serialized::Data;
++use zbus6 as zbus;
+ 
+ fn pair() -> [UnixDatagram; 2] {
+     let (a, b) = UnixDatagram::pair().unwrap();
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs:174:
+         );
+     }
+     let response = Message::method_return(&received.header())
+-        
+         .sender(MANAGER)
+-        
+         .destination(CLIENT)
+-        
+         .build(&OwnedObjectPath::try_from("/org/freedesktop/systemd1/job/74").unwrap())
+         .unwrap();
+     let response = transfer(&manager, &client, &response);
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:1:
+-use zbus6 as zbus;
+ use super::*;
+ use std::fs::File;
+ use std::io::Read;
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:5:
+ use std::os::fd::{AsRawFd, FromRawFd};
+ use zbus::wire::{Fd, Variant as Value};
++use zbus6 as zbus;
+ const MANAGER: &str = ":1.74";
+ const CLIENT: &str = ":1.75";
+ 
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:36:
+         if kind == "path" { "/foreign" } else { PATH },
+         if kind == "member" { "StopUnit" } else { METHOD },
+     )
+-    
+     .destination(if kind == "well-known" {
+         "org.freedesktop.systemd1"
+     } else {
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:43:
+         MANAGER
+     })
+-    
+     .interface(if kind == "interface" {
+         "org.example.Foreign"
+     } else {
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:49:
+         INTERFACE
+-    })
+-    ;
++    });
+     if kind == "sender" {
+         builder = builder.sender(CLIENT);
+     }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:104:
+ }
+ fn reply(exchange: &DispatchExchange, path: &str) -> Message {
+     Message::method_return(&exchange.request.header())
+-        
+         .sender(MANAGER)
+-        
+         .destination(CLIENT)
+-        
+         .build(&OwnedObjectPath::try_from(path).unwrap())
+         .unwrap()
+ }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:293:
+         let mut exchange = exchange();
+         let mut builder = Message::method_return(&exchange.request.header());
+         if kind != "no-sender" {
+-            builder = builder
+-                .sender(if kind == "sender" { ":1.99" } else { MANAGER })
+-                ;
++            builder = builder.sender(if kind == "sender" { ":1.99" } else { MANAGER });
+         }
+         if kind != "no-destination" {
+-            builder = builder
+-                .destination(if kind == "destination" {
+-                    ":1.98"
+-                } else {
+-                    CLIENT
+-                })
+-                ;
++            builder = builder.destination(if kind == "destination" {
++                ":1.98"
++            } else {
++                CLIENT
++            });
+         }
+         if kind == "serial" {
+             builder = builder.reply_serial(Some(
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:333:
+             builder = builder.member("Foreign");
+         }
+         if kind == "flags" {
+-            builder = builder
+-                .with_flags(zbus::message::Flags::NO_AUTO_START)
+-                ;
++            builder = builder.with_flags(zbus::message::Flags::NO_AUTO_START);
+         }
+         let path = OwnedObjectPath::try_from("/org/freedesktop/systemd1/job/1").unwrap();
+         let file = tempfile::tempfile().unwrap();
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs:369:
+         &exchange.request.header(),
+         "org.freedesktop.systemd1.UnitExists",
+     )
+-    
+     .sender(MANAGER)
+-    
+     .destination(CLIENT)
+-    
+     .build(&"sensitive-manager-detail")
+     .unwrap();
+     exchange.arm().unwrap();
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_flags_tests.rs:1:
+ //! Typed wire forms, not a manager, transport or execution capability.
+-use zbus6 as zbus;
+ use super::*;
+ use zbus::message::{Builder, Flags};
++use zbus6 as zbus;
+ 
+ fn with_flags(message: &Message, bits: u8) -> Builder<'_> {
+     let mut header = message.header();
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_flags_tests.rs:133:
+             &held.request.header(),
+             "org.freedesktop.systemd1.UnitExists",
+         )
+-        
+         .sender(MANAGER)
+-        
+         .destination(CLIENT)
+-        
+         .build(&())
+         .unwrap();
+         let message = with_flags(&seed, bits)
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs:1:
+ //! Borrowed state is reply data, never request custody or start authority.
+-use zbus6 as zbus;
+ use super::*;
++use zbus6 as zbus;
+ #[test]
+ fn dispatch_reply_state_requires_the_borrowed_preparation_api() {
+     let held = exchange();
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs:13:
+     let [mut err, err_w] = pipe();
+     let request = request_kind([&out_w, &err_w], "ok");
+     let response = Message::method_return(&request.header())
+-        
+         .sender(MANAGER)
+-        
+         .destination(CLIENT)
+-        
+         .build(&OwnedObjectPath::try_from("/org/freedesktop/systemd1/job/74").unwrap())
+         .unwrap();
+     let mut state = ReplyState::prepare(&request, MANAGER, CLIENT).unwrap();
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs:162:
+             &held.request.header(),
+             "org.freedesktop.systemd1.UnitExists",
+         )
+-        
+         .sender(MANAGER)
+-        
+         .destination(CLIENT)
+-        
+     } else {
+         zbus::message::Builder::from(good.header())
+     };
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs:184:
+             header.primary_mut().set_flags(flags);
+             builder = zbus::message::Builder::from(header);
+         }
+-        7 => {
+-            builder = builder
+-                .with_flags(zbus::message::Flags::NO_AUTO_START)
+-                
+-        }
++        7 => builder = builder.with_flags(zbus::message::Flags::NO_AUTO_START),
+         _ => (),
+     }
+     if action == 5 || action == 8 {
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire.rs:1:
+ //! Held wire mechanics, not a start permit. Only the consuming owner binds trust.
+-use zbus6 as zbus;
+ use super::*;
+ use crate::systemd_unit::UnitProperty;
+ use std::{
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire.rs:11:
+     message::{Message, Type},
+     wire::{Fd, OwnedObjectPath, Variant as Value},
+ };
++use zbus6 as zbus;
+ mod exchange_imports {
+     pub(super) use crate::diagnostic_kernel_admission::KernelError;
+     pub(super) use crate::protocol::MAX_PACKET_BYTES;
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire.rs:340:
+     let message = Message::method_call(PATH, "StartTransientUnit")
+         .destination(manager)
+         .interface(INTERFACE)
+-        .serial(serial).build(&body)
++        .serial(serial)
++        .build(&body)
+         .map_err(|_| denied())?;
+     check(message.data().fds().len() == 18)?;
+     let aliases = std::array::from_fn(|i| message.data().fds()[i].as_raw_fd());
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire_tests.rs:24:
+ }
+ fn reply(r: &HeldRequest, manager: &str, client: &str, path: &str) -> Message {
+     Message::method_return(&r.message.header())
+-        
+         .sender(manager)
+-        
+         .destination(client)
+-        
+         .build(&OwnedObjectPath::try_from(path).unwrap())
+         .unwrap()
+ }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_loaded.rs:1:
+ //! Read-only settings projection, never launch or cleanup authority.
+-use zbus6 as zbus;
+ use crate::canonical_json;
+ use crate::diagnostic_lease::DiagnosticState;
+ use crate::diagnostic_manager::{ManagerScope, ManagerSnapshot};
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_loaded.rs:8:
+ use serde::{Deserialize, Serialize};
+ use std::collections::{BTreeMap, HashMap};
+ use zbus::wire::OwnedVariant as OwnedValue;
++use zbus6 as zbus;
+ 
+ #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+ #[serde(deny_unknown_fields)]
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager.rs:1:
+ //! Bounded read-only manager observation. No unit mutation or cleanup authority.
+-use zbus6 as zbus;
++use crate::diagnostic_blocking_v6::{Connection, ConnectionBuilder as Builder, Proxy};
+ use crate::diagnostic_lease::{validate_identity, DiagnosticIdentity, SURFACES};
+ use crate::diagnostic_loaded::{decode_settings, InvocationGuard, LoadedSettings, LoadedSnapshot};
+ use crate::{canonical_json, is_hash};
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager.rs:11:
+ use std::os::unix::fs::{FileTypeExt, MetadataExt};
+ use std::process::{Child, Command, Stdio};
+ use std::time::{Duration, Instant};
+-use crate::diagnostic_blocking_v6::{ConnectionBuilder as Builder, Connection, Proxy};
+ use zbus::wire::{OwnedObjectPath, OwnedVariant as OwnedValue};
++use zbus6 as zbus;
+ 
+ const REQUEST_BYTES: usize = 4096;
+ const OUTPUT_BYTES: usize = 65_536;
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager.rs:828:
+     #[test]
+     fn reply_origin_and_error_name_are_checked_before_absence_or_body_decode() {
+         let method = zbus::Message::method_call("/org/freedesktop/systemd1", "GetUnit")
+-            
+             .build(&("scope",))
+             .unwrap();
+         let reply = zbus::Message::method_return(&method.header())
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager.rs:835:
+-            
+             .sender(":1.9")
+-            
+             .build(&7u32)
+             .unwrap();
+         assert_eq!(decode_reply::<u32>(&reply, ":1.9"), Ok(7));
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs:1:
+ //! Private fixed read-only channel; no original message or execution authority.
+-use zbus6 as zbus;
+ use std::future::Future;
+ use std::time::Duration;
+ use tokio::runtime::{Builder, Runtime};
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs:6:
+ use zbus::{Connection, Message};
++use zbus6 as zbus;
+ #[path = "diagnostic_manager_channel_kernel.rs"]
+ mod kernel;
+ use kernel::{boot, clock, KernelPins, Operation, PathPins};
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs:1:
+-use zbus6 as zbus;
+ use super::*;
+ use std::os::fd::AsRawFd;
+ use zbus::wire::Fd;
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs:5:
++use zbus6 as zbus;
+ const CLIENT: &str = ":1.74";
+ pub(super) fn trace_query(response: &zbus::Result<Message>, client: &str, kind: Query) {
+     if std::env::var("HC074_PRIVATE_MANAGER_REPLY_TRACE").as_deref() != Ok("1") {
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs:47:
+ }
+ fn response(kind: &str) -> Message {
+     let request = Message::method_call(BUS_PATH, "GetNameOwner")
+-        
+         .build(&())
+         .unwrap();
+     let seed = Message::method_return(&request.header())
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs:54:
+-        
+         .build(&())
+         .unwrap();
+     let mut header = seed.header();
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs:67:
+         zbus::message::Builder::from(header)
+     };
+     if kind != "no-sender" {
+-        builder = builder
+-            .sender(if kind == "sender" { ":1.999" } else { BUS })
+-            ;
++        builder = builder.sender(if kind == "sender" { ":1.999" } else { BUS });
+     }
+     if kind != "no-destination" {
+-        builder = builder
+-            .destination(if kind == "destination" {
+-                ":1.998"
+-            } else {
+-                CLIENT
+-            })
+-            ;
++        builder = builder.destination(if kind == "destination" {
++            ":1.998"
++        } else {
++            CLIENT
++        });
+     }
+     if kind == "no-serial" {
+         builder = builder.reply_serial(None);
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs:93:
+         builder = builder.member("Foreign");
+     }
+     if matches!(kind, "flags" | "combined") {
+-        builder = builder
+-            .with_flags(zbus::message::Flags::NO_AUTO_START)
+-            ;
++        builder = builder.with_flags(zbus::message::Flags::NO_AUTO_START);
+     }
+     if kind == "interactive" {
+-        builder = builder
+-            .with_flags(zbus::message::Flags::ALLOW_INTERACTIVE_AUTH)
+-            ;
++        builder = builder.with_flags(zbus::message::Flags::ALLOW_INTERACTIVE_AUTH);
+     }
+     let file = tempfile::tempfile().unwrap();
+     match kind {
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager_sandbox_query.rs:1:
+ //! Fixed read-only queries on the original connection, not original delivery.
+-use zbus6 as zbus;
+ use super::*;
+ use zbus::wire::{OwnedObjectPath, OwnedVariant as OwnedValue};
++use zbus6 as zbus;
+ const PATH: &str = "/org/freedesktop/systemd1";
+ const UNIT: &str = "org.freedesktop.systemd1.Unit";
+ const SERVICE: &str = "org.freedesktop.systemd1.Service";
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager_sandbox_query.rs:245:
+     #[test]
+     fn bootstrap_sandbox_manager_replies_cannot_change_sender_destination_or_type() {
+         let request = Message::method_call(PATH, "GetUnit")
+-            
+             .sender(":1.74")
+-            
+             .destination(":1.1")
+-            
+             .build(&(unit(),))
+             .unwrap();
+         let good = Message::method_return(&request.header())
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager_sandbox_query.rs:256:
+-            
+             .sender(":1.1")
+-            
+             .build(&OwnedObjectPath::try_from("/org/freedesktop/systemd1/unit/held").unwrap())
+             .unwrap();
+         shape(&good, ":1.1", ":1.74", "o").unwrap();
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_manager_sandbox_query.rs:264:
+         assert!(shape(&good, ":1.1", ":1.74", "v").is_err());
+         assert!(shape(&request, ":1.1", ":1.74", "o").is_err());
+         let bad = Message::method_return(&request.header())
+-            
+             .sender(":1.1")
+-            
+             .build(&true)
+             .unwrap();
+         assert!(shape(&bad, ":1.1", ":1.74", "o").is_err());
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_original_manager_message_units.rs:1:
+-use zbus6 as zbus;
+ use super::*;
+ use crate::systemd_unit::UnitProperty;
+ use std::os::fd::FromRawFd;
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_original_manager_message_units.rs:5:
+ use zbus::wire::Variant as Value;
++use zbus6 as zbus;
+ const MANAGER: &str = ":1.74";
+ const CLIENT: &str = ":1.75";
+ fn pipe() -> [File; 2] {
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_original_manager_message_units.rs:45:
+             canonical::METHOD
+         },
+     )
+-    
+     .interface(canonical::INTERFACE)
+-    
+     .destination(if kind == "well-known" {
+         "org.freedesktop.systemd1"
+     } else if kind == "manager" {
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_original_manager_message_units.rs:55:
+     } else {
+         MANAGER
+     })
+-    
+     .serial(if kind == "serial" {
+         NonZeroU32::new(input.legacy.primary_header().serial_num().get() + 1).unwrap()
+     } else {
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_original_manager_message_units.rs:65:
+         builder = builder.sender(CLIENT);
+     }
+     if kind == "flags" {
+-        builder = builder
+-            .with_flags(zbus::message::Flags::NO_REPLY_EXPECTED)
+-            ;
++        builder = builder.with_flags(zbus::message::Flags::NO_REPLY_EXPECTED);
+     }
+     builder.build(&(name, mode, props, auxiliary)).unwrap()
+ }
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs:1:
+-use zbus6 as zbus;
+ use super::*;
+ use crate::diagnostic_lease::{DiagnosticIdentity, DiagnosticStage};
+ use std::io::{Read, Write};
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs:5:
++use zbus6 as zbus;
+ 
+ #[test]
+ fn original_pipe_message_rejects_envelope_body_names_and_missing_fd_table() {
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs:39:
+             if kind == 0 { "/wrong" } else { PATH },
+             if kind == 1 { "StopUnit" } else { METHOD },
+         )
+-        
+         .destination(if kind == 2 {
+             "org.example.Wrong"
+         } else {
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs:46:
+             DESTINATION
+         })
+-        
+         .interface(if kind == 3 {
+             "org.example.Wrong"
+         } else {
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs:52:
+             INTERFACE
+-        })
+-        ;
++        });
+         if kind == 4 {
+-            builder = builder
+-                .with_flags(zbus::message::Flags::NO_REPLY_EXPECTED)
+-                ;
++            builder = builder.with_flags(zbus::message::Flags::NO_REPLY_EXPECTED);
+         }
+         if kind == 5 {
+             builder = builder.sender(":1.74");
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs:77:
+         );
+     }
+     let msg = Message::method_call(PATH, METHOD)
+-        
+         .destination(DESTINATION)
+-        
+         .interface(INTERFACE)
+-        
+         .build(&"malformed")
+         .unwrap();
+     assert!(inspect_message(&msg, &spec, &stdout.writer, &stderr.writer).is_err());
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs:88:
+     // Both FD entries present but the body has the wrong signature.
+     let msg = Message::method_call(PATH, METHOD)
+-        
+         .destination(DESTINATION)
+-        
+         .interface(INTERFACE)
+-        
+         .build(&(Fd::from(&stdout.writer), Fd::from(&stderr.writer)))
+         .unwrap();
+     assert!(matches!(
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/systemd_unit.rs:1:
+-use zbus6 as zbus;
++use crate::diagnostic_blocking_v6::{Connection, Proxy};
+ use crate::manifest::CampaignManifest;
+ use crate::spawn::SpawnIntent;
+ use crate::{canonical_json, sha256_hex, ProcessIdentity, Role};
+Diff in /mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074/src/systemd_unit.rs:7:
+ use std::path::{Component, Path};
+ use std::time::{Duration, Instant};
+ use thiserror::Error;
+-use crate::diagnostic_blocking_v6::{Connection, Proxy};
+ use zbus::wire::{OwnedObjectPath, Variant as Value};
++use zbus6 as zbus;
+ 
+ const SYSTEMD_DESTINATION: &str = "org.freedesktop.systemd1";
+ const SYSTEMD_MANAGER_PATH: &str = "/org/freedesktop/systemd1";

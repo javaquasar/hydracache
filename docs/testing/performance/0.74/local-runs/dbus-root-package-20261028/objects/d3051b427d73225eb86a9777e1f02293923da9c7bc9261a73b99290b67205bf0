@@ -1,0 +1,12 @@
+{
+  "boot_after": "addcfc11-77a1-4381-9b12-bdd7e03fa86c",
+  "boot_before": "addcfc11-77a1-4381-9b12-bdd7e03fa86c",
+  "boot_unchanged": true,
+  "clocks_changed": false,
+  "passed": true,
+  "phase": "checks",
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

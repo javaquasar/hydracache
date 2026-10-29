@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::tests::roster_tests::oidc_roster_v2_original_binding_constructor_and_rotation_cross_latch ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 2.75s
+

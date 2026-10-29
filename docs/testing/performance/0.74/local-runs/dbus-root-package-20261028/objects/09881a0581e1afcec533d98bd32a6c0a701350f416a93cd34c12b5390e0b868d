@@ -1,0 +1,31 @@
+
+# BEGIN AUTHORITY INVENTORY GATE
+[[gate]]
+id = "tool.hydracache-long-run-supervisor-074.authority-inventory"
+kind = "external_tool"
+source = "tools/long-run-supervisor-074/tests/support/authority_inventory_alloc.rs"
+package = "hydracache-long-run-supervisor-074"
+target = "hydracache_long_run_supervisor_074"
+test = "authority_inventory_allocation_attribution"
+cfg = 'all (target_os = "linux" , feature = "fixed-leaf-alloc-probe")'
+env = ""
+reason = "manual local expected inventory requests; no timing or admission"
+tier = "manual"
+required_features = ["fixed-leaf-alloc-probe"]
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 1200
+owner_release = "0.74.0"
+ship_mandatory = false
+artifacts = []
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+[gate.command]
+program = "cargo"
+args = ["test","--release","-p","hydracache-long-run-supervisor-074","--features","fixed-leaf-alloc-probe","--lib","--locked","authority_inventory_allocation_attribution","--","--ignored","--nocapture","--test-threads=1"]
+cwd = "."
+platform = "linux"
+[gate.command.env]
+# END AUTHORITY INVENTORY GATE

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_output_preparation::intent_journal::tests::signed_history_exact_anchor_pair_and_document_budgets_refuse",
+  "passed": 1
+}

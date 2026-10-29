@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::fixed_leaf_path_tests::fixed_leaf_path_differential_identity_flags_and_unknown_names",
+  "passed": 1
+}

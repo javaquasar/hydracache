@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-root-package-074/isolated.py", line 120, in <module>
+    run(sys.argv[2], c.BASE/('tests-'+sys.argv[2]), float(sys.argv[3]))
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-root-package-074/isolated.py", line 91, in run
+    value = cases(image, catalog, out/(prefix+'-cases'), env, deadline)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-root-package-074/isolated.py", line 57, in cases
+    completed.append(future.result())
+                     ^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/usr/lib/python3.12/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-root-package-074/isolated.py", line 39, in run
+    folder = b.invoke(out, f'case-{index:04d}',
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-root-package-074/batch.py", line 38, in invoke
+    c.need(code == 0, 'first complete test-batch refusal: '+label)
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-root-package-074/apply.py", line 22, in need
+    raise ValueError(why)
+ValueError: first complete test-batch refusal: case-0006

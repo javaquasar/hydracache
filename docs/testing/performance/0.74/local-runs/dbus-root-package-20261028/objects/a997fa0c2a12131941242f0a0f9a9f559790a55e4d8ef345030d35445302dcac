@@ -1,0 +1,6 @@
+
+running 1 test
+test current_image_extra_descriptor_and_wrong_assertion_cannot_bypass_old_census ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 16 filtered out; finished in 4.50s
+

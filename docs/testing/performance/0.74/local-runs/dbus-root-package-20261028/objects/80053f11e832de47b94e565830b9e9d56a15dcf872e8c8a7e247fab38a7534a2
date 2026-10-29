@@ -1,0 +1,40 @@
+{
+  "catalog": 8,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 8,
+  "rows": [
+    [
+      "linux::contradictory_recursive_events_and_duplicate_pids_fail_closed",
+      "ok"
+    ],
+    [
+      "linux::empty_and_populated_without_pids_are_distinct_observations",
+      "ok"
+    ],
+    [
+      "linux::independent_parallel_readers_keep_identical_fixture_snapshots",
+      "ok"
+    ],
+    [
+      "linux::node_depth_pid_entry_and_document_bounds_are_enforced",
+      "ok"
+    ],
+    [
+      "linux::recursive_child_membership_survives_empty_leader_list",
+      "ok"
+    ],
+    [
+      "linux::retained_root_child_and_document_descriptors_detect_drift",
+      "ok"
+    ],
+    [
+      "linux::strict_documents_refuse_missing_unknown_duplicate_and_numeric_drift",
+      "ok"
+    ],
+    [
+      "linux::unsafe_paths_links_special_files_ownership_and_modes_are_refused",
+      "ok"
+    ]
+  ]
+}

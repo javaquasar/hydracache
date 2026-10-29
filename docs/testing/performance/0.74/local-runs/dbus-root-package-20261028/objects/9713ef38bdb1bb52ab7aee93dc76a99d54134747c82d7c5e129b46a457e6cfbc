@@ -1,0 +1,31 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--cd",
+    "/",
+    "--exec",
+    "/usr/bin/python3",
+    "-B",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-root-package-074/native.py",
+    "session",
+    "focus-188"
+  ],
+  "bound": 1200,
+  "floor": 4294967296,
+  "freeze_sha256": "e644f28fdf54cf406afb1225cba1d8341d82d459d580732cd6eaa5c9c46e1378",
+  "poll": 5,
+  "release_admitted": false,
+  "retirement": 5,
+  "retry": false,
+  "server": false,
+  "session_bound": 1100,
+  "source": {
+    "head": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+    "tracked": " M Cargo.lock\n M Cargo.toml\n M tools/long-run-supervisor-074/Cargo.toml\n M tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange.rs\n M tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_socket_tests.rs\n M tools/long-run-supervisor-074/src/diagnostic_dispatch_exchange_tests.rs\n M tools/long-run-supervisor-074/src/diagnostic_dispatch_negotiated_tests.rs\n M tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_flags_tests.rs\n M tools/long-run-supervisor-074/src/diagnostic_dispatch_reply_state_tests.rs\n M tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire.rs\n M tools/long-run-supervisor-074/src/diagnostic_held_delivery_wire_tests.rs\n M tools/long-run-supervisor-074/src/diagnostic_loaded.rs\n M tools/long-run-supervisor-074/src/diagnostic_manager.rs\n M tools/long-run-supervisor-074/src/diagnostic_manager_channel.rs\n M tools/long-run-supervisor-074/src/diagnostic_manager_channel_tests.rs\n M tools/long-run-supervisor-074/src/diagnostic_manager_held_delivery.rs\n M tools/long-run-supervisor-074/src/diagnostic_manager_sandbox_query.rs\n M tools/long-run-supervisor-074/src/diagnostic_original_manager_message.rs\n M tools/long-run-supervisor-074/src/diagnostic_original_manager_message_units.rs\n M tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport.rs\n M tools/long-run-supervisor-074/src/diagnostic_original_pipe_transport_tests.rs\n M tools/long-run-supervisor-074/src/lib.rs\n M tools/long-run-supervisor-074/src/systemd_unit.rs\n"
+  },
+  "source_worktree_uncommitted": true
+}

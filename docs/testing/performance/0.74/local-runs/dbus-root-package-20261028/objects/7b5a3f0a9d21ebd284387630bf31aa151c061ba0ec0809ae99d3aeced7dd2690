@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::fd_identity::tests::fresh_fd_identity_original_trace_order_counts_and_refusal_sites_match",
+  "passed": 1
+}

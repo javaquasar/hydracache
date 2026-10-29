@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_collector::tests::collector_leaked_pipe_writer_blocks_eof_and_can_append_late_bytes",
+  "passed": 1
+}

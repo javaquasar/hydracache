@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_signer_bundle::executable::tests::signer_executable_equal_byte_foreign_inode_and_wrong_process_refuse_bundle",
+  "passed": 1
+}

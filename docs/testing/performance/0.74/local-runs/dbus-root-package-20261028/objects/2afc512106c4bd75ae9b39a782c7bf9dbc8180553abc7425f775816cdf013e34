@@ -1,0 +1,28 @@
+{
+  "catalog": 5,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 5,
+  "rows": [
+    [
+      "ordinary_child_four_independent_owners_leave_parent_unchanged",
+      "ok"
+    ],
+    [
+      "ordinary_child_native_denials_and_positive_unfiltered_control",
+      "ok"
+    ],
+    [
+      "ordinary_child_refuses_environment_and_unknown_or_extra_arguments",
+      "ok"
+    ],
+    [
+      "ordinary_child_refuses_extra_inherited_descriptor_without_parent_flag_mutation",
+      "ok"
+    ],
+    [
+      "ordinary_child_x32_and_i386_die_sigsys_without_output_or_core",
+      "ok"
+    ]
+  ]
+}

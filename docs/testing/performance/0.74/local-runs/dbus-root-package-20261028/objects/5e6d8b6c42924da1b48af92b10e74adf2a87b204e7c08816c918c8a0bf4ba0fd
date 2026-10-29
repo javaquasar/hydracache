@@ -1,0 +1,6 @@
+
+running 1 test
+test root::launch::isolation::tests::fixed_install_order_duplicate_entry_missing_exit_and_failed_syscall_refuse ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 50 filtered out; finished in 0.01s
+

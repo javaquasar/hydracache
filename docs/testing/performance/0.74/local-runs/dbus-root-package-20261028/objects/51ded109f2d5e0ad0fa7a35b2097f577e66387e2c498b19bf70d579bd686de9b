@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "wsl.exe",
+    "-d",
+    "Ubuntu",
+    "-u",
+    "artur",
+    "--cd",
+    "/",
+    "--exec",
+    "/usr/bin/python3",
+    "-B",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-root-package-074/source_guard.py",
+    "-v"
+  ],
+  "bound": 60,
+  "live": false,
+  "retry": false,
+  "server": false
+}

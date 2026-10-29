@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_live_identity::tests::actual_owned_helper_and_fixture_tree_cannot_be_promoted ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

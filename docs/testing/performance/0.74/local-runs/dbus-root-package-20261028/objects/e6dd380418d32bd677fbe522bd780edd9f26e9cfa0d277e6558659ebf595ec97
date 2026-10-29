@@ -1,0 +1,12 @@
+{
+  "boot_after": "e6beda75-cecb-4a5d-bb9f-738a440ec98e",
+  "boot_before": "e6beda75-cecb-4a5d-bb9f-738a440ec98e",
+  "boot_unchanged": true,
+  "clocks_changed": false,
+  "passed": true,
+  "phase": "format",
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

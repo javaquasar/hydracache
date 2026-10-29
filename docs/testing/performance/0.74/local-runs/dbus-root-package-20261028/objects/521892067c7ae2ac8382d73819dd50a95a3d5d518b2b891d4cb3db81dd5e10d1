@@ -1,0 +1,11 @@
+error: prepared_query_policy accepts only one key source: per_entity, entity, collection, key, or key_segments
+ --> tests/policy/fail_prepared_conflicting_key_sources.rs:6:19
+  |
+6 |       let _policy = prepared_query_policy!(
+  |  ___________________^
+7 | |         per_entity = User,
+8 | |         key = "user:42",
+9 | |     );
+  | |_____^
+  |
+  = note: this error originates in the macro `prepared_query_policy` (in Nightly builds, run with -Z macro-backtrace for more info)

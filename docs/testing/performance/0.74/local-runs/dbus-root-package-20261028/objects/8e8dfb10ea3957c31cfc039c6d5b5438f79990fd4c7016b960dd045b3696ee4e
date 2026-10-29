@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 1,
+  "local_filtered": 1592,
+  "name": "systemd_unit::tests::reads_a_real_loaded_service_over_dbus",
+  "passed": 0
+}

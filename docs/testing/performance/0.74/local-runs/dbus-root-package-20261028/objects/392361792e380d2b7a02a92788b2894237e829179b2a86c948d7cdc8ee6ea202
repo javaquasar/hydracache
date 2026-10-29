@@ -1,0 +1,5 @@
+bootstrap_census_complete_forged_roles_reach_only_closed_authentication: test
+bootstrap_census_dead_guardian_refuses_without_replacing_attempt: test
+bootstrap_census_extra_descriptor_and_wrong_image_refuse_before_authentication_boundary: test
+
+3 tests, 0 benchmarks

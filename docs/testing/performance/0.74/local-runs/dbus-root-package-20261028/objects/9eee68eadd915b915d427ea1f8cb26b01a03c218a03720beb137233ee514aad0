@@ -1,0 +1,6 @@
+
+running 1 test
+test stale_or_unauthorized_abort_does_not_record_intent_or_call_backend ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.03s
+

@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_kernel_admission::tests::kernel_admission_inherited_socket_identifies_child_and_refuses_after_sigkill ... ignored, manual nonroot Linux/python3 inherited sender and original message pidfd; no live service
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

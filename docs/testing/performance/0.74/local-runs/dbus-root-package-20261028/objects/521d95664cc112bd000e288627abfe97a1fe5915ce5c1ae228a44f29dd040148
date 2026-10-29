@@ -1,0 +1,9 @@
+
+running 4 tests
+test backend_failure_retains_progress_cause_and_retry_completes_once ... ok
+test completed_progress_failure_recovers_marker_release_without_repeating_effect ... ok
+test progress_deadline_commits_intent_stops_and_releases_only_after_completion ... ok
+test startup_deadline_recovers_durable_cause_without_a_first_checkpoint ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+

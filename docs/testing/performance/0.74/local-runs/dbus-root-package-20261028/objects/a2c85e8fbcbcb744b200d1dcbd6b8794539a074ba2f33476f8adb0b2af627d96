@@ -1,0 +1,10 @@
+
+running 5 tests
+test ordinary_child_four_independent_owners_leave_parent_unchanged ... ok
+test ordinary_child_native_denials_and_positive_unfiltered_control ... ok
+test ordinary_child_refuses_environment_and_unknown_or_extra_arguments ... ok
+test ordinary_child_refuses_extra_inherited_descriptor_without_parent_flag_mutation ... ok
+test ordinary_child_x32_and_i386_die_sigsys_without_output_or_core ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+

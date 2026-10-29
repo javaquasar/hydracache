@@ -1,0 +1,17 @@
+{
+  "passed": false,
+  "first_refusal": "staged bytes differ from tested working bytes",
+  "rows": [
+    {
+      "path": "Cargo.toml",
+      "staged_sha256": "29118852fb21a5b3d9fc091bea2bb9e4240f47fee75ea8a538f29c0dae56858d",
+      "tested_sha256": "84b1986d8a2014be985460b3ecc4a809f3ae3e8f9822ef6c7134b3ecbe9af114",
+      "staged_bytes": 7339,
+      "tested_bytes": 7491,
+      "tested_crlf": 152,
+      "staged_crlf": 0,
+      "only_crlf_normalization": true
+    }
+  ],
+  "committed": false
+}

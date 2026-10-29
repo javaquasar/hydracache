@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::tests::controller_trust_seeded_disallowed_actors_and_independent_threads ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 1.48s
+

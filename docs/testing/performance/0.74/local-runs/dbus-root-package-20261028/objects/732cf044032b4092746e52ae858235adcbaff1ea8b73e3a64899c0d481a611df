@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_two_phase_launch::root_enrollment::kernel::fixed_slice::tests::fixed_slice_ancestry_requires_same_original_objects_and_not_just_name ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

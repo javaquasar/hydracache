@@ -1,0 +1,260 @@
+"""GNU/MSRV checks of the actual root package, never a production host authority."""
+from pathlib import Path
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import time
+
+import common as c
+
+NATIVE=Path(c.NATIVE)
+PHASES=('seed','checks','focus-194','focus-188','tests-194','tests-188')
+GROUP_SHA='e5ff52835fc2486171dbdbbb1b6df47177f583b4539f561779992c2c5065a691'
+CODEC_SHA='1b13c005abfbb96b1374e27fcc871ce0a14d87fe955e2097712a9cfb029fadf3'
+
+
+def environment(compiler):
+    version={'194':'1.94.0','188':'1.88.0'}[compiler]
+    toolchain=Path('/home/artur/.rustup/toolchains')/(version+'-x86_64-unknown-linux-gnu')/'bin'
+    for name in ('cargo','rustc','cargo-clippy','clippy-driver'):
+        c.need((toolchain/name).is_file(),'qualified compiler/component: '+name)
+    env=dict(HOME='/home/artur',USER='artur',LOGNAME='artur',LANG='C.UTF-8',
+        PATH=str(toolchain)+':/usr/local/bin:/usr/bin:/bin',CARGO_HOME=str(NATIVE/'cargo-home'),
+        RUSTC=str(toolchain/'rustc'),RUSTUP_TOOLCHAIN=version+'-x86_64-unknown-linux-gnu',
+        RUSTC_WRAPPER='',RUSTC_WORKSPACE_WRAPPER='',CARGO_NET_OFFLINE='true',
+        CARGO_INCREMENTAL='0',CARGO_BUILD_JOBS='2')
+    return toolchain,env
+
+
+def capacity():c.capacity(NATIVE)
+
+
+def seed(review,out,deadline):
+    c.need(time.monotonic()<deadline,'original seed-session deadline before effects')
+    next_capacity=0
+    def checkpoint():
+        nonlocal next_capacity
+        now=time.monotonic()
+        c.need(now<deadline,'original complete seed-session deadline')
+        if now>=next_capacity:capacity();next_capacity=now+5
+    parent=NATIVE.parent
+    parent.mkdir(parents=True,exist_ok=True,mode=0o700)
+    c.need(parent.resolve()==parent and parent.stat().st_uid==1000 and not parent.stat().st_mode&0o077,
+           'exclusive native source parent')
+    NATIVE.mkdir(mode=0o700,exist_ok=False)
+    capacity()
+    codec_path=c.ROOT/'tools/dbus-source-package-074/package.py'
+    c.need(c.sha(codec_path.read_bytes())==CODEC_SHA,'same pure regular-archive decoder')
+    codec=c.load(codec_path,'root_package_safe_archive_codec')
+    inventory={}
+    for row in review['registry']:
+        checkpoint()
+        archive=c.BASE/'input/archives'/(row['name']+'.crate')
+        raw=archive.read_bytes()
+        c.need(c.sha(raw)==row['sha256'],'held registry archive: '+row['name'])
+        members=codec.unpack(raw,row['name'])
+        directory=NATIVE/'vendor'/row['name']
+        directory.mkdir(parents=True)
+        for name,body in members.items():
+            checkpoint()
+            path=directory/name
+            path.parent.mkdir(parents=True,exist_ok=True)
+            path.write_bytes(body)
+        files={name:c.sha(body) for name,body in members.items()}
+        c.write(directory,'.cargo-checksum.json',dict(package=row['sha256'],files=files))
+        inventory[row['name']]=files
+    (NATIVE/'cargo-home').mkdir(mode=0o700)
+    config='[source.crates-io]\nreplace-with="hc074-root-reviewed"\n[source.hc074-root-reviewed]\ndirectory="'+str(NATIVE/'vendor')+'"\n'
+    (NATIVE/'cargo-home/config.toml').write_text(config,encoding='utf8')
+    c.write(NATIVE,'vendor-receipt.json',inventory)
+    c.write(out,'vendor-receipt.json',inventory)
+    checkpoint()
+    print(json.dumps(dict(seeded=True,registry=len(inventory))),flush=True)
+
+
+def vendor_postflight(deadline):
+    c.need(time.monotonic()<deadline,'original vendor-postflight deadline')
+    inventory=json.loads((NATIVE/'vendor-receipt.json').read_bytes())
+    for name,members in inventory.items():
+        c.need(time.monotonic()<deadline,'original vendor-postflight deadline')
+        capacity()
+        directory=NATIVE/'vendor'/name
+        actual={p.relative_to(directory).as_posix():c.sha(p.read_bytes()) for p in directory.rglob('*') if p.is_file()}
+        checksum=actual.pop('.cargo-checksum.json')
+        value=json.loads((directory/'.cargo-checksum.json').read_bytes())
+        c.need(actual==members and value['files']==members,'unchanged decoded registry source')
+
+
+def cargo_command(compiler,action):
+    toolchain,env=environment(compiler)
+    args=['--offline','--locked','--manifest-path',str(c.ROOT/'Cargo.toml'),
+          '--target-dir',str(NATIVE/'builds'/compiler),'-p','hydracache-long-run-supervisor-074']
+    if action=='metadata':argv=[str(toolchain/'cargo'),'metadata','--offline','--locked','--no-deps','--format-version','1',
+                               '--manifest-path',str(c.ROOT/'Cargo.toml')]
+    elif action=='check':argv=[str(toolchain/'cargo'),'check',*args,'--all-targets','--all-features']
+    elif action=='clippy':argv=[str(toolchain/'cargo'),'clippy',*args,'--all-targets','--all-features','--','-D','warnings']
+    elif action=='build':argv=[str(toolchain/'cargo'),'test',*args,'--all-targets','--no-run','--message-format=json']
+    elif action=='cargo-version':argv=[str(toolchain/'cargo'),'--version','--verbose']
+    elif action=='rustc-version':argv=[str(toolchain/'rustc'),'--version','--verbose']
+    else:raise ValueError('fixed Cargo action')
+    return argv,env
+
+
+def invoke(out,label,argv,env,review,deadline):
+    c.need(time.monotonic()<deadline,'original complete-session deadline')
+    c.guard(review);capacity()
+    c.need(time.monotonic()<deadline,'original deadline after preflight, before spawn')
+    folder=out/label;folder.mkdir(exist_ok=False)
+    c.write(folder,'intent.json',dict(argv=argv,environment=env,deadline=deadline,bound=1200,session_bound=1100,
+        cwd=str(c.ROOT/c.PKG) if argv[0].startswith(str(NATIVE/'builds')+'/') else str(c.ROOT),
+        floor=4*1024**3,poll=5,retirement=5,retry=False))
+    with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+        worker=subprocess.Popen(['/usr/bin/python3','-B',str(Path(__file__)),'worker',str(folder)],
+            stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,start_new_session=True)
+        code=worker.wait(timeout=max(0,deadline-time.monotonic())+10)
+    execution=json.loads((folder/'execution.json').read_bytes())
+    c.need(execution['retired'] and not execution['errors'],'kernel-owned phase retirement')
+    c.guard(review)
+    c.write(folder,'result.json',dict(exit=code,source_unchanged=True,server=False,release_admitted=False))
+    print(json.dumps(dict(phase=label,exit=code)),flush=True)
+    c.need(code==0,'first root package refusal: '+label)
+    return folder
+
+
+def check_targets(raw,review):
+    metadata=json.loads(raw)
+    package=next(p for p in metadata['packages'] if p['name']=='hydracache-long-run-supervisor-074')
+    actual=[dict(name=t['name'],kind=t['kind'],test=t['test'],doctest=t['doctest'],
+                 src=Path(t['src_path']).relative_to(c.ROOT).as_posix()) for t in package['targets']]
+    c.need(actual==review['targets'],'all original root package targets retained')
+
+
+def artifacts(raw,review,compiler):
+    messages=[json.loads(line) for line in raw.splitlines()]
+    c.need([m['success'] for m in messages if m.get('reason')=='build-finished']==[True],'actual successful complete build')
+    expected={(t['name'],tuple(t['kind']),t['src']) for t in review['targets']}
+    found={};covered=set()
+    for row in messages:
+        if row.get('reason')!='compiler-artifact' or not row.get('executable'):continue
+        target=row['target'];source=Path(target['src_path'])
+        if not source.is_relative_to(c.ROOT/c.PKG):continue
+        key=(target['name'],tuple(target['kind']),source.relative_to(c.ROOT).as_posix())
+        c.need(key in expected,'known actual package build target')
+        covered.add(key)
+        if not row['profile']['test']:continue  # A normal executable must never be invoked as a test harness.
+        image=Path(row['executable'])
+        c.need(image.resolve().is_relative_to(NATIVE/'builds'/compiler),'owned actual test image')
+        c.need(key not in found,'unique actual test-profile image')
+        found[key]=dict(name=target['name'],kind=target['kind'],src=key[2],path=str(image),
+                        sha256=c.sha(image.read_bytes()),bytes=image.stat().st_size)
+    required={(t['name'],tuple(t['kind']),t['src']) for t in review['targets'] if t['test']}
+    c.need(covered==expected and required.issubset(found)
+           and any(v['kind']==['lib'] for v in found.values()),'all targets built; every test-enabled target has a test image')
+    return sorted(found.values(),key=lambda row:(row['kind'],row['name']))
+
+
+def account(raw,catalog):
+    text=raw.decode()
+    rows=re.findall(r'^test (.+?) \.\.\. (ok|FAILED|ignored(?:, [^\n]*)?)$',text,re.M)
+    summaries=re.findall(r'^test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;',text,re.M)
+    c.need(len(summaries)==1,'one actual target summary')
+    state,passed,failed,ignored,measured,filtered=summaries[0]
+    c.need(state=='ok' and int(failed)==int(measured)==int(filtered)==0,'no failed/measured/filtered package case')
+    c.need(len(rows)==len(catalog)==int(passed)+int(ignored) and sorted(n for n,_ in rows)==catalog,
+           'every actual target case accounted exactly once')
+    c.need(sum(s=='ok' for _,s in rows)==int(passed)
+           and sum(s.startswith('ignored') for _,s in rows)==int(ignored),'exact pass versus ignored counts')
+    return dict(passed=int(passed),ignored=int(ignored),catalog=len(catalog),filtered=0,rows=rows)
+
+
+def tests(compiler,review,out,deadline):
+    folder=invoke(out,'build',*cargo_command(compiler,'build'),review,deadline)
+    images=artifacts((folder/'stdout.log').read_bytes(),review,compiler)
+    c.write(out,'images.json',images)
+    _,env=environment(compiler)
+    invoke(out,'complete-test-batch',[sys.executable,'-B',str(Path(__file__).parent/'isolated.py'),
+           'run',compiler,str(deadline)],env,review,deadline)
+    return json.loads((out/'totals.json').read_bytes())
+
+
+def focus(compiler,review,out,deadline):
+    folder=invoke(out,'build',*cargo_command(compiler,'build'),review,deadline)
+    images=artifacts((folder/'stdout.log').read_bytes(),review,compiler)
+    c.write(out,'images.json',images)
+    selected=[v for v in images if v['kind']==['test'] and v['name']=='bootstrap_current_image']
+    c.need(len(selected)==1,'one actual original held-entry integration image')
+    image=selected[0];path=Path(image['path']);_,env=environment(compiler)
+    listed=invoke(out,'bootstrap-list',[str(path),'--list'],env,review,deadline)
+    catalog=sorted(line[:-6] for line in (listed/'stdout.log').read_text().splitlines() if line.endswith(': test'))
+    c.need(len(catalog)==len(set(catalog))==17,'all original bootstrap integration cases')
+    c.need(c.sha(path.read_bytes())==image['sha256'],'original focused image custody')
+    tested=invoke(out,'bootstrap-full',[str(path),'--test-threads=1'],env,review,deadline)
+    value=account((tested/'stdout.log').read_bytes(),catalog)
+    c.write(out,'accounting.json',value)
+    c.write(out,'catalog.json',catalog)
+    c.need(c.sha(path.read_bytes())==image['sha256'],'original focused image postflight')
+    return value
+
+
+def session(phase):
+    c.need(phase in PHASES and os.getuid()==os.getgid()==1000,'fixed nonroot local package session')
+    out=c.BASE/phase
+    review=json.loads((c.BASE/'freeze/runtime-reviewed.json').read_bytes())
+    deadline=time.monotonic()+1100
+    c.guard(review)
+    boot=Path('/proc/sys/kernel/random/boot_id').read_text().strip()
+    result=dict(passed=False,source_unchanged=False,boot_before=boot,server=False,services=False,
+                clocks_changed=False,release_admitted=False,phase=phase)
+    try:
+        if phase=='seed':seed(review,out,deadline)
+        else:
+            c.need(json.loads((c.BASE/'seed/native-result.json').read_bytes())['passed'],'complete original offline seed')
+            capacity()
+            if phase=='checks':
+                for compiler in ('194','188'):
+                    for action in ('cargo-version','rustc-version','metadata','check','clippy'):
+                        folder=invoke(out,compiler+'-'+action,*cargo_command(compiler,action),review,deadline)
+                        if action=='metadata':check_targets((folder/'stdout.log').read_bytes(),review)
+                        if action.endswith('version'):
+                            expected='1.94.0' if compiler=='194' else '1.88.0'
+                            c.need(expected in (folder/'stdout.log').read_text().splitlines()[0],'actual qualified compiler version')
+            else:
+                c.need(json.loads((c.BASE/'checks/native-result.json').read_bytes())['passed'],'paired complete check/Clippy first')
+                if phase.startswith('focus-'):result['tests']=focus(phase.split('-')[1],review,out,deadline)
+                else:
+                    for compiler in ('194','188'):
+                        c.need(json.loads((c.BASE/('focus-'+compiler)/'native-result.json').read_bytes())['passed'],'both original-caller bootstrap focuses before full catalogs')
+                    result['tests']=tests(phase.split('-')[1],review,out,deadline)
+            vendor_postflight(deadline)
+        c.need(time.monotonic()<deadline,'original complete package-session deadline')
+        result['passed']=True
+    except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error))
+    finally:
+        try:c.guard(review);result['source_unchanged']=True
+        except BaseException as error:result.update(passed=False,source_refusal=str(error))
+        result['boot_after']=Path('/proc/sys/kernel/random/boot_id').read_text().strip()
+        result['boot_unchanged']=result['boot_after']==boot
+        c.write(out,'native-result.json',result)
+    raise SystemExit(0 if result['passed'] and result['source_unchanged'] and result['boot_unchanged'] else 1)
+
+
+if __name__=='__main__':
+    if len(sys.argv)==3 and sys.argv[1]=='worker':
+        folder=Path(sys.argv[2]);intent=json.loads((folder/'intent.json').read_bytes())
+        c.need(folder.resolve().is_relative_to(c.BASE.resolve()),'owned phase output')
+        c.guard(json.loads((c.BASE/'freeze/runtime-reviewed.json').read_bytes()))
+        os.environ.clear();os.environ.update(intent['environment'])
+        group_path=c.ROOT/'scripts/ci/watchdog_linux_group.py'
+        c.need(c.sha(group_path.read_bytes())==GROUP_SHA,'original Linux CI owner')
+        group=c.load(group_path,'root_package_owned_phase')
+        c.need(time.monotonic()<intent['deadline'],'existing CI deadline before owner spawn')
+        c.need(intent['cwd'] in (str(c.ROOT),str(c.ROOT/c.PKG)),'fixed original Cargo/test working directory')
+        execution=c.owned()._owned(group.LinuxGroup(),intent['argv'],intent['cwd'],capacity,
+                                   bound=1200,deadline=intent['deadline'])
+        c.write(folder,'execution.json',execution)
+        raise SystemExit(execution['exit'])
+    c.need(len(sys.argv)==3 and sys.argv[1]=='session','fixed package coordinator')
+    session(sys.argv[2])

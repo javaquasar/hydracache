@@ -1,0 +1,12 @@
+{
+  "boot_after": "38194c92-939c-46b3-bacf-88c7989f2c55",
+  "boot_before": "38194c92-939c-46b3-bacf-88c7989f2c55",
+  "boot_unchanged": true,
+  "clocks_changed": false,
+  "passed": true,
+  "phase": "checks",
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

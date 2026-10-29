@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 38,
+  "name": "reader::roles::installed::inventory::tests::bootstrap_installed_inventory_exact_set_is_bounded_and_not_old_set",
+  "passed": 1
+}

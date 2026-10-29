@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 1,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::fresh_kernel_cost::fresh_kernel_observation_attribution",
+  "passed": 0
+}

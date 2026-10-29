@@ -1,0 +1,65 @@
+"""Fixed root package phases under the unchanged Windows Job and Linux owner."""
+from pathlib import Path
+import json
+import subprocess
+import sys
+import traceback
+
+import common as c
+
+PHASES=('seed','format','checks','focus-194','focus-188','tests-194','tests-188')
+
+
+def command(phase):
+    c.need(phase in PHASES,'fixed package phase')
+    return ['wsl.exe','-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B',
+            '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-root-package-074/native.py','session',phase]
+
+
+def worker(phase):
+    c.guard(json.loads((c.BASE/'freeze/runtime-reviewed.json').read_bytes()))
+    value=c.owned()
+    result=value._owned(value.load_job().WindowsJob(),command(phase),str(c.ROOT),c.capacity,bound=1200)
+    c.write(c.BASE/phase,'execution.json',result)
+    raise SystemExit(result['exit'])
+
+
+def main(phase):
+    c.need(phase in PHASES,'fixed package phase')
+    out=c.BASE/phase
+    out.mkdir(exist_ok=False)
+    (out/'producer.py').write_bytes(Path(__file__).read_bytes())
+    with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+        try:
+            review=json.loads((c.BASE/'freeze/runtime-reviewed.json').read_bytes())
+            c.guard(review)
+            before=c.git_snapshot()
+            c.write(out,'intent.json',dict(argv=command(phase),source=before,freeze_sha256=c.sha((c.BASE/'freeze/runtime-reviewed.json').read_bytes()),
+                bound=1200,session_bound=1100,floor=4*1024**3,poll=5,retirement=5,retry=False,
+                source_worktree_uncommitted=True,server=False,release_admitted=False))
+            child=subprocess.Popen([sys.executable,'-B',str(Path(__file__)), '--worker',phase],cwd=c.ROOT,
+                stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr)
+            try:child.wait(timeout=1210)
+            except subprocess.TimeoutExpired:
+                child.kill();child.wait(timeout=5);raise ValueError('original outer owner exceeded bound')
+            execution=json.loads((out/'execution.json').read_bytes())
+            c.need(execution['retired'] and not execution['errors'],'original package Job retirement')
+            c.guard(review)
+            c.need(before==c.git_snapshot(),'root source/HEAD postflight')
+            result=json.loads((out/'native-result.json').read_bytes())
+            c.need(result['passed'] and result['source_unchanged'] and result['boot_unchanged'] and execution['exit']==0,
+                   'complete first package phase: '+phase)
+            c.write(out,'result.json',dict(passed=True,source_unchanged=True,source_worktree_uncommitted=True,
+                server=False,release_admitted=False))
+        except BaseException as error:
+            stderr.write(traceback.format_exc().encode())
+            c.write(out,'refusal.json',dict(type=type(error).__name__,reason=str(error)))
+            raise
+    print(json.dumps(dict(phase=phase,passed=True,release_admitted=False)))
+
+
+if __name__=='__main__':
+    if len(sys.argv)==3 and sys.argv[1]=='--worker':worker(sys.argv[2])
+    else:
+        c.need(len(sys.argv)==2,'one fixed package phase')
+        main(sys.argv[1])

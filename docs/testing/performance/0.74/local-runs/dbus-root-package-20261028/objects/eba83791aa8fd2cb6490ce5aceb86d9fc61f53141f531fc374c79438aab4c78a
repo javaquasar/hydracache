@@ -1,0 +1,4 @@
+strict_config_builds_the_frozen_service_policy: test
+unknown_duplicate_relaxed_and_nonproduction_values_fail_closed: test
+
+2 tests, 0 benchmarks

@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::trusted_input::controller_input::held_runtime::bootstrap_enrollment::tests::bootstrap_enrollment_actual_file_drift_poison_is_shared_and_cannot_heal ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.02s
+

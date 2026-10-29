@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_output_preparation::fixed_intent_storage::campaign_admission::tests::fixed_admission_scan_original_storage_descriptor_or_lock_argument_drift_latches",
+  "passed": 1
+}

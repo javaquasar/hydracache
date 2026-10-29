@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "abort_backend::tests::diagnostic_limit_and_existing_byte_drift_fail_closed",
+  "passed": 1
+}

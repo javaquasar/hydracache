@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_signer_isolation::linux::tests::child_entry_status_filter_count_has_bounded_post_install_slot",
+  "passed": 1
+}

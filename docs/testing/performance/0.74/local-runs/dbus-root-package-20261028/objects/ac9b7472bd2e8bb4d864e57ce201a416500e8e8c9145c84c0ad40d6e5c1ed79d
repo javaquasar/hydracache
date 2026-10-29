@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_root_owned_input::tests::root_input_namespace_root_and_original_thread_drift_refuse_without_refresh ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.01s
+

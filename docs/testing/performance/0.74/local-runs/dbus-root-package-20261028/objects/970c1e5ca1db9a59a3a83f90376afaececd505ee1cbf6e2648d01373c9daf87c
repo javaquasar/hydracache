@@ -1,0 +1,627 @@
+@baseUrl = http://127.0.0.1:3000
+
+### Sandbox info
+GET {{baseUrl}}/
+
+### Readiness check
+GET {{baseUrl}}/ready
+
+### Runtime sandbox config
+GET {{baseUrl}}/demo/config
+
+### Copyable scenario presets
+GET {{baseUrl}}/demo/presets
+
+### Release 36 ergonomics examples: verbose API vs sugar
+GET {{baseUrl}}/demo/ergonomics/examples
+
+### Release 36 rollout comparison: uncached vs cached canary reads
+POST {{baseUrl}}/demo/rollout/compare
+Content-Type: application/json
+
+{
+  "id": 42,
+  "reads": 2,
+  "ttl_ms": 5000,
+  "tags": ["rollout"],
+  "flow_id": "rollout-canary"
+}
+
+### Release 36 DB soak: short deterministic gate
+POST {{baseUrl}}/demo/db/soak/run
+Content-Type: application/json
+
+{
+  "iterations": 12,
+  "concurrency": 8,
+  "ttl_ms": 5000,
+  "loader_delay_ms": 1,
+  "flow_id": "db-soak-short"
+}
+
+### Release 36 DB soak: longer manual pre-release run
+POST {{baseUrl}}/demo/db/soak/run
+Content-Type: application/json
+
+{
+  "iterations": 500,
+  "concurrency": 16,
+  "ttl_ms": 5000,
+  "loader_delay_ms": 2,
+  "flow_id": "db-soak-long"
+}
+
+### OpenAPI document
+GET {{baseUrl}}/openapi.json
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### Developer console dashboard
+GET {{baseUrl}}/demo/ui
+
+### Actuator health
+GET {{baseUrl}}/actuator/hydracache/health
+
+### Actuator diagnostics
+GET {{baseUrl}}/actuator/hydracache/caches/main/diagnostics
+
+### Application report
+GET {{baseUrl}}/demo/report
+
+### Structured event log
+GET {{baseUrl}}/demo/events
+
+### Grouped event summary
+GET {{baseUrl}}/demo/events/summary
+
+### Filtered event log: cache hits
+GET {{baseUrl}}/demo/events?kind=cache-hit
+
+### Filtered event log: flow id with limit
+GET {{baseUrl}}/demo/events?flow_id=manual-flow&limit=10
+
+### Export bundle
+GET {{baseUrl}}/demo/export
+
+### Built-in self-test
+POST {{baseUrl}}/demo/self-test
+
+### Compare SQLx, Diesel, and SeaORM adapter cache behavior
+POST {{baseUrl}}/demo/query/users/42/orm-comparison
+Content-Type: application/json
+
+{
+  "ttl_ms": 5000,
+  "tags": ["users", "orm-comparison"],
+  "loader_delay_ms": 10,
+  "flow_id": "orm-comparison-flow"
+}
+
+### Scenario runner: golden path
+POST {{baseUrl}}/demo/scenarios/run
+Content-Type: application/json
+
+{
+  "scenario": "golden-path",
+  "flow_id": "manual-golden",
+  "reset": true
+}
+
+### List committed scenario files
+GET {{baseUrl}}/demo/scenarios/files
+
+### Parsed scenario catalog with document and suite metadata
+GET {{baseUrl}}/demo/scenarios/catalog
+
+### Run committed YAML scenario file
+POST {{baseUrl}}/demo/scenarios/file/run
+Content-Type: application/json
+
+{
+  "path": "golden-path.yaml",
+  "format": "yaml"
+}
+
+### Run committed regression suite file
+POST {{baseUrl}}/demo/scenarios/suite/file/run
+Content-Type: application/json
+
+{
+  "path": "regression-suite.json"
+}
+
+### Run inline scenario suite
+POST {{baseUrl}}/demo/scenarios/suite/run
+Content-Type: application/json
+
+{
+  "name": "manual-inline-suite",
+  "reset_between": true,
+  "entries": [
+    {
+      "name": "named ttl",
+      "scenario": "ttl"
+    },
+    {
+      "name": "committed json",
+      "file": "golden-path.json",
+      "format": "json"
+    }
+  ]
+}
+
+### Flow catalog
+GET {{baseUrl}}/demo/flows
+
+### Timeline for one flow id
+GET {{baseUrl}}/demo/flows/manual-golden/timeline
+
+### Replay a retained/imported flow through the flow catalog endpoint
+POST {{baseUrl}}/demo/flows/manual-golden/replay
+Content-Type: application/json
+
+{
+  "scenario": "golden-path",
+  "flow_id": "manual-golden-replay",
+  "reset": true
+}
+
+### Compare supported local profiles
+POST {{baseUrl}}/demo/profiles/compare
+Content-Type: application/json
+
+{
+  "scenario": "ttl",
+  "profiles": ["memory", "sqlite-memory", "sqlite-file", "postgres-compose"]
+}
+
+### Replay a named scenario and link it to a previous flow
+POST {{baseUrl}}/demo/replay
+Content-Type: application/json
+
+{
+  "scenario": "negative-suite",
+  "source_flow_id": "manual-golden",
+  "flow_id": "manual-replay",
+  "reset": true
+}
+
+### Fault injection: invalidation race timing
+POST {{baseUrl}}/demo/faults/run
+Content-Type: application/json
+
+{
+  "scenario": "invalidation-race",
+  "loader_delay_ms": 80,
+  "invalidate_after_ms": 10,
+  "flow_id": "fault-race"
+}
+
+### Fault injection: loader error
+POST {{baseUrl}}/demo/faults/run
+Content-Type: application/json
+
+{
+  "scenario": "golden-path",
+  "fail_loader": true,
+  "flow_id": "fault-loader"
+}
+
+### Manual benchmark
+POST {{baseUrl}}/demo/benchmarks/manual
+Content-Type: application/json
+
+{
+  "key_prefix": "bench",
+  "requests": 64,
+  "concurrency": 8,
+  "unique_keys": 4,
+  "loader_delay_ms": 5,
+  "flow_id": "bench-flow"
+}
+
+### Benchmark compare
+POST {{baseUrl}}/demo/benchmarks/compare
+Content-Type: application/json
+
+{
+  "baseline": {
+    "key_prefix": "bench-a",
+    "requests": 64,
+    "concurrency": 8,
+    "unique_keys": 4,
+    "loader_delay_ms": 5,
+    "flow_id": "bench-a"
+  },
+  "candidate": {
+    "key_prefix": "bench-b",
+    "requests": 64,
+    "concurrency": 8,
+    "unique_keys": 16,
+    "loader_delay_ms": 5,
+    "flow_id": "bench-b"
+  }
+}
+
+### Parse a small YAML scenario document
+POST {{baseUrl}}/demo/scenarios/document/parse
+Content-Type: application/json
+
+{
+  "format": "yaml",
+  "document": "name: yaml-golden\nflow_id: yaml-flow\nreset: true\nsteps:\n  - name: first load\n    action: load-user\n    id: 42\n    ttl_ms: 5000\n    tags: [yaml]\n    expected_source: loader\n  - name: second load\n    action: load-user\n    id: 42\n    ttl_ms: 5000\n    tags: [yaml]\n    expected_source: cache\nassertions:\n  - name: has hit\n    metric: cache-hits\n    op: gte\n    value: 1\n"
+}
+
+### Run a JSON scenario document with assertions
+POST {{baseUrl}}/demo/scenarios/document/run
+Content-Type: application/json
+
+{
+  "name": "json-golden",
+  "flow_id": "json-dsl-flow",
+  "reset": true,
+  "steps": [
+    {
+      "name": "first load",
+      "action": "load-user",
+      "id": 42,
+      "ttl_ms": 5000,
+      "tags": ["json-dsl"],
+      "expected_source": "loader"
+    },
+    {
+      "name": "second load",
+      "action": "load-user",
+      "id": 42,
+      "ttl_ms": 5000,
+      "tags": ["json-dsl"],
+      "expected_source": "cache"
+    }
+  ],
+  "assertions": [
+    {
+      "name": "all steps pass",
+      "metric": "failed-steps",
+      "op": "eq",
+      "value": 0
+    },
+    {
+      "name": "has cache hit",
+      "metric": "cache-hits",
+      "op": "gte",
+      "value": 1
+    }
+  ]
+}
+
+### Prometheus text metrics
+GET {{baseUrl}}/demo/observability/prometheus
+
+### OpenTelemetry-style latest trace
+GET {{baseUrl}}/demo/observability/traces/latest
+
+### Database seed and migration report
+GET {{baseUrl}}/demo/db/seed-report
+
+### OpenAPI generated-client contract check
+GET {{baseUrl}}/demo/openapi/client-check
+
+### OpenAPI generated-client smoke check
+GET {{baseUrl}}/demo/openapi/client-smoke
+
+### Import an empty session event stream shape
+POST {{baseUrl}}/demo/import
+Content-Type: application/json
+
+{
+  "replace_events": true,
+  "source": "manual-import",
+  "bundle": {
+    "events": {
+      "events": []
+    }
+  }
+}
+
+### Optional auth guard status
+GET {{baseUrl}}/demo/security
+
+### Optional auth guard example when HYDRACACHE_SANDBOX_TOKEN is configured
+GET {{baseUrl}}/demo/security
+Authorization: Bearer local-dev-token
+
+### Clear structured event log
+POST {{baseUrl}}/demo/events/clear
+
+### Reset demo cache, counters, users, and event log
+POST {{baseUrl}}/demo/reset
+
+### Put a raw local cache entry with TTL and tags
+POST {{baseUrl}}/demo/cache/put
+Content-Type: application/json
+
+{
+  "key": "manual:1",
+  "value": "alpha",
+  "ttl_ms": 5000,
+  "tags": ["manual"],
+  "flow_id": "manual-flow"
+}
+
+### Read a raw local cache entry
+POST {{baseUrl}}/demo/cache/get
+Content-Type: application/json
+
+{
+  "key": "manual:1",
+  "flow_id": "manual-flow"
+}
+
+### Get-or-load should return cache while the manual entry exists
+POST {{baseUrl}}/demo/cache/get-or-load
+Content-Type: application/json
+
+{
+  "key": "manual:1",
+  "loader_value": "beta",
+  "loader_delay_ms": 10,
+  "tags": ["manual"],
+  "flow_id": "manual-flow"
+}
+
+### Contains key
+POST {{baseUrl}}/demo/cache/contains
+Content-Type: application/json
+
+{
+  "key": "manual:1",
+  "flow_id": "manual-flow"
+}
+
+### Remove one key
+POST {{baseUrl}}/demo/cache/remove
+Content-Type: application/json
+
+{
+  "key": "manual:1",
+  "flow_id": "manual-flow"
+}
+
+### Invalidate by arbitrary tag
+POST {{baseUrl}}/demo/cache/invalidate-tag
+Content-Type: application/json
+
+{
+  "tag": "manual",
+  "flow_id": "manual-flow"
+}
+
+### Listener demo: capture mutation, access, key, tag, and callback events
+POST {{baseUrl}}/demo/listeners/run
+Content-Type: application/json
+
+{
+  "key": "listener:manual",
+  "tag": "listener-manual",
+  "value": "alpha",
+  "loader_value": "beta",
+  "ttl_ms": 5000,
+  "flow_id": "listener-flow"
+}
+
+### Event preflight demo: observed vs unobserved listener cost modes
+POST {{baseUrl}}/demo/events/preflight/run
+Content-Type: application/json
+
+{
+  "flow_id": "event-preflight-flow"
+}
+
+### Distributed invalidation demo: remote tag, key, and flush propagation
+POST {{baseUrl}}/demo/distributed/invalidation/run
+Content-Type: application/json
+
+{
+  "key": "dist:tagged",
+  "second_key": "dist:key",
+  "flush_key": "dist:flush",
+  "tag": "dist",
+  "value": "alpha",
+  "flow_id": "dist-flow"
+}
+
+### Cluster lifecycle demo: client/member discovery, invalidation, and leave
+POST {{baseUrl}}/demo/cluster/lifecycle/run
+Content-Type: application/json
+
+{
+  "cluster": "sandbox-orders",
+  "key": "cluster:tagged",
+  "second_key": "cluster:key",
+  "retained_key": "cluster:retained",
+  "tag": "cluster-users",
+  "value": "Ada",
+  "flow_id": "cluster-flow"
+}
+
+### Cluster owner-load demo: owner loader, near-cache hydration, concurrent sharing, and rejections
+POST {{baseUrl}}/demo/cluster/owner-load/run
+Content-Type: application/json
+
+{
+  "cluster": "sandbox-orders",
+  "key": "cluster:owner-load:user:42",
+  "value": "Ada",
+  "concurrency": 8,
+  "loader_delay_ms": 40,
+  "flow_id": "owner-load-flow"
+}
+
+### Real adapters demo: chitchat discovery -> admission bridge -> raft metadata
+POST {{baseUrl}}/demo/cluster/real-adapters/run
+Content-Type: application/json
+
+{
+  "cluster": "sandbox-orders",
+  "member_node_id": "sandbox-member-a",
+  "client_node_id": "sandbox-client-a",
+  "flow_id": "real-cluster-flow"
+}
+
+### First load should use the loader
+POST {{baseUrl}}/demo/load/42
+
+### Second load should use the cache
+POST {{baseUrl}}/demo/load/42
+
+### Query-cache load with custom TTL and tags
+POST {{baseUrl}}/demo/query/users/42/load
+Content-Type: application/json
+
+{
+  "ttl_ms": 5000,
+  "tags": ["users"],
+  "flow_id": "query-flow"
+}
+
+### Query-cache product load from seeded backing store
+POST {{baseUrl}}/demo/query/products/100/load
+Content-Type: application/json
+
+{
+  "ttl_ms": 5000,
+  "tags": ["products"],
+  "flow_id": "product-query-flow"
+}
+
+### Query-cache order summary load from seeded backing store
+POST {{baseUrl}}/demo/query/orders/5000/summary/load
+Content-Type: application/json
+
+{
+  "ttl_ms": 5000,
+  "tags": ["orders"],
+  "flow_id": "order-query-flow"
+}
+
+### Typed-cache load with namespace-specific key
+POST {{baseUrl}}/demo/typed/users/7/load
+Content-Type: application/json
+
+{
+  "ttl_ms": 5000,
+  "tags": ["team:kernel"],
+  "flow_id": "typed-flow"
+}
+
+### Cached non-database function
+POST {{baseUrl}}/demo/functions/double/21
+
+### TTL scenario report
+POST {{baseUrl}}/demo/scenarios/ttl
+Content-Type: application/json
+
+{
+  "key": "ttl:short",
+  "value": "short",
+  "ttl_ms": 50,
+  "wait_ms": 80,
+  "flow_id": "ttl-flow"
+}
+
+### Single-flight scenario report
+POST {{baseUrl}}/demo/scenarios/single-flight
+Content-Type: application/json
+
+{
+  "key": "sf:1",
+  "loader_value": "shared",
+  "concurrency": 8,
+  "loader_delay_ms": 50,
+  "tags": ["sf"],
+  "flow_id": "single-flight-flow"
+}
+
+### Invalidation/load race scenario report
+POST {{baseUrl}}/demo/scenarios/invalidation-race
+Content-Type: application/json
+
+{
+  "key": "race:1",
+  "loader_value": "stale",
+  "tag": "race",
+  "loader_delay_ms": 80,
+  "invalidate_after_ms": 10,
+  "flow_id": "race-flow"
+}
+
+### Negative scenario: missing cache key
+POST {{baseUrl}}/demo/negative/missing-key
+Content-Type: application/json
+
+{
+  "key": "missing:manual",
+  "flow_id": "negative-flow"
+}
+
+### Negative scenario: missing backing-store user
+POST {{baseUrl}}/demo/negative/missing-user
+Content-Type: application/json
+
+{
+  "id": 999999,
+  "flow_id": "negative-flow"
+}
+
+### Negative scenario: loader error
+POST {{baseUrl}}/demo/negative/loader-error
+Content-Type: application/json
+
+{
+  "key": "loader:error",
+  "error": "simulated loader failure",
+  "flow_id": "negative-flow"
+}
+
+### Negative scenario: expired entry
+POST {{baseUrl}}/demo/negative/expired-entry
+Content-Type: application/json
+
+{
+  "key": "expired:manual",
+  "value": "gone",
+  "ttl_ms": 50,
+  "wait_ms": 80,
+  "flow_id": "negative-flow"
+}
+
+### Negative scenario: invalidation miss
+POST {{baseUrl}}/demo/negative/invalidation-miss
+Content-Type: application/json
+
+{
+  "tag": "missing-tag",
+  "flow_id": "negative-flow"
+}
+
+### Update the backing store without invalidating cache
+POST {{baseUrl}}/demo/users/42
+Content-Type: application/json
+
+{
+  "name": "Grace",
+  "flow_id": "manual-flow"
+}
+
+### Still cached until invalidated
+POST {{baseUrl}}/demo/load/42
+
+### Invalidate user tag
+POST {{baseUrl}}/demo/invalidate/user/42
+
+### Reload should use the updated backing store value
+POST {{baseUrl}}/demo/load/42
+
+### Flush all local cache entries
+POST {{baseUrl}}/demo/flush

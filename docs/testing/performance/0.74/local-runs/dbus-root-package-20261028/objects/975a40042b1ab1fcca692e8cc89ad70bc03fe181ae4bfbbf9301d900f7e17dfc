@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_manager::account::tests::membership_capacity_duplicates_sentinel_and_primary_are_exact",
+  "passed": 1
+}

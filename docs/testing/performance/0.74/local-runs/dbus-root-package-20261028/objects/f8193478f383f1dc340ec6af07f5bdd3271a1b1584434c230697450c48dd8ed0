@@ -1,0 +1,1 @@
+{"phase":"spool fixture preparation","observed_failure":"TypeError: can only concatenate str (not bytes) to str","before_fixture_write":true,"new_context_created":false,"original_producer_retained":true,"raw_outer_streams_retained":false,"census_streams_retained":true,"correction":"repr of byte/text preimage in error text, separately unit checked"}

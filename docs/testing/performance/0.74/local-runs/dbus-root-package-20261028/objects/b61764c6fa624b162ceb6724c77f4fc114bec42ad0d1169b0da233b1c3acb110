@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_output_preparation::intent_journal::tests::signed_history_resigned_origin_clock_and_revision_mutations_refuse",
+  "passed": 1
+}

@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::authority_registry::fixture::fixed::directory_cost::fresh_authority_directory_prototype_cpu_screen ... ignored, manual finite baseline directory CPU attribution; no admission or preparation retry
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

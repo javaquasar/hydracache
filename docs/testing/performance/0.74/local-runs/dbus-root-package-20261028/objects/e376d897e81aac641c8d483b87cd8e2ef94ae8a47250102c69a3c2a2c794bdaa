@@ -1,0 +1,24 @@
+{
+  "catalog": 4,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 4,
+  "rows": [
+    [
+      "allocator_capture_is_thread_local",
+      "ok"
+    ],
+    [
+      "allocator_capture_restores_on_panic_and_refuses_nesting",
+      "ok"
+    ],
+    [
+      "fixed_boot_reader_allocation_pairs",
+      "ok"
+    ],
+    [
+      "fixed_boot_reader_uses_one_small_read",
+      "ok"
+    ]
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "catalog": 8,
+  "filtered": 0,
+  "ignored": 1,
+  "passed": 7,
+  "rows": [
+    [
+      "held_activation_environment_ingress_reaches_only_unchanged_core_refusal",
+      "ok"
+    ],
+    [
+      "owned_case_controls::owned_case_exact_names_and_single_success_cannot_be_forged_by_empty_selection",
+      "ok"
+    ],
+    [
+      "owned_case_controls::owned_case_fail_empty_timeout_and_live_descendant_are_never_positive_proof",
+      "ok"
+    ],
+    [
+      "owned_case_controls::owned_case_healthy_child",
+      "ok"
+    ],
+    [
+      "owned_case_controls::owned_case_nonzero_child",
+      "ok"
+    ],
+    [
+      "owned_case_controls::owned_case_orphan_child",
+      "ok"
+    ],
+    [
+      "owned_case_controls::owned_case_timeout_child",
+      "ok"
+    ],
+    [
+      "owned_launcher_process_fault_matrix",
+      "ignored, owned nonroot synthetic ELF process/FD fault matrix; no systemd or product"
+    ]
+  ]
+}

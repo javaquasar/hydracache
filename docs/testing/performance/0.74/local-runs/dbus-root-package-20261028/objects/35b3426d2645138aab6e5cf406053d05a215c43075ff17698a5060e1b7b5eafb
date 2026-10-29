@@ -1,0 +1,8 @@
+
+running 3 tests
+test exact_peer_principal_and_signature_are_required_together ... ok
+test read_only_host_observation_has_no_signature_but_keeps_peer_admission ... ok
+test read_only_status_has_no_signed_document_but_still_checks_peer_and_principal ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

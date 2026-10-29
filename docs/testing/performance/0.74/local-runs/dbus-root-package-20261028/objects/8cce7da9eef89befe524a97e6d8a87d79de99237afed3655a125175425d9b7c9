@@ -1,0 +1,20 @@
+{
+  "catalog": 3,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 3,
+  "rows": [
+    [
+      "linux::operator_fixed_account_observation_is_explicit_not_enrollment",
+      "ok"
+    ],
+    [
+      "linux::operator_rejects_account_or_helper_selectors",
+      "ok"
+    ],
+    [
+      "linux::real_account_helper_refuses_noncanonical_selectors_and_byte_budget",
+      "ok"
+    ]
+  ]
+}

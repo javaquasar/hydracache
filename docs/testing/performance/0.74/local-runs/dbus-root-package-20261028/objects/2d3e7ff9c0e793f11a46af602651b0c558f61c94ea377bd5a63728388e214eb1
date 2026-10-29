@@ -1,0 +1,12 @@
+{
+  "catalog": 1,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 1,
+  "rows": [
+    [
+      "collector_starting_record_empty_input_is_not_a_runtime_capability",
+      "ok"
+    ]
+  ]
+}

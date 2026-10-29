@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "systemd_smoke::tests::controller_loss_spec_is_long_enough_to_outlive_its_caller_and_stays_non_product",
+  "passed": 1
+}

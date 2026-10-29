@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_artifacts::linux::io_binding_tests::checked_material_io_binding_is_fixture_explicit_and_refuses_state_or_process_drift",
+  "passed": 1
+}

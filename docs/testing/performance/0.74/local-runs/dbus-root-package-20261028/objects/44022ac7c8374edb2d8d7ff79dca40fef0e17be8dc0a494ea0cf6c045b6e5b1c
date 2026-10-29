@@ -1,0 +1,5 @@
+digest_signature_and_request_binding_tamper_fail_closed: test
+exact_signed_authorization_is_accepted: test
+repository_actor_and_time_window_are_enforced: test
+
+3 tests, 0 benchmarks

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::tests::original_sigkill_and_drop_at_rooted_and_exec_boundaries_reap_before_cleanup",
+  "passed": 1
+}

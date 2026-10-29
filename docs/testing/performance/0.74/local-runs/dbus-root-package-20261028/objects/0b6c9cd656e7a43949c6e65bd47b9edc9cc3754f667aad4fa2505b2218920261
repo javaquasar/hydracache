@@ -1,0 +1,76 @@
+{
+  "correction": "add --color=never to case dispatch; unfiltered serial integration harnesses",
+  "extra": {
+    "docs/testing/performance/0.74/diagnostic-builder-public-policy.json": {
+      "base_blob_sha256": "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22",
+      "base_commit": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+      "raw_sha256": "dfe81cf770088029e03f04faa4da429ef163583c0ba1b7002b8ec5606e766e22"
+    },
+    "docs/testing/performance/0.74/diagnostic-signer-issuer-public.json": {
+      "base_blob_sha256": "d44da42b6f71a36d8d691c43767363d6df1bb8bd85fc2f088be3c7fbdd606693",
+      "base_commit": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+      "raw_sha256": "d44da42b6f71a36d8d691c43767363d6df1bb8bd85fc2f088be3c7fbdd606693"
+    },
+    "docs/testing/performance/0.74/diagnostic-signer-issuer-selection.json": {
+      "base_blob_sha256": "a35572f453b9939dc9e9619df0858eeaccfbacf45cddc7d8ec367e3e160e2019",
+      "base_commit": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+      "raw_sha256": "a35572f453b9939dc9e9619df0858eeaccfbacf45cddc7d8ec367e3e160e2019"
+    },
+    "docs/testing/performance/0.74/diagnostic-worker-issuer-public.json": {
+      "base_blob_sha256": "cb4eaf75dc83c9e0506d91f5ded3a6eff323db619440408adc71f5d665726b82",
+      "base_commit": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+      "raw_sha256": "cb4eaf75dc83c9e0506d91f5ded3a6eff323db619440408adc71f5d665726b82"
+    },
+    "docs/testing/performance/0.74/local-runs/diagnostic-builder-hosted-37923423889/build-receipt-v1.json": {
+      "base_blob_sha256": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7",
+      "base_commit": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+      "raw_sha256": "e32bb7cd9b6cbf1d91d52abc79cb1e0225b3a7f6602e82e5b9a303c3645a77d7"
+    },
+    "docs/testing/performance/0.74/local-runs/material-lock-frozen-input-20261024/objects/be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19": {
+      "base_blob_sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
+      "base_commit": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+      "raw_sha256": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19"
+    },
+    "docs/testing/performance/0.74/rental-pilot-draft/direct.json": {
+      "base_blob_sha256": "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9",
+      "base_commit": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+      "raw_sha256": "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9"
+    },
+    "docs/testing/performance/0.74/rental-pilot-draft/embedded.json": {
+      "base_blob_sha256": "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149",
+      "base_commit": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+      "raw_sha256": "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149"
+    },
+    "docs/testing/performance/0.74/rental-pilot-draft/resp2.json": {
+      "base_blob_sha256": "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae",
+      "base_commit": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+      "raw_sha256": "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae"
+    },
+    "docs/testing/performance/0.74/rental-pilot-draft/resp3.json": {
+      "base_blob_sha256": "b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7",
+      "base_commit": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+      "raw_sha256": "b680683c291d0a4dadbac1901f051ba0fedcac0ac9127d197e0261fe6fdabdd7"
+    },
+    "tools/get-owner-scheduled-controls-074/Cargo.lock": {
+      "base_blob_sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+      "base_commit": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+      "raw_sha256": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d"
+    },
+    "tools/owned-case-074/controls.rs": {
+      "base_blob_sha256": "047f2c59eb745c986645485ebbbec27958ccd6b2ca1974966e04359a420071e3",
+      "base_commit": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+      "raw_sha256": "047f2c59eb745c986645485ebbbec27958ccd6b2ca1974966e04359a420071e3"
+    },
+    "tools/owned-case-074/library.rs": {
+      "base_blob_sha256": "85f5a8476c9d69aa17566d4239ecd277b03a6f06a65689357e96caf3d0af47ef",
+      "base_commit": "75ca41e25b71d09cd5fbee6271680b5035027c9c",
+      "raw_sha256": "85f5a8476c9d69aa17566d4239ecd277b03a6f06a65689357e96caf3d0af47ef"
+    }
+  },
+  "old_exact_driver_bypasses_original_wrapper": true,
+  "original_caller": "owned_case::selected_alone recognizes exactly four argv entries",
+  "product_source_changed": false,
+  "release_admitted": false,
+  "unresolved": [],
+  "windows_changed": false
+}

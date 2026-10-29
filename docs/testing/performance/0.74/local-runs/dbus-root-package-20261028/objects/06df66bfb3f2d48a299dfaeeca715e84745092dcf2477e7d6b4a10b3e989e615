@@ -1,0 +1,11 @@
+
+running 6 tests
+test append_refuses_to_write_after_a_torn_tail_without_explicit_recovery ... ok
+test append_syncs_chain_and_exact_head ... ok
+test complete_json_without_terminal_newline_is_still_a_torn_record ... ok
+test refuses_replaying_a_sequence_or_reusing_a_stale_head ... ok
+test rejects_middle_corruption_sequence_gap_hash_break_and_identity_drift ... ok
+test verifies_complete_chain_and_recovers_only_incomplete_tail ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

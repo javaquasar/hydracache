@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::authority_registry::fixture::fresh_stamp::tests::fresh_authority_stamp_installed_leaf_cpu_screen ... ignored, manual finite authority leaf CPU screen; not admission or a preparation retry
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 1592 filtered out; finished in 0.01s
+

@@ -1,0 +1,12 @@
+{
+  "boot_after": "20dbc06c-1862-440e-a83a-2b746e2c2b1f",
+  "boot_before": "20dbc06c-1862-440e-a83a-2b746e2c2b1f",
+  "boot_unchanged": true,
+  "clocks_changed": false,
+  "passed": true,
+  "phase": "format",
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

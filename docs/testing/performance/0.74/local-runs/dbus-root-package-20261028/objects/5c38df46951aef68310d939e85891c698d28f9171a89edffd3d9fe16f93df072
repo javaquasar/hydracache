@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "host_receipt::tests::host_observation_v1_rejects_worker_authority_extensions",
+  "passed": 1
+}

@@ -1,0 +1,28 @@
+{
+  "catalog": 5,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 5,
+  "rows": [
+    [
+      "initializes_and_compare_and_swaps_with_previous_snapshot",
+      "ok"
+    ],
+    [
+      "lock_is_exclusive_and_path_traversal_is_rejected",
+      "ok"
+    ],
+    [
+      "malformed_and_oversized_state_fail_closed",
+      "ok"
+    ],
+    [
+      "prepared_state_persists_without_placeholder_process_or_checkpoint_identity",
+      "ok"
+    ],
+    [
+      "stale_revision_and_identity_drift_do_not_mutate_state",
+      "ok"
+    ]
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_signer_root_fixture::rooted_exec::handoff::tests::signer_handoff_send_failure_latches_attempt_before_dispatch_without_retry",
+  "passed": 1
+}

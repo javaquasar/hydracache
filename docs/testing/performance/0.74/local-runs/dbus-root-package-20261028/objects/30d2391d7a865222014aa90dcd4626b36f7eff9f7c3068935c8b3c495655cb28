@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::isolation::tests::fixed_install_order_duplicate_entry_missing_exit_and_failed_syscall_refuse",
+  "passed": 1
+}

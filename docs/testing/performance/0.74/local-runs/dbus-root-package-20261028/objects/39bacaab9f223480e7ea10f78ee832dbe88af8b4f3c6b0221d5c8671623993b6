@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 38,
+  "name": "reader::roles::installed::tests::bootstrap_installed_child_record_roundtrip_only_asserts_and_preserves_offset",
+  "passed": 1
+}

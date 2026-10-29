@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 11,
+  "name": "owned::tests::owned_probe_wait_status_exhaustive_exact_events_and_seeded_high_bits",
+  "passed": 1
+}

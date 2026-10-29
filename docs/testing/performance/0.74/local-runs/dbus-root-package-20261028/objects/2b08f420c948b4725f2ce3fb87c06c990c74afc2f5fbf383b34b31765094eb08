@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_logical_faults_retain_partial_tail_or_committed_refusal_without_replay",
+  "passed": 1
+}

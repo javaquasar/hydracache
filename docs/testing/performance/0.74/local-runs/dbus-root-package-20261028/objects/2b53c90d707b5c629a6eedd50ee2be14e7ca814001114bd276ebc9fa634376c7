@@ -1,0 +1,28 @@
+{
+  "catalog": 5,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 5,
+  "rows": [
+    [
+      "ordinary_owned_probe_arguments_internal_child_and_environment_refuse",
+      "ok"
+    ],
+    [
+      "ordinary_owned_probe_four_independent_normal_owners_preserve_parent",
+      "ok"
+    ],
+    [
+      "ordinary_owned_probe_kernel_busy_writer_control_is_not_retried",
+      "ok"
+    ],
+    [
+      "ordinary_owned_probe_native_and_two_abi_modes_use_original_exec",
+      "ok"
+    ],
+    [
+      "ordinary_owned_probe_writable_and_hardlinked_image_refuse",
+      "ok"
+    ]
+  ]
+}

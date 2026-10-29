@@ -1,0 +1,16 @@
+{
+  "boot_after": "95e7e851-187c-4973-938f-5fc2de3b7ed4",
+  "boot_before": "95e7e851-187c-4973-938f-5fc2de3b7ed4",
+  "boot_unchanged": true,
+  "clocks_changed": false,
+  "first_refusal": {
+    "reason": "first root package refusal: complete-test-batch",
+    "type": "ValueError"
+  },
+  "passed": false,
+  "phase": "tests-194",
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

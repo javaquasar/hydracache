@@ -1,0 +1,28 @@
+{
+  "catalog": 5,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 5,
+  "rows": [
+    [
+      "drain_and_intentional_idle_use_distinct_progress_signals",
+      "ok"
+    ],
+    [
+      "identity_phase_sequence_and_counter_drift_fail_closed",
+      "ok"
+    ],
+    [
+      "measured_heartbeat_does_not_reset_the_useful_progress_deadline",
+      "ok"
+    ],
+    [
+      "measured_work_requires_operations_surface_accounting_and_cpu_to_advance",
+      "ok"
+    ],
+    [
+      "reconciliation_accepts_owner_convergence_in_either_direction",
+      "ok"
+    ]
+  ]
+}

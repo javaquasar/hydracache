@@ -1,0 +1,1 @@
+{"phase":"spool_context preparation before any source change","observed_failure":"ValueError: old native attempt retired","census_output_captured":false,"raw_streams_retained":false,"prepared_source_applied":false,"new_context_created":false,"new_attempt_requires_recorded_census":true}

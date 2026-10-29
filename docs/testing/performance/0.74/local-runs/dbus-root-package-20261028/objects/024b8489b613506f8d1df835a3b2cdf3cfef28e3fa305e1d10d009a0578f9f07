@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "campaign_smoke::tests::fixture_diagnostic_reads_only_the_bounded_role_stderr",
+  "passed": 1
+}

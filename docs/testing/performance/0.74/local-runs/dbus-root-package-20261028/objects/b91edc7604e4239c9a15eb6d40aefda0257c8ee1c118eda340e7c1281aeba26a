@@ -1,0 +1,44 @@
+{
+  "catalog": 9,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 9,
+  "rows": [
+    [
+      "a_live_writer_is_would_block_not_eof_or_an_unbounded_read",
+      "ok"
+    ],
+    [
+      "an_io_error_preserves_only_the_preceding_prefix",
+      "ok"
+    ],
+    [
+      "eof_and_byte_cap_are_distinct",
+      "ok"
+    ],
+    [
+      "missing_and_invalid_handles_refuse_capture_without_reading",
+      "ok"
+    ],
+    [
+      "nonzero_exit_is_returned_not_promoted_or_retried",
+      "ok"
+    ],
+    [
+      "repeated_eintr_consumes_the_fixed_read_budget",
+      "ok"
+    ],
+    [
+      "seeded_binary_prefixes_never_overread_or_claim_unobserved_eof",
+      "ok"
+    ],
+    [
+      "successful_exit_keeps_exact_streams_and_status",
+      "ok"
+    ],
+    [
+      "timeout_reports_original_kill_reap_and_public_output",
+      "ok"
+    ]
+  ]
+}

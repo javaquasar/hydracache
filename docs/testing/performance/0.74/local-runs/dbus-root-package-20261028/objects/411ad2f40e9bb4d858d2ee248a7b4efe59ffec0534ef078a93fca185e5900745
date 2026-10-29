@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_process::credentials::tests::every_uid_gid_slot_and_leader_identity_are_checked",
+  "passed": 1
+}

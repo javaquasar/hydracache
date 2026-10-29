@@ -1,0 +1,34 @@
+"""Bounded inert Linux source-custody controls, independent of package execution."""
+from pathlib import Path
+import json
+import subprocess
+import sys
+
+import common as c
+
+OUT = c.BASE / 'source-custody-control'
+ARGV = ['wsl.exe', '-d', 'Ubuntu', '-u', 'artur', '--cd', '/', '--exec',
+        '/usr/bin/python3', '-B',
+        '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/dbus-root-package-074/source_guard.py', '-v']
+
+
+if __name__ == '__main__':
+    if sys.argv[1:] == ['--worker']:
+        value = c.owned()
+        execution = value._owned(value.load_job().WindowsJob(), ARGV, str(c.ROOT), c.capacity, bound=60)
+        c.write(OUT, 'execution.json', execution)
+        raise SystemExit(execution['exit'])
+    c.need(not sys.argv[1:], 'one inert source-custody control')
+    OUT.mkdir(exist_ok=False)
+    (OUT/'producer.py').write_bytes(Path(__file__).read_bytes())
+    (OUT/'source_guard.py').write_bytes((Path(__file__).parent/'source_guard.py').read_bytes())
+    with (OUT/'stdout.log').open('xb') as stdout, (OUT/'stderr.log').open('xb') as stderr:
+        before = c.git_snapshot()
+        c.write(OUT, 'intent.json', dict(argv=ARGV, bound=60, retry=False, live=False, server=False))
+        code = subprocess.call([sys.executable, '-B', str(Path(__file__)), '--worker'],
+                               cwd=c.ROOT, stdout=stdout, stderr=stderr)
+        result = json.loads((OUT/'execution.json').read_bytes())
+        c.need(before == c.git_snapshot(), 'no tracked source/HEAD change')
+        c.write(OUT, 'result.json', dict(passed=code == 0 and result['retired'] and not result['errors'],
+            live=False, source_unchanged=True, server=False, release_admitted=False))
+    raise SystemExit(code)

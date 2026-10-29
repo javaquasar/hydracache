@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::handoff::tests::send_window_terminal_refuses_unknown_modes_and_live_peer_zero_records",
+  "passed": 1
+}

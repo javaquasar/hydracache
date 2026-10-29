@@ -1,0 +1,17 @@
+
+running 12 tests
+test owned::tests::loss::owned_probe_loss_report_mutations_refuse_without_pid_adoption ... ok
+test owned::tests::loss::owned_probe_parent_loss_matrix ... ok
+test owned::tests::loss::owned_probe_parent_loss_role ... ok
+test owned::tests::owned_probe_first_object_and_equal_byte_foreign_file_are_not_interchangeable ... ok
+test owned::tests::owned_probe_kernel_exec_rejects_header_only_not_a_runtime_admission ... ok
+test owned::tests::owned_probe_output_is_exact_bounded_data_not_an_installation_receipt ... ok
+test owned::tests::owned_probe_parent_status_is_bounded_single_thread_observation ... ok
+test owned::tests::owned_probe_phase_replay_and_wrong_terminal_output_refuse_stickily ... ok
+test owned::tests::owned_probe_pre_acquisition_cleanup_model_and_four_independent_tracers ... ok
+test owned::tests::owned_probe_selected_descriptor_and_bounded_header_refusals ... ok
+test owned::tests::owned_probe_sigkill_and_drop_at_both_original_stops_reap_only_owned_child ... ok
+test owned::tests::owned_probe_wait_status_exhaustive_exact_events_and_seeded_high_bits ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+

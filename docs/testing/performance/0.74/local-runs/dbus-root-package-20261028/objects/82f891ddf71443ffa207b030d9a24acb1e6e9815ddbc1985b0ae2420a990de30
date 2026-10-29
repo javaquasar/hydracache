@@ -1,0 +1,10 @@
+{
+  "removed": 142,
+  "bytes": 4981399552,
+  "free_before": 14400421888,
+  "free_after": 18711003136,
+  "sources_preserved": true,
+  "evidence_preserved": true,
+  "executables_preserved": true,
+  "other_worktrees_untouched": true
+}

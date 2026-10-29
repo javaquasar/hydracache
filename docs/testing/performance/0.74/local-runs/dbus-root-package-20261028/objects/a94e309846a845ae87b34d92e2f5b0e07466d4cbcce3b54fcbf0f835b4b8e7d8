@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::tests::bootstrap_entry_census_preserves_prefix_rejects_alias_and_tracks_drift",
+  "passed": 1
+}

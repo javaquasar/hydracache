@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 16,
+  "name": "installed_controls::held_controls::ancillary::tests::kernel_ancillary_bounded_malformed_headers_refuse_without_panic",
+  "passed": 1
+}

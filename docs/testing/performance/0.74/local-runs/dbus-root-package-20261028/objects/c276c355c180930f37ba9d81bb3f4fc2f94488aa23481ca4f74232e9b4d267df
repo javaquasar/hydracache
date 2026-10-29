@@ -1,0 +1,12 @@
+{
+  "catalog": 1,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 1,
+  "rows": [
+    [
+      "ordinary_owned_probe_cli_refuses_unknown_path_pid_and_command_overrides",
+      "ok"
+    ]
+  ]
+}

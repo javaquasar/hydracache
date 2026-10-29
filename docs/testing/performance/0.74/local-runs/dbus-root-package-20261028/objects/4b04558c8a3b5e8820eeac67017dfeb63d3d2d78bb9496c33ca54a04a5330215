@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::handoff::tests::attempt_and_event_budgets_are_sticky_without_a_transport_success",
+  "passed": 1
+}

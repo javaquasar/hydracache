@@ -1,0 +1,20 @@
+{
+  "catalog": 3,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 3,
+  "rows": [
+    [
+      "cpuset_is_bound_to_the_live_process_status",
+      "ok"
+    ],
+    [
+      "current_process_snapshot_has_stable_kernel_identity_fields",
+      "ok"
+    ],
+    [
+      "verifier_reports_every_changed_kernel_identity_field",
+      "ok"
+    ]
+  ]
+}

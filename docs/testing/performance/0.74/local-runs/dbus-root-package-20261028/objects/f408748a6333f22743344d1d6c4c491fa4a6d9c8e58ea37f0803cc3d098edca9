@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::operation_cost::operation_observer_preserves_errno_and_is_thread_local",
+  "passed": 1
+}

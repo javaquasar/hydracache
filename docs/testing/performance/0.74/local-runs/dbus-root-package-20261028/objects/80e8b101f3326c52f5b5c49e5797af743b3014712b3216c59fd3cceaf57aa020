@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::local_context::tests::worker_context_original_directory_and_named_document_objects_are_not_refreshed",
+  "passed": 1
+}

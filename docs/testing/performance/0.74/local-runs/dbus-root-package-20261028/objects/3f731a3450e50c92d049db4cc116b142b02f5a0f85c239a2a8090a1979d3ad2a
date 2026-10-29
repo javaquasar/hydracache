@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 3,
+  "name": "archive_bytes_and_headers_are_deterministic",
+  "passed": 1
+}

@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "staged_files": 29,
+  "byte_equal_files": 28,
+  "only_exception": [
+    {
+      "path": "Cargo.toml",
+      "tested_sha256": "84b1986d8a2014be985460b3ecc4a809f3ae3e8f9822ef6c7134b3ecbe9af114",
+      "git_blob_sha256": "29118852fb21a5b3d9fc091bea2bb9e4240f47fee75ea8a538f29c0dae56858d",
+      "crlf_removed": 152,
+      "toml_model_equal": true,
+      "other_byte_change": false,
+      "working_source_changed": false
+    }
+  ],
+  "normal_git_text_policy_unchanged": true,
+  "tests_reexecuted": false,
+  "release_admitted": false
+}

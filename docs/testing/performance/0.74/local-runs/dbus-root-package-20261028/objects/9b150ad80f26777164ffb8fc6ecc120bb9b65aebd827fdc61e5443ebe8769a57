@@ -1,0 +1,4 @@
+empty_nul_and_overlong_notifications_are_rejected: test
+readiness_message_uses_one_bounded_unix_datagram: test
+
+2 tests, 0 benchmarks

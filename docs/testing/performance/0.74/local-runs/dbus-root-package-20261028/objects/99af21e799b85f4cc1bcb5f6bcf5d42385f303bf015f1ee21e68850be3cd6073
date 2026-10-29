@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::tests::held_delivery_wire_exact_eighteen_aliases_names_and_fixed_command",
+  "passed": 1
+}

@@ -1,0 +1,9 @@
+{
+  "after_sha256": "a563c9ceafdcced6ef86824a9ceedf893b6dad37f8659ef45b004a35e9f14899",
+  "before_sha256": "be35448d0e78ac43f344fcb9a066038c169e394d737ac479b7ed70970da84f03",
+  "passed": true,
+  "release_admitted": false,
+  "runtime_changed": false,
+  "tokens_unchanged": true,
+  "windows_changed": false
+}

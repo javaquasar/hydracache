@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_kernel_admission::origin::namespace_open_tests::namespace_open_prototype_cpu_screen ... ignored, manual finite baseline Namespace open CPU screen; no preparation retry or admission
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

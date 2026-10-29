@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::handoff::tests::only_the_expected_fault_classes_may_have_received_the_public_dummy",
+  "passed": 1
+}

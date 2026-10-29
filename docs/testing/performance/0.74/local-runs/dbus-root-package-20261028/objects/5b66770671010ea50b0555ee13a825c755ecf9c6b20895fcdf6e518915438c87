@@ -1,0 +1,8 @@
+Failed to find real location of C:\Python313\python.exe
+test_cpu_io_start_identity_and_candidate_children_from_fixture_only (test_attribution.Attribution.test_cpu_io_start_identity_and_candidate_children_from_fixture_only) ... ok
+test_nonqualifying_probe_preserves_outer_caller_and_actual_failure_exit (test_attribution.Attribution.test_nonqualifying_probe_preserves_outer_caller_and_actual_failure_exit) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.087s
+
+OK

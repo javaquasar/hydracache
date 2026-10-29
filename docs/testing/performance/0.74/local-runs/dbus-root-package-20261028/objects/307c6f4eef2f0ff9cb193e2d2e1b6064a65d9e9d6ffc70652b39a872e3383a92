@@ -1,0 +1,1 @@
+{"passed":false,"kind":"inert synthetic fixture","observed_from":"exec tool output","raw_streams_captured":false,"tests":2,"errors":1,"first_refusal":"every actual target case accounted exactly once","cause":"Windows text fixture wrote CRLF; actual GNU stream is LF","product_execution":false}

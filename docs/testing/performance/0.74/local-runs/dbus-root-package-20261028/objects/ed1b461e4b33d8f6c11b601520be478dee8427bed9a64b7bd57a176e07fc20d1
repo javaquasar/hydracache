@@ -1,0 +1,7 @@
+error: query_cache_policy entity requires id
+ --> tests/policy/fail_entity_missing_id.rs:6:19
+  |
+6 |     let _policy = query_cache_policy!(entity = User);
+  |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the macro `query_cache_policy` (in Nightly builds, run with -Z macro-backtrace for more info)

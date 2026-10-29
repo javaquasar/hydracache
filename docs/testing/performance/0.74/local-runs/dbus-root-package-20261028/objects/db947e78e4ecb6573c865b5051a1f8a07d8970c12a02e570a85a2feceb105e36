@@ -1,0 +1,60 @@
+[package]
+name = "hydracache"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "User-facing HydraCache runtime crate."
+
+[features]
+default = []
+allocator-explicit = []
+allocator-system = ["allocator-explicit"]
+allocator-jemalloc = ["allocator-explicit", "dep:tikv-jemallocator"]
+allocator-mimalloc = ["allocator-explicit", "dep:mimalloc"]
+durable-value-store = ["dep:sled"]
+durable-values = []
+tiered-values = []
+testing = []
+instrumentation-lab = []
+
+[dependencies]
+serde.workspace = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+async-trait.workspace = true
+bytes.workspace = true
+crossbeam-queue.workspace = true
+futures-util.workspace = true
+hydracache-core.workspace = true
+hydracache-macros.workspace = true
+moka.workspace = true
+sled = { workspace = true, optional = true }
+thiserror.workspace = true
+tokio.workspace = true
+mimalloc = { version = "0.1.48", optional = true }
+tikv-jemallocator = { version = "0.6.0", optional = true }
+
+[dev-dependencies]
+criterion.workspace = true
+jsonschema.workspace = true
+loom.workspace = true
+proptest.workspace = true
+serde_json.workspace = true
+trybuild.workspace = true
+
+[[bench]]
+name = "cache_hot_path"
+harness = false
+
+[[example]]
+name = "memory_compat_driver_071"
+required-features = ["durable-value-store"]
+
+[lints]
+workspace = true

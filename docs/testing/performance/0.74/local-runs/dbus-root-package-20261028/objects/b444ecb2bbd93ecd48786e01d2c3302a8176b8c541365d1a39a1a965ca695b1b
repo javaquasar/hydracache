@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_kernel_admission::projection_fields_tests::status_field_scan_differential_first_refusal_seeded_order_duplicates_and_shapes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.05s
+

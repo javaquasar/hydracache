@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_process::tests::every_read_poll_failure_and_terminal_state_refuses_without_retry",
+  "passed": 1
+}

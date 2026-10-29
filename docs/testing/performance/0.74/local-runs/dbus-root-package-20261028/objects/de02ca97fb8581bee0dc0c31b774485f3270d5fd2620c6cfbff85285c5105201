@@ -1,0 +1,41 @@
+
+running 1 test
+test installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker ... FAILED
+
+failures:
+
+---- installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker stdout ----
+
+thread 'installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker' (411) panicked at tools/long-run-supervisor-074/tests/../../owned-case-074/library.rs:227:5:
+owned case installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker: Some("child-failed")
+
+running 1 test
+test installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker ... FAILED
+
+failures:
+
+---- installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker stdout ----
+held-entry before ACK stderr: 
+
+thread 'installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker' (413) panicked at tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs:260:5:
+assertion `left == right` failed: 
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 6.39s
+
+
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    installed_controls::held_controls::held_entry_valid_readiness_then_duplicate_refuses_without_worker
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 6.39s
+

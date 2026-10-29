@@ -1,0 +1,6 @@
+
+running 1 test
+test root::launch::loss::tests::inherited_cloexec_writer_blocks_eof_until_original_child_exit ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 50 filtered out; finished in 0.01s
+

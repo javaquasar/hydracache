@@ -1,0 +1,9 @@
+attach_fails_closed_for_host_process_checkpoint_lease_and_failure_drift: test
+controller_resilience_expected_red_canary: test
+exact_attach_only_changes_controller_revision_and_lease: test
+future_useful_progress_timestamp_cannot_bypass_staleness: test
+lease_expiry_is_terminal_and_never_restarts: test
+request_replay_is_idempotent_only_for_identical_digest: test
+state_machine_cannot_skip_roles_or_restart_terminal_work: test
+
+7 tests, 0 benchmarks

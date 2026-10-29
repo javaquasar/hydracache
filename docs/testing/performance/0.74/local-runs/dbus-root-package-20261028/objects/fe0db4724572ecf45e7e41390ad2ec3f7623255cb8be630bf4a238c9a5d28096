@@ -1,0 +1,14 @@
+
+running 9 tests
+test each_supplied_artifact_requires_exact_nonempty_bytes_and_length ... ok
+test every_statement_field_is_selected_and_even_valid_resigning_cannot_change_it ... ok
+test malformed_selection_profile_source_and_artifact_limits_refuse_before_verification ... ok
+test old_observer_and_new_signer_receipts_have_no_shared_reader_or_role ... ok
+test old_reviewed_key_roles_and_weak_issuer_cannot_select_signer_build_purpose ... ok
+test seeded_content_corruption_and_four_independent_concurrent_models ... ok
+test strict_json_canonical_lf_schema_duplicates_and_budget_refuse ... ok
+test synthetic_signature_and_supplied_bytes_match_without_attesting_build_or_runtime ... ok
+test wrong_issuer_domain_and_all_signature_positions_refuse ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.89s
+

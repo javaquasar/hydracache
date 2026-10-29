@@ -1,0 +1,120 @@
+"""Fresh complete catalogs with four independent single-case FD/process tables.
+
+No partial result is reused. Every original case is scheduled once, with the
+original image and body. Each process has an independent LinuxGroup and retains
+the original absolute session deadline; ignored cases are still not executed.
+"""
+from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
+from pathlib import Path
+import json
+import re
+import sys
+
+import batch as b
+import common as c
+import native as n
+
+
+def account(raw, selected, size):
+    text = raw.decode()
+    rows = re.findall(r'^test (.+?) \.\.\. (ok|FAILED|ignored(?:, [^\n]*)?)$', text, re.M)
+    summaries = re.findall(r'^test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;', text, re.M)
+    c.need(len(rows) == len(summaries) == 1, 'one actual selected case and summary')
+    state, passed, failed, ignored, measured, filtered = summaries[0]
+    c.need(state == 'ok' and int(failed) == int(measured) == 0
+           and int(passed)+int(ignored) == 1 and int(filtered) == size-1,
+           'exact per-process selection, never lost/failed/measured cases')
+    name, outcome = rows[0]
+    c.need(name == selected and (int(passed) == 1) == (outcome == 'ok')
+           and (int(ignored) == 1) == outcome.startswith('ignored'), 'actual original selected case')
+    return dict(name=name, passed=int(passed), ignored=int(ignored), catalog=1,
+                local_filtered=int(filtered), global_omitted=0)
+
+
+def cases(image, catalog, out, env, deadline):
+    path = Path(image['path'])
+    out.mkdir(exist_ok=False)
+    def run(index, selected):
+        c.need(c.sha(path.read_bytes()) == image['sha256'], 'per-case held actual image')
+        folder = b.invoke(out, f'case-{index:04d}',
+            [str(path), '--exact', selected, '--test-threads=1'], env, deadline)
+        value = account((folder/'stdout.log').read_bytes(), selected, len(catalog))
+        c.need(c.sha(path.read_bytes()) == image['sha256'], 'per-case actual image postflight')
+        c.write(folder, 'accounting.json', value)
+        return value
+    completed = []
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        pending = {}
+        next_index = 0
+        while next_index < min(4, len(catalog)):
+            pending[pool.submit(run, next_index, catalog[next_index])] = next_index
+            next_index += 1
+        while pending:
+            ready, _ = wait(pending, return_when=FIRST_COMPLETED)
+            for future in ready:
+                index = pending.pop(future)
+                try:
+                    completed.append(future.result())
+                except BaseException as error:
+                    c.write(out, 'first-refusal.json', dict(case=catalog[index], type=type(error).__name__,
+                        reason=str(error), completed=len(completed), retry=False))
+                    for other in pending:
+                        other.cancel()
+                    raise
+                if next_index < len(catalog):
+                    pending[pool.submit(run, next_index, catalog[next_index])] = next_index
+                    next_index += 1
+    c.need(sorted(row['name'] for row in completed) == catalog
+           and len(completed) == len(catalog), 'entire new catalog exactly once; no partial stitching')
+    return dict(passed=sum(row['passed'] for row in completed),
+                ignored=sum(row['ignored'] for row in completed), catalog=len(catalog),
+                global_omitted=0, concurrent_processes=4)
+
+
+def run(compiler, out, deadline):
+    images = json.loads((out/'images.json').read_bytes())
+    _, env = n.environment(compiler)
+    totals = dict(passed=0, ignored=0, catalog=0, targets=len(images))
+    catalogs = {}
+    for index, image in enumerate(images):
+        path = Path(image['path'])
+        c.need(path.resolve().is_relative_to(n.NATIVE/'builds'/compiler)
+               and c.sha(path.read_bytes()) == image['sha256'], 'original actual test-profile image')
+        prefix = f'target-{index:03d}'
+        listed = b.invoke(out, prefix+'-list', [str(path), '--list'], env, deadline)
+        catalog = sorted(line[:-6] for line in (listed/'stdout.log').read_text().splitlines()
+                         if line.endswith(': test'))
+        c.need(len(catalog) == len(set(catalog)), 'unique original full target catalog')
+        if image['kind'] == ['lib']:
+            c.need(len(catalog) == 1593, 'complete original library catalog')
+        if catalog:
+            value = cases(image, catalog, out/(prefix+'-cases'), env, deadline)
+        else:
+            tested = b.invoke(out, prefix+'-empty', [str(path), '--test-threads=1'], env, deadline)
+            value = n.account((tested/'stdout.log').read_bytes(), [])
+            c.write(tested, 'accounting.json', value)
+        for key in ('passed','ignored','catalog'):
+            totals[key] += value[key]
+        catalogs[image['kind'][0]+'/'+image['name']] = catalog
+        c.write(out, prefix+'-accounting.json', value)
+        c.need(c.sha(path.read_bytes()) == image['sha256'], 'full target image postflight')
+    c.write(out, 'catalogs.json', catalogs)
+    lib = next(v for v in images if v['kind'] == ['lib'])
+    selected = [s for s in catalogs['lib/'+lib['name']]
+                if s.endswith('::dispatch_negotiated_private_bus_fault_matrix')]
+    c.need(len(selected) == 1, 'one original private-bus matrix')
+    fault = b.invoke(out, 'private-bus', [lib['path'], '--ignored','--exact',selected[0],'--show-output'], env, deadline)
+    raw = (fault/'stdout.log').read_text()
+    expected = ['bare-receiver','healthy','atomic-adapter','fragmented','lost-ack',
+                'foreign-sender','wrong-serial','disconnect','manager-error','no-capability']
+    c.need(re.findall(r'^HC074-NEGOTIATED case=([a-z-]+) result=ok ', raw, re.M) == expected,
+           'all ten original actual transport scenarios')
+    c.need(re.findall(r'^test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;', raw, re.M)
+           == [('ok','1','0','0','0','1592')], 'exact private-matrix summary')
+    c.need(c.sha(Path(lib['path']).read_bytes()) == lib['sha256'], 'private-matrix image postflight')
+    c.write(out, 'totals.json', totals)
+
+
+if __name__ == '__main__':
+    c.need(len(sys.argv) == 4 and sys.argv[1] == 'run', 'one complete isolated compiler catalog')
+    run(sys.argv[2], c.BASE/('tests-'+sys.argv[2]), float(sys.argv[3]))

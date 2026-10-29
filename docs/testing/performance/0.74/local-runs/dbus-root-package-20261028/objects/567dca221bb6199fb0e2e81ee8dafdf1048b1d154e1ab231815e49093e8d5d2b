@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "start_evidence::tests::bounded_input_and_create_new_output_are_enforced",
+  "passed": 1
+}

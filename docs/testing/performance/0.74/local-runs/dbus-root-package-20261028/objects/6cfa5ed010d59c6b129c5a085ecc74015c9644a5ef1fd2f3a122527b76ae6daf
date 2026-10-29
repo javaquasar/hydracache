@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_artifacts::linux::held_role_census::bootstrap_images::tests::bootstrap_image_census_each_missing_or_extra_seal_and_bad_access_refuses",
+  "passed": 1
+}

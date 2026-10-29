@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "process_identity::tests::cgroup_file_path_cannot_escape_the_unified_hierarchy",
+  "passed": 1
+}

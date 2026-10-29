@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::authority_registry::fixture::fd_path_controls::authority_fd_path_retains_descriptor_and_observes_fresh_inventory_mutations",
+  "passed": 1
+}

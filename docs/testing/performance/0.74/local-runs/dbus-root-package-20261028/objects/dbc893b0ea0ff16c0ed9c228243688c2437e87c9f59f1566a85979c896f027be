@@ -1,0 +1,16 @@
+{
+  "catalog": 2,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 2,
+  "rows": [
+    [
+      "actual_root_owned_system_file_is_inventory_not_execution",
+      "ok"
+    ],
+    [
+      "caller_owned_copy_cannot_be_promoted_by_readonly_mode",
+      "ok"
+    ]
+  ]
+}

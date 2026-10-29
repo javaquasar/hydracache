@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_process::user_namespace::tests::namespace_concurrent_original_guards_do_not_share_refusal",
+  "passed": 1
+}

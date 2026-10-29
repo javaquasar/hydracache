@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "host_receipt::tests::installed_binary_identity_requires_every_manifest_field",
+  "passed": 1
+}

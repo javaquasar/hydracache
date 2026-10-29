@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::trusted_input::controller_input::held_runtime::tests::original_guard_requires_actual_authority_policy_and_epoch",
+  "passed": 1
+}

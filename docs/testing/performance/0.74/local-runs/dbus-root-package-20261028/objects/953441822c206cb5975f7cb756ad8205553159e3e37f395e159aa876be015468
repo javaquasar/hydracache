@@ -1,0 +1,12 @@
+
+running 7 tests
+test exact_chain_head_role_and_process_identity_are_required ... ok
+test live_chain_can_be_observed_before_a_controller_attaches_its_head ... ok
+test live_observation_retries_a_journal_and_head_commit_window ... ok
+test live_observation_retries_an_incomplete_appended_record ... ok
+test non_regular_checkpoint_journal_is_rejected_before_parsing ... ok
+test stale_head_and_non_live_state_fail_closed ... ok
+test terminal_evidence_requires_the_final_phase_and_retains_role_identity ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+

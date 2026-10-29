@@ -1,0 +1,13 @@
+
+running 8 tests
+test host_observation_is_revision_zero_unsigned_and_pathless ... ok
+test manifest_path_validation_is_structural_and_configuration_independent ... ok
+test rejects_oversized_truncated_unknown_duplicate_and_invalid_utf8_packets ... ok
+test rejects_path_traversal_and_cross_operation_fields ... ok
+test response_digest_excludes_only_its_own_field ... ok
+test strict_protocol_accepts_allowlisted_operations ... ok
+test subsequent_role_start_is_revision_bound_and_has_no_staging_path ... ok
+test wire_envelope_requires_authorization_only_for_mutating_operations ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

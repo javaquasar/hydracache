@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_signer_bundle::executable::tests::signer_executable_seeded_live_and_exec_cases_and_independent_originals ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.63s
+

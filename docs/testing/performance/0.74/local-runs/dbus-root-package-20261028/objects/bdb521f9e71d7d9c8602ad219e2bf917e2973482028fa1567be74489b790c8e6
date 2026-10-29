@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_live_execution::tests::synthetic_execution_guards_are_independent_under_concurrency",
+  "passed": 1
+}

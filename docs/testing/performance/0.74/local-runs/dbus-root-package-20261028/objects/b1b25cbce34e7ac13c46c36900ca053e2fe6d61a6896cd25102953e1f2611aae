@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_artifacts::linux::held_role_census::tests::held_complete_census_refuses_aliases_bad_partial_slots_and_wrong_pidfd_identity ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.01s
+

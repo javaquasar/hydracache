@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 6,
+  "name": "duplicate_executor_quarantine_remains_fail_closed",
+  "passed": 1
+}

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_artifacts::linux::io_binding_tests::fixture_named_binding_propagates_material_refusal_without_new_capability",
+  "passed": 1
+}

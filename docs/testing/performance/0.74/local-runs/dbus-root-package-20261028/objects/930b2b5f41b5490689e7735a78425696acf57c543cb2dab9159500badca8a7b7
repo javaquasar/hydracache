@@ -1,0 +1,7 @@
+
+running 2 tests
+test linux::manager_scope_has_only_fixed_diagnostic_units ... ok
+test linux::scope_wire_refuses_future_unknown_duplicate_and_noncanonical_input ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

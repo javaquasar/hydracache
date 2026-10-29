@@ -1,0 +1,68 @@
+{
+  "catalog": 15,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 15,
+  "rows": [
+    [
+      "authority_fixed_api_has_no_path_selector_and_nonroot_cannot_enroll",
+      "ok"
+    ],
+    [
+      "authority_registry_api_is_inspection_not_start_authority",
+      "ok"
+    ],
+    [
+      "worker_policy_asserted_host_boot_and_both_namespaces_match_exactly",
+      "ok"
+    ],
+    [
+      "worker_policy_canonical_strict_json_and_budgets_refuse",
+      "ok"
+    ],
+    [
+      "worker_policy_concurrent_guards_share_no_refusal_or_authority",
+      "ok"
+    ],
+    [
+      "worker_policy_context_and_envelope_drift_latch_without_refresh",
+      "ok"
+    ],
+    [
+      "worker_policy_external_trust_rejects_weak_keys_and_invalid_pins",
+      "ok"
+    ],
+    [
+      "worker_policy_group_rules_preserve_exact_lists_and_union_bound",
+      "ok"
+    ],
+    [
+      "worker_policy_oversized_revalidation_and_key_pin_changes_latch",
+      "ok"
+    ],
+    [
+      "worker_policy_resigned_invalid_identity_and_context_refuse",
+      "ok"
+    ],
+    [
+      "worker_policy_revocation_is_first_error_and_cannot_restore",
+      "ok"
+    ],
+    [
+      "worker_policy_roundtrip_is_idempotent_not_host_enrollment",
+      "ok"
+    ],
+    [
+      "worker_policy_seeded_valid_resigned_mutations_keep_original_pin",
+      "ok"
+    ],
+    [
+      "worker_policy_signatures_and_foreign_domains_refuse",
+      "ok"
+    ],
+    [
+      "worker_policy_unsigned_field_changes_never_adopt_new_values",
+      "ok"
+    ]
+  ]
+}

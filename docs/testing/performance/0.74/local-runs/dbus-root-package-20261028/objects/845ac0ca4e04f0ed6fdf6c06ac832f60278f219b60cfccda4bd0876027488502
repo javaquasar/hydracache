@@ -1,0 +1,16 @@
+{
+  "catalog": 2,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 2,
+  "rows": [
+    [
+      "linux::manager_scope_has_only_fixed_diagnostic_units",
+      "ok"
+    ],
+    [
+      "linux::scope_wire_refuses_future_unknown_duplicate_and_noncanonical_input",
+      "ok"
+    ]
+  ]
+}

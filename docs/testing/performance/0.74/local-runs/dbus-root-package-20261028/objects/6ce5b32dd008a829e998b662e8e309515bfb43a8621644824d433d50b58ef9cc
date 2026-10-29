@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::tests::initial_drop_and_wrong_phase_kill_reap_original_before_root_cleanup",
+  "passed": 1
+}

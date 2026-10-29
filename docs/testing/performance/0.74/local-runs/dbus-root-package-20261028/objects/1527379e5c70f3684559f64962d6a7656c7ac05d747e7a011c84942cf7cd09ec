@@ -1,0 +1,17 @@
+{
+  "after_sha256": "be35448d0e78ac43f344fcb9a066038c169e394d737ac479b7ed70970da84f03",
+  "assertions_removed": false,
+  "before_sha256": "40fe7bc99b3880c6c7374632f982cf31d999bbf2d49e463eeb4e43aa2ae255ed",
+  "independent_source_and_helper_guard": true,
+  "original_windows_seconds": [
+    300,
+    60,
+    10
+  ],
+  "partial_tests_reused": false,
+  "reconciled_after_final_metadata_error": true,
+  "release_admitted": false,
+  "runtime_changed": false,
+  "test": "tools/long-run-supervisor-074/tests/diagnostic_spool.rs",
+  "trust_pins_changed": false
+}

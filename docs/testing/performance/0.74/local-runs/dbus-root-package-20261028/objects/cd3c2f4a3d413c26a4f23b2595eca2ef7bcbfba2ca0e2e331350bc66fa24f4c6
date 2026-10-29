@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_named_output::tests::production_ancestry_policy_requires_root_and_private_worker_cell",
+  "passed": 1
+}

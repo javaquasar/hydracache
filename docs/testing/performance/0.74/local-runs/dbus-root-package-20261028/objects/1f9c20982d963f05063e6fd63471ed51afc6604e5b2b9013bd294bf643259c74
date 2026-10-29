@@ -1,0 +1,7 @@
+{
+  "case": "installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse",
+  "completed": 5,
+  "reason": "first complete test-batch refusal: case-0006",
+  "retry": false,
+  "type": "ValueError"
+}

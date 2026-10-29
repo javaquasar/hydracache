@@ -1,0 +1,32 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-root-package/20261028-a1/builds/194/debug/deps/hydracache_long_run_supervisor_074-289ec81dfbc503eb",
+    "--exact",
+    "diagnostic_worker_policy::trusted_input::controller_input::build_input::oidc_input::fenced_preflight::request_attempt::collector_preflight::observed_reservation::publication::progress::causal::start_consent::validation_frame::starting::pipes::sinks::start_material::pipe_transport::grouped_preparation::custody::descriptor_plan::barred_custody::barred_collector::enrollment_frame::dispatch_exchange::tests::negotiated_tests::credential_adapter::negotiated_credential_adapter_keeps_optional_fields_and_process_fd_alias",
+    "--test-threads=1",
+    "--color=never"
+  ],
+  "bound": 1200,
+  "cwd": "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/long-run-supervisor-074",
+  "deadline": 1102.761421154,
+  "environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_HOME": "/home/artur/.cache/hydracache-074-root-package/20261028-a1/cargo-home",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_OFFLINE": "true",
+    "HOME": "/home/artur",
+    "LANG": "C.UTF-8",
+    "LOGNAME": "artur",
+    "PATH": "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin:/usr/local/bin:/usr/bin:/bin",
+    "RUSTC": "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTC_WORKSPACE_WRAPPER": "",
+    "RUSTC_WRAPPER": "",
+    "RUSTUP_TOOLCHAIN": "1.94.0-x86_64-unknown-linux-gnu",
+    "USER": "artur"
+  },
+  "floor": 4294967296,
+  "poll": 5,
+  "retirement": 5,
+  "retry": false,
+  "session_bound": 1100
+}

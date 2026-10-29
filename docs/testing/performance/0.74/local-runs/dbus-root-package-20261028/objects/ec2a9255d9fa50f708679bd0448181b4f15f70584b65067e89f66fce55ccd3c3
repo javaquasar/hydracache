@@ -1,0 +1,12 @@
+
+running 7 tests
+test canonical_schema_unknown_duplicate_missing_types_and_budget_refuse ... ok
+test every_binding_fixed_profile_and_false_declaration_is_checked_even_after_resigning ... ok
+test fixed_bootstrap_schema_is_statement_data_not_authority ... ok
+test launcher_and_workflow_pins_are_bounded_assertions_not_discovered_authority ... ok
+test matching_declared_context_checks_signature_and_all_content_without_enrollment ... ok
+test seeded_signed_context_mutations_and_four_independent_models ... ok
+test wrong_receipt_key_signature_and_unbound_content_cannot_gain_stronger_result ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.57s
+

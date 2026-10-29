@@ -1,0 +1,6 @@
+
+running 1 test
+test owned::tests::owned_probe_kernel_exec_rejects_header_only_not_a_runtime_admission ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.01s
+

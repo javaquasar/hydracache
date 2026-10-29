@@ -1,0 +1,24 @@
+{
+  "compiler_manifest_sha256": "eab7ebb034bd6e97a25231e6114037a18fa18793adf85044b4378aa105206828",
+  "maintenance_owner": "HydraCache repository maintainers: local backport preparation",
+  "msrv": "1.88",
+  "nondefault_fixture_feature": "hc074-unix-fixture",
+  "package": "zbus",
+  "production_default_features_changed": false,
+  "published": false,
+  "release_admitted": false,
+  "schema": "hc074-local-backport-provenance-v1",
+  "source_changes_from_upstream": [
+    "Cargo.toml",
+    "Cargo.toml.orig",
+    "src/connection/socket/mod.rs",
+    "src/match_rule/mod.rs",
+    "src/runtime/io/unix.rs"
+  ],
+  "source_revision": "hc074-zbus-native-fixture-source-2",
+  "unsigned": true,
+  "upstream_archive_sha256": "fcff5faa63a63d5b81051740f7382017f10b3440b3f401d97f0cf0b3b39c62d9",
+  "upstream_packaged_lock_is_not_tested_consumer_lock": true,
+  "upstream_vcs_file_is_base_provenance_only": true,
+  "upstream_version": "6.1.0"
+}

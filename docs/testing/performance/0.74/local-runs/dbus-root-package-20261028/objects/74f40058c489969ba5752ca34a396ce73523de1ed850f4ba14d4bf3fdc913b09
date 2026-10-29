@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_two_phase_launch::root_enrollment::kernel::transport::tests::fault::cgroup_root_transport_role_matrix ... ignored, explicit isolated local-root cgroup2 fixture only
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

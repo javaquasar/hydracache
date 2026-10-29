@@ -1,0 +1,12 @@
+
+running 7 tests
+test ordinary_policy_256_seeded_argument_mutations ... ok
+test ordinary_policy_all_native_numbers_and_argument_classes ... ok
+test ordinary_policy_architecture_and_x32_are_terminal ... ok
+test ordinary_policy_four_independent_readers_and_malformed_model_inputs ... ok
+test ordinary_policy_has_exact_fixed_shape_and_closed_denial_set ... ok
+test ordinary_policy_prctl_tail_checks_both_full_width_arguments ... ok
+test ordinary_probe_cli_refuses_unknown_command_before_process_mutation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+

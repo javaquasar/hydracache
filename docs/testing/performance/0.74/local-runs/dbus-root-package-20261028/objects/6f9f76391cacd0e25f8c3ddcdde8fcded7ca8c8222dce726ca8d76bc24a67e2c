@@ -1,0 +1,11 @@
+
+running 6 tests
+test activation::tests::activation_ingress_every_name_byte_and_descriptor_count_are_exact ... ok
+test activation::tests::activation_ingress_exact_fields_accept_all_orders_without_mutating_input ... ok
+test activation::tests::activation_ingress_unknown_missing_duplicate_and_noncanonical_fields_refuse ... ok
+test kernel::tests::bootstrap_refuses_reserved_magic_zero_token_and_bad_or_alias_pids ... ok
+test kernel::tests::exact_release_binds_every_packet_and_bootstrap_byte ... ok
+test kernel::tests::malformed_time_and_duplicate_fdinfo_refuse ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

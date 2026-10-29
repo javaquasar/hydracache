@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::authority_registry::fixture::tests::authority_fixture_logical_faults_retain_partial_tail_or_committed_refusal_without_replay ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.09s
+

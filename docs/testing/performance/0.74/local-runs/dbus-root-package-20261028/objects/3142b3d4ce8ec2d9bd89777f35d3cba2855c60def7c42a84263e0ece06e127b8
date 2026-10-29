@@ -1,0 +1,10 @@
+
+running 5 tests
+test empty_fenced_intent_public_entries_require_original_guard_borrows ... ok
+test empty_reservation_fence_public_entry_has_no_caller_selected_origin ... ok
+test initial_consumption_entry_requires_owned_runtime_publication ... ok
+test original_fence_public_entry_has_no_caller_selected_origin ... ok
+test reservation_publication_entry_requires_fixed_original_intent_and_owned_fence ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

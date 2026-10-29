@@ -1,0 +1,8 @@
+roles_wrong_soname_and_missing_dependencies_refuse: test
+scripts_short_oversized_abi_and_interpreter_refuse: test
+search_paths_duplicate_needed_writable_exec_and_unknown_tags_refuse: test
+seeded_mutations_do_not_panic_and_independent_readers_agree: test
+synthetic_catalog_binds_each_role_and_bytes_without_authority: test
+unchanged_declarations_still_record_changed_bytes: test
+
+6 tests, 0 benchmarks

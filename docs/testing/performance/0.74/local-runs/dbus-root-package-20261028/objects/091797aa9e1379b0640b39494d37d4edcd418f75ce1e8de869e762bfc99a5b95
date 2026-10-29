@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_output_preparation::intent_journal::tests::signed_history_original_guard_input_drift_latches ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.03s
+

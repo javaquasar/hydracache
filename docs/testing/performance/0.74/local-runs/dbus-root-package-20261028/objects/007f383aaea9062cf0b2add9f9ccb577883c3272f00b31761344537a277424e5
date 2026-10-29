@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_signer_runtime_fixture::tests::signer_runtime_cloexec_positional_reads_and_healthy_drop_preserve_owner",
+  "passed": 1
+}

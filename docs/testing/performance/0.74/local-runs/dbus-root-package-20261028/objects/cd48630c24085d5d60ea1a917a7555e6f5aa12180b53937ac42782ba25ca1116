@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_controller_producer::tests::producer_strict_request_schema_builder_identity_and_budget",
+  "passed": 1
+}

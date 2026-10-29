@@ -1,0 +1,10 @@
+
+running 5 tests
+test ordinary_owned_probe_arguments_internal_child_and_environment_refuse ... ok
+test ordinary_owned_probe_four_independent_normal_owners_preserve_parent ... ok
+test ordinary_owned_probe_kernel_busy_writer_control_is_not_retried ... ok
+test ordinary_owned_probe_native_and_two_abi_modes_use_original_exec ... ok
+test ordinary_owned_probe_writable_and_hardlinked_image_refuse ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+

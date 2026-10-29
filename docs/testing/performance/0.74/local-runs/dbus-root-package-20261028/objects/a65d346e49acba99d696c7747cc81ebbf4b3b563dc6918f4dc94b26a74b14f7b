@@ -1,0 +1,36 @@
+{
+  "catalog": 7,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 7,
+  "rows": [
+    [
+      "linux::concurrent_publication_has_one_generation_and_no_replacement",
+      "ok"
+    ],
+    [
+      "linux::every_crash_window_retains_pending_or_reverifies_same_published_packet",
+      "ok"
+    ],
+    [
+      "linux::fixture_publication_is_byte_exact_and_replay_never_overwrites",
+      "ok"
+    ],
+    [
+      "linux::offline_verification_requires_external_digest_and_reconciles_content",
+      "ok"
+    ],
+    [
+      "linux::overflow_retains_only_bounded_prefix_and_original_size_without_full_hash_claim",
+      "ok"
+    ],
+    [
+      "linux::pinned_spool_detects_replacement_and_in_place_drift",
+      "ok"
+    ],
+    [
+      "linux::spool_refuses_links_special_files_wrong_modes_owners_and_extra_entries",
+      "ok"
+    ]
+  ]
+}

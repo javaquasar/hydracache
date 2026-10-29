@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::manager_binding::tests::manager_receiver_binding_retains_actual_origin_without_packet_or_claim_adoption",
+  "passed": 1
+}

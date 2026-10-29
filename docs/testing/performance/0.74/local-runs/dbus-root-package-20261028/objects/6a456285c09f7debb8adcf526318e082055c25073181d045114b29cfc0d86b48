@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_signer_bundle::executable::tests::signer_executable_different_inode_exec_keeps_generation_but_cross_refuses",
+  "passed": 1
+}

@@ -1,0 +1,712 @@
+[
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\archive-693a8ea83310c85d.pdb",
+    "Length": 25833472,
+    "LastWriteTimeUtc": "2026-10-27T23:15:33.7548433Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\artifact_inventory_phase_544_074-c6b94f2a422238ee.pdb",
+    "Length": 10661888,
+    "LastWriteTimeUtc": "2026-10-27T00:07:39.4850075Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\artifact_inventory_phase_545_074-8ce8553e01a3b5bb.pdb",
+    "Length": 11882496,
+    "LastWriteTimeUtc": "2026-10-27T00:09:50.3173842Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\artifact_inventory_reader_074-8d6a8247d59551b3.pdb",
+    "Length": 9744384,
+    "LastWriteTimeUtc": "2026-10-27T00:07:38.3628469Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\async_stream_impl-231f2ffb0ce31be1.pdb",
+    "Length": 2412544,
+    "LastWriteTimeUtc": "2026-10-27T23:40:33.6481155Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\async_stream_impl-9368fc9f10c83a31.pdb",
+    "Length": 2428928,
+    "LastWriteTimeUtc": "2026-10-27T23:57:07.0298577Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\authority_context_074-93366802e8ffbee5.pdb",
+    "Length": 24014848,
+    "LastWriteTimeUtc": "2026-10-27T03:39:15.2424264Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\authority_hex_reader_074-ea13aab8881fd670.pdb",
+    "Length": 19361792,
+    "LastWriteTimeUtc": "2026-10-27T03:38:57.6928986Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\authority_key_hex_074-7121b55b400151f2.pdb",
+    "Length": 24006656,
+    "LastWriteTimeUtc": "2026-10-27T03:39:20.6743154Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\authority_reader_phase_074-4802d61dde0c4f38.pdb",
+    "Length": 20623360,
+    "LastWriteTimeUtc": "2026-10-27T00:28:19.0003959Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\authority_runtime_074-8e223b6ed657b4a1.pdb",
+    "Length": 20000768,
+    "LastWriteTimeUtc": "2026-10-27T00:28:15.5693098Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\authority_rust_history_074-aed2135a4a4dcb53.pdb",
+    "Length": 21950464,
+    "LastWriteTimeUtc": "2026-10-27T12:35:40.6644355Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\authority_storage_source_074-9fb46060ec5a1abb.pdb",
+    "Length": 19828736,
+    "LastWriteTimeUtc": "2026-10-27T03:38:45.1889982Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\bootstrap_build_owner_074-1617c8ce495e2c75.pdb",
+    "Length": 9146368,
+    "LastWriteTimeUtc": "2026-10-27T03:38:51.2264976Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\bootstrap_child_boundary_074-cb7fac5011c36155.pdb",
+    "Length": 9138176,
+    "LastWriteTimeUtc": "2026-10-27T03:39:23.6580488Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\bootstrap_child_census_074-fc0c6ce131b406ca.pdb",
+    "Length": 9105408,
+    "LastWriteTimeUtc": "2026-10-27T03:39:06.3232702Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\bootstrap_child_reader_074-cdcb81b2ea628a5c.pdb",
+    "Length": 9097216,
+    "LastWriteTimeUtc": "2026-10-27T03:39:13.3031859Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\bootstrap_current_image_074-f56d9cecdaab1714.pdb",
+    "Length": 9138176,
+    "LastWriteTimeUtc": "2026-10-27T03:38:49.7225158Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\bootstrap_current_view_074-ce5aa705fe5e7947.pdb",
+    "Length": 19853312,
+    "LastWriteTimeUtc": "2026-10-27T02:09:19.1633255Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\bootstrap_doc_reader_074-011c9e50ef6b3633.pdb",
+    "Length": 20107264,
+    "LastWriteTimeUtc": "2026-10-27T02:09:16.614961Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\bootstrap_enrollment_074-735e56be175fc707.pdb",
+    "Length": 9064448,
+    "LastWriteTimeUtc": "2026-10-27T03:39:22.9686915Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\bootstrap_entry_binding_074-0c985ae950aee6aa.pdb",
+    "Length": 9072640,
+    "LastWriteTimeUtc": "2026-10-27T03:38:33.62901Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\bootstrap_image_census_074-527f74a0f8e66a51.pdb",
+    "Length": 9129984,
+    "LastWriteTimeUtc": "2026-10-27T03:38:46.6411637Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\bootstrap_installed_origin_074-e2fd50c663c15b7b.pdb",
+    "Length": 19910656,
+    "LastWriteTimeUtc": "2026-10-27T01:28:34.4940498Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\ci_reliability_071-7d280a6807a390d7.pdb",
+    "Length": 181604352,
+    "LastWriteTimeUtc": "2026-10-28T01:11:44.3409285Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\ci_reliability_071-a36308f06e686ef9.pdb",
+    "Length": 181661696,
+    "LastWriteTimeUtc": "2026-10-28T00:55:31.8973343Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\cost_phase_reader_074-586c8f91a290cc3f.pdb",
+    "Length": 19460096,
+    "LastWriteTimeUtc": "2026-10-27T03:39:21.8281855Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\current_frontier_074-590611d413a1fc32.pdb",
+    "Length": 21401600,
+    "LastWriteTimeUtc": "2026-10-27T19:52:21.7824208Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\current_tree_input_audit_074-cd19873f92652053.pdb",
+    "Length": 20885504,
+    "LastWriteTimeUtc": "2026-10-27T12:35:45.418353Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\current_tree_reader_074-01604d1a91da0685.pdb",
+    "Length": 20123648,
+    "LastWriteTimeUtc": "2026-10-27T19:52:21.2008901Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\custody_preparation_cost_074-b5b9bb388ff7144a.pdb",
+    "Length": 19705856,
+    "LastWriteTimeUtc": "2026-10-27T03:38:27.7863953Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\custody_reader_074-b379f19a7d45b8db.pdb",
+    "Length": 19320832,
+    "LastWriteTimeUtc": "2026-10-27T03:39:02.1325282Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\darling_macro-4a18451e13eb61f7.pdb",
+    "Length": 3256320,
+    "LastWriteTimeUtc": "2026-10-27T23:40:41.848226Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\darling_macro-70e95512e88ae0be.pdb",
+    "Length": 3248128,
+    "LastWriteTimeUtc": "2026-10-27T23:40:38.1898604Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\darling_macro-7d2c78c6b48cf510.pdb",
+    "Length": 3248128,
+    "LastWriteTimeUtc": "2026-10-27T23:43:51.903006Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\darling_macro-b4145eb849fc7a68.pdb",
+    "Length": 3264512,
+    "LastWriteTimeUtc": "2026-10-27T23:57:09.7918366Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\darling_macro-d9a3e4f73a41f051.pdb",
+    "Length": 3264512,
+    "LastWriteTimeUtc": "2026-10-27T23:57:11.6771173Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\derive_more_impl-64384931990f06db.pdb",
+    "Length": 2764800,
+    "LastWriteTimeUtc": "2026-10-27T23:57:31.4706563Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\derive_more_impl-b9fae9df9dbcb3b7.pdb",
+    "Length": 2756608,
+    "LastWriteTimeUtc": "2026-10-27T23:40:55.0477377Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_artifact_fixture_074-f1e58a7942832e8b.pdb",
+    "Length": 23654400,
+    "LastWriteTimeUtc": "2026-10-27T19:52:19.4326126Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_builder.pdb",
+    "Length": 1191936,
+    "LastWriteTimeUtc": "2026-10-27T23:15:33.9688842Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_controller.pdb",
+    "Length": 1191936,
+    "LastWriteTimeUtc": "2026-10-27T23:15:34.6807839Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_held_bootstrap.pdb",
+    "Length": 1626112,
+    "LastWriteTimeUtc": "2026-10-27T23:15:34.1358203Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_held_launcher.pdb",
+    "Length": 1191936,
+    "LastWriteTimeUtc": "2026-10-27T23:15:33.7485863Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_isolation_probe.pdb",
+    "Length": 1191936,
+    "LastWriteTimeUtc": "2026-10-27T23:15:33.1206505Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_owned_probe.pdb",
+    "Length": 1191936,
+    "LastWriteTimeUtc": "2026-10-27T23:15:33.4988824Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diagnostic_signer_root_probe.pdb",
+    "Length": 1191936,
+    "LastWriteTimeUtc": "2026-10-27T23:15:34.4321743Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diesel_derives-2e14fef8e7fb1183.pdb",
+    "Length": 4132864,
+    "LastWriteTimeUtc": "2026-10-27T23:41:12.2977064Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diesel_derives-97b3efb7b961f57e.pdb",
+    "Length": 4132864,
+    "LastWriteTimeUtc": "2026-10-27T23:44:05.7177764Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\diesel_derives-adb6d3ae82bd36a8.pdb",
+    "Length": 4149248,
+    "LastWriteTimeUtc": "2026-10-27T23:57:49.1104812Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\document_scratch_cost_074-a5a2c23235e28154.pdb",
+    "Length": 19968000,
+    "LastWriteTimeUtc": "2026-10-27T03:39:27.2331211Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\document_scratch_reader_074-1129562daada7549.pdb",
+    "Length": 19787776,
+    "LastWriteTimeUtc": "2026-10-27T03:38:35.5409419Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\fresh_kernel_cost_074-25f993699deed3cd.pdb",
+    "Length": 19943424,
+    "LastWriteTimeUtc": "2026-10-27T10:37:48.0456765Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\fresh_kernel_cost_074-c010b6d77dc7de86.pdb",
+    "Length": 17887232,
+    "LastWriteTimeUtc": "2026-10-27T10:43:10.1343789Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\fresh_status_reader_074-376427f61bf9865c.pdb",
+    "Length": 17846272,
+    "LastWriteTimeUtc": "2026-10-27T10:43:07.5161251Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\fresh_status_reader_074-6e4f5a5772244580.pdb",
+    "Length": 19714048,
+    "LastWriteTimeUtc": "2026-10-27T03:39:11.8747656Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\frontier_current_view_074-1b4dc86b4f781bb8.pdb",
+    "Length": 21770240,
+    "LastWriteTimeUtc": "2026-10-27T12:39:10.1347056Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\frontier_current_view_074-b0fd6728ef75459c.pdb",
+    "Length": 19337216,
+    "LastWriteTimeUtc": "2026-10-27T12:42:43.7865811Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\getset-45013e5289913364.pdb",
+    "Length": 2535424,
+    "LastWriteTimeUtc": "2026-10-27T23:57:39.6273445Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\held_activation_ingress_074-960e5f5c17de8041.pdb",
+    "Length": 9539584,
+    "LastWriteTimeUtc": "2026-10-27T02:09:17.564509Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\held_bind_alias_refusal_074-f70718154c796378.pdb",
+    "Length": 8359936,
+    "LastWriteTimeUtc": "2026-10-27T02:09:18.7812285Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\held_complete_role_census_074-83ae831ae0ac68df.pdb",
+    "Length": 19279872,
+    "LastWriteTimeUtc": "2026-10-27T02:09:21.38244Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\held_material_roles_074-e7036d7ccadefb2e.pdb",
+    "Length": 8351744,
+    "LastWriteTimeUtc": "2026-10-27T02:09:15.5205217Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\held_preparation_cost_074-f2b2271c0b527c17.pdb",
+    "Length": 4468736,
+    "LastWriteTimeUtc": "2026-10-27T19:52:24.7515813Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\held_security_view_074-25e146d1560da366.pdb",
+    "Length": 18501632,
+    "LastWriteTimeUtc": "2026-10-27T02:09:22.5368724Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\historical_input_view_074-d52dc7099b3a66b6.pdb",
+    "Length": 19525632,
+    "LastWriteTimeUtc": "2026-10-27T03:38:29.8866067Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\historical_source_cache_074-30c9058d8e56d5eb.pdb",
+    "Length": 17207296,
+    "LastWriteTimeUtc": "2026-10-27T09:27:54.8473996Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\historical_source_cache_074-f3d58766fe894dcc.pdb",
+    "Length": 19042304,
+    "LastWriteTimeUtc": "2026-10-27T09:16:52.4090189Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\history_status_readers_074-9525694c70ce8cf5.pdb",
+    "Length": 20713472,
+    "LastWriteTimeUtc": "2026-10-27T19:52:19.306073Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\hydracache_long_run_supervisor_074.pdb",
+    "Length": 25849856,
+    "LastWriteTimeUtc": "2026-10-27T23:15:34.5301216Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\hydracache_macros-355de4f07a298737.pdb",
+    "Length": 3649536,
+    "LastWriteTimeUtc": "2026-10-28T00:14:04.6888428Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\hydracache_macros-6d64c930a0f680ff.pdb",
+    "Length": 3567616,
+    "LastWriteTimeUtc": "2026-10-27T23:55:11.0384557Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\hydracache_macros-dc6b05836ad82039.pdb",
+    "Length": 3649536,
+    "LastWriteTimeUtc": "2026-10-28T00:09:32.0453536Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\hydracache_macros-dfaa7adfffd9564c.pdb",
+    "Length": 3567616,
+    "LastWriteTimeUtc": "2026-10-28T01:13:20.6666371Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\hydracache_macros-e2f633e5c6dccc25.pdb",
+    "Length": 3559424,
+    "LastWriteTimeUtc": "2026-10-27T23:56:19.5771557Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\hydracache_macros-e481663054fdfef0.pdb",
+    "Length": 3567616,
+    "LastWriteTimeUtc": "2026-10-28T00:13:23.462972Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\hydracache_sandbox.pdb",
+    "Length": 361828352,
+    "LastWriteTimeUtc": "2026-10-28T00:17:46.7556499Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\inherent-819b686a5ddbdd16.pdb",
+    "Length": 2478080,
+    "LastWriteTimeUtc": "2026-10-27T23:57:39.1112291Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\inherent-a2f03f64572e283a.pdb",
+    "Length": 2478080,
+    "LastWriteTimeUtc": "2026-10-27T23:41:06.0212306Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\memory_compat_071-02c4893712f4aecd.pdb",
+    "Length": 178982912,
+    "LastWriteTimeUtc": "2026-10-27T09:00:14.0382653Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\memory_compat_071-8686cf30b2dcd225.pdb",
+    "Length": 169357312,
+    "LastWriteTimeUtc": "2026-10-27T09:27:40.3027646Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\memory_profile_071-13d0c91fb1d1840a.pdb",
+    "Length": 168087552,
+    "LastWriteTimeUtc": "2026-10-27T09:27:48.4696243Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\memory_profile_071-834a7f9825207aa1.pdb",
+    "Length": 177590272,
+    "LastWriteTimeUtc": "2026-10-27T09:00:13.8441489Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\ouroboros_macro-6790750ea5011553.pdb",
+    "Length": 2723840,
+    "LastWriteTimeUtc": "2026-10-27T23:57:31.4327137Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\ouroboros_macro-e457307f9a9da036.pdb",
+    "Length": 2707456,
+    "LastWriteTimeUtc": "2026-10-27T23:40:54.803461Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\owned_case_074-bb20943103445185.pdb",
+    "Length": 19804160,
+    "LastWriteTimeUtc": "2026-10-27T03:38:32.1107625Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\package_closure_inputs_074-969750399caf0c3a.pdb",
+    "Length": 16289792,
+    "LastWriteTimeUtc": "2026-10-27T09:27:55.5857208Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\package_closure_inputs_074-9e21ebe05bf97dd8.pdb",
+    "Length": 17993728,
+    "LastWriteTimeUtc": "2026-10-27T09:17:00.9064692Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\package_diagnostics_074-2dca0006b987b401.pdb",
+    "Length": 21753856,
+    "LastWriteTimeUtc": "2026-10-27T19:52:24.4129506Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\package_frontier_inputs_074-58dc58c3e5e1cafe.pdb",
+    "Length": 20697088,
+    "LastWriteTimeUtc": "2026-10-27T12:39:09.9751378Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\package_frontier_inputs_074-e7585a3ba6cf2bbf.pdb",
+    "Length": 18649088,
+    "LastWriteTimeUtc": "2026-10-27T12:42:43.5272249Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\parse_display_derive-1559119d614fa3ee.pdb",
+    "Length": 4632576,
+    "LastWriteTimeUtc": "2026-10-27T23:43:59.7998338Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\parse_display_derive-36adef13458ac2ab.pdb",
+    "Length": 17780736,
+    "LastWriteTimeUtc": "2026-10-27T23:41:05.3012301Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\parse_display_derive-e98ed5d8aeaf5438.pdb",
+    "Length": 4698112,
+    "LastWriteTimeUtc": "2026-10-27T23:57:37.6716957Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\performance_contract_074-1ecfe587a41df042.pdb",
+    "Length": 264392704,
+    "LastWriteTimeUtc": "2026-10-27T19:53:06.646545Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\pid_path_cost_074-4d2918ebfc8b6f38.pdb",
+    "Length": 17879040,
+    "LastWriteTimeUtc": "2026-10-27T10:43:11.5645669Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\pid_path_cost_074-9cd86608a5ecc5f9.pdb",
+    "Length": 20262912,
+    "LastWriteTimeUtc": "2026-10-27T10:37:48.0314651Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\pid_path_reader_074-47d634dd8cbf5dcf.pdb",
+    "Length": 17264640,
+    "LastWriteTimeUtc": "2026-10-27T10:43:09.6607135Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\pid_path_reader_074-4e4daced4151fe19.pdb",
+    "Length": 19116032,
+    "LastWriteTimeUtc": "2026-10-27T03:38:59.5667006Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\pid_stage_join_074-4ffe31c745980398.pdb",
+    "Length": 17838080,
+    "LastWriteTimeUtc": "2026-10-27T10:43:07.5559203Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\pid_stage_join_074-adfddf0a560b4736.pdb",
+    "Length": 19738624,
+    "LastWriteTimeUtc": "2026-10-27T10:39:30.1141046Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\pin_project_internal-7f0bc3df6b8441b8.pdb",
+    "Length": 2789376,
+    "LastWriteTimeUtc": "2026-10-27T23:56:46.39553Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\prost_derive-2b2210552ea1e1a4.pdb",
+    "Length": 3141632,
+    "LastWriteTimeUtc": "2026-10-27T23:43:44.2858544Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\prost_derive-7cf88ca39df90f97.pdb",
+    "Length": 3141632,
+    "LastWriteTimeUtc": "2026-10-27T23:56:44.879617Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\prost_derive-dc2bc535b6ecc98c.pdb",
+    "Length": 3715072,
+    "LastWriteTimeUtc": "2026-10-27T23:40:10.6264869Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\release_governance-8416fb2a2c17ab75.pdb",
+    "Length": 199372800,
+    "LastWriteTimeUtc": "2026-10-28T00:55:31.9484029Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\release_governance-cf173090acb2b3d8.pdb",
+    "Length": 199348224,
+    "LastWriteTimeUtc": "2026-10-28T01:11:46.8629005Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\remaining_preparation_cost_074-7be0934189a74f45.pdb",
+    "Length": 19943424,
+    "LastWriteTimeUtc": "2026-10-27T03:39:30.7967939Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\remaining_readers_074-0d83a871dff85d09.pdb",
+    "Length": 20893696,
+    "LastWriteTimeUtc": "2026-10-27T19:52:23.747369Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\remaining_readers_074-b95739ae1e736e6e.pdb",
+    "Length": 18763776,
+    "LastWriteTimeUtc": "2026-10-27T09:27:36.0955618Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\role_census_reader_074-84f022ca7d65590d.pdb",
+    "Length": 16904192,
+    "LastWriteTimeUtc": "2026-10-27T09:27:51.9606141Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\role_census_reader_074-9e43509eb2457541.pdb",
+    "Length": 18788352,
+    "LastWriteTimeUtc": "2026-10-27T09:16:52.0450807Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\roots_lock_view_074-9961def68ab23e2d.pdb",
+    "Length": 19656704,
+    "LastWriteTimeUtc": "2026-10-27T03:38:43.1254465Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\rust_embed_impl-603c0407da6c76eb.pdb",
+    "Length": 3723264,
+    "LastWriteTimeUtc": "2026-10-27T23:41:14.8842224Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\rust_embed_impl-d69281dcbc5fce1e.pdb",
+    "Length": 2584576,
+    "LastWriteTimeUtc": "2026-10-27T23:44:06.3676392Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\sea_orm_macros-1bbdcc4c63228dc4.pdb",
+    "Length": 2494464,
+    "LastWriteTimeUtc": "2026-10-27T23:41:18.5160762Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\sea_orm_macros-eeec300a88987f88.pdb",
+    "Length": 2494464,
+    "LastWriteTimeUtc": "2026-10-27T23:57:50.3259767Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\security_input_view_074-5d51299aa0ac7da2.pdb",
+    "Length": 19714048,
+    "LastWriteTimeUtc": "2026-10-27T00:28:15.4869079Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\serde_repr-00f68578c2e9b5dc.pdb",
+    "Length": 2355200,
+    "LastWriteTimeUtc": "2026-10-27T23:40:53.2605314Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\serde_repr-88c57d76eabc6f37.pdb",
+    "Length": 2355200,
+    "LastWriteTimeUtc": "2026-10-27T23:57:28.9981963Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\serde_with_macros-672043b2ad3b00b1.pdb",
+    "Length": 2945024,
+    "LastWriteTimeUtc": "2026-10-27T23:41:01.773036Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\serde_with_macros-d4bb5bd0795f8250.pdb",
+    "Length": 2953216,
+    "LastWriteTimeUtc": "2026-10-27T23:57:36.0546893Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\source_successor_view_074-3d8c7cedfe7c3d71.pdb",
+    "Length": 19738624,
+    "LastWriteTimeUtc": "2026-10-27T00:28:17.0991487Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\status_field_scan_074-70c3f69a90c74eed.pdb",
+    "Length": 19124224,
+    "LastWriteTimeUtc": "2026-10-27T03:38:48.2783197Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\structmeta_derive-3450ff7b04e0b050.pdb",
+    "Length": 2641920,
+    "LastWriteTimeUtc": "2026-10-27T23:40:45.8481262Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\structmeta_derive-50a1bfa271979340.pdb",
+    "Length": 2650112,
+    "LastWriteTimeUtc": "2026-10-27T23:57:15.8472778Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\swagger_routes-1b8fb260b4487056.pdb",
+    "Length": 362590208,
+    "LastWriteTimeUtc": "2026-10-27T23:51:14.4415356Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\swagger_routes-61bb6c4ca554fd83.pdb",
+    "Length": 355799040,
+    "LastWriteTimeUtc": "2026-10-27T23:42:39.1110325Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\swagger_routes-88bf82ecb401270e.pdb",
+    "Length": 415764480,
+    "LastWriteTimeUtc": "2026-10-28T00:17:47.5391322Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\terminal_current_view_074-54c039b1dfe15c06.pdb",
+    "Length": 20000768,
+    "LastWriteTimeUtc": "2026-10-27T00:28:17.3280015Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\thiserror_impl-5f1b5f0ebba019ca.pdb",
+    "Length": 2715648,
+    "LastWriteTimeUtc": "2026-10-27T23:57:29.8217879Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\tracing_attributes-a7aa04f0a2957178.pdb",
+    "Length": 2977792,
+    "LastWriteTimeUtc": "2026-10-27T23:55:51.4131698Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\utoipa_gen-0fe522fe8099e07b.pdb",
+    "Length": 4640768,
+    "LastWriteTimeUtc": "2026-10-27T23:57:47.6051792Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\utoipa_gen-226f3d23543e4796.pdb",
+    "Length": 4608000,
+    "LastWriteTimeUtc": "2026-10-28T00:09:54.2701178Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\utoipa_gen-5962eb40a6a236b0.pdb",
+    "Length": 4509696,
+    "LastWriteTimeUtc": "2026-10-27T23:58:00.4285122Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\utoipa_gen-8b0fe6f84aa2320c.pdb",
+    "Length": 4476928,
+    "LastWriteTimeUtc": "2026-10-27T23:41:24.6844506Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\utoipa_gen-a70199ed5c291456.pdb",
+    "Length": 4608000,
+    "LastWriteTimeUtc": "2026-10-27T23:50:08.4030842Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\validation_leaf_reader_074-ce3c503f1907ea1e.pdb",
+    "Length": 19943424,
+    "LastWriteTimeUtc": "2026-10-27T09:16:57.9241504Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\validation_leaf_reader_074-ff4df87548db8e92.pdb",
+    "Length": 17870848,
+    "LastWriteTimeUtc": "2026-10-27T09:27:53.3943193Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\validation_leaf_requests_074-5f9d5cc733460cd7.pdb",
+    "Length": 19705856,
+    "LastWriteTimeUtc": "2026-10-27T03:38:41.2827528Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\validation_round_cost_074-9875885b8de4944b.pdb",
+    "Length": 22073344,
+    "LastWriteTimeUtc": "2026-10-27T03:38:25.3756749Z"
+  },
+  {
+    "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\deps\\xtask.pdb",
+    "Length": 274337792,
+    "LastWriteTimeUtc": "2026-10-28T01:18:48.3692293Z"
+  }
+]

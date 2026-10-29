@@ -1,0 +1,8 @@
+
+running 3 tests
+test copy_is_distinct_readonly_single_link_without_repairing_cargo_source ... ok
+test invalid_expected_digest_creates_no_attempt ... ok
+test source_alias_writer_after_copy_does_not_change_the_new_inode ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+

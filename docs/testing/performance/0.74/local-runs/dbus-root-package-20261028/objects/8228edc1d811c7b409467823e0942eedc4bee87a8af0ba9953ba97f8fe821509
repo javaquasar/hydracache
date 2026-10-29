@@ -1,0 +1,44 @@
+{
+  "catalog": 9,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 9,
+  "rows": [
+    [
+      "context_files_actual_context_failure_precedes_missing_file_path",
+      "ok"
+    ],
+    [
+      "context_files_changed_names_contents_and_restoration_cannot_refresh",
+      "ok"
+    ],
+    [
+      "context_files_constructor_open_mapping_and_document_failures_latch_original",
+      "ok"
+    ],
+    [
+      "context_files_fixture_cannot_claim_fixed_root_owner_or_symlink_origin",
+      "ok"
+    ],
+    [
+      "context_files_independent_concurrent_guards_do_not_share_refusal",
+      "ok"
+    ],
+    [
+      "context_files_owned_roundtrip_and_successful_drop_preserve_policy",
+      "ok"
+    ],
+    [
+      "context_files_policy_failure_after_open_latches_through_drop",
+      "ok"
+    ],
+    [
+      "context_files_refusal_and_revocation_precede_any_account_path_access",
+      "ok"
+    ],
+    [
+      "context_files_seeded_resigned_foreign_context_cannot_enroll_owned_files",
+      "ok"
+    ]
+  ]
+}

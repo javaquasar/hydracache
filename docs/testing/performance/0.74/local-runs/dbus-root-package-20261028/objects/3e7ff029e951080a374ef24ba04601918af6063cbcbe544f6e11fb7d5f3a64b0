@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_artifacts::linux::held_role_census::bootstrap_images::entry::installed::entry_material::held_wire::tests::held_delivery_wire_absolute_bound_cannot_be_renewed_after_arm_or_reply ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.02s
+

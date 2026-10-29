@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::tests::seeded_map_mutations_never_panic_and_known_identity_mutations_refuse",
+  "passed": 1
+}

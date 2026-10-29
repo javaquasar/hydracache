@@ -1,0 +1,8 @@
+activation::tests::activation_ingress_every_name_byte_and_descriptor_count_are_exact: test
+activation::tests::activation_ingress_exact_fields_accept_all_orders_without_mutating_input: test
+activation::tests::activation_ingress_unknown_missing_duplicate_and_noncanonical_fields_refuse: test
+kernel::tests::bootstrap_refuses_reserved_magic_zero_token_and_bad_or_alias_pids: test
+kernel::tests::exact_release_binds_every_packet_and_bootstrap_byte: test
+kernel::tests::malformed_time_and_duplicate_fdinfo_refuse: test
+
+6 tests, 0 benchmarks

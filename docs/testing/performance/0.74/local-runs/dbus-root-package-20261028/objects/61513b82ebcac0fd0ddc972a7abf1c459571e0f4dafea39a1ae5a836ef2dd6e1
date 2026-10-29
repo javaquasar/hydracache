@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_signer_isolation::linux::tests::child_entry_directory_decoder_bounds_canonical_names_and_types ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.00s
+

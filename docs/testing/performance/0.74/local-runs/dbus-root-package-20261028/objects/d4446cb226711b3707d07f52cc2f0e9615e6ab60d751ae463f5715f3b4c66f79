@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_process::executable::tests::executable_reader_rejects_writable_o_path_and_nonmatching_expectations",
+  "passed": 1
+}

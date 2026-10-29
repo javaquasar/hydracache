@@ -1,0 +1,16 @@
+{
+  "boot_after": "3352663f-2859-44ab-8512-ce9402c574f1",
+  "boot_before": "3352663f-2859-44ab-8512-ce9402c574f1",
+  "boot_unchanged": true,
+  "clocks_changed": false,
+  "first_refusal": {
+    "reason": "first root package refusal: fmt",
+    "type": "ValueError"
+  },
+  "passed": false,
+  "phase": "format",
+  "release_admitted": false,
+  "server": false,
+  "services": false,
+  "source_unchanged": true
+}

@@ -1,0 +1,54 @@
+
+running 7 tests
+test linux::concurrent_publication_has_one_generation_and_no_replacement ... FAILED
+test linux::every_crash_window_retains_pending_or_reverifies_same_published_packet ... FAILED
+test linux::fixture_publication_is_byte_exact_and_replay_never_overwrites ... FAILED
+test linux::offline_verification_requires_external_digest_and_reconciles_content ... FAILED
+test linux::overflow_retains_only_bounded_prefix_and_original_size_without_full_hash_claim ... FAILED
+test linux::pinned_spool_detects_replacement_and_in_place_drift ... FAILED
+test linux::spool_refuses_links_special_files_wrong_modes_owners_and_extra_entries ... ok
+
+failures:
+
+---- linux::concurrent_publication_has_one_generation_and_no_replacement stdout ----
+
+thread 'linux::concurrent_publication_has_one_generation_and_no_replacement' (15054) panicked at tools/long-run-supervisor-074/tests/diagnostic_spool.rs:102:10:
+called `Result::unwrap()` on an `Err` value: Invalid
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- linux::every_crash_window_retains_pending_or_reverifies_same_published_packet stdout ----
+
+thread 'linux::every_crash_window_retains_pending_or_reverifies_same_published_packet' (15055) panicked at tools/long-run-supervisor-074/tests/diagnostic_spool.rs:102:10:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- linux::fixture_publication_is_byte_exact_and_replay_never_overwrites stdout ----
+
+thread 'linux::fixture_publication_is_byte_exact_and_replay_never_overwrites' (15056) panicked at tools/long-run-supervisor-074/tests/diagnostic_spool.rs:102:10:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- linux::offline_verification_requires_external_digest_and_reconciles_content stdout ----
+
+thread 'linux::offline_verification_requires_external_digest_and_reconciles_content' (15057) panicked at tools/long-run-supervisor-074/tests/diagnostic_spool.rs:102:10:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- linux::overflow_retains_only_bounded_prefix_and_original_size_without_full_hash_claim stdout ----
+
+thread 'linux::overflow_retains_only_bounded_prefix_and_original_size_without_full_hash_claim' (15058) panicked at tools/long-run-supervisor-074/tests/diagnostic_spool.rs:102:10:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+---- linux::pinned_spool_detects_replacement_and_in_place_drift stdout ----
+
+thread 'linux::pinned_spool_detects_replacement_and_in_place_drift' (15059) panicked at tools/long-run-supervisor-074/tests/diagnostic_spool.rs:102:10:
+called `Result::unwrap()` on an `Err` value: Invalid
+
+
+failures:
+    linux::concurrent_publication_has_one_generation_and_no_replacement
+    linux::every_crash_window_retains_pending_or_reverifies_same_published_packet
+    linux::fixture_publication_is_byte_exact_and_replay_never_overwrites
+    linux::offline_verification_requires_external_digest_and_reconciles_content
+    linux::overflow_retains_only_bounded_prefix_and_original_size_without_full_hash_claim
+    linux::pinned_spool_detects_replacement_and_in_place_drift
+
+test result: FAILED. 1 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+

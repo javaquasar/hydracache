@@ -1,0 +1,11 @@
+{
+  "removed": 6832,
+  "bytes": 12035674647,
+  "free_before": 13334134784,
+  "free_after": 24723652608,
+  "cargo_target_roots": 21,
+  "sources_preserved": true,
+  "evidence_preserved": true,
+  "executables_preserved": true,
+  "other_worktrees_untouched": true
+}

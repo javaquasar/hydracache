@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_output_preparation::fixed_intent_storage::reserved_state::tests::reserved_state_pending_and_unhandled_context_refuse_before_and_after_binding",
+  "passed": 1
+}

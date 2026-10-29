@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_artifacts::linux::io_binding_tests::fixture_named_process_binding_refuses_replaced_path_while_inode_only_accepts",
+  "passed": 1
+}

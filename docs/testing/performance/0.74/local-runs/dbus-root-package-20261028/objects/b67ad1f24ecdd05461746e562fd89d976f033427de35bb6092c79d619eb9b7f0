@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 38,
+  "name": "installed_mode::tests::bootstrap_installed_mode_refuses_pid_count_names_duplicate_and_foreign_environment",
+  "passed": 1
+}

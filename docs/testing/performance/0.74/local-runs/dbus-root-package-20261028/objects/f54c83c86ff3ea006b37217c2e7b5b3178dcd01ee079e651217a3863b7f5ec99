@@ -1,0 +1,1 @@
+{"deleted":0,"kind":"cleanup preflight refusal","observed_from":"exec tool output","raw_streams_captured":false,"reason":"assumed B/CACHEDIR.TAG absent; optional cache cleanup skipped","sources_preserved":true,"evidence_preserved":true}

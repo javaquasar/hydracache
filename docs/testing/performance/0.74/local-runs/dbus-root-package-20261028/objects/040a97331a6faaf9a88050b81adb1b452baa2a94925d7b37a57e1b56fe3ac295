@@ -1,0 +1,10 @@
+
+running 5 tests
+test accounts_directories_and_unresolved_key_fail_closed ... ok
+test private_storage_is_checked_before_installation_without_metadata_repair ... ok
+test role_overhead_does_not_expand_the_fixed_root_entrypoint ... ok
+test service_is_detached_confined_and_exposes_no_workflow_shell ... ok
+test sudo_boundary_exposes_only_the_fixed_signed_bundle_installer ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+

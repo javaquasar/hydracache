@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::authority_registry::tests::authority_registry_canonical_record_and_independent_bindings_are_exact ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.01s
+

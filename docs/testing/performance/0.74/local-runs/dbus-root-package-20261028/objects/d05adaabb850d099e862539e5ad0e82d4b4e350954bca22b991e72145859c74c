@@ -1,0 +1,20 @@
+{
+  "catalog": 3,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 3,
+  "rows": [
+    [
+      "bootstrap_census_complete_forged_roles_reach_only_closed_authentication",
+      "ok"
+    ],
+    [
+      "bootstrap_census_dead_guardian_refuses_without_replacing_attempt",
+      "ok"
+    ],
+    [
+      "bootstrap_census_extra_descriptor_and_wrong_image_refuse_before_authentication_boundary",
+      "ok"
+    ]
+  ]
+}

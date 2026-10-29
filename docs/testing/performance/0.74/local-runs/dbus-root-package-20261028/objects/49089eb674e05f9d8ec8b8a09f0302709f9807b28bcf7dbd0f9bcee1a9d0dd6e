@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1,
+  "name": "bootstrap_child_forged_but_canonical_sealed_record_reaches_only_closed_authentication",
+  "passed": 1
+}

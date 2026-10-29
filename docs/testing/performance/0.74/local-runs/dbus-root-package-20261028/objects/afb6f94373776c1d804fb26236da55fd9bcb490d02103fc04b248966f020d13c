@@ -1,0 +1,24 @@
+{
+  "catalog": 4,
+  "filtered": 0,
+  "ignored": 0,
+  "passed": 4,
+  "rows": [
+    [
+      "builds_a_create_new_packet_bound_to_the_request_and_time_window",
+      "ok"
+    ],
+    [
+      "derives_only_the_public_verification_key_from_a_private_seed",
+      "ok"
+    ],
+    [
+      "provisioning_manifest_signature_binds_every_digest_byte",
+      "ok"
+    ],
+    [
+      "rejects_non_mutating_requests_time_drift_and_unsafe_key_files",
+      "ok"
+    ]
+  ]
+}

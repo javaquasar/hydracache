@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_manager::account::binding::tests::owned_concurrent_bindings_keep_independent_refusal_state",
+  "passed": 1
+}

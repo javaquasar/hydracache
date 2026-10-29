@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "phase": "seed-reuse",
+  "release_admitted": false,
+  "reused_from": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-root-package-20261028\\seed\\result.json",
+  "reused_sha256": "df9264e4ec5cb1746e6fc343f8d2afafa25371f944cc05af946fd5b65717fe1b",
+  "server": false,
+  "source_unchanged": true,
+  "source_worktree_uncommitted": true
+}

@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_worker_policy::trusted_input::controller_input::build_input::tests::controller_build_invalid_policy_receipt_and_budgets_cross_latch",
+  "passed": 1
+}

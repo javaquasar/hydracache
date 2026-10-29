@@ -1,0 +1,19 @@
+
+running 1 test
+test installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse ... FAILED
+
+failures:
+
+---- installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse stdout ----
+held-entry child stderr: 
+
+thread 'installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse' (14180) panicked at tools/long-run-supervisor-074/tests/support/bootstrap_held_entry_controls.rs:175:5:
+bounded child timeout; first result: 
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    installed_controls::held_controls::held_entry_context_entry_invocation_deadline_reserved_and_pid_faults_refuse
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 6.57s
+

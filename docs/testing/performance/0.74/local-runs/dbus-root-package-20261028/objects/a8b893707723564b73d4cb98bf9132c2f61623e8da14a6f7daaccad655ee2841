@@ -1,0 +1,6 @@
+
+running 1 test
+test diagnostic_worker_policy::local_context::account_files::kernel_binding::opening::mount_binding::task_binding::authority_binding::intent_binding::tests::early_attempt_tests::early_attempt_late_target_or_unknown_context_is_not_adopted ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1592 filtered out; finished in 0.61s
+

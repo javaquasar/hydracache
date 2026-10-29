@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 50,
+  "name": "root::launch::loss::tests::original_socket_endpoints_require_each_original_not_equal_peer_inodes",
+  "passed": 1
+}

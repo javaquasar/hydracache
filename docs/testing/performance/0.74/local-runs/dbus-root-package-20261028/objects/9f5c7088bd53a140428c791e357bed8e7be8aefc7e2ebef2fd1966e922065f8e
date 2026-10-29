@@ -1,0 +1,8 @@
+{
+  "catalog": 1,
+  "global_omitted": 0,
+  "ignored": 0,
+  "local_filtered": 1592,
+  "name": "diagnostic_kernel_admission::origin::operation_cost::operation_observer_clock_fault_and_stale_spans_cannot_replace_results",
+  "passed": 1
+}
