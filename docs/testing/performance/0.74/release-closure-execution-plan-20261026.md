@@ -837,3 +837,16 @@ are scoped compatibility evidence. Explicit MTU scope and maintained security
 package/consumer/Root adoption remain, followed by fresh full security/package/
 workspace and the still-open production lifecycle/reconnect/trust/host gates.
 All original checks/order/frequency/deadlines and thresholds remain unchanged.
+
+
+The [maintained U package preparation](chitchat-security-package-result-20261030.md)
+now yields an actual26-member Cargo-verified archive, both GNU/MSRV fresh builds,
+all-target/all-feature check/strict Clippy and full dependency policy under both
+owned/upstream names at2295466c. First full-library attempt:83 pass; GC times out
+at original5 seconds while its unchanged unpaused body requires a25-second sleep.
+R5 stays terminal, with16 other1.94 and100 MSRV runtime cases and registry/callers
+unexecuted. The proposed separate complete-library780-second lane needs explicit
+agreement; no existing case limit or first result changes. Keep original checks,
+Root/qualification, G/F/Q negatives and all first refusals. Actual registry/public
+nominal-type/MTU/Root decisions, exact full security/package/workspace and original
+execution/lifecycle/reconnect/trust/compatible-host admission remain open.

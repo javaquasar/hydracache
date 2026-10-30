@@ -1,5 +1,16 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [security-only maintained-package preparation](chitchat-security-package-result-20261030.md)
+now produces a real Cargo-verified26-member archive from U. GNU1.94/MSRV1.88
+fresh builds, all-target/all-feature checks and strict Clippy pass; full policy
+passes under both owned/upstream identities at RustSec2295466c. The first full
+library attempt passes83 cases, then the original unpaused25-second GC test
+hits the unchanged5-second short-case cap. R5 stays terminal;16 other1.94 and
+100 MSRV runtime cases, registry and consumers are unexecuted. Original checks,
+first refusals and Root identities remain. The proposed separate full-library
+package780 lane needs operator agreement; actual shipping/public type/MTU/Root
+and production lifecycle/host admission remain open. No performance claim.
+
 The [separately approved original-frame commit candidate G](chitchat-frame-result-20261030.md)
 is now declined by the first complete native239/9/30 resource matrix. It fixes
 F's finish-capacity regression, but accepted-multiblock records9 versus B6 logical

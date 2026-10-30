@@ -1351,3 +1351,17 @@ or next hypothesis. Original checks/frequency/windows/thresholds, Root identitie
 F/Q negative decisions and U/C2 separate scope remain unchanged. Maintained
 security distribution, explicit MTU scope, exact Root/package/workspace and
 production execution/lifecycle/reconnect/trust/compatible-host gates stay open.
+
+
+The [security-only owned-package preparation](../testing/performance/0.74/chitchat-security-package-result-20261030.md)
+now has a real Cargo-verified archive and GNU1.94/MSRV1.88 fresh build/check/strict
+Clippy positives. Complete policy passes under both upstream and proposed owned
+names at exact RustSec2295466c. The first full catalog passes83 cases then the
+original unpaused25-second GC test hits the unchanged5-second short-case cap.
+Keep R5 STOP, all16 remaining1.94 and100 MSRV cases explicitly unexecuted, and
+registry/consumer blocked. A separate complete-library package780 lane is a
+concrete proposal awaiting operator agreement; no retry, ignored test, clock
+change or deadline extension is admitted. Preserve original Root identities,
+G/F/Q negatives and every first preparation refusal. Shipping identity/public
+nominal-type compatibility/MTU scope and full Root/package/workspace plus
+production lifecycle/reconnect/trust/compatible-host gates remain open.

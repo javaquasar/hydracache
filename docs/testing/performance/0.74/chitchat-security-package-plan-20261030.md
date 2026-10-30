@@ -94,3 +94,42 @@ MTU/admission/compression/allocation hypothesis or product claim is introduced.
 The earlier byte-exact-U constraint is now byte-exact after this finite reviewed
 inverse; describe that difference explicitly instead of calling final bytes U.
 Repair STOP receipt accounting without reopening it or ignoring another refusal.
+
+## First full-catalog refusal and proposed separate long-test gate
+
+R5 produces the real Cargo archive, builds/checks/strictly lints it on GNU1.94
+and1.88, and passes83 exact library cases on1.94. The next case,
+`tests::test_dead_node_garbage_collection`, times out under the unchanged5-second
+short-case owner; that owner retires successfully. Its original unpaused Tokio
+test contains an explicit20+5-second sleep after cluster convergence. The log
+does not establish which await was active at termination and contains no failed
+assertion. This is a full-gate refusal, not proof of a product regression.
+
+R5 remains terminal:16 other1.94 cases, all100 MSRV runtime cases, registry and
+external consumers are not dispatched. Earlier selected-U positives never
+claimed this complete asynchronous catalog. Do not extend the short-case cap,
+change/pause upstream time, omit the case or reinterpret the timeout as a pass.
+
+The concrete proposed continuation needs explicit operator agreement because the
+frozen new packaging method assigned5 seconds to every library case. Add a
+separate full-library lane under the existing package780-second owner, preserving
+local1200/native1100,4GiB floors and poll/retirement5. Run the complete unchanged
+100-case catalog once per held1.94/1.88 extracted-package image with
+`--test-threads=1 --nocapture`, no filter/ignore/retry. Require exact100 passed,
+zero failed/ignored, full source/ref/boot/registry/image pre/postflight and
+retirement. Keep every original short-case receipt and R5 STOP. Only a separately
+positive full lane could unlock a new registry/consumer context; it cannot make
+R5 green. This proposal has not been executed by this plan update.
+
+The Root adapter also exposes nominal upstream `FailureDetectorConfig` and
+`ChitchatId` types in public methods. A spelling-preserving Rust library alias
+does not establish dual-package type compatibility. Before Root adoption, prove
+the concrete caller boundary and decide shipping identity/publication and MTU
+scope explicitly. No public registry, Root or server admission is inferred here.
+
+The operator subsequently explicitly agreed to the separate full780-second
+library lane, preserving all short5-second receipts and R5 STOP. The prepared
+runner is tools/chitchat-package-complete-074; its11 pure accounting/isolation
+controls and syntax gate pass before any native/full-library dispatch. It uses
+the same held freshly built extracted-package images and a NEW private context.
+Only two complete100-case positives can admit registry/consumer execution.
