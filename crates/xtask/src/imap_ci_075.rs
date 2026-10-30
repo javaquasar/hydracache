@@ -230,10 +230,18 @@ pub fn tooling_command(root: &Path, _windows: bool) -> Command {
             "imap_native_recovery_075",
             "--test",
             "imap_soak_075",
+            "--test",
+            "imap_sbom_075",
             "--locked",
         ])
         .current_dir(root);
     command.env("CARGO_TARGET_DIR", root.join("target/imap-075/tooling"));
+    // This isolated lane measures semantics, not debug-symbol I/O; large ELF debug
+    // sections otherwise dominate bounded artifact hashing on small Linux runners.
+    command
+        .env("CARGO_PROFILE_DEV_DEBUG", "0")
+        .env("CARGO_PROFILE_TEST_DEBUG", "0")
+        .env("CARGO_INCREMENTAL", "0");
     command
 }
 

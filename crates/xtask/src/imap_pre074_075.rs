@@ -178,20 +178,26 @@ pub fn check_contract(root: &Path) -> Result<(), Box<dyn Error>> {
 
 fn command(
     builds: &mut crate::imap_build_process_075::BuildController,
+    capture: &mut crate::imap_sbom_capture_075::Capture,
     root: &Path,
     stage: crate::imap_build_process_075::BuildStage,
     program: &str,
     args: &[&str],
 ) -> Result<(), Box<dyn Error>> {
-    let mut invocation = Command::new(program);
-    invocation.current_dir(root).args(args);
-    builds.run(stage, invocation)?;
-    Ok(())
+    let name = format!("{stage:?}");
+    if program == "cargo" {
+        let mut invocation = Command::new(program);
+        invocation.current_dir(root).args(args);
+        capture.cargo(root, builds, &name, stage, invocation)
+    } else {
+        capture.maven(root, builds, &name, "artifact-build", stage, args)
+    }
 }
 
 fn rust_consumer(
     root: &Path,
     builds: &mut crate::imap_build_process_075::BuildController,
+    capture: &mut crate::imap_sbom_capture_075::Capture,
 ) -> Result<(), Box<dyn Error>> {
     let scratch = root.join("target/imap-075");
     fs::create_dir_all(&scratch)?;
@@ -219,7 +225,10 @@ fn rust_consumer(
         if action == "build" {
             invocation.arg("--locked");
         }
-        builds.run(
+        capture.cargo(
+            root,
+            builds,
+            &format!("consumer-{action}"),
             if action == "test" {
                 crate::imap_build_process_075::BuildStage::RustConsumerTests
             } else {
@@ -232,6 +241,12 @@ fn rust_consumer(
             &fs::read_to_string(temp.path().join("Cargo.lock"))?,
         )?;
     }
+    capture.metadata(
+        root,
+        builds,
+        Some(&temp.path().join("Cargo.toml")),
+        "consumer-metadata",
+    )?;
     Ok(())
 }
 
@@ -317,10 +332,12 @@ pub fn prepare_tools(
     check_contract(root)?;
     use crate::imap_build_process_075::{BuildController, BuildStage};
     let mut builds = BuildController::new(root)?;
+    let mut capture = crate::imap_sbom_capture_075::Capture::start(root, &mut builds)?;
     // Cargo's integration-test build provides CARGO_BIN_EXE_hydracache-server for
     // hc2_daemon_process; avoid a separate build with a different dev-feature union.
     command(
         &mut builds,
+        &mut capture,
         root,
         BuildStage::ServerTests,
         "cargo",
@@ -337,6 +354,7 @@ pub fn prepare_tools(
     )?;
     command(
         &mut builds,
+        &mut capture,
         root,
         BuildStage::HelperContractTests,
         "cargo",
@@ -353,9 +371,10 @@ pub fn prepare_tools(
             "--locked",
         ],
     )?;
-    rust_consumer(root, &mut builds)?;
+    rust_consumer(root, &mut builds, &mut capture)?;
     command(
         &mut builds,
+        &mut capture,
         root,
         BuildStage::SoakWorkerBuild,
         "cargo",
@@ -371,6 +390,7 @@ pub fn prepare_tools(
     let maven = if cfg!(windows) { "mvn.cmd" } else { "mvn" };
     command(
         &mut builds,
+        &mut capture,
         root,
         BuildStage::JavaContract,
         maven,
@@ -378,6 +398,7 @@ pub fn prepare_tools(
     )?;
     command(
         &mut builds,
+        &mut capture,
         root,
         BuildStage::NativeJava,
         maven,
@@ -390,6 +411,7 @@ pub fn prepare_tools(
     )?;
     command(
         &mut builds,
+        &mut capture,
         root,
         BuildStage::NativeDependencyJar,
         maven,
@@ -405,6 +427,7 @@ pub fn prepare_tools(
     )?;
     command(
         &mut builds,
+        &mut capture,
         root,
         BuildStage::NativeDependencyPom,
         maven,
@@ -417,7 +440,10 @@ pub fn prepare_tools(
             "-DoutputDirectory=target/dependencies",
         ],
     )?;
-    crate::imap_package_reproduction_075::reproduce_with_controller(root, &mut builds)
+    let packages =
+        crate::imap_package_reproduction_075::reproduce_with_controller(root, &mut builds)?;
+    capture.finish(root, &mut builds)?;
+    Ok(packages)
 }
 
 fn binary(root: &Path, name: &str) -> PathBuf {
@@ -610,6 +636,7 @@ pub struct PreparationReceipt {
     pub native_histories: Artifact,
     pub native_recovery: Artifact,
     pub soak_reports: Vec<Artifact>,
+    pub development_inventory: Artifact,
     pub rust: Artifact,
     pub workspace_metadata: Artifact,
     pub blocked_until_074: Vec<String>,
@@ -729,7 +756,7 @@ pub fn produce(root: &Path, output: &Path) -> Result<PathBuf, Box<dyn Error>> {
     let workspace_metadata = metadata(root)?;
     let soak_reports = crate::imap_soak_075::preparation_smoke(root, &source, &directory)?;
     let receipt = PreparationReceipt {
-        schema: "hydracache.imap.pre074-preparation.v5".into(),
+        schema: "hydracache.imap.pre074-preparation.v6".into(),
         release: "0.75".into(),
         scope: "pre074_preparation".into(),
         source_sha: source.clone(),
@@ -755,6 +782,12 @@ pub fn produce(root: &Path, output: &Path) -> Result<PathBuf, Box<dyn Error>> {
         native_histories: retain(root, &directory, "native-histories.json", &native_histories)?,
         native_recovery: retain(root, &directory, "native-recovery.json", &native_recovery)?,
         soak_reports,
+        development_inventory: retain(
+            root,
+            &directory,
+            "development-provenance.json",
+            &read_relative(root, crate::imap_sbom_075::LATEST, MAX_ARTIFACT_BYTES)?,
+        )?,
         rust: retain(root, &directory, "rust.json", &observed_rust)?,
         workspace_metadata: retain(
             root,
@@ -791,7 +824,7 @@ pub fn validate_receipt_header(
     receipt: &PreparationReceipt,
     source: &str,
 ) -> Result<(), Box<dyn Error>> {
-    if receipt.schema != "hydracache.imap.pre074-preparation.v5"
+    if receipt.schema != "hydracache.imap.pre074-preparation.v6"
         || receipt.release != "0.75"
         || receipt.scope != "pre074_preparation"
         || receipt.source_sha != source
@@ -857,6 +890,10 @@ pub fn verify(root: &Path, path: &Path) -> Result<PreparationReceipt, Box<dyn Er
         (&receipt.native_extended, "native-extended.json"),
         (&receipt.native_histories, "native-histories.json"),
         (&receipt.native_recovery, "native-recovery.json"),
+        (
+            &receipt.development_inventory,
+            "development-provenance.json",
+        ),
         (&receipt.rust, "rust.json"),
         (&receipt.workspace_metadata, "workspace-metadata.json"),
     ];
@@ -865,6 +902,8 @@ pub fn verify(root: &Path, path: &Path) -> Result<PreparationReceipt, Box<dyn Er
             return Err("preparation artifacts are missing, aliased or foreign".into());
         }
     }
+    read_artifact(root, &receipt.development_inventory)?;
+    crate::imap_sbom_075::verify(root, Path::new(&receipt.development_inventory.path))?;
     for (reference, cohort) in receipt
         .soak_reports
         .iter()

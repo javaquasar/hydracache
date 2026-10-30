@@ -84,6 +84,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("imap-pre074-evidence") => xtask::imap_pre074_075::run(args.collect(), "produce")?,
         Some("imap-soak") => xtask::imap_soak_075::run(args.collect())?,
         Some("imap-soak-cancel") => xtask::imap_soak_075::run_cancel(args.collect())?,
+        Some("imap-sbom") => xtask::imap_sbom_075::run(args.collect(), false)?,
+        Some("imap-sbom-check") => xtask::imap_sbom_075::run(args.collect(), true)?,
         Some("imap-pre074-evidence-check") => {
             xtask::imap_pre074_075::run(args.collect(), "verify")?
         }
@@ -204,6 +206,8 @@ fn print_usage() {
          cargo xtask imap-pre074-tools --release 0.75  # build/test isolated integration preparation and external consumers\n  \
          cargo xtask imap-pre074-evidence --release 0.75 --output <new-target-dir>  # execute preparation and strictly replay its local receipt\n  \
          cargo xtask imap-pre074-evidence-check --release 0.75 --receipt <path>\n  \
+         cargo xtask imap-sbom --release 0.75  # capture actual resolved development build inputs and unsigned CycloneDX 1.6\n  \
+         cargo xtask imap-sbom-check --release 0.75 --receipt <provenance>\n  \
          cargo xtask imap-cluster-chaos --release 0.75 [--seed <u64>] [--rounds <1..6>|--schedule <path>]  # execute/replay bounded actual-service histories\n  \
          cargo xtask imap-semantic-audit --release 0.75  # check provisional signatures, typed helpers and shared-owner semantic adapters\n  \
          cargo xtask imap-distributed-correctness --release 0.75 [--evidence <new-dir>]  # run every locally available distributed simulator/security/key proof and optionally emit receipts\n  \

@@ -49,6 +49,8 @@ pub mod imap_package_reproduction_075;
 pub mod imap_pre074_075;
 pub mod imap_proof_process_075;
 pub mod imap_qualification_075;
+pub mod imap_sbom_075;
+pub mod imap_sbom_capture_075;
 pub mod imap_semantic_audit075;
 pub mod imap_soak_075;
 pub mod imap_soak_worker_075;

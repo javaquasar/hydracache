@@ -4,7 +4,6 @@ use std::error::Error;
 use std::fs;
 use std::io::{Read, Write};
 use std::path::Path;
-use std::process::Command;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -85,8 +84,7 @@ pub fn reproduce_with_controller(
         fs::create_dir(&destination)?;
         copy_sources(&source.join("pom.xml"), &destination.join("pom.xml"))?;
         copy_sources(&source.join("src"), &destination.join("src"))?;
-        let maven = if cfg!(windows) { "mvn.cmd" } else { "mvn" };
-        let mut invocation = Command::new(maven);
+        let mut invocation = crate::imap_sbom_capture_075::maven_command(root)?;
         invocation
             .current_dir(root)
             .arg("-B")

@@ -129,8 +129,13 @@ evidence, not a product protocol, persistent service image or ship receipt.
 Typed entry views, helper futures, progress queries and scoped transfer controls remain runtime
 APIs; the 40 core operation IDs and production HC/1/HC/2 identities do not change.
 
-The separate development preparation receipt uses `hydracache.imap.pre074-preparation.v5`
-and `docs/testing/imap/0.75/schemas/pre074-preparation.schema.json`. Its only scope is
+The separate development preparation receipt uses `hydracache.imap.pre074-preparation.v6`
+and `docs/testing/imap/0.75/schemas/pre074-preparation.schema.json`. It retains unsigned
+resolved development provenance. Its v1 inventory/provenance,
+Maven-resolution journal and CycloneDX 1.6 profile are documented in
+`docs/testing/imap/0.75/development-sbom.md`; strict replay rejects old/future versions,
+missing closure/features, substituted tool/artifact bytes and promoted policy results.
+Its only scope is
 `pre074_preparation`, with production disabled and all six predecessor/integration blockers
 retained. It binds clean source, current tooling/runtime, eleven fixed input artifacts, raw
 current-daemon, existing-v1-storage, packaged Java/Hazelcast and external Rust observations,

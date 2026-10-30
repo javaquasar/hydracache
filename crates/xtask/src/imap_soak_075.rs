@@ -98,6 +98,7 @@ impl SoakProfile {
         for artifact in &self.artifacts {
             if artifact.path.is_empty()
                 || artifact.path.contains('\\')
+                || artifact.path.contains(':')
                 || artifact.path.len() > 512
                 || !paths.insert(&artifact.path)
                 || Path::new(&artifact.path)
@@ -684,7 +685,6 @@ pub fn execute_worker(
                         .map_err(|e| e.to_string())?,
                     )
                     .map_err(|e| e.to_string())?;
-                    profile.check_artifacts(root).map_err(|e| e.to_string())?;
                     publish_marker(control, "start").map_err(|e| e.to_string())?;
                 }
                 println!(

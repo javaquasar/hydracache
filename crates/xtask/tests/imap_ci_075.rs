@@ -388,6 +388,8 @@ fn tooling_isolates_the_live_producer_on_every_platform_and_preserves_gate_argum
                 "imap_native_recovery_075",
                 "--test",
                 "imap_soak_075",
+                "--test",
+                "imap_sbom_075",
                 "--locked",
             ]
         );
@@ -396,5 +398,19 @@ fn tooling_isolates_the_live_producer_on_every_platform_and_preserves_gate_argum
             .find(|(name, _)| name == &"CARGO_TARGET_DIR")
             .map(|(_, value)| value);
         assert_eq!(child_target, Some(Some(isolated.as_os_str())));
+        for (name, value) in [
+            ("CARGO_PROFILE_DEV_DEBUG", "0"),
+            ("CARGO_PROFILE_TEST_DEBUG", "0"),
+            ("CARGO_INCREMENTAL", "0"),
+        ] {
+            assert_eq!(
+                command
+                    .get_envs()
+                    .find(|(key, _)| key == &name)
+                    .and_then(|(_, v)| v)
+                    .and_then(|v| v.to_str()),
+                Some(value)
+            );
+        }
     }
 }

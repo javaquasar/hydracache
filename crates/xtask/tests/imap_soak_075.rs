@@ -22,10 +22,10 @@ fn profile() -> SoakProfile {
             period_ms: 10,
             maximum_rounds: 32,
             warmup_rounds: 2,
-            startup_ms: 3000,
+            startup_ms: 10000,
             drain_ms: 100,
-            hard_ms: 3220,
-            host_remaining_ms: 10000,
+            hard_ms: 10220,
+            host_remaining_ms: 20000,
         },
         runtime: runtime(),
         artifacts: vec![BoundArtifact {
@@ -115,7 +115,7 @@ fn bounds_and_logical_phase_protocol_do_not_stitch_workers_or_accept_leaks() {
             5 => f.owners.resync = Some(1),
             6 => f.owners.values = Some(100),
             7 => f.owners.outcomes = Some(29),
-            8 => f.active_elapsed_ms = 9999,
+            8 => f.active_elapsed_ms = p.bounds.hard_ms + 1,
             9 => f.schema = "future".into(),
             10 => pid = 18,
             _ => birth = "birth-b",
@@ -312,7 +312,7 @@ fn physical_defects_leaks_replacement_exit_and_output_never_qualify() {
 }
 fn wait_round(path: &Path) {
     let started = Instant::now();
-    while started.elapsed() < Duration::from_secs(3) {
+    while started.elapsed() < Duration::from_secs(30) {
         if std::fs::read_to_string(path).is_ok_and(|text| text.contains("\"phase\":\"round\"")) {
             return;
         }

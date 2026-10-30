@@ -27,6 +27,8 @@ pub enum BuildStage {
     ReproduceContract,
     ReproduceNative,
     ToolingTests,
+    ProvenanceTools,
+    ProvenanceMetadata,
 }
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
