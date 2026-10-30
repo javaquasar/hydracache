@@ -7,12 +7,14 @@ Nothing is published, adopted, installed or run on the dedicated server.
 
 Three separately locked inputs retain all21 upstream archive members:
 
-- B: exact0.11.1 archive plus only two previously identified lifetime annotations;
+- B: exact0.11.1 archive plus two lifetime annotations and the previously verified
+  15 test-only format captures; assertions/values/deadlines stay exact;
 - Z: B plus exact Zstd0.14.3 requirement in normalized and authoring manifests;
 - U: Z plus exact LRU0.18.2 requirement in both manifests.
 
-All serializer/bound/compression algorithms are original bytes; Delta and lib
-only differ by those two annotation signatures. Source-only canonical tar files
+All serializer/bound/compression algorithms are original bytes. Reversing the
+exact annotation/test-format prelude recovers every whole upstream member.
+Source-only canonical tar files
 retain upstream metadata as historical data. They are not official `.crate`
 packages, shipping identities or signed receipts. The old packaged lock is data;
 fixture locks are separately resolved from current Root without upgrading helpers.
@@ -39,9 +41,11 @@ Every peer retains the original1200-second outer/1100-second session, per-case5/
 catalog10, physical/native4GiB floors and5-second poll/retirement. Original Job/
 LinuxGroup own commands. Native staging is a new private cache, not modification
 of a qualified old cache. Registry/source/lock/image/catalog postflight is exact.
-Phase directories are write-once. Earlier initial/r1 refusals and producer bytes
-remain retained; corrected r2 accounting preserves exact identities and every
-native pass/fail/ignored/filtered count while accepting actual diagnostic output.
+Phase directories are write-once. Earlier initial/r1/r2 refusals, debug property
+timeout and r3 MSRV lint refusal remain retained, along with their complete
+producer/input contexts. R4 adds only the previously qualified test-format fixes
+to the common baseline and uses the prior release functional profile/package cwd.
+Every actual pass/fail/ignored/filtered count and original cap remains.
 
 Source controls: `python -B -m unittest discover -s tools/chitchat-security-only-074 -p test_*.py -v`.
 `candidate.py`, `finalize.py`, `runner.py` and `policy.py` have fixed roles;

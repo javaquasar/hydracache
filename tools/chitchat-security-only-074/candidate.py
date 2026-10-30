@@ -13,10 +13,32 @@ def original(raw):
 def replace(files,path,old,new):
     c.need(files[path].count(old)==1,'one exact preimage: '+path);files[path]=files[path].replace(old,new)
 
+# Exact previously reviewed L/L2 test-only format captures; no assertion changes.
+TEST_STYLE={'src/lib.rs':[(b'format!("k{}", i)',b'format!("k{i}")',1),
+ (b'panic!("Expected SynAck, got {:?}", ack)',b'panic!("Expected SynAck, got {ack:?}")',1)],
+ 'tests/perf_test.rs':[(b'"Delay exceeded: {:?}",\n        delay',b'"Delay exceeded: {delay:?}"',5)],
+ 'tests/cluster_test.rs':[
+ (b'write!(f, "Key \'{}\' == \'{}\'", key, expected_value)',b'write!(f, "Key \'{key}\' == \'{expected_value}\'")',1),
+ (b'write!(f, "INS KV in node {:?}: ", chitchat_id)',b'write!(f, "INS KV in node {chitchat_id:?}: ")',1),
+ (b'write!(f, "({}={})", key, value)',b'write!(f, "({key}={value})")',1),
+ (b'write!(f, "DEL node {:?} key {}", chitchat_id, key)',b'write!(f, "DEL node {chitchat_id:?} key {key}")',1),
+ (b'write!(f, "WAIT {:?}", duration)',b'write!(f, "WAIT {duration:?}")',1),
+ (b'"Node {:?} assertion failed",\n                            expected_status,',b'"Node {expected_status:?} assertion failed",',1),
+ (b'format!("node-{}", i)',b'format!("node-{i}")',1),
+ (b'format!("key_{}", idx)',b'format!("key_{idx}")',1)]}
+
+def test_style(files,reverse=False):
+    for path,edits in TEST_STYLE.items():
+        for before,after,count in edits:
+            old,new=(after,before) if reverse else (before,after)
+            c.need(files[path].count(old)==count,'exact test-only format preimage: '+path)
+            files[path]=files[path].replace(old,new)
+
 def variants(raw):
     upstream=original(raw);b=dict(upstream)
     replace(b,'src/lib.rs',b'-> Option<KeyChangeEvent> {',b"-> Option<KeyChangeEvent<'_>> {")
     replace(b,'src/delta.rs',b'fn as_ref(&self) -> DeltaOpRef {',b"fn as_ref(&self) -> DeltaOpRef<'_> {")
+    test_style(b)
     z=dict(b)
     replace(z,'Cargo.toml',b'[dependencies.zstd]\nversion = "0.13"',b'[dependencies.zstd]\nversion = "=0.14.3"')
     replace(z,'Cargo.toml.orig',b'zstd = "0.13"',b'zstd = "=0.14.3"')
@@ -27,7 +49,8 @@ def variants(raw):
         c.need(set(files)==set(upstream),'same complete upstream member inventory')
         c.need(files['src/serialize.rs']==upstream['src/serialize.rs'],'unchanged bound/writer/compression algorithms')
         changed={n for n in files if files[n]!=upstream[n]}
-        c.need(changed==({'src/lib.rs','src/delta.rs'} if name=='B' else {'src/lib.rs','src/delta.rs','Cargo.toml','Cargo.toml.orig'}),'only annotations/manifests change')
+        common={'src/lib.rs','src/delta.rs','tests/perf_test.rs','tests/cluster_test.rs'}
+        c.need(changed==(common if name=='B' else common|{'Cargo.toml','Cargo.toml.orig'}),'only annotations/test formatting/manifests change')
     return upstream,dict(B=b,Z=z,U=u)
 
 def prepare():

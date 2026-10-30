@@ -11,8 +11,9 @@ import time
 import tomllib
 
 ROOT=Path(__file__).resolve().parents[2];HERE=Path(__file__).resolve().parent
-BASE=ROOT/'target/chitchat-security-only-20261030'
-NATIVE=Path('/home/artur/.cache/hydracache-074-security-only/20261030-v1')
+CAPTURE=ROOT/'target/chitchat-security-only-20261030'
+BASE=CAPTURE/'r4'
+NATIVE=Path('/home/artur/.cache/hydracache-074-security-only/20261030-v3')
 PINS={'Cargo.lock':'8ade63f6a4aae93f27f5161798bc87804542a48093b4203f35e25e29b680a4f5',
  'deny.toml':'16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930',
  'docs/testing/performance/0.74/qualification-manifest.toml':'11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc',

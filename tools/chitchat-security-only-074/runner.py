@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -15,9 +16,11 @@ OBS=('serialize::security_stream_review::observe_streams','delta::security_delta
  'security_review::malformed_streams_keep_decisions_and_cursor')
 CONTEXT='security_review::reused_contexts_start_only_the_second_job'
 NEGATIVE=('serialize::security_stream_review::minimal_bound_contract','serialize::security_stream_review::all_stream_bounds_hold')
-FRAME=c.BASE/'freeze-r2.json'
+FRAME=c.BASE/'freeze-r4.json'
+STAGE='stage-r4'
+STOP=c.BASE/'stop-r4.json'
 
-def output(label):return c.BASE/('peers-r2' if label in PEERS else '.')/label
+def output(label):return c.BASE/('peers-r4' if label in PEERS else '.')/label
 
 def inputs():
     return {name:c.tree(c.BASE/name) for name in ('fixtures','canonical','input') if (c.BASE/name).exists()}
@@ -30,7 +33,8 @@ def group():return c.owned.load_job().WindowsJob() if os.name=='nt' else c.load(
 def invocation(out,name,argv,env,deadline,frame,expected_exit=0,bound=1200):
     guard(frame);c.capacity();c.need(time.monotonic()<deadline,'original complete-session deadline')
     folder=out/name;folder.mkdir(exist_ok=False)
-    c.write(folder,'intent.json',dict(argv=argv,deadline=deadline,bound=bound,image_sha256=c.sha(Path(argv[0]).read_bytes()),expected_exit=expected_exit,retry=False))
+    cwd=str(c.fixtures()/out.name.rsplit('-',1)[-1])
+    c.write(folder,'intent.json',dict(argv=argv,cwd=cwd,deadline=deadline,bound=bound,image_sha256=c.sha(Path(argv[0]).read_bytes()),expected_exit=expected_exit,retry=False))
     with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
         worker=subprocess.run([sys.executable,'-B',str(Path(__file__)),'command',str(folder)],stdin=subprocess.DEVNULL,
           stdout=stdout,stderr=stderr,env=dict(env,HC074_SECURITY_ARGV=json.dumps(argv),HC074_SECURITY_DEADLINE=str(deadline),HC074_SECURITY_BOUND=str(bound)),timeout=max(0,min(bound,deadline-time.monotonic()))+10)
@@ -42,7 +46,7 @@ def invocation(out,name,argv,env,deadline,frame,expected_exit=0,bound=1200):
 def cargo(label,action):
     host,compiler,variant=label.split('-');tool,env,suffix=c.environment(compiler)
     target=c.BASE/'builds'/label if os.name=='nt' else c.NATIVE/'builds'/label
-    args=['--manifest-path',str(c.fixtures()/variant/'Cargo.toml'),'--target-dir',str(target),'--offline','--locked']
+    args=['--manifest-path',str(c.fixtures()/variant/'Cargo.toml'),'--target-dir',str(target),'--offline','--locked','--release']
     if action=='build':argv=[str(tool/('cargo'+suffix)),'test',*args,'--all-features','--lib','--no-run','--message-format=json']
     elif action=='check':argv=[str(tool/('cargo'+suffix)),'check',*args,'--all-targets','--all-features']
     elif action=='clippy':argv=[str(tool/('cargo'+suffix)),'clippy',*args,'--all-targets','--all-features','--','-D','warnings']
@@ -134,12 +138,13 @@ def stage():
     (c.NATIVE/'cargo-home').mkdir()
     (c.NATIVE/'cargo-home/config.toml').write_text('[source.crates-io]\nreplace-with="security-only"\n[source.security-only]\ndirectory="'+(c.NATIVE/'vendor').as_posix()+'"\n',encoding='utf8')
     guard(json.loads(FRAME.read_bytes()));registry(deadline)
-    c.write(c.BASE/'stage','session-result.json',dict(complete=True,root_adopted=False))
+    c.write(c.BASE/STAGE,'session-result.json',dict(complete=True,root_adopted=False))
 
 def outer(label):
-    c.need(os.name=='nt' and label in PEERS|{'resolve','stage'},'fixed local outer phase')
+    c.need(os.name=='nt' and label in PEERS|{'resolve',STAGE},'fixed local outer phase')
+    c.need(not STOP.exists(),'stop dispatch after the first unexpected r3 refusal')
     out=output(label);out.mkdir(parents=True,exist_ok=False);before=c.source();head=c.snapshot();held=inputs()
-    if label.startswith('gnu-') or label=='stage':argv=[str(Path(os.environ['SystemRoot'])/'System32/wsl.exe'),'-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B','/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-security-only-074/runner.py','session',label]
+    if label.startswith('gnu-') or label==STAGE:argv=[str(Path(os.environ['SystemRoot'])/'System32/wsl.exe'),'-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B','/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-security-only-074/runner.py','session',label]
     else:argv=[sys.executable,'-B',str(Path(__file__)),'session',label]
     c.write(out,'intent.json',dict(argv=argv,source=before,git=head,input_trees=held,bound=1200,session_bound=1100,floor=4*1024**3,poll=5,cleanup=5,retry=False))
     result=dict(complete=False,root_adopted=False,release_admitted=False)
@@ -153,14 +158,21 @@ def outer(label):
             c.need(json.loads((out/'session-result.json').read_bytes())['complete'],'complete original session')
             result['complete']=True
         except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
-    c.write(out,'result.json',result);print(json.dumps(dict(phase=label,**result)));raise SystemExit(0 if result['complete'] else 1)
+    c.write(out,'result.json',result)
+    if not result['complete']:
+        try:c.write(c.BASE,STOP.name,dict(phase=label,first_refusal=result.get('first_refusal'),root_adopted=False))
+        except FileExistsError:pass
+    print(json.dumps(dict(phase=label,**result)));raise SystemExit(0 if result['complete'] else 1)
 
 if __name__=='__main__':
     if len(sys.argv)==3 and sys.argv[1]=='command':
         folder=Path(sys.argv[2]);c.need(folder.resolve().is_relative_to(c.BASE.resolve()),'owned command output')
         argv=json.loads(os.environ['HC074_SECURITY_ARGV']);bound=float(os.environ['HC074_SECURITY_BOUND']);deadline=min(float(os.environ['HC074_SECURITY_DEADLINE']),time.monotonic()+bound)
-        result=c.owned._owned(group(),argv,str(c.ROOT),c.capacity,bound=bound,deadline=deadline)
+        intent=json.loads((folder/'intent.json').read_bytes())
+        cwd=intent.get('cwd',str(c.ROOT))
+        c.need(cwd==str(c.ROOT) or cwd in [str(c.fixtures()/n) for n in ('B','Z','U')],'fixed original package working directory')
+        result=c.owned._owned(group(),argv,cwd,c.capacity,bound=bound,deadline=deadline)
         c.write(folder,'execution.json',result);raise SystemExit(result['exit'])
     if len(sys.argv)==3 and sys.argv[1]=='session':
-        {'resolve':resolve,'stage':stage}.get(sys.argv[2],lambda:session(sys.argv[2]))();raise SystemExit(0)
+        {'resolve':resolve,STAGE:stage}.get(sys.argv[2],lambda:session(sys.argv[2]))();raise SystemExit(0)
     c.need(len(sys.argv)==2,'one fixed phase');outer(sys.argv[1])

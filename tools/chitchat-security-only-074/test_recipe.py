@@ -14,6 +14,7 @@ class ExactSource(unittest.TestCase):
         old,rows=p.variants(self.raw)
         self.assertEqual(len(old),21)
         for name,files in rows.items():
+            files=dict(files);p.test_style(files,reverse=True)
             self.assertEqual(files['src/serialize.rs'],old['src/serialize.rs'])
             self.assertEqual(files['src/delta.rs'].replace(b"fn as_ref(&self) -> DeltaOpRef<'_> {",b'fn as_ref(&self) -> DeltaOpRef {'),old['src/delta.rs'])
             self.assertEqual(files['src/lib.rs'].replace(b"fn strip_key_prefix(&self, prefix: &str) -> Option<KeyChangeEvent<'_>> {",b'fn strip_key_prefix(&self, prefix: &str) -> Option<KeyChangeEvent> {'),old['src/lib.rs'])
