@@ -226,7 +226,9 @@ fn journal_failure_terminates_running_builder_and_event_budget_is_finite() {
     assert!(!e.report.journal_complete);
     let mut b = limits();
     b.maximum_events = 2;
-    b.heartbeat = Duration::from_secs(1);
+    // This case budgets only start/final events. Instrumented startup may exceed
+    // one second, so periodic progress must fall after the phase's own deadline.
+    b.heartbeat = Duration::from_secs(4);
     let mut c = controller(root.path(), b, Cancellation::default());
     c.run(BuildStage::ServerTests, worker("echo")).unwrap();
     assert!(c
