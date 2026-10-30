@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "only_changed_fixture_members": [
+    "fixtures\\P\\src\\observer.rs",
+    "fixtures\\G\\src\\observer.rs",
+    "fixtures\\B\\src\\observer.rs"
+  ],
+  "change_scope": "one diagnostic negative-control function",
+  "product_G_changed": false,
+  "C_observer_changed": false,
+  "numeric_observations_started": false
+}

@@ -1,0 +1,163 @@
+"""Fixed local GNU prerequisite, with the original Job/subreaper envelopes."""
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import sys
+import time
+import traceback
+import tomllib
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'chitchat-frame-074'))
+import recipe as p
+c=p.c
+NATIVE=Path('/home/artur/.cache/hydracache-074-frame/20261030-r2')
+INPUT=p.BASE/'native-input-r4'
+OUT=p.BASE/'native-build-r2'
+STATE=p.BASE/'native-state-r2'
+PHASE='build'
+FRAME=p.BASE/'native-frame-r4.json'
+FAST='tools/dbus-root-package-074/source_guard.py'
+FAST_SHA='dddb71d7a1b1c81b434477531a5a5ae01e15858782aea1b18b8b705efe0c00a6'
+WRAP='-Wl,--wrap=malloc,--wrap=calloc,--wrap=realloc,--wrap=free'
+
+
+def source():
+    if os.name=='nt':value=c.source()
+    else:
+        members=tomllib.loads((c.ROOT/'Cargo.toml').read_text(encoding='utf8'))['workspace']['members']
+        names={n.decode() for n in c.git('ls-files','-z','--',*members,'third_party/hc074-dbus').split(b'\0') if n}
+        names|=set(c.PINS)|{'Cargo.toml','.cargo/config.toml'}
+        names|={n.relative_to(c.ROOT).as_posix() for n in c.HERE.iterdir() if n.is_file()}
+        c.need(c.sha((c.ROOT/FAST).read_bytes())==FAST_SHA,'unchanged qualified openat2 source reader')
+        reader=c.load(c.ROOT/FAST,'context_fresh_kernel_source')
+        parallel=c.load(c.ROOT/'tools/chitchat-call-context-074/parallel_source.py','context_parallel_source')
+        value=parallel.hashes(reader,c.ROOT,sorted(names))
+        for n,digest in c.PINS.items():c.need(value[n]==digest,'same complete Root/helper pin: '+n)
+    for path in p.HERE.iterdir():
+        if path.is_file():value[path.relative_to(c.ROOT).as_posix()]=c.sha(path.read_bytes())
+    for name in ('chitchat-native-cost-074/wrap.c','chitchat-native-cost-074/wrap.h','chitchat-native-cost-074/control.c'):
+        path=c.ROOT/'tools'/name;value[path.relative_to(c.ROOT).as_posix()]=c.sha(path.read_bytes())
+    c.need(c.sha((c.ROOT/FAST).read_bytes())==FAST_SHA,'held fresh-source helper')
+    value[FAST]=FAST_SHA
+    import material
+    value.update(material.held())
+    for path in Path(__file__).resolve().parent.iterdir():
+        if path.is_file():value[path.relative_to(c.ROOT).as_posix()]=c.sha(path.read_bytes())
+    return value
+
+
+def prepare():
+    c.need(p.EXECUTION_ALLOWED and not (p.BASE/'STOP.json').exists(),'G stop seal')
+    old=p.BASE/'native-input-r3';frame=p.BASE/'native-frame-r3.json'
+    c.need(c.tree(old)==json.loads(frame.read_bytes()),'exact first input frame')
+    c.need(json.loads((p.BASE/'native-build-r2/result.json').read_bytes())['complete'],'qualified unchanged builds')
+    shutil.copytree(old,INPUT)
+    previous=json.loads((INPUT/'preparation.json').read_bytes())
+    previous['source']=source();previous['input_parent_frame_sha256']=c.sha(frame.read_bytes())
+    previous['repair_scope']='WSL sandbox access refusal before Linux entry; controller namespace only, identical images/fixtures/object'
+    (INPUT/'preparation.json').write_text(json.dumps(previous,indent=2,sort_keys=True)+'\n',encoding='utf8',newline='\n')
+    c.write(p.BASE,FRAME.name,c.tree(INPUT));guard()
+
+
+def capacity():
+    c.capacity()
+    if os.name=='posix' and NATIVE.exists() and shutil.disk_usage(NATIVE).free<4*1024**3:
+        raise c.owned.CapacityError('original native four-GiB floor')
+
+
+def guard():
+    c.need(c.tree(INPUT)==json.loads(FRAME.read_bytes()),'fresh complete original native inputs')
+    prep=json.loads((INPUT/'preparation.json').read_bytes())
+    c.need(source()==prep['source'],'fresh actual source and no changed product checks')
+    for v,files in prep['fixtures'].items():c.need(c.tree(p.BASE/'fixtures'/v)==files,'unchanged first Windows fixtures')
+    if NATIVE.exists():
+        c.need(c.tree(NATIVE/'fixtures')==c.tree(INPUT/'fixtures'),'fresh actual GNU fixtures')
+        for name in ('wrap.c','wrap.h','control.c','peek_control.c'):
+            c.need((NATIVE/name).read_bytes()==(INPUT/name).read_bytes(),'actual original C source: '+name)
+        obj=STATE/'object.json'
+        if obj.exists():c.need(c.sha((NATIVE/'wrap.o').read_bytes())==json.loads(obj.read_bytes())['sha256'],'held actual native observer object')
+    capacity()
+
+
+def environment(compiler='194'):
+    tool,env,_=c.environment(compiler)
+    env['CARGO_ENCODED_RUSTFLAGS']='\x1f'.join(('-C','linker=/usr/bin/gcc','-C','link-arg=-fuse-ld=bfd',
+       '-C','link-arg='+str(NATIVE/'wrap.o'),'-C','link-arg='+WRAP))
+    return tool,env
+
+
+def cargo_args(variant,compiler='194'):
+    c.need(variant in ('B','P','G') and compiler in ('194','188'),'fixed controls/candidate/compilers')
+    # An explicit target keeps diagnostic link flags off host proc-macros,
+    # exactly as in the qualified original native observer.
+    return ['--manifest-path',str(NATIVE/'fixtures'/variant/'Cargo.toml'),'--target-dir',str(NATIVE/'builds'/(variant+compiler)),
+        '--target','x86_64-unknown-linux-gnu','--offline','--locked','--release','--all-features']
+
+
+def invoke(name,argv,env,deadline,bound=1200,cwd=None):
+    guard();folder=OUT/name;folder.mkdir(exist_ok=False)
+    c.write(folder,'intent.json',dict(argv=argv,env=env,cwd=str(cwd or NATIVE),deadline=deadline,bound=bound,
+        image_sha256=c.sha(Path(argv[0]).read_bytes()),retry=False))
+    with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+        child=subprocess.run([sys.executable,'-B',str(Path(__file__)),'command',str(folder)],stdin=subprocess.DEVNULL,
+          stdout=stdout,stderr=stderr,env=env,timeout=max(0,min(bound,deadline-time.monotonic()))+10)
+    result=json.loads((folder/'execution.json').read_bytes())
+    c.need(child.returncode==result['exit']==0 and result['retired'] and not result['errors'],'first owned native outcome: '+name)
+    c.need(c.sha(Path(argv[0]).read_bytes())==json.loads((folder/'intent.json').read_bytes())['image_sha256'],'actual original command image')
+    guard();return folder
+
+
+def account(folder,test,names):
+    text=(folder/'stdout.log').read_text()
+    c.need(re.findall(r'^test (.+?) (?:- should panic )?\.\.\. ',text,re.M)==[test],'one exact native case')
+    c.need(re.findall(r'^test result: ok\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;',text,re.M)==[('1','0','0','0',str(len(names)-1))],'complete actual case accounting')
+
+
+def session():
+    import session as current
+    current.session(sys.modules[__name__])
+
+
+def outer():
+    c.need(p.EXECUTION_ALLOWED and not (p.BASE/'STOP.json').exists(),'G stopped; no further execution')
+    out=OUT;out.mkdir(exist_ok=False);before=source();head=c.snapshot();held=c.tree(INPUT)
+    argv=[str(Path(os.environ['SystemRoot'])/'System32/wsl.exe'),'-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B',
+      '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-frame-native-r4-074/native.py','session',PHASE]
+    c.write(out,'intent.json',dict(argv=argv,source=before,git=head,inputs=held,bound=1200,session_bound=1100,floor=4*1024**3,poll=5,cleanup=5,retry=False))
+    result=dict(complete=False,root_adopted=False,resources_qualified=False)
+    with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+        try:
+            child=subprocess.run([sys.executable,'-B',str(Path(__file__)),'outer-worker',PHASE],stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,timeout=1210)
+            own=json.loads((out/'execution.json').read_bytes())
+            c.need(child.returncode==own['exit']==0 and own['retired'] and not own['errors'],'complete original outer Job')
+            c.need(source()==before and c.snapshot()==head and c.tree(INPUT)==held,'complete Root/source/ref/input postflight')
+            c.need(json.loads((out/'session-result.json').read_bytes())['complete'],'complete first native session')
+            result['complete']=True
+        except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+    c.write(out,'result.json',result);print(json.dumps(result));raise SystemExit(0 if result['complete'] else 1)
+
+
+if __name__=='__main__':
+    c.need(p.EXECUTION_ALLOWED and not (p.BASE/'STOP.json').exists(),'G stopped; no direct worker/session execution')
+    if sys.argv[1]=='prepare':prepare()
+    elif sys.argv[1] in ('run','session','outer-worker'):
+        c.need(len(sys.argv)==3 and sys.argv[2] in ('observe',),'fixed native phase')
+        PHASE=sys.argv[2];OUT=p.BASE/('native-'+PHASE+'-r4')
+        if sys.argv[1]=='run':outer()
+        elif sys.argv[1]=='session':session()
+        else:
+            intent=json.loads((OUT/'intent.json').read_bytes())
+            _,env,_=c.environment('194');os.environ.clear();os.environ.update(env)
+            own=c.owned._owned(c.owned.load_job().WindowsJob(),intent['argv'],str(c.ROOT),capacity,bound=1200)
+            c.write(OUT,'execution.json',own);raise SystemExit(own['exit'])
+    elif sys.argv[1]=='command':
+        folder=Path(sys.argv[2]);relative=folder.resolve().relative_to(p.BASE.resolve())
+        c.need(relative.parts[0] in ('native-observe-r4',),'fixed native phase output')
+        OUT=p.BASE/relative.parts[0];c.need(folder.resolve().is_relative_to(OUT.resolve()),'fixed native output')
+        intent=json.loads((folder/'intent.json').read_bytes());os.environ.clear();os.environ.update(intent['env'])
+        group=c.load(c.ROOT/'scripts/ci/watchdog_linux_group.py','context_native_group').LinuxGroup()
+        own=c.owned._owned(group,intent['argv'],intent['cwd'],capacity,bound=intent['bound'],deadline=min(intent['deadline'],time.monotonic()+intent['bound']))
+        c.write(folder,'execution.json',own);raise SystemExit(own['exit'])
+    else:raise ValueError('fixed G native phases')

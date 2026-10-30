@@ -1,0 +1,99 @@
+"""Data-only evidence storage; no archived Python or compiled image execution."""
+import json,re
+from pathlib import Path,PurePosixPath
+import checks as a
+HERE=Path(__file__).resolve().parent
+PACKET=a.ROOT/'docs/testing/performance/0.74/local-runs/chitchat-frame-20261030'
+
+def collect():
+    bodies={}
+    for prefix,root in [('capture',a.BASE),('first-preparation',a.BASE.with_name(a.BASE.name+'-prepare-r1'))]:
+        for path in root.rglob('*'):
+            relative=path.relative_to(root)
+            if 'builds' in relative.parts or '__pycache__' in relative.parts:continue
+            a.need(not path.is_symlink() and not getattr(path,'is_junction',lambda:False)(),'regular contained evidence')
+            if path.is_file():
+                a.need(path.suffix in ('.json','.log','.toml','.rs','.py','.md','.c','.h','.txt') or path.name in ('Cargo.lock','Cargo.toml.orig','.gitattributes','LICENSE','README','NOTICE'),'data-only member: '+str(relative))
+                bodies[prefix+'/'+relative.as_posix()]=path.read_bytes()
+    for name in ('chitchat-frame-074','chitchat-frame-result-074','chitchat-frame-native-r2-074','chitchat-frame-native-r3-074','chitchat-frame-native-r4-074','chitchat-frame-evidence-074'):
+        for path in (a.ROOT/'tools'/name).iterdir():
+            if path.is_file():bodies['source/current/'+path.relative_to(a.ROOT).as_posix()]=path.read_bytes()
+    for name in ('Cargo.toml','Cargo.lock','deny.toml'):
+        bodies['reference/root/'+name]=(a.ROOT/name).read_bytes()
+    bodies['reference/root/qualification-manifest.toml']=(a.ROOT/'docs/testing/performance/0.74/qualification-manifest.toml').read_bytes()
+    for name in ('reference/compat-B0/stdout.log','capture/retention/analysis.json'):
+        bodies['reference/F/'+name]=a.reference(name)
+    return bodies
+
+def validate(index,read):
+    a.need(index['schema']=='hc074-chitchat-frame-v1' and index['parent_sha256']==a.PARENT_SHA,'closed packet identity')
+    a.need(all(index[k] is False for k in ('root_adopted','release_admitted','CPU_qualified','RSS_qualified')),'no scope promotion')
+    data={}
+    for name,row in index['members'].items():
+        p=PurePosixPath(name);a.need(not p.is_absolute() and '..' not in p.parts and '\\' not in name and ':' not in name,'contained packet name')
+        a.need(re.fullmatch('[0-9a-f]{64}',row['sha256']) and type(row['bytes']) is int and row['bytes']>=0,'whole exact descriptor')
+        raw=read(row['sha256']);a.need(a.sha(raw)==row['sha256'] and len(raw)==row['bytes'],'whole exact packet member');data[name]=raw
+    result=json.loads(data['capture/analysis/native.json'])
+    a.need(result==index['resource_result'] and result['complete'],'whole first native result')
+    for phase in ('build','semantic194','semantic188','observe'):
+        for receipt in ('result.json','session-result.json'):
+            a.need(json.loads(data['capture/native-'+phase+('-r2' if phase=='build' else '-r4' if phase=='observe' else '-r3')+'/'+receipt])['complete'],'complete first R2 phase envelope')
+    values=[]
+    for i,v in enumerate(('B','P','G','G','P','B'),1):
+        cell={}
+        for kind,marker in [('operation','HC074_NATIVE_ALLOC:'),('stateful','HC074_STATEFUL:'),('caller','HC074_CALLER:')]:
+            prefix=f'capture/native-observe-r4/observe-{i}-{v}-{kind}/'
+            owner=json.loads(data[prefix+'execution.json']);intent=json.loads(data[prefix+'intent.json'])
+            image=json.loads(data['capture/native-state-r2/image-'+v+'194.json'])
+            a.need(owner['exit']==0 and owner['retired'] and not owner['errors'] and owner['bound_seconds']==5,'original retired observation')
+            a.need(intent['argv'][0]==image['path'] and intent['image_sha256']==image['sha256'],'held actual observation image')
+            cell[kind]=a.diagnostic(data[prefix+'stdout.log'],marker)
+        values.append(cell)
+    a.need(a.review(values)==result,'independent full-body/dominance reconciliation')
+    a.native_semantics(lambda name:data['capture/'+name])
+    a.native_builds(lambda name:data['capture/'+name])
+    a.need(index['decision']=='declined-first-full-resource-gate' and not index['further_measurements_allowed'],'closed negative G decision')
+    a.need(json.loads(data['capture/decision.json'])['decision']==index['decision'] and 'capture/STOP.json' in data,'first stop retained')
+    a.need(not json.loads(data['capture/native-semantic194/session-result.json'])['complete'],'original R1 allocator-control refusal remains')
+    a.need(not json.loads(data['capture/native-semantic194-r2/session-result.json'])['complete'],'original R2 parser refusal remains')
+    a.need(not json.loads(data['capture/native-observe-r3/result.json'])['complete'] and not any(n.startswith('capture/native-observe-r3/observe-') for n in data),'original R3 access refusal has no observations')
+    a.need(json.loads(data['reference/F/capture/retention/analysis.json'])['resource_gate_pass'] is False,'F remains negative')
+    for name,digest in [('Cargo.lock','8ade63f6a4aae93f27f5161798bc87804542a48093b4203f35e25e29b680a4f5'),('deny.toml','16ee708c678497358f30d772cbb843832b4e02e8f3ae4355b648620a94c44930'),('qualification-manifest.toml','11917570528020b5e1eb275a5ad9509ba358e6a6ca044647d1235b685659b0bc')]:
+        a.need(a.sha(data['reference/root/'+name])==digest,'unchanged Root/qualification input')
+    return data
+
+def retain():
+    data=collect();result=json.loads(data['capture/analysis/native.json'])
+    index=dict(schema='hc074-chitchat-frame-v1',parent_sha256=a.PARENT_SHA,resource_result=result,
+      decision='declined-first-full-resource-gate',further_measurements_allowed=False,
+      root_adopted=False,release_admitted=False,CPU_qualified=False,RSS_qualified=False,
+      members={n:dict(sha256=a.sha(raw),bytes=len(raw)) for n,raw in sorted(data.items())})
+    objects={a.sha(raw):raw for raw in data.values()};validate(index,objects.__getitem__)
+    PACKET.mkdir(exist_ok=False);(PACKET/'objects').mkdir()
+    for digest,body in objects.items():(PACKET/'objects'/digest).write_bytes(body)
+    (PACKET/'.gitattributes').write_bytes(b'objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+    raw=(json.dumps(index,indent=2,sort_keys=True)+'\n').encode();(PACKET/'index.json').write_bytes(raw)
+    print(json.dumps(dict(sha256=a.sha(raw),members=len(data),objects=len(objects))))
+
+def verify(digest):
+    raw=(PACKET/'index.json').read_bytes();a.need(a.sha(raw)==digest,'external whole index digest');index=json.loads(raw)
+    data=validate(index,lambda h:(PACKET/'objects'/h).read_bytes())
+    print(json.dumps(dict(complete=True,members=len(data),resource_gate=index['resource_result']['allocation_retention_gate_pass'],root_adopted=False)))
+    return index
+
+def restore(digest,destination):
+    index=verify(digest);destination=Path(destination).resolve()
+    a.need(destination.is_relative_to((a.ROOT/'target').resolve()) and not destination.exists(),'new source-only workspace destination')
+    destination.mkdir();count=0
+    for name,row in index['members'].items():
+        if not name.startswith('capture/fixtures/G/'):continue
+        relative=PurePosixPath(name.removeprefix('capture/fixtures/G/'));path=destination/str(relative)
+        path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes((PACKET/'objects'/row['sha256']).read_bytes());count+=1
+    a.need((destination/'Cargo.lock').is_file() and (destination/'src/serialize.rs').is_file(),'complete original G source')
+    print(json.dumps(dict(source_members=count,producer_executed=False,build_executed=False)))
+
+if __name__=='__main__':
+    import sys
+    if sys.argv[1]=='retain':retain()
+    elif sys.argv[1]=='verify':a.need(len(sys.argv)==3,'explicit digest');verify(sys.argv[2])
+    else:a.need(sys.argv[1]=='restore' and len(sys.argv)==4,'fixed restore/digest/destination');restore(sys.argv[2],sys.argv[3])

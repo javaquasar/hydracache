@@ -1,0 +1,32 @@
+{
+  "complete": true,
+  "files": {
+    "tools\\chitchat-frame-074\\commit.rs": {
+      "before": "424736117889268813cd99bff385d75295219ed8b536a54a250ee35774652b85",
+      "after": "424736117889268813cd99bff385d75295219ed8b536a54a250ee35774652b85"
+    },
+    "tools\\chitchat-frame-074\\tests.rs": {
+      "before": "d150eac291b4b8f68209f1e79ed95141e0c74c8137420295a6932f80a0d91a7a",
+      "after": "d150eac291b4b8f68209f1e79ed95141e0c74c8137420295a6932f80a0d91a7a"
+    },
+    "tools\\chitchat-frame-result-074\\checkpoints.rs": {
+      "before": "89ecaab7b836d820dc5c3a39d33369463ed2ececae7a72551bffba5699e9225a",
+      "after": "89ecaab7b836d820dc5c3a39d33369463ed2ececae7a72551bffba5699e9225a"
+    },
+    "tools\\chitchat-frame-native-r2-074\\checkpoints.rs": {
+      "before": "77031fbb2d99e46b9498cc0ea15e24b7cb0289852bec861a2f9796c11a1cf875",
+      "after": "77031fbb2d99e46b9498cc0ea15e24b7cb0289852bec861a2f9796c11a1cf875"
+    },
+    "tools\\chitchat-frame-native-r3-074\\checkpoints.rs": {
+      "before": "77031fbb2d99e46b9498cc0ea15e24b7cb0289852bec861a2f9796c11a1cf875",
+      "after": "77031fbb2d99e46b9498cc0ea15e24b7cb0289852bec861a2f9796c11a1cf875"
+    },
+    "tools\\chitchat-frame-native-r4-074\\checkpoints.rs": {
+      "before": "77031fbb2d99e46b9498cc0ea15e24b7cb0289852bec861a2f9796c11a1cf875",
+      "after": "77031fbb2d99e46b9498cc0ea15e24b7cb0289852bec861a2f9796c11a1cf875"
+    }
+  },
+  "first_refusal": "Access is denied. (os error 5); preserved r1 logs",
+  "executed_fixtures_changed": false,
+  "rebuild": false
+}

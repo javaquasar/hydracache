@@ -1,0 +1,10 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "first owned native outcome: control-B194-03",
+    "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-frame-evidence-074/semantics.py\", line 37, in session\n    folder=core.invoke('control-'+key+f'-{i:02}',[image['path'],'--exact',test,'--test-threads=1','--nocapture'],env,deadline,5)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-frame-result-074/native.py\", line 100, in invoke\n    c.need(child.returncode==result['exit']==0 and result['retired'] and not result['errors'],'first owned native outcome: '+name)\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-security-only-074/scope.py\", line 28, in need\n    if not ok:raise ValueError(why)\n              ^^^^^^^^^^^^^^^^^^^^^\nValueError: first owned native outcome: control-B194-03\n",
+    "type": "ValueError"
+  },
+  "resources_qualified": false,
+  "root_adopted": false
+}

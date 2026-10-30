@@ -1,0 +1,4 @@
+
+thread 'serialize::fused_review::projection_panic_restores_original_cache' panicked at src/fused_tests.rs:165:13:
+projection fault
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

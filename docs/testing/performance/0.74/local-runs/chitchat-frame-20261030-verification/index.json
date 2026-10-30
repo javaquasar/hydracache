@@ -1,0 +1,374 @@
+{
+  "controls": {
+    "complete": true,
+    "mutation_controls": 5,
+    "product_execution": false
+  },
+  "members": {
+    "docs/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1634576,
+      "sha256": "e0946615be55a05e49477d7015c07061f3dca82fd7b8012d7a69ee0a5cbe15db"
+    },
+    "docs/docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md": {
+      "bytes": 91262,
+      "sha256": "21d0f3d51cf4ffeea4c5dbc16ac9a72f04f7ee17f94e8060feacf3b663dd9ef2"
+    },
+    "docs/docs/testing/performance/0.74/README.md": {
+      "bytes": 526087,
+      "sha256": "b73c1a3146189340651b03fc9f059065b01c045a4132740555482101955816ca"
+    },
+    "docs/docs/testing/performance/0.74/chitchat-frame-result-20261030.md": {
+      "bytes": 8077,
+      "sha256": "1ad748e5231d18d77f7d6f5679597456e7b351f23d48eebf931445c81453e156"
+    },
+    "docs/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 59719,
+      "sha256": "7704eaa47d9054cf28c1d1da14185e2f363e9b505c072ac379cd3f45e86dbe77"
+    },
+    "final/byte-verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/byte-verify/intent.json": {
+      "bytes": 303244,
+      "sha256": "142d6f83ce6f9c71927c96d73acd8e2c7ed26b3859472af0f06252f72762f5f1"
+    },
+    "final/byte-verify/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/byte-verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/byte-verify/stdout.log": {
+      "bytes": 84,
+      "sha256": "8b9ec908592babd1ae308febcbc5a4d5a365cf8e7adfce6e09949db5b80d9808"
+    },
+    "final/controls/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/controls/intent.json": {
+      "bytes": 303163,
+      "sha256": "7429b9b465259de1e6a63ebd8b6c7eaeec296d2ba922893cfd7bffff6c2d18ed"
+    },
+    "final/controls/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/controls/stderr.log": {
+      "bytes": 2513,
+      "sha256": "2602950c07c9311920d1042b4650da5bc645cfef58becd99cbaa8515229c682a"
+    },
+    "final/controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/doc-check/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/doc-check/intent.json": {
+      "bytes": 303111,
+      "sha256": "40459573904e10c6719c8463e32e6498770ce11d0faeb56ec3d381f8d6f4bd4d"
+    },
+    "final/doc-check/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "final/format/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/format/intent.json": {
+      "bytes": 303802,
+      "sha256": "49355b1be89a4ffc6651799f78d6ed9c76eb30cd738e6b6e2a015c5fcb8661ad"
+    },
+    "final/format/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/performance-contract/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/performance-contract/intent.json": {
+      "bytes": 303157,
+      "sha256": "ec059811401c3d8dc2fbb85d83ce6cad84f33ea0857cafcd8e41da8387c03806"
+    },
+    "final/performance-contract/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/performance-contract/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/performance-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "final/restore-verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/restore-verify/intent.json": {
+      "bytes": 303351,
+      "sha256": "9818662941e818e2baa7cd62144e18ef2924a218ad4bea74764384bc9ccec399"
+    },
+    "final/restore-verify/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/restore-verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/restore-verify/stdout.log": {
+      "bytes": 161,
+      "sha256": "0946e5a436a98cd68f8ed56153c43a47ccc8302d7328e6b98ac44da0dfd9e0fe"
+    },
+    "final/syntax/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/syntax/intent.json": {
+      "bytes": 303375,
+      "sha256": "b7e9986cde7074a87fea5f1b50ee6ec05d2231db1a312677223406a4547d5f3e"
+    },
+    "final/syntax/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source/current/tools/chitchat-frame-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-frame-074/README.md": {
+      "bytes": 2602,
+      "sha256": "b58c585530a6aaabe10632852ef4c38662b6c8b02ef5c0335ade9320cd2f4a0e"
+    },
+    "source/current/tools/chitchat-frame-074/checkpoint.py": {
+      "bytes": 2168,
+      "sha256": "aeb3380d8ccdc483bdd1b37e3260038e5db8c7916ebe8cf6d66a75f87c10ed47"
+    },
+    "source/current/tools/chitchat-frame-074/commit.rs": {
+      "bytes": 928,
+      "sha256": "424736117889268813cd99bff385d75295219ed8b536a54a250ee35774652b85"
+    },
+    "source/current/tools/chitchat-frame-074/recipe.py": {
+      "bytes": 4393,
+      "sha256": "64023e6c1b1216cb1b63c1dcf08e9626687c46210c077fb324ab71d7fdb93154"
+    },
+    "source/current/tools/chitchat-frame-074/run.py": {
+      "bytes": 9770,
+      "sha256": "2d9ffd641b99b9d53415e50f5d3d5507800d290efe9667291f5df5654dbf43fb"
+    },
+    "source/current/tools/chitchat-frame-074/tests.rs": {
+      "bytes": 4398,
+      "sha256": "d150eac291b4b8f68209f1e79ed95141e0c74c8137420295a6932f80a0d91a7a"
+    },
+    "source/current/tools/chitchat-frame-evidence-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-frame-evidence-074/COST_REVIEW.md": {
+      "bytes": 2742,
+      "sha256": "5b57e6cf5241506b230b148eab35cd503348e37753ecbedfbd7ae9de978e9845"
+    },
+    "source/current/tools/chitchat-frame-evidence-074/README.md": {
+      "bytes": 1718,
+      "sha256": "b498ab501497211a22e22ad704c88055ee711589500d239cd038d9c5b67c4e5d"
+    },
+    "source/current/tools/chitchat-frame-evidence-074/checks.py": {
+      "bytes": 17059,
+      "sha256": "271ec4d9a1af4af0581d61d53373ed1ffc866a039d98a6da7593d513ba9edca8"
+    },
+    "source/current/tools/chitchat-frame-evidence-074/close.py": {
+      "bytes": 3276,
+      "sha256": "bb37d4b192f217cfface5561a6e6324cef9be5120e2049ad20ab163a7d493741"
+    },
+    "source/current/tools/chitchat-frame-evidence-074/controller_r4.py": {
+      "bytes": 2633,
+      "sha256": "00c0dbacbd2236304f2a1082464e040a29b1e2ad33a3d4e59c56ae2780fc7ba4"
+    },
+    "source/current/tools/chitchat-frame-evidence-074/gates.py": {
+      "bytes": 4095,
+      "sha256": "262e512c15afd1e32ea3e56f7c3d0cec79d3686954340be8f92f4e7f3c46dd32"
+    },
+    "source/current/tools/chitchat-frame-evidence-074/packet.py": {
+      "bytes": 7900,
+      "sha256": "506df526ba8b0d7fcb59ec4bdd16ef35750953f27c03aba72dbac1f7fa670357"
+    },
+    "source/current/tools/chitchat-frame-evidence-074/semantics.py": {
+      "bytes": 7537,
+      "sha256": "7646ef64a2b43fcf194eac53f51f2ab53955e0e7bca4cd3c3985a35413d69ef7"
+    },
+    "source/current/tools/chitchat-frame-evidence-074/semantics_r2.py": {
+      "bytes": 7570,
+      "sha256": "162dd30b63d60b5d8517e80861aebb49c81fb189271b27ea6ebb00e3568cd1ee"
+    },
+    "source/current/tools/chitchat-frame-evidence-074/semantics_r3.py": {
+      "bytes": 7570,
+      "sha256": "c37613a0a027e4e6c52fde402af655da2c9a40011d60c39e4d5dd2f9afb0544c"
+    },
+    "source/current/tools/chitchat-frame-evidence-074/test_checks.py": {
+      "bytes": 6532,
+      "sha256": "b0aee2bea4ced011c9dbe27f298b1f38de4e778cbf0063d59fe29933a9d8d865"
+    },
+    "source/current/tools/chitchat-frame-final-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-frame-final-074/README.md": {
+      "bytes": 432,
+      "sha256": "94426ac35c4ca7e2f496f6d7260c2287e98f52a59de2fd66259319ed994e3add"
+    },
+    "source/current/tools/chitchat-frame-final-074/retain.py": {
+      "bytes": 5374,
+      "sha256": "798d23a110dadcd166c8aedeb91ed2b88ee9028f86beadbd967620d8f0d6c374"
+    },
+    "source/current/tools/chitchat-frame-native-r2-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-frame-native-r2-074/README.md": {
+      "bytes": 1524,
+      "sha256": "361b4610bc5441258355d5c79ab49a44da77de1763e6d84fe1bbad85cf37eee5"
+    },
+    "source/current/tools/chitchat-frame-native-r2-074/checkpoints.rs": {
+      "bytes": 2250,
+      "sha256": "77031fbb2d99e46b9498cc0ea15e24b7cb0289852bec861a2f9796c11a1cf875"
+    },
+    "source/current/tools/chitchat-frame-native-r2-074/material.py": {
+      "bytes": 13430,
+      "sha256": "38a2f4e27c38ba2fb602fc53b1a54d88e1615ae3fb3b95dc7b1601367b97f7a3"
+    },
+    "source/current/tools/chitchat-frame-native-r2-074/native.py": {
+      "bytes": 9204,
+      "sha256": "cc9fc674952781d9f4d0d1a355cb7732426903800cebec6766abcf86be27c7e4"
+    },
+    "source/current/tools/chitchat-frame-native-r2-074/session.py": {
+      "bytes": 8916,
+      "sha256": "0e5888b5ad2dc978146046dc5013845cc875be3ed397398155cae65ff6108205"
+    },
+    "source/current/tools/chitchat-frame-native-r3-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-frame-native-r3-074/README.md": {
+      "bytes": 1524,
+      "sha256": "361b4610bc5441258355d5c79ab49a44da77de1763e6d84fe1bbad85cf37eee5"
+    },
+    "source/current/tools/chitchat-frame-native-r3-074/checkpoints.rs": {
+      "bytes": 2250,
+      "sha256": "77031fbb2d99e46b9498cc0ea15e24b7cb0289852bec861a2f9796c11a1cf875"
+    },
+    "source/current/tools/chitchat-frame-native-r3-074/material.py": {
+      "bytes": 13430,
+      "sha256": "38a2f4e27c38ba2fb602fc53b1a54d88e1615ae3fb3b95dc7b1601367b97f7a3"
+    },
+    "source/current/tools/chitchat-frame-native-r3-074/native.py": {
+      "bytes": 9865,
+      "sha256": "3b009606d8589188ebac510c7039efe496aa31f7fd474441f1b7697e7f52d331"
+    },
+    "source/current/tools/chitchat-frame-native-r3-074/session.py": {
+      "bytes": 8916,
+      "sha256": "5d6fb91855a2a3223ea41193ff644c75af895acbd983a58e66d512c38e5428be"
+    },
+    "source/current/tools/chitchat-frame-native-r4-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-frame-native-r4-074/README.md": {
+      "bytes": 1773,
+      "sha256": "1f8de66e7e95520a4088558c8d643bd8f9c3cb407dbaaa8548bb59902f6e22f0"
+    },
+    "source/current/tools/chitchat-frame-native-r4-074/checkpoints.rs": {
+      "bytes": 2250,
+      "sha256": "77031fbb2d99e46b9498cc0ea15e24b7cb0289852bec861a2f9796c11a1cf875"
+    },
+    "source/current/tools/chitchat-frame-native-r4-074/material.py": {
+      "bytes": 13430,
+      "sha256": "38a2f4e27c38ba2fb602fc53b1a54d88e1615ae3fb3b95dc7b1601367b97f7a3"
+    },
+    "source/current/tools/chitchat-frame-native-r4-074/native.py": {
+      "bytes": 9811,
+      "sha256": "cdca0379c2358b07057dbfee49e85ee27f6065a1eab64c7310742c1a918a0861"
+    },
+    "source/current/tools/chitchat-frame-native-r4-074/session.py": {
+      "bytes": 8916,
+      "sha256": "5d6fb91855a2a3223ea41193ff644c75af895acbd983a58e66d512c38e5428be"
+    },
+    "source/current/tools/chitchat-frame-result-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-frame-result-074/README.md": {
+      "bytes": 1524,
+      "sha256": "361b4610bc5441258355d5c79ab49a44da77de1763e6d84fe1bbad85cf37eee5"
+    },
+    "source/current/tools/chitchat-frame-result-074/checkpoints.rs": {
+      "bytes": 1897,
+      "sha256": "89ecaab7b836d820dc5c3a39d33369463ed2ececae7a72551bffba5699e9225a"
+    },
+    "source/current/tools/chitchat-frame-result-074/material.py": {
+      "bytes": 13430,
+      "sha256": "38a2f4e27c38ba2fb602fc53b1a54d88e1615ae3fb3b95dc7b1601367b97f7a3"
+    },
+    "source/current/tools/chitchat-frame-result-074/native.py": {
+      "bytes": 9289,
+      "sha256": "11d4fddaf31a5017fe75f7eaef8ee21d0f98607488f8b8f086b7c0902b96e974"
+    },
+    "source/current/tools/chitchat-frame-result-074/session.py": {
+      "bytes": 8907,
+      "sha256": "f0b5d401da4cfddb18ef526153f11b75bde4037c48771d2ca3b4c9f9b81ece38"
+    }
+  },
+  "schema": "hc074-chitchat-frame-offline-v1",
+  "summary": {
+    "CPU_qualified": false,
+    "RSS_qualified": false,
+    "complete": true,
+    "decision": "declined-first-full-resource-gate",
+    "gates": [
+      "controls",
+      "syntax",
+      "format",
+      "byte-verify",
+      "restore-verify",
+      "doc-check",
+      "performance-contract"
+    ],
+    "offline_controls": 24,
+    "primary_sha256": "41a5a9ef83a599c6d2cbcd519dd5070f8527b7994c04618741e06b0038fbcb09",
+    "product_execution": false,
+    "release_admitted": false,
+    "root_adopted": false
+  }
+}

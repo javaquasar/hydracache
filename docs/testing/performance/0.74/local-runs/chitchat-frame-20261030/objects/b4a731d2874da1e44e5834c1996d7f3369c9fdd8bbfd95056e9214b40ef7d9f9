@@ -1,0 +1,9 @@
+
+thread 'serialize::fused_review::inconsistent_private_projection_fails_loud_without_loop' (9777) panicked at src/serialize.rs:880:9:
+assertion `left == right` failed: projection shorter than declared item
+  left: 2
+ right: 3
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'serialize::fused_review::inconsistent_private_projection_fails_loud_without_loop' (9777) panicked at src/serialize.rs:846:13:
+projection longer than declared item

@@ -1,0 +1,16 @@
+{
+  "source": "tools\\chitchat-call-result-074\\compat.py",
+  "sha256": "6287c250d83e557d1e089c06a395cc10240373690a0a1e40961a87e0f5be6651",
+  "pure_cases": "original C2 full Root entry/exit and fresh actual fixture/image per case",
+  "native_controls": "unchanged full core.invoke before/after Root guards",
+  "bounds": {
+    "outer": 1200,
+    "session": 1100,
+    "case": 5,
+    "poll": 5,
+    "retirement": 5,
+    "floor": 4294967296
+  },
+  "product_checks_removed": false,
+  "allocation_protocol_changed": false
+}

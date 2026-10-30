@@ -1,0 +1,29 @@
+test_refuses_changed_whole_object (__main__.ArchiveControls.test_refuses_changed_whole_object) ... ok
+test_refuses_coherently_rehashed_cached_build (__main__.ArchiveControls.test_refuses_coherently_rehashed_cached_build) ... ok
+test_refuses_coherently_rehashed_green_result (__main__.ArchiveControls.test_refuses_coherently_rehashed_green_result) ... ok
+test_refuses_path_escape (__main__.ArchiveControls.test_refuses_path_escape) ... ok
+test_refuses_scope_promotion (__main__.ArchiveControls.test_refuses_scope_promotion) ... ok
+test_complete_windows_bodies (__main__.Controls.test_complete_windows_bodies) ... ok
+test_meter_all_twelve_fields (__main__.Controls.test_meter_all_twelve_fields) ... ok
+test_original_F_remains_negative (__main__.Controls.test_original_F_remains_negative) ... ok
+test_refuses_bool_counter (__main__.Controls.test_refuses_bool_counter) ... ok
+test_refuses_duplicate_raw_marker (__main__.Controls.test_refuses_duplicate_raw_marker) ... ok
+test_refuses_incomplete_raw_marker (__main__.Controls.test_refuses_incomplete_raw_marker) ... ok
+test_refuses_missing_physical_field (__main__.Controls.test_refuses_missing_physical_field) ... ok
+test_refuses_retained_C (__main__.Controls.test_refuses_retained_C) ... ok
+test_refuses_unexecuted_C_checkpoints (__main__.Controls.test_refuses_unexecuted_C_checkpoints) ... ok
+test_complete_first_result_matches (__main__.WholeMatrixControls.test_complete_first_result_matches) ... ok
+test_complete_native_semantics (__main__.WholeMatrixControls.test_complete_native_semantics) ... ok
+test_flags_one_extra_physical_peak (__main__.WholeMatrixControls.test_flags_one_extra_physical_peak) ... ok
+test_flags_returned_output_capacity (__main__.WholeMatrixControls.test_flags_returned_output_capacity) ... ok
+test_native_images_were_fresh (__main__.WholeMatrixControls.test_native_images_were_fresh) ... ok
+test_refuses_changed_full_workload (__main__.WholeMatrixControls.test_refuses_changed_full_workload) ... ok
+test_refuses_changed_operation_wire (__main__.WholeMatrixControls.test_refuses_changed_operation_wire) ... ok
+test_refuses_changed_repeat (__main__.WholeMatrixControls.test_refuses_changed_repeat) ... ok
+test_refuses_missing_process (__main__.WholeMatrixControls.test_refuses_missing_process) ... ok
+test_refuses_retained_C_in_full_body (__main__.WholeMatrixControls.test_refuses_retained_C_in_full_body) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 6.962s
+
+OK

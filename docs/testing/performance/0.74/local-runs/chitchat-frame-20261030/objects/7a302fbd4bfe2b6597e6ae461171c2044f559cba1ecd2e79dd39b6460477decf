@@ -1,0 +1,11 @@
+{
+  "reason": "GNU optimizer elided direct malloc/free from negative-control closure",
+  "proof": [
+    "attribution/negative-control-r1/disassemble-0.log",
+    "attribution/negative-control-r1/disassemble-1.log"
+  ],
+  "product_G_changed": false,
+  "numeric_observations_started": false,
+  "repair": "opaque black_box function pointers and volatile use in diagnostic negative control only",
+  "first_refusals_preserved": true
+}

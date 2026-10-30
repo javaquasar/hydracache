@@ -1,0 +1,31 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-frame/20261030-r2/builds/G188/x86_64-unknown-linux-gnu/release/deps/chitchat-a56dda0941b5b71e",
+    "--exact",
+    "delta::tests::test_delta_serialization_exceed_mtu_on_add_node",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "bound": 5,
+  "cwd": "/home/artur/.cache/hydracache-074-frame/20261030-r2/fixtures/G",
+  "deadline": 67320.648212913,
+  "env": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_ENCODED_RUSTFLAGS": "-C\u001flinker=/usr/bin/gcc\u001f-C\u001flink-arg=-fuse-ld=bfd\u001f-C\u001flink-arg=/home/artur/.cache/hydracache-074-frame/20261030-r2/wrap.o\u001f-C\u001flink-arg=-Wl,--wrap=malloc,--wrap=calloc,--wrap=realloc,--wrap=free",
+    "CARGO_HOME": "/home/artur/.cache/hydracache-074-security-only/20261030-v3/cargo-home",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_OFFLINE": "true",
+    "HOME": "/home/artur",
+    "LANG": "C.UTF-8",
+    "LOGNAME": "artur",
+    "PATH": "/home/artur/.rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin:/usr/local/bin:/usr/bin:/bin",
+    "PROPTEST_RNG_SEED": "7606312",
+    "RUSTC": "/home/artur/.rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTC_WORKSPACE_WRAPPER": "",
+    "RUSTC_WRAPPER": "",
+    "RUSTUP_TOOLCHAIN": "1.88.0-x86_64-unknown-linux-gnu",
+    "USER": "artur"
+  },
+  "image_sha256": "6e76711edbad54f9b14daa61b1b25793ee3ccde2e0235553b9f1c6b90a8f67a0",
+  "retry": false
+}

@@ -1,0 +1,11 @@
+{
+  "first_case": "native-semantic194-r2/case-G194-006",
+  "actual_exit": 0,
+  "actual_test_result": "ok, should panic",
+  "outer_result_promoted": false,
+  "reason": "test-name regex consumed the should-panic suffix",
+  "repair": "use original C2 optional should-panic suffix parser",
+  "product_G_changed": false,
+  "images_rebuilt": false,
+  "numeric_observations_started": false
+}

@@ -1,0 +1,24 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "baseline_append_capacity": [
+    256,
+    256,
+    64
+  ],
+  "baseline_finish_capacity": 256,
+  "candidate_append_capacity": [
+    256,
+    128,
+    64
+  ],
+  "candidate_finish_capacity": 256,
+  "checkpoint_pass": true,
+  "complete": true,
+  "finish_len": 155,
+  "full_resource_gate_pass": false,
+  "observations_per_image": 2,
+  "regressions": [],
+  "release_admitted": false,
+  "root_adopted": false
+}

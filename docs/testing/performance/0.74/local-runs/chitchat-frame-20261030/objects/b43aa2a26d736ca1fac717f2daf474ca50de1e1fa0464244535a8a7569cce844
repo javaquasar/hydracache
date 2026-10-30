@@ -1,0 +1,11 @@
+{
+  "complete": true,
+  "expected_failure": false,
+  "failed": 0,
+  "passed": 1,
+  "resources_qualified": false,
+  "root_adopted": false,
+  "selected": [
+    "serialize::frame_review::commit_refuses_a_bad_first_internal_frame_before_effects"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "first_result": {
+    "complete": false,
+    "first_refusal": {
+      "reason": "complete original outer Job",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-frame-native-r3-074\\native.py\", line 134, in outer\n    c.need(child.returncode==own['exit']==0 and own['retired'] and not own['errors'],'complete original outer Job')\n    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-security-only-074\\scope.py\", line 28, in need\n    if not ok:raise ValueError(why)\n              ^^^^^^^^^^^^^^^^^^^^^\nValueError: complete original outer Job\n",
+      "type": "ValueError"
+    },
+    "resources_qualified": false,
+    "root_adopted": false
+  },
+  "owner": {
+    "bound_seconds": 1200,
+    "capacity_poll_seconds": 5,
+    "classification": "test-failure",
+    "cleanup_seconds": 5,
+    "errors": [],
+    "exit": 4294967295,
+    "observed_child_exit": 4294967295,
+    "production_writer_authority": false,
+    "retired": true
+  },
+  "linux_session_started": false,
+  "resource_observations": 0,
+  "repair": "sandbox access and separate controller/output namespace",
+  "images_rebuilt": false,
+  "checks_changed": false,
+  "bounds_changed": false,
+  "root_adopted": false
+}

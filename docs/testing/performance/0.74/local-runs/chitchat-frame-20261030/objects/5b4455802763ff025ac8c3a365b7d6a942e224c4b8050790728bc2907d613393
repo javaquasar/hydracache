@@ -1,0 +1,418 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "complete": true,
+  "confirmed": "G has one extra compression call and three extra logical/physical Rust allocations; capacities, decisions and wire agree",
+  "decision": "declined-first-full-resource-gate",
+  "new_measurements": false,
+  "registry_source": {
+    "src/bulk/compressor.rs": {
+      "bytes": 5976,
+      "sha256": "a1d9c59d22f99f9fe168e6245df0318657b059cbecb489cc8daa164958b48247"
+    },
+    "src/lib.rs": {
+      "bytes": 3833,
+      "sha256": "6175d6b1bdb86629ba1c934fdf42021112f70287934f1f7d6fa26b3215afe522"
+    }
+  },
+  "regressions": [
+    {
+      "after": 9,
+      "before": 6,
+      "field": "allocs",
+      "kind": "stateful",
+      "peer": "B",
+      "row": 6,
+      "scope": "logical"
+    },
+    {
+      "after": 9,
+      "before": 6,
+      "field": "allocs",
+      "kind": "stateful",
+      "peer": "B",
+      "row": 6,
+      "scope": "physical"
+    }
+  ],
+  "release_admitted": false,
+  "root_adopted": false,
+  "rows": {
+    "B": {
+      "compressions": 5,
+      "decisions": [
+        true,
+        true,
+        true
+      ],
+      "finish_capacity": 4000,
+      "meter": {
+        "c_free_checkpoints": 5,
+        "native": {
+          "c": {
+            "allocs": 10,
+            "calloc_calls": 5,
+            "external_frees": 0,
+            "failed": 0,
+            "free_calls": 10,
+            "live": 0,
+            "malloc_calls": 5,
+            "peak": 41710,
+            "realloc_calls": 0,
+            "requested": 194439
+          },
+          "errors": 0,
+          "rust": {
+            "allocs": 6,
+            "calloc_calls": 0,
+            "external_frees": 0,
+            "failed": 0,
+            "free_calls": 6,
+            "live": 0,
+            "malloc_calls": 6,
+            "peak": 9181,
+            "realloc_calls": 3,
+            "requested": 14181
+          }
+        },
+        "rust": {
+          "allocs": 6,
+          "live": 0,
+          "peak": 9181,
+          "reallocs": 3,
+          "requested": 14181
+        }
+      },
+      "name": "accepted-multiblock",
+      "payload_sha256": [
+        "f7d352a57110e3aa02712829101ccbdd37624119af3dc0450ef8e1eb79553038",
+        "81612386cf7d782bb42c83605c42b650dfb45d73aaeacb16e5d002dc7b0be4da",
+        "56e75135f0ade48aa22e0f12a1b8dbdacf1eacadc82f5af7c1b46757dc4dd697"
+      ],
+      "states": [
+        {
+          "cache": null,
+          "capacity": [
+            1000,
+            2000,
+            1000
+          ],
+          "len": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "cache": null,
+          "capacity": [
+            1000,
+            2000,
+            1000
+          ],
+          "len": [
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "cache": null,
+          "capacity": [
+            4000,
+            4102,
+            1000
+          ],
+          "len": [
+            3507,
+            102,
+            1000
+          ]
+        },
+        {
+          "cache": null,
+          "capacity": [
+            4000,
+            4102,
+            1000
+          ],
+          "len": [
+            3507,
+            105,
+            1000
+          ]
+        }
+      ],
+      "steps": [
+        [
+          "Node",
+          1000
+        ],
+        [
+          {
+            "Ascii": 4096
+          },
+          4109
+        ],
+        [
+          "Tiny",
+          65507
+        ]
+      ],
+      "threshold": 1000,
+      "wire_bytes": 3616,
+      "wire_sha256": "beb1d44bc1352fefbcede966e70931495c357063c8a438e8c420ea28acd45166"
+    },
+    "G": {
+      "compressions": 6,
+      "decisions": [
+        true,
+        true,
+        true
+      ],
+      "finish_capacity": 4000,
+      "meter": {
+        "c_free_checkpoints": 5,
+        "native": {
+          "c": {
+            "allocs": 4,
+            "calloc_calls": 2,
+            "external_frees": 0,
+            "failed": 0,
+            "free_calls": 4,
+            "live": 0,
+            "malloc_calls": 2,
+            "peak": 41710,
+            "realloc_calls": 0,
+            "requested": 69309
+          },
+          "errors": 0,
+          "rust": {
+            "allocs": 9,
+            "calloc_calls": 0,
+            "external_frees": 0,
+            "failed": 0,
+            "free_calls": 9,
+            "live": 0,
+            "malloc_calls": 9,
+            "peak": 7079,
+            "realloc_calls": 2,
+            "requested": 10158
+          }
+        },
+        "rust": {
+          "allocs": 9,
+          "live": 0,
+          "peak": 7079,
+          "reallocs": 2,
+          "requested": 10158
+        }
+      },
+      "name": "accepted-multiblock",
+      "payload_sha256": [
+        "f7d352a57110e3aa02712829101ccbdd37624119af3dc0450ef8e1eb79553038",
+        "81612386cf7d782bb42c83605c42b650dfb45d73aaeacb16e5d002dc7b0be4da",
+        "56e75135f0ade48aa22e0f12a1b8dbdacf1eacadc82f5af7c1b46757dc4dd697"
+      ],
+      "states": [
+        {
+          "cache": null,
+          "capacity": [
+            1000,
+            2000,
+            1000
+          ],
+          "len": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "cache": null,
+          "capacity": [
+            1000,
+            2000,
+            1000
+          ],
+          "len": [
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "cache": null,
+          "capacity": [
+            4000,
+            2000,
+            1000
+          ],
+          "len": [
+            3507,
+            102,
+            102
+          ]
+        },
+        {
+          "cache": null,
+          "capacity": [
+            4000,
+            2000,
+            1000
+          ],
+          "len": [
+            3507,
+            105,
+            102
+          ]
+        }
+      ],
+      "steps": [
+        [
+          "Node",
+          1000
+        ],
+        [
+          {
+            "Ascii": 4096
+          },
+          4109
+        ],
+        [
+          "Tiny",
+          65507
+        ]
+      ],
+      "threshold": 1000,
+      "wire_bytes": 3616,
+      "wire_sha256": "beb1d44bc1352fefbcede966e70931495c357063c8a438e8c420ea28acd45166"
+    },
+    "P": {
+      "compressions": 10,
+      "decisions": [
+        true,
+        true,
+        true
+      ],
+      "finish_capacity": 4000,
+      "meter": {
+        "c_free_checkpoints": 5,
+        "native": {
+          "c": {
+            "allocs": 20,
+            "calloc_calls": 10,
+            "external_frees": 0,
+            "failed": 0,
+            "free_calls": 20,
+            "live": 0,
+            "malloc_calls": 10,
+            "peak": 41710,
+            "realloc_calls": 0,
+            "requested": 388872
+          },
+          "errors": 0,
+          "rust": {
+            "allocs": 9,
+            "calloc_calls": 0,
+            "external_frees": 0,
+            "failed": 0,
+            "free_calls": 9,
+            "live": 0,
+            "malloc_calls": 9,
+            "peak": 9181,
+            "realloc_calls": 3,
+            "requested": 14260
+          }
+        },
+        "rust": {
+          "allocs": 9,
+          "live": 0,
+          "peak": 9181,
+          "reallocs": 3,
+          "requested": 14260
+        }
+      },
+      "name": "accepted-multiblock",
+      "payload_sha256": [
+        "f7d352a57110e3aa02712829101ccbdd37624119af3dc0450ef8e1eb79553038",
+        "81612386cf7d782bb42c83605c42b650dfb45d73aaeacb16e5d002dc7b0be4da",
+        "56e75135f0ade48aa22e0f12a1b8dbdacf1eacadc82f5af7c1b46757dc4dd697"
+      ],
+      "states": [
+        {
+          "cache": null,
+          "capacity": [
+            1000,
+            2000,
+            1000
+          ],
+          "len": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "cache": null,
+          "capacity": [
+            1000,
+            2000,
+            1000
+          ],
+          "len": [
+            0,
+            6,
+            0
+          ]
+        },
+        {
+          "cache": null,
+          "capacity": [
+            4000,
+            4102,
+            1000
+          ],
+          "len": [
+            3507,
+            102,
+            1000
+          ]
+        },
+        {
+          "cache": null,
+          "capacity": [
+            4000,
+            4102,
+            1000
+          ],
+          "len": [
+            3507,
+            105,
+            1000
+          ]
+        }
+      ],
+      "steps": [
+        [
+          "Node",
+          1000
+        ],
+        [
+          {
+            "Ascii": 4096
+          },
+          4109
+        ],
+        [
+          "Tiny",
+          65507
+        ]
+      ],
+      "threshold": 1000,
+      "wire_bytes": 3616,
+      "wire_sha256": "beb1d44bc1352fefbcede966e70931495c357063c8a438e8c420ea28acd45166"
+    }
+  },
+  "source_inference": "The 102-byte simulated tail is not cached as compressed; its additional compression error maps to an owned String/io::Error. This is consistent with the allocation increase, not allocator-stack attribution."
+}

@@ -1,0 +1,60 @@
+
+/home/artur/.cache/hydracache-074-frame/20261030-r1/builds/B194/x86_64-unknown-linux-gnu/release/deps/chitchat-0c48676f6e73114d:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000065be0 <chitchat::delta::cost_review::c_checkpoint_positive_and_retained_negative_control::{{closure}}>:
+   65be0:	41 57                	push   %r15
+   65be2:	41 56                	push   %r14
+   65be4:	53                   	push   %rbx
+   65be5:	e8 96 5b 03 00       	call   9b780 <chitchat::delta::cost_review::c_free_checkpoint>
+   65bea:	e8 91 5b 03 00       	call   9b780 <chitchat::delta::cost_review::c_free_checkpoint>
+   65bef:	48 8d 3d 49 6e 31 00 	lea    0x316e49(%rip),%rdi        # 37ca3f <anon.372fa82706c5b3cfc19e4826a51e5e3f.142.llvm.6757958972363952406+0x277>
+   65bf6:	48 8d 15 e3 c9 44 00 	lea    0x44c9e3(%rip),%rdx        # 4b25e0 <anon.372fa82706c5b3cfc19e4826a51e5e3f.194.llvm.6757958972363952406+0x18>
+   65bfd:	be 22 00 00 00       	mov    $0x22,%esi
+   65c02:	ff 15 28 a8 49 00    	call   *0x49a828(%rip)        # 500430 <_GLOBAL_OFFSET_TABLE_+0x16b0>
+   65c08:	48 89 c7             	mov    %rax,%rdi
+   65c0b:	ff 15 77 a5 49 00    	call   *0x49a577(%rip)        # 500188 <_GLOBAL_OFFSET_TABLE_+0x1408>
+   65c11:	48 89 c3             	mov    %rax,%rbx
+   65c14:	49 89 d6             	mov    %rdx,%r14
+   65c17:	48 8b 02             	mov    (%rdx),%rax
+   65c1a:	48 85 c0             	test   %rax,%rax
+   65c1d:	74 05                	je     65c24 <chitchat::delta::cost_review::c_checkpoint_positive_and_retained_negative_control::{{closure}}+0x44>
+   65c1f:	48 89 df             	mov    %rbx,%rdi
+   65c22:	ff d0                	call   *%rax
+   65c24:	4d 8b 76 08          	mov    0x8(%r14),%r14
+   65c28:	4d 85 f6             	test   %r14,%r14
+   65c2b:	74 4e                	je     65c7b <chitchat::delta::cost_review::c_checkpoint_positive_and_retained_negative_control::{{closure}}+0x9b>
+   65c2d:	ff 15 7d 9c 49 00    	call   *0x499c7d(%rip)        # 4ff8b0 <_GLOBAL_OFFSET_TABLE_+0xb30>
+   65c33:	48 89 df             	mov    %rbx,%rdi
+   65c36:	ff 15 ec aa 49 00    	call   *0x49aaec(%rip)        # 500728 <_GLOBAL_OFFSET_TABLE_+0x19a8>
+   65c3c:	ff 15 9e ae 49 00    	call   *0x49ae9e(%rip)        # 500ae0 <_GLOBAL_OFFSET_TABLE_+0x1d60>
+   65c42:	64 80 3c 25 f8 7d fe 	cmpb   $0x1,%fs:0xfffffffffffe7df8
+   65c49:	ff 01 
+   65c4b:	75 2e                	jne    65c7b <chitchat::delta::cost_review::c_checkpoint_positive_and_retained_negative_control::{{closure}}+0x9b>
+   65c4d:	64 48 8b 04 25 18 7e 	mov    %fs:0xfffffffffffe7e18,%rax
+   65c54:	fe ff 
+   65c56:	64 48 8b 0c 25 20 7e 	mov    %fs:0xfffffffffffe7e20,%rcx
+   65c5d:	fe ff 
+   65c5f:	4c 29 f0             	sub    %r14,%rax
+   65c62:	48 39 c8             	cmp    %rcx,%rax
+   65c65:	48 0f 4f c8          	cmovg  %rax,%rcx
+   65c69:	64 48 89 04 25 18 7e 	mov    %rax,%fs:0xfffffffffffe7e18
+   65c70:	fe ff 
+   65c72:	64 48 89 0c 25 20 7e 	mov    %rcx,%fs:0xfffffffffffe7e20
+   65c79:	fe ff 
+   65c7b:	5b                   	pop    %rbx
+   65c7c:	41 5e                	pop    %r14
+   65c7e:	41 5f                	pop    %r15
+   65c80:	e9 fb 5a 03 00       	jmp    9b780 <chitchat::delta::cost_review::c_free_checkpoint>
+   65c85:	49 89 c7             	mov    %rax,%r15
+   65c88:	49 8b 76 08          	mov    0x8(%r14),%rsi
+   65c8c:	49 8b 56 10          	mov    0x10(%r14),%rdx
+   65c90:	48 89 df             	mov    %rbx,%rdi
+   65c93:	e8 08 24 03 00       	call   980a0 <<alloc::boxed::Box<T,A> as core::ops::drop::Drop>::drop>
+   65c98:	4c 89 ff             	mov    %r15,%rdi
+   65c9b:	e8 00 94 ff ff       	call   5f0a0 <_Unwind_Resume@plt>
+   65ca0:	ff 15 3a b3 49 00    	call   *0x49b33a(%rip)        # 500fe0 <_GLOBAL_OFFSET_TABLE_+0x2260>
+   65ca6:	66 2e 0f 1f 84 00 00 	cs nopw 0x0(%rax,%rax,1)
+   65cad:	00 00 00 

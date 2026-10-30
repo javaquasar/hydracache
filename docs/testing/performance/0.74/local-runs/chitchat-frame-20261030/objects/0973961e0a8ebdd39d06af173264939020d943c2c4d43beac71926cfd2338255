@@ -1,0 +1,280 @@
+//! Fixed stateful stream workload; stack traces and TLS do not allocate.
+use super::*;
+use serde_json::json;
+use std::cell::Cell;
+use std::hint::black_box;
+
+thread_local! { static COMPRESSIONS: Cell<u64> = const { Cell::new(0) }; }
+pub(crate) fn record() {
+    COMPRESSIONS.with(|v| v.set(v.get() + 1));
+}
+
+struct Blob(Vec<u8>);
+impl Serializable for Blob {
+    fn serialized_len(&self) -> usize {
+        self.0.len()
+    }
+    fn serialize(&self, out: &mut Vec<u8>) {
+        out.extend_from_slice(&self.0);
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
+struct Inventory {
+    len: [usize; 3],
+    capacity: [usize; 3],
+    cache: Option<usize>,
+}
+fn inventory(w: &CompressedStreamWriter) -> Inventory {
+    Inventory {
+        len: [
+            w.output.len(),
+            w.uncompressed_block.len(),
+            w.compressed_block.len(),
+        ],
+        capacity: [
+            w.output.capacity(),
+            w.uncompressed_block.capacity(),
+            w.compressed_block.capacity(),
+        ],
+        cache: w.stateful_cache(),
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct Trace {
+    states: [Inventory; 6],
+    decisions: [bool; 5],
+    count: usize,
+    calls: u64,
+    wire: [u8; 8192],
+    wire_len: usize,
+    finish_capacity:usize,
+}
+#[derive(Clone, Copy, Debug, serde::Serialize)]
+enum Payload {
+    Mixed,
+    Noise(usize),
+    Ascii(usize),
+    Tiny,
+    Node,
+}
+struct Case {
+    name: &'static str,
+    threshold: u16,
+    steps: Vec<(Payload, usize)>,
+}
+fn cases() -> Vec<Case> {
+    use Payload::*;
+    vec![
+        Case {
+            name: "immediate-exact-tail",
+            threshold: 64,
+            steps: vec![(Mixed, 167)],
+        },
+        Case {
+            name: "continue-roomy",
+            threshold: 64,
+            steps: vec![(Mixed, 167), (Tiny, 65507)],
+        },
+        Case {
+            name: "cheap-refusal-continue",
+            threshold: 64,
+            steps: vec![(Mixed, 167), (Noise(4096), 1000), (Tiny, 65507)],
+        },
+        Case {
+            name: "effectful-refusal-continue",
+            threshold: 64,
+            steps: vec![(Mixed, 167), (Noise(4096), 4269), (Tiny, 65507)],
+        },
+        Case {
+            name: "continue-tight-twice",
+            threshold: 64,
+            steps: vec![(Mixed, 167), (Tiny, 173), (Tiny, 176)],
+        },
+        Case {
+            name: "repeated-cheap-refusal",
+            threshold: 64,
+            steps: vec![
+                (Mixed, 167),
+                (Noise(4096), 1000),
+                (Noise(4096), 1000),
+                (Noise(4096), 1000),
+                (Tiny, 65507),
+            ],
+        },
+        Case {
+            name: "accepted-multiblock",
+            threshold: 1000,
+            steps: vec![(Node, 1000), (Ascii(4096), 4109), (Tiny, 65507)],
+        },
+        Case {
+            name: "small-raw-tail",
+            threshold: 64,
+            steps: vec![(Noise(35), 1000), (Tiny, 65507)],
+        },
+        Case {
+            name: "effectful-refusal-no-cache",
+            threshold: 16,
+            steps: vec![(Noise(35), 1000), (Noise(129), 177), (Tiny, 65507)],
+        },
+    ]
+}
+fn noise(n: usize, ascii: bool) -> Vec<u8> {
+    let mut seed = 0x0741028_u64;
+    (0..n)
+        .map(|_| {
+            seed ^= seed << 13;
+            seed ^= seed >> 7;
+            seed ^= seed << 17;
+            if ascii {
+                32 + (seed % 95) as u8
+            } else {
+                seed as u8
+            }
+        })
+        .collect()
+}
+fn payload(kind: Payload) -> Blob {
+    Blob(match kind {
+        Payload::Mixed => {
+            let mut v = noise(128, false);
+            v.extend_from_slice(&[b'r'; 32]);
+            v
+        }
+        Payload::Noise(n) => noise(n, false),
+        Payload::Ascii(n) => noise(n, true),
+        Payload::Tiny => vec![17, 18, 19],
+        Payload::Node => vec![4, 0, b'n', b'o', b'd', b'e'],
+    })
+}
+fn old_bound(w: &CompressedStreamWriter, n: usize) -> usize {
+    let total = w.uncompressed_block.len() + n;
+    w.output.len() + total + if total > w.block_threshold { 6 } else { 3 } + 1
+}
+fn oracle(w: &CompressedStreamWriter, item: &Blob) -> usize {
+    let old = old_bound(w, item.serialized_len());
+    if w.uncompressed_block.len() + item.serialized_len() <= 2 * w.block_threshold {
+        return old;
+    }
+    let mut clone = w.clone();
+    clone.append(item);
+    old.max(clone.finish().len())
+}
+fn run(case: &Case, items: &[Blob]) -> Trace {
+    let mut w = CompressedStreamWriter::with_block_threshold(case.threshold);
+    crate::delta::cost_review::c_free_checkpoint();
+    let mut trace = Trace {
+        states: [inventory(&w); 6],
+        decisions: [false; 5],
+        count: items.len(),
+        calls: 0,
+        wire: [0; 8192],
+        wire_len: 0,
+        finish_capacity:0,
+    };
+    COMPRESSIONS.with(|v| v.set(0));
+    for (i, (item, (_, budget))) in items.iter().zip(&case.steps).enumerate() {
+        trace.decisions[i] = w.stateful_append(black_box(item), black_box(*budget));
+        trace.states[i + 1] = inventory(&w);
+        crate::delta::cost_review::c_free_checkpoint();
+        assert!(w.compression_context.is_none());
+    }
+    let wire = black_box(w.finish());
+    crate::delta::cost_review::c_free_checkpoint();
+    trace.finish_capacity=wire.capacity();
+    assert!(wire.len() <= trace.wire.len());
+    trace.wire[..wire.len()].copy_from_slice(&wire);
+    trace.wire_len = wire.len();
+    trace.calls = COMPRESSIONS.with(Cell::get);
+    drop(black_box(wire));
+    trace
+}
+fn wire_hex(trace: &Trace) -> String {
+    trace.wire[..trace.wire_len]
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect()
+}
+fn semantic(case: &Case, items: &[Blob]) -> usize {
+    let mut w = CompressedStreamWriter::with_block_threshold(case.threshold);
+    let mut differences = 0;
+    for (item, (_, budget)) in items.iter().zip(&case.steps) {
+        let mut saved = w.clone();
+        let safe = oracle(&w, item) <= *budget;
+        let expected = if STATEFUL_VARIANT == "B" {
+            old_bound(&w, item.serialized_len()) <= *budget
+        } else {
+            safe
+        };
+        let actual = w.stateful_append(item, *budget);
+        assert_eq!(actual, expected, "{}", case.name);
+        differences += usize::from(actual != safe);
+        if actual {
+            saved.append(item);
+        } else {
+            assert_eq!(w.output, saved.output);
+            assert_eq!(w.uncompressed_block, saved.uncompressed_block);
+        }
+        assert_eq!(w.clone().finish(), saved.finish(), "{}", case.name);
+        let state = inventory(&w);
+        assert!(state.len.iter().zip(state.capacity).all(|(n, c)| *n <= c));
+        if let Some(n) = state.cache {
+            assert!(n <= state.len[2] && state.len[1] <= case.threshold as usize);
+        }
+    }
+    differences
+}
+#[test]
+fn stateful_semantics_control() {
+    let mut differences = 0;
+    for case in cases() {
+        let items: Vec<_> = case.steps.iter().map(|(p, _)| payload(*p)).collect();
+        differences += semantic(&case, &items);
+    }
+    assert_eq!(differences, if STATEFUL_VARIANT == "B" { 2 } else { 0 });
+}
+#[test]
+fn stateful_capacity_control() {
+    for case in cases() {
+        let items: Vec<_> = case.steps.iter().map(|(p, _)| payload(*p)).collect();
+        let trace = run(&case, &items);
+        for state in &trace.states[..=trace.count] {
+            assert!(state.len.iter().zip(state.capacity).all(|(n, c)| *n <= c));
+            if STATEFUL_VARIANT != "Q" && STATEFUL_VARIANT != "G" {
+                assert_eq!(state.cache, None);
+            }
+        }
+        assert_eq!(trace, run(&case, &items));
+    }
+}
+#[test]
+fn stateful_observations() {
+    let mut rows = Vec::new();
+    for case in cases() {
+        let items: Vec<_> = case.steps.iter().map(|(p, _)| payload(*p)).collect();
+        let original = run(&case, &items);
+        let mut records = Vec::new();
+        for _ in 0..2 {
+            let (trace, meter) = crate::delta::cost_review::stateful_capture(|| {
+                run(black_box(&case), black_box(&items))
+            });
+            assert_eq!(trace, original);
+            records.push(json!({"meter":meter,"states":&trace.states[..=trace.count],"decisions":&trace.decisions[..trace.count],
+                "compressions":trace.calls,"wire":wire_hex(&trace),"finish_capacity":trace.finish_capacity,"writer_stack_bytes":std::mem::size_of::<CompressedStreamWriter>()}));
+        }
+        assert_eq!(records[0], records[1]);
+        let inputs: Vec<_> = items
+            .iter()
+            .map(|v| v.0.iter().map(|b| format!("{b:02x}")).collect::<String>())
+            .collect();
+        rows.push(json!({"name":case.name,"threshold":case.threshold,"steps":case.steps,"inputs":inputs,"records":records}));
+    }
+    println!(
+        "HC074_STATEFUL:{}",
+        json!({"seed":0x0741028_u64,"variant":STATEFUL_VARIANT,"rows":rows,
+        "scope":"linked-default-C-malloc-family; Rust System explicitly tagged","CPU_qualified":false,"RSS_qualified":false})
+    );
+}
+
+impl BorrowedItem for Blob {
+    fn visit(&self,sink:&mut impl FnMut(&[u8])) { sink(&self.0); }
+}

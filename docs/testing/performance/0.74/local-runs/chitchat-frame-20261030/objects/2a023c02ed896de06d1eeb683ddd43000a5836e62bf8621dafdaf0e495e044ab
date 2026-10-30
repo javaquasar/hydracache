@@ -1,0 +1,10 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "one exact native case",
+    "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-frame-evidence-074/semantics_r2.py\", line 46, in session\n    guard();core.account(folder,test,names)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-frame-native-r2-074/native.py\", line 107, in account\n    c.need(re.findall(r'^test (.+?) \\.\\.\\. ',text,re.M)==[test],'one exact native case')\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-security-only-074/scope.py\", line 28, in need\n    if not ok:raise ValueError(why)\n              ^^^^^^^^^^^^^^^^^^^^^\nValueError: one exact native case\n",
+    "type": "ValueError"
+  },
+  "resources_qualified": false,
+  "root_adopted": false
+}

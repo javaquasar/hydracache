@@ -1,0 +1,6 @@
+
+thread 'delta::cost_review::c_checkpoint_positive_and_retained_negative_control' (8632) panicked at src/observer.rs:501:5:
+assertion `left == right` failed: retained owned C bytes
+  left: 64
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

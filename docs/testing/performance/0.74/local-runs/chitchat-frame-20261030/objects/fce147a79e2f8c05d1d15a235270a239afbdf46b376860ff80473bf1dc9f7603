@@ -1,0 +1,11 @@
+{
+  "complete": true,
+  "expected_failure": false,
+  "failed": 0,
+  "passed": 1,
+  "resources_qualified": false,
+  "root_adopted": false,
+  "selected": [
+    "serialize::fused_review::inconsistent_private_projection_fails_loud_without_loop"
+  ]
+}

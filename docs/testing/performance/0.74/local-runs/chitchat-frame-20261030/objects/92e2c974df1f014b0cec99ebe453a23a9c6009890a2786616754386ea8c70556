@@ -1,0 +1,12 @@
+{
+  "probe_source_sha256": "69db0d1490ace38197b470572b0aa24a97d12a98ca387107f64be1fd69986175",
+  "original_live_runner_sha256": "556c68104d7ff704b206d360d28120a620b3feac5a9bdd66e1a8f82d1845d481",
+  "order": [
+    "B",
+    "G"
+  ],
+  "repetitions_per_image": 2,
+  "threshold_increase_allowed": 0,
+  "tests_before_G": true,
+  "unchanged_F_not_rerun": true
+}

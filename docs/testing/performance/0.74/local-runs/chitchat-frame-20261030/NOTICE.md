@@ -1,0 +1,1 @@
+The two unmodified Zstd0.14.3 Rust source bodies under indexed capture/attribution/accepted-multiblock/registry/src are retained for offline source review. Their upstream MIT license and copyright notice are reproduced in LICENSE.zstd. These are diagnostic source data, not an adopted dependency or executable package.

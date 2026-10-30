@@ -1,0 +1,11 @@
+
+running 1 test
+test serialize::fused_review::full_item_domain_and_unbounded_mtu ... ok
+
+successes:
+
+successes:
+    serialize::fused_review::full_item_domain_and_unbounded_mtu
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 130 filtered out; finished in 0.15s
+

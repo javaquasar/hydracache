@@ -1,0 +1,128 @@
+#include "wrap.h"
+#include <errno.h>
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+_Static_assert(sizeof(size_t) == 8 && sizeof(uintptr_t) == 8, "qualified GNU x86_64 only");
+_Static_assert(sizeof(hc_stats) == 80 && sizeof(hc_snapshot) == 168, "exact C/Rust diagnostic ABI");
+enum { SLOTS = 4096 };
+typedef struct { uintptr_t ptr; size_t bytes; unsigned rust; } slot;
+static _Thread_local struct {
+    unsigned active, depth;
+    hc_snapshot snap;
+    slot slots[SLOTS];
+} state;
+extern void *__real_malloc(size_t);
+extern void *__real_calloc(size_t, size_t);
+extern void *__real_realloc(void *, size_t);
+extern void __real_free(void *);
+
+static hc_stats *stats(void) { return state.depth ? &state.snap.rust : &state.snap.c; }
+static size_t bucket(uintptr_t p) { return ((p >> 4) * UINT64_C(11400714819323198485)) % SLOTS; }
+static void add(void *p, size_t n) {
+    hc_stats *s = stats();
+    size_t first = SLOTS, start = bucket((uintptr_t)p);
+    for (size_t i = 0; i < SLOTS; ++i) {
+        size_t at = (start + i) % SLOTS;
+        if (state.slots[at].ptr == (uintptr_t)p) { state.snap.errors++; return; }
+        if (state.slots[at].ptr <= 1 && first == SLOTS) first = at;
+        if (!state.slots[at].ptr) break;
+    }
+    if (first == SLOTS || n > INT64_MAX || s->live > INT64_MAX - (int64_t)n || s->requested > UINT64_MAX - n) {
+        state.snap.errors++; return;
+    }
+    state.slots[first] = (slot){ (uintptr_t)p, n, !!state.depth };
+    s->requested += n; s->live += (int64_t)n;
+    if (s->live > s->peak) s->peak = s->live;
+}
+static void remove_entry(uintptr_t p) {
+    if (!p) return;
+    size_t start = bucket(p);
+    for (size_t i = 0; i < SLOTS; ++i) {
+        slot *e = &state.slots[(start + i) % SLOTS];
+        if (!e->ptr) break;
+        if (e->ptr == p) {
+            if (e->rust != !!state.depth) state.snap.errors++;
+            hc_stats *s = e->rust ? &state.snap.rust : &state.snap.c;
+            s->live -= (int64_t)e->bytes; e->ptr = 1; return;
+        }
+    }
+    stats()->external_frees++;
+}
+int hc_begin(void) {
+    if (state.active || state.depth) return 0;
+    memset(&state.snap, 0, sizeof(state.snap));
+    memset(state.slots, 0, sizeof(state.slots)); state.active = 1; return 1;
+}
+int hc_end(hc_snapshot *out) {
+    if (!state.active || state.depth || !out) return 0;
+    state.active = 0; *out = state.snap; return 1;
+}
+void hc_rust_enter(void) {
+    if (state.depth == UINT_MAX) { state.snap.errors++; return; }
+    state.depth++;
+}
+void hc_rust_leave(void) {
+    if (!state.depth) { state.snap.errors++; return; }
+    state.depth--;
+}
+void *__wrap_malloc(size_t n) {
+    void *p = __real_malloc(n); int saved = errno;
+    if (state.active) {
+        stats()->malloc_calls++;
+        if (p) { stats()->allocs++; add(p, n); } else stats()->failed++;
+    }
+    errno = saved; return p;
+}
+void *__wrap_calloc(size_t n, size_t size) {
+    void *p = __real_calloc(n, size); int saved = errno;
+    if (state.active) {
+        stats()->calloc_calls++;
+        if (p) {
+            if (n && size > SIZE_MAX / n) state.snap.errors++;
+            else { stats()->allocs++; add(p, n * size); }
+        } else stats()->failed++;
+    }
+    errno = saved; return p;
+}
+void *__wrap_realloc(void *p, size_t n) {
+    uintptr_t old = (uintptr_t)p;
+    void *q = __real_realloc(p, n); int saved = errno;
+    if (state.active) {
+        stats()->realloc_calls++;
+        if (q || (old && !n)) {
+            remove_entry(old);
+            if (q) { if (!old) stats()->allocs++; add(q, n); }
+        } else stats()->failed++;
+    }
+    errno = saved; return q;
+}
+void __wrap_free(void *p) {
+    if (state.active) { stats()->free_calls++; remove_entry((uintptr_t)p); }
+    __real_free(p);
+}
+
+/* Volatile function pointers keep genuine undefined libc references for ld. */
+int hc_c_probe(void) {
+    void *(*volatile m)(size_t) = malloc;
+    void *(*volatile c)(size_t, size_t) = calloc;
+    void *(*volatile r)(void *, size_t) = realloc;
+    void (*volatile f)(void *) = free;
+    unsigned char *p = m(128); if (!p) return 0;
+    memset(p, 0xa5, 128);
+    unsigned char *q = r(p, 256); if (!q) { f(p); return 0; }
+    for (size_t i = 0; i < 128; ++i) if (q[i] != 0xa5) { f(q); return 0; }
+    f(q); p = c(2, 64); if (!p) return 0;
+    for (size_t i = 0; i < 128; ++i) if (p[i]) { f(p); return 0; }
+    f(p); return 1;
+}
+
+/* Appended after the byte-identical qualified wrap.c. No observer-state change. */
+int hc_peek(hc_snapshot *out) {
+    if (!state.active || state.depth || !out) return 0;
+    *out = state.snap;
+    return 1;
+}

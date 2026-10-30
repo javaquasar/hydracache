@@ -1,0 +1,57 @@
+
+/home/artur/.cache/hydracache-074-frame/20261030-r1/builds/B194/x86_64-unknown-linux-gnu/release/deps/chitchat-0c48676f6e73114d:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000065b00 <chitchat::delta::cost_review::c_checkpoint_positive_and_retained_negative_control>:
+   65b00:	48 81 ec e8 00 00 00 	sub    $0xe8,%rsp
+   65b07:	e8 74 5c 03 00       	call   9b780 <chitchat::delta::cost_review::c_free_checkpoint>
+   65b0c:	ff 15 ce 93 49 00    	call   *0x4993ce(%rip)        # 4feee0 <_GLOBAL_OFFSET_TABLE_+0x160>
+   65b12:	89 44 24 0c          	mov    %eax,0xc(%rsp)
+   65b16:	83 f8 01             	cmp    $0x1,%eax
+   65b19:	75 43                	jne    65b5e <chitchat::delta::cost_review::c_checkpoint_positive_and_retained_negative_control+0x5e>
+   65b1b:	48 8d 7c 24 18       	lea    0x18(%rsp),%rdi
+   65b20:	e8 9b 07 00 00       	call   662c0 <chitchat::delta::cost_review::measured>
+   65b25:	48 83 7c 24 30 00    	cmpq   $0x0,0x30(%rsp)
+   65b2b:	75 4e                	jne    65b7b <chitchat::delta::cost_review::c_checkpoint_positive_and_retained_negative_control+0x7b>
+   65b2d:	48 8d 7c 24 40       	lea    0x40(%rsp),%rdi
+   65b32:	e8 39 49 03 00       	call   9a470 <chitchat::delta::cost_review::native_finish>
+   65b37:	48 83 bc 24 80 00 00 	cmpq   $0x0,0x80(%rsp)
+   65b3e:	00 00 
+   65b40:	75 55                	jne    65b97 <chitchat::delta::cost_review::c_checkpoint_positive_and_retained_negative_control+0x97>
+   65b42:	64 48 8b 04 25 f0 7d 	mov    %fs:0xfffffffffffe7df0,%rax
+   65b49:	fe ff 
+   65b4b:	48 89 44 24 10       	mov    %rax,0x10(%rsp)
+   65b50:	48 83 f8 02          	cmp    $0x2,%rax
+   65b54:	75 60                	jne    65bb6 <chitchat::delta::cost_review::c_checkpoint_positive_and_retained_negative_control+0xb6>
+   65b56:	48 81 c4 e8 00 00 00 	add    $0xe8,%rsp
+   65b5d:	c3                   	ret
+   65b5e:	48 8d 15 03 42 31 00 	lea    0x314203(%rip),%rdx        # 379d68 <anon.372fa82706c5b3cfc19e4826a51e5e3f.82.llvm.6757958972363952406>
+   65b65:	4c 8d 0d 64 c5 44 00 	lea    0x44c564(%rip),%r9        # 4b20d0 <anon.372fa82706c5b3cfc19e4826a51e5e3f.84.llvm.6757958972363952406>
+   65b6c:	48 8d 74 24 0c       	lea    0xc(%rsp),%rsi
+   65b71:	31 ff                	xor    %edi,%edi
+   65b73:	31 c9                	xor    %ecx,%ecx
+   65b75:	ff 15 65 a5 49 00    	call   *0x49a565(%rip)        # 5000e0 <_GLOBAL_OFFSET_TABLE_+0x1360>
+   65b7b:	48 8d 74 24 30       	lea    0x30(%rsp),%rsi
+   65b80:	48 8d 15 b9 39 31 00 	lea    0x3139b9(%rip),%rdx        # 379540 <anon.0d2f75ef9032cabff543837beb2ebc2e.6.llvm.15899902373347402035>
+   65b87:	4c 8d 0d 3a ca 44 00 	lea    0x44ca3a(%rip),%r9        # 4b25c8 <anon.372fa82706c5b3cfc19e4826a51e5e3f.194.llvm.6757958972363952406>
+   65b8e:	31 ff                	xor    %edi,%edi
+   65b90:	31 c9                	xor    %ecx,%ecx
+   65b92:	e8 58 cf 00 00       	call   72aef <core::panicking::assert_failed>
+   65b97:	48 8d b4 24 80 00 00 	lea    0x80(%rsp),%rsi
+   65b9e:	00 
+   65b9f:	48 8d 15 9a 39 31 00 	lea    0x31399a(%rip),%rdx        # 379540 <anon.0d2f75ef9032cabff543837beb2ebc2e.6.llvm.15899902373347402035>
+   65ba6:	4c 8d 0d 03 ca 44 00 	lea    0x44ca03(%rip),%r9        # 4b25b0 <anon.372fa82706c5b3cfc19e4826a51e5e3f.193.llvm.6757958972363952406>
+   65bad:	31 ff                	xor    %edi,%edi
+   65baf:	31 c9                	xor    %ecx,%ecx
+   65bb1:	e8 39 cf 00 00       	call   72aef <core::panicking::assert_failed>
+   65bb6:	48 8d 15 8b 39 31 00 	lea    0x31398b(%rip),%rdx        # 379548 <anon.372fa82706c5b3cfc19e4826a51e5e3f.191.llvm.6757958972363952406>
+   65bbd:	4c 8d 0d d4 c9 44 00 	lea    0x44c9d4(%rip),%r9        # 4b2598 <anon.372fa82706c5b3cfc19e4826a51e5e3f.192.llvm.6757958972363952406>
+   65bc4:	48 8d 74 24 10       	lea    0x10(%rsp),%rsi
+   65bc9:	31 ff                	xor    %edi,%edi
+   65bcb:	31 c9                	xor    %ecx,%ecx
+   65bcd:	ff 15 7d 9b 49 00    	call   *0x499b7d(%rip)        # 4ff750 <_GLOBAL_OFFSET_TABLE_+0x9d0>
+   65bd3:	66 2e 0f 1f 84 00 00 	cs nopw 0x0(%rax,%rax,1)
+   65bda:	00 00 00 
+   65bdd:	0f 1f 00             	nopl   (%rax)

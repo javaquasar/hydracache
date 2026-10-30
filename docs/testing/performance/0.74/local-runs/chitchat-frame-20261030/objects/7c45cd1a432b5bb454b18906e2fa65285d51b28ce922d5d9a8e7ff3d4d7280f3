@@ -1,0 +1,8 @@
+{
+  "decision": "declined-first-full-resource-gate",
+  "further_measurements_allowed": false,
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "root_adopted": false,
+  "release_admitted": false
+}

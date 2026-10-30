@@ -1,0 +1,4 @@
+
+thread 'delta::cost_review::c_checkpoint_positive_and_retained_negative_control' (97559) panicked at src/observer.rs:524:9:
+assertion failed: refused.is_err()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

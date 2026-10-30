@@ -1,0 +1,7 @@
+{
+  "complete": true,
+  "full_resource_gate_pass": false,
+  "root_adopted": false,
+  "scope": "Windows1.94/1.88 functional, excludes first retained observation",
+  "selected_positive_executions": 172
+}

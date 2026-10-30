@@ -1,0 +1,4 @@
+
+thread 'delta::tests::test_delta_serialization_panic_if_add_after_exceed' (8444) panicked at src/delta.rs:438:9:
+assertion failed: mtu >= 100
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

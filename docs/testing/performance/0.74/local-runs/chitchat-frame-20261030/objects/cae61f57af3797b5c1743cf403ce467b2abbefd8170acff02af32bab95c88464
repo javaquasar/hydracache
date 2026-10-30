@@ -1,0 +1,64 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "allocation_retention_gate_pass": false,
+  "allocator_page_retention_qualified": false,
+  "cases": [
+    239,
+    9,
+    30
+  ],
+  "comparisons": {
+    "B/caller": 30,
+    "B/operation": 239,
+    "B/stateful": 7,
+    "P/caller": 30,
+    "P/operation": 239,
+    "P/stateful": 9
+  },
+  "complete": true,
+  "excluded_unsafe_B": [
+    {
+      "kind": "stateful",
+      "peer": "B",
+      "row": 3
+    },
+    {
+      "kind": "stateful",
+      "peer": "B",
+      "row": 8
+    }
+  ],
+  "observations_per_case_per_image": 4,
+  "order": [
+    "B",
+    "P",
+    "G",
+    "G",
+    "P",
+    "B"
+  ],
+  "regressions": [
+    {
+      "after": 9,
+      "before": 6,
+      "field": "allocs",
+      "kind": "stateful",
+      "peer": "B",
+      "row": 6,
+      "scope": "logical"
+    },
+    {
+      "after": 9,
+      "before": 6,
+      "field": "allocs",
+      "kind": "stateful",
+      "peer": "B",
+      "row": 6,
+      "scope": "physical"
+    }
+  ],
+  "release_admitted": false,
+  "root_adopted": false,
+  "stack_qualified": false
+}

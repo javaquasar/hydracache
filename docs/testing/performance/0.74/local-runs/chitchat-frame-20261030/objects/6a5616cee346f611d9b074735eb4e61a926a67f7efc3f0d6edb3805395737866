@@ -1,0 +1,4 @@
+
+thread 'serialize::call_context_review::oversized_item_is_refused_before_serialization' (9734) panicked at src/serialize.rs:364:9:
+assertion failed: item_len <= u16::MAX as usize
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

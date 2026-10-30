@@ -1,0 +1,10 @@
+
+thread 'serialize::frame_review::commit_refuses_a_bad_first_internal_frame_before_effects' (9756) panicked at src/serialize.rs:926:42:
+range end index 3 out of range for slice of length 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'serialize::frame_review::commit_refuses_a_bad_first_internal_frame_before_effects' (9756) panicked at src/serialize.rs:927:13:
+internal block tag
+
+thread 'serialize::frame_review::commit_refuses_a_bad_first_internal_frame_before_effects' (9756) panicked at src/serialize.rs:929:46:
+mid > len

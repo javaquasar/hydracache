@@ -1,0 +1,9 @@
+{
+  "Removed": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-fused-20261030\\builds",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-fused-20261030\\retention\\builds"
+  ],
+  "FreeBefore": 5460635648,
+  "FreeAfter": 6841774080,
+  "SourcesAndEvidenceKept": true
+}
