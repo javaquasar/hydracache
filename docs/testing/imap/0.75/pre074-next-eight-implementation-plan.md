@@ -712,21 +712,21 @@ cargo xtask imap-coverage-check --release 0.75 --receipt <current-source-report>
 
 ## 15. Условия завершения всей итерации
 
-- [ ] P1: реальные builds выполняются под отдельным контроллером; fault/cancel/cleanup tests green.
-- [ ] P2: все семь local helper variants доступны через оба development ports и external consumers.
-- [ ] P3: native extended subset работает по field/capability matrix; fabricated поля отвергаются.
-- [ ] P4: наблюдён реальный concurrent cohort, независимый bounded checker и его canaries green.
-- [ ] P5: допустимый queue-overflow recovery возвращает новый проверенный baseline;
+- [x] P1: реальные builds выполняются под отдельным контроллером; fault/cancel/cleanup tests green.
+- [x] P2: все семь local helper variants доступны через оба development ports и external consumers.
+- [x] P3: native extended subset работает по field/capability matrix; fabricated поля отвергаются.
+- [x] P4: наблюдён реальный concurrent cohort, независимый bounded checker и его canaries green.
+- [x] P5: допустимый queue-overflow recovery возвращает новый проверенный baseline;
       недопустимый recovery остаётся Gap.
-- [ ] P6: controller, resource observations и checkpoint/segment semantics проверены;
+- [x] P6: controller, resource observations и checkpoint/segment semantics проверены;
       короткий integrated smoke действительно выполнен.
-- [ ] P7: actual Rust/Java artifacts имеют валидный resolved SBOM/provenance с видимыми unknown/policy failures.
+- [x] P7: actual Rust/Java artifacts имеют валидный resolved SBOM/provenance с видимыми unknown/policy failures.
 - [ ] P8: свежие scoped reports текущего SHA прошли gates; непокрытый/устаревший отчёт обнаруживается.
 - [ ] Все новые code paths имеют конкретные тесты; coverage и platform scope раскрыты.
 - [ ] Clean-source IMap producer/replay и полная required matrix прошли на итоговом коммите.
 - [ ] Состояние общего CI и разница с baseline описаны независимо от результата IMap matrix.
-- [ ] W0 открыт, production остаётся disabled, release registry не объявляет публикацию.
-- [ ] Документ не называет непроведённый длительный прогон или S2 квалифицированным.
+- [x] W0 открыт, production остаётся disabled, release registry не объявляет публикацию.
+- [x] Документ не называет непроведённый длительный прогон или S2 квалифицированным.
 
 ## 16. Передача работы после публикации 0.74
 

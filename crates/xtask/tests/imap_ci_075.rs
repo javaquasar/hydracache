@@ -4,6 +4,72 @@ use std::process::Command;
 use xtask::imap_ci_075::*;
 use xtask::imap_qualification_075::digest;
 const WORKFLOW: &str = include_str!("../../../.github/workflows/imap-075.yml");
+#[test]
+fn actual_preparation_tests_are_registered_and_reach_the_bounded_qualification_step() {
+    let root = root();
+    let registry = xtask::gated_tests::load_registry(&root).unwrap();
+    let entries = registry
+        .gate
+        .into_iter()
+        .filter(|gate| gate.id.starts_with("ignored.xtask.imap075."))
+        .collect::<Vec<_>>();
+    assert_eq!(entries.len(), 4);
+    assert!(entries.iter().all(|gate| gate.owner_release == "0.75.0"
+        && gate.ship_mandatory
+        && gate.command.args.iter().any(|arg| arg == "--ignored")
+        && gate.command.args.iter().any(|arg| arg == &gate.test)));
+    assert!(
+        xtask::release_governance::ci_wiring_problems(&root, &entries)
+            .unwrap()
+            .is_empty()
+    );
+    let problems = xtask::gated_tests::check_registry(&root).unwrap();
+    assert!(
+        !problems
+            .iter()
+            .any(|problem| problem.contains("imap_soak_075") || problem.contains("imap_sbom_075")),
+        "{problems:#?}"
+    );
+}
+#[test]
+fn topology_checks_both_075_extensions_and_rejects_duplicate_registration() {
+    let root = root();
+    let input = root.join("docs/testing/ci-topology.json");
+    let input = if input.exists() {
+        input
+    } else {
+        root.join("docs/testing/memory/0.71/ci-topology.json")
+    };
+    let original: serde_json::Value = serde_json::from_slice(&fs::read(input).unwrap()).unwrap();
+    let temp = tempfile::tempdir().unwrap();
+    let fixture = temp.path().join("topology.json");
+    let mut invalid = original.clone();
+    invalid["schema_version"] = serde_json::json!(0);
+    fs::write(&fixture, serde_json::to_vec(&invalid).unwrap()).unwrap();
+    let error = xtask::ci_topology::check_with_path(&root, "0.71", &fixture)
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("schema_version must be 1"), "{error}");
+    for registry in [
+        "ci-topology-extension.json",
+        "soak-ci-topology-extension.json",
+    ] {
+        let extension: serde_json::Value = serde_json::from_slice(
+            &fs::read(root.join("docs/testing/imap/0.75").join(registry)).unwrap(),
+        )
+        .unwrap();
+        let mut duplicated = original.clone();
+        duplicated["workflows"]
+            .as_array_mut()
+            .unwrap()
+            .push(extension);
+        fs::write(&fixture, serde_json::to_vec(&duplicated).unwrap()).unwrap();
+        assert!(xtask::ci_topology::check_with_path(&root, "0.71", &fixture)
+            .unwrap_err()
+            .to_string()
+            .contains("unique 0.75 workflow"));
+    }
+}
 fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()

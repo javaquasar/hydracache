@@ -8,6 +8,11 @@ use std::process::{Command, Stdio};
 #[unsafe(no_mangle)]
 static __llvm_profile_runtime: std::ffi::c_int = 0;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let result = run();
+    xtask::imap_coverage_075::flush_profile()?;
+    result
+}
+fn run() -> Result<(), Box<dyn std::error::Error>> {
     let args = std::env::args().skip(1).collect::<Vec<_>>();
     match args.first().map(String::as_str) {
         Some("echo") => {
@@ -121,6 +126,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         _ => return Err("unknown proof worker mode".into()),
     }
-    xtask::imap_coverage_075::flush_profile()?;
     Ok(())
 }

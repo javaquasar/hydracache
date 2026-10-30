@@ -5,6 +5,9 @@ use crate::imap_qualification_075::{digest, hex, read_relative};
 use crate::imap_sbom_capture_075::{Capture, REPOSITORY, SPY};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+#[cfg(test)]
+#[path = "../tests/support/imap_sbom_075.rs"]
+mod tests;
 use std::{
     collections::{BTreeMap, BTreeSet},
     error::Error,
@@ -290,12 +293,14 @@ fn activated_dependencies(package: &Value, context: &CargoContext) -> Result<BTr
     let mut pending = context.features.iter().cloned().collect::<Vec<_>>();
     let mut seen = BTreeSet::new();
     let mut active = BTreeSet::new();
+    let mut work = 0;
     while let Some(feature) = pending.pop() {
+        work += 1;
+        if work > 20000 || pending.len() > 20000 {
+            return Err("Cargo feature closure work bound".into());
+        }
         if !seen.insert(feature.clone()) {
             continue;
-        }
-        if seen.len() > 20000 || pending.len() > 20000 {
-            return Err("Cargo feature closure work bound".into());
         }
         let values = definitions
             .get(&feature)

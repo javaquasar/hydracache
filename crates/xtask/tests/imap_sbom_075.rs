@@ -20,6 +20,127 @@ fn transcript() -> Vec<u8> {
         .collect::<String>()
         .into_bytes()
 }
+#[test]
+fn malformed_resolver_and_compiler_records_refuse_at_their_exact_boundary() {
+    let target = CargoTarget {
+        triple: "fixture".into(),
+        cfg: Default::default(),
+    };
+    let project = |meta: &Value, bytes: &[u8], locked: &str| {
+        cargo_projection_for_target(meta, bytes, "fixture", locked, &"b".repeat(40), &target)
+    };
+    for mode in 0..10 {
+        let mut meta = metadata();
+        let mut bytes = transcript();
+        let mut locked = lock();
+        let expected = match mode {
+            0 => {
+                locked = locked.replace(&"a".repeat(64), "invalid");
+                "registry checksum missing"
+            }
+            1 => {
+                locked.push_str(&lock().replace("version=4\n", ""));
+                "duplicate locked identity"
+            }
+            2 => {
+                bytes.extend_from_slice(b"{}\n");
+                "Cargo compiler record bound"
+            }
+            3 => {
+                bytes = b"{\"reason\":\"build-finished\",\"success\":false}\n".to_vec();
+                "Cargo build terminal"
+            }
+            4 => {
+                bytes = b"{\"reason\":\"future\"}\n".to_vec();
+                "unknown Cargo compiler record"
+            }
+            5 => {
+                meta["packages"][0]["features"]["enabled"] = json!(["absent"]);
+                "unknown Cargo feature closure member"
+            }
+            6 => {
+                let node = meta["resolve"]["nodes"][0].clone();
+                meta["resolve"]["nodes"].as_array_mut().unwrap().push(node);
+                "duplicate Cargo resolved node"
+            }
+            7 => {
+                meta["packages"][0]["dependencies"][0]["name"] = json!("foreign");
+                "no matching declaration"
+            }
+            8 => {
+                meta["packages"][0]["dependencies"][0]["optional"] = Value::Null;
+                "Cargo optional declaration missing"
+            }
+            _ => {
+                meta["packages"][0]["features"]["enabled"] = json!(vec!["enabled"; 20001]);
+                "Cargo feature closure work bound"
+            }
+        };
+        let error = project(&meta, &bytes, &locked).unwrap_err().to_string();
+        assert!(error.contains(expected), "{mode}: {error}");
+    }
+    let mut meta = metadata();
+    meta["packages"][1]["name"] = meta["packages"][0]["name"].clone();
+    meta["packages"][1]["version"] = meta["packages"][0]["version"].clone();
+    meta["packages"][1]["source"] = Value::Null;
+    assert!(project(&meta, &transcript(), &lock())
+        .unwrap_err()
+        .to_string()
+        .contains("ambiguous compiled"));
+    assert!(target
+        .applies("cfg(target_arch=unknown)")
+        .unwrap_err()
+        .to_string()
+        .contains("literal required"));
+    assert!(target.applies("cfg(all(windows,,unix))").is_err());
+}
+#[test]
+fn inventory_roots_and_compilation_instances_cannot_be_duplicated_or_omitted() {
+    for mode in 0..4 {
+        let mut value = inventory();
+        match mode {
+            0 => {
+                value.roots.pop();
+            }
+            1 => value.roots[1] = value.roots[0].clone(),
+            2 => value.compilations.push(value.compilations[0].clone()),
+            _ => value.compilations[0].component = "foreign".into(),
+        }
+        assert!(validate_inventory(&value).is_err(), "{mode}");
+    }
+}
+#[test]
+fn maven_record_limits_tools_and_unknown_events_are_fail_closed() {
+    assert!(maven_journal(&lines(&journal()), "")
+        .unwrap_err()
+        .to_string()
+        .contains("journal bound"));
+    assert!(maven_journal(&vec![b' '; 16385], "fixture")
+        .unwrap_err()
+        .to_string()
+        .contains("record/work bound"));
+    for mode in 0..2 {
+        let mut rows = journal();
+        rows[3] = if mode == 0 {
+            rows[1].clone()
+        } else {
+            json!({"event":"future"})
+        };
+        let error = maven_journal(&lines(&rows), "fixture")
+            .unwrap_err()
+            .to_string();
+        assert!(
+            error.contains(if mode == 0 {
+                "invalid Maven tool"
+            } else {
+                "unexpected Maven journal record"
+            }),
+            "{error}"
+        );
+    }
+    assert!(run(vec![], false).is_err());
+    assert!(run(vec![], true).is_err());
+}
 fn lock() -> String {
     format!("version=4\n[[package]]\nname='library'\nversion='1.2.3'\nsource='registry+https://github.com/rust-lang/crates.io-index'\nchecksum='{}'\n","a".repeat(64))
 }
@@ -468,5 +589,90 @@ fn actual_host_filtered_cargo_graph_replays_compiler_feature_and_dependency_clos
         assert!(components.len() > 10);
         assert!(!edges.is_empty());
         assert!(instances.len() >= components.len());
+    }
+}
+#[test]
+#[ignore = "requires a current real preparation; mutations are unqualified test fixtures only"]
+fn actual_provenance_reconstruction_rejects_archive_and_policy_substitution() {
+    use xtask::imap_extended_receipt_075::artifact;
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let path = std::env::var("IMAP075_PROVENANCE_FIXTURE")
+        .expect("explicit actual provenance fixture required");
+    assert!(path.starts_with("target/imap-075/"));
+    let original: Provenance = serde_json::from_slice(
+        &xtask::imap_qualification_075::read_relative(root, &path, 8 * 1024 * 1024).unwrap(),
+    )
+    .unwrap();
+    let scratch = tempfile::tempdir_in(root.join("target/imap-075")).unwrap();
+    let fixture = scratch.path().join("provenance.json");
+    let write = |name: &str, value: &Value| {
+        let path = scratch.path().join(name);
+        std::fs::write(&path, serde_json::to_vec(value).unwrap()).unwrap();
+        artifact(root, &path, 8 * 1024 * 1024).unwrap()
+    };
+    // This test binary is a distinct verifier. Its fixtures explicitly bind its own
+    // bytes, and never replace or qualify the real producer's provenance archive.
+    let mut fixture_base = original;
+    fixture_base.producer =
+        artifact(root, &std::env::current_exe().unwrap(), 512 * 1024 * 1024).unwrap();
+    std::fs::write(&fixture, serde_json::to_vec(&fixture_base).unwrap()).unwrap();
+    verify(root, &fixture).unwrap();
+    for mode in 0..8 {
+        let mut changed = fixture_base.clone();
+        let expected = match mode {
+            0 => {
+                changed.source_sha = "0".repeat(40);
+                "foreign/stale/production"
+            }
+            1 => {
+                let mut capture: Value = serde_json::from_slice(
+                    &std::fs::read(root.join(&changed.capture.path)).unwrap(),
+                )
+                .unwrap();
+                capture["source_sha"] = json!("0".repeat(40));
+                changed.capture = write("changed-capture.json", &capture);
+                "build-start source differs"
+            }
+            2 => {
+                changed.inputs.pop();
+                "missing/substituted capture inputs"
+            }
+            3 => {
+                changed.inventory.sha256 = "0".repeat(64);
+                "provenance input checksum/size"
+            }
+            4 => {
+                let mut bom: Value =
+                    serde_json::from_slice(&std::fs::read(root.join(&changed.sbom.path)).unwrap())
+                        .unwrap();
+                bom["components"][0]["name"] = json!("substituted-component");
+                changed.sbom = write("changed-bom.json", &bom);
+                "CycloneDX does not represent"
+            }
+            5 => {
+                let mut policy: Value = serde_json::from_slice(
+                    &std::fs::read(root.join(&changed.dependency_policy.report.path)).unwrap(),
+                )
+                .unwrap();
+                policy["stdout"] = json!("substituted raw bytes");
+                changed.dependency_policy.report = write("changed-policy.json", &policy);
+                "policy raw report hash differs"
+            }
+            6 => {
+                changed.dependency_policy.java_state = PolicyState::Passed;
+                "policy promoted unknown/failure"
+            }
+            _ => {
+                changed.dependency_policy.state = PolicyState::Passed;
+                "policy promoted unknown/failure"
+            }
+        };
+        std::fs::write(&fixture, serde_json::to_vec(&changed).unwrap()).unwrap();
+        let error = verify(root, &fixture).unwrap_err().to_string();
+        assert!(error.contains(expected), "{mode}: {error}");
     }
 }

@@ -30,3 +30,17 @@ closes an already delivered lease. Rust results retain their existing owned leas
 Local logs reside under ignored `target/imap-075/`; exact source-bound receipt and
 remote matrix qualification are performed after the final implementation commits.
 General repository CI failures inherited from 0.74 are reported separately.
+
+The P8 capture at `5835aaeb519f3c0ff4f99fbb09e8ee5c1b6b9d1e` completed its
+instrumented Rust workloads, actual preparation and strict preparation replay.
+Its analysis correctly refused an incomplete live LLVM profile; it produced no
+qualified coverage report. The subsequent fix defers only the measurement
+process's own profile and requires it after physical exit. Seventeen coverage
+tests and the explicit public-CLI refusal canary cover this boundary. Fresh
+current-source capture and zero-missed-line qualification remain required.
+
+All four prepared-artifact integration tests are registered in the common gated
+test inventory and wired to the bounded 0.75 qualification step. A scoped test
+checks their registration and workflow references. The common registry still
+reports eight unregistered Linux targets in the unchanged 0.74 supervisor test
+sources; this is not a passing global-registry or general-CI claim.

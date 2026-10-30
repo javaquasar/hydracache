@@ -23,6 +23,53 @@ fn target() -> xtask::imap_sbom_075::CargoTarget {
         cfg: ["windows".into()].into_iter().collect(),
     }
 }
+#[test]
+fn public_workloads_use_fixed_probes_and_distinct_short_resume_segments() {
+    let workloads = public_workloads("target/imap-075/fixture");
+    assert_eq!(workloads.len(), 6);
+    for (arguments, name) in workloads[..3].iter().zip([
+        "imap-native-observation",
+        "imap-native-concurrent",
+        "imap-native-listener-recovery",
+    ]) {
+        assert_eq!(arguments, &[name, "--release", "0.75"]);
+    }
+    for (index, arguments) in workloads[3..].iter().enumerate() {
+        assert_eq!(
+            &arguments[..10],
+            [
+                "imap-soak",
+                "--release",
+                "0.75",
+                "--cohort",
+                if index == 0 { "all" } else { "reference" },
+                "--profile",
+                "smoke",
+                "--host-budget-seconds",
+                "60",
+                "--output"
+            ]
+        );
+        assert!(arguments[10].starts_with("target/imap-075/fixture/soak-"));
+        if index == 0 {
+            assert_eq!(arguments.len(), 11);
+        } else {
+            assert_eq!(arguments[11], "--resume");
+            assert_eq!(
+                arguments[12],
+                format!(
+                    "target/imap-075/fixture/soak-cli/reference/{}",
+                    if index == 1 {
+                        "checkpoint.json"
+                    } else {
+                        "report.json"
+                    }
+                )
+            );
+            assert!(!arguments[12].starts_with(&arguments[10]));
+        }
+    }
+}
 fn profile() -> Profile {
     Profile {
         schema: "imap075-coverage-profile-v1".into(),
@@ -39,6 +86,158 @@ fn profile() -> Profile {
             version: "fixture".into(),
         }],
     }
+}
+fn analysis_fixture() -> (Control, Analysis) {
+    let artifact = xtask::imap_extended_receipt_075::Artifact {
+        path: "target/fixture".into(),
+        bytes: 1,
+        sha256: "c".repeat(64),
+    };
+    let control = Control {
+        schema: "imap075-coverage-control-v1".into(),
+        source_sha: "a".repeat(40),
+        run_id: "b".repeat(32),
+        production_enabled: false,
+        profile: profile(),
+        sources: vec![source("crates/xtask/src/unit.rs")],
+        producer: artifact.clone(),
+    };
+    let analysis = Analysis {
+        schema: "imap075-scoped-coverage-v1".into(),
+        source_sha: control.source_sha.clone(),
+        run_id: control.run_id.clone(),
+        profile: control.profile.clone(),
+        sources: control.sources.clone(),
+        raw_profiles: vec![artifact.clone()],
+        rust_report: artifact.clone(),
+        java_reports: vec![artifact],
+        summary: Summary {
+            sources: vec![],
+            executable_added: 0,
+            covered_added: 0,
+            compiled_out: vec![],
+        },
+        qualification: false,
+    };
+    (control, analysis)
+}
+#[test]
+fn analysis_phase_requires_its_own_live_pid_or_a_closed_source_bound_measurement() {
+    let root = tempfile::tempdir().unwrap();
+    let directory = root.path().join("capture");
+    std::fs::create_dir(&directory).unwrap();
+    let (control, analysis) = analysis_fixture();
+    let write = |name: &str, value: &serde_json::Value| {
+        std::fs::write(directory.join(name), serde_json::to_vec(value).unwrap()).unwrap();
+    };
+    let pid = std::process::id();
+    let mut identity = serde_json::json!({"pid":pid,
+        "platform_birth":xtask::imap_soak_075::process_identity(pid).unwrap(),
+        "incarnation":format!("coverage-{pid}")});
+    write("analysis-started.json", &identity);
+    assert_eq!(
+        analysis_phase(root.path(), &directory, &control, false).unwrap(),
+        Some(pid)
+    );
+    assert!(analysis_phase(root.path(), &directory, &control, true)
+        .unwrap_err()
+        .to_string()
+        .contains("still lives"));
+    identity["platform_birth"] = json!("foreign-birth");
+    write("analysis-started.json", &identity);
+    assert!(analysis_phase(root.path(), &directory, &control, false).is_err());
+    identity = json!({"pid":u32::MAX,"platform_birth":"absent-process",
+        "incarnation":format!("coverage-{}",u32::MAX)});
+    write("analysis-started.json", &identity);
+    assert!(analysis_phase(root.path(), &directory, &control, true).is_err());
+    write("analysis.json", &serde_json::to_value(&analysis).unwrap());
+    assert_eq!(
+        analysis_phase(root.path(), &directory, &control, true).unwrap(),
+        None
+    );
+    for field in [
+        "schema",
+        "source_sha",
+        "run_id",
+        "profile",
+        "sources",
+        "qualification",
+    ] {
+        let mut changed = serde_json::to_value(&analysis).unwrap();
+        changed[field] = match field {
+            "profile" => {
+                let mut profile = changed[field].clone();
+                profile["os"] = json!("foreign");
+                profile
+            }
+            "sources" => json!([]),
+            "qualification" => json!(true),
+            _ => json!("foreign"),
+        };
+        write("analysis.json", &changed);
+        assert!(
+            analysis_phase(root.path(), &directory, &control, true)
+                .unwrap_err()
+                .to_string()
+                .contains("incomplete/stale"),
+            "{field}"
+        );
+    }
+    identity["pid"] = json!(0);
+    write("analysis-started.json", &identity);
+    assert!(analysis_phase(root.path(), &directory, &control, true)
+        .unwrap_err()
+        .to_string()
+        .contains("invalid coverage controller"));
+}
+#[test]
+fn reconstructed_analysis_cannot_substitute_any_bound_evidence() {
+    let (_, original) = analysis_fixture();
+    compare_analysis(&original, &original).unwrap();
+    for mode in 0..11 {
+        let mut changed = original.clone();
+        match mode {
+            0 => changed.schema = "future".into(),
+            1 => changed.qualification = true,
+            2 => changed.source_sha = "d".repeat(40),
+            3 => changed.run_id = "e".repeat(32),
+            4 => changed.profile.os = "foreign".into(),
+            5 => changed.sources.clear(),
+            6 => changed.raw_profiles.clear(),
+            7 => changed.summary.covered_added += 1,
+            8 => changed.rust_report.sha256 = "f".repeat(64),
+            9 => changed.rust_report.bytes += 1,
+            _ => changed.java_reports.clear(),
+        }
+        assert!(compare_analysis(&original, &changed).is_err(), "{mode}");
+    }
+}
+#[test]
+fn public_checker_and_cli_refuse_an_unqualified_measurement_before_replay() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let scratch = tempfile::tempdir_in(root.join("target/imap-075")).unwrap();
+    let path = scratch.path().join("report.json");
+    let (_, analysis) = analysis_fixture();
+    std::fs::write(&path, serde_json::to_vec(&analysis).unwrap()).unwrap();
+    assert!(check(root, &path)
+        .unwrap_err()
+        .to_string()
+        .contains("not finalized qualification"));
+    let mut command = Command::new(env!("CARGO_BIN_EXE_xtask"));
+    command
+        .current_dir(root)
+        .args(["imap-coverage-check", "--release", "0.75", "--receipt"])
+        .arg(&path);
+    let error =
+        xtask::imap_proof_process_075::execute(command, &[], Default::default()).unwrap_err();
+    assert_eq!(error.kind, xtask::imap_proof_process_075::FailureKind::Exit);
+    assert!(error.detail.contains("not finalized qualification"));
+    let not_a_repository = tempfile::tempdir().unwrap();
+    assert!(capture(not_a_repository.path(), Path::new("target/imap-075/absent")).is_err());
 }
 #[test]
 fn changed_line_intersection_never_counts_comments_or_assumes_coverage() {
@@ -105,6 +304,56 @@ fn atomic_checkpoint_replaces_complete_bytes_and_preserves_previous_on_failure()
             .count(),
         0
     );
+}
+#[test]
+fn live_analysis_is_deferred_only_for_measurement_and_every_final_profile_is_required() {
+    let root = tempfile::tempdir().unwrap();
+    let directory = root.path().join("capture");
+    for role in ["controller", "tooling", "testkit", "consumer", "analysis"] {
+        let path = directory.join("raw").join(role);
+        std::fs::create_dir_all(&path).unwrap();
+        if role != "analysis" {
+            std::fs::write(path.join("17.profraw"), b"metadata fixture, not LLVM data").unwrap();
+        }
+    }
+    let analysis = directory.join("raw/analysis/42.profraw");
+    std::fs::write(&analysis, b"").unwrap();
+    assert!(collect_profiles(root.path(), &directory, None).is_err());
+    assert_eq!(
+        collect_profiles(root.path(), &directory, Some(42))
+            .unwrap()
+            .len(),
+        4
+    );
+    assert!(collect_profiles(root.path(), &directory, Some(0)).is_err());
+    std::fs::write(&analysis, b"completed fixture").unwrap();
+    assert_eq!(
+        collect_profiles(root.path(), &directory, None)
+            .unwrap()
+            .len(),
+        5
+    );
+    for name in [
+        ".profraw",
+        "0.profraw",
+        "001.profraw",
+        "17.profraw.profraw",
+        "foreign.tmp",
+    ] {
+        let path = directory.join("raw/analysis").join(name);
+        std::fs::write(&path, b"fixture").unwrap();
+        assert!(
+            collect_profiles(root.path(), &directory, None).is_err(),
+            "{name}"
+        );
+        std::fs::remove_file(path).unwrap();
+    }
+    let nonfile = directory.join("raw/analysis/71.profraw");
+    std::fs::create_dir(&nonfile).unwrap();
+    assert!(collect_profiles(root.path(), &directory, None).is_err());
+    std::fs::remove_dir(nonfile).unwrap();
+    std::fs::remove_file(directory.join("raw/tooling/17.profraw")).unwrap();
+    assert!(collect_profiles(root.path(), &directory, None).is_err());
 }
 #[test]
 fn missing_empty_foreign_duplicate_and_platform_mixed_components_refuse() {
@@ -376,6 +625,12 @@ fn snapshot_discovers_new_scoped_files_from_real_git_and_hashes_comments() {
         ],
     );
     let baseline = git(root.path(), &["rev-parse", "HEAD"]);
+    // Unrelated source changes must not exhaust the declared scope's Git byte budget.
+    std::fs::write(
+        root.path().join("large-unrelated.rs"),
+        format!("//{}\n", "x".repeat(8 * 1024 * 1024 + 1)),
+    )
+    .unwrap();
     for (path, text) in [
         ("crates/xtask/src/new.rs", "pub fn added() {}\n"),
         ("crates/xtask/src/comments.rs", "// comment only\n"),
@@ -418,6 +673,7 @@ fn snapshot_discovers_new_scoped_files_from_real_git_and_hashes_comments() {
         second.iter().find(|s| s.path == path).unwrap().sha256
     );
     assert!(source_snapshot_since(root.path(), "bad-baseline").is_err());
+    assert!(source_snapshot_since(root.path(), &"0".repeat(40)).is_err());
     assert!(source_snapshot_since(root.path(), "HEAD").is_err());
     for mode in ["capture", "worker", "analysis", "check", "unknown"] {
         assert!(run(vec![], mode).is_err());

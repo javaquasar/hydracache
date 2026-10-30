@@ -254,9 +254,32 @@ pub fn source_snapshot_since(root: &Path, baseline: &str) -> Result<Vec<Source>>
         return Err("coverage baseline commit identity required".into());
     }
     fn git(root: &Path, args: &[&str]) -> Result<Vec<u8>> {
-        let result = Command::new("git").current_dir(root).args(args).output()?;
+        let patterns = SCOPES
+            .iter()
+            .flat_map(|scope| {
+                [
+                    format!(":(glob){scope}**/*.rs"),
+                    format!(":(glob){scope}**/*.java"),
+                ]
+            })
+            .collect::<Vec<_>>();
+        let result = Command::new("git")
+            .current_dir(root)
+            .args(args)
+            .arg("--")
+            .args(patterns)
+            .output()?;
         if !result.status.success() || result.stdout.len() > MAX {
-            return Err("coverage Git input failed/bounded".into());
+            return Err(format!(
+                "coverage scoped Git input failed/bounded: status {}, {} output bytes; {}",
+                result.status,
+                result.stdout.len(),
+                String::from_utf8_lossy(&result.stderr)
+                    .chars()
+                    .take(512)
+                    .collect::<String>()
+            )
+            .into());
         }
         Ok(result.stdout)
     }
@@ -267,13 +290,11 @@ pub fn source_snapshot_since(root: &Path, baseline: &str) -> Result<Vec<Source>>
             "core.quotepath=false",
             "diff",
             "--no-ext-diff",
+            "--no-textconv",
             "--no-renames",
             "--unified=0",
             baseline,
             "HEAD",
-            "--",
-            "*.rs",
-            "*.java",
         ],
     )?)?;
     let mut result = Vec::new();
@@ -1277,10 +1298,59 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
     }
     driver.execute(BuildStage::CoverageExecution, command)?;
     let preparation = artifact(root, &directory.join("preparation/receipt.json"), MAX)?;
+    // Exercise the public entry points as a user would, after their real artifacts exist.
+    // Resume starts a separate short segment; it never extends the smoke dwell claim.
+    for arguments in public_workloads(&relative(root, &directory)?) {
+        let mut command = Command::new(std::env::current_exe()?);
+        command.current_dir(root).args(arguments).env(
+            "LLVM_PROFILE_FILE",
+            directory.join("raw/controller").join("%p.profraw"),
+        );
+        driver.execute(BuildStage::CoverageExecution, command)?;
+    }
     let prepared: crate::imap_pre074_075::PreparationReceipt = load(root, &preparation.path)?;
     let provenance: crate::imap_sbom_075::Provenance =
         load(root, &prepared.development_inventory.path)?;
     let inputs: crate::imap_sbom_capture_075::Capture = load(root, &provenance.capture.path)?;
+    let mut command = Command::new("cargo");
+    command
+        .current_dir(root)
+        .args([
+            "test",
+            "-p",
+            "xtask",
+            "--test",
+            "imap_sbom_075",
+            "--test",
+            "imap_soak_075",
+            "--features",
+            "imap-075-coverage",
+            "--locked",
+            "--message-format=json-render-diagnostics",
+        ])
+        .env("IMAP075_CARGO_FIXTURE", &inputs.directory)
+        .env(
+            "IMAP075_PROVENANCE_FIXTURE",
+            &prepared.development_inventory.path,
+        )
+        .env(
+            "IMAP075_SOAK_FIXTURE",
+            relative(root, &directory.join("soak-cli/reference"))?,
+        );
+    instrumentation(&mut command, root, &directory.join("raw/tooling"));
+    command.args(["--", "actual_", "--ignored"]);
+    let report = driver.execute(BuildStage::ToolingTests, command)?;
+    streams.push(report_output(root, &report)?);
+    let mut command = Command::new(std::env::current_exe()?);
+    command
+        .current_dir(root)
+        .args(["imap-sbom-check", "--release", "0.75", "--receipt"])
+        .arg(&prepared.development_inventory.path)
+        .env(
+            "LLVM_PROFILE_FILE",
+            directory.join("raw/controller").join("%p.profraw"),
+        );
+    driver.execute(BuildStage::CoverageExecution, command)?;
     let java: Vec<JavaSession> = load(
         root,
         &format!("{}/coverage-sessions.json", inputs.directory),
@@ -1307,6 +1377,50 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
     }
     store_new(root, &directory.join("capture.json"), &receipt)?;
     Ok(())
+}
+pub fn public_workloads(directory: &str) -> Vec<Vec<String>> {
+    let mut result: Vec<Vec<String>> = [
+        "imap-native-observation",
+        "imap-native-concurrent",
+        "imap-native-listener-recovery",
+    ]
+    .into_iter()
+    .map(|name| vec![name.into(), "--release".into(), "0.75".into()])
+    .collect();
+    for (cohort, output, parent) in [
+        ("all", "soak-cli", None),
+        (
+            "reference",
+            "soak-resume-checkpoint",
+            Some("checkpoint.json"),
+        ),
+        ("reference", "soak-resume-report", Some("report.json")),
+    ] {
+        let mut arguments: Vec<String> = [
+            "imap-soak",
+            "--release",
+            "0.75",
+            "--cohort",
+            cohort,
+            "--profile",
+            "smoke",
+            "--host-budget-seconds",
+            "60",
+            "--output",
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect();
+        arguments.push(format!("{directory}/{output}"));
+        if let Some(parent) = parent {
+            arguments.extend([
+                "--resume".into(),
+                format!("{directory}/soak-cli/reference/{parent}"),
+            ]);
+        }
+        result.push(arguments);
+    }
+    result
 }
 #[cfg(feature = "imap-075-coverage")]
 fn capture_consumer(
@@ -1465,7 +1579,15 @@ pub fn retain_java_session(
     fs::write(path, serde_json::to_vec_pretty(&sessions)?)?;
     Ok(())
 }
-fn raw_profiles(root: &Path, directory: &Path) -> Result<Vec<Artifact>> {
+/// A measurement may defer only its own still-live analysis file. Qualification passes None.
+pub fn collect_profiles(
+    root: &Path,
+    directory: &Path,
+    live_analysis: Option<u32>,
+) -> Result<Vec<Artifact>> {
+    if live_analysis == Some(0) {
+        return Err("invalid deferred analysis PID".into());
+    }
     let mut result = Vec::new();
     let mut total = 0u64;
     for role in ["controller", "tooling", "testkit", "consumer", "analysis"] {
@@ -1476,14 +1598,16 @@ fn raw_profiles(root: &Path, directory: &Path) -> Result<Vec<Artifact>> {
                 .file_name()
                 .and_then(|s| s.to_str())
                 .ok_or("invalid LLVM profile filename")?;
-            if !name.ends_with(".profraw")
-                || !name
-                    .trim_end_matches(".profraw")
-                    .bytes()
-                    .all(|b| b.is_ascii_digit())
-                || result.len() >= 2048
-            {
+            let pid = name.strip_suffix(".profraw").and_then(|stem| {
+                stem.parse::<u32>()
+                    .ok()
+                    .filter(|p| *p > 0 && p.to_string() == stem)
+            });
+            if pid.is_none() || result.len() >= 2048 {
                 return Err("foreign/oversized LLVM raw profile set".into());
+            }
+            if role == "analysis" && pid == live_analysis {
+                continue;
             }
             let reference = artifact(root, &path, MAX_RAW)?;
             total = total
@@ -1783,23 +1907,7 @@ fn analyze(root: &Path, path: &str, strict: bool) -> Result<Analysis> {
     if capture.java_tools != java_tool_artifacts(root)? {
         return Err("coverage Java report tools substituted".into());
     }
-    if strict {
-        let started: crate::imap_soak_075::WorkerIdentity = load(
-            root,
-            &relative(root, &directory.join("analysis-started.json"))?,
-        )?;
-        dead(&started)?;
-        let measured: Analysis = load(root, &relative(root, &directory.join("analysis.json"))?)?;
-        if measured.schema != "imap075-scoped-coverage-v1"
-            || measured.qualification
-            || measured.source_sha != control.source_sha
-            || measured.run_id != control.run_id
-            || measured.profile != control.profile
-            || measured.sources != control.sources
-        {
-            return Err("coverage analysis phase incomplete/stale".into());
-        }
-    }
+    let live_analysis = analysis_phase(root, &directory, &control, strict)?;
     for stream in &capture.cargo_streams {
         bound(root, stream, MAX)?;
     }
@@ -1809,7 +1917,7 @@ fn analyze(root: &Path, path: &str, strict: bool) -> Result<Analysis> {
     if expected != capture.objects {
         return Err("coverage instrumented object set missing/substituted".into());
     }
-    let raw = raw_profiles(root, &directory)?;
+    let raw = collect_profiles(root, &directory, live_analysis)?;
     let analysis_prefix = format!("{}/raw/analysis/", relative(root, &directory)?);
     if strict && !raw.iter().any(|a| a.path.starts_with(&analysis_prefix)) {
         return Err("completed analysis LLVM profile missing".into());
@@ -1845,6 +1953,40 @@ fn analyze(root: &Path, path: &str, strict: bool) -> Result<Analysis> {
         qualification,
     })
 }
+pub fn analysis_phase(
+    root: &Path,
+    directory: &Path,
+    control: &Control,
+    strict: bool,
+) -> Result<Option<u32>> {
+    let started: crate::imap_soak_075::WorkerIdentity = load(
+        root,
+        &relative(root, &directory.join("analysis-started.json"))?,
+    )?;
+    if strict {
+        dead(&started)?;
+        let measured: Analysis = load(root, &relative(root, &directory.join("analysis.json"))?)?;
+        if measured.schema != "imap075-scoped-coverage-v1"
+            || measured.qualification
+            || measured.source_sha != control.source_sha
+            || measured.run_id != control.run_id
+            || measured.profile != control.profile
+            || measured.sources != control.sources
+        {
+            return Err("coverage analysis phase incomplete/stale".into());
+        }
+        Ok(None)
+    } else {
+        let current = identity()?;
+        if started.pid != current.pid
+            || started.platform_birth != current.platform_birth
+            || started.incarnation != current.incarnation
+        {
+            return Err("measurement may defer only its own live profile".into());
+        }
+        Ok(Some(current.pid))
+    }
+}
 pub fn capture(root: &Path, path: &Path) -> Result<PathBuf> {
     let source = crate::imap_ci_075::source_state(root)?;
     let profile = current_profile()?;
@@ -1860,13 +2002,16 @@ pub fn capture(root: &Path, path: &Path) -> Result<PathBuf> {
     Ok(result)
 }
 pub fn check(root: &Path, path: &Path) -> Result<Analysis> {
+    check_report(root, path, true)
+}
+fn check_report(root: &Path, path: &Path, strict: bool) -> Result<Analysis> {
     let relative = if path.is_absolute() {
         relative(root, path)?
     } else {
         path.to_string_lossy().replace('\\', "/")
     };
     let saved: Analysis = load(root, &relative)?;
-    if saved.schema != "imap075-scoped-coverage-v1" || !saved.qualification {
+    if saved.schema != "imap075-scoped-coverage-v1" || saved.qualification != strict {
         return Err("coverage report is not finalized qualification".into());
     }
     bound(root, &saved.rust_report, MAX)?;
@@ -1877,8 +2022,14 @@ pub fn check(root: &Path, path: &Path) -> Result<Analysis> {
         .parent()
         .ok_or("coverage receipt parent")?
         .join("capture.json");
-    let fresh = analyze(root, &capture.to_string_lossy().replace('\\', "/"), true)?;
-    if saved.source_sha != fresh.source_sha
+    let fresh = analyze(root, &capture.to_string_lossy().replace('\\', "/"), strict)?;
+    compare_analysis(&saved, &fresh)?;
+    Ok(fresh)
+}
+pub fn compare_analysis(saved: &Analysis, fresh: &Analysis) -> Result<()> {
+    if saved.schema != fresh.schema
+        || saved.qualification != fresh.qualification
+        || saved.source_sha != fresh.source_sha
         || saved.run_id != fresh.run_id
         || saved.profile != fresh.profile
         || saved.sources != fresh.sources
@@ -1890,7 +2041,7 @@ pub fn check(root: &Path, path: &Path) -> Result<Analysis> {
     {
         return Err("archived coverage differs from actual fresh reconstruction".into());
     }
-    Ok(fresh)
+    Ok(())
 }
 pub fn run(args: Vec<String>, mode: &str) -> Result<()> {
     let root = crate::doc_check::find_repo_root()?;
@@ -1913,6 +2064,7 @@ pub fn run(args: Vec<String>, mode: &str) -> Result<()> {
                 false,
             )?;
             store_new(&root, &directory.join("analysis.json"), &analysis)?;
+            check_report(&root, &directory.join("analysis.json"), false)?;
             println!(
                 "imap-coverage: measurement only; {}/{} changed executable lines",
                 analysis.summary.covered_added, analysis.summary.executable_added

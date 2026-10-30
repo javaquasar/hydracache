@@ -145,6 +145,63 @@ fn actual_native_fixture_is_independently_linearizable_and_exhaustion_is_not_suc
     assert!(check(&observed.histories[0], 1000001).is_err());
 }
 #[test]
+fn final_key_worker_interval_and_operation_coverage_bounds_are_independent() {
+    let mut history = fixture().histories[0].clone();
+    history.final_entries = vec![
+        Entry {
+            key: "61".into(),
+            value: "31".into()
+        };
+        5
+    ];
+    assert!(check(&history, 100000)
+        .unwrap_err()
+        .to_string()
+        .contains("final key bound"));
+    let program = vec![
+        command(0, 0, 0, Operation::Get, "61", None, None),
+        command(1, 0, 1, Operation::Get, "61", None, None),
+    ];
+    assert!(check(
+        &tiny(program.clone(), vec![(None, None); 2], false, vec![]),
+        100
+    )
+    .unwrap_err()
+    .to_string()
+    .contains("worker/key bound"));
+    let mut program = program;
+    program.push(command(2, 1, 0, Operation::Get, "61", None, None));
+    let mut history = tiny(program, vec![(None, None); 3], false, vec![]);
+    history.raw.swap(1, 2);
+    for (index, event) in history.raw.iter_mut().enumerate() {
+        event.stamp = index as u64 + 1;
+    }
+    history.raw_digest = raw_digest(&history.raw);
+    assert!(check(&history, 100)
+        .unwrap_err()
+        .to_string()
+        .contains("worker interval order"));
+    let mut histories = fixture();
+    for command in &mut histories.histories[0].program {
+        command.operation = Operation::ContainsKey;
+        command.value = None;
+        command.expected = None;
+    }
+    let history = &mut histories.histories[0];
+    for event in &mut history.raw {
+        event.value = None;
+        event.boolean = (event.phase == Phase::Return).then_some(false);
+    }
+    history.final_entries.clear();
+    history.final_digest = digest_entries(&[]);
+    history.raw_digest = raw_digest(&history.raw);
+    assert_eq!(check(history, 100000).unwrap(), Verdict::Linearizable);
+    assert!(validate(&histories)
+        .unwrap_err()
+        .to_string()
+        .contains("operation coverage missing"));
+}
+#[test]
 fn two_winners_impossible_get_and_realtime_order_are_detected_after_rehashing() {
     let commands = vec![
         command(0, 0, 0, Operation::PutIfAbsent, "61", Some("31"), None),

@@ -7565,3 +7565,70 @@ cwd = "."
 platform = "any"
 
 [gate.command.env]
+
+[[gate]]
+id = "ignored.xtask.imap075.prepared-native-daemon-smoke"
+kind = "ignored_test"
+source = "crates/xtask/tests/imap_soak_075.rs"
+package = "xtask"
+target = "imap_soak_075"
+test = "actual_prepared_native_and_daemon_segments_preserve_workers_and_verify_rounds"
+reason = "Requires current managed Java and daemon artifacts; coverage capture runs this short smoke after preparation"
+tier = "fast"
+required_tools = ["cargo", "java"]
+timeout_seconds = 180
+owner_release = "0.75.0"
+ship_mandatory = true
+ci = { workflow = ".github/workflows/imap-075.yml", job = "qualification", step = "Run bounded local proofs" }
+command = { program = "cargo", args = ["test", "-p", "xtask", "--test", "imap_soak_075", "--locked", "--", "actual_prepared_native_and_daemon_segments_preserve_workers_and_verify_rounds", "--ignored", "--exact"], cwd = ".", platform = "any" }
+
+[[gate]]
+id = "ignored.xtask.imap075.actual-cargo-closure"
+kind = "ignored_test"
+source = "crates/xtask/tests/imap_sbom_075.rs"
+package = "xtask"
+target = "imap_sbom_075"
+test = "actual_host_filtered_cargo_graph_replays_compiler_feature_and_dependency_closure"
+reason = "Requires the current preparation's owned five-stage compiler and metadata directory; capture supplies its exact path"
+tier = "fast"
+required_env = ["IMAP075_CARGO_FIXTURE"]
+required_tools = ["cargo"]
+timeout_seconds = 180
+owner_release = "0.75.0"
+ship_mandatory = true
+ci = { workflow = ".github/workflows/imap-075.yml", job = "qualification", step = "Run bounded local proofs" }
+command = { program = "cargo", args = ["test", "-p", "xtask", "--test", "imap_sbom_075", "--locked", "--", "actual_host_filtered_cargo_graph_replays_compiler_feature_and_dependency_closure", "--ignored", "--exact"], cwd = ".", platform = "any" }
+
+[[gate]]
+id = "ignored.xtask.imap075.actual-provenance-mutations"
+kind = "ignored_test"
+source = "crates/xtask/tests/imap_sbom_075.rs"
+package = "xtask"
+target = "imap_sbom_075"
+test = "actual_provenance_reconstruction_rejects_archive_and_policy_substitution"
+reason = "Requires current-source actual provenance; capture supplies the archive and mutations use separate unqualified fixtures"
+tier = "fast"
+required_env = ["IMAP075_PROVENANCE_FIXTURE"]
+required_tools = ["cargo", "java"]
+timeout_seconds = 600
+owner_release = "0.75.0"
+ship_mandatory = true
+ci = { workflow = ".github/workflows/imap-075.yml", job = "qualification", step = "Run bounded local proofs" }
+command = { program = "cargo", args = ["test", "-p", "xtask", "--test", "imap_sbom_075", "--locked", "--", "actual_provenance_reconstruction_rejects_archive_and_policy_substitution", "--ignored", "--exact"], cwd = ".", platform = "any" }
+
+[[gate]]
+id = "ignored.xtask.imap075.actual-soak-archive-mutations"
+kind = "ignored_test"
+source = "crates/xtask/tests/imap_soak_075.rs"
+package = "xtask"
+target = "imap_soak_075"
+test = "actual_saved_soak_and_restart_reject_substituted_and_partial_archives"
+reason = "Requires a physically completed current-source public smoke; capture supplies the segment path and fixtures preserve original bytes"
+tier = "fast"
+required_env = ["IMAP075_SOAK_FIXTURE"]
+required_tools = ["cargo", "java"]
+timeout_seconds = 180
+owner_release = "0.75.0"
+ship_mandatory = true
+ci = { workflow = ".github/workflows/imap-075.yml", job = "qualification", step = "Run bounded local proofs" }
+command = { program = "cargo", args = ["test", "-p", "xtask", "--test", "imap_soak_075", "--locked", "--", "actual_saved_soak_and_restart_reject_substituted_and_partial_archives", "--ignored", "--exact"], cwd = ".", platform = "any" }

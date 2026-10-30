@@ -9,6 +9,12 @@ use hydracache_cluster_testkit::value_plane_model_075::MutationIdentity;
 use hydracache_cluster_testkit::value_plane_security_075::*;
 use hydracache_cluster_testkit::value_plane_service_075::*;
 use std::sync::Arc;
+#[test]
+fn helper_errors_have_stable_actionable_display() {
+    let error = HelperBoundaryError::Invocation(InvocationRejection::Cancelled);
+    assert_eq!(error.to_string(), format!("{error:?}"));
+    assert!(error.to_string().contains("Cancelled"));
+}
 
 fn binding() -> BackendBinding {
     BackendBinding {

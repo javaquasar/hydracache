@@ -5,6 +5,46 @@ use std::{
     time::{Duration, Instant},
 };
 use xtask::{imap_build_process_075::Cancellation, imap_soak_075::*};
+#[test]
+fn long_cli_profiles_are_validated_before_any_worker_can_start() {
+    for selected in ["hour", "six-hours", "day"] {
+        let arguments = [
+            "--release",
+            "0.75",
+            "--cohort",
+            "all",
+            "--profile",
+            selected,
+            "--host-budget-seconds",
+            "100000",
+            "--output",
+            "target/imap-075/must-not-start",
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect();
+        assert!(run(arguments)
+            .unwrap_err()
+            .to_string()
+            .contains("one explicit cohort"));
+    }
+    for arguments in [
+        vec!["--release"],
+        vec!["--release", "0.74"],
+        vec!["--release", "0.75", "--cohort", "foreign"],
+        vec!["--release", "0.75", "--profile", "forever"],
+        vec!["--release", "0.75", "--release", "0.75"],
+        vec!["--release", "0.75", "--foreign", "value"],
+        vec![
+            "--release",
+            "0.75",
+            "--host-budget-seconds",
+            "18446744073709551615",
+        ],
+    ] {
+        assert!(run(arguments.into_iter().map(String::from).collect()).is_err());
+    }
+}
 fn runtime() -> String {
     static RUNTIME: OnceLock<String> = OnceLock::new();
     RUNTIME
@@ -91,6 +131,69 @@ fn active(p: &SoakProfile) -> SegmentState {
         s.accept(&frame(p, phase, 0), 17, "birth-a").unwrap();
     }
     s
+}
+#[test]
+fn every_invalid_phase_cut_digest_and_owner_scope_ends_the_segment() {
+    let p = profile();
+    for (before, phase, expected) in [
+        (vec![], Phase::Ready, "readiness"),
+        (vec![Phase::Ready], Phase::Warmup, "warmup"),
+        (
+            vec![Phase::Ready, Phase::Warmup],
+            Phase::Active,
+            "active cut",
+        ),
+    ] {
+        let mut state = SegmentState::new(p.clone()).unwrap();
+        for previous in before {
+            state.accept(&frame(&p, previous, 0), 17, "birth").unwrap();
+        }
+        assert!(state
+            .accept(&frame(&p, phase, 1), 17, "birth")
+            .unwrap_err()
+            .contains(expected));
+        assert_eq!(state.terminal, Some(Terminal::Failed));
+    }
+    let mut state = SegmentState::new(p.clone()).unwrap();
+    assert!(state
+        .accept(&frame(&p, Phase::Round, 1), 17, "birth")
+        .unwrap_err()
+        .contains("phase transition"));
+    for mode in 0..3 {
+        let mut state = active(&p);
+        let mut invalid = frame(&p, Phase::Round, 1);
+        let expected = match mode {
+            0 => {
+                invalid.digest = None;
+                "logical digest"
+            }
+            1 => {
+                invalid.reason = Some("cancelled".into());
+                "premature"
+            }
+            _ => {
+                invalid.phase = Phase::Drained;
+                "changed logical state"
+            }
+        };
+        assert!(state
+            .accept(&invalid, 17, "birth-a")
+            .unwrap_err()
+            .contains(expected));
+    }
+    for cohort in [Cohort::Native, Cohort::Daemon] {
+        let mut p = p.clone();
+        p.cohort = cohort;
+        let mut state = SegmentState::new(p.clone()).unwrap();
+        let mut ready = frame(&p, Phase::Ready, 0);
+        ready.owners.unit = if cohort == Cohort::Native {
+            "native_fixture_counts"
+        } else {
+            "daemon_protocol_only"
+        }
+        .into();
+        assert!(state.accept(&ready, 17, "birth").is_err());
+    }
 }
 #[test]
 fn bounds_and_logical_phase_protocol_do_not_stitch_workers_or_accept_leaks() {
@@ -400,6 +503,17 @@ fn restart_context_corruption_runtime_mismatch_and_false_completion_refuse() {
         incarnation: "live".into(),
     });
     assert!(resume_parent(&live, &p).is_err());
+    live.worker = None;
+    assert!(resume_parent(&live, &p)
+        .unwrap_err()
+        .to_string()
+        .contains("cleanup/identity unknown"));
+    live.worker = Some(WorkerIdentity {
+        pid: u32::MAX,
+        platform_birth: "absent-process".into(),
+        incarnation: "dead".into(),
+    });
+    assert_eq!(resume_parent(&live, &p).unwrap(), report.segment);
     let mut incomplete = report.clone();
     incomplete.rounds = 0;
     assert!(validate_report(&incomplete).is_err());
@@ -454,6 +568,139 @@ fn actual_prepared_native_and_daemon_segments_preserve_workers_and_verify_rounds
         assert_eq!(report.remaining_members, Some(0));
         validate_report(&report).unwrap();
     }
+}
+#[test]
+#[ignore = "requires current-source public smoke outputs; all mutations stay in an owned fixture"]
+fn actual_saved_soak_and_restart_reject_substituted_and_partial_archives() {
+    use serde_json::{json, Value};
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let directory =
+        std::env::var("IMAP075_SOAK_FIXTURE").expect("explicit actual smoke fixture required");
+    assert!(directory.starts_with("target/imap-075/"));
+    let directory = root.join(directory);
+    let original = check_saved(root, &directory.join("report.json")).unwrap();
+    check_checkpoint(root, &directory.join("checkpoint.json")).unwrap();
+    let transcript = std::fs::read(directory.join("stdout.jsonl")).unwrap();
+    let checkpoint = std::fs::read(directory.join("checkpoint.json")).unwrap();
+    let identity = std::fs::read(directory.join("identity.json")).unwrap();
+    let scratch = tempfile::tempdir_in(root.join("target/imap-075")).unwrap();
+    let report_path = scratch.path().join("report.json");
+    for mode in 0..6 {
+        let mut report = original.clone();
+        let mut bytes = transcript.clone();
+        let expected = match mode {
+            0 => {
+                report.profile.source_sha = "0".repeat(40);
+                "archived source differs"
+            }
+            1 => {
+                report.profile.seed += 1;
+                "producer/artifact profile differs"
+            }
+            2 => {
+                report.transcript_sha256 = "0".repeat(64);
+                "transcript binding differs"
+            }
+            3 => {
+                bytes = vec![b' '; 4097];
+                bytes.push(b'\n');
+                "saved soak frame bound"
+            }
+            4 => {
+                let mut rows = transcript
+                    .split(|b| *b == b'\n')
+                    .filter(|row| !row.is_empty())
+                    .collect::<Vec<_>>();
+                rows.pop();
+                bytes = rows
+                    .into_iter()
+                    .flat_map(|row| row.iter().copied().chain([b'\n']))
+                    .collect();
+                "saved soak progress incomplete"
+            }
+            _ => {
+                bytes = b"not-json\n".to_vec();
+                "expected"
+            }
+        };
+        if mode >= 3 {
+            report.transcript_bytes = bytes.len() as u64;
+            report.transcript_sha256 = xtask::imap_qualification_075::digest(&bytes);
+        }
+        std::fs::write(&report_path, serde_json::to_vec(&report).unwrap()).unwrap();
+        std::fs::write(scratch.path().join("stdout.jsonl"), &bytes).unwrap();
+        let error = check_saved(root, &report_path).unwrap_err().to_string();
+        assert!(error.contains(expected), "saved {mode}: {error}");
+    }
+    let checkpoint_path = scratch.path().join("checkpoint.json");
+    for mode in 0..8 {
+        let mut report: Value = serde_json::from_slice(&checkpoint).unwrap();
+        let mut identity: Value = serde_json::from_slice(&identity).unwrap();
+        let mut bytes = transcript.clone();
+        let expected = match mode {
+            0 => {
+                report["profile"]["source_sha"] = json!("0".repeat(40));
+                "checkpoint source differs"
+            }
+            1 => {
+                report["controller"]["pid"] = json!(std::process::id());
+                report["controller"]["platform_birth"] =
+                    json!(process_identity(std::process::id()).unwrap());
+                "previous controller still lives"
+            }
+            2 => {
+                report["profile"]["seed"] = json!(original.profile.seed + 1);
+                "checkpoint runtime/artifact/profile differs"
+            }
+            3 => {
+                identity["segment"] = json!("foreign");
+                "checkpoint identity differs"
+            }
+            4 => {
+                identity["worker"]["pid"] = json!(std::process::id());
+                identity["worker"]["platform_birth"] =
+                    json!(process_identity(std::process::id()).unwrap());
+                "previous worker still lives"
+            }
+            5 => {
+                bytes.pop();
+                "corrupt/partial"
+            }
+            6 => {
+                bytes = vec![b' '; 4097];
+                bytes.push(b'\n');
+                "checkpoint frame bound"
+            }
+            _ => {
+                bytes = b"not-json\n".to_vec();
+                "expected"
+            }
+        };
+        std::fs::write(&checkpoint_path, serde_json::to_vec(&report).unwrap()).unwrap();
+        std::fs::write(
+            scratch.path().join("identity.json"),
+            serde_json::to_vec(&identity).unwrap(),
+        )
+        .unwrap();
+        std::fs::write(scratch.path().join("stdout.jsonl"), &bytes).unwrap();
+        let error = check_checkpoint(root, &checkpoint_path)
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains(expected), "checkpoint {mode}: {error}");
+    }
+    std::fs::write(&checkpoint_path, checkpoint).unwrap();
+    assert!(request_cancel(root, &checkpoint_path)
+        .unwrap_err()
+        .to_string()
+        .contains("controller no longer lives"));
+    assert!(check_checkpoint(root, &report_path)
+        .unwrap_err()
+        .to_string()
+        .contains("checkpoint name required"));
 }
 
 #[test]

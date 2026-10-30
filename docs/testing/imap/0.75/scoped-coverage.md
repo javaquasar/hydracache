@@ -21,6 +21,10 @@ instrumented executable before Cargo can rebuild that target. The instrumented
 analysis process exits before the final report is reconstructed. A measurement
 with uncovered lines is retained as `analysis.json` with `qualification=false`;
 it cannot satisfy the final gate.
+The measurement defers only its own still-live PID profile, checked against its
+PID/birth marker. The final pass defers nothing and requires the completed analysis
+profile. Git diff/list queries apply the declared source scopes before their byte
+budget; unrelated predecessor source changes do not consume this scope's budget.
 
 LLVM profiles are bounded at 128 MiB per file, 2,048 files and 4 GiB in total.
 The first actual capture observed 33–50 MiB profiles for this large development
@@ -38,6 +42,15 @@ required to merge successfully; corrupt profiles are not discarded or skipped.
 Only those two worker binaries use the documented
 [LLVM manual-buffer runtime mode](https://github.com/llvm/llvm-project/blob/main/clang/docs/SourceBasedCodeCoverage.md#using-the-profiling-runtime-without-a-filesystem).
 Ordinary tooling/test controllers retain LLVM's exit dump. Counters are never reset.
+
+After the real preparation, the capture also invokes the public native probe and
+soak commands. All-cohort smoke and reference-only checkpoint/report resumes use
+separate segments and fresh output directories. The actual compiler-graph replay
+and provenance mutation tests run against this preparation's inputs; mutations
+are isolated test fixtures and cannot replace the producer's archive. A fixed
+SBOM check command separately replays the original producer-bound provenance.
+The measurement phase reconstructs its own unqualified result a second time;
+only the closed-process final phase may enforce and issue qualification.
 
 The final check reconstructs LLVM LCOV and JaCoCo source counts from the retained
 execution profiles and exact binaries/JARs. Source SHA, all scoped source bytes,
