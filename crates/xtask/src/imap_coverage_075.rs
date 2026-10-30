@@ -1262,6 +1262,13 @@ pub fn execute_pipeline(
     Ok(directory.join("capture.json"))
 }
 fn read_control(root: &Path, path: &str) -> Result<(Control, PathBuf)> {
+    read_control_using(root, path, current_inputs)
+}
+fn read_control_using(
+    root: &Path,
+    path: &str,
+    inputs: impl FnOnce(&Path) -> Result<(String, Profile, Vec<Source>)>,
+) -> Result<(Control, PathBuf)> {
     if !path.starts_with("target/imap-075/")
         || Path::new(path).file_name().and_then(|s| s.to_str()) != Some("control.json")
     {
@@ -1273,7 +1280,7 @@ fn read_control(root: &Path, path: &str) -> Result<(Control, PathBuf)> {
         .parent()
         .ok_or("coverage control parent")?
         .to_path_buf();
-    let (source, profile, sources) = current_inputs(root)?;
+    let (source, profile, sources) = inputs(root)?;
     validate_control(&control, &source, &profile, &sources)?;
     if control.producer.path != relative(root, &directory.join("controller").join(suffix("xtask")))?
     {
@@ -1669,12 +1676,7 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
         java_tools: java_tool_artifacts(root)?,
         completed: true,
     };
-    if crate::imap_ci_075::source_state(root)? != control.source_sha
-        || source_snapshot(root)? != control.sources
-        || current_profile()? != control.profile
-    {
-        return Err("coverage inputs changed during execution".into());
-    }
+    require_current_inputs(root, &control, "execution", current_inputs)?;
     store_new(root, &directory.join("capture.json"), &receipt)?;
     Ok(())
 }
@@ -2333,12 +2335,7 @@ fn analyze_using(
     let ranges = compiled_out_ranges(root, &control.sources, &contexts)?;
     let summary = summarize(&control.sources, &lines, &control.profile.os, ranges)?;
     let qualification = gate_result(&summary, strict)?;
-    if crate::imap_ci_075::source_state(root)? != control.source_sha
-        || source_snapshot(root)? != control.sources
-        || current_profile()? != control.profile
-    {
-        return Err("coverage inputs changed during analysis".into());
-    }
+    require_current_inputs(root, &control, "analysis", current_inputs)?;
     Ok(Analysis {
         schema: "imap075-scoped-coverage-v2".into(),
         source_sha: control.source_sha,
@@ -2432,10 +2429,38 @@ pub fn analysis_phase(
     }
 }
 fn current_inputs(root: &Path) -> Result<(String, Profile, Vec<Source>)> {
-    let source = crate::imap_ci_075::source_state(root)?;
-    let profile = current_profile()?;
-    let sources = source_snapshot(root)?;
+    current_inputs_using(
+        root,
+        crate::imap_ci_075::source_state,
+        current_profile,
+        source_snapshot,
+    )
+}
+fn current_inputs_using(
+    root: &Path,
+    mut read_source: impl FnMut(&Path) -> Result<String>,
+    read_profile: impl FnOnce() -> Result<Profile>,
+    snapshot: impl FnOnce(&Path) -> Result<Vec<Source>>,
+) -> Result<(String, Profile, Vec<Source>)> {
+    let source = read_source(root)?;
+    let profile = read_profile()?;
+    let sources = snapshot(root)?;
+    if read_source(root)? != source {
+        return Err("source changed while reading coverage inputs".into());
+    }
     Ok((source, profile, sources))
+}
+fn require_current_inputs(
+    root: &Path,
+    control: &Control,
+    phase: &str,
+    read: impl FnOnce(&Path) -> Result<(String, Profile, Vec<Source>)>,
+) -> Result<()> {
+    let (source, profile, sources) = read(root)?;
+    if source != control.source_sha || profile != control.profile || sources != control.sources {
+        return Err(format!("coverage inputs changed during {phase}").into());
+    }
+    Ok(())
 }
 pub fn capture(root: &Path, path: &Path) -> Result<PathBuf> {
     capture_from(root, path, current_inputs, &mut ManagedDriver::new(root)?)

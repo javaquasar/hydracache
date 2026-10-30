@@ -244,11 +244,6 @@ fn run_lane_using(args: Vec<String>, host: &LaneHost) -> LaneResult<()> {
         passed: coverage.qualification,
         production_enabled: false,
     };
-    if !receipt.passed {
-        return Err(
-            "CI lane requires independently qualified coverage; receipt not published".into(),
-        );
-    }
     write_receipt(
         &root,
         &options.output.ok_or("--output is required")?,
@@ -702,6 +697,11 @@ pub fn write_receipt(
     relative: &str,
     receipt: &CiReceipt,
 ) -> Result<(), Box<dyn Error>> {
+    if !receipt.passed {
+        return Err(
+            "CI lane requires independently qualified coverage; receipt not published".into(),
+        );
+    }
     let path = Path::new(relative);
     if relative.is_empty()
         || relative.contains('\\')

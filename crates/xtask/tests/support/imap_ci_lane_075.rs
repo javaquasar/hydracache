@@ -350,6 +350,39 @@ fn actual_coverage_verifier_refuses_the_relative_unqualified_report_before_prepa
     assert!(!root.path().join("target/imap-075/lane-unit.json").exists());
 }
 #[test]
+fn direct_ci_writer_refuses_unqualified_metadata_before_creating_output_directories() {
+    let root = fixture();
+    let receipt = CiReceipt {
+        release: "0.75".into(),
+        receipt_version: 3,
+        scope: "unit-unqualified".into(),
+        mode: "pr".into(),
+        source_sha: "0".repeat(40),
+        workflow_sha256: "0".repeat(64),
+        coverage_sha256: "0".repeat(64),
+        lane: Lane {
+            rust: "1.94.0".into(),
+            java: 21,
+            shard: 0,
+        },
+        seeds: vec![],
+        steps: 0,
+        rust_fingerprint: "unit".into(),
+        java_fingerprint: "unit".into(),
+        commands: vec![],
+        completed: false,
+        passed: false,
+        production_enabled: false,
+    };
+    assert!(
+        write_receipt(root.path(), "unqualified/nested/receipt.json", &receipt)
+            .unwrap_err()
+            .to_string()
+            .contains("requires independently qualified coverage")
+    );
+    assert!(!root.path().join("unqualified").exists());
+}
+#[test]
 fn managed_ci_leaf_has_no_recursive_builds_or_children() {
     println!("ci-owned-leaf-complete");
 }

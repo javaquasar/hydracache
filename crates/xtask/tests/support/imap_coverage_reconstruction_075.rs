@@ -393,3 +393,192 @@ fn reconstruction_metadata_guards_refuse_substitution_without_qualifying_inputs(
     assert!(dead(&capture.controller).is_err());
     assert!(!f.directory.join("report.json").exists());
 }
+
+#[test]
+fn coverage_inputs_are_read_between_two_equal_source_observations() {
+    use std::cell::{Cell, RefCell};
+    let f = fixture();
+    let events = RefCell::new(Vec::new());
+    let input = current_inputs_using(
+        f.root.path(),
+        |root| {
+            assert_eq!(root, f.root.path());
+            events.borrow_mut().push("source");
+            Ok(f.control.source_sha.clone())
+        },
+        || {
+            events.borrow_mut().push("profile");
+            Ok(f.control.profile.clone())
+        },
+        |_| {
+            events.borrow_mut().push("snapshot");
+            Ok(f.control.sources.clone())
+        },
+    )
+    .unwrap();
+    assert_eq!(
+        *events.borrow(),
+        vec!["source", "profile", "snapshot", "source"]
+    );
+    assert_eq!(
+        input,
+        (
+            f.control.source_sha.clone(),
+            f.control.profile.clone(),
+            f.control.sources.clone()
+        )
+    );
+    for fail_at in 1..=4 {
+        let calls = Cell::new(0);
+        let step = || -> Result<()> {
+            calls.set(calls.get() + 1);
+            if calls.get() == fail_at {
+                Err("unit coverage input unavailable".into())
+            } else {
+                Ok(())
+            }
+        };
+        assert!(current_inputs_using(
+            f.root.path(),
+            |_| {
+                step()?;
+                Ok(f.control.source_sha.clone())
+            },
+            || {
+                step()?;
+                Ok(f.control.profile.clone())
+            },
+            |_| {
+                step()?;
+                Ok(f.control.sources.clone())
+            }
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("unit coverage input unavailable"));
+        assert_eq!(calls.get(), fail_at);
+    }
+    let source_reads = Cell::new(0);
+    assert!(current_inputs_using(
+        f.root.path(),
+        |_| {
+            source_reads.set(source_reads.get() + 1);
+            Ok(if source_reads.get() == 1 {
+                f.control.source_sha.clone()
+            } else {
+                "changed".into()
+            })
+        },
+        || Ok(f.control.profile.clone()),
+        |_| Ok(f.control.sources.clone())
+    )
+    .unwrap_err()
+    .to_string()
+    .contains("source changed while reading"));
+}
+
+#[test]
+fn final_capture_and_analysis_inputs_must_match_every_bound_component() {
+    let f = fixture();
+    for phase in ["execution", "analysis"] {
+        require_current_inputs(f.root.path(), &f.control, phase, |root| {
+            assert_eq!(root, f.root.path());
+            Ok((
+                f.control.source_sha.clone(),
+                f.control.profile.clone(),
+                f.control.sources.clone(),
+            ))
+        })
+        .unwrap();
+        for mode in 0..3 {
+            let mut source = f.control.source_sha.clone();
+            let mut profile = f.control.profile.clone();
+            let mut sources = f.control.sources.clone();
+            match mode {
+                0 => source = "changed".into(),
+                1 => profile.os = "foreign".into(),
+                _ => sources.clear(),
+            }
+            assert_eq!(
+                require_current_inputs(f.root.path(), &f.control, phase, |_| Ok((
+                    source, profile, sources
+                )))
+                .unwrap_err()
+                .to_string(),
+                format!("coverage inputs changed during {phase}")
+            );
+        }
+        assert_eq!(
+            require_current_inputs(f.root.path(), &f.control, phase, |_| Err(
+                "unit input failure".into()
+            ))
+            .unwrap_err()
+            .to_string(),
+            "unit input failure"
+        );
+    }
+    assert!(!f.capture.completed);
+    assert!(!f.directory.join("report.json").exists());
+}
+
+#[test]
+fn owned_control_loading_refuses_aliases_substituted_producers_and_missing_inputs() {
+    let mut f = fixture();
+    let directory = f.directory.join("controller");
+    fs::create_dir(&directory).unwrap();
+    f.control.producer = material(
+        f.root.path(),
+        &directory,
+        &suffix("xtask"),
+        b"unit producer bytes; never executable",
+    );
+    let path = f.directory.join("control.json");
+    fs::write(&path, serde_json::to_vec(&f.control).unwrap()).unwrap();
+    let relative = relative(f.root.path(), &path).unwrap();
+    let inputs = |_: &Path| {
+        Ok((
+            f.control.source_sha.clone(),
+            f.control.profile.clone(),
+            f.control.sources.clone(),
+        ))
+    };
+    let (_, owned) = read_control_using(f.root.path(), &relative, inputs).unwrap();
+    assert_eq!(owned, f.directory);
+    for path in [
+        "foreign/control.json",
+        "target/imap-075/unit/alias.json",
+        "/absolute/control.json",
+    ] {
+        assert!(read_control_using(f.root.path(), path, |_| panic!(
+            "invalid path must not load inputs"
+        ))
+        .unwrap_err()
+        .to_string()
+        .contains("fixed owned coverage control path"));
+    }
+    assert!(read_control_using(f.root.path(), &relative, |_| Err(
+        "unit inputs missing".into()
+    ))
+    .unwrap_err()
+    .to_string()
+    .contains("unit inputs missing"));
+    let mut changed = f.control.clone();
+    changed.producer = f.capture.objects[0].clone();
+    fs::write(&path, serde_json::to_vec(&changed).unwrap()).unwrap();
+    assert!(read_control_using(f.root.path(), &relative, inputs)
+        .unwrap_err()
+        .to_string()
+        .contains("foreign coverage controller"));
+    changed = f.control.clone();
+    changed.producer.sha256 = "1".repeat(64);
+    fs::write(&path, serde_json::to_vec(&changed).unwrap()).unwrap();
+    assert!(read_control_using(f.root.path(), &relative, inputs).is_err());
+    fs::write(&path, b"{").unwrap();
+    assert!(read_control_using(f.root.path(), &relative, |_| panic!(
+        "invalid JSON must not load tools"
+    ))
+    .is_err());
+    assert!(!f.capture.completed);
+    assert!(!f.directory.join("capture.json").exists());
+    assert!(!f.directory.join("report.json").exists());
+}

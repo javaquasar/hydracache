@@ -152,3 +152,26 @@ the instrumented coverage target passed 39 tests. All-target checks and strict
 all-feature Clippy passed. Linux source-module checks passed 22 tests and strict
 Clippy on each exact Rust version, including the full procfs exit-race lookup.
 Fresh complete source-bound coverage and matrix qualification are still required.
+
+All four `633b469a9` lanes in run `41110867177` reached strict reconstruction
+and refused uncovered lines; HC/2 run `41110867182` passed. The clean Windows
+`22a3c9b10` capture completed every workload, actual prepared-artifact test and
+reconstruction but refused 152 uncovered changed executable lines (197 in the
+earlier Windows diagnostic). It retained six compiler streams, 107 objects,
+three Java sessions and an unsigned 1001-component inventory with failed Rust
+and unknown Java policy. Its 161 raw files were archived with per-entry and ZIP
+SHA-256 verification; no qualified report was produced.
+
+Follow-up guards read the source SHA both before and after expensive profile
+and source-snapshot collection, and independently recheck all bound inputs at
+worker/analysis completion. Tests refuse control aliases and substituted
+producer hashes. CI publication now rejects unqualified metadata at the common
+writer boundary, including direct callers. Linux uses the exact pre-exec
+callback in parent-side tests with modeled function pointers; production keeps
+fixed libc calls and performs no LLVM/file/allocator work after fork. Source
+and configuration errors are tested before any child can be launched. Each
+exact Linux toolchain passed 25 source-module tests and strict Clippy; this
+does not replace full matrix or coverage admission.
+This guard block also passed 152 library and 12 CI tests in both Windows build
+modes, 38 default/39 instrumented coverage tests, all-target checks, strict
+all-feature Clippy, formatting and doc-check.

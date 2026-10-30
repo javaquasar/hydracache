@@ -278,6 +278,121 @@ fn child_setup_checks_each_syscall_result_without_forking_or_setting_limits() {
 }
 
 #[test]
+fn exact_pre_exec_callback_is_checked_in_the_parent_with_only_modeled_syscalls() {
+    unsafe extern "C" fn session_ok() -> libc::pid_t {
+        23
+    }
+    unsafe extern "C" fn session_failure() -> libc::pid_t {
+        unsafe {
+            *libc::__errno_location() = libc::EPERM;
+        }
+        -1
+    }
+    unsafe extern "C" fn limit_ok(
+        resource: LimitResource,
+        limit: *const libc::rlimit,
+    ) -> libc::c_int {
+        // No panics may cross this FFI boundary, and no real limits are changed.
+        if !limit.is_null()
+            && resource == libc::RLIMIT_AS
+            && unsafe { (*limit).rlim_cur == 123 && (*limit).rlim_max == 123 }
+        {
+            0
+        } else {
+            unsafe {
+                *libc::__errno_location() = libc::EINVAL;
+            }
+            -1
+        }
+    }
+    unsafe extern "C" fn limit_failure(_: LimitResource, _: *const libc::rlimit) -> libc::c_int {
+        unsafe {
+            *libc::__errno_location() = libc::EIO;
+        }
+        -1
+    }
+    let good = ChildCalls {
+        setsid: session_ok,
+        setrlimit: limit_ok,
+    };
+    child_setup_callback(true, 123, good)().unwrap();
+    child_setup_callback(
+        false,
+        123,
+        ChildCalls {
+            setsid: session_failure,
+            ..good
+        },
+    )()
+    .unwrap();
+    assert_eq!(
+        child_setup_callback(
+            true,
+            123,
+            ChildCalls {
+                setsid: session_failure,
+                ..good
+            }
+        )()
+        .unwrap_err()
+        .raw_os_error(),
+        Some(libc::EPERM)
+    );
+    assert_eq!(
+        child_setup_callback(
+            false,
+            123,
+            ChildCalls {
+                setrlimit: limit_failure,
+                ..good
+            }
+        )()
+        .unwrap_err()
+        .raw_os_error(),
+        Some(libc::EIO)
+    );
+    assert!(child_setup_callback(true, 124, good)().is_err());
+}
+
+#[test]
+fn actual_owner_reads_and_session_configuration_do_not_spawn_or_change_the_parent_session() {
+    let owner = current_member().unwrap();
+    assert_eq!(owner.pid, std::process::id() as i32);
+    assert!(owner.live);
+    for inherited in [None, Some(owner.session)] {
+        let mut command = Command::new("unit-never-spawned");
+        configure_current_session(&mut command, inherited).unwrap();
+    }
+    assert_eq!(current_member().unwrap().session, owner.session);
+}
+
+#[test]
+fn spawn_session_or_configuration_refusal_precedes_every_pre_exec_and_spawn() {
+    let mut command = Command::new("unit-command-must-not-be-spawned");
+    let error = Tree::spawn_using(
+        &mut command,
+        ProcessBounds::default(),
+        || Err(denied()),
+        |_, _| panic!("unreadable session must not reach configuration"),
+    )
+    .err()
+    .unwrap();
+    assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
+    let error = Tree::spawn_using(
+        &mut command,
+        ProcessBounds::default(),
+        || Ok(Some(17)),
+        |_, inherited| {
+            assert_eq!(inherited, Some(17));
+            Err(io::Error::other("modeled configuration refusal"))
+        },
+    )
+    .err()
+    .unwrap();
+    assert_eq!(error.to_string(), "modeled configuration refusal");
+}
+
+#[test]
 fn root_reaping_waits_for_the_entire_owned_tree_to_drain() {
     use std::os::unix::process::ExitStatusExt;
     assert!(

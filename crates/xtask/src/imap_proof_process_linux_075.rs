@@ -254,6 +254,42 @@ fn configure_session(
     }
     Ok(())
 }
+fn current_member() -> io::Result<Member> {
+    member(std::process::id() as i32)
+}
+fn configure_current_session(command: &mut Command, inherited: Option<i32>) -> io::Result<()> {
+    configure_session(command, inherited, current_member, chain, unsafe {
+        libc::getpgrp()
+    })
+}
+#[cfg(any(target_env = "gnu", target_env = "uclibc"))]
+type LimitResource = libc::__rlimit_resource_t;
+#[cfg(not(any(target_env = "gnu", target_env = "uclibc")))]
+type LimitResource = libc::c_int;
+#[derive(Clone, Copy)]
+struct ChildCalls {
+    setsid: unsafe extern "C" fn() -> libc::pid_t,
+    setrlimit: unsafe extern "C" fn(LimitResource, *const libc::rlimit) -> libc::c_int,
+}
+const CHILD_CALLS: ChildCalls = ChildCalls {
+    setsid: libc::setsid,
+    setrlimit: libc::setrlimit,
+};
+fn child_setup_callback(
+    root_session: bool,
+    memory: libc::rlim_t,
+    calls: ChildCalls,
+) -> impl FnMut() -> io::Result<()> + Send + Sync + 'static {
+    move || {
+        child_setup(
+            root_session,
+            memory,
+            // The production table contains only these async-signal-safe libc calls.
+            || unsafe { (calls.setsid)() },
+            |limit| unsafe { (calls.setrlimit)(libc::RLIMIT_AS, limit) },
+        )
+    }
+}
 fn child_setup(
     root_session: bool,
     memory: libc::rlim_t,
@@ -291,28 +327,32 @@ fn reap_after_drain(
 }
 impl Tree {
     pub fn spawn(command: &mut Command, bounds: ProcessBounds) -> io::Result<(Self, Child)> {
+        Self::spawn_using(
+            command,
+            bounds,
+            inherited_session,
+            configure_current_session,
+        )
+    }
+    fn spawn_using(
+        command: &mut Command,
+        bounds: ProcessBounds,
+        read_session: impl FnOnce() -> io::Result<Option<i32>>,
+        configure: impl FnOnce(&mut Command, Option<i32>) -> io::Result<()>,
+    ) -> io::Result<(Self, Child)> {
         // Cooperative nested controllers use separate groups in the root's session.
         // The root owns all those groups, including when an inner controller is killed.
         // This is process ownership, not isolation against a program deliberately calling setsid.
-        let inherited = inherited_session()?;
-        configure_session(
-            command,
-            inherited,
-            || member(std::process::id() as i32),
-            chain,
-            unsafe { libc::getpgrp() },
-        )?;
+        let inherited = read_session()?;
+        configure(command, inherited)?;
         let memory = bounds.memory_bytes as libc::rlim_t;
         // Only an async-signal-safe syscall is used after fork, before exec.
         unsafe {
-            command.pre_exec(move || {
-                child_setup(
-                    inherited.is_none(),
-                    memory,
-                    || libc::setsid(),
-                    |limit| libc::setrlimit(libc::RLIMIT_AS, limit),
-                )
-            });
+            command.pre_exec(child_setup_callback(
+                inherited.is_none(),
+                memory,
+                CHILD_CALLS,
+            ));
         }
         let child = command.spawn()?;
         Ok((
