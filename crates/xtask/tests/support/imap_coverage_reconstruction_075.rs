@@ -629,3 +629,86 @@ fn coverage_controller_budget_and_missing_analysis_marker_refuse_before_subproce
     assert!(!f.directory.join("analysis.json").exists());
     assert!(!f.directory.join("report.json").exists());
 }
+#[test]
+fn analysis_boundary_propagates_origin_material_and_context_refusals_without_publishing() {
+    let bindings: AnalysisBindings<Driver> = AnalysisBindings {
+        java_tools: |_| Ok(vec![]),
+        phase: |_, _, _, _| Ok(None),
+        objects: |root, dir, _| Ok(vec![artifact(root, &dir.join("extra-object"), MAX)?]),
+        raw: |root, dir, _| Ok(vec![artifact(root, &dir.join("raw"), MAX)?]),
+        regenerate: |_, _, control, capture, _, driver| {
+            driver.calls += 1;
+            let zero_lines = control
+                .sources
+                .iter()
+                .map(|s| (s.path.clone(), s.added.iter().map(|&n| (n, 0)).collect()))
+                .collect();
+            Ok((capture.preparation.clone(), vec![], zero_lines))
+        },
+        contexts: |_, _, _, _| Err("unit context input refused".into()),
+        inputs: |_| panic!("negative fixtures cannot reach final source admission"),
+    };
+    for mode in 0..4 {
+        let f = fixture();
+        assert!(validate_capture_header(&f.capture).is_err());
+        let mut capture = f.capture.clone();
+        capture.objects.sort_by(|a, b| a.path.cmp(&b.path));
+        if mode >= 2 {
+            capture.cargo_streams = vec![f.control.bootstrap.clone(); 6];
+        }
+        let mut producer = f.control.producer.clone();
+        if mode == 0 {
+            producer.sha256 = "1".repeat(64);
+        }
+        let material = CapturedAnalysis {
+            control: f.control.clone(),
+            directory: f.directory.clone(),
+            capture,
+            producer,
+        };
+        let mut driver = Driver::default();
+        let error = analyze_bound(
+            f.root.path(),
+            &relative(f.root.path(), &f.directory.join("capture.json")).unwrap(),
+            mode == 2,
+            material,
+            &mut driver,
+            &bindings,
+        )
+        .unwrap_err()
+        .to_string();
+        assert!(
+            error.contains(match mode {
+                0 => "another producer",
+                1 => "compiler phases",
+                2 => "analysis LLVM profile missing",
+                _ => "unit context input refused",
+            }),
+            "{mode}: {error}"
+        );
+        assert_eq!(driver.calls, usize::from(mode == 3));
+        assert!(!f.directory.join("capture.json").exists());
+        assert!(!f.directory.join("report.json").exists());
+    }
+}
+#[test]
+fn analysis_command_propagates_measurement_failure_before_any_report_can_be_written() {
+    let f = fixture();
+    let path = f.directory.join("control.json");
+    fs::write(&path, serde_json::to_vec(&f.control).unwrap()).unwrap();
+    let error = analysis_command(
+        f.root.path(),
+        &relative(f.root.path(), &path).unwrap(),
+        |root, path| Ok((load(root, path)?, root.join(path).parent().unwrap().into())),
+        |_, _, strict| {
+            assert!(!strict);
+            Err("unit analysis refused".into())
+        },
+        |_, _, _| panic!("failed analysis must not run verification"),
+    )
+    .unwrap_err();
+    assert!(error.to_string().contains("unit analysis refused"));
+    assert!(f.directory.join("analysis-started.json").exists());
+    assert!(!f.directory.join("analysis.json").exists());
+    assert!(!f.directory.join("report.json").exists());
+}

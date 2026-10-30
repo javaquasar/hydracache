@@ -189,19 +189,22 @@ pub struct CargoTarget {
 }
 impl CargoTarget {
     pub fn current() -> Result<Self> {
-        fn output(args: &[&str]) -> Result<String> {
-            let mut command = Command::new("rustc");
-            command.args(args);
-            let output = crate::imap_proof_process_075::execute(
-                command,
-                &[],
-                crate::imap_proof_process_075::ProcessBounds {
-                    stdout_bytes: 8192,
-                    ..Default::default()
-                },
-            )?;
-            Ok(String::from_utf8(output.stdout)?)
-        }
+        Self::current_using(Self::rustc_output)
+    }
+    fn rustc_output(args: &[&str]) -> Result<String> {
+        let mut command = Command::new("rustc");
+        command.args(args);
+        let output = crate::imap_proof_process_075::execute(
+            command,
+            &[],
+            crate::imap_proof_process_075::ProcessBounds {
+                stdout_bytes: 8192,
+                ..Default::default()
+            },
+        )?;
+        Ok(String::from_utf8(output.stdout)?)
+    }
+    fn current_using(mut output: impl FnMut(&[&str]) -> Result<String>) -> Result<Self> {
         let version = output(&["-vV"])?;
         let triple = version
             .lines()
@@ -830,12 +833,18 @@ impl jsonschema::Retrieve for OfflineSchemas {
     }
 }
 pub fn validate_cyclone_dx(bom: &Value) -> Result<()> {
+    validate_cyclone_dx_with_schema(
+        bom,
+        include_str!(
+            "../../../docs/testing/imap/0.75/schemas/vendor/cyclonedx-1.6/bom-1.6.schema.json"
+        ),
+    )
+}
+fn validate_cyclone_dx_with_schema(bom: &Value, source: &str) -> Result<()> {
     if bom["bomFormat"] != "CycloneDX" || bom["specVersion"] != "1.6" {
         return Err("pinned CycloneDX format/version differs".into());
     }
-    let schema: Value = serde_json::from_str(include_str!(
-        "../../../docs/testing/imap/0.75/schemas/vendor/cyclonedx-1.6/bom-1.6.schema.json"
-    ))?;
+    let schema: Value = serde_json::from_str(source)?;
     let validator = jsonschema::options()
         .with_retriever(OfflineSchemas)
         .build(&schema)?;
@@ -926,10 +935,24 @@ fn inputs(root: &Path, capture: &Capture) -> Result<Vec<Artifact>> {
         .collect()
 }
 fn pom_metadata(root: &Path, paths: &BTreeSet<String>) -> Result<Value> {
+    pom_metadata_using(
+        root,
+        paths,
+        |file, bytes| file.write_all(bytes),
+        execute_pom_command,
+    )
+}
+fn pom_metadata_using(
+    root: &Path,
+    paths: &BTreeSet<String>,
+    write: impl FnOnce(&mut fs::File, &[u8]) -> std::io::Result<()>,
+    launch: impl FnOnce(Command) -> Result<Vec<u8>>,
+) -> Result<Value> {
     let scratch = root.join("target/imap-075");
     verify_pom_scratch(&scratch.canonicalize()?, &root.canonicalize()?)?;
     let mut list = tempfile::NamedTempFile::new_in(scratch)?;
-    list.write_all(
+    write(
+        list.as_file_mut(),
         paths
             .iter()
             .map(|p| format!("{p}\n"))
@@ -956,6 +979,9 @@ fn pom_metadata(root: &Path, paths: &BTreeSet<String>) -> Result<Value> {
         .arg("io.hydracache.imap.provenance.MavenInventoryMain075")
         .arg(root)
         .arg(list.path());
+    Ok(serde_json::from_slice(&launch(command)?)?)
+}
+fn execute_pom_command(command: Command) -> Result<Vec<u8>> {
     let output = crate::imap_proof_process_075::execute(
         command,
         &[],
@@ -964,8 +990,9 @@ fn pom_metadata(root: &Path, paths: &BTreeSet<String>) -> Result<Value> {
             ..Default::default()
         },
     )?;
-    Ok(serde_json::from_slice(&output.stdout)?)
+    Ok(output.stdout)
 }
+
 pub fn reduce(root: &Path, capture: &Capture, source: &str) -> Result<Inventory> {
     let target_cfg = CargoTarget::current()?;
     if target_cfg.triple != capture.host {
@@ -1581,3 +1608,7 @@ fn verify_pom_scratch(scratch: &Path, root: &Path) -> Result<()> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "../tests/support/imap_inventory_errors_075.rs"]
+mod error_boundary_tests;

@@ -2399,19 +2399,75 @@ fn analyze_using(
     let prepared: crate::imap_pre074_075::PreparationReceipt =
         load(root, &capture.preparation.path)?;
     crate::imap_pre074_075::validate_receipt_header(&prepared, &control.source_sha)?;
+    analyze_bound(
+        root,
+        path,
+        strict,
+        CapturedAnalysis {
+            control,
+            directory,
+            capture,
+            producer: prepared.tooling,
+        },
+        driver,
+        &AnalysisBindings {
+            java_tools: java_tool_artifacts,
+            phase: analysis_phase,
+            objects: compiler_objects,
+            raw: collect_profiles,
+            regenerate,
+            contexts,
+            inputs: current_inputs,
+        },
+    )
+}
+struct CapturedAnalysis {
+    control: Control,
+    directory: PathBuf,
+    capture: CaptureReceipt,
+    producer: Artifact,
+}
+type MeasuredLines = (Artifact, Vec<Artifact>, Lines);
+type SourceContexts = BTreeMap<String, Vec<crate::imap_sbom_075::CargoTarget>>;
+type CurrentInputs = (String, Profile, Vec<Source>);
+type RegenerateFn<D> =
+    fn(&Path, &Path, &Control, &CaptureReceipt, &[Artifact], &mut D) -> Result<MeasuredLines>;
+struct AnalysisBindings<D> {
+    java_tools: fn(&Path) -> Result<Vec<Artifact>>,
+    phase: fn(&Path, &Path, &Control, bool) -> Result<Option<u32>>,
+    objects: fn(&Path, &Path, &[CompilerRecord]) -> Result<Vec<Artifact>>,
+    raw: fn(&Path, &Path, Option<u32>) -> Result<Vec<Artifact>>,
+    regenerate: RegenerateFn<D>,
+    contexts: fn(&Path, &[Source], &[Artifact], &Profile) -> Result<SourceContexts>,
+    inputs: fn(&Path) -> Result<CurrentInputs>,
+}
+fn analyze_bound<D: CoverageDriver>(
+    root: &Path,
+    path: &str,
+    strict: bool,
+    material: CapturedAnalysis,
+    driver: &mut D,
+    bindings: &AnalysisBindings<D>,
+) -> Result<Analysis> {
+    let CapturedAnalysis {
+        control,
+        directory,
+        capture,
+        producer,
+    } = material;
     validate_capture_origin(
         path,
         &relative(root, &directory.join("capture.json"))?,
         &capture,
         &control,
-        &prepared.tooling,
-        &java_tool_artifacts(root)?,
+        &producer,
+        &(bindings.java_tools)(root)?,
     )?;
-    let live_analysis = analysis_phase(root, &directory, &control, strict)?;
-    let mut expected = compiler_objects(root, &directory, &capture.cargo_streams)?;
+    let live_analysis = (bindings.phase)(root, &directory, &control, strict)?;
+    let mut expected = (bindings.objects)(root, &directory, &capture.cargo_streams)?;
     expected.push(control.producer.clone());
     expected.sort_by(|a, b| a.path.cmp(&b.path));
-    let raw = collect_profiles(root, &directory, live_analysis)?;
+    let raw = (bindings.raw)(root, &directory, live_analysis)?;
     let analysis_prefix = format!("{}/raw/analysis/", relative(root, &directory)?);
     validate_capture_materials(
         &capture,
@@ -2422,8 +2478,8 @@ fn analyze_using(
         strict,
     )?;
     let (rust_report, java_reports, lines) =
-        regenerate(root, &directory, &control, &capture, &raw, driver)?;
-    let contexts = contexts(
+        (bindings.regenerate)(root, &directory, &control, &capture, &raw, driver)?;
+    let contexts = (bindings.contexts)(
         root,
         &control.sources,
         &capture
@@ -2436,7 +2492,7 @@ fn analyze_using(
     let ranges = compiled_out_ranges(root, &control.sources, &contexts)?;
     let summary = summarize(&control.sources, &lines, &control.profile.os, ranges)?;
     let qualification = gate_result(&summary, strict)?;
-    require_current_inputs(root, &control, "analysis", current_inputs)?;
+    require_current_inputs(root, &control, "analysis", bindings.inputs)?;
     Ok(Analysis {
         schema: "imap075-scoped-coverage-v2".into(),
         source_sha: control.source_sha,
@@ -2681,20 +2737,7 @@ pub fn run_using(
         }
         "worker" if args[2] == "--control" => capture_worker(root, &args[3])?,
         "analysis" if args[2] == "--control" => {
-            let (_, directory) = read_control(root, &args[3])?;
-            let marker = directory.join("analysis-started.json");
-            store_new(root, &marker, &identity()?)?;
-            let analysis = analyze(
-                root,
-                &relative(root, &directory.join("capture.json"))?,
-                false,
-            )?;
-            store_new(root, &directory.join("analysis.json"), &analysis)?;
-            check_report(root, &directory.join("analysis.json"), false)?;
-            println!(
-                "imap-coverage: measurement only; {}/{} changed executable lines",
-                analysis.summary.covered_added, analysis.summary.executable_added
-            );
+            analysis_command(root, &args[3], read_control, analyze, check_report)?;
         }
         "check" if args[2] == "--receipt" => {
             let analysis = host.check(root, Path::new(&args[3]))?;
@@ -2727,3 +2770,27 @@ fn validate_workload_producer(actual: &Artifact, prepared: &Artifact) -> Result<
 #[cfg(test)]
 #[path = "../tests/support/imap_coverage_profile_inputs_075.rs"]
 mod profile_input_tests;
+
+fn analysis_command(
+    root: &Path,
+    control_path: &str,
+    read: impl FnOnce(&Path, &str) -> Result<(Control, PathBuf)>,
+    measure: impl FnOnce(&Path, &str, bool) -> Result<Analysis>,
+    verify: impl FnOnce(&Path, &Path, bool) -> Result<Analysis>,
+) -> Result<()> {
+    let (_, directory) = read(root, control_path)?;
+    let marker = directory.join("analysis-started.json");
+    store_new(root, &marker, &identity()?)?;
+    let analysis = measure(
+        root,
+        &relative(root, &directory.join("capture.json"))?,
+        false,
+    )?;
+    store_new(root, &directory.join("analysis.json"), &analysis)?;
+    verify(root, &directory.join("analysis.json"), false)?;
+    println!(
+        "imap-coverage: measurement only; {}/{} changed executable lines",
+        analysis.summary.covered_added, analysis.summary.executable_added
+    );
+    Ok(())
+}

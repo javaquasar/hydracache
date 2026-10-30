@@ -281,3 +281,15 @@ negative tests stop producer and execution refusals before capture publication.
 Malformed compiler JSON now reaches snapshot error propagation, and missing
 Java sessions stop before receipt publication. Coverage admission remains
 unchanged and requires another complete current-source measurement.
+
+The analysis/SBOM boundary block passed 206 default/214 instrumented library,
+39/40 coverage and 15 SBOM checks (two actual-input cases remain in full
+capture), all-target checks and strict Clippy with named function aliases.
+Analysis keeps real header/source/identity/preparation validation in its public
+wrapper and fixed production bindings. Negative tests stop origin/material/
+context refusals and analysis-command failures without publishing model reports.
+SBOM tests exercise malformed pinned schema inputs, each fixed rustc target
+observation, list-write refusal and real bounded missing/failed metadata
+commands. The public CycloneDX validator still uses the compiled pinned schema;
+no receipt selects an execution adapter. Remaining measured obligations require
+further tests and another full capture before P8 admission.
