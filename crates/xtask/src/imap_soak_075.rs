@@ -445,14 +445,15 @@ pub fn process_identity(pid: u32) -> Result<String, Box<dyn Error>> {
         let (mut exit, mut kernel, mut user) = (creation, creation, creation);
         let ok =
             unsafe { GetProcessTimes(handle, &mut creation, &mut exit, &mut kernel, &mut user) };
+        // Read a failed GetProcessTimes error before CloseHandle can change it.
+        let result = windows_process_birth(
+            ok != 0,
+            creation.dwHighDateTime,
+            creation.dwLowDateTime,
+            std::io::Error::last_os_error,
+        );
         unsafe { CloseHandle(handle) };
-        if ok == 0 {
-            return Err(std::io::Error::last_os_error().into());
-        }
-        Ok(format!(
-            "windows-filetime-{:08x}{:08x}",
-            creation.dwHighDateTime, creation.dwLowDateTime
-        ))
+        result
     }
     #[cfg(target_os = "linux")]
     {
@@ -1053,15 +1054,15 @@ fn identity_is_live_using(
 }
 
 pub fn current_runtime(cohort: Cohort) -> Result<String, Box<dyn Error>> {
-    let command = if cohort == Cohort::Native {
-        let mut c = Command::new(crate::imap_api_differential::java_executable().canonicalize()?);
-        c.args(["-Xms16m", "-Xmx64m", "--version"]);
-        c
-    } else {
-        let mut c = Command::new("rustc");
-        c.arg("--version");
-        c
-    };
+    runtime_using(
+        cohort,
+        || Ok(crate::imap_api_differential::java_executable().canonicalize()?),
+        runtime_observation,
+        crate::imap_daemon_probe_075::binary_digest,
+    )
+}
+type RuntimeObservation = (Vec<u8>, Vec<u8>);
+fn runtime_observation(command: Command) -> Result<RuntimeObservation, Box<dyn Error>> {
     let output = process::execute(
         command,
         &[],
@@ -1071,13 +1072,28 @@ pub fn current_runtime(cohort: Cohort) -> Result<String, Box<dyn Error>> {
             ..Default::default()
         },
     )?;
-    let mut bytes = output.stdout;
-    bytes.extend(output.stderr);
+    Ok((output.stdout, output.stderr))
+}
+fn runtime_using(
+    cohort: Cohort,
+    mut launcher: impl FnMut() -> Result<std::path::PathBuf, Box<dyn Error>>,
+    observe: impl FnOnce(Command) -> Result<RuntimeObservation, Box<dyn Error>>,
+    hash: impl FnOnce(&Path) -> Result<String, Box<dyn Error>>,
+) -> Result<String, Box<dyn Error>> {
+    let command = if cohort == Cohort::Native {
+        let mut c = Command::new(launcher()?);
+        c.args(["-Xms16m", "-Xmx64m", "--version"]);
+        c
+    } else {
+        let mut c = Command::new("rustc");
+        c.arg("--version");
+        c
+    };
+    let (mut bytes, stderr) = observe(command)?;
+    bytes.extend(stderr);
     let text = String::from_utf8(bytes)?;
     let launcher = if cohort == Cohort::Native {
-        crate::imap_daemon_probe_075::binary_digest(
-            &crate::imap_api_differential::java_executable().canonicalize()?,
-        )?
+        hash(&launcher()?)?
     } else {
         "static-worker-artifact".into()
     };
@@ -1097,6 +1113,29 @@ pub fn trusted_profile(
     source: &str,
     cohort: Cohort,
     bounds: SoakBounds,
+) -> Result<SoakProfile, Box<dyn Error>> {
+    trusted_profile_using(
+        root,
+        source,
+        cohort,
+        bounds,
+        |root| {
+            crate::imap_extended_receipt_075::artifact(
+                root,
+                &std::env::current_exe()?,
+                512 * 1024 * 1024,
+            )
+        },
+        current_runtime,
+    )
+}
+fn trusted_profile_using(
+    root: &Path,
+    source: &str,
+    cohort: Cohort,
+    bounds: SoakBounds,
+    tooling: impl FnOnce(&Path) -> Result<crate::imap_extended_receipt_075::Artifact, Box<dyn Error>>,
+    runtime: impl FnOnce(Cohort) -> Result<String, Box<dyn Error>>,
 ) -> Result<SoakProfile, Box<dyn Error>> {
     let paths = match cohort {
         Cohort::Reference => vec![binary(root, "imap-soak-worker-075")],
@@ -1122,11 +1161,7 @@ pub fn trusted_profile(
     if cohort == Cohort::Native && artifacts[2].sha256 != crate::imap_pre074_075::HAZELCAST_SHA256 {
         return Err("soak native pin differs".into());
     }
-    let tooling = crate::imap_extended_receipt_075::artifact(
-        root,
-        &std::env::current_exe()?,
-        512 * 1024 * 1024,
-    )?;
+    let tooling = tooling(root)?;
     artifacts.push(BoundArtifact {
         path: tooling.path,
         sha256: tooling.sha256,
@@ -1137,7 +1172,7 @@ pub fn trusted_profile(
         cohort,
         seed: 117,
         bounds,
-        runtime: current_runtime(cohort)?,
+        runtime: runtime(cohort)?,
         artifacts,
     };
     profile.validate()?;
@@ -1178,6 +1213,13 @@ pub fn run_prepared(
     }
 }
 pub fn check_saved(root: &Path, path: &Path) -> Result<SoakReport, Box<dyn Error>> {
+    check_saved_using(root, path, &ReplayBindings::real())
+}
+fn check_saved_using(
+    root: &Path,
+    path: &Path,
+    bindings: &ReplayBindings,
+) -> Result<SoakReport, Box<dyn Error>> {
     let relative = path
         .strip_prefix(root)
         .unwrap_or(path)
@@ -1186,11 +1228,11 @@ pub fn check_saved(root: &Path, path: &Path) -> Result<SoakReport, Box<dyn Error
     let bytes = crate::imap_qualification_075::read_relative(root, &relative, 256 * 1024)?;
     let report: SoakReport = serde_json::from_slice(&bytes)?;
     validate_report(&report)?;
-    if report.profile.source_sha != crate::imap_ci_075::source_state(root)? {
+    if report.profile.source_sha != (bindings.source)(root)? {
         return Err("soak archived source differs".into());
     }
-    report.profile.check_artifacts(root)?;
-    let current = trusted_profile(
+    (bindings.artifacts)(&report.profile, root)?;
+    let current = (bindings.profile)(
         root,
         &report.profile.source_sha,
         report.profile.cohort,
@@ -1217,30 +1259,24 @@ pub fn check_saved(root: &Path, path: &Path) -> Result<SoakReport, Box<dyn Error
             .worker
             .as_ref()
             .ok_or("soak worker identity missing")?;
-        let mut state = SegmentState::new(report.profile.clone())?;
-        for line in transcript
-            .split(|b| *b == b'\n')
-            .filter(|line| !line.is_empty())
-        {
-            if line.len() > 4096 {
-                return Err("saved soak frame bound".into());
-            }
-            state.accept(
-                &serde_json::from_slice(line)?,
-                identity.pid,
-                &identity.platform_birth,
-            )?;
-        }
-        if state.terminal != Some(Terminal::Complete)
-            || state.rounds != report.rounds
-            || state.active_elapsed_ms != report.active_elapsed_ms
-        {
-            return Err("saved soak progress incomplete".into());
-        }
+        replay_saved_progress(
+            &report.profile,
+            identity,
+            &transcript,
+            report.rounds,
+            report.active_elapsed_ms,
+        )?;
     }
     Ok(report)
 }
 pub fn check_checkpoint(root: &Path, path: &Path) -> Result<SoakReport, Box<dyn Error>> {
+    check_checkpoint_using(root, path, &ReplayBindings::real())
+}
+fn check_checkpoint_using(
+    root: &Path,
+    path: &Path,
+    bindings: &ReplayBindings,
+) -> Result<SoakReport, Box<dyn Error>> {
     let relative = path
         .strip_prefix(root)
         .unwrap_or(path)
@@ -1253,12 +1289,11 @@ pub fn check_checkpoint(root: &Path, path: &Path) -> Result<SoakReport, Box<dyn 
         &crate::imap_qualification_075::read_relative(root, &relative, 256 * 1024)?,
     )?;
     validate_report(&report)?;
-    if report.profile.source_sha != crate::imap_ci_075::source_state(root)?
-        || identity_is_live(&report.controller)?
+    if report.profile.source_sha != (bindings.source)(root)? || (bindings.live)(&report.controller)?
     {
         return Err("checkpoint source differs or previous controller still lives".into());
     }
-    let current = trusted_profile(
+    let current = (bindings.profile)(
         root,
         &report.profile.source_sha,
         report.profile.cohort,
@@ -1281,7 +1316,7 @@ pub fn check_checkpoint(root: &Path, path: &Path) -> Result<SoakReport, Box<dyn 
         )?)?;
     if identity.schema != "imap075-soak-identity-v1"
         || identity.segment != report.segment
-        || identity_is_live(&identity.worker)?
+        || (bindings.live)(&identity.worker)?
     {
         return Err("checkpoint identity differs or previous worker still lives".into());
     }
@@ -1890,3 +1925,68 @@ fn require_soak_source(expected: &str, current: &str) -> Result<(), Box<dyn Erro
 #[cfg(test)]
 #[path = "../tests/support/imap_soak_publication_075.rs"]
 mod publication_tests;
+
+#[cfg(test)]
+#[path = "../tests/support/imap_soak_replay_errors_075.rs"]
+mod replay_error_tests;
+
+type SoakResult<T> = Result<T, Box<dyn Error>>;
+type ReplayProfile = fn(&Path, &str, Cohort, SoakBounds) -> SoakResult<SoakProfile>;
+struct ReplayBindings {
+    source: fn(&Path) -> SoakResult<String>,
+    profile: ReplayProfile,
+    artifacts: fn(&SoakProfile, &Path) -> SoakResult<()>,
+    live: fn(&WorkerIdentity) -> SoakResult<bool>,
+}
+impl ReplayBindings {
+    fn real() -> Self {
+        Self {
+            source: crate::imap_ci_075::source_state,
+            profile: trusted_profile,
+            artifacts: SoakProfile::check_artifacts,
+            live: identity_is_live,
+        }
+    }
+}
+fn replay_saved_progress(
+    profile: &SoakProfile,
+    identity: &WorkerIdentity,
+    transcript: &[u8],
+    rounds: u64,
+    active_ms: u64,
+) -> SoakResult<()> {
+    let mut state = SegmentState::new(profile.clone())?;
+    for line in transcript
+        .split(|b| *b == b'\n')
+        .filter(|line| !line.is_empty())
+    {
+        if line.len() > 4096 {
+            return Err("saved soak frame bound".into());
+        }
+        state.accept(
+            &serde_json::from_slice(line)?,
+            identity.pid,
+            &identity.platform_birth,
+        )?;
+    }
+    if state.terminal != Some(Terminal::Complete)
+        || state.rounds != rounds
+        || state.active_elapsed_ms != active_ms
+    {
+        return Err("saved soak progress incomplete".into());
+    }
+    Ok(())
+}
+
+#[cfg(windows)]
+fn windows_process_birth(
+    ok: bool,
+    high: u32,
+    low: u32,
+    error: impl FnOnce() -> std::io::Error,
+) -> SoakResult<String> {
+    if !ok {
+        return Err(error().into());
+    }
+    Ok(format!("windows-filetime-{high:08x}{low:08x}"))
+}

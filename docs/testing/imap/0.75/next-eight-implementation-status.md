@@ -305,3 +305,11 @@ completion report. Independent policy replay rejects malformed/substituted raw
 reports and promotion of unknown state. CLI generation and inventory/BOM write
 failures publish no model provenance or documents. Fixed real production
 functions and the coverage admission rule remain unchanged.
+
+The replay/runtime error block passed 217 default/225 instrumented library,
+39/40 coverage and 11 real soak checks per mode, all-target checks and strict
+Clippy. Private replay bindings exercise malformed saved progress and source,
+artifact and profile refusals; fixtures remain Failed and the public checker
+rejects them. Runtime observation errors stop before profile admission. Windows
+process birth errors are captured before CloseHandle can replace last-error.
+No qualification report is produced by these tests; P8 awaits full measurement.
