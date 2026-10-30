@@ -27,6 +27,12 @@ Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) · gates:
 [`../GATES.md`](../GATES.md) · predecessor:
 [`V0_73_EVIDENCE_DRIVEN_PERFORMANCE_EFFICIENCY_PLAN.md`](V0_73_EVIDENCE_DRIVEN_PERFORMANCE_EFFICIENCY_PLAN.md).
 
+The2026-10-30 [coordinated Chitchat identity preparation](../testing/performance/0.74/chitchat-copied-root-result-20261030.md)
+records the operator-approved dependency migration boundary. Actual Root remains
+unchanged; two disk-floor stage refusals are preserved and real Cargo coverage
+is pending a stable build window. This is security/compatibility preparation,
+not an accepted optimization or release/server admission. All thresholds remain.
+
 Read `CLAUDE.md`, `docs/RULES.md`, `docs/GATES.md`, `docs/COMPAT.md`, the final 0.73 release
 evidence, and the retained 0.67.1 reference report before implementation. This plan inherits R-1
 through R-11. In particular, higher request counts do not justify reordered commands, changed

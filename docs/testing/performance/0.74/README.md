@@ -1,5 +1,19 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The operator has now approved the coordinated Chitchat identity migration for
+[private copied-Root preparation](chitchat-copied-root-result-20261030.md).
+All2259 original source/fixture files and647 checksum-bound ordinary archives
+are prepared; actual Root/lock/qualification remain unchanged. Two first stage
+attempts stopped on the unchanged physical4GiB floor, before Cargo. Both are
+retained, not replayed. The changed third preparation passes17 pure controls;
+real GNU metadata/package/typed-caller compilation awaits a stable build window.
+Read-only attribution records concurrent large0.75 output; no0.75 files/processes
+were changed.10.27GiB of old0.74 build caches were removed after evidence checks.
+The193-member/98-object [packet](local-runs/chitchat-copied-root-20261030/index.json)
+has SHA256160ea3e77442cc8319ac43b5a2061a78d62a1ee96180d985b34e7f6d564834b9.
+Coordinated migration preparation is approved; publication, actual Root adoption,
+full security/workspace/platform and production/server admission remain open.
+
 The [public identity audit/control](chitchat-public-identity-result-20261030.md)
 now confirms THREE actual boundaries across21 adapter methods and four direct
 shared-alias consumers: config, borrowed ID and Transport. Both GNU1.94/MSRV1.88
@@ -7,7 +21,7 @@ pass three real dual-package runtime controls and produce expected E0308/E0277
 for all three incompatible crossings. Packet06ce2017 preserves whole source/
 metadata/diagnostics and an exact UNAPPLIED migration proposal. This is a
 successful nominal-control gate, not full Root compatibility or adoption.
-Coordinated public dependency migration needs an explicit decision; no publish,
+Its later operator decision is recorded above; no publish,
 Root/MTU/security/performance/platform or server admission follows automatically.
 
 The [separately approved complete U-package lane](chitchat-security-package-complete-result-20261030.md)

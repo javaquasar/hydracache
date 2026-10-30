@@ -8,6 +8,13 @@ The [machine-readable decision](release-closure-scope-20261026.toml) keeps zero
 accepted performance candidates, the existing composition ledger and frozen
 qualification identity unchanged.
 
+On2026-10-30 the operator separately approved coordinated Chitchat package identity
+for [private Root candidate preparation](chitchat-copied-root-result-20261030.md).
+This resolves that architectural decision only. Two physical-capacity stage
+refusals remain terminal, Cargo has not executed, and the changed third stage
+awaits a stable build window. Actual Root adoption, publication and the complete
+release/host gates below remain required; no performance candidate is accepted.
+
 ## 1 Record scope and review the eventual product identity
 
 Scope is recorded. Do not reopen terminal W2–W9/GET-owner candidates or call
