@@ -316,3 +316,88 @@ fn periodic_artifact_rebinding_refuses_failure_and_samples_after_success() {
         .unwrap();
     assert!(!root.path().join("report.json").exists());
 }
+#[test]
+fn daemon_deadlines_keep_exact_startup_and_drain_boundaries_and_allow_observed_exit() {
+    let b = SoakBounds::smoke();
+    let startup = Duration::from_millis(b.startup_ms);
+    let drain = Duration::from_millis(b.drain_ms);
+    daemon_deadlines(false, false, &b, || startup, || None).unwrap();
+    assert!(daemon_deadlines(
+        false,
+        false,
+        &b,
+        || startup + Duration::from_millis(1),
+        || panic!("startup refusal stops before drain")
+    )
+    .unwrap_err()
+    .contains("readiness deadline"));
+    daemon_deadlines(
+        true,
+        false,
+        &b,
+        || panic!("a ready daemon skips startup clock"),
+        || Some(drain),
+    )
+    .unwrap();
+    assert!(daemon_deadlines(
+        true,
+        false,
+        &b,
+        || Duration::ZERO,
+        || Some(drain + Duration::from_millis(1))
+    )
+    .unwrap_err()
+    .contains("drain deadline"));
+    daemon_deadlines(
+        true,
+        true,
+        &b,
+        || Duration::ZERO,
+        || Some(drain + Duration::from_millis(1)),
+    )
+    .unwrap();
+    assert_eq!(daemon_drain_reason(true), "cancelled");
+    assert_eq!(daemon_drain_reason(false), "duration_complete");
+    daemon_round_budget(b.maximum_rounds - 1, b.maximum_rounds).unwrap();
+    assert!(daemon_round_budget(b.maximum_rounds, b.maximum_rounds)
+        .unwrap_err()
+        .contains("round limit"));
+}
+#[test]
+fn wrong_daemon_cohort_and_marker_io_failures_refuse_before_any_worker_or_control_is_created() {
+    let root = tempfile::tempdir().unwrap();
+    let control = root.path().join("control");
+    assert!(execute_daemon(
+        root.path(),
+        profile(),
+        Path::new("missing-binary"),
+        &control,
+        Cancellation::default(),
+        None
+    )
+    .unwrap_err()
+    .to_string()
+    .contains("daemon soak cohort required"));
+    assert!(!control.exists());
+    for kind in [
+        std::io::ErrorKind::PermissionDenied,
+        std::io::ErrorKind::WouldBlock,
+    ] {
+        let e = marker_using(root.path(), "cancel", |path| {
+            assert_eq!(path, root.path().join("cancel"));
+            Err(std::io::Error::from(kind))
+        })
+        .unwrap_err();
+        assert_eq!(e.downcast_ref::<std::io::Error>().unwrap().kind(), kind);
+    }
+    assert!(
+        !marker_using(root.path(), "cancel", |_| Err(std::io::Error::from(
+            std::io::ErrorKind::NotFound
+        )))
+        .unwrap()
+    );
+    assert!(marker_using(root.path(), "foreign", |_| panic!(
+        "invalid marker does not open files"
+    ))
+    .is_err());
+}

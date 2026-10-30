@@ -99,3 +99,55 @@ fn fixed_tool_materials_refuse_aliases_missing_files_and_changed_hashes() {
     fs::remove_file(tool).unwrap();
     assert!(verify_tool_material(root.path(), &row).is_err());
 }
+#[test]
+fn upstream_origin_is_a_direct_declaration_or_explicitly_unknown() {
+    for pom in [
+        None,
+        Some(json!({})),
+        Some(json!({"source_url":""})),
+        Some(json!({"source_url":17})),
+    ] {
+        assert_eq!(
+            declared_upstream(pom.as_ref()),
+            ("unknown".into(), "unknown".into())
+        );
+    }
+    assert_eq!(
+        declared_upstream(Some(
+            &json!({"source_url":"https://example.invalid/unit-source"})
+        )),
+        (
+            "https://example.invalid/unit-source".into(),
+            "direct-pom-declaration".into()
+        )
+    );
+}
+#[test]
+fn java_root_replacement_requires_identical_bytes_and_pom_scratch_stays_owned() {
+    let component = Component {
+        id: "maven:unit:root:jar::1".into(),
+        ecosystem: "maven".into(),
+        name: "root".into(),
+        version: "1".into(),
+        source: "workspace:git:unit".into(),
+        source_checksum: "0".repeat(64),
+        upstream_source: "unknown".into(),
+        upstream_origin: "unknown".into(),
+        licenses: vec![],
+        license_origin: "unknown".into(),
+    };
+    let mut components = BTreeMap::new();
+    replace_java_root(&mut components, component.clone()).unwrap();
+    replace_java_root(&mut components, component.clone()).unwrap();
+    let mut changed = component.clone();
+    changed.source_checksum = "1".repeat(64);
+    assert!(replace_java_root(&mut components, changed)
+        .unwrap_err()
+        .to_string()
+        .contains("installed Java root differs"));
+    let root = tempfile::tempdir().unwrap();
+    let canonical = root.path().canonicalize().unwrap();
+    verify_pom_scratch(&canonical.join("target/imap-075"), &canonical).unwrap();
+    let foreign = tempfile::tempdir().unwrap();
+    assert!(verify_pom_scratch(&foreign.path().canonicalize().unwrap(), &canonical).is_err());
+}

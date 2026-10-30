@@ -1910,3 +1910,44 @@ fn pipeline_uses_a_controller_copy_stops_on_failure_and_never_overwrites_output(
         assert_eq!(driver.calls, 0);
     }
 }
+
+#[test]
+fn missing_java_xml_execution_jar_or_build_material_never_publishes_a_session() {
+    use xtask::imap_build_process_075::BuildStage;
+    for missing in 0..4 {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join(".gitignore"), "target/\ntests/\n").unwrap();
+        git(root.path(), &["init", "-q"]);
+        record(root.path(), "unqualified missing Java material fixture");
+        let directory = root.path().join("target/imap-075/java-missing-unit");
+        std::fs::create_dir_all(&directory).unwrap();
+        let module = "java-imap-provenance-075";
+        let target = root.path().join(format!("tests/{module}/target"));
+        std::fs::create_dir_all(target.join("site/jacoco")).unwrap();
+        let mut driver = FakeDriver { calls: 0, fail: 0 };
+        let mut report = driver
+            .execute(BuildStage::JavaContract, Command::new("never-executed"))
+            .unwrap();
+        report.stdout_path = directory
+            .join("build.stdout")
+            .to_string_lossy()
+            .into_owned();
+        let files = [
+            target.join("site/jacoco/jacoco.xml"),
+            directory.join(format!("{module}.exec")),
+            target.join(format!("{module}-0.75.0-SNAPSHOT.jar")),
+            directory.join("build.json"),
+        ];
+        for (index, file) in files.iter().enumerate() {
+            if index != missing {
+                std::fs::write(file, b"unqualified fixture bytes; never executed").unwrap();
+            }
+        }
+        assert!(
+            retain_java_session(root.path(), &directory, module, "unit-session", &report).is_err()
+        );
+        assert!(!directory.join("coverage-sessions.json").exists());
+        assert!(!directory.join("capture.json").exists());
+        assert!(!directory.join("report.json").exists());
+    }
+}

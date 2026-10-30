@@ -119,3 +119,54 @@ fn maven_boot_inventory_requires_one_launcher_and_bounds_actual_directory_entrie
         .contains("boot directory bound"));
     assert!(!root.path().join("report.json").exists());
 }
+#[test]
+fn rust_version_host_requires_one_bounded_path_free_host() {
+    assert_eq!(
+        rust_version_host("rustc 1.94\nhost: unit-host\n").unwrap(),
+        "unit-host"
+    );
+    for version in [
+        "rustc 1.94".into(),
+        "host: ".into(),
+        "host: ../foreign".into(),
+        "host: bad host".into(),
+        format!("host: {}", "a".repeat(129)),
+    ] {
+        assert!(rust_version_host(&version).is_err());
+    }
+    assert_eq!(
+        rust_version_host(&format!("host: {}", "a".repeat(128)))
+            .unwrap()
+            .len(),
+        128
+    );
+}
+#[test]
+fn installed_maven_home_requires_an_existing_absolute_directory_and_preserves_its_spelling() {
+    let root = tempfile::tempdir().unwrap();
+    let valid = format!("Apache Maven unit\nMaven home: {}\n", root.path().display());
+    assert_eq!(installed_maven_home(&valid).unwrap(), root.path());
+    let file = root.path().join("plain-file");
+    fs::write(&file, b"not a directory").unwrap();
+    for output in [
+        "missing home line".into(),
+        "Maven home: relative".into(),
+        format!("Maven home: {}", root.path().join("missing").display()),
+        format!("Maven home: {}", file.display()),
+    ] {
+        assert!(installed_maven_home(&output).is_err());
+    }
+}
+#[test]
+fn canonical_repository_scope_refuses_a_foreign_sibling() {
+    let root = tempfile::tempdir().unwrap();
+    let canonical = root.path().canonicalize().unwrap();
+    verify_repository_scope(&canonical.join(REPOSITORY), &canonical).unwrap();
+    let foreign = tempfile::tempdir().unwrap();
+    assert!(
+        verify_repository_scope(&foreign.path().canonicalize().unwrap(), &canonical)
+            .unwrap_err()
+            .to_string()
+            .contains("foreign Maven repository refused")
+    );
+}

@@ -1012,12 +1012,41 @@ pub fn validate_runtime_versions(rust: &str, java: &str) -> Result<()> {
     Ok(())
 }
 pub fn current_profile() -> Result<Profile> {
-    validate_policy(&serde_json::from_str(include_str!(
-        "../../../docs/testing/imap/0.75/coverage-profile.json"
-    ))?)?;
+    current_profile_using(
+        include_str!("../../../docs/testing/imap/0.75/coverage-profile.json"),
+        &mut CurrentProfileHost,
+    )
+}
+trait ProfileHost {
+    fn tools(&mut self) -> Result<BTreeMap<String, PathBuf>>;
+    fn fingerprint(&mut self, path: &Path, args: &[&str]) -> Result<String>;
+    fn java(&mut self) -> Result<PathBuf>;
+    fn target(&mut self) -> Result<crate::imap_sbom_075::CargoTarget>;
+    fn rust_materials(&mut self, host: &str) -> Result<Vec<Value>>;
+}
+struct CurrentProfileHost;
+impl ProfileHost for CurrentProfileHost {
+    fn tools(&mut self) -> Result<BTreeMap<String, PathBuf>> {
+        tool_paths()
+    }
+    fn fingerprint(&mut self, path: &Path, args: &[&str]) -> Result<String> {
+        fingerprint(path, args)
+    }
+    fn java(&mut self) -> Result<PathBuf> {
+        Ok(crate::imap_api_differential::java_executable().canonicalize()?)
+    }
+    fn target(&mut self) -> Result<crate::imap_sbom_075::CargoTarget> {
+        crate::imap_sbom_075::CargoTarget::current()
+    }
+    fn rust_materials(&mut self, host: &str) -> Result<Vec<Value>> {
+        crate::imap_sbom_capture_075::rust_materials(host)
+    }
+}
+fn current_profile_using(policy: &str, host: &mut impl ProfileHost) -> Result<Profile> {
+    validate_policy(&serde_json::from_str(policy)?)?;
     let jvm = jvm_relative(std::env::consts::OS, std::env::consts::ARCH)?;
     let mut tools = Vec::new();
-    for (name, path) in tool_paths()? {
+    for (name, path) in host.tools()? {
         let args = if name == "java" {
             vec![
                 "-Xms16m",
@@ -1030,7 +1059,7 @@ pub fn current_profile() -> Result<Profile> {
         } else {
             vec!["--version"]
         };
-        let version = fingerprint(&path, &args)?;
+        let version = host.fingerprint(&path, &args)?;
         let metadata = fs::metadata(&path)?;
         tools.push(Tool {
             name,
@@ -1050,7 +1079,7 @@ pub fn current_profile() -> Result<Profile> {
         .version
         .clone();
     validate_runtime_versions(&rust.version, &java)?;
-    let java_path = crate::imap_api_differential::java_executable().canonicalize()?;
+    let java_path = host.java()?;
     let java_home = java_path
         .parent()
         .and_then(Path::parent)
@@ -1068,9 +1097,8 @@ pub fn current_profile() -> Result<Profile> {
             version: java.clone(),
         });
     }
-    for input in crate::imap_sbom_capture_075::rust_materials(
-        &crate::imap_sbom_075::CargoTarget::current()?.triple,
-    )? {
+    let target = host.target()?;
+    for input in host.rust_materials(&target.triple)? {
         tools.push(Tool {
             name: format!(
                 "rust-distribution:{}",
@@ -1090,7 +1118,7 @@ pub fn current_profile() -> Result<Profile> {
         rust_flags: RUST_FLAGS.into(),
         cargo_config: CARGO_CONFIG.iter().map(|c| (*c).to_owned()).collect(),
         feature: "imap-075-coverage".into(),
-        target: crate::imap_sbom_075::CargoTarget::current()?,
+        target: host.target()?,
         tools,
     })
 }
@@ -2675,3 +2703,7 @@ fn validate_workload_producer(actual: &Artifact, prepared: &Artifact) -> Result<
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "../tests/support/imap_coverage_profile_inputs_075.rs"]
+mod profile_input_tests;

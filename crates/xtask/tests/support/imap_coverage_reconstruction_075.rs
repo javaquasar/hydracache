@@ -171,6 +171,7 @@ struct Driver {
     mismatch: bool,
     duplicate: bool,
     bad_json: bool,
+    bad_lcov: bool,
 }
 impl CoverageDriver for Driver {
     fn execute(&mut self, stage: BuildStage, command: Command) -> Result<BuildReport> {
@@ -191,7 +192,12 @@ impl CoverageDriver for Driver {
             assert_eq!(args[0], "export");
             let response = fs::read_to_string(args[1].strip_prefix('@').unwrap())?;
             assert!(response.contains("--check-binary-ids"));
-            let mut lcov = "SF:crates/xtask/src/unit.rs\nDA:1,0\nend_of_record\n".to_owned();
+            let mut lcov = if self.bad_lcov {
+                "SF:foreign.rs\nDA:1,0\nend_of_record\n"
+            } else {
+                "SF:crates/xtask/src/unit.rs\nDA:1,0\nend_of_record\n"
+            }
+            .to_owned();
             if self.duplicate {
                 lcov.push_str(
                     "SF:tests/java-imap-benchmark/src/main/java/unit.java\nDA:1,0\nend_of_record\n",
@@ -581,4 +587,31 @@ fn owned_control_loading_refuses_aliases_substituted_producers_and_missing_input
     assert!(!f.capture.completed);
     assert!(!f.directory.join("capture.json").exists());
     assert!(!f.directory.join("report.json").exists());
+}
+#[test]
+fn independently_reconstructed_lcov_and_java_mapping_refuse_foreign_sources() {
+    let f = fixture();
+    let mut driver = Driver {
+        bad_lcov: true,
+        ..Default::default()
+    };
+    assert!(reconstruct(&f, &mut driver).is_err());
+    assert_eq!(driver.calls, 2);
+    let mut f = fixture();
+    let projection=serde_json::to_vec(&json!({"schema":"imap075-java-coverage-v1","sessions":[{"id":f.capture.java[0].id}],"sources":{"../foreign.java":{"1":0}}})).unwrap();
+    f.capture.java[0].xml = material(
+        f.root.path(),
+        &f.directory,
+        "foreign-mapping.xml",
+        &projection,
+    );
+    f.capture.java[0].exec = material(
+        f.root.path(),
+        &f.directory,
+        "foreign-mapping.exec",
+        &projection,
+    );
+    let mut driver = Driver::default();
+    assert!(reconstruct(&f, &mut driver).is_err());
+    assert_eq!(driver.calls, 5);
 }

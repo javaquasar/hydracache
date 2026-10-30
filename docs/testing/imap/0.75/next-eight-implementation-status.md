@@ -227,3 +227,23 @@ Daemon protocol tests exercise every network boundary and incorrect binary
 result. Package failure uses a real finite owned shell, verifies physical reap
 and stops before the second module. Replay and Maven material tests reject
 substitution, inconsistent runtime inputs and foreign paths. P8 remains open.
+
+The profile/materials follow-up passed 197 default and 202 instrumented library
+checks, 39/40 coverage, six preparation, 15 SBOM and 11 real soak checks in
+each mode, plus all-target check, strict Clippy, formatting and doc-check.
+The production profile host remains fixed; modeled hosts cannot be selected
+by receipts and publish no control/capture/report. Tests cover every input
+boundary, policy parsing, missing tools/JDK/distribution fields and actual
+bounded fingerprint failures. Java-session publication refuses absent XML,
+execution, JAR or build materials. Independent reconstruction refuses foreign
+LCOV and Java paths. POM origin stays declared or unknown, and Java root
+replacement requires matching bytes. Shared binding refresh preserves clock
+reads after hashing; daemon startup/drain boundaries, round cap and marker I/O
+refusals have explicit tests. No fresh current-source coverage claim is made.
+
+General CI `41124551240` failed separately: Docs refused a required update to
+`docs-site/examples/Cargo.lock` under `--locked`; MSRV reported 1405 passed,
+53 failed and 135 ignored with owned-runtime-root refusals; Rust policy
+reported RUSTSEC-2026-0391/0398/0403. Instruction tripwire exited 3 and migration
+fast-evidence admission refused its failed upstream lane. No globally green
+or unchanged-failure-set claim is made, and frozen gates remain unchanged.

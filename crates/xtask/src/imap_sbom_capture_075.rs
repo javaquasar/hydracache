@@ -65,9 +65,7 @@ pub fn maven_command(root: &Path) -> Result<Command, Box<dyn Error>> {
 fn maven_command_at(root: &Path, home: &Path) -> Result<Command, Box<dyn Error>> {
     let repository = root.join(REPOSITORY);
     fs::create_dir_all(&repository)?;
-    if !repository.canonicalize()?.starts_with(root.canonicalize()?) {
-        return Err("foreign Maven repository refused".into());
-    }
+    verify_repository_scope(&repository.canonicalize()?, &root.canonicalize()?)?;
     let settings = root.join(SETTINGS);
     let mut boot = Vec::new();
     let mut examined = 0;
@@ -166,18 +164,7 @@ impl Capture {
         command.args(["-vV"]);
         let report = builds.run(BuildStage::ProvenanceTools, command)?;
         let rust_version = fs::read_to_string(&report.stdout_path)?;
-        let host = rust_version
-            .lines()
-            .find_map(|line| line.strip_prefix("host: "))
-            .ok_or("rustc host missing")?
-            .to_owned();
-        if host.len() > 128
-            || !host
-                .bytes()
-                .all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_')
-        {
-            return Err("rustc host bound".into());
-        }
+        let host = rust_version_host(&rust_version)?;
         let directory = relative(root, builds.directory())?;
         let (rustc_sha256, cargo_sha256) = rust_tools()?;
         let rust_inputs = rust_materials(&host)?;
@@ -205,16 +192,7 @@ impl Capture {
         let report = builds.run(BuildStage::ProvenanceTools, version)?;
         let output = fs::read_to_string(report.stdout_path)?;
         // Maven's version command has no settings, environment or system-property dump.
-        let home = output
-            .lines()
-            .find_map(|line| line.strip_prefix("Maven home: "))
-            .ok_or("Maven home missing")?;
-        // Keep Maven's absolute spelling for Java classpaths. Windows canonicalize
-        // returns a verbatim \\?\ prefix that the JVM wildcard loader does not expand.
-        let maven_home = PathBuf::from(home.trim());
-        if !maven_home.is_absolute() || !maven_home.is_dir() {
-            return Err("Maven distribution path invalid".into());
-        }
+        let maven_home = installed_maven_home(&output)?;
         self.maven_home = maven_home.to_string_lossy().into();
         let java = crate::imap_api_differential::java_executable();
         let jdk = java
@@ -544,4 +522,44 @@ fn trusted_cargo(command: &mut Command) {
     ] {
         command.env_remove(variable);
     }
+}
+
+fn verify_repository_scope(repository: &Path, root: &Path) -> Result<(), Box<dyn Error>> {
+    if !repository.starts_with(root) {
+        return Err("foreign Maven repository refused".into());
+    }
+    Ok(())
+}
+fn rust_version_host(version: &str) -> Result<String, Box<dyn Error>> {
+    let host = version
+        .lines()
+        .find_map(|line| line.strip_prefix("host: "))
+        .ok_or("rustc host missing")?
+        .to_owned();
+    if host.len() > 128
+        || !host
+            .bytes()
+            .all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_')
+    {
+        return Err("rustc host bound".into());
+    }
+
+    if host.is_empty() {
+        return Err("rustc host bound".into());
+    }
+    Ok(host)
+}
+fn installed_maven_home(output: &str) -> Result<PathBuf, Box<dyn Error>> {
+    let home = output
+        .lines()
+        .find_map(|line| line.strip_prefix("Maven home: "))
+        .ok_or("Maven home missing")?;
+    // Keep Maven's absolute spelling for Java classpaths. Windows canonicalize
+    // returns a verbatim \\?\ prefix that the JVM wildcard loader does not expand.
+    let maven_home = PathBuf::from(home.trim());
+    if !maven_home.is_absolute() || !maven_home.is_dir() {
+        return Err("Maven distribution path invalid".into());
+    }
+
+    Ok(maven_home)
 }

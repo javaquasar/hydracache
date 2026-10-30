@@ -927,9 +927,7 @@ fn inputs(root: &Path, capture: &Capture) -> Result<Vec<Artifact>> {
 }
 fn pom_metadata(root: &Path, paths: &BTreeSet<String>) -> Result<Value> {
     let scratch = root.join("target/imap-075");
-    if !scratch.canonicalize()?.starts_with(root.canonicalize()?) {
-        return Err("foreign POM-list scratch refused".into());
-    }
+    verify_pom_scratch(&scratch.canonicalize()?, &root.canonicalize()?)?;
     let mut list = tempfile::NamedTempFile::new_in(scratch)?;
     list.write_all(
         paths
@@ -1103,6 +1101,7 @@ pub fn reduce(root: &Path, capture: &Capture, source: &str) -> Result<Inventory>
         } else {
             "direct-pom-declaration"
         };
+        let (upstream_source, upstream_origin) = declared_upstream(pom);
         insert(
             &mut components,
             Component {
@@ -1119,20 +1118,8 @@ pub fn reduce(root: &Path, capture: &Capture, source: &str) -> Result<Inventory>
                         .unwrap_or("unknown")
                 ),
                 source_checksum: text(&row, "sha256")?.into(),
-                upstream_source: pom
-                    .and_then(|p| p["source_url"].as_str())
-                    .filter(|s| !s.is_empty())
-                    .unwrap_or("unknown")
-                    .into(),
-                upstream_origin: if pom
-                    .and_then(|p| p["source_url"].as_str())
-                    .is_some_and(|s| !s.is_empty())
-                {
-                    "direct-pom-declaration"
-                } else {
-                    "unknown"
-                }
-                .into(),
+                upstream_source,
+                upstream_origin,
                 licenses,
                 license_origin: origin.into(),
             },
@@ -1167,6 +1154,7 @@ pub fn reduce(root: &Path, capture: &Capture, source: &str) -> Result<Inventory>
             .iter()
             .map(|v| text(v, "name").map(str::to_owned))
             .collect::<Result<Vec<_>>>()?;
+        let (upstream_source, upstream_origin) = declared_upstream(Some(declarations));
         let c = Component {
             id,
             ecosystem: "maven".into(),
@@ -1174,30 +1162,13 @@ pub fn reduce(root: &Path, capture: &Capture, source: &str) -> Result<Inventory>
             version: "0.75.0-SNAPSHOT".into(),
             source: format!("workspace:git:{source}"),
             source_checksum: hash,
-            upstream_source: declarations["source_url"]
-                .as_str()
-                .filter(|s| !s.is_empty())
-                .unwrap_or("unknown")
-                .into(),
-            upstream_origin: if declarations["source_url"]
-                .as_str()
-                .is_some_and(|s| !s.is_empty())
-            {
-                "direct-pom-declaration"
-            } else {
-                "unknown"
-            }
-            .into(),
+            upstream_source,
+            upstream_origin,
             licenses,
             license_origin: text(declarations, "license_origin")?.into(),
         };
         // Installed contract JAR and workspace JAR are byte-identical; repository location is not source authority.
-        if let Some(old) = components.remove(&c.id) {
-            if old.source_checksum != c.source_checksum {
-                return Err("installed Java root differs".into());
-            }
-        }
-        insert(&mut components, c)?;
+        replace_java_root(&mut components, c)?;
     }
     for name in ["contract", "native"] {
         edges.extend(tree_edges(
@@ -1583,3 +1554,30 @@ fn verify_tool_material(base: &Path, row: &Value) -> Result<()> {
 #[cfg(test)]
 #[path = "../tests/support/imap_inventory_materials_075.rs"]
 mod material_tests;
+
+fn declared_upstream(pom: Option<&Value>) -> (String, String) {
+    match pom
+        .and_then(|p| p["source_url"].as_str())
+        .filter(|s| !s.is_empty())
+    {
+        Some(source) => (source.into(), "direct-pom-declaration".into()),
+        None => ("unknown".into(), "unknown".into()),
+    }
+}
+fn replace_java_root(
+    components: &mut BTreeMap<String, Component>,
+    component: Component,
+) -> Result<()> {
+    if let Some(old) = components.remove(&component.id) {
+        if old.source_checksum != component.source_checksum {
+            return Err("installed Java root differs".into());
+        }
+    }
+    insert(components, component)
+}
+fn verify_pom_scratch(scratch: &Path, root: &Path) -> Result<()> {
+    if !scratch.starts_with(root) {
+        return Err("foreign POM-list scratch refused".into());
+    }
+    Ok(())
+}

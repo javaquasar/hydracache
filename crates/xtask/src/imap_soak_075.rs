@@ -562,10 +562,17 @@ pub(crate) fn worker_arguments(profile: &SoakProfile, control: &Path) -> Vec<Str
     ]
 }
 pub fn marker(control: &Path, name: &str) -> Result<bool, Box<dyn Error>> {
+    marker_using(control, name, fs::File::open)
+}
+fn marker_using(
+    control: &Path,
+    name: &str,
+    open: impl FnOnce(std::path::PathBuf) -> std::io::Result<fs::File>,
+) -> Result<bool, Box<dyn Error>> {
     marker_name(name)?;
     use std::io::Read;
     let path = control.join(name);
-    let input = match fs::File::open(path) {
+    let input = match open(path) {
         Ok(input) => input,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(false),
         Err(e) => return Err(e.into()),
@@ -806,10 +813,13 @@ impl WorkerControl<'_> {
         {
             return Err("soak cancellation drain deadline".into());
         }
-        if clock().saturating_duration_since(self.last_binding) >= Duration::from_secs(10) {
-            check_bindings(self.profile, self.root).map_err(|e| e.to_string())?;
-            self.last_binding = clock();
-        }
+        refresh_soak_bindings(
+            self.root,
+            self.profile,
+            &mut self.last_binding,
+            &mut clock,
+            check_bindings,
+        )?;
         Ok(())
     }
 }
@@ -1715,20 +1725,11 @@ pub fn execute_daemon(
                     crate::imap_daemon_probe_075::soak_drain(&addrs).map_err(|e| e.to_string())?;
                     frame.phase = Phase::Drained;
                     frame.active_elapsed_ms = at.elapsed().as_millis() as u64;
-                    frame.reason = Some(
-                        if requested {
-                            "cancelled"
-                        } else {
-                            "duration_complete"
-                        }
-                        .into(),
-                    );
+                    frame.reason = Some(daemon_drain_reason(requested).into());
                     record(&mut state, &frame, o.pid, &birth)?;
                     drain = Some(Instant::now());
                 } else if drain.is_none() && Instant::now() >= next && !o.root_exited {
-                    if frame.round == profile.bounds.maximum_rounds {
-                        return Err("daemon soak round limit".into());
-                    }
+                    daemon_round_budget(frame.round, profile.bounds.maximum_rounds)?;
                     crate::imap_daemon_probe_075::soak_round(
                         &addrs,
                         profile.seed,
@@ -1746,20 +1747,20 @@ pub fn execute_daemon(
                     );
                 }
             }
-            if state.phase.is_none()
-                && started.elapsed() > Duration::from_millis(profile.bounds.startup_ms)
-            {
-                return Err("daemon soak readiness deadline".into());
-            }
-            if drain.is_some_and(|at| at.elapsed() > Duration::from_millis(profile.bounds.drain_ms))
-                && !o.root_exited
-            {
-                return Err("daemon soak drain deadline".into());
-            }
-            if last_binding.elapsed() >= Duration::from_secs(10) {
-                profile.check_artifacts(root).map_err(|e| e.to_string())?;
-                last_binding = Instant::now();
-            }
+            daemon_deadlines(
+                state.phase.is_some(),
+                o.root_exited,
+                &profile.bounds,
+                || started.elapsed(),
+                || drain.map(|at| at.elapsed()),
+            )?;
+            refresh_soak_bindings(
+                root,
+                &profile,
+                &mut last_binding,
+                Instant::now,
+                SoakProfile::check_artifacts,
+            )?;
             Ok(())
         },
     );
@@ -1798,4 +1799,46 @@ pub fn execute_daemon(
         &serde_json::to_vec_pretty(&report)?,
     )?;
     Ok(report)
+}
+
+fn refresh_soak_bindings(
+    root: &Path,
+    profile: &SoakProfile,
+    last: &mut Instant,
+    mut clock: impl FnMut() -> Instant,
+    check: impl FnOnce(&SoakProfile, &Path) -> Result<(), Box<dyn Error>>,
+) -> Result<(), String> {
+    if clock().saturating_duration_since(*last) >= Duration::from_secs(10) {
+        check(profile, root).map_err(|e| e.to_string())?;
+        *last = clock();
+    }
+    Ok(())
+}
+fn daemon_drain_reason(cancelled: bool) -> &'static str {
+    if cancelled {
+        "cancelled"
+    } else {
+        "duration_complete"
+    }
+}
+fn daemon_round_budget(round: u64, maximum: u64) -> Result<(), String> {
+    if round == maximum {
+        return Err("daemon soak round limit".into());
+    }
+    Ok(())
+}
+fn daemon_deadlines(
+    ready: bool,
+    exited: bool,
+    bounds: &SoakBounds,
+    startup: impl FnOnce() -> Duration,
+    drain: impl FnOnce() -> Option<Duration>,
+) -> Result<(), String> {
+    if !ready && startup() > Duration::from_millis(bounds.startup_ms) {
+        return Err("daemon soak readiness deadline".into());
+    }
+    if drain().is_some_and(|at| at > Duration::from_millis(bounds.drain_ms)) && !exited {
+        return Err("daemon soak drain deadline".into());
+    }
+    Ok(())
 }
