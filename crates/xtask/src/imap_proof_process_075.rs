@@ -27,11 +27,22 @@ mod pipe_setup_tests;
 pub fn announce_fixture(
     file: &std::path::Path,
     exit_after: bool,
+    checkpoint: impl FnMut() -> Result<(), Box<dyn std::error::Error>>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    announce_using(file, exit_after, checkpoint, || {
+        std::thread::park_timeout(Duration::from_millis(2));
+        Ok(())
+    })
+}
+fn announce_using(
+    file: &std::path::Path,
+    exit_after: bool,
     mut checkpoint: impl FnMut() -> Result<(), Box<dyn std::error::Error>>,
+    mut wait: impl FnMut() -> Result<(), Box<dyn std::error::Error>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut ready = false;
     loop {
-        std::thread::park_timeout(Duration::from_millis(2));
+        wait()?;
         if !ready {
             checkpoint()?;
             std::fs::write(file, std::process::id().to_string())?;

@@ -258,3 +258,26 @@ Controller tests refuse invalid budgets, non-directory roots, missing analysis
 markers and foreign compiler archive directories before subprocess execution.
 A fresh clean-source complete capture and the exact full matrix remain required
 before P8 can be marked qualified.
+
+The clean published `30e515a06` Windows capture passed all workloads and all
+four prepared-input tests, retaining six compiler streams, 107 objects and
+three Java sessions. Final strict reconstruction refused 67 uncovered changed
+executable lines (152 in the previous Windows diagnostic). Every captured
+source binding was checked; the coverage module's CRLF checkout matched its
+raw captured SHA and the normalized committed blob. All four Linux lanes in
+`41135442493` reached strict reconstruction and refused uncovered lines; the
+retained Rust 1.94/Java 21 stream has 65 (148 previously), with matching uploaded
+ZIP SHA and no source mismatches. HC/2 `41135442089` passed. No qualified report
+was produced. Dependency policy stays Rust failed / Java unknown / aggregate
+failed and unsigned. Raw diagnostics were archived with per-entry verification.
+
+The first subsequent fault block passed 201 default/209 instrumented library,
+39/40 coverage and 13 process checks, all-target checks and strict Clippy.
+Exact Linux source-module checks passed 28 tests and strict Clippy on each
+Rust 1.88/1.94. A finite injected wait tests the parked announcement path
+without changing production parking or checkpoint order. Private worker
+bindings retain the real production producer/identity/publication functions;
+negative tests stop producer and execution refusals before capture publication.
+Malformed compiler JSON now reaches snapshot error propagation, and missing
+Java sessions stop before receipt publication. Coverage admission remains
+unchanged and requires another complete current-source measurement.

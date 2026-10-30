@@ -47,3 +47,34 @@ fn each_checkpoint_failure_and_actual_pid_io_failure_propagates_without_later_wo
     .is_err());
     assert_eq!(calls, 1);
 }
+#[test]
+fn parked_announcement_waits_without_republishing_and_finite_wait_errors_stop_it() {
+    let root = tempfile::tempdir().unwrap();
+    let file = root.path().join("pid");
+    let mut waits = 0;
+    let mut checkpoints = 0;
+    let error = announce_using(
+        &file,
+        false,
+        || {
+            checkpoints += 1;
+            Ok(())
+        },
+        || {
+            waits += 1;
+            if waits == 3 {
+                Err("unit finite wait stop".into())
+            } else {
+                Ok(())
+            }
+        },
+    )
+    .unwrap_err();
+    assert!(error.to_string().contains("unit finite wait stop"));
+    assert_eq!(waits, 3);
+    assert_eq!(checkpoints, 1);
+    assert_eq!(
+        std::fs::read_to_string(file).unwrap(),
+        std::process::id().to_string()
+    );
+}

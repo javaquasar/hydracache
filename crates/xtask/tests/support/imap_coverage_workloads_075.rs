@@ -95,6 +95,8 @@ struct Driver {
     calls: usize,
     fail_at: usize,
     missing_at: usize,
+    bad_compiler_at: usize,
+    missing_java: bool,
     lock_drift: bool,
 }
 impl CoverageDriver for Driver {
@@ -140,15 +142,24 @@ impl CoverageDriver for Driver {
             if self.calls != self.missing_at {
                 fs::write(
                     &stdout,
-                    serde_json::to_vec(
-                        &json!({"reason":"compiler-artifact","executable":root.join(RUNNER_TARGET).join("unit-object")}),
-                    )?,
+                    if self.calls == self.bad_compiler_at {
+                        b"{".to_vec()
+                    } else {
+                        serde_json::to_vec(
+                            &json!({"reason":"compiler-artifact","executable":root.join(RUNNER_TARGET).join("unit-object")}),
+                        )?
+                    },
                 )?;
             }
             stdout
         } else {
             root.join("unused.stdout")
         };
+        if self.missing_java && self.calls == 14 {
+            fs::remove_file(
+                root.join("target/imap-075/workload-unit/java/coverage-sessions.json"),
+            )?;
+        }
         Ok(BuildReport {
             bounds: BuildBounds::default(),
             scope: "unit-workload-unqualified".into(),
@@ -307,4 +318,67 @@ fn compiler_object_archive_refuses_a_foreign_directory_before_accessing_its_cont
     .is_err());
     assert_eq!(fs::read_dir(foreign.path()).unwrap().count(), 0);
     unpublished(&f);
+}
+#[test]
+fn malformed_compiler_streams_and_missing_java_session_stop_before_publication() {
+    for bad_compiler_at in [1, 2, 3, 4, 13] {
+        let f = fixture();
+        let mut driver = Driver {
+            bad_compiler_at,
+            ..Default::default()
+        };
+        assert!(run(&f, &mut driver, false).is_err());
+        assert_eq!(driver.calls, bad_compiler_at);
+        unpublished(&f);
+    }
+    let f = fixture();
+    let mut driver = Driver {
+        missing_java: true,
+        ..Default::default()
+    };
+    assert!(run(&f, &mut driver, false).is_err());
+    assert_eq!(driver.calls, 14);
+    unpublished(&f);
+}
+#[test]
+fn worker_wrapper_keeps_producer_guard_before_identity_and_never_publishes_on_execution_refusal() {
+    fn read(root: &Path, path: &str) -> Result<(Control, PathBuf)> {
+        Ok((load(root, path)?, root.join(path).parent().unwrap().into()))
+    }
+    fn producer(root: &Path) -> Result<Artifact> {
+        artifact(root, &root.join(RUNNER_TARGET).join("unit-object"), MAX)
+    }
+    fn refuse(_: &Path, _: &str, _: &Control, _: &Path) -> Result<CaptureReceipt> {
+        Err("unit worker execution refused".into())
+    }
+    for mismatch in [false, true] {
+        let f = fixture();
+        if mismatch {
+            let mut changed = f.control.clone();
+            changed.producer.sha256 = "1".repeat(64);
+            fs::write(
+                f.directory.join("control.json"),
+                serde_json::to_vec(&changed).unwrap(),
+            )
+            .unwrap();
+        }
+        let error = capture_worker_using(
+            f.root.path(),
+            &relative(f.root.path(), &f.directory.join("control.json")).unwrap(),
+            &CaptureWorkerBindings {
+                read,
+                producer,
+                execute: refuse,
+            },
+        )
+        .unwrap_err()
+        .to_string();
+        assert!(error.contains(if mismatch {
+            "runner bytes differ"
+        } else {
+            "unit worker execution refused"
+        }));
+        assert_eq!(f.directory.join("capture-started.json").exists(), !mismatch);
+        unpublished(&f);
+    }
 }

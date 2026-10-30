@@ -1591,21 +1591,38 @@ fn capture_worker(_: &Path, _: &str) -> Result<()> {
 }
 #[cfg(feature = "imap-075-coverage")]
 fn capture_worker(root: &Path, path: &str) -> Result<()> {
-    let (control, directory) = read_control(root, path)?;
-    validate_workload_producer(
-        &artifact(root, &std::env::current_exe()?, 512 * 1024 * 1024)?,
-        &control.producer,
-    )?;
-    store_new(root, &directory.join("capture-started.json"), &identity()?)?;
-    let receipt = capture_workloads(
+    capture_worker_using(
         root,
         path,
-        &control,
-        &directory,
-        &mut ManagedDriver::new(root)?,
-        prepared_workload_inputs,
-        current_inputs,
-    )?;
+        &CaptureWorkerBindings {
+            read: read_control,
+            producer: |root| artifact(root, &std::env::current_exe()?, 512 * 1024 * 1024),
+            execute: |root, path, control, directory| {
+                capture_workloads(
+                    root,
+                    path,
+                    control,
+                    directory,
+                    &mut ManagedDriver::new(root)?,
+                    prepared_workload_inputs,
+                    current_inputs,
+                )
+            },
+        },
+    )
+}
+#[cfg(feature = "imap-075-coverage")]
+struct CaptureWorkerBindings {
+    read: fn(&Path, &str) -> Result<(Control, PathBuf)>,
+    producer: fn(&Path) -> Result<Artifact>,
+    execute: fn(&Path, &str, &Control, &Path) -> Result<CaptureReceipt>,
+}
+#[cfg(feature = "imap-075-coverage")]
+fn capture_worker_using(root: &Path, path: &str, bindings: &CaptureWorkerBindings) -> Result<()> {
+    let (control, directory) = (bindings.read)(root, path)?;
+    validate_workload_producer(&(bindings.producer)(root)?, &control.producer)?;
+    store_new(root, &directory.join("capture-started.json"), &identity()?)?;
+    let receipt = (bindings.execute)(root, path, &control, &directory)?;
     store_new(root, &directory.join("capture.json"), &receipt)?;
     Ok(())
 }

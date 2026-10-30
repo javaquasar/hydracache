@@ -699,6 +699,7 @@ fn windows_spelling_normalization_never_hides_traversal_or_foreign_files() {
         assert!(normalize_source("C:/Repo", bad, &known()).is_err(), "{bad}");
     }
     assert!(normalize_source("/tmp/repo", r"C:\Repo\crates\xtask\src\unit.rs", &known()).is_err());
+    assert!(normalize_source("/tmp/repo", "/tmp/repo/unknown.rs", &known()).is_err());
     assert_eq!(
         normalize_source("/tmp/repo", "/tmp/repo/crates/xtask/src/unit.rs", &known()).unwrap(),
         "crates/xtask/src/unit.rs"
