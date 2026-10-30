@@ -1,0 +1,76 @@
+"""Fixed native session body; allocator qualification only, not CPU/RSS."""
+def session(core):
+    c=core.c;p=core.p;out=core.OUT;NATIVE=core.NATIVE
+    import json
+    import os
+    from pathlib import Path
+    import shutil
+    import time
+    import traceback
+    import run as windows
+    deadline=time.monotonic()+1100
+    result=dict(complete=False,root_adopted=False,resources_qualified=False)
+    try:
+        c.need(os.getuid()==os.getgid()==1000,'nonroot local GNU owner')
+        core.guard();c.need(not NATIVE.exists(),'new exclusive native source/build directory')
+        NATIVE.mkdir(parents=True,mode=0o700)
+        shutil.copytree(core.INPUT/'fixtures',NATIVE/'fixtures')
+        for name in ('wrap.c','wrap.h','control.c','peek_control.c'):shutil.copyfile(core.INPUT/name,NATIVE/name)
+        registry=c.load(c.HERE/'runner.py','fused_prerequisite_registry');registry.registry(deadline)
+        _,env,_=c.environment('194')
+        invoke=lambda name,argv,bound=1200:core.invoke(name,argv,env,deadline,bound)
+        invoke('source-control',['/usr/bin/python3','-B',str(c.ROOT/'tools/chitchat-call-context-074/parallel_source.py'),str(core.INPUT/'preparation.json')])
+        invoke('gcc-version',['/usr/bin/gcc','--version']);invoke('ld-version',['/usr/bin/ld.bfd','--version'])
+        flags=['/usr/bin/gcc','-std=c11','-O2','-g','-Wall','-Wextra','-Werror','-fno-builtin','-fno-lto']
+        invoke('compile-wrapper',[*flags,'-c',str(NATIVE/'wrap.c'),'-o',str(NATIVE/'wrap.o')])
+        c.write(out,'object.json',dict(path=str(NATIVE/'wrap.o'),sha256=c.sha((NATIVE/'wrap.o').read_bytes())))
+        for label in ('control','peek_control'):
+            invoke('compile-'+label,[*flags,str(NATIVE/(label+'.c')),str(NATIVE/'wrap.o'),core.WRAP,'-pthread','-o',str(NATIVE/label)])
+            folder=invoke(label,[str(NATIVE/label)],5)
+            marker='HC074_NATIVE_C_CONTROLS:' if label=='control' else 'HC074_PEEK_CONTROL:'
+            raw=(folder/'stdout.log').read_text();c.need(raw.count(marker)==1 and json.loads(raw.split(marker)[1].splitlines()[0])['complete'],'old C controls')
+        tool,env=core.environment()
+        c.need('13.3.0' in (out/'gcc-version/stdout.log').read_text() and '2.42' in (out/'ld-version/stdout.log').read_text(),'same qualified GNU compiler/linker')
+        compiler=invoke('compiler',[str(tool/'rustc'),'-vV'])
+        c.need('release: 1.94.0\n' in (compiler/'stdout.log').read_text(),'exact actual compiler')
+        images={};catalogs={}
+        for v in ('B','F'):
+            args=core.cargo_args(v)
+            folder=invoke('build-'+v,[str(tool/'cargo'),'test',*args,'--lib','--no-run','--message-format=json'])
+            rows=[json.loads(s) for s in (folder/'stdout.log').read_text().splitlines() if s.startswith('{')]
+            actual=[r for r in rows if r.get('reason')=='compiler-artifact' and r.get('executable') and r['target']['kind']==['lib'] and r['profile']['test']]
+            c.need(len(actual)==1 and actual[0]['fresh'] is False and [r['success'] for r in rows if r.get('reason')=='build-finished']==[True],'fresh complete independent image')
+            c.need(Path(actual[0]['target']['src_path']).resolve()==NATIVE/'fixtures'/v/'src/lib.rs','actual source artifact')
+            image=Path(actual[0]['executable']);c.need(image.resolve().is_relative_to(NATIVE/'builds'/v),'independent target')
+            images[v]=dict(path=str(image),sha256=c.sha(image.read_bytes()));c.write(out,'image-'+v+'.json',images[v])
+            if v=='F':c.need(images['B']['sha256']!=images['F']['sha256'],'no baseline binary reuse')
+            listed=invoke('catalog-'+v,[str(image),'--list'],10)
+            text=(listed/'stdout.log').read_text();names=sorted(s[:-6] for s in text.splitlines() if s.endswith(': test'))
+            old=json.loads((windows.phase('catalog-'+v)/'result.json').read_bytes())['catalog']
+            added=['delta::cost_review::'+n for n in ('allocator_control','allocation_observations','operation_allocation_observations','native_c_allocator_control','native_rust_tag_control','native_operation_observations')]
+            added+=['delta::cost_review::actual_caller::'+n for n in ('fixed_caller_semantics_control','fixed_caller_capacity_control','fixed_caller_observations')]
+            added+=['serialize::stateful_review::'+n for n in ('stateful_semantics_control','stateful_capacity_control','stateful_observations')]
+            c.need(names==sorted(old+added) and len(names)==len(set(names)) and text.splitlines()[-1]==f'{len(names)} tests, 0 benchmarks','complete actual native catalog')
+            catalogs[v]=names;c.write(out,'catalog-'+v+'.json',names)
+            for action in ('check','clippy'):
+                argv=[str(tool/'cargo'),action,*args,'--all-targets']
+                if action=='clippy':argv+=['--','-D','warnings']
+                invoke(action+'-'+v,argv)
+            archives=list((NATIVE/'builds'/v).glob('x86_64-unknown-linux-gnu/release/build/zstd-sys-*/out/libzstd.a'));c.need(len(archives)==1,'one actual static Zstd')
+            invoke('zstd-imports-'+v,['/usr/bin/nm','-u',str(archives[0])]);invoke('linked-zstd-'+v,['/usr/bin/objdump','-d','--disassemble=ZSTD_createCCtx',str(image)])
+            selected=['delta::cost_review::'+n for n in ('allocator_control','native_c_allocator_control','native_rust_tag_control')]
+            selected+=['serialize::stateful_review::'+n for n in ('stateful_semantics_control','stateful_capacity_control')]
+            selected+=['delta::cost_review::actual_caller::'+n for n in ('fixed_caller_semantics_control','fixed_caller_capacity_control')]
+            if v=='F':selected += [n for n in names if n.startswith(('serialize::fused_review::','delta::fused_review::'))]+['serialize::security_stream_review::minimal_bound_contract','serialize::security_stream_review::all_stream_bounds_hold']
+            c.write(out,'selection-'+v+'.json',dict(selected=selected,full_library_passed=False,unexecuted=[n for n in names if n not in selected]))
+            for i,test in enumerate(selected):
+                folder=invoke('case-'+v+f'-{i:02}',[str(image),'--exact',test,'--test-threads=1','--nocapture'],5);core.account(folder,test,names)
+        # Predeclared B/F/F/B replication, not retry-to-pass. Both inner observations retained.
+        for step,v in enumerate(('B','F','F','B'),1):
+            for kind,test in [('operation','delta::cost_review::native_operation_observations'),('stateful','serialize::stateful_review::stateful_observations'),('caller','delta::cost_review::actual_caller::fixed_caller_observations')]:
+                folder=invoke(f'observe-{step}-{v}-{kind}',[images[v]['path'],'--exact',test,'--test-threads=1','--nocapture'],5);core.account(folder,test,catalogs[v])
+        registry.registry(deadline);core.guard()
+        c.need(all(c.sha(Path(image['path']).read_bytes())==image['sha256'] for image in images.values()) and time.monotonic()<deadline,'original image/session postflight')
+        result['complete']=True
+    except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+    c.write(out,'session-result.json',result);raise SystemExit(0 if result['complete'] else 1)
