@@ -1,5 +1,14 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [actual private Root continuation](chitchat-copied-root-native-result-20261030.md)
+now passes staging, real B/O metadata and GNU1.94 adapter check/strict Clippy.
+Four real direct aliases are coherent; only the adapter is compiled here.
+Packet4ac5b1e3 retains all352 members/176 objects. The next baseline test stops on
+the original disk floor before Cargo starts, so test/MSRV/other-consumer and
+external typed-caller coverage remain open. All three first resource refusals
+stay terminal. Old cache cleanup is recorded, including the safe refusal while
+a0.75 test process was active. Actual Root and release/server admission stay closed.
+
 The operator has now approved the coordinated Chitchat identity migration for
 [private copied-Root preparation](chitchat-copied-root-result-20261030.md).
 All2259 original source/fixture files and647 checksum-bound ordinary archives
