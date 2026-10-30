@@ -1,5 +1,13 @@
 # Decision needed after the dependency-only security preparation
 
+Final continuation: the one expressly approved borrowed-input candidate F is now
+[closed negatively](chitchat-fused-result-20261030.md). Its first retained-finish
+resource checkpoint is B256/F268 capacity for155 identical wire bytes, repeated
+twice per image. Windows semantic/MSRV positives do not override it. Actual source,
+first refusals, all evidence and sealed execution tools remain. The full numerical
+matrix, CPU/RSS and Root integration stop. The historical proposals below do not
+authorize a successor, rescue or retry; no new algorithm candidate is opened.
+
 Status: the operator explicitly approved one isolated local MTU candidate on
 2026-10-30 after the question identifying the earlier no-new-hypotheses boundary.
 This records preparation/implementation/fault-test scope, not Root adoption,

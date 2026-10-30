@@ -1,0 +1,1 @@
+{"complete": true, "decision": "declined-first-retained-output-regression", "resource_gate_pass": false, "retained_delta_bytes": 12, "final_Windows_positive_executions": 164, "retention_observations_per_image": 2, "further_measurements_allowed": false, "CPU_qualified": false, "RSS_qualified": false, "root_adopted": false, "release_admitted": false}

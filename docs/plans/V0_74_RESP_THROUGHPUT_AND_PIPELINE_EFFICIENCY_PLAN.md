@@ -1328,3 +1328,13 @@ now passes local native non-increase and eight Windows/GNU/MSRV semantic peers,
 explicitly confirms one borrowed MTU candidate; continue its independent storage/
 byte-oracle/admission work under the recorded no-new-Vec/public-trait constraints.
 C1 remains declined and C2 does not grant full resource/CPU/RSS/Root admission.
+
+The [approved borrowed-input F candidate](../testing/performance/0.74/chitchat-fused-result-20261030.md)
+now has a definitive negative result: its first retained returned-Vec checkpoint
+grows B256→F268 bytes while all155 wire bytes agree, repeated twice per image.
+Final Windows1.94/MSRV1.88 check/strict Clippy,164 selected executions and full
+37/239/seven semantic bodies pass, but cannot offset that independent increase.
+Preserve the actual fixture/projection/transaction implementation and every first
+refusal in packet e554bd8e. STOP blocks further measurement; full resource/CPU/RSS,
+distribution/Root and release/server gates remain unqualified. No new hypothesis,
+rescue, threshold change, service/clock change or server workload is opened here.

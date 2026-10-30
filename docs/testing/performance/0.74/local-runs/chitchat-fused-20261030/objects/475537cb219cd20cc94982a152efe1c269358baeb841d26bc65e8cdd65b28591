@@ -1,0 +1,1 @@
+{"first": "native-r1/clippy-F", "resource_observations_started": false, "product_source_changed": false, "only_repair": "test counter plus-one comparison rewritten equivalently", "rerun_scope": "fresh native diagnostic preparation, all original checks and bounds"}

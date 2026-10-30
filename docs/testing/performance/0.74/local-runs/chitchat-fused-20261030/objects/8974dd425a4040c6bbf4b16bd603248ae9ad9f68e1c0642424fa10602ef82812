@@ -1,0 +1,8 @@
+{
+  "decision": "declined-first-retained-output-regression",
+  "first_resource_result": "retention/analysis.json",
+  "sha256": "ca421bb29fae7c52fade5885d1825ef7b96b3fdfc7b4ccebbbaa09bfe98dc39b",
+  "further_measurements_allowed": false,
+  "new_hypotheses_allowed": false,
+  "root_adopted": false
+}

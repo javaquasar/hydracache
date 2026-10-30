@@ -1,0 +1,1 @@
+{"source_finding": "overlong private visitor chunk ending on full block could make zero progress", "production_private_implementations": "known str/ChitchatId/DeltaOp exact, existing byte proofs pass", "correction": "fail before copying an overlong borrowed chunk", "new_hypothesis": false, "resource_observations_started": false, "old_results_preserved": true}

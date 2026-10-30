@@ -1,0 +1,10 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "first owned native outcome: clippy-F",
+    "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-fused-result-074/session.py\", line 58, in session\n    invoke(action+'-'+v,argv)\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-fused-result-074/session.py\", line 21, in <lambda>\n    invoke=lambda name,argv,bound=1200:core.invoke(name,argv,env,deadline,bound)\n                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-fused-result-074/native.py\", line 97, in invoke\n    c.need(child.returncode==result['exit']==0 and result['retired'] and not result['errors'],'first owned native outcome: '+name)\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-security-only-074/scope.py\", line 28, in need\n    if not ok:raise ValueError(why)\n              ^^^^^^^^^^^^^^^^^^^^^\nValueError: first owned native outcome: clippy-F\n",
+    "type": "ValueError"
+  },
+  "resources_qualified": false,
+  "root_adopted": false
+}

@@ -1,0 +1,11 @@
+
+running 1 test
+test serialize::fused_review::generic_bound_counterexample ... ok
+
+successes:
+
+successes:
+    serialize::fused_review::generic_bound_counterexample
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 124 filtered out; finished in 0.00s
+

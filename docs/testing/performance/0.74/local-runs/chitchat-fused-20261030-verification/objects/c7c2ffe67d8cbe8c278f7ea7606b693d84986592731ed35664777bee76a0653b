@@ -1,0 +1,104 @@
+"""Restore literal source data from immutable C2; one candidate, no Root edits."""
+import json
+from pathlib import Path
+import shutil
+import sys
+
+HERE=Path(__file__).resolve().parent;ROOT=HERE.parents[1]
+sys.path.insert(0,str(ROOT/'tools/chitchat-security-only-074'));import scope as c
+BASE=ROOT/'target/chitchat-fused-20261030'
+PARENT=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-call-context-20261030'
+PARENT_SHA='37c6f98061bb495f9cb058e40c0c9400b03ce1af69fd48cec8b5906c97533ab3'
+
+CLONE='''
+#[cfg(test)]
+impl Clone for CompressedStreamWriter {
+    fn clone(&self) -> Self {
+        Self { output:self.output.clone(),uncompressed_block:self.uncompressed_block.clone(),
+            compressed_block:self.compressed_block.clone(),block_threshold:self.block_threshold,
+            compression_context:None,tail_cache:self.tail_cache }
+    }
+}
+'''
+BASELINE='''
+#[cfg(test)]
+impl CompressedStreamWriter {
+    pub(crate) fn try_append_borrowed<I:BorrowedItem+?Sized>(&mut self,item:&I,budget:usize)->bool {
+        if self.serialized_len_upperbound_after(item)>budget { return false; }
+        self.append(item);true
+    }
+}
+'''
+PREDICTOR='''    #[cfg(test)]
+    pub fn serialized_len_upperbound_after<S: Serializable + ?Sized>(&self, item: &S) -> usize {
+        let n=item.serialized_len();assert!(n>0);
+        let old=self.legacy_bound(n);
+        if n>u16::MAX as usize || self.uncompressed_block.len()+n<=2*self.block_threshold { return old; }
+        let mut saved=self.clone();saved.append(item);old.max(saved.finish().len())
+    }
+
+'''
+
+def baseline():
+    import bounds
+    BASE.mkdir(exist_ok=False);out=BASE/'preparation';out.mkdir()
+    c.write(out,'bounds.json',bounds.review())
+    raw=(PARENT/'index.json').read_bytes();c.need(c.sha(raw)==PARENT_SHA,'immutable C2 index')
+    sys.path.insert(0,str(ROOT/'tools/chitchat-call-result-074'));import verify
+    index=json.loads(raw);verify.validate(index,lambda h:(PARENT/'objects'/h).read_bytes())
+    for v,origin in [('B','B0'),('C2','C2')]:
+        folder=BASE/'fixtures'/v;folder.mkdir(parents=True)
+        for name,row in index['members'].items():
+            prefix='fixtures/'+origin+'/'
+            if not name.startswith(prefix):continue
+            relative=Path(name[len(prefix):]);c.need(not relative.is_absolute() and '..' not in relative.parts,'contained literal source')
+            body=(PARENT/'objects'/row['sha256']).read_bytes();c.need(c.sha(body)==row['sha256'] and len(body)==row['bytes'],'whole source member')
+            path=folder/relative;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(body)
+        c.need((folder/'src/serialize.rs').is_file(),'whole known parent fixture')
+        path=folder/'src/serialize.rs';body=path.read_text(encoding='utf8')
+        body=body.replace("    compression_context: Option<zstd::bulk::Compressor<'static>>,","    compression_context: Option<zstd::bulk::Compressor<'static>>,\n    tail_cache:Option<usize>,",1)
+        body=body.replace('            compression_context: None,','            compression_context: None,\n            tail_cache:None,',1)
+        projection=(HERE/'borrowed.rs').read_text().split('impl CompressedStreamWriter {')[0]
+        body+='\n#[cfg(test)]\n'+projection.replace('impl BorrowedItem for str','#[cfg(test)]\nimpl BorrowedItem for str').replace('impl BorrowedItem for ChitchatId','#[cfg(test)]\nimpl BorrowedItem for ChitchatId')
+        body+=CLONE+BASELINE+'\n#[cfg(test)]\n#[path="fused_tests.rs"]\nmod fused_review;\n'
+        path.write_text(body,encoding='utf8',newline='\n');(folder/'src/fused_tests.rs').write_bytes((HERE/'tests.rs').read_bytes())
+    c.write(out,'baseline.json',dict(parent_sha256=PARENT_SHA,fixtures={v:c.tree(BASE/'fixtures'/v) for v in ('B','C2')},
+      test_only_projection=True,baseline_padding_slot=True,root_adopted=False))
+
+def candidate():
+    result=json.loads((BASE/'counterexample-B/result.json').read_bytes())
+    c.need(result['complete'] and result['expected_failure'],'first actual MTU baseline failure before F materialization')
+    held=json.loads((BASE/'preparation/baseline.json').read_bytes())['fixtures']
+    c.need(all(c.tree(BASE/'fixtures'/v)==files for v,files in held.items()),'all baseline source unchanged')
+    folder=BASE/'fixtures/F';shutil.copytree(BASE/'fixtures/C2',folder)
+    path=folder/'src/serialize.rs';body=path.read_text(encoding='utf8');before=c.sha(path.read_bytes())
+    projection=(HERE/'borrowed.rs').read_text().split('impl CompressedStreamWriter {')[0]
+    old='\n#[cfg(test)]\n'+projection.replace('impl BorrowedItem for str','#[cfg(test)]\nimpl BorrowedItem for str').replace('impl BorrowedItem for ChitchatId','#[cfg(test)]\nimpl BorrowedItem for ChitchatId')
+    c.need(body.count(old)==body.count(BASELINE)==1,'one common projection and baseline adapter')
+    body=body.replace(old,'\n'+(HERE/'borrowed.rs').read_text()).replace(BASELINE,'')
+    start=body.index('    pub fn serialized_len_upperbound_after<');end=body.index('    /// Appends a new item',start)
+    body=body[:start]+PREDICTOR+body[end:]
+    marker='        item.serialize(&mut writer.uncompressed_block);';c.need(body.count(marker)==1,'one existing append')
+    body=body.replace(marker,'        writer.tail_cache=None;\n'+marker)
+    marker='        self.flush_block();\n        BlockType::NoMoreBlocks.serialize(&mut self.output);'
+    c.need(body.count(marker)==1,'one original finish')
+    body=body.replace(marker,'''        if let Some(n)=self.tail_cache.take() {
+            BlockType::Compressed.serialize(&mut self.output);
+            (n as u16).serialize(&mut self.output);
+            self.output.extend_from_slice(&self.compressed_block[..n]);
+        } else { self.flush_block(); }
+        BlockType::NoMoreBlocks.serialize(&mut self.output);''')
+    path.write_text(body,encoding='utf8',newline='\n')
+    path=folder/'src/delta.rs';body=path.read_text(encoding='utf8')
+    start=body.index('        if self\n            .compressed_stream_writer\n            .serialized_len_upperbound_after(&delta_op)')
+    end=body.index('        assert!(self.delta_builder.apply_op(delta_op).is_ok());',start)
+    body=body[:start]+'''        if !self.compressed_stream_writer.try_append_borrowed(&delta_op,self.mtu) {
+            return false;
+        }
+'''+body[end:]
+    body+='\n'+(HERE/'delta_borrowed.rs').read_text()+'\n#[cfg(test)]\n#[path="fused_delta_tests.rs"]\nmod fused_review;\n'
+    path.write_text(body,encoding='utf8',newline='\n');(folder/'src/fused_delta_tests.rs').write_bytes((HERE/'delta_tests.rs').read_bytes())
+    c.write(BASE/'preparation','candidate.json',dict(before_sha256=before,files=c.tree(folder),
+      one_algorithm=True,new_vec=False,private_projection=True,test_only_predictor=True,stack_RSS_qualified=False,root_adopted=False))
+
+if __name__=='__main__':{'baseline':baseline,'candidate':candidate}[sys.argv[1]]()

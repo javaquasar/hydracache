@@ -1,0 +1,15 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "baseline_finish_capacity": 256,
+  "candidate_finish_capacity": 268,
+  "complete": true,
+  "decision": "declined-first-retained-output-regression",
+  "delta_bytes": 12,
+  "full_allocation_gate_pass": false,
+  "further_measurements_allowed": false,
+  "observations_per_image": 2,
+  "release_admitted": false,
+  "resource_gate_pass": false,
+  "root_adopted": false
+}

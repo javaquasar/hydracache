@@ -1,0 +1,8 @@
+{
+  "prepared": true,
+  "executed": false,
+  "outer_directory_exists": false,
+  "reason": "source-length guard repair followed by first Windows retained-output regression; stop before all further numeric work",
+  "resource_239_9_30_executed": false,
+  "GNU_MS RV_complete": false
+}

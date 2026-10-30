@@ -1,0 +1,105 @@
+"""Current live diagnostic overlays, exact original inputs; never archived code."""
+import json
+from pathlib import Path
+import shutil
+import sys
+ROOT=Path(__file__).resolve().parents[2];HERE=Path(__file__).resolve().parent
+sys.path.insert(0,str(ROOT/'tools/chitchat-fused-074'));import recipe as p
+c=p.c
+PINS={
+ 'tools/chitchat-borrowed-074/native.py':'25be974c0e32e228076ede2f1150913235c26c504c26a2d608b4d2e59409521c',
+ 'tools/chitchat-call-context-074/parallel_source.py':'89278fa755e744dc17d4c0192c32960c74ca2e8f487fe561d7744b1d00fe26fb',
+ 'tools/chitchat-inplace-074/allocation_tests_portable.rs':'ab5cf5e12f5dfbb956ebcee59f8af554cf3030544eba07bd2e928ad2d0b109df',
+ 'tools/chitchat-native-cost-074/native_tests.rs':'ddcd1ac9310f5da7859ae7c411d18b62b7b966175cfb6c37d636e0f2ac7dbe92',
+ 'tools/chitchat-stateful-074/stateful.rs':'ec9520622675819b446ae22e8ff1c9913a1ec52214f54b8372ef61c7904248a2',
+ 'tools/chitchat-caller-074/caller.rs':'235499f1627ab07a176f1b6a8700b1dbf5625340bd20fa2a2cc7ec4ee78f21f4',
+ 'tools/chitchat-caller-074/cases-r2.json':'4a3308a82d014fb58df808a9f3984922537a80c02219610cdf5ee6fa1ec4a1f9'}
+
+def held():
+    for n,h in PINS.items():c.need(c.sha((ROOT/n).read_bytes())==h,'unchanged live qualified source/input: '+n)
+    return PINS
+
+def change(raw,before,after):
+    c.need(raw.count(before)==1,'one diagnostic anchor: '+before[:80]);return raw.replace(before,after)
+
+def prepare(core):
+    import run as windows
+    held();out=core.INPUT;out.mkdir(exist_ok=False)
+    for mode in ('check-F','clippy-F','compat-F','old0-F','old1-F','check-F-188','clippy-F-188','compat-F-188'):
+        c.need(json.loads((windows.phase(mode)/'result.json').read_bytes())['complete'],'completed Windows gates before GNU resources')
+    observer=(ROOT/'tools/chitchat-inplace-074/allocation_tests_portable.rs').read_text()
+    for before,after in [('unsafe { System.alloc(layout) }','tag_system(|| unsafe { System.alloc(layout) })'),
+       ('unsafe { System.alloc_zeroed(layout) }','tag_system(|| unsafe { System.alloc_zeroed(layout) })'),
+       ('unsafe { System.dealloc(ptr, layout) };','tag_system(|| unsafe { System.dealloc(ptr, layout) });'),
+       ('unsafe { System.realloc(ptr, layout, size) }','tag_system(|| unsafe { System.realloc(ptr, layout, size) })')]:
+        observer=change(observer,before,after)
+    observer+='\n'+(ROOT/'tools/chitchat-native-cost-074/native_tests.rs').read_text()
+    observer+='''
+pub(crate) fn stateful_capture<T>(operation:impl FnOnce()->T)->(T,serde_json::Value) {
+    native_begin();let (result,rust)=measured(operation);let native=native_finish();
+    assert_eq!(rust.live,0);(result,json!({"rust":rust,"native":native}))
+}
+#[path="caller.rs"]
+pub(crate) mod actual_caller;
+'''
+    stateful=(ROOT/'tools/chitchat-stateful-074/stateful.rs').read_text()
+    stateful=change(stateful,'if STATEFUL_VARIANT != "Q"','if STATEFUL_VARIANT != "Q" && STATEFUL_VARIANT != "F"')
+    stateful+='''
+impl BorrowedItem for Blob {
+    fn visit(&self,sink:&mut impl FnMut(&[u8])) { sink(&self.0); }
+}
+'''
+    for v in ('B','F'):
+        folder=out/'fixtures'/v;shutil.copytree(p.BASE/'fixtures'/v,folder)
+        src=folder/'src'
+        for name,body in [('observer.rs',observer),('stateful.rs',stateful),
+                         ('caller.rs',(ROOT/'tools/chitchat-caller-074/caller.rs').read_text())]:
+            (src/name).write_text(body,encoding='utf8',newline='\n')
+        (src/'cases-r2.json').write_bytes((ROOT/'tools/chitchat-caller-074/cases-r2.json').read_bytes())
+        path=src/'delta.rs';text=path.read_text()
+        text+='\n#[cfg(test)]\n#[path="observer.rs"]\npub(crate) mod cost_review;\n#[cfg(test)]\nconst CALLER_VARIANT:&str="'+v+'";\n'
+        path.write_text(text,encoding='utf8',newline='\n')
+        path=src/'serialize.rs';text=path.read_text()
+        text=change(text,'    call_context_review::after_context_ready(context.is_some());',
+          '    call_context_review::after_context_ready(context.is_some());\n    #[cfg(test)]\n    stateful_review::record();\n    #[cfg(test)]\n    crate::delta::cost_review::actual_caller::record_compression();')
+        # Only test counters enter the candidate's fixed branch structure.
+        if v=='F':
+            text=change(text,'        if self.legacy_bound(n) > budget {','        #[cfg(test)]\n        inplace_review::record(if self.legacy_bound(n)>budget {2} else if self.output.len()+self.uncompressed_block.len()+n+3*(self.uncompressed_block.len()+n).div_ceil(self.block_threshold)<budget {3} else {1});\n        if self.legacy_bound(n) > budget {')
+        else:
+            text=change(text,'    tail_cache:Option<usize>,','    #[cfg(test)]\n    tail_cache:Option<usize>,')
+            text=change(text,'            tail_cache:None,','            #[cfg(test)]\n            tail_cache:None,')
+            text=change(text,'        let new_item_serialized_len = item.serialized_len();','        #[cfg(test)]\n        inplace_review::record(0);\n        let new_item_serialized_len = item.serialized_len();')
+        text+='''
+#[cfg(test)]
+impl CompressedStreamWriter {
+    fn stateful_cache(&self)->Option<usize> {self.tail_cache}
+    fn stateful_append<I:BorrowedItem+?Sized>(&mut self,item:&I,budget:usize)->bool {self.try_append_borrowed(item,budget)}
+    pub(crate) fn cost_inventory(&self)->([usize;3],usize) {
+        ([self.output.len(),self.uncompressed_block.len(),self.compressed_block.len()],self.block_threshold)
+    }
+    pub(crate) fn caller_inventory(&self)->([usize;3],[usize;3],Option<usize>) {
+        ([self.output.len(),self.uncompressed_block.len(),self.compressed_block.len()],
+         [self.output.capacity(),self.uncompressed_block.capacity(),self.compressed_block.capacity()],self.tail_cache)
+    }
+}
+#[cfg(test)]
+pub(crate) mod inplace_review {
+    use std::cell::Cell;
+    thread_local! {static COUNTS:Cell<[u64;4]>=const{Cell::new([0;4])};}
+    pub(crate) fn record(i:usize) {COUNTS.with(|v|{let mut a=v.get();a[i]+=1;v.set(a)});}
+    pub(crate) fn reset() {COUNTS.with(|v|v.set([0;4]));}
+    pub(crate) fn take()->[u64;4] {COUNTS.with(Cell::get)}
+}
+#[cfg(test)]
+#[path="stateful.rs"]
+mod stateful_review;
+'''
+        text+='\n#[cfg(test)]\nconst STATEFUL_VARIANT:&str="'+v+'";\n'
+        path.write_text(text,encoding='utf8',newline='\n')
+    old=ROOT/'tools/chitchat-native-cost-074';prior=ROOT/'tools/chitchat-call-context-074'
+    for name in ('wrap.h','control.c'):(out/name).write_bytes((old/name).read_bytes())
+    (out/'wrap.c').write_bytes((old/'wrap.c').read_bytes()+b'\n'+(prior/'peek.c').read_bytes())
+    (out/'peek_control.c').write_bytes((prior/'peek_control.c').read_bytes())
+    c.write(out,'preparation.json',dict(source=core.source(),fixtures={v:c.tree(p.BASE/'fixtures'/v) for v in ('B','F')},
+      pins=PINS,variants=['B','F'],production_functional_changes=False,root_adopted=False,resources_qualified=False))
+    c.write(p.BASE,core.FRAME.name,c.tree(out))

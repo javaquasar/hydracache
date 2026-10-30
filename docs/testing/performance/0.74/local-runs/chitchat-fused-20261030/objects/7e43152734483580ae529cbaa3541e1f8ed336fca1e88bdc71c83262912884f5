@@ -1,0 +1,40 @@
+{
+  "complete": true,
+  "failed": 0,
+  "observation": {
+    "CPU_qualified": false,
+    "RSS_qualified": false,
+    "budget": 167,
+    "name": "immediate-exact-tail",
+    "payload": "08ec9b00125ab0f99e35d15a408aa744d0b3ce9386474d6d53b936fadb5ee6b1c057bf603aeac3f4177b0971057195264cd2975c34a09db0c790418708649a1377879ab300b49d32b465511507d930ece338bcfb64bae90a1c626094f1883d0553955afed900d4bfc04155e55a824f0b3d0bcd32e099bc9bd2691791a2f3dcb77272727272727272727272727272727272727272727272727272727272727272",
+    "records": [
+      {
+        "append_capacity": [
+          134,
+          128,
+          64
+        ],
+        "finish_capacity": 268,
+        "finish_len": 155,
+        "wire": "02400008ec9b00125ab0f99e35d15a408aa744d0b3ce9386474d6d53b936fadb5ee6b1c057bf603aeac3f4177b0971057195264cd2975c34a09db0c790418708649a1302400077879ab300b49d32b465511507d930ece338bcfb64bae90a1c626094f1883d0553955afed900d4bfc04155e55a824f0b3d0bcd32e099bc9bd2691791a2f3dcb701110028b52ffd2020450000107272010022c00200"
+      },
+      {
+        "append_capacity": [
+          134,
+          128,
+          64
+        ],
+        "finish_capacity": 268,
+        "finish_len": 155,
+        "wire": "02400008ec9b00125ab0f99e35d15a408aa744d0b3ce9386474d6d53b936fadb5ee6b1c057bf603aeac3f4177b0971057195264cd2975c34a09db0c790418708649a1302400077879ab300b49d32b465511507d930ece338bcfb64bae90a1c626094f1883d0553955afed900d4bfc04155e55a824f0b3d0bcd32e099bc9bd2691791a2f3dcb701110028b52ffd2020450000107272010022c00200"
+      }
+    ],
+    "scope": "returned Vec capacity only",
+    "seed": 7606312,
+    "threshold": 64,
+    "variant": "F"
+  },
+  "passed": 1,
+  "resources_qualified": false,
+  "root_adopted": false
+}

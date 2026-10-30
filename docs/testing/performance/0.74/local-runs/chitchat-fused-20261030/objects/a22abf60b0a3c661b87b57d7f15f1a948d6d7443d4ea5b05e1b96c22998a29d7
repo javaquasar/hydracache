@@ -1,0 +1,15 @@
+{
+  "encoded_max": 262145,
+  "item_max": 65535,
+  "mtu_upper_limit_added": false,
+  "pending_max": "threshold",
+  "root_adopted": false,
+  "stack_RSS_qualified": false,
+  "storage_envelope": 262146,
+  "storage_max_thresholds": [
+    1,
+    65534,
+    65535
+  ],
+  "thresholds": 65535
+}

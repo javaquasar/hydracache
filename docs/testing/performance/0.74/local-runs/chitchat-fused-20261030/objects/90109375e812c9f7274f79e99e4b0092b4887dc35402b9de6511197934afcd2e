@@ -1,0 +1,11 @@
+{
+  "complete": true,
+  "expected_failure": true,
+  "failed": 1,
+  "passed": 0,
+  "resources_qualified": false,
+  "root_adopted": false,
+  "selected": [
+    "serialize::fused_review::tiny_mtu_counterexample"
+  ]
+}

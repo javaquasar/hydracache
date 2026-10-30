@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [one approved borrowed-input MTU candidate F](chitchat-fused-result-20261030.md)
+is now declined at its first retained-finish checkpoint: identical155 wire bytes,
+but B256/F268 returned Vec capacity in both predeclared observations. Final Windows
+Rust1.94/MSRV1.88 check/strict Clippy,164 selected positives and full37/239/seven
+semantic bodies pass. These positives cannot buy12 extra retained bytes. The
+implementation, first refusals and complete evidence remain in886 members/334
+objects, index e554bd8e. STOP prevents further execution; no full resource/CPU/RSS
+cohort, Root adoption, publication, server, services or clocks follow. No successor
+hypothesis is opened. C2 remains a separate positive prerequisite, not an MTU fix.
+
 The [separate C2 call-lifetime successor](chitchat-call-context-result-20261030.md)
 now passes its local prerequisite:20→6 C allocations in the frozen diagnostic,
 zero C-live at both append checkpoints, identical wire/Vec/Rust fields. Eight

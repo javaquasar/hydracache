@@ -1,0 +1,22 @@
+
+running 1 test
+test serialize::fused_review::tiny_mtu_counterexample ... FAILED
+
+successes:
+
+successes:
+
+failures:
+
+---- serialize::fused_review::tiny_mtu_counterexample stdout ----
+
+thread 'serialize::fused_review::tiny_mtu_counterexample' (49672) panicked at src\fused_tests.rs:38:5:
+assertion failed: !w.try_append_borrowed(&item, budget)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    serialize::fused_review::tiny_mtu_counterexample
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 123 filtered out; finished in 0.00s
+

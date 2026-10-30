@@ -1,0 +1,18 @@
+test_archive_path_escape (__main__.Review.test_archive_path_escape) ... ok
+test_cached_candidate_artifact (__main__.Review.test_cached_candidate_artifact) ... ok
+test_changed_workload (__main__.Review.test_changed_workload) ... ok
+test_complete_declined_result (__main__.Review.test_complete_declined_result) ... ok
+test_corrupt_archive_object (__main__.Review.test_corrupt_archive_object) ... ok
+test_execution_seals_precede_effects (__main__.Review.test_execution_seals_precede_effects) ... ok
+test_missing_case (__main__.Review.test_missing_case) ... ok
+test_public_traits_unchanged (__main__.Review.test_public_traits_unchanged) ... ok
+test_raised_bound (__main__.Review.test_raised_bound) ... ok
+test_reclassified_negative (__main__.Review.test_reclassified_negative) ... ok
+test_removed_first_failure (__main__.Review.test_removed_first_failure) ... ok
+test_stack_envelope_is_not_promoted (__main__.Review.test_stack_envelope_is_not_promoted) ... ok
+test_stale_producer_source (__main__.Review.test_stale_producer_source) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 1.995s
+
+OK

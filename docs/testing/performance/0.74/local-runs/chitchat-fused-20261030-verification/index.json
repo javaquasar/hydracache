@@ -1,0 +1,393 @@
+{
+  "members": {
+    "docs/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1629997,
+      "sha256": "37c8e5efdd6a01983b5171c299abc849a6d239e8dbcb4bca44b3ac7420f8ac4b"
+    },
+    "docs/docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md": {
+      "bytes": 90348,
+      "sha256": "d74060053880f816440003013e009d2c8a162f751e83aca0ea766e259fd516e8"
+    },
+    "docs/docs/testing/performance/0.74/README.md": {
+      "bytes": 525707,
+      "sha256": "7bd117fcff2d4878103523820c592195a194b1ddfcb59b869ed2df599b619dec"
+    },
+    "docs/docs/testing/performance/0.74/chitchat-fused-result-20261030.md": {
+      "bytes": 6650,
+      "sha256": "92eef99b5e20b55ab4403f8bf0d5d09c235feb0eb0f5c17a4ea248233cb60cfc"
+    },
+    "docs/docs/testing/performance/0.74/chitchat-mtu-next-candidate-plan-20261030.md": {
+      "bytes": 8957,
+      "sha256": "82f2724dfda549cd372d2078c05b456860fde5320e63b950f867d983f3580c6c"
+    },
+    "docs/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 58682,
+      "sha256": "b523d8803a2a5231e40c0b153dd47e7107b9013e55e1adfa3cccf9ced45c6d4a"
+    },
+    "final/byte-verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/byte-verify/intent.json": {
+      "bytes": 300573,
+      "sha256": "7467a65fbcfc41900567f9f95753a5cd885e546ca5c11fc061e99eacdebfe71e"
+    },
+    "final/byte-verify/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/byte-verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/byte-verify/stdout.log": {
+      "bytes": 352,
+      "sha256": "76077b2f39b96d882c115666cd65eb13e740b48afce609cbdf4db2b121c0f36f"
+    },
+    "final/controls/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/controls/intent.json": {
+      "bytes": 300478,
+      "sha256": "2aad1ed78d531b2931e9512331a893e33197629ace794461eb5a5c0c374d33c4"
+    },
+    "final/controls/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/controls/stderr.log": {
+      "bytes": 1152,
+      "sha256": "c5cbbc6ac1532e4aae62c391b43eba6a5689d9a94aa64c8471edf0d37ab41598"
+    },
+    "final/controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/doc-check/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/doc-check/intent.json": {
+      "bytes": 300428,
+      "sha256": "c14827f4f99af4318cc365bcbea4215df944e9475befd8e08d6ddb453ee8fc1f"
+    },
+    "final/doc-check/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "final/format/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/format/intent.json": {
+      "bytes": 301002,
+      "sha256": "a7dfe9da0646708a557e6aa306b2776cbd37e15c0ad41194b287a2136ad494b8"
+    },
+    "final/format/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/performance-contract/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/performance-contract/intent.json": {
+      "bytes": 300474,
+      "sha256": "e7302afa85073bdfbb550716a8511d8548ecfb7009777d037002c5bd4d64947e"
+    },
+    "final/performance-contract/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/performance-contract/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/performance-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "final/restore-verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/restore-verify/intent.json": {
+      "bytes": 300695,
+      "sha256": "8ed9c7779620545efdeabba3bafd130c86957bd92dee160c3568c246f6e39b0a"
+    },
+    "final/restore-verify/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/restore-verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/restore-verify/stdout.log": {
+      "bytes": 518,
+      "sha256": "567926940913fb4904f0c625fa54ae9c8e5960e07dd4947d5a0d86ef48bc4f3d"
+    },
+    "final/seal-controls/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/seal-controls/intent.json": {
+      "bytes": 300478,
+      "sha256": "00bd261d3d524ea138343c5a8db928bed08536064c493d74e1f220ce0575641d"
+    },
+    "final/seal-controls/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/seal-controls/stderr.log": {
+      "bytes": 1152,
+      "sha256": "c9db61c92b6e114c75cc07625bab8d33277551f2308517858e40fcc49fe4ccc1"
+    },
+    "final/seal-controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/seal-syntax/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/seal-syntax/intent.json": {
+      "bytes": 300564,
+      "sha256": "863a2a99c9998883a7c08bb8b20dc420745dbb73138e5557cd2cbe1e66329aa8"
+    },
+    "final/seal-syntax/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/seal-syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/seal-syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/syntax/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/syntax/intent.json": {
+      "bytes": 300564,
+      "sha256": "6a5a15d1cc429c22ed414eb290635e37b35813e981ee3684016cbba74d8f2d2d"
+    },
+    "final/syntax/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "first-final-producer/chitchat-fused-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "first-final-producer/chitchat-fused-074/README.md": {
+      "bytes": 2785,
+      "sha256": "7847593f5ca802b0b494c00ae37b1dc4df80e3637ccaf4db4502aa2827d39c3b"
+    },
+    "first-final-producer/chitchat-fused-074/borrowed.rs": {
+      "bytes": 6928,
+      "sha256": "5bbe6095db40d81c7ec5f5f0ff590a3067beedd5f98993db9652e7ba53602c63"
+    },
+    "first-final-producer/chitchat-fused-074/bounds.py": {
+      "bytes": 783,
+      "sha256": "fcc1b2668330116f9170f9551488f23559ba6b478a765ffc9a5157a71be9ff91"
+    },
+    "first-final-producer/chitchat-fused-074/delta_borrowed.rs": {
+      "bytes": 1183,
+      "sha256": "4e9b78acb78398d5ff0ad10070c4220f02fee9c91ede8ba6b4b63df67ee2f9aa"
+    },
+    "first-final-producer/chitchat-fused-074/delta_tests.rs": {
+      "bytes": 1628,
+      "sha256": "6a3cdb621546c0d2a0fb5edad2dd1077546225eb2d5090398cbb436874f6c8e7"
+    },
+    "first-final-producer/chitchat-fused-074/recipe.py": {
+      "bytes": 6882,
+      "sha256": "c7c2ffe67d8cbe8c278f7ea7606b693d84986592731ed35664777bee76a0653b"
+    },
+    "first-final-producer/chitchat-fused-074/run.py": {
+      "bytes": 8588,
+      "sha256": "07786b1a85e1d285878f53fd21d9d44e008608d61eb8bde1834a8563b4efe57d"
+    },
+    "first-final-producer/chitchat-fused-074/tests.rs": {
+      "bytes": 7901,
+      "sha256": "8bf7330de5e1748b0f9ad87e23208cf7c27a7ef4157cbf5f952cbb2adf6cbab7"
+    },
+    "first-final-producer/chitchat-fused-result-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "first-final-producer/chitchat-fused-result-074/README.md": {
+      "bytes": 1708,
+      "sha256": "f3300cef9ef3479ce07181b2b3afd8a34d86021e9d5658d555f47abb47b438e8"
+    },
+    "first-final-producer/chitchat-fused-result-074/archive.py": {
+      "bytes": 6171,
+      "sha256": "4aa62272cfab0e6da80c9d314a3180f64af9ed570356d752e5a79b0d44ce89ce"
+    },
+    "first-final-producer/chitchat-fused-result-074/gates.py": {
+      "bytes": 4187,
+      "sha256": "ab24b385f646a98fe64c2f3405f072f20bbd28eb37aad1158fa8357b6894fd0a"
+    },
+    "first-final-producer/chitchat-fused-result-074/material.py": {
+      "bytes": 6929,
+      "sha256": "f3e352208aee14b82fc88988d0d5e7ba4defd673a16a0228ba35b6de473dd31b"
+    },
+    "first-final-producer/chitchat-fused-result-074/native.py": {
+      "bytes": 8516,
+      "sha256": "28579077203555413b3dd89746c10863284c6159fdef81a471039676b887281c"
+    },
+    "first-final-producer/chitchat-fused-result-074/retention.py": {
+      "bytes": 5493,
+      "sha256": "0a29f1d4dde90ba2519e457d7ee803b91d561338f8e3864d8a9097006380564c"
+    },
+    "first-final-producer/chitchat-fused-result-074/retention_probe.rs": {
+      "bytes": 1863,
+      "sha256": "69db0d1490ace38197b470572b0aa24a97d12a98ca387107f64be1fd69986175"
+    },
+    "first-final-producer/chitchat-fused-result-074/review.py": {
+      "bytes": 8867,
+      "sha256": "9dcfc61a11eee45809ac465214d3249f58541d33637821beb0876c2c9ed37f8a"
+    },
+    "first-final-producer/chitchat-fused-result-074/session.py": {
+      "bytes": 7257,
+      "sha256": "8e5aff267d76d0401869a3db94770c702cd546ad1c836d01c3cd5c0be3f7edf2"
+    },
+    "first-final-producer/chitchat-fused-result-074/test_review.py": {
+      "bytes": 4134,
+      "sha256": "6c2cf1576f24e715b895306394f63576a7eb29b8abc38b5f9184a26c4436a592"
+    },
+    "source/current/tools/chitchat-fused-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-fused-074/README.md": {
+      "bytes": 2785,
+      "sha256": "7847593f5ca802b0b494c00ae37b1dc4df80e3637ccaf4db4502aa2827d39c3b"
+    },
+    "source/current/tools/chitchat-fused-074/borrowed.rs": {
+      "bytes": 6928,
+      "sha256": "5bbe6095db40d81c7ec5f5f0ff590a3067beedd5f98993db9652e7ba53602c63"
+    },
+    "source/current/tools/chitchat-fused-074/bounds.py": {
+      "bytes": 783,
+      "sha256": "fcc1b2668330116f9170f9551488f23559ba6b478a765ffc9a5157a71be9ff91"
+    },
+    "source/current/tools/chitchat-fused-074/delta_borrowed.rs": {
+      "bytes": 1183,
+      "sha256": "4e9b78acb78398d5ff0ad10070c4220f02fee9c91ede8ba6b4b63df67ee2f9aa"
+    },
+    "source/current/tools/chitchat-fused-074/delta_tests.rs": {
+      "bytes": 1628,
+      "sha256": "6a3cdb621546c0d2a0fb5edad2dd1077546225eb2d5090398cbb436874f6c8e7"
+    },
+    "source/current/tools/chitchat-fused-074/recipe.py": {
+      "bytes": 7061,
+      "sha256": "57c43ecf084e4442ce89af13aa5a5f63248e47a0ed315b3a27e6e3586f99b835"
+    },
+    "source/current/tools/chitchat-fused-074/run.py": {
+      "bytes": 8636,
+      "sha256": "556c68104d7ff704b206d360d28120a620b3feac5a9bdd66e1a8f82d1845d481"
+    },
+    "source/current/tools/chitchat-fused-074/tests.rs": {
+      "bytes": 7901,
+      "sha256": "8bf7330de5e1748b0f9ad87e23208cf7c27a7ef4157cbf5f952cbb2adf6cbab7"
+    },
+    "source/current/tools/chitchat-fused-result-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-fused-result-074/README.md": {
+      "bytes": 1708,
+      "sha256": "f3300cef9ef3479ce07181b2b3afd8a34d86021e9d5658d555f47abb47b438e8"
+    },
+    "source/current/tools/chitchat-fused-result-074/archive.py": {
+      "bytes": 6171,
+      "sha256": "4aa62272cfab0e6da80c9d314a3180f64af9ed570356d752e5a79b0d44ce89ce"
+    },
+    "source/current/tools/chitchat-fused-result-074/gates.py": {
+      "bytes": 4278,
+      "sha256": "956b472425c6e02cdc041e2085ebcc6500f686256172dd4e731162a75039839f"
+    },
+    "source/current/tools/chitchat-fused-result-074/material.py": {
+      "bytes": 6929,
+      "sha256": "f3e352208aee14b82fc88988d0d5e7ba4defd673a16a0228ba35b6de473dd31b"
+    },
+    "source/current/tools/chitchat-fused-result-074/native.py": {
+      "bytes": 8588,
+      "sha256": "ba9da0c8956ea1ff7651b27f3831b45b5cfb5e5dcbc7434391b9401496d9eace"
+    },
+    "source/current/tools/chitchat-fused-result-074/retain_verification.py": {
+      "bytes": 4276,
+      "sha256": "c96dbf516c40b69d58101c539a213ba34af76e50e4b65f22d8813a83ec817efb"
+    },
+    "source/current/tools/chitchat-fused-result-074/retention.py": {
+      "bytes": 5541,
+      "sha256": "6c0d8922787ff35b79eb1827e8e9d0390b7835fff98ae0feb965db4b6c6d9734"
+    },
+    "source/current/tools/chitchat-fused-result-074/retention_probe.rs": {
+      "bytes": 1863,
+      "sha256": "69db0d1490ace38197b470572b0aa24a97d12a98ca387107f64be1fd69986175"
+    },
+    "source/current/tools/chitchat-fused-result-074/review.py": {
+      "bytes": 8867,
+      "sha256": "9dcfc61a11eee45809ac465214d3249f58541d33637821beb0876c2c9ed37f8a"
+    },
+    "source/current/tools/chitchat-fused-result-074/session.py": {
+      "bytes": 7257,
+      "sha256": "8e5aff267d76d0401869a3db94770c702cd546ad1c836d01c3cd5c0be3f7edf2"
+    },
+    "source/current/tools/chitchat-fused-result-074/test_review.py": {
+      "bytes": 4498,
+      "sha256": "b33c962752ce17e0d08b832543e4d05834e367aedfe32e50a7f11009e9afa097"
+    }
+  },
+  "schema": "hc074-chitchat-fused-offline-verification-v1",
+  "summary": {
+    "complete": true,
+    "decision": "declined-first-retained-output-regression",
+    "gates": [
+      "controls",
+      "syntax",
+      "format",
+      "byte-verify",
+      "restore-verify",
+      "doc-check",
+      "performance-contract",
+      "seal-controls",
+      "seal-syntax"
+    ],
+    "offline_controls": 13,
+    "primary_sha256": "e554bd8ee5bd7b4f0cc2963393ccbea922e93663f294962446d1caa651034403",
+    "product_execution": false,
+    "release_admitted": false,
+    "root_adopted": false
+  }
+}

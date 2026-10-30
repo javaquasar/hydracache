@@ -1,0 +1,40 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "complete": true,
+  "corpora": [
+    {
+      "cases": 239,
+      "fields": [
+        "accepted",
+        "actual",
+        "mtu",
+        "remaining",
+        "value_len",
+        "wire"
+      ],
+      "marker": "HC074_SUPPORTED_DELTA:",
+      "same": true
+    },
+    {
+      "cases": 37,
+      "fields": [
+        "actual",
+        "id",
+        "payload",
+        "remaining",
+        "threshold",
+        "wire"
+      ],
+      "marker": "HC074_STREAM_BOUNDS:",
+      "same": true
+    },
+    {
+      "cases": 7,
+      "marker": "HC074_SECURITY_MALFORMED:",
+      "same": true
+    }
+  ],
+  "resources_qualified": false,
+  "root_adopted": false
+}

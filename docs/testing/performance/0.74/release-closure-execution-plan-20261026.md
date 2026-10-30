@@ -812,3 +812,13 @@ recorded constraints. Next derive exact storage/overflow/stack bounds and the
 borrowed-byte oracle, then implement its admission/consuming join and require
 the unchanged generic/caller/full resource gates. No Root/security/workspace,
 CPU/RSS or server-admission pass is inferred from C2's one diagnostic pair.
+
+The [one authorized borrowed-input F candidate](chitchat-fused-result-20261030.md)
+is closed negatively at the first retained-finish resource checkpoint: B256/F268
+returned capacity for identical155 wire bytes, twice per image. Final Windows/MSRV
+functional/check/strict-Clippy positives are retained, not promoted. The original
+37/239/seven corpus agrees except intended bounds. Actual code/first refusals/source
+and sealed tools remain in packet e554bd8e. No full239/9/30 allocation cohort,
+CPU/RSS, Root distribution/security adoption or server admission follows. Existing
+Root/package/workspace/lifecycle/host gates remain open. No successor or rescue is
+authorized by this completed experiment; do not lower thresholds or reuse Q numbers.
