@@ -154,7 +154,11 @@ fn cargo_identity(package: &Value) -> Result<String> {
 fn lock_checksums(lock: &str) -> Result<BTreeMap<(String, String, String), String>> {
     let lock: toml::Value = toml::from_str(lock)?;
     let mut result = BTreeMap::new();
-    for package in lock["package"].as_array().ok_or("lock packages missing")? {
+    for package in lock
+        .get("package")
+        .and_then(toml::Value::as_array)
+        .ok_or("lock packages missing")?
+    {
         if let Some(source) = package.get("source").and_then(toml::Value::as_str) {
             let key = (
                 package["name"].as_str().ok_or("lock name")?.into(),
@@ -994,22 +998,28 @@ fn execute_pom_command(command: Command) -> Result<Vec<u8>> {
 }
 
 pub fn reduce(root: &Path, capture: &Capture, source: &str) -> Result<Inventory> {
-    let target_cfg = CargoTarget::current()?;
+    reduce_using(root, capture, source, &mut ActualInventoryObservations)
+}
+fn reduce_using(
+    root: &Path,
+    capture: &Capture,
+    source: &str,
+    observations: &mut impl InventoryObservations,
+) -> Result<Inventory> {
+    let target_cfg = observations.target()?;
     if target_cfg.triple != capture.host {
         return Err("current Cargo target host differs".into());
     }
-    if crate::imap_sbom_capture_075::rust_tools()?
-        != (capture.rustc_sha256.clone(), capture.cargo_sha256.clone())
-    {
+    if observations.rust_tools()? != (capture.rustc_sha256.clone(), capture.cargo_sha256.clone()) {
         return Err("current Rust compiler/Cargo substituted".into());
     }
-    if crate::imap_sbom_capture_075::rust_materials(&capture.host)? != capture.rust_inputs {
+    if observations.rust_materials(&capture.host)? != capture.rust_inputs {
         return Err("Rust compiler/stdlib distribution inputs substituted".into());
     }
     let mut version = Command::new("rustc");
     version.arg("-vV");
-    let output = crate::imap_proof_process_075::execute(version, &[], Default::default())?;
-    if String::from_utf8(output.stdout)? != capture.rust_version
+    let output = observations.output(version)?;
+    if String::from_utf8(output)? != capture.rust_version
         || !capture
             .rust_version
             .lines()
@@ -1077,12 +1087,12 @@ pub fn reduce(root: &Path, capture: &Capture, source: &str) -> Result<Inventory>
         poms,
         materials,
     } = maven_inputs;
-    let java = crate::imap_api_differential::java_executable();
+    let java = observations.java();
     let jdk = java.parent().and_then(Path::parent).ok_or("JDK layout")?;
-    let mut maven = crate::imap_sbom_capture_075::maven_command(root)?;
+    let mut maven = observations.maven(root)?;
     maven.arg("--version");
-    let output = crate::imap_proof_process_075::execute(maven, &[], Default::default())?;
-    let version = String::from_utf8(output.stdout)?;
+    let output = observations.output(maven)?;
+    let version = String::from_utf8(output)?;
     let home = version
         .lines()
         .find_map(|l| l.strip_prefix("Maven home: "))
@@ -1101,7 +1111,7 @@ pub fn reduce(root: &Path, capture: &Capture, source: &str) -> Result<Inventory>
         };
         verify_tool_material(base, row)?;
     }
-    let metadata = pom_metadata(root, &poms)?;
+    let metadata = observations.poms(root, &poms)?;
     for (stage, row, path) in materials {
         let id = maven_id(&row)?;
         let pom = if row["extension"] == "pom" {
@@ -1640,3 +1650,40 @@ fn write_inventory_documents(
     )?;
     Ok(())
 }
+
+trait InventoryObservations {
+    fn target(&mut self) -> Result<CargoTarget>;
+    fn rust_tools(&mut self) -> Result<(String, String)>;
+    fn rust_materials(&mut self, host: &str) -> Result<Vec<Value>>;
+    fn output(&mut self, command: Command) -> Result<Vec<u8>>;
+    fn java(&mut self) -> PathBuf;
+    fn maven(&mut self, root: &Path) -> Result<Command>;
+    fn poms(&mut self, root: &Path, paths: &BTreeSet<String>) -> Result<Value>;
+}
+struct ActualInventoryObservations;
+impl InventoryObservations for ActualInventoryObservations {
+    fn target(&mut self) -> Result<CargoTarget> {
+        CargoTarget::current()
+    }
+    fn rust_tools(&mut self) -> Result<(String, String)> {
+        crate::imap_sbom_capture_075::rust_tools()
+    }
+    fn rust_materials(&mut self, host: &str) -> Result<Vec<Value>> {
+        crate::imap_sbom_capture_075::rust_materials(host)
+    }
+    fn output(&mut self, command: Command) -> Result<Vec<u8>> {
+        Ok(crate::imap_proof_process_075::execute(command, &[], Default::default())?.stdout)
+    }
+    fn java(&mut self) -> PathBuf {
+        crate::imap_api_differential::java_executable()
+    }
+    fn maven(&mut self, root: &Path) -> Result<Command> {
+        crate::imap_sbom_capture_075::maven_command(root)
+    }
+    fn poms(&mut self, root: &Path, paths: &BTreeSet<String>) -> Result<Value> {
+        pom_metadata(root, paths)
+    }
+}
+#[cfg(test)]
+#[path = "../tests/support/imap_inventory_projection_errors_075.rs"]
+mod projection_error_tests;

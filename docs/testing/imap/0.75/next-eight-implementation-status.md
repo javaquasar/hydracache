@@ -313,3 +313,11 @@ artifact and profile refusals; fixtures remain Failed and the public checker
 rejects them. Runtime observation errors stop before profile admission. Windows
 process birth errors are captured before CloseHandle can replace last-error.
 No qualification report is produced by these tests; P8 awaits full measurement.
+
+The inventory projection block passed 218 default/226 instrumented library and
+15 SBOM checks per mode, all-target checks and strict all-feature Clippy. Fixed
+production observations remain private; model inputs stop on malformed Maven
+journals, Cargo output, conflicting component hashes, missing root JARs and
+invalid dependency trees without publishing inventory. A regression test found
+that a Cargo.lock without package entries panicked; it now returns a bounded
+validation error. These checks do not constitute P8 qualification.
