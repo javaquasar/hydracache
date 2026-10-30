@@ -14,6 +14,9 @@ mod platform;
 mod platform;
 
 pub(crate) const PROCESS_SCOPE: &str = platform::SCOPE;
+#[cfg(all(test, any(windows, target_os = "linux")))]
+#[path = "../tests/support/imap_proof_pipe_setup_075.rs"]
+mod pipe_setup_tests;
 
 #[derive(Debug, Clone, Copy)]
 pub struct ProcessBounds {
@@ -184,11 +187,29 @@ pub fn execute_observed(
 
 #[cfg(any(windows, target_os = "linux"))]
 pub(crate) fn execute_managed(
+    command: Command,
+    input: &[u8],
+    bounds: ProcessBounds,
+    policy: ExecutionPolicy,
+    observe: impl FnMut(ProcessObservation<'_>) -> Result<(), String>,
+) -> Result<ProcessOutput, ProcessFailure> {
+    execute_with_pipe_setup(command, input, bounds, policy, observe, prepare_pipes)
+}
+#[cfg(any(windows, target_os = "linux"))]
+fn prepare_pipes(
+    stdout: &std::process::ChildStdout,
+    stderr: &std::process::ChildStderr,
+) -> io::Result<()> {
+    platform::prepare_pipe(stdout).and_then(|()| platform::prepare_pipe(stderr))
+}
+#[cfg(any(windows, target_os = "linux"))]
+fn execute_with_pipe_setup(
     mut command: Command,
     input: &[u8],
     bounds: ProcessBounds,
     policy: ExecutionPolicy,
     mut observe: impl FnMut(ProcessObservation<'_>) -> Result<(), String>,
+    prepare: impl FnOnce(&std::process::ChildStdout, &std::process::ChildStderr) -> io::Result<()>,
 ) -> Result<ProcessOutput, ProcessFailure> {
     bounds.validate_policy(policy)?;
     if input.len() > bounds.input_bytes {
@@ -242,8 +263,7 @@ pub(crate) fn execute_managed(
     })?;
     let mut stdout = child.stdout.take().expect("piped proof stdout");
     let mut stderr = child.stderr.take().expect("piped proof stderr");
-    let preparation =
-        platform::prepare_pipe(&stdout).and_then(|()| platform::prepare_pipe(&stderr));
+    let preparation = prepare(&stdout, &stderr);
     if let Err(error) = preparation {
         let remaining = cleanup(&mut tree, &mut child, bounds.cleanup_timeout)?;
         return Err(io_error(FailureKind::Containment, error).cleaned(remaining));

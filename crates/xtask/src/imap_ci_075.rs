@@ -6,7 +6,7 @@ use std::collections::BTreeSet;
 use std::error::Error;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 pub const RUST_VERSIONS: [&str; 2] = ["1.88.0", "1.94.0"];
@@ -57,6 +57,76 @@ pub struct CiReceipt {
     pub production_enabled: bool,
 }
 
+type LaneResult<T> = Result<T, Box<dyn Error>>;
+type LaneAction = fn(Vec<String>) -> LaneResult<()>;
+// Fixed production bindings; neither CLI options nor receipts can select drivers.
+// Private function inputs let unit tests observe orchestration without recursive Cargo.
+struct LaneHost {
+    root: fn() -> LaneResult<PathBuf>,
+    workflow: fn(&Path) -> LaneResult<()>,
+    source: fn(&Path) -> LaneResult<String>,
+    fingerprint: fn(&str, &[&str]) -> LaneResult<String>,
+    actions: [LaneAction; 6],
+    tooling: fn(&Path, Command) -> LaneResult<()>,
+    coverage_capture: fn(&Path, &Path) -> LaneResult<PathBuf>,
+    coverage_check: fn(&Path, &Path) -> LaneResult<crate::imap_coverage_075::Analysis>,
+    preparation: fn(&Path, &Path) -> LaneResult<PathBuf>,
+    preparation_check: fn(&Path, &Path) -> LaneResult<()>,
+    differential:
+        fn(&Path, u64, usize) -> LaneResult<crate::imap_api_differential::DifferentialReport>,
+    concurrent: fn(
+        &Path,
+        i64,
+        usize,
+    )
+        -> LaneResult<crate::imap_extended_concurrent_075::ExtendedConcurrentReport>,
+    extended: fn(&Path, &Path, i64) -> LaneResult<PathBuf>,
+    extended_check: fn(&Path, &Path) -> LaneResult<()>,
+    campaign: fn(&Path, u64, usize) -> LaneResult<serde_json::Value>,
+}
+const ACTUAL_HOST: LaneHost = LaneHost {
+    root: crate::doc_check::find_repo_root,
+    workflow: check_workflow,
+    source: source_state,
+    fingerprint,
+    actions: [
+        crate::imap_distributed_correctness::run,
+        crate::imap_capability_audit::run,
+        crate::imap_migration_dry_run::run,
+        crate::imap_qualification_075::comparison_run,
+        crate::imap_qualification_075::release_run,
+        crate::imap_semantic_audit075::run,
+    ],
+    tooling: bounded_tooling,
+    coverage_capture: crate::imap_coverage_075::capture,
+    coverage_check: crate::imap_coverage_075::check,
+    preparation: crate::imap_pre074_075::produce,
+    preparation_check: check_preparation,
+    differential: crate::imap_api_differential::check_actual_at_root,
+    concurrent: crate::imap_extended_concurrent_075::check_actual,
+    extended: crate::imap_extended_receipt_075::produce,
+    extended_check: check_extended,
+    campaign: crate::imap_cluster_campaign_075::check_at_root,
+};
+fn bounded_tooling(root: &Path, command: Command) -> LaneResult<()> {
+    crate::imap_build_process_075::BuildController::new(root)?
+        .run(
+            crate::imap_build_process_075::BuildStage::ToolingTests,
+            command,
+        )
+        .map(drop)
+        .map_err(Into::into)
+}
+fn check_preparation(root: &Path, path: &Path) -> LaneResult<()> {
+    crate::imap_pre074_075::verify(root, path).map(drop)
+}
+fn check_extended(root: &Path, path: &Path) -> LaneResult<()> {
+    crate::imap_extended_receipt_075::verify(root, path).map(drop)
+}
+#[cfg(test)]
+#[path = "../tests/support/imap_ci_lane_075.rs"]
+mod lane_tests;
+
 pub fn expected_lanes(mode: &str) -> Result<Vec<Lane>, Box<dyn Error>> {
     let shards = match mode {
         "pr" => 1,
@@ -97,29 +167,26 @@ pub fn run_check(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 pub fn run_lane(args: Vec<String>) -> Result<(), Box<dyn Error>> {
+    run_lane_using(args, &ACTUAL_HOST)
+}
+fn run_lane_using(args: Vec<String>, host: &LaneHost) -> LaneResult<()> {
     let options = parse(&args, true)?;
-    let root = crate::doc_check::find_repo_root()?;
+    let root = (host.root)()?;
     let lane = options.lane.ok_or("CI lane identity required")?;
     if !expected_lanes(&options.mode)?.contains(&lane) {
         return Err("lane is outside the declared matrix".into());
     }
-    check_workflow(&root)?;
-    let before = source_state(&root)?;
-    let rust = fingerprint("rustc", &["--version"])?;
-    let java = fingerprint("java", &["--version"])?;
+    (host.workflow)(&root)?;
+    let before = (host.source)(&root)?;
+    let rust = (host.fingerprint)("rustc", &["--version"])?;
+    let java = (host.fingerprint)("java", &["--version"])?;
     if !rust.starts_with(&format!("rustc {} ", lane.rust)) || !java_major(&java, lane.java) {
         return Err("actual Rust/JVM versions do not match the requested CI lane".into());
     }
-    crate::imap_distributed_correctness::run(vec!["--release".into(), "0.75".into()])?;
-    crate::imap_capability_audit::run(vec!["--release".into(), "0.75".into()])?;
-    crate::imap_migration_dry_run::run(vec!["--release".into(), "0.75".into()])?;
-    crate::imap_qualification_075::comparison_run(vec!["--release".into(), "0.75".into()])?;
-    crate::imap_qualification_075::release_run(vec!["--release".into(), "0.75".into()])?;
-    crate::imap_semantic_audit075::run(vec!["--release".into(), "0.75".into()])?;
-    crate::imap_build_process_075::BuildController::new(&root)?.run(
-        crate::imap_build_process_075::BuildStage::ToolingTests,
-        tooling_command(&root, cfg!(windows)),
-    )?;
+    for action in host.actions {
+        action(vec!["--release".into(), "0.75".into()])?;
+    }
+    (host.tooling)(&root, tooling_command(&root, cfg!(windows)))?;
     let output = std::path::Path::new(options.output.as_deref().ok_or("--output is required")?);
     let preparation_dir = output
         .parent()
@@ -135,15 +202,15 @@ pub fn run_lane(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "coverage-{}-{}-{}-{before}",
             lane.rust, lane.java, lane.shard
         ));
-    let coverage_path = crate::imap_coverage_075::capture(&root, &coverage_dir)?;
-    crate::imap_coverage_075::check(&root, &coverage_path)?;
+    let coverage_path = (host.coverage_capture)(&root, &coverage_dir)?;
+    let coverage = (host.coverage_check)(&root, &coverage_path)?;
     let coverage_sha256 = digest(&std::fs::read(coverage_path)?);
-    let preparation_receipt = crate::imap_pre074_075::produce(&root, &preparation_dir)?;
-    crate::imap_pre074_075::verify(&root, &preparation_receipt)?;
+    let preparation_receipt = (host.preparation)(&root, &preparation_dir)?;
+    (host.preparation_check)(&root, &preparation_receipt)?;
     let seeds = seeds_for(lane.shard)?;
     for seed in &seeds {
-        crate::imap_api_differential::check_actual_at_root(&root, *seed, 128)?;
-        crate::imap_extended_concurrent_075::check_actual(&root, i64::try_from(*seed)?, 15)?;
+        (host.differential)(&root, *seed, 128)?;
+        (host.concurrent)(&root, i64::try_from(*seed)?, 15)?;
         let output = std::path::Path::new(options.output.as_deref().ok_or("--output is required")?);
         let evidence_dir = output
             .parent()
@@ -152,15 +219,11 @@ pub fn run_lane(args: Vec<String>) -> Result<(), Box<dyn Error>> {
                 "extended-{}-{}-{}-{}-{}",
                 lane.rust, lane.java, lane.shard, seed, before
             ));
-        let receipt =
-            crate::imap_extended_receipt_075::produce(&root, &evidence_dir, i64::try_from(*seed)?)?;
-        crate::imap_extended_receipt_075::verify(&root, &receipt)?;
-        println!(
-            "{}",
-            crate::imap_cluster_campaign_075::check_at_root(&root, *seed, 3)?
-        );
+        let receipt = (host.extended)(&root, &evidence_dir, i64::try_from(*seed)?)?;
+        (host.extended_check)(&root, &receipt)?;
+        println!("{}", (host.campaign)(&root, *seed, 3)?);
     }
-    if source_state(&root)? != before {
+    if (host.source)(&root)? != before {
         return Err("source changed during CI lane execution".into());
     }
     let receipt = CiReceipt {
@@ -178,9 +241,14 @@ pub fn run_lane(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         java_fingerprint: java,
         commands: COMMANDS.into_iter().map(str::to_owned).collect(),
         completed: true,
-        passed: true,
+        passed: coverage.qualification,
         production_enabled: false,
     };
+    if !receipt.passed {
+        return Err(
+            "CI lane requires independently qualified coverage; receipt not published".into(),
+        );
+    }
     write_receipt(
         &root,
         &options.output.ok_or("--output is required")?,

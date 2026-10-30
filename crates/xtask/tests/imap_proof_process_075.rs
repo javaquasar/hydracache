@@ -98,6 +98,23 @@ fn terminal_nested_fixture_can_also_complete_and_reap_normally() {
     let pid = std::fs::read_to_string(file).unwrap().parse().unwrap();
     assert!(!live(pid));
 }
+#[test]
+fn failed_pid_publication_terminates_and_reaps_both_direct_and_nested_workers() {
+    let temp = tempfile::tempdir().unwrap();
+    for mode in ["announce-sleep", "nested-controller-complete"] {
+        let mut worker = command(mode);
+        // A directory is a genuine PID-file I/O failure, without corrupting
+        // the separate LLVM checkpoint destination or killing its writer.
+        worker.arg(temp.path());
+        let mut completion = bounds();
+        completion.timeout = Duration::from_secs(15);
+        let failure = execute(worker, &[], completion).unwrap_err();
+        assert_eq!(failure.kind, FailureKind::Exit, "{mode}");
+        assert!(failure.direct_child_reaped);
+        assert_eq!(failure.remaining_live_members, Some(0));
+        assert_eq!(std::fs::read_dir(temp.path()).unwrap().count(), 0);
+    }
+}
 fn bounds() -> ProcessBounds {
     ProcessBounds {
         timeout: Duration::from_secs(3),

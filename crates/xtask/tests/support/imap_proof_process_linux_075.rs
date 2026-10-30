@@ -139,6 +139,45 @@ fn member_liveness_refuses_unknown_state_and_accepts_only_observed_absence() {
 }
 
 #[test]
+fn descendant_procfs_exit_race_uses_the_same_member_lookup_without_retaining_private_environment() {
+    let pid = std::process::id() as i32;
+    // Assert only the byte bound; never print or persist process environment.
+    assert!(read_environment(pid).unwrap().len() <= 1024 * 1024 + 1);
+    assert!(read_environment(-1).is_err());
+    let mut reads = 0;
+    assert!(descendant_using(
+        pid,
+        17,
+        |requested| {
+            assert_eq!(requested, pid);
+            reads += 1;
+            if reads == 1 {
+                Err(denied())
+            } else {
+                Ok(format!("{GROUP_CHAIN}=17\0").into_bytes())
+            }
+        },
+        member
+    )
+    .unwrap());
+    assert_eq!(reads, 2);
+    assert!(!descendant_using(
+        pid,
+        17,
+        |_| Err(denied()),
+        |_| Err(io::Error::from_raw_os_error(libc::ESRCH))
+    )
+    .unwrap());
+    assert!(descendant_using(
+        pid,
+        17,
+        |_| Err(denied()),
+        |_| Err(io::Error::other("member unreadable"))
+    )
+    .is_err());
+}
+
+#[test]
 fn session_planning_preserves_root_and_nested_ownership_without_spawning() {
     let mut command = Command::new("unit-never-spawned");
     command.env(GROUP_CHAIN, "stale");

@@ -40,17 +40,22 @@ fn parse_chain(raw: &str) -> io::Result<Vec<i32>> {
 }
 fn descendant(pid: i32, group: i32) -> io::Result<bool> {
     // Read only an operational marker from owned processes; never retain or log environment data.
-    retry_marker(
-        || {
-            let mut bytes = Vec::new();
-            std::fs::File::open(format!("/proc/{pid}/environ"))?
-                .take(1024 * 1024 + 1)
-                .read_to_end(&mut bytes)?;
-            Ok(bytes)
-        },
-        || member_live(member(pid)),
-        group,
-    )
+    descendant_using(pid, group, read_environment, member)
+}
+fn read_environment(pid: i32) -> io::Result<Vec<u8>> {
+    let mut bytes = Vec::new();
+    std::fs::File::open(format!("/proc/{pid}/environ"))?
+        .take(1024 * 1024 + 1)
+        .read_to_end(&mut bytes)?;
+    Ok(bytes)
+}
+fn descendant_using(
+    pid: i32,
+    group: i32,
+    mut read: impl FnMut(i32) -> io::Result<Vec<u8>>,
+    mut read_member: impl FnMut(i32) -> io::Result<Member>,
+) -> io::Result<bool> {
+    retry_marker(|| read(pid), || member_live(read_member(pid)), group)
 }
 fn member_live(value: io::Result<Member>) -> io::Result<bool> {
     match value {

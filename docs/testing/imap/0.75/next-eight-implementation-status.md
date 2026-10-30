@@ -134,3 +134,21 @@ Those tests include real finite owned shell/nested-controller executions as
 well as modeled syscall, ownership, procfs and deferred-reaping failures. The
 modeled trees suppress Drop, so unit failures cannot signal fixture PIDs. This
 source harness is not full Linux package or P8 matrix qualification.
+
+The retained Rust 1.94/Java 21 final stream for `633b469a9` has 176 uncovered
+added executable lines, compared with 216 in that lane for `59dd581fe`. It
+remains an unqualified diagnostic. Its bootstrap-inclusive capture reached
+strict reconstruction rather than failing input collection.
+
+The next CI/process block tests all 27 orchestration boundaries through private
+fixed-function bindings. Modeled coverage is always unqualified and cannot
+publish a CI receipt; the actual coverage checker also refuses an unqualified
+relative report before preparation starts. Actual bounded adapters run one
+finite child without recursive Cargo. Pipe-setup I/O refusal reaps the real
+owned child before returning a containment failure; direct and nested worker
+PID-publication failures exit normally enough to retain their LLVM counters.
+The default/instrumented checks passed 148 library, 12 CI and 13 process tests;
+the instrumented coverage target passed 39 tests. All-target checks and strict
+all-feature Clippy passed. Linux source-module checks passed 22 tests and strict
+Clippy on each exact Rust version, including the full procfs exit-race lookup.
+Fresh complete source-bound coverage and matrix qualification are still required.
