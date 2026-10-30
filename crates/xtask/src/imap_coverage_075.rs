@@ -1560,13 +1560,51 @@ fn capture_worker(_: &Path, _: &str) -> Result<()> {
 }
 #[cfg(feature = "imap-075-coverage")]
 fn capture_worker(root: &Path, path: &str) -> Result<()> {
-    use crate::imap_build_process_075::BuildStage;
     let (control, directory) = read_control(root, path)?;
-    if artifact(root, &std::env::current_exe()?, 512 * 1024 * 1024)? != control.producer {
-        return Err("coverage runner bytes differ from prepared controller".into());
-    }
+    validate_workload_producer(
+        &artifact(root, &std::env::current_exe()?, 512 * 1024 * 1024)?,
+        &control.producer,
+    )?;
     store_new(root, &directory.join("capture-started.json"), &identity()?)?;
-    let mut driver = ManagedDriver::new(root)?;
+    let receipt = capture_workloads(
+        root,
+        path,
+        &control,
+        &directory,
+        &mut ManagedDriver::new(root)?,
+        prepared_workload_inputs,
+        current_inputs,
+    )?;
+    store_new(root, &directory.join("capture.json"), &receipt)?;
+    Ok(())
+}
+#[cfg(feature = "imap-075-coverage")]
+struct PreparedWorkloadInputs {
+    inventory: Artifact,
+    directory: String,
+}
+#[cfg(feature = "imap-075-coverage")]
+fn prepared_workload_inputs(root: &Path, preparation: &Artifact) -> Result<PreparedWorkloadInputs> {
+    let prepared: crate::imap_pre074_075::PreparationReceipt = load(root, &preparation.path)?;
+    let provenance: crate::imap_sbom_075::Provenance =
+        load(root, &prepared.development_inventory.path)?;
+    let inputs: crate::imap_sbom_capture_075::Capture = load(root, &provenance.capture.path)?;
+    Ok(PreparedWorkloadInputs {
+        inventory: prepared.development_inventory,
+        directory: inputs.directory,
+    })
+}
+#[cfg(feature = "imap-075-coverage")]
+fn capture_workloads(
+    root: &Path,
+    path: &str,
+    control: &Control,
+    directory: &Path,
+    driver: &mut impl CoverageDriver,
+    prepare: impl FnOnce(&Path, &Artifact) -> Result<PreparedWorkloadInputs>,
+    inputs_now: impl FnOnce(&Path) -> Result<(String, Profile, Vec<Source>)>,
+) -> Result<CaptureReceipt> {
+    use crate::imap_build_process_075::BuildStage;
     let mut streams = vec![control.bootstrap.clone()];
     let mut command = crate::imap_ci_075::tooling_command(root, cfg!(windows));
     command.args([
@@ -1578,7 +1616,7 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
     let report = driver.execute(BuildStage::ToolingTests, command)?;
     streams.push(snapshot_compiler_record(
         root,
-        &directory,
+        directory,
         report_output(root, &report)?,
     )?);
     let mut command = Command::new("cargo");
@@ -1599,10 +1637,10 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
     let report = driver.execute(BuildStage::HelperContractTests, command)?;
     streams.push(snapshot_compiler_record(
         root,
-        &directory,
+        directory,
         report_output(root, &report)?,
     )?);
-    capture_consumer(root, &directory, &mut driver, &mut streams)?;
+    capture_consumer(root, directory, driver, &mut streams)?;
     let mut command = Command::new(std::env::current_exe()?);
     command
         .current_dir(root)
@@ -1625,7 +1663,7 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
     let preparation = artifact(root, &directory.join("preparation/receipt.json"), MAX)?;
     // Exercise the public entry points as a user would, after their real artifacts exist.
     // Resume starts a separate short segment; it never extends the smoke dwell claim.
-    for arguments in public_workloads(&relative(root, &directory)?) {
+    for arguments in public_workloads(&relative(root, directory)?) {
         let mut command = Command::new(std::env::current_exe()?);
         command.current_dir(root).args(arguments).env(
             "LLVM_PROFILE_FILE",
@@ -1633,10 +1671,7 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
         );
         driver.execute(BuildStage::CoverageExecution, command)?;
     }
-    let prepared: crate::imap_pre074_075::PreparationReceipt = load(root, &preparation.path)?;
-    let provenance: crate::imap_sbom_075::Provenance =
-        load(root, &prepared.development_inventory.path)?;
-    let inputs: crate::imap_sbom_capture_075::Capture = load(root, &provenance.capture.path)?;
+    let inputs = prepare(root, &preparation)?;
     let mut command = Command::new("cargo");
     command
         .current_dir(root)
@@ -1654,10 +1689,7 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
             "--message-format=json-render-diagnostics",
         ])
         .env("IMAP075_CARGO_FIXTURE", &inputs.directory)
-        .env(
-            "IMAP075_PROVENANCE_FIXTURE",
-            &prepared.development_inventory.path,
-        )
+        .env("IMAP075_PROVENANCE_FIXTURE", &inputs.inventory.path)
         .env(
             "IMAP075_SOAK_FIXTURE",
             relative(root, &directory.join("soak-cli/reference"))?,
@@ -1667,14 +1699,14 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
     let report = driver.execute(BuildStage::ToolingTests, command)?;
     streams.push(snapshot_compiler_record(
         root,
-        &directory,
+        directory,
         report_output(root, &report)?,
     )?);
     let mut command = Command::new(std::env::current_exe()?);
     command
         .current_dir(root)
         .args(["imap-sbom-check", "--release", "0.75", "--receipt"])
-        .arg(&prepared.development_inventory.path)
+        .arg(&inputs.inventory.path)
         .env(
             "LLVM_PROFILE_FILE",
             directory.join("raw/controller").join("%p.profraw"),
@@ -1684,7 +1716,7 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
         root,
         &format!("{}/coverage-sessions.json", inputs.directory),
     )?;
-    let mut objects = compiler_objects(root, &directory, &streams)?;
+    let mut objects = compiler_objects(root, directory, &streams)?;
     objects.push(control.producer.clone());
     objects.sort_by(|a, b| a.path.cmp(&b.path));
     let receipt = CaptureReceipt {
@@ -1698,9 +1730,8 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
         java_tools: java_tool_artifacts(root)?,
         completed: true,
     };
-    require_current_inputs(root, &control, "execution", current_inputs)?;
-    store_new(root, &directory.join("capture.json"), &receipt)?;
-    Ok(())
+    require_current_inputs(root, control, "execution", inputs_now)?;
+    Ok(receipt)
 }
 pub fn public_workloads(directory: &str) -> Vec<Vec<String>> {
     let mut result: Vec<Vec<String>> = [
@@ -2629,6 +2660,18 @@ pub fn run_using(
             );
         }
         _ => return Err("unknown/ambiguous coverage command".into()),
+    }
+    Ok(())
+}
+
+#[cfg(all(test, feature = "imap-075-coverage"))]
+#[path = "../tests/support/imap_coverage_workloads_075.rs"]
+mod workload_tests;
+
+#[cfg(feature = "imap-075-coverage")]
+fn validate_workload_producer(actual: &Artifact, prepared: &Artifact) -> Result<()> {
+    if actual != prepared {
+        return Err("coverage runner bytes differ from prepared controller".into());
     }
     Ok(())
 }

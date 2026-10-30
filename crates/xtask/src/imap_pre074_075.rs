@@ -909,21 +909,10 @@ pub fn verify(root: &Path, path: &Path) -> Result<PreparationReceipt, Box<dyn Er
         .iter()
         .zip(["reference", "native", "daemon"])
     {
-        if reference.path
-            != directory
-                .join(format!("soak-{cohort}/report.json"))
-                .to_string_lossy()
-                .replace('\\', "/")
-        {
-            return Err("preparation soak report path differs".into());
-        }
+        validate_soak_report_path(directory, reference, cohort)?;
         read_artifact(root, reference)?;
         let report = crate::imap_soak_075::check_saved(root, Path::new(&reference.path))?;
-        if report.terminal != crate::imap_soak_075::Terminal::Complete
-            || report.profile.bounds.active_ms != 200
-        {
-            return Err("preparation soak incomplete/foreign profile".into());
-        }
+        validate_preparation_soak(report.terminal, report.profile.bounds.active_ms)?;
     }
     let fresh_soak = tempfile::tempdir_in(root.join("target/imap-075"))?;
     crate::imap_soak_075::preparation_smoke(root, &source, fresh_soak.path())?;
@@ -938,9 +927,7 @@ pub fn verify(root: &Path, path: &Path) -> Result<PreparationReceipt, Box<dyn Er
     crate::imap_native_probe_075::validate(&native)?;
     let fresh_native: crate::imap_native_probe_075::NativeProbe =
         serde_json::from_slice(&crate::imap_native_probe_075::observe(root)?)?;
-    if native != fresh_native {
-        return Err("native extended replay differs".into());
-    }
+    validate_extended_replay(&native, &fresh_native)?;
     let histories: crate::imap_native_concurrent_075::Histories =
         serde_json::from_slice(&read_artifact(root, &receipt.native_histories)?)?;
     let fresh_histories =
@@ -950,9 +937,7 @@ pub fn verify(root: &Path, path: &Path) -> Result<PreparationReceipt, Box<dyn Er
         serde_json::from_slice(&read_artifact(root, &receipt.native_recovery)?)?;
     crate::imap_native_recovery_075::validate(&recovery)?;
     let fresh_recovery = serde_json::from_slice(&crate::imap_native_recovery_075::observe(root)?)?;
-    if recovery != fresh_recovery {
-        return Err("native listener recovery replay differs".into());
-    }
+    validate_recovery_replay(&recovery, &fresh_recovery)?;
     let observed_rust = read_artifact(root, &receipt.rust)?;
     validate_rust_probe(&observed_rust)?;
     let observed_metadata: Value =
@@ -1075,3 +1060,49 @@ mod tests {
         assert!(validate_rust_probe(b"{\"passed\":true}").is_err());
     }
 }
+
+fn validate_soak_report_path(
+    directory: &Path,
+    reference: &Artifact,
+    cohort: &str,
+) -> Result<(), Box<dyn Error>> {
+    if reference.path
+        != directory
+            .join(format!("soak-{cohort}/report.json"))
+            .to_string_lossy()
+            .replace('\\', "/")
+    {
+        return Err("preparation soak report path differs".into());
+    }
+    Ok(())
+}
+fn validate_preparation_soak(
+    terminal: crate::imap_soak_075::Terminal,
+    active_ms: u64,
+) -> Result<(), Box<dyn Error>> {
+    if terminal != crate::imap_soak_075::Terminal::Complete || active_ms != 200 {
+        return Err("preparation soak incomplete/foreign profile".into());
+    }
+    Ok(())
+}
+fn validate_extended_replay(
+    native: &crate::imap_native_probe_075::NativeProbe,
+    fresh: &crate::imap_native_probe_075::NativeProbe,
+) -> Result<(), Box<dyn Error>> {
+    if native != fresh {
+        return Err("native extended replay differs".into());
+    }
+    Ok(())
+}
+fn validate_recovery_replay(
+    recovery: &crate::imap_native_recovery_075::RecoveryProbe,
+    fresh: &crate::imap_native_recovery_075::RecoveryProbe,
+) -> Result<(), Box<dyn Error>> {
+    if recovery != fresh {
+        return Err("native listener recovery replay differs".into());
+    }
+    Ok(())
+}
+#[cfg(test)]
+#[path = "../tests/support/imap_preparation_replay_075.rs"]
+mod replay_tests;

@@ -58,3 +58,31 @@ fn worker_configuration_requires_an_owned_absolute_directory_and_a_known_canary(
     changed.extend(args);
     assert!(WorkerConfig::parse(&changed).is_err());
 }
+#[test]
+fn hung_worker_checkpoint_is_attempted_once_and_errors_propagate_without_retries() {
+    let mut done = false;
+    let mut calls = 0;
+    checkpoint_once(&mut done, || {
+        calls += 1;
+        Ok(())
+    })
+    .unwrap();
+    assert!(done);
+    assert_eq!(calls, 1);
+    checkpoint_once(&mut done, || {
+        panic!("a completed checkpoint must not run again")
+    })
+    .unwrap();
+    let mut failed = false;
+    assert!(
+        checkpoint_once(&mut failed, || Err("unit checkpoint failure".into()))
+            .unwrap_err()
+            .to_string()
+            .contains("unit checkpoint failure")
+    );
+    assert!(failed);
+    checkpoint_once(&mut failed, || {
+        panic!("the fault worker does not retry failed checkpoints")
+    })
+    .unwrap();
+}

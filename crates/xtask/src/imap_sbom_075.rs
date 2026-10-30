@@ -996,7 +996,6 @@ pub fn reduce(root: &Path, capture: &Capture, source: &str) -> Result<Inventory>
     let mut components = BTreeMap::new();
     let mut edges = BTreeSet::new();
     let mut compilations = BTreeMap::new();
-    let mut tools = BTreeMap::new();
     let stage = |name: &str| {
         capture
             .stages
@@ -1007,20 +1006,15 @@ pub fn reduce(root: &Path, capture: &Capture, source: &str) -> Result<Inventory>
     let root_metadata = load(root, &stage("root-metadata")?.stdout)?;
     let consumer_metadata = load(root, &stage("consumer-metadata")?.stdout)?;
     for metadata in [&root_metadata, &consumer_metadata] {
-        for package in array(metadata, "packages")?
-            .iter()
-            .filter(|p| p["source"].is_null())
-        {
-            if !Path::new(text(package, "manifest_path")?).starts_with(root) {
-                return Err("foreign path dependency in development closure".into());
-            }
-        }
+        validate_workspace_metadata(root, metadata)?;
     }
-    let mut poms = BTreeSet::from([
-        "tests/java-imap-benchmark/pom.xml".into(),
-        "tests/java-imap-hazelcast-075/pom.xml".into(),
-    ]);
-    let mut materials = Vec::new();
+    let mut maven_inputs = MavenInputs {
+        poms: BTreeSet::from([
+            "tests/java-imap-benchmark/pom.xml".into(),
+            "tests/java-imap-hazelcast-075/pom.xml".into(),
+        ]),
+        ..Default::default()
+    };
     for s in &capture.stages {
         if let Some(journal) = &s.journal {
             let rows = maven_journal(
@@ -1028,44 +1022,7 @@ pub fn reduce(root: &Path, capture: &Capture, source: &str) -> Result<Inventory>
                 s.nonce.as_deref().ok_or("Maven nonce missing")?,
             )?;
             for row in rows {
-                match row["event"].as_str() {
-                    Some("material") => {
-                        let path = if row["location"] == "repository" {
-                            format!("{REPOSITORY}/{}", text(&row, "path")?)
-                        } else {
-                            text(&row, "path")?.into()
-                        };
-                        let actual = artifact(root, &root.join(&path), 512 * 1024 * 1024)?;
-                        if actual.sha256 != text(&row, "sha256")?
-                            || actual.bytes
-                                != row["bytes"].as_u64().ok_or("Maven material size missing")?
-                        {
-                            return Err("Maven material substituted after build".into());
-                        }
-                        if text(&row, "extension")? == "pom" {
-                            poms.insert(path.clone());
-                        }
-                        materials.push((s.name.clone(), row, path));
-                    }
-                    Some("tool") => {
-                        let key = format!("{}:{}", text(&row, "kind")?, text(&row, "path")?);
-                        if let Some(old) = tools.insert(key, row.clone()) {
-                            if old != row {
-                                return Err("tool input changed across Maven invocations".into());
-                            }
-                        }
-                    }
-                    Some("init") => {
-                        let version = json!({"kind":"runtime-versions","maven":row["maven_version"],"java":row["java_version"],"vendor":row["java_vendor"]});
-                        if let Some(old) = tools.insert("runtime-versions".into(), version.clone())
-                        {
-                            if old != version {
-                                return Err("Maven/JDK runtime changed".into());
-                            }
-                        }
-                    }
-                    _ => {}
-                }
+                maven_inputs.accept(root, &s.name, row)?;
             }
         } else if !s.name.ends_with("metadata") {
             let metadata = if s.name.starts_with("consumer-") {
@@ -1090,6 +1047,11 @@ pub fn reduce(root: &Path, capture: &Capture, source: &str) -> Result<Inventory>
             }
         }
     }
+    let MavenInputs {
+        mut tools,
+        poms,
+        materials,
+    } = maven_inputs;
     let java = crate::imap_api_differential::java_executable();
     let jdk = java.parent().and_then(Path::parent).ok_or("JDK layout")?;
     let mut maven = crate::imap_sbom_capture_075::maven_command(root)?;
@@ -1112,21 +1074,7 @@ pub fn reduce(root: &Path, capture: &Capture, source: &str) -> Result<Inventory>
         } else {
             Path::new(&capture.maven_home)
         };
-        let path = text(row, "path")?;
-        if path.contains('\\')
-            || path.contains(':')
-            || Path::new(path)
-                .components()
-                .any(|c| !matches!(c, std::path::Component::Normal(_)))
-        {
-            return Err("foreign tool material path".into());
-        }
-        let file = base.join(path);
-        if crate::imap_daemon_probe_075::binary_digest(&file.canonicalize()?)?
-            != text(row, "sha256")?
-        {
-            return Err("current Maven/JDK input hash differs".into());
-        }
+        verify_tool_material(base, row)?;
     }
     let metadata = pom_metadata(root, &poms)?;
     for (stage, row, path) in materials {
@@ -1554,3 +1502,84 @@ pub fn run(args: Vec<String>, check: bool) -> Result<()> {
 #[cfg(test)]
 #[path = "../tests/support/imap_sbom_offline_075.rs"]
 mod offline_tests;
+
+#[derive(Default)]
+struct MavenInputs {
+    poms: BTreeSet<String>,
+    materials: Vec<(String, Value, String)>,
+    tools: BTreeMap<String, Value>,
+}
+impl MavenInputs {
+    fn accept(&mut self, root: &Path, stage: &str, row: Value) -> Result<()> {
+        match row["event"].as_str() {
+            Some("material") => {
+                let path = if row["location"] == "repository" {
+                    format!("{REPOSITORY}/{}", text(&row, "path")?)
+                } else {
+                    text(&row, "path")?.into()
+                };
+                let actual = artifact(root, &root.join(&path), 512 * 1024 * 1024)?;
+                if actual.sha256 != text(&row, "sha256")?
+                    || actual.bytes != row["bytes"].as_u64().ok_or("Maven material size missing")?
+                {
+                    return Err("Maven material substituted after build".into());
+                }
+                if text(&row, "extension")? == "pom" {
+                    self.poms.insert(path.clone());
+                }
+                self.materials.push((stage.into(), row, path));
+            }
+            Some("tool") => {
+                let key = format!("{}:{}", text(&row, "kind")?, text(&row, "path")?);
+                if let Some(old) = self.tools.insert(key, row.clone()) {
+                    if old != row {
+                        return Err("tool input changed across Maven invocations".into());
+                    }
+                }
+            }
+            Some("init") => {
+                let version = json!({"kind":"runtime-versions","maven":row["maven_version"],"java":row["java_version"],"vendor":row["java_vendor"]});
+                if let Some(old) = self
+                    .tools
+                    .insert("runtime-versions".into(), version.clone())
+                {
+                    if old != version {
+                        return Err("Maven/JDK runtime changed".into());
+                    }
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+}
+fn validate_workspace_metadata(root: &Path, metadata: &Value) -> Result<()> {
+    for package in array(metadata, "packages")?
+        .iter()
+        .filter(|p| p["source"].is_null())
+    {
+        if !Path::new(text(package, "manifest_path")?).starts_with(root) {
+            return Err("foreign path dependency in development closure".into());
+        }
+    }
+    Ok(())
+}
+fn verify_tool_material(base: &Path, row: &Value) -> Result<()> {
+    let path = text(row, "path")?;
+    if path.contains('\\')
+        || path.contains(':')
+        || Path::new(path)
+            .components()
+            .any(|c| !matches!(c, std::path::Component::Normal(_)))
+    {
+        return Err("foreign tool material path".into());
+    }
+    let file = base.join(path);
+    if crate::imap_daemon_probe_075::binary_digest(&file.canonicalize()?)? != text(row, "sha256")? {
+        return Err("current Maven/JDK input hash differs".into());
+    }
+    Ok(())
+}
+#[cfg(test)]
+#[path = "../tests/support/imap_inventory_materials_075.rs"]
+mod material_tests;

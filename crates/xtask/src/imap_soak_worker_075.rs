@@ -289,10 +289,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         let mut checkpointed = false;
         loop {
             std::thread::sleep(Duration::from_millis(50));
-            if !checkpointed {
-                checkpointed = true;
-                crate::imap_coverage_075::flush_profile()?;
-            }
+            checkpoint_once(&mut checkpointed, crate::imap_coverage_075::flush_profile)?;
         }
     }
     crate::imap_coverage_075::flush_profile()?;
@@ -301,3 +298,14 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 #[cfg(test)]
 #[path = "../tests/support/imap_soak_worker_checks_075.rs"]
 mod tests;
+
+fn checkpoint_once(
+    done: &mut bool,
+    checkpoint: impl FnOnce() -> Result<(), Box<dyn Error>>,
+) -> Result<(), Box<dyn Error>> {
+    if !*done {
+        *done = true;
+        checkpoint()?;
+    }
+    Ok(())
+}

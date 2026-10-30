@@ -71,6 +71,13 @@ pub fn reproduce_with_controller(
     root: &Path,
     builds: &mut crate::imap_build_process_075::BuildController,
 ) -> Result<Vec<JavaPackageProof>, Box<dyn Error>> {
+    reproduce_packages(root, builds, crate::imap_sbom_capture_075::maven_command)
+}
+fn reproduce_packages(
+    root: &Path,
+    builds: &mut crate::imap_build_process_075::BuildController,
+    mut maven: impl FnMut(&Path) -> Result<std::process::Command, Box<dyn Error>>,
+) -> Result<Vec<JavaPackageProof>, Box<dyn Error>> {
     let scratch = root.join("target/imap-075");
     fs::create_dir_all(&scratch)?;
     let temp = tempfile::tempdir_in(scratch)?;
@@ -84,7 +91,7 @@ pub fn reproduce_with_controller(
         fs::create_dir(&destination)?;
         copy_sources(&source.join("pom.xml"), &destination.join("pom.xml"))?;
         copy_sources(&source.join("src"), &destination.join("src"))?;
-        let mut invocation = crate::imap_sbom_capture_075::maven_command(root)?;
+        let mut invocation = maven(root)?;
         invocation
             .current_dir(root)
             .arg("-B")
@@ -162,3 +169,7 @@ mod tests {
             .contains("total work"));
     }
 }
+
+#[cfg(test)]
+#[path = "../tests/support/imap_package_command_075.rs"]
+mod command_tests;

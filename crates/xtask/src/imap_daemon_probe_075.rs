@@ -491,11 +491,22 @@ pub(crate) fn soak_drain(addrs: &[SocketAddr; 3]) -> Result<(), Box<dyn Error>> 
     step(10, addrs).map(|_| ())
 }
 pub fn soak_round(addrs: &[SocketAddr; 3], seed: u64, position: u64) -> Result<(), Box<dyn Error>> {
+    soak_round_using(addrs, seed, position, roundtrip)
+}
+fn soak_round_using<T>(
+    addrs: &[SocketAddr; 3],
+    seed: u64,
+    position: u64,
+    mut transport: T,
+) -> Result<(), Box<dyn Error>>
+where
+    T: FnMut(SocketAddr, &[u8]) -> Result<Vec<u8>, Box<dyn Error>>,
+{
     let ns = Namespace::new("redis")?;
     let first = (seed ^ position).to_be_bytes();
     let second = (seed ^ position ^ 0x8000_0000_0000_0000).to_be_bytes();
-    let request = |id: &str, body: ClientRequest| -> Result<_, Box<dyn Error>> {
-        let raw = roundtrip(
+    let request = |transport: &mut T, id: &str, body: ClientRequest| -> Result<_, Box<dyn Error>> {
+        let raw = transport(
             addrs[0],
             &http_request(
                 "POST",
@@ -511,6 +522,7 @@ pub fn soak_round(addrs: &[SocketAddr; 3], seed: u64, position: u64) -> Result<(
     require(
         matches!(
             request(
+                &mut transport,
                 "soak-put",
                 ClientRequest::Put {
                     ns: ns.clone(),
@@ -524,7 +536,7 @@ pub fn soak_round(addrs: &[SocketAddr; 3], seed: u64, position: u64) -> Result<(
         ),
         "soak HC1 put failed",
     )?;
-    let response = roundtrip(
+    let response = transport(
         addrs[2],
         b"*2\r\n$3\r\nGET\r\n$1\r\na\r\n*1\r\n$4\r\nQUIT\r\n",
     )?;
@@ -536,16 +548,17 @@ pub fn soak_round(addrs: &[SocketAddr; 3], seed: u64, position: u64) -> Result<(
     set.extend_from_slice(&second);
     set.extend_from_slice(b"\r\n*1\r\n$4\r\nQUIT\r\n");
     require(
-        roundtrip(addrs[2], &set)? == b"+OK\r\n+OK\r\n",
+        transport(addrs[2], &set)? == b"+OK\r\n+OK\r\n",
         "soak RESP set failed",
     )?;
     require(
-        matches!(request("soak-get",ClientRequest::Get{ns:ns.clone(),key:key(b"a")})?,Ok(ClientResponse::Value{value:Some(value)}) if value==second),
+        matches!(request(&mut transport, "soak-get",ClientRequest::Get{ns:ns.clone(),key:key(b"a")})?,Ok(ClientResponse::Value{value:Some(value)}) if value==second),
         "soak HC1 did not observe RESP value",
     )?;
     require(
         matches!(
             request(
+                &mut transport,
                 "soak-remove",
                 ClientRequest::Invalidate {
                     ns: ns.clone(),
@@ -558,9 +571,17 @@ pub fn soak_round(addrs: &[SocketAddr; 3], seed: u64, position: u64) -> Result<(
     )?;
     require(
         matches!(
-            request("soak-absent", ClientRequest::Get { ns, key: key(b"a") })?,
+            request(
+                &mut transport,
+                "soak-absent",
+                ClientRequest::Get { ns, key: key(b"a") }
+            )?,
             Ok(ClientResponse::Value { value: None })
         ),
         "soak quiescent key remains",
     )
 }
+
+#[cfg(test)]
+#[path = "../tests/support/imap_daemon_soak_transport_075.rs"]
+mod soak_transport_tests;

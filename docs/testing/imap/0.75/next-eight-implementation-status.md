@@ -213,3 +213,17 @@ Rust 1.94/Java 21 stream has 148 uncovered lines (176 at `633b469a9`). Its ZIP
 SHA-256 matches the uploaded digest, and every retained uncovered source hash
 matches head `0e91855f3`; the CI merge source is `70af0ff90`. This is diagnostic
 only and does not admit P8 or production.
+
+The workload/replay block passed 184 default and 189 instrumented library
+checks, 38/39 coverage checks, two daemon-probe, two native, two recovery,
+six preparation, 15 SBOM and 11 real soak checks per mode. Four prepared-input
+cases remain reserved for the full actual-artifact capture. All-target checks
+and strict all-feature Clippy passed, without lint suppressions. Private
+workload tests refuse each of 14 commands, missing compiler output, consumer
+lock drift and final source drift; even modeled completion fails live-controller
+and missing-analysis admission and publishes no capture. Fixed production
+wrappers retain producer pins, real process identity and publication ownership.
+Daemon protocol tests exercise every network boundary and incorrect binary
+result. Package failure uses a real finite owned shell, verifies physical reap
+and stops before the second module. Replay and Maven material tests reject
+substitution, inconsistent runtime inputs and foreign paths. P8 remains open.
