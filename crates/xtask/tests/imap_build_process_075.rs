@@ -179,6 +179,28 @@ fn cancellation_is_monotonic_and_reaps_an_actual_running_child() {
 struct BrokenJournal {
     writes: usize,
 }
+#[test]
+fn slow_setup_exhausts_the_phase_before_any_child_is_spawned() {
+    struct SlowJournal;
+    impl Write for SlowJournal {
+        fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
+            std::thread::sleep(Duration::from_millis(50));
+            Ok(bytes.len())
+        }
+        fn flush(&mut self) -> io::Result<()> {
+            Ok(())
+        }
+    }
+    let root = tempfile::tempdir().unwrap();
+    let mut bounds = limits();
+    bounds.phase_timeout = Duration::from_millis(20);
+    let mut c = controller(root.path(), bounds, Cancellation::default());
+    c.replace_journal(Box::new(SlowJournal));
+    let error = c.run(BuildStage::ServerTests, worker("echo")).unwrap_err();
+    assert_eq!(error.report.outcome, BuildOutcome::TimedOut);
+    assert!(error.report.pid.is_none());
+    assert!(error.detail.contains("setup consumed"));
+}
 impl Write for BrokenJournal {
     fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
         self.writes += 1;

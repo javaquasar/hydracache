@@ -110,21 +110,53 @@ fn round(service: &UnifiedIMapService, seed: u64, position: u64) -> Result<Strin
         .execute(ServiceCommand::point("get", b"a"))
         .map_err(|e| format!("{e:?}"))?;
     let value = result.value.ok_or("soak lost reference value")?;
-    if value != (seed ^ position).to_be_bytes() {
-        return Err("reference logical value differs".into());
-    }
-    if listener.drain().map_err(|e| format!("{e:?}"))?.len() != 1 {
-        return Err("reference callback incomplete".into());
-    }
+    let callbacks = listener.drain().map_err(|e| format!("{e:?}"))?.len();
     drop(listener);
     service
         .retire_outcomes("soak", 3, position)
         .map_err(|e| format!("{e:?}"))?;
     drop(service.checkpoint().map_err(|e| format!("{e:?}"))?);
-    if service.statistics().retained_outcomes != 0 {
+    validate_reference_round(
+        &value,
+        seed,
+        position,
+        callbacks,
+        service.statistics().retained_outcomes,
+    )
+}
+fn validate_reference_round(
+    value: &[u8],
+    seed: u64,
+    position: u64,
+    callbacks: usize,
+    retained_outcomes: usize,
+) -> Result<String, Box<dyn Error>> {
+    if value != (seed ^ position).to_be_bytes() {
+        return Err("reference logical value differs".into());
+    }
+    if callbacks != 1 {
+        return Err("reference callback incomplete".into());
+    }
+    if retained_outcomes != 0 {
         return Err("reference retained outcome leak".into());
     }
-    Ok(state_digest(&value))
+    Ok(state_digest(value))
+}
+fn stop_reason(
+    bounds: &SoakBounds,
+    round: u64,
+    elapsed: u64,
+    cancelled: bool,
+) -> Option<&'static str> {
+    if cancelled {
+        Some("cancelled")
+    } else if elapsed >= bounds.active_ms && round >= 2 {
+        Some("duration_complete")
+    } else if round >= bounds.maximum_rounds {
+        Some("round_limit")
+    } else {
+        None
+    }
 }
 fn emit(frame: &Frame) -> Result<(), Box<dyn Error>> {
     crate::imap_coverage_075::flush_profile()?;
@@ -204,16 +236,13 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let active = Instant::now();
     let mut leaked = None;
     loop {
-        if marker(&config.control, "cancel")? {
-            frame.reason = Some("cancelled".into());
-            break;
-        }
-        if active.elapsed() >= Duration::from_millis(profile.bounds.active_ms) && frame.round >= 2 {
-            frame.reason = Some("duration_complete".into());
-            break;
-        }
-        if frame.round == profile.bounds.maximum_rounds {
-            frame.reason = Some("round_limit".into());
+        if let Some(reason) = stop_reason(
+            &profile.bounds,
+            frame.round,
+            active.elapsed().as_millis() as u64,
+            marker(&config.control, "cancel")?,
+        ) {
+            frame.reason = Some(reason.into());
             break;
         }
         frame.round += 1;
@@ -257,11 +286,18 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     frame.owners = owners(&service);
     emit(&frame)?;
     if config.fault == "hang" {
-        crate::imap_coverage_075::flush_profile()?;
+        let mut checkpointed = false;
         loop {
             std::thread::sleep(Duration::from_millis(50));
+            if !checkpointed {
+                checkpointed = true;
+                crate::imap_coverage_075::flush_profile()?;
+            }
         }
     }
     crate::imap_coverage_075::flush_profile()?;
     Ok(())
 }
+#[cfg(test)]
+#[path = "../tests/support/imap_soak_worker_checks_075.rs"]
+mod tests;

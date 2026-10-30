@@ -262,6 +262,18 @@ fn public_checker_and_cli_refuse_an_unqualified_measurement_before_replay() {
     assert!(error.detail.contains("not finalized qualification"));
     let not_a_repository = tempfile::tempdir().unwrap();
     assert!(capture(not_a_repository.path(), Path::new("target/imap-075/absent")).is_err());
+    // On the clean measurement source this reaches the owned-output guard, never Cargo.
+    assert!(capture(root, Path::new(".")).is_err());
+    assert!(run(
+        vec![
+            "--release".into(),
+            "0.75".into(),
+            "--output".into(),
+            ".".into()
+        ],
+        "capture"
+    )
+    .is_err());
 }
 #[test]
 fn changed_line_intersection_never_counts_comments_or_assumes_coverage() {
@@ -891,7 +903,7 @@ fn compiler_inventory_includes_host_scripts_and_macros_but_never_rlibs_or_debug_
     let library = binary.parent().unwrap().join("libmacro.so");
     let rows = [
         json!({"reason":"compiler-artifact","executable":binary}),
-        json!({"reason":"compiler-artifact","executable":null,"target":{"kind":["custom-build"]},"filenames":[script, "sidecar.pdb"]}),
+        json!({"reason":"compiler-artifact","executable":null,"target":{"kind":["custom-build"],"name":"build-script-build"},"filenames":[script, "sidecar.pdb"]}),
         json!({"reason":"compiler-artifact","executable":null,"target":{"kind":["proc-macro"]},"filenames":[library]}),
         json!({"reason":"compiler-artifact","executable":null,"target":{"kind":["lib"],"crate_types":["rlib"]},"filenames":["ignored.rlib","ignored.rmeta"]}),
     ];
@@ -904,6 +916,17 @@ fn compiler_inventory_includes_host_scripts_and_macros_but_never_rlibs_or_debug_
     let expected = declared_objects(root.path(), &encode(&rows)).unwrap();
     assert_eq!(expected.len(), 3);
     assert!(expected.iter().any(|p| p.ends_with("libmacro.so")));
+    let aws_script = binary
+        .parent()
+        .unwrap()
+        .join(format!("build-script-main{}", std::env::consts::EXE_SUFFIX));
+    let aws = json!({"reason":"compiler-artifact","target":{"kind":["custom-build"],"name":"build-script-main"},"filenames":[aws_script]});
+    assert_eq!(
+        declared_objects(root.path(), &encode(&[aws]))
+            .unwrap()
+            .len(),
+        1
+    );
     for extension in ["dll", "dylib"] {
         let row = json!({"reason":"compiler-artifact","target":{"crate_types":["cdylib"]},"filenames":[binary.with_extension(extension)]});
         assert_eq!(
@@ -915,7 +938,9 @@ fn compiler_inventory_includes_host_scripts_and_macros_but_never_rlibs_or_debug_
     }
     for value in [
         json!({"reason":"compiler-artifact","target":{"kind":["proc-macro"]}}),
-        json!({"reason":"compiler-artifact","target":{"kind":["custom-build"]},"filenames":["sidecar.pdb"]}),
+        json!({"reason":"compiler-artifact","target":{"kind":["custom-build"],"name":"build-script-build"},"filenames":["sidecar.pdb"]}),
+        json!({"reason":"compiler-artifact","target":{"kind":["custom-build"]},"filenames":[script]}),
+        json!({"reason":"compiler-artifact","target":{"kind":["custom-build"],"name":"../foreign"},"filenames":[script]}),
         json!({"reason":"compiler-artifact","executable":"/foreign/binary"}),
         json!({"reason":"compiler-artifact","executable":binary.parent().unwrap().join("../aliased")}),
     ] {
@@ -1103,6 +1128,187 @@ impl CoverageDriver for FakeDriver {
             journal_complete: true,
             logs_complete: true,
         })
+    }
+    fn analyze(
+        &mut self,
+        _: &Path,
+        _: &str,
+        strict: bool,
+    ) -> Result<Analysis, Box<dyn std::error::Error>> {
+        assert!(strict);
+        self.calls += 1;
+        if self.calls == self.fail {
+            return Err("fixture analysis refused".into());
+        }
+        Ok(analysis_fixture().1)
+    }
+}
+#[test]
+fn capture_publication_retains_the_analysis_verdict_and_never_publishes_failed_work() {
+    for fail in 0..=4 {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join(".gitignore"), "target/\n").unwrap();
+        git(root.path(), &["init", "-q"]);
+        record(root.path(), "unqualified capture fixture");
+        let sha = git(root.path(), &["rev-parse", "HEAD"]);
+        let runner = root.path().join("target/imap-075/coverage-runner/debug");
+        std::fs::create_dir_all(&runner).unwrap();
+        std::fs::write(
+            runner.join(format!("xtask{}", std::env::consts::EXE_SUFFIX)),
+            b"fixture bytes; never executed",
+        )
+        .unwrap();
+        let output = Path::new("target/imap-075/capture-fixture");
+        let mut driver = FakeDriver { calls: 0, fail };
+        let result = capture_from(
+            root.path(),
+            output,
+            |_| Ok((sha, profile(), vec![source("crates/xtask/src/unit.rs")])),
+            &mut driver,
+        );
+        if fail == 0 {
+            let report = result.unwrap();
+            let saved: Analysis = serde_json::from_slice(&std::fs::read(&report).unwrap()).unwrap();
+            assert!(!saved.qualification);
+            assert_eq!(driver.calls, 4);
+            assert!(check(root.path(), &report)
+                .unwrap_err()
+                .to_string()
+                .contains("not finalized qualification"));
+        } else {
+            assert!(result.is_err());
+            assert_eq!(driver.calls, fail);
+            assert!(!root.path().join(output).join("report.json").exists());
+        }
+        let calls = driver.calls;
+        assert!(capture_using(
+            root.path(),
+            output,
+            "a".repeat(40),
+            profile(),
+            vec![],
+            &mut driver
+        )
+        .is_err());
+        assert_eq!(driver.calls, calls);
+    }
+}
+#[test]
+fn capture_refuses_foreign_outputs_and_failed_inputs_before_loading_tools_or_spawning() {
+    let root = tempfile::tempdir().unwrap();
+    for path in [
+        ".",
+        "outside",
+        "target/foreign",
+        "target/imap-075/../escape",
+    ] {
+        let mut driver = FakeDriver { calls: 0, fail: 0 };
+        assert!(capture_from(
+            root.path(),
+            Path::new(path),
+            |_| panic!("invalid path cannot load inputs"),
+            &mut driver
+        )
+        .is_err());
+        assert_eq!(driver.calls, 0);
+    }
+    let mut driver = FakeDriver { calls: 0, fail: 0 };
+    let path = Path::new("target/imap-075/unused");
+    assert!(capture_from(
+        root.path(),
+        path,
+        |_| Err("fixture inputs unavailable".into()),
+        &mut driver
+    )
+    .is_err());
+    assert_eq!(driver.calls, 0);
+    assert!(!root.path().join(path).exists());
+    std::fs::create_dir_all(root.path().join(path)).unwrap();
+    assert!(capture_from(
+        root.path(),
+        path,
+        |_| panic!("existing output cannot load inputs"),
+        &mut driver
+    )
+    .is_err());
+}
+#[test]
+fn command_dispatch_propagates_real_verdicts_and_refuses_wrong_arguments_before_execution() {
+    struct Host {
+        calls: usize,
+        fail: bool,
+    }
+    impl CoverageHost for Host {
+        fn capture(
+            &mut self,
+            _: &Path,
+            path: &Path,
+        ) -> Result<PathBuf, Box<dyn std::error::Error>> {
+            self.calls += 1;
+            if self.fail {
+                return Err("fixture capture failed".into());
+            }
+            Ok(path.join("report.json"))
+        }
+        fn check(&mut self, _: &Path, _: &Path) -> Result<Analysis, Box<dyn std::error::Error>> {
+            self.calls += 1;
+            if self.fail {
+                return Err("fixture check failed".into());
+            }
+            let measured = analysis_fixture().1;
+            assert!(!measured.qualification);
+            Ok(measured)
+        }
+    }
+    let root = tempfile::tempdir().unwrap();
+    for mode in ["capture", "check"] {
+        let flag = if mode == "capture" {
+            "--output"
+        } else {
+            "--receipt"
+        };
+        let args = vec![
+            "--release".into(),
+            "0.75".into(),
+            flag.into(),
+            "fixture".into(),
+        ];
+        for fail in [false, true] {
+            let mut host = Host { calls: 0, fail };
+            assert_eq!(
+                run_using(root.path(), args.clone(), mode, &mut host).is_err(),
+                fail
+            );
+            assert_eq!(host.calls, 1);
+        }
+        for changed in [
+            vec![],
+            vec![
+                "--release".into(),
+                "0.74".into(),
+                flag.into(),
+                "fixture".into(),
+            ],
+            vec![
+                "--release".into(),
+                "0.75".into(),
+                "--foreign".into(),
+                "fixture".into(),
+            ],
+        ] {
+            let mut host = Host {
+                calls: 0,
+                fail: false,
+            };
+            assert!(run_using(root.path(), changed, mode, &mut host).is_err());
+            assert_eq!(host.calls, 0);
+        }
+        let mut host = Host {
+            calls: 0,
+            fail: false,
+        };
+        assert!(run_using(root.path(), args, "unknown", &mut host).is_err());
+        assert_eq!(host.calls, 0);
     }
 }
 #[test]

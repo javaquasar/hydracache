@@ -1121,6 +1121,12 @@ pub trait CoverageDriver {
         stage: crate::imap_build_process_075::BuildStage,
         command: Command,
     ) -> Result<crate::imap_build_process_075::BuildReport>;
+    fn analyze(&mut self, root: &Path, path: &str, strict: bool) -> Result<Analysis>
+    where
+        Self: Sized,
+    {
+        analyze_using(root, path, strict, self)
+    }
 }
 struct ManagedDriver(crate::imap_build_process_075::BuildController);
 impl ManagedDriver {
@@ -1236,12 +1242,8 @@ fn read_control(root: &Path, path: &str) -> Result<(Control, PathBuf)> {
         .parent()
         .ok_or("coverage control parent")?
         .to_path_buf();
-    validate_control(
-        &control,
-        &crate::imap_ci_075::source_state(root)?,
-        &current_profile()?,
-        &source_snapshot(root)?,
-    )?;
+    let (source, profile, sources) = current_inputs(root)?;
+    validate_control(&control, &source, &profile, &sources)?;
     if control.producer.path != relative(root, &directory.join("controller").join(suffix("xtask")))?
     {
         return Err("foreign coverage controller".into());
@@ -1325,14 +1327,27 @@ pub fn declared_objects(root: &Path, bytes: &[u8]) -> Result<BTreeSet<String>> {
                 let files = row["filenames"]
                     .as_array()
                     .ok_or("compiler object filenames missing")?;
+                let script_name = if script {
+                    let name = row["target"]["name"]
+                        .as_str()
+                        .filter(|name| {
+                            !name.is_empty()
+                                && name.len() <= 128
+                                && !name.contains(['/', '\\', ':'])
+                                && !matches!(*name, "." | "..")
+                        })
+                        .ok_or("compiler build-script target name missing/invalid")?;
+                    Some(suffix(name))
+                } else {
+                    None
+                };
                 let selected = files
                     .iter()
                     .filter_map(Value::as_str)
                     .filter(|name| {
                         let path = Path::new(name);
                         if script {
-                            path.file_name().and_then(|s| s.to_str())
-                                == Some(&suffix("build-script-build"))
+                            path.file_name().and_then(|s| s.to_str()) == script_name.as_deref()
                         } else {
                             matches!(
                                 path.extension().and_then(|s| s.to_str()),
@@ -2207,6 +2222,14 @@ pub fn gate_result(summary: &Summary, strict: bool) -> Result<bool> {
     }
 }
 fn analyze(root: &Path, path: &str, strict: bool) -> Result<Analysis> {
+    ManagedDriver::new(root)?.analyze(root, path, strict)
+}
+fn analyze_using(
+    root: &Path,
+    path: &str,
+    strict: bool,
+    driver: &mut impl CoverageDriver,
+) -> Result<Analysis> {
     let capture: CaptureReceipt = load(root, path)?;
     if capture.schema != "imap075-coverage-capture-v2" || !capture.completed {
         return Err("coverage execution incomplete/future".into());
@@ -2243,9 +2266,8 @@ fn analyze(root: &Path, path: &str, strict: bool) -> Result<Analysis> {
     if strict && !raw.iter().any(|a| a.path.starts_with(&analysis_prefix)) {
         return Err("completed analysis LLVM profile missing".into());
     }
-    let mut driver = ManagedDriver::new(root)?;
     let (rust_report, java_reports, lines) =
-        regenerate(root, &directory, &control, &capture, &raw, &mut driver)?;
+        regenerate(root, &directory, &control, &capture, &raw, driver)?;
     let contexts = contexts(
         root,
         &control.sources,
@@ -2312,17 +2334,52 @@ pub fn analysis_phase(
         Ok(Some(current.pid))
     }
 }
-pub fn capture(root: &Path, path: &Path) -> Result<PathBuf> {
+fn current_inputs(root: &Path) -> Result<(String, Profile, Vec<Source>)> {
     let source = crate::imap_ci_075::source_state(root)?;
     let profile = current_profile()?;
     let sources = source_snapshot(root)?;
-    let mut driver = ManagedDriver::new(root)?;
-    let receipt = execute_pipeline(root, path, source, profile, sources, &mut driver)?;
-    let analysis = analyze(root, &relative(root, &receipt)?, true)?;
-    let result = receipt
-        .parent()
-        .ok_or("coverage result parent")?
-        .join("report.json");
+    Ok((source, profile, sources))
+}
+pub fn capture(root: &Path, path: &Path) -> Result<PathBuf> {
+    capture_from(root, path, current_inputs, &mut ManagedDriver::new(root)?)
+}
+/// Reject invalid output arguments before hashing tool distributions or starting a build.
+pub fn capture_from(
+    root: &Path,
+    path: &Path,
+    inputs: impl FnOnce(&Path) -> Result<(String, Profile, Vec<Source>)>,
+    driver: &mut impl CoverageDriver,
+) -> Result<PathBuf> {
+    let relative = if path.is_absolute() {
+        path.strip_prefix(root)?
+    } else {
+        path
+    };
+    if relative.components().count() < 3
+        || !relative.starts_with("target/imap-075")
+        || relative
+            .components()
+            .any(|c| !matches!(c, std::path::Component::Normal(_)))
+        || root.join(relative).exists()
+    {
+        return Err("fresh owned IMap coverage output required".into());
+    }
+    let (source, profile, sources) = inputs(root)?;
+    capture_using(root, path, source, profile, sources, driver)
+}
+/// Execution and publication are testable without recursive builds. The analysis
+/// verdict is retained verbatim; this layer never promotes a measurement to qualification.
+pub fn capture_using(
+    root: &Path,
+    path: &Path,
+    source: String,
+    profile: Profile,
+    sources: Vec<Source>,
+    driver: &mut impl CoverageDriver,
+) -> Result<PathBuf> {
+    let receipt = execute_pipeline(root, path, source, profile, sources, driver)?;
+    let analysis = driver.analyze(root, &relative(root, &receipt)?, true)?;
+    let result = receipt.with_file_name("report.json");
     store_new(root, &result, &analysis)?;
     Ok(result)
 }
@@ -2370,39 +2427,61 @@ pub fn compare_analysis(saved: &Analysis, fresh: &Analysis) -> Result<()> {
 }
 pub fn run(args: Vec<String>, mode: &str) -> Result<()> {
     let root = crate::doc_check::find_repo_root()?;
+    run_using(&root, args, mode, &mut ActualCoverageHost)
+}
+pub trait CoverageHost {
+    fn capture(&mut self, root: &Path, path: &Path) -> Result<PathBuf>;
+    fn check(&mut self, root: &Path, path: &Path) -> Result<Analysis>;
+}
+struct ActualCoverageHost;
+impl CoverageHost for ActualCoverageHost {
+    fn capture(&mut self, root: &Path, path: &Path) -> Result<PathBuf> {
+        capture(root, path)
+    }
+    fn check(&mut self, root: &Path, path: &Path) -> Result<Analysis> {
+        check(root, path)
+    }
+}
+pub fn run_using(
+    root: &Path,
+    args: Vec<String>,
+    mode: &str,
+    host: &mut impl CoverageHost,
+) -> Result<()> {
     if args.len() != 4 || args[0] != "--release" || args[1] != "0.75" {
         return Err("coverage expects --release 0.75 and one explicit path".into());
     }
     match mode {
         "capture" if args[2] == "--output" => {
-            let path = capture(&root, Path::new(&args[3]))?;
-            println!("imap-coverage: qualified {}", path.display());
+            let path = host.capture(root, Path::new(&args[3]))?;
+            println!("imap-coverage: capture report {}", path.display());
         }
-        "worker" if args[2] == "--control" => capture_worker(&root, &args[3])?,
+        "worker" if args[2] == "--control" => capture_worker(root, &args[3])?,
         "analysis" if args[2] == "--control" => {
-            let (_, directory) = read_control(&root, &args[3])?;
+            let (_, directory) = read_control(root, &args[3])?;
             let marker = directory.join("analysis-started.json");
-            store_new(&root, &marker, &identity()?)?;
+            store_new(root, &marker, &identity()?)?;
             let analysis = analyze(
-                &root,
-                &relative(&root, &directory.join("capture.json"))?,
+                root,
+                &relative(root, &directory.join("capture.json"))?,
                 false,
             )?;
-            store_new(&root, &directory.join("analysis.json"), &analysis)?;
-            check_report(&root, &directory.join("analysis.json"), false)?;
+            store_new(root, &directory.join("analysis.json"), &analysis)?;
+            check_report(root, &directory.join("analysis.json"), false)?;
             println!(
                 "imap-coverage: measurement only; {}/{} changed executable lines",
                 analysis.summary.covered_added, analysis.summary.executable_added
             );
         }
         "check" if args[2] == "--receipt" => {
-            let analysis = check(&root, Path::new(&args[3]))?;
+            let analysis = host.check(root, Path::new(&args[3]))?;
             println!(
-                "imap-coverage-check: {}/{} changed executable lines; {} {}",
+                "imap-coverage-check: {}/{} changed executable lines; {} {}; qualification={}",
                 analysis.summary.covered_added,
                 analysis.summary.executable_added,
                 analysis.profile.os,
-                analysis.profile.target.triple
+                analysis.profile.target.triple,
+                analysis.qualification
             );
         }
         _ => return Err("unknown/ambiguous coverage command".into()),

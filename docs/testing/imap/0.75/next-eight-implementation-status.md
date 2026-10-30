@@ -67,3 +67,11 @@ exposed an `ESRCH` procfs exit race and missing bootstrap binary IDs. Follow-up
 code handles vanished procfs entries explicitly and uses v2 control/capture
 records with immediate immutable archives of Cargo executables, host build
 scripts and proc-macro libraries. Fresh qualification remains required.
+
+Additional focused canaries cover capture publication/dispatch without recursive
+Cargo, actual Windows junction refusal before creating soak controls, idempotent
+atomic cancellation markers, and exact log-prefix hashes after interrupted or
+partial writes. Finite raw worker faults are allowed to exit so their final LLVM
+checkpoints can be observed; their malformed, leaked, replaced, partial or
+wrong-profile executions remain ineligible for completed segments. These checks
+do not replace final clean-source coverage qualification.

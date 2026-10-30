@@ -494,19 +494,39 @@ fn write_new(path: &Path, bytes: &[u8]) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 fn publish_marker(control: &Path, name: &str) -> Result<(), Box<dyn Error>> {
-    if !["start", "cancel"].contains(&name) {
-        return Err("unknown soak control marker".into());
-    }
+    marker_name(name)?;
     let mut pending = tempfile::NamedTempFile::new_in(control)?;
     pending.write_all(format!("{name}-v1").as_bytes())?;
     pending.as_file().sync_all()?;
-    match pending.persist_noclobber(control.join(name)) {
-        Ok(_) => Ok(()),
-        Err(error) if error.error.kind() == std::io::ErrorKind::AlreadyExists => {
-            marker(control, name)?;
+    complete_marker(
+        control,
+        name,
+        pending
+            .persist_noclobber(control.join(name))
+            .map(|_| ())
+            .map_err(|e| e.error),
+    )
+}
+fn marker_name(name: &str) -> Result<(), Box<dyn Error>> {
+    if !["start", "cancel"].contains(&name) {
+        return Err("unknown soak control marker".into());
+    }
+    Ok(())
+}
+fn complete_marker(
+    control: &Path,
+    name: &str,
+    result: std::io::Result<()>,
+) -> Result<(), Box<dyn Error>> {
+    match result {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
+            if !marker(control, name)? {
+                return Err("soak marker disappeared during publication".into());
+            }
             Ok(())
         }
-        Err(error) => Err(error.error.into()),
+        Err(error) => Err(error.into()),
     }
 }
 
@@ -542,6 +562,7 @@ pub(crate) fn worker_arguments(profile: &SoakProfile, control: &Path) -> Vec<Str
     ]
 }
 pub fn marker(control: &Path, name: &str) -> Result<bool, Box<dyn Error>> {
+    marker_name(name)?;
     use std::io::Read;
     let path = control.join(name);
     let input = match fs::File::open(path) {
@@ -556,6 +577,18 @@ pub fn marker(control: &Path, name: &str) -> Result<bool, Box<dyn Error>> {
     }
     Ok(true)
 }
+fn plain_control_component(redirected: bool) -> Result<(), Box<dyn Error>> {
+    if redirected {
+        return Err("soak control symlink/reparse refused".into());
+    }
+    Ok(())
+}
+fn control_scope(root: &Path, canonical: &Path) -> Result<(), Box<dyn Error>> {
+    if !canonical.starts_with(root) {
+        return Err("soak control canonical escape".into());
+    }
+    Ok(())
+}
 fn prepare_control(root: &Path, control: &Path) -> Result<(), Box<dyn Error>> {
     let relative = control.strip_prefix(root)?.to_path_buf();
     let root = root.canonicalize()?;
@@ -568,14 +601,20 @@ fn prepare_control(root: &Path, control: &Path) -> Result<(), Box<dyn Error>> {
     let mut parent = root.clone();
     for component in relative.components() {
         parent.push(component);
-        if parent.exists() && fs::symlink_metadata(&parent)?.file_type().is_symlink() {
-            return Err("soak control symlink refused".into());
+        if parent.exists() {
+            let metadata = fs::symlink_metadata(&parent)?;
+            let redirected = metadata.file_type().is_symlink();
+            #[cfg(windows)]
+            let redirected = {
+                use std::os::windows::fs::MetadataExt;
+                redirected || metadata.file_attributes() & 0x400 != 0
+            };
+            plain_control_component(redirected)?;
+            control_scope(&root, &parent.canonicalize()?)?;
         }
     }
     fs::create_dir(control)?;
-    if !control.canonicalize()?.starts_with(root) {
-        return Err("soak control canonical escape".into());
-    }
+    control_scope(&root, &control.canonicalize()?)?;
     Ok(())
 }
 /// Code constructs the command. The profile/checkpoint can never choose a program or arguments.
@@ -781,6 +820,9 @@ pub fn execute_worker(
     )?;
     Ok(report)
 }
+#[cfg(test)]
+#[path = "../tests/support/imap_soak_control_075.rs"]
+mod control_tests;
 pub fn validate_report(report: &SoakReport) -> Result<(), Box<dyn Error>> {
     report.profile.validate()?;
     if report.schema != "imap075-soak-report-v1"

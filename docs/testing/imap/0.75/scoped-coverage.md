@@ -40,6 +40,11 @@ an exact stream-to-object correspondence and the complete archive, bounded at
 512 unique objects, 512 MiB per object and 8 GiB in total. LLVM still checks every
 binary ID; host profiles are never discarded. The export command uses a bounded
 UTF-8 response file to avoid Windows command-line length limits.
+Build-script filenames are matched against Cargo's actual target name, including
+`aws-lc-sys`'s `build-script-main`. Capture rejects invalid or existing outputs
+before loading tool distributions. Unit executors exercise publication and CLI
+dispatch with unqualified measurements; publication retains the verdict verbatim,
+and the real checker refuses those fixtures.
 The v2 policy/profile records also bind two code-chosen Cargo overrides: only
 `sha2@0.11.0` is optimized at level 3 in this isolated dev/test measurement build.
 Scoped implementation crates retain their unoptimized coverage maps. This avoids

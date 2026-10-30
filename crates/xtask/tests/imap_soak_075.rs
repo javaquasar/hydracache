@@ -75,7 +75,13 @@ fn profile() -> SoakProfile {
     }
 }
 fn setup() -> (tempfile::TempDir, SoakProfile) {
-    let root = tempfile::tempdir().unwrap();
+    let repository = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    std::fs::create_dir_all(repository.join("target/imap-075")).unwrap();
+    let root = tempfile::tempdir_in(repository.join("target/imap-075")).unwrap();
     std::fs::copy(
         env!("CARGO_BIN_EXE_imap-soak-worker-075"),
         root.path().join("worker"),
@@ -204,7 +210,7 @@ fn bounds_and_logical_phase_protocol_do_not_stitch_workers_or_accept_leaks() {
     let mut second = frame(&p, Phase::Round, 2);
     second.incarnation = "replacement".into();
     assert!(s.accept(&second, 17, "birth-a").is_err());
-    for mode in 0..12 {
+    for mode in 0..14 {
         let mut s = active(&p);
         let mut f = frame(&p, Phase::Round, 1);
         let mut pid = 17;
@@ -412,6 +418,98 @@ fn physical_defects_leaks_replacement_exit_and_output_never_qualify() {
     .unwrap();
     assert_eq!(report.terminal, Terminal::TimedOut, "{}", report.detail);
     assert_eq!(report.remaining_members, Some(0));
+}
+#[test]
+fn finite_raw_worker_faults_finish_and_remain_ineligible_for_segment_completion() {
+    for fault in [
+        "malformed",
+        "flood",
+        "profile",
+        "leak",
+        "replacement",
+        "exit",
+        "",
+    ] {
+        let (root, p) = setup();
+        let control = root.path().join("raw-worker");
+        std::fs::create_dir(&control).unwrap();
+        std::fs::write(
+            control.join(if fault.is_empty() { "cancel" } else { "start" }),
+            if fault.is_empty() {
+                b"cancel-v1".as_slice()
+            } else {
+                b"start-v1".as_slice()
+            },
+        )
+        .unwrap();
+        let arguments = vec![
+            p.bounds.active_ms.to_string(),
+            p.bounds.period_ms.to_string(),
+            p.bounds.maximum_rounds.to_string(),
+            p.bounds.warmup_rounds.to_string(),
+            p.bounds.startup_ms.to_string(),
+            p.seed.to_string(),
+            p.source_sha.clone(),
+            control.to_string_lossy().into_owned(),
+        ];
+        let mut command = worker();
+        if !fault.is_empty() {
+            command.arg(format!("--canary={fault}"));
+        }
+        command.args(arguments);
+        let result = xtask::imap_proof_process_075::execute(command, &[], Default::default());
+        if fault == "leak" {
+            let failure = result.unwrap_err();
+            assert_eq!(
+                failure.kind,
+                xtask::imap_proof_process_075::FailureKind::Exit
+            );
+            assert!(failure.detail.contains("ActiveOwners"));
+            assert!(failure.direct_child_reaped);
+            assert_eq!(failure.remaining_live_members, Some(0));
+            continue;
+        }
+        let output = result.unwrap();
+        assert!(output.direct_child_reaped);
+        assert_eq!(output.remaining_live_members, 0);
+        if fault == "malformed" {
+            assert_eq!(output.stdout, b"not-json\n");
+            continue;
+        }
+        if fault == "flood" {
+            assert_eq!(output.stdout, vec![b'x'; 8192]);
+            continue;
+        }
+        let frames = output
+            .stdout
+            .split(|b| *b == b'\n')
+            .filter(|line| !line.is_empty())
+            .map(|line| serde_json::from_slice::<Frame>(line).unwrap())
+            .collect::<Vec<_>>();
+        assert!(!frames.is_empty());
+        if fault.is_empty() {
+            assert_eq!(frames.len(), 1);
+            assert_eq!(frames[0].phase, Phase::Ready);
+        }
+        let mut verifier = SegmentState::new(p).unwrap();
+        let mut valid = true;
+        for frame in &frames {
+            if verifier
+                .accept(frame, frames[0].pid, "unqualified raw-worker fixture")
+                .is_err()
+            {
+                valid = false;
+                break;
+            }
+        }
+        assert!(
+            !valid || verifier.terminal != Some(Terminal::Complete),
+            "{fault}"
+        );
+        if fault == "replacement" {
+            assert!(frames.iter().any(|frame| frame.pid != frames[0].pid));
+        }
+    }
 }
 fn wait_round(path: &Path) {
     let started = Instant::now();
@@ -768,6 +866,10 @@ fn manual_workflow_has_closed_trusted_source_inputs_and_no_automatic_transfer() 
                 .as_sequence_mut()
                 .unwrap()
                 .push(serde_yaml::from_str("uses: actions/upload-artifact@main").unwrap()),
+            11 => {
+                value["jobs"]["hour"]["steps"][5]["env"]["COHORT"] = Value::String("foreign".into())
+            }
+            12 => value["jobs"]["hour"]["steps"][6]["if"] = Value::String("success()".into()),
             _ => value["concurrency"]["cancel-in-progress"] = serde_yaml::to_value(true).unwrap(),
         }
         std::fs::write(&file, serde_yaml::to_string(&value).unwrap()).unwrap();
@@ -784,7 +886,13 @@ fn operator_marker_and_hung_drain_both_have_bounded_physical_cleanup() {
     let progress = control.join("stdout.jsonl");
     let thread = std::thread::spawn(move || {
         wait_round(&progress);
-        request_cancel(&observer_root, &checkpoint).unwrap();
+        run_cancel(vec![
+            "--release".into(),
+            "0.75".into(),
+            "--checkpoint".into(),
+            checkpoint.to_string_lossy().into_owned(),
+        ])
+        .unwrap();
         request_cancel(&observer_root, &checkpoint).unwrap();
     });
     let report = execute_worker(

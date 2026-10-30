@@ -177,6 +177,101 @@ fn hex(bytes: &[u8]) -> String {
 fn create(path: &Path) -> io::Result<File> {
     OpenOptions::new().create_new(true).write(true).open(path)
 }
+struct RetainedLog<W> {
+    writer: W,
+    bytes: usize,
+    hash: Sha256,
+}
+impl<W: Write> RetainedLog<W> {
+    fn new(writer: W) -> Self {
+        Self {
+            writer,
+            bytes: 0,
+            hash: Sha256::new(),
+        }
+    }
+    fn append(&mut self, mut bytes: &[u8]) -> io::Result<()> {
+        while !bytes.is_empty() {
+            match self.writer.write(bytes) {
+                Ok(0) => return Err(io::Error::from(io::ErrorKind::WriteZero)),
+                Ok(n) => {
+                    self.hash.update(&bytes[..n]);
+                    self.bytes += n;
+                    bytes = &bytes[n..];
+                }
+                Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
+                Err(error) => return Err(error),
+            }
+        }
+        Ok(())
+    }
+}
+struct LogCapture<O, E> {
+    out: RetainedLog<O>,
+    err: RetainedLog<E>,
+}
+#[derive(Debug)]
+struct LogFailure {
+    journal: bool,
+    aggregate: bool,
+    detail: String,
+}
+impl<O: Write, E: Write> LogCapture<O, E> {
+    fn new(out: O, err: E) -> Self {
+        Self {
+            out: RetainedLog::new(out),
+            err: RetainedLog::new(err),
+        }
+    }
+    fn append(&mut self, out: &[u8], err: &[u8], remaining: usize) -> Result<(), LogFailure> {
+        if out.len() + err.len() > remaining {
+            return Err(LogFailure {
+                journal: false,
+                aggregate: true,
+                detail: "aggregate build output bound".into(),
+            });
+        }
+        self.out
+            .append(out)
+            .and_then(|()| self.err.append(err))
+            .map_err(|error| LogFailure {
+                journal: true,
+                aggregate: false,
+                detail: error.to_string(),
+            })
+    }
+    fn hashes(self) -> (String, String) {
+        (
+            hex(&self.out.hash.finalize()),
+            hex(&self.err.hash.finalize()),
+        )
+    }
+}
+fn failure_outcome(
+    kind: FailureKind,
+    journal: bool,
+    cancelled: bool,
+    aggregate: bool,
+) -> BuildOutcome {
+    if kind == FailureKind::Cleanup {
+        BuildOutcome::CleanupFailed
+    } else if journal {
+        BuildOutcome::JournalFailed
+    } else if cancelled {
+        BuildOutcome::Cancelled
+    } else if aggregate {
+        BuildOutcome::OutputLimit
+    } else {
+        match kind {
+            FailureKind::Timeout => BuildOutcome::TimedOut,
+            FailureKind::StdoutLimit | FailureKind::StderrLimit => BuildOutcome::OutputLimit,
+            _ => BuildOutcome::Failed,
+        }
+    }
+}
+#[cfg(test)]
+#[path = "../tests/support/imap_build_logs_075.rs"]
+mod log_tests;
 
 /// A controller owns a fresh directory and an absolute monotonic budget across all its phases.
 pub struct BuildController {
@@ -359,8 +454,7 @@ impl BuildController {
         let mut aggregate_limit = false;
         let mut cancelled = false;
         let mut next_heartbeat = self.bounds.heartbeat;
-        let mut out_hash = Sha256::new();
-        let mut err_hash = Sha256::new();
+        let mut logs = LogCapture::new(&mut out, &mut err);
         let remaining_output = self.bounds.aggregate_output_bytes - self.output_bytes;
         let timeout = effective.saturating_sub(started.elapsed());
         if timeout.is_zero() {
@@ -392,19 +486,17 @@ impl BuildController {
                 }
                 let a = &observation.stdout[report.stdout_bytes..];
                 let b = &observation.stderr[report.stderr_bytes..];
-                if a.len() + b.len() > self.bounds.aggregate_output_bytes - self.output_bytes {
-                    aggregate_limit = true;
-                    return Err("aggregate build output bound".into());
+                let previous = report.stdout_bytes + report.stderr_bytes;
+                let retained =
+                    logs.append(a, b, self.bounds.aggregate_output_bytes - self.output_bytes);
+                report.stdout_bytes = logs.out.bytes;
+                report.stderr_bytes = logs.err.bytes;
+                self.output_bytes += report.stdout_bytes + report.stderr_bytes - previous;
+                if let Err(failure) = retained {
+                    aggregate_limit = failure.aggregate;
+                    journal_failed = failure.journal;
+                    return Err(failure.detail);
                 }
-                if let Err(failure) = out.write_all(a).and_then(|()| err.write_all(b)) {
-                    journal_failed = true;
-                    return Err(failure.to_string());
-                }
-                out_hash.update(a);
-                err_hash.update(b);
-                self.output_bytes += a.len() + b.len();
-                report.stdout_bytes = observation.stdout.len();
-                report.stderr_bytes = observation.stderr.len();
                 if observation.elapsed >= next_heartbeat {
                     event.elapsed_ms = ms(observation.elapsed);
                     event.stdout_bytes = report.stdout_bytes;
@@ -423,8 +515,7 @@ impl BuildController {
             },
         );
         report.elapsed_ms = ms(started.elapsed());
-        report.stdout_sha256 = hex(&out_hash.finalize());
-        report.stderr_sha256 = hex(&err_hash.finalize());
+        (report.stdout_sha256, report.stderr_sha256) = logs.hashes();
         let detail = match result {
             Ok(output) => {
                 report.outcome = BuildOutcome::Completed;
@@ -436,23 +527,8 @@ impl BuildController {
             Err(failure) => {
                 report.root_reaped = failure.direct_child_reaped;
                 report.remaining_live_members = failure.remaining_live_members;
-                report.outcome = if failure.kind == FailureKind::Cleanup {
-                    BuildOutcome::CleanupFailed
-                } else if journal_failed {
-                    BuildOutcome::JournalFailed
-                } else if cancelled {
-                    BuildOutcome::Cancelled
-                } else if aggregate_limit {
-                    BuildOutcome::OutputLimit
-                } else {
-                    match failure.kind {
-                        FailureKind::Timeout => BuildOutcome::TimedOut,
-                        FailureKind::StdoutLimit | FailureKind::StderrLimit => {
-                            BuildOutcome::OutputLimit
-                        }
-                        _ => BuildOutcome::Failed,
-                    }
-                };
+                report.outcome =
+                    failure_outcome(failure.kind, journal_failed, cancelled, aggregate_limit);
                 Some(failure.to_string())
             }
         };
@@ -490,15 +566,21 @@ impl BuildController {
 }
 /// The CI wrapper supplies its absolute harness deadline. This clock is used for budgets only.
 pub fn remaining_budget() -> Result<Duration, Box<dyn std::error::Error>> {
-    let raw = match std::env::var("HYDRACACHE_IMAP075_BUILD_DEADLINE_MS") {
+    remaining_budget_from(
+        std::env::var("HYDRACACHE_IMAP075_BUILD_DEADLINE_MS"),
+        SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis(),
+    )
+}
+fn remaining_budget_from(
+    value: Result<String, std::env::VarError>,
+    now: u128,
+) -> Result<Duration, Box<dyn std::error::Error>> {
+    let raw = match value {
         Ok(raw) => Some(raw),
         Err(std::env::VarError::NotPresent) => None,
         Err(failure) => return Err(failure.into()),
     };
-    remaining_budget_at(
-        raw.as_deref(),
-        SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis(),
-    )
+    remaining_budget_at(raw.as_deref(), now)
 }
 pub fn remaining_budget_at(
     raw: Option<&str>,
