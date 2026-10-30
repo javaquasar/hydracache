@@ -20,7 +20,8 @@ Socket/ChitchatMessage implications in the analysis.
 Prepare one exclusive local fixture context with TWO real normal dependencies:
 official crates.io chitchat0.11.1 and the unchanged maintained archive
 hydra-chitchat0.11.1-hydra.1 from the already-tested private file registry. Mirror
-only exact official bytes under the existing94-package union. No local runtime
+only exact official bytes: the existing94-package union plus the same parent's
+official Chitchat root archive, in a NEW95-package mirror. No local runtime
 patch, stub/mock adapter, Root path override or modified upstream package.
 
 Check real nominal assignability for configuration, borrowed ID and transport.
