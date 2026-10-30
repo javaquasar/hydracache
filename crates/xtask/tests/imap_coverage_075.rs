@@ -91,11 +91,12 @@ fn consumer_workspace_refuses_concurrent_or_stale_inputs_and_restarts_empty_at_t
 }
 fn profile() -> Profile {
     Profile {
-        schema: "imap075-coverage-profile-v1".into(),
+        schema: "imap075-coverage-profile-v2".into(),
         baseline: BASELINE.into(),
         os: "windows".into(),
         arch: "x86_64".into(),
         rust_flags: "-C instrument-coverage -C debuginfo=0".into(),
+        cargo_config: CARGO_CONFIG.iter().map(|s| (*s).to_owned()).collect(),
         feature: "imap-075-coverage".into(),
         target: target(),
         tools: vec![Tool {
@@ -113,16 +114,20 @@ fn analysis_fixture() -> (Control, Analysis) {
         sha256: "c".repeat(64),
     };
     let control = Control {
-        schema: "imap075-coverage-control-v1".into(),
+        schema: "imap075-coverage-control-v2".into(),
         source_sha: "a".repeat(40),
         run_id: "b".repeat(32),
         production_enabled: false,
         profile: profile(),
         sources: vec![source("crates/xtask/src/unit.rs")],
         producer: artifact.clone(),
+        bootstrap: CompilerRecord {
+            stream: artifact.clone(),
+            objects: vec![],
+        },
     };
     let analysis = Analysis {
-        schema: "imap075-scoped-coverage-v1".into(),
+        schema: "imap075-scoped-coverage-v2".into(),
         source_sha: control.source_sha.clone(),
         run_id: control.run_id.clone(),
         profile: control.profile.clone(),
@@ -295,6 +300,7 @@ fn policy_cannot_silently_weaken_the_denominator_or_platform_claim() {
         "production_enabled",
         "claim_branch_coverage",
         "historical_global_ratchet",
+        "cargo_config",
     ] {
         let mut changed = policy.clone();
         changed[key] = json!(null);
@@ -525,12 +531,16 @@ fn coverage_header_binds_source_tools_cfg_profile_and_all_source_components() {
         sha256: "c".repeat(64),
     };
     let control = Control {
-        schema: "imap075-coverage-control-v1".into(),
+        schema: "imap075-coverage-control-v2".into(),
         source_sha: "a".repeat(40),
         run_id: "b".repeat(32),
         production_enabled: false,
         profile: profile(),
         sources: vec![source("crates/xtask/src/unit.rs")],
+        bootstrap: CompilerRecord {
+            stream: producer.clone(),
+            objects: vec![],
+        },
         producer,
     };
     validate_control(
@@ -540,7 +550,7 @@ fn coverage_header_binds_source_tools_cfg_profile_and_all_source_components() {
         &control.sources,
     )
     .unwrap();
-    for mode in 0..7 {
+    for mode in 0..9 {
         let mut changed = control.clone();
         match mode {
             0 => changed.source_sha = "b".repeat(40),
@@ -549,6 +559,8 @@ fn coverage_header_binds_source_tools_cfg_profile_and_all_source_components() {
             3 => changed.profile.tools[0].sha256 = "d".repeat(64),
             4 => changed.sources.clear(),
             5 => changed.schema = "future".into(),
+            6 => changed.profile.cargo_config.clear(),
+            7 => changed.schema = "imap075-coverage-control-v1".into(),
             _ => changed.run_id = "not-unique".into(),
         }
         assert!(
@@ -866,6 +878,186 @@ fn snapshot_discovers_new_scoped_files_from_real_git_and_hashes_comments() {
         .to_string()
         .contains("source work bound"));
 }
+#[test]
+fn compiler_inventory_includes_host_scripts_and_macros_but_never_rlibs_or_debug_sidecars() {
+    let root = tempfile::tempdir().unwrap();
+    let binary = root
+        .path()
+        .join("target/imap-075/coverage-runner/debug/tool");
+    let script = binary.parent().unwrap().join(format!(
+        "build-script-build{}",
+        std::env::consts::EXE_SUFFIX
+    ));
+    let library = binary.parent().unwrap().join("libmacro.so");
+    let rows = [
+        json!({"reason":"compiler-artifact","executable":binary}),
+        json!({"reason":"compiler-artifact","executable":null,"target":{"kind":["custom-build"]},"filenames":[script, "sidecar.pdb"]}),
+        json!({"reason":"compiler-artifact","executable":null,"target":{"kind":["proc-macro"]},"filenames":[library]}),
+        json!({"reason":"compiler-artifact","executable":null,"target":{"kind":["lib"],"crate_types":["rlib"]},"filenames":["ignored.rlib","ignored.rmeta"]}),
+    ];
+    let encode = |rows: &[serde_json::Value]| {
+        rows.iter()
+            .map(|r| format!("{r}\n"))
+            .collect::<String>()
+            .into_bytes()
+    };
+    let expected = declared_objects(root.path(), &encode(&rows)).unwrap();
+    assert_eq!(expected.len(), 3);
+    assert!(expected.iter().any(|p| p.ends_with("libmacro.so")));
+    for extension in ["dll", "dylib"] {
+        let row = json!({"reason":"compiler-artifact","target":{"crate_types":["cdylib"]},"filenames":[binary.with_extension(extension)]});
+        assert_eq!(
+            declared_objects(root.path(), &encode(&[row]))
+                .unwrap()
+                .len(),
+            1
+        );
+    }
+    for value in [
+        json!({"reason":"compiler-artifact","target":{"kind":["proc-macro"]}}),
+        json!({"reason":"compiler-artifact","target":{"kind":["custom-build"]},"filenames":["sidecar.pdb"]}),
+        json!({"reason":"compiler-artifact","executable":"/foreign/binary"}),
+        json!({"reason":"compiler-artifact","executable":binary.parent().unwrap().join("../aliased")}),
+    ] {
+        assert!(declared_objects(root.path(), &encode(&[value])).is_err());
+    }
+    assert!(declared_objects(root.path(), b"ordinary Cargo output\n").is_err());
+    assert!(declared_objects(root.path(), b"{malformed\n").is_err());
+    assert!(declared_objects(root.path(), &vec![0; 8 * 1024 * 1024 + 1]).is_err());
+    let wide=(0..513).map(|i|json!({"reason":"compiler-artifact","executable":binary.with_file_name(format!("tool-{i}"))})).collect::<Vec<_>>();
+    assert!(declared_objects(root.path(), &encode(&wide)).is_err());
+}
+#[test]
+fn compiler_archive_preserves_relinked_objects_and_reconstructs_without_live_target_files() {
+    use xtask::imap_extended_receipt_075::artifact;
+    let root = tempfile::tempdir().unwrap();
+    let directory = root.path().join("target/imap-075/capture");
+    std::fs::create_dir_all(directory.join("objects")).unwrap();
+    let binary = root
+        .path()
+        .join("target/imap-075/coverage-runner/debug/tool");
+    std::fs::create_dir_all(binary.parent().unwrap()).unwrap();
+    let mut records = vec![];
+    for (index, bytes) in [b"first compiler object".as_slice(), b"relinked object"]
+        .iter()
+        .enumerate()
+    {
+        std::fs::write(&binary, bytes).unwrap();
+        let stream = root.path().join(format!("target/stream-{index}.stdout"));
+        std::fs::write(
+            &stream,
+            serde_json::to_vec(&json!({"reason":"compiler-artifact","executable":binary})).unwrap(),
+        )
+        .unwrap();
+        let reference = artifact(root.path(), &stream, 1024).unwrap();
+        if index == 0 {
+            let hash = xtask::imap_qualification_075::digest(bytes);
+            let destination = directory.join("objects").join(format!("{hash}.bin"));
+            std::fs::write(&destination, b"foreign existing object").unwrap();
+            assert!(snapshot_compiler_record(root.path(), &directory, reference.clone()).is_err());
+            assert_eq!(
+                std::fs::read(&destination).unwrap(),
+                b"foreign existing object"
+            );
+            std::fs::remove_file(destination).unwrap();
+        }
+        let record = snapshot_compiler_record(root.path(), &directory, reference).unwrap();
+        // Repeated declarations deduplicate bytes without replacing an archive object.
+        snapshot_compiler_record(root.path(), &directory, record.stream.clone()).unwrap();
+        records.push(record);
+    }
+    std::fs::remove_file(&binary).unwrap();
+    let archived = compiler_objects(root.path(), &directory, &records).unwrap();
+    assert_eq!(archived.len(), 2);
+    for mutation in 0..6 {
+        let mut changed = records.clone();
+        match mutation {
+            0 => {
+                changed[0].objects.clear();
+            }
+            1 => {
+                let duplicate = changed[0].objects[0].clone();
+                changed[0].objects.push(duplicate);
+            }
+            2 => changed[0].objects[0].executable = "target/foreign".into(),
+            3 => changed[0].objects[0].archived.path = "target/foreign".into(),
+            4 => changed[0].objects[0].archived.sha256 = "0".repeat(64),
+            _ => changed.push(changed[0].clone()),
+        }
+        assert!(
+            compiler_objects(root.path(), &directory, &changed).is_err(),
+            "{mutation}"
+        );
+    }
+    assert!(compiler_objects(root.path(), &directory, &[]).is_err());
+    assert!(compiler_objects(root.path(), &directory, &vec![records[0].clone(); 17]).is_err());
+    let original = root.path().join(&archived[0].path);
+    let bytes = std::fs::read(&original).unwrap();
+    std::fs::write(&original, b"substituted").unwrap();
+    assert!(compiler_objects(root.path(), &directory, &records).is_err());
+    std::fs::write(&original, bytes).unwrap();
+    let extra = directory.join("objects/unregistered.bin");
+    std::fs::write(&extra, b"unregistered object").unwrap();
+    assert!(compiler_objects(root.path(), &directory, &records).is_err());
+    std::fs::remove_file(extra).unwrap();
+    let nonfile = directory.join("objects/not-an-object");
+    std::fs::create_dir(&nonfile).unwrap();
+    assert!(compiler_objects(root.path(), &directory, &records).is_err());
+    assert!(snapshot_compiler_record(root.path(), &directory, records[0].stream.clone()).is_err());
+}
+#[test]
+fn compiler_archive_and_response_files_enforce_finite_exact_budgets() {
+    let profile =
+        json!({"opt_level":"0","debuginfo":0,"debug_assertions":true,"overflow_checks":true});
+    validate_measured_profile(&profile).unwrap();
+    for (key, value) in [
+        ("opt_level", json!("3")),
+        ("debuginfo", json!(2)),
+        ("debug_assertions", json!(false)),
+        ("overflow_checks", json!(false)),
+    ] {
+        let mut changed = profile.clone();
+        changed[key] = value;
+        assert!(validate_measured_profile(&changed).is_err());
+    }
+    assert!(validate_measured_profile(&json!({})).is_err());
+    let limit = 8 * 1024 * 1024 * 1024;
+    object_count(512).unwrap();
+    assert!(object_count(513).is_err());
+    assert_eq!(object_total(limit - 1, 1).unwrap(), limit);
+    for (total, bytes) in [
+        (limit, 1),
+        (0, 0),
+        (0, 512 * 1024 * 1024 + 1),
+        (u64::MAX, 1),
+    ] {
+        assert!(object_total(total, bytes).is_err());
+    }
+    let response = String::from_utf8(
+        response_file(&[
+            "export".into(),
+            r"\\?\C:\path with spaces\бинарник.exe".into(),
+            r"\\?\UNC\server\share\object".into(),
+        ])
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        response,
+        "\"export\"\n\"C:/path with spaces/бинарник.exe\"\n\"//server/share/object\"\n"
+    );
+    for value in [
+        "@nested",
+        "quote\"path",
+        "bad\nline",
+        "bad\rline",
+        "bad\0line",
+    ] {
+        assert!(response_file(&[value.into()]).is_err());
+    }
+    assert!(response_file(&vec!["arg".into(); 4097]).is_err());
+    assert!(response_file(&["x".repeat(8 * 1024 * 1024)]).is_err());
+}
 struct FakeDriver {
     calls: usize,
     fail: usize,
@@ -874,12 +1066,22 @@ impl CoverageDriver for FakeDriver {
     fn execute(
         &mut self,
         stage: xtask::imap_build_process_075::BuildStage,
-        _: Command,
+        command: Command,
     ) -> Result<xtask::imap_build_process_075::BuildReport, Box<dyn std::error::Error>> {
         use xtask::imap_build_process_075::*;
         self.calls += 1;
         if self.calls == self.fail {
             return Err("fixture stage failed".into());
+        }
+        let mut stdout_path = "fixture".to_owned();
+        if stage == BuildStage::CoverageRunner {
+            let root = command.get_current_dir().unwrap();
+            let stream = root.join("target/fixture-cargo.stdout");
+            std::fs::write(&stream, serde_json::to_vec(&json!({
+                "reason":"compiler-artifact",
+                "executable":root.join("target/imap-075/coverage-runner/debug").join(format!("xtask{}",std::env::consts::EXE_SUFFIX))
+            })).unwrap()).unwrap();
+            stdout_path = stream.to_string_lossy().into_owned();
         }
         Ok(BuildReport {
             bounds: BuildBounds::default(),
@@ -888,7 +1090,7 @@ impl CoverageDriver for FakeDriver {
             outcome: BuildOutcome::Completed,
             elapsed_ms: 1,
             effective_timeout_ms: 100,
-            stdout_path: "fixture".into(),
+            stdout_path,
             stderr_path: "fixture".into(),
             stdout_bytes: 0,
             stderr_bytes: 0,

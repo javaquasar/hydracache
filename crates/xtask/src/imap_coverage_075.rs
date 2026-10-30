@@ -17,6 +17,28 @@ pub const BASELINE: &str = "98d7321b1cda568c386cbfdef1993c7e4dcebe38";
 const MAX: usize = 8 * 1024 * 1024;
 const MAX_RAW: usize = 128 * 1024 * 1024;
 const MAX_RAW_TOTAL: u64 = 6 * 1024 * 1024 * 1024;
+const MAX_OBJECTS: usize = 512;
+pub const CARGO_CONFIG: &[&str] = &[
+    "profile.dev.opt-level=0",
+    "profile.test.opt-level=0",
+    r#"profile.dev.package."sha2@0.11.0".opt-level=3"#,
+    r#"profile.test.package."sha2@0.11.0".opt-level=3"#,
+];
+pub fn object_total(total: u64, bytes: u64) -> Result<u64> {
+    let total = total
+        .checked_add(bytes)
+        .ok_or("compiler archive byte overflow")?;
+    if bytes == 0 || bytes > 512 * 1024 * 1024 || total > 8 * 1024 * 1024 * 1024 {
+        return Err("compiler archive byte bound".into());
+    }
+    Ok(total)
+}
+pub fn object_count(count: usize) -> Result<()> {
+    if count > MAX_OBJECTS {
+        return Err("compiler archive object count bound".into());
+    }
+    Ok(())
+}
 const SCOPES: &[&str] = &[
     "crates/xtask/src/",
     "crates/hydracache-cluster-testkit/src/",
@@ -771,6 +793,7 @@ pub struct Profile {
     pub os: String,
     pub arch: String,
     pub rust_flags: String,
+    pub cargo_config: Vec<String>,
     pub feature: String,
     pub target: crate::imap_sbom_075::CargoTarget,
     pub tools: Vec<Tool>,
@@ -785,6 +808,19 @@ pub struct Control {
     pub profile: Profile,
     pub sources: Vec<Source>,
     pub producer: Artifact,
+    pub bootstrap: CompilerRecord,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CompiledObject {
+    pub executable: String,
+    pub archived: Artifact,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CompilerRecord {
+    pub stream: Artifact,
+    pub objects: Vec<CompiledObject>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -804,7 +840,7 @@ pub struct CaptureReceipt {
     pub schema: String,
     pub control: Artifact,
     pub controller: crate::imap_soak_075::WorkerIdentity,
-    pub cargo_streams: Vec<Artifact>,
+    pub cargo_streams: Vec<CompilerRecord>,
     pub objects: Vec<Artifact>,
     pub java: Vec<JavaSession>,
     pub preparation: Artifact,
@@ -838,15 +874,8 @@ fn relative(root: &Path, path: &Path) -> Result<String> {
         .to_string_lossy()
         .replace('\\', "/"))
 }
-fn checked(root: &Path, path: &str, maximum: usize) -> Result<PathBuf> {
-    let target = root.join(path);
-    if artifact(root, &target, maximum)?.path != path {
-        return Err("aliased/foreign coverage artifact path".into());
-    }
-    Ok(target)
-}
 fn bound(root: &Path, reference: &Artifact, maximum: usize) -> Result<PathBuf> {
-    let path = checked(root, &reference.path, maximum)?;
+    let path = root.join(&reference.path);
     if artifact(root, &path, maximum)? != *reference {
         return Err("coverage artifact bytes substituted".into());
     }
@@ -1001,18 +1030,19 @@ pub fn current_profile() -> Result<Profile> {
     }
     tools.sort_by(|a, b| a.name.cmp(&b.name));
     Ok(Profile {
-        schema: "imap075-coverage-profile-v1".into(),
+        schema: "imap075-coverage-profile-v2".into(),
         baseline: BASELINE.into(),
         os: std::env::consts::OS.into(),
         arch: std::env::consts::ARCH.into(),
         rust_flags: RUST_FLAGS.into(),
+        cargo_config: CARGO_CONFIG.iter().map(|c| (*c).to_owned()).collect(),
         feature: "imap-075-coverage".into(),
         target: crate::imap_sbom_075::CargoTarget::current()?,
         tools,
     })
 }
 pub fn validate_policy(value: &Value) -> Result<()> {
-    let expected = serde_json::json!({"schema":"imap075-coverage-policy-v1","baseline":BASELINE,"production_enabled":false,"rust":["1.88.0","1.94.0"],"java":[17,21],"platforms":["linux-x86_64","windows-x86_64"],"rust_flags":["-C","instrument-coverage","-C","debuginfo=0"],"scopes":SCOPES,"require_all_changed_executable_lines":true,"claim_branch_coverage":false,"claim_production_correctness":false,"historical_global_ratchet":"unchanged"});
+    let expected = serde_json::json!({"schema":"imap075-coverage-policy-v2","baseline":BASELINE,"production_enabled":false,"rust":["1.88.0","1.94.0"],"java":[17,21],"platforms":["linux-x86_64","windows-x86_64"],"rust_flags":["-C","instrument-coverage","-C","debuginfo=0"],"cargo_config":CARGO_CONFIG,"scopes":SCOPES,"require_all_changed_executable_lines":true,"claim_branch_coverage":false,"claim_production_correctness":false,"historical_global_ratchet":"unchanged"});
     if *value != expected {
         return Err("coverage policy differs from fixed source/cfg/line contract".into());
     }
@@ -1024,7 +1054,7 @@ pub fn validate_control(
     profile: &Profile,
     sources: &[Source],
 ) -> Result<()> {
-    if control.schema != "imap075-coverage-control-v1"
+    if control.schema != "imap075-coverage-control-v2"
         || !hex(source, 40)
         || control.source_sha != source
         || control.production_enabled
@@ -1038,6 +1068,9 @@ pub fn validate_control(
     Ok(())
 }
 fn instrumentation(command: &mut Command, root: &Path, raw: &Path) {
+    for configuration in CARGO_CONFIG {
+        command.args(["--config", configuration]);
+    }
     for key in [
         "RUSTFLAGS",
         "RUSTC",
@@ -1055,6 +1088,12 @@ fn instrumentation(command: &mut Command, root: &Path, raw: &Path) {
         .env("CARGO_TARGET_DIR", root.join(RUNNER_TARGET))
         .env("CARGO_PROFILE_DEV_DEBUG", "0")
         .env("CARGO_PROFILE_TEST_DEBUG", "0")
+        .env("CARGO_PROFILE_DEV_OPT_LEVEL", "0")
+        .env("CARGO_PROFILE_TEST_OPT_LEVEL", "0")
+        .env("CARGO_PROFILE_DEV_DEBUG_ASSERTIONS", "true")
+        .env("CARGO_PROFILE_TEST_DEBUG_ASSERTIONS", "true")
+        .env("CARGO_PROFILE_DEV_OVERFLOW_CHECKS", "true")
+        .env("CARGO_PROFILE_TEST_OVERFLOW_CHECKS", "true")
         .env("CARGO_INCREMENTAL", "0")
         .env("CARGO_BUILD_JOBS", "2")
         .env("RUST_TEST_THREADS", "1")
@@ -1121,6 +1160,7 @@ pub fn execute_pipeline(
     let directory = output(root, path)?;
     for name in [
         "controller",
+        "objects",
         "raw",
         "raw/controller",
         "raw/tooling",
@@ -1131,10 +1171,12 @@ pub fn execute_pipeline(
     ] {
         fs::create_dir(directory.join(name))?;
     }
-    driver.execute(
+    let bootstrap_report = driver.execute(
         BuildStage::CoverageRunner,
         runner_command(root, &directory.join("raw/bootstrap")),
     )?;
+    let bootstrap =
+        snapshot_compiler_record(root, &directory, report_output(root, &bootstrap_report)?)?;
     let copied = directory.join("controller").join(suffix("xtask"));
     fs::copy(runner(root), &copied)?;
     if crate::imap_ci_075::source_state(root)? != source_sha {
@@ -1148,13 +1190,14 @@ pub fn execute_pipeline(
     );
     let run_id = digest(nonce.as_bytes())[..32].to_owned();
     let control = Control {
-        schema: "imap075-coverage-control-v1".into(),
+        schema: "imap075-coverage-control-v2".into(),
         source_sha,
         run_id,
         production_enabled: false,
         profile,
         sources,
         producer: artifact(root, &copied, 512 * 1024 * 1024)?,
+        bootstrap,
     };
     let control_path = directory.join("control.json");
     store_new(root, &control_path, &control)?;
@@ -1253,33 +1296,183 @@ fn report_output(
 ) -> Result<Artifact> {
     artifact(root, Path::new(&report.stdout_path), MAX)
 }
-fn compiler_objects(root: &Path, streams: &[Artifact]) -> Result<Vec<Artifact>> {
+/// Cargo's executable field omits host build scripts and loaded proc-macro libraries.
+pub fn declared_objects(root: &Path, bytes: &[u8]) -> Result<BTreeSet<String>> {
+    if bytes.len() > MAX {
+        return Err("compiler object stream byte bound".into());
+    }
     let mut paths = BTreeSet::new();
-    for stream in streams {
-        let bytes = read_relative(root, &stream.path, MAX)?;
-        for line in bytes
-            .split(|b| *b == b'\n')
-            .filter(|l| l.first() == Some(&b'{'))
-        {
-            let row: Value = serde_json::from_slice(line)?;
-            if row["reason"] == "compiler-artifact" {
-                if let Some(executable) = row["executable"].as_str() {
-                    let path = Path::new(executable);
-                    if !path.starts_with(root.join(RUNNER_TARGET)) {
-                        return Err("foreign instrumented Cargo output".into());
-                    }
-                    paths.insert(path.to_path_buf());
+    for line in bytes
+        .split(|b| *b == b'\n')
+        .filter(|l| l.first() == Some(&b'{'))
+    {
+        let row: Value = serde_json::from_slice(line)?;
+        if row["reason"] == "compiler-artifact" {
+            let mut candidates = Vec::new();
+            if let Some(executable) = row["executable"].as_str() {
+                candidates.push(executable);
+            }
+            let contains = |field: &str, value: &str| {
+                row["target"][field]
+                    .as_array()
+                    .is_some_and(|items| items.iter().any(|item| item == value))
+            };
+            let script = contains("kind", "custom-build");
+            let dynamic = contains("kind", "proc-macro")
+                || contains("crate_types", "dylib")
+                || contains("crate_types", "cdylib");
+            if script || dynamic {
+                let files = row["filenames"]
+                    .as_array()
+                    .ok_or("compiler object filenames missing")?;
+                let selected = files
+                    .iter()
+                    .filter_map(Value::as_str)
+                    .filter(|name| {
+                        let path = Path::new(name);
+                        if script {
+                            path.file_name().and_then(|s| s.to_str())
+                                == Some(&suffix("build-script-build"))
+                        } else {
+                            matches!(
+                                path.extension().and_then(|s| s.to_str()),
+                                Some("dll" | "so" | "dylib")
+                            )
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                if selected.is_empty() {
+                    return Err("compiler host object missing from filenames".into());
+                }
+                candidates.extend(selected);
+            }
+            for executable in candidates {
+                let path = Path::new(executable);
+                if !path.is_absolute() || !path.starts_with(root.join(RUNNER_TARGET)) {
+                    return Err("foreign instrumented Cargo output".into());
+                }
+                let path = relative(root, path)?;
+                if Path::new(&path)
+                    .components()
+                    .any(|c| !matches!(c, std::path::Component::Normal(_)))
+                {
+                    return Err("aliased instrumented Cargo output".into());
+                }
+                paths.insert(path);
+                if paths.len() > MAX_OBJECTS {
+                    return Err("instrumented binary set bounded".into());
                 }
             }
         }
     }
-    if paths.is_empty() || paths.len() > 128 {
-        return Err("instrumented binary set empty/bounded".into());
+    if paths.is_empty() {
+        return Err("instrumented binary set empty".into());
     }
-    paths
-        .into_iter()
-        .map(|p| artifact(root, &p, 512 * 1024 * 1024))
-        .collect()
+    Ok(paths)
+}
+/// Called immediately after a physically completed Cargo phase, before another can relink.
+pub fn snapshot_compiler_record(
+    root: &Path,
+    directory: &Path,
+    stream: Artifact,
+) -> Result<CompilerRecord> {
+    bound(root, &stream, MAX)?;
+    let mut objects = Vec::new();
+    let mut retained = 0;
+    let mut count = 0;
+    for entry in fs::read_dir(directory.join("objects"))? {
+        let entry = entry?;
+        if !entry.file_type()?.is_file() {
+            return Err("compiler archive contains a non-file".into());
+        }
+        retained = object_total(retained, entry.metadata()?.len())?;
+        count += 1;
+        object_count(count)?;
+    }
+    for executable in declared_objects(root, &read_relative(root, &stream.path, MAX)?)? {
+        let original = artifact(root, &root.join(&executable), 512 * 1024 * 1024)?;
+        let destination = directory
+            .join("objects")
+            .join(format!("{}.bin", original.sha256));
+        if !destination.exists() {
+            retained = object_total(retained, original.bytes)?;
+            count += 1;
+            object_count(count)?;
+            use std::io::Write;
+            let mut pending = tempfile::NamedTempFile::new_in(directory.join("objects"))?;
+            std::io::copy(&mut fs::File::open(root.join(&executable))?, &mut pending)?;
+            pending.flush()?;
+            pending.persist_noclobber(&destination)?;
+        }
+        let archived = artifact(root, &destination, 512 * 1024 * 1024)?;
+        if archived.sha256 != original.sha256 || archived.bytes != original.bytes {
+            return Err("compiler object changed during archival".into());
+        }
+        objects.push(CompiledObject {
+            executable,
+            archived,
+        });
+    }
+    Ok(CompilerRecord { stream, objects })
+}
+pub fn compiler_objects(
+    root: &Path,
+    directory: &Path,
+    streams: &[CompilerRecord],
+) -> Result<Vec<Artifact>> {
+    if streams.is_empty() || streams.len() > 16 {
+        return Err("compiler record count bound".into());
+    }
+    let mut seen = BTreeSet::new();
+    let mut objects = BTreeMap::new();
+    let mut total = 0;
+    for record in streams {
+        bound(root, &record.stream, MAX)?;
+        if !seen.insert(&record.stream.path) {
+            return Err("duplicate compiler record".into());
+        }
+        let expected = declared_objects(root, &read_relative(root, &record.stream.path, MAX)?)?;
+        let actual = record
+            .objects
+            .iter()
+            .map(|o| o.executable.clone())
+            .collect::<BTreeSet<_>>();
+        if expected != actual || actual.len() != record.objects.len() {
+            return Err("compiler object correspondence missing/duplicate/foreign".into());
+        }
+        for object in &record.objects {
+            if object.archived.path
+                != relative(
+                    root,
+                    &directory
+                        .join("objects")
+                        .join(format!("{}.bin", object.archived.sha256)),
+                )?
+            {
+                return Err("compiler object archive alias".into());
+            }
+            bound(root, &object.archived, 512 * 1024 * 1024)?;
+            if !objects.contains_key(&object.archived.path) {
+                total = object_total(total, object.archived.bytes)?;
+                objects.insert(object.archived.path.clone(), object.archived.clone());
+            }
+            object_count(objects.len())?;
+        }
+    }
+    let retained = fs::read_dir(directory.join("objects"))?
+        .take(MAX_OBJECTS + 1)
+        .map(|entry| {
+            let entry = entry?;
+            if !entry.file_type()?.is_file() {
+                return Err("compiler archive contains a non-file".into());
+            }
+            relative(root, &entry.path())
+        })
+        .collect::<Result<BTreeSet<_>>>()?;
+    if retained != objects.keys().cloned().collect() {
+        return Err("compiler archive has missing/unregistered objects".into());
+    }
+    Ok(objects.into_values().collect())
 }
 #[cfg(not(feature = "imap-075-coverage"))]
 fn capture_worker(_: &Path, _: &str) -> Result<()> {
@@ -1294,7 +1487,7 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
     }
     store_new(root, &directory.join("capture-started.json"), &identity()?)?;
     let mut driver = ManagedDriver::new(root)?;
-    let mut streams = Vec::new();
+    let mut streams = vec![control.bootstrap.clone()];
     let mut command = crate::imap_ci_075::tooling_command(root, cfg!(windows));
     command.args([
         "--features",
@@ -1303,7 +1496,11 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
     ]);
     instrumentation(&mut command, root, &directory.join("raw/tooling"));
     let report = driver.execute(BuildStage::ToolingTests, command)?;
-    streams.push(report_output(root, &report)?);
+    streams.push(snapshot_compiler_record(
+        root,
+        &directory,
+        report_output(root, &report)?,
+    )?);
     let mut command = Command::new("cargo");
     command.current_dir(root).args([
         "test",
@@ -1320,7 +1517,11 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
     ]);
     instrumentation(&mut command, root, &directory.join("raw/testkit"));
     let report = driver.execute(BuildStage::HelperContractTests, command)?;
-    streams.push(report_output(root, &report)?);
+    streams.push(snapshot_compiler_record(
+        root,
+        &directory,
+        report_output(root, &report)?,
+    )?);
     capture_consumer(root, &directory, &mut driver, &mut streams)?;
     let mut command = Command::new(std::env::current_exe()?);
     command
@@ -1384,7 +1585,11 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
     instrumentation(&mut command, root, &directory.join("raw/tooling"));
     command.args(["--", "actual_", "--ignored"]);
     let report = driver.execute(BuildStage::ToolingTests, command)?;
-    streams.push(report_output(root, &report)?);
+    streams.push(snapshot_compiler_record(
+        root,
+        &directory,
+        report_output(root, &report)?,
+    )?);
     let mut command = Command::new(std::env::current_exe()?);
     command
         .current_dir(root)
@@ -1399,11 +1604,11 @@ fn capture_worker(root: &Path, path: &str) -> Result<()> {
         root,
         &format!("{}/coverage-sessions.json", inputs.directory),
     )?;
-    let mut objects = compiler_objects(root, &streams)?;
+    let mut objects = compiler_objects(root, &directory, &streams)?;
     objects.push(control.producer.clone());
     objects.sort_by(|a, b| a.path.cmp(&b.path));
     let receipt = CaptureReceipt {
-        schema: "imap075-coverage-capture-v1".into(),
+        schema: "imap075-coverage-capture-v2".into(),
         control: artifact(root, &root.join(path), MAX)?,
         controller: identity()?,
         cargo_streams: streams,
@@ -1471,7 +1676,7 @@ fn capture_consumer(
     root: &Path,
     directory: &Path,
     driver: &mut impl CoverageDriver,
-    streams: &mut Vec<Artifact>,
+    streams: &mut Vec<CompilerRecord>,
 ) -> Result<()> {
     let temp = consumer_workspace(root)?;
     fs::create_dir(temp.path().join("src"))?;
@@ -1514,7 +1719,11 @@ fn capture_consumer(
             crate::imap_build_process_075::BuildStage::CoverageExecution,
             command,
         )?;
-        streams.push(report_output(root, &report)?);
+        streams.push(snapshot_compiler_record(
+            root,
+            directory,
+            report_output(root, &report)?,
+        )?);
         crate::imap_pre074_075::validate_consumer_lock(
             &fs::read_to_string(root.join("Cargo.lock"))?,
             &fs::read_to_string(temp.path().join("Cargo.lock"))?,
@@ -1698,6 +1907,16 @@ fn java_tool_artifacts(root: &Path) -> Result<Vec<Artifact>> {
     .map(|path| artifact(root, &root.join(path), 32 * 1024 * 1024))
     .collect()
 }
+pub fn validate_measured_profile(profile: &Value) -> Result<()> {
+    if profile["opt_level"] != "0"
+        || profile["debuginfo"] != 0
+        || profile["debug_assertions"] != true
+        || profile["overflow_checks"] != true
+    {
+        return Err("scoped implementation requires an unoptimized checked Cargo profile".into());
+    }
+    Ok(())
+}
 fn contexts(
     root: &Path,
     sources: &[Source],
@@ -1731,6 +1950,7 @@ fn contexts(
             } else {
                 continue;
             };
+            validate_measured_profile(&row["profile"])?;
             let mut cfg = profile.target.clone();
             if row["profile"]["test"] == true {
                 cfg.cfg.insert("test".into());
@@ -1799,6 +2019,35 @@ fn normalized_java(root: &Path, xml: &Path, driver: &mut impl CoverageDriver) ->
     )?;
     Ok(serde_json::from_slice(&fs::read(report.stdout_path)?)?)
 }
+/// LLVM response files keep Windows command lines bounded. Normalized path separators
+/// avoid platform-specific backslash escaping; quotes/control bytes fail explicitly.
+pub fn response_file(arguments: &[String]) -> Result<Vec<u8>> {
+    if arguments.len() > 4096 {
+        return Err("LLVM response argument count bound".into());
+    }
+    let mut output = String::new();
+    for argument in arguments {
+        if argument.starts_with('@') || argument.chars().any(|c| c.is_control() || c == '"') {
+            return Err("unsupported LLVM response argument".into());
+        }
+        let normalized = if let Some(unc) = argument.strip_prefix(r"\\?\UNC\") {
+            format!("//{unc}")
+        } else {
+            argument
+                .strip_prefix(r"\\?\")
+                .unwrap_or(argument)
+                .to_owned()
+        }
+        .replace('\\', "/");
+        output.push('"');
+        output.push_str(&normalized);
+        output.push_str("\"\n");
+        if output.len() > MAX {
+            return Err("LLVM response byte bound".into());
+        }
+    }
+    Ok(output.into_bytes())
+}
 fn regenerate(
     root: &Path,
     directory: &Path,
@@ -1831,29 +2080,42 @@ fn regenerate(
         .iter()
         .map(|s| s.path.clone())
         .collect::<BTreeSet<_>>();
-    let mut command = Command::new(&tools["llvm-cov"]);
-    command
-        .arg("export")
-        .arg(bound(root, &control.producer, 512 * 1024 * 1024)?)
-        .args(["--format=lcov", "--check-binary-ids", "--instr-profile"])
-        .arg(profdata)
-        .arg("--compilation-dir")
-        .arg(root);
+    let mut arguments = vec![
+        bound(root, &control.producer, 512 * 1024 * 1024)?
+            .to_string_lossy()
+            .into_owned(),
+        "--format=lcov".into(),
+        "--check-binary-ids".into(),
+        "--instr-profile".into(),
+        profdata.to_string_lossy().into_owned(),
+        "--compilation-dir".into(),
+        root.to_string_lossy().into_owned(),
+    ];
     for object in &capture.objects {
         if object != &control.producer {
-            command
-                .arg("--object")
-                .arg(bound(root, object, 512 * 1024 * 1024)?);
+            arguments.push("--object".into());
+            arguments.push(
+                bound(root, object, 512 * 1024 * 1024)?
+                    .to_string_lossy()
+                    .into_owned(),
+            );
         }
     }
-    command.arg("--sources");
+    arguments.push("--sources".into());
     for source in control
         .sources
         .iter()
         .filter(|s| s.path.ends_with(".rs") && !s.added.is_empty())
     {
-        command.arg(root.join(&source.path));
+        arguments.push(root.join(&source.path).to_string_lossy().into_owned());
     }
+    let mut response = tempfile::NamedTempFile::new_in(temp.path())?;
+    response.write_all(&response_file(&arguments)?)?;
+    response.flush()?;
+    let mut command = Command::new(&tools["llvm-cov"]);
+    command
+        .arg("export")
+        .arg(format!("@{}", response.path().display()));
     let report = driver.execute(
         crate::imap_build_process_075::BuildStage::CoverageReport,
         command,
@@ -1946,7 +2208,7 @@ pub fn gate_result(summary: &Summary, strict: bool) -> Result<bool> {
 }
 fn analyze(root: &Path, path: &str, strict: bool) -> Result<Analysis> {
     let capture: CaptureReceipt = load(root, path)?;
-    if capture.schema != "imap075-coverage-capture-v1" || !capture.completed {
+    if capture.schema != "imap075-coverage-capture-v2" || !capture.completed {
         return Err("coverage execution incomplete/future".into());
     }
     bound(root, &capture.control, MAX)?;
@@ -1966,10 +2228,11 @@ fn analyze(root: &Path, path: &str, strict: bool) -> Result<Analysis> {
         return Err("coverage Java report tools substituted".into());
     }
     let live_analysis = analysis_phase(root, &directory, &control, strict)?;
-    for stream in &capture.cargo_streams {
-        bound(root, stream, MAX)?;
+    if capture.cargo_streams.len() != 6 || capture.cargo_streams.first() != Some(&control.bootstrap)
+    {
+        return Err("coverage bootstrap/compiler phases incomplete/substituted".into());
     }
-    let mut expected = compiler_objects(root, &capture.cargo_streams)?;
+    let mut expected = compiler_objects(root, &directory, &capture.cargo_streams)?;
     expected.push(control.producer.clone());
     expected.sort_by(|a, b| a.path.cmp(&b.path));
     if expected != capture.objects {
@@ -1986,7 +2249,11 @@ fn analyze(root: &Path, path: &str, strict: bool) -> Result<Analysis> {
     let contexts = contexts(
         root,
         &control.sources,
-        &capture.cargo_streams,
+        &capture
+            .cargo_streams
+            .iter()
+            .map(|r| r.stream.clone())
+            .collect::<Vec<_>>(),
         &control.profile,
     )?;
     let ranges = compiled_out_ranges(root, &control.sources, &contexts)?;
@@ -1999,7 +2266,7 @@ fn analyze(root: &Path, path: &str, strict: bool) -> Result<Analysis> {
         return Err("coverage inputs changed during analysis".into());
     }
     Ok(Analysis {
-        schema: "imap075-scoped-coverage-v1".into(),
+        schema: "imap075-scoped-coverage-v2".into(),
         source_sha: control.source_sha,
         run_id: control.run_id,
         profile: control.profile,
@@ -2024,7 +2291,7 @@ pub fn analysis_phase(
     if strict {
         dead(&started)?;
         let measured: Analysis = load(root, &relative(root, &directory.join("analysis.json"))?)?;
-        if measured.schema != "imap075-scoped-coverage-v1"
+        if measured.schema != "imap075-scoped-coverage-v2"
             || measured.qualification
             || measured.source_sha != control.source_sha
             || measured.run_id != control.run_id
@@ -2069,7 +2336,7 @@ fn check_report(root: &Path, path: &Path, strict: bool) -> Result<Analysis> {
         path.to_string_lossy().replace('\\', "/")
     };
     let saved: Analysis = load(root, &relative)?;
-    if saved.schema != "imap075-scoped-coverage-v1" || saved.qualification != strict {
+    if saved.schema != "imap075-scoped-coverage-v2" || saved.qualification != strict {
         return Err("coverage report is not finalized qualification".into());
     }
     bound(root, &saved.rust_report, MAX)?;

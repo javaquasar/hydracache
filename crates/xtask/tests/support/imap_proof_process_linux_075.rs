@@ -3,6 +3,21 @@ fn denied() -> io::Error {
     io::Error::from(io::ErrorKind::PermissionDenied)
 }
 #[test]
+fn disappeared_procfs_entries_accept_enoent_and_esrch_but_not_live_access_failures() {
+    for error in [libc::ENOENT, libc::ESRCH] {
+        assert!(absent(&io::Error::from_raw_os_error(error)));
+        assert!(!retry_marker(
+            || Err(io::Error::from_raw_os_error(error)),
+            || panic!("a vanished process needs no liveness retry"),
+            17,
+        )
+        .unwrap());
+    }
+    for error in [libc::EACCES, libc::EIO, libc::EINVAL] {
+        assert!(!absent(&io::Error::from_raw_os_error(error)));
+    }
+}
+#[test]
 fn transient_procfs_denial_retries_but_dead_owners_need_no_environment() {
     let mut calls = 0;
     assert!(retry_marker(

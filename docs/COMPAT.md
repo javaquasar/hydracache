@@ -129,8 +129,9 @@ evidence, not a product protocol, persistent service image or ship receipt.
 Typed entry views, helper futures, progress queries and scoped transfer controls remain runtime
 APIs; the 40 core operation IDs and production HC/1/HC/2 identities do not change.
 
-The development-only scoped coverage family uses strict v1 policy, control,
-capture, Java session/projection and finalized report records, documented in
+The development-only scoped coverage family uses strict v2 policy/profile,
+control/capture and finalized report records, with v1 Java session/projection
+records (bootstrap compiler stream and immutable Cargo object archives), documented in
 `docs/testing/imap/0.75/scoped-coverage.md`. Unknown fields/future versions, stale
 source/tool/cfg, incomplete execution, foreign paths, missing components and
 uncovered added executable lines refuse qualification. Reports bind raw LLVM and

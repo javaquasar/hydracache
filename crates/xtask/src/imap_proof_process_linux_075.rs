@@ -4,6 +4,9 @@ use std::os::unix::process::CommandExt;
 pub const SCOPE: &str = "linux_owned_session_nested_groups_per_process_address_space_limit";
 const SESSION_OWNER: &str = "HYDRACACHE_IMAP075_PROCESS_SESSION_OWNER";
 const GROUP_CHAIN: &str = "HYDRACACHE_IMAP075_PROCESS_GROUP_CHAIN";
+fn absent(error: &io::Error) -> bool {
+    error.kind() == io::ErrorKind::NotFound || error.raw_os_error() == Some(libc::ESRCH)
+}
 fn chain() -> io::Result<Vec<i32>> {
     chain_environment(std::env::var(GROUP_CHAIN))
 }
@@ -47,7 +50,7 @@ fn descendant(pid: i32, group: i32) -> io::Result<bool> {
         },
         || match member(pid) {
             Ok(value) => Ok(value.live),
-            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(false),
+            Err(error) if absent(&error) => Ok(false),
             Err(error) => Err(error),
         },
         group,
@@ -76,7 +79,7 @@ fn retry_marker(
                 }
                 return Ok(false);
             }
-            Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(false),
+            Err(error) if absent(&error) => return Ok(false),
             Err(error) if error.kind() == io::ErrorKind::PermissionDenied => {
                 // procfs can deny mm access during exit/exec while the preceding stat
                 // snapshot still says live. Never silently drop an inaccessible live owner.
@@ -156,11 +159,7 @@ fn inventory() -> io::Result<Vec<Member>> {
         };
         match member(pid) {
             Ok(value) => result.push(value),
-            Err(error)
-                if matches!(
-                    error.kind(),
-                    io::ErrorKind::NotFound | io::ErrorKind::PermissionDenied
-                ) => {}
+            Err(error) if absent(&error) || error.kind() == io::ErrorKind::PermissionDenied => {}
             Err(error) => return Err(error),
         }
     }
@@ -339,7 +338,7 @@ impl Tree {
                 match descendant(value.pid, self.group) {
                     Ok(true) => result.push(value),
                     Ok(false) => {}
-                    Err(error) if matches!(error.kind(), io::ErrorKind::NotFound) => {}
+                    Err(error) if absent(&error) => {}
                     Err(error) => return Err(error),
                 }
             }

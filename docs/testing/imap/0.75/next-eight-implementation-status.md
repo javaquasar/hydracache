@@ -55,3 +55,15 @@ provenance mutation cases passed; the soak mutation fixture's distinct-producer
 binding was diagnosed and corrected. These diagnostic profiles are retained;
 they do not constitute a qualified coverage report. Fresh final capture remains
 required after the fixes.
+
+The clean `344ce949e` capture passed tooling/helper/consumer tests, preparation
+and replay, public native probes, all three smoke cohorts, both resumes, and all
+four actual prepared-artifact tests. Its default 40-minute outer budget expired
+during coverage analysis; cleanup completed and no qualified report was issued.
+An explicitly unqualified closed-profile diagnostic retains 229 profiles and 35
+objects; the empty profile of the killed analyzer is recorded as excluded, so
+this diagnostic cannot satisfy qualification. The Linux matrix independently
+exposed an `ESRCH` procfs exit race and missing bootstrap binary IDs. Follow-up
+code handles vanished procfs entries explicitly and uses v2 control/capture
+records with immediate immutable archives of Cargo executables, host build
+scripts and proc-macro libraries. Fresh qualification remains required.

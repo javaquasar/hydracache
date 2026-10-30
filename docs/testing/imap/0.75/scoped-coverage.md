@@ -32,6 +32,19 @@ conservatively retained in full; predecessor-only files have no 0.75 changed-lin
 obligation. `unchanged` in the summary refers to this selected scope.
 
 LLVM profiles are bounded at 128 MiB per file, 2,048 files and 6 GiB in total.
+Control/capture v2 also binds the bootstrap Cargo stream. Each physically
+completed Cargo phase immediately archives its executables, host build scripts
+and proc-macro/dynamic libraries by content hash. Later relinking at the same
+target path cannot replace an earlier measured object. Reconstruction requires
+an exact stream-to-object correspondence and the complete archive, bounded at
+512 unique objects, 512 MiB per object and 8 GiB in total. LLVM still checks every
+binary ID; host profiles are never discarded. The export command uses a bounded
+UTF-8 response file to avoid Windows command-line length limits.
+The v2 policy/profile records also bind two code-chosen Cargo overrides: only
+`sha2@0.11.0` is optimized at level 3 in this isolated dev/test measurement build.
+Scoped implementation crates retain their unoptimized coverage maps. This avoids
+spending the analysis budget on debug-mode hashing of multi-gigabyte evidence;
+artifact contents, source checks and the zero-uncovered-line gate remain required.
 The first actual capture observed 33–50 MiB profiles for this large development
 tooling binary. Coverage test cases run one at a time to keep profile write I/O
 out of unrelated short deadline canaries; explicit concurrency inside each test
