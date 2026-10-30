@@ -1,5 +1,5 @@
 //! Fixed-command capture of actual development build inputs. No receipt selects executable code.
-use crate::imap_build_process_075::{BuildController, BuildStage};
+use crate::imap_build_process_075::{BuildController, BuildReport, BuildStage};
 use serde::{Deserialize, Serialize};
 use std::{
     error::Error,
@@ -157,6 +157,52 @@ fn relative(root: &Path, path: &Path) -> Result<String, Box<dyn Error>> {
         .to_string_lossy()
         .replace('\\', "/"))
 }
+type CaptureResult<T> = Result<T, Box<dyn Error>>;
+trait CaptureCommands {
+    fn directory(&self) -> &Path;
+    fn run(&mut self, stage: BuildStage, command: Command) -> CaptureResult<BuildReport>;
+    fn maven(&mut self, root: &Path) -> CaptureResult<Command>;
+    fn coverage_enabled(&self) -> bool;
+    fn retain(
+        &mut self,
+        root: &Path,
+        module: &str,
+        id: &str,
+        report: &BuildReport,
+    ) -> CaptureResult<()>;
+}
+impl CaptureCommands for BuildController {
+    fn directory(&self) -> &Path {
+        self.directory()
+    }
+    fn run(&mut self, stage: BuildStage, command: Command) -> CaptureResult<BuildReport> {
+        Ok(self.run(stage, command)?)
+    }
+    fn maven(&mut self, root: &Path) -> CaptureResult<Command> {
+        maven_command(root)
+    }
+    fn coverage_enabled(&self) -> bool {
+        cfg!(feature = "imap-075-coverage")
+    }
+    fn retain(
+        &mut self,
+        root: &Path,
+        module: &str,
+        id: &str,
+        report: &BuildReport,
+    ) -> CaptureResult<()> {
+        crate::imap_coverage_075::retain_java_session(root, self.directory(), module, id, report)
+    }
+}
+fn copy_provenance_resource(root: &Path, resource: &Path) -> CaptureResult<()> {
+    fs::copy(
+        root.join(
+            "tests/java-imap-provenance-075/src/main/resources/META-INF/plexus/components.xml",
+        ),
+        resource.join("components.xml"),
+    )?;
+    Ok(())
+}
 impl Capture {
     pub fn start(root: &Path, builds: &mut BuildController) -> Result<Self, Box<dyn Error>> {
         let source_sha = crate::imap_ci_075::source_state(root)?;
@@ -185,9 +231,9 @@ impl Capture {
     fn bootstrap(
         &mut self,
         root: &Path,
-        builds: &mut BuildController,
+        builds: &mut impl CaptureCommands,
     ) -> Result<(), Box<dyn Error>> {
-        let mut version = maven_command(root)?;
+        let mut version = builds.maven(root)?;
         version.arg("--version");
         let report = builds.run(BuildStage::ProvenanceTools, version)?;
         let output = fs::read_to_string(report.stdout_path)?;
@@ -240,12 +286,7 @@ impl Capture {
         builds.run(BuildStage::ProvenanceTools, javac)?;
         let resource = target.join("META-INF/plexus");
         fs::create_dir_all(&resource)?;
-        fs::copy(
-            root.join(
-                "tests/java-imap-provenance-075/src/main/resources/META-INF/plexus/components.xml",
-            ),
-            resource.join("components.xml"),
-        )?;
+        copy_provenance_resource(root, &resource)?;
         let mut jar = Command::new(jdk.join(format!("bin/jar{}", std::env::consts::EXE_SUFFIX)));
         jar.args([
             "-J-Xms16m",
@@ -292,6 +333,15 @@ impl Capture {
         manifest: Option<&Path>,
         name: &str,
     ) -> Result<(), Box<dyn Error>> {
+        self.metadata_using(root, builds, manifest, name)
+    }
+    fn metadata_using(
+        &mut self,
+        root: &Path,
+        builds: &mut impl CaptureCommands,
+        manifest: Option<&Path>,
+        name: &str,
+    ) -> Result<(), Box<dyn Error>> {
         let mut command = Command::new("cargo");
         trusted_cargo(&mut command);
         command
@@ -325,12 +375,23 @@ impl Capture {
         stage: BuildStage,
         args: &[&str],
     ) -> Result<(), Box<dyn Error>> {
+        self.maven_using(root, builds, name, kind, stage, args)
+    }
+    fn maven_using(
+        &mut self,
+        root: &Path,
+        builds: &mut impl CaptureCommands,
+        name: &str,
+        kind: &str,
+        stage: BuildStage,
+        args: &[&str],
+    ) -> Result<(), Box<dyn Error>> {
         let directory = root
             .join(&self.directory)
             .join(format!("resolution-{}", self.stages.len()));
         fs::create_dir(&directory)?;
         let nonce = format!("{}-{}", std::process::id(), self.stages.len());
-        let mut command = maven_command(root)?;
+        let mut command = builds.maven(root)?;
         command
             .arg(format!(
                 "-Dmaven.ext.class.path={}",
@@ -348,7 +409,7 @@ impl Capture {
             .arg(format!("-Dhydracache.imap075.nonce={nonce}"))
             .arg(format!("-Dhydracache.imap075.stage={kind}"))
             .args(args);
-        let coverage_module = if cfg!(feature = "imap-075-coverage") {
+        let coverage_module = if builds.coverage_enabled() {
             match name {
                 "JavaContract" => Some("java-imap-benchmark"),
                 "NativeJava" => Some("java-imap-hazelcast-075"),
@@ -369,13 +430,7 @@ impl Capture {
         }
         let report = builds.run(stage, command)?;
         if let Some((module, id, _)) = coverage {
-            crate::imap_coverage_075::retain_java_session(
-                root,
-                builds.directory(),
-                module,
-                &id,
-                &report,
-            )?;
+            builds.retain(root, module, &id, &report)?;
         }
         self.stages.push(CapturedStage {
             name: name.into(),
@@ -385,12 +440,15 @@ impl Capture {
         });
         Ok(())
     }
-    pub fn finish(
+    pub fn finish(self, root: &Path, builds: &mut BuildController) -> Result<(), Box<dyn Error>> {
+        self.finish_using(root, builds)
+    }
+    fn finish_using(
         mut self,
         root: &Path,
-        builds: &mut BuildController,
+        builds: &mut impl CaptureCommands,
     ) -> Result<(), Box<dyn Error>> {
-        self.metadata(root, builds, None, "root-metadata")?;
+        self.metadata_using(root, builds, None, "root-metadata")?;
         for (name, module) in [
             ("contract", "java-imap-benchmark"),
             ("native", "java-imap-hazelcast-075"),
@@ -398,7 +456,7 @@ impl Capture {
             let pom = format!("tests/{module}/pom.xml");
             let output = root.join(&self.directory).join(format!("{name}-tree.json"));
             let output_arg = format!("-DoutputFile={}", output.display());
-            self.maven(
+            self.maven_using(
                 root,
                 builds,
                 &format!("{name}-tree"),
@@ -413,7 +471,7 @@ impl Capture {
                 ],
             )?;
         }
-        self.maven(
+        self.maven_using(
             root,
             builds,
             "provenance-tests",
@@ -563,3 +621,7 @@ fn installed_maven_home(output: &str) -> Result<PathBuf, Box<dyn Error>> {
 
     Ok(maven_home)
 }
+
+#[cfg(test)]
+#[path = "../tests/support/imap_capture_errors_075.rs"]
+mod capture_error_tests;

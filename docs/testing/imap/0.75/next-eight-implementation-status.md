@@ -321,3 +321,15 @@ journals, Cargo output, conflicting component hashes, missing root JARs and
 invalid dependency trees without publishing inventory. A regression test found
 that a Cargo.lock without package entries panicked; it now returns a bounded
 validation error. These checks do not constitute P8 qualification.
+
+The capture/soak orchestration block passed 224 default/232 instrumented library,
+39/40 coverage, 15 SBOM and 11 real soak tests per mode, all-target checks and
+strict all-feature Clippy. Capture propagates missing provenance resources,
+Java-session retention errors, metadata/build failures and capture-write refusal
+before inventory generation. Private soak commands retain the actual public
+profile/execution/replay/artifact functions. Negative model segments remain
+Failed; controlled later-stage refusals publish no completed reports. Daemon
+observer deadline and refresh failures run a real finite OS process and verify
+reap with zero live members. Cargo inventory tree failure also asserts the
+specific missing group identity. Full zero-uncovered qualification remains a
+separate clean-source Windows capture and complete Linux matrix/collector.

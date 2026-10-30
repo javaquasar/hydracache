@@ -159,6 +159,9 @@ fn reducer_propagates_journal_cargo_component_root_and_tree_errors_without_inven
                 std::io::ErrorKind::NotFound
             );
         }
+        if mode == 4 {
+            assert!(error.to_string().contains("groupId"), "{error}");
+        }
         assert!(!root.path().join("capture/inventory.json").exists());
         assert!(!root.path().join("capture/provenance.json").exists());
     }

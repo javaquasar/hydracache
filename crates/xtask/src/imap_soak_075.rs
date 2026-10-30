@@ -1356,26 +1356,26 @@ pub fn preparation_smoke(
     source: &str,
     directory: &Path,
 ) -> Result<Vec<crate::imap_extended_receipt_075::Artifact>, Box<dyn Error>> {
+    preparation_smoke_using(root, source, directory, &mut ActualSoakCommands)
+}
+fn preparation_smoke_using(
+    root: &Path,
+    source: &str,
+    directory: &Path,
+    commands: &mut impl SoakCommands,
+) -> SoakResult<Vec<crate::imap_extended_receipt_075::Artifact>> {
     let mut reports = Vec::new();
     for cohort in [Cohort::Reference, Cohort::Native, Cohort::Daemon] {
         let mut bounds = SoakBounds::smoke();
         bounds.host_remaining_ms =
             crate::imap_build_process_075::remaining_budget()?.as_millis() as u64;
-        let profile = trusted_profile(root, source, cohort, bounds)?;
+        let profile = commands.profile(root, source, cohort, bounds)?;
         let control = directory.join(format!("soak-{cohort:?}").to_lowercase());
-        let report = run_prepared(root, profile, &control, Cancellation::default(), None)?;
+        let report = commands.execute(root, profile, &control, None)?;
         validate_report(&report)?;
-        require_completed_segment(
-            &report.terminal,
-            &report.detail,
-            "preparation soak incomplete",
-        )?;
-        check_saved(root, &control.join("report.json"))?;
-        reports.push(crate::imap_extended_receipt_075::artifact(
-            root,
-            &control.join("report.json"),
-            256 * 1024,
-        )?);
+        commands.completed(&report, "preparation soak incomplete")?;
+        commands.check(root, &control.join("report.json"))?;
+        reports.push(commands.artifact(root, &control.join("report.json"))?);
     }
     Ok(reports)
 }
@@ -1498,6 +1498,9 @@ pub fn run_cancel(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
+    run_using(args, &mut ActualSoakCommands)
+}
+fn run_using(args: Vec<String>, commands: &mut impl SoakCommands) -> SoakResult<()> {
     let mut fields = std::collections::BTreeMap::new();
     if !args.len().is_multiple_of(2) {
         return Err("soak options require values".into());
@@ -1557,8 +1560,8 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     if cohorts.len() != 1 && bounds.active_ms > 200 {
         return Err("long profiles require one explicit cohort".into());
     }
-    let root = crate::doc_check::find_repo_root()?;
-    let source = crate::imap_ci_075::source_state(&root)?;
+    let root = commands.root()?;
+    let source = commands.source(&root)?;
     let output = fields.remove("--output").ok_or("--output required")?;
     let directory = root.join(output);
     require_soak_output(output)?;
@@ -1579,32 +1582,27 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         current.host_remaining_ms = current
             .host_remaining_ms
             .saturating_sub(started.elapsed().as_millis() as u64);
-        let profile = trusted_profile(&root, &source, cohort, current)?;
+        let profile = commands.profile(&root, &source, cohort, current)?;
         let parent_segment = parent
             .as_ref()
             .map(|saved| resume_parent(saved, &profile))
             .transpose()?;
-        let report = run_prepared(
+        let report = commands.execute(
             &root,
             profile,
             &directory.join(format!("{cohort:?}").to_lowercase()),
-            Cancellation::default(),
             parent_segment,
         )?;
         validate_report(&report)?;
-        require_completed_segment(
-            &report.terminal,
-            &report.detail,
-            &format!("soak {cohort:?}"),
-        )?;
-        check_saved(
+        commands.completed(&report, &format!("soak {cohort:?}"))?;
+        commands.check(
             &root,
             &directory
                 .join(format!("{cohort:?}").to_lowercase())
                 .join("report.json"),
         )?;
     }
-    require_soak_source(&source, &crate::imap_ci_075::source_state(&root)?)?;
+    require_soak_source(&source, &commands.source(&root)?)?;
     println!("imap-soak: complete local segment(s); no production admission");
     Ok(())
 }
@@ -1626,8 +1624,35 @@ fn execute_daemon_using(
     control: &Path,
     cancel: Cancellation,
     parent: Option<String>,
-    mut write: impl FnMut(&Path, &[u8]) -> Result<(), Box<dyn Error>>,
+    write: impl FnMut(&Path, &[u8]) -> Result<(), Box<dyn Error>>,
 ) -> Result<SoakReport, Box<dyn Error>> {
+    execute_daemon_bound(
+        root,
+        profile,
+        binary,
+        control,
+        cancel,
+        parent,
+        DaemonBindings {
+            write,
+            clock: Instant::now,
+            check: SoakProfile::check_artifacts,
+        },
+    )
+}
+fn execute_daemon_bound<W, C>(
+    root: &Path,
+    profile: SoakProfile,
+    binary: &Path,
+    control: &Path,
+    cancel: Cancellation,
+    parent: Option<String>,
+    mut bindings: DaemonBindings<W, C>,
+) -> SoakResult<SoakReport>
+where
+    W: FnMut(&Path, &[u8]) -> SoakResult<()>,
+    C: FnMut() -> Instant,
+{
     profile.validate()?;
     if profile.cohort != Cohort::Daemon {
         return Err("daemon soak cohort required".into());
@@ -1662,7 +1687,7 @@ fn execute_daemon_using(
         containment: String::new(),
         detail: String::new(),
     };
-    write(
+    (bindings.write)(
         &control.join("checkpoint.json"),
         &serde_json::to_vec(&report)?,
     )?;
@@ -1685,8 +1710,8 @@ fn execute_daemon_using(
     let mut drain = None;
     let mut birth = String::new();
     let incarnation = nonce();
-    let started = Instant::now();
-    let mut last_binding = Instant::now();
+    let started = (bindings.clock)();
+    let mut last_binding = (bindings.clock)();
     let mut record =
         |state: &mut SegmentState, frame: &Frame, pid: u32, birth: &str| -> Result<(), String> {
             state.accept(frame, pid, birth)?;
@@ -1807,15 +1832,15 @@ fn execute_daemon_using(
                 state.phase.is_some(),
                 o.root_exited,
                 &profile.bounds,
-                || started.elapsed(),
+                || (bindings.clock)().saturating_duration_since(started),
                 || drain.map(|at| at.elapsed()),
             )?;
             refresh_soak_bindings(
                 root,
                 &profile,
                 &mut last_binding,
-                Instant::now,
-                SoakProfile::check_artifacts,
+                &mut bindings.clock,
+                bindings.check,
             )?;
             Ok(())
         },
@@ -1850,7 +1875,7 @@ fn execute_daemon_using(
         cleanup_complete,
         "; daemon cleanup/listeners incomplete",
     );
-    write(
+    (bindings.write)(
         &control.join("report.json"),
         &serde_json::to_vec_pretty(&report)?,
     )?;
@@ -1989,4 +2014,79 @@ fn windows_process_birth(
         return Err(error().into());
     }
     Ok(format!("windows-filetime-{high:08x}{low:08x}"))
+}
+
+trait SoakCommands {
+    fn root(&mut self) -> SoakResult<std::path::PathBuf>;
+    fn source(&mut self, root: &Path) -> SoakResult<String>;
+    fn profile(
+        &mut self,
+        root: &Path,
+        source: &str,
+        cohort: Cohort,
+        bounds: SoakBounds,
+    ) -> SoakResult<SoakProfile>;
+    fn execute(
+        &mut self,
+        root: &Path,
+        profile: SoakProfile,
+        control: &Path,
+        parent: Option<String>,
+    ) -> SoakResult<SoakReport>;
+    fn completed(&mut self, report: &SoakReport, context: &str) -> SoakResult<()>;
+    fn check(&mut self, root: &Path, path: &Path) -> SoakResult<SoakReport>;
+    fn artifact(
+        &mut self,
+        root: &Path,
+        path: &Path,
+    ) -> SoakResult<crate::imap_extended_receipt_075::Artifact>;
+}
+struct ActualSoakCommands;
+impl SoakCommands for ActualSoakCommands {
+    fn root(&mut self) -> SoakResult<std::path::PathBuf> {
+        crate::doc_check::find_repo_root()
+    }
+    fn source(&mut self, root: &Path) -> SoakResult<String> {
+        crate::imap_ci_075::source_state(root)
+    }
+    fn profile(
+        &mut self,
+        root: &Path,
+        source: &str,
+        cohort: Cohort,
+        bounds: SoakBounds,
+    ) -> SoakResult<SoakProfile> {
+        trusted_profile(root, source, cohort, bounds)
+    }
+    fn execute(
+        &mut self,
+        root: &Path,
+        profile: SoakProfile,
+        control: &Path,
+        parent: Option<String>,
+    ) -> SoakResult<SoakReport> {
+        run_prepared(root, profile, control, Cancellation::default(), parent)
+    }
+    fn completed(&mut self, report: &SoakReport, context: &str) -> SoakResult<()> {
+        require_completed_segment(&report.terminal, &report.detail, context)
+    }
+    fn check(&mut self, root: &Path, path: &Path) -> SoakResult<SoakReport> {
+        check_saved(root, path)
+    }
+    fn artifact(
+        &mut self,
+        root: &Path,
+        path: &Path,
+    ) -> SoakResult<crate::imap_extended_receipt_075::Artifact> {
+        crate::imap_extended_receipt_075::artifact(root, path, 256 * 1024)
+    }
+}
+#[cfg(test)]
+#[path = "../tests/support/imap_soak_orchestration_errors_075.rs"]
+mod orchestration_error_tests;
+
+struct DaemonBindings<W, C> {
+    write: W,
+    clock: C,
+    check: fn(&SoakProfile, &Path) -> SoakResult<()>,
 }
