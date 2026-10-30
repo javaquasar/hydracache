@@ -1,0 +1,21 @@
+{
+  "targets": [
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\build",
+      "bytes": 3319380174.0
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-borrowed-20261030\\builds",
+      "bytes": 335950442.0
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-call-context-20261030\\builds",
+      "bytes": 1615354125.0
+    }
+  ],
+  "free_before": 3707174912,
+  "free_after": 7331495936,
+  "xtask_sha256": "E49F4694C8DD18629D33CDEDA08D7F2A617CCAE14CC3BE41F10B52AD233471A9",
+  "active_users": 0,
+  "source_or_evidence_removed": false
+}

@@ -1,0 +1,11 @@
+
+running 1 test
+test serialize::borrowed_context_control::retains_context_for_its_writer ... FAILED
+
+failures:
+
+failures:
+    serialize::borrowed_context_control::retains_context_for_its_writer
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 115 filtered out; finished in 0.00s
+

@@ -1,0 +1,7 @@
+{
+  "complete": false,
+  "reason": "AttributeError: module 'finalize' has no attribute 'r'",
+  "cause": "gates modified sys.path before generic finalize import",
+  "source": "retainer-first-source.py",
+  "measurement_repeated": false
+}

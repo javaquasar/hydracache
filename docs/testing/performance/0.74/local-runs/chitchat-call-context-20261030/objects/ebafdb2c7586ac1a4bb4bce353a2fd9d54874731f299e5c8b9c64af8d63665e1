@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "expected_failure": false,
+  "failed": 0,
+  "mtu_repaired": false,
+  "passed": 1,
+  "resources_qualified": false,
+  "root_adopted": false,
+  "selected": [
+    "serialize::call_context_review::context_is_absent_at_append_boundary"
+  ]
+}

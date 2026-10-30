@@ -1,0 +1,22 @@
+
+running 1 test
+test serialize::call_context_review::context_is_absent_at_append_boundary ... FAILED
+
+successes:
+
+successes:
+
+failures:
+
+---- serialize::call_context_review::context_is_absent_at_append_boundary stdout ----
+
+thread 'serialize::call_context_review::context_is_absent_at_append_boundary' (3340) panicked at src\call_context.rs:30:5:
+context retained after first append
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    serialize::call_context_review::context_is_absent_at_append_boundary
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 115 filtered out; finished in 0.00s
+

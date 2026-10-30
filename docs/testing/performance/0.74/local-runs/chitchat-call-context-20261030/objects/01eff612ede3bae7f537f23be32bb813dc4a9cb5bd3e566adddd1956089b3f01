@@ -1,0 +1,13 @@
+{
+  "after_sha256": "41907754eae0bf7f43d30347a5d99a59ec2529b3f423555a1124aa6315f9810f",
+  "before_sha256": "1dd63a2bc5efa735c808549c54d2b0fd8b49cd9a734573638331ac38ed767b6f",
+  "boundary": "return and unwind",
+  "changed_function": "append",
+  "mtu_repaired": false,
+  "new_tests_sha256": "78257a91a3ec1c9b234ca1b1e32d4f403b45978b7dec3c6a13ee9a1e93f4fde5",
+  "new_vec": false,
+  "old_tests_sha256": "7bce78db50cea3c9516f5f8fd485d219ba804f03c4b502a6fc9a6b0b5f373d49",
+  "public_traits_changed": false,
+  "root_adopted": false,
+  "test_only_strengthening": "oversized serialize-entry sentinel"
+}

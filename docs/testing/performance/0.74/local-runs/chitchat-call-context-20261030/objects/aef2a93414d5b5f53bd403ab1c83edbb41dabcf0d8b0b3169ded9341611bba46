@@ -1,0 +1,31 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-call-context/20261030-r1/functional188/builds/C2/release/deps/chitchat-9604c2a67cdd8247",
+    "--exact",
+    "state::tests::test_cluster_state_set_and_mark_for_deletion",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "bound": 5,
+  "cwd": "/home/artur/.cache/hydracache-074-call-context/20261030-r1/functional188/fixtures/C2",
+  "deadline": 54307.092394454,
+  "env": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_HOME": "/home/artur/.cache/hydracache-074-security-only/20261030-v3/cargo-home",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_OFFLINE": "true",
+    "HOME": "/home/artur",
+    "LANG": "C.UTF-8",
+    "LOGNAME": "artur",
+    "PATH": "/home/artur/.rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin:/usr/local/bin:/usr/bin:/bin",
+    "PROPTEST_RNG_SEED": "7606312",
+    "RUSTC": "/home/artur/.rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTC_WORKSPACE_WRAPPER": "",
+    "RUSTC_WRAPPER": "",
+    "RUSTUP_TOOLCHAIN": "1.88.0-x86_64-unknown-linux-gnu",
+    "USER": "artur"
+  },
+  "expected_exit": 0,
+  "image_sha256": "e7050d0267d3989153de1c0e7fefa41fb8bca0ffaee7fdfb272d4600d2de9042",
+  "retry": false
+}

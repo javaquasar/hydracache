@@ -1,5 +1,16 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [separate C2 call-lifetime successor](chitchat-call-context-result-20261030.md)
+now passes its local prerequisite:20→6 C allocations in the frozen diagnostic,
+zero C-live at both append checkpoints, identical wire/Vec/Rust fields. Eight
+Windows/GNU ×1.94/1.88 × B0/C2 semantic peers complete532 positive executions,
+check/strict Clippy and exact full37/239/cursor bodies. Both first T1 failures and
+all old negative MTU contracts remain. Packet37c6f980 retains1641 members/695
+objects; nine offline controls prevent partial/changed/scope-promoted evidence.
+C2 does not fix MTU or qualify full resource/CPU/RSS/Root. The operator explicitly
+confirmed the one isolated borrowed MTU candidate; derive its full storage/domain
+bounds before implementation. No Root/server/service/clock/product campaign.
+
 The [separate C1 context-lifetime prerequisite](chitchat-context-result-20261030.md)
 is now definitively declined. Its valid isolated GNU pair has identical wire,
 Rust counters and Vecs, but owns26,632 extra C-live bytes after both append

@@ -1,0 +1,22 @@
+
+running 1 test
+test serialize::borrowed_context_control::retains_context_for_its_writer ... FAILED
+
+successes:
+
+successes:
+
+failures:
+
+---- serialize::borrowed_context_control::retains_context_for_its_writer stdout ----
+
+thread 'serialize::borrowed_context_control::retains_context_for_its_writer' (37032) panicked at src\context_control.rs:9:5:
+source control has no retained context
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    serialize::borrowed_context_control::retains_context_for_its_writer
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 115 filtered out; finished in 0.00s
+

@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-call-result-074\check_restore.py", line 7, in <module>
+    root=v.a.ROOT/'target/chitchat-call-source-review-20261030'
+         ^^^
+AttributeError: module 'verify' has no attribute 'a'

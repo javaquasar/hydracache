@@ -802,3 +802,13 @@ it does not acquire MTU/Root/distribution admission from C1. Next resolve a
 maintainable security/MTU source path under the SAME gates, then exact-input Root/
 package/workspace and original execution/lifecycle/reconnect/trust/host work.
 No successor hypothesis, registry publication or server launch is approved here.
+
+The [separate C2 call-lifetime control](chitchat-call-context-result-20261030.md)
+now passes its local non-increase prerequisite and eight full selected semantic
+peers (532 positive executions) on Windows/GNU1.94/1.88. Both T1 first failures
+remain; C1 is not promoted. All original MTU contracts remain negative. The
+operator explicitly confirms the ONE isolated borrowed MTU candidate under the
+recorded constraints. Next derive exact storage/overflow/stack bounds and the
+borrowed-byte oracle, then implement its admission/consuming join and require
+the unchanged generic/caller/full resource gates. No Root/security/workspace,
+CPU/RSS or server-admission pass is inferred from C2's one diagnostic pair.

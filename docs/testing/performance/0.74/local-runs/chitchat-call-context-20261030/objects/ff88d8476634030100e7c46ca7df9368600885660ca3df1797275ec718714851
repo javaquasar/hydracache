@@ -1,0 +1,18 @@
+
+running 1 test
+test serialize::call_context_review::panic_after_context_creation_releases_only_context ... ok
+
+successes:
+
+---- serialize::call_context_review::panic_after_context_creation_releases_only_context stdout ----
+
+thread 'serialize::call_context_review::panic_after_context_creation_releases_only_context' panicked at src\call_context.rs:13:9:
+injected unwind before compression, after context creation
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+successes:
+    serialize::call_context_review::panic_after_context_creation_releases_only_context
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 115 filtered out; finished in 0.00s
+

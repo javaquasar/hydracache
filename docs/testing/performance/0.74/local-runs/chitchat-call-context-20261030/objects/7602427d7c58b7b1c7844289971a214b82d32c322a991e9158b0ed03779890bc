@@ -1,0 +1,6 @@
+
+running 1 test
+test serialize::call_context_review::zero_length_generic_item_keeps_original_behavior ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 115 filtered out; finished in 0.00s
+

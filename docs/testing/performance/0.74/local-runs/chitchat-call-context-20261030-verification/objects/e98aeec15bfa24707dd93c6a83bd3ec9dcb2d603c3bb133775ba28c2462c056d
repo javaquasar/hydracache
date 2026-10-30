@@ -1,0 +1,109 @@
+"""C2 source-only lifetime successor; never mutates the declined C1 packet."""
+import ast
+import json
+from pathlib import Path
+import shutil
+import sys
+
+HERE=Path(__file__).resolve().parent
+ROOT=HERE.parents[1]
+sys.path.insert(0,str(ROOT/'tools/chitchat-security-only-074'))
+import scope as c
+BASE=ROOT/'target/chitchat-call-context-20261030'
+PARENT=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-context-20261030'
+PARENT_SHA='9668415d296e8ed37cbbc371b28bbf5396d3ddd52aaa3d4a9b2899c6420de47a'
+BOUNDARY='serialize::call_context_review::context_is_absent_at_append_boundary'
+PANIC='serialize::call_context_review::panic_after_context_creation_releases_only_context'
+OLD_APPEND=b'''    pub fn append<S: Serializable + ?Sized>(&mut self, item: &S) {
+        let item_len = item.serialized_len();
+        assert!(item_len <= u16::MAX as usize);
+        item.serialize(&mut self.uncompressed_block);
+        while self.uncompressed_block.len() > self.block_threshold {
+            // time to flush our current block.
+            self.flush_block();
+        }
+    }
+'''
+CALL_APPEND=b'''    pub fn append<S: Serializable + ?Sized>(&mut self, item: &S) {
+        struct AppendContext<'a>(&'a mut CompressedStreamWriter);
+        impl Drop for AppendContext<'_> {
+            fn drop(&mut self) {
+                self.0.compression_context = None;
+            }
+        }
+        let call = AppendContext(self);
+        let writer = &mut *call.0;
+        let item_len = item.serialized_len();
+        assert!(item_len <= u16::MAX as usize);
+        item.serialize(&mut writer.uncompressed_block);
+        while writer.uncompressed_block.len() > writer.block_threshold {
+            // time to flush our current block.
+            writer.flush_block();
+        }
+    }
+'''
+HOOK=b'''    #[cfg(test)]
+    call_context_review::after_context_ready(context.is_some());
+'''
+
+
+def parent():
+    raw=(PARENT/'index.json').read_bytes();c.need(c.sha(raw)==PARENT_SHA,'immutable declined parent packet')
+    before=list(sys.path);sys.path.insert(0,str(ROOT/'tools/chitchat-context-result-074'))
+    import verify
+    index=json.loads(raw);verify.validate(index,lambda h:(PARENT/'objects'/h).read_bytes());sys.path[:]=before
+    def read(name):
+        row=index['members'][name];raw=(PARENT/'objects'/row['sha256']).read_bytes()
+        c.need(c.sha(raw)==row['sha256'] and len(raw)==row['bytes'],'whole original parent member')
+        return raw
+    return index,read
+
+
+def baseline():
+    BASE.mkdir(exist_ok=False);out=BASE/'preparation';out.mkdir()
+    index,read=parent();constants={}
+    for node in ast.parse(read('source/current/recipe.py')).body:
+        if isinstance(node,ast.Assign) and len(node.targets)==1 and isinstance(node.targets[0],ast.Name) and node.targets[0].id in ('STATELESS','OWNED'):
+            constants[node.targets[0].id]=ast.literal_eval(node.value)
+    c.need(set(constants)=={'STATELESS','OWNED'},'literal source recipe only; no archived producer execution')
+    inputs={}
+    for target,origin,helper in [('B0','B0','STATELESS'),('T1','C1','OWNED')]:
+        folder=BASE/'fixtures'/target;folder.mkdir(parents=True)
+        prefix='fixtures/'+origin+'/'
+        for name in index['members']:
+            if name.startswith(prefix):
+                relative=Path(name[len(prefix):]);c.need(not relative.is_absolute() and '..' not in relative.parts,'contained source member')
+                path=folder/relative;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(read(name))
+        path=folder/'src/serialize.rs';raw=path.read_bytes();old=constants[helper]
+        needle=b'    zstd::bulk::compress_to_buffer(source, destination, 0)' if target=='B0' else b'    context.as_mut().unwrap().compress_to_buffer(source, destination)'
+        c.need(raw.count(old)==1 and old.count(needle)==1 and raw.count(OLD_APPEND)==1,'one exact original helper and append')
+        raw=raw.replace(old,old.replace(needle,HOOK+needle))
+        raw+=b'\n#[cfg(test)]\n#[path="call_context.rs"]\nmod call_context_review;\n'
+        path.write_bytes(raw);(folder/'src/call_context.rs').write_bytes((HERE/'call_tests.rs').read_bytes())
+        inputs[target]=c.tree(folder)
+    c.write(out,'baseline.json',dict(parent_index_sha256=PARENT_SHA,fixtures=inputs,tests_before_candidate=True,
+      hook_test_only=True,root_adopted=False,mtu_repaired=False))
+
+
+def candidate():
+    for action in ('control','panic'):
+        value=json.loads((BASE/(action+'-T1')/'result.json').read_bytes())
+        c.need(value['complete'] and value['expected_failure'] and value['failed']==1,'actual failing T1 boundary and unwind controls before C2')
+    held=json.loads((BASE/'preparation/baseline.json').read_bytes())['fixtures']
+    c.need(all(c.tree(BASE/'fixtures'/v)==files for v,files in held.items()),'immutable original controls')
+    origin=BASE/'fixtures/T1';dest=BASE/'fixtures/C2';shutil.copytree(origin,dest)
+    path=dest/'src/serialize.rs';before=path.read_bytes();c.need(before.count(OLD_APPEND)==1,'one original append')
+    after=before.replace(OLD_APPEND,CALL_APPEND);path.write_bytes(after)
+    old_tests=(origin/'src/call_context.rs').read_bytes();new_tests=(HERE/'call_tests.rs').read_bytes()
+    start=b'fn oversized_item_is_refused_before_serialization()';end=b'#[test]\nfn zero_length_generic_item_keeps_original_behavior()'
+    def without_size_test(raw):
+        c.need(raw.count(start)==raw.count(end)==1,'one new oversized control')
+        left=raw.index(start);right=raw.index(end,left);return raw[:left]+raw[right:]
+    c.need(without_size_test(old_tests)==without_size_test(new_tests),'only strengthen unexecuted oversized-test sentinel')
+    (dest/'src/call_context.rs').write_bytes(new_tests)
+    c.write(BASE/'preparation','candidate.json',dict(before_sha256=c.sha(before),after_sha256=c.sha(after),
+      changed_function='append',boundary='return and unwind',new_vec=False,public_traits_changed=False,
+      old_tests_sha256=c.sha(old_tests),new_tests_sha256=c.sha(new_tests),test_only_strengthening='oversized serialize-entry sentinel',mtu_repaired=False,root_adopted=False))
+
+
+if __name__=='__main__':{'baseline':baseline,'candidate':candidate}[sys.argv[1]]()

@@ -1,0 +1,21 @@
+{
+  "archived_producer_executed": false,
+  "members": {
+    "completed-build-cleanup.json": {
+      "bytes": 671,
+      "sha256": "b0c2706856f27e6edc5664db56a137896042a5937a9da5682b266734f4571132"
+    },
+    "retainer-first-refusal.json": {
+      "bytes": 241,
+      "sha256": "0533b09b7caec81a627fea5acdc0782789a0fc774cbdfbd9c1bc47cec9c23fe3"
+    },
+    "retainer-first-source.py": {
+      "bytes": 2366,
+      "sha256": "e31f5f6d98ae195dcb92caab6dedff39431f6a80bd046105ba6994e9b7f17e01"
+    }
+  },
+  "primary_index_sha256": "37c6f98061bb495f9cb058e40c0c9400b03ce1af69fd48cec8b5906c97533ab3",
+  "root_adopted": false,
+  "schema": "hc074-chitchat-call-postflight-v1",
+  "verification_index_sha256": "36cdf1304874952223c9ec39ee263033af6256232aeab69dadfbe5a67b923a79"
+}

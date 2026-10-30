@@ -1321,3 +1321,10 @@ complete source/evidence and all first carrier/source-effect refusals; Root and
 every threshold/check/window remain unchanged. Security-only U, maintained
 distribution, exact Root/workspace and production lifecycle/host admission are
 separate open gates, not passes inferred from this experiment.
+
+The [separate C2 call-lifetime prerequisite](../testing/performance/0.74/chitchat-call-context-result-20261030.md)
+now passes local native non-increase and eight Windows/GNU/MSRV semantic peers,
+532 positive executions, with all old negative MTU contracts retained. The operator
+explicitly confirms one borrowed MTU candidate; continue its independent storage/
+byte-oracle/admission work under the recorded no-new-Vec/public-trait constraints.
+C1 remains declined and C2 does not grant full resource/CPU/RSS/Root admission.

@@ -1,0 +1,6 @@
+
+running 1 test
+test serialize::borrowed_context_control::buffer_error_then_next_job_has_exact_standalone_bytes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 115 filtered out; finished in 0.00s
+

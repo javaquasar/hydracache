@@ -12,6 +12,16 @@ combined design stops before borrowed/fused implementation, generic/caller rescu
 or CPU measurements. Preserve the proposal and negative implementation as history;
 no successor design or relaxed gate is approved by this record.
 
+Continuation on2026-10-30: the operator proceeded with the separate C2 call-
+lifetime control, which now passes its local prerequisite and all eight functional
+peers; see [C2 result](chitchat-call-context-result-20261030.md). C1 stays declined.
+The operator also explicitly confirmed one isolated borrowed MTU candidate, with
+existing scratch/no new Vec/no public Serializable change and all original gates.
+This continues the storage/admission work below; it does not authorize multiple
+algorithm candidates, Root adoption, publication or server execution. Treat old
+bound/RSS estimates as risk notes, not approved budgets. Actual mtu has no public
+u16 upper limit; preserve that domain and check the exact fixed-storage bounds.
+
 ## Why dependencies alone cannot finish adoption
 
 Fresh official registry metadata still has Zstd^0.13 in Chitchat0.11.1 through

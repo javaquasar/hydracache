@@ -1,0 +1,8 @@
+{
+  "first_launcher_exit": 1,
+  "first_launcher_output": "",
+  "cause": "unconfirmed shell-level refusal before first mode directory existed",
+  "measurement_started": false,
+  "corrected_dispatch": "fixed literal mode list",
+  "first_results_overwritten": false
+}

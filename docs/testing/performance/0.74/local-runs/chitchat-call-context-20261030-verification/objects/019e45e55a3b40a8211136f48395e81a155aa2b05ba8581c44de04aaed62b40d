@@ -1,0 +1,14 @@
+test_coherent_dropped_negative_or_property_case_refuses (test_archive.Archive.test_coherent_dropped_negative_or_property_case_refuses) ... ok
+test_coherent_incomplete_owner_and_cached_baseline_refuse (test_archive.Archive.test_coherent_incomplete_owner_and_cached_baseline_refuse) ... ok
+test_coherent_second_functional_source_change_refuses (test_archive.Archive.test_coherent_second_functional_source_change_refuses) ... ok
+test_corrupted_bytes_and_scope_promotion_refuse (test_archive.Archive.test_corrupted_bytes_and_scope_promotion_refuse) ... ok
+test_whole_packet_and_negative_old_contracts_are_not_a_release (test_archive.Archive.test_whole_packet_and_negative_old_contracts_are_not_a_release) ... ok
+test_every_original_owner_field_and_capacity_is_a_veto (test_review.Resource.test_every_original_owner_field_and_capacity_is_a_veto) ... ok
+test_identical_cost_is_only_a_subgate (test_review.Resource.test_identical_cost_is_only_a_subgate) ... ok
+test_lower_requests_cannot_buy_a_checkpoint_increase (test_review.Resource.test_lower_requests_cannot_buy_a_checkpoint_increase) ... ok
+test_missing_fields_wrong_source_scope_and_unbalanced_drop_refuse (test_review.Resource.test_missing_fields_wrong_source_scope_and_unbalanced_drop_refuse) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 1.702s
+
+OK

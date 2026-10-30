@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "expected_failure": true,
+  "failed": 1,
+  "mtu_repaired": false,
+  "passed": 0,
+  "resources_qualified": false,
+  "root_adopted": false,
+  "selected": [
+    "serialize::call_context_review::panic_after_context_creation_releases_only_context"
+  ]
+}

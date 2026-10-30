@@ -1,0 +1,9 @@
+{
+  "allocation_measurement": false,
+  "complete": true,
+  "expected_negative": 3,
+  "full_library_passed": false,
+  "mtu_repaired": false,
+  "passed": 70,
+  "root_adopted": false
+}
