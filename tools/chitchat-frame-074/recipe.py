@@ -8,7 +8,7 @@ sys.path.insert(0,str(ROOT/'tools/chitchat-security-only-074'));import scope as 
 BASE=ROOT/'target/chitchat-frame-20261030'
 PARENT=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-fused-20261030'
 PARENT_SHA='e554bd8ee5bd7b4f0cc2963393ccbea922e93663f294962446d1caa651034403'
-EXECUTION_ALLOWED=True
+EXECUTION_ALLOWED=False
 SUFFIX='\n#[cfg(test)]\n#[path="frame_tests.rs"]\nmod frame_review;\n#[cfg(test)]\nconst FRAME_VARIANT:&str="{v}";\n'
 BASELINE_HELPER='''
 #[cfg(test)]

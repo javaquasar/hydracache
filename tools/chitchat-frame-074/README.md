@@ -26,3 +26,15 @@ All original5-second case/10-second catalog/local1200/native1100/4GiB floors/
 workspace4800 remain. No numerical CPU/RSS before functional and allocation gates.
 Stack/RSS/page retention remain independently unqualified until actually gated.
 The full numerical protocol needs a separate review for this exact source.
+
+Before any native observation, the resource prereview added the existing P control
+to the initial B/G/G/B proposal, freezing B/P/G/G/P/B in the native input receipts.
+P is attribution only, under the same approved dependency graph. No cohort/order
+change followed an observation. Both G processes finish the entire239/9/30 corpus.
+
+G is now closed negatively: accepted-multiblock has9 versus B6 logical/physical
+Rust allocations, four identical observations per image. Returned finish capacities
+and the other resource comparisons pass. This cannot compensate the allocation
+increase. Execution is sealed; preserve all source/results and do not run CPU/RSS
+or a rescue candidate. See `../chitchat-frame-evidence-074/README.md` and the main
+result documentation for the exact decision, evidence digest and remaining gates.
