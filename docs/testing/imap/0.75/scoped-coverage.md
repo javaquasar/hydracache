@@ -25,13 +25,22 @@ The measurement defers only its own still-live PID profile, checked against its
 PID/birth marker. The final pass defers nothing and requires the completed analysis
 profile. Git diff/list queries apply the declared source scopes before their byte
 budget; unrelated predecessor source changes do not consume this scope's budget.
+For a synthetic PR merge with one parent descending from the fixed 0.75 baseline,
+the changed-file set comes from that parent before patches are requested. Every
+final tracked source is still byte-bound. Changes in a shared selected file are
+conservatively retained in full; predecessor-only files have no 0.75 changed-line
+obligation. `unchanged` in the summary refers to this selected scope.
 
-LLVM profiles are bounded at 128 MiB per file, 2,048 files and 4 GiB in total.
+LLVM profiles are bounded at 128 MiB per file, 2,048 files and 6 GiB in total.
 The first actual capture observed 33–50 MiB profiles for this large development
 tooling binary. Coverage test cases run one at a time to keep profile write I/O
 out of unrelated short deadline canaries; explicit concurrency inside each test
 and real multi-client workload remains exercised. These bounds and scheduling
 are measurement controls and do not change the ordinary test or production plan.
+The later 95fed9bba diagnostic retained 231 closed profile files and
+4,076,955,432 raw bytes before the final analysis. The aggregate allowance includes
+the additional fault cases and closed analyzer; it never permits dropping a
+profile, lowering the changed-line gate or admitting a partial report.
 
 Intentionally killed proof/soak workers suppress the automatic exit dump. They
 serialize bounded counter buffers and atomically replace their PID profile before
@@ -51,6 +60,17 @@ are isolated test fixtures and cannot replace the producer's archive. A fixed
 SBOM check command separately replays the original producer-bound provenance.
 The measurement phase reconstructs its own unqualified result a second time;
 only the closed-process final phase may enforce and issue qualification.
+The all-cohort CLI smoke has a 180-second shared host budget; each active segment
+still lasts 200 ms. Producer-bound originals are replayed by their own CLI;
+mutation-test binaries bind separate unqualified copies to their own producer.
+
+The external consumer uses a newly created, exclusively owned temporary workspace
+at a stable path. This keeps the remap flag and dependency cache stable across
+captures. Existing or stale directories refuse, inputs are freshly copied, tests
+run each time, and ordinary drop removes the newly created workspace. The common
+historical gated-test registry remains byte-identical to its predecessor; the
+closed 0.75 discovery extension lives in this directory and its tests execute
+through the 0.75 capture rather than generic release-evidence receipts.
 
 The final check reconstructs LLVM LCOV and JaCoCo source counts from the retained
 execution profiles and exact binaries/JARs. Source SHA, all scoped source bytes,

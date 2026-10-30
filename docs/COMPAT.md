@@ -141,6 +141,13 @@ and cooperative nested groups, with per-process address-space bounds and no proc
 count cap; a program deliberately creating another session remains outside this
 local containment scope.
 
+The closed v1 `docs/testing/imap/0.75/gated-test-registry.toml` extension registers
+the four prepared-artifact tests for discovery validation. It accepts only its
+0.75 release, fixed test identities, commands, budgets and actual CI wiring;
+unknown fields and substituted entries fail. Execution belongs to the bounded
+0.75 capture. The historical common registry and generic release-evidence
+registry identities retain their original format and meaning.
+
 The separate development preparation receipt uses `hydracache.imap.pre074-preparation.v6`
 and `docs/testing/imap/0.75/schemas/pre074-preparation.schema.json`. It retains unsigned
 resolved development provenance. Its v1 inventory/provenance,

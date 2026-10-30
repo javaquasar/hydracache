@@ -10,6 +10,10 @@ use std::{
     process::Command,
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
+#[cfg(windows)]
+const WORKER_MEMORY_BYTES: usize = 1024 * 1024 * 1024;
+#[cfg(target_os = "linux")]
+const WORKER_MEMORY_BYTES: usize = 8usize * 1024 * 1024 * 1024;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -639,11 +643,7 @@ pub fn execute_worker(
             cleanup_timeout: Duration::from_secs(5),
             stdout_bytes: 8 * 1024 * 1024,
             stderr_bytes: 1024 * 1024,
-            memory_bytes: if cfg!(windows) {
-                1024 * 1024 * 1024
-            } else {
-                8usize * 1024 * 1024 * 1024
-            },
+            memory_bytes: WORKER_MEMORY_BYTES,
             ..Default::default()
         },
         ExecutionPolicy::Soak,
@@ -891,11 +891,8 @@ pub fn current_runtime(cohort: Cohort) -> Result<String, Box<dyn Error>> {
     ))
 }
 fn binary(root: &Path, name: &str) -> std::path::PathBuf {
-    root.join("target/debug").join(if cfg!(windows) {
-        format!("{name}.exe")
-    } else {
-        name.into()
-    })
+    root.join("target/debug")
+        .join(format!("{name}{}", std::env::consts::EXE_SUFFIX))
 }
 pub fn trusted_profile(
     root: &Path,
@@ -1504,11 +1501,7 @@ pub fn execute_daemon(
             cleanup_timeout: Duration::from_secs(5),
             stdout_bytes: 8 * 1024 * 1024,
             stderr_bytes: 1024 * 1024,
-            memory_bytes: if cfg!(windows) {
-                1024 * 1024 * 1024
-            } else {
-                8usize * 1024 * 1024 * 1024
-            },
+            memory_bytes: WORKER_MEMORY_BYTES,
             ..Default::default()
         },
         ExecutionPolicy::Soak,

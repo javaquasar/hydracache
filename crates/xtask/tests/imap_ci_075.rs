@@ -5,9 +5,85 @@ use xtask::imap_ci_075::*;
 use xtask::imap_qualification_075::digest;
 const WORKFLOW: &str = include_str!("../../../.github/workflows/imap-075.yml");
 #[test]
+fn closed_075_registry_extension_refuses_foreign_metadata_and_missing_workflow() {
+    use serde_json::json;
+    let root = tempfile::tempdir().unwrap();
+    assert!(xtask::imap_gated_registry_075::load(root.path())
+        .unwrap()
+        .is_empty());
+    let path = root
+        .path()
+        .join(xtask::imap_gated_registry_075::REGISTRY_PATH);
+    fs::create_dir_all(path.parent().unwrap()).unwrap();
+    let original: toml::Value = toml::from_str(include_str!(
+        "../../../docs/testing/imap/0.75/gated-test-registry.toml"
+    ))
+    .unwrap();
+    let original = serde_json::to_value(original).unwrap();
+    fs::write(&path, toml::to_string(&original).unwrap()).unwrap();
+    assert!(xtask::imap_gated_registry_075::load(root.path()).is_err());
+    let workflow = root.path().join(".github/workflows/imap-075.yml");
+    fs::create_dir_all(workflow.parent().unwrap()).unwrap();
+    fs::write(&workflow, WORKFLOW).unwrap();
+    assert_eq!(
+        xtask::imap_gated_registry_075::load(root.path())
+            .unwrap()
+            .len(),
+        4
+    );
+    for mode in 0..21 {
+        let mut value = original.clone();
+        match mode {
+            0 => value["schema_version"] = json!(2),
+            1 => value["release"] = json!("0.74.0"),
+            2 => {
+                value["gate"].as_array_mut().unwrap().pop();
+            }
+            3 => value["gate"][0]["id"] = json!("foreign"),
+            4 => value["gate"][1] = value["gate"][0].clone(),
+            5 => value["gate"][0]["owner_release"] = json!("0.74.0"),
+            6 => value["gate"][0]["source"] = json!("outside.rs"),
+            7 => value["gate"][0]["command"]["program"] = json!("sh"),
+            8 => value["gate"][0]["command"]["args"] = json!(["echo", "pass"]),
+            9 => value["gate"][0]["command"]["env"] = json!({"RUSTC_WRAPPER":"foreign"}),
+            10 => value["gate"][1]["required_env"] = json!([]),
+            11 => value["gate"][0]["timeout_seconds"] = json!(0),
+            12 => value["gate"][0]["required_features"] = json!(["foreign"]),
+            13 => value["gate"][0]["reason"] = json!(""),
+            14 => value["gate"][0]["tier"] = json!("manual"),
+            15 => value["gate"][0]["command"]["platform"] = json!("linux"),
+            16 => value["gate"][0]["ci"]["workflow"] = json!("foreign.yml"),
+            17 => value["gate"][0]["ci"]["step"] = json!("Skipped"),
+            18 => value["gate"][0]["ship_mandatory"] = json!(false),
+            19 => value["gate"][0]["artifacts"] = json!(["outside"]),
+            _ => value["future"] = json!(true),
+        }
+        fs::write(&path, toml::to_string(&value).unwrap()).unwrap();
+        assert!(
+            xtask::imap_gated_registry_075::load(root.path()).is_err(),
+            "{mode}"
+        );
+    }
+    fs::write(&path, toml::to_string(&original).unwrap()).unwrap();
+    fs::write(
+        &workflow,
+        WORKFLOW.replace("name: Run bounded local proofs", "name: Renamed"),
+    )
+    .unwrap();
+    assert!(xtask::imap_gated_registry_075::load(root.path())
+        .unwrap_err()
+        .to_string()
+        .contains("workflow wiring differs"));
+    fs::write(&path, vec![b'x'; 64 * 1024 + 1]).unwrap();
+    assert!(xtask::imap_gated_registry_075::load(root.path()).is_err());
+}
+#[test]
 fn actual_preparation_tests_are_registered_and_reach_the_bounded_qualification_step() {
     let root = root();
-    let registry = xtask::gated_tests::load_registry(&root).unwrap();
+    let mut registry = xtask::gated_tests::load_registry(&root).unwrap();
+    registry
+        .gate
+        .extend(xtask::imap_gated_registry_075::load(&root).unwrap());
     let entries = registry
         .gate
         .into_iter()

@@ -57,6 +57,7 @@ fn failed_phase_cannot_start_following_phase_and_retains_exit_log() {
     let root = tempfile::tempdir().unwrap();
     let mut c = controller(root.path(), limits(), Cancellation::default());
     let e = c.run(BuildStage::ServerTests, worker("error")).unwrap_err();
+    assert!(e.to_string().contains("fixture_exit"));
     assert_eq!(e.report.outcome, BuildOutcome::Failed);
     assert!(e.report.root_reaped);
     assert_eq!(e.report.remaining_live_members, Some(0));
@@ -89,6 +90,15 @@ fn controller_deadline_is_not_extended_by_heartbeats_and_output_floods_are_refus
 #[test]
 fn outer_budget_reserve_refuses_before_spawn_and_proof_cap_cannot_be_bypassed() {
     let root = tempfile::tempdir().unwrap();
+    for invalid in [Duration::ZERO, Duration::from_secs(7201)] {
+        assert!(BuildController::with_budget(
+            root.path(),
+            invalid,
+            limits(),
+            Cancellation::default()
+        )
+        .is_err());
+    }
     let mut c = BuildController::with_budget(
         root.path(),
         Duration::from_millis(10),
@@ -142,6 +152,7 @@ fn cancellation_is_monotonic_and_reaps_an_actual_running_child() {
     let token = Cancellation::default();
     token.cancel();
     let mut c = controller(root.path(), limits(), token);
+    assert!(c.cancellation().is_cancelled());
     assert!(c
         .run(BuildStage::ServerTests, worker("echo"))
         .unwrap_err()
@@ -243,4 +254,36 @@ fn aggregate_output_and_stage_work_are_bounded() {
         Cancellation::default()
     )
     .is_err());
+}
+#[test]
+fn combined_stream_bound_is_independent_of_each_stream_and_result_publication_is_exclusive() {
+    let output = execute(worker("both"), &[], ProcessBounds::default()).unwrap();
+    assert_eq!(output.stdout, b"12345678");
+    assert_eq!(output.stderr, b"abcdefgh");
+    let root = tempfile::tempdir().unwrap();
+    let mut bounds = limits();
+    bounds.aggregate_output_bytes = 12;
+    let mut c = controller(root.path(), bounds, Cancellation::default());
+    let error = c.run(BuildStage::ServerTests, worker("both")).unwrap_err();
+    assert_eq!(error.report.outcome, BuildOutcome::OutputLimit);
+    assert!(error.report.root_reaped);
+    assert_eq!(error.report.remaining_live_members, Some(0));
+    let mut c = controller(root.path(), limits(), Cancellation::default());
+    let result = c.directory().join("1-ServerTests.json");
+    std::fs::write(&result, b"existing fixture; not a build receipt").unwrap();
+    let error = c.run(BuildStage::ServerTests, worker("echo")).unwrap_err();
+    assert_eq!(error.report.outcome, BuildOutcome::JournalFailed);
+    assert!(error.report.root_reaped);
+    assert_eq!(error.report.remaining_live_members, Some(0));
+    assert_eq!(
+        std::fs::read(result).unwrap(),
+        b"existing fixture; not a build receipt"
+    );
+    assert_eq!(
+        c.run(BuildStage::JavaContract, worker("echo"))
+            .unwrap_err()
+            .report
+            .outcome,
+        BuildOutcome::Refused
+    );
 }

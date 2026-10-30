@@ -16,6 +16,7 @@ type Result<T> = std::result::Result<T, Box<dyn Error>>;
 pub const BASELINE: &str = "98d7321b1cda568c386cbfdef1993c7e4dcebe38";
 const MAX: usize = 8 * 1024 * 1024;
 const MAX_RAW: usize = 128 * 1024 * 1024;
+const MAX_RAW_TOTAL: u64 = 6 * 1024 * 1024 * 1024;
 const SCOPES: &[&str] = &[
     "crates/xtask/src/",
     "crates/hydracache-cluster-testkit/src/",
@@ -253,22 +254,13 @@ pub fn source_snapshot_since(root: &Path, baseline: &str) -> Result<Vec<Source>>
     if !hex(baseline, 40) {
         return Err("coverage baseline commit identity required".into());
     }
-    fn git(root: &Path, args: &[&str]) -> Result<Vec<u8>> {
-        let patterns = SCOPES
-            .iter()
-            .flat_map(|scope| {
-                [
-                    format!(":(glob){scope}**/*.rs"),
-                    format!(":(glob){scope}**/*.java"),
-                ]
-            })
-            .collect::<Vec<_>>();
-        let result = Command::new("git")
-            .current_dir(root)
-            .args(args)
-            .arg("--")
-            .args(patterns)
-            .output()?;
+    fn git(root: &Path, args: &[&str], paths: &[String]) -> Result<Vec<u8>> {
+        let mut command = Command::new("git");
+        command.current_dir(root).args(args);
+        if !paths.is_empty() {
+            command.arg("--").args(paths);
+        }
+        let result = command.output()?;
         if !result.status.success() || result.stdout.len() > MAX {
             return Err(format!(
                 "coverage scoped Git input failed/bounded: status {}, {} output bytes; {}",
@@ -283,24 +275,80 @@ pub fn source_snapshot_since(root: &Path, baseline: &str) -> Result<Vec<Source>>
         }
         Ok(result.stdout)
     }
-    let changed = added_lines(&git(
+    let patterns = SCOPES
+        .iter()
+        .flat_map(|scope| {
+            [
+                format!(":(glob){scope}**/*.rs"),
+                format!(":(glob){scope}**/*.java"),
+            ]
+        })
+        .collect::<Vec<_>>();
+    let parents = git(root, &["rev-list", "--parents", "-n", "1", "HEAD"], &[])?;
+    let parents = std::str::from_utf8(&parents)?
+        .split_whitespace()
+        .collect::<Vec<_>>();
+    let mut own_tip = "HEAD";
+    if parents.len() == 3 {
+        let first = git(root, &["merge-base", baseline, parents[1]], &[])?;
+        let second = git(root, &["merge-base", baseline, parents[2]], &[])?;
+        let first_owned = std::str::from_utf8(&first)?.trim() == baseline;
+        let second_owned = std::str::from_utf8(&second)?.trim() == baseline;
+        if first_owned && !second_owned {
+            own_tip = parents[1];
+        } else if second_owned && !first_owned {
+            own_tip = parents[2];
+        }
+    }
+    // A PR merge may contain a much newer 0.74 tree. Select 0.75's changed files
+    // before requesting patches, while still binding every final tracked source.
+    // Changed lines in shared files are conservatively retained in full.
+    let names = git(
         root,
         &[
-            "-c",
-            "core.quotepath=false",
             "diff",
             "--no-ext-diff",
             "--no-textconv",
             "--no-renames",
-            "--unified=0",
+            "--name-only",
+            "-z",
             baseline,
-            "HEAD",
+            own_tip,
         ],
-    )?)?;
+        &patterns,
+    )?;
+    let paths = std::str::from_utf8(&names)?
+        .split('\0')
+        .filter(|p| !p.is_empty())
+        .map(|p| format!(":(literal){p}"))
+        .collect::<Vec<_>>();
+    if paths.len() > 2048 {
+        return Err("coverage changed-source work bound".into());
+    }
+    let changed = if paths.is_empty() {
+        BTreeMap::new()
+    } else {
+        added_lines(&git(
+            root,
+            &[
+                "-c",
+                "core.quotepath=false",
+                "diff",
+                "--no-ext-diff",
+                "--no-textconv",
+                "--no-renames",
+                "--unified=0",
+                baseline,
+                "HEAD",
+            ],
+            &paths,
+        )?)?
+    };
     let mut result = Vec::new();
     for path in std::str::from_utf8(&git(
         root,
         &["-c", "core.quotepath=false", "ls-files", "-z"],
+        &patterns,
     )?)?
     .split('\0')
     .filter(|p| !p.is_empty())
@@ -779,11 +827,7 @@ pub struct Analysis {
 }
 
 fn suffix(name: &str) -> String {
-    if cfg!(windows) {
-        format!("{name}.exe")
-    } else {
-        name.into()
-    }
+    format!("{name}{}", std::env::consts::EXE_SUFFIX)
 }
 fn runner(root: &Path) -> PathBuf {
     root.join(RUNNER_TARGET).join("debug").join(suffix("xtask"))
@@ -1405,7 +1449,7 @@ pub fn public_workloads(directory: &str) -> Vec<Vec<String>> {
             "--profile",
             "smoke",
             "--host-budget-seconds",
-            "60",
+            "180",
             "--output",
         ]
         .into_iter()
@@ -1429,7 +1473,7 @@ fn capture_consumer(
     driver: &mut impl CoverageDriver,
     streams: &mut Vec<Artifact>,
 ) -> Result<()> {
-    let temp = tempfile::tempdir_in(directory)?;
+    let temp = consumer_workspace(root)?;
     fs::create_dir(temp.path().join("src"))?;
     fs::copy(
         root.join("tests/rust-imap-contract-consumer-075/src/main.rs"),
@@ -1490,6 +1534,16 @@ fn capture_consumer(
         command,
     )?;
     Ok(())
+}
+
+/// A single owned temporary workspace keeps the remap flag and dependency cache
+/// stable across captures. Existing/stale workspaces refuse; their contents are
+/// never reused. TempDir removes only this newly created workspace on drop.
+pub fn consumer_workspace(root: &Path) -> Result<tempfile::TempDir> {
+    Ok(tempfile::Builder::new()
+        .prefix("coverage-consumer-workspace")
+        .rand_bytes(0)
+        .tempdir_in(root.join("target/imap-075"))?)
 }
 
 /// Code-chosen JaCoCo phase arguments; inherited JVM injection remains scrubbed by the executor.
@@ -1610,12 +1664,7 @@ pub fn collect_profiles(
                 continue;
             }
             let reference = artifact(root, &path, MAX_RAW)?;
-            total = total
-                .checked_add(reference.bytes)
-                .ok_or("LLVM profile bytes overflow")?;
-            if reference.bytes == 0 || total > 4 * 1024 * 1024 * 1024 {
-                return Err("LLVM raw profile aggregate bound".into());
-            }
+            total = profile_total(total, reference.bytes)?;
             result.push(reference);
         }
         if role != "analysis" && before == result.len() {
@@ -1627,6 +1676,15 @@ pub fn collect_profiles(
         return Err("LLVM execution profiles missing".into());
     }
     Ok(result)
+}
+pub fn profile_total(total: u64, bytes: u64) -> Result<u64> {
+    let sum = total
+        .checked_add(bytes)
+        .ok_or("LLVM profile bytes overflow")?;
+    if bytes == 0 || bytes > MAX_RAW as u64 || sum > MAX_RAW_TOTAL {
+        return Err("LLVM raw profile aggregate bound".into());
+    }
+    Ok(sum)
 }
 fn java_tool_artifacts(root: &Path) -> Result<Vec<Artifact>> {
     [

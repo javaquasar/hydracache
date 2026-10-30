@@ -39,8 +39,19 @@ process's own profile and requires it after physical exit. Seventeen coverage
 tests and the explicit public-CLI refusal canary cover this boundary. Fresh
 current-source capture and zero-missed-line qualification remain required.
 
-All four prepared-artifact integration tests are registered in the common gated
-test inventory and wired to the bounded 0.75 qualification step. A scoped test
-checks their registration and workflow references. The common registry still
+All four prepared-artifact integration tests are registered in a closed 0.75
+extension imported by common discovery validation, and wired to the bounded 0.75
+qualification step. A scoped test checks their registration and actual workflow
+references, with canaries for foreign metadata. The common registry still
 reports eight unregistered Linux targets in the unchanged 0.74 supervisor test
 sources; this is not a passing global-registry or general-CI claim.
+
+The clean `95fed9bba` capture completed preparation/replay and native probe CLI
+commands, then refused its all-cohort smoke because the caller supplied only
+60 seconds of shared host budget. Cleanup was confirmed. A separate diagnostic
+run with a 180-second shared budget completed reference/native/daemon smoke and
+both checkpoint/report resumes. The actual five-stage Cargo replay and all eight
+provenance mutation cases passed; the soak mutation fixture's distinct-producer
+binding was diagnosed and corrected. These diagnostic profiles are retained;
+they do not constitute a qualified coverage report. Fresh final capture remains
+required after the fixes.

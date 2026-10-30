@@ -41,6 +41,7 @@ pub mod imap_extended_receipt_075;
 pub mod imap_foundation_component_proofs;
 pub mod imap_foundation_evidence;
 pub mod imap_foundation_generate;
+pub mod imap_gated_registry_075;
 pub mod imap_hazelcast_source;
 pub mod imap_migration_dry_run;
 pub mod imap_native_concurrent_075;

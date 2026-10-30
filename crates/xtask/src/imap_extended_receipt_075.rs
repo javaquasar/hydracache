@@ -480,12 +480,7 @@ fn runtime() -> Result<RuntimeBinding, Box<dyn Error>> {
         rust_fingerprint: fingerprint("rustc", &["--version"])?,
         java_fingerprint: fingerprint(&java, &["-Xmx128m", "--version"])?,
         java_launcher_sha256: launcher,
-        process_scope: if cfg!(windows) {
-            "windows_job_kill_on_close_process_commit_limit"
-        } else {
-            "linux_owned_session_nested_groups_per_process_address_space_limit"
-        }
-        .into(),
+        process_scope: crate::imap_proof_process_075::PROCESS_SCOPE.into(),
         process_timeout_ms: bounds.timeout.as_millis() as u64,
         process_memory_bytes: bounds.memory_bytes as u64,
         process_count_limit: if bounds.maximum_processes == 0 {

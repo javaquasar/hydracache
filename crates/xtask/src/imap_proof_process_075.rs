@@ -13,6 +13,8 @@ mod platform;
 #[path = "imap_proof_process_linux_075.rs"]
 mod platform;
 
+pub(crate) const PROCESS_SCOPE: &str = platform::SCOPE;
+
 #[derive(Debug, Clone, Copy)]
 pub struct ProcessBounds {
     pub timeout: Duration,

@@ -11,6 +11,11 @@ use std::sync::{
     Arc,
 };
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+#[cfg(windows)]
+const BUILD_CONTAINMENT: &str = "windows_job_per_process_commit_limit";
+#[cfg(target_os = "linux")]
+const BUILD_CONTAINMENT: &str =
+    "owned_session_nested_groups_per_process_address_space_no_count_cap";
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -301,12 +306,7 @@ impl BuildController {
             pid: None,
             root_reaped: false,
             remaining_live_members: None,
-            containment: if cfg!(windows) {
-                "windows_job_per_process_commit_limit"
-            } else {
-                "owned_session_nested_groups_per_process_address_space_no_count_cap"
-            }
-            .into(),
+            containment: BUILD_CONTAINMENT.into(),
             journal_complete: false,
             logs_complete: false,
         };

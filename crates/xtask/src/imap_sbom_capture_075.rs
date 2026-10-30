@@ -212,11 +212,8 @@ impl Capture {
         fs::create_dir_all(root.join("tests/java-imap-provenance-075/target"))?;
         let package =
             root.join("tests/java-imap-provenance-075/src/main/java/io/hydracache/imap/provenance");
-        let mut javac = Command::new(jdk.join(if cfg!(windows) {
-            "bin/javac.exe"
-        } else {
-            "bin/javac"
-        }));
+        let mut javac =
+            Command::new(jdk.join(format!("bin/javac{}", std::env::consts::EXE_SUFFIX)));
         javac
             .args([
                 "-J-Xms16m",
@@ -257,11 +254,7 @@ impl Capture {
             ),
             resource.join("components.xml"),
         )?;
-        let mut jar = Command::new(jdk.join(if cfg!(windows) {
-            "bin/jar.exe"
-        } else {
-            "bin/jar"
-        }));
+        let mut jar = Command::new(jdk.join(format!("bin/jar{}", std::env::consts::EXE_SUFFIX)));
         jar.args([
             "-J-Xms16m",
             "-J-Xmx128m",

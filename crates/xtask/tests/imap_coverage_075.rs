@@ -46,7 +46,7 @@ fn public_workloads_use_fixed_probes_and_distinct_short_resume_segments() {
                 "--profile",
                 "smoke",
                 "--host-budget-seconds",
-                "60",
+                "180",
                 "--output"
             ]
         );
@@ -69,6 +69,25 @@ fn public_workloads_use_fixed_probes_and_distinct_short_resume_segments() {
             assert!(!arguments[12].starts_with(&arguments[10]));
         }
     }
+}
+#[test]
+fn consumer_workspace_refuses_concurrent_or_stale_inputs_and_restarts_empty_at_the_same_path() {
+    let root = tempfile::tempdir().unwrap();
+    assert!(consumer_workspace(root.path()).is_err());
+    std::fs::create_dir_all(root.path().join("target/imap-075")).unwrap();
+    let first = consumer_workspace(root.path()).unwrap();
+    let path = first.path().to_path_buf();
+    assert!(path.ends_with("target/imap-075/coverage-consumer-workspace"));
+    std::fs::write(path.join("stale-input"), b"owned fixture").unwrap();
+    assert!(consumer_workspace(root.path()).is_err());
+    drop(first);
+    assert!(!path.exists());
+    let next = consumer_workspace(root.path()).unwrap();
+    assert_eq!(next.path(), path);
+    assert_eq!(std::fs::read_dir(next.path()).unwrap().count(), 0);
+    let retained = next.keep();
+    assert!(consumer_workspace(root.path()).is_err());
+    std::fs::remove_dir(retained).unwrap();
 }
 fn profile() -> Profile {
     Profile {
@@ -356,6 +375,19 @@ fn live_analysis_is_deferred_only_for_measurement_and_every_final_profile_is_req
     assert!(collect_profiles(root.path(), &directory, None).is_err());
 }
 #[test]
+fn raw_profile_budget_is_exact_and_refuses_empty_oversized_and_overflow_inputs() {
+    let limit = 6 * 1024 * 1024 * 1024;
+    assert_eq!(profile_total(0, 1).unwrap(), 1);
+    assert_eq!(profile_total(limit - 1, 1).unwrap(), limit);
+    assert!(profile_total(limit, 1).is_err());
+    assert!(profile_total(0, 0).is_err());
+    assert!(profile_total(0, 128 * 1024 * 1024 + 1).is_err());
+    assert!(profile_total(u64::MAX, 1)
+        .unwrap_err()
+        .to_string()
+        .contains("overflow"));
+}
+#[test]
 fn missing_empty_foreign_duplicate_and_platform_mixed_components_refuse() {
     let mut sources = vec![source("crates/xtask/src/unit.rs")];
     let data = Lines::from([(
@@ -606,6 +638,125 @@ fn git(root: &Path, args: &[&str]) -> String {
     );
     String::from_utf8(result.stdout).unwrap().trim().into()
 }
+fn record(root: &Path, message: &str) {
+    git(root, &["add", "."]);
+    git(
+        root,
+        &[
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "-qm",
+            message,
+        ],
+    );
+}
+#[test]
+fn merge_scope_keeps_every_owned_file_before_the_patch_budget_and_binds_all_final_sources() {
+    let root = tempfile::tempdir().unwrap();
+    git(root.path(), &["init", "-q"]);
+    git(root.path(), &["config", "core.autocrlf", "false"]);
+    let directory = root.path().join("crates/xtask/src");
+    std::fs::create_dir_all(&directory).unwrap();
+    let shared = "pub fn inherited() -> u8 { 1 }\n// gap 1\n// gap 2\n// gap 3\n// gap 4\n";
+    std::fs::write(directory.join("shared.rs"), shared).unwrap();
+    record(root.path(), "common predecessor");
+    let common = git(root.path(), &["rev-parse", "HEAD"]);
+    std::fs::write(directory.join("foundation.rs"), "pub fn baseline() {}\n").unwrap();
+    record(root.path(), "075 coverage baseline");
+    let baseline = git(root.path(), &["rev-parse", "HEAD"]);
+    git(root.path(), &["checkout", "-qb", "owned"]);
+    std::fs::write(
+        directory.join("shared.rs"),
+        format!("{shared}pub fn added_075() -> u8 {{ 7 }}\n"),
+    )
+    .unwrap();
+    std::fs::write(directory.join("owned.rs"), "pub fn owned() {}\n").unwrap();
+    record(root.path(), "075 changes");
+    git(root.path(), &["checkout", "--detach", &common]);
+    std::fs::write(
+        directory.join("shared.rs"),
+        shared.replace("{ 1 }", "{ 2 }"),
+    )
+    .unwrap();
+    for name in ["base_large_a.rs", "base_large_b.rs"] {
+        std::fs::write(
+            directory.join(name),
+            format!("//{}\n", "x".repeat(4 * 1024 * 1024 + 1)),
+        )
+        .unwrap();
+    }
+    std::fs::write(
+        directory.join("base_only.rs"),
+        "pub fn predecessor_only() {}\n",
+    )
+    .unwrap();
+    record(root.path(), "new published predecessor");
+    git(root.path(), &["branch", "upstream"]);
+    git(
+        root.path(),
+        &[
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "merge",
+            "--no-ff",
+            "--no-edit",
+            "owned",
+        ],
+    );
+    let first = source_snapshot_since(root.path(), &baseline).unwrap();
+    assert!(first
+        .iter()
+        .filter(|s| s.path.contains("base_"))
+        .all(|s| s.added.is_empty()));
+    assert!(
+        first
+            .iter()
+            .find(|s| s.path.ends_with("base_only.rs"))
+            .unwrap()
+            .has_executable
+    );
+    assert_eq!(
+        first
+            .iter()
+            .find(|s| s.path.ends_with("owned.rs"))
+            .unwrap()
+            .added,
+        [1].into_iter().collect()
+    );
+    // In a shared file the final baseline diff is conservative: both the 0.75
+    // addition and the predecessor's changed line remain executable obligations.
+    assert_eq!(
+        first
+            .iter()
+            .find(|s| s.path.ends_with("shared.rs"))
+            .unwrap()
+            .added,
+        [1, 6].into_iter().collect()
+    );
+    git(root.path(), &["checkout", "owned"]);
+    git(
+        root.path(),
+        &[
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "merge",
+            "--no-ff",
+            "--no-edit",
+            "upstream",
+        ],
+    );
+    assert_eq!(
+        source_snapshot_since(root.path(), &baseline).unwrap(),
+        first
+    );
+}
 #[test]
 fn snapshot_discovers_new_scoped_files_from_real_git_and_hashes_comments() {
     let root = tempfile::tempdir().unwrap();
@@ -675,6 +826,8 @@ fn snapshot_discovers_new_scoped_files_from_real_git_and_hashes_comments() {
     assert!(source_snapshot_since(root.path(), "bad-baseline").is_err());
     assert!(source_snapshot_since(root.path(), &"0".repeat(40)).is_err());
     assert!(source_snapshot_since(root.path(), "HEAD").is_err());
+    let current = git(root.path(), &["rev-parse", "HEAD"]);
+    assert!(source_snapshot_since(root.path(), &current).is_err());
     for mode in ["capture", "worker", "analysis", "check", "unknown"] {
         assert!(run(vec![], mode).is_err());
         assert!(run(
@@ -688,6 +841,30 @@ fn snapshot_discovers_new_scoped_files_from_real_git_and_hashes_comments() {
         )
         .is_err());
     }
+    for index in 0..2049 {
+        std::fs::write(
+            root.path()
+                .join(format!("crates/xtask/src/bound_{index}.rs")),
+            "// bounded source fixture\n",
+        )
+        .unwrap();
+    }
+    record(root.path(), "changed source work bound");
+    assert!(source_snapshot_since(root.path(), &baseline)
+        .unwrap_err()
+        .to_string()
+        .contains("changed-source work bound"));
+    let wide = git(root.path(), &["rev-parse", "HEAD"]);
+    std::fs::write(
+        root.path().join("crates/xtask/src/new.rs"),
+        "pub fn changed_again() {}\n",
+    )
+    .unwrap();
+    record(root.path(), "all tracked source work bound");
+    assert!(source_snapshot_since(root.path(), &wide)
+        .unwrap_err()
+        .to_string()
+        .contains("source work bound"));
 }
 struct FakeDriver {
     calls: usize,

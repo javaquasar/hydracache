@@ -582,13 +582,37 @@ fn actual_saved_soak_and_restart_reject_substituted_and_partial_archives() {
         std::env::var("IMAP075_SOAK_FIXTURE").expect("explicit actual smoke fixture required");
     assert!(directory.starts_with("target/imap-075/"));
     let directory = root.join(directory);
-    let original = check_saved(root, &directory.join("report.json")).unwrap();
-    check_checkpoint(root, &directory.join("checkpoint.json")).unwrap();
+    assert!(check_saved(root, &directory.join("report.json"))
+        .unwrap_err()
+        .to_string()
+        .contains("producer/artifact profile differs"));
+    let mut original: SoakReport =
+        serde_json::from_slice(&std::fs::read(directory.join("report.json")).unwrap()).unwrap();
+    // The real CLI already replays the original archive with its original producer.
+    // This distinct test binary owns separate unqualified fixtures, just as the
+    // provenance mutation test does; it never overwrites the original reports.
+    original.profile.artifacts = trusted_profile(
+        root,
+        &original.profile.source_sha,
+        original.profile.cohort,
+        original.profile.bounds.clone(),
+    )
+    .unwrap()
+    .artifacts;
     let transcript = std::fs::read(directory.join("stdout.jsonl")).unwrap();
-    let checkpoint = std::fs::read(directory.join("checkpoint.json")).unwrap();
+    let mut checkpoint: Value =
+        serde_json::from_slice(&std::fs::read(directory.join("checkpoint.json")).unwrap()).unwrap();
+    checkpoint["profile"]["artifacts"] = serde_json::to_value(&original.profile.artifacts).unwrap();
+    let checkpoint = serde_json::to_vec(&checkpoint).unwrap();
     let identity = std::fs::read(directory.join("identity.json")).unwrap();
     let scratch = tempfile::tempdir_in(root.join("target/imap-075")).unwrap();
     let report_path = scratch.path().join("report.json");
+    std::fs::write(&report_path, serde_json::to_vec(&original).unwrap()).unwrap();
+    std::fs::write(scratch.path().join("stdout.jsonl"), &transcript).unwrap();
+    std::fs::write(scratch.path().join("checkpoint.json"), &checkpoint).unwrap();
+    std::fs::write(scratch.path().join("identity.json"), &identity).unwrap();
+    check_saved(root, &report_path).unwrap();
+    check_checkpoint(root, &scratch.path().join("checkpoint.json")).unwrap();
     for mode in 0..6 {
         let mut report = original.clone();
         let mut bytes = transcript.clone();
