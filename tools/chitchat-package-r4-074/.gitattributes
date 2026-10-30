@@ -1,0 +1,4 @@
+# Preserve exact producer bytes and recognize Windows line endings.
+* -text whitespace=cr-at-eol
+# The upstream license includes a literal trailing copyright space.
+inputs/LICENSE whitespace=cr-at-eol,-blank-at-eol
