@@ -80,13 +80,6 @@ pub(crate) fn execute_native(root: &Path, class: &str) -> Result<Vec<u8>, Box<dy
         ),
         root.join("tests/java-imap-hazelcast-075/target/dependencies/hazelcast-5.5.0.jar"),
     ];
-    let hashes = paths
-        .iter()
-        .map(|p| crate::imap_daemon_probe_075::binary_digest(p))
-        .collect::<Result<Vec<_>, _>>()?;
-    if hashes[2] != crate::imap_pre074_075::HAZELCAST_SHA256 {
-        return Err("native dependency pin differs".into());
-    }
     let mut command = Command::new(crate::imap_api_differential::java_executable());
     command
         .arg("-Xmx128m")
@@ -97,22 +90,43 @@ pub(crate) fn execute_native(root: &Path, class: &str) -> Result<Vec<u8>, Box<dy
         .arg("-cp")
         .arg(std::env::join_paths(&paths)?)
         .arg(class);
-    let result = crate::imap_proof_process_075::execute(
-        command,
-        &[],
-        crate::imap_proof_process_075::ProcessBounds {
-            timeout: Duration::from_secs(40),
-            stdout_bytes: 65536,
-            ..Default::default()
-        },
-    )?;
+    execute_pinned(&paths, crate::imap_pre074_075::HAZELCAST_SHA256, || {
+        crate::imap_proof_process_075::execute(
+            command,
+            &[],
+            crate::imap_proof_process_075::ProcessBounds {
+                timeout: Duration::from_secs(40),
+                stdout_bytes: 65536,
+                ..Default::default()
+            },
+        )
+        .map(|result| result.stdout)
+        .map_err(Into::into)
+    })
+}
+fn execute_pinned(
+    paths: &[std::path::PathBuf; 3],
+    pin: &str,
+    launch: impl FnOnce() -> Result<Vec<u8>, Box<dyn Error>>,
+) -> Result<Vec<u8>, Box<dyn Error>> {
+    let hashes = paths
+        .iter()
+        .map(|p| crate::imap_daemon_probe_075::binary_digest(p))
+        .collect::<Result<Vec<_>, _>>()?;
+    if hashes[2] != pin {
+        return Err("native dependency pin differs".into());
+    }
+    let result = launch()?;
     for (path, before) in paths.iter().zip(hashes) {
         if crate::imap_daemon_probe_075::binary_digest(path)? != before {
             return Err("native artifact changed while running".into());
         }
     }
-    Ok(result.stdout)
+    Ok(result)
 }
+#[cfg(test)]
+#[path = "../tests/support/imap_native_artifacts_075.rs"]
+mod artifact_tests;
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     if args != ["--release", "0.75"] {

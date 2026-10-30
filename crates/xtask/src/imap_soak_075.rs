@@ -701,6 +701,118 @@ fn finalize_segment(
     }
 }
 
+struct WorkerFrames {
+    parsed: usize,
+    state: SegmentState,
+    birth: Option<String>,
+}
+impl WorkerFrames {
+    fn accept(
+        &mut self,
+        observation: &process::ProcessObservation<'_>,
+        control: &Path,
+        segment: &str,
+        mut read_birth: impl FnMut(u32) -> Result<String, Box<dyn Error>>,
+    ) -> Result<(), String> {
+        if self.parsed > observation.stdout.len() {
+            return Err("soak stdout observation regressed".into());
+        }
+        while let Some(end) = observation.stdout[self.parsed..]
+            .iter()
+            .position(|b| *b == b'\n')
+        {
+            let line = &observation.stdout[self.parsed..self.parsed + end];
+            if line.len() > 4096 {
+                return Err("soak frame byte bound".into());
+            }
+            self.parsed += end + 1;
+            let frame: Frame = serde_json::from_slice(line).map_err(|e| e.to_string())?;
+            if self.birth.is_none() {
+                if observation.root_exited {
+                    return Err("soak worker died before owned readiness".into());
+                }
+                self.birth = Some(read_birth(observation.pid).map_err(|e| e.to_string())?);
+            }
+            self.state.accept(
+                &frame,
+                observation.pid,
+                self.birth.as_deref().expect("observed process birth"),
+            )?;
+            if frame.phase == Phase::Ready {
+                write_new(
+                    &control.join("identity.json"),
+                    &serde_json::to_vec(&IdentityCheckpoint {
+                        schema: "imap075-soak-identity-v1".into(),
+                        segment: segment.into(),
+                        worker: self.state.worker.clone().expect("accepted worker identity"),
+                    })
+                    .map_err(|e| e.to_string())?,
+                )
+                .map_err(|e| e.to_string())?;
+                publish_marker(control, "start").map_err(|e| e.to_string())?;
+            }
+            println!(
+                "imap-soak: {:?} {:?} round={} active_ms={}",
+                self.state.profile.cohort, frame.phase, frame.round, frame.active_elapsed_ms
+            );
+        }
+        if observation.stdout.len() - self.parsed > 4096 {
+            return Err("unterminated soak frame bound".into());
+        }
+        Ok(())
+    }
+}
+struct WorkerControl<'a> {
+    root: &'a Path,
+    profile: &'a SoakProfile,
+    control: &'a Path,
+    cancel: &'a Cancellation,
+    started: Instant,
+    cancellation_at: Option<Instant>,
+    timeout_drain: bool,
+    last_binding: Instant,
+}
+impl WorkerControl<'_> {
+    fn observe(
+        &mut self,
+        observation: &process::ProcessObservation<'_>,
+        ready: bool,
+        mut clock: impl FnMut() -> Instant,
+        check_bindings: impl FnOnce(&SoakProfile, &Path) -> Result<(), Box<dyn Error>>,
+    ) -> Result<(), String> {
+        if !ready
+            && clock().saturating_duration_since(self.started)
+                > Duration::from_millis(self.profile.bounds.startup_ms)
+        {
+            return Err("soak readiness deadline".into());
+        }
+        let requested = marker(self.control, "cancel").map_err(|e| e.to_string())?;
+        let budget_drain = observation.elapsed
+            >= Duration::from_millis(self.profile.bounds.hard_ms - self.profile.bounds.drain_ms);
+        if (self.cancel.is_cancelled() || requested || budget_drain)
+            && !observation.root_exited
+            && self.cancellation_at.is_none()
+        {
+            if !requested {
+                publish_marker(self.control, "cancel").map_err(|e| e.to_string())?;
+            }
+            self.timeout_drain = budget_drain && !self.cancel.is_cancelled() && !requested;
+            self.cancellation_at = Some(clock());
+        }
+        if self.cancellation_at.is_some_and(|at| {
+            clock().saturating_duration_since(at)
+                > Duration::from_millis(self.profile.bounds.drain_ms)
+        }) && !observation.root_exited
+        {
+            return Err("soak cancellation drain deadline".into());
+        }
+        if clock().saturating_duration_since(self.last_binding) >= Duration::from_secs(10) {
+            check_bindings(self.profile, self.root).map_err(|e| e.to_string())?;
+            self.last_binding = clock();
+        }
+        Ok(())
+    }
+}
 /// Code constructs the command. The profile/checkpoint can never choose a program or arguments.
 pub fn execute_worker(
     root: &Path,
@@ -751,13 +863,23 @@ pub fn execute_worker(
         .create_new(true)
         .write(true)
         .open(control.join("stderr.txt"))?;
-    let (mut saved, mut saved_err, mut parsed) = (0usize, 0usize, 0usize);
-    let mut state = SegmentState::new(profile.clone())?;
-    let mut birth = None;
-    let mut cancellation_at = None;
-    let mut timeout_drain = false;
-    let mut last_binding = Instant::now();
+    let (mut saved, mut saved_err) = (0usize, 0usize);
+    let mut frames = WorkerFrames {
+        parsed: 0,
+        state: SegmentState::new(profile.clone())?,
+        birth: None,
+    };
     let started = Instant::now();
+    let mut controls = WorkerControl {
+        root,
+        profile: &profile,
+        control,
+        cancel: &cancel,
+        started,
+        cancellation_at: None,
+        timeout_drain: false,
+        last_binding: started,
+    };
     let result = process::execute_managed(
         command,
         &[],
@@ -779,81 +901,20 @@ pub fn execute_worker(
                 .write_all(&o.stderr[saved_err..])
                 .map_err(|e| e.to_string())?;
             saved_err = o.stderr.len();
-            while let Some(end) = o.stdout[parsed..].iter().position(|b| *b == b'\n') {
-                let line = &o.stdout[parsed..parsed + end];
-                if line.len() > 4096 {
-                    return Err("soak frame byte bound".into());
-                }
-                parsed += end + 1;
-                let frame: Frame = serde_json::from_slice(line).map_err(|e| e.to_string())?;
-                if birth.is_none() {
-                    if o.root_exited {
-                        return Err("soak worker died before owned readiness".into());
-                    }
-                    birth = Some(process_identity(o.pid).map_err(|e| e.to_string())?);
-                }
-                state.accept(
-                    &frame,
-                    o.pid,
-                    birth.as_deref().expect("observed process birth"),
-                )?;
-                if frame.phase == Phase::Ready {
-                    write_new(
-                        &control.join("identity.json"),
-                        &serde_json::to_vec(&IdentityCheckpoint {
-                            schema: "imap075-soak-identity-v1".into(),
-                            segment: report.segment.clone(),
-                            worker: state.worker.clone().expect("accepted worker identity"),
-                        })
-                        .map_err(|e| e.to_string())?,
-                    )
-                    .map_err(|e| e.to_string())?;
-                    publish_marker(control, "start").map_err(|e| e.to_string())?;
-                }
-                println!(
-                    "imap-soak: {:?} {:?} round={} active_ms={}",
-                    profile.cohort, frame.phase, frame.round, frame.active_elapsed_ms
-                );
-            }
-            if o.stdout.len() - parsed > 4096 {
-                return Err("unterminated soak frame bound".into());
-            }
-            if state.phase.is_none()
-                && started.elapsed() > Duration::from_millis(profile.bounds.startup_ms)
-            {
-                return Err("soak readiness deadline".into());
-            }
-            let requested = marker(control, "cancel").map_err(|e| e.to_string())?;
-            let budget_drain = o.elapsed
-                >= Duration::from_millis(profile.bounds.hard_ms - profile.bounds.drain_ms);
-            if (cancel.is_cancelled() || requested || budget_drain)
-                && !o.root_exited
-                && cancellation_at.is_none()
-            {
-                if !requested {
-                    publish_marker(control, "cancel").map_err(|e| e.to_string())?;
-                }
-                timeout_drain = budget_drain && !cancel.is_cancelled() && !requested;
-                cancellation_at = Some(Instant::now());
-            }
-            if cancellation_at
-                .is_some_and(|at| at.elapsed() > Duration::from_millis(profile.bounds.drain_ms))
-                && !o.root_exited
-            {
-                return Err("soak cancellation drain deadline".into());
-            }
-            if last_binding.elapsed() >= Duration::from_secs(10) {
-                profile.check_artifacts(root).map_err(|e| e.to_string())?;
-                last_binding = Instant::now();
-            }
-            Ok(())
+            frames.accept(&o, control, &report.segment, process_identity)?;
+            controls.observe(
+                &o,
+                frames.state.phase.is_some(),
+                Instant::now,
+                SoakProfile::check_artifacts,
+            )
         },
     );
     stdout.sync_all()?;
     stderr.sync_all()?;
-    report.worker = state.worker;
-    report.rounds = state.rounds;
-    report.active_elapsed_ms = state.active_elapsed_ms;
+    report.worker = frames.state.worker;
+    report.rounds = frames.state.rounds;
+    report.active_elapsed_ms = frames.state.active_elapsed_ms;
     report.transcript_bytes = saved as u64;
     report.transcript_sha256 =
         crate::imap_qualification_075::digest(&fs::read(control.join("stdout.jsonl"))?);
@@ -861,16 +922,16 @@ pub fn execute_worker(
         &mut report,
         result,
         ProtocolEnd::Worker {
-            line_complete: parsed == saved,
-            terminal: state.terminal,
-            cancelled_before_active: cancellation_at.is_some() && state.rounds == 0,
+            line_complete: frames.parsed == saved,
+            terminal: frames.state.terminal,
+            cancelled_before_active: controls.cancellation_at.is_some() && frames.state.rounds == 0,
         },
-        cancellation_at.is_some(),
+        controls.cancellation_at.is_some(),
     );
     let cleanup_complete = report.remaining_members == Some(0) && report.process_reaped;
     finalize_segment(
         &mut report,
-        timeout_drain,
+        controls.timeout_drain,
         profile.check_artifacts(root),
         cleanup_complete,
         "; incomplete process cleanup",
@@ -887,6 +948,9 @@ mod completion_tests;
 #[cfg(test)]
 #[path = "../tests/support/imap_soak_control_075.rs"]
 mod control_tests;
+#[cfg(test)]
+#[path = "../tests/support/imap_soak_frames_075.rs"]
+mod frame_tests;
 pub fn validate_report(report: &SoakReport) -> Result<(), Box<dyn Error>> {
     report.profile.validate()?;
     if report.schema != "imap075-soak-report-v1"

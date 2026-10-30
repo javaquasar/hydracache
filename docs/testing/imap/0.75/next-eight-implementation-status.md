@@ -188,3 +188,12 @@ Default and instrumented checks passed 156 library tests, 38/39 coverage tests
 and 15 SBOM tests (two require actual prepared inputs), with all-target check
 and strict all-feature Clippy. This does not change the actual failed policy
 observations or qualify the remaining source lines.
+
+The native/soak follow-up separates fixed artifact verification, frame parsing
+and deadline decisions from process execution. Unit tests cover missing or
+changed native inputs, launch failures, malformed/regressing frames, readiness,
+cancellation, drain deadlines and periodic binding failures. Modeled cases
+publish no qualified reports. Default and instrumented checks each passed
+164 library, two native and 11 real soak tests (two prepared-input cases remain
+in the capture lane), with all-target checks and strict all-feature Clippy.
+P8 still requires a fresh complete capture and strict matrix admission.
