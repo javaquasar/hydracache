@@ -621,6 +621,48 @@ fn actual_provenance_reconstruction_rejects_archive_and_policy_substitution() {
         artifact(root, &std::env::current_exe().unwrap(), 512 * 1024 * 1024).unwrap();
     std::fs::write(&fixture, serde_json::to_vec(&fixture_base).unwrap()).unwrap();
     verify(root, &fixture).unwrap();
+    let capture: xtask::imap_sbom_capture_075::Capture =
+        serde_json::from_slice(&std::fs::read(root.join(&fixture_base.capture.path)).unwrap())
+            .unwrap();
+    for mode in 0..7 {
+        let mut changed = capture.clone();
+        let expected = match mode {
+            0 => {
+                changed.host = "foreign-target".into();
+                "target host differs"
+            }
+            1 => {
+                changed.cargo_sha256 = "0".repeat(64);
+                "compiler/Cargo substituted"
+            }
+            2 => {
+                changed.rust_inputs.clear();
+                "distribution inputs substituted"
+            }
+            3 => {
+                changed.rust_version.push_str("foreign version\n");
+                "host/version differs"
+            }
+            4 => {
+                changed.source_sha = "0".repeat(40);
+                "source changed during managed build capture"
+            }
+            5 => {
+                changed.stages.clear();
+                "fixed capture stage missing"
+            }
+            _ => {
+                changed.maven_home = scratch.path().to_string_lossy().into_owned();
+                "Maven distribution differs"
+            }
+        };
+        let error = if mode == 4 {
+            generate(root, &changed).unwrap_err()
+        } else {
+            reduce(root, &changed, &fixture_base.source_sha).unwrap_err()
+        };
+        assert!(error.to_string().contains(expected), "{mode}: {error}");
+    }
     for mode in 0..8 {
         let mut changed = fixture_base.clone();
         let expected = match mode {

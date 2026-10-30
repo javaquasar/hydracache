@@ -13,6 +13,13 @@ use std::task::{Context, Poll, Wake, Waker};
 struct LocalWake;
 impl Wake for LocalWake { fn wake(self: Arc<Self>) {} }
 
+fn require_ready<T>(poll: Poll<T>) -> T {
+    match poll {
+        Poll::Ready(value) => value,
+        Poll::Pending => panic!("local reference helper unexpectedly suspended"),
+    }
+}
+
 fn observe() -> String {
     let service=UnifiedIMapService::new(CollectionBounds::default(),3).unwrap();
     let binding=BackendBinding{namespace:NamespaceIdentity{tenant:1,namespace:2,generation:3},route:PartitionRoute{partition:0,epoch:4,owner:5},client:"packaged-consumer".into()};
@@ -27,10 +34,8 @@ fn observe() -> String {
         LocalHelperCommand::EntryViews{keys:vec![vec![0,255]],max_bytes:4096}).unwrap();
     let (_,mut future)=helper.invoke(prepared).unwrap();
     let waker=Waker::from(Arc::new(LocalWake));
-    match future.as_mut().poll(&mut Context::from_waker(&waker)) {
-        Poll::Ready(result) => assert!(matches!(result.outcome,AsyncOutcome::Completed(Ok(LocalHelperResult::EntryViews(views))) if views.len()==1 && views[0].value==Some(vec![0,128,255]))),
-        Poll::Pending => panic!("local reference helper unexpectedly suspended"),
-    }
+    let helper_result=require_ready(future.as_mut().poll(&mut Context::from_waker(&waker)));
+    assert!(matches!(helper_result.outcome,AsyncOutcome::Completed(Ok(LocalHelperResult::EntryViews(views))) if views.len()==1 && views[0].value==Some(vec![0,128,255])));
     let view=service.execute(ServiceCommand::point("get",&[0,255])).unwrap();
     let value=view.value.unwrap().iter().map(|b|format!("{b:02x}")).collect::<String>();
     format!("{{\"schema\":\"imap075-external-rust-consumer-v1\",\"kind\":\"{}\",\"value\":\"{value}\",\"operation_count\":{}}}",result.kind,BackendOperation::ALL.len())
@@ -39,6 +44,17 @@ fn main() { println!("{}",observe()); }
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn consumer_waker_accepts_owned_and_borrowed_notifications() {
+        let waker=super::Waker::from(super::Arc::new(super::LocalWake));
+        waker.wake_by_ref();
+        waker.wake();
+    }
+    #[test]
+    #[should_panic(expected="local reference helper unexpectedly suspended")]
+    fn a_suspended_reference_helper_cannot_be_reported_as_a_completed_consumer() {
+        super::require_ready::<()>(super::Poll::Pending);
+    }
     #[test]
     fn external_consumer_preserves_the_owned_binary_request() {
         assert_eq!(super::observe(),"{\"schema\":\"imap075-external-rust-consumer-v1\",\"kind\":\"inserted\",\"value\":\"0080ff\",\"operation_count\":40}");

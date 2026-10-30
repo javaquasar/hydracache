@@ -75,3 +75,22 @@ partial writes. Finite raw worker faults are allowed to exit so their final LLVM
 checkpoints can be observed; their malformed, leaked, replaced, partial or
 wrong-profile executions remain ineligible for completed segments. These checks
 do not replace final clean-source coverage qualification.
+
+The `277aa0ec6` matrix completed without qualification. Both Rust 1.94 lanes
+reached the final strict LLVM reconstruction and refused uncovered changed
+executable lines. Both Rust 1.88 lanes refused the missing tracked external
+consumer source component. The Windows `31ee66134` capture passed its workloads
+but reached the same missing-consumer refusal during measurement; no qualified
+report was produced. Its 150 raw files are retained in a ZIP with every entry
+independently SHA-256 verified before removing the uncompressed copies.
+
+The follow-up consumer manifest compiles the tracked absolute source directly
+inside an isolated external workspace, avoiding copied relative source remapping.
+New tests cover parser work bounds, deleted-file handling, malformed cfg
+attributes, UNC/source aliases, runtime-matrix refusal, retained Java phase
+bindings and real build-output redirects. Linux procfs parsing, bounded inventory
+and inherited-session checks have injectable read inputs with tests against the
+actual source module on Rust 1.88/1.94 in Ubuntu WSL. Additional prepared SBOM
+mutations check target/compiler/stdlib/version/distribution substitution and
+source changes. Fresh full capture, independent checking and the complete matrix
+remain required before P8 can be marked qualified.

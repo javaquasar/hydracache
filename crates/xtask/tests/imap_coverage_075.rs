@@ -71,6 +71,78 @@ fn public_workloads_use_fixed_probes_and_distinct_short_resume_segments() {
     }
 }
 #[test]
+fn coverage_runtime_matrix_rejects_unsupported_platforms_and_toolchains() {
+    assert_eq!(
+        jvm_relative("windows", "x86_64").unwrap(),
+        "bin/server/jvm.dll"
+    );
+    assert_eq!(
+        jvm_relative("linux", "x86_64").unwrap(),
+        "lib/server/libjvm.so"
+    );
+    for (os, arch) in [
+        ("macos", "x86_64"),
+        ("windows", "aarch64"),
+        ("linux", "x86"),
+    ] {
+        assert!(jvm_relative(os, arch).is_err());
+    }
+    for rust in ["release: 1.88.0", "release: 1.94.0"] {
+        for java in ["openjdk 17.0.1", "openjdk 21.0.1", "java 21.0.1"] {
+            validate_runtime_versions(&format!("rustc\n{rust}\nhost: fixture"), java).unwrap();
+        }
+    }
+    for rust in [
+        "",
+        "release: 1.87.0",
+        "release: 1.94.0-nightly",
+        "prefix release: 1.94.0",
+    ] {
+        assert!(validate_runtime_versions(rust, "openjdk 21.0.1")
+            .unwrap_err()
+            .to_string()
+            .contains("Rust toolchain"));
+    }
+    for java in [
+        "",
+        "openjdk 25.0.1",
+        "unrecognized\nopenjdk 21.0.1",
+        "openjdk 210.1",
+    ] {
+        assert!(validate_runtime_versions("release: 1.94.0", java)
+            .unwrap_err()
+            .to_string()
+            .contains("JDK"));
+    }
+}
+#[test]
+fn external_consumer_manifest_uses_the_tracked_absolute_target_without_a_copied_source() {
+    assert!(consumer_manifest(Path::new("relative")).is_err());
+    let temporary = tempfile::tempdir().unwrap();
+    let root = temporary.path().join("consumer space Юникод");
+    let manifest: toml::Value = toml::from_str(&consumer_manifest(&root).unwrap()).unwrap();
+    assert_eq!(
+        manifest["package"]["name"].as_str(),
+        Some("imap-contract-consumer-075")
+    );
+    assert_eq!(manifest["package"]["publish"].as_bool(), Some(false));
+    assert!(manifest["workspace"].as_table().unwrap().is_empty());
+    assert_eq!(manifest["bin"].as_array().unwrap().len(), 1);
+    assert_eq!(
+        Path::new(manifest["bin"][0]["path"].as_str().unwrap()),
+        root.join("tests/rust-imap-contract-consumer-075/src/main.rs")
+    );
+    assert_eq!(
+        Path::new(
+            manifest["dependencies"]["hydracache-cluster-testkit"]["path"]
+                .as_str()
+                .unwrap()
+        ),
+        root.join("crates/hydracache-cluster-testkit")
+    );
+    assert!(!root.exists());
+}
+#[test]
 fn consumer_workspace_refuses_concurrent_or_stale_inputs_and_restarts_empty_at_the_same_path() {
     let root = tempfile::tempdir().unwrap();
     assert!(consumer_workspace(root.path()).is_err());
@@ -536,6 +608,92 @@ fn future_stale_or_merged_java_sessions_cannot_qualify() {
     assert!(java_lines(&valid, "foreign", "fresh", "C:/Repo", &known).is_err());
 }
 #[test]
+fn java_capture_binds_completed_phases_and_refuses_reused_execution_or_session_inputs() {
+    use xtask::imap_build_process_075::{BuildOutcome, BuildStage};
+    let root = tempfile::tempdir().unwrap();
+    std::fs::write(root.path().join(".gitignore"), "target/\ntests/\n").unwrap();
+    git(root.path(), &["init", "-q"]);
+    record(root.path(), "unqualified Java capture fixture");
+    let directory = root.path().join("target/imap-075/java-fixture");
+    std::fs::create_dir_all(&directory).unwrap();
+    let mut driver = FakeDriver { calls: 0, fail: 0 };
+    let mut report = driver
+        .execute(BuildStage::JavaContract, Command::new("never-executed"))
+        .unwrap();
+    report.stdout_path = directory
+        .join("build.stdout")
+        .to_string_lossy()
+        .into_owned();
+    std::fs::write(
+        directory.join("build.json"),
+        serde_json::to_vec(&report).unwrap(),
+    )
+    .unwrap();
+    for mode in 0..3 {
+        let mut incomplete = report.clone();
+        match mode {
+            0 => incomplete.outcome = BuildOutcome::Failed,
+            1 => incomplete.root_reaped = false,
+            _ => incomplete.remaining_live_members = None,
+        }
+        assert!(retain_java_session(
+            root.path(),
+            &directory,
+            "java-imap-provenance-075",
+            "fixture",
+            &incomplete
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("phase incomplete"));
+    }
+    assert!(java_arguments(root.path(), &directory, "foreign").is_err());
+    for module in [
+        "java-imap-provenance-075",
+        "java-imap-benchmark",
+        "java-imap-hazelcast-075",
+    ] {
+        let (id, arguments) = java_arguments(root.path(), &directory, module).unwrap();
+        assert!(arguments.contains(&"-Djacoco.append=false".into()));
+        let target = root.path().join(format!("tests/{module}/target"));
+        std::fs::create_dir_all(target.join("site/jacoco")).unwrap();
+        std::fs::write(
+            target.join("site/jacoco/jacoco.xml"),
+            b"fixture XML; never qualified",
+        )
+        .unwrap();
+        std::fs::write(
+            target.join(format!("{module}-0.75.0-SNAPSHOT.jar")),
+            b"fixture JAR; never executed",
+        )
+        .unwrap();
+        std::fs::write(
+            directory.join(format!("{module}.exec")),
+            b"fixture execution bytes; never qualified",
+        )
+        .unwrap();
+        assert!(java_arguments(root.path(), &directory, module)
+            .unwrap_err()
+            .to_string()
+            .contains("must be fresh"));
+        retain_java_session(root.path(), &directory, module, &id, &report).unwrap();
+        assert!(
+            retain_java_session(root.path(), &directory, module, &id, &report)
+                .unwrap_err()
+                .to_string()
+                .contains("duplicate Java")
+        );
+    }
+    let sessions: Vec<JavaSession> =
+        serde_json::from_slice(&std::fs::read(directory.join("coverage-sessions.json")).unwrap())
+            .unwrap();
+    assert_eq!(sessions.len(), 3);
+    assert!(sessions
+        .iter()
+        .all(|s| s.exec.bytes > 0 && s.build.bytes > 0));
+    assert!(!directory.join("report.json").exists());
+}
+#[test]
 fn coverage_header_binds_source_tools_cfg_profile_and_all_source_components() {
     let producer = xtask::imap_extended_receipt_075::Artifact {
         path: "target/fixture.exe".into(),
@@ -617,6 +775,106 @@ fn changed_line_ranges_and_cfg_disclosures_are_independent_of_comment_lines() {
     assert_eq!(ranges[0].first, 1);
     assert!(ranges[0].last >= 2);
     assert!(compiled_out_ranges(root.path(), &[source], &BTreeMap::new()).is_err());
+}
+#[test]
+fn parser_work_budgets_and_deleted_files_refuse_without_losing_obligations() {
+    let deleted = b"+++ /dev/null\n@@ -1,2 +0,0 @@\n";
+    assert!(added_lines(deleted).unwrap().is_empty());
+    assert!(added_lines("\n".repeat(200001).as_bytes())
+        .unwrap_err()
+        .to_string()
+        .contains("diff work bound"));
+    let mut diff = String::from("+++ b/crates/xtask/src/unit.rs\n");
+    for _ in 0..11 {
+        diff.push_str("@@ -0,0 +1,100000 @@\n");
+    }
+    assert!(added_lines(diff.as_bytes())
+        .unwrap_err()
+        .to_string()
+        .contains("aggregate changed-line bound"));
+    assert!(
+        parse_lcov("\n".repeat(1000001).as_bytes(), "C:/Repo", &known())
+            .unwrap_err()
+            .to_string()
+            .contains("LCOV work bound")
+    );
+    assert!(parse_lcov(
+        b"SF:crates/xtask/src/unit.rs\nSF:crates/xtask/src/unit.rs\n",
+        "C:/Repo",
+        &known()
+    )
+    .unwrap_err()
+    .to_string()
+    .contains("nested LCOV"));
+    let empty = Lines::from([("crates/xtask/src/unit.rs".into(), BTreeMap::new())]);
+    assert!(summarize(
+        &[source("crates/xtask/src/unit.rs")],
+        &empty,
+        "windows",
+        vec![]
+    )
+    .unwrap_err()
+    .to_string()
+    .contains("empty executable Rust"));
+    let data = Lines::from([("crates/xtask/src/unit.rs".into(), BTreeMap::from([(1, 1)]))]);
+    assert!(summarize(
+        &[source("crates/xtask/src/unit.rs")],
+        &data,
+        "windows",
+        vec![]
+    )
+    .unwrap_err()
+    .to_string()
+    .contains("changed-line set is empty"));
+}
+#[test]
+fn cfg_disclosure_refuses_malformed_attributes_and_unsupported_predicates() {
+    let root = tempfile::tempdir().unwrap();
+    let path = "crates/xtask/src/cfg.rs";
+    std::fs::create_dir_all(root.path().join("crates/xtask/src")).unwrap();
+    let contexts = BTreeMap::from([(path.into(), vec![target()])]);
+    let mut input = source(path);
+    input.added = (1..=10).collect();
+    for (text, reason) in [
+        ("#[cfg]\nfn invalid() {}", "invalid cfg attribute"),
+        (
+            "#[cfg(unsupported(windows))]\nfn invalid() {}",
+            "operator/arity unsupported",
+        ),
+    ] {
+        std::fs::write(root.path().join(path), text).unwrap();
+        assert!(
+            compiled_out_ranges(root.path(), &[input.clone()], &contexts)
+                .unwrap_err()
+                .to_string()
+                .contains(reason)
+        );
+    }
+}
+#[test]
+fn java_source_aliases_and_unc_spellings_remain_unique() {
+    assert_eq!(
+        normalize_source(
+            r"\\server\repo",
+            r"\\?\UNC\server\repo\crates\xtask\src\unit.rs",
+            &known()
+        )
+        .unwrap(),
+        "crates/xtask/src/unit.rs"
+    );
+    let path = "tests/java-imap-provenance-075/src/main/java/Fixture.java";
+    let known = BTreeSet::from([path.into()]);
+    let value = json!({"schema":"imap075-java-coverage-v1","sessions":[{"id":"fresh"}],"sources":{"Fixture.java":{"2":1},"FIXTURE.java":{"3":1}}});
+    assert!(java_lines(
+        &value,
+        "java-imap-provenance-075",
+        "fresh",
+        "C:/Repo",
+        &known
+    )
+    .unwrap_err()
+    .to_string()
+    .contains("duplicate Java coverage source"));
 }
 #[test]
 fn trusted_runner_flags_are_explicit_and_do_not_use_the_live_target() {
@@ -810,12 +1068,16 @@ fn snapshot_discovers_new_scoped_files_from_real_git_and_hashes_comments() {
         ("crates/xtask/src/new.rs", "pub fn added() {}\n"),
         ("crates/xtask/src/comments.rs", "// comment only\n"),
         (
+            "crates/xtask/src/closure.rs",
+            "pub const CALLBACK: fn() = || {};\n",
+        ),
+        (
             "tests/java-imap-provenance-075/src/main/java/Fixture.java",
             "/* { comment */ public class Fixture { void run() {} }\n",
         ),
         (
             "tests/java-imap-provenance-075/src/main/java/Comments.java",
-            "// { comment\n/* { ignored */\n\"{ quoted\"\n",
+            "// { comment\n/* { ignored */\n\"{ quoted \\\" still quoted\"\n",
         ),
         ("outside.rs", "fn ignored() {}"),
     ] {
@@ -837,8 +1099,8 @@ fn snapshot_discovers_new_scoped_files_from_real_git_and_hashes_comments() {
         ],
     );
     let first = source_snapshot_since(root.path(), &baseline).unwrap();
-    assert_eq!(first.len(), 4);
-    assert_eq!(first.iter().filter(|s| s.has_executable).count(), 2);
+    assert_eq!(first.len(), 5);
+    assert_eq!(first.iter().filter(|s| s.has_executable).count(), 3);
     assert!(first.iter().all(|s| !s.added.is_empty()));
     let path = "crates/xtask/src/comments.rs";
     std::fs::write(root.path().join(path), "// a different comment\n").unwrap();

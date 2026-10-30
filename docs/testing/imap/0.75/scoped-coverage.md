@@ -89,9 +89,11 @@ still lasts 200 ms. Producer-bound originals are replayed by their own CLI;
 mutation-test binaries bind separate unqualified copies to their own producer.
 
 The external consumer uses a newly created, exclusively owned temporary workspace
-at a stable path. This keeps the remap flag and dependency cache stable across
-captures. Existing or stale directories refuse, inputs are freshly copied, tests
-run each time, and ordinary drop removes the newly created workspace. The common
+at a stable path. Its generated manifest points directly to the tracked absolute
+consumer source and the testkit dependency. This avoids copied relative source
+paths and compiler-version-dependent LLVM remapping. Existing or stale directories
+refuse, the manifest and lock input are freshly written, tests run each time,
+and ordinary drop removes the newly created workspace. The common
 historical gated-test registry remains byte-identical to its predecessor; the
 closed 0.75 discovery extension lives in this directory and its tests execute
 through the 0.75 capture rather than generic release-evidence receipts.

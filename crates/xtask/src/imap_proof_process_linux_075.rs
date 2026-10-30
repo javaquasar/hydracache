@@ -110,6 +110,9 @@ fn member(pid: i32) -> io::Result<Member> {
     std::fs::File::open(format!("/proc/{pid}/stat"))?
         .take(4097)
         .read_to_string(&mut text)?;
+    parse_member(pid, &text)
+}
+fn parse_member(pid: i32, text: &str) -> io::Result<Member> {
     if text.len() > 4096 {
         return Err(io::Error::other("process stat bound"));
     }
@@ -144,20 +147,25 @@ fn member(pid: i32) -> io::Result<Member> {
     })
 }
 fn inventory() -> io::Result<Vec<Member>> {
+    inventory_from(
+        std::fs::read_dir("/proc")?.map(|entry| entry.map(|entry| entry.file_name())),
+        member,
+    )
+}
+fn inventory_from(
+    entries: impl IntoIterator<Item = io::Result<std::ffi::OsString>>,
+    mut read: impl FnMut(i32) -> io::Result<Member>,
+) -> io::Result<Vec<Member>> {
     let mut result = Vec::new();
-    for (index, entry) in std::fs::read_dir("/proc")?.enumerate() {
+    for (index, entry) in entries.into_iter().enumerate() {
         if index >= 65536 {
             return Err(io::Error::other("process inventory bound"));
         }
         let entry = entry?;
-        let Some(pid) = entry
-            .file_name()
-            .to_str()
-            .and_then(|s| s.parse::<i32>().ok())
-        else {
+        let Some(pid) = entry.to_str().and_then(|s| s.parse::<i32>().ok()) else {
             continue;
         };
-        match member(pid) {
+        match read(pid) {
             Ok(value) => result.push(value),
             Err(error) if absent(&error) || error.kind() == io::ErrorKind::PermissionDenied => {}
             Err(error) => return Err(error),
@@ -166,7 +174,18 @@ fn inventory() -> io::Result<Vec<Member>> {
     Ok(result)
 }
 fn inherited_session() -> io::Result<Option<i32>> {
-    let Some(marker) = std::env::var_os(SESSION_OWNER) else {
+    inherited_session_from(
+        std::env::var_os(SESSION_OWNER),
+        std::process::id() as i32,
+        member,
+    )
+}
+fn inherited_session_from(
+    marker: Option<std::ffi::OsString>,
+    current_pid: i32,
+    mut read: impl FnMut(i32) -> io::Result<Member>,
+) -> io::Result<Option<i32>> {
+    let Some(marker) = marker else {
         return Ok(None);
     };
     let marker = marker
@@ -175,12 +194,12 @@ fn inherited_session() -> io::Result<Option<i32>> {
     let (pid, birth) = marker
         .split_once(':')
         .ok_or_else(|| io::Error::other("invalid process session marker"))?;
-    let owner = member(
+    let owner = read(
         pid.parse()
             .map_err(|_| io::Error::other("invalid process owner PID"))?,
     )?;
-    let current = member(std::process::id() as i32)?;
-    let leader = member(current.session)?;
+    let current = read(current_pid)?;
+    let leader = read(current.session)?;
     if birth.parse::<u64>().ok() != Some(owner.birth)
         || !owner.live
         || leader.parent != owner.pid

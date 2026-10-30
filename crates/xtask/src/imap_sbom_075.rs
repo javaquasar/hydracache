@@ -1528,3 +1528,7 @@ pub fn run(args: Vec<String>, check: bool) -> Result<()> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "../tests/support/imap_sbom_offline_075.rs"]
+mod offline_tests;

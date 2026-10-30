@@ -937,13 +937,38 @@ fn fingerprint(path: &Path, args: &[&str]) -> Result<String> {
     bytes.extend(result.stderr);
     Ok(String::from_utf8(bytes)?.trim().to_owned())
 }
+/// The admitted runtime matrix is checked independently of expensive file hashing.
+pub fn jvm_relative(os: &str, arch: &str) -> Result<&'static str> {
+    if arch != "x86_64" {
+        return Err("coverage platform is outside the admitted profile".into());
+    }
+    match os {
+        "windows" => Ok("bin/server/jvm.dll"),
+        "linux" => Ok("lib/server/libjvm.so"),
+        _ => Err("coverage platform is outside the admitted profile".into()),
+    }
+}
+pub fn validate_runtime_versions(rust: &str, java: &str) -> Result<()> {
+    if !["release: 1.88.0", "release: 1.94.0"]
+        .iter()
+        .any(|release| rust.lines().any(|line| line == *release))
+    {
+        return Err("coverage Rust toolchain is outside the admitted 0.75 matrix".into());
+    }
+    if !["17.", "21."].iter().any(|v| {
+        java.lines().next().is_some_and(|l| {
+            l.starts_with(&format!("java {v}")) || l.starts_with(&format!("openjdk {v}"))
+        })
+    }) {
+        return Err("coverage JDK is outside the admitted 0.75 matrix".into());
+    }
+    Ok(())
+}
 pub fn current_profile() -> Result<Profile> {
     validate_policy(&serde_json::from_str(include_str!(
         "../../../docs/testing/imap/0.75/coverage-profile.json"
     ))?)?;
-    if !["windows", "linux"].contains(&std::env::consts::OS) || std::env::consts::ARCH != "x86_64" {
-        return Err("coverage platform is outside the admitted profile".into());
-    }
+    let jvm = jvm_relative(std::env::consts::OS, std::env::consts::ARCH)?;
     let mut tools = Vec::new();
     for (name, path) in tool_paths()? {
         let args = if name == "java" {
@@ -971,25 +996,13 @@ pub fn current_profile() -> Result<Profile> {
         .iter()
         .find(|t| t.name == "rustc")
         .ok_or("coverage rustc missing")?;
-    if !["release: 1.88.0", "release: 1.94.0"]
-        .iter()
-        .any(|release| rust.version.lines().any(|line| line == *release))
-    {
-        return Err("coverage Rust toolchain is outside the admitted 0.75 matrix".into());
-    }
     let java = tools
         .iter()
         .find(|t| t.name == "java")
         .ok_or("coverage JDK missing")?
         .version
         .clone();
-    if !["17.", "21."].iter().any(|v| {
-        java.lines().next().is_some_and(|l| {
-            l.starts_with(&format!("java {v}")) || l.starts_with(&format!("openjdk {v}"))
-        })
-    }) {
-        return Err("coverage JDK is outside the admitted 0.75 matrix".into());
-    }
+    validate_runtime_versions(&rust.version, &java)?;
     let java_path = crate::imap_api_differential::java_executable().canonicalize()?;
     let java_home = java_path
         .parent()
@@ -998,14 +1011,7 @@ pub fn current_profile() -> Result<Profile> {
     for (name, relative) in [
         ("jdk-release", "release"),
         ("jdk-modules", "lib/modules"),
-        (
-            "jdk-jvm",
-            if cfg!(windows) {
-                "bin/server/jvm.dll"
-            } else {
-                "lib/server/libjvm.so"
-            },
-        ),
+        ("jdk-jvm", jvm),
     ] {
         let file = java_home.join(relative);
         tools.push(Tool {
@@ -1694,27 +1700,8 @@ fn capture_consumer(
     streams: &mut Vec<CompilerRecord>,
 ) -> Result<()> {
     let temp = consumer_workspace(root)?;
-    fs::create_dir(temp.path().join("src"))?;
-    fs::copy(
-        root.join("tests/rust-imap-contract-consumer-075/src/main.rs"),
-        temp.path().join("src/main.rs"),
-    )?;
-    let dependency = root
-        .join("crates/hydracache-cluster-testkit")
-        .to_string_lossy()
-        .replace('\\', "/");
-    fs::write(
-        temp.path().join("Cargo.toml"),
-        toml::to_string(
-            &serde_json::json!({"package":{"name":"imap-contract-consumer-075","version":"0.0.0","edition":"2021","publish":false},"workspace":{},"dependencies":{"hydracache-cluster-testkit":{"path":dependency}}}),
-        )?,
-    )?;
+    fs::write(temp.path().join("Cargo.toml"), consumer_manifest(root)?)?;
     fs::copy(root.join("Cargo.lock"), temp.path().join("Cargo.lock"))?;
-    let remap = format!(
-        "--remap-path-prefix={}={}",
-        temp.path().display(),
-        root.join("tests/rust-imap-contract-consumer-075").display()
-    );
     for action in ["test", "build"] {
         let mut command = Command::new("cargo");
         command.current_dir(temp.path()).args([
@@ -1726,10 +1713,6 @@ fn capture_consumer(
             command.arg("--locked");
         }
         instrumentation(&mut command, root, &directory.join("raw/consumer"));
-        command.env_remove("RUSTFLAGS").env(
-            "CARGO_ENCODED_RUSTFLAGS",
-            ["-C", "instrument-coverage", "-C", "debuginfo=0", &remap].join("\x1f"),
-        );
         let report = driver.execute(
             crate::imap_build_process_075::BuildStage::CoverageExecution,
             command,
@@ -1760,7 +1743,22 @@ fn capture_consumer(
     Ok(())
 }
 
-/// A single owned temporary workspace keeps the remap flag and dependency cache
+/// Compile the tracked consumer directly from an isolated external workspace.
+/// Absolute Cargo target paths avoid compiler-version-dependent remapping of
+/// a copied relative `src/main.rs` in LLVM coverage maps.
+pub fn consumer_manifest(root: &Path) -> Result<String> {
+    if !root.is_absolute() {
+        return Err("absolute consumer source root required".into());
+    }
+    Ok(toml::to_string(&serde_json::json!({
+        "package": {"name":"imap-contract-consumer-075", "version":"0.0.0", "edition":"2021", "publish":false},
+        "workspace": {},
+        "bin": [{"name":"imap-contract-consumer-075", "path":root.join("tests/rust-imap-contract-consumer-075/src/main.rs")}],
+        "dependencies": {"hydracache-cluster-testkit":{"path":root.join("crates/hydracache-cluster-testkit")}}
+    }))?)
+}
+
+/// A single owned temporary workspace keeps the manifest and dependency cache
 /// stable across captures. Existing/stale workspaces refuse; their contents are
 /// never reused. TempDir removes only this newly created workspace on drop.
 pub fn consumer_workspace(root: &Path) -> Result<tempfile::TempDir> {

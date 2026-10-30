@@ -31,6 +31,48 @@ fn controller(root: &std::path::Path, bounds: BuildBounds, token: Cancellation) 
     BuildController::with_budget(root, Duration::from_secs(seconds), bounds, token).unwrap()
 }
 #[test]
+fn build_controllers_refuse_real_redirects_before_creating_external_outputs() {
+    let root = tempfile::tempdir().unwrap();
+    let outside = tempfile::tempdir().unwrap();
+    let redirect = root.path().join("target");
+    #[cfg(windows)]
+    {
+        let mut command = Command::new("powershell.exe");
+        command.args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Command",
+            "$ErrorActionPreference='Stop'; New-Item -ItemType Junction -Path $env:IMAP075_TEST_JUNCTION -Value $env:IMAP075_TEST_DESTINATION | Out-Null"])
+            .env("IMAP075_TEST_JUNCTION", &redirect)
+            .env("IMAP075_TEST_DESTINATION", outside.path());
+        execute(
+            command,
+            &[],
+            ProcessBounds {
+                timeout: Duration::from_secs(20),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    }
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(outside.path(), &redirect).unwrap();
+    let error = BuildController::with_budget(
+        root.path(),
+        Duration::from_secs(5),
+        limits(),
+        Cancellation::default(),
+    )
+    .err()
+    .expect("redirect must refuse");
+    assert!(
+        error.to_string().contains("symlinked") || error.to_string().contains("reparse"),
+        "{error}"
+    );
+    assert!(!outside.path().join("imap-075").exists());
+    #[cfg(windows)]
+    std::fs::remove_dir(redirect).unwrap();
+    #[cfg(unix)]
+    std::fs::remove_file(redirect).unwrap();
+}
+#[test]
 fn builds_retain_bounded_logs_phase_events_and_verified_cleanup() {
     let root = tempfile::tempdir().unwrap();
     let mut c = controller(root.path(), limits(), Cancellation::default());
