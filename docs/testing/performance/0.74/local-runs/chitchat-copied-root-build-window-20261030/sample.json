@@ -1,0 +1,38 @@
+{
+  "utc": "2026-10-30T16:34:50.2491182Z",
+  "free_bytes": 7850397696,
+  "compilers": [
+    {
+      "ProcessId": 8604,
+      "Name": "cargo.exe",
+      "CommandLine": "\"C:\\Users\\ArturBuzov\\.cargo\\bin\\cargo.exe\" test -p xtask --test imap_coverage_075 --test imap_build_process_075 --features imap-075-coverage --locked --config profile.dev.opt-level=0 --config profile.test.opt-level=0 --config \"profile.dev.package.\\\"sha2@0.11.0\\\".opt-level=3\" --config \"profile.test.package.\\\"sha2@0.11.0\\\".opt-level=3\""
+    },
+    {
+      "ProcessId": 49636,
+      "Name": "cargo.exe",
+      "CommandLine": "\"C:\\Users\\ArturBuzov\\.rustup\\toolchains\\stable-x86_64-pc-windows-msvc\\bin\\cargo.exe\" test -p xtask --test imap_coverage_075 --test imap_build_process_075 --features imap-075-coverage --locked --config profile.dev.opt-level=0 --config profile.test.opt-level=0 --config profile.dev.package.\\\"sha2@0.11.0\\\".opt-level=3 --config profile.test.package.\\\"sha2@0.11.0\\\".opt-level=3"
+    },
+    {
+      "ProcessId": 50788,
+      "Name": "rustc.exe",
+      "CommandLine": "\"C:\\Users\\ArturBuzov\\.rustup\\toolchains\\stable-x86_64-pc-windows-msvc\\bin\\rustc.exe\" --crate-name imap_coverage_075 --edition=2021 crates\\xtask\\tests\\imap_coverage_075.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no --warn=unexpected_cfgs --check-cfg cfg(coverage) --check-cfg cfg(fuzzing) --check-cfg cfg(hydracache_loom) --test --cfg feature=\\\"imap-075-coverage\\\" --check-cfg cfg(docsrs,test) --check-cfg \"cfg(feature, values(\\\"imap-075-coverage\\\"))\" -C metadata=0f191b410fda89a6 -C extra-filename=-ad5bf6b146e83027 --out-dir C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps -C strip=debuginfo -L dependency=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps --extern flate2=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libflate2-d88c65bbd6ddda24.rlib --extern hydracache=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libhydracache-b5a124fb75b3e0c6.rlib --extern hydracache_client_plane_spike=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libhydracache_client_plane_spike-31cb99d5e8e52e53.rlib --extern hydracache_cluster_testkit=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libhydracache_cluster_testkit-eb4ee2faad5556d4.rlib --extern hydracache_loadgen=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libhydracache_loadgen-7fc94aa5dd7ad383.rlib --extern hydracache_long_run_supervisor_074=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libhydracache_long_run_supervisor_074-09eee13e8de9a19e.rlib --extern jsonschema=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libjsonschema-9784a5b08a2de8cc.rlib --extern proc_macro2=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libproc_macro2-9c23f80a07f6fc8b.rlib --extern prost=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libprost-77ef8bd414a79332.rlib --extern prost_types=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libprost_types-26ba04ad8d1a8968.rlib --extern protoc_bin_vendored=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libprotoc_bin_vendored-645c2375302d4dd1.rlib --extern serde=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libserde-0271f95f4cfeda47.rlib --extern serde_json=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libserde_json-3db7ee0ae332c912.rlib --extern serde_yaml=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libserde_yaml-81dd47dd1793c60d.rlib --extern sha2=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libsha2-1b5c50dfe742a7c9.rlib --extern syn=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libsyn-001a88428596a13e.rlib --extern tar=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libtar-4b43d3cb5290f604.rlib --extern tempfile=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libtempfile-df7f2ff6eceb642a.rlib --extern time=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libtime-8b1d95e7e7ef1dff.rlib --extern toml=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libtoml-bc8e6bd42258ed09.rlib --extern windows_sys=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libwindows_sys-6f91808374cf3725.rlib --extern xtask=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libxtask-d6400f8ad83695b9.rlib -C instrument-coverage -C debuginfo=0 -L native=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\build\\ring-7819054ef8428d4e\\out -L native=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\build\\aws-lc-sys-ec828fd3176bd5b8\\out -L native=C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\build\\zstd-sys-68d2066e6eae499c\\out"
+    },
+    {
+      "ProcessId": 49988,
+      "Name": "link.exe",
+      "CommandLine": "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX64\\x64\\link.exe\" @C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\rustct1UZXe\\linker-arguments"
+    }
+  ],
+  "artifacts": [
+    {
+      "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\tooling\\debug\\deps\\libxtask-bc219db9bb5b049a.rlib",
+      "Length": 379392732,
+      "LastWriteTimeUtc": "2026-10-30T16:06:24.0444667Z"
+    },
+    {
+      "FullName": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\tooling\\debug\\deps\\libhydracache_loadgen-a801da7c8176c3c5.rlib",
+      "Length": 482169440,
+      "LastWriteTimeUtc": "2026-10-30T16:05:29.3880036Z"
+    }
+  ]
+}

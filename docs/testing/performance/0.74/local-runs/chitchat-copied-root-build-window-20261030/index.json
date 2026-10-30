@@ -1,0 +1,19 @@
+{
+  "clock_or_service_changed": false,
+  "competing_build_active": true,
+  "confirmed_other_release_compiler_pids": [
+    50788,
+    49988
+  ],
+  "free_bytes": 7850397696,
+  "original_operator_preference": "0.74 build window after current 0.75 compilation",
+  "other_processes_or_files_changed": false,
+  "parent_verification_sha256": "4a78c606450165d278fdf5272f4a7b58606fd27c7cf4056d006f5e2a3ce2678d",
+  "release_admitted": false,
+  "root_adopted": false,
+  "sample_bytes": 6659,
+  "sample_sha256": "59095be1990be50aa762946114d98116539e1b54d004a33adc210bf330a8c87a",
+  "schema": "hc074-copied-root-build-window-observation-v1",
+  "third_native_stage_dispatched": false,
+  "utc": "2026-10-30T16:34:50.2491182Z"
+}
