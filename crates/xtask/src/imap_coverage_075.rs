@@ -48,40 +48,53 @@ const SCOPES: &[&str] = &[
     "tests/rust-imap-contract-consumer-075/src/",
 ];
 pub type Lines = BTreeMap<String, BTreeMap<u32, u64>>;
+/// Validate the native writer's size/result before publishing any checkpoint.
+pub fn profile_bytes(size: u64, write: impl FnOnce(&mut [u8]) -> i32) -> Result<Vec<u8>> {
+    let size = usize::try_from(size)?;
+    if size == 0 || size > MAX_RAW {
+        return Err("LLVM checkpoint buffer byte bound".into());
+    }
+    let mut bytes = vec![0u8; size];
+    if write(&mut bytes) != 0 {
+        return Err("LLVM buffer serialization failed".into());
+    }
+    Ok(bytes)
+}
 /// Snapshot counters without resetting them, then atomically publish the complete buffer.
 pub fn flush_profile() -> Result<()> {
     #[cfg(feature = "imap-075-coverage")]
     {
-        unsafe extern "C" {
-            fn __llvm_profile_get_size_for_buffer() -> u64;
-            fn __llvm_profile_write_buffer(buffer: *mut std::ffi::c_char) -> std::ffi::c_int;
-        }
-        // SAFETY: LLVM reports the exact size required by write_buffer for this executable.
-        let size = usize::try_from(unsafe { __llvm_profile_get_size_for_buffer() })?;
-        if size == 0 || size > MAX_RAW {
-            return Err("LLVM checkpoint buffer byte bound".into());
-        }
-        let mut bytes = vec![0u8; size];
-        // SAFETY: bytes owns the full reported writable allocation. Only this worker
-        // thread performs snapshots, and the runtime neither retains nor frees it.
-        if unsafe { __llvm_profile_write_buffer(bytes.as_mut_ptr().cast()) } != 0 {
-            return Err("LLVM buffer serialization failed".into());
-        }
         let pattern = PathBuf::from(
             std::env::var_os("LLVM_PROFILE_FILE")
                 .ok_or("explicit LLVM checkpoint path required")?,
         );
-        if !pattern.is_absolute()
-            || pattern.file_name().and_then(|s| s.to_str()) != Some("%p.profraw")
-        {
-            return Err("fixed PID-specific LLVM checkpoint pattern required".into());
-        }
-        persist_profile(
-            pattern.parent().ok_or("LLVM profile parent")?,
-            std::process::id(),
-            &bytes,
-        )?;
+        flush_profile_at(&pattern)?;
     }
+    Ok(())
+}
+/// Explicit checkpoint destination permits testing native publication failures
+/// without changing the process-wide LLVM environment.
+#[cfg(feature = "imap-075-coverage")]
+pub fn flush_profile_at(pattern: &Path) -> Result<()> {
+    if !pattern.is_absolute() || pattern.file_name().and_then(|s| s.to_str()) != Some("%p.profraw")
+    {
+        return Err("fixed PID-specific LLVM checkpoint pattern required".into());
+    }
+    unsafe extern "C" {
+        fn __llvm_profile_get_size_for_buffer() -> u64;
+        fn __llvm_profile_write_buffer(buffer: *mut std::ffi::c_char) -> std::ffi::c_int;
+    }
+    // SAFETY: LLVM reports the exact required allocation size for this executable.
+    let bytes = profile_bytes(unsafe { __llvm_profile_get_size_for_buffer() }, |bytes| {
+        // SAFETY: the complete writable allocation is owned here, is not retained
+        // by LLVM, and this worker thread never resets the counters.
+        unsafe { __llvm_profile_write_buffer(bytes.as_mut_ptr().cast()) }
+    })?;
+    persist_profile(
+        pattern.parent().ok_or("LLVM profile parent")?,
+        std::process::id(),
+        &bytes,
+    )?;
     Ok(())
 }
 /// Publication only; the independent LLVM reader still validates the actual profile bytes.

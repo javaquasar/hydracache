@@ -1,4 +1,25 @@
 use super::*;
+#[test]
+fn output_metadata_and_canonical_scope_refuse_redirects_and_foreign_roots() {
+    plain_build_component(false, false).unwrap();
+    for (symlink, reparse, reason) in [
+        (true, false, "symlinked"),
+        (false, true, "reparse"),
+        (true, true, "symlinked"),
+    ] {
+        assert!(plain_build_component(symlink, reparse)
+            .unwrap_err()
+            .to_string()
+            .contains(reason));
+    }
+    let root = tempfile::tempdir().unwrap();
+    let root = root.path().canonicalize().unwrap();
+    build_output_scope(&root.join("target/imap-075/builds"), &root).unwrap();
+    assert!(build_output_scope(root.parent().unwrap(), &root)
+        .unwrap_err()
+        .to_string()
+        .contains("escapes root"));
+}
 struct Prefix {
     bytes: Vec<u8>,
     remaining: usize,

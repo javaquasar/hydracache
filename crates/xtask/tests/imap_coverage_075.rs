@@ -395,6 +395,62 @@ fn policy_cannot_silently_weaken_the_denominator_or_platform_claim() {
     assert!(validate_policy(&changed).is_err());
 }
 #[test]
+fn native_checkpoint_buffers_refuse_invalid_sizes_and_failed_serialization_before_publication() {
+    for size in [0, 128 * 1024 * 1024 + 1, u64::MAX] {
+        assert!(profile_bytes(size, |_| panic!(
+            "invalid sizes must refuse before writer entry"
+        ))
+        .is_err());
+    }
+    assert_eq!(
+        profile_bytes(4, |bytes| {
+            bytes.copy_from_slice(&[1, 2, 3, 4]);
+            0
+        })
+        .unwrap(),
+        [1, 2, 3, 4]
+    );
+    assert!(profile_bytes(4, |bytes| {
+        bytes[0] = 1;
+        -1
+    })
+    .unwrap_err()
+    .to_string()
+    .contains("serialization failed"));
+}
+#[test]
+#[cfg(feature = "imap-075-coverage")]
+fn native_checkpoint_path_and_io_failures_leave_no_published_partial_profile() {
+    let root = tempfile::tempdir().unwrap();
+    for path in [
+        PathBuf::from("%p.profraw"),
+        root.path().join("wrong.profraw"),
+    ] {
+        assert!(flush_profile_at(&path)
+            .unwrap_err()
+            .to_string()
+            .contains("checkpoint pattern"));
+    }
+    let blocked = root.path().join("blocked");
+    std::fs::write(&blocked, b"owned file blocks directory creation").unwrap();
+    assert!(flush_profile_at(&blocked.join("raw/%p.profraw")).is_err());
+    assert_eq!(
+        std::fs::read(&blocked).unwrap(),
+        b"owned file blocks directory creation"
+    );
+    let raw = root.path().join("raw");
+    std::fs::create_dir(&raw).unwrap();
+    flush_profile_at(&raw.join("%p.profraw")).unwrap();
+    let published = raw.join(format!("{}.profraw", std::process::id()));
+    assert!(published.metadata().unwrap().len() > 0);
+    assert_eq!(
+        std::fs::read_dir(root.path().join("profile-staging"))
+            .unwrap()
+            .count(),
+        0
+    );
+}
+#[test]
 fn atomic_checkpoint_replaces_complete_bytes_and_preserves_previous_on_failure() {
     let root = tempfile::tempdir().unwrap();
     let directory = root.path().join("role");

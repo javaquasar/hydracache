@@ -273,6 +273,31 @@ fn failure_outcome(
 #[path = "../tests/support/imap_build_logs_075.rs"]
 mod log_tests;
 
+fn plain_build_component(symlink: bool, reparse: bool) -> Result<(), Box<dyn std::error::Error>> {
+    if symlink {
+        return Err("symlinked build output refused".into());
+    }
+    if reparse {
+        return Err("reparse build output refused".into());
+    }
+    Ok(())
+}
+#[cfg(windows)]
+fn reparse(metadata: &fs::Metadata) -> bool {
+    use std::os::windows::fs::MetadataExt;
+    metadata.file_attributes() & 0x400 != 0
+}
+#[cfg(not(windows))]
+fn reparse(_: &fs::Metadata) -> bool {
+    false
+}
+fn build_output_scope(output: &Path, root: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    if !output.starts_with(root) {
+        return Err("build output escapes root".into());
+    }
+    Ok(())
+}
+
 /// A controller owns a fresh directory and an absolute monotonic budget across all its phases.
 pub struct BuildController {
     directory: PathBuf,
@@ -310,22 +335,11 @@ impl BuildController {
         for name in ["target", "imap-075", "builds"] {
             parent.push(name);
             if let Ok(metadata) = fs::symlink_metadata(&parent) {
-                if metadata.file_type().is_symlink() {
-                    return Err("symlinked build output refused".into());
-                }
-                #[cfg(windows)]
-                {
-                    use std::os::windows::fs::MetadataExt;
-                    if metadata.file_attributes() & 0x400 != 0 {
-                        return Err("reparse build output refused".into());
-                    }
-                }
+                plain_build_component(metadata.file_type().is_symlink(), reparse(&metadata))?;
             }
         }
         fs::create_dir_all(&parent)?;
-        if !parent.canonicalize()?.starts_with(root.canonicalize()?) {
-            return Err("build output escapes root".into());
-        }
+        build_output_scope(&parent.canonicalize()?, &root.canonicalize()?)?;
         static NEXT: AtomicU64 = AtomicU64::new(0);
         let stamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos();
         let directory = parent.join(format!(
