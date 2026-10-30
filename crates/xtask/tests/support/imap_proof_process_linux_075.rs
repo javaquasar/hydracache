@@ -112,6 +112,338 @@ fn process(pid: i32, parent: i32, group: i32, session: i32, birth: u64) -> Membe
         live: true,
     }
 }
+
+#[test]
+fn member_liveness_refuses_unknown_state_and_accepts_only_observed_absence() {
+    let mut value = process(11, 1, 11, 11, 3);
+    assert!(member_live(Ok(value.clone())).unwrap());
+    value.live = false;
+    assert!(!member_live(Ok(value)).unwrap());
+    for code in [libc::ENOENT, libc::ESRCH] {
+        assert!(!member_live(Err(io::Error::from_raw_os_error(code))).unwrap());
+    }
+    for code in [libc::EACCES, libc::EIO] {
+        assert_eq!(
+            member_live(Err(io::Error::from_raw_os_error(code)))
+                .unwrap_err()
+                .raw_os_error(),
+            Some(code)
+        );
+    }
+    assert!(retry_marker(
+        || Ok(format!("{GROUP_CHAIN}=invalid\0").into_bytes()),
+        || panic!("a readable invalid marker does not need liveness"),
+        17,
+    )
+    .is_err());
+}
+
+#[test]
+fn session_planning_preserves_root_and_nested_ownership_without_spawning() {
+    let mut command = Command::new("unit-never-spawned");
+    command.env(GROUP_CHAIN, "stale");
+    configure_session(
+        &mut command,
+        None,
+        || Ok(process(11, 1, 11, 11, 42)),
+        || panic!("root must not inherit a group chain"),
+        17,
+    )
+    .unwrap();
+    let values = command
+        .get_envs()
+        .map(|(k, v)| {
+            (
+                k.to_string_lossy().into_owned(),
+                v.map(|s| s.to_string_lossy().into_owned()),
+            )
+        })
+        .collect::<std::collections::BTreeMap<_, _>>();
+    assert_eq!(values[SESSION_OWNER].as_deref(), Some("11:42"));
+    assert_eq!(values[GROUP_CHAIN], None);
+    assert!(configure_session(
+        &mut command,
+        None,
+        || Err(denied()),
+        || panic!("root chain"),
+        17
+    )
+    .is_err());
+    for (parents, expected) in [(vec![], "17"), (vec![7], "7,17"), (vec![7, 17], "7,17")] {
+        let mut command = Command::new("unit-never-spawned");
+        configure_session(
+            &mut command,
+            Some(7),
+            || panic!("nested owner must not be replaced"),
+            || Ok(parents),
+            17,
+        )
+        .unwrap();
+        let marker = command
+            .get_envs()
+            .find(|(key, _)| *key == std::ffi::OsStr::new(GROUP_CHAIN))
+            .unwrap()
+            .1
+            .unwrap();
+        assert_eq!(marker, std::ffi::OsStr::new(expected));
+    }
+    assert!(configure_session(
+        &mut command,
+        Some(7),
+        || panic!("nested owner"),
+        || Err(denied()),
+        17
+    )
+    .is_err());
+    assert_eq!(child_session(None, 23), Some(23));
+    assert_eq!(child_session(Some(7), 23), None);
+}
+
+#[test]
+fn child_setup_checks_each_syscall_result_without_forking_or_setting_limits() {
+    for root in [false, true] {
+        let mut session_calls = 0;
+        let mut limit_calls = 0;
+        child_setup(
+            root,
+            123,
+            || {
+                session_calls += 1;
+                23
+            },
+            |limit| {
+                limit_calls += 1;
+                assert_eq!(limit.rlim_cur, 123);
+                assert_eq!(limit.rlim_max, 123);
+                0
+            },
+        )
+        .unwrap();
+        assert_eq!(session_calls, usize::from(root));
+        assert_eq!(limit_calls, 1);
+    }
+    assert!(child_setup(
+        true,
+        123,
+        || -1,
+        |_| panic!("setsid failure must stop setup")
+    )
+    .is_err());
+    assert!(child_setup(
+        false,
+        123,
+        || panic!("nested worker must retain its session"),
+        |_| -1
+    )
+    .is_err());
+}
+
+#[test]
+fn root_reaping_waits_for_the_entire_owned_tree_to_drain() {
+    use std::os::unix::process::ExitStatusExt;
+    assert!(
+        reap_after_drain(1, || panic!("live descendants must retain the root zombie"))
+            .unwrap()
+            .is_none()
+    );
+    assert!(reap_after_drain(0, || Ok(None)).unwrap().is_none());
+    assert!(reap_after_drain(0, || Ok(Some(ExitStatus::from_raw(0))))
+        .unwrap()
+        .unwrap()
+        .success());
+    assert_eq!(
+        reap_after_drain(0, || Err(denied())).unwrap_err().kind(),
+        io::ErrorKind::PermissionDenied
+    );
+}
+
+#[test]
+fn managed_nested_leaf_executes_and_reaps_one_finite_owned_shell() {
+    let mut command = Command::new("/bin/sh");
+    command.args(["-c", "printf 'owned-shell-complete'"]);
+    let result = execute(
+        command,
+        &[],
+        ProcessBounds {
+            timeout: Duration::from_secs(10),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    assert_eq!(result.stdout, b"owned-shell-complete");
+    assert!(result.direct_child_reaped);
+    assert_eq!(result.remaining_live_members, 0);
+    println!("owned-leaf-complete");
+}
+
+#[test]
+fn real_cooperative_nested_controller_reaps_both_finite_owned_roots() {
+    let mut command = Command::new(std::env::current_exe().unwrap());
+    let (_, module) = module_path!().split_once("::").unwrap();
+    command.args([
+        "--exact",
+        &format!("{module}::managed_nested_leaf_executes_and_reaps_one_finite_owned_shell"),
+        "--nocapture",
+    ]);
+    let result = execute(
+        command,
+        &[],
+        ProcessBounds {
+            timeout: Duration::from_secs(15),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    assert!(String::from_utf8(result.stdout)
+        .unwrap()
+        .contains("owned-leaf-complete"));
+    assert!(result.direct_child_reaped);
+    assert_eq!(result.remaining_live_members, 0);
+}
+
+#[test]
+fn ownership_inventory_distinguishes_root_nested_foreign_and_unreadable_members() {
+    // This model owns no processes. Suppress Drop unconditionally, including
+    // during a failed assertion, so no test PID/group can receive a real signal.
+    let tree = std::mem::ManuallyDrop::new(Tree {
+        group: 17,
+        session: Some(17),
+        nested_session: Some(7),
+        terminated: false,
+        finished: false,
+    });
+    let mut dead = process(1, 0, 17, 17, 1);
+    dead.live = false;
+    let members = vec![
+        dead,
+        process(2, 0, 22, 17, 1),
+        process(3, 0, 17, 22, 1),
+        process(4, 0, 22, 7, 1),
+        process(5, 0, 22, 7, 1),
+        process(6, 0, 22, 22, 1),
+    ];
+    let owned = tree
+        .owned_members_using(
+            || Ok(members),
+            |pid, group| {
+                assert_eq!(group, 17);
+                match pid {
+                    4 => Ok(true),
+                    5 => Ok(false),
+                    _ => panic!("foreign member must not be inspected"),
+                }
+            },
+        )
+        .unwrap();
+    assert_eq!(
+        owned.iter().map(|m| m.pid).collect::<Vec<_>>(),
+        vec![2, 3, 4]
+    );
+    for code in [libc::ENOENT, libc::ESRCH] {
+        assert!(tree
+            .owned_members_using(
+                || Ok(vec![process(4, 0, 22, 7, 1)]),
+                |_, _| Err(io::Error::from_raw_os_error(code)),
+            )
+            .unwrap()
+            .is_empty());
+    }
+    assert!(tree
+        .owned_members_using(|| Ok(vec![process(4, 0, 22, 7, 1)]), |_, _| Err(denied()),)
+        .is_err());
+    assert!(tree
+        .owned_members_using(
+            || Err(io::Error::other("inventory unreadable")),
+            |_, _| panic!("inventory failed"),
+        )
+        .is_err());
+}
+
+#[test]
+fn termination_requires_observed_ownership_and_distinguishes_absence_from_signal_failure() {
+    fn model() -> std::mem::ManuallyDrop<Tree> {
+        std::mem::ManuallyDrop::new(Tree {
+            group: 17,
+            session: Some(17),
+            nested_session: None,
+            terminated: false,
+            finished: false,
+        })
+    }
+    fn failure(code: i32) -> i32 {
+        // Model the documented syscall result on this test thread only.
+        // No real PID is passed to any signal or ownership operation.
+        unsafe {
+            *libc::__errno_location() = code;
+        }
+        -1
+    }
+    let mut tree = model();
+    let mut groups = Vec::new();
+    tree.terminate_using(
+        |_| Ok(vec![process(1, 0, 23, 17, 1), process(2, 0, 23, 17, 1)]),
+        |group, signal| {
+            assert_eq!(signal, libc::SIGKILL);
+            groups.push(group);
+            0
+        },
+    )
+    .unwrap();
+    assert_eq!(groups, vec![-17, -23]);
+    assert!(tree.terminated);
+    let mut tree = model();
+    tree.terminate_using(
+        |_| Ok(vec![process(1, 0, 23, 17, 1)]),
+        |_, _| failure(libc::ESRCH),
+    )
+    .unwrap();
+    assert!(tree.terminated);
+    for root_failure in [false, true] {
+        let mut tree = model();
+        let mut calls = 0;
+        let error = tree
+            .terminate_using(
+                |_| Ok(vec![process(1, 0, 23, 17, 1)]),
+                |group, _| {
+                    calls += 1;
+                    if root_failure || group == -23 {
+                        failure(libc::EPERM)
+                    } else {
+                        0
+                    }
+                },
+            )
+            .unwrap_err();
+        assert_eq!(error.raw_os_error(), Some(libc::EPERM));
+        assert_eq!(calls, if root_failure { 1 } else { 2 });
+        assert!(!tree.terminated);
+    }
+    let mut tree = model();
+    assert!(tree
+        .terminate_using(
+            |_| Ok(vec![process(1, 0, 0, 17, 1)]),
+            |group, _| {
+                assert_eq!(group, -17);
+                0
+            }
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("invalid owned process group"));
+    assert!(!tree.terminated);
+    assert!(tree
+        .terminate_using(
+            |_| Err(denied()),
+            |_, _| panic!("unreadable ownership must not signal")
+        )
+        .is_err());
+    tree.finished = true;
+    tree.terminate_using(
+        |_| panic!("finished tree needs no inventory"),
+        |_, _| panic!("finished tree must not signal"),
+    )
+    .unwrap();
+}
 #[test]
 fn proc_stat_parsing_handles_parentheses_zombies_and_exact_byte_and_field_bounds() {
     let mut fields = vec!["0"; 20];

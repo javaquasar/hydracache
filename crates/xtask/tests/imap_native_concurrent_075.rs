@@ -384,6 +384,15 @@ fn profile_witness_identity_and_callback_canaries_never_qualify() {
     let mut h = fixture();
     h.histories[0].witness[1] = h.histories[0].witness[0];
     assert!(validate(&h).is_err());
+    let mut h = fixture();
+    let entry = h.histories[0].final_entries.first_mut().unwrap();
+    entry.value = if entry.value == "ff" { "00" } else { "ff" }.into();
+    h.histories[0].final_digest = digest_entries(&h.histories[0].final_entries);
+    assert_eq!(
+        check(&h.histories[0], 100_000).unwrap(),
+        Verdict::NonLinearizable
+    );
+    assert!(validate(&h).is_err());
     for (key, value) in [
         ("kind", json!("invented")),
         ("key", json!("ff")),

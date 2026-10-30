@@ -40,6 +40,14 @@ an exact stream-to-object correspondence and the complete archive, bounded at
 512 unique objects, 512 MiB per object and 8 GiB in total. LLVM still checks every
 binary ID; host profiles are never discarded. The export command uses a bounded
 UTF-8 response file to avoid Windows command-line length limits.
+Raw input has exactly six known directories: bootstrap, controller, tooling,
+testkit, consumer and analysis. Unknown entries and redirected directories refuse.
+Every emitted bootstrap profile is bound and merged; that compiler phase may be
+empty when it executes no instrumented host process, for example on a fully
+cached build. The four workload directories require profiles, and final
+qualification separately requires the closed analyzer's profile.
+Atomic publication uses a sibling `profile-staging` directory outside `raw`;
+unpublished buffers are not profile inputs and cannot alias an execution role.
 Build-script filenames are matched against Cargo's actual target name, including
 `aws-lc-sys`'s `build-script-main`. Capture rejects invalid or existing outputs
 before loading tool distributions. Unit executors exercise publication and CLI

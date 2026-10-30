@@ -145,6 +145,24 @@ fn topology_checks_both_075_extensions_and_rejects_duplicate_registration() {
             .to_string()
             .contains("unique 0.75 workflow"));
     }
+    let isolated = tempfile::tempdir().unwrap();
+    let extension_dir = isolated.path().join("docs/testing/imap/0.75");
+    fs::create_dir_all(&extension_dir).unwrap();
+    fs::write(&fixture, serde_json::to_vec(&original).unwrap()).unwrap();
+    for name in [
+        "ci-topology-extension.json",
+        "soak-ci-topology-extension.json",
+    ] {
+        let extension = extension_dir.join(name);
+        fs::write(&extension, b"{").unwrap();
+        assert!(
+            xtask::ci_topology::check_with_path(isolated.path(), "0.71", &fixture)
+                .unwrap_err()
+                .to_string()
+                .contains("EOF")
+        );
+        fs::remove_file(extension).unwrap();
+    }
 }
 fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))

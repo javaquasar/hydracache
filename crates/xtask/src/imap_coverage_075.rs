@@ -18,6 +18,14 @@ const MAX: usize = 8 * 1024 * 1024;
 const MAX_RAW: usize = 128 * 1024 * 1024;
 const MAX_RAW_TOTAL: u64 = 6 * 1024 * 1024 * 1024;
 const MAX_OBJECTS: usize = 512;
+pub const RAW_PROFILE_ROLES: [&str; 6] = [
+    "bootstrap",
+    "controller",
+    "tooling",
+    "testkit",
+    "consumer",
+    "analysis",
+];
 pub const CARGO_CONFIG: &[&str] = &[
     "profile.dev.opt-level=0",
     "profile.test.opt-level=0",
@@ -103,10 +111,14 @@ pub fn persist_profile(directory: &Path, pid: u32, bytes: &[u8]) -> Result<()> {
     if !directory.is_absolute() || pid == 0 || bytes.is_empty() || bytes.len() > MAX_RAW {
         return Err("profile publication path/PID/byte bound".into());
     }
-    let staging = directory
-        .parent()
-        .ok_or("profile staging parent")?
-        .join("profile-staging");
+    let parent = directory.parent().ok_or("profile staging parent")?;
+    // Unpublished buffers must stay outside the enumerated raw-role namespace.
+    let staging_parent = if parent.file_name().and_then(|s| s.to_str()) == Some("raw") {
+        parent.parent().ok_or("capture staging parent")?
+    } else {
+        parent
+    };
+    let staging = staging_parent.join("profile-staging");
     fs::create_dir_all(&staging)?;
     let mut file = tempfile::Builder::new()
         .prefix("partial-")
@@ -1278,6 +1290,12 @@ fn identity() -> Result<crate::imap_soak_075::WorkerIdentity> {
     })
 }
 fn dead(identity: &crate::imap_soak_075::WorkerIdentity) -> Result<()> {
+    dead_using(identity, crate::imap_soak_075::process_identity)
+}
+fn dead_using(
+    identity: &crate::imap_soak_075::WorkerIdentity,
+    read: impl FnOnce(u32) -> Result<String>,
+) -> Result<()> {
     if identity.pid == 0
         || identity.platform_birth.is_empty()
         || identity.platform_birth.len() > 256
@@ -1285,7 +1303,7 @@ fn dead(identity: &crate::imap_soak_075::WorkerIdentity) -> Result<()> {
     {
         return Err("invalid coverage controller identity".into());
     }
-    match crate::imap_soak_075::process_identity(identity.pid) {
+    match read(identity.pid) {
         Ok(current) if current == identity.platform_birth => {
             Err("coverage controller still lives; raw profile incomplete".into())
         }
@@ -1299,18 +1317,17 @@ fn dead(identity: &crate::imap_soak_075::WorkerIdentity) -> Result<()> {
                     return Ok(());
                 }
             }
-            #[cfg(windows)]
-            {
-                if let Some(io) = error.downcast_ref::<std::io::Error>() {
-                    if io.raw_os_error() == Some(87) {
-                        return Ok(());
-                    }
-                }
-            }
             Err(error)
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../tests/support/imap_coverage_lifecycle_075.rs"]
+mod lifecycle_tests;
+#[cfg(test)]
+#[path = "../tests/support/imap_coverage_reconstruction_075.rs"]
+mod reconstruction_tests;
 fn report_output(
     root: &Path,
     report: &crate::imap_build_process_075::BuildReport,
@@ -1879,7 +1896,22 @@ pub fn collect_profiles(
     }
     let mut result = Vec::new();
     let mut total = 0u64;
-    for role in ["controller", "tooling", "testkit", "consumer", "analysis"] {
+    for entry in fs::read_dir(directory.join("raw"))? {
+        let entry = entry?;
+        let name = entry.file_name();
+        let metadata = fs::symlink_metadata(entry.path())?;
+        if !RAW_PROFILE_ROLES
+            .iter()
+            .any(|role| name == std::ffi::OsStr::new(role))
+            || !metadata.is_dir()
+            || metadata.file_type().is_symlink()
+            || crate::imap_build_process_075::reparse(&metadata)
+        {
+            return Err("foreign/redirected LLVM profile role".into());
+        }
+    }
+    let mut missing = None;
+    for role in RAW_PROFILE_ROLES {
         let before = result.len();
         for entry in fs::read_dir(directory.join("raw").join(role))? {
             let path = entry?.path();
@@ -1902,13 +1934,16 @@ pub fn collect_profiles(
             total = profile_total(total, reference.bytes)?;
             result.push(reference);
         }
-        if role != "analysis" && before == result.len() {
-            return Err(format!("LLVM profile execution phase missing: {role}").into());
+        if !matches!(role, "analysis" | "bootstrap") && before == result.len() {
+            missing.get_or_insert(role);
         }
     }
     result.sort_by(|a, b| a.path.cmp(&b.path));
     if result.is_empty() {
         return Err("LLVM execution profiles missing".into());
+    }
+    if let Some(role) = missing {
+        return Err(format!("LLVM profile execution phase missing: {role}").into());
     }
     Ok(result)
 }
@@ -2082,8 +2117,19 @@ fn regenerate(
     raw: &[Artifact],
     driver: &mut impl CoverageDriver,
 ) -> Result<(Artifact, Vec<Artifact>, Lines)> {
-    use std::io::Write;
     let tools = tool_paths()?;
+    regenerate_with_tools(root, directory, control, capture, raw, driver, &tools)
+}
+fn regenerate_with_tools(
+    root: &Path,
+    directory: &Path,
+    control: &Control,
+    capture: &CaptureReceipt,
+    raw: &[Artifact],
+    driver: &mut impl CoverageDriver,
+    tools: &BTreeMap<String, PathBuf>,
+) -> Result<(Artifact, Vec<Artifact>, Lines)> {
+    use std::io::Write;
     let temp = tempfile::tempdir_in(directory)?;
     let profdata = temp.path().join("merged.profdata");
     let mut list = tempfile::NamedTempFile::new_in(temp.path())?;
@@ -2242,41 +2288,36 @@ fn analyze_using(
     driver: &mut impl CoverageDriver,
 ) -> Result<Analysis> {
     let capture: CaptureReceipt = load(root, path)?;
-    if capture.schema != "imap075-coverage-capture-v2" || !capture.completed {
-        return Err("coverage execution incomplete/future".into());
-    }
+    validate_capture_header(&capture)?;
     bound(root, &capture.control, MAX)?;
     let (control, directory) = read_control(root, &capture.control.path)?;
-    if path != relative(root, &directory.join("capture.json"))? {
-        return Err("coverage capture alias/foreign path".into());
-    }
     dead(&capture.controller)?;
     bound(root, &capture.preparation, MAX)?;
     let prepared: crate::imap_pre074_075::PreparationReceipt =
         load(root, &capture.preparation.path)?;
     crate::imap_pre074_075::validate_receipt_header(&prepared, &control.source_sha)?;
-    if prepared.tooling != control.producer {
-        return Err("coverage workload used another producer".into());
-    }
-    if capture.java_tools != java_tool_artifacts(root)? {
-        return Err("coverage Java report tools substituted".into());
-    }
+    validate_capture_origin(
+        path,
+        &relative(root, &directory.join("capture.json"))?,
+        &capture,
+        &control,
+        &prepared.tooling,
+        &java_tool_artifacts(root)?,
+    )?;
     let live_analysis = analysis_phase(root, &directory, &control, strict)?;
-    if capture.cargo_streams.len() != 6 || capture.cargo_streams.first() != Some(&control.bootstrap)
-    {
-        return Err("coverage bootstrap/compiler phases incomplete/substituted".into());
-    }
     let mut expected = compiler_objects(root, &directory, &capture.cargo_streams)?;
     expected.push(control.producer.clone());
     expected.sort_by(|a, b| a.path.cmp(&b.path));
-    if expected != capture.objects {
-        return Err("coverage instrumented object set missing/substituted".into());
-    }
     let raw = collect_profiles(root, &directory, live_analysis)?;
     let analysis_prefix = format!("{}/raw/analysis/", relative(root, &directory)?);
-    if strict && !raw.iter().any(|a| a.path.starts_with(&analysis_prefix)) {
-        return Err("completed analysis LLVM profile missing".into());
-    }
+    validate_capture_materials(
+        &capture,
+        &control,
+        &expected,
+        &raw,
+        &analysis_prefix,
+        strict,
+    )?;
     let (rust_report, java_reports, lines) =
         regenerate(root, &directory, &control, &capture, &raw, driver)?;
     let contexts = contexts(
@@ -2310,6 +2351,51 @@ fn analyze_using(
         summary,
         qualification,
     })
+}
+fn validate_capture_header(capture: &CaptureReceipt) -> Result<()> {
+    if capture.schema != "imap075-coverage-capture-v2" || !capture.completed {
+        return Err("coverage execution incomplete/future".into());
+    }
+    Ok(())
+}
+fn validate_capture_origin(
+    path: &str,
+    expected_path: &str,
+    capture: &CaptureReceipt,
+    control: &Control,
+    workload_producer: &Artifact,
+    java_tools: &[Artifact],
+) -> Result<()> {
+    if path != expected_path {
+        return Err("coverage capture alias/foreign path".into());
+    }
+    if workload_producer != &control.producer {
+        return Err("coverage workload used another producer".into());
+    }
+    if capture.java_tools != java_tools {
+        return Err("coverage Java report tools substituted".into());
+    }
+    Ok(())
+}
+fn validate_capture_materials(
+    capture: &CaptureReceipt,
+    control: &Control,
+    objects: &[Artifact],
+    raw: &[Artifact],
+    analysis_prefix: &str,
+    strict: bool,
+) -> Result<()> {
+    if capture.cargo_streams.len() != 6 || capture.cargo_streams.first() != Some(&control.bootstrap)
+    {
+        return Err("coverage bootstrap/compiler phases incomplete/substituted".into());
+    }
+    if objects != capture.objects {
+        return Err("coverage instrumented object set missing/substituted".into());
+    }
+    if strict && !raw.iter().any(|a| a.path.starts_with(analysis_prefix)) {
+        return Err("completed analysis LLVM profile missing".into());
+    }
+    Ok(())
 }
 pub fn analysis_phase(
     root: &Path,

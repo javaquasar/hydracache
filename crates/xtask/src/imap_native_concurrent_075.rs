@@ -433,29 +433,7 @@ pub fn validate(histories: &Histories) -> Result<(), Box<dyn Error>> {
         if operations.len() != 9 {
             return Err("native concurrent operation coverage missing".into());
         }
-        let calls = normalize(history)?;
-        let mut map = BTreeMap::new();
-        let mut applied = BTreeSet::new();
-        if history.witness.len() != calls.len() {
-            return Err("native witness incomplete".into());
-        }
-        for &id in &history.witness {
-            if id >= calls.len()
-                || !applied.insert(id)
-                || calls.iter().enumerate().any(|(i, c)| {
-                    c.end < calls[id].start && !applied.contains(&i)
-                        || history.program[i].worker == history.program[id].worker
-                            && history.program[i].position < history.program[id].position
-                            && !applied.contains(&i)
-                })
-                || apply(&mut map, &history.program[id]) != calls[id].result
-            {
-                return Err("native witness violates result/order".into());
-            }
-        }
-        if map != final_map(history)? {
-            return Err("native witness final state differs".into());
-        }
+        let calls = validate_witness(history)?;
         let expected_events = history
             .program
             .iter()
@@ -486,6 +464,37 @@ pub fn validate(histories: &Histories) -> Result<(), Box<dyn Error>> {
     }
     Ok(())
 }
+// Keep witness replay independently testable: full qualification first runs the
+// separate search, which can reject a corrupt final state before replay starts.
+fn validate_witness(history: &History) -> Result<Vec<Call>, Box<dyn Error>> {
+    let calls = normalize(history)?;
+    let mut map = BTreeMap::new();
+    let mut applied = BTreeSet::new();
+    if history.witness.len() != calls.len() {
+        return Err("native witness incomplete".into());
+    }
+    for &id in &history.witness {
+        if id >= calls.len()
+            || !applied.insert(id)
+            || calls.iter().enumerate().any(|(i, c)| {
+                c.end < calls[id].start && !applied.contains(&i)
+                    || history.program[i].worker == history.program[id].worker
+                        && history.program[i].position < history.program[id].position
+                        && !applied.contains(&i)
+            })
+            || apply(&mut map, &history.program[id]) != calls[id].result
+        {
+            return Err("native witness violates result/order".into());
+        }
+    }
+    if map != final_map(history)? {
+        return Err("native witness final state differs".into());
+    }
+    Ok(calls)
+}
+#[cfg(test)]
+#[path = "../tests/support/imap_native_witness_075.rs"]
+mod witness_tests;
 pub fn observe(root: &Path) -> Result<Vec<u8>, Box<dyn Error>> {
     let bytes = crate::imap_native_probe_075::execute_native(
         root,

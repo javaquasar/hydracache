@@ -94,3 +94,43 @@ actual source module on Rust 1.88/1.94 in Ubuntu WSL. Additional prepared SBOM
 mutations check target/compiler/stdlib/version/distribution substitution and
 source changes. Fresh full capture, independent checking and the complete matrix
 remain required before P8 can be marked qualified.
+
+The clean `59dd581fe` retry completed the Windows workloads and final strict
+reconstruction, which refused 197 uncovered added executable lines. All four
+Linux Rust 1.88/1.94 × Java 17/21 lanes in run `41097005376` likewise reached
+strict reconstruction and refused uncovered lines; HC/2 run `41097005395`
+passed. These are diagnostic results, not qualified reports. The Windows raw
+archive retains all 140 files with every entry SHA-256 verified. The actual
+SBOM inventory contains 1001 components, remains unsigned, and reports failed
+Rust policy and unknown Java policy. The short smoke and resumed segments
+remain short runs; they make no six-hour or real-cluster qualification claim.
+
+Follow-up profile collection includes the bootstrap role as well as all five
+workload/analysis roles. Empty bootstrap data is permitted when no host program
+runs, but every emitted bootstrap file must be validated and merged. Unknown
+roles and redirected role directories refuse collection. Atomic profile staging
+now lives outside `raw`, so temporary files cannot become unregistered inputs.
+Tests cover empty and malformed bootstrap data, unknown roles, actual directory
+redirects, source changes during runner preparation, oversized controls and
+absolute output ownership. This correction preserves the v2 record shapes and
+does not relax the zero-uncovered-lines requirement.
+
+Private reconstruction tests exercise all eleven external-command boundaries,
+stale/duplicate Java sessions, incomplete Java builds, changed raw inputs,
+projection mismatches and duplicate source components. Their simulated counts
+are zero, their capture is incomplete, and they never publish a coverage report.
+Separate lifecycle tests distinguish a live controller, a reused PID, confirmed
+absence and unreadable process identity. Pure metadata checks cover capture
+aliases, workload producer/tool substitution, the six compiler streams, exact
+object inventory and closed analysis profiles. The actual entry points retain
+fixed tool selection and mandatory LLVM/JaCoCo reconstruction.
+
+The follow-up Windows checks passed 141 library tests and eight native-history
+tests in both default and instrumented builds; the coverage/CI targets passed
+39 and 12 tests respectively. All-target checks, strict all-feature Clippy,
+formatting and doc-check passed. The actual Linux process/build source modules
+passed 19 tests and strict Clippy on each of Rust 1.88 and 1.94 in Ubuntu WSL.
+Those tests include real finite owned shell/nested-controller executions as
+well as modeled syscall, ownership, procfs and deferred-reaping failures. The
+modeled trees suppress Drop, so unit failures cannot signal fixture PIDs. This
+source harness is not full Linux package or P8 matrix qualification.

@@ -283,12 +283,12 @@ fn plain_build_component(symlink: bool, reparse: bool) -> Result<(), Box<dyn std
     Ok(())
 }
 #[cfg(windows)]
-fn reparse(metadata: &fs::Metadata) -> bool {
+pub(crate) fn reparse(metadata: &fs::Metadata) -> bool {
     use std::os::windows::fs::MetadataExt;
     metadata.file_attributes() & 0x400 != 0
 }
 #[cfg(not(windows))]
-fn reparse(_: &fs::Metadata) -> bool {
+pub(crate) fn reparse(_: &fs::Metadata) -> bool {
     false
 }
 fn build_output_scope(output: &Path, root: &Path) -> Result<(), Box<dyn std::error::Error>> {

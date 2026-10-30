@@ -48,13 +48,16 @@ fn descendant(pid: i32, group: i32) -> io::Result<bool> {
                 .read_to_end(&mut bytes)?;
             Ok(bytes)
         },
-        || match member(pid) {
-            Ok(value) => Ok(value.live),
-            Err(error) if absent(&error) => Ok(false),
-            Err(error) => Err(error),
-        },
+        || member_live(member(pid)),
         group,
     )
+}
+fn member_live(value: io::Result<Member>) -> io::Result<bool> {
+    match value {
+        Ok(value) => Ok(value.live),
+        Err(error) if absent(&error) => Ok(false),
+        Err(error) => Err(error),
+    }
 }
 fn retry_marker(
     mut read: impl FnMut() -> io::Result<Vec<u8>>,
@@ -218,59 +221,99 @@ pub struct Tree {
     terminated: bool,
     finished: bool,
 }
+fn configure_session(
+    command: &mut Command,
+    inherited: Option<i32>,
+    owner: impl FnOnce() -> io::Result<Member>,
+    parents: impl FnOnce() -> io::Result<Vec<i32>>,
+    group: i32,
+) -> io::Result<()> {
+    if inherited.is_some() {
+        command.process_group(0);
+        let mut parents = parents()?;
+        if parents.last() != Some(&group) {
+            parents.push(group);
+        }
+        command.env(
+            GROUP_CHAIN,
+            parents
+                .iter()
+                .map(i32::to_string)
+                .collect::<Vec<_>>()
+                .join(","),
+        );
+    } else {
+        let owner = owner()?;
+        command.env(SESSION_OWNER, format!("{}:{}", owner.pid, owner.birth));
+        command.env_remove(GROUP_CHAIN);
+    }
+    Ok(())
+}
+fn child_setup(
+    root_session: bool,
+    memory: libc::rlim_t,
+    mut setsid: impl FnMut() -> libc::pid_t,
+    mut set_limit: impl FnMut(&libc::rlimit) -> libc::c_int,
+) -> io::Result<()> {
+    if root_session && setsid() < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    let limit = libc::rlimit {
+        rlim_cur: memory,
+        rlim_max: memory,
+    };
+    if set_limit(&limit) == 0 {
+        Ok(())
+    } else {
+        Err(io::Error::last_os_error())
+    }
+}
+fn child_session(inherited: Option<i32>, pid: u32) -> Option<i32> {
+    if inherited.is_none() {
+        Some(pid as i32)
+    } else {
+        None
+    }
+}
+fn reap_after_drain(
+    remaining: usize,
+    reap: impl FnOnce() -> io::Result<Option<ExitStatus>>,
+) -> io::Result<Option<ExitStatus>> {
+    if remaining != 0 {
+        return Ok(None);
+    }
+    reap()
+}
 impl Tree {
     pub fn spawn(command: &mut Command, bounds: ProcessBounds) -> io::Result<(Self, Child)> {
         // Cooperative nested controllers use separate groups in the root's session.
         // The root owns all those groups, including when an inner controller is killed.
         // This is process ownership, not isolation against a program deliberately calling setsid.
         let inherited = inherited_session()?;
-        if inherited.is_some() {
-            command.process_group(0);
-            let mut parents = chain()?;
-            let group = unsafe { libc::getpgrp() };
-            if parents.last() != Some(&group) {
-                parents.push(group);
-            }
-            command.env(
-                GROUP_CHAIN,
-                parents
-                    .iter()
-                    .map(i32::to_string)
-                    .collect::<Vec<_>>()
-                    .join(","),
-            );
-        } else {
-            let owner = member(std::process::id() as i32)?;
-            command.env(SESSION_OWNER, format!("{}:{}", owner.pid, owner.birth));
-            command.env_remove(GROUP_CHAIN);
-        }
+        configure_session(
+            command,
+            inherited,
+            || member(std::process::id() as i32),
+            chain,
+            unsafe { libc::getpgrp() },
+        )?;
         let memory = bounds.memory_bytes as libc::rlim_t;
         // Only an async-signal-safe syscall is used after fork, before exec.
         unsafe {
             command.pre_exec(move || {
-                if inherited.is_none() && libc::setsid() < 0 {
-                    return Err(io::Error::last_os_error());
-                }
-                let limit = libc::rlimit {
-                    rlim_cur: memory,
-                    rlim_max: memory,
-                };
-                if libc::setrlimit(libc::RLIMIT_AS, &limit) == 0 {
-                    Ok(())
-                } else {
-                    Err(io::Error::last_os_error())
-                }
+                child_setup(
+                    inherited.is_none(),
+                    memory,
+                    || libc::setsid(),
+                    |limit| libc::setrlimit(libc::RLIMIT_AS, limit),
+                )
             });
         }
         let child = command.spawn()?;
         Ok((
             Self {
                 group: child.id() as i32,
-                session: if inherited.is_none() {
-                    Some(child.id() as i32)
-                } else {
-                    None
-                },
+                session: child_session(inherited, child.id()),
                 nested_session: inherited,
                 terminated: false,
                 finished: false,
@@ -279,15 +322,23 @@ impl Tree {
         ))
     }
     pub fn terminate(&mut self) -> io::Result<()> {
+        self.terminate_using(Self::owned_members, |group, signal| unsafe {
+            libc::kill(group, signal)
+        })
+    }
+    fn terminate_using(
+        &mut self,
+        members: impl FnOnce(&Self) -> io::Result<Vec<Member>>,
+        mut kill: impl FnMut(libc::pid_t, libc::c_int) -> libc::c_int,
+    ) -> io::Result<()> {
         if self.finished {
             return Ok(());
         }
-        let groups = self
-            .owned_members()?
+        let groups = members(self)?
             .into_iter()
             .map(|m| m.group)
             .collect::<std::collections::BTreeSet<_>>();
-        if unsafe { libc::kill(-self.group, libc::SIGKILL) } != 0 {
+        if kill(-self.group, libc::SIGKILL) != 0 {
             let error = io::Error::last_os_error();
             if error.raw_os_error() != Some(libc::ESRCH) {
                 return Err(error);
@@ -297,7 +348,7 @@ impl Tree {
             if group <= 0 {
                 return Err(io::Error::other("invalid owned process group"));
             }
-            if unsafe { libc::kill(-group, libc::SIGKILL) } != 0 {
+            if kill(-group, libc::SIGKILL) != 0 {
                 let error = io::Error::last_os_error();
                 if error.raw_os_error() != Some(libc::ESRCH) {
                     return Err(error);
@@ -326,10 +377,7 @@ impl Tree {
             return Ok(None);
         }
         self.terminate()?;
-        if self.live_members()? != 0 {
-            return Ok(None);
-        }
-        child.try_wait()
+        reap_after_drain(self.live_members()?, || child.try_wait())
     }
     pub fn live_members(&mut self) -> io::Result<usize> {
         if self.finished {
@@ -344,6 +392,13 @@ impl Tree {
         Ok(count)
     }
     fn owned_members(&self) -> io::Result<Vec<Member>> {
+        self.owned_members_using(inventory, descendant)
+    }
+    fn owned_members_using(
+        &self,
+        inventory: impl FnOnce() -> io::Result<Vec<Member>>,
+        mut descendant: impl FnMut(i32, i32) -> io::Result<bool>,
+    ) -> io::Result<Vec<Member>> {
         let mut result = Vec::new();
         for value in inventory()? {
             if !value.live {

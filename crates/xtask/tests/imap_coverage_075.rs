@@ -469,15 +469,25 @@ fn atomic_checkpoint_replaces_complete_bytes_and_preserves_previous_on_failure()
             .count(),
         0
     );
+    let capture = root.path().join("capture");
+    let role = capture.join("raw/tooling");
+    std::fs::create_dir_all(&role).unwrap();
+    persist_profile(&role, 19, b"unqualified atomic publication fixture").unwrap();
+    assert!(capture.join("profile-staging").is_dir());
+    assert!(!capture.join("raw/profile-staging").exists());
+    assert_eq!(
+        std::fs::read(role.join("19.profraw")).unwrap(),
+        b"unqualified atomic publication fixture"
+    );
 }
 #[test]
 fn live_analysis_is_deferred_only_for_measurement_and_every_final_profile_is_required() {
     let root = tempfile::tempdir().unwrap();
     let directory = root.path().join("capture");
-    for role in ["controller", "tooling", "testkit", "consumer", "analysis"] {
+    for role in RAW_PROFILE_ROLES {
         let path = directory.join("raw").join(role);
         std::fs::create_dir_all(&path).unwrap();
-        if role != "analysis" {
+        if !matches!(role, "analysis" | "bootstrap") {
             std::fs::write(path.join("17.profraw"), b"metadata fixture, not LLVM data").unwrap();
         }
     }
@@ -519,6 +529,99 @@ fn live_analysis_is_deferred_only_for_measurement_and_every_final_profile_is_req
     std::fs::remove_dir(nonfile).unwrap();
     std::fs::remove_file(directory.join("raw/tooling/17.profraw")).unwrap();
     assert!(collect_profiles(root.path(), &directory, None).is_err());
+}
+#[test]
+fn bootstrap_profiles_are_never_dropped_and_unknown_raw_roles_never_hide_inputs() {
+    let root = tempfile::tempdir().unwrap();
+    let directory = root.path().join("capture");
+    for role in RAW_PROFILE_ROLES {
+        std::fs::create_dir_all(directory.join("raw").join(role)).unwrap();
+    }
+    assert!(collect_profiles(root.path(), &directory, None)
+        .unwrap_err()
+        .to_string()
+        .contains("execution profiles missing"));
+    let bootstrap = directory.join("raw/bootstrap/17.profraw");
+    std::fs::write(
+        &bootstrap,
+        b"unqualified compiler-host fixture, not LLVM data",
+    )
+    .unwrap();
+    assert!(collect_profiles(root.path(), &directory, None)
+        .unwrap_err()
+        .to_string()
+        .contains("phase missing: controller"));
+    for role in ["controller", "tooling", "testkit", "consumer"] {
+        std::fs::write(
+            directory.join("raw").join(role).join("18.profraw"),
+            b"unqualified workload fixture",
+        )
+        .unwrap();
+    }
+    let profiles = collect_profiles(root.path(), &directory, Some(42)).unwrap();
+    assert_eq!(profiles.len(), 5);
+    assert!(profiles
+        .iter()
+        .any(|p| p.path.ends_with("/raw/bootstrap/17.profraw")));
+    std::fs::write(&bootstrap, b"").unwrap();
+    assert!(collect_profiles(root.path(), &directory, Some(42)).is_err());
+    std::fs::remove_file(&bootstrap).unwrap();
+    assert_eq!(
+        collect_profiles(root.path(), &directory, Some(42))
+            .unwrap()
+            .len(),
+        4
+    );
+    for folder in ["foreign", "bootstrap-alias"] {
+        let path = directory.join("raw").join(folder);
+        std::fs::create_dir(&path).unwrap();
+        assert!(collect_profiles(root.path(), &directory, Some(42))
+            .unwrap_err()
+            .to_string()
+            .contains("foreign/redirected LLVM profile role"));
+        std::fs::remove_dir(path).unwrap();
+    }
+    let file = directory.join("raw/foreign.profraw");
+    std::fs::write(&file, b"must not be silently ignored").unwrap();
+    assert!(collect_profiles(root.path(), &directory, Some(42)).is_err());
+}
+#[test]
+fn raw_profile_roles_refuse_real_directory_redirects() {
+    let root = tempfile::tempdir().unwrap();
+    let outside = tempfile::tempdir().unwrap();
+    let directory = root.path().join("capture");
+    for role in RAW_PROFILE_ROLES {
+        std::fs::create_dir_all(directory.join("raw").join(role)).unwrap();
+    }
+    let link = directory.join("raw/bootstrap");
+    std::fs::remove_dir(&link).unwrap();
+    #[cfg(windows)]
+    {
+        let mut command = Command::new("powershell.exe");
+        command.args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Command",
+            "$ErrorActionPreference='Stop'; New-Item -ItemType Junction -Path $env:IMAP075_TEST_JUNCTION -Value $env:IMAP075_TEST_DESTINATION | Out-Null"])
+            .env("IMAP075_TEST_JUNCTION", &link)
+            .env("IMAP075_TEST_DESTINATION", outside.path());
+        xtask::imap_proof_process_075::execute(
+            command,
+            &[],
+            xtask::imap_proof_process_075::ProcessBounds {
+                timeout: std::time::Duration::from_secs(20),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    }
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(outside.path(), &link).unwrap();
+    assert!(collect_profiles(root.path(), &directory, None)
+        .unwrap_err()
+        .to_string()
+        .contains("foreign/redirected LLVM profile role"));
+    #[cfg(windows)]
+    std::fs::remove_dir(link).unwrap();
+    #[cfg(unix)]
+    std::fs::remove_file(link).unwrap();
 }
 #[test]
 fn raw_profile_budget_is_exact_and_refuses_empty_oversized_and_overflow_inputs() {
@@ -1628,6 +1731,104 @@ fn command_dispatch_propagates_real_verdicts_and_refuses_wrong_arguments_before_
         assert!(run_using(root.path(), args, "unknown", &mut host).is_err());
         assert_eq!(host.calls, 0);
     }
+}
+#[test]
+fn absolute_capture_outputs_remain_owned_and_never_promote_fixture_measurements() {
+    let (root, sha) = pipeline_root();
+    let output = root.path().join("target/imap-075/absolute-fixture");
+    let mut driver = FakeDriver { calls: 0, fail: 0 };
+    let report = capture_from(
+        root.path(),
+        &output,
+        |_| Ok((sha, profile(), vec![source("crates/xtask/src/unit.rs")])),
+        &mut driver,
+    )
+    .unwrap();
+    assert_eq!(report, output.join("report.json"));
+    assert_eq!(driver.calls, 4);
+    assert!(check(root.path(), &report)
+        .unwrap_err()
+        .to_string()
+        .contains("not finalized qualification"));
+    let outside = tempfile::tempdir().unwrap();
+    assert!(capture_from(
+        root.path(),
+        outside.path(),
+        |_| panic!("foreign absolute path must refuse before inputs"),
+        &mut driver
+    )
+    .is_err());
+    assert_eq!(driver.calls, 4);
+}
+#[test]
+fn oversized_control_json_stops_after_bootstrap_without_starting_any_workload() {
+    let (root, sha) = pipeline_root();
+    let mut huge = profile();
+    huge.tools[0].version = "x".repeat(8 * 1024 * 1024);
+    let output = Path::new("target/imap-075/oversized-control-fixture");
+    let mut driver = FakeDriver { calls: 0, fail: 0 };
+    assert!(
+        execute_pipeline(root.path(), output, sha, huge, vec![], &mut driver)
+            .unwrap_err()
+            .to_string()
+            .contains("retained JSON bound")
+    );
+    assert_eq!(driver.calls, 1);
+    assert!(!root.path().join(output).join("control.json").exists());
+    assert!(!root.path().join(output).join("report.json").exists());
+}
+fn pipeline_root() -> (tempfile::TempDir, String) {
+    let root = tempfile::tempdir().unwrap();
+    std::fs::write(root.path().join(".gitignore"), "target/\n").unwrap();
+    git(root.path(), &["init", "-q"]);
+    record(root.path(), "unqualified pipeline fixture");
+    let sha = git(root.path(), &["rev-parse", "HEAD"]);
+    let runner = root.path().join("target/imap-075/coverage-runner/debug");
+    std::fs::create_dir_all(&runner).unwrap();
+    std::fs::write(
+        runner.join(format!("xtask{}", std::env::consts::EXE_SUFFIX)),
+        b"unqualified fixture bytes; never executed",
+    )
+    .unwrap();
+    (root, sha)
+}
+#[test]
+fn a_real_source_commit_during_bootstrap_refuses_control_publication() {
+    struct Drift(FakeDriver);
+    impl CoverageDriver for Drift {
+        fn execute(
+            &mut self,
+            stage: xtask::imap_build_process_075::BuildStage,
+            command: Command,
+        ) -> Result<xtask::imap_build_process_075::BuildReport, Box<dyn std::error::Error>>
+        {
+            let root = command.get_current_dir().unwrap().to_path_buf();
+            let report = self.0.execute(stage, command)?;
+            assert_eq!(
+                stage,
+                xtask::imap_build_process_075::BuildStage::CoverageRunner
+            );
+            std::fs::write(
+                root.join("source-changed.txt"),
+                b"source moved after capture inputs",
+            )
+            .unwrap();
+            record(&root, "source changed during bootstrap");
+            Ok(report)
+        }
+    }
+    let (root, sha) = pipeline_root();
+    let output = Path::new("target/imap-075/source-drift-fixture");
+    let mut driver = Drift(FakeDriver { calls: 0, fail: 0 });
+    assert!(
+        execute_pipeline(root.path(), output, sha, profile(), vec![], &mut driver)
+            .unwrap_err()
+            .to_string()
+            .contains("source changed while preparing")
+    );
+    assert_eq!(driver.0.calls, 1);
+    assert!(!root.path().join(output).join("control.json").exists());
+    assert!(!root.path().join(output).join("report.json").exists());
 }
 #[test]
 fn pipeline_uses_a_controller_copy_stops_on_failure_and_never_overwrites_output() {
