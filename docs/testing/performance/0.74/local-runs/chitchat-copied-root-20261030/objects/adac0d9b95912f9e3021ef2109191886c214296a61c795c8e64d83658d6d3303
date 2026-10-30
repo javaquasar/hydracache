@@ -1,0 +1,2425 @@
+{
+  "root": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target",
+  "rows": [
+    {
+      "name": "pulldown-security-20261029",
+      "bytes": 5321728298,
+      "files": 9725
+    },
+    {
+      "name": "dbus-backport-20261028",
+      "bytes": 1674399760,
+      "files": 5515
+    },
+    {
+      "name": "dbus-read-flows-v3-20261028",
+      "bytes": 991915574,
+      "files": 1984
+    },
+    {
+      "name": "dbus-read-flows-v2-20261028",
+      "bytes": 990891810,
+      "files": 1972
+    },
+    {
+      "name": "chitchat-inplace-20261029",
+      "bytes": 885311125,
+      "files": 9623
+    },
+    {
+      "name": "dbus-owner-properties-20261028",
+      "bytes": 878232078,
+      "files": 1693
+    },
+    {
+      "name": "source-continuation-20261024",
+      "bytes": 793827471,
+      "files": 4475
+    },
+    {
+      "name": "native-frontier-20261027",
+      "bytes": 787055448,
+      "files": 12
+    },
+    {
+      "name": "tests",
+      "bytes": 757949269,
+      "files": 6537
+    },
+    {
+      "name": "chitchat-preview-cost-20261028",
+      "bytes": 700295562,
+      "files": 2710
+    },
+    {
+      "name": "held-wsl-native-environment-20261022",
+      "bytes": 565309916,
+      "files": 67
+    },
+    {
+      "name": "debug",
+      "bytes": 519988865,
+      "files": 100403
+    },
+    {
+      "name": "chitchat-mtu-20261028",
+      "bytes": 419502580,
+      "files": 9360
+    },
+    {
+      "name": "status-field-scan-20261024",
+      "bytes": 408626603,
+      "files": 789
+    },
+    {
+      "name": "chitchat-compat-20261029",
+      "bytes": 390167323,
+      "files": 1627
+    },
+    {
+      "name": "chitchat-compat-20261029-r1",
+      "bytes": 381420755,
+      "files": 1602
+    },
+    {
+      "name": "dbus-original-delivery-20261028",
+      "bytes": 368231754,
+      "files": 13393
+    },
+    {
+      "name": "dbus-legacy-integration-20261028",
+      "bytes": 363985829,
+      "files": 13423
+    },
+    {
+      "name": "dbus-read-flows-20261028",
+      "bytes": 335407996,
+      "files": 765
+    },
+    {
+      "name": "yaml-security-20261028",
+      "bytes": 274081399,
+      "files": 1273
+    },
+    {
+      "name": "dbus-native-20261028",
+      "bytes": 266801830,
+      "files": 9664
+    },
+    {
+      "name": "zstd-security-fault-20261029",
+      "bytes": 221594127,
+      "files": 3164
+    },
+    {
+      "name": "roots-lock-view-20261027",
+      "bytes": 220901526,
+      "files": 2527
+    },
+    {
+      "name": "chitchat-host-cost-20261029",
+      "bytes": 192956451,
+      "files": 5871
+    },
+    {
+      "name": "dbus-runtime-20261028",
+      "bytes": 191396293,
+      "files": 4516
+    },
+    {
+      "name": "chitchat-cohort-r3-20261030-r2",
+      "bytes": 176219305,
+      "files": 929
+    },
+    {
+      "name": "chitchat-copied-root-20261030",
+      "bytes": 175157622,
+      "files": 681
+    },
+    {
+      "name": "blob-fault-20261024",
+      "bytes": 165779690,
+      "files": 1773
+    },
+    {
+      "name": "dbus-root-package-20261028",
+      "bytes": 158319286,
+      "files": 767
+    },
+    {
+      "name": "doc",
+      "bytes": 153060303,
+      "files": 6408
+    },
+    {
+      "name": "chitchat-security-only-20261030",
+      "bytes": 133573917,
+      "files": 8669
+    },
+    {
+      "name": "remaining-security-20261028",
+      "bytes": 127618206,
+      "files": 3390
+    },
+    {
+      "name": "evidence-run-cargo",
+      "bytes": 123782588,
+      "files": 203
+    },
+    {
+      "name": "dbus-native-source-2-20261028",
+      "bytes": 112678746,
+      "files": 3872
+    },
+    {
+      "name": "server-preparation-profile-20261028",
+      "bytes": 112614196,
+      "files": 77
+    },
+    {
+      "name": "dbus-original-owner-20261028",
+      "bytes": 106981154,
+      "files": 3865
+    },
+    {
+      "name": "negotiated-dispatch-20261018",
+      "bytes": 106360366,
+      "files": 108
+    },
+    {
+      "name": "chitchat-package-20261030-r5",
+      "bytes": 97668725,
+      "files": 6127
+    },
+    {
+      "name": "original-start-material-bin-20261017",
+      "bytes": 91093048,
+      "files": 5
+    },
+    {
+      "name": "boot-buffer-plain-20261018",
+      "bytes": 86232213,
+      "files": 73
+    },
+    {
+      "name": "chitchat-caller-20261029-r2",
+      "bytes": 84895731,
+      "files": 961
+    },
+    {
+      "name": "bootstrap-original-service-20261023",
+      "bytes": 84558162,
+      "files": 2819
+    },
+    {
+      "name": "chitchat-frame-20261030",
+      "bytes": 81397339,
+      "files": 2377
+    },
+    {
+      "name": "chitchat-commit-Q-20261029-r2",
+      "bytes": 75421229,
+      "files": 617
+    },
+    {
+      "name": "fixed-grouped-bin-v5u5LH",
+      "bytes": 75361056,
+      "files": 4
+    },
+    {
+      "name": "native-recheck-transfer-e771b63a22ff4a24a407b4df17ea2b63",
+      "bytes": 75043768,
+      "files": 13
+    },
+    {
+      "name": "dbus-legacy-calls-20261028",
+      "bytes": 74339883,
+      "files": 2671
+    },
+    {
+      "name": "original-safety-alarm-bin-20261017",
+      "bytes": 74269720,
+      "files": 4
+    },
+    {
+      "name": "authorized-server-session-20261025",
+      "bytes": 73150394,
+      "files": 1300
+    },
+    {
+      "name": "chitchat-native-cost-opaque-20261029",
+      "bytes": 71968754,
+      "files": 613
+    },
+    {
+      "name": "dbus-fragments-20261028",
+      "bytes": 65148233,
+      "files": 2613
+    },
+    {
+      "name": "original-manager-message-20261018",
+      "bytes": 62411019,
+      "files": 4
+    },
+    {
+      "name": "w9c-kernel-37304417778",
+      "bytes": 60183439,
+      "files": 575
+    },
+    {
+      "name": "w9c-kernel-37303375748",
+      "bytes": 54696708,
+      "files": 334
+    },
+    {
+      "name": "chitchat-fused-20261030",
+      "bytes": 48758492,
+      "files": 924
+    },
+    {
+      "name": "chitchat-call-context-20261030",
+      "bytes": 48182678,
+      "files": 1706
+    },
+    {
+      "name": "chitchat-stateful-20261029",
+      "bytes": 47719261,
+      "files": 783
+    },
+    {
+      "name": "held-root-transfer-b3161ea17aad430d99622c74853c0625",
+      "bytes": 46850856,
+      "files": 2
+    },
+    {
+      "name": "chitchat-caller-20261029-r1",
+      "bytes": 46284685,
+      "files": 454
+    },
+    {
+      "name": "swagger-security-20261028",
+      "bytes": 44589522,
+      "files": 451
+    },
+    {
+      "name": "blob-native-transport-20261024",
+      "bytes": 44245748,
+      "files": 86
+    },
+    {
+      "name": "workspace-dbus-20261029",
+      "bytes": 44039073,
+      "files": 3734
+    },
+    {
+      "name": "original-kernel-walk-20261018",
+      "bytes": 41983958,
+      "files": 4
+    },
+    {
+      "name": "supervisor-zstd-security-20261030",
+      "bytes": 41964339,
+      "files": 1901
+    },
+    {
+      "name": "original-live-walk-20261018",
+      "bytes": 41779124,
+      "files": 4
+    },
+    {
+      "name": "original-preparation-budget-20261018",
+      "bytes": 41759081,
+      "files": 3
+    },
+    {
+      "name": "original-manager-join-20261018",
+      "bytes": 41490936,
+      "files": 3
+    },
+    {
+      "name": "original-manager-grouped-message-20261018",
+      "bytes": 41417687,
+      "files": 3
+    },
+    {
+      "name": "chitchat-cost-20261029-r1",
+      "bytes": 40324411,
+      "files": 573
+    },
+    {
+      "name": "enrollment-host",
+      "bytes": 39683216,
+      "files": 2
+    },
+    {
+      "name": "chitchat-cost-20261029",
+      "bytes": 38248604,
+      "files": 272
+    },
+    {
+      "name": "chitchat-caller-20261029",
+      "bytes": 37896972,
+      "files": 304
+    },
+    {
+      "name": "fixed-grouped-process-bin-GFI9jW",
+      "bytes": 37774544,
+      "files": 2
+    },
+    {
+      "name": "grouped-process-bin-LNpZoJ",
+      "bytes": 37562432,
+      "files": 2
+    },
+    {
+      "name": "dbus-fixed-channel-20261028",
+      "bytes": 37380584,
+      "files": 1365
+    },
+    {
+      "name": "grouped-preparation-bin-LmaZ0c",
+      "bytes": 37286192,
+      "files": 2
+    },
+    {
+      "name": "controller-component-cost-bin-20261017",
+      "bytes": 37214624,
+      "files": 2
+    },
+    {
+      "name": "validation-leaf-cost-bin-20261017",
+      "bytes": 36964896,
+      "files": 2
+    },
+    {
+      "name": "original-pipe-transport-bin-20261017",
+      "bytes": 36923312,
+      "files": 2
+    },
+    {
+      "name": "diagnostic-hosted-build-37923423889",
+      "bytes": 36794537,
+      "files": 19
+    },
+    {
+      "name": "chitchat-native-cost-scope-20261029",
+      "bytes": 36652122,
+      "files": 386
+    },
+    {
+      "name": "chitchat-native-cost-target-20261029",
+      "bytes": 35494509,
+      "files": 381
+    },
+    {
+      "name": "security-review-20261028",
+      "bytes": 35411941,
+      "files": 575
+    },
+    {
+      "name": "dbus-root-integration-20261028",
+      "bytes": 35321138,
+      "files": 2322
+    },
+    {
+      "name": "chitchat-native-cost-20261029",
+      "bytes": 35199392,
+      "files": 296
+    },
+    {
+      "name": "chitchat-commit-P-20261029-r2",
+      "bytes": 34759833,
+      "files": 272
+    },
+    {
+      "name": "chitchat-commit-P-20261029-r1",
+      "bytes": 34537064,
+      "files": 194
+    },
+    {
+      "name": "chitchat-cohort-r2-20261029",
+      "bytes": 33779726,
+      "files": 410
+    },
+    {
+      "name": "release",
+      "bytes": 33661013,
+      "files": 968
+    },
+    {
+      "name": "dbus-reply-state-20261028",
+      "bytes": 32695827,
+      "files": 1319
+    },
+    {
+      "name": "census-integration-linux-20261024",
+      "bytes": 32591084,
+      "files": 9
+    },
+    {
+      "name": "census-integration-linux-v4-20261024",
+      "bytes": 32585788,
+      "files": 8
+    },
+    {
+      "name": "census-integration-linux-v3-20261024",
+      "bytes": 32585518,
+      "files": 8
+    },
+    {
+      "name": "census-integration-linux-v2-20261024",
+      "bytes": 32584901,
+      "files": 8
+    },
+    {
+      "name": "census-panic-linux-v4-20261024",
+      "bytes": 32177414,
+      "files": 8
+    },
+    {
+      "name": "census-panic-linux-v3-20261024",
+      "bytes": 32176917,
+      "files": 8
+    },
+    {
+      "name": "gnu-repaired-local-20261027",
+      "bytes": 31894063,
+      "files": 315
+    },
+    {
+      "name": "original-manager-live-20261028",
+      "bytes": 31425450,
+      "files": 30
+    },
+    {
+      "name": "package-syntax-20261025",
+      "bytes": 31383625,
+      "files": 35
+    },
+    {
+      "name": "bootstrap-original-getunit-20261023",
+      "bytes": 30895512,
+      "files": 242
+    },
+    {
+      "name": "blob-caller-linux-session-v2-20261024",
+      "bytes": 28804639,
+      "files": 7
+    },
+    {
+      "name": "chitchat-cohort-20261029-r1",
+      "bytes": 28691135,
+      "files": 338
+    },
+    {
+      "name": "diagnostic-start-material-bundle-20261017",
+      "bytes": 27117795,
+      "files": 9
+    },
+    {
+      "name": "static-contract-trace-20261024",
+      "bytes": 26292233,
+      "files": 12436
+    },
+    {
+      "name": "security-successor-20261026",
+      "bytes": 26087100,
+      "files": 248
+    },
+    {
+      "name": "gnu-frontier-local-20261027",
+      "bytes": 25880830,
+      "files": 232
+    },
+    {
+      "name": "package-review-v7-20261026",
+      "bytes": 24208322,
+      "files": 198
+    },
+    {
+      "name": "wsl-clock-readonly-20261023",
+      "bytes": 24084501,
+      "files": 53
+    },
+    {
+      "name": "bootstrap-held-entry-20261023",
+      "bytes": 22752310,
+      "files": 2729
+    },
+    {
+      "name": "security-input-view-20261026",
+      "bytes": 22102113,
+      "files": 288
+    },
+    {
+      "name": "chitchat-borrowed-20261030",
+      "bytes": 21011566,
+      "files": 744
+    },
+    {
+      "name": "dbus-source-package-20261028",
+      "bytes": 20710104,
+      "files": 691
+    },
+    {
+      "name": "tokio-security-20261026",
+      "bytes": 17999297,
+      "files": 227
+    },
+    {
+      "name": "roots-approved-20261026",
+      "bytes": 17665747,
+      "files": 125
+    },
+    {
+      "name": "dbus-linux-20261028",
+      "bytes": 16332626,
+      "files": 679
+    },
+    {
+      "name": "dbus-linux-v5-20261028",
+      "bytes": 16308444,
+      "files": 670
+    },
+    {
+      "name": "dbus-linux-v3-20261028",
+      "bytes": 16290386,
+      "files": 671
+    },
+    {
+      "name": "dbus-linux-v4-20261028",
+      "bytes": 16225342,
+      "files": 639
+    },
+    {
+      "name": "status-field-memory-20261024-v2-doc-placement",
+      "bytes": 15930460,
+      "files": 69
+    },
+    {
+      "name": "roots-patch-20261026",
+      "bytes": 15748359,
+      "files": 105
+    },
+    {
+      "name": "authority-operator-order-194",
+      "bytes": 15701834,
+      "files": 61
+    },
+    {
+      "name": "dbus-linux-v2-20261028",
+      "bytes": 15682904,
+      "files": 617
+    },
+    {
+      "name": "blob-fault-source-snapshots-20261024",
+      "bytes": 15530262,
+      "files": 1884
+    },
+    {
+      "name": "bootstrap-installed-child-20261023",
+      "bytes": 15047423,
+      "files": 1799
+    },
+    {
+      "name": "bootstrap-held-delivery-20261023",
+      "bytes": 14859586,
+      "files": 1818
+    },
+    {
+      "name": "dbus-root-package-20261029-formatted8",
+      "bytes": 14621194,
+      "files": 21492
+    },
+    {
+      "name": "helper-spans-20261025",
+      "bytes": 14346554,
+      "files": 28
+    },
+    {
+      "name": "authority-runtime-development",
+      "bytes": 14191172,
+      "files": 31
+    },
+    {
+      "name": "authority-scratch-reuse-194",
+      "bytes": 13426348,
+      "files": 61
+    },
+    {
+      "name": "workspace-markdown-20261029",
+      "bytes": 12848866,
+      "files": 80
+    },
+    {
+      "name": "webpki-patch-20261026",
+      "bytes": 12472034,
+      "files": 85
+    },
+    {
+      "name": "security-patch-20261026",
+      "bytes": 11769387,
+      "files": 80
+    },
+    {
+      "name": "get-owner-b0-binaries-18ee8cdc",
+      "bytes": 11741184,
+      "files": 4
+    },
+    {
+      "name": "authority-owned-journal-194",
+      "bytes": 11670092,
+      "files": 57
+    },
+    {
+      "name": "sample-boot-inline-194",
+      "bytes": 11662347,
+      "files": 71
+    },
+    {
+      "name": "bootstrap-installed-material-20261023",
+      "bytes": 11391369,
+      "files": 1336
+    },
+    {
+      "name": "security-patch-20261024",
+      "bytes": 11342321,
+      "files": 89
+    },
+    {
+      "name": "bootstrap-installed-origin-20261023",
+      "bytes": 10661342,
+      "files": 1149
+    },
+    {
+      "name": "authority-operator-order-188",
+      "bytes": 10166262,
+      "files": 51
+    },
+    {
+      "name": "authority-operator-targeted-188",
+      "bytes": 9993848,
+      "files": 51
+    },
+    {
+      "name": "authority-operator-targeted-194",
+      "bytes": 9986643,
+      "files": 53
+    },
+    {
+      "name": "bootstrap-installed-entry-20261023",
+      "bytes": 9789484,
+      "files": 1112
+    },
+    {
+      "name": "package-v6-syntax-first-20261026",
+      "bytes": 9718056,
+      "files": 11
+    },
+    {
+      "name": "package-v5-syntax-context-first-20261026",
+      "bytes": 9672091,
+      "files": 11
+    },
+    {
+      "name": "chitchat-host-cost-20261029-r1",
+      "bytes": 9638824,
+      "files": 57
+    },
+    {
+      "name": "authority-owned-journal-188",
+      "bytes": 9423748,
+      "files": 51
+    },
+    {
+      "name": "package-syntax-v4-closure-20261025",
+      "bytes": 9404955,
+      "files": 10
+    },
+    {
+      "name": "repaired-scope-syntax-20261025",
+      "bytes": 9395327,
+      "files": 10
+    },
+    {
+      "name": "package-syntax-v2-20261025",
+      "bytes": 9395098,
+      "files": 10
+    },
+    {
+      "name": "performance-evidence",
+      "bytes": 9325308,
+      "files": 500
+    },
+    {
+      "name": "authority-scratch-reuse-188",
+      "bytes": 8940305,
+      "files": 51
+    },
+    {
+      "name": "linux-clock-control-20261023",
+      "bytes": 8185792,
+      "files": 111
+    },
+    {
+      "name": "sample-boot-inline-188",
+      "bytes": 7980473,
+      "files": 51
+    },
+    {
+      "name": "authority-read-baseline-194",
+      "bytes": 7967924,
+      "files": 53
+    },
+    {
+      "name": "authority-read-baseline-188",
+      "bytes": 7832569,
+      "files": 51
+    },
+    {
+      "name": "chitchat-package-20261030-r3",
+      "bytes": 7687993,
+      "files": 1587
+    },
+    {
+      "name": "server-source-capsule-20261025",
+      "bytes": 7541216,
+      "files": 2
+    },
+    {
+      "name": "bootstrap-child-boundary-20261023",
+      "bytes": 7301836,
+      "files": 270
+    },
+    {
+      "name": "chitchat-public-identity-20261030",
+      "bytes": 7132883,
+      "files": 258
+    },
+    {
+      "name": "sample-boot-baseline-194",
+      "bytes": 7119983,
+      "files": 53
+    },
+    {
+      "name": "authority-runtime-balanced-first",
+      "bytes": 7059657,
+      "files": 349
+    },
+    {
+      "name": "sample-boot-baseline-188",
+      "bytes": 7016761,
+      "files": 51
+    },
+    {
+      "name": "proc-document-baseline-194",
+      "bytes": 7001409,
+      "files": 53
+    },
+    {
+      "name": "proc-document-baseline-188",
+      "bytes": 6893477,
+      "files": 51
+    },
+    {
+      "name": "windows-fixed-cargo-20261027",
+      "bytes": 6777876,
+      "files": 196
+    },
+    {
+      "name": "census-panic-linux-v2-20261024",
+      "bytes": 6508626,
+      "files": 9
+    },
+    {
+      "name": "bootstrap-sandbox-owner-20261023",
+      "bytes": 6454926,
+      "files": 785
+    },
+    {
+      "name": "dbus-original-delivery-checks-20261028",
+      "bytes": 5870858,
+      "files": 53
+    },
+    {
+      "name": "dbus-root-package-20261028-cases3",
+      "bytes": 5851936,
+      "files": 10669
+    },
+    {
+      "name": "dbus-root-package-20261029-resource6",
+      "bytes": 5420630,
+      "files": 10339
+    },
+    {
+      "name": "chitchat-package-complete-20261030",
+      "bytes": 5262370,
+      "files": 272
+    },
+    {
+      "name": "bootstrap-current-image-20261023",
+      "bytes": 5190225,
+      "files": 522
+    },
+    {
+      "name": "authority-operator-targeted-first",
+      "bytes": 3971847,
+      "files": 22
+    },
+    {
+      "name": "dbus-root-package-20261029-hash5",
+      "bytes": 3741936,
+      "files": 4331
+    },
+    {
+      "name": "authority-runtime-allocation-development",
+      "bytes": 3673198,
+      "files": 35
+    },
+    {
+      "name": "w9b-d3a-3171d02a-binaries",
+      "bytes": 3660800,
+      "files": 2
+    },
+    {
+      "name": "authority-runtime-native-second",
+      "bytes": 3392881,
+      "files": 55
+    },
+    {
+      "name": "dbus-original-owner-checks-20261028",
+      "bytes": 3113446,
+      "files": 26
+    },
+    {
+      "name": "authority-runtime-cpu-first",
+      "bytes": 3052356,
+      "files": 152
+    },
+    {
+      "name": "dbus-legacy-final-20261028",
+      "bytes": 2788731,
+      "files": 30
+    },
+    {
+      "name": "package-v5-syntax-first-20261026",
+      "bytes": 2766350,
+      "files": 6
+    },
+    {
+      "name": "dbus-source-package-final-20261028",
+      "bytes": 2763852,
+      "files": 30
+    },
+    {
+      "name": "ordinary-ci-074",
+      "bytes": 2749068,
+      "files": 45
+    },
+    {
+      "name": "chitchat-package-20261030",
+      "bytes": 2574627,
+      "files": 78
+    },
+    {
+      "name": "authority-runtime-allocation-seventh",
+      "bytes": 2464443,
+      "files": 150
+    },
+    {
+      "name": "bootstrap-child-census-20261023",
+      "bytes": 2343340,
+      "files": 490
+    },
+    {
+      "name": "authority-operator-order-checks",
+      "bytes": 2310547,
+      "files": 24
+    },
+    {
+      "name": "dbus-fixed-final-20261028",
+      "bytes": 2297036,
+      "files": 24
+    },
+    {
+      "name": "census-panic-linux-20261024",
+      "bytes": 2288396,
+      "files": 9
+    },
+    {
+      "name": "chitchat-package-20261030-r2",
+      "bytes": 2260400,
+      "files": 74
+    },
+    {
+      "name": "dbus-root-package-20261028-caller4",
+      "bytes": 2129875,
+      "files": 156
+    },
+    {
+      "name": "dbus-root-package-20261028-custody2",
+      "bytes": 2117825,
+      "files": 240
+    },
+    {
+      "name": "roots-final-20261026",
+      "bytes": 2102904,
+      "files": 30
+    },
+    {
+      "name": "dbus-reply-state-final-20261028",
+      "bytes": 2035200,
+      "files": 29
+    },
+    {
+      "name": "dbus-fragments-final-20261028",
+      "bytes": 2032456,
+      "files": 28
+    },
+    {
+      "name": "dbus-read-final-20261028",
+      "bytes": 2024541,
+      "files": 28
+    },
+    {
+      "name": "chitchat-package-20261030-r4",
+      "bytes": 1972758,
+      "files": 66
+    },
+    {
+      "name": "native-full-package-capacity-restored-20261027",
+      "bytes": 1916759,
+      "files": 7
+    },
+    {
+      "name": "original-reply-binding-20261018",
+      "bytes": 1904789,
+      "files": 75
+    },
+    {
+      "name": "chitchat-package-20261030-r4-prepare-r2",
+      "bytes": 1665202,
+      "files": 57
+    },
+    {
+      "name": "dbus-linux-final-20261028",
+      "bytes": 1620133,
+      "files": 23
+    },
+    {
+      "name": "dbus-owner-final-20261028",
+      "bytes": 1613093,
+      "files": 23
+    },
+    {
+      "name": "dbus-runtime-final-20261028",
+      "bytes": 1613003,
+      "files": 23
+    },
+    {
+      "name": "dbus-msrv-final-20261028",
+      "bytes": 1606376,
+      "files": 23
+    },
+    {
+      "name": "chitchat-preview-cost-final-20261028",
+      "bytes": 1600430,
+      "files": 23
+    },
+    {
+      "name": "test-hydracache-daemon-process",
+      "bytes": 1573927,
+      "files": 18
+    },
+    {
+      "name": "cleanup-old-rlib-review-20261028",
+      "bytes": 1517312,
+      "files": 2
+    },
+    {
+      "name": "custody-loss",
+      "bytes": 1470956,
+      "files": 81
+    },
+    {
+      "name": "chitchat-package-20261030-r4-prepare-r1",
+      "bytes": 1366344,
+      "files": 56
+    },
+    {
+      "name": "authority-operator-argv-first",
+      "bytes": 1364259,
+      "files": 7
+    },
+    {
+      "name": "bootstrap-entry-binding-20261023",
+      "bytes": 1306563,
+      "files": 272
+    },
+    {
+      "name": "authority-scratch-reuse-checks",
+      "bytes": 1192437,
+      "files": 26
+    },
+    {
+      "name": "w9e-run-37300775917",
+      "bytes": 1171840,
+      "files": 46
+    },
+    {
+      "name": "blob-native-source-snapshots-20261024",
+      "bytes": 1158657,
+      "files": 173
+    },
+    {
+      "name": "chitchat-call-source-review-20261030",
+      "bytes": 1127047,
+      "files": 79
+    },
+    {
+      "name": "git-cpu-spawn-capture-20261026",
+      "bytes": 1126915,
+      "files": 35
+    },
+    {
+      "name": "authority-owned-journal-checks",
+      "bytes": 1055800,
+      "files": 24
+    },
+    {
+      "name": "git-cpu-capture-leaves-20261026",
+      "bytes": 1007215,
+      "files": 35
+    },
+    {
+      "name": "authority-runtime-allocation-sixth",
+      "bytes": 910642,
+      "files": 19
+    },
+    {
+      "name": "nextest",
+      "bytes": 829686,
+      "files": 1
+    },
+    {
+      "name": "authority-runtime-allocation-fifth",
+      "bytes": 823104,
+      "files": 84
+    },
+    {
+      "name": "chitchat-frame-20261030-prepare-r1",
+      "bytes": 782222,
+      "files": 60
+    },
+    {
+      "name": "chitchat-context-source-review-20261030",
+      "bytes": 740003,
+      "files": 51
+    },
+    {
+      "name": "git-cpu-coordinator-frames-20261026",
+      "bytes": 717934,
+      "files": 35
+    },
+    {
+      "name": "git-job-cpu-20261026",
+      "bytes": 704656,
+      "files": 9
+    },
+    {
+      "name": "dbus-root-package-20261029-spool7",
+      "bytes": 693538,
+      "files": 61
+    },
+    {
+      "name": "chitchat-package-complete-controls-20261030",
+      "bytes": 615670,
+      "files": 10
+    },
+    {
+      "name": "get-owner-d3a-213e9e0a",
+      "bytes": 595914,
+      "files": 362
+    },
+    {
+      "name": "artifact-inventory-audit-20261024",
+      "bytes": 576734,
+      "files": 1
+    },
+    {
+      "name": "git-cpu-overhead-20261026",
+      "bytes": 530252,
+      "files": 35
+    },
+    {
+      "name": "authority-runtime-allocation-fourth",
+      "bytes": 528835,
+      "files": 21
+    },
+    {
+      "name": "authority-runtime-allocation-third",
+      "bytes": 528456,
+      "files": 21
+    },
+    {
+      "name": "authority-runtime-allocation-second",
+      "bytes": 522876,
+      "files": 15
+    },
+    {
+      "name": "authority-runtime-final-188",
+      "bytes": 466063,
+      "files": 77
+    },
+    {
+      "name": "authority-runtime-dev-194-path-fixed",
+      "bytes": 463932,
+      "files": 77
+    },
+    {
+      "name": "windows-cleanup-gate-20261027",
+      "bytes": 462146,
+      "files": 170
+    },
+    {
+      "name": "authority-runtime-final-194",
+      "bytes": 458876,
+      "files": 77
+    },
+    {
+      "name": "blob-caller-linux-session-20261024",
+      "bytes": 423886,
+      "files": 8
+    },
+    {
+      "name": "normalization-20261025",
+      "bytes": 411772,
+      "files": 7
+    },
+    {
+      "name": "diagnostic-local-build-62114be0-native",
+      "bytes": 394351,
+      "files": 20
+    },
+    {
+      "name": "sweep-trees-20261025",
+      "bytes": 393856,
+      "files": 20
+    },
+    {
+      "name": "chitchat-fused-source-review-20261030",
+      "bytes": 390450,
+      "files": 28
+    },
+    {
+      "name": "history-prefix-20261025",
+      "bytes": 390071,
+      "files": 8
+    },
+    {
+      "name": "census-integration-sources-20261024",
+      "bytes": 361831,
+      "files": 150
+    },
+    {
+      "name": "history-namespace-20261025",
+      "bytes": 358906,
+      "files": 9
+    },
+    {
+      "name": "census-cost-20261024",
+      "bytes": 357893,
+      "files": 12
+    },
+    {
+      "name": "direct-pipe-20261025-first",
+      "bytes": 357256,
+      "files": 5
+    },
+    {
+      "name": "canonical-20261025",
+      "bytes": 355754,
+      "files": 6
+    },
+    {
+      "name": "native-preparation-cost-20261024",
+      "bytes": 282933,
+      "files": 40
+    },
+    {
+      "name": "reviewed-package-v9-20261027",
+      "bytes": 273449,
+      "files": 7
+    },
+    {
+      "name": "bootstrap-child-reader-20261023",
+      "bytes": 271128,
+      "files": 138
+    },
+    {
+      "name": "owned-process-control-first-20261025",
+      "bytes": 268446,
+      "files": 5
+    },
+    {
+      "name": "owned-process-final-control-20261025",
+      "bytes": 268446,
+      "files": 5
+    },
+    {
+      "name": "wsl-clock-setter-20261023",
+      "bytes": 268331,
+      "files": 39
+    },
+    {
+      "name": "reviewed-package-v8-20261027",
+      "bytes": 257935,
+      "files": 7
+    },
+    {
+      "name": "wsl-clock-root-namespace-uac-outcome-20261023",
+      "bytes": 253664,
+      "files": 106
+    },
+    {
+      "name": "reviewed-package-v7-20261026",
+      "bytes": 252903,
+      "files": 9
+    },
+    {
+      "name": "transport-capture-20261025",
+      "bytes": 247601,
+      "files": 6
+    },
+    {
+      "name": "windows-workspace-preflight-20261027",
+      "bytes": 247503,
+      "files": 91
+    },
+    {
+      "name": "authority-runtime-allocation-first",
+      "bytes": 244597,
+      "files": 15
+    },
+    {
+      "name": "reviewed-package-v6-20261026",
+      "bytes": 244489,
+      "files": 9
+    },
+    {
+      "name": "reviewed-package-v5-20261026",
+      "bytes": 241728,
+      "files": 7
+    },
+    {
+      "name": "reviewed-package-v2-20261025",
+      "bytes": 225404,
+      "files": 7
+    },
+    {
+      "name": "roots-baseline-inputs-20261026",
+      "bytes": 194472,
+      "files": 7
+    },
+    {
+      "name": "chitchat-cohort-r3-20261030",
+      "bytes": 187543,
+      "files": 56
+    },
+    {
+      "name": "bootstrap-build-owner-20261023",
+      "bytes": 166401,
+      "files": 167
+    },
+    {
+      "name": "collector-peer-capacity-checks",
+      "bytes": 145075,
+      "files": 23
+    },
+    {
+      "name": "leaf-attribution-20261026",
+      "bytes": 143732,
+      "files": 2
+    },
+    {
+      "name": "__pycache__",
+      "bytes": 132415,
+      "files": 14
+    },
+    {
+      "name": "reply-state-owner-20261018",
+      "bytes": 122447,
+      "files": 38
+    },
+    {
+      "name": "chitchat-cohort-r3-20261030-r1",
+      "bytes": 118122,
+      "files": 51
+    },
+    {
+      "name": "authority-read-baseline-checks",
+      "bytes": 114842,
+      "files": 14
+    },
+    {
+      "name": "boot-buffer-20261018",
+      "bytes": 113996,
+      "files": 45
+    },
+    {
+      "name": "reviewed-package-v4-closure-20261025",
+      "bytes": 112866,
+      "files": 6
+    },
+    {
+      "name": "held-complete-census-20261022",
+      "bytes": 110289,
+      "files": 89
+    },
+    {
+      "name": "chitchat-cohort-20261029",
+      "bytes": 109688,
+      "files": 69
+    },
+    {
+      "name": "wsl-clock-causality-root-context-20261023",
+      "bytes": 109276,
+      "files": 33
+    },
+    {
+      "name": "reviewed-package-20261025",
+      "bytes": 106417,
+      "files": 3
+    },
+    {
+      "name": "native-full-package-first-20261027",
+      "bytes": 103476,
+      "files": 6
+    },
+    {
+      "name": "native-full-package-checked-first-20261027",
+      "bytes": 103300,
+      "files": 5
+    },
+    {
+      "name": "collector-peer-baseline-checks",
+      "bytes": 99802,
+      "files": 25
+    },
+    {
+      "name": "bootstrap-image-census-20261023",
+      "bytes": 92871,
+      "files": 103
+    },
+    {
+      "name": "server-preparation-outputs-analysis-20261028",
+      "bytes": 90104,
+      "files": 14
+    },
+    {
+      "name": "trust-component-stack-checks",
+      "bytes": 88726,
+      "files": 30
+    },
+    {
+      "name": "authorized-server-preflight-20261026",
+      "bytes": 87375,
+      "files": 5
+    },
+    {
+      "name": "authorized-server-preflight-20261025",
+      "bytes": 86195,
+      "files": 5
+    },
+    {
+      "name": "authority-runtime-first-checks",
+      "bytes": 85719,
+      "files": 20
+    },
+    {
+      "name": "sample-boot-inline-checks",
+      "bytes": 82323,
+      "files": 31
+    },
+    {
+      "name": "package-closure-inputs-audit-20261027",
+      "bytes": 80922,
+      "files": 2
+    },
+    {
+      "name": "hc2-python-generation",
+      "bytes": 80914,
+      "files": 9
+    },
+    {
+      "name": "current-tree-generic-gateway-20261024",
+      "bytes": 77893,
+      "files": 7
+    },
+    {
+      "name": "current-tree-first-candidate-20261024",
+      "bytes": 77251,
+      "files": 7
+    },
+    {
+      "name": "held-material-gate-checks",
+      "bytes": 74571,
+      "files": 29
+    },
+    {
+      "name": "result-join-saved-replay-first-20261025",
+      "bytes": 70821,
+      "files": 2
+    },
+    {
+      "name": "dbus-fixed-macros-20261028",
+      "bytes": 67488,
+      "files": 6
+    },
+    {
+      "name": "memory-evidence",
+      "bytes": 66693,
+      "files": 1
+    },
+    {
+      "name": "capture-attribution-20261026",
+      "bytes": 65861,
+      "files": 2
+    },
+    {
+      "name": "wsl-clock-writer-20261023",
+      "bytes": 61238,
+      "files": 26
+    },
+    {
+      "name": "held-material-roles-20261022",
+      "bytes": 59618,
+      "files": 70
+    },
+    {
+      "name": "context-document-stack-checks",
+      "bytes": 59044,
+      "files": 33
+    },
+    {
+      "name": "trust-component-baseline-checks",
+      "bytes": 58866,
+      "files": 27
+    },
+    {
+      "name": "held-bind-alias-20261023",
+      "bytes": 58814,
+      "files": 87
+    },
+    {
+      "name": "pidfd-info-checks",
+      "bytes": 50085,
+      "files": 30
+    },
+    {
+      "name": "dbus-root-source-diff-preview-20261028",
+      "bytes": 48795,
+      "files": 22
+    },
+    {
+      "name": "authority-runtime-balanced-doc-followup-first-20261022",
+      "bytes": 47856,
+      "files": 48
+    },
+    {
+      "name": "get-owner-b0-18ee8cdc",
+      "bytes": 47704,
+      "files": 3
+    },
+    {
+      "name": "linux-ci-group-baseline-20261026",
+      "bytes": 47495,
+      "files": 5
+    },
+    {
+      "name": "linux-ci-group-extended-v2-20261026",
+      "bytes": 47377,
+      "files": 5
+    },
+    {
+      "name": "projection-groups-checks",
+      "bytes": 47267,
+      "files": 30
+    },
+    {
+      "name": "linux-ci-group-candidate-v2-20261026",
+      "bytes": 46954,
+      "files": 5
+    },
+    {
+      "name": "wsl-clock-writer-identity-20261023",
+      "bytes": 46183,
+      "files": 74
+    },
+    {
+      "name": "linux-ci-group-candidate-20261026",
+      "bytes": 45919,
+      "files": 5
+    },
+    {
+      "name": "native-gnu-frontier-first-20261027",
+      "bytes": 42598,
+      "files": 7
+    },
+    {
+      "name": "capture-leaves-final17-source",
+      "bytes": 40940,
+      "files": 3
+    },
+    {
+      "name": "authority-storage-source-first-checks",
+      "bytes": 40533,
+      "files": 28
+    },
+    {
+      "name": "native-context-launch-20261027",
+      "bytes": 40156,
+      "files": 6
+    },
+    {
+      "name": "diagnostic-process-local-capture",
+      "bytes": 40148,
+      "files": 3
+    },
+    {
+      "name": "capture-leaves-precommit-source",
+      "bytes": 39775,
+      "files": 3
+    },
+    {
+      "name": "authority-history-view-first-checks",
+      "bytes": 39150,
+      "files": 26
+    },
+    {
+      "name": "wsl-clock-causality-20261023",
+      "bytes": 38922,
+      "files": 17
+    },
+    {
+      "name": "held-activation-ingress-20261022",
+      "bytes": 38650,
+      "files": 66
+    },
+    {
+      "name": "ci-watchdog-native-source-20261026",
+      "bytes": 38209,
+      "files": 4
+    },
+    {
+      "name": "capture-leaves-first-source",
+      "bytes": 37647,
+      "files": 3
+    },
+    {
+      "name": "chitchat-commit-P-20261029",
+      "bytes": 37532,
+      "files": 15
+    },
+    {
+      "name": "diagnostic-manager-capture-9a225347",
+      "bytes": 37064,
+      "files": 4
+    },
+    {
+      "name": "diagnostic-manager-capture-224f6ed3",
+      "bytes": 36974,
+      "files": 3
+    },
+    {
+      "name": "coordinator-frames-first-model-source",
+      "bytes": 36695,
+      "files": 3
+    },
+    {
+      "name": "diagnostic-manager-capture-c2fdc3f4",
+      "bytes": 36185,
+      "files": 3
+    },
+    {
+      "name": "authority-integration-audit-first-checks",
+      "bytes": 35465,
+      "files": 23
+    },
+    {
+      "name": "release-evidence",
+      "bytes": 35440,
+      "files": 6
+    },
+    {
+      "name": "diagnostic-receipts-ceaa8b07-capture",
+      "bytes": 35257,
+      "files": 3
+    },
+    {
+      "name": "diagnostic-manager-capture-097ab6fa",
+      "bytes": 35223,
+      "files": 3
+    },
+    {
+      "name": "wsl-clock-root-namespace-journal-controls-20261023",
+      "bytes": 35197,
+      "files": 41
+    },
+    {
+      "name": "history-status-initial-candidate-20261026",
+      "bytes": 34817,
+      "files": 8
+    },
+    {
+      "name": "artifact-phase-first-passing-20261024",
+      "bytes": 34265,
+      "files": 3
+    },
+    {
+      "name": "artifact-phase-format-refusal-20261024",
+      "bytes": 34177,
+      "files": 3
+    },
+    {
+      "name": "authority-runtime-balanced-checks-20261022",
+      "bytes": 33115,
+      "files": 43
+    },
+    {
+      "name": "sample-boot-baseline-checks",
+      "bytes": 32892,
+      "files": 14
+    },
+    {
+      "name": "status-field-memory-20261024",
+      "bytes": 31679,
+      "files": 11
+    },
+    {
+      "name": "authority-operator-targeted-final-first-checks",
+      "bytes": 29252,
+      "files": 22
+    },
+    {
+      "name": "timing-instrumentation-9e79b012",
+      "bytes": 29243,
+      "files": 14
+    },
+    {
+      "name": "wsl-clock-root-namespace-uac-20261023",
+      "bytes": 29187,
+      "files": 39
+    },
+    {
+      "name": "wsl-clock-registration-20261023",
+      "bytes": 28858,
+      "files": 30
+    },
+    {
+      "name": "diagnostic-artifacts-evidence-70ca60eb",
+      "bytes": 28766,
+      "files": 3
+    },
+    {
+      "name": "authority-operator-order-final-first-checks",
+      "bytes": 27961,
+      "files": 21
+    },
+    {
+      "name": "cost-reader-first-20261024",
+      "bytes": 27220,
+      "files": 7
+    },
+    {
+      "name": "cost-reader-import-20261024",
+      "bytes": 27220,
+      "files": 7
+    },
+    {
+      "name": "authority-rust-history-development",
+      "bytes": 27133,
+      "files": 6
+    },
+    {
+      "name": "diagnostic-ipc-evidence-403696a7",
+      "bytes": 26234,
+      "files": 3
+    },
+    {
+      "name": "authority-owned-journal-final-first-checks",
+      "bytes": 25985,
+      "files": 20
+    },
+    {
+      "name": "context-document-baseline-checks",
+      "bytes": 25981,
+      "files": 22
+    },
+    {
+      "name": "ci-watchdog-candidate-first-20261026",
+      "bytes": 24794,
+      "files": 3
+    },
+    {
+      "name": "authority-scratch-owner-audit-first-checks",
+      "bytes": 23900,
+      "files": 19
+    },
+    {
+      "name": "git-cpu-variance-first-model-source",
+      "bytes": 23575,
+      "files": 2
+    },
+    {
+      "name": "authority-rust-history-first-checks",
+      "bytes": 22841,
+      "files": 16
+    },
+    {
+      "name": "git-cpu-overhead-model-first-source",
+      "bytes": 22076,
+      "files": 2
+    },
+    {
+      "name": "git-job-cpu-before-live-identity",
+      "bytes": 21930,
+      "files": 2
+    },
+    {
+      "name": "blob-batch-retained-20261024",
+      "bytes": 21092,
+      "files": 2
+    },
+    {
+      "name": "git-boundary-pre-close-budget-20261026",
+      "bytes": 21032,
+      "files": 2
+    },
+    {
+      "name": "package-log-ast-20261024",
+      "bytes": 20912,
+      "files": 2
+    },
+    {
+      "name": "linux-watchdog-windows-compat-20261026",
+      "bytes": 19899,
+      "files": 30
+    },
+    {
+      "name": "ci-watchdog-budget-native-first-20261026",
+      "bytes": 19802,
+      "files": 30
+    },
+    {
+      "name": "history-status-preformat-20261026",
+      "bytes": 19463,
+      "files": 6
+    },
+    {
+      "name": "package-log-first-20261024",
+      "bytes": 19297,
+      "files": 2
+    },
+    {
+      "name": "history-status-preclippy-20261026",
+      "bytes": 19259,
+      "files": 6
+    },
+    {
+      "name": "reserved-reconciliation-checks-20261022",
+      "bytes": 17939,
+      "files": 13
+    },
+    {
+      "name": "git-job-cpu-first-model-source",
+      "bytes": 17873,
+      "files": 2
+    },
+    {
+      "name": "ci-watchdog-before-budget-20261026",
+      "bytes": 17660,
+      "files": 2
+    },
+    {
+      "name": "ci-watchdog-native-first-20261026",
+      "bytes": 17629,
+      "files": 25
+    },
+    {
+      "name": "wsl-clock-einval-20261023",
+      "bytes": 17623,
+      "files": 17
+    },
+    {
+      "name": "authority-read-audit-checks-first",
+      "bytes": 17586,
+      "files": 14
+    },
+    {
+      "name": "dbus-legacy-unit-gate-20261028",
+      "bytes": 16991,
+      "files": 3
+    },
+    {
+      "name": "held-manager-compat-checks-20261022",
+      "bytes": 16927,
+      "files": 24
+    },
+    {
+      "name": "remaining-readers-preformat-20261026",
+      "bytes": 16393,
+      "files": 5
+    },
+    {
+      "name": "dbus-legacy-caller-inventory-20261028",
+      "bytes": 16326,
+      "files": 2
+    },
+    {
+      "name": "held-native-fd-cli-regression-20261022",
+      "bytes": 16232,
+      "files": 6
+    },
+    {
+      "name": "ci-watchdog-before-20261026",
+      "bytes": 16059,
+      "files": 3
+    },
+    {
+      "name": "wsl-clock-root-namespace-uac-controls-20261023",
+      "bytes": 15941,
+      "files": 33
+    },
+    {
+      "name": "proc-document-baseline-checks",
+      "bytes": 15807,
+      "files": 14
+    },
+    {
+      "name": "authority-runtime-native-checks-20261022",
+      "bytes": 15689,
+      "files": 13
+    },
+    {
+      "name": "git-cpu-variance-20261026",
+      "bytes": 15416,
+      "files": 2
+    },
+    {
+      "name": "coordinator-frames-synthetic-20261026",
+      "bytes": 14995,
+      "files": 2
+    },
+    {
+      "name": "authority-runtime-variance-checks-20261022",
+      "bytes": 14724,
+      "files": 16
+    },
+    {
+      "name": "remaining-readers-interim-source-20261026",
+      "bytes": 14643,
+      "files": 4
+    },
+    {
+      "name": "reserved-leaf-audit-checks",
+      "bytes": 14640,
+      "files": 13
+    },
+    {
+      "name": "wsl-clock-root-namespace-controls-20261023",
+      "bytes": 14055,
+      "files": 36
+    },
+    {
+      "name": "guard-path-20261025",
+      "bytes": 14002,
+      "files": 5
+    },
+    {
+      "name": "wsl-debug-transport-audit-20261023",
+      "bytes": 13730,
+      "files": 44
+    },
+    {
+      "name": "authority-scratch-reuse-final-checks-first",
+      "bytes": 12639,
+      "files": 15
+    },
+    {
+      "name": "census-integration-first-source-20261024",
+      "bytes": 12391,
+      "files": 4
+    },
+    {
+      "name": "w9c-capability-37301889560",
+      "bytes": 12084,
+      "files": 1
+    },
+    {
+      "name": "static-trace-initial-source-20261024",
+      "bytes": 11861,
+      "files": 2
+    },
+    {
+      "name": "ci-watchdog-streams-source-20261026",
+      "bytes": 11699,
+      "files": 1
+    },
+    {
+      "name": "output-binding-native-first-20261025",
+      "bytes": 11467,
+      "files": 18
+    },
+    {
+      "name": "authority-read-baseline-final-checks-first",
+      "bytes": 11180,
+      "files": 14
+    },
+    {
+      "name": "projection-groups-controls",
+      "bytes": 10630,
+      "files": 10
+    },
+    {
+      "name": "wsl-clock-trace-20261023",
+      "bytes": 10521,
+      "files": 18
+    },
+    {
+      "name": "authority-runtime-cpu-development",
+      "bytes": 10417,
+      "files": 11
+    },
+    {
+      "name": "context-document-baseline-first-source",
+      "bytes": 10302,
+      "files": 2
+    },
+    {
+      "name": "ci-watchdog-budget-red-source-20261026",
+      "bytes": 10241,
+      "files": 1
+    },
+    {
+      "name": "held-native-fd-v2-20261022",
+      "bytes": 10149,
+      "files": 72
+    },
+    {
+      "name": "handoff-native-first-20261025",
+      "bytes": 10000,
+      "files": 19
+    },
+    {
+      "name": "remaining-readers-initial-source-20261026",
+      "bytes": 9933,
+      "files": 3
+    },
+    {
+      "name": "census-narrow-comment-oracle-20261024",
+      "bytes": 9821,
+      "files": 3
+    },
+    {
+      "name": "lineage-native-first-20261025",
+      "bytes": 9821,
+      "files": 20
+    },
+    {
+      "name": "canary-sweep",
+      "bytes": 9433,
+      "files": 2
+    },
+    {
+      "name": "wsl-clock-setter-attribution-20261023",
+      "bytes": 9127,
+      "files": 13
+    },
+    {
+      "name": "authorized-server-build-inventory-20261025",
+      "bytes": 8577,
+      "files": 5
+    },
+    {
+      "name": "census-rejected-generic-20261024",
+      "bytes": 8443,
+      "files": 2
+    },
+    {
+      "name": "evidence-inspect-37348230051",
+      "bytes": 8213,
+      "files": 2
+    },
+    {
+      "name": "held-manager-compat-third",
+      "bytes": 8044,
+      "files": 12
+    },
+    {
+      "name": "held-native-fd-20261022",
+      "bytes": 7558,
+      "files": 40
+    },
+    {
+      "name": "cost-reader-byte-20261024",
+      "bytes": 7445,
+      "files": 2
+    },
+    {
+      "name": "chitchat-fused-20261030-prepare-r1",
+      "bytes": 7322,
+      "files": 3
+    },
+    {
+      "name": "sample-boot-inline-final-checks-first",
+      "bytes": 7237,
+      "files": 12
+    },
+    {
+      "name": "w11-start-bundle-37399210572",
+      "bytes": 7092,
+      "files": 7
+    },
+    {
+      "name": "sample-boot-baseline-final-checks-first",
+      "bytes": 6793,
+      "files": 10
+    },
+    {
+      "name": "current-tree-first-scoped-20261024",
+      "bytes": 6330,
+      "files": 2
+    },
+    {
+      "name": "wsl-clock-offline-join-20261023",
+      "bytes": 6086,
+      "files": 13
+    },
+    {
+      "name": "owned-observer-reader-first-refusal-20261025",
+      "bytes": 6074,
+      "files": 3
+    },
+    {
+      "name": "w11-host-capability-37307408040",
+      "bytes": 6016,
+      "files": 1
+    },
+    {
+      "name": "coordinator-native-first-20261025",
+      "bytes": 5841,
+      "files": 20
+    },
+    {
+      "name": "git-process-boundary-20261026",
+      "bytes": 5285,
+      "files": 4
+    },
+    {
+      "name": "proc-document-baseline-final-checks-first",
+      "bytes": 5252,
+      "files": 9
+    },
+    {
+      "name": "debug-w11-observation-37398568113",
+      "bytes": 5238,
+      "files": 5
+    },
+    {
+      "name": "ci-watchdog-posix-first-20261026",
+      "bytes": 5112,
+      "files": 17
+    },
+    {
+      "name": "webpki-fixtures-20261026",
+      "bytes": 5037,
+      "files": 2
+    },
+    {
+      "name": "authority-runtime-doc-followup",
+      "bytes": 4869,
+      "files": 7
+    },
+    {
+      "name": "remaining-security-verification-20261028",
+      "bytes": 4794,
+      "files": 3
+    },
+    {
+      "name": "chitchat-mtu-verification-20261028",
+      "bytes": 4660,
+      "files": 3
+    },
+    {
+      "name": "observer-dispatch-074",
+      "bytes": 4462,
+      "files": 6
+    },
+    {
+      "name": "authority-history-view-first",
+      "bytes": 4256,
+      "files": 3
+    },
+    {
+      "name": "yaml-verification-20261028",
+      "bytes": 4193,
+      "files": 3
+    },
+    {
+      "name": "test-evidence",
+      "bytes": 4172,
+      "files": 2
+    },
+    {
+      "name": "watchdog-taskkill-handles-first-20261026",
+      "bytes": 4080,
+      "files": 10
+    },
+    {
+      "name": "authority-runtime-baseline",
+      "bytes": 4022,
+      "files": 2
+    },
+    {
+      "name": "wsl-clock-root-namespace-logged-invocation-20261023",
+      "bytes": 3562,
+      "files": 17
+    },
+    {
+      "name": "get-owner-allocation-v2-private-first",
+      "bytes": 3367,
+      "files": 5
+    },
+    {
+      "name": "held-manager-compat-second",
+      "bytes": 3194,
+      "files": 6
+    },
+    {
+      "name": "w11-controller-start-37399781792",
+      "bytes": 2901,
+      "files": 4
+    },
+    {
+      "name": "authority-runtime-allocation-doc-followup",
+      "bytes": 2808,
+      "files": 9
+    },
+    {
+      "name": "authority-runtime-cpu-doc-followup",
+      "bytes": 2727,
+      "files": 9
+    },
+    {
+      "name": "wsl-clock-policy-review-controls-20261023",
+      "bytes": 2602,
+      "files": 19
+    },
+    {
+      "name": "wsl-clock-root-namespace-uac-request-20261023",
+      "bytes": 2548,
+      "files": 7
+    },
+    {
+      "name": "wsl-clock-root-namespace-logged-20261023",
+      "bytes": 2485,
+      "files": 8
+    },
+    {
+      "name": "evidence-inspect-37352537768",
+      "bytes": 2306,
+      "files": 3
+    },
+    {
+      "name": "ci-watchdog-streams-first-20261026",
+      "bytes": 2090,
+      "files": 5
+    },
+    {
+      "name": "held-manager-compat-first",
+      "bytes": 1926,
+      "files": 3
+    },
+    {
+      "name": "native-format-exact-config-20261027",
+      "bytes": 1925,
+      "files": 7
+    },
+    {
+      "name": "authority-runtime-dev-194",
+      "bytes": 1885,
+      "files": 1
+    },
+    {
+      "name": "held-manager-compat-final-checks-20261022",
+      "bytes": 1860,
+      "files": 12
+    },
+    {
+      "name": "launch-preflight-first-20261025",
+      "bytes": 1662,
+      "files": 2
+    },
+    {
+      "name": "evidence-inspect-37350765373",
+      "bytes": 1410,
+      "files": 2
+    },
+    {
+      "name": "xtask-verify-39960",
+      "bytes": 1295,
+      "files": 2
+    },
+    {
+      "name": "security-patch-msrv188",
+      "bytes": 1294,
+      "files": 2
+    },
+    {
+      "name": "xtask-check",
+      "bytes": 1294,
+      "files": 2
+    },
+    {
+      "name": "w11-controller-abort-cancelled-37400171345",
+      "bytes": 1270,
+      "files": 2
+    },
+    {
+      "name": "held-environment-preflight-20261026",
+      "bytes": 1164,
+      "files": 4
+    },
+    {
+      "name": "swagger-verification-20261028",
+      "bytes": 1094,
+      "files": 4
+    },
+    {
+      "name": "blob-caller-linux-preflight-20261024",
+      "bytes": 949,
+      "files": 6
+    },
+    {
+      "name": "security-review-verification-20261028",
+      "bytes": 825,
+      "files": 4
+    },
+    {
+      "name": "wsl-clock-root-namespace-uac-post-report-20261023",
+      "bytes": 774,
+      "files": 10
+    },
+    {
+      "name": "native-format-once-20261027",
+      "bytes": 636,
+      "files": 2
+    },
+    {
+      "name": "worker-request-fault-3etk66v8",
+      "bytes": 614,
+      "files": 4
+    },
+    {
+      "name": "worker-request-fault-7hpr8uyz",
+      "bytes": 614,
+      "files": 4
+    },
+    {
+      "name": "worker-request-fault-d0c67k3d",
+      "bytes": 614,
+      "files": 4
+    },
+    {
+      "name": "worker-request-fault-joqf_6e5",
+      "bytes": 614,
+      "files": 4
+    },
+    {
+      "name": "worker-request-fault-ls7216y_",
+      "bytes": 614,
+      "files": 4
+    },
+    {
+      "name": "worker-request-fault-nit5veoj",
+      "bytes": 614,
+      "files": 4
+    },
+    {
+      "name": "worker-request-fault-q_jjiu2w",
+      "bytes": 614,
+      "files": 4
+    },
+    {
+      "name": "worker-request-fault-uyapnneu",
+      "bytes": 614,
+      "files": 4
+    },
+    {
+      "name": "worker-request-fault-xh2689g1",
+      "bytes": 614,
+      "files": 4
+    },
+    {
+      "name": "dispatch-handoff-staged-reader-first-20261025",
+      "bytes": 315,
+      "files": 4
+    },
+    {
+      "name": "held-lineage-staged-reader-first-20261025",
+      "bytes": 309,
+      "files": 4
+    },
+    {
+      "name": "authorized-server-session-staged-reader-first-20261025",
+      "bytes": 304,
+      "files": 4
+    },
+    {
+      "name": "boot-authority-ops-20261021",
+      "bytes": 291,
+      "files": 1
+    },
+    {
+      "name": "original-output-binding-staged-reader-first-20261025",
+      "bytes": 283,
+      "files": 4
+    },
+    {
+      "name": "launch-coordinator-staged-reader-first-20261025",
+      "bytes": 279,
+      "files": 4
+    },
+    {
+      "name": "compat",
+      "bytes": 210,
+      "files": 1
+    },
+    {
+      "name": "chitchat-native-cost-retain-20261029",
+      "bytes": 176,
+      "files": 2
+    },
+    {
+      "name": "ci-watchdog-unsupported-first-20261026",
+      "bytes": 162,
+      "files": 3
+    },
+    {
+      "name": "diagnostic-local-build-62114be0",
+      "bytes": 0,
+      "files": 0
+    },
+    {
+      "name": "hc2-ci-test",
+      "bytes": 0,
+      "files": 0
+    },
+    {
+      "name": "tmp",
+      "bytes": 0,
+      "files": 0
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "floor": 4294967296,
+  "full_workspace_dispatched": false,
+  "native_bound": 1100,
+  "operator_approved_coordinated_migration": true,
+  "outer_bound": 1200,
+  "package_bound": 780,
+  "parent_sha256": "06ce2017ce7e2c0b9474914cc134025d95dcb2b2dd0ab8a6892ee87d7b4e8454",
+  "poll": 5,
+  "product_Root_changed": false,
+  "public_registry_qualified": false,
+  "publication_authorized": false,
+  "release_admitted": false,
+  "retirement": 5,
+  "retry": false,
+  "root_adopted": false,
+  "test_threads": 4,
+  "workspace_bound": 4800,
+  "workspace_start_floor": 17179869184
+}

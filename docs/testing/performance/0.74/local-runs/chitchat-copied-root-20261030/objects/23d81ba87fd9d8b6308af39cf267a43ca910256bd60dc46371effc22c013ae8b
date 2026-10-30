@@ -1,0 +1,21 @@
+{
+  "deleted": [
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\targets",
+      "bytes": 133072368,
+      "absent": true
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\pulldown-security-20261029\\consumer-targets",
+      "bytes": 5182199272,
+      "absent": true
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-backport-20261028\\targets",
+      "bytes": 1639358954,
+      "absent": true
+    }
+  ],
+  "free_bytes": 7269232640,
+  "held_xtask_sha256": "e49f4694c8dd18629d33cdeda08d7f2a617ccae14cc3be41f10b52ad233471a9"
+}

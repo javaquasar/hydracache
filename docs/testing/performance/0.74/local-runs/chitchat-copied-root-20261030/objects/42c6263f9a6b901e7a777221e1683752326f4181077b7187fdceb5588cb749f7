@@ -1,0 +1,166 @@
+{
+  "caches": [
+    {
+      "path": "target/pulldown-security-20261029/targets",
+      "bytes": 133072368,
+      "files": 588,
+      "top_suffixes": [
+        [
+          ".rlib",
+          60294074
+        ],
+        [
+          ".pdb",
+          36036608
+        ],
+        [
+          ".rmeta",
+          29413415
+        ],
+        [
+          ".exe",
+          7067648
+        ],
+        [
+          ".d",
+          199240
+        ],
+        [
+          ".json",
+          46903
+        ],
+        [
+          "",
+          9548
+        ],
+        [
+          ".timestamp",
+          4224
+        ]
+      ],
+      "sample": [
+        "candidate-194\\.rustc_info.json",
+        "candidate-194\\CACHEDIR.TAG",
+        "candidate-194\\debug\\.cargo-lock",
+        "candidate-194\\debug\\deps\\bitflags-1672d037c673fe47.d",
+        "candidate-194\\debug\\deps\\bitflags-48b20a8ee7f65e3e.d",
+        "candidate-194\\debug\\deps\\getopts-3ea6a85323f11172.d",
+        "candidate-194\\debug\\deps\\getopts-f256c0ecaed132f2.d",
+        "candidate-194\\debug\\deps\\hc074_markdown_security_probe-11990ea9d2d51555.d"
+      ]
+    },
+    {
+      "path": "target/pulldown-security-20261029/consumer-targets",
+      "bytes": 5182199272,
+      "files": 8134,
+      "top_suffixes": [
+        [
+          ".pdb",
+          2742706176
+        ],
+        [
+          ".rlib",
+          1127299118
+        ],
+        [
+          ".exe",
+          626399744
+        ],
+        [
+          ".rmeta",
+          465205561
+        ],
+        [
+          ".lib",
+          53106522
+        ],
+        [
+          ".a",
+          52890120
+        ],
+        [
+          ".o",
+          48174652
+        ],
+        [
+          ".dll",
+          39112704
+        ]
+      ],
+      "sample": [
+        "194\\CACHEDIR.TAG",
+        "194\\debug\\.cargo-lock",
+        "194\\debug\\hc2_java_interop_server.exe",
+        "194\\debug\\hc2_java_interop_server.pdb",
+        "194\\debug\\deps\\anyhow-692ef12f8345247e.d",
+        "194\\debug\\deps\\async_trait-531346a186ba0c02.d",
+        "194\\debug\\deps\\async_trait-531346a186ba0c02.dll",
+        "194\\debug\\deps\\async_trait-531346a186ba0c02.dll.exp"
+      ]
+    },
+    {
+      "path": "target/dbus-backport-20261028/targets",
+      "bytes": 1639358954,
+      "files": 2787,
+      "top_suffixes": [
+        [
+          ".rlib",
+          856636364
+        ],
+        [
+          ".rmeta",
+          366288904
+        ],
+        [
+          ".pdb",
+          311803904
+        ],
+        [
+          ".dll",
+          75505152
+        ],
+        [
+          ".exe",
+          26548224
+        ],
+        [
+          ".d",
+          2065659
+        ],
+        [
+          ".json",
+          288532
+        ],
+        [
+          ".lib",
+          80268
+        ]
+      ],
+      "sample": [
+        "Q\\188\\828af5106fdd0379cfac5ef91e980c1c8355fe960955d7dab8e7775cef111595\\.rustc_info.json",
+        "Q\\188\\828af5106fdd0379cfac5ef91e980c1c8355fe960955d7dab8e7775cef111595\\CACHEDIR.TAG",
+        "Q\\188\\828af5106fdd0379cfac5ef91e980c1c8355fe960955d7dab8e7775cef111595\\debug\\.cargo-lock",
+        "Q\\188\\828af5106fdd0379cfac5ef91e980c1c8355fe960955d7dab8e7775cef111595\\debug\\deps\\async_trait-5784b94823e13839.d",
+        "Q\\188\\828af5106fdd0379cfac5ef91e980c1c8355fe960955d7dab8e7775cef111595\\debug\\deps\\async_trait-5784b94823e13839.dll",
+        "Q\\188\\828af5106fdd0379cfac5ef91e980c1c8355fe960955d7dab8e7775cef111595\\debug\\deps\\async_trait-5784b94823e13839.dll.exp",
+        "Q\\188\\828af5106fdd0379cfac5ef91e980c1c8355fe960955d7dab8e7775cef111595\\debug\\deps\\async_trait-5784b94823e13839.dll.lib",
+        "Q\\188\\828af5106fdd0379cfac5ef91e980c1c8355fe960955d7dab8e7775cef111595\\debug\\deps\\async_trait-5784b94823e13839.pdb"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "packet": "markdown-security-20261029",
+      "index_sha256": "2a9ae414126ae6741b7f2e5f0ff2f305e42c6ea5c68a5dbebf484fbcd5d62cca",
+      "members": 4713,
+      "objects_verified": true
+    },
+    {
+      "packet": "dbus-msrv-backport-20261028",
+      "index_sha256": "ab5c211321f2557437f0c93c0bf2e99b82f8dd417a68e95f84590fb8a45c109e",
+      "members": 2754,
+      "objects_verified": true
+    }
+  ],
+  "preserve_sources_evidence": true
+}

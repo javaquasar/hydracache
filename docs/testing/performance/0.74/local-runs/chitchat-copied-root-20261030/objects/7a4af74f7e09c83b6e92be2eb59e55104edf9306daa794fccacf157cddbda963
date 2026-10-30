@@ -1,0 +1,123 @@
+{
+  "complete": true,
+  "utc": "2026-10-30T16:11:25.585583+00:00",
+  "rows": [
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target",
+      "bytes": 15405165815,
+      "files": 363101,
+      "recent_large": []
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target",
+      "bytes": 65363685515,
+      "files": 65987,
+      "recent_large": [
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\p8-277-linux-188-tail.bin",
+          "bytes": 1160972650,
+          "mtime": 1793375684.4999156
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\p8-277-linux-194-21.zip",
+          "bytes": 917299666,
+          "mtime": 1793375251.289789
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\tooling\\debug\\deps\\libhydracache_loadgen-a801da7c8176c3c5.rlib",
+          "bytes": 482169440,
+          "mtime": 1793376329.3880036
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\tooling\\debug\\deps\\libxtask-bc219db9bb5b049a.rlib",
+          "bytes": 379392732,
+          "mtime": 1793376384.0444667
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\debug\\imap_soak_worker_075.pdb",
+          "bytes": 287305728,
+          "mtime": 1793375048.1095748
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\debug\\deps\\imap_soak_worker_075.pdb",
+          "bytes": 287305728,
+          "mtime": 1793375048.1095748
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\tooling\\debug\\deps\\imap_proof_worker_075.pdb",
+          "bytes": 247518645,
+          "mtime": 1793376426.686051
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\tooling\\debug\\deps\\libhydracache_cluster_testkit-7b510726fe4c9ba0.rlib",
+          "bytes": 245457400,
+          "mtime": 1793376235.7041383
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\tooling\\debug\\deps\\xtask.pdb",
+          "bytes": 245127160,
+          "mtime": 1793376425.42402
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\debug\\deps\\imap_contract_consumer_075-b767b2b382158f54.pdb",
+          "bytes": 174026752,
+          "mtime": 1793375000.5711124
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\coverage-runner\\debug\\deps\\libxtask-d6400f8ad83695b9.rlib",
+          "bytes": 167947086,
+          "mtime": 1793376660.6609728
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\tooling\\debug\\incremental\\xtask-1gu8iu1hkcdmy\\s-hnp5obvv09-05zgk60-crvn9x4era0o6yn7xk7ix6b1e\\dep-graph.bin",
+          "bytes": 147976998,
+          "mtime": 1793376374.9432101
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\tooling\\debug\\incremental\\hydracache_loadgen-0d6pk4i5kwyhy\\s-hnp5mxt3iy-1q8800k-dm8ahbd6p5pbe4bxw6a905qv7\\dep-graph.bin",
+          "bytes": 141430320,
+          "mtime": 1793376298.1587615
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\debug\\imap_contract_consumer_075.pdb",
+          "bytes": 138170368,
+          "mtime": 1793375006.928937
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\debug\\deps\\imap_contract_consumer_075.pdb",
+          "bytes": 138170368,
+          "mtime": 1793375006.928937
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\tooling\\debug\\deps\\libhydracache-2d18193f38503487.rlib",
+          "bytes": 133680660,
+          "mtime": 1793376081.3412836
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\tooling\\debug\\incremental\\xtask-1gu8iu1hkcdmy\\s-hnp5obvv09-05zgk60-crvn9x4era0o6yn7xk7ix6b1e\\query-cache.bin",
+          "bytes": 103248544,
+          "mtime": 1793376374.8436093
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\tooling\\debug\\incremental\\hydracache_loadgen-0d6pk4i5kwyhy\\s-hnp5mxt3iy-1q8800k-dm8ahbd6p5pbe4bxw6a905qv7\\query-cache.bin",
+          "bytes": 90552698,
+          "mtime": 1793376298.1571388
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\tooling\\debug\\incremental\\hydracache-2twztggd4c4fi\\s-hnp5kpoe2s-1m4ofqt-c4av3x5wupo6a1ljpfqs2lvf2\\dep-graph.bin",
+          "bytes": 89165552,
+          "mtime": 1793376076.641217
+        },
+        {
+          "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-075\\target\\imap-075\\p8-capture-31ee66134\\objects\\a11c00309dfd4451b250dd23376935af6e203b2b5c7e32172306c850ff11c55f.bin",
+          "bytes": 71983616,
+          "mtime": 1793374844.7529209
+        }
+      ]
+    }
+  ],
+  "original_074_target_bytes": 24646399457,
+  "removed_074_bytes": 9795207571,
+  "expected_074_before_new_contexts": 14851191886,
+  "physical_free": 3653931008
+}

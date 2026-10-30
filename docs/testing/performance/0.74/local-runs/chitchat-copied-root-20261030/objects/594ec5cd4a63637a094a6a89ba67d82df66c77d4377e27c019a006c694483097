@@ -1,0 +1,10 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "complete original copied-Root Job",
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-copied-root-074\\runner.py\", line 155, in outer\n    owner=json.loads((out/'execution.json').read_bytes());c.need(child.returncode==owner['exit']==0 and owner['retired'] and not owner['errors'],'complete original copied-Root Job')\n                                                          ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-security-only-074\\scope.py\", line 28, in need\n    if not ok:raise ValueError(why)\n              ^^^^^^^^^^^^^^^^^^^^^\nValueError: complete original copied-Root Job\n",
+    "type": "ValueError"
+  },
+  "release_admitted": false,
+  "root_adopted": false
+}

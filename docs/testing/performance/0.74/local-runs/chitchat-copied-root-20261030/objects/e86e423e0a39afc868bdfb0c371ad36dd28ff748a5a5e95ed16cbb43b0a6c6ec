@@ -1,0 +1,15 @@
+{
+  "deleted": [
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-inplace-20261029\\targets",
+      "bytes": 558518278,
+      "absent": true
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-preview-cost-20261028\\targets",
+      "bytes": 672440536,
+      "absent": true
+    }
+  ],
+  "free_bytes": 8430637056
+}

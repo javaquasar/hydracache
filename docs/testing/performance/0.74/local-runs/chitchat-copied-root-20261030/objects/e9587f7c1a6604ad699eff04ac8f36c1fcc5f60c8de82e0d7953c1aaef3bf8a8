@@ -1,0 +1,20 @@
+{
+  "deleted": [
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-read-flows-v2-20261028\\targets",
+      "bytes": 984418069,
+      "absent": true
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-read-flows-v3-20261028\\targets",
+      "bytes": 984446813,
+      "absent": true
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\dbus-owner-properties-20261028\\targets",
+      "bytes": 871712095,
+      "absent": true
+    }
+  ],
+  "free_bytes": 9585688576
+}
