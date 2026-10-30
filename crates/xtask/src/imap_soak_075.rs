@@ -617,6 +617,90 @@ fn prepare_control(root: &Path, control: &Path) -> Result<(), Box<dyn Error>> {
     control_scope(&root, &control.canonicalize()?)?;
     Ok(())
 }
+enum ProtocolEnd {
+    Worker {
+        line_complete: bool,
+        terminal: Option<Terminal>,
+        cancelled_before_active: bool,
+    },
+    Daemon {
+        terminal: Option<Terminal>,
+    },
+}
+/// Classify protocol completion separately from the observed process outcome.
+/// This function neither executes processes nor publishes evidence.
+fn finalize_process(
+    report: &mut SoakReport,
+    result: Result<process::ProcessOutput, process::ProcessFailure>,
+    protocol: ProtocolEnd,
+    cancelled: bool,
+) {
+    match result {
+        Ok(output) => {
+            report.process_reaped = output.direct_child_reaped;
+            report.remaining_members = Some(output.remaining_live_members);
+            report.containment = output.scope.into();
+            report.terminal = Terminal::Failed;
+            match protocol {
+                ProtocolEnd::Worker {
+                    line_complete,
+                    terminal,
+                    cancelled_before_active,
+                } => {
+                    if !line_complete {
+                        report.detail = "incomplete soak protocol line".into();
+                    } else if let Some(terminal) = terminal {
+                        report.terminal = terminal;
+                    } else if cancelled_before_active {
+                        report.terminal = Terminal::Cancelled;
+                        report.detail = "cancelled before active admission".into();
+                    } else {
+                        report.detail = "worker exited without drain".into();
+                    }
+                }
+                ProtocolEnd::Daemon { terminal } => {
+                    report.terminal = terminal.unwrap_or(Terminal::Failed);
+                    if report.terminal == Terminal::Failed {
+                        report.detail = "daemon exited before drain".into();
+                    }
+                }
+            }
+        }
+        Err(error) => {
+            report.process_reaped = error.direct_child_reaped;
+            report.remaining_members = error.remaining_live_members;
+            report.detail = error.to_string();
+            report.terminal = if error.kind == process::FailureKind::Timeout {
+                Terminal::TimedOut
+            } else if cancelled && report.detail.contains("cancellation drain") {
+                Terminal::Cancelled
+            } else {
+                Terminal::Failed
+            };
+        }
+    }
+}
+fn finalize_segment(
+    report: &mut SoakReport,
+    timeout_drain: bool,
+    artifacts: Result<(), Box<dyn Error>>,
+    cleanup_complete: bool,
+    cleanup_detail: &str,
+) {
+    if timeout_drain && matches!(report.terminal, Terminal::Complete | Terminal::Cancelled) {
+        report.terminal = Terminal::TimedOut;
+        report.detail = "hard deadline requested bounded drain".into();
+    }
+    if let Err(error) = artifacts {
+        report.terminal = Terminal::Failed;
+        report.detail = error.to_string();
+    }
+    if !cleanup_complete {
+        report.terminal = Terminal::Failed;
+        report.detail.push_str(cleanup_detail);
+    }
+}
+
 /// Code constructs the command. The profile/checkpoint can never choose a program or arguments.
 pub fn execute_worker(
     root: &Path,
@@ -773,53 +857,33 @@ pub fn execute_worker(
     report.transcript_bytes = saved as u64;
     report.transcript_sha256 =
         crate::imap_qualification_075::digest(&fs::read(control.join("stdout.jsonl"))?);
-    match result {
-        Ok(output) => {
-            report.process_reaped = output.direct_child_reaped;
-            report.remaining_members = Some(output.remaining_live_members);
-            report.containment = output.scope.into();
-            if parsed != saved {
-                report.detail = "incomplete soak protocol line".into();
-            } else if let Some(terminal) = state.terminal {
-                report.terminal = terminal;
-            } else if cancellation_at.is_some() && state.rounds == 0 {
-                report.terminal = Terminal::Cancelled;
-                report.detail = "cancelled before active admission".into();
-            } else {
-                report.detail = "worker exited without drain".into();
-            }
-        }
-        Err(error) => {
-            report.process_reaped = error.direct_child_reaped;
-            report.remaining_members = error.remaining_live_members;
-            report.detail = error.to_string();
-            report.terminal = if error.kind == process::FailureKind::Timeout {
-                Terminal::TimedOut
-            } else if cancellation_at.is_some() && report.detail.contains("cancellation drain") {
-                Terminal::Cancelled
-            } else {
-                Terminal::Failed
-            };
-        }
-    }
-    if timeout_drain && matches!(report.terminal, Terminal::Complete | Terminal::Cancelled) {
-        report.terminal = Terminal::TimedOut;
-        report.detail = "hard deadline requested bounded drain".into();
-    }
-    if let Err(error) = profile.check_artifacts(root) {
-        report.terminal = Terminal::Failed;
-        report.detail = error.to_string();
-    }
-    if report.remaining_members != Some(0) || !report.process_reaped {
-        report.terminal = Terminal::Failed;
-        report.detail.push_str("; incomplete process cleanup");
-    }
+    finalize_process(
+        &mut report,
+        result,
+        ProtocolEnd::Worker {
+            line_complete: parsed == saved,
+            terminal: state.terminal,
+            cancelled_before_active: cancellation_at.is_some() && state.rounds == 0,
+        },
+        cancellation_at.is_some(),
+    );
+    let cleanup_complete = report.remaining_members == Some(0) && report.process_reaped;
+    finalize_segment(
+        &mut report,
+        timeout_drain,
+        profile.check_artifacts(root),
+        cleanup_complete,
+        "; incomplete process cleanup",
+    );
     write_new(
         &control.join("report.json"),
         &serde_json::to_vec_pretty(&report)?,
     )?;
     Ok(report)
 }
+#[cfg(test)]
+#[path = "../tests/support/imap_soak_completion_075.rs"]
+mod completion_tests;
 #[cfg(test)]
 #[path = "../tests/support/imap_soak_control_075.rs"]
 mod control_tests;
@@ -1644,42 +1708,27 @@ pub fn execute_daemon(
     let transcript = fs::read(control.join("stdout.jsonl"))?;
     report.transcript_bytes = transcript.len() as u64;
     report.transcript_sha256 = crate::imap_qualification_075::digest(&transcript);
-    match result {
-        Ok(output) => {
-            report.process_reaped = output.direct_child_reaped;
-            report.remaining_members = Some(output.remaining_live_members);
-            report.containment = output.scope.into();
-            report.terminal = state.terminal.unwrap_or(Terminal::Failed);
-            if report.terminal == Terminal::Failed {
-                report.detail = "daemon exited before drain".into();
-            }
-        }
-        Err(error) => {
-            report.process_reaped = error.direct_child_reaped;
-            report.remaining_members = error.remaining_live_members;
-            report.detail = error.to_string();
-            report.terminal = if error.kind == process::FailureKind::Timeout {
-                Terminal::TimedOut
-            } else {
-                Terminal::Failed
-            };
-        }
-    }
-    if let Err(error) = profile.check_artifacts(root) {
-        report.terminal = Terminal::Failed;
-        report.detail = error.to_string();
-    }
-    if !report.process_reaped
-        || report.remaining_members != Some(0)
-        || addrs
+    finalize_process(
+        &mut report,
+        result,
+        ProtocolEnd::Daemon {
+            terminal: state.terminal,
+        },
+        false,
+    );
+    let artifacts = profile.check_artifacts(root);
+    let cleanup_complete = report.process_reaped
+        && report.remaining_members == Some(0)
+        && addrs
             .iter()
-            .any(|addr| std::net::TcpListener::bind(addr).is_err())
-    {
-        report.terminal = Terminal::Failed;
-        report
-            .detail
-            .push_str("; daemon cleanup/listeners incomplete");
-    }
+            .all(|addr| std::net::TcpListener::bind(addr).is_ok());
+    finalize_segment(
+        &mut report,
+        false,
+        artifacts,
+        cleanup_complete,
+        "; daemon cleanup/listeners incomplete",
+    );
     write_new(
         &control.join("report.json"),
         &serde_json::to_vec_pretty(&report)?,
