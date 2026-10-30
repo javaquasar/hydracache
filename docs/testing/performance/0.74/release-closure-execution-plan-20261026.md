@@ -863,3 +863,17 @@ remain. This closes local preparation, not public publication/Root/MTU/resource/
 CPU/RSS/Windows or server admission. Next decide maintained shipping/public-type/
 MTU scope, obtain real registry receipt and exact Root security/package/workspace
 passes, then the still-open execution/lifecycle/reconnect/trust/compatible-host gates.
+
+
+The [public identity audit and real-package controls](chitchat-public-identity-result-20261030.md)
+now close the three-boundary nominal prerequisite:21 public methods, four direct
+shared aliases, six actual runtime positives and six exact E0308/E0277 negative
+compilations across GNU1.94/MSRV1.88. Strict check/Clippy, source/graph/download/
+owner validation and all original bounds remain. Transport/Socket/message callers
+are part of the boundary too. Packet06ce2017 retains the exact unapplied manifest
+proposal and first public metadata404. Keeping library spelling does not make the
+two package type families interchangeable. Explicitly decide coordinated public
+identity migration before a copied-Root candidate; no full Root compilation,
+publication, old-gate retry or new optimization hypothesis is inferred. Actual
+public registry, MTU scope, Root security/package/workspace/platform and original
+execution/lifecycle/reconnect/trust/compatible-host gates remain open.

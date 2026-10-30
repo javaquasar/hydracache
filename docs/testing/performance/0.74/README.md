@@ -1,5 +1,15 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [public identity audit/control](chitchat-public-identity-result-20261030.md)
+now confirms THREE actual boundaries across21 adapter methods and four direct
+shared-alias consumers: config, borrowed ID and Transport. Both GNU1.94/MSRV1.88
+pass three real dual-package runtime controls and produce expected E0308/E0277
+for all three incompatible crossings. Packet06ce2017 preserves whole source/
+metadata/diagnostics and an exact UNAPPLIED migration proposal. This is a
+successful nominal-control gate, not full Root compatibility or adoption.
+Coordinated public dependency migration needs an explicit decision; no publish,
+Root/MTU/security/performance/platform or server admission follows automatically.
+
 The [separately approved complete U-package lane](chitchat-security-package-complete-result-20261030.md)
 now passes both full100-case GNU/MSRV catalogs, exact local registry/checksum
 negative and12 external caller executions with fresh normal registry builds,
