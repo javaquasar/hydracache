@@ -76,3 +76,21 @@ never stop other chats' compilers. First refusals are immutable, no retry-to-pas
 Cargo references: [package normalization and verification](https://doc.rust-lang.org/cargo/commands/cargo-package.html),
 [registry identities](https://doc.rust-lang.org/cargo/reference/registries.html),
 [source replacement's immutable-source requirement](https://doc.rust-lang.org/cargo/reference/source-replacement.html).
+
+
+## Recorded packaging continuation after the first Clippy refusal
+
+R3 produces and Cargo-verifies the real archive, and both1.94/1.88 builds/checks
+finish. The declared project floor1.88 makes Clippy1.94 require eight existing
+nested ifs to use supported let-chains. Keep1.88 and strict warnings unchanged;
+do not lower metadata or add lint allowances to bypass this result. The first
+refusal and the secondary STOP/dispatch accounting refusal stay separate.
+
+Prepare only a reversible style prelude for those eight exact sites in lib,
+server, state and channel transport. Require complete inverse reconstruction to
+U, explicit short-circuit/callback/error/drop-order review, unchanged serializer
+and public signatures, and the same full extracted-package/consumer gates. No
+MTU/admission/compression/allocation hypothesis or product claim is introduced.
+The earlier byte-exact-U constraint is now byte-exact after this finite reviewed
+inverse; describe that difference explicitly instead of calling final bytes U.
+Repair STOP receipt accounting without reopening it or ignoring another refusal.
