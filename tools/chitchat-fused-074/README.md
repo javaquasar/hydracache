@@ -1,0 +1,42 @@
+# F: one isolated borrowed-input MTU candidate
+
+Local, private source fixture only. Parent C2 packet:
+`37c6f98061bb495f9cb058e40c0c9400b03ce1af69fd48cec8b5906c97533ab3`.
+Root dependencies, thresholds, old packets and first refusals remain unchanged.
+No server, publication, installation, services or clock changes.
+
+Final disposition: declined at the first retained-output checkpoint. On the frozen
+immediate-exact-tail input both images emit155 identical wire bytes, but the
+returned Vec capacity is B256/F268 in each of the two predeclared observations.
+Do not compensate this increase with smaller append capacities or fewer allocations.
+STOP seals the local execution entry points. No repair/rescue or further measurement
+is part of this candidate; Root is unchanged. Full239/9/30 allocation, GNU/MSRV,
+CPU/RSS and distribution gates remain unqualified.
+
+Before coding, derive storage over every nonzero u16 threshold, pending <= threshold
+and item <=65535. The old API has no u16 MTU limit; preserve arbitrary usize budgets.
+For threshold t and total n <=t+65535, conservative encoded bytes including end tag
+are n+3*ceil(n/t)+1. Its maximum is262145, but that maximum and maximum t cannot
+occur together. A transaction using one t-byte raw block, at most t bytes of saved
+old tail cache and the conservative encoded bound excluding the end tag needs at
+most262146 bytes. Proof: t+ceil(65535/t) <=65536 for1<=t<=65535, so
+2t+(t+65535)+3*(1+ceil(65535/t)) <=262146. `bounds.py` independently exhausts t.
+This is an upper bound, not permission to increase stack/RSS or thread stack size.
+
+Use separately instantiated, non-inlined stack functions selected by needed size;
+small inputs must not reserve the maximum frame. Compression uses the existing
+scratch Vec. A stack checkpoint keeps the prior cache, pending/output unchanged
+until admission, and restores scratch length/cache on rejection/unwind. Successful
+simulation commits encoded prefix once, keeps raw tail as pending and compressed
+tail in the existing scratch. No speculative heap capacity on refusal, no new Vec,
+global arena, unsafe stack Vec, uninitialized reads or public trait changes.
+
+The private borrowed projection must match the original public serializer, used
+only as an independent test oracle. Cheap legacy rejection, correct conservative
+acceptance, and ambiguous max(legacy, exact finish) preserve supported admissions.
+Generic append remains supported. Exact prediction/Clone are test-only.
+
+Preserve frozen37 streams/239 delta cases/3 oversized/9 stateful/30 caller cases,
+malformed cursor corpus, seed, resource dominance fields and CPU1.03. The first
+resource refusal stops F; no new candidate or retry-to-pass follows. No claim of
+RSS, CPU, release readiness or Root adoption from semantic checks.

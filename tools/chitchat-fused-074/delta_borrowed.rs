@@ -1,0 +1,37 @@
+impl BorrowedItem for DeltaOpRef<'_> {
+    fn visit(&self, sink: &mut impl FnMut(&[u8])) {
+        match self {
+            Self::Node {
+                chitchat_id,
+                last_gc_version,
+                from_version_excluded,
+            } => {
+                sink(&[0]);
+                chitchat_id.visit(sink);
+                sink(&last_gc_version.to_le_bytes());
+                sink(&from_version_excluded.to_le_bytes());
+            }
+            Self::KeyValue(kv) => {
+                sink(&[1]);
+                kv.key.visit(sink);
+                kv.value.visit(sink);
+                sink(&kv.version.to_le_bytes());
+                sink(&[match kv.state {
+                    DeletionStatusMutation::Set => 0,
+                    DeletionStatusMutation::Delete => 1,
+                    DeletionStatusMutation::DeleteAfterTtl => 2,
+                }]);
+            }
+            Self::SetMaxVersion { max_version } => {
+                sink(&[2]);
+                sink(&max_version.to_le_bytes());
+            }
+        }
+    }
+}
+
+impl BorrowedItem for DeltaOp {
+    fn visit(&self, sink: &mut impl FnMut(&[u8])) {
+        self.as_ref().visit(sink);
+    }
+}
