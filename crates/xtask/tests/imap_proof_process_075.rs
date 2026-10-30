@@ -88,7 +88,11 @@ fn terminal_nested_fixture_can_also_complete_and_reap_normally() {
     let file = temp.path().join("completed-pid");
     let mut worker = command("nested-controller-complete");
     worker.arg(&file);
-    let result = execute(worker, &[], bounds()).unwrap();
+    // This is a completion/ownership proof, not a latency gate. The measured
+    // build publishes three large counter snapshots before both roots exit.
+    let mut completion = bounds();
+    completion.timeout = Duration::from_secs(10);
+    let result = execute(worker, &[], completion).unwrap();
     assert!(result.direct_child_reaped);
     assert_eq!(result.remaining_live_members, 0);
     let pid = std::fs::read_to_string(file).unwrap().parse().unwrap();

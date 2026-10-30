@@ -304,7 +304,7 @@ impl BuildController {
             containment: if cfg!(windows) {
                 "windows_job_per_process_commit_limit"
             } else {
-                "inherited_process_group_per_process_address_space_no_count_cap"
+                "owned_session_nested_groups_per_process_address_space_no_count_cap"
             }
             .into(),
             journal_complete: false,

@@ -5,8 +5,16 @@ pub const SCOPE: &str = "linux_owned_session_nested_groups_per_process_address_s
 const SESSION_OWNER: &str = "HYDRACACHE_IMAP075_PROCESS_SESSION_OWNER";
 const GROUP_CHAIN: &str = "HYDRACACHE_IMAP075_PROCESS_GROUP_CHAIN";
 fn chain() -> io::Result<Vec<i32>> {
-    let raw = std::env::var(GROUP_CHAIN).unwrap_or_default();
-    parse_chain(&raw)
+    chain_environment(std::env::var(GROUP_CHAIN))
+}
+fn chain_environment(raw: Result<String, std::env::VarError>) -> io::Result<Vec<i32>> {
+    match raw {
+        Ok(value) => parse_chain(&value),
+        Err(std::env::VarError::NotPresent) => Ok(vec![]),
+        Err(std::env::VarError::NotUnicode(_)) => {
+            Err(io::Error::other("invalid process group marker encoding"))
+        }
+    }
 }
 fn parse_chain(raw: &str) -> io::Result<Vec<i32>> {
     if raw.len() > 2048 {
@@ -29,23 +37,61 @@ fn parse_chain(raw: &str) -> io::Result<Vec<i32>> {
 }
 fn descendant(pid: i32, group: i32) -> io::Result<bool> {
     // Read only an operational marker from owned processes; never retain or log environment data.
-    let mut bytes = Vec::new();
-    std::fs::File::open(format!("/proc/{pid}/environ"))?
-        .take(1024 * 1024 + 1)
-        .read_to_end(&mut bytes)?;
-    if bytes.len() > 1024 * 1024 {
-        return Err(io::Error::other("owned process environment byte bound"));
-    }
-    let key = format!("{GROUP_CHAIN}=");
-    for entry in bytes.split(|b| *b == 0) {
-        if let Some(value) = entry.strip_prefix(key.as_bytes()) {
-            return Ok(
-                parse_chain(std::str::from_utf8(value).map_err(io::Error::other)?)?
-                    .contains(&group),
-            );
+    retry_marker(
+        || {
+            let mut bytes = Vec::new();
+            std::fs::File::open(format!("/proc/{pid}/environ"))?
+                .take(1024 * 1024 + 1)
+                .read_to_end(&mut bytes)?;
+            Ok(bytes)
+        },
+        || match member(pid) {
+            Ok(value) => Ok(value.live),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(false),
+            Err(error) => Err(error),
+        },
+        group,
+    )
+}
+fn retry_marker(
+    mut read: impl FnMut() -> io::Result<Vec<u8>>,
+    mut live: impl FnMut() -> io::Result<bool>,
+    group: i32,
+) -> io::Result<bool> {
+    let mut attempt = 0;
+    loop {
+        match read() {
+            Ok(bytes) => {
+                if bytes.len() > 1024 * 1024 {
+                    return Err(io::Error::other("owned process environment byte bound"));
+                }
+                let key = format!("{GROUP_CHAIN}=");
+                for entry in bytes.split(|b| *b == 0) {
+                    if let Some(value) = entry.strip_prefix(key.as_bytes()) {
+                        return Ok(parse_chain(
+                            std::str::from_utf8(value).map_err(io::Error::other)?,
+                        )?
+                        .contains(&group));
+                    }
+                }
+                return Ok(false);
+            }
+            Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(false),
+            Err(error) if error.kind() == io::ErrorKind::PermissionDenied => {
+                // procfs can deny mm access during exit/exec while the preceding stat
+                // snapshot still says live. Never silently drop an inaccessible live owner.
+                if !live()? {
+                    return Ok(false);
+                }
+                if attempt == 5 {
+                    return Err(error);
+                }
+                attempt += 1;
+                std::thread::sleep(Duration::from_millis(2));
+            }
+            Err(error) => return Err(error),
         }
     }
-    Ok(false)
 }
 #[derive(Clone)]
 struct Member {
@@ -317,4 +363,89 @@ pub fn prepare_pipe(pipe: &impl Pipe) -> io::Result<()> {
 }
 pub fn available(_: &impl Pipe) -> io::Result<Option<usize>> {
     Ok(Some(8192))
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn denied() -> io::Error {
+        io::Error::from(io::ErrorKind::PermissionDenied)
+    }
+    #[test]
+    fn transient_procfs_denial_retries_but_dead_owners_need_no_environment() {
+        let mut calls = 0;
+        assert!(retry_marker(
+            || {
+                calls += 1;
+                if calls == 1 {
+                    Err(denied())
+                } else {
+                    Ok(format!("{GROUP_CHAIN}=17,23\0").into_bytes())
+                }
+            },
+            || Ok(true),
+            17
+        )
+        .unwrap());
+        assert_eq!(calls, 2);
+        assert!(!retry_marker(|| Err(denied()), || Ok(false), 17).unwrap());
+        assert!(!retry_marker(
+            || Err(io::Error::from(io::ErrorKind::NotFound)),
+            || panic!("absent process has no liveness check"),
+            17
+        )
+        .unwrap());
+    }
+    #[test]
+    fn persistent_live_denial_and_unrelated_io_fail_loud() {
+        let mut calls = 0;
+        assert_eq!(
+            retry_marker(
+                || {
+                    calls += 1;
+                    Err(denied())
+                },
+                || Ok(true),
+                17
+            )
+            .unwrap_err()
+            .kind(),
+            io::ErrorKind::PermissionDenied
+        );
+        assert_eq!(calls, 6);
+        assert!(retry_marker(
+            || Err(denied()),
+            || Err(io::Error::other("liveness unknown")),
+            17
+        )
+        .is_err());
+        assert!(retry_marker(|| Err(io::Error::other("unexpected IO")), || Ok(true), 17).is_err());
+    }
+    #[test]
+    fn marker_parser_ignores_private_bytes_and_enforces_bounds() {
+        use std::os::unix::ffi::OsStringExt;
+        assert!(chain_environment(Err(std::env::VarError::NotUnicode(
+            std::ffi::OsString::from_vec(vec![0xff])
+        )))
+        .is_err());
+        assert!(chain_environment(Err(std::env::VarError::NotPresent))
+            .unwrap()
+            .is_empty());
+        assert_eq!(chain_environment(Ok("17".into())).unwrap(), vec![17]);
+        assert!(retry_marker(
+            || Ok([
+                b"PRIVATE=\xff\0".as_slice(),
+                format!("{GROUP_CHAIN}=17\0").as_bytes()
+            ]
+            .concat()),
+            || Ok(true),
+            17
+        )
+        .unwrap());
+        assert!(!retry_marker(|| Ok(b"PRIVATE=opaque\0".to_vec()), || Ok(true), 17).unwrap());
+        for raw in ["-1", "0", "invalid", &"1,".repeat(1025)] {
+            assert!(parse_chain(raw).is_err());
+        }
+        assert_eq!(parse_chain("").unwrap(), Vec::<i32>::new());
+        assert!(retry_marker(|| Ok(vec![0; 1024 * 1024 + 1]), || Ok(true), 17).is_err());
+    }
 }
