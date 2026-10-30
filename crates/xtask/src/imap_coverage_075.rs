@@ -681,6 +681,28 @@ pub fn require_complete(summary: &Summary) -> Result<()> {
 }
 
 /// False cfg bodies are disclosed separately; the LLVM line denominator remains untouched.
+fn record_excluded_cfg(
+    source: &Source,
+    predicate: String,
+    first: u32,
+    last: u32,
+    ranges: &mut Vec<CfgRange>,
+    failure: &mut Option<String>,
+) -> bool {
+    if first == 0 || last < first {
+        *failure = Some("cfg source span locations unavailable".into());
+        return false;
+    }
+    if source.added.range(first..=last).next().is_some() {
+        ranges.push(CfgRange {
+            source: source.path.clone(),
+            first,
+            last,
+            predicate,
+        });
+    }
+    false
+}
 pub fn compiled_out_ranges(
     root: &Path,
     sources: &[Source],
@@ -716,21 +738,14 @@ pub fn compiled_out_ranges(
                     }
                 }
                 if !any {
-                    let first = span.start().line as u32;
-                    let last = span.end().line as u32;
-                    if first == 0 || last < first {
-                        self.failure = Some("cfg source span locations unavailable".into());
-                        return false;
-                    }
-                    if self.source.added.range(first..=last).next().is_some() {
-                        self.ranges.push(CfgRange {
-                            source: self.source.path.clone(),
-                            first,
-                            last,
-                            predicate,
-                        });
-                    }
-                    return false;
+                    return record_excluded_cfg(
+                        self.source,
+                        predicate,
+                        span.start().line as u32,
+                        span.end().line as u32,
+                        &mut self.ranges,
+                        &mut self.failure,
+                    );
                 }
             }
             true

@@ -65,3 +65,60 @@ fn malformed_controller_identity_refuses_before_any_process_lookup() {
     identity.platform_birth = "x".repeat(256);
     dead_using(&identity, |_| Ok("reused".into())).unwrap();
 }
+
+#[test]
+fn unavailable_cfg_spans_never_remove_changed_line_obligations() {
+    let source = Source {
+        path: "crates/xtask/src/unit.rs".into(),
+        sha256: "0".repeat(64),
+        bytes: 1,
+        added: [2].into_iter().collect(),
+        has_executable: true,
+    };
+    for (first, last) in [(0, 0), (0, 2), (3, 2)] {
+        let mut ranges = vec![];
+        let mut failure = None;
+        assert!(!record_excluded_cfg(
+            &source,
+            "unit-disabled-cfg".into(),
+            first,
+            last,
+            &mut ranges,
+            &mut failure
+        ));
+        assert!(ranges.is_empty());
+        assert_eq!(
+            failure.as_deref(),
+            Some("cfg source span locations unavailable")
+        );
+    }
+    let mut ranges = vec![];
+    let mut failure = None;
+    assert!(!record_excluded_cfg(
+        &source,
+        "unit-disabled-cfg".into(),
+        3,
+        4,
+        &mut ranges,
+        &mut failure
+    ));
+    assert!(ranges.is_empty() && failure.is_none());
+    assert!(!record_excluded_cfg(
+        &source,
+        "unit-disabled-cfg".into(),
+        1,
+        2,
+        &mut ranges,
+        &mut failure
+    ));
+    assert_eq!(
+        ranges,
+        vec![CfgRange {
+            source: source.path,
+            first: 1,
+            last: 2,
+            predicate: "unit-disabled-cfg".into()
+        }]
+    );
+    assert!(failure.is_none());
+}

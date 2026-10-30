@@ -175,3 +175,16 @@ does not replace full matrix or coverage admission.
 This guard block also passed 152 library and 12 CI tests in both Windows build
 modes, 38 default/39 instrumented coverage tests, all-target checks, strict
 all-feature Clippy, formatting and doc-check.
+
+The subsequent parser/policy block tests unavailable cfg span locations,
+ambiguous Windows source spelling, malformed Rust/UTF-8 and missing source
+files. Invalid spans fail rather than remove changed-line obligations. Policy
+transport checks distinguish successful, rejected, incomplete and unavailable
+scanner observations; unknown Java policy keeps the aggregate unknown unless
+Rust is failed. Synthetic policy cases publish no provenance or qualified
+report. The public provenance validator still uses its compiled pinned schema;
+private schema-input tests cover malformed JSON/schema/value rejection.
+Default and instrumented checks passed 156 library tests, 38/39 coverage tests
+and 15 SBOM tests (two require actual prepared inputs), with all-target check
+and strict all-feature Clippy. This does not change the actual failed policy
+observations or qualify the remaining source lines.

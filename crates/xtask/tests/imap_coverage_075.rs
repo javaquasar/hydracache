@@ -672,6 +672,16 @@ fn missing_empty_foreign_duplicate_and_platform_mixed_components_refuse() {
 }
 #[test]
 fn windows_spelling_normalization_never_hides_traversal_or_foreign_files() {
+    let ambiguous = BTreeSet::from([
+        "crates/xtask/src/unit.rs".into(),
+        "crates/xtask/src/UNIT.rs".into(),
+    ]);
+    assert!(
+        normalize_source("C:/Repo", "C:/Repo/CRATES/XTASK/SRC/Unit.rs", &ambiguous)
+            .unwrap_err()
+            .to_string()
+            .contains("outside the declared tracked scope")
+    );
     assert_eq!(
         normalize_source("C:/Repo", r"\\?\C:\Repo\crates\xtask\src\unit.rs", &known()).unwrap(),
         "crates/xtask/src/unit.rs"
@@ -1009,6 +1019,12 @@ fn cfg_disclosure_refuses_malformed_attributes_and_unsupported_predicates() {
                 .contains(reason)
         );
     }
+    for bytes in [b"pub fn broken(".as_slice(), b"\xff".as_slice()] {
+        std::fs::write(root.path().join(path), bytes).unwrap();
+        assert!(compiled_out_ranges(root.path(), &[input.clone()], &contexts).is_err());
+    }
+    std::fs::remove_file(root.path().join(path)).unwrap();
+    assert!(compiled_out_ranges(root.path(), &[input], &contexts).is_err());
 }
 #[test]
 fn java_source_aliases_and_unc_spellings_remain_unique() {

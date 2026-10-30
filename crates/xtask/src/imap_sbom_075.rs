@@ -1355,13 +1355,31 @@ fn capture_policy(root: &Path, directory: &Path) -> Result<Policy> {
     command
         .current_dir(root)
         .args(["deny", "--format", "json", "check"]);
-    let (success, report) = match controller.run(BuildStage::ProvenanceMetadata, command) {
+    policy_from_outcome(
+        root,
+        directory,
+        controller.run(BuildStage::ProvenanceMetadata, command),
+    )
+}
+fn policy_from_outcome(
+    root: &Path,
+    directory: &Path,
+    outcome: std::result::Result<
+        crate::imap_build_process_075::BuildReport,
+        crate::imap_build_process_075::BuildError,
+    >,
+) -> Result<Policy> {
+    let (success, report) = match outcome {
         Ok(report) => (true, report),
         Err(error) => (false, *error.report),
     };
     let stdout = fs::read(&report.stdout_path).unwrap_or_default();
     let stderr = fs::read(&report.stderr_path).unwrap_or_default();
-    let rust_state = policy_state(success, report.logs_complete && report.root_reaped, &stderr);
+    let complete = report.logs_complete
+        && report.root_reaped
+        && report.outcome == crate::imap_build_process_075::BuildOutcome::Completed
+        && report.remaining_live_members == Some(0);
+    let rust_state = policy_state(success, complete, &stderr);
     let raw = json!({"schema":"imap075-dependency-policy-v1","scope":"cargo-deny-root-workspace-default-features; Java advisory/license policy not run","rust_state":rust_state,"java_state":"unknown","build_report":report,"stdout":String::from_utf8_lossy(&stdout),"stderr":String::from_utf8_lossy(&stderr)});
     let path = directory.join("dependency-policy.json");
     fs::write(&path, serde_json::to_vec_pretty(&raw)?)?;
@@ -1378,9 +1396,13 @@ fn capture_policy(root: &Path, directory: &Path) -> Result<Policy> {
     })
 }
 pub fn validate_provenance_schema(value: &Value) -> Result<()> {
-    let schema: Value = serde_json::from_str(include_str!(
-        "../../../docs/testing/imap/0.75/schemas/development-provenance.schema.json"
-    ))?;
+    validate_provenance_with_schema(
+        include_str!("../../../docs/testing/imap/0.75/schemas/development-provenance.schema.json"),
+        value,
+    )
+}
+fn validate_provenance_with_schema(source: &str, value: &Value) -> Result<()> {
+    let schema: Value = serde_json::from_str(source)?;
     if !jsonschema::validator_for(&schema)?.is_valid(value) {
         return Err("development provenance schema rejected".into());
     }
