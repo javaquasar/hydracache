@@ -683,7 +683,7 @@ fn inputs(root: &Path) -> Result<Vec<Artifact>, Box<dyn Error>> {
     Ok(result)
 }
 
-fn new_output(root: &Path, output: &Path) -> Result<PathBuf, Box<dyn Error>> {
+pub(crate) fn new_output(root: &Path, output: &Path) -> Result<PathBuf, Box<dyn Error>> {
     let relative = if output.is_absolute() {
         output.strip_prefix(root)?
     } else {

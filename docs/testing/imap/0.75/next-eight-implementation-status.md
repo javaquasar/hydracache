@@ -12,8 +12,8 @@ Release 0.75 remains planned; W0 and production IMap remain blocked by 0.74.
 | P4 native histories | Implemented | Two real official clients; seeds 117/118 with actual overlap; Java and independent Rust DFS, strict raw/normalized binding, replay and bounded shrinking; preparation v3 artifact |
 | P5 listener recovery | Implemented | Controlled writer gate and exact callback tuples; 29 native suite tests; actual packaged recovery probe independently checked, preparation v4 artifact/replay |
 | P6 continuous soak | Implemented | Clean-source actual smoke: reference 19 rounds, native 5, daemon 11, all reaped/no live members; checkpoint replay creates a new segment; preparation v5 and local-archive workflow; no 6/24-hour execution claimed |
-| P7 development SBOM | Validation in progress | 12 Rust unit tests and real five-stage Cargo graph replay passed; six Java tooling tests; actual Maven resolver journals; fixed identity-tool JVM bounds; clean-source complete generation/replay follows the implementation commit |
-| P8 scoped coverage | Pending | No Rust coverage percentage claimed |
+| P7 development SBOM | Implemented | Clean-source `61b08b5794e1617930d49d4707f8c02089a4905b`: 995 components; complete generation and independent reconstruction passed; 12 Rust tests plus actual five-stage graph replay and six Java tests; dependency policy Rust failed / Java unknown, unsigned |
+| P8 scoped coverage | Validation in progress | LLVM/JaCoCo capture/reconstruction, strict source/tool/cfg/session binding, zero-missed changed-line gate and negative canaries implemented; focused Rust tests and strict Clippy passed; 39 native and 10 provenance Java tests with mandatory class gates passed; native source report has no missed executable lines; no Rust coverage percentage claimed before actual capture |
 
 P1 uses a separate build execution policy. Public short proof workers retain the
 60-second maximum. Deadline, output/event/stage exhaustion, cancellation and failed

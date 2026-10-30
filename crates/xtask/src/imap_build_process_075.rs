@@ -29,6 +29,9 @@ pub enum BuildStage {
     ToolingTests,
     ProvenanceTools,
     ProvenanceMetadata,
+    CoverageRunner,
+    CoverageExecution,
+    CoverageReport,
 }
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

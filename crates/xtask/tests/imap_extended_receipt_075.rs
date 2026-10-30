@@ -127,7 +127,7 @@ impl Fixture {
             process_scope: if cfg!(windows) {
                 "windows_job_kill_on_close_process_commit_limit"
             } else {
-                "linux_inherited_process_group_per_process_address_space_limit"
+                "linux_owned_session_nested_groups_per_process_address_space_limit"
             }
             .into(),
             process_timeout_ms: 15_000,
@@ -324,7 +324,7 @@ fn shrink_identity_budget_and_runtime_capabilities_are_checked() {
     }
     let mut caps = fixture.receipt.clone();
     caps.runtime.process_scope =
-        "linux_inherited_process_group_per_process_address_space_limit".into();
+        "linux_owned_session_nested_groups_per_process_address_space_limit".into();
     caps.runtime.process_count_limit = Some(8);
     assert!(validate(fixture.root(), &caps).is_err());
     caps.runtime.process_scope = "windows_job_kill_on_close_process_commit_limit".into();

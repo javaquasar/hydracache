@@ -151,4 +151,30 @@ final class NativeListenerRecovery075Test {
       assertTrue(probe.contains("\"gap_before\":\"queue_overflow\""));assertTrue(probe.contains("\"removed_subscriptions\":2"));
     }
   }
+  @Test void nonWriteCallbacksAreExplicitProfileViolations() {
+    for(int mode=0;mode<4;mode++) {
+      var fake=new Fake();try(var owner=new NativeListenerRecovery075(fake.map(),1,16)) {
+        var listener=fake.registrations.get(0);
+        var event=new EntryEvent<byte[],byte[]>("fixture",null,EntryEventType.REMOVED.getType(),new byte[]{1},new byte[]{2});
+        switch(mode) {
+          case 0->listener.entryRemoved(event);
+          case 1->listener.entryEvicted(event);
+          case 2->listener.mapCleared(new com.hazelcast.map.MapEvent("fixture",null,EntryEventType.CLEAR_ALL.getType(),1));
+          case 3->listener.mapEvicted(new com.hazelcast.map.MapEvent("fixture",null,EntryEventType.EVICT_ALL.getType(),1));
+        }
+        assertEquals(Optional.of(Reason.PROFILE_VIOLATION),owner.reason());assertEquals(State.GAP,owner.state());
+      }
+    }
+  }
+  @Test void interruptDuringCallbackWaitRefusesAndReleasesWriterGate() throws Exception {
+    var fake=new Fake();try(var owner=overflow(fake)) {
+      fake.emit=false;owner.put(b("61"),b("33"));
+      var executor=Executors.newSingleThreadExecutor();var outcome=new CompletableFuture<Throwable>();
+      try {
+        var task=executor.submit(()->{try{owner.recover(Bounds.smoke(),new Cancellation());outcome.complete(null);}catch(Throwable failure){outcome.complete(failure);}});
+        long until=System.nanoTime()+TimeUnit.SECONDS.toNanos(2);while(!owner.waitingForCallbacks()&&System.nanoTime()<until)Thread.yield();assertTrue(owner.waitingForCallbacks());
+        task.cancel(true);assertInstanceOf(InterruptedException.class,outcome.get(2,TimeUnit.SECONDS));assertEquals(Optional.of(Reason.CANCELLED),owner.reason());
+      } finally {executor.shutdownNow();}
+    }
+  }
 }

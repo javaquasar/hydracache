@@ -244,6 +244,7 @@ impl Capture {
             "ProvenanceData075.java",
             "MavenResolutionSpy075.java",
             "MavenInventoryMain075.java",
+            "CoverageDataMain075.java",
         ] {
             javac.arg(package.join(name));
         }
@@ -362,7 +363,35 @@ impl Capture {
             .arg(format!("-Dhydracache.imap075.nonce={nonce}"))
             .arg(format!("-Dhydracache.imap075.stage={kind}"))
             .args(args);
+        let coverage_module = if cfg!(feature = "imap-075-coverage") {
+            match name {
+                "JavaContract" => Some("java-imap-benchmark"),
+                "NativeJava" => Some("java-imap-hazelcast-075"),
+                "provenance-tests" => Some("java-imap-provenance-075"),
+                _ => None,
+            }
+        } else {
+            None
+        };
+        let coverage = coverage_module
+            .map(|module| {
+                crate::imap_coverage_075::java_arguments(root, builds.directory(), module)
+                    .map(|(id, args)| (module, id, args))
+            })
+            .transpose()?;
+        if let Some((_, _, args)) = &coverage {
+            command.args(args);
+        }
         let report = builds.run(stage, command)?;
+        if let Some((module, id, _)) = coverage {
+            crate::imap_coverage_075::retain_java_session(
+                root,
+                builds.directory(),
+                module,
+                &id,
+                &report,
+            )?;
+        }
         self.stages.push(CapturedStage {
             name: name.into(),
             stdout: relative(root, Path::new(&report.stdout_path))?,

@@ -24,6 +24,23 @@ final class NativeIMapExtended075Test {
     do { events.addAll(adapter.drainEvents()); if (events.size() >= count) return List.copyOf(events); Thread.sleep(2); } while (System.nanoTime() < deadline);
     fail("native callbacks incomplete: " + events.size() + "/" + count); return List.of();
   }
+  @SuppressWarnings("unchecked") @Test void aggregateLostResponseAndExpirationNeverMasqueradeAsHealthy() {
+    var registration=new java.util.concurrent.atomic.AtomicReference<com.hazelcast.core.EntryListener<byte[],byte[]>>();
+    IMap<byte[],byte[]> map=(IMap<byte[],byte[]>)Proxy.newProxyInstance(getClass().getClassLoader(),new Class<?>[]{IMap.class},(proxy,method,args)->switch(method.getName()){
+      case "isEmpty"->true;case "iterator"->Collections.emptyIterator();case "addEntryListener"->{registration.set((com.hazelcast.core.EntryListener<byte[],byte[]>)args[0]);yield UUID.randomUUID();}case "removeEntryListener"->true;
+      case "putAll","clear"->throw new IllegalStateException("injected lost aggregate response");
+      default->throw new AssertionError(method.getName());
+    });
+    try(var adapter=new NativeIMapAdapter075(map,NativeIMapProfile075.exclusive(),4)) {
+      assertEquals(1,adapter.registrationGeneration());
+      var failure=assertThrows(NativeIMapAdapter075.UncertainWrite.class,()->adapter.execute(Request.empty(CLEAR)));assertEquals(0,failure.attemptedIndex());assertEquals(Optional.of(NativeIMapAdapter075.Gap.UNCERTAIN_WRITE),adapter.gap());
+    }
+    try(var adapter=new NativeIMapAdapter075(map,NativeIMapProfile075.exclusive(),4)) {
+      registration.get().entryExpired(new com.hazelcast.core.EntryEvent<byte[],byte[]>("fixture",null,com.hazelcast.core.EntryEventType.EXPIRED.getType(),new byte[]{1},new byte[]{2}));
+      assertEquals(Optional.of(NativeIMapAdapter075.Gap.PROFILE_VIOLATION),adapter.gap());
+    }
+    assertThrows(IllegalArgumentException.class,()->new Request(REMOVE_DETAILED,Collections.nCopies(65,b("61")),List.of(),Optional.empty(),64));
+  }
   @Test void detailedBinaryHelpersMatchIndependentMapAndActualPerKeyEvents() throws Exception {
     try (var adapter = new NativeIMapAdapter075(fixture.client(), name(), NativeIMapProfile075.exclusive())) {
       var expected = new TreeMap<BytesValue, BytesValue>();

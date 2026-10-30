@@ -19,6 +19,15 @@ final class NativeConcurrent075Test {
     return History.observed(race(), List.of(new Invoke(1, 0, 0), new Invoke(2, 1, 1), new Return(3, 0, 0, RawResult.value(null)),
         new Return(4, 1, 1, RawResult.value(secondWinner ? null : b("31").copy()))), state(secondWinner ? "32" : "31"));
   }
+  @Test void overlapQualificationStopsAtItsBoundAndRejectsAnImpossibleHistory() throws Exception {
+    var calls=new ArrayList<Integer>();
+    var sequential=History.observed(race(),List.of(new Invoke(1,0,0),new Return(2,0,0,RawResult.value(null)),new Invoke(3,1,1),new Return(4,1,1,RawResult.value(b("31").copy()))),state("31"));
+    assertFalse(sequential.hasOverlap());
+    assertThrows(IllegalStateException.class,()->NativeConcurrentWorker075.qualified(3,attempt->{calls.add(attempt);return new NativeConcurrentWorker075.Run(sequential,List.of(),UUID.randomUUID(),List.of(),attempt);}));
+    assertEquals(List.of(1,2,3),calls);
+    assertThrows(IllegalStateException.class,()->NativeConcurrentWorker075.qualified(1,attempt->new NativeConcurrentWorker075.Run(raceHistory(true),List.of(),UUID.randomUUID(),List.of(),attempt)));
+    assertEquals(1,NativeConcurrentWorker075.qualified(1,attempt->new NativeConcurrentWorker075.Run(raceHistory(false),List.of(),UUID.randomUUID(),List.of(),attempt)).attempts());
+  }
   @Test void oneWinnerAndPreviousValuesHaveALegalSerializationAndActualOverlap() {
     var history = raceHistory(false); var report = check(history, 1000);
     assertEquals(Verdict.LINEARIZABLE, report.verdict()); assertEquals(List.of(0, 1), report.witness()); assertTrue(history.hasOverlap());

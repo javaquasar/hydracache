@@ -1,0 +1,44 @@
+# IMap 0.75 scoped coverage
+
+This development gate measures added executable lines since
+`98d7321b1cda568c386cbfdef1993c7e4dcebe38`. The policy is recorded in
+[coverage-profile.json](coverage-profile.json). Release 0.75 remains planned,
+W0 remains open and production IMap remains disabled.
+
+Install `llvm-tools-preview` for the exact active Rust 1.88.0 or 1.94.0
+toolchain; use JDK 17 or 21. Linux and Windows x86_64 results are separate.
+Run from a clean committed worktree:
+
+```text
+cargo xtask imap-coverage-capture --release 0.75 --output target/imap-075/coverage-unique
+cargo xtask imap-coverage-check --release 0.75 --receipt target/imap-075/coverage-unique/report.json
+```
+
+The controller uses the P1 bounded process executor, an isolated Cargo target,
+explicit instrumentation flags, fresh PID-specific LLVM profiles and fresh
+JaCoCo execution files with one session per Maven phase. It copies its live
+instrumented executable before Cargo can rebuild that target. The instrumented
+analysis process exits before the final report is reconstructed. A measurement
+with uncovered lines is retained as `analysis.json` with `qualification=false`;
+it cannot satisfy the final gate.
+
+The final check reconstructs LLVM LCOV and JaCoCo source counts from the retained
+execution profiles and exact binaries/JARs. Source SHA, all scoped source bytes,
+tool distributions, compiler cfg/features, Cargo executable sets, Java test
+completion and session identities are bound to that capture. Missing sources,
+empty reports, substituted bytes, live controllers and foreign paths refuse.
+Changed comments and other non-executable lines do not inflate the denominator.
+Compiled-out platform files and cfg ranges are disclosed; another platform's
+result cannot qualify them. No branch coverage or production correctness claim
+follows from a passing line gate.
+
+New Java classes also have mandatory Maven JaCoCo class checks (80% line floor)
+in their test phase. The source-bound changed-line gate is stricter and requires
+zero uncovered added executable lines. Existing global Rust and Java ratchets
+remain unchanged. Test dependencies and instrumentation are development-only.
+
+CI retains the existing three-job topology and exact Rust/JDK matrix. Coverage
+runs before final artifact preparation because instrumented external consumer
+builds must not invalidate an earlier exact-artifact receipt. CI v3 receipts
+include the checked report digest. A local capture is not an S2 cluster result,
+release admission or a long-duration soak.

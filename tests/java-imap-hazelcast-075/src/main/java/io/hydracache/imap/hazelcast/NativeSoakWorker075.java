@@ -44,7 +44,7 @@ public final class NativeSoakWorker075 {
   static void emit(PrintStream out, Config config, NativeListenerRecovery075 owner, String incarnation, String phase, long round, long elapsed, String digest, String reason) {
     var memory = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
     String cpu = ProcessHandle.current().info().totalCpuDuration().map(d -> Long.toString(d.toNanos())).orElse("null");
-    long gc = ManagementFactory.getGarbageCollectorMXBeans().stream().mapToLong(bean -> Math.max(0, bean.getCollectionCount())).sum();
+    String gc = gcCollections(ManagementFactory.getGarbageCollectorMXBeans().stream().mapToLong(bean -> bean.getCollectionCount()).toArray());
     out.println("{\"schema\":\"imap075-soak-frame-v1\",\"phase\":\"" + phase + "\",\"pid\":" + ProcessHandle.current().pid() + ",\"incarnation\":\"" + incarnation
         + "\",\"cohort\":\"native\",\"seed\":" + Long.toUnsignedString(config.seed()) + ",\"source_sha\":\"" + config.source() + "\",\"round\":" + round + ",\"active_elapsed_ms\":" + elapsed
         + ",\"digest\":" + (digest == null ? "null" : "\"" + digest + "\"") + ",\"owners\":{\"unit\":\"native_fixture_counts\",\"values\":" + owner.ownedKeys()
@@ -80,4 +80,10 @@ public final class NativeSoakWorker075 {
     }
   }
   public static void main(String[] args) throws Exception { run(Config.parse(args), System.out); }
+  static String gcCollections(long... counters) {
+    if(counters.length==0)return "null";
+    long total=0;
+    for(long count:counters){if(count<0||count>Long.MAX_VALUE-total)return "null";total+=count;}
+    return Long.toString(total);
+  }
 }

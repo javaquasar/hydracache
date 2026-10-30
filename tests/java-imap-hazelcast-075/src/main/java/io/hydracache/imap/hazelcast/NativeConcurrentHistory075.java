@@ -65,7 +65,6 @@ public final class NativeConcurrentHistory075 {
       if (event instanceof Return end) canonical.append('|').append(end.result().value().map(BytesValue::hex).orElse("null")).append('|').append(end.result().booleanValue().map(Object::toString).orElse("null"));
       canonical.append('\n');
     }
-    try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(canonical.toString().getBytes(StandardCharsets.UTF_8))); }
-    catch (NoSuchAlgorithmException unavailable) { throw new IllegalStateException(unavailable); }
+    return HexFormat.of().formatHex(NativeDigests075.sha256().digest(canonical.toString().getBytes(StandardCharsets.UTF_8)));
   }
 }

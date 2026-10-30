@@ -36,6 +36,34 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("sleep" | "ignore_stdin") => loop {
             std::thread::park_timeout(std::time::Duration::from_secs(60));
         },
+        Some("nested-controller") => {
+            let mut child = Command::new(std::env::current_exe()?);
+            child
+                .arg("announce-sleep")
+                .arg(args.get(1).ok_or("nested PID file required")?);
+            xtask::imap_proof_process_075::execute_observed(
+                child,
+                &[],
+                xtask::imap_proof_process_075::ProcessBounds {
+                    timeout: std::time::Duration::from_secs(30),
+                    ..Default::default()
+                },
+                |_| {
+                    xtask::imap_coverage_075::flush_profile();
+                    Ok(())
+                },
+            )?;
+        }
+        Some("announce-sleep") => {
+            std::fs::write(
+                args.get(1).ok_or("PID file required")?,
+                std::process::id().to_string(),
+            )?;
+            loop {
+                xtask::imap_coverage_075::flush_profile();
+                std::thread::park_timeout(std::time::Duration::from_secs(60));
+            }
+        }
         Some("stdout" | "stderr") => {
             let mut out: Box<dyn Write> = if args[0] == "stdout" {
                 Box::new(std::io::stdout())

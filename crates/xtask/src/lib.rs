@@ -32,6 +32,7 @@ pub mod imap_ci_075;
 pub mod imap_cluster_campaign_075;
 pub mod imap_cluster_fuzz_policy075;
 pub mod imap_contract;
+pub mod imap_coverage_075;
 pub mod imap_daemon_probe_075;
 pub mod imap_distributed_correctness;
 pub mod imap_extended_concurrent_075;

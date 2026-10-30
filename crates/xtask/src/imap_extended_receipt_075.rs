@@ -483,7 +483,7 @@ fn runtime() -> Result<RuntimeBinding, Box<dyn Error>> {
         process_scope: if cfg!(windows) {
             "windows_job_kill_on_close_process_commit_limit"
         } else {
-            "linux_inherited_process_group_per_process_address_space_limit"
+            "linux_owned_session_nested_groups_per_process_address_space_limit"
         }
         .into(),
         process_timeout_ms: bounds.timeout.as_millis() as u64,
@@ -757,7 +757,7 @@ pub fn validate(root: &Path, receipt: &ExtendedReceipt) -> Result<(), Box<dyn Er
         || !matches!(
             r.process_scope.as_str(),
             "windows_job_kill_on_close_process_commit_limit"
-                | "linux_inherited_process_group_per_process_address_space_limit"
+                | "linux_owned_session_nested_groups_per_process_address_space_limit"
         )
         || r.process_timeout_ms != 15_000
         || r.process_memory_bytes == 0

@@ -18,11 +18,12 @@ fn receipts(mode: &str) -> Vec<CiReceipt> {
         .into_iter()
         .map(|lane| CiReceipt {
             release: "0.75".into(),
-            receipt_version: 2,
+            receipt_version: 3,
             scope: "local_ci".into(),
             mode: mode.into(),
             source_sha: "a".repeat(40),
             workflow_sha256: digest(WORKFLOW.as_bytes()),
+            coverage_sha256: "b".repeat(64),
             seeds: seeds_for(lane.shard).unwrap(),
             steps: 128,
             rust_fingerprint: format!("rustc {} (test fixture)", lane.rust),
@@ -40,6 +41,7 @@ fn receipts(mode: &str) -> Vec<CiReceipt> {
                 "imap-extended-concurrent".into(),
                 "imap-extended-evidence".into(),
                 "imap-pre074-preparation".into(),
+                "imap-scoped-coverage".into(),
             ],
             completed: true,
             passed: true,
@@ -70,6 +72,7 @@ fn incomplete_failed_mixed_source_or_weakened_lanes_never_complete_ci() {
     for field in [
         "release",
         "receipt_version",
+        "coverage_sha256",
         "scope",
         "mode",
         "source_sha",
@@ -390,6 +393,8 @@ fn tooling_isolates_the_live_producer_on_every_platform_and_preserves_gate_argum
                 "imap_soak_075",
                 "--test",
                 "imap_sbom_075",
+                "--test",
+                "imap_coverage_075",
                 "--locked",
             ]
         );

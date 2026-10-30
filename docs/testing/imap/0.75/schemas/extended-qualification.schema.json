@@ -197,7 +197,7 @@
         "process_scope": {
           "enum": [
             "windows_job_kill_on_close_process_commit_limit",
-            "linux_inherited_process_group_per_process_address_space_limit"
+            "linux_owned_session_nested_groups_per_process_address_space_limit"
           ]
         },
         "process_timeout_ms": {

@@ -63,6 +63,25 @@ fn command(mode: &str) -> Command {
     c.arg(mode);
     c
 }
+#[test]
+fn outer_refusal_reaps_a_cooperative_nested_controller_group() {
+    use xtask::imap_proof_process_075::execute_observed;
+    let temp = tempfile::tempdir().unwrap();
+    let file = temp.path().join("nested-pid");
+    let mut worker = command("nested-controller");
+    worker.arg(&file);
+    let mut nested_pid = None;
+    let failure = execute_observed(worker, &[], bounds(), |_| {
+        if let Ok(pid) = std::fs::read_to_string(&file) {
+            nested_pid = Some(pid.parse::<u32>().unwrap());
+            return Err("nested ownership canary".into());
+        }
+        Ok(())
+    })
+    .unwrap_err();
+    assert_eq!(failure.kind, FailureKind::Observation);
+    assert!(!live(nested_pid.expect("nested child started")));
+}
 fn bounds() -> ProcessBounds {
     ProcessBounds {
         timeout: Duration::from_secs(3),

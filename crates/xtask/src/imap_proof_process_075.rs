@@ -407,13 +407,18 @@ fn cleanup(
         .map_err(|e| io_error(FailureKind::Cleanup, e))?;
     let started = Instant::now();
     loop {
-        let reaped = child
-            .try_wait()
-            .map_err(|e| io_error(FailureKind::Cleanup, e))?
-            .is_some();
+        // Repeat owned-session cleanup: cooperative inner controllers may have
+        // forked a group while the first process inventory was being collected.
+        tree.terminate()
+            .map_err(|e| io_error(FailureKind::Cleanup, e))?;
         let remaining = tree
             .live_members()
             .map_err(|e| io_error(FailureKind::Cleanup, e))?;
+        let reaped = remaining == 0
+            && child
+                .try_wait()
+                .map_err(|e| io_error(FailureKind::Cleanup, e))?
+                .is_some();
         if reaped && remaining == 0 {
             return Ok(0);
         }

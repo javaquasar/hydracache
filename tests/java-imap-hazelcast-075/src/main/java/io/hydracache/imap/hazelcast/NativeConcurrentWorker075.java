@@ -22,9 +22,13 @@ public final class NativeConcurrentWorker075 {
     public Run { nativeEvents = List.copyOf(nativeEvents); clients = List.copyOf(clients); }
   }
   public static Run qualified(HazelcastLoopback075 fixture, Program program, int maxAttempts) throws Exception {
+    return qualified(maxAttempts,attempt->run(fixture,program,attempt));
+  }
+  @FunctionalInterface interface Attempt {Run execute(int attempt) throws Exception;}
+  static Run qualified(int maxAttempts,Attempt attemptSource) throws Exception {
     if (maxAttempts < 1 || maxAttempts > 8) throw new IllegalArgumentException("native overlap attempt bound");
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-      var run = run(fixture, program, attempt);
+      var run = attemptSource.execute(attempt);
       if (run.history().hasOverlap()) {
         if (NativeConcurrentOracle075.check(run.history(), 100_000).verdict() != NativeConcurrentOracle075.Verdict.LINEARIZABLE) throw new IllegalStateException("native history failed qualification");
         return run;

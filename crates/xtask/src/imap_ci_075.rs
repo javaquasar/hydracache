@@ -13,7 +13,7 @@ pub const RUST_VERSIONS: [&str; 2] = ["1.88.0", "1.94.0"];
 pub const JAVA_VERSIONS: [u32; 2] = [17, 21];
 const WORKFLOW: &str = ".github/workflows/imap-075.yml";
 const BUILD_BUDGET_COMMAND: &str = r#"echo "HYDRACACHE_IMAP075_BUILD_DEADLINE_MS=$(( ($(date +%s) + 43 * 60) * 1000 ))" >> "$GITHUB_ENV""#;
-const COMMANDS: [&str; 11] = [
+const COMMANDS: [&str; 12] = [
     "imap-distributed-correctness",
     "imap-capability-audit",
     "imap-migration-dry-run",
@@ -25,6 +25,7 @@ const COMMANDS: [&str; 11] = [
     "imap-extended-concurrent",
     "imap-extended-evidence",
     "imap-pre074-preparation",
+    "imap-scoped-coverage",
 ];
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -44,6 +45,7 @@ pub struct CiReceipt {
     pub mode: String,
     pub source_sha: String,
     pub workflow_sha256: String,
+    pub coverage_sha256: String,
     pub lane: Lane,
     pub seeds: Vec<u64>,
     pub steps: usize,
@@ -126,6 +128,16 @@ pub fn run_lane(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "pre074-{}-{}-{}-{before}",
             lane.rust, lane.java, lane.shard
         ));
+    let coverage_dir = output
+        .parent()
+        .ok_or("CI coverage parent required")?
+        .join(format!(
+            "coverage-{}-{}-{}-{before}",
+            lane.rust, lane.java, lane.shard
+        ));
+    let coverage_path = crate::imap_coverage_075::capture(&root, &coverage_dir)?;
+    crate::imap_coverage_075::check(&root, &coverage_path)?;
+    let coverage_sha256 = digest(&std::fs::read(coverage_path)?);
     let preparation_receipt = crate::imap_pre074_075::produce(&root, &preparation_dir)?;
     crate::imap_pre074_075::verify(&root, &preparation_receipt)?;
     let seeds = seeds_for(lane.shard)?;
@@ -153,11 +165,12 @@ pub fn run_lane(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     }
     let receipt = CiReceipt {
         release: "0.75".into(),
-        receipt_version: 2,
+        receipt_version: 3,
         scope: "local_ci".into(),
         mode: options.mode,
         source_sha: before,
         workflow_sha256: digest(&read_relative(&root, WORKFLOW, MAX_ARTIFACT_BYTES)?),
+        coverage_sha256,
         lane,
         seeds,
         steps: 128,
@@ -232,6 +245,8 @@ pub fn tooling_command(root: &Path, _windows: bool) -> Command {
             "imap_soak_075",
             "--test",
             "imap_sbom_075",
+            "--test",
+            "imap_coverage_075",
             "--locked",
         ])
         .current_dir(root);
@@ -312,6 +327,7 @@ pub fn check_workflow(root: &Path) -> Result<(), Box<dyn Error>> {
         "sdks/java/**",
         "tests/java-imap-benchmark/**",
         "tests/java-imap-hazelcast-075/**",
+        "tests/java-imap-provenance-075/**",
         "tests/rust-imap-contract-consumer-075/**",
         "docs/testing/imap/**",
         "fuzz/**",
@@ -472,6 +488,7 @@ pub fn check_workflow(root: &Path) -> Result<(), Box<dyn Error>> {
         "imap-ci-check",
         "--receipts",
         "needs.qualification.result",
+        "--component llvm-tools-preview",
     ] {
         if !run_text.contains(required) {
             return Err(
@@ -509,13 +526,14 @@ pub fn validate_receipts(
     for receipt in receipts {
         if !seen.insert(receipt.lane.clone())
             || receipt.release != "0.75"
-            || receipt.receipt_version != 2
+            || receipt.receipt_version != 3
             || receipt.scope != "local_ci"
             || receipt.mode != mode
             || receipt.source_sha != source
             || !hex(source, 40)
             || receipt.workflow_sha256 != workflow_digest
             || !hex(workflow_digest, 64)
+            || !hex(&receipt.coverage_sha256, 64)
             || !receipt.passed
             || !receipt.completed
             || receipt.production_enabled

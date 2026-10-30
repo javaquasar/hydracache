@@ -77,10 +77,8 @@ public final class NativeIMapObservation075 {
       keyBound(entry.key());
       if (entry.value().size() > NativeIMapProfile075.MAX_VALUE_BYTES || ordered.put(entry.key(), entry.value()) != null) throw new IllegalArgumentException("native snapshot entry");
     }
-    try {
-      var digest = MessageDigest.getInstance("SHA-256");
+      var digest = NativeDigests075.sha256();
       ordered.forEach((key, value) -> { for (var bytes : List.of(key.copy(), value.copy())) { digest.update(ByteBuffer.allocate(4).putInt(bytes.length).array()); digest.update(bytes); } digest.update((byte) 0); });
       return HexFormat.of().formatHex(digest.digest());
-    } catch (NoSuchAlgorithmException unavailable) { throw new IllegalStateException(unavailable); }
   }
 }

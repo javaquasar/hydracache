@@ -129,6 +129,18 @@ evidence, not a product protocol, persistent service image or ship receipt.
 Typed entry views, helper futures, progress queries and scoped transfer controls remain runtime
 APIs; the 40 core operation IDs and production HC/1/HC/2 identities do not change.
 
+The development-only scoped coverage family uses strict v1 policy, control,
+capture, Java session/projection and finalized report records, documented in
+`docs/testing/imap/0.75/scoped-coverage.md`. Unknown fields/future versions, stale
+source/tool/cfg, incomplete execution, foreign paths, missing components and
+uncovered added executable lines refuse qualification. Reports bind raw LLVM and
+JaCoCo execution data to current compiler outputs and exact source bytes. Platform
+results are separate; these are unsigned local test evidence, not branch coverage,
+S2 qualification or release admission. The Linux executor owns the root session
+and cooperative nested groups, with per-process address-space bounds and no process
+count cap; a program deliberately creating another session remains outside this
+local containment scope.
+
 The separate development preparation receipt uses `hydracache.imap.pre074-preparation.v6`
 and `docs/testing/imap/0.75/schemas/pre074-preparation.schema.json`. It retains unsigned
 resolved development provenance. Its v1 inventory/provenance,
@@ -183,7 +195,8 @@ readers reject v4. Implemented hour/6-hour/24-hour profiles do not claim those r
 The 0.75 migration corpus uses `fixture_version = 1` for bounded development
 staging/dry-run readers only. Runtime replica images preserve logical incarnation
 within the test cluster and have no persisted reader or production transport
-schema. CI receipts use `receipt_version = 2` with explicit `local_ci` scope;
+schema. CI receipts use `receipt_version = 3` with explicit `local_ci` scope and
+a required current-source scoped coverage report digest;
 comparison/release manifests use provisional `contract_version = 1` and reject
 unknown fields/versions. None is a production HC/1/HC/2 allocation or an import
 endpoint, and local receipts cannot authorize a release.

@@ -55,4 +55,9 @@ class MavenResolutionSpy075Test {
     var properties=new Properties();properties.setProperty("hydracache.imap075.root","");
     var spy=new MavenResolutionSpy075();assertThrows(IllegalArgumentException.class,()->spy.init(()->Map.of("userProperties",properties)));spy.close();
   }
+  @Test void workspaceReactorMaterialRetainsItsOwnOrigin() throws Exception {
+    var f=fixture("workspace");Path jar=root.resolve("reactor.jar");Files.writeString(jar,"reactor");
+    f.spy.onEvent(material(jar,null));f.spy.onEvent(event(ExecutionEvent.Type.SessionEnded,false));f.spy.close();
+    String text=Files.readString(f.output);assertTrue(text.contains("\"location\":\"workspace\""));assertTrue(text.contains("\"path\":\"reactor.jar\""));assertTrue(text.contains("\"complete\":true"));
+  }
 }
