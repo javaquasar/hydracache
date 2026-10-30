@@ -1,0 +1,17 @@
+fatal: not a git repository: /mnt/c/Workspace/prj/jq/cashe/hydracache-074/C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/supervisor-zstd-security-074/run.py", line 113, in <module>
+    c.need(len(sys.argv)==2,'one fixed phase');main(sys.argv[1])
+                                               ^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/supervisor-zstd-security-074/run.py", line 84, in main
+    before=c.source();head=c.snapshot();argv,env=command(label)
+           ^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/supervisor-zstd-security-074/common.py", line 43, in source
+    names=subprocess.check_output(['git','ls-files','-z','--',*members,'third_party/hc074-dbus'],cwd=ROOT).split(b'\0')
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', 'ls-files', '-z', '--', 'crates/hydracache-cdc-postgres', 'crates/hydracache-cache-sim', 'crates/hydracache', 'crates/hydracache-actuator-axum', 'crates/hydracache-client', 'crates/hydracache-client-hc2', 'crates/hydracache-client-plane-spike', 'crates/hydracache-client-protocol', 'crates/hydracache-client-transport-axum', 'crates/hydracache-cluster', 'crates/hydracache-cluster-chitchat', 'crates/hydracache-cluster-raft', 'crates/hydracache-cluster-testkit', 'crates/hydracache-cluster-transport-axum', 'crates/hydracache-core', 'crates/hydracache-db', 'crates/hydracache-loadgen', 'crates/hydracache-diesel', 'crates/hydracache-macros', 'crates/hydracache-observability', 'crates/hydracache-operator', 'crates/hydracache-redis-compat', 'crates/hydracache-sandbox', 'crates/hydracache-seaorm', 'crates/hydracache-server', 'crates/hydracache-sim', 'crates/hydracache-sim-wasm', 'crates/hydracache-sql-lint', 'crates/hydracache-sqlx', 'crates/hydracache-transport-nats', 'crates/hydracache-transport-redis', 'crates/xtask', 'fuzz', 'tests/post-publish-consumer', 'tools/long-run-supervisor-074', 'tools/performance-integrated-074', 'third_party/hc074-dbus']' returned non-zero exit status 128.

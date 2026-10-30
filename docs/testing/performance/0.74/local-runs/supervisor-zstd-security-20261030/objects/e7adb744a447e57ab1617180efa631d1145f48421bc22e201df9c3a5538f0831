@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/supervisor-zstd-security-074/run.py", line 113, in <module>
+    c.need(len(sys.argv)==2,'one fixed phase');main(sys.argv[1])
+                                               ^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/supervisor-zstd-security-074/run.py", line 84, in main
+    before=c.source();head=c.snapshot();argv,env=command(label)
+                           ^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/supervisor-zstd-security-074/common.py", line 61, in snapshot
+    return dict(head=git('rev-parse','HEAD').decode().strip(),tracked=git('status','--porcelain','--untracked-files=no').decode())
+                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/supervisor-zstd-security-074/common.py", line 44, in git
+    return subprocess.check_output(prefix+list(args),cwd=ROOT)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/usr/bin/git', '--git-dir=/mnt/c/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074', '--work-tree=/mnt/c/Workspace/prj/jq/cashe/hydracache-074', 'status', '--porcelain', '--untracked-files=no']' died with <Signals.SIGTERM: 15>.

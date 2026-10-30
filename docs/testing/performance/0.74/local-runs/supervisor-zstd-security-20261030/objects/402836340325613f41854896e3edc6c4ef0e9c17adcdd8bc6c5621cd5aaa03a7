@@ -1,0 +1,2 @@
+error: cannot update the lock file C:\Workspace\prj\jq\cashe\hydracache-074\target\supervisor-zstd-security-20261030\probe\Cargo.lock because --locked was passed to prevent this
+help: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead.

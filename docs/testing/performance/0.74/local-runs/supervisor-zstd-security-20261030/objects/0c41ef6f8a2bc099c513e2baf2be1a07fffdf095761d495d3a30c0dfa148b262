@@ -1,0 +1,6 @@
+{
+  "baseline_sha256": "614ab78420fc5764440083eaab6d5fec4b93b0ff22a4361203ef242a3f36ba44",
+  "candidate_sha256": "59844dc0ddba1f0e48b6063bf07aa78dc990bb21966264f8b42a216c4893e0f1",
+  "changed_edges": 1,
+  "unchanged_registry_nodes": true
+}

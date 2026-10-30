@@ -1,0 +1,9 @@
+error: failed to select a version for the requirement `pulldown-cmark = "^0.13"` (locked to 0.13.5)
+candidate versions found which didn't match: 0.13.4
+location searched: directory source `/home/artur/.cache/hydracache-074-root-package/20261028-a1/vendor` (which is replacing registry `crates-io`)
+required by package `prost-build v0.14.4`
+    ... which satisfies dependency `prost-build = "^0.14"` (locked to 0.14.4) of package `tonic-prost-build v0.14.6`
+    ... which satisfies dependency `tonic-prost-build = "^0.14.6"` (locked to 0.14.6) of package `hydracache-client-hc2 v0.73.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/crates/hydracache-client-hc2)`
+    ... which satisfies path dependency `hydracache-client-hc2` (locked to 0.73.0) of package `hydracache-fuzz v0.0.0 (/mnt/c/Workspace/prj/jq/cashe/hydracache-074/fuzz)`
+perhaps a crate was updated and forgotten to be re-vendored?
+As a reminder, you're using offline mode (--offline) which can sometimes cause surprising resolution failures, if this error is too confusing you may wish to retry without `--offline`.

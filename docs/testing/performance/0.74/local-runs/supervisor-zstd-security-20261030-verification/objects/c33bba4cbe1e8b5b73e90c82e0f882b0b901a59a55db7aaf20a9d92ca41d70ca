@@ -1,0 +1,1 @@
+{"objects_verified": 1863, "candidate_lock_sha256": "8ade63f6a4aae93f27f5161798bc87804542a48093b4203f35e25e29b680a4f5", "root_remaining_advisories": ["RUSTSEC-2026-0391", "RUSTSEC-2026-0398", "RUSTSEC-2026-0403"], "release_admitted": false}

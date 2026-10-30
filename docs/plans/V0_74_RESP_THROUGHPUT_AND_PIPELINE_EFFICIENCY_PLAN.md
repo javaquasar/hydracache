@@ -1298,3 +1298,10 @@ the [selected environment and transfer boundary](../testing/performance/0.74/ori
 do not authorize server OS/service changes or prove FD delivery. Full package,
 remaining security, lifecycle/crash/reconnect, trust and qualification gates stay
 open; no new performance hypothesis or unchanged V6 replay is admitted.
+
+The [direct supervisor security result](../testing/performance/0.74/supervisor-zstd-security-result-20261030.md)
+applies only the private Zstd0.14.3/safe8.2.0 edge, with paired Windows/GNU/MSRV
+checks and16 exact-Root archive case executions. Its advisory scope passes;
+Root remains blocked by the three Chitchat Zstd findings. Q's complete negative
+CPU/resource admission is retained and Q is not adopted. No performance
+candidate, C74 freeze, full-workspace pass or server admission follows.

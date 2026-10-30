@@ -1,0 +1,6 @@
+
+running 1 test
+test archive_replay_verification_rejects_digest_and_extra_file_drift ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.04s
+

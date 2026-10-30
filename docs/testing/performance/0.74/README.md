@@ -1,5 +1,19 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [direct supervisor Zstd update](supervisor-zstd-security-result-20261030.md)
+now removes the old wrapper from that unpublished tool: exact0.14.3/safe8.2.0,
+same C backend, no runtime source changes. Four unchanged Root archive cases pass
+on Windows/GNU × Rust1.94/1.88 (16 candidate executions), with all four complete
+check/strict-Clippy peers. GNU full formatting and Windows package formatting
+pass; the first Windows full-formatter OS206 refusal remains. A separate wire
+fixture passes but has newer helpers and is not exact-Root evidence. All23
+publishable roots exclude the changed private edge. Fresh advisory review passes
+for supervisor and still refuses exactly0391/0398/0403 through Chitchat in Root.
+Q stays unadopted under its negative CPU/resource gates. Primary packet
+`01b16a601a6346b4656d3f258e7f48da1949e4532d8445fdd653aefc219f91d3`
+retains1863 members/1630 objects, including first refusals and exact inputs.
+No server/service/clock/product run, threshold change or full-workspace promotion.
+
 The [complete corrected Q matrix](chitchat-cohort-r3-result-20261030.md) now runs
 all60 original normal processes and restores the exact supervisor automatically
 (PID416408/NRestarts0). Seven real faults, a20-second disconnected context and

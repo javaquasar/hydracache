@@ -1,0 +1,7 @@
+{
+  "case": "archive_bytes_and_headers_are_deterministic",
+  "complete": true,
+  "filtered": 3,
+  "passed": 1,
+  "release_admitted": false
+}

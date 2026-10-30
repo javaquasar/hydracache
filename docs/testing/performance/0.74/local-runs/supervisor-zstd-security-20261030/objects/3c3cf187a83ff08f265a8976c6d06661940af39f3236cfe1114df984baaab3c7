@@ -1,0 +1,7 @@
+{
+  "case": "hardlinked_input_is_rejected_without_creating_an_archive",
+  "complete": true,
+  "filtered": 3,
+  "passed": 1,
+  "release_admitted": false
+}

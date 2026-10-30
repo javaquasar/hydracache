@@ -1,0 +1,10 @@
+error: failed to load source for dependency `zbus_macros`
+
+Caused by:
+  Unable to update C:\Workspace\prj\jq\cashe\hydracache-074\third_party\hc074-dbus\zbus_macros-6.1.0
+
+Caused by:
+  failed to read `C:\Workspace\prj\jq\cashe\hydracache-074\third_party\hc074-dbus\zbus_macros-6.1.0\Cargo.toml`
+
+Caused by:
+  The system cannot find the path specified. (os error 3)

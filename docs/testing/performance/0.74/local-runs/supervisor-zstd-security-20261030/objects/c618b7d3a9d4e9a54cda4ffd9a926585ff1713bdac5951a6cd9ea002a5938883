@@ -1,0 +1,9 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "complete unchanged catalog",
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\supervisor-zstd-security-074\\run.py\", line 87, in main\n    value.update(account(label))\n                 ~~~~~~~^^^^^^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\supervisor-zstd-security-074\\run.py\", line 58, in account\n    c.need(sorted(actual)==names and raw.splitlines()[-1]==f'{len(names)} tests, 0 benchmarks','complete unchanged catalog')\n    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\supervisor-zstd-security-074\\common.py\", line 32, in need\n    if not ok:raise ValueError(why)\n              ^^^^^^^^^^^^^^^^^^^^^\nValueError: complete unchanged catalog\n",
+    "type": "ValueError"
+  },
+  "release_admitted": false
+}

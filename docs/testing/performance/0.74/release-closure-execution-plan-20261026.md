@@ -761,3 +761,17 @@ looser estimator. Carry this negative admission into the maintained-backport/
 public-consumer decision. Root security/workspace, distribution, continuous
 retention and production original execution/lifecycle/reconnect/trust/enrollment
 remain separate gates. No new product hypothesis or costly qualification follows.
+
+The [independent direct supervisor security step](supervisor-zstd-security-result-20261030.md)
+is now applied in81149cb02: only its private Zstd edge moves to0.14.3/safe8.2.0.
+The two-node exact lock delta preserves all unrelated bytes/order and unchanged
+Chitchat. Four complete Windows/GNU ×1.94/1.88 check/Clippy peers and16 actual
+Root archive cases pass. GNU whole-workspace formatting and Windows package
+formatting pass; retain the first whole-Windows OS206 refusal and every GNU/
+fixture preparation refusal. The six-payload separate wire fixture is not an
+exact-Root graph claim. All23 public roots exclude the private edge. A fresh
+private RustSec snapshot admits supervisor but still refuses exactly three
+Root advisories through Chitchat. Keep Q unadopted and preserve all thresholds.
+Next close that remaining security/distribution decision and exact-input full
+package/workspace gates before the still-open production lifecycle/reconnect/
+trust/compatible-host rehearsal. This step grants no server execution authority.

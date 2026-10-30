@@ -1,0 +1,9 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "first complete original ownership",
+    "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/supervisor-zstd-security-074/run.py\", line 92, in main\n    c.need(child.returncode==owner['exit']==0 and owner['retired'] and not owner['errors'],'first complete original ownership')\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/supervisor-zstd-security-074/common.py\", line 33, in need\n    if not ok:raise ValueError(why)\n              ^^^^^^^^^^^^^^^^^^^^^\nValueError: first complete original ownership\n",
+    "type": "ValueError"
+  },
+  "release_admitted": false
+}

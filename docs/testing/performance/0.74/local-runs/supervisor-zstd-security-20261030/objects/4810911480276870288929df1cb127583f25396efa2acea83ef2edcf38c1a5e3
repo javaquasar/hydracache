@@ -1,0 +1,14 @@
+{
+  "baseline_nodes": 683,
+  "baseline_sha256": "34d7a21d9833a180460e5a094f9ee7f1effe07dfb43a65d90865798963e0070c",
+  "candidate_nodes": 685,
+  "candidate_sha256": "8ade63f6a4aae93f27f5161798bc87804542a48093b4203f35e25e29b680a4f5",
+  "changed_consumer": "unpublished hydracache-long-run-supervisor-074",
+  "chitchat_unchanged": true,
+  "denial_policy_unchanged": true,
+  "new_registry": {
+    "zstd-0.14.3": "db3ae9bf90af6e40197bef767eeefc46ad6397420fe873830bd85e5fbbfb3c70",
+    "zstd-safe-8.2.0": "ded520f16b29e1a9b771c722221b2b0a0398c2316d9bb3c42b458a5414d7434b"
+  },
+  "performance_claim": false
+}

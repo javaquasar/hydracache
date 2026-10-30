@@ -1,0 +1,16 @@
+{
+  "reason": "operator-owned preflight abort after attributed cross-filesystem Git status cost; no Cargo spawned",
+  "pid": 35373,
+  "parent": 35370,
+  "start_ticks": "3561499",
+  "cmdline": [
+    "/usr/bin/git",
+    "--git-dir=/mnt/c/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074",
+    "--work-tree=/mnt/c/Workspace/prj/jq/cashe/hydracache-074",
+    "status",
+    "--porcelain",
+    "--untracked-files=no"
+  ],
+  "signal": "SIGTERM",
+  "product_checks_changed": false
+}

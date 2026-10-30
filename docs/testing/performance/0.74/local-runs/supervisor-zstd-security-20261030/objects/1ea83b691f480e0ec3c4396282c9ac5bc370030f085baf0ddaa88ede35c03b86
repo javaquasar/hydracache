@@ -1,0 +1,7 @@
+{
+  "case": "archive_replay_verification_rejects_digest_and_extra_file_drift",
+  "complete": true,
+  "filtered": 3,
+  "passed": 1,
+  "release_admitted": false
+}

@@ -1,0 +1,8 @@
+test_body_and_length_tampering_refuse (test_verify.StoredRefusals.test_body_and_length_tampering_refuse) ... ok
+test_claim_promotions_refuse_even_with_rehashed_analysis (test_verify.StoredRefusals.test_claim_promotions_refuse_even_with_rehashed_analysis) ... ok
+test_complete_packet (test_verify.StoredRefusals.test_complete_packet) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.415s
+
+OK

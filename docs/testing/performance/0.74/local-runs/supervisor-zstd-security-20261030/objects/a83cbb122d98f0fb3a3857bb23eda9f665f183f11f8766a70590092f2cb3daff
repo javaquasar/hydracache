@@ -1,0 +1,7 @@
+{
+  "case": "create_new_limits_and_output_placement_fail_closed",
+  "complete": true,
+  "filtered": 3,
+  "passed": 1,
+  "release_admitted": false
+}
