@@ -83,7 +83,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         }
         Some("both") => {
             std::io::stdout().write_all(b"12345678")?;
+            std::io::stdout().flush()?;
             std::io::stderr().write_all(b"abcdefgh")?;
+            std::io::stderr().flush()?;
         }
         Some("stdout" | "stderr") => {
             let mut out: Box<dyn Write> = if args[0] == "stdout" {

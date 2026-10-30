@@ -10,7 +10,11 @@ fn worker(mode: &str) -> Command {
 }
 fn limits() -> BuildBounds {
     BuildBounds {
-        phase_timeout: Duration::from_secs(3),
+        phase_timeout: Duration::from_secs(if cfg!(feature = "imap-075-coverage") {
+            10
+        } else {
+            3
+        }),
         cleanup_reserve: Duration::from_millis(20),
         stdout_bytes: 8192,
         stderr_bytes: 8192,
@@ -19,7 +23,12 @@ fn limits() -> BuildBounds {
     }
 }
 fn controller(root: &std::path::Path, bounds: BuildBounds, token: Cancellation) -> BuildController {
-    BuildController::with_budget(root, Duration::from_secs(5), bounds, token).unwrap()
+    let seconds = if cfg!(feature = "imap-075-coverage") {
+        15
+    } else {
+        5
+    };
+    BuildController::with_budget(root, Duration::from_secs(seconds), bounds, token).unwrap()
 }
 #[test]
 fn builds_retain_bounded_logs_phase_events_and_verified_cleanup() {
@@ -228,7 +237,7 @@ fn journal_failure_terminates_running_builder_and_event_budget_is_finite() {
     b.maximum_events = 2;
     // This case budgets only start/final events. Instrumented startup may exceed
     // one second, so periodic progress must fall after the phase's own deadline.
-    b.heartbeat = Duration::from_secs(4);
+    b.heartbeat = b.phase_timeout + Duration::from_secs(1);
     let mut c = controller(root.path(), b, Cancellation::default());
     c.run(BuildStage::ServerTests, worker("echo")).unwrap();
     assert!(c

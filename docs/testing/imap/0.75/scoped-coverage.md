@@ -59,6 +59,12 @@ The later 95fed9bba diagnostic retained 231 closed profile files and
 4,076,955,432 raw bytes before the final analysis. The aggregate allowance includes
 the additional fault cases and closed analyzer; it never permits dropping a
 profile, lowering the changed-line gate or admitting a partial report.
+Healthy build-controller fixtures allow 10 seconds in the instrumented profile
+(three seconds ordinarily) for the final LLVM dump. Their outer test budget is
+15 seconds (five ordinarily). Explicit negative deadlines, byte/event limits,
+cleanup requirements and the public 60-second proof ceiling are unchanged. The
+two-event fixture schedules no periodic heartbeat within its phase; the combined
+stream fixture flushes both streams before its potentially slow profile dump.
 
 Intentionally killed proof/soak workers suppress the automatic exit dump. They
 serialize bounded counter buffers and atomically replace their PID profile before
