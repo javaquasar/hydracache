@@ -154,3 +154,45 @@ fn pinned_provenance_validator_refuses_malformed_schema_and_values() {
         "development provenance schema rejected"
     );
 }
+#[test]
+fn independent_policy_replay_keeps_unknown_and_refuses_raw_or_state_substitution() {
+    for mode in 0..5 {
+        let root = tempfile::tempdir().unwrap();
+        let mut p = policy_from_outcome(
+            root.path(),
+            root.path(),
+            Ok(policy_report(root.path(), b"")),
+        )
+        .unwrap();
+        assert_eq!(p.state, PolicyState::Unknown);
+        assert_eq!(p.rust_state, PolicyState::Unknown);
+        verify_policy(root.path(), &p).unwrap();
+        let path = root.path().join(&p.report.path);
+        match mode {
+            0 => {
+                fs::write(&path, b"{").unwrap();
+                p.report = artifact(root.path(), &path, MAX).unwrap();
+            }
+            1 => {
+                fs::remove_file(&path).unwrap();
+            }
+            2 | 4 => {
+                let mut raw: Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+                if mode == 2 {
+                    raw["rust_state"] = json!("passed");
+                } else {
+                    raw["stdout"] = json!("tampered");
+                }
+                fs::write(&path, serde_json::to_vec(&raw).unwrap()).unwrap();
+                p.report = artifact(root.path(), &path, MAX).unwrap();
+            }
+            _ => p.state = PolicyState::Passed,
+        }
+        assert!(verify_policy(root.path(), &p).is_err());
+        assert!(!root.path().join("provenance.json").exists());
+    }
+    let root = tempfile::tempdir().unwrap();
+    let file = root.path().join("not-directory");
+    fs::write(&file, b"unit").unwrap();
+    assert!(capture_policy(&file, root.path()).is_err());
+}

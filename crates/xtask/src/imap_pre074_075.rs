@@ -199,6 +199,12 @@ fn rust_consumer(
     builds: &mut crate::imap_build_process_075::BuildController,
     capture: &mut crate::imap_sbom_capture_075::Capture,
 ) -> Result<(), Box<dyn Error>> {
+    rust_consumer_using(root, &mut ActualPreparation { builds, capture })
+}
+fn rust_consumer_using(
+    root: &Path,
+    host: &mut impl PreparationCommands,
+) -> Result<(), Box<dyn Error>> {
     let scratch = root.join("target/imap-075");
     fs::create_dir_all(&scratch)?;
     let temp = tempfile::tempdir_in(&scratch)?;
@@ -225,9 +231,8 @@ fn rust_consumer(
         if action == "build" {
             invocation.arg("--locked");
         }
-        capture.cargo(
+        host.cargo(
             root,
-            builds,
             &format!("consumer-{action}"),
             if action == "test" {
                 crate::imap_build_process_075::BuildStage::RustConsumerTests
@@ -241,9 +246,8 @@ fn rust_consumer(
             &fs::read_to_string(temp.path().join("Cargo.lock"))?,
         )?;
     }
-    capture.metadata(
+    host.metadata(
         root,
-        builds,
         Some(&temp.path().join("Cargo.toml")),
         "consumer-metadata",
     )?;
@@ -352,40 +356,12 @@ pub fn prepare_tools(
             "--locked",
         ],
     )?;
-    command(
-        &mut builds,
-        &mut capture,
+    reference_tool_builds(
         root,
-        BuildStage::HelperContractTests,
-        "cargo",
-        &[
-            "test",
-            "-p",
-            "hydracache-cluster-testkit",
-            "--test",
-            "imap_backend_contract_075",
-            "--test",
-            "imap_backend_helper_contract_075",
-            "--test",
-            "value_plane_service_async_075",
-            "--locked",
-        ],
-    )?;
-    rust_consumer(root, &mut builds, &mut capture)?;
-    command(
-        &mut builds,
-        &mut capture,
-        root,
-        BuildStage::SoakWorkerBuild,
-        "cargo",
-        &[
-            "build",
-            "-p",
-            "xtask",
-            "--bin",
-            "imap-soak-worker-075",
-            "--locked",
-        ],
+        &mut ActualPreparation {
+            builds: &mut builds,
+            capture: &mut capture,
+        },
     )?;
     let maven = if cfg!(windows) { "mvn.cmd" } else { "mvn" };
     command(
@@ -782,12 +758,7 @@ pub fn produce(root: &Path, output: &Path) -> Result<PathBuf, Box<dyn Error>> {
         native_histories: retain(root, &directory, "native-histories.json", &native_histories)?,
         native_recovery: retain(root, &directory, "native-recovery.json", &native_recovery)?,
         soak_reports,
-        development_inventory: retain(
-            root,
-            &directory,
-            "development-provenance.json",
-            &read_relative(root, crate::imap_sbom_075::LATEST, MAX_ARTIFACT_BYTES)?,
-        )?,
+        development_inventory: retain_development_inventory(root, &directory)?,
         rust: retain(root, &directory, "rust.json", &observed_rust)?,
         workspace_metadata: retain(
             root,
@@ -1106,3 +1077,113 @@ fn validate_recovery_replay(
 #[cfg(test)]
 #[path = "../tests/support/imap_preparation_replay_075.rs"]
 mod replay_tests;
+
+trait PreparationCommands {
+    fn command(
+        &mut self,
+        root: &Path,
+        stage: crate::imap_build_process_075::BuildStage,
+        program: &str,
+        args: &[&str],
+    ) -> Result<(), Box<dyn Error>>;
+    fn cargo(
+        &mut self,
+        root: &Path,
+        name: &str,
+        stage: crate::imap_build_process_075::BuildStage,
+        invocation: Command,
+    ) -> Result<(), Box<dyn Error>>;
+    fn metadata(
+        &mut self,
+        root: &Path,
+        manifest: Option<&Path>,
+        name: &str,
+    ) -> Result<(), Box<dyn Error>>;
+    fn consumer(&mut self, root: &Path) -> Result<(), Box<dyn Error>>;
+}
+struct ActualPreparation<'a> {
+    builds: &'a mut crate::imap_build_process_075::BuildController,
+    capture: &'a mut crate::imap_sbom_capture_075::Capture,
+}
+impl PreparationCommands for ActualPreparation<'_> {
+    fn command(
+        &mut self,
+        root: &Path,
+        stage: crate::imap_build_process_075::BuildStage,
+        program: &str,
+        args: &[&str],
+    ) -> Result<(), Box<dyn Error>> {
+        command(self.builds, self.capture, root, stage, program, args)
+    }
+    fn cargo(
+        &mut self,
+        root: &Path,
+        name: &str,
+        stage: crate::imap_build_process_075::BuildStage,
+        invocation: Command,
+    ) -> Result<(), Box<dyn Error>> {
+        self.capture
+            .cargo(root, self.builds, name, stage, invocation)
+    }
+    fn metadata(
+        &mut self,
+        root: &Path,
+        manifest: Option<&Path>,
+        name: &str,
+    ) -> Result<(), Box<dyn Error>> {
+        self.capture.metadata(root, self.builds, manifest, name)
+    }
+    fn consumer(&mut self, root: &Path) -> Result<(), Box<dyn Error>> {
+        rust_consumer(root, self.builds, self.capture)
+    }
+}
+fn reference_tool_builds(
+    root: &Path,
+    host: &mut impl PreparationCommands,
+) -> Result<(), Box<dyn Error>> {
+    use crate::imap_build_process_075::BuildStage;
+    host.command(
+        root,
+        BuildStage::HelperContractTests,
+        "cargo",
+        &[
+            "test",
+            "-p",
+            "hydracache-cluster-testkit",
+            "--test",
+            "imap_backend_contract_075",
+            "--test",
+            "imap_backend_helper_contract_075",
+            "--test",
+            "value_plane_service_async_075",
+            "--locked",
+        ],
+    )?;
+    host.consumer(root)?;
+    host.command(
+        root,
+        BuildStage::SoakWorkerBuild,
+        "cargo",
+        &[
+            "build",
+            "-p",
+            "xtask",
+            "--bin",
+            "imap-soak-worker-075",
+            "--locked",
+        ],
+    )?;
+
+    Ok(())
+}
+fn retain_development_inventory(root: &Path, directory: &Path) -> Result<Artifact, Box<dyn Error>> {
+    retain(
+        root,
+        directory,
+        "development-provenance.json",
+        &read_relative(root, crate::imap_sbom_075::LATEST, MAX_ARTIFACT_BYTES)?,
+    )
+}
+#[cfg(test)]
+#[path = "../tests/support/imap_preparation_errors_075.rs"]
+mod preparation_error_tests;

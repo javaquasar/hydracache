@@ -827,10 +827,21 @@ impl WorkerControl<'_> {
 pub fn execute_worker(
     root: &Path,
     profile: SoakProfile,
+    command: Command,
+    control: &Path,
+    cancel: Cancellation,
+    parent: Option<String>,
+) -> Result<SoakReport, Box<dyn Error>> {
+    execute_worker_using(root, profile, command, control, cancel, parent, write_new)
+}
+fn execute_worker_using(
+    root: &Path,
+    profile: SoakProfile,
     mut command: Command,
     control: &Path,
     cancel: Cancellation,
     parent: Option<String>,
+    mut write: impl FnMut(&Path, &[u8]) -> Result<(), Box<dyn Error>>,
 ) -> Result<SoakReport, Box<dyn Error>> {
     profile.validate()?;
     profile.check_artifacts(root)?;
@@ -860,7 +871,7 @@ pub fn execute_worker(
         containment: String::new(),
         detail: String::new(),
     };
-    write_new(
+    write(
         &control.join("checkpoint.json"),
         &serde_json::to_vec(&report)?,
     )?;
@@ -946,7 +957,7 @@ pub fn execute_worker(
         cleanup_complete,
         "; incomplete process cleanup",
     );
-    write_new(
+    write(
         &control.join("report.json"),
         &serde_json::to_vec_pretty(&report)?,
     )?;
@@ -1571,6 +1582,17 @@ pub fn execute_daemon(
     cancel: Cancellation,
     parent: Option<String>,
 ) -> Result<SoakReport, Box<dyn Error>> {
+    execute_daemon_using(root, profile, binary, control, cancel, parent, write_new)
+}
+fn execute_daemon_using(
+    root: &Path,
+    profile: SoakProfile,
+    binary: &Path,
+    control: &Path,
+    cancel: Cancellation,
+    parent: Option<String>,
+    mut write: impl FnMut(&Path, &[u8]) -> Result<(), Box<dyn Error>>,
+) -> Result<SoakReport, Box<dyn Error>> {
     profile.validate()?;
     if profile.cohort != Cohort::Daemon {
         return Err("daemon soak cohort required".into());
@@ -1605,7 +1627,7 @@ pub fn execute_daemon(
         containment: String::new(),
         detail: String::new(),
     };
-    write_new(
+    write(
         &control.join("checkpoint.json"),
         &serde_json::to_vec(&report)?,
     )?;
@@ -1793,7 +1815,7 @@ pub fn execute_daemon(
         cleanup_complete,
         "; daemon cleanup/listeners incomplete",
     );
-    write_new(
+    write(
         &control.join("report.json"),
         &serde_json::to_vec_pretty(&report)?,
     )?;
@@ -1864,3 +1886,7 @@ fn require_soak_source(expected: &str, current: &str) -> Result<(), Box<dyn Erro
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "../tests/support/imap_soak_publication_075.rs"]
+mod publication_tests;

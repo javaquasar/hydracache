@@ -1362,14 +1362,9 @@ pub fn generate(root: &Path, capture: &Capture) -> Result<PathBuf> {
     let inventory = reduce(root, capture, &source)?;
     let bom = cyclone_dx(&inventory)?;
     let directory = root.join(&capture.directory);
-    fs::write(
-        directory.join("inventory.json"),
-        serde_json::to_vec_pretty(&inventory)?,
-    )?;
-    fs::write(
-        directory.join("bom.cdx.json"),
-        serde_json::to_vec_pretty(&bom)?,
-    )?;
+    write_inventory_documents(&directory, &inventory, &bom, |path, bytes| {
+        fs::write(path, bytes)
+    })?;
     let provenance = Provenance {
         schema: "imap075-development-provenance-v1".into(),
         source_sha: source,
@@ -1433,44 +1428,7 @@ pub fn verify(root: &Path, path: &Path) -> Result<Provenance> {
     if bom != cyclone_dx(&expected)? {
         return Err("CycloneDX does not represent current resolved inventory".into());
     }
-    let raw: Value = serde_json::from_slice(&check_artifact(
-        root,
-        &provenance.dependency_policy.report,
-        MAX,
-    )?)?;
-    let p = &provenance.dependency_policy;
-    let report: crate::imap_build_process_075::BuildReport =
-        serde_json::from_value(raw["build_report"].clone())?;
-    let stderr = raw["stderr"]
-        .as_str()
-        .filter(|s| s.len() <= 256 * 1024)
-        .ok_or("bounded policy stderr missing")?;
-    let stdout = raw["stdout"]
-        .as_str()
-        .filter(|s| s.len() <= 64 * 1024)
-        .ok_or("bounded policy stdout missing")?;
-    if digest(stderr.as_bytes()) != report.stderr_sha256
-        || digest(stdout.as_bytes()) != report.stdout_sha256
-    {
-        return Err("policy raw report hash differs".into());
-    }
-    let rust = policy_state(
-        report.outcome == crate::imap_build_process_075::BuildOutcome::Completed,
-        report.logs_complete && report.root_reaped,
-        stderr.as_bytes(),
-    );
-    if serde_json::to_value(&rust)? != raw["rust_state"]
-        || rust != p.rust_state
-        || p.java_state != PolicyState::Unknown
-        || p.state
-            != if rust == PolicyState::Failed {
-                PolicyState::Failed
-            } else {
-                PolicyState::Unknown
-            }
-    {
-        return Err("policy promoted unknown/failure".into());
-    }
+    verify_policy(root, &provenance.dependency_policy)?;
     Ok(provenance)
 }
 pub fn run(args: Vec<String>, check: bool) -> Result<()> {
@@ -1478,12 +1436,27 @@ pub fn run(args: Vec<String>, check: bool) -> Result<()> {
         .parent()
         .and_then(Path::parent)
         .ok_or("workspace root")?;
+    run_using(
+        root,
+        args,
+        check,
+        crate::imap_pre074_075::prepare_tools,
+        verify,
+    )
+}
+fn run_using(
+    root: &Path,
+    args: Vec<String>,
+    check: bool,
+    prepare: impl FnOnce(&Path) -> Result<Vec<crate::imap_package_reproduction_075::JavaPackageProof>>,
+    check_receipt: impl FnOnce(&Path, &Path) -> Result<Provenance>,
+) -> Result<()> {
     if check {
         if args.len() != 4 || args[0] != "--release" || args[1] != "0.75" || args[2] != "--receipt"
         {
             return Err("expected --release 0.75 --receipt <provenance>".into());
         }
-        let p = verify(root, Path::new(&args[3]))?;
+        let p = check_receipt(root, Path::new(&args[3]))?;
         println!(
             "imap-sbom-check: inventory valid; dependency policy {:?}; unsigned",
             p.dependency_policy.state
@@ -1492,7 +1465,7 @@ pub fn run(args: Vec<String>, check: bool) -> Result<()> {
         if args != ["--release", "0.75"] {
             return Err("expected --release 0.75".into());
         }
-        crate::imap_pre074_075::prepare_tools(root)?;
+        prepare(root)?;
     }
     Ok(())
 }
@@ -1612,3 +1585,58 @@ fn verify_pom_scratch(scratch: &Path, root: &Path) -> Result<()> {
 #[cfg(test)]
 #[path = "../tests/support/imap_inventory_errors_075.rs"]
 mod error_boundary_tests;
+
+fn verify_policy(root: &Path, policy: &Policy) -> Result<()> {
+    let raw: Value = serde_json::from_slice(&check_artifact(root, &policy.report, MAX)?)?;
+    let p = policy;
+    let report: crate::imap_build_process_075::BuildReport =
+        serde_json::from_value(raw["build_report"].clone())?;
+    let stderr = raw["stderr"]
+        .as_str()
+        .filter(|s| s.len() <= 256 * 1024)
+        .ok_or("bounded policy stderr missing")?;
+    let stdout = raw["stdout"]
+        .as_str()
+        .filter(|s| s.len() <= 64 * 1024)
+        .ok_or("bounded policy stdout missing")?;
+    if digest(stderr.as_bytes()) != report.stderr_sha256
+        || digest(stdout.as_bytes()) != report.stdout_sha256
+    {
+        return Err("policy raw report hash differs".into());
+    }
+    let rust = policy_state(
+        report.outcome == crate::imap_build_process_075::BuildOutcome::Completed,
+        report.logs_complete && report.root_reaped,
+        stderr.as_bytes(),
+    );
+    if serde_json::to_value(&rust)? != raw["rust_state"]
+        || rust != p.rust_state
+        || p.java_state != PolicyState::Unknown
+        || p.state
+            != if rust == PolicyState::Failed {
+                PolicyState::Failed
+            } else {
+                PolicyState::Unknown
+            }
+    {
+        return Err("policy promoted unknown/failure".into());
+    }
+    Ok(())
+}
+
+fn write_inventory_documents(
+    directory: &Path,
+    inventory: &Inventory,
+    bom: &Value,
+    mut write: impl FnMut(&Path, &[u8]) -> std::io::Result<()>,
+) -> Result<()> {
+    write(
+        &directory.join("inventory.json"),
+        &serde_json::to_vec_pretty(inventory)?,
+    )?;
+    write(
+        &directory.join("bom.cdx.json"),
+        &serde_json::to_vec_pretty(bom)?,
+    )?;
+    Ok(())
+}

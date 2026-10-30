@@ -293,3 +293,15 @@ observation, list-write refusal and real bounded missing/failed metadata
 commands. The public CycloneDX validator still uses the compiled pinned schema;
 no receipt selects an execution adapter. Remaining measured obligations require
 further tests and another full capture before P8 admission.
+
+The preparation/publication block passed 213 default/221 instrumented library,
+six preparation, 15 SBOM and 11 real soak tests per mode, all-target checks,
+strict all-feature Clippy, formatting and doc-check. Private preparation
+commands propagate consumer build/metadata and helper/worker refusals before
+receipt publication. Retained-inventory tests preserve existing bytes on
+conflict. Worker report-write refusal follows a real finite owned canary and
+verifies reap; daemon spawn/checkpoint failures remain Failed and publish no
+completion report. Independent policy replay rejects malformed/substituted raw
+reports and promotion of unknown state. CLI generation and inventory/BOM write
+failures publish no model provenance or documents. Fixed real production
+functions and the coverage admission rule remain unchanged.
