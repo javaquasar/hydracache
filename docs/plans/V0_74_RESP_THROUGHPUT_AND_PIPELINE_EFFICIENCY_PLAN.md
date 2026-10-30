@@ -1338,3 +1338,16 @@ Preserve the actual fixture/projection/transaction implementation and every firs
 refusal in packet e554bd8e. STOP blocks further measurement; full resource/CPU/RSS,
 distribution/Root and release/server gates remain unqualified. No new hypothesis,
 rescue, threshold change, service/clock change or server workload is opened here.
+
+
+The [separately authorized G original-frame successor](../testing/performance/0.74/chitchat-frame-result-20261030.md)
+now closes negatively. F's returned capacity is repaired, but the first complete
+B/P/G/G/P/B239/9/30 resource cohort records9 versus B6 logical/physical Rust
+allocations in accepted-multiblock, four identical observations. All other twelve-
+field comparisons and capacities pass. Windows/MSRV172 and GNU206 selected
+positives and check/strict Clippy do not override the resource refusal. Preserve
+G source and2421-member packet41a5a9ef; seal further execution, no CPU/RSS/rescue
+or next hypothesis. Original checks/frequency/windows/thresholds, Root identities,
+F/Q negative decisions and U/C2 separate scope remain unchanged. Maintained
+security distribution, explicit MTU scope, exact Root/package/workspace and
+production execution/lifecycle/reconnect/trust/compatible-host gates stay open.

@@ -822,3 +822,18 @@ and sealed tools remain in packet e554bd8e. No full239/9/30 allocation cohort,
 CPU/RSS, Root distribution/security adoption or server admission follows. Existing
 Root/package/workspace/lifecycle/host gates remain open. No successor or rescue is
 authorized by this completed experiment; do not lower thresholds or reuse Q numbers.
+
+
+The [separate G original-frame experiment](chitchat-frame-result-20261030.md) is
+now terminal and negative. First finish capacity agrees at256, then all18 native
+processes complete the original239/9/30 corpus in frozen B/P/G/G/P/B order. Only
+the original accepted-multiblock Rust allocation-count fields refuse: B6/G9,
+confirmed by logical/physical observers and four observations. Lower requested/
+peak bytes and C counts cannot buy that increase. All other comparisons pass.
+Preserve all code and first preparation/observer/parser/access refusals in packet
+41a5a9ef; F/Q remain negative. No CPU/RSS cohort, successor, server or product
+workload follows. Local Windows/MSRV172 and GNU206 selected positives/check/lint
+are scoped compatibility evidence. Explicit MTU scope and maintained security
+package/consumer/Root adoption remain, followed by fresh full security/package/
+workspace and the still-open production lifecycle/reconnect/trust/host gates.
+All original checks/order/frequency/deadlines and thresholds remain unchanged.

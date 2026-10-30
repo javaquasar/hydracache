@@ -1,14 +1,20 @@
 # HydraCache 0.74 RESP/native performance evidence
 
-The [one approved borrowed-input MTU candidate F](chitchat-fused-result-20261030.md)
-is now declined at its first retained-finish checkpoint: identical155 wire bytes,
-but B256/F268 returned Vec capacity in both predeclared observations. Final Windows
-Rust1.94/MSRV1.88 check/strict Clippy,164 selected positives and full37/239/seven
-semantic bodies pass. These positives cannot buy12 extra retained bytes. The
-implementation, first refusals and complete evidence remain in886 members/334
-objects, index e554bd8e. STOP prevents further execution; no full resource/CPU/RSS
-cohort, Root adoption, publication, server, services or clocks follow. No successor
-hypothesis is opened. C2 remains a separate positive prerequisite, not an MTU fix.
+The [separately approved original-frame commit candidate G](chitchat-frame-result-20261030.md)
+is now declined by the first complete native239/9/30 resource matrix. It fixes
+F's finish-capacity regression, but accepted-multiblock records9 versus B6 logical
+and physical Rust allocations in all four observations. Other counters/capacities
+pass and cannot compensate. Windows/MSRV172 and GNU206 selected positives,
+check/strict Clippy and full diagnostic bodies pass. The2421-member/801-object
+packet41a5a9ef retains every source, first refusal and complete observation. G and
+F stay sealed/unadopted; CPU/RSS, Root/security distribution, full package/workspace
+and production lifecycle/host gates remain open. No successor, server, services,
+clocks or product workload follows this negative decision.
+
+The [earlier borrowed-input candidate F](chitchat-fused-result-20261030.md) remains
+negative and immutable: same155 wire bytes but B256/F268 returned Vec capacity,
+twice per image. Its886-member packet e554bd8e and actual code remain. G was a
+separate later authorization; none of its results replaces or rescues F.
 
 The [separate C2 call-lifetime successor](chitchat-call-context-result-20261030.md)
 now passes its local prerequisite:20→6 C allocations in the frozen diagnostic,
