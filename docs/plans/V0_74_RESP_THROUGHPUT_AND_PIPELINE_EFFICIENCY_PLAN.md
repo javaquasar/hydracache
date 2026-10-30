@@ -1365,3 +1365,16 @@ change or deadline extension is admitted. Preserve original Root identities,
 G/F/Q negatives and every first preparation refusal. Shipping identity/public
 nominal-type compatibility/MTU scope and full Root/package/workspace plus
 production lifecycle/reconnect/trust/compatible-host gates remain open.
+
+
+The [separately operator-approved full-package continuation](../testing/performance/0.74/chitchat-security-package-complete-result-20261030.md)
+now passes100 original library cases per GNU1.94/MSRV1.88, actual local registry
+and corrupt-checksum refusal, plus six external callers per compiler. Normal
+registry dependencies compile fresh and full check/strict Clippy pass. The
+unchanged26-member package is0296600c; child packet28fad46b keeps negative parent
+6200fd3f immutable. Full library uses the approved existing780-second envelope;
+short5-second/outer1200/native1100/floor/poll/retirement and all Root identities
+remain. This closes local preparation, not public publication/Root/MTU/resource/
+CPU/RSS/Windows or server admission. Next decide maintained shipping/public-type/
+MTU scope, obtain real registry receipt and exact Root security/package/workspace
+passes, then the still-open execution/lifecycle/reconnect/trust/compatible-host gates.

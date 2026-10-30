@@ -144,3 +144,5 @@ files/consumer format, byte verification, source-only restoration, doc-check and
 local non-promotable performance contract all pass. This packet retains the first
 offline-control addressing error separately. The operator later explicitly
 approved the proposed separate780-second full lane; it cannot alter R5 verdicts.
+
+Later continuation: the [separate approved complete-library/registry/caller lane](chitchat-security-package-complete-result-20261030.md) passes200 library and12 external cases. R5 and every short-case result above remain immutable.

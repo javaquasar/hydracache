@@ -1,5 +1,14 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [separately approved complete U-package lane](chitchat-security-package-complete-result-20261030.md)
+now passes both full100-case GNU/MSRV catalogs, exact local registry/checksum
+negative and12 external caller executions with fresh normal registry builds,
+check/strict Clippy. Packet28fad46b preserves the separate negative R5 parent
+6200fd3f; its short5-second timeout is never rewritten. This closes local
+library/registry/consumer preparation only. Public shipping/nominal-type/MTU
+scope, actual public registry, fresh Root/package/workspace/Windows and original
+production lifecycle/reconnect/trust/compatible-host admission remain open.
+
 The [security-only maintained-package preparation](chitchat-security-package-result-20261030.md)
 now produces a real Cargo-verified26-member archive from U. GNU1.94/MSRV1.88
 fresh builds, all-target/all-feature checks and strict Clippy pass; full policy
