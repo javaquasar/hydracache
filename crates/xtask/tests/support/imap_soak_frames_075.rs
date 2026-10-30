@@ -401,3 +401,76 @@ fn wrong_daemon_cohort_and_marker_io_failures_refuse_before_any_worker_or_contro
     ))
     .is_err());
 }
+#[test]
+fn resume_identity_checks_distinguish_alive_reused_absent_and_unreadable_processes() {
+    let id = WorkerIdentity {
+        pid: 17,
+        platform_birth: "unit-birth".into(),
+        incarnation: "unit".into(),
+    };
+    assert!(identity_is_live_using(
+        &id,
+        |pid| {
+            assert_eq!(pid, 17);
+            Ok("unit-birth".into())
+        },
+        false
+    )
+    .unwrap());
+    assert!(!identity_is_live_using(&id, |_| Ok("reused-birth".into()), false).unwrap());
+    assert!(!identity_is_live_using(
+        &id,
+        |_| Err(std::io::Error::from(std::io::ErrorKind::NotFound).into()),
+        false
+    )
+    .unwrap());
+    for code in [87, 1168] {
+        assert!(!identity_is_live_using(
+            &id,
+            |_| Err(std::io::Error::from_raw_os_error(code).into()),
+            true
+        )
+        .unwrap());
+    }
+    for kind in [
+        std::io::ErrorKind::PermissionDenied,
+        std::io::ErrorKind::WouldBlock,
+    ] {
+        let error = identity_is_live_using(&id, |_| Err(std::io::Error::from(kind).into()), false)
+            .unwrap_err();
+        assert_eq!(error.downcast_ref::<std::io::Error>().unwrap().kind(), kind);
+    }
+    assert!(identity_is_live_using(
+        &id,
+        |_| Err("unclassified process observation".into()),
+        false
+    )
+    .unwrap_err()
+    .to_string()
+    .contains("unclassified"));
+}
+#[test]
+fn soak_terminal_source_and_output_guards_never_promote_incomplete_segments() {
+    require_completed_segment(&Terminal::Complete, "", "unit admission guard only").unwrap();
+    for terminal in [Terminal::Cancelled, Terminal::TimedOut, Terminal::Failed] {
+        let error =
+            require_completed_segment(&terminal, "unit failure", "preparation soak incomplete")
+                .unwrap_err()
+                .to_string();
+        assert!(error.contains("preparation soak incomplete"));
+        assert!(error.contains("unit failure"));
+    }
+    for output in ["target/imap-075/unit", r"target\imap-075\unit"] {
+        require_soak_output(output).unwrap();
+    }
+    for output in [
+        "target/imap-075",
+        "foreign/unit",
+        "/target/imap-075/unit",
+        "target/imap-075-foreign/unit",
+    ] {
+        assert!(require_soak_output(output).is_err());
+    }
+    require_soak_source("unit-before", "unit-before").unwrap();
+    assert!(require_soak_source("unit-before", "unit-after").is_err());
+}

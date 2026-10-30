@@ -615,3 +615,17 @@ fn independently_reconstructed_lcov_and_java_mapping_refuse_foreign_sources() {
     assert!(reconstruct(&f, &mut driver).is_err());
     assert_eq!(driver.calls, 5);
 }
+#[test]
+fn coverage_controller_budget_and_missing_analysis_marker_refuse_before_subprocesses() {
+    use std::time::Duration;
+    let f = fixture();
+    for remaining in [Duration::ZERO, Duration::from_secs(7201)] {
+        assert!(ManagedDriver::with_remaining(f.root.path(), remaining).is_err());
+    }
+    let file = f.root.path().join("plain-root-file");
+    fs::write(&file, b"not a directory").unwrap();
+    assert!(ManagedDriver::with_remaining(&file, Duration::from_secs(30)).is_err());
+    assert!(analysis_phase(f.root.path(), &f.directory, &f.control, false).is_err());
+    assert!(!f.directory.join("analysis.json").exists());
+    assert!(!f.directory.join("report.json").exists());
+}

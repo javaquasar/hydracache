@@ -247,3 +247,14 @@ General CI `41124551240` failed separately: Docs refused a required update to
 reported RUSTSEC-2026-0391/0398/0403. Instruction tripwire exited 3 and migration
 fast-evidence admission refused its failed upstream lane. No globally green
 or unchanged-failure-set claim is made, and frozen gates remain unchanged.
+
+The final pre-capture guard block passed 200 default/206 instrumented library,
+39/40 coverage and 11 real soak tests per mode, with all-target check, strict
+all-feature Clippy, formatting and doc-check. Resume tests distinguish matching
+birth, reused PID, observed absence, Windows invalid-PID codes and unreadable
+processes without signalling fixture PIDs. Completion/source/output guards
+preserve the existing refusal messages and publish no synthetic reports.
+Controller tests refuse invalid budgets, non-directory roots, missing analysis
+markers and foreign compiler archive directories before subprocess execution.
+A fresh clean-source complete capture and the exact full matrix remain required
+before P8 can be marked qualified.

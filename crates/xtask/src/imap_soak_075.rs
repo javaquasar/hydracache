@@ -1019,12 +1019,19 @@ pub fn resume_parent(report: &SoakReport, profile: &SoakProfile) -> Result<Strin
     Ok(report.segment.clone())
 }
 fn identity_is_live(identity: &WorkerIdentity) -> Result<bool, Box<dyn Error>> {
-    match process_identity(identity.pid) {
+    identity_is_live_using(identity, process_identity, cfg!(windows))
+}
+fn identity_is_live_using(
+    identity: &WorkerIdentity,
+    read: impl FnOnce(u32) -> Result<String, Box<dyn Error>>,
+    windows: bool,
+) -> Result<bool, Box<dyn Error>> {
+    match read(identity.pid) {
         Ok(birth) => Ok(birth == identity.platform_birth),
         Err(error) => {
             if error.downcast_ref::<std::io::Error>().is_some_and(|e| {
                 e.kind() == std::io::ErrorKind::NotFound
-                    || cfg!(windows) && matches!(e.raw_os_error(), Some(87 | 1168))
+                    || windows && matches!(e.raw_os_error(), Some(87 | 1168))
             }) {
                 Ok(false)
             } else {
@@ -1312,13 +1319,11 @@ pub fn preparation_smoke(
         let control = directory.join(format!("soak-{cohort:?}").to_lowercase());
         let report = run_prepared(root, profile, &control, Cancellation::default(), None)?;
         validate_report(&report)?;
-        if report.terminal != Terminal::Complete {
-            return Err(format!(
-                "preparation soak incomplete: {:?}: {}",
-                report.terminal, report.detail
-            )
-            .into());
-        }
+        require_completed_segment(
+            &report.terminal,
+            &report.detail,
+            "preparation soak incomplete",
+        )?;
         check_saved(root, &control.join("report.json"))?;
         reports.push(crate::imap_extended_receipt_075::artifact(
             root,
@@ -1510,9 +1515,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let source = crate::imap_ci_075::source_state(&root)?;
     let output = fields.remove("--output").ok_or("--output required")?;
     let directory = root.join(output);
-    if !output.replace('\\', "/").starts_with("target/imap-075/") {
-        return Err("soak output must be under target/imap-075".into());
-    }
+    require_soak_output(output)?;
     prepare_control(&root, &directory)?;
     let parent = fields
         .remove("--resume")
@@ -1543,13 +1546,11 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             parent_segment,
         )?;
         validate_report(&report)?;
-        if report.terminal != Terminal::Complete {
-            return Err(format!(
-                "soak {:?}: {:?}: {}",
-                cohort, report.terminal, report.detail
-            )
-            .into());
-        }
+        require_completed_segment(
+            &report.terminal,
+            &report.detail,
+            &format!("soak {cohort:?}"),
+        )?;
         check_saved(
             &root,
             &directory
@@ -1557,9 +1558,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
                 .join("report.json"),
         )?;
     }
-    if crate::imap_ci_075::source_state(&root)? != source {
-        return Err("source changed during soak".into());
-    }
+    require_soak_source(&source, &crate::imap_ci_075::source_state(&root)?)?;
     println!("imap-soak: complete local segment(s); no production admission");
     Ok(())
 }
@@ -1839,6 +1838,29 @@ fn daemon_deadlines(
     }
     if drain().is_some_and(|at| at > Duration::from_millis(bounds.drain_ms)) && !exited {
         return Err("daemon soak drain deadline".into());
+    }
+    Ok(())
+}
+
+fn require_completed_segment(
+    terminal: &Terminal,
+    detail: &str,
+    context: &str,
+) -> Result<(), Box<dyn Error>> {
+    if *terminal != Terminal::Complete {
+        return Err(format!("{context}: {terminal:?}: {detail}").into());
+    }
+    Ok(())
+}
+fn require_soak_output(output: &str) -> Result<(), Box<dyn Error>> {
+    if !output.replace('\\', "/").starts_with("target/imap-075/") {
+        return Err("soak output must be under target/imap-075".into());
+    }
+    Ok(())
+}
+fn require_soak_source(expected: &str, current: &str) -> Result<(), Box<dyn Error>> {
+    if current != expected {
+        return Err("source changed during soak".into());
     }
     Ok(())
 }

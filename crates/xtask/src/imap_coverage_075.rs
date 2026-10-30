@@ -1212,8 +1212,11 @@ pub trait CoverageDriver {
 struct ManagedDriver(crate::imap_build_process_075::BuildController);
 impl ManagedDriver {
     fn new(root: &Path) -> Result<Self> {
-        use crate::imap_build_process_075::{remaining_budget, BuildBounds, BuildController};
-        let remaining = remaining_budget()?;
+        use crate::imap_build_process_075::remaining_budget;
+        Self::with_remaining(root, remaining_budget()?)
+    }
+    fn with_remaining(root: &Path, remaining: std::time::Duration) -> Result<Self> {
+        use crate::imap_build_process_075::{BuildBounds, BuildController};
         Ok(Self(BuildController::with_budget(
             root,
             remaining,

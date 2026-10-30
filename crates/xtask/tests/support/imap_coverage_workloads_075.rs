@@ -295,3 +295,16 @@ fn workload_producer_requires_exact_path_hash_and_length_before_workloads() {
     }
     unpublished(&f);
 }
+#[test]
+fn compiler_object_archive_refuses_a_foreign_directory_before_accessing_its_contents() {
+    let f = fixture();
+    let foreign = tempfile::tempdir().unwrap();
+    assert!(compiler_objects(
+        f.root.path(),
+        foreign.path(),
+        std::slice::from_ref(&f.control.bootstrap)
+    )
+    .is_err());
+    assert_eq!(fs::read_dir(foreign.path()).unwrap().count(), 0);
+    unpublished(&f);
+}
