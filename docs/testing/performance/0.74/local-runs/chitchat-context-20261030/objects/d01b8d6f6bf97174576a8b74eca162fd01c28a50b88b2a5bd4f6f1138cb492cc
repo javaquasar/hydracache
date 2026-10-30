@@ -1,0 +1,468 @@
+
+44ff4c55aa9e5133-debug.o:
+
+44ff4c55aa9e5133-entropy_common.o:
+                 U ERR_getErrorString
+                 U FSE_decompress_wksp_bmi2
+                 U __stack_chk_fail
+                 U memcpy
+                 U memset
+
+44ff4c55aa9e5133-error_private.o:
+
+44ff4c55aa9e5133-fse_decompress.o:
+                 U FSE_readNCount_bmi2
+                 U __stack_chk_fail
+
+44ff4c55aa9e5133-pool.o:
+
+44ff4c55aa9e5133-threading.o:
+
+44ff4c55aa9e5133-zstd_common.o:
+                 U ERR_getErrorString
+
+fb80479a5fb81f6a-fse_compress.o:
+
+fb80479a5fb81f6a-hist.o:
+                 U __stack_chk_fail
+                 U memmove
+                 U memset
+
+fb80479a5fb81f6a-huf_compress.o:
+                 U FSE_buildCTable_wksp
+                 U FSE_compress_usingCTable
+                 U FSE_normalizeCount
+                 U FSE_optimalTableLog
+                 U FSE_optimalTableLog_internal
+                 U FSE_writeNCount
+                 U HIST_count_simple
+                 U HIST_count_wksp
+                 U HUF_readStats
+                 U __stack_chk_fail
+
+fb80479a5fb81f6a-zstd_compress.o:
+                 U FSE_buildCTable_wksp
+                 U FSE_readNCount
+                 U HIST_countFast_wksp
+                 U HIST_count_wksp
+                 U HUF_buildCTable_wksp
+                 U HUF_estimateCompressedSize
+                 U HUF_optimalTableLog
+                 U HUF_readCTable
+                 U HUF_validateCTable
+                 U HUF_writeCTable_wksp
+                 U ZSTD_buildCTable
+                 U ZSTD_compressBlock_btlazy2
+                 U ZSTD_compressBlock_btlazy2_dictMatchState
+                 U ZSTD_compressBlock_btlazy2_extDict
+                 U ZSTD_compressBlock_btopt
+                 U ZSTD_compressBlock_btopt_dictMatchState
+                 U ZSTD_compressBlock_btopt_extDict
+                 U ZSTD_compressBlock_btultra
+                 U ZSTD_compressBlock_btultra2
+                 U ZSTD_compressBlock_btultra_dictMatchState
+                 U ZSTD_compressBlock_btultra_extDict
+                 U ZSTD_compressBlock_doubleFast
+                 U ZSTD_compressBlock_doubleFast_dictMatchState
+                 U ZSTD_compressBlock_doubleFast_extDict
+                 U ZSTD_compressBlock_fast
+                 U ZSTD_compressBlock_fast_dictMatchState
+                 U ZSTD_compressBlock_fast_extDict
+                 U ZSTD_compressBlock_greedy
+                 U ZSTD_compressBlock_greedy_dedicatedDictSearch
+                 U ZSTD_compressBlock_greedy_dedicatedDictSearch_row
+                 U ZSTD_compressBlock_greedy_dictMatchState
+                 U ZSTD_compressBlock_greedy_dictMatchState_row
+                 U ZSTD_compressBlock_greedy_extDict
+                 U ZSTD_compressBlock_greedy_extDict_row
+                 U ZSTD_compressBlock_greedy_row
+                 U ZSTD_compressBlock_lazy
+                 U ZSTD_compressBlock_lazy2
+                 U ZSTD_compressBlock_lazy2_dedicatedDictSearch
+                 U ZSTD_compressBlock_lazy2_dedicatedDictSearch_row
+                 U ZSTD_compressBlock_lazy2_dictMatchState
+                 U ZSTD_compressBlock_lazy2_dictMatchState_row
+                 U ZSTD_compressBlock_lazy2_extDict
+                 U ZSTD_compressBlock_lazy2_extDict_row
+                 U ZSTD_compressBlock_lazy2_row
+                 U ZSTD_compressBlock_lazy_dedicatedDictSearch
+                 U ZSTD_compressBlock_lazy_dedicatedDictSearch_row
+                 U ZSTD_compressBlock_lazy_dictMatchState
+                 U ZSTD_compressBlock_lazy_dictMatchState_row
+                 U ZSTD_compressBlock_lazy_extDict
+                 U ZSTD_compressBlock_lazy_extDict_row
+                 U ZSTD_compressBlock_lazy_row
+                 U ZSTD_compressLiterals
+                 U ZSTD_compressSuperBlock
+                 U ZSTD_crossEntropyCost
+                 U ZSTD_dedicatedDictSearch_lazy_loadDictionary
+                 U ZSTD_encodeSequences
+                 U ZSTD_fillDoubleHashTable
+                 U ZSTD_fillHashTable
+                 U ZSTD_fseBitCost
+                 U ZSTD_insertAndFindFirstIndex
+                 U ZSTD_ldm_adjustParameters
+                 U ZSTD_ldm_blockCompress
+                 U ZSTD_ldm_fillHashTable
+                 U ZSTD_ldm_generateSequences
+                 U ZSTD_ldm_getMaxNbSeq
+                 U ZSTD_ldm_getTableSize
+                 U ZSTD_ldm_skipRawSeqStoreBytes
+                 U ZSTD_ldm_skipSequences
+                 U ZSTD_row_update
+                 U ZSTD_selectEncodingType
+                 U ZSTD_splitBlock
+                 w ZSTD_trace_compress_begin
+                 w ZSTD_trace_compress_end
+                 U ZSTD_updateTree
+                 U _GLOBAL_OFFSET_TABLE_
+                 U __stack_chk_fail
+                 U calloc
+                 U free
+                 U malloc
+                 U memcpy
+                 U memset
+
+fb80479a5fb81f6a-zstd_compress_literals.o:
+                 U HUF_compress1X_repeat
+                 U HUF_compress4X_repeat
+                 U _GLOBAL_OFFSET_TABLE_
+                 U __stack_chk_fail
+                 U memcpy
+
+fb80479a5fb81f6a-zstd_compress_sequences.o:
+                 U FSE_buildCTable_rle
+                 U FSE_buildCTable_wksp
+                 U FSE_normalizeCount
+                 U FSE_optimalTableLog
+                 U FSE_writeNCount
+                 U __stack_chk_fail
+                 U memcpy
+
+fb80479a5fb81f6a-zstd_compress_superblock.o:
+                 U HIST_countFast_wksp
+                 U HIST_count_wksp
+                 U HUF_compress1X_usingCTable
+                 U HUF_compress4X_usingCTable
+                 U HUF_estimateCompressedSize
+                 U ZSTD_buildBlockEntropyStats
+                 U ZSTD_compressRleLiteralsBlock
+                 U ZSTD_crossEntropyCost
+                 U ZSTD_encodeSequences
+                 U ZSTD_fseBitCost
+                 U ZSTD_noCompressLiterals
+                 U __stack_chk_fail
+                 U memcpy
+
+fb80479a5fb81f6a-zstd_double_fast.o:
+                 U __stack_chk_fail
+
+fb80479a5fb81f6a-zstd_fast.o:
+
+fb80479a5fb81f6a-zstd_lazy.o:
+                 U __stack_chk_fail
+
+fb80479a5fb81f6a-zstd_ldm.o:
+                 U ZSTD_fillDoubleHashTable
+                 U ZSTD_fillHashTable
+                 U ZSTD_selectBlockCompressor
+                 U __stack_chk_fail
+
+fb80479a5fb81f6a-zstd_opt.o:
+                 U HIST_count_simple
+                 U HUF_getNbBitsFromCTable
+                 U ZSTD_resetSeqStore
+                 U __stack_chk_fail
+
+fb80479a5fb81f6a-zstd_preSplit.o:
+                 U HIST_add
+                 U memset
+
+fb80479a5fb81f6a-zstdmt_compress.o:
+                 U POOL_free
+                 U POOL_resize
+                 U POOL_sizeof
+                 U POOL_tryAdd
+                 U ZSTD_CCtxParams_setParameter
+                 U ZSTD_CCtx_trace
+                 U ZSTD_compressBegin_advanced_internal
+                 U ZSTD_compressBound
+                 U ZSTD_compressContinue_public
+                 U ZSTD_compressEnd_public
+                 U ZSTD_createCCtx_advanced
+                 U ZSTD_createCDict_advanced
+                 U ZSTD_cycleLog
+                 U ZSTD_freeCCtx
+                 U ZSTD_freeCDict
+                 U ZSTD_getCParamsFromCCtxParams
+                 U ZSTD_invalidateRepCodes
+                 U ZSTD_ldm_adjustParameters
+                 U ZSTD_ldm_fillHashTable
+                 U ZSTD_ldm_generateSequences
+                 U ZSTD_ldm_getMaxNbSeq
+                 U ZSTD_referenceExternalSequences
+                 U ZSTD_sizeof_CCtx
+                 U ZSTD_sizeof_CDict
+                 U ZSTD_writeLastEmptyBlock
+                 U __stack_chk_fail
+                 U calloc
+                 U free
+                 U malloc
+                 U memcpy
+                 U memmove
+                 U memset
+
+88f362f13b0528ed-huf_decompress.o:
+                 U HUF_decompress4X1_usingDTable_internal_fast_asm_loop
+                 U HUF_decompress4X2_usingDTable_internal_fast_asm_loop
+                 U HUF_readStats_wksp
+                 U __stack_chk_fail
+                 U memcpy
+                 U memset
+
+88f362f13b0528ed-zstd_ddict.o:
+                 U ZSTD_loadDEntropy
+                 U free
+                 U malloc
+                 U memcpy
+
+88f362f13b0528ed-zstd_decompress.o:
+                 U FSE_readNCount
+                 U HUF_readDTableX2_wksp
+                 U ZBUFFv04_createDCtx
+                 U ZBUFFv04_decompressContinue
+                 U ZBUFFv04_decompressInit
+                 U ZBUFFv04_decompressWithDictionary
+                 U ZBUFFv04_freeDCtx
+                 U ZBUFFv05_createDCtx
+                 U ZBUFFv05_decompressContinue
+                 U ZBUFFv05_decompressInitDictionary
+                 U ZBUFFv05_freeDCtx
+                 U ZBUFFv06_createDCtx
+                 U ZBUFFv06_decompressContinue
+                 U ZBUFFv06_decompressInitDictionary
+                 U ZBUFFv06_freeDCtx
+                 U ZBUFFv07_createDCtx
+                 U ZBUFFv07_decompressContinue
+                 U ZBUFFv07_decompressInitDictionary
+                 U ZBUFFv07_freeDCtx
+                 U ZSTD_DDict_dictContent
+                 U ZSTD_DDict_dictSize
+                 U ZSTD_buildFSETable
+                 U ZSTD_checkContinuity
+                 U ZSTD_copyDDictParameters
+                 U ZSTD_createDDict_advanced
+                 U ZSTD_decompressBlock_internal
+                 U ZSTD_freeDDict
+                 U ZSTD_getDictID_fromDDict
+                 U ZSTD_getErrorCode
+                 U ZSTD_getcBlockSize
+                 U ZSTD_sizeof_DDict
+                 w ZSTD_trace_decompress_begin
+                 w ZSTD_trace_decompress_end
+                 U ZSTDv01_decompress
+                 U ZSTDv01_findFrameSizeInfoLegacy
+                 U ZSTDv02_decompress
+                 U ZSTDv02_findFrameSizeInfoLegacy
+                 U ZSTDv03_decompress
+                 U ZSTDv03_findFrameSizeInfoLegacy
+                 U ZSTDv04_decompress
+                 U ZSTDv04_findFrameSizeInfoLegacy
+                 U ZSTDv05_createDCtx
+                 U ZSTDv05_decompress_usingDict
+                 U ZSTDv05_findFrameSizeInfoLegacy
+                 U ZSTDv05_freeDCtx
+                 U ZSTDv05_getFrameParams
+                 U ZSTDv06_createDCtx
+                 U ZSTDv06_decompress_usingDict
+                 U ZSTDv06_findFrameSizeInfoLegacy
+                 U ZSTDv06_freeDCtx
+                 U ZSTDv06_getFrameParams
+                 U ZSTDv07_createDCtx
+                 U ZSTDv07_decompress_usingDict
+                 U ZSTDv07_findFrameSizeInfoLegacy
+                 U ZSTDv07_freeDCtx
+                 U ZSTDv07_getFrameParams
+                 U _GLOBAL_OFFSET_TABLE_
+                 U __stack_chk_fail
+                 U calloc
+                 U free
+                 U malloc
+                 U memcpy
+                 U memmove
+                 U memset
+
+88f362f13b0528ed-zstd_decompress_block.o:
+                 U FSE_readNCount
+                 U HUF_decompress1X1_DCtx_wksp
+                 U HUF_decompress1X_usingDTable
+                 U HUF_decompress4X_hufOnly_wksp
+                 U HUF_decompress4X_usingDTable
+                 U __stack_chk_fail
+                 U memcpy
+                 U memmove
+                 U memset
+
+a6c81c75fc82913a-cover.o:
+                 U POOL_add
+                 U POOL_create
+                 U POOL_free
+                 U ZDICT_finalizeDictionary
+                 U ZDICT_isError
+                 U ZSTD_compressBound
+                 U ZSTD_compress_usingCDict
+                 U ZSTD_createCCtx
+                 U ZSTD_createCDict
+                 U ZSTD_freeCCtx
+                 U ZSTD_freeCDict
+                 U _GLOBAL_OFFSET_TABLE_
+                 U __fprintf_chk
+                 U __memcpy_chk
+                 U __stack_chk_fail
+                 U clock
+                 U fflush
+                 U free
+                 U fwrite
+                 U malloc
+                 U memcmp
+                 U memcpy
+                 U memset
+                 U qsort_r
+                 U stderr
+
+a6c81c75fc82913a-divsufsort.o:
+                 U __assert_fail
+                 U __stack_chk_fail
+                 U free
+                 U malloc
+                 U memset
+
+a6c81c75fc82913a-fastcover.o:
+                 U COVER_best_destroy
+                 U COVER_best_finish
+                 U COVER_best_init
+                 U COVER_best_start
+                 U COVER_best_wait
+                 U COVER_computeEpochs
+                 U COVER_dictSelectionError
+                 U COVER_dictSelectionFree
+                 U COVER_dictSelectionIsError
+                 U COVER_selectDict
+                 U COVER_sum
+                 U COVER_warnOnSmallCorpus
+                 U POOL_add
+                 U POOL_create
+                 U POOL_free
+                 U ZDICT_finalizeDictionary
+                 U _GLOBAL_OFFSET_TABLE_
+                 U __fprintf_chk
+                 U __memcpy_chk
+                 U __stack_chk_fail
+                 U calloc
+                 U clock
+                 U fflush
+                 U free
+                 U fwrite
+                 U malloc
+                 U memcpy
+                 U stderr
+
+a6c81c75fc82913a-zdict.o:
+                 U ERR_getErrorString
+                 U FSE_normalizeCount
+                 U FSE_writeNCount
+                 U HUF_buildCTable_wksp
+                 U HUF_writeCTable_wksp
+                 U ZDICT_optimizeTrainFromBuffer_fastCover
+                 U ZSTD_compressBegin_usingCDict_deprecated
+                 U ZSTD_compressBlock_deprecated
+                 U ZSTD_createCCtx
+                 U ZSTD_createCDict_advanced
+                 U ZSTD_freeCCtx
+                 U ZSTD_freeCDict
+                 U ZSTD_getParams
+                 U ZSTD_getSeqStore
+                 U ZSTD_loadCEntropy
+                 U ZSTD_reset_compressedBlockState
+                 U ZSTD_seqToCodes
+                 U _GLOBAL_OFFSET_TABLE_
+                 U __fprintf_chk
+                 U __memcpy_chk
+                 U __memset_chk
+                 U __stack_chk_fail
+                 U clock
+                 U divsufsort
+                 U fflush
+                 U fputc
+                 U free
+                 U fwrite
+                 U malloc
+                 U memcpy
+                 U memmove
+                 U memset
+                 U stderr
+
+3f451b2306bc13c8-zstd_v01.o:
+                 U __memcpy_chk
+                 U __stack_chk_fail
+                 U free
+                 U malloc
+                 U memcpy
+                 U memmove
+                 U memset
+
+3f451b2306bc13c8-zstd_v02.o:
+                 U __stack_chk_fail
+                 U free
+                 U malloc
+                 U memcpy
+                 U memmove
+                 U memset
+
+3f451b2306bc13c8-zstd_v03.o:
+                 U __stack_chk_fail
+                 U free
+                 U malloc
+                 U memcpy
+                 U memmove
+                 U memset
+
+3f451b2306bc13c8-zstd_v04.o:
+                 U ERR_getErrorString
+                 U __stack_chk_fail
+                 U calloc
+                 U free
+                 U malloc
+                 U memcpy
+                 U memmove
+                 U memset
+
+3f451b2306bc13c8-zstd_v05.o:
+                 U ERR_getErrorString
+                 U __stack_chk_fail
+                 U calloc
+                 U free
+                 U malloc
+                 U memcpy
+                 U memmove
+                 U memset
+
+3f451b2306bc13c8-zstd_v06.o:
+                 U ERR_getErrorString
+                 U __stack_chk_fail
+                 U free
+                 U malloc
+                 U memcpy
+                 U memmove
+                 U memset
+
+3f451b2306bc13c8-zstd_v07.o:
+                 U ERR_getErrorString
+                 U __stack_chk_fail
+                 U free
+                 U malloc
+                 U memcpy
+                 U memmove
+                 U memset
+
+7faed3f8272f2313-huf_decompress_amd64.o:

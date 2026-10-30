@@ -1,0 +1,6 @@
+{
+  "attempted_cancel": "refused: no matching live session remained; carrier had already completed",
+  "signal_sent": false,
+  "comparison_admitted": false,
+  "reason": "B0 and supposed C1 used identical cached binary"
+}

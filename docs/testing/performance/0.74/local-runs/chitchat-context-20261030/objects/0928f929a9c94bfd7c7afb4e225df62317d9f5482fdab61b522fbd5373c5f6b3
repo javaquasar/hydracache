@@ -1,0 +1,15 @@
+{
+  "pid": 62723,
+  "start_ticks": "4625198",
+  "cmdline": [
+    "/usr/bin/python3",
+    "-B",
+    "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-borrowed-074/native.py",
+    "session"
+  ],
+  "boot_id": "4d382e4f-3fac-472a-be93-8112c5e7bd13",
+  "signal": "SIGINT",
+  "native_stage_created": true,
+  "measurement_started": false,
+  "reason": "full Windows source resolution duplicated in native 9P guard; preserve first refusal"
+}

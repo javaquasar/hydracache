@@ -788,3 +788,17 @@ has separately approved one local borrowed-input MTU candidate under the
 [new plan](chitchat-mtu-next-candidate-plan-20261030.md). Preserve all old S/P/Q
 decisions. Isolate context lifetime from the algorithm, then require all original
 generic/actual-caller gates. Publication and server admission stay separate.
+
+The [separate C1 prerequisite](chitchat-context-result-20261030.md) now closes with
+a definitive negative decision. Windows behavioral controls and the valid GNU
+source/check/Clippy/native pair pass, but corresponding append checkpoints retain
+26,632 extra owned C bytes. Lower total allocations do not compensate. Stop this
+combined borrowed-input design before implementation or CPU/resource rescue;
+keep all code, raw data and every first source/target/cache/capacity refusal.
+The independently verified737-member packet and review-only source restorer are
+retained; ten offline controls include coherently rehashed cached-image refusal.
+The standalone U security result remains positive within its original scope;
+it does not acquire MTU/Root/distribution admission from C1. Next resolve a
+maintainable security/MTU source path under the SAME gates, then exact-input Root/
+package/workspace and original execution/lifecycle/reconnect/trust/host work.
+No successor hypothesis, registry publication or server launch is approved here.

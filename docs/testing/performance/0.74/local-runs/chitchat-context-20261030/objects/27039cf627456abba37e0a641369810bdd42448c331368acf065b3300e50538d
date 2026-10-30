@@ -1,0 +1,10 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "first owned native outcome: build-B0",
+    "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-borrowed-074/native.py\", line 136, in session\n    folder=invoke('build-'+v,[str(tool/'cargo'),'test',*args,'--lib','--no-run','--message-format=json'],env,deadline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-borrowed-074/native.py\", line 98, in invoke\n    c.need(child.returncode==result['exit']==0 and result['retired'] and not result['errors'],'first owned native outcome: '+name)\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-security-only-074/scope.py\", line 28, in need\n    if not ok:raise ValueError(why)\n              ^^^^^^^^^^^^^^^^^^^^^\nValueError: first owned native outcome: build-B0\n",
+    "type": "ValueError"
+  },
+  "resources_qualified": false,
+  "root_adopted": false
+}

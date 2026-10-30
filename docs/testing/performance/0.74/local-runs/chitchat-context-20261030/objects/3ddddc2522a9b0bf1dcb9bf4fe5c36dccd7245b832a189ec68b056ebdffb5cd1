@@ -1,0 +1,10 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "actual linked compressor creation uses wrapped allocation",
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-context-result-074\\analyze.py\", line 157, in main\n    try:result=analyze(read)\n               ~~~~~~~^^^^^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-context-result-074\\analyze.py\", line 144, in analyze\n    need('ZSTD_createCCtx' in linked and '__wrap_malloc' in linked,'actual linked compressor creation uses wrapped allocation')\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-context-result-074\\analyze.py\", line 17, in need\n    if not value:raise ValueError(why)\n                 ^^^^^^^^^^^^^^^^^^^^^\nValueError: actual linked compressor creation uses wrapped allocation\n",
+    "type": "ValueError"
+  },
+  "release_admitted": false,
+  "root_adopted": false
+}

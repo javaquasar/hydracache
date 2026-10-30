@@ -1,0 +1,15 @@
+test_every_checkpoint_field_is_a_veto (test_analysis.Admission.test_every_checkpoint_field_is_a_veto) ... ok
+test_identical_input_is_only_a_prerequisite (test_analysis.Admission.test_identical_input_is_only_a_prerequisite) ... ok
+test_lower_total_c_requests_do_not_buy_live_retention (test_analysis.Admission.test_lower_total_c_requests_do_not_buy_live_retention) ... ok
+test_missing_counter_changed_work_scope_and_unbalanced_drop_refuse (test_analysis.Admission.test_missing_counter_changed_work_scope_and_unbalanced_drop_refuse) ... ok
+test_coherently_rehashed_cached_baseline_as_candidate_refuses (test_verify.Retained.test_coherently_rehashed_cached_baseline_as_candidate_refuses) ... ok
+test_coherently_rehashed_incomplete_owner_refuses (test_verify.Retained.test_coherently_rehashed_incomplete_owner_refuses) ... ok
+test_coherently_rehashed_second_source_hypothesis_refuses (test_verify.Retained.test_coherently_rehashed_second_source_hypothesis_refuses) ... ok
+test_negative_result_cannot_be_promoted (test_verify.Retained.test_negative_result_cannot_be_promoted) ... ok
+test_raw_corruption_and_scope_promotion_refuse (test_verify.Retained.test_raw_corruption_and_scope_promotion_refuse) ... ok
+test_whole_packet_replays_without_archived_execution (test_verify.Retained.test_whole_packet_replays_without_archived_execution) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.964s
+
+OK

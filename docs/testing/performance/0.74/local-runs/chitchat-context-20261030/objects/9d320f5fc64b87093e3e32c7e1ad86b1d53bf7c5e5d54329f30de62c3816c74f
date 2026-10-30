@@ -1,0 +1,10 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "",
+    "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-borrowed-074/native.py\", line 103, in session\n    for name,argv in [('gcc-version',['/usr/bin/gcc','--version']),('ld-version',['/usr/bin/ld.bfd','--version'])]:invoke(name,argv,env,deadline)\n                                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-borrowed-074/native.py\", line 74, in invoke\n    guard();folder=p.BASE/'native'/name;folder.mkdir(exist_ok=False)\n    ^^^^^^^\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-borrowed-074/native.py\", line 55, in guard\n    c.need(source()==prep['source'],'fresh actual source and no changed product checks')\n           ^^^^^^^^\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-borrowed-074/native.py\", line 18, in source\n    value=c.source()\n          ^^^^^^^^^^\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-security-only-074/scope.py\", line 49, in source\n    p=ROOT/n;need(p.is_file() and p.resolve().is_relative_to(ROOT.resolve()) and not p.is_symlink() and not getattr(p,'is_junction',lambda:False)(),'regular actual Root/source member')\n                                  ^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1242, in resolve\n    s = self._flavour.realpath(self, strict=strict)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<frozen posixpath>\", line 432, in realpath\n  File \"<frozen posixpath>\", line 476, in _joinrealpath\nKeyboardInterrupt\n",
+    "type": "KeyboardInterrupt"
+  },
+  "resources_qualified": false,
+  "root_adopted": false
+}

@@ -1312,3 +1312,12 @@ with the isolated Zstd/LRU requirements. The unchanged MTU contracts remain red;
 Root adoption is not granted by those source-compatibility results. The operator
 has approved one separate local MTU candidate under its recorded plan, preserving
 all thresholds, first refusals and previous S/P/Q negative decisions.
+
+The [C1 context prerequisite](../testing/performance/0.74/chitchat-context-result-20261030.md)
+is now declined: valid paired GNU observations retain26,632 extra owned C bytes
+at each append checkpoint despite fewer total allocations. The approved combined
+design stops before a new MTU implementation or CPU/rescue cohort. Preserve its
+complete source/evidence and all first carrier/source-effect refusals; Root and
+every threshold/check/window remain unchanged. Security-only U, maintained
+distribution, exact Root/workspace and production lifecycle/host admission are
+separate open gates, not passes inferred from this experiment.

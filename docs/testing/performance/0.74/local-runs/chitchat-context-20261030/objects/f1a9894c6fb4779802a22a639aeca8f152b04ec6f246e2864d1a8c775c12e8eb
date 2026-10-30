@@ -1,0 +1,11 @@
+{
+  "baseline_sha256": "acf42c5aacc7cdecd77989fdc8ee75d157fe30ffc9338f504edc56d69c93f3ae",
+  "candidate_sha256": "94d467a25b8b4ffead2d6b5d19dc195371f3edc4449d0d0a08a843127cc13820",
+  "changed_function": "compress_block_with_context",
+  "first_full_block_then_no_larger_blocks": true,
+  "fixed_level": 0,
+  "mtu_repaired": false,
+  "new_vec": false,
+  "public_trait_changed": false,
+  "root_adopted": false
+}

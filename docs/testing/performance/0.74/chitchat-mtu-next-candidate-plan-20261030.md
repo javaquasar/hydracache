@@ -5,6 +5,13 @@ Status: the operator explicitly approved one isolated local MTU candidate on
 This records preparation/implementation/fault-test scope, not Root adoption,
 publication, service maintenance or server workload. B/Z/U remains immutable.
 
+Final disposition: the isolated C1 per-writer context prerequisite is declined
+for extra owned C-live bytes at both append checkpoints. See the
+[complete result/source packet](chitchat-context-result-20261030.md). This approved
+combined design stops before borrowed/fused implementation, generic/caller rescue
+or CPU measurements. Preserve the proposal and negative implementation as history;
+no successor design or relaxed gate is approved by this record.
+
 ## Why dependencies alone cannot finish adoption
 
 Fresh official registry metadata still has Zstd^0.13 in Chitchat0.11.1 through

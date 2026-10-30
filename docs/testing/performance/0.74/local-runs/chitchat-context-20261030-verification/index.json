@@ -1,0 +1,266 @@
+{
+  "archived_code_executed": false,
+  "members": {
+    "capture/byte-verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/byte-verify/intent.json": {
+      "bytes": 301240,
+      "sha256": "9ae33d40c534fb5dfb5317af62c9a7c9203babba7b36f87b5afb2c3110f0fa6e"
+    },
+    "capture/byte-verify/result.json": {
+      "bytes": 77,
+      "sha256": "19d3497cf93c423b2cd1316a3abc7e64e3e78621050e5f078fd5fffab1c4867e"
+    },
+    "capture/byte-verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/byte-verify/stdout.log": {
+      "bytes": 483,
+      "sha256": "08893f2555c4f70ed7af0b8318ae695c906e95f66261e80b3a7cb8b5b621b933"
+    },
+    "capture/controls/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/controls/intent.json": {
+      "bytes": 301318,
+      "sha256": "0de77f04b74ea9026fa5d98b128567c08cffe538ca86a17b413797c9432f12d8"
+    },
+    "capture/controls/result.json": {
+      "bytes": 77,
+      "sha256": "19d3497cf93c423b2cd1316a3abc7e64e3e78621050e5f078fd5fffab1c4867e"
+    },
+    "capture/controls/stderr.log": {
+      "bytes": 1452,
+      "sha256": "c0952b42dcfcde1c38f2aa55dcab4638f59e95eacf42de35bdd57deca75804d6"
+    },
+    "capture/controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/doc-check/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/doc-check/intent.json": {
+      "bytes": 301193,
+      "sha256": "7160fe148efb85ced8d999ae63fc5ffde627f933cdb884adadc29a0422992c34"
+    },
+    "capture/doc-check/result.json": {
+      "bytes": 77,
+      "sha256": "19d3497cf93c423b2cd1316a3abc7e64e3e78621050e5f078fd5fffab1c4867e"
+    },
+    "capture/doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "capture/format/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/format/intent.json": {
+      "bytes": 301441,
+      "sha256": "3d3923730728b5cfca649fc8736b0b9edef168f955ce4db11883cb1622c92d92"
+    },
+    "capture/format/result.json": {
+      "bytes": 77,
+      "sha256": "19d3497cf93c423b2cd1316a3abc7e64e3e78621050e5f078fd5fffab1c4867e"
+    },
+    "capture/format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/performance-contract/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/performance-contract/intent.json": {
+      "bytes": 301239,
+      "sha256": "ef1b30f353d59ecb0416893bb03f427763d02de59b390b80769defa14be5a537"
+    },
+    "capture/performance-contract/result.json": {
+      "bytes": 77,
+      "sha256": "19d3497cf93c423b2cd1316a3abc7e64e3e78621050e5f078fd5fffab1c4867e"
+    },
+    "capture/performance-contract/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/performance-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "capture/restore-verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/restore-verify/intent.json": {
+      "bytes": 301247,
+      "sha256": "9f82c3ccd3c27b133bcee4dbbe09c7240ccaf7b6df30ed159171e305e07d41ca"
+    },
+    "capture/restore-verify/result.json": {
+      "bytes": 77,
+      "sha256": "19d3497cf93c423b2cd1316a3abc7e64e3e78621050e5f078fd5fffab1c4867e"
+    },
+    "capture/restore-verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/restore-verify/stdout.log": {
+      "bytes": 68,
+      "sha256": "109b4db61332d937d953ba922b5ccd775d2b91a63fd1515284083cf0b13caff9"
+    },
+    "capture/syntax/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "capture/syntax/intent.json": {
+      "bytes": 301334,
+      "sha256": "6d3f0764e7a8df59abb412386d0f6eb3da9a2139ada222b0f4b00252ba5744df"
+    },
+    "capture/syntax/result.json": {
+      "bytes": 77,
+      "sha256": "19d3497cf93c423b2cd1316a3abc7e64e3e78621050e5f078fd5fffab1c4867e"
+    },
+    "capture/syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture/syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "documents/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1620346,
+      "sha256": "35ef44061f07009cd282dc81ca423eebf56cb11f81050ba8afd169cf2953236f"
+    },
+    "documents/docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md": {
+      "bytes": 89048,
+      "sha256": "402566819195961137906f8cc7589813e0948df09387a2bec29d79fafb60a268"
+    },
+    "documents/docs/testing/performance/0.74/README.md": {
+      "bytes": 524160,
+      "sha256": "74793779c370808bc8f8d7889f3fb1c4cbeb1cd3d1a58986f7017325dd024dab"
+    },
+    "documents/docs/testing/performance/0.74/chitchat-context-result-20261030.md": {
+      "bytes": 9389,
+      "sha256": "eb7bd7c539301266f65c8997ca742b7aef76bf235361c6dde74fc44ed736b5b0"
+    },
+    "documents/docs/testing/performance/0.74/chitchat-mtu-next-candidate-plan-20261030.md": {
+      "bytes": 7656,
+      "sha256": "61fc639bd3954bcef8628b4665f16aec1e33d978d03d609072afde97c8e3edb2"
+    },
+    "documents/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 57229,
+      "sha256": "49f9787df90bdfa7dd7c4c5fd67e934008201afed662a2b4d88ecaef9f3dacbe"
+    },
+    "source/chitchat-borrowed-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/chitchat-borrowed-074/README.md": {
+      "bytes": 1584,
+      "sha256": "bc150149df0f83f62a544f26d5df76b9858cadc60aef029df5fcffd1c031cba1"
+    },
+    "source/chitchat-borrowed-074/context_tests.rs": {
+      "bytes": 2105,
+      "sha256": "eb5628f18ca6148e2cfa53fd84e8f577a37fe95d2dce9c454f3e235c04c326b0"
+    },
+    "source/chitchat-borrowed-074/native-plan.md": {
+      "bytes": 5060,
+      "sha256": "219379bed33a319ac1bf9d0dcc2141aac8ec35a8e8b7da6e4c1463990944c4fd"
+    },
+    "source/chitchat-borrowed-074/native.py": {
+      "bytes": 15331,
+      "sha256": "25be974c0e32e228076ede2f1150913235c26c504c26a2d608b4d2e59409521c"
+    },
+    "source/chitchat-borrowed-074/native_tests.rs": {
+      "bytes": 6367,
+      "sha256": "456958f7c7df1b80eee4c84b52e80709754b5152903322b22856acbe07d45272"
+    },
+    "source/chitchat-borrowed-074/parallel_source.py": {
+      "bytes": 2742,
+      "sha256": "89278fa755e744dc17d4c0192c32960c74ca2e8f487fe561d7744b1d00fe26fb"
+    },
+    "source/chitchat-borrowed-074/peek.c": {
+      "bytes": 211,
+      "sha256": "1bd91bad0b8778c0e759036003379668e06f448caebd7645140e4f7dd122ab7f"
+    },
+    "source/chitchat-borrowed-074/peek_control.c": {
+      "bytes": 892,
+      "sha256": "cc3d599b1a4ed4adeb189452d5cd4929b9660b9565a2e537361db1f39ccdced5"
+    },
+    "source/chitchat-borrowed-074/recipe.py": {
+      "bytes": 3379,
+      "sha256": "15e9371b668c9dfec0264b63cb25961a8d2be8a6a3e75d5d2ca61a290ef40b4a"
+    },
+    "source/chitchat-borrowed-074/run.py": {
+      "bytes": 6509,
+      "sha256": "933e9337aa1b76d01245ba933ed736f4cb6efe455fef5e31c7b10837447f0c49"
+    },
+    "source/chitchat-context-result-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/chitchat-context-result-074/README.md": {
+      "bytes": 2050,
+      "sha256": "add76b2ee815a451bded81cd345e4bc2dd289dc03fab2d9dd9806c1c3687b95d"
+    },
+    "source/chitchat-context-result-074/analyze.py": {
+      "bytes": 14198,
+      "sha256": "58054293b43958ab6dc3f33bb53ce60fcc06bd50402a74e193cbf285a3b8abf6"
+    },
+    "source/chitchat-context-result-074/check_restore.py": {
+      "bytes": 1509,
+      "sha256": "bc2aa55a6dc6dcb7caa38fe64c0e3d07cc18e4c7cb75106fc46fc41d827ee00a"
+    },
+    "source/chitchat-context-result-074/cleanup_native.py": {
+      "bytes": 1953,
+      "sha256": "3e149b826d53bc5e0f1ce992ffe5f1a944d486c9bd51d16db06c1d44f6aafb93"
+    },
+    "source/chitchat-context-result-074/gates.py": {
+      "bytes": 4212,
+      "sha256": "367a8af66e408ecee68126965929dec49998375e95eb1358d0791e9e70fa9ed6"
+    },
+    "source/chitchat-context-result-074/restore.py": {
+      "bytes": 1855,
+      "sha256": "d083eef252d9202187bb3a60165cf3f035f3e3bb8fc0b4bce12e283a4472ec11"
+    },
+    "source/chitchat-context-result-074/retain.py": {
+      "bytes": 2842,
+      "sha256": "e39fd0e5be3c23eb5098205f372511eabdd775f03d7ea2bda18880b62292dc09"
+    },
+    "source/chitchat-context-result-074/retain_verification.py": {
+      "bytes": 2213,
+      "sha256": "c21e59c49cce80e8b5c3d00ea770954e87dcd7d7ee5f5524ffce1e987b19e4c0"
+    },
+    "source/chitchat-context-result-074/test_analysis.py": {
+      "bytes": 3075,
+      "sha256": "a5ddc63f9fb7d8bacff144e081e7e823c8d9466e71b0df3220b5716968c2b7d2"
+    },
+    "source/chitchat-context-result-074/test_verify.py": {
+      "bytes": 2639,
+      "sha256": "a585e81bc310e9c9de0f18f18fd8e70302a8daebf4b2199b8536dd692ec8e246"
+    },
+    "source/chitchat-context-result-074/verify.py": {
+      "bytes": 1339,
+      "sha256": "edad9aab64e3c60d17cbcca54f78e2da743d05b7f05ab8ec6fa305e1b3bd49b4"
+    }
+  },
+  "prerequisite_passed": false,
+  "primary_index_sha256": "9668415d296e8ed37cbbc371b28bbf5396d3ddd52aaa3d4a9b2899c6420de47a",
+  "release_admitted": false,
+  "root_adopted": false,
+  "schema": "hc074-chitchat-context-verification-v1"
+}

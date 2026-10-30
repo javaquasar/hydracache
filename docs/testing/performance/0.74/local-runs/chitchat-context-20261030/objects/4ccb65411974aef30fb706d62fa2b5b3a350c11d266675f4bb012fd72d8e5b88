@@ -1,0 +1,10 @@
+test_differential_fresh_bytes_missing_and_alias (__main__.Controls.test_differential_fresh_bytes_missing_and_alias) ... ok
+test_whole_actual_inventory (__main__.Controls.test_whole_actual_inventory) ... ok
+test_fresh_bytes_order_missing_and_replacement (parallel_control_original_reader.Controls.test_fresh_bytes_order_missing_and_replacement) ... ok
+test_no_parent_leaf_alias_escape_directory_or_fifo (parallel_control_original_reader.Controls.test_no_parent_leaf_alias_escape_directory_or_fifo) ... ok
+test_same_held_root_bytes_without_a_compiler_or_live_round (parallel_control_original_reader.Controls.test_same_held_root_bytes_without_a_compiler_or_live_round) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 2.058s
+
+OK

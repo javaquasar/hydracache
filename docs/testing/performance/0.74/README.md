@@ -1,5 +1,17 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [separate C1 context-lifetime prerequisite](chitchat-context-result-20261030.md)
+is now definitively declined. Its valid isolated GNU pair has identical wire,
+Rust counters and Vecs, but owns26,632 extra C-live bytes after both append
+checkpoints. The20→2 allocation observation cannot buy that retention increase.
+No fused MTU implementation, rescue matrix, Root adoption or CPU claim follows.
+All first source/target/cache/capacity refusals and the actual declined code remain
+in737 retained members/227 objects; ten data-only mutation/admission controls pass.
+Independent target/image/runtime tags prevent cached-baseline substitution.
+The restorer exports50 original source members for review without execution.
+Root/security/distribution/package/workspace and production lifecycle/host gates
+remain open; no server/service/clock/product work was performed.
+
 The [dependency-only Chitchat preparation](chitchat-security-only-result-20261030.md)
 now completes12 Windows/GNU ×1.94/1.88 × B/Z/U peers:728 selected cases pass,
 check/strict Clippy pass, and all37/239/seven diagnostic corpora match. Full

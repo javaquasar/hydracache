@@ -1,0 +1,5 @@
+{
+  "first_cancel_refused": "native stage had just been created; no signal or receipt written",
+  "second_cancel": "SIGINT sent only through held pidfd after exact cmdline/start/no-child/no-build proof",
+  "measurement_started": false
+}

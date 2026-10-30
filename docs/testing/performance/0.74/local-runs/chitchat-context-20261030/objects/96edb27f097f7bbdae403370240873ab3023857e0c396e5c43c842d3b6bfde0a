@@ -1,0 +1,17 @@
+{
+  "targets": [
+    {
+      "path": "/home/artur/.cache/hydracache-074-borrowed/20261030-c1-r2/builds",
+      "bytes": 114620163
+    },
+    {
+      "path": "/home/artur/.cache/hydracache-074-borrowed/20261030-c1-r3/builds",
+      "bytes": 292671635
+    }
+  ],
+  "native_free_before": 804380606464,
+  "native_free_after": 804776611840,
+  "source_or_evidence_removed": false,
+  "active_users": 0,
+  "first_nonroot_census": "refused PermissionError before deletion"
+}
