@@ -4,7 +4,7 @@ import common as c
 
 class ExactHistory(unittest.TestCase):
     def test_exact_two_node_direct_edge(self):
-        old=(c.BASE/'baseline/Cargo.lock').read_bytes()
+        old=p.historical_lock()
         new=p.candidate(old)
         self.assertEqual(p.review(old,new)['candidate_nodes'],685)
         # Every unapproved byte change, including comments and unrelated nodes, refuses.

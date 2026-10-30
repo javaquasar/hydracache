@@ -2,6 +2,13 @@
 import tomllib
 import common as c
 
+def historical_lock():
+    # Works after ordinary build-cache cleanup and in a shallow evidence checkout.
+    packet=c.ROOT/'docs/testing/performance/0.74/local-runs/supervisor-zstd-security-20261030/objects'/c.OLD_LOCK
+    raw=packet.read_bytes() if packet.exists() else c.git('show','edf39086d241c461c39b7e0915bb31cea5d03f86:Cargo.lock')
+    c.need(c.sha(raw)==c.OLD_LOCK,'exact independently retained historical baseline')
+    return raw
+
 def fixture():
     c.need(c.sha((c.ROOT/'Cargo.lock').read_bytes())==c.OLD_LOCK,'original baseline')
     p=c.BASE/'probe';p.mkdir(exist_ok=False)
@@ -41,14 +48,22 @@ def candidate(old):
             token=expected[name];c.need(raw.count(token)==1,'one old edge: '+name)
             replacement=b'"zstd 0.14.3",' if name=='hydracache-long-run-supervisor-074' else b'"zstd 0.13.3",' if name=='chitchat' else b'"zstd-safe 7.2.4",'
             records[name,version]=raw.replace(token,replacement)
+    original_order=list(records)
     tested=(c.ROOT/'tools/chitchat-mtu-review-074/patches/tested-fixture.lock').read_bytes()
+    c.need(c.sha(tested)=='89e7e80fceb5562ae4ffaf78093073770e1864ff31d7b443afcb9b9a4926d674','exact already reviewed registry fixture')
     for block in tested.split(b'[[package]]\n')[1:]:
         row=tomllib.loads('[[package]]\n'+block.decode())['package'][0]
         if row['name'] in ('zstd','zstd-safe'):
             c.need(c.ARCHIVES[row['name']+'-'+row['version']]==row['checksum'],'already audited exact registry archive')
             if row['name']=='zstd':block=block.replace(b'"zstd-safe",',b'"zstd-safe 8.2.0",')
             key=row['name'],row['version'];c.need(key not in records,'only two new versions');records[key]=block
-    return head+b''.join(b'[[package]]\n'+raw for _,raw in sorted(records.items()))
+    order=[]
+    for key in original_order:
+        order.append(key)
+        if key==('zstd','0.13.3'):order.append(('zstd','0.14.3'))
+        if key==('zstd-safe','7.2.4'):order.append(('zstd-safe','8.2.0'))
+    c.need(set(order)==set(records),'same historical order plus two adjacent versions')
+    return head+b''.join(b'[[package]]\n'+records[key] for key in order)
 
 def review(old,new):
     c.need(candidate(old)==new,'whole byte exact candidate, including all historical edges')

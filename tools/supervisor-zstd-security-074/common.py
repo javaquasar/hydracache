@@ -38,12 +38,17 @@ def load(path,name):
     s=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
 def capacity():
     if shutil.disk_usage(ROOT).free<4*1024**3 or os.name=='posix' and shutil.disk_usage(NATIVE).free<4*1024**3:raise owned.CapacityError('original physical/native four-GiB floor')
+
+def git(*args):
+    prefix=['git'] if os.name=='nt' else ['/mnt/c/Program Files/Git/cmd/git.exe','--git-dir=C:/Workspace/prj/jq/cashe/hydracache/.git/worktrees/hydracache-074','--work-tree=C:/Workspace/prj/jq/cashe/hydracache-074']
+    return subprocess.check_output(prefix+list(args),cwd=ROOT)
 def source():
     members=tomllib.loads((ROOT/'Cargo.toml').read_text(encoding='utf8'))['workspace']['members']
-    names=subprocess.check_output(['git','ls-files','-z','--',*members,'third_party/hc074-dbus'],cwd=ROOT).split(b'\0')
+    names=git('ls-files','-z','--',*members,'third_party/hc074-dbus').split(b'\0')
     names={x.decode() for x in names if x}|set(PINS)|{'Cargo.toml','Cargo.lock','.cargo/config.toml'}
     names|={p.relative_to(ROOT).as_posix() for p in HERE.iterdir() if p.is_file()}
     names|={p.relative_to(ROOT).as_posix() for p in (BASE/'probe').rglob('*') if p.is_file() and 'target' not in p.relative_to(BASE/'probe').parts}
+    names|={p.relative_to(ROOT).as_posix() for p in (BASE/'input').rglob('*') if p.is_file()}
     if os.name=='posix':
         helper=load(ROOT/'tools/dbus-root-package-074/source_guard.py','direct_zstd_source_guard');result=helper.hashes(ROOT,sorted(names))
     else:
@@ -53,8 +58,7 @@ def source():
     for n,h in PINS.items():need(result[n]==h,'original unchanged pin: '+n)
     return result
 def snapshot():
-    return dict(head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
-        tracked=subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=ROOT).decode())
+    return dict(head=git('rev-parse','HEAD').decode().strip(),tracked=git('status','--porcelain','--untracked-files=no').decode())
 
 def phase(label):return BASE/('gnu' if os.name=='posix' else '.')/label
 
