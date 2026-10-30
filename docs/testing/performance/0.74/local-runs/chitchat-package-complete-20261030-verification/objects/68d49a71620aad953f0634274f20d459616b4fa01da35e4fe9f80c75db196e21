@@ -1,0 +1,17 @@
+test_checksum_refusal_required (__main__.Controls.test_checksum_refusal_required) ... ok
+test_filtered_case_cannot_pass (__main__.Controls.test_filtered_case_cannot_pass) ... ok
+test_full_library_bound_is_frozen (__main__.Controls.test_full_library_bound_is_frozen) ... ok
+test_library_workload_cannot_be_filtered (__main__.Controls.test_library_workload_cannot_be_filtered) ... ok
+test_negative_parent_cannot_be_rewritten (__main__.Controls.test_negative_parent_cannot_be_rewritten) ... ok
+test_no_patch_fallback (__main__.Controls.test_no_patch_fallback) ... ok
+test_parent_import_namespace_is_isolated (__main__.Controls.test_parent_import_namespace_is_isolated) ... ok
+test_registry_source_cannot_be_path (__main__.Controls.test_registry_source_cannot_be_path) ... ok
+test_retirement_required (__main__.Controls.test_retirement_required) ... ok
+test_scope_cannot_be_promoted (__main__.Controls.test_scope_cannot_be_promoted) ... ok
+test_whole_first_data (__main__.Controls.test_whole_first_data) ... ok
+test_whole_root_map (__main__.Controls.test_whole_root_map) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 8.565s
+
+OK

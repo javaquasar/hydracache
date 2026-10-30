@@ -1,0 +1,153 @@
+
+running 100 tests
+test delta::tests::test_delta_op_tag ... ok
+test delta::tests::test_delta_serialization_default ... ok
+test delta::tests::test_delta_serialization_exceed_mtu_on_add_kv ... ok
+test delta::tests::test_delta_serialization_exceed_mtu_on_add_node ... ok
+test delta::tests::test_delta_serialization_panic_if_add_after_exceed - should panic ... ok
+test delta::tests::test_delta_serialization_simple_foo ... ok
+test delta::tests::test_delta_serialization_simple_node ... ok
+test delta::tests::test_delta_serialization_simple_with_nodes_to_reset ... ok
+test delta::tests::test_delta_serialization_with_set_max_version ... ok
+test digest::tests::test_digest_serialization ... ok
+test digest::tests::test_node_digest_serialization ... ok
+test failure_detector::tests::test_bounded_array_stats ... ok
+test failure_detector::tests::test_failure_detector ... ok
+test failure_detector::tests::test_failure_detector_does_not_see_a_node_as_alive_with_a_single_heartbeat ... ok
+test failure_detector::tests::test_failure_detector_node_state_additive_smoothing_effect_fades_off ... ok
+test failure_detector::tests::test_failure_detector_node_state_additive_smoothing_predominant_in_the_beginning ... ok
+test failure_detector::tests::test_failure_detector_node_state_from_live_to_down_to_live ... ok
+test failure_detector::tests::test_sampling_window ... ok
+test listener::tests::test_listeners_empty_prefix ... ok
+test listener::tests::test_listeners_forever ... ok
+test listener::tests::test_listeners_prefixes ... ok
+test listener::tests::test_listeners_simple ... ok
+test message::tests::test_ack ... ok
+test message::tests::test_bad_cluster ... ok
+test message::tests::test_syn ... ok
+test message::tests::test_syn_ack ... ok
+test serialize::tests::test_compressed_serialized_stream ... ok
+test serialize::tests::test_compressed_serialized_stream_len_when_there_are_no_compressed_blocks ... ok
+test serialize::tests::test_compressed_serialized_stream_with_random_data ... ok
+test serialize::tests::test_empty ... ok
+test serialize::tests::test_proptest_compressed_stream ... ok
+test serialize::tests::test_serialize_block_type ... ok
+test serialize::tests::test_serialize_bool ... ok
+test serialize::tests::test_serialize_chitchat_id ... ok
+test serialize::tests::test_serialize_heartbeat ... ok
+test serialize::tests::test_serialize_ip ... ok
+test server::tests::test_gossip_dead_and_seed_node ... ok
+test server::tests::test_gossip_no_dead_node_no_seed_nodes ... ok
+test server::tests::test_graceful_shutdown ... ok
+test server::tests::test_heartbeat ... ok
+test server::tests::test_member_change_event_is_broadcasted ... ok
+test server::tests::test_panic_shutdown ... ok
+test server::tests::test_seeding ... ok
+test server::tests::test_select_nodes_for_gossip ... ok
+test server::tests::test_syn ... ok
+test server::tests::test_syn_ack ... ok
+test server::tests::test_syn_bad_cluster ... ok
+test state::tests::test_apply_delta_reset_does_not_violate_monotonic_property ... ok
+test state::tests::test_cluster_state_apply_delta ... ok
+test state::tests::test_cluster_state_apply_delta_last_gc_equal_max_does_not_reset ... ok
+test state::tests::test_cluster_state_compute_delta_depth_first_chitchat ... ok
+test state::tests::test_cluster_state_compute_delta_depth_first_single_node ... ok
+test state::tests::test_cluster_state_compute_delta_missing_node ... ok
+test state::tests::test_cluster_state_compute_delta_should_ignore_dead_nodes ... ok
+test state::tests::test_cluster_state_compute_delta_with_old_node_state_that_needs_reset ... ok
+test state::tests::test_cluster_state_compute_digest ... ok
+test state::tests::test_cluster_state_delete_after_ttl ... ok
+test state::tests::test_cluster_state_first_version_is_one ... ok
+test state::tests::test_cluster_state_gc_keys_marked_for_deletion ... ok
+test state::tests::test_cluster_state_missing_node ... ok
+test state::tests::test_cluster_state_set ... ok
+test state::tests::test_cluster_state_set_and_mark_for_deletion ... ok
+test state::tests::test_cluster_state_set_with_same_value_updates_version ... ok
+test state::tests::test_delta_accepted_when_sender_gc_equals_receiver_max ... ok
+test state::tests::test_iter_prefix ... ok
+test state::tests::test_node_apply_delta_different_last_gc_is_ok_if_below_max_version ... ok
+test state::tests::test_node_apply_delta_no_reset_if_older_version ... ok
+test state::tests::test_node_apply_delta_on_reset_fresher_version ... ok
+test state::tests::test_node_apply_delta_simple ... ok
+test state::tests::test_node_apply_same_value_different_version ... ok
+test state::tests::test_node_set_delete ... ok
+test state::tests::test_node_set_delete_after_ttl_set ... ok
+test state::tests::test_node_set_with_ttl ... ok
+test state::tests::test_node_skip_delta_from_the_future ... ok
+test state::tests::test_sorted_stale_nodes_empty ... ok
+test state::tests::test_sorted_stale_nodes_insert ... ok
+test state::tests::test_sorted_stale_nodes_into_iter ... ok
+test state::tests::test_sorted_stale_nodes_offer ... ok
+test state::tests::test_stale_node_iter_stale_key_values ... ok
+test tests::test_chitchat_dead_node_liveness ... ok
+test tests::test_chitchat_handshake ... ok
+test tests::test_chitchat_listener ... ok
+test tests::test_chitchat_no_need_to_reset_if_last_gc_version_is_higher ... [2m2026-10-30T12:51:24.386157Z[0m [33m WARN[0m [2mchitchat::state[0m[2m:[0m Node to reset node-10001:0:127.0.0.1:10001 last gc version: 20001 max version: 20000
+[2m2026-10-30T12:51:24.391936Z[0m [32m INFO[0m [2mchitchat::state[0m[2m:[0m resetting for node id node-10001:0:127.0.0.1:10001 last_gc_version 20001
+ok
+test tests::test_dead_node_garbage_collection ... [2m2026-10-30T12:51:24.908668Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:60003
+[2m2026-10-30T12:51:50.409460Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:60001
+[2m2026-10-30T12:51:50.409809Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:60002
+[2m2026-10-30T12:51:50.409993Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:60004
+[2m2026-10-30T12:51:50.410098Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:60005
+[2m2026-10-30T12:51:50.410443Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:60006
+ok
+test tests::test_dead_node_kvs_are_gossiped_too_when_node_joins ... [2m2026-10-30T12:51:50.613226Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:40001
+[2m2026-10-30T12:51:51.015241Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:40002
+[2m2026-10-30T12:51:51.015559Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:40001
+ok
+test tests::test_live_node_channel ... [2m2026-10-30T12:51:52.498939Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:20001
+[2m2026-10-30T12:51:52.499319Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:20002
+[2m2026-10-30T12:51:52.499500Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:20003
+[2m2026-10-30T12:51:52.499618Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:20004
+[2m2026-10-30T12:51:52.499774Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:20005
+ok
+test tests::test_live_node_channel_with_extra_predicate ... [2m2026-10-30T12:51:55.604862Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:1
+[2m2026-10-30T12:51:55.606408Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:2
+[2m2026-10-30T12:51:55.606723Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:3
+ok
+test tests::test_maybe_trigger_catchup_callback ... [2m2026-10-30T12:51:55.608365Z[0m [32m INFO[0m [2mchitchat::state[0m[2m:[0m resetting for node id node-10002:0:127.0.0.1:10002 last_gc_version 1000
+[2m2026-10-30T12:51:55.608696Z[0m [32m INFO[0m [2mchitchat[0m[2m:[0m executing catch-up callback
+ok
+test tests::test_multiple_nodes ... [2m2026-10-30T12:51:56.012474Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:20001
+[2m2026-10-30T12:51:56.012893Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:20002
+[2m2026-10-30T12:51:56.013164Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:20003
+[2m2026-10-30T12:51:56.013417Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:20004
+[2m2026-10-30T12:51:56.013580Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:20005
+ok
+test tests::test_network_partition_nodes ... [2m2026-10-30T12:51:56.420615Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:11001
+[2m2026-10-30T12:51:56.421804Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:11002
+[2m2026-10-30T12:51:56.422066Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:11003
+[2m2026-10-30T12:51:56.422370Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:11004
+[2m2026-10-30T12:51:56.422775Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:11005
+[2m2026-10-30T12:51:56.423197Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:11006
+ok
+test tests::test_node_goes_from_live_to_down_to_live ... [2m2026-10-30T12:51:56.826250Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:30003
+[2m2026-10-30T12:51:58.326301Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:30001
+[2m2026-10-30T12:51:58.326802Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:30002
+[2m2026-10-30T12:51:58.327169Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:30004
+[2m2026-10-30T12:51:58.327737Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:30005
+[2m2026-10-30T12:51:58.327992Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:30006
+[2m2026-10-30T12:51:58.328460Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:30003
+ok
+test tests::test_process_syn ... ok
+test tests::test_reset_garbage_collected_node_state ... [2m2026-10-30T12:51:58.331070Z[0m [32m INFO[0m [2mchitchat[0m[2m:[0m skip reset_node_state because the node was recently garbage collected
+ok
+test tests::test_reset_node_state ... ok
+test tests::test_reset_node_state_adopts_snapshot_max_version_reproduces_194 ... ok
+test tests::test_reset_node_state_does_not_regress_last_gc_version_reproduces_194 ... [2m2026-10-30T12:51:58.333415Z[0m [33m WARN[0m [2mchitchat[0m[2m:[0m attempted to reset node with an obsolete state (rare race condition) [3mnode_max_version[0m[2m=[0m100 [3mnode_last_gc_version[0m[2m=[0m100 [3mdelta_max_version[0m[2m=[0m120 [3mdelta_last_gc_version[0m[2m=[0m80
+ok
+test transport::tests::test_transport_in_mem ... [2m2026-10-30T12:51:58.334000Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:10000
+[2m2026-10-30T12:51:58.334239Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:10000
+[2m2026-10-30T12:51:58.334407Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:10000
+[2m2026-10-30T12:51:58.636126Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:20002
+[2m2026-10-30T12:51:58.636566Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:20001
+[2m2026-10-30T12:51:58.637085Z[0m [32m INFO[0m [2mchitchat::transport::channel[0m[2m:[0m close [3maddr[0m[2m=[0m127.0.0.1:40000
+ok
+test transport::tests::test_transport_udp ... ok
+test transport::tests::test_udp_transport_ignore_invalid_payload ... [2m2026-10-30T12:51:58.953439Z[0m [33m WARN[0m [2mchitchat::transport::udp[0m[2m:[0m invalid-chitchat-payload [3mpayload_len[0m[2m=[0m4 [3mfrom[0m[2m=[0m127.0.0.1:30001 [3merr[0m[2m=[0minvalid chitchat magic number
+ok
+test types::tests::test_deletion_status_to_u8 ... ok
+
+test result: ok. 100 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 33.02s
+

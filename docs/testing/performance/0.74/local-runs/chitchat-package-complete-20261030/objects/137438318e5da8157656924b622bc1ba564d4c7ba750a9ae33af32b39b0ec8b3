@@ -1,0 +1,21 @@
+{
+  "CPU_qualified": false,
+  "RSS_qualified": false,
+  "Root_public_type_compatibility_qualified": false,
+  "Windows_qualified": false,
+  "cargo_crate_sha256": "0296600cf25af830741ee575df5da4e050d48e7bc561ffbdcda63ebab12877c2",
+  "complete": true,
+  "consumer_cases": 12,
+  "full_library_cases": 200,
+  "full_library_gate_pass": true,
+  "local_registry_qualified": true,
+  "parent_first_refusal_preserved": true,
+  "parent_sha256": "6200fd3fe30ae00532e30a5622573851a3dee15cb243f08051f0cd2ee6b22b47",
+  "parent_short_case_gate_pass": false,
+  "public_registry_qualified": false,
+  "release_admitted": false,
+  "resources_qualified": false,
+  "root_adopted": false,
+  "upstream_MTU_fixed": false,
+  "upstream_integration_runtime_qualified": false
+}

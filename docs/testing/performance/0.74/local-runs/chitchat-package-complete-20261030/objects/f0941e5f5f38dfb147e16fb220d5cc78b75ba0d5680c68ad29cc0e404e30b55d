@@ -1,0 +1,13 @@
+    Checking tracing-core v0.1.36
+    Checking lazy_static v1.5.0
+    Checking log v0.4.33
+    Checking sharded-slab v0.1.7
+    Checking tracing-log v0.2.0
+    Checking thread_local v1.1.9
+    Checking nu-ansi-term v0.50.3
+    Checking smallvec v1.15.2
+    Checking tracing v0.1.44
+    Checking tracing-subscriber v0.3.23
+    Checking hydra-chitchat v0.11.1-hydra.1 (registry `hc074-draft`)
+    Checking hc074-owned-consumer v0.0.0 (/home/artur/.cache/hydracache-074-package/20261030-a6/consumer)
+    Finished `release` profile [optimized] target(s) in 1.60s

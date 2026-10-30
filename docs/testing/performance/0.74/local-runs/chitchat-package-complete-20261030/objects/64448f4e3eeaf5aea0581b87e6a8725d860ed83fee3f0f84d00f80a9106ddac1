@@ -1,0 +1,8 @@
+consumer::actual_channel_transport_delivers_original_wire_surface: test
+consumer::binary_unicode_scalar_projection_round_trips: test
+consumer::malformed_and_future_protocol_refuse: test
+consumer::original_library_alias_and_wire_are_stable: test
+consumer::original_spawn_and_owned_shutdown_remain_usable: test
+consumer::public_state_versions_and_deletion_remain_original: test
+
+6 tests, 0 benchmarks

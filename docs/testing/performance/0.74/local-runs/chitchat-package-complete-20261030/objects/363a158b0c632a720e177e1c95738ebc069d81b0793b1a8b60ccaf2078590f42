@@ -1,0 +1,15 @@
+{
+  "floor": 4294967296,
+  "library_bound": 780,
+  "local_bound": 1200,
+  "native_bound": 1100,
+  "operator_agreed_full_lane": true,
+  "parent_sha256": "6200fd3fe30ae00532e30a5622573851a3dee15cb243f08051f0cd2ee6b22b47",
+  "poll": 5,
+  "public_registry_qualified": false,
+  "release_admitted": false,
+  "retirement": 5,
+  "retry": false,
+  "root_adopted": false,
+  "short_case_bound": 5
+}
