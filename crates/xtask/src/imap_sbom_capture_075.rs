@@ -12,19 +12,13 @@ pub const REPOSITORY: &str = "target/imap-075/maven-repository";
 pub const SETTINGS: &str = "docs/testing/imap/0.75/maven-provenance-settings.xml";
 pub const SPY: &str = "tests/java-imap-provenance-075/target/provenance-spy.jar";
 pub const CLASSWORLDS: &str = "docs/testing/imap/0.75/maven-classworlds.conf";
+#[cfg(test)]
+#[path = "../tests/support/imap_rust_materials_075.rs"]
+mod rust_material_tests;
 
 pub fn maven_home_from_launcher(launcher: &Path) -> Result<PathBuf, Box<dyn Error>> {
     let canonical = launcher.canonicalize()?;
-    let spelling = canonical.to_string_lossy();
-    let spelling = if let Some(unc) = spelling.strip_prefix(r"\\?\UNC\") {
-        format!(r"\\{unc}")
-    } else {
-        spelling
-            .strip_prefix(r"\\?\")
-            .unwrap_or(&spelling)
-            .to_owned()
-    };
-    let path = PathBuf::from(spelling);
+    let path = launcher_spelling(&canonical);
     let bin = path.parent().ok_or("Maven launcher parent")?;
     let home = bin.parent().ok_or("Maven distribution parent")?;
     if bin.file_name().and_then(|s| s.to_str()) != Some("bin")
@@ -35,9 +29,27 @@ pub fn maven_home_from_launcher(launcher: &Path) -> Result<PathBuf, Box<dyn Erro
     }
     Ok(home.into())
 }
+fn launcher_spelling(canonical: &Path) -> PathBuf {
+    let spelling = canonical.to_string_lossy();
+    let spelling = if let Some(unc) = spelling.strip_prefix(r"\\?\UNC\") {
+        format!(r"\\{unc}")
+    } else {
+        spelling
+            .strip_prefix(r"\\?\")
+            .unwrap_or(&spelling)
+            .to_owned()
+    };
+    PathBuf::from(spelling)
+}
 fn maven_home() -> Result<PathBuf, Box<dyn Error>> {
+    let paths = std::env::var_os("PATH").ok_or("Maven PATH missing")?;
+    maven_home_in(std::env::split_paths(&paths))
+}
+fn maven_home_in(
+    directories: impl IntoIterator<Item = PathBuf>,
+) -> Result<PathBuf, Box<dyn Error>> {
     let program = if cfg!(windows) { "mvn.cmd" } else { "mvn" };
-    for directory in std::env::split_paths(&std::env::var_os("PATH").ok_or("Maven PATH missing")?) {
+    for directory in directories {
         let candidate = directory.join(program);
         if candidate.is_file() {
             return maven_home_from_launcher(&candidate);
@@ -48,13 +60,15 @@ fn maven_home() -> Result<PathBuf, Box<dyn Error>> {
 
 /// Both original builds and clean-directory reproduction use this same owned repository/settings.
 pub fn maven_command(root: &Path) -> Result<Command, Box<dyn Error>> {
+    maven_command_at(root, &maven_home()?)
+}
+fn maven_command_at(root: &Path, home: &Path) -> Result<Command, Box<dyn Error>> {
     let repository = root.join(REPOSITORY);
     fs::create_dir_all(&repository)?;
     if !repository.canonicalize()?.starts_with(root.canonicalize()?) {
         return Err("foreign Maven repository refused".into());
     }
     let settings = root.join(SETTINGS);
-    let home = maven_home()?;
     let mut boot = Vec::new();
     let mut examined = 0;
     for entry in fs::read_dir(home.join("boot"))? {
@@ -451,6 +465,14 @@ pub fn rust_tools() -> Result<(String, String), Box<dyn Error>> {
 }
 
 pub fn rust_materials(host: &str) -> Result<Vec<serde_json::Value>, Box<dyn Error>> {
+    validate_rust_host(host)?;
+    let mut command = Command::new("rustc");
+    command.args(["--print", "sysroot"]);
+    let output = crate::imap_proof_process_075::execute(command, &[], Default::default())?;
+    let sysroot = PathBuf::from(String::from_utf8(output.stdout)?.trim());
+    rust_distribution(&sysroot, host)
+}
+fn validate_rust_host(host: &str) -> Result<(), Box<dyn Error>> {
     if host.is_empty()
         || host.len() > 128
         || !host
@@ -459,10 +481,19 @@ pub fn rust_materials(host: &str) -> Result<Vec<serde_json::Value>, Box<dyn Erro
     {
         return Err("Rust toolchain host bound".into());
     }
-    let mut command = Command::new("rustc");
-    command.args(["--print", "sysroot"]);
-    let output = crate::imap_proof_process_075::execute(command, &[], Default::default())?;
-    let sysroot = PathBuf::from(String::from_utf8(output.stdout)?.trim());
+    Ok(())
+}
+fn rust_material_budget(total: u64, size: u64, count: usize) -> Result<u64, Box<dyn Error>> {
+    let total = total
+        .checked_add(size)
+        .ok_or("Rust distribution aggregate overflow")?;
+    if total > 2 * 1024 * 1024 * 1024u64 || count >= 512 {
+        return Err("Rust distribution aggregate bound".into());
+    }
+    Ok(total)
+}
+fn rust_distribution(sysroot: &Path, host: &str) -> Result<Vec<serde_json::Value>, Box<dyn Error>> {
+    validate_rust_host(host)?;
     let mut result = std::collections::BTreeMap::new();
     let mut total = 0u64;
     for directory in [
@@ -491,12 +522,7 @@ pub fn rust_materials(host: &str) -> Result<Vec<serde_json::Value>, Box<dyn Erro
             }
             let actual = file.canonicalize()?;
             let size = fs::metadata(&actual)?.len();
-            total = total
-                .checked_add(size)
-                .ok_or("Rust distribution aggregate overflow")?;
-            if total > 2 * 1024 * 1024 * 1024u64 || result.len() >= 512 {
-                return Err("Rust distribution aggregate bound".into());
-            }
+            total = rust_material_budget(total, size, result.len())?;
             let path = format!("{directory}/{name}");
             let hash = crate::imap_daemon_probe_075::binary_digest(&actual)?;
             result.insert(path.clone(),serde_json::json!({"kind":"rust-distribution","path":path,"sha256":hash,"bytes":size}));

@@ -67,19 +67,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         Some("announce-sleep") => {
             let file = args.get(1).ok_or("PID file required")?;
             let exit_after = args.get(2).is_some_and(|s| s == "--exit-after-announce");
-            let mut ready = false;
-            loop {
-                std::thread::park_timeout(std::time::Duration::from_millis(2));
-                if !ready {
-                    xtask::imap_coverage_075::flush_profile()?;
-                    std::fs::write(file, std::process::id().to_string())?;
-                    ready = true;
-                }
-                if exit_after {
-                    xtask::imap_coverage_075::flush_profile()?;
-                    return Ok(());
-                }
-            }
+            xtask::imap_proof_process_075::announce_fixture(
+                std::path::Path::new(file),
+                exit_after,
+                xtask::imap_coverage_075::flush_profile,
+            )?;
         }
         Some("both") => {
             std::io::stdout().write_all(b"12345678")?;

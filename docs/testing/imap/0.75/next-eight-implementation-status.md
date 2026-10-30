@@ -197,3 +197,19 @@ publish no qualified reports. Default and instrumented checks each passed
 164 library, two native and 11 real soak tests (two prepared-input cases remain
 in the capture lane), with all-target checks and strict all-feature Clippy.
 P8 still requires a fresh complete capture and strict matrix admission.
+
+The checkpoint/Git/materials block passed 172 library, 13 process and 15 SBOM
+checks in both default and instrumented Windows builds, and 38/39 coverage
+checks. All-target check and strict all-feature Clippy passed. The exact Linux
+process/build sources passed 27 tests and strict Clippy on each Rust 1.88/1.94.
+Checkpoint failures preserve the fixed LLVM writer; Git refuses malformed
+UTF-8/foreign scoped files; distribution tests cover real directory limits and
+Maven launcher spelling without changing the global environment or executing
+fixture bytes.
+
+All four lanes of run `41124550975` reached strict reconstruction and refused
+uncovered changed executable lines; HC/2 run `41124550950` passed. The retained
+Rust 1.94/Java 21 stream has 148 uncovered lines (176 at `633b469a9`). Its ZIP
+SHA-256 matches the uploaded digest, and every retained uncovered source hash
+matches head `0e91855f3`; the CI merge source is `70af0ff90`. This is diagnostic
+only and does not admit P8 or production.

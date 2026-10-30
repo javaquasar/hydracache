@@ -298,29 +298,36 @@ pub fn source_snapshot(root: &Path) -> Result<Vec<Source>> {
 }
 /// The production capture always supplies BASELINE; fixtures use an isolated real Git history.
 pub fn source_snapshot_since(root: &Path, baseline: &str) -> Result<Vec<Source>> {
+    source_snapshot_using(root, baseline, scoped_git)
+}
+fn scoped_git(root: &Path, args: &[&str], paths: &[String]) -> Result<Vec<u8>> {
+    let mut command = Command::new("git");
+    command.current_dir(root).args(args);
+    if !paths.is_empty() {
+        command.arg("--").args(paths);
+    }
+    let result = command.output()?;
+    if !result.status.success() || result.stdout.len() > MAX {
+        return Err(format!(
+            "coverage scoped Git input failed/bounded: status {}, {} output bytes; {}",
+            result.status,
+            result.stdout.len(),
+            String::from_utf8_lossy(&result.stderr)
+                .chars()
+                .take(512)
+                .collect::<String>()
+        )
+        .into());
+    }
+    Ok(result.stdout)
+}
+fn source_snapshot_using(
+    root: &Path,
+    baseline: &str,
+    mut git: impl FnMut(&Path, &[&str], &[String]) -> Result<Vec<u8>>,
+) -> Result<Vec<Source>> {
     if !hex(baseline, 40) {
         return Err("coverage baseline commit identity required".into());
-    }
-    fn git(root: &Path, args: &[&str], paths: &[String]) -> Result<Vec<u8>> {
-        let mut command = Command::new("git");
-        command.current_dir(root).args(args);
-        if !paths.is_empty() {
-            command.arg("--").args(paths);
-        }
-        let result = command.output()?;
-        if !result.status.success() || result.stdout.len() > MAX {
-            return Err(format!(
-                "coverage scoped Git input failed/bounded: status {}, {} output bytes; {}",
-                result.status,
-                result.stdout.len(),
-                String::from_utf8_lossy(&result.stderr)
-                    .chars()
-                    .take(512)
-                    .collect::<String>()
-            )
-            .into());
-        }
-        Ok(result.stdout)
     }
     let patterns = SCOPES
         .iter()
@@ -401,7 +408,7 @@ pub fn source_snapshot_since(root: &Path, baseline: &str) -> Result<Vec<Source>>
     .filter(|p| !p.is_empty())
     {
         if !scoped(path) {
-            continue;
+            return Err("scoped Git inventory returned a foreign source".into());
         }
         if result.len() >= 2048 {
             return Err("coverage source work bound".into());

@@ -122,3 +122,45 @@ fn unavailable_cfg_spans_never_remove_changed_line_obligations() {
     );
     assert!(failure.is_none());
 }
+
+#[test]
+fn scoped_git_inventory_refuses_malformed_diff_encoding_and_foreign_source_names() {
+    let root = tempfile::tempdir().unwrap();
+    for mode in 0..3 {
+        let error = source_snapshot_using(root.path(), BASELINE, |observed, args, _| {
+            assert_eq!(observed, root.path());
+            if args.contains(&"rev-list") {
+                return Ok("0".repeat(40).into_bytes());
+            }
+            if args.contains(&"--name-only") {
+                return Ok(if mode == 0 {
+                    b"crates/xtask/src/unit.rs\0".to_vec()
+                } else {
+                    vec![]
+                });
+            }
+            if args.contains(&"--unified=0") {
+                return Ok(vec![0xff]);
+            }
+            if args.contains(&"ls-files") {
+                return Ok(if mode == 1 {
+                    vec![0xff, 0]
+                } else {
+                    b"foreign.rs\0".to_vec()
+                });
+            }
+            panic!("unexpected scoped Git command: {args:?}")
+        })
+        .unwrap_err();
+        if mode == 2 {
+            assert!(error.to_string().contains("foreign source"));
+        }
+    }
+    assert!(
+        source_snapshot_using(root.path(), "bad-baseline", |_, _, _| panic!(
+            "invalid baseline must not execute Git"
+        ))
+        .is_err()
+    );
+    assert!(!root.path().join("report.json").exists());
+}

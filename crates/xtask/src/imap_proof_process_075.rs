@@ -14,9 +14,35 @@ mod platform;
 mod platform;
 
 pub(crate) const PROCESS_SCOPE: &str = platform::SCOPE;
+#[cfg(test)]
+#[path = "../tests/support/imap_proof_checkpoints_075.rs"]
+mod checkpoint_tests;
 #[cfg(all(test, any(windows, target_os = "linux")))]
 #[path = "../tests/support/imap_proof_pipe_setup_075.rs"]
 mod pipe_setup_tests;
+
+/// Fault-worker announcement only; callers still own process containment/deadlines.
+/// The fixture exposes checkpoint errors without changing the LLVM environment.
+#[doc(hidden)]
+pub fn announce_fixture(
+    file: &std::path::Path,
+    exit_after: bool,
+    mut checkpoint: impl FnMut() -> Result<(), Box<dyn std::error::Error>>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mut ready = false;
+    loop {
+        std::thread::park_timeout(Duration::from_millis(2));
+        if !ready {
+            checkpoint()?;
+            std::fs::write(file, std::process::id().to_string())?;
+            ready = true;
+        }
+        if exit_after {
+            checkpoint()?;
+            return Ok(());
+        }
+    }
+}
 
 #[derive(Debug, Clone, Copy)]
 pub struct ProcessBounds {
