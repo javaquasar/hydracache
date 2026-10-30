@@ -18,13 +18,14 @@ def validate(index,read):
     return data
 
 def retain():
-    data=historical.collect()
+    data=historical.collect(exclude=('third/source-only-review/',))
     for path in historical.walk(HERE):data['source/current/'+path.relative_to(ROOT).as_posix()]=path.read_bytes()
     for folder,digest,label in (('chitchat-copied-root-20261030',PARENT,'primary'),('chitchat-copied-root-verification-20261030',VERIFY,'verification')):
         raw=(OUT.parent/folder/'index.json').read_bytes();r.need(historical.sha(raw)==digest,'whole original parent index');data['parents/'+label+'.json']=raw
     result=historical.reconcile(data);native=r.reconcile(data)
     index=dict(schema='hc074-copied-root-native-v1',parent_sha256=PARENT,parent_verification_sha256=VERIFY,result=result,native_result=native,
-        ordinary_archives_excluded=True,compiled_images_excluded=True,members={n:dict(sha256=historical.sha(b),bytes=len(b)) for n,b in sorted(data.items())})
+        ordinary_archives_excluded=True,compiled_images_excluded=True,duplicate_generated_source_only_restore_excluded=True,
+        members={n:dict(sha256=historical.sha(b),bytes=len(b)) for n,b in sorted(data.items())})
     objects={historical.sha(b):b for b in data.values()};validate(index,objects.__getitem__)
     OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir()
     for h,b in objects.items():(OUT/'objects'/h).write_bytes(b)

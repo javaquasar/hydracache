@@ -37,11 +37,12 @@ def source_files(body):
             result[name]=archive.extractfile(member).read()
     return result
 
-def collect():
+def collect(exclude=()):
     data={}
     for base,prefix in ((FIRST,'first'),(SECOND,'second'),(THIRD,'third')):
         for p in walk(base):
             rel=p.relative_to(base).as_posix()
+            if any((prefix+'/'+rel).startswith(name) for name in exclude):continue
             if rel.startswith('input/archives/') or rel=='input/source.tar':continue
             need(p.suffix.lower() in ('.json','.log','.py','.md','.toml','.rs','.crate','.lock') or p.name=='.gitattributes','declared source/data extension')
             data[prefix+'/'+rel]=p.read_bytes()

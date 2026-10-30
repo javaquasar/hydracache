@@ -4,7 +4,7 @@ from pathlib import Path
 import packet as p
 sys.path.insert(0,str(p.ROOT/'tools/chitchat-copied-root-074'));import root_context as s
 c=s.c;BASE=p.ROOT/'target/chitchat-copied-root-native-evidence-20261030'
-MODES=('controls','syntax','byte-verify','doc-check','performance-contract')
+MODES=('controls','syntax','collection-controls','caller-controls','caller-syntax','byte-verify','doc-check','performance-contract')
 DOCS=('docs/articles/007-optimization-starts-with-measurement.md','docs/testing/performance/0.74/README.md',
  'docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md','docs/testing/performance/0.74/release-closure-execution-plan-20261026.md',
  'docs/testing/performance/0.74/chitchat-copied-root-result-20261030.md','docs/testing/performance/0.74/chitchat-copied-root-native-result-20261030.md')
@@ -12,6 +12,9 @@ DOCS=('docs/articles/007-optimization-starts-with-measurement.md','docs/testing/
 def commands(digest):
     return {
       'controls':[sys.executable,'-B',str(p.HERE/'test_review.py')],
+      'collection-controls':[sys.executable,'-B',str(p.HERE/'test_collection.py')],
+      'caller-controls':[sys.executable,'-B',str(p.ROOT/'tools/chitchat-copied-root-caller-074/test_caller.py')],
+      'caller-syntax':[sys.executable,'-B','-c',"import ast,pathlib;[ast.parse(p.read_bytes(),filename=str(p)) for n in ('chitchat-copied-root-caller-074','chitchat-copied-root-native-evidence-074','chitchat-copied-root-evidence-074') for p in (pathlib.Path('tools')/n).glob('*.py')]"],
       'syntax':[sys.executable,'-B','-c',"import ast,pathlib;[ast.parse(p.read_bytes(),filename=str(p)) for p in pathlib.Path('tools/chitchat-copied-root-native-evidence-074').glob('*.py')]"],
       'byte-verify':[sys.executable,'-B',str(p.HERE/'packet.py'),'verify',digest],
       'doc-check':[str(p.ROOT/'target/debug/xtask.exe'),'doc-check'],
@@ -20,6 +23,8 @@ def commands(digest):
 def source(digest):
     values=s.source()
     for path in p.historical.walk(p.HERE):values[path.relative_to(p.ROOT).as_posix()]=p.historical.sha(path.read_bytes())
+    for path in p.historical.walk(p.ROOT/'tools/chitchat-copied-root-caller-074'):values[path.relative_to(p.ROOT).as_posix()]=p.historical.sha(path.read_bytes())
+    path=p.ROOT/'tools/chitchat-copied-root-evidence-074/packet.py';values[path.relative_to(p.ROOT).as_posix()]=p.historical.sha(path.read_bytes())
     for name in DOCS:
         path=p.ROOT/name
         if path.exists():values[name]=p.historical.sha(path.read_bytes())
@@ -28,7 +33,7 @@ def source(digest):
     return values
 
 def main(mode,digest):
-    c.need(mode in MODES and (digest!='-' or mode in ('controls','syntax')),'fixed current-source check and digest')
+    c.need(mode in MODES and (digest!='-' or mode in ('controls','syntax','collection-controls','caller-controls','caller-syntax')),'fixed current-source check and digest')
     out=BASE/mode;out.mkdir(parents=True,exist_ok=False);argv=commands(digest)[mode];before=source(digest);head=c.snapshot();image=c.sha(Path(argv[0]).read_bytes())
     if mode in ('doc-check','performance-contract'):c.need(image=='e49f4694c8dd18629d33cdeda08d7f2a617ccae14cc3be41f10b52ad233471a9','same held xtask image')
     c.write(out,'intent.json',dict(argv=argv,source=before,git=head,image_sha256=image,bound=1200,floor=4*1024**3,poll=5,cleanup=5,retry=False))
