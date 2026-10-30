@@ -59,7 +59,7 @@ final class DevelopmentHelperPort075Test {
   @Test void prepareIsPureAndContextGrantsBoundsAndProductionAreFenced() {
     var service = owner(); var queue = new Queue(); var clock = new AtomicLong(); var port = port(service, queue, clock, grant(8));
     var before = service.resourceUsage(); var command = new IMapLocalHelper.Checkpoint(10);
-    var prepared = port.prepare(binding(), id(1), command); assertEquals(before, service.resourceUsage()); assertEquals(0, clock.get()); assertTrue(queue.tasks.isEmpty());
+    var prepared = port.prepare(binding(), id(1), command); assertEquals(command.deadline(),prepared.deadline()); assertEquals(before, service.resourceUsage()); assertEquals(0, clock.get()); assertTrue(queue.tasks.isEmpty());
     var other = port(service, queue, clock, grant(9)); assertThrows(SecurityException.class, () -> other.invoke(prepared));
     var bad = new DevelopmentBackendPort075.Binding(1, 2, 3, 0, 4, 6, "consumer");
     assertThrows(DevelopmentBackendPort075.BoundaryException.class, () -> port.prepare(bad, id(1), command));

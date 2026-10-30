@@ -127,7 +127,7 @@ fn round(service: &UnifiedIMapService, seed: u64, position: u64) -> Result<Strin
     Ok(state_digest(&value))
 }
 fn emit(frame: &Frame) -> Result<(), Box<dyn Error>> {
-    crate::imap_coverage_075::flush_profile();
+    crate::imap_coverage_075::flush_profile()?;
     let mut out = std::io::stdout().lock();
     serde_json::to_writer(&mut out, frame)?;
     writeln!(out)?;
@@ -168,12 +168,12 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         reason: None,
     };
     if config.fault == "malformed" {
-        crate::imap_coverage_075::flush_profile();
+        crate::imap_coverage_075::flush_profile()?;
         println!("not-json");
         return Ok(());
     }
     if config.fault == "flood" {
-        crate::imap_coverage_075::flush_profile();
+        crate::imap_coverage_075::flush_profile()?;
         std::io::stdout().write_all(&[b'x'; 8192])?;
         return Ok(());
     }
@@ -257,10 +257,11 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     frame.owners = owners(&service);
     emit(&frame)?;
     if config.fault == "hang" {
-        crate::imap_coverage_075::flush_profile();
+        crate::imap_coverage_075::flush_profile()?;
         loop {
             std::thread::sleep(Duration::from_millis(50));
         }
     }
+    crate::imap_coverage_075::flush_profile()?;
     Ok(())
 }

@@ -87,6 +87,26 @@ fn policy_cannot_silently_weaken_the_denominator_or_platform_claim() {
     assert!(validate_policy(&changed).is_err());
 }
 #[test]
+fn atomic_checkpoint_replaces_complete_bytes_and_preserves_previous_on_failure() {
+    let root = tempfile::tempdir().unwrap();
+    let directory = root.path().join("role");
+    std::fs::create_dir(&directory).unwrap();
+    persist_profile(&directory, 17, b"first fixture; not a valid LLVM report").unwrap();
+    persist_profile(&directory, 17, b"second").unwrap();
+    let path = directory.join("17.profraw");
+    assert_eq!(std::fs::read(&path).unwrap(), b"second");
+    assert!(persist_profile(&directory, 0, b"invalid").is_err());
+    assert!(persist_profile(&directory, 17, b"").is_err());
+    assert!(persist_profile(Path::new("relative"), 17, b"invalid").is_err());
+    assert_eq!(std::fs::read(path).unwrap(), b"second");
+    assert_eq!(
+        std::fs::read_dir(root.path().join("profile-staging"))
+            .unwrap()
+            .count(),
+        0
+    );
+}
+#[test]
 fn missing_empty_foreign_duplicate_and_platform_mixed_components_refuse() {
     let mut sources = vec![source("crates/xtask/src/unit.rs")];
     let data = Lines::from([(
@@ -322,6 +342,7 @@ fn trusted_runner_flags_are_explicit_and_do_not_use_the_live_target() {
         .contains("instrument-coverage"));
     assert_eq!(vars["RUSTC_WRAPPER"], None);
     assert_eq!(vars["CARGO_INCREMENTAL"], Some("0".into()));
+    assert_eq!(vars["RUST_TEST_THREADS"], Some("1".into()));
 }
 fn git(root: &Path, args: &[&str]) -> String {
     let result = Command::new("git")

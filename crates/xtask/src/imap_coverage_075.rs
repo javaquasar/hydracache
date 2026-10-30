@@ -15,6 +15,7 @@ use syn::{spanned::Spanned, visit::Visit};
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 pub const BASELINE: &str = "98d7321b1cda568c386cbfdef1993c7e4dcebe38";
 const MAX: usize = 8 * 1024 * 1024;
+const MAX_RAW: usize = 128 * 1024 * 1024;
 const SCOPES: &[&str] = &[
     "crates/xtask/src/",
     "crates/hydracache-cluster-testkit/src/",
@@ -24,20 +25,60 @@ const SCOPES: &[&str] = &[
     "tests/rust-imap-contract-consumer-075/src/",
 ];
 pub type Lines = BTreeMap<String, BTreeMap<u32, u64>>;
-/// A fault canary may be killed by its owner. Retain counters before publishing its frame.
-/// This feature is linked only by the trusted `-C instrument-coverage` runner.
-pub fn flush_profile() {
+/// Snapshot counters without resetting them, then atomically publish the complete buffer.
+pub fn flush_profile() -> Result<()> {
     #[cfg(feature = "imap-075-coverage")]
     {
         unsafe extern "C" {
-            fn __llvm_profile_write_file() -> std::ffi::c_int;
+            fn __llvm_profile_get_size_for_buffer() -> u64;
+            fn __llvm_profile_write_buffer(buffer: *mut std::ffi::c_char) -> std::ffi::c_int;
         }
-        // SAFETY: LLVM supplies this no-argument instrumentation runtime symbol.
-        // A single worker thread calls it; it neither changes service state nor resets counters.
-        unsafe {
-            __llvm_profile_write_file();
+        // SAFETY: LLVM reports the exact size required by write_buffer for this executable.
+        let size = usize::try_from(unsafe { __llvm_profile_get_size_for_buffer() })?;
+        if size == 0 || size > MAX_RAW {
+            return Err("LLVM checkpoint buffer byte bound".into());
         }
+        let mut bytes = vec![0u8; size];
+        // SAFETY: bytes owns the full reported writable allocation. Only this worker
+        // thread performs snapshots, and the runtime neither retains nor frees it.
+        if unsafe { __llvm_profile_write_buffer(bytes.as_mut_ptr().cast()) } != 0 {
+            return Err("LLVM buffer serialization failed".into());
+        }
+        let pattern = PathBuf::from(
+            std::env::var_os("LLVM_PROFILE_FILE")
+                .ok_or("explicit LLVM checkpoint path required")?,
+        );
+        if !pattern.is_absolute()
+            || pattern.file_name().and_then(|s| s.to_str()) != Some("%p.profraw")
+        {
+            return Err("fixed PID-specific LLVM checkpoint pattern required".into());
+        }
+        persist_profile(
+            pattern.parent().ok_or("LLVM profile parent")?,
+            std::process::id(),
+            &bytes,
+        )?;
     }
+    Ok(())
+}
+/// Publication only; the independent LLVM reader still validates the actual profile bytes.
+pub fn persist_profile(directory: &Path, pid: u32, bytes: &[u8]) -> Result<()> {
+    use std::io::Write;
+    if !directory.is_absolute() || pid == 0 || bytes.is_empty() || bytes.len() > MAX_RAW {
+        return Err("profile publication path/PID/byte bound".into());
+    }
+    let staging = directory
+        .parent()
+        .ok_or("profile staging parent")?
+        .join("profile-staging");
+    fs::create_dir_all(&staging)?;
+    let mut file = tempfile::Builder::new()
+        .prefix("partial-")
+        .tempfile_in(staging)?;
+    file.write_all(bytes)?;
+    file.flush()?;
+    file.persist(directory.join(format!("{pid}.profraw")))?;
+    Ok(())
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -951,6 +992,7 @@ fn instrumentation(command: &mut Command, root: &Path, raw: &Path) {
         .env("CARGO_PROFILE_TEST_DEBUG", "0")
         .env("CARGO_INCREMENTAL", "0")
         .env("CARGO_BUILD_JOBS", "2")
+        .env("RUST_TEST_THREADS", "1")
         .env("LLVM_PROFILE_FILE", raw.join("%p.profraw"));
 }
 pub fn runner_command(root: &Path, raw: &Path) -> Command {
@@ -1443,11 +1485,11 @@ fn raw_profiles(root: &Path, directory: &Path) -> Result<Vec<Artifact>> {
             {
                 return Err("foreign/oversized LLVM raw profile set".into());
             }
-            let reference = artifact(root, &path, 32 * 1024 * 1024)?;
+            let reference = artifact(root, &path, MAX_RAW)?;
             total = total
                 .checked_add(reference.bytes)
                 .ok_or("LLVM profile bytes overflow")?;
-            if reference.bytes == 0 || total > 512 * 1024 * 1024 {
+            if reference.bytes == 0 || total > 4 * 1024 * 1024 * 1024 {
                 return Err("LLVM raw profile aggregate bound".into());
             }
             result.push(reference);
@@ -1589,11 +1631,7 @@ fn regenerate(
     let profdata = temp.path().join("merged.profdata");
     let mut list = tempfile::NamedTempFile::new_in(temp.path())?;
     for reference in raw {
-        writeln!(
-            list,
-            "{}",
-            bound(root, reference, 32 * 1024 * 1024)?.display()
-        )?;
+        writeln!(list, "{}", bound(root, reference, MAX_RAW)?.display())?;
     }
     list.flush()?;
     let mut command = Command::new(&tools["llvm-profdata"]);

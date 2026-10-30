@@ -1,6 +1,12 @@
 //! Deliberately faulty local proof workers. Never launched by a production path.
 use std::io::{Read, Write};
 use std::process::{Command, Stdio};
+// LLVM's supported manual-buffer mode: this binary may be deliberately killed.
+// Suppress the default initializer/atexit writer; checkpoints are published atomically.
+#[cfg(feature = "imap-075-coverage")]
+#[used]
+#[unsafe(no_mangle)]
+static __llvm_profile_runtime: std::ffi::c_int = 0;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = std::env::args().skip(1).collect::<Vec<_>>();
     match args.first().map(String::as_str) {
@@ -36,32 +42,38 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("sleep" | "ignore_stdin") => loop {
             std::thread::park_timeout(std::time::Duration::from_secs(60));
         },
-        Some("nested-controller") => {
+        Some("nested-controller" | "nested-controller-complete") => {
             let mut child = Command::new(std::env::current_exe()?);
             child
                 .arg("announce-sleep")
                 .arg(args.get(1).ok_or("nested PID file required")?);
-            xtask::imap_proof_process_075::execute_observed(
+            if args[0] == "nested-controller-complete" {
+                child.arg("--exit-after-announce");
+            }
+            xtask::imap_proof_process_075::execute(
                 child,
                 &[],
                 xtask::imap_proof_process_075::ProcessBounds {
                     timeout: std::time::Duration::from_secs(30),
                     ..Default::default()
                 },
-                |_| {
-                    xtask::imap_coverage_075::flush_profile();
-                    Ok(())
-                },
             )?;
         }
         Some("announce-sleep") => {
-            std::fs::write(
-                args.get(1).ok_or("PID file required")?,
-                std::process::id().to_string(),
-            )?;
+            let file = args.get(1).ok_or("PID file required")?;
+            let exit_after = args.get(2).is_some_and(|s| s == "--exit-after-announce");
+            let mut ready = false;
             loop {
-                xtask::imap_coverage_075::flush_profile();
-                std::thread::park_timeout(std::time::Duration::from_secs(60));
+                std::thread::park_timeout(std::time::Duration::from_millis(2));
+                if !ready {
+                    xtask::imap_coverage_075::flush_profile()?;
+                    std::fs::write(file, std::process::id().to_string())?;
+                    ready = true;
+                }
+                if exit_after {
+                    xtask::imap_coverage_075::flush_profile()?;
+                    return Ok(());
+                }
             }
         }
         Some("stdout" | "stderr") => {
@@ -83,6 +95,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .spawn()?;
             let pid = child.id();
             if let Some(file) = args.get(1) {
+                xtask::imap_coverage_075::flush_profile()?;
                 std::fs::write(file, pid.to_string())?;
             }
             writeln!(std::io::stdout(), "descendant:{pid}")?;
@@ -108,5 +121,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         _ => return Err("unknown proof worker mode".into()),
     }
+    xtask::imap_coverage_075::flush_profile()?;
     Ok(())
 }

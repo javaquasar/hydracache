@@ -82,6 +82,18 @@ fn outer_refusal_reaps_a_cooperative_nested_controller_group() {
     assert_eq!(failure.kind, FailureKind::Observation);
     assert!(!live(nested_pid.expect("nested child started")));
 }
+#[test]
+fn terminal_nested_fixture_can_also_complete_and_reap_normally() {
+    let temp = tempfile::tempdir().unwrap();
+    let file = temp.path().join("completed-pid");
+    let mut worker = command("nested-controller-complete");
+    worker.arg(&file);
+    let result = execute(worker, &[], bounds()).unwrap();
+    assert!(result.direct_child_reaped);
+    assert_eq!(result.remaining_live_members, 0);
+    let pid = std::fs::read_to_string(file).unwrap().parse().unwrap();
+    assert!(!live(pid));
+}
 fn bounds() -> ProcessBounds {
     ProcessBounds {
         timeout: Duration::from_secs(3),

@@ -22,6 +22,23 @@ analysis process exits before the final report is reconstructed. A measurement
 with uncovered lines is retained as `analysis.json` with `qualification=false`;
 it cannot satisfy the final gate.
 
+LLVM profiles are bounded at 128 MiB per file, 2,048 files and 4 GiB in total.
+The first actual capture observed 33–50 MiB profiles for this large development
+tooling binary. Coverage test cases run one at a time to keep profile write I/O
+out of unrelated short deadline canaries; explicit concurrency inside each test
+and real multi-client workload remains exercised. These bounds and scheduling
+are measurement controls and do not change the ordinary test or production plan.
+
+Intentionally killed proof/soak workers suppress the automatic exit dump. They
+serialize bounded counter buffers and atomically replace their PID profile before
+publishing observable frames. A kill during serialization/publication leaves the
+previous complete checkpoint intact. `profile-staging/` holds only incomplete
+temporary writes and is never a counter input. Every admitted `.profraw` is still
+required to merge successfully; corrupt profiles are not discarded or skipped.
+Only those two worker binaries use the documented
+[LLVM manual-buffer runtime mode](https://github.com/llvm/llvm-project/blob/main/clang/docs/SourceBasedCodeCoverage.md#using-the-profiling-runtime-without-a-filesystem).
+Ordinary tooling/test controllers retain LLVM's exit dump. Counters are never reset.
+
 The final check reconstructs LLVM LCOV and JaCoCo source counts from the retained
 execution profiles and exact binaries/JARs. Source SHA, all scoped source bytes,
 tool distributions, compiler cfg/features, Cargo executable sets, Java test
