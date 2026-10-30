@@ -1,0 +1,125 @@
+"""Fixed local G actions in original Windows Job owner, no retries or shell jobs."""
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+import traceback
+import recipe as p
+c=p.c
+PURE=('serialize::tests::','delta::tests::','message::tests::','digest::tests::','state::tests::','security_review::',
+ 'serialize::borrowed_context_control::buffer_error','serialize::borrowed_context_control::independent_writers')
+OBS=('serialize::security_stream_review::observe_streams','delta::security_delta_review::supported_delta_operations')
+
+def parts(mode):
+    fields=mode.split('-');c.need(len(fields) in (2,3),'fixed compiler suffix')
+    action,v=fields[:2];compiler=fields[2] if len(fields)==3 else '194'
+    c.need(v in ('B','G') and compiler in ('194','188'),'one candidate/fixed compilers');return action,v,compiler
+
+def source():
+    value=c.source()
+    for path in p.HERE.iterdir():
+        if path.is_file():value[path.relative_to(c.ROOT).as_posix()]=c.sha(path.read_bytes())
+    for path in (p.BASE/'fixtures').rglob('*'):
+        c.need(not path.is_symlink() and not getattr(path,'is_junction',lambda:False)(),'regular actual source')
+        if path.is_file():value[path.relative_to(c.ROOT).as_posix()]=c.sha(path.read_bytes())
+    return value
+
+def label(action,v,compiler):return action+'-'+v+('-188' if compiler=='188' else '')
+
+def phase(mode):return p.BASE/mode
+
+
+def image(v,compiler):
+    rows=[json.loads(s) for s in (p.BASE/label('build',v,compiler)/'stdout.log').read_text().splitlines() if s.startswith('{')]
+    found=[r for r in rows if r.get('reason')=='compiler-artifact' and r.get('executable') and r['profile']['test'] and r['target']['kind']==['lib']]
+    c.need([r['success'] for r in rows if r.get('reason')=='build-finished']==[True] and len(found)==1 and found[0]['fresh'] is False,'one fresh actual build')
+    path=Path(found[0]['executable']);c.need(Path(found[0]['target']['src_path']).resolve()==(p.BASE/'fixtures'/v/'src/lib.rs').resolve(),'actual source identity')
+    c.need(path.resolve().is_relative_to((p.BASE/'builds'/label('windows',v,compiler)).resolve()),'independent target identity');return path
+
+def command(mode):
+    c.need(p.EXECUTION_ALLOWED and not (c.ROOT/'target/chitchat-frame-20261030/STOP.json').exists(),'G stopped at first retained-output regression; no further execution')
+    action,v,compiler=parts(mode);tool,env,_=c.environment(compiler)
+    args=['--manifest-path',str(p.BASE/'fixtures'/v/'Cargo.toml'),'--target-dir',str(p.BASE/'builds'/label('windows',v,compiler)),
+      '--offline','--locked','--release','--all-features']
+    if action=='build':argv=[str(tool/'cargo.exe'),'test',*args,'--lib','--no-run','--message-format=json']
+    elif action in ('check','clippy'):
+        argv=[str(tool/'cargo.exe'),action,*args,'--all-targets']
+        if action=='clippy':argv+=['--','-D','warnings']
+    elif action=='catalog':argv=[str(image(v,compiler)),'--list']
+    elif action=='retention':argv=[str(image(v,compiler)),'--exact','serialize::retained_finish::retained_finish_output','--test-threads=1','--show-output']
+    elif action.startswith('frame'):
+        index=int(action[5:]);c.need(0<=index<4 and v=='G','four new frame controls')
+        catalog=json.loads((phase(label('catalog',v,compiler))/'result.json').read_bytes())['catalog']
+        cases=[n for n in catalog if n.startswith('serialize::frame_review::')]
+        c.need(len(cases)==4,'complete frame controls');argv=[str(image(v,compiler)),'--exact',cases[index],'--test-threads=1','--show-output']
+    elif action=='counterexample':argv=[str(image(v,compiler)),'--exact','serialize::fused_review::tiny_mtu_counterexample','--test-threads=1','--show-output']
+    elif action.startswith('old'):
+        index=int(action[3:]);c.need(index in (0,1) and v=='G','original MTU contracts')
+        test=('serialize::security_stream_review::minimal_bound_contract','serialize::security_stream_review::all_stream_bounds_hold')[index]
+        argv=[str(image(v,compiler)),'--exact',test,'--test-threads=1','--show-output']
+    elif action.startswith('case'):
+        index=int(action[4:]);c.need(0<=index<10 and v=='G','fixed individual F controls')
+        catalog=json.loads((phase(label('catalog',v,compiler))/'result.json').read_bytes())['catalog']
+        cases=[n for n in catalog if n.startswith(('serialize::fused_review::','delta::fused_review::'))]
+        c.need(len(cases)==10,'all new controls');argv=[str(image(v,compiler)),'--exact',cases[index],'--test-threads=1','--show-output']
+    elif action=='compat':argv=[str(image(v,compiler)),*PURE,*OBS,'serialize::call_context_review::','--test-threads=1','--show-output']
+    else:raise ValueError('fixed actions')
+    return argv,env,5 if action in ('counterexample','retention') or action.startswith(('case','old','frame')) else 10 if action=='catalog' else 1200
+
+def negative(mode):return parts(mode)[:2]==('counterexample','B')
+
+def accounting(mode):
+    action,v,compiler=parts(mode)
+    if action not in ('counterexample','compat','catalog','retention') and not action.startswith(('case','old','frame')):return {}
+    raw=(phase(mode)/'stdout.log').read_text(encoding='utf8').replace('\r\n','\n')
+    if action=='catalog':
+        names=sorted(s[:-6] for s in raw.splitlines() if s.endswith(': test'))
+        c.need(len(names)==len(set(names)) and 'serialize::fused_review::tiny_mtu_counterexample' in names,'complete actual catalog')
+        c.need(raw.splitlines()[-1]==str(len(names))+' tests, 0 benchmarks','complete catalog footer');return dict(catalog=names)
+    catalog=json.loads((phase(label('catalog',v,compiler))/'result.json').read_bytes())['catalog']
+    if action=='counterexample':expected=['serialize::fused_review::tiny_mtu_counterexample']
+    elif action=='retention':expected=['serialize::retained_finish::retained_finish_output']
+    elif action.startswith('frame'):expected=[[n for n in catalog if n.startswith('serialize::frame_review::')][int(action[5:])]]
+    elif action.startswith('old'):expected=[('serialize::security_stream_review::minimal_bound_contract','serialize::security_stream_review::all_stream_bounds_hold')[int(action[3:])]]
+    elif action.startswith('case'):expected=[[n for n in catalog if n.startswith(('serialize::fused_review::','delta::fused_review::'))][int(action[4:])]]
+    else:expected=[n for n in catalog if n.startswith(PURE+('serialize::call_context_review::',)) or n in OBS]
+    neg=negative(mode);rows=re.findall(r'^test (.+?) (?:- should panic )?\.\.\. (ok|FAILED)$',raw,re.M)
+    c.need(sorted(n for n,_ in rows)==sorted(expected) and all(result==('FAILED' if neg else 'ok') for _,result in rows),'exact selected outcomes')
+    summaries=re.findall(r'^test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;',raw,re.M)
+    c.need(summaries==[('FAILED' if neg else 'ok','0' if neg else str(len(expected)),'1' if neg else '0','0','0',str(len(catalog)-len(expected)))],'complete actual counts')
+    extra={}
+    if action=='retention':
+        lines=[s.split('HC074_RETAINED_FINISH:',1)[1] for s in raw.splitlines() if 'HC074_RETAINED_FINISH:' in s]
+        c.need(len(lines)==1,'one full retained observation');report=json.loads(lines[0])
+        c.need(report['variant']==v and len(report['records'])==2 and report['records'][0]==report['records'][1],'two actual same-image observations and runtime variant')
+        extra['observation']=report
+    return dict(passed=0 if neg else len(expected),failed=1 if neg else 0,expected_failure=neg,selected=expected,**extra)
+
+def main(mode):
+    c.need(p.EXECUTION_ALLOWED and not (c.ROOT/'target/chitchat-frame-20261030/STOP.json').exists(),'G stopped; no new owned phase')
+    out=phase(mode)
+    out.mkdir(parents=True,exist_ok=False);before=source();head=c.snapshot();argv,env,bound=command(mode)
+    c.write(out,'intent.json',dict(argv=argv,source=before,git=head,image_sha256=c.sha(Path(argv[0]).read_bytes()),
+      bound=bound,floor=4*1024**3,poll=5,cleanup=5,retry=False))
+    result=dict(complete=False,root_adopted=False,resources_qualified=False)
+    with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+        try:
+            child=subprocess.run([sys.executable,'-B',str(Path(__file__)),mode,'worker'],stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,env=env,timeout=bound+10)
+            own=json.loads((out/'execution.json').read_bytes());expected=101 if negative(mode) else 0
+            c.need(child.returncode==own['exit']==expected and own['retired'] and not own['errors'],'complete original owned outcome')
+            c.need(source()==before and c.snapshot()==head and c.sha(Path(argv[0]).read_bytes())==json.loads((out/'intent.json').read_bytes())['image_sha256'],'whole source/ref/image postflight')
+            result.update(accounting(mode));result['complete']=True
+        except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+    c.write(out,'result.json',result);print(json.dumps(dict(mode=mode,**{k:v for k,v in result.items() if k not in ('catalog','selected')})))
+    raise SystemExit(0 if result['complete'] else 1)
+
+if __name__=='__main__':
+    c.need(os.name=='nt' and len(sys.argv) in (2,3),'fixed Windows controls')
+    if len(sys.argv)==3:
+        c.need(sys.argv[2]=='worker','fixed worker');argv,env,bound=command(sys.argv[1]);os.environ.clear();os.environ.update(env)
+        _,v,_=parts(sys.argv[1]);own=c.owned._owned(c.owned.load_job().WindowsJob(),argv,str(p.BASE/'fixtures'/v),c.capacity,bound=bound)
+        out=phase(sys.argv[1])
+        c.write(out,'execution.json',own);raise SystemExit(own['exit'])
+    main(sys.argv[1])
