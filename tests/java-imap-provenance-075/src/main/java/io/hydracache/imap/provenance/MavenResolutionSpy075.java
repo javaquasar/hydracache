@@ -42,6 +42,11 @@ public final class MavenResolutionSpy075 implements EventSpy {
       }
     }
     for (String path : List.of("release","lib/modules","bin/java" + (File.separatorChar == '\\' ? ".exe" : ""),"bin/javac" + (File.separatorChar == '\\' ? ".exe" : ""),"bin/jar" + (File.separatorChar == '\\' ? ".exe" : ""))) tool("jdk",jdk,jdk.resolve(path));
+    tool("jdk",jdk,jdk.resolve(File.separatorChar=='\\'?"bin/server/jvm.dll":"lib/server/libjvm.so"));
+    Path logging=maven.resolve("conf/logging");
+    if(Files.isDirectory(logging))try(var files=Files.list(logging)){
+      var configs=files.filter(Files::isRegularFile).sorted().toList();if(configs.size()>64)throw new IOException("Maven logging input bound");for(var config:configs)tool("maven",maven,config);
+    }
     initialized = true;
   }
   private void tool(String kind,Path base,Path file) throws Exception {

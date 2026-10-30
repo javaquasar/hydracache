@@ -23,6 +23,8 @@ class MavenResolutionSpy075Test {
     Path maven=Files.createDirectories(root.resolve("maven")),jdk=Files.createDirectories(root.resolve("jdk"));
     for(String path:List.of("lib/core.jar","boot/boot.jar")){Path p=maven.resolve(path);Files.createDirectories(p.getParent());Files.writeString(p,"tool");}
     for(String path:List.of("release","lib/modules","bin/java","bin/javac","bin/jar")){if(File.separatorChar=='\\'&&path.startsWith("bin/"))path+=".exe";Path p=jdk.resolve(path);Files.createDirectories(p.getParent());Files.writeString(p,"tool");}
+    Path vm=jdk.resolve(File.separatorChar=='\\'?"bin/server/jvm.dll":"lib/server/libjvm.so");Files.createDirectories(vm.getParent());Files.writeString(vm,"vm-tool");
+    Path logging=maven.resolve("conf/logging/logger.properties");Files.createDirectories(logging.getParent());Files.writeString(logging,"public-tool-config");
     String oldMaven=System.getProperty("maven.home"),oldJava=System.getProperty("java.home");var spy=new MavenResolutionSpy075();
     try{System.setProperty("maven.home",maven.toString());System.setProperty("java.home",jdk.toString());spy.init(()->Map.of("userProperties",props));}
     finally{if(oldMaven==null)System.clearProperty("maven.home");else System.setProperty("maven.home",oldMaven);System.setProperty("java.home",oldJava);}

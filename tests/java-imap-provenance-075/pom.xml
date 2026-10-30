@@ -8,7 +8,7 @@
   </dependencies>
   <build><plugins>
     <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.14.1</version></plugin>
-    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.4</version><configuration><failIfNoTests>true</failIfNoTests></configuration></plugin>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.4</version><configuration><argLine>@{argLine} -Xms16m -Xmx256m -XX:ActiveProcessorCount=2 -XX:ReservedCodeCacheSize=32m -XX:CompressedClassSpaceSize=64m -XX:ErrorFile=${project.build.directory}/jvm-%p.log</argLine><failIfNoTests>true</failIfNoTests></configuration></plugin>
     <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId><version>3.4.1</version></plugin>
     <plugin><groupId>org.jacoco</groupId><artifactId>jacoco-maven-plugin</artifactId><version>0.8.13</version><executions><execution><goals><goal>prepare-agent</goal></goals></execution><execution><id>report</id><phase>test</phase><goals><goal>report</goal></goals></execution></executions></plugin>
   </plugins></build>

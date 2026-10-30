@@ -33,6 +33,10 @@ predicates such as `cfg(any())` even in a host-filtered graph. Rust compiler-dri
 stdlib and distribution library inputs are hashed in addition to the launchers.
 
 Maven builds use the fixed credential-free settings and a workspace-owned repository.
+The installed Maven distribution is started with its ClassWorlds entry point and
+a checked-in realm configuration. JVM heap, code cache, class space and CPU count
+are bounded explicitly. The distribution JARs, logging configuration and native
+JVM implementation are hashed. JDK javac/jar helper startups have fixed VM limits.
 An EventSpy compiled against the installed Maven captures actual resolver inputs,
 including dynamically loaded Surefire providers, plugin dependencies, POMs and BOMs.
 Its explicit successful terminal is mandatory because Maven can swallow spy errors.

@@ -37,7 +37,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.5.4</version>
-        <configuration><failIfNoTests>true</failIfNoTests></configuration>
+        <configuration><argLine>@{argLine} -Xms16m -Xmx256m -XX:ActiveProcessorCount=2 -XX:ReservedCodeCacheSize=32m -XX:CompressedClassSpaceSize=64m -XX:ErrorFile=${project.build.directory}/jvm-%p.log</argLine><failIfNoTests>true</failIfNoTests></configuration>
       </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>

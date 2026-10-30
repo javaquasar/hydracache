@@ -905,6 +905,7 @@ fn inputs(root: &Path, capture: &Capture) -> Result<Vec<Artifact>> {
     for path in [
         "Cargo.lock",
         crate::imap_sbom_capture_075::SETTINGS,
+        crate::imap_sbom_capture_075::CLASSWORLDS,
         SPY,
         "docs/testing/imap/0.75/development-sbom-profile.json",
         "docs/testing/imap/0.75/schemas/development-provenance.schema.json",
@@ -935,7 +936,19 @@ fn pom_metadata(root: &Path, paths: &BTreeSet<String>) -> Result<Value> {
     list.flush()?;
     let mut command = Command::new(crate::imap_api_differential::java_executable());
     command
-        .args(["-Xms16m", "-Xmx256m", "-cp"])
+        .args([
+            "-Xms16m",
+            "-Xmx128m",
+            "-XX:ActiveProcessorCount=2",
+            "-XX:ReservedCodeCacheSize=32m",
+            "-XX:CompressedClassSpaceSize=64m",
+        ])
+        .arg(format!(
+            "-XX:ErrorFile={}",
+            root.join("target/imap-075/pom-metadata-jvm-%p.log")
+                .display()
+        ))
+        .arg("-cp")
         .arg(root.join(SPY))
         .arg("io.hydracache.imap.provenance.MavenInventoryMain075")
         .arg(root)

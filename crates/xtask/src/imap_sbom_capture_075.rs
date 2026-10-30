@@ -11,6 +11,40 @@ use std::{
 pub const REPOSITORY: &str = "target/imap-075/maven-repository";
 pub const SETTINGS: &str = "docs/testing/imap/0.75/maven-provenance-settings.xml";
 pub const SPY: &str = "tests/java-imap-provenance-075/target/provenance-spy.jar";
+pub const CLASSWORLDS: &str = "docs/testing/imap/0.75/maven-classworlds.conf";
+
+pub fn maven_home_from_launcher(launcher: &Path) -> Result<PathBuf, Box<dyn Error>> {
+    let canonical = launcher.canonicalize()?;
+    let spelling = canonical.to_string_lossy();
+    let spelling = if let Some(unc) = spelling.strip_prefix(r"\\?\UNC\") {
+        format!(r"\\{unc}")
+    } else {
+        spelling
+            .strip_prefix(r"\\?\")
+            .unwrap_or(&spelling)
+            .to_owned()
+    };
+    let path = PathBuf::from(spelling);
+    let bin = path.parent().ok_or("Maven launcher parent")?;
+    let home = bin.parent().ok_or("Maven distribution parent")?;
+    if bin.file_name().and_then(|s| s.to_str()) != Some("bin")
+        || !home.join("lib").is_dir()
+        || !home.join("boot").is_dir()
+    {
+        return Err("Maven distribution layout unsupported".into());
+    }
+    Ok(home.into())
+}
+fn maven_home() -> Result<PathBuf, Box<dyn Error>> {
+    let program = if cfg!(windows) { "mvn.cmd" } else { "mvn" };
+    for directory in std::env::split_paths(&std::env::var_os("PATH").ok_or("Maven PATH missing")?) {
+        let candidate = directory.join(program);
+        if candidate.is_file() {
+            return maven_home_from_launcher(&candidate);
+        }
+    }
+    Err("installed Maven launcher missing from PATH".into())
+}
 
 /// Both original builds and clean-directory reproduction use this same owned repository/settings.
 pub fn maven_command(root: &Path) -> Result<Command, Box<dyn Error>> {
@@ -20,9 +54,56 @@ pub fn maven_command(root: &Path) -> Result<Command, Box<dyn Error>> {
         return Err("foreign Maven repository refused".into());
     }
     let settings = root.join(SETTINGS);
-    let mut command = Command::new(if cfg!(windows) { "mvn.cmd" } else { "mvn" });
+    let home = maven_home()?;
+    let mut boot = Vec::new();
+    let mut examined = 0;
+    for entry in fs::read_dir(home.join("boot"))? {
+        examined += 1;
+        if examined > 256 {
+            return Err("Maven boot directory bound".into());
+        }
+        let path = entry?.path();
+        if path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .is_some_and(|name| name.starts_with("plexus-classworlds-") && name.ends_with(".jar"))
+        {
+            boot.push(path);
+        }
+    }
+    if boot.len() != 1 {
+        return Err("Maven ClassWorlds launcher ambiguous/missing".into());
+    }
+    let mut command = Command::new(crate::imap_api_differential::java_executable());
     command
         .current_dir(root)
+        .args([
+            "-Xms32m",
+            "-Xmx512m",
+            "-XX:ActiveProcessorCount=2",
+            "-XX:ReservedCodeCacheSize=64m",
+            "-XX:CompressedClassSpaceSize=64m",
+        ])
+        .arg(format!(
+            "-XX:ErrorFile={}",
+            root.join("target/imap-075/maven-jvm-%p.log").display()
+        ))
+        .arg(format!(
+            "-Dclassworlds.conf={}",
+            root.join(CLASSWORLDS).display()
+        ))
+        .arg(format!("-Dmaven.home={}", home.display()))
+        .arg(format!(
+            "-Dlibrary.jansi.path={}",
+            home.join("lib/jansi-native").display()
+        ))
+        .arg(format!(
+            "-Dmaven.multiModuleProjectDirectory={}",
+            root.display()
+        ))
+        .arg("-classpath")
+        .arg(&boot[0])
+        .arg("org.codehaus.plexus.classworlds.launcher.Launcher")
         .args(["-B", "-Dstyle.color=never", "--strict-checksums", "-s"])
         .arg(&settings)
         .arg("-gs")
@@ -31,6 +112,8 @@ pub fn maven_command(root: &Path) -> Result<Command, Box<dyn Error>> {
     command
         .env_remove("MAVEN_ARGS")
         .env_remove("MAVEN_OPTS")
+        .env_remove("MAVEN_DEBUG_OPTS")
+        .env_remove("MAVEN_PROJECTBASEDIR")
         .env("MAVEN_SKIP_RC", "1");
     Ok(command)
 }
@@ -136,6 +219,17 @@ impl Capture {
         }));
         javac
             .args([
+                "-J-Xms16m",
+                "-J-Xmx256m",
+                "-J-XX:ActiveProcessorCount=2",
+                "-J-XX:ReservedCodeCacheSize=32m",
+                "-J-XX:CompressedClassSpaceSize=64m",
+            ])
+            .arg(format!(
+                "-J-XX:ErrorFile={}",
+                root.join("target/imap-075/javac-jvm-%p.log").display()
+            ))
+            .args([
                 "--release",
                 "17",
                 "-proc:none",
@@ -167,11 +261,22 @@ impl Capture {
         } else {
             "bin/jar"
         }));
-        jar.args(["--create", "--date=2026-10-29T00:00:00Z", "--file"])
-            .arg(root.join(SPY))
-            .arg("-C")
-            .arg(target)
-            .arg(".");
+        jar.args([
+            "-J-Xms16m",
+            "-J-Xmx128m",
+            "-J-XX:ActiveProcessorCount=2",
+            "-J-XX:ReservedCodeCacheSize=32m",
+            "-J-XX:CompressedClassSpaceSize=64m",
+        ])
+        .arg(format!(
+            "-J-XX:ErrorFile={}",
+            root.join("target/imap-075/jar-jvm-%p.log").display()
+        ))
+        .args(["--create", "--date=2026-10-29T00:00:00Z", "--file"])
+        .arg(root.join(SPY))
+        .arg("-C")
+        .arg(target)
+        .arg(".");
         builds.run(BuildStage::ProvenanceTools, jar)?;
         Ok(())
     }

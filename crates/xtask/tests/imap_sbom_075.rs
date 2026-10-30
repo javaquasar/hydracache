@@ -369,6 +369,12 @@ fn maven_build_commands_pin_repository_settings_and_scrub_ambient_options() {
         .map(|a| a.to_string_lossy().into_owned())
         .collect::<Vec<_>>();
     assert!(args.contains(&"--strict-checksums".into()));
+    assert!(args.contains(&"-Xmx512m".into()));
+    assert!(args.contains(&"-XX:ActiveProcessorCount=2".into()));
+    assert!(args.contains(&"org.codehaus.plexus.classworlds.launcher.Launcher".into()));
+    assert!(args
+        .iter()
+        .any(|a| a.starts_with("-Dclassworlds.conf=") && a.ends_with("maven-classworlds.conf")));
     assert!(args.contains(&"-gs".into()));
     assert!(args.iter().any(|a| a.starts_with("-Dmaven.repo.local=")));
     for key in ["MAVEN_ARGS", "MAVEN_OPTS"] {
@@ -385,6 +391,45 @@ fn maven_build_commands_pin_repository_settings_and_scrub_ambient_options() {
             .and_then(|v| v.to_str()),
         Some("1")
     );
+}
+#[test]
+fn maven_distribution_resolution_does_not_treat_shims_as_a_complete_toolchain() {
+    let root = tempfile::tempdir().unwrap();
+    let bin = root.path().join("bin");
+    std::fs::create_dir(&bin).unwrap();
+    let launcher = bin.join(if cfg!(windows) { "mvn.cmd" } else { "mvn" });
+    std::fs::write(&launcher, b"fixture launcher, never executed").unwrap();
+    assert!(xtask::imap_sbom_capture_075::maven_home_from_launcher(&launcher).is_err());
+    std::fs::create_dir(root.path().join("lib")).unwrap();
+    std::fs::create_dir(root.path().join("boot")).unwrap();
+    assert_eq!(
+        xtask::imap_sbom_capture_075::maven_home_from_launcher(&launcher)
+            .unwrap()
+            .canonicalize()
+            .unwrap(),
+        root.path().canonicalize().unwrap()
+    );
+    assert!(
+        xtask::imap_sbom_capture_075::maven_home_from_launcher(&root.path().join("missing"))
+            .is_err()
+    );
+}
+
+#[test]
+fn fixed_maven_version_starts_inside_the_short_proof_memory_envelope() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let mut command = xtask::imap_sbom_capture_075::maven_command(root).unwrap();
+    command.arg("--version");
+    let result = xtask::imap_proof_process_075::execute(command, &[], Default::default()).unwrap();
+    assert!(String::from_utf8(result.stdout)
+        .unwrap()
+        .contains("Apache Maven"));
+    assert!(result.direct_child_reaped);
+    assert_eq!(result.remaining_live_members, 0);
 }
 
 #[test]
