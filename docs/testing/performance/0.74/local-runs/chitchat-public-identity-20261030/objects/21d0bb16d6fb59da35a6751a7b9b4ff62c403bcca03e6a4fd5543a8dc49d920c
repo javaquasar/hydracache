@@ -1,0 +1,7 @@
+{
+  "actual_code": "E0308",
+  "complete": true,
+  "expected_code": "E0308",
+  "probe": "/home/artur/.cache/hydracache-074-identity/20261030-a1/source/id/src/lib.rs",
+  "root_adopted": false
+}

@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "Content-Type": "application/json",
+    "Date": "Fri, 30 Oct 2026 13:53:42 GMT"
+  },
+  "http_status": 404,
+  "name_reserved": false,
+  "observed_at_utc": "2026-10-30T13:53:40.152362+00:00",
+  "ownership_proven": false,
+  "publication_authorized": false,
+  "response_bytes": 63,
+  "response_received": true,
+  "response_sha256": "0c7b61f871dda1b0f1275c835b2950436740794dac278b41a08b1217a9822e8b",
+  "retry": false,
+  "root_adopted": false,
+  "url": "https://crates.io/api/v1/crates/hydra-chitchat"
+}

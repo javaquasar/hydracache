@@ -1,0 +1,18 @@
+{
+  "adapter_compiled": false,
+  "catalog_bound": 10,
+  "crate_sha256": "0296600cf25af830741ee575df5da4e050d48e7bc561ffbdcda63ebab12877c2",
+  "floor": 4294967296,
+  "local_bound": 1200,
+  "native_bound": 1100,
+  "package_bound": 780,
+  "parent_sha256": "28fad46b76c3f0702decfe4f0e816c66fd2d722cdbc4b5e6805ebbec99ca5a69",
+  "poll": 5,
+  "public_registry_qualified": false,
+  "real_packages": true,
+  "release_admitted": false,
+  "retirement": 5,
+  "retry": false,
+  "root_adopted": false,
+  "short_case_bound": 5
+}

@@ -1,0 +1,18 @@
+test_actual_root_cannot_be_replaced (__main__.Controls.test_actual_root_cannot_be_replaced) ... ok
+test_adapter_compilation_cannot_be_inferred (__main__.Controls.test_adapter_compilation_cannot_be_inferred) ... ok
+test_aliases_cannot_be_swapped (__main__.Controls.test_aliases_cannot_be_swapped) ... ok
+test_complete_original_root_frame (__main__.Controls.test_complete_original_root_frame) ... ok
+test_name_query_cannot_prove_ownership (__main__.Controls.test_name_query_cannot_prove_ownership) ... ok
+test_negative_must_actually_fail_compilation (__main__.Controls.test_negative_must_actually_fail_compilation) ... ok
+test_original_deadline_required (__main__.Controls.test_original_deadline_required) ... ok
+test_positive_case_cannot_be_ignored (__main__.Controls.test_positive_case_cannot_be_ignored) ... ok
+test_probe_source_is_bound (__main__.Controls.test_probe_source_is_bound) ... ok
+test_retirement_required (__main__.Controls.test_retirement_required) ... ok
+test_unapplied_proposal_is_not_adoption (__main__.Controls.test_unapplied_proposal_is_not_adoption) ... ok
+test_whole_actual_outcomes (__main__.Controls.test_whole_actual_outcomes) ... ok
+test_wrong_diagnostic_refuses (__main__.Controls.test_wrong_diagnostic_refuses) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 1.227s
+
+OK

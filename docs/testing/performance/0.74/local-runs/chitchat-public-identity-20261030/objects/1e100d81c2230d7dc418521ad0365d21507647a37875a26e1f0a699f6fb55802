@@ -1,0 +1,28 @@
+{
+  "after_sha256": "11eb12a7cf08e3cae6004c9e1c1f09e04aa46c38319a24954893b347aaa5c45c",
+  "before_sha256": "84b1986d8a2014be985460b3ecc4a809f3ae3e8f9822ef6c7134b3ecbe9af114",
+  "crate_sha256": "0296600cf25af830741ee575df5da4e050d48e7bc561ffbdcda63ebab12877c2",
+  "exact_after": "chitchat = { package = \"hydra-chitchat\", version = \"=0.11.1-hydra.1\" }",
+  "exact_before": "chitchat = \"0.11.0\"",
+  "external_direct_dependency_migration_required": true,
+  "file": "Cargo.toml",
+  "library_alias": "chitchat",
+  "matching_occurrences": 1,
+  "prerequisites": [
+    "operator identity/migration decision",
+    "exact maintained publication and real public registry consumer",
+    "coherent copied-Root caller compile gate",
+    "current Root source/effect/security/package/workspace/platform gates",
+    "explicit retained MTU scope"
+  ],
+  "proposal_applied": false,
+  "public_nominal_identity_changes": [
+    "FailureDetectorConfig",
+    "ChitchatId",
+    "Transport (including Socket/ChitchatMessage)"
+  ],
+  "publication_authorized": false,
+  "root_adopted": false,
+  "rust_source_changes": 0,
+  "schema": "hc074-chitchat-identity-migration-proposal-v1"
+}

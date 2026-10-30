@@ -1,0 +1,131 @@
+{
+  "adapter_source_sha256": "1f405c001b48ce323677ca482c97c0bea030b0322aafc44199cda52545d49e39",
+  "direct": [
+    {
+      "member": "crates/hydracache-cluster-chitchat",
+      "section": "dependencies",
+      "value": {
+        "workspace": true
+      }
+    },
+    {
+      "member": "crates/hydracache-cluster-raft",
+      "section": "dev-dependencies",
+      "value": {
+        "workspace": true
+      }
+    },
+    {
+      "member": "crates/hydracache-cluster-testkit",
+      "section": "dependencies",
+      "value": {
+        "workspace": true
+      }
+    },
+    {
+      "member": "crates/hydracache-sandbox",
+      "section": "dependencies",
+      "value": {
+        "workspace": true
+      }
+    }
+  ],
+  "exposed": {
+    "chitchat_id": "pub fn chitchat_id(&self) -> &ChitchatId",
+    "failure_detector_config": "pub fn failure_detector_config(mut self, config: FailureDetectorConfig) -> Self",
+    "spawn_with_transport": "pub async fn spawn_with_transport( config: ChitchatDiscoveryConfig, transport: &dyn Transport, ) -> CacheResult<Self>"
+  },
+  "full_adapter_compiled": false,
+  "public_methods": 21,
+  "references": {
+    "crates/hydracache-cluster-chitchat/src/lib.rs": [
+      {
+        "line": 16,
+        "text": "//! use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};"
+      },
+      {
+        "line": 53,
+        "text": "use chitchat::transport::{Transport, UdpTransport};"
+      },
+      {
+        "line": 54,
+        "text": "use chitchat::{"
+      },
+      {
+        "line": 248,
+        "text": "    /// Tests can use `chitchat::transport::ChannelTransport`; production code"
+      },
+      {
+        "line": 336,
+        "text": "    /// # use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};"
+      },
+      {
+        "line": 717,
+        "text": "    use chitchat::transport::ChannelTransport;"
+      }
+    ],
+    "crates/hydracache-cluster-raft/src/lib.rs": [
+      {
+        "line": 36,
+        "text": "//! use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};"
+      }
+    ],
+    "crates/hydracache-cluster-raft/tests/chitchat_admission_bridge.rs": [
+      {
+        "line": 5,
+        "text": "use chitchat::transport::ChannelTransport;"
+      },
+      {
+        "line": 10,
+        "text": "use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};"
+      }
+    ],
+    "crates/hydracache-cluster-raft/tests/gossip_fault_harness.rs": [
+      {
+        "line": 5,
+        "text": "use chitchat::transport::Transport;"
+      },
+      {
+        "line": 6,
+        "text": "use chitchat::ChitchatMessage;"
+      },
+      {
+        "line": 11,
+        "text": "use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};"
+      }
+    ],
+    "crates/hydracache-cluster-testkit/src/lib.rs": [
+      {
+        "line": 16,
+        "text": "use chitchat::transport::{ChannelTransport, Socket, Transport};"
+      },
+      {
+        "line": 17,
+        "text": "use chitchat::{ChitchatMessage, Deserializable, Serializable};"
+      }
+    ],
+    "crates/hydracache-cluster/src/lib.rs": [
+      {
+        "line": 39,
+        "text": "use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};"
+      }
+    ],
+    "crates/hydracache-sandbox/src/lib.rs": [
+      {
+        "line": 84,
+        "text": "use chitchat::transport::ChannelTransport;"
+      },
+      {
+        "line": 98,
+        "text": "use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};"
+      }
+    ],
+    "crates/hydracache-server/src/grid_host.rs": [
+      {
+        "line": 21,
+        "text": "use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};"
+      }
+    ]
+  },
+  "root_adopted": false
+}

@@ -1,0 +1,7 @@
+{
+  "actual_code": "E0277",
+  "complete": true,
+  "expected_code": "E0277",
+  "probe": "/home/artur/.cache/hydracache-074-identity/20261030-a1/source/transport/src/lib.rs",
+  "root_adopted": false
+}

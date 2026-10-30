@@ -1,0 +1,5 @@
+[
+  "tests::identical_display_names_do_not_establish_nominal_identity",
+  "tests::owned_nominal_surface_remains_usable",
+  "tests::small_wire_surfaces_agree_across_the_two_real_packages"
+]

@@ -1,0 +1,55 @@
+{
+  "CPU_qualified": false,
+  "MTU_qualified": false,
+  "RSS_qualified": false,
+  "Root_public_type_compatibility_qualified": false,
+  "actual_positive_cases": 6,
+  "cargo_crate_sha256": "0296600cf25af830741ee575df5da4e050d48e7bc561ffbdcda63ebab12877c2",
+  "complete": true,
+  "direct_consumers": 4,
+  "expected_compile_refusals": [
+    {
+      "code": "E0308",
+      "compiler": "1.94.0",
+      "variant": "config"
+    },
+    {
+      "code": "E0308",
+      "compiler": "1.94.0",
+      "variant": "id"
+    },
+    {
+      "code": "E0277",
+      "compiler": "1.94.0",
+      "variant": "transport"
+    },
+    {
+      "code": "E0308",
+      "compiler": "1.88.0",
+      "variant": "config"
+    },
+    {
+      "code": "E0308",
+      "compiler": "1.88.0",
+      "variant": "id"
+    },
+    {
+      "code": "E0277",
+      "compiler": "1.88.0",
+      "variant": "transport"
+    }
+  ],
+  "exposed_boundaries": 3,
+  "full_adapter_compiled": false,
+  "mixed_identity_assignable": false,
+  "nominal_control_gate_pass": true,
+  "parent_sha256": "28fad46b76c3f0702decfe4f0e816c66fd2d722cdbc4b5e6805ebbec99ca5a69",
+  "public_metadata_status": 404,
+  "public_methods": 21,
+  "public_registry_qualified": false,
+  "publication_authorized": false,
+  "registry_nodes": 58,
+  "release_admitted": false,
+  "root_adopted": false,
+  "security_qualified": false
+}

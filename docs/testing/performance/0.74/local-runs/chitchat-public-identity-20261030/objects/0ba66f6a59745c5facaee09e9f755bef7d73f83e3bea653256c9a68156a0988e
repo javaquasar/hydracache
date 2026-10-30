@@ -1,0 +1,20 @@
+test_actual_diagnostic_shape_accepts_expected_nominal_failure (__main__.Controls.test_actual_diagnostic_shape_accepts_expected_nominal_failure) ... ok
+test_ambiguous_lock_edge_refuses (__main__.Controls.test_ambiguous_lock_edge_refuses) ... ok
+test_configuration_type_drift_refuses (__main__.Controls.test_configuration_type_drift_refuses) ... ok
+test_dependency_build_error_cannot_count (__main__.Controls.test_dependency_build_error_cannot_count) ... ok
+test_different_probe_line_refuses (__main__.Controls.test_different_probe_line_refuses) ... ok
+test_exact_boundary_and_direct_consumer_audit (__main__.Controls.test_exact_boundary_and_direct_consumer_audit) ... ok
+test_explicit_lock_version_is_unambiguous (__main__.Controls.test_explicit_lock_version_is_unambiguous) ... ok
+test_extra_public_method_refuses (__main__.Controls.test_extra_public_method_refuses) ... ok
+test_manifest_has_two_normal_registry_dependencies (__main__.Controls.test_manifest_has_two_normal_registry_dependencies) ... ok
+test_missing_primary_probe_span_refuses (__main__.Controls.test_missing_primary_probe_span_refuses) ... ok
+test_qualified_parent_and_exact_real_archive (__main__.Controls.test_qualified_parent_and_exact_real_archive) ... ok
+test_success_is_not_a_negative_control (__main__.Controls.test_success_is_not_a_negative_control) ... ok
+test_transport_boundary_cannot_disappear (__main__.Controls.test_transport_boundary_cannot_disappear) ... ok
+test_unknown_variant_refuses (__main__.Controls.test_unknown_variant_refuses) ... ok
+test_wrong_error_code_refuses (__main__.Controls.test_wrong_error_code_refuses) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.672s
+
+OK

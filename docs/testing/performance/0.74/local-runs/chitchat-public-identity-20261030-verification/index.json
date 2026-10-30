@@ -1,0 +1,245 @@
+{
+  "members": {
+    "docs/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1643525,
+      "sha256": "a1247623ef72cd3092fd789ab591ab8dd5ca20700e7cb8211370b02e5e2dd14c"
+    },
+    "docs/docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md": {
+      "bytes": 94199,
+      "sha256": "e831bc05cde556a8a7516db948aaa9fe9c8bc133f81c8fac098a6057c9a14deb"
+    },
+    "docs/docs/testing/performance/0.74/README.md": {
+      "bytes": 528241,
+      "sha256": "d6ff93286ac08abc8c9378be0449dc1c379532b42cfcbd1c6f9d8f75a22af86b"
+    },
+    "docs/docs/testing/performance/0.74/chitchat-public-identity-migration-proposal-20261030.json": {
+      "bytes": 1159,
+      "sha256": "1e100d81c2230d7dc418521ad0365d21507647a37875a26e1f0a699f6fb55802"
+    },
+    "docs/docs/testing/performance/0.74/chitchat-public-identity-migration-proposal-20261030.md": {
+      "bytes": 2805,
+      "sha256": "68f33865f20f6222e777e688693759ba98d828794e249e7adb41b28677acf95a"
+    },
+    "docs/docs/testing/performance/0.74/chitchat-public-identity-plan-20261030.md": {
+      "bytes": 4989,
+      "sha256": "1a776fd6993aa04ad4d2d8780174bbfcd70b17120240a52ad1d25cf8511c02d7"
+    },
+    "docs/docs/testing/performance/0.74/chitchat-public-identity-result-20261030.md": {
+      "bytes": 7384,
+      "sha256": "7bea9960726667bfab8254bc565870ed1402ab5bcd3f8b308133917f3bf0fd9c"
+    },
+    "docs/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 62525,
+      "sha256": "d9af3eb57e606170a91e91923aeb4d315e425799cb9f4afcd133581435af82ee"
+    },
+    "final/byte-verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/byte-verify/intent.json": {
+      "bytes": 312700,
+      "sha256": "dbc7b56c988f20be19181a0c4bdac80a65e43973f2af6f9eb0ad9fd01dcbfa2d"
+    },
+    "final/byte-verify/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/byte-verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/byte-verify/stdout.log": {
+      "bytes": 1167,
+      "sha256": "2dbb0b822e8b315a239eed97135abe7d303bf9be394cd198b74f17cc2e22dbbc"
+    },
+    "final/controls/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/controls/intent.json": {
+      "bytes": 312623,
+      "sha256": "87e94818ffa7704fb6082f4a23c80d4a85739f2b1d3d1a7f62dd68c5ee79dfed"
+    },
+    "final/controls/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/controls/stderr.log": {
+      "bytes": 1362,
+      "sha256": "c7c24492d0b6a78b8a26bbe278ce2a2f56362db431f7371024fda941464f4d93"
+    },
+    "final/controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/doc-check/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/doc-check/intent.json": {
+      "bytes": 312557,
+      "sha256": "ffa40d2679a8b0f1438e445ea18da772d512bd06edaebd49e7d25d7ef2c6aa23"
+    },
+    "final/doc-check/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "final/performance-contract/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/performance-contract/intent.json": {
+      "bytes": 312603,
+      "sha256": "8a6f16d59b6bda0a39bcbbec4d2bc52deaaf0bc4e1bf735ffa6b8933b187e4ca"
+    },
+    "final/performance-contract/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/performance-contract/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/performance-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "final/restore-verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/restore-verify/intent.json": {
+      "bytes": 312817,
+      "sha256": "5d33af85986f264a0ed5a1591e8404bde7fff113606f590364c0d548b49b9f53"
+    },
+    "final/restore-verify/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/restore-verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/restore-verify/stdout.log": {
+      "bytes": 1249,
+      "sha256": "441656389019d188d70d5fcd37b0073d452085abc2e18ae8442cfe37c968338c"
+    },
+    "final/syntax/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/syntax/intent.json": {
+      "bytes": 312715,
+      "sha256": "99264e0e83252453b7bad60f64b1c9058c296566c20b165d25fcd2d4106875c3"
+    },
+    "final/syntax/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source/current/tools/chitchat-public-identity-074/.gitattributes": {
+      "bytes": 29,
+      "sha256": "730a35ae3d558080083c3103d9ac8100c3f6561678092abe341701dfa331eb1d"
+    },
+    "source/current/tools/chitchat-public-identity-074/README.md": {
+      "bytes": 833,
+      "sha256": "4fc40b93fa68dc2f56c004cbffd767ab1e1bb5b35b875cbc908376e480218bd1"
+    },
+    "source/current/tools/chitchat-public-identity-074/config.rs": {
+      "bytes": 98,
+      "sha256": "cca8ed26b06e00009c56ce31131f2e5708bc08a84069639e3d09d600b63d7354"
+    },
+    "source/current/tools/chitchat-public-identity-074/contract.py": {
+      "bytes": 12544,
+      "sha256": "1fddd58f055ad88282959efa94e18cb50ee1feb0f8745614feb9d4ad51ee5bf5"
+    },
+    "source/current/tools/chitchat-public-identity-074/id.rs": {
+      "bytes": 80,
+      "sha256": "893d635c1be2fb4c28d3483251b2205ccaa434c2f813e340d65815323901a93f"
+    },
+    "source/current/tools/chitchat-public-identity-074/observation.py": {
+      "bytes": 1427,
+      "sha256": "07a4a32c48c65bddebc4038d66e606e757ff9dad7c78843a2dae4390de564a9b"
+    },
+    "source/current/tools/chitchat-public-identity-074/offline.py": {
+      "bytes": 2493,
+      "sha256": "3068a843095cfaf4abc012f6a2673d124282d5d517d26fe6c3d8ba3ac03d1efa"
+    },
+    "source/current/tools/chitchat-public-identity-074/positive.rs": {
+      "bytes": 2528,
+      "sha256": "e457e2a947babdb2ebb50ee79d41bea2e6df0d4c616b6d42cfc537e5963d61a6"
+    },
+    "source/current/tools/chitchat-public-identity-074/runner.py": {
+      "bytes": 13565,
+      "sha256": "9be2f368d3a3782321fa49c545faf4ffdd865d8604656f66920dfa79ce504493"
+    },
+    "source/current/tools/chitchat-public-identity-074/test_contract.py": {
+      "bytes": 4026,
+      "sha256": "2970a3c129f557385e9d614f5ccef0b9711dae17c715b8df3d0ea517efac9f2a"
+    },
+    "source/current/tools/chitchat-public-identity-074/transport.rs": {
+      "bytes": 112,
+      "sha256": "8997311b20543920b1f7f383a4d530bee83836f3dfd5289788f4854825fd8fd0"
+    },
+    "source/current/tools/chitchat-public-identity-evidence-074/.gitattributes": {
+      "bytes": 29,
+      "sha256": "730a35ae3d558080083c3103d9ac8100c3f6561678092abe341701dfa331eb1d"
+    },
+    "source/current/tools/chitchat-public-identity-evidence-074/README.md": {
+      "bytes": 898,
+      "sha256": "9727cafd4596a34b6d4bf406e217ba1e836dd40b14610bfb50b560a1b0f1050a"
+    },
+    "source/current/tools/chitchat-public-identity-evidence-074/accounting.py": {
+      "bytes": 13490,
+      "sha256": "79785899998adc342be5f403afb5175edb213bb7dae5a9f63c18669351545639"
+    },
+    "source/current/tools/chitchat-public-identity-evidence-074/gates.py": {
+      "bytes": 4012,
+      "sha256": "35bdea9a2316af59554f17b0e9d7efb8cbf61deb9b304f46e17d345315b04cbd"
+    },
+    "source/current/tools/chitchat-public-identity-evidence-074/packet.py": {
+      "bytes": 5742,
+      "sha256": "3bcd23e7fcf37b05fd1fd634d587c49b26501ac317858c74ad49e4e131df1ed0"
+    },
+    "source/current/tools/chitchat-public-identity-evidence-074/test_accounting.py": {
+      "bytes": 3563,
+      "sha256": "80567906ff25d43b7fc01cc9696fa78a4d0f71f6264725d07ea30b1c4c8094e7"
+    },
+    "source/current/tools/chitchat-public-identity-evidence-074/verification.py": {
+      "bytes": 3446,
+      "sha256": "3104049c1e4e8a25a9fe23aba12c8f990a47a8229e3d7810eb86e2894d5b0505"
+    }
+  },
+  "result": {
+    "complete": true,
+    "evidence_controls": 13,
+    "gates": [
+      "controls",
+      "syntax",
+      "byte-verify",
+      "restore-verify",
+      "doc-check",
+      "performance-contract"
+    ],
+    "primary_sha256": "06ce2017ce7e2c0b9474914cc134025d95dcb2b2dd0ab8a6892ee87d7b4e8454",
+    "product_execution": false,
+    "release_admitted": false,
+    "root_adopted": false
+  },
+  "schema": "hc074-chitchat-public-identity-offline-v1"
+}

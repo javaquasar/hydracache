@@ -1,0 +1,99 @@
+[package]
+name = "hydracache-fuzz"
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+hydracache-client-protocol.workspace = true
+hydracache-client-hc2.workspace = true
+hydracache-client-plane-spike.workspace = true
+hydracache-cluster-raft.workspace = true
+hydracache-cluster-transport-axum.workspace = true
+hydracache-observability.workspace = true
+hydracache-redis-compat.workspace = true
+hydracache-server.workspace = true
+libfuzzer-sys = "0.4"
+prost.workspace = true
+protobuf.workspace = true
+raft.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[[bin]]
+name = "fuzz_config_parse"
+path = "fuzz_targets/fuzz_config_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_kv_codec"
+path = "fuzz_targets/fuzz_kv_codec.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_resp_command"
+path = "fuzz_targets/fuzz_resp_command.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_snapshot_decode"
+path = "fuzz_targets/fuzz_snapshot_decode.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "raft_wire_frame"
+path = "fuzz_targets/raft_wire_frame.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_hc2_client_plane"
+path = "fuzz_targets/fuzz_hc2_client_plane.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_management_envelope"
+path = "fuzz_targets/fuzz_management_envelope.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_management_recovery"
+path = "fuzz_targets/fuzz_management_recovery.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_management_placement"
+path = "fuzz_targets/fuzz_management_placement.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_management_cursor"
+path = "fuzz_targets/fuzz_management_cursor.rs"
+test = false
+doc = false
+bench = false
+
+[lints]
+workspace = true
