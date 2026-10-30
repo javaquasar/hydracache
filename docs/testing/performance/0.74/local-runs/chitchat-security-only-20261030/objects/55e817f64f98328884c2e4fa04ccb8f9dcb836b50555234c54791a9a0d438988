@@ -1,0 +1,94 @@
+    Checking chitchat v0.11.1 (/home/artur/.cache/hydracache-074-security-only/20261030-v2/fixtures/B)
+error: variables can be used directly in the `format!` string
+  --> tests/perf_test.rs:83:5
+   |
+83 | /     assert!(
+84 | |         delay < Duration::from_secs(10),
+85 | |         "Delay exceeded: {:?}",
+86 | |         delay
+87 | |     );
+   | |_____^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+   = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+
+error: variables can be used directly in the `format!` string
+  --> tests/perf_test.rs:95:5
+   |
+95 | /     assert!(
+96 | |         delay < Duration::from_secs(10),
+97 | |         "Delay exceeded: {:?}",
+98 | |         delay
+99 | |     );
+   | |_____^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+error: variables can be used directly in the `format!` string
+   --> tests/perf_test.rs:107:5
+    |
+107 | /     assert!(
+108 | |         delay < Duration::from_secs(10),
+109 | |         "Delay exceeded: {:?}",
+110 | |         delay
+111 | |     );
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+error: variables can be used directly in the `format!` string
+   --> tests/perf_test.rs:119:5
+    |
+119 | /     assert!(
+120 | |         delay < Duration::from_secs(10),
+121 | |         "Delay exceeded: {:?}",
+122 | |         delay
+123 | |     );
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+error: variables can be used directly in the `format!` string
+   --> tests/perf_test.rs:131:5
+    |
+131 | /     assert!(
+132 | |         delay < Duration::from_secs(15),
+133 | |         "Delay exceeded: {:?}",
+134 | |         delay
+135 | |     );
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+error: could not compile `chitchat` (test "perf_test") due to 5 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: variables can be used directly in the `format!` string
+   --> src/lib.rs:683:23
+    |
+683 |             let key = format!("k{}", i);
+    |                       ^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+    = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+help: change this to
+    |
+683 -             let key = format!("k{}", i);
+683 +             let key = format!("k{i}");
+    |
+
+error: variables can be used directly in the `format!` string
+    --> src/lib.rs:1492:13
+     |
+1492 |             panic!("Expected SynAck, got {:?}", ack);
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+     |
+1492 -             panic!("Expected SynAck, got {:?}", ack);
+1492 +             panic!("Expected SynAck, got {ack:?}");
+     |
+
+error: could not compile `chitchat` (lib test) due to 2 previous errors

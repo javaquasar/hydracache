@@ -1,0 +1,63 @@
+"""Exact graph/source freeze; no unrelated resolver changes or hidden MTU edits."""
+import json
+from pathlib import Path
+import tomllib
+import candidate
+import scope as c
+
+def packages(raw):
+    values=tomllib.loads(raw.decode())['package']
+    def edge(token):
+        parts=token.split();matches=[p for p in values if p['name']==parts[0] and (len(parts)==1 or p['version']==parts[1])]
+        c.need(len(matches)==1,'unambiguous actual lock edge: '+token)
+        p=matches[0];return (p['name'],p['version'],p.get('source'))
+    return {(p['name'],p['version']):dict(p,dependencies=[edge(d) for d in p.get('dependencies',[])]) for p in values if p.get('source','').startswith('registry+')}
+
+def review_graphs(rows):
+    c.need(set(rows)=={'B','Z','U'},'all three exact inputs')
+    b,z,u=(packages(rows[n]) for n in ('B','Z','U'))
+    def delta(a,b,removed,added):
+        c.need(set(a)-set(b)==set(removed) and set(b)-set(a)==set(added),'only predeclared registry nodes change')
+        for key in set(a)&set(b):c.need(a[key]==b[key],'unrelated source/checksum/edge unchanged: '+str(key))
+    delta(b,z,{('zstd','0.13.3'),('zstd-safe','7.2.4')},{('zstd','0.14.3'),('zstd-safe','8.2.0')})
+    delta(z,u,{('lru','0.17.0')},{('lru','0.18.2')})
+    c.need(u['lru','0.18.2']['checksum']=='5d2f2f9b4ba7e6b24d95e7e899329d35be83bcded72c8540cdd5368932d1d90a','previously audited LRU archive')
+    return dict(nodes={k:len(packages(v))+1 for k,v in rows.items()},zstd_changed_nodes=2,lru_changed_nodes=1,root_adopted=False)
+
+def main():
+    c.need(json.loads((c.BASE/'resolve/result.json').read_bytes())['complete'],'complete first metadata resolution')
+    rows={n:(c.BASE/'fixtures'/n/'Cargo.lock').read_bytes() for n in ('B','Z','U')};review=review_graphs(rows)
+    raw=(c.BASE/'input/archives/chitchat-0.11.1.crate').read_bytes();_,canonical=candidate.variants(raw)
+    root=packages((c.ROOT/'Cargo.lock').read_bytes());omissions={}
+    expected=json.loads((c.HERE/'root-feature-omissions.json').read_bytes())
+    c.need(expected['root_lock_sha256']==c.sha((c.ROOT/'Cargo.lock').read_bytes()) and expected['standalone_only'],'explicit same-Root standalone scope')
+    for name,data in rows.items():
+        omissions[name]=[]
+        for key,row in packages(data).items():
+            c.need(key in root or key in {('lru','0.18.2'),('assert-json-diff','2.0.2')},'no unrelated version drift from Root')
+            if key in root:
+                c.need({k:v for k,v in row.items() if k!='dependencies'}=={k:v for k,v in root[key].items() if k!='dependencies'},'same whole registry version/source/checksum')
+                if row['dependencies']!=root[key]['dependencies']:
+                    omissions[name].append(dict(package=list(key),removed=[list(e) for e in sorted(set(root[key]['dependencies'])-set(row['dependencies']))],added=[list(e) for e in sorted(set(row['dependencies'])-set(root[key]['dependencies']))]))
+            if key==('assert-json-diff','2.0.2'):c.need(row['checksum']=='47e4f2b81832e72834d7518d8487a0396a28cc408186a2e8854c0f98011faf12','same original upstream dev-only test helper')
+        c.need(omissions[name]==expected['omissions'],'only the exact ten frozen standalone feature-edge omissions')
+    review['standalone_root_feature_omissions']=omissions
+    for name,files in canonical.items():
+        c.need(c.tree(c.BASE/'canonical'/name)=={p:c.sha(b) for p,b in files.items()},'whole source recipe inverse')
+    ledger={}
+    for data in rows.values():
+        for row in packages(data).values():
+            name=row['name']+'-'+row['version'];digest=row['checksum']
+            c.need(name not in ledger or ledger[name]==digest,'same union source identity');ledger[name]=digest
+    cache=Path.home()/'.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f'
+    for name,digest in ledger.items():
+        body=(cache/(name+'.crate')).read_bytes();c.need(c.sha(body)==digest,'whole primary archive: '+name)
+        path=c.BASE/'input/archives'/(name+'.crate')
+        if path.exists():c.need(path.read_bytes()==body,'same held official archive')
+        else:path.write_bytes(body)
+    c.write(c.BASE/'input','registry.json',ledger)
+    c.write(c.BASE/'preparation','graph-review.json',review)
+    c.write(c.BASE,'freeze.json',dict(fixtures=c.tree(c.BASE/'fixtures'),canonical=c.tree(c.BASE/'canonical'),input=c.tree(c.BASE/'input'),source=c.source(),root_adopted=False,wide_gate_passed=False))
+    print(json.dumps(dict(**review,registry_union=len(ledger))))
+
+if __name__=='__main__':main()

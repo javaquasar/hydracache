@@ -1,0 +1,12 @@
+
+running 1 test
+test serialize::security_stream_review::minimal_bound_contract ... HC074_MIN_BOUND:{"actual":13,"bound_held":false,"bounds":[10],"id":"one-byte","payload":["!"],"remaining":0,"threshold":1,"wire":"02010001020100000201002100"}
+FAILED
+
+failures:
+
+failures:
+    serialize::security_stream_review::minimal_bound_contract
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 105 filtered out; finished in 0.00s
+

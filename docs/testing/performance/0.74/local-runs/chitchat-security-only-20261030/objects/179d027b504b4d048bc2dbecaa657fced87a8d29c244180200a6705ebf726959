@@ -1,0 +1,103 @@
+{
+  "CPU_qualified": false,
+  "actual_known_bound_failures": 6,
+  "complete_functional_matrix": true,
+  "completed_peers": 12,
+  "context": "r4",
+  "diagnostic_tables_equal": true,
+  "graph": {
+    "lru_changed_nodes": 1,
+    "nodes": {
+      "B": 92,
+      "U": 92,
+      "Z": 92
+    },
+    "root_adopted": false,
+    "zstd_changed_nodes": 2
+  },
+  "peers": {
+    "gnu-188-B": {
+      "complete": true,
+      "release_admitted": false,
+      "root_adopted": false
+    },
+    "gnu-188-U": {
+      "complete": true,
+      "release_admitted": false,
+      "root_adopted": false
+    },
+    "gnu-188-Z": {
+      "complete": true,
+      "release_admitted": false,
+      "root_adopted": false
+    },
+    "gnu-194-B": {
+      "complete": true,
+      "release_admitted": false,
+      "root_adopted": false
+    },
+    "gnu-194-U": {
+      "complete": true,
+      "release_admitted": false,
+      "root_adopted": false
+    },
+    "gnu-194-Z": {
+      "complete": true,
+      "release_admitted": false,
+      "root_adopted": false
+    },
+    "windows-188-B": {
+      "complete": true,
+      "release_admitted": false,
+      "root_adopted": false
+    },
+    "windows-188-U": {
+      "complete": true,
+      "release_admitted": false,
+      "root_adopted": false
+    },
+    "windows-188-Z": {
+      "complete": true,
+      "release_admitted": false,
+      "root_adopted": false
+    },
+    "windows-194-B": {
+      "complete": true,
+      "release_admitted": false,
+      "root_adopted": false
+    },
+    "windows-194-U": {
+      "complete": true,
+      "release_admitted": false,
+      "root_adopted": false
+    },
+    "windows-194-Z": {
+      "complete": true,
+      "release_admitted": false,
+      "root_adopted": false
+    }
+  },
+  "performance_claim": false,
+  "planned_peers": 12,
+  "policy": {
+    "B": [
+      "RUSTSEC-2026-0253",
+      "RUSTSEC-2026-0391",
+      "RUSTSEC-2026-0398",
+      "RUSTSEC-2026-0403"
+    ],
+    "U": [],
+    "Z": [
+      "RUSTSEC-2026-0253"
+    ]
+  },
+  "q_adopted": false,
+  "registry_qualified": false,
+  "release_admitted": false,
+  "resources_qualified": false,
+  "root_adopted": false,
+  "schema": "hc074-chitchat-dependency-only-result-v1",
+  "source_algorithms_unchanged": true,
+  "source_members": 21,
+  "wide_gate_passed": false
+}

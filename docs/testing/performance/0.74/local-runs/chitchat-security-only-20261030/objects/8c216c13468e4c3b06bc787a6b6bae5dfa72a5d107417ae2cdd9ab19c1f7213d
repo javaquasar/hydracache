@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-security-only-074/runner.py", line 165, in <module>
+    {'resolve':resolve,'stage':stage}.get(sys.argv[2],lambda:session(sys.argv[2]))();raise SystemExit(0)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-security-only-074/runner.py", line 125, in stage
+    shutil.copytree(c.BASE/'fixtures',c.NATIVE/'fixtures')
+    ^^^^^^
+NameError: name 'shutil' is not defined. Did you forget to import 'shutil'?

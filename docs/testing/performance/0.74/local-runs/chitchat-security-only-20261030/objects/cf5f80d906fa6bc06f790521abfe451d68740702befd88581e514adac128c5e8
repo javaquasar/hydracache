@@ -1,0 +1,9 @@
+{
+  "complete": true,
+  "errors": [
+    "RUSTSEC-2026-0253"
+  ],
+  "policy_passed": false,
+  "release_admitted": false,
+  "root_adopted": false
+}

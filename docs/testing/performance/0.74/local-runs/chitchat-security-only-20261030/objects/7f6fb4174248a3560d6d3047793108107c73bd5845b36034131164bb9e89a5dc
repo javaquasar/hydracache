@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "errors": [
+    "RUSTSEC-2026-0253",
+    "RUSTSEC-2026-0391",
+    "RUSTSEC-2026-0398",
+    "RUSTSEC-2026-0403"
+  ],
+  "policy_passed": false,
+  "release_admitted": false,
+  "root_adopted": false
+}

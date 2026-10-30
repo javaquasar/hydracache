@@ -1,0 +1,10 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "complete outer original Job",
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-security-only-074\\runner.py\", line 155, in outer\n    own=json.loads((out/'execution.json').read_bytes());c.need(child.returncode==own['exit']==0 and own['retired'] and not own['errors'],'complete outer original Job')\n                                                        ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-security-only-074\\scope.py\", line 27, in need\n    if not ok:raise ValueError(why)\n              ^^^^^^^^^^^^^^^^^^^^^\nValueError: complete outer original Job\n",
+    "type": "ValueError"
+  },
+  "release_admitted": false,
+  "root_adopted": false
+}

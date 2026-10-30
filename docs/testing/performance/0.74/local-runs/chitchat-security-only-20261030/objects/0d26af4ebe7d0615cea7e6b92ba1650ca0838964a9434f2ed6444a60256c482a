@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-security-only-20261030\\builds\\windows-194-B\\release\\deps\\chitchat-036fc0a14bbcfe19.exe",
+    "--exact",
+    "state::tests::test_cluster_state_gc_keys_marked_for_deletion",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "bound": 5,
+  "cwd": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-security-only-20261030\\fixtures\\B",
+  "deadline": 210885.2003711,
+  "expected_exit": 0,
+  "image_sha256": "58c2ae6943c3f78be62c9f31e0861e861d5de99b3d45ab4aa16dab311dc3d8fc",
+  "retry": false
+}

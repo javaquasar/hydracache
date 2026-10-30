@@ -1,0 +1,163 @@
+"""Fixed local inputs/peers, original CI owners and first-result latches."""
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+import time
+import traceback
+import scope as c
+
+PEERS={f'{host}-{v}-{variant}' for host in ('windows','gnu') for v in ('194','188') for variant in ('B','Z','U')}
+PURE=('serialize::tests::','delta::tests::','message::tests::','digest::tests::','state::tests::')
+OBS=('serialize::security_stream_review::observe_streams','delta::security_delta_review::supported_delta_operations',
+ 'security_review::malformed_streams_keep_decisions_and_cursor')
+CONTEXT='security_review::reused_contexts_start_only_the_second_job'
+NEGATIVE=('serialize::security_stream_review::minimal_bound_contract','serialize::security_stream_review::all_stream_bounds_hold')
+FRAME=c.BASE/'freeze-r1.json'
+
+def output(label):return c.BASE/('peers-r1' if label in PEERS else '.')/label
+
+def inputs():
+    return {name:c.tree(c.BASE/name) for name in ('fixtures','canonical','input') if (c.BASE/name).exists()}
+
+def guard(expected):
+    c.need(c.tree(c.fixtures())==expected['fixtures'],'whole original fixture source/lock frame')
+
+def group():return c.owned.load_job().WindowsJob() if os.name=='nt' else c.load(c.ROOT/'scripts/ci/watchdog_linux_group.py','security_only_linux_group').LinuxGroup()
+
+def invocation(out,name,argv,env,deadline,frame,expected_exit=0,bound=1200):
+    guard(frame);c.capacity();c.need(time.monotonic()<deadline,'original complete-session deadline')
+    folder=out/name;folder.mkdir(exist_ok=False)
+    c.write(folder,'intent.json',dict(argv=argv,deadline=deadline,bound=bound,image_sha256=c.sha(Path(argv[0]).read_bytes()),expected_exit=expected_exit,retry=False))
+    with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+        worker=subprocess.run([sys.executable,'-B',str(Path(__file__)),'command',str(folder)],stdin=subprocess.DEVNULL,
+          stdout=stdout,stderr=stderr,env=dict(env,HC074_SECURITY_ARGV=json.dumps(argv),HC074_SECURITY_DEADLINE=str(deadline),HC074_SECURITY_BOUND=str(bound)),timeout=max(0,min(bound,deadline-time.monotonic()))+10)
+    execution=json.loads((folder/'execution.json').read_bytes())
+    c.need(worker.returncode==execution['exit']==expected_exit and execution['retired'] and not execution['errors'],'complete original owned result: '+name)
+    c.need(c.sha(Path(argv[0]).read_bytes())==json.loads((folder/'intent.json').read_bytes())['image_sha256'],'original image postflight')
+    guard(frame);return folder
+
+def cargo(label,action):
+    host,compiler,variant=label.split('-');tool,env,suffix=c.environment(compiler)
+    target=c.BASE/'builds'/label if os.name=='nt' else c.NATIVE/'builds'/label
+    args=['--manifest-path',str(c.fixtures()/variant/'Cargo.toml'),'--target-dir',str(target),'--offline','--locked']
+    if action=='build':argv=[str(tool/('cargo'+suffix)),'test',*args,'--all-features','--lib','--no-run','--message-format=json']
+    elif action=='check':argv=[str(tool/('cargo'+suffix)),'check',*args,'--all-targets','--all-features']
+    elif action=='clippy':argv=[str(tool/('cargo'+suffix)),'clippy',*args,'--all-targets','--all-features','--','-D','warnings']
+    elif action=='compiler':argv=[str(tool/('rustc'+suffix)),'-vV']
+    else:raise ValueError('fixed Cargo commands')
+    return argv,env
+
+def registry(deadline):
+    ledger=json.loads((c.BASE/'input/registry.json').read_bytes())
+    codec=c.load(c.ROOT/'tools/dbus-source-package-074/package.py','security_only_registry_codec')
+    for name,digest in ledger.items():
+        c.need(time.monotonic()<deadline,'whole registry validation deadline');c.capacity()
+        raw=(c.BASE/'input/archives'/(name+'.crate')).read_bytes();c.need(c.sha(raw)==digest,'original whole registry archive')
+        root=(Path.home()/'.cargo/registry/src/index.crates.io-1949cf8c6b5b557f' if os.name=='nt' else c.NATIVE/'vendor')/name
+        for n,body in codec.unpack(raw,name).items():
+            p=root/n;c.need(p.is_file() and not p.is_symlink() and p.read_bytes()==body,'fresh actual compiler source: '+name+'/'+n)
+
+def account(raw,names,test,negative):
+    text=raw.decode().replace('\r\n','\n')
+    rows=re.findall(r'^test (.+?) (?:- should panic )?\.\.\. (ok|FAILED)$',text,re.M)
+    summary=re.findall(r'^test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored; (\d+) measured; (\d+) filtered out;',text,re.M)
+    c.need(rows==[(test,'FAILED' if negative else 'ok')],'one exact actual test identity')
+    c.need(summary==[('FAILED' if negative else 'ok','0' if negative else '1','1' if negative else '0','0','0',str(len(names)-1))],'complete exact native accounting')
+
+def session(label):
+    c.need(label in PEERS and label.startswith('windows-')==(os.name=='nt'),'fixed actual platform/peer')
+    out=output(label);deadline=time.monotonic()+1100;frame=json.loads(FRAME.read_bytes())
+    result=dict(complete=False,root_adopted=False,wide_gate_passed=False)
+    try:
+        guard(frame);registry(deadline)
+        for action in ('compiler','build','check','clippy'):
+            folder=invocation(out,action,*cargo(label,action),deadline,frame)
+            if action=='compiler':c.need(('release: '+('1.94.0' if '-194-' in label else '1.88.0')) in (folder/'stdout.log').read_text(),'actual compiler identity')
+        rows=[json.loads(line) for line in (out/'build/stdout.log').read_text().splitlines() if line.startswith('{')]
+        images=[r for r in rows if r.get('reason')=='compiler-artifact' and r.get('executable') and r['target']['kind']==['lib'] and r['profile']['test']]
+        c.need(len(images)==1 and [r['success'] for r in rows if r.get('reason')=='build-finished']==[True],'one actual successful library image')
+        image=Path(images[0]['executable']);c.write(out,'image.json',dict(path=str(image),sha256=c.sha(image.read_bytes())))
+        _,env=cargo(label,'build');listed=invocation(out,'catalog',[str(image),'--list'],env,deadline,frame,bound=10)
+        text=(listed/'stdout.log').read_text();names=sorted(s[:-6] for s in text.splitlines() if s.endswith(': test'))
+        c.need(names and len(names)==len(set(names)) and text.splitlines()[-1]==f'{len(names)} tests, 0 benchmarks','complete original native catalog')
+        selected=[n for n in names if n.startswith(PURE) or n in OBS or n==CONTEXT and not label.endswith('-B')]
+        c.need(set(OBS)<=set(selected) and all(any(n.startswith(p) for n in selected) for p in PURE),'all original pure groups and diagnostic observations')
+        negatives=list(NEGATIVE) if label.startswith('windows-194-') else []
+        c.write(out,'catalog.json',dict(all=names,selected=selected,negative_contracts=negatives,unexecuted=[n for n in names if n not in selected and n not in negatives],selection_is_full_library=False))
+        for i,test in enumerate(selected):
+            folder=invocation(out,f'test-{i:03}',[str(image),'--exact',test,'--test-threads=1','--nocapture'],env,deadline,frame,bound=5)
+            account((folder/'stdout.log').read_bytes(),names,test,False)
+        if label.startswith('windows-194-'):
+            for i,test in enumerate(NEGATIVE):
+                c.need(test in names,'unchanged original bound contract')
+                folder=invocation(out,'known-bound-'+str(i),[str(image),'--exact',test,'--test-threads=1','--nocapture'],env,deadline,frame,expected_exit=101,bound=5)
+                account((folder/'stdout.log').read_bytes(),names,test,True)
+        guard(frame);registry(deadline);c.need(time.monotonic()<deadline,'original complete native/session envelope')
+        result.update(complete=True,passed=len(selected),catalog=len(names),known_bound_gate_passed=False)
+    except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+    c.write(out,'session-result.json',result);raise SystemExit(0 if result['complete'] else 1)
+
+def resolve():
+    out=c.BASE/'resolve';deadline=time.monotonic()+1100;before=c.source();head=c.snapshot();original=inputs()
+    tool,env,suffix=c.environment('194')
+    for variant in ('B','Z','U'):
+        folder=out/variant;folder.mkdir();argv=[str(tool/'cargo.exe'),'metadata','--manifest-path',str(c.BASE/'fixtures'/variant/'Cargo.toml'),'--all-features','--format-version','1','--offline']
+        c.write(folder,'intent.json',dict(argv=argv,deadline=deadline,retry=False,allowed_mutation='this fixture Cargo.lock only'))
+        with (folder/'stdout.log').open('xb') as stdout,(folder/'stderr.log').open('xb') as stderr:
+            child=subprocess.run([sys.executable,'-B',str(Path(__file__)),'command',str(folder)],stdout=stdout,stderr=stderr,env=dict(env,HC074_SECURITY_ARGV=json.dumps(argv),HC074_SECURITY_DEADLINE=str(deadline),HC074_SECURITY_BOUND='1200'),timeout=max(0,deadline-time.monotonic())+10)
+        own=json.loads((folder/'execution.json').read_bytes());c.need(child.returncode==own['exit']==0 and own['retired'] and not own['errors'],'first original locked-graph preparation')
+    after=inputs()
+    for label in ('fixtures',):
+        for variant in ('B','Z','U'):original[label].pop(variant+'/Cargo.lock');after[label].pop(variant+'/Cargo.lock')
+    c.need(original==after and c.source()==before and c.snapshot()==head,'only three fixture lockfiles change')
+    c.write(out,'session-result.json',dict(complete=True,root_adopted=False))
+
+def stage():
+    c.need(os.name=='posix' and os.getuid()==os.getgid()==1000,'nonroot local native cache only')
+    c.need(c.NATIVE.parent.parent.resolve()==c.NATIVE.parent.parent,'original non-symlink native cache parent')
+    c.NATIVE.mkdir(parents=True,exist_ok=False,mode=0o700)
+    shutil.copytree(c.BASE/'fixtures',c.NATIVE/'fixtures')
+    codec=c.load(c.ROOT/'tools/dbus-source-package-074/package.py','security_only_stage_codec')
+    deadline=time.monotonic()+1100
+    for name,digest in json.loads((c.BASE/'input/registry.json').read_bytes()).items():
+        c.capacity();c.need(time.monotonic()<deadline,'original staging deadline')
+        raw=(c.BASE/'input/archives'/(name+'.crate')).read_bytes();c.need(c.sha(raw)==digest,'same whole source archive')
+        members=codec.unpack(raw,name);root=c.NATIVE/'vendor'/name;root.mkdir(parents=True)
+        for n,body in members.items():p=root/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(body)
+        c.write(root,'.cargo-checksum.json',dict(package=digest,files={n:c.sha(b) for n,b in members.items()}))
+    (c.NATIVE/'cargo-home').mkdir()
+    (c.NATIVE/'cargo-home/config.toml').write_text('[source.crates-io]\nreplace-with="security-only"\n[source.security-only]\ndirectory="'+(c.NATIVE/'vendor').as_posix()+'"\n',encoding='utf8')
+    guard(json.loads(FRAME.read_bytes()));registry(deadline)
+    c.write(c.BASE/'stage','session-result.json',dict(complete=True,root_adopted=False))
+
+def outer(label):
+    c.need(os.name=='nt' and label in PEERS|{'resolve','stage'},'fixed local outer phase')
+    out=output(label);out.mkdir(parents=True,exist_ok=False);before=c.source();head=c.snapshot();held=inputs()
+    if label.startswith('gnu-') or label=='stage':argv=[str(Path(os.environ['SystemRoot'])/'System32/wsl.exe'),'-d','Ubuntu','-u','artur','--cd','/','--exec','/usr/bin/python3','-B','/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-security-only-074/runner.py','session',label]
+    else:argv=[sys.executable,'-B',str(Path(__file__)),'session',label]
+    c.write(out,'intent.json',dict(argv=argv,source=before,git=head,input_trees=held,bound=1200,session_bound=1100,floor=4*1024**3,poll=5,cleanup=5,retry=False))
+    result=dict(complete=False,root_adopted=False,release_admitted=False)
+    with (out/'stdout.log').open('xb') as stdout,(out/'stderr.log').open('xb') as stderr:
+        try:
+            env=dict(os.environ,HC074_SECURITY_ARGV=json.dumps(argv),HC074_SECURITY_DEADLINE=str(time.monotonic()+1200),HC074_SECURITY_BOUND='1200')
+            child=subprocess.run([sys.executable,'-B',str(Path(__file__)),'command',str(out)],stdout=stdout,stderr=stderr,env=env,timeout=1210)
+            own=json.loads((out/'execution.json').read_bytes());c.need(child.returncode==own['exit']==0 and own['retired'] and not own['errors'],'complete outer original Job')
+            c.need(c.source()==before and c.snapshot()==head,'whole Root/source/ref postflight')
+            if label!='resolve':c.need(inputs()==held,'whole prepared inputs postflight')
+            c.need(json.loads((out/'session-result.json').read_bytes())['complete'],'complete original session')
+            result['complete']=True
+        except BaseException as error:result['first_refusal']=dict(type=type(error).__name__,reason=str(error),traceback=traceback.format_exc())
+    c.write(out,'result.json',result);print(json.dumps(dict(phase=label,**result)));raise SystemExit(0 if result['complete'] else 1)
+
+if __name__=='__main__':
+    if len(sys.argv)==3 and sys.argv[1]=='command':
+        folder=Path(sys.argv[2]);c.need(folder.resolve().is_relative_to(c.BASE.resolve()),'owned command output')
+        argv=json.loads(os.environ['HC074_SECURITY_ARGV']);bound=float(os.environ['HC074_SECURITY_BOUND']);deadline=min(float(os.environ['HC074_SECURITY_DEADLINE']),time.monotonic()+bound)
+        result=c.owned._owned(group(),argv,str(c.ROOT),c.capacity,bound=bound,deadline=deadline)
+        c.write(folder,'execution.json',result);raise SystemExit(result['exit'])
+    if len(sys.argv)==3 and sys.argv[1]=='session':
+        {'resolve':resolve,'stage':stage}.get(sys.argv[2],lambda:session(sys.argv[2]))();raise SystemExit(0)
+    c.need(len(sys.argv)==2,'one fixed phase');outer(sys.argv[1])

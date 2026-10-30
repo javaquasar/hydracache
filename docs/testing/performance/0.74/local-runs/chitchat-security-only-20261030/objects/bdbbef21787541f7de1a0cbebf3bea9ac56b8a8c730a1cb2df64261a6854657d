@@ -1,0 +1,6 @@
+{
+  "test": "test_steps_preserve_all_algorithms_and_members",
+  "reason": "test inverse replaced existing upstream lifetime annotations outside the two edited signatures",
+  "source_preparation_started": false,
+  "root_changed": false
+}

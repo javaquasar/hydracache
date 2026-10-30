@@ -1,5 +1,17 @@
 # HydraCache 0.74 RESP/native performance evidence
 
+The [dependency-only Chitchat preparation](chitchat-security-only-result-20261030.md)
+now completes12 Windows/GNU ×1.94/1.88 × B/Z/U peers:728 selected cases pass,
+check/strict Clippy pass, and all37/239/seven diagnostic corpora match. Full
+standalone dependency policy goes4→1→0 findings through separate Zstd/LRU steps.
+All algorithms remain original; six unchanged MTU-contract executions still fail.
+R4's fifteen test-only format captures preserve assertions and every first
+debug/parser/staging/MSRV refusal. Primary packet
+`e6dd71ebb6818b13587b4750360ade76db5484e5083021ca6505699c039373b3`
+retains8599 members/3182 objects. Root/distribution/resource/CPU gates remain open;
+Q stays unadopted. One separate local MTU candidate is now approved; no server,
+service, clock, installation or product campaign was run in this preparation.
+
 The [direct supervisor Zstd update](supervisor-zstd-security-result-20261030.md)
 now removes the old wrapper from that unpublished tool: exact0.14.3/safe8.2.0,
 same C backend, no runtime source changes. Four unchanged Root archive cases pass

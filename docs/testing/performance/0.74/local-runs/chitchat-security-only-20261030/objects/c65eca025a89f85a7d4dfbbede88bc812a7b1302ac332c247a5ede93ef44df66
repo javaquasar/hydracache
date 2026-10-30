@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-security-only/20261030-v2/builds/gnu-194-U/release/deps/chitchat-d1bc51f1a50dbfae",
+    "--exact",
+    "state::tests::test_sorted_stale_nodes_insert",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "bound": 5,
+  "cwd": "/home/artur/.cache/hydracache-074-security-only/20261030-v2/fixtures/U",
+  "deadline": 41980.669548356,
+  "expected_exit": 0,
+  "image_sha256": "f6eab1ab195b28b0e3a26600764f192c22805368f177858b37cf440ae6abcbce",
+  "retry": false
+}

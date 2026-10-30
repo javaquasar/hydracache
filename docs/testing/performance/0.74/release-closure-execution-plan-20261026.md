@@ -775,3 +775,16 @@ Root advisories through Chitchat. Keep Q unadopted and preserve all thresholds.
 Next close that remaining security/distribution decision and exact-input full
 package/workspace gates before the still-open production lifecycle/reconnect/
 trust/compatible-host rehearsal. This step grants no server execution authority.
+
+The [dependency-only Chitchat source continuation](chitchat-security-only-result-20261030.md)
+now finishes12 Windows/GNU ×1.94/1.88 × B/Z/U peers,728 positive cases and all
+check/strict-Clippy pairs. The normalized and authoring dependency steps stay
+separate; complete37/239/seven diagnostics are identical and full standalone
+policy goes4→1→0 without exceptions. Original algorithms remain; six old MTU
+contracts are actually red. Every initial/debug/parser/staging/MSRV refusal is
+retained. This closes local security-source compatibility, not Root adoption,
+distribution, resource/CPU/retention or full package/workspace gates. The operator
+has separately approved one local borrowed-input MTU candidate under the
+[new plan](chitchat-mtu-next-candidate-plan-20261030.md). Preserve all old S/P/Q
+decisions. Isolate context lifetime from the algorithm, then require all original
+generic/actual-caller gates. Publication and server admission stay separate.

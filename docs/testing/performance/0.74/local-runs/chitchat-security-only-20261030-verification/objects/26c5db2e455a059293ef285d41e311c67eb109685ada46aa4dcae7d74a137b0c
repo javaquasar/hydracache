@@ -1,0 +1,11 @@
+test_diagnostic_between_header_and_outcome (test_accounting.ActualNativeGrammar.test_diagnostic_between_header_and_outcome) ... ok
+test_known_negative_never_becomes_pass (test_accounting.ActualNativeGrammar.test_known_negative_never_becomes_pass) ... ok
+test_missing_duplicate_wrong_headers_or_summary_refuse (test_accounting.ActualNativeGrammar.test_missing_duplicate_wrong_headers_or_summary_refuse) ... ok
+test_foreign_archive_bytes_refuse (test_recipe.ExactSource.test_foreign_archive_bytes_refuse) ... ok
+test_missing_and_duplicate_preimages_refuse (test_recipe.ExactSource.test_missing_and_duplicate_preimages_refuse) ... ok
+test_steps_preserve_all_algorithms_and_members (test_recipe.ExactSource.test_steps_preserve_all_algorithms_and_members) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.015s
+
+OK

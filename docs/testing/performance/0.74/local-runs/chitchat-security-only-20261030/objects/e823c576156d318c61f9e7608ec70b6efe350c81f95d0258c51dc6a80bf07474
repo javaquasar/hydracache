@@ -1,0 +1,11 @@
+{
+  "bound_seconds": 5.0,
+  "capacity_poll_seconds": 5,
+  "classification": "success",
+  "cleanup_seconds": 5,
+  "errors": [],
+  "exit": 0,
+  "observed_child_exit": 0,
+  "production_writer_authority": false,
+  "retired": true
+}

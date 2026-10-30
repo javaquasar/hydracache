@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/home/artur/.cache/hydracache-074-security-only/20261030-v2/builds/gnu-194-Z/release/deps/chitchat-f636b96485b32bff",
+    "--exact",
+    "state::tests::test_cluster_state_apply_delta_last_gc_equal_max_does_not_reset",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "bound": 5,
+  "cwd": "/home/artur/.cache/hydracache-074-security-only/20261030-v2/fixtures/Z",
+  "deadline": 41837.848098524,
+  "expected_exit": 0,
+  "image_sha256": "ca1c120b541b79a6ae4627a373197eb7f9e2f2f6fe3eda838d73f0e0bdfbff01",
+  "retry": false
+}

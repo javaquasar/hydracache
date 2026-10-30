@@ -1,0 +1,66 @@
+--- a/tests/cluster_test.rs
++++ b/tests/cluster_test.rs
+@@ -53,7 +53,7 @@
+     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+         match self {
+             NodeStatePredicate::EqualKeyValue(key, expected_value) => {
+-                write!(f, "Key '{}' == '{}'", key, expected_value)
++                write!(f, "Key '{key}' == '{expected_value}'")
+             }
+             NodeStatePredicate::KeyPresent(key, present) => {
+                 write!(
+@@ -86,14 +86,14 @@
+                 chitchat_id,
+                 keys_values,
+             } => {
+-                write!(f, "INS KV in node {:?}: ", chitchat_id)?;
++                write!(f, "INS KV in node {chitchat_id:?}: ")?;
+                 for (key, value) in keys_values {
+-                    write!(f, "({}={})", key, value)?;
++                    write!(f, "({key}={value})")?;
+                 }
+                 Ok(())
+             }
+             Operation::DeleteKey { chitchat_id, key } => {
+-                write!(f, "DEL node {:?} key {}", chitchat_id, key)
++                write!(f, "DEL node {chitchat_id:?} key {key}")
+             }
+             Operation::DeleteKeyAfterTtl { chitchat_id, key } => {
+                 write!(
+@@ -127,7 +127,7 @@
+                 )
+             }
+             Operation::Wait(duration) => {
+-                write!(f, "WAIT {:?}", duration)
++                write!(f, "WAIT {duration:?}")
+             }
+             Operation::NodeStatusAssert {
+                 server_chitchat_id,
+@@ -312,8 +312,7 @@
+                         let chitchat_guard = chitchat.lock().await;
+                         assert!(
+                             expected_status.check(&chitchat_guard, &chitchat_id),
+-                            "Node {:?} assertion failed",
+-                            expected_status,
++                            "Node {expected_status:?} assertion failed",
+                         );
+                     }
+                 }
+@@ -836,7 +835,7 @@
+     let mut simulator = Simulator::new(Duration::from_millis(100), Duration::from_secs(5));
+     let mut chitchat_ids = Vec::new();
+     for i in 0..20 {
+-        chitchat_ids.push(create_chitchat_id(&format!("node-{}", i)));
++        chitchat_ids.push(create_chitchat_id(&format!("node-{i}")));
+     }
+     let seeds = vec![
+         chitchat_ids[0].clone(),
+@@ -853,7 +852,7 @@
+         .collect();
+     simulator.execute(add_node_operations).await;
+ 
+-    let key_names: Vec<_> = (0..200).map(|idx| format!("key_{}", idx)).collect();
++    let key_names: Vec<_> = (0..200).map(|idx| format!("key_{idx}")).collect();
+     let mut keys_values_inserted_per_chitchat_id: HashMap<ChitchatId, HashSet<String>> =
+         HashMap::new();
+     for chitchat_id in chitchat_ids.iter() {

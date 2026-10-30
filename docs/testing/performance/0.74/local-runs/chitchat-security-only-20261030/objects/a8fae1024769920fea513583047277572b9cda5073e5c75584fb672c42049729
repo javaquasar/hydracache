@@ -1,0 +1,4 @@
+
+thread 'serialize::security_stream_review::minimal_bound_contract' (49128) panicked at src\stream_review.rs:69:5:
+original upperbound contract
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

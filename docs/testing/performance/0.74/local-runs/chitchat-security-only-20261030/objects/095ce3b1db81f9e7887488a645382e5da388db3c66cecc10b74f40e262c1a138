@@ -1,0 +1,10 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "one exact actual test identity",
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-security-only-074\\runner.py\", line 92, in session\n    account((folder/'stdout.log').read_bytes(),names,test,False)\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-security-only-074\\runner.py\", line 67, in account\n    c.need(rows==[(test,'FAILED' if negative else 'ok')],'one exact actual test identity')\n    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-security-only-074\\scope.py\", line 27, in need\n    if not ok:raise ValueError(why)\n              ^^^^^^^^^^^^^^^^^^^^^\nValueError: one exact actual test identity\n",
+    "type": "ValueError"
+  },
+  "root_adopted": false,
+  "wide_gate_passed": false
+}

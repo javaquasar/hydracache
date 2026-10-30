@@ -1305,3 +1305,10 @@ checks and16 exact-Root archive case executions. Its advisory scope passes;
 Root remains blocked by the three Chitchat Zstd findings. Q's complete negative
 CPU/resource admission is retained and Q is not adopted. No performance
 candidate, C74 freeze, full-workspace pass or server admission follows.
+
+The [dependency-only Chitchat result](../testing/performance/0.74/chitchat-security-only-result-20261030.md)
+completes12 local functional peers/728 positive cases and full standalone policy
+with the isolated Zstd/LRU requirements. The unchanged MTU contracts remain red;
+Root adoption is not granted by those source-compatibility results. The operator
+has approved one separate local MTU candidate under its recorded plan, preserving
+all thresholds, first refusals and previous S/P/Q negative decisions.

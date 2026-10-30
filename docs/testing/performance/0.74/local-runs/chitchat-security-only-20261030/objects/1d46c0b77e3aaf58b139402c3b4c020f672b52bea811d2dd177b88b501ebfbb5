@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+    "-vV"
+  ],
+  "bound": 1200,
+  "cwd": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-security-only-20261030\\r4\\fixtures\\B",
+  "deadline": 212634.268291,
+  "expected_exit": 0,
+  "image_sha256": "6a0699e427ee9c1492ef1c9ea967d035dc4660e92c7fe32f2c6a1038116700e5",
+  "retry": false
+}

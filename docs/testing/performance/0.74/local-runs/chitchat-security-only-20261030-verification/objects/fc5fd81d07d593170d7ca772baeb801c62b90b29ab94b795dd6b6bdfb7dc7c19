@@ -1,0 +1,9 @@
+test_coherently_rehashed_owner_and_selection_tampering_refuse (test_verify.DataOnlyRefusals.test_coherently_rehashed_owner_and_selection_tampering_refuse) ... ok
+test_complete_source_policy_and_case_replay (test_verify.DataOnlyRefusals.test_complete_source_policy_and_case_replay) ... ok
+test_corrupt_archive_and_log_bytes_refuse (test_verify.DataOnlyRefusals.test_corrupt_archive_and_log_bytes_refuse) ... ok
+test_no_root_or_wide_gate_promotion (test_verify.DataOnlyRefusals.test_no_root_or_wide_gate_promotion) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 5.372s
+
+OK

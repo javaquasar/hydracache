@@ -1,0 +1,10 @@
+{
+  ".gitattributes": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
+  "candidate.py": "c10268beccc3e1bbd9deacda959627b479d6dce6915ded112cc6ea0e737d2298",
+  "finalize.py": "6ac68392b0bd55fdf9bc02ae1a767bd4d7e751b46b806cf4b1716d97a0bfd954",
+  "root-feature-omissions.json": "7f6a88575a0491bee60f912f03f6da5174d436efb12e89d781081e734764c4b8",
+  "runner.py": "1993a41cc61617dc004ef98c78e030b4158dce3a996f2803ac0ae2d1f1035d18",
+  "scope.py": "66322835a02bbc06a95255200b6fd2466b2c9b44629b38c27a9958f16ff18ff2",
+  "security_tests.rs": "afe5bffc627afb725f2d859235531a49c76eb0b061996d81aeda771a3941d05f",
+  "test_recipe.py": "7526cbf65579d562f776ee58cf519472e5fb3206cb502bcd1defb49c57e42404"
+}

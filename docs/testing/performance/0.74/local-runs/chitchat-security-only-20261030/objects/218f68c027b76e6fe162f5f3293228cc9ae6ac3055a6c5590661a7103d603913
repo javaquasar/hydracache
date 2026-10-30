@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.88.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+    "clippy",
+    "--manifest-path",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-security-only-20261030\\r4\\fixtures\\U\\Cargo.toml",
+    "--target-dir",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-security-only-20261030\\r4\\builds\\windows-188-U",
+    "--offline",
+    "--locked",
+    "--release",
+    "--all-targets",
+    "--all-features",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "bound": 1200,
+  "cwd": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-security-only-20261030\\r4\\fixtures\\U",
+  "deadline": 213498.6917725,
+  "expected_exit": 0,
+  "image_sha256": "d9d1f16c0438e0e5e820b2bb40846e3cc6a023e0a835505c5c4b25664e46c3be",
+  "retry": false
+}

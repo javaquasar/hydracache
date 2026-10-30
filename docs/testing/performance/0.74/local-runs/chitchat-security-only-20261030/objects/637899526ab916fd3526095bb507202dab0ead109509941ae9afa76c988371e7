@@ -1,0 +1,52 @@
+--- a/tests/perf_test.rs
++++ b/tests/perf_test.rs
+@@ -82,8 +82,7 @@
+     let delay = delay_before_detection_sample(40, &transport).await;
+     assert!(
+         delay < Duration::from_secs(10),
+-        "Delay exceeded: {:?}",
+-        delay
++        "Delay exceeded: {delay:?}"
+     );
+ }
+ 
+@@ -94,8 +93,7 @@
+     let delay = delay_before_detection_sample(20, &transport).await;
+     assert!(
+         delay < Duration::from_secs(10),
+-        "Delay exceeded: {:?}",
+-        delay
++        "Delay exceeded: {delay:?}"
+     );
+ }
+ 
+@@ -106,8 +104,7 @@
+     let delay = delay_before_detection_sample(40, &transport).await;
+     assert!(
+         delay < Duration::from_secs(10),
+-        "Delay exceeded: {:?}",
+-        delay
++        "Delay exceeded: {delay:?}"
+     );
+ }
+ 
+@@ -118,8 +115,7 @@
+     let delay = delay_before_detection_sample(100, &transport).await;
+     assert!(
+         delay < Duration::from_secs(10),
+-        "Delay exceeded: {:?}",
+-        delay
++        "Delay exceeded: {delay:?}"
+     );
+ }
+ 
+@@ -130,8 +126,7 @@
+     let delay = delay_before_detection_sample(100, &*transport).await;
+     assert!(
+         delay < Duration::from_secs(15),
+-        "Delay exceeded: {:?}",
+-        delay
++        "Delay exceeded: {delay:?}"
+     );
+ }
+ 

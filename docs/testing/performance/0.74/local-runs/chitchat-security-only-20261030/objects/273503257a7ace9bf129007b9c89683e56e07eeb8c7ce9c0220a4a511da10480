@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-security-only-20261030\\builds\\windows-194-B\\debug\\deps\\chitchat-0edc6cf9c3e409df.exe",
+    "--list"
+  ],
+  "bound": 10,
+  "deadline": 210267.0010676,
+  "expected_exit": 0,
+  "image_sha256": "fa0cf9e68bce086f638ce0c7848bc91d8fe4c9b56226bddbce6020dfa0a39b2e",
+  "retry": false
+}

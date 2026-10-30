@@ -1,0 +1,11 @@
+--- a/src/delta.rs
++++ b/src/delta.rs
+@@ -145,7 +145,7 @@
+ }
+ 
+ impl DeltaOp {
+-    fn as_ref(&self) -> DeltaOpRef {
++    fn as_ref(&self) -> DeltaOpRef<'_> {
+         match self {
+             DeltaOp::Node {
+                 chitchat_id,

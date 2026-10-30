@@ -1,0 +1,10 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "complete original owned result: test-022",
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-security-only-074\\runner.py\", line 94, in session\n    folder=invocation(out,f'test-{i:03}',[str(image),'--exact',test,'--test-threads=1','--nocapture'],env,deadline,frame,bound=5)\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-security-only-074\\runner.py\", line 38, in invocation\n    c.need(worker.returncode==execution['exit']==expected_exit and execution['retired'] and not execution['errors'],'complete original owned result: '+name)\n    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\tools\\chitchat-security-only-074\\scope.py\", line 27, in need\n    if not ok:raise ValueError(why)\n              ^^^^^^^^^^^^^^^^^^^^^\nValueError: complete original owned result: test-022\n",
+    "type": "ValueError"
+  },
+  "root_adopted": false,
+  "wide_gate_passed": false
+}

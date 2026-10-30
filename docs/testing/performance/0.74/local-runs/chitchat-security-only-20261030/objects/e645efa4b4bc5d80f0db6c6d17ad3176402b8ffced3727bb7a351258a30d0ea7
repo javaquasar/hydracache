@@ -1,0 +1,15 @@
+{
+  "allowed_mutation": "this fixture Cargo.lock only",
+  "argv": [
+    "C:\\Users\\ArturBuzov\\.rustup\\toolchains\\1.94.0-x86_64-pc-windows-msvc\\bin\\cargo.exe",
+    "metadata",
+    "--manifest-path",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\chitchat-security-only-20261030\\r4\\fixtures\\B\\Cargo.toml",
+    "--all-features",
+    "--format-version",
+    "1",
+    "--offline"
+  ],
+  "deadline": 212245.5209025,
+  "retry": false
+}
