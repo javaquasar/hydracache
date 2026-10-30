@@ -44,5 +44,18 @@ class Controls(unittest.TestCase):
     def test_ambiguous_source_edge_refuses(self):
         rows=[dict(name='root',version='1',dependencies=['dep 1']),dict(name='dep',version='1',source='registry+a'),dict(name='dep',version='1',source='registry+b')]
         with self.assertRaises(ValueError):s.lock_edges(rows)
+    def test_new_capacity_context_never_resumes_first(self):
+        self.assertNotEqual(s.BASE,s.FIRST);self.assertEqual(s.INPUT,s.FIRST/'input')
+        self.assertNotEqual(s.N.parent/s.N.name,s.VENDOR.parent)
+        self.assertEqual(s.VENDOR.name,'vendor')
+    def test_read_only_mirror_is_bound_to_archive_not_its_own_checksum(self):
+        raw=s.m.codec().pack({'src/lib.rs':b'original'},'example-1');digest=c.sha(raw)
+        values={'src/lib.rs':c.sha(b'original')};row=dict(files=values,package=digest)
+        s.verify_mirror(raw,'example-1',digest,values,row)
+        forged={'src/lib.rs':c.sha(b'changed')}
+        with self.assertRaises(ValueError):s.verify_mirror(raw,'example-1',digest,forged,dict(files=forged,package=digest))
+    def test_mirror_changed_archive_refuses(self):
+        raw=s.m.codec().pack({'src/lib.rs':b'original'},'example-1');values={'src/lib.rs':c.sha(b'original')}
+        with self.assertRaises(ValueError):s.verify_mirror(raw,'example-1','0'*64,values,dict(files=values,package='0'*64))
 
 if __name__=='__main__':unittest.main(verbosity=2)

@@ -23,11 +23,12 @@ def invoke(label,argv,env,deadline,cwd=None,mutate=False,bound=780):
     return folder
 
 def mirror(deadline):
-    ledger=json.loads((s.BASE/'input/registry.json').read_bytes())
+    ledger=json.loads((s.INPUT/'registry.json').read_bytes())
     for name,digest in ledger.items():
-        c.need(time.monotonic()<deadline,'original mirror validation deadline');s.capacity();folder=s.N/'vendor'/name
+        c.need(time.monotonic()<deadline,'original mirror validation deadline');s.capacity();folder=s.VENDOR/name
+        raw=(s.INPUT/'archives'/(name+'.crate')).read_bytes()
         values=c.tree(folder);row=json.loads((folder/'.cargo-checksum.json').read_bytes());values.pop('.cargo-checksum.json')
-        c.need(values==row['files'] and row['package']==digest,'whole ordinary lock-bound mirror source')
+        s.verify_mirror(raw,name,digest,values,row)
 
 def git(v,label,args,env,deadline,mutate=False):
     argv=['/usr/bin/git','-c','core.hooksPath=/dev/null','-c','commit.gpgsign=false','-c','user.name=HydraCache Copied Root Diagnostic','-c','user.email=diagnostic@invalid','-C',str(s.N/'copies'/v),*args]
@@ -35,24 +36,17 @@ def git(v,label,args,env,deadline,mutate=False):
 
 def stage(env,deadline):
     c.need(not s.N.exists(),'exclusive copied Root directory');s.N.mkdir(parents=True,mode=0o700)
-    source=m.codec().unpack((s.BASE/'input/source.tar').read_bytes(),'hc074-copied-root',True);expected=json.loads((s.BASE/'input/source-map.json').read_bytes())
+    source=m.codec().unpack((s.INPUT/'source.tar').read_bytes(),'hc074-copied-root',True);expected=json.loads((s.INPUT/'source-map.json').read_bytes())
     c.need({n:c.sha(b) for n,b in source.items()}==expected,'whole canonical frozen Root source archive')
-    proposal=json.loads((s.BASE/'input/proposal.json').read_bytes())
+    proposal=json.loads((s.INPUT/'proposal.json').read_bytes())
     for v in ('B','O'):
         files=dict(source);files['Cargo.toml']=s.variant(source['Cargo.toml'],proposal,v)
         root=s.N/'copies'/v
         for name,body in files.items():
             path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(body)
         c.write(s.BASE/'state','staged-'+v+'.json',{n:c.sha(b) for n,b in files.items()})
-    for name,digest in json.loads((s.BASE/'input/registry.json').read_bytes()).items():
-        c.need(time.monotonic()<deadline,'original complete source preparation deadline');s.capacity()
-        raw=(s.BASE/'input/archives'/(name+'.crate')).read_bytes();c.need(c.sha(raw)==digest,'whole held official archive')
-        files=m.codec().unpack(raw,name);root=s.N/'vendor'/name
-        for n,b in files.items():
-            path=root/n;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(b)
-        c.write(root,'.cargo-checksum.json',dict(package=digest,files={n:c.sha(b) for n,b in files.items()}))
-    (s.N/'cargo-home').mkdir();reference=json.loads((s.BASE/'input/registry-reference.json').read_bytes())
-    config='[source.crates-io]\nreplace-with="copied-root-reviewed"\n[source.copied-root-reviewed]\ndirectory="'+(s.N/'vendor').as_posix()+'"\n[registries.hc074-draft]\nindex="'+reference['registry'].removeprefix('registry+')+'"\n'
+    (s.N/'cargo-home').mkdir();reference=json.loads((s.INPUT/'registry-reference.json').read_bytes())
+    config='[source.crates-io]\nreplace-with="copied-root-reviewed"\n[source.copied-root-reviewed]\ndirectory="'+s.VENDOR.as_posix()+'"\n[registries.hc074-draft]\nindex="'+reference['registry'].removeprefix('registry+')+'"\n'
     (s.N/'cargo-home/config.toml').write_text(config,encoding='utf8');c.write(s.BASE/'state','config.json',dict(sha256=c.sha(config.encode())))
     s.actual();mirror(deadline)
     for v in ('B','O'):
@@ -70,9 +64,9 @@ def metadata(tool,env,deadline):
         out=invoke('metadata-'+v,argv,dict(env,CARGO_NET_OFFLINE='false',CARGO_NET_RETRY='0') if v=='O' else env,deadline,cwd=root,mutate=v=='O')
         data=json.loads((out/'stdout.log').read_bytes());c.need(data['workspace_root']==str(root),'actual copied full workspace')
         raw=(root/'Cargo.lock').read_bytes()
-        if v=='B':c.need(raw==(s.BASE/'input/base.lock').read_bytes(),'exact unchanged baseline lock')
+        if v=='B':c.need(raw==(s.INPUT/'base.lock').read_bytes(),'exact unchanged baseline lock')
         else:
-            review=s.resolve_graph(raw,(s.BASE/'input/base.lock').read_bytes());c.write(out,'graph-review.json',review)
+            review=s.resolve_graph(raw,(s.INPUT/'base.lock').read_bytes());c.write(out,'graph-review.json',review)
             expected=json.loads((s.BASE/'state/staged-O.json').read_bytes())
             for name,digest in expected.items():
                 if name!='Cargo.lock':c.need(c.sha((root/name).read_bytes())==digest,'only copied owned lock resolution')
@@ -88,9 +82,9 @@ def metadata(tool,env,deadline):
         c.need((v=='B' and len(legacy)==1 and not owned) or (v=='O' and len(owned)==1 and not legacy),'one coherent selected identity, no mixed Chitchat graph')
         chosen=(legacy or owned)[0]['id']
         if v=='O':
-            reference=json.loads((s.BASE/'input/registry-reference.json').read_bytes());package=owned[0]
+            reference=json.loads((s.INPUT/'registry-reference.json').read_bytes());package=owned[0]
             c.need(package['version']==m.VERSION and package['source']==reference['registry'],'actual exact private registry dependency')
-            folder=Path(package['manifest_path']).parent;files=m.codec().unpack((s.BASE/'input/owned.crate').read_bytes(),m.PREFIX)
+            folder=Path(package['manifest_path']).parent;files=m.codec().unpack((s.INPUT/'owned.crate').read_bytes(),m.PREFIX)
             values=c.tree(folder);values.pop('.cargo-ok',None);values.pop('.cargo-checksum.json',None)
             c.need(values=={n:c.sha(b) for n,b in files.items()},'whole real maintained dependency source')
             c.write(s.BASE/'state','owned-download.json',dict(path=str(folder),files=values,source=package['source'],version=package['version']))

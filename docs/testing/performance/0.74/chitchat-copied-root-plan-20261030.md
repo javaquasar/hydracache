@@ -57,6 +57,18 @@ never modify other chats, old held images or inputs.
 
 ## Remaining admission
 
+The first a1 staging owner stopped on the original physical4GiB floor before
+any Git/Cargo invocation: exit125, resource-floor, retired. No inner session
+result was published. Its STOP, streams, input and exact producer source remain.
+After verified removal of old completed 0.74 Cargo caches, the distinct a2
+capacity context reuses only those immutable inputs and the ordinary unpacked
+mirror. Each mirror file and its checksum map is freshly compared with the
+whole original archive; trusting a self-edited checksum map is forbidden.
+Own copied source/Git, Cargo home and build targets are exclusive a2 outputs.
+This does not reopen a1 or lower either disk floor. All remaining lanes retain
+their original commands, ordering, guards and deadlines. Sixteen pure controls
+cover the original thirteen cases, context separation and forged-mirror refusal.
+
 Coherent copied-Root success is a local prerequisite, not public-registry, fresh
 whole-Root security/workspace/platform, MTU/resource/performance or production
 lifecycle/reconnect/trust/compatible-host qualification. Retain exact source,

@@ -4,8 +4,11 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2];HERE=Path(__file__).resolve().parent
 sys.path.insert(0,str(ROOT/'tools/chitchat-public-identity-074'));import contract as abi
 c=abi.c;m=abi.m;prior=abi.prior
-BASE=ROOT/'target/chitchat-copied-root-20261030'
-N=Path('/home/artur/.cache/hydracache-074-copied-root/20261030-a1')
+FIRST=ROOT/'target/chitchat-copied-root-20261030'
+BASE=ROOT/'target/chitchat-copied-root-20261030-r2'
+INPUT=FIRST/'input'
+N=Path('/home/artur/.cache/hydracache-074-copied-root/20261030-a2')
+VENDOR=Path('/home/artur/.cache/hydracache-074-copied-root/20261030-a1/vendor')
 PACKET=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-public-identity-20261030'
 PARENT_SHA='06ce2017ce7e2c0b9474914cc134025d95dcb2b2dd0ab8a6892ee87d7b4e8454'
 PROPOSAL=ROOT/'docs/testing/performance/0.74/chitchat-public-identity-migration-proposal-20261030.json'
@@ -24,7 +27,7 @@ def variant(raw,proposal,which):
 
 def source():
     values=prior.source()
-    for root in (HERE,BASE/'input'):
+    for root in (HERE,INPUT,BASE/'input'):
         for path in root.rglob('*'):
             if '__pycache__' in path.parts:continue
             c.need(not path.is_symlink() and not getattr(path,'is_junction',lambda:False)(),'regular copied-Root source/input')
@@ -63,8 +66,8 @@ def actual():
             c.need(c.sha((root/'.git/config').read_bytes())==row['config_sha256'],'fixed private Git configuration')
     frame=BASE/'state/config.json'
     if frame.exists():c.need(c.sha((N/'cargo-home/config.toml').read_bytes())==json.loads(frame.read_bytes())['sha256'],'same original private registry configuration')
-    if (BASE/'input/registry-reference.json').exists():
-        row=json.loads((BASE/'input/registry-reference.json').read_bytes());root=Path('/home/artur/.cache/hydracache-074-package/20261030-a6')
+    if (INPUT/'registry-reference.json').exists():
+        row=json.loads((INPUT/'registry-reference.json').read_bytes());root=Path('/home/artur/.cache/hydracache-074-package/20261030-a6')
         for name,digest in row['registry_files'].items():c.need(c.sha((root/name).read_bytes())==digest,'whole exact read-only qualified registry locator')
     frame=BASE/'state/owned-download.json'
     if frame.exists():
@@ -84,11 +87,16 @@ def lock_edges(rows):
         result[row['name'],row['version'],row.get('source')]=children
     return result
 
+def verify_mirror(raw,name,digest,values,row):
+    c.need(c.sha(raw)==digest,'whole original official mirror archive')
+    expected={n:c.sha(b) for n,b in m.codec().unpack(raw,name).items()}
+    c.need(values==row['files']==expected and row['package']==digest,'whole ordinary archive-bound read-only mirror source')
+
 def resolve_graph(raw,before):
     old=tomllib.loads(before.decode())['package'];new=tomllib.loads(raw.decode())['package']
     old_nodes={(p['name'],p['version'],p.get('source')):p for p in old};new_nodes={(p['name'],p['version'],p.get('source')):p for p in new}
     old_edges,new_edges=lock_edges(old),lock_edges(new)
-    allowed=json.loads((BASE/'input/registry.json').read_bytes());reference=json.loads((BASE/'input/registry-reference.json').read_bytes())
+    allowed=json.loads((INPUT/'registry.json').read_bytes());reference=json.loads((INPUT/'registry-reference.json').read_bytes())
     for p in new:
         if p.get('source'):
             if p['name']==m.NAME:c.need(p['version']==m.VERSION and p['source']==reference['registry'] and p['checksum']==abi.CRATE_SHA,'exact maintained owned lock identity')
@@ -107,40 +115,21 @@ def resolve_graph(raw,before):
 def prepare():
     capacity()
     for mode in ('controls','syntax'):c.need(json.loads((BASE/'offline'/mode/'result.json').read_bytes())['complete'],'complete copied-Root pure preflight')
-    BASE.mkdir(exist_ok=True);(BASE/'input/archives').mkdir(parents=True);(BASE/'state').mkdir()
-    raw=(PACKET/'index.json').read_bytes();c.need(c.sha(raw)==PARENT_SHA,'whole identity control parent')
-    index=json.loads(raw);c.need(index['result']['nominal_control_gate_pass'] and index['result']['mixed_identity_assignable'] is False,'explicit confirmed migration boundary')
-    def get(name):
-        row=index['members'][name];body=(PACKET/'objects'/row['sha256']).read_bytes();c.need(c.sha(body)==row['sha256'] and len(body)==row['bytes'],'whole qualified parent input');return body
-    proposal=json.loads(PROPOSAL.read_bytes());c.need((ROOT/'Cargo.toml').read_bytes()==get('reference/root/Cargo.toml'),'same whole current Root preimage')
-    source_map=json.loads(get('reference/frozen-root-map.json'))
-    names=set(source_map)
-    for prefix in ('README*','LICENSE*','.gitignore','.gitattributes','.cargo','docs/testing/compat'):
-        names.update(n.decode() for n in c.git('ls-files','-z','--',prefix).split(b'\0') if n)
-    files={}
-    for name in sorted(names):
-        m.codec().safe_name(name);path=ROOT/name;c.need(path.is_file() and path.resolve().is_relative_to(ROOT.resolve()) and not path.is_symlink() and not path.is_junction(),'exact regular tracked copied input')
-        body=path.read_bytes()
-        if name in source_map:c.need(c.sha(body)==source_map[name],'whole original Root source map')
-        files[name]=body
-    c.write(BASE/'input','source-map.json',{n:c.sha(b) for n,b in files.items()})
-    (BASE/'input/source.tar').write_bytes(m.codec().pack(files,'hc074-copied-root'))
-    (BASE/'input/base.lock').write_bytes(files['Cargo.lock'])
-    (BASE/'input/proposal.json').write_bytes(PROPOSAL.read_bytes())
-    (BASE/'input/parent-index.json').write_bytes(raw)
-    (BASE/'input/owned.crate').write_bytes(get('input/owned.crate'))
-    (BASE/'input/registry-reference.json').write_bytes(get('input/registry-reference.json'))
-    ledger={p['name']+'-'+p['version']:p['checksum'] for p in tomllib.loads(files['Cargo.lock'].decode())['package'] if p.get('source')}
-    cache=Path.home()/'.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f'
-    parent_ledger=json.loads(get('input/registry.json'));name='lru-0.18.2';ledger[name]=parent_ledger[name]
-    total=0
-    for name,digest in ledger.items():
-        body=(cache/(name+'.crate')).read_bytes();c.need(c.sha(body)==digest,'whole lock-bound ordinary registry archive: '+name)
-        (BASE/'input/archives'/(name+'.crate')).write_bytes(body);total+=len(body)
-    c.write(BASE/'input','registry.json',ledger)
-    c.write(BASE/'input','scope.json',dict(operator_approved_coordinated_migration=True,parent_sha256=PARENT_SHA,product_Root_changed=False,
-        root_adopted=False,publication_authorized=False,public_registry_qualified=False,release_admitted=False,
-        package_bound=780,test_threads=4,outer_bound=1200,native_bound=1100,floor=4*1024**3,poll=5,retirement=5,
-        full_workspace_dispatched=False,workspace_bound=4800,workspace_start_floor=16*1024**3,retry=False))
-    c.write(BASE/'input','variants.json',{v:dict(manifest_sha256=c.sha(variant(files['Cargo.toml'],proposal,v))) for v in ('B','O')})
-    print(json.dumps(dict(complete=True,source_files=len(files),registry_archives=len(ledger),archive_bytes=total,root_adopted=False)))
+    # The first context is terminal, never resumed. Borrow only its immutable
+    # input bytes and fully revalidate its unpacked official vendor data.
+    owner=json.loads((FIRST/'native/stage/execution.json').read_bytes())
+    c.need(owner['classification']=='resource-floor' and owner['exit']==125 and owner['retired'],'retained first resource refusal')
+    c.need((FIRST/'STOP.json').is_file() and not (FIRST/'native/stage/session-result.json').exists(),'no invented first inner result')
+    c.need(not (FIRST/'native/stage/init-B').exists(),'first attempt did not invoke Git or Cargo')
+    BASE.mkdir(exist_ok=True);(BASE/'input').mkdir();(BASE/'state').mkdir()
+    ledger=json.loads((INPUT/'registry.json').read_bytes())
+    for name,digest in ledger.items():c.need(c.sha((INPUT/'archives'/(name+'.crate')).read_bytes())==digest,'whole held official Root input')
+    expected=json.loads((INPUT/'source-map.json').read_bytes())
+    raw=m.codec().unpack((INPUT/'source.tar').read_bytes(),'hc074-copied-root',True)
+    c.need({n:c.sha(b) for n,b in raw.items()}==expected,'whole original canonical source input')
+    c.need((ROOT/'Cargo.toml').read_bytes()==raw['Cargo.toml'] and (ROOT/'Cargo.lock').read_bytes()==raw['Cargo.lock'],'same unchanged actual Root')
+    c.write(BASE/'input','reuse.json',dict(first_context=str(FIRST),first_owner_sha256=c.sha((FIRST/'native/stage/execution.json').read_bytes()),
+        input={p.relative_to(INPUT).as_posix():c.sha(p.read_bytes()) for p in INPUT.rglob('*') if p.is_file()},
+        vendor=str(VENDOR),first_refusal_retained=True,retry_to_pass=False,root_adopted=False))
+    print(json.dumps(dict(complete=True,read_only_archives=len(ledger),source_files=len(expected),native_context=str(N),root_adopted=False)))
+    return
