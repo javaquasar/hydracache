@@ -1,0 +1,34 @@
+{
+  "caches": [
+    {
+      "path": "target/dbus-read-flows-v2-20261028/targets",
+      "bytes": 984418069,
+      "files": 1642
+    },
+    {
+      "path": "target/dbus-read-flows-v3-20261028/targets",
+      "bytes": 984446813,
+      "files": 1642
+    },
+    {
+      "path": "target/dbus-owner-properties-20261028/targets",
+      "bytes": 871712095,
+      "files": 1356
+    }
+  ],
+  "evidence": [
+    {
+      "packet": "dbus-read-flows-20261028",
+      "index_sha256": "4be475b3f92e348e8ccde151356d73607e0b609ebcacf406c4e13fc586131fb2",
+      "members": 1007,
+      "objects_verified": true
+    },
+    {
+      "packet": "dbus-owner-properties-20261028",
+      "index_sha256": "6dcc7caeafe086771c60a717c27bfe3ab2091177c1866520fcc1edc25b846dfb",
+      "members": 365,
+      "objects_verified": true
+    }
+  ],
+  "preserve_sources_evidence": true
+}

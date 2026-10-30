@@ -1,0 +1,6 @@
+   Compiling zstd-safe v8.2.0
+    Checking lru v0.18.2
+    Checking zstd v0.14.3
+    Checking hydra-chitchat v0.11.1-hydra.1 (registry `hc074-draft`)
+    Checking hydracache-cluster-chitchat v0.73.0 (/home/artur/.cache/hydracache-074-copied-root/20261030-a3/copies/O/crates/hydracache-cluster-chitchat)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.04s

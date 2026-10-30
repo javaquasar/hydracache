@@ -1,0 +1,40 @@
+{
+  "argv": [
+    "/usr/bin/git",
+    "-c",
+    "core.hooksPath=/dev/null",
+    "-c",
+    "commit.gpgsign=false",
+    "-c",
+    "user.name=HydraCache Copied Root Diagnostic",
+    "-c",
+    "user.email=diagnostic@invalid",
+    "-C",
+    "/home/artur/.cache/hydracache-074-copied-root/20261030-a2/copies/O",
+    "add",
+    "--force",
+    "--",
+    "."
+  ],
+  "bound": 780,
+  "cwd": "/home/artur/.cache/hydracache-074-copied-root/20261030-a2",
+  "deadline": 87088.215428302,
+  "env": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_HOME": "/home/artur/.cache/hydracache-074-copied-root/20261030-a2/cargo-home",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_OFFLINE": "true",
+    "HOME": "/home/artur",
+    "LANG": "C.UTF-8",
+    "LOGNAME": "artur",
+    "PATH": "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin:/usr/local/bin:/usr/bin:/bin",
+    "PROPTEST_RNG_SEED": "7606312",
+    "RUSTC": "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTC_WORKSPACE_WRAPPER": "",
+    "RUSTC_WRAPPER": "",
+    "RUSTUP_TOOLCHAIN": "1.94.0-x86_64-unknown-linux-gnu",
+    "USER": "artur"
+  },
+  "image_sha256": "eb54b535467e0975c1284d4c4d08eea779aeb248a5d34b02e2ee171382e22201",
+  "retry": false
+}

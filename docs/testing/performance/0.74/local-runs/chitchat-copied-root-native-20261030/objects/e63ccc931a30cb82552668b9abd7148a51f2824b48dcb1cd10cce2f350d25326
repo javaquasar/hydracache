@@ -1,0 +1,8 @@
+{
+  "complete": false,
+  "mode": "controls-download",
+  "error": "no bypass of a failed parent",
+  "caller_or_unit_command_launched": false,
+  "parent_phase": "test-B-194-adapter",
+  "pure_data_controls_separate": true
+}

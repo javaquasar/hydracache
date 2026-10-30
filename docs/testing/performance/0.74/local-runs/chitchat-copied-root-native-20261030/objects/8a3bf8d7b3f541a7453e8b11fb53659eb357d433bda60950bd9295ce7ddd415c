@@ -1,0 +1,56 @@
+{
+  "deleted": [
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\tests\\trybuild\\debug\\deps",
+      "bytes": 424134160,
+      "absent": true
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\tests\\trybuild\\x86_64-pc-windows-msvc\\debug\\deps",
+      "bytes": 16162012,
+      "absent": true
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\diagnostic_builder.pdb",
+      "bytes": 1191936,
+      "absent": true
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\diagnostic_controller.pdb",
+      "bytes": 1191936,
+      "absent": true
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\diagnostic_held_bootstrap.pdb",
+      "bytes": 1683456,
+      "absent": true
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\diagnostic_held_launcher.pdb",
+      "bytes": 1191936,
+      "absent": true
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\diagnostic_signer_isolation_probe.pdb",
+      "bytes": 1191936,
+      "absent": true
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\diagnostic_signer_owned_probe.pdb",
+      "bytes": 1191936,
+      "absent": true
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\diagnostic_signer_root_probe.pdb",
+      "bytes": 1191936,
+      "absent": true
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\hydracache_long_run_supervisor_074.pdb",
+      "bytes": 25784320,
+      "absent": true
+    }
+  ],
+  "free_bytes": 6547173376,
+  "held_xtask_sha256": "e49f4694c8dd18629d33cdeda08d7f2a617ccae14cc3be41f10b52ad233471a9"
+}

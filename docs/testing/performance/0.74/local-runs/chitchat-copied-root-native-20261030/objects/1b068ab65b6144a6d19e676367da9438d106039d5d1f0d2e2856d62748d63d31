@@ -1,0 +1,34 @@
+{
+  "argv": [
+    "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "metadata",
+    "--manifest-path",
+    "/home/artur/.cache/hydracache-074-copied-root/20261030-a3/copies/B/Cargo.toml",
+    "--all-features",
+    "--format-version",
+    "1",
+    "--locked",
+    "--offline"
+  ],
+  "bound": 780,
+  "cwd": "/home/artur/.cache/hydracache-074-copied-root/20261030-a3/copies/B",
+  "deadline": 94851.508654679,
+  "env": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_HOME": "/home/artur/.cache/hydracache-074-copied-root/20261030-a3/cargo-home",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_OFFLINE": "true",
+    "HOME": "/home/artur",
+    "LANG": "C.UTF-8",
+    "LOGNAME": "artur",
+    "PATH": "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin:/usr/local/bin:/usr/bin:/bin",
+    "PROPTEST_RNG_SEED": "7606312",
+    "RUSTC": "/home/artur/.rustup/toolchains/1.94.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTC_WORKSPACE_WRAPPER": "",
+    "RUSTC_WRAPPER": "",
+    "RUSTUP_TOOLCHAIN": "1.94.0-x86_64-unknown-linux-gnu",
+    "USER": "artur"
+  },
+  "image_sha256": "77f14b761b02b47e6747473f556b3bc9f98f7e4525b7c3b8d74898ff816e4636",
+  "retry": false
+}

@@ -1,0 +1,29 @@
+{
+  "caches": [
+    {
+      "path": "target/chitchat-inplace-20261029/targets",
+      "bytes": 558518278,
+      "files": 1674
+    },
+    {
+      "path": "target/chitchat-preview-cost-20261028/targets",
+      "bytes": 672440536,
+      "files": 2564
+    }
+  ],
+  "evidence": [
+    {
+      "packet": "chitchat-inplace-20261029",
+      "index_sha256": "9381608b814a7fcdc16835ece436534fc1d48f816039023f9c0adbc16a234fd1",
+      "members": 3476,
+      "objects_verified": true
+    },
+    {
+      "packet": "chitchat-preview-cost-20261028",
+      "index_sha256": "51b3a9de6e09754d617e4a036837b5ef1cbcb4dbbfa01c257a32b3252239a8ab",
+      "members": 162,
+      "objects_verified": true
+    }
+  ],
+  "preserve_sources_evidence": true
+}

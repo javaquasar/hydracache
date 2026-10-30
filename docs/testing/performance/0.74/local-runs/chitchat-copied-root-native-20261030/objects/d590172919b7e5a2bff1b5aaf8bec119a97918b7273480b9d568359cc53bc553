@@ -1,0 +1,7 @@
+{
+  "complete": false,
+  "error": "declared source/data extension",
+  "cause": "duplicate generated source-only-review directory included in data collection",
+  "output_created": false,
+  "qualification_replayed": false
+}

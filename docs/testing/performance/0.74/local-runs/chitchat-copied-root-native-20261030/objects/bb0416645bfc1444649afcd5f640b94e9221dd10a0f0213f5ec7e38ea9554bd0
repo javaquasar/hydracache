@@ -1,0 +1,6 @@
+    Updating `hc074-draft` index
+     Locking 2 packages to latest compatible versions
+      Adding hydra-chitchat v0.11.1-hydra.1 (registry `hc074-draft`)
+    Updating lru v0.17.0 -> v0.18.2
+ Downloading crates ...
+  Downloaded hydra-chitchat v0.11.1-hydra.1 (registry `hc074-draft`)

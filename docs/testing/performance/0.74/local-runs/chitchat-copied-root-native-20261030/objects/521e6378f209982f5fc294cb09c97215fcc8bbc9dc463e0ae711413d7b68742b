@@ -1,0 +1,45 @@
+{
+  "caches": [
+    {
+      "path": "target/chitchat-mtu-20261028/targets",
+      "bytes": 316009394,
+      "files": 8538
+    },
+    {
+      "path": "target/dbus-runtime-20261028/targets",
+      "bytes": 166474056,
+      "files": 2977
+    },
+    {
+      "path": "target/chitchat-compat-20261029/windows-targets",
+      "bytes": 337133002,
+      "files": 1287
+    },
+    {
+      "path": "target/chitchat-compat-20261029-r1/windows-targets",
+      "bytes": 333582028,
+      "files": 1283
+    }
+  ],
+  "evidence": [
+    {
+      "packet": "chitchat-mtu-backport-20261028",
+      "index_sha256": "d6fc98b961530fdc3b879018521500c80d65094e7f160263b7318fa8870d5dfe",
+      "members": 855,
+      "objects_verified": true
+    },
+    {
+      "packet": "dbus-runtime-bridge-20261028",
+      "index_sha256": "59b7f69b3ee958f2a467af97d1cd80ed0d7f35194e33d9fbb58ed001602e1cda",
+      "members": 1566,
+      "objects_verified": true
+    },
+    {
+      "packet": "chitchat-compat-20261029",
+      "index_sha256": "865f98e6b82240f06b71cf7b316b441766a6653947fa6d8899fa8540f2fb9bfc",
+      "members": 759,
+      "objects_verified": true
+    }
+  ],
+  "preserve_sources_evidence": true
+}

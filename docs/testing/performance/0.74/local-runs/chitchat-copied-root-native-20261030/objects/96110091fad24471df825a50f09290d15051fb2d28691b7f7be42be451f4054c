@@ -1,0 +1,22 @@
+test_actual_committed_blobs_must_match_every_canonical_source (__main__.Controls.test_actual_committed_blobs_must_match_every_canonical_source) ... ok
+test_all_actual_direct_users_still_inherit_alias (__main__.Controls.test_all_actual_direct_users_still_inherit_alias) ... ok
+test_ambiguous_source_edge_refuses (__main__.Controls.test_ambiguous_source_edge_refuses) ... ok
+test_baseline_is_whole_actual_root (__main__.Controls.test_baseline_is_whole_actual_root) ... ok
+test_exact_four_caller_packages (__main__.Controls.test_exact_four_caller_packages) ... ok
+test_filtered_or_partial_test_result_refuses (__main__.Controls.test_filtered_or_partial_test_result_refuses) ... ok
+test_fixed_phase_parser_refuses_workspace_or_publish (__main__.Controls.test_fixed_phase_parser_refuses_workspace_or_publish) ... ok
+test_lock_label_normalization_preserves_semantic_edges (__main__.Controls.test_lock_label_normalization_preserves_semantic_edges) ... ok
+test_mirror_changed_archive_refuses (__main__.Controls.test_mirror_changed_archive_refuses) ... ok
+test_new_capacity_context_never_resumes_first (__main__.Controls.test_new_capacity_context_never_resumes_first) ... ok
+test_only_chitchat_dependency_changes (__main__.Controls.test_only_chitchat_dependency_changes) ... ok
+test_original_manifest_cannot_drift (__main__.Controls.test_original_manifest_cannot_drift) ... ok
+test_owned_manifest_reconstructs_shipping_proposal (__main__.Controls.test_owned_manifest_reconstructs_shipping_proposal) ... ok
+test_read_only_mirror_is_bound_to_archive_not_its_own_checksum (__main__.Controls.test_read_only_mirror_is_bound_to_archive_not_its_own_checksum) ... ok
+test_unknown_variant_refuses (__main__.Controls.test_unknown_variant_refuses) ... ok
+test_whole_default_catalog_accounts_ignored_explicitly (__main__.Controls.test_whole_default_catalog_accounts_ignored_explicitly) ... ok
+test_wrong_shipping_digest_refuses (__main__.Controls.test_wrong_shipping_digest_refuses) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.204s
+
+OK

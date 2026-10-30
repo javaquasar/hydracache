@@ -1,0 +1,51 @@
+{
+  "caches": [
+    {
+      "path": "target/dbus-read-flows-20261028/targets",
+      "bytes": 332041409,
+      "files": 469
+    },
+    {
+      "path": "target/yaml-security-20261028/targets",
+      "bytes": 146721665,
+      "files": 318
+    },
+    {
+      "path": "target/zstd-security-fault-20261029/targets",
+      "bytes": 189643437,
+      "files": 798
+    },
+    {
+      "path": "target/remaining-security-20261028/targets",
+      "bytes": 96142976,
+      "files": 2719
+    }
+  ],
+  "evidence": [
+    {
+      "packet": "dbus-read-flows-20261028",
+      "index_sha256": "4be475b3f92e348e8ccde151356d73607e0b609ebcacf406c4e13fc586131fb2",
+      "members": 1007,
+      "objects_verified": true
+    },
+    {
+      "packet": "yaml-security-20261028",
+      "index_sha256": "1e12021d3dcb7632e95f7cc10a17244178f3a1905af17ce8740eda1267bffcb0",
+      "members": 928,
+      "objects_verified": true
+    },
+    {
+      "packet": "zstd-security-fault-20261029",
+      "index_sha256": "f6e65d045c764e113055b24fdcf3ffc180c634931fc1472d9d9d54262054e13e",
+      "members": 4352,
+      "objects_verified": true
+    },
+    {
+      "packet": "remaining-security-20261028",
+      "index_sha256": "06c216b4efc54dcf6cab2cad8f2d2d342d20652d0bd14086b1f2ea8d5fabf541",
+      "members": 381,
+      "objects_verified": true
+    }
+  ],
+  "preserve_sources_evidence": true
+}

@@ -1,0 +1,38 @@
+{
+  "added": [
+    [
+      "hydra-chitchat",
+      "0.11.1-hydra.1",
+      "registry+file:///home/artur/.cache/hydracache-074-package/20261030-a6/registry-index"
+    ],
+    [
+      "lru",
+      "0.18.2",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ]
+  ],
+  "complete": true,
+  "removed": [
+    [
+      "chitchat",
+      "0.11.1",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "lru",
+      "0.17.0",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "zstd",
+      "0.13.3",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ],
+    [
+      "zstd-safe",
+      "7.2.4",
+      "registry+https://github.com/rust-lang/crates.io-index"
+    ]
+  ],
+  "root_adopted": false
+}

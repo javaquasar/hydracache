@@ -1,0 +1,66 @@
+{
+  "caches": [
+    {
+      "path": "target/tests/trybuild/debug/deps",
+      "bytes": 424134160,
+      "files": 261,
+      "kind": "only-generated-trybuild-dependencies"
+    },
+    {
+      "path": "target/tests/trybuild/x86_64-pc-windows-msvc/debug/deps",
+      "bytes": 16162012,
+      "files": 939,
+      "kind": "only-generated-trybuild-dependencies"
+    },
+    {
+      "path": "target/debug/diagnostic_builder.pdb",
+      "bytes": 1191936,
+      "files": 1,
+      "kind": "rebuildable-debug-symbols"
+    },
+    {
+      "path": "target/debug/diagnostic_controller.pdb",
+      "bytes": 1191936,
+      "files": 1,
+      "kind": "rebuildable-debug-symbols"
+    },
+    {
+      "path": "target/debug/diagnostic_held_bootstrap.pdb",
+      "bytes": 1683456,
+      "files": 1,
+      "kind": "rebuildable-debug-symbols"
+    },
+    {
+      "path": "target/debug/diagnostic_held_launcher.pdb",
+      "bytes": 1191936,
+      "files": 1,
+      "kind": "rebuildable-debug-symbols"
+    },
+    {
+      "path": "target/debug/diagnostic_signer_isolation_probe.pdb",
+      "bytes": 1191936,
+      "files": 1,
+      "kind": "rebuildable-debug-symbols"
+    },
+    {
+      "path": "target/debug/diagnostic_signer_owned_probe.pdb",
+      "bytes": 1191936,
+      "files": 1,
+      "kind": "rebuildable-debug-symbols"
+    },
+    {
+      "path": "target/debug/diagnostic_signer_root_probe.pdb",
+      "bytes": 1191936,
+      "files": 1,
+      "kind": "rebuildable-debug-symbols"
+    },
+    {
+      "path": "target/debug/hydracache_long_run_supervisor_074.pdb",
+      "bytes": 25784320,
+      "files": 1,
+      "kind": "rebuildable-debug-symbols"
+    }
+  ],
+  "preserve_sources_evidence": true,
+  "preserve_held_executable": true
+}

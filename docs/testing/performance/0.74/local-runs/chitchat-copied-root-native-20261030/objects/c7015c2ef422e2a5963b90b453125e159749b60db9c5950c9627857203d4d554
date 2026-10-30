@@ -1,0 +1,8 @@
+{
+  "blocked_before_deletion": true,
+  "reason": "old profile had an active test process",
+  "process_id": 52980,
+  "process_name": "xtask-530fbc6c2ab8cccf.exe",
+  "deleted_files": 0,
+  "process_stopped_by_agent": false
+}
