@@ -1,0 +1,133 @@
+{
+  "canonical_U": {
+    ".cargo_vcs_info.json": "7469f985e1a4f7739fd960cdc6af5b80d441ecfc3f08b3d8385e43224cd6735a",
+    "Cargo.lock": "072b58738d6d4c1d8201d0e114403c89576bfcd7382531160d5de9770aa6c3c2",
+    "Cargo.toml": "adf4e5ae7e6223b51de2c08891b90d241acf9d81d1a02c124c14b6fb726f7a46",
+    "Cargo.toml.orig": "c38f3725b0518bdfda181047eb13576ab232eacb846c311879353ff4f2eccb2a",
+    "src/configuration.rs": "8818c37d1046a656c2fb03740f78561edaee989a4dd86e57ed5312bada211e14",
+    "src/delta.rs": "3c430bc398ea2653dc4214f07d651458bf64ea7e3080c574c8aa42ae2e37c1b7",
+    "src/digest.rs": "3d66b262c2f69a1f2e769fc6cd2b23ec4a3bf29acc990bb1530c1007d7a7ce79",
+    "src/failure_detector.rs": "1230da150a8f023a81fdeef82e6bb186cdbf5818ab74b6f3baa4a30d2ccc889a",
+    "src/lib.rs": "4ee2ec8115287b1751a37bb17cab32b076d660d4a89623168b69f8fc40b31749",
+    "src/listener.rs": "aa96611d3041e2cf5b0abb94fbd40d4eaa60a96739df4845ea8b45a33429dd11",
+    "src/message.rs": "d3d0b88558034a0da601b03bd48fbab89e62562bd23554f8f6dcb208fd0d51cc",
+    "src/serialize.rs": "a2be164f2b9eac484fb34b03cda2cc9afffcb6b067bd0d19dc421b83a7b6718e",
+    "src/server.rs": "6684576168c4bdfafdc0706d7f1be40f4e37cbd4f001440d408b0789648e47f1",
+    "src/state.rs": "6f078fb9b049fae017848cbee7e84346c9479942a56d2b7f6505b929ff31c406",
+    "src/transport/channel.rs": "6cc9dc23a3b6a1f282c6ae1ab20195f74b4116a9f036e2236bd47526e0fb2944",
+    "src/transport/mod.rs": "5f56d64b916df1e709e9c4f6e6a19fed83838ea24ce3a073c97c93fdf48ee850",
+    "src/transport/udp.rs": "62b4c9237240504e4329c8c6d54234e0ac90eb7b172a6b2bcd348a7889f89008",
+    "src/transport/utils.rs": "3538ecaea71dd0de9a1f339d564495710182b11a95ec38d23c4a6e70b6557c17",
+    "src/types.rs": "e2e5b4d0f66fdda1f684ae6a884273aa82868ca08e4fcdb09827c0f082b8cc80",
+    "tests/cluster_test.rs": "b5893f03ab872b16b3ee7f995f3948b3e05e3609aa4be26f091feb4218fcb64c",
+    "tests/perf_test.rs": "96fbd9c44d3a90293b58f6201f5363acd2a84469914120a59cc7bf15d9dec3e2"
+  },
+  "known_MTU_contracts": "six original failures retained; unresolved",
+  "library": "chitchat",
+  "license_blob_sha1": "bb24b90b572e6cd6e116591f94c1ccdb383e1257",
+  "license_sha256": "6755ef28efcf3e523c25a6339c018b6d77db59fc908f90b57441647aa4c51298",
+  "maintenance": {
+    "advisory_mapping": "also evaluate upstream chitchat0.11.1 advisories; never use the fork name as an exclusion",
+    "proposed_owner": "HydraCache project maintainer (javaquasar)",
+    "review": "single-maintainer; not independent review",
+    "rollback": "no Root integration yet; remove only the prepared draft identity, not prior evidence",
+    "update": "new source/version requires new exact receipt and full gates; never move an exact version",
+    "upstream_review": "before each release candidate and at least monthly while selected"
+  },
+  "name": "hydra-chitchat",
+  "parent_sha256": "e6dd71ebb6818b13587b4750360ade76db5484e5083021ca6505699c039373b3",
+  "registry_qualified": false,
+  "release_admitted": false,
+  "resources_qualified": false,
+  "root_adopted": false,
+  "schema": "hc074-chitchat-owned-security-source-v1",
+  "source_algorithms_unchanged": true,
+  "style_prelude": {
+    "format_sites": [
+      {
+        "after": "    pub async fn with_chitchat<F, T>(&self, mut fun: F) -> T\n    where\n        F: FnMut(&mut Chitchat) -> T,\n    {",
+        "after_sha256": "a0fb2d05132cbc92fc023a8fab3894e519e54592b54f2385a8fae095edc9a87d",
+        "before": "    pub async fn with_chitchat<F, T>(&self, mut fun: F) -> T\n    where F: FnMut(&mut Chitchat) -> T {",
+        "before_sha256": "8525b41caee27674b704a8fb7c97e08400b3c8d80a70d1cad78ea67a01d3013b",
+        "path": "src/server.rs"
+      }
+    ],
+    "review": {
+      "conditional_effects": "gossip await/log, state early return, MTU bail, removed-link return, catchup callback, liveness predicate unchanged",
+      "drop_order": "outer bindings are Copy scalars or shared references; error object is dropped after the same log; no extra intervening statements",
+      "format_only": "One existing where-clause whitespace/trailing-comma format; signature/type bounds unchanged",
+      "lint_allowances_added": false,
+      "msrv": "1.88",
+      "public_signatures": "unchanged",
+      "serialization": "src/serialize.rs stays byte-exact U",
+      "short_circuit_order": "unchanged outer condition then inner condition, once each"
+    },
+    "schema": "hc074-package-reversible-style-v1",
+    "sites": [
+      {
+        "after": "        if let Some(random_dead_node) = random_dead_node_opt\n            && let Err(error) = self.gossip(random_dead_node).await\n        {\n            debug!(error=?error, node_address=%random_dead_node, \"Failed to gossip with dead node.\");\n        }",
+        "after_sha256": "311b7a9c61da2a37bbbb55f0908e66a73e32befbd20104cc13ac0852d8f3a2eb",
+        "before": "        if let Some(random_dead_node) = random_dead_node_opt {\n            if let Err(error) = self.gossip(random_dead_node).await {\n                debug!(error=?error, node_address=%random_dead_node, \"Failed to gossip with dead node.\");\n            }\n        }",
+        "before_sha256": "bf7276dc2b8c7e31f04d76ec5f798b82dcdb4655d3eb8bc98b0da983d7014de4",
+        "path": "src/server.rs"
+      },
+      {
+        "after": "        if let Some(random_seed_node) = random_seed_node_opt\n            && let Err(error) = self.gossip(random_seed_node).await\n        {\n            warn!(error=?error, node_address=%random_seed_node, \"Failed to gossip with seed node.\");\n        }",
+        "after_sha256": "5dd0bd4fd6353951b377777182c06033d4f141cb907449aca9d229afe82ffe1c",
+        "before": "        if let Some(random_seed_node) = random_seed_node_opt {\n            if let Err(error) = self.gossip(random_seed_node).await {\n                warn!(error=?error, node_address=%random_seed_node, \"Failed to gossip with seed node.\");\n            }\n        }",
+        "before_sha256": "e0d98f28cee94fc19fbea4d61b3c692ba3650225370e8537e6e6ec6533c964d4",
+        "path": "src/server.rs"
+      },
+      {
+        "after": "        if let Some(previous_versioned_value) = self.get_versioned(&key)\n            && previous_versioned_value.value == value\n            && matches!(previous_versioned_value.status, DeletionStatus::Set)\n        {\n            // No need to change anything, the value is already set!\n            return;\n        }",
+        "after_sha256": "b763f52e5f2d1db624c302732d9e415547713b013b438d422ddcd6f8e55a073e",
+        "before": "        if let Some(previous_versioned_value) = self.get_versioned(&key) {\n            if previous_versioned_value.value == value\n                && matches!(previous_versioned_value.status, DeletionStatus::Set)\n            {\n                // No need to change anything, the value is already set!\n                return;\n            }\n        }",
+        "before_sha256": "544032cc8c520cf4cb08413d9b9e3b3b36a989a490e2847668373ee638cd31ed",
+        "path": "src/state.rs"
+      },
+      {
+        "after": "        if let Some(previous_versioned_value) = self.get_versioned(&key)\n            && previous_versioned_value.value == value\n            && matches!(\n                previous_versioned_value.status,\n                DeletionStatus::DeleteAfterTtl(_)\n            )\n        {\n            // No need to change anything, the value is already set!\n            return;\n        }",
+        "after_sha256": "f8d11b4da53b867203f5b541d981b01178c2b2b8b119b9f0932c2b6c87254c46",
+        "before": "        if let Some(previous_versioned_value) = self.get_versioned(&key) {\n            if previous_versioned_value.value == value\n                && matches!(\n                    previous_versioned_value.status,\n                    DeletionStatus::DeleteAfterTtl(_)\n                )\n            {\n                // No need to change anything, the value is already set!\n                return;\n            }\n        }",
+        "before_sha256": "b752fe480aaf7386adc33e553c6dc79ac6aef5be903beff1b52fdbe7fda37cbf",
+        "path": "src/state.rs"
+      },
+      {
+        "after": "        if let Some(mtu) = self.mtu_opt\n            && num_bytes > mtu\n        {\n            bail!(\"Serialized message size exceeds MTU.\");\n        }",
+        "after_sha256": "5d89dd8b51f62aa1215806f446bbd74b0de733c1c58927f8a4551e3f8d770143",
+        "before": "        if let Some(mtu) = self.mtu_opt {\n            if num_bytes > mtu {\n                bail!(\"Serialized message size exceeds MTU.\");\n            }\n        }",
+        "before_sha256": "9418ae7b55861c19c37175ae4997229ec9c4e1b779e60e300277e21d453ba730",
+        "path": "src/transport/channel.rs"
+      },
+      {
+        "after": "        if let Some(to_addrs) = inner_lock.removed_links.get(&from_addr)\n            && to_addrs.contains(&to_addr)\n        {\n            return Ok(());\n        }",
+        "after_sha256": "5b12ee6c93bfa8f7190e04a61f8e4bda333b89e0261e470170d6e13672df75f8",
+        "before": "        if let Some(to_addrs) = inner_lock.removed_links.get(&from_addr) {\n            if to_addrs.contains(&to_addr) {\n                return Ok(());\n            }\n        }",
+        "before_sha256": "f1ab8dc3e63687ccf64e17e4658479528936b8406b720cf246c58b96417da1c1",
+        "path": "src/transport/channel.rs"
+      },
+      {
+        "after": "        if was_reset_triggered && let Some(catchup_callback) = &self.config.catchup_callback {\n            info!(\"executing catch-up callback\");\n            catchup_callback();\n        }",
+        "after_sha256": "5cc1d2c5ed137ecc16f967fc878d41c9a99a096f6676a35d97fc3df121046567",
+        "before": "        if was_reset_triggered {\n            if let Some(catchup_callback) = &self.config.catchup_callback {\n                info!(\"executing catch-up callback\");\n                catchup_callback();\n            }\n        }",
+        "before_sha256": "a04c4f2fe6f10c35bc9a81fcc0143af63b384cfc8b7ed4b6c556b22a958636ab",
+        "path": "src/lib.rs"
+      },
+      {
+        "after": "                    if let Some(liveness_extra_predicate) = &self.config.extra_liveness_predicate\n                        && !liveness_extra_predicate(node_state)\n                    {\n                        return None;\n                    }",
+        "after_sha256": "981a75ca41ed17a44c23c7caa7360bce29058b21849bd5b2a5dfa7056eb232b8",
+        "before": "                    if let Some(liveness_extra_predicate) = &self.config.extra_liveness_predicate {\n                        if !liveness_extra_predicate(node_state) {\n                            return None;\n                        }\n                    }",
+        "before_sha256": "ac5f18c87eef2e0c1fa8a3b686123293c4a2f5a592054065fe6369f5a5939e98",
+        "path": "src/lib.rs"
+      }
+    ]
+  },
+  "upstream": {
+    "archive_sha256": "9e1cfd5d16c6fc43487006ab5b5c910f295cc53cf07d90491fb36c8dc479c754",
+    "commit": "c2b98cbea3162a4353c1fc1ffa7fd1e5985aee3a",
+    "name": "chitchat",
+    "repository": "https://github.com/quickwit-oss/chitchat",
+    "version": "0.11.1"
+  },
+  "version": "0.11.1-hydra.1"
+}

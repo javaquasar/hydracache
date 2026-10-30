@@ -1,0 +1,13 @@
+import json,os
+from pathlib import Path
+roots=('security-patch-msrv188','xtask-verify-39960','hydracache-074/target/release','hydracache-074\\target\\release')
+out=[];other=0
+for p in Path('/proc').iterdir():
+    if not p.name.isdigit() or int(p.name)==os.getpid():continue
+    try:a=(p/'cmdline').read_bytes().split(b'\0')
+    except (FileNotFoundError,PermissionError):continue
+    if not a or Path(a[0].decode(errors='replace')).name not in ('cargo','rustc','cc','c++','clang','ld'):continue
+    match=[r for r in roots if any(r.encode() in v for v in a)]
+    if match:out.append(dict(pid=int(p.name),matched_roots=match))
+    else:other+=1
+print(json.dumps(dict(cache_writers=out,other_compiler_processes=other)))

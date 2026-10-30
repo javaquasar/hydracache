@@ -1,0 +1,11 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "[Errno 2] No such file or directory: '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/chitchat-package-20261030-r3/native/build188/clippy/execution.json'",
+    "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-package-r3-074/run.py\", line 86, in session\n    invoke(action,argv,env,deadline)\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-package-r3-074/run.py\", line 19, in invoke\n    own=json.loads((folder/'execution.json').read_bytes());c.need(child.returncode==own['exit']==expect and own['retired'] and not own['errors'],'first complete owned command: '+name)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1021, in read_bytes\n    with self.open(mode='rb') as f:\n         ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/mnt/c/Workspace/prj/jq/cashe/hydracache-074/target/chitchat-package-20261030-r3/native/build188/clippy/execution.json'\n",
+    "type": "FileNotFoundError"
+  },
+  "registry_qualified": false,
+  "release_admitted": false,
+  "root_adopted": false
+}

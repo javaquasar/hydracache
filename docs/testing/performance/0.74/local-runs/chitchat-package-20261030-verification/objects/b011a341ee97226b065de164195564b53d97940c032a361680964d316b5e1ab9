@@ -1,0 +1,26 @@
+test_alias_cannot_hide_upstream_policy_refusal (__main__.EvidenceControls.test_alias_cannot_hide_upstream_policy_refusal) ... ok
+test_catalog_omission_refuses (__main__.EvidenceControls.test_catalog_omission_refuses) ... ok
+test_changed_full_root_map_refuses (__main__.EvidenceControls.test_changed_full_root_map_refuses) ... ERROR
+test_coherently_hashed_database_change_refuses (__main__.EvidenceControls.test_coherently_hashed_database_change_refuses) ... ok
+test_consumer_scope_promotion_refuses (__main__.EvidenceControls.test_consumer_scope_promotion_refuses) ... ok
+test_escaping_member_refuses (__main__.EvidenceControls.test_escaping_member_refuses) ... ok
+test_expanded_deadline_refuses (__main__.EvidenceControls.test_expanded_deadline_refuses) ... ok
+test_first_capacity_refusal_is_immutable (__main__.EvidenceControls.test_first_capacity_refusal_is_immutable) ... ok
+test_full_data_and_source_reconcile (__main__.EvidenceControls.test_full_data_and_source_reconcile) ... ok
+test_stopped_phase_cannot_be_called_complete (__main__.EvidenceControls.test_stopped_phase_cannot_be_called_complete) ... ok
+test_unretired_writer_refuses (__main__.EvidenceControls.test_unretired_writer_refuses) ... ok
+test_wrong_complete_descriptor_refuses (__main__.EvidenceControls.test_wrong_complete_descriptor_refuses) ... ok
+
+======================================================================
+ERROR: test_changed_full_root_map_refuses (__main__.EvidenceControls.test_changed_full_root_map_refuses)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Workspace\prj\jq\cashe\hydracache-074\tools\chitchat-package-result-074\test_result.py", line 33, in test_changed_full_root_map_refuses
+    name='capture/'+m.BASE.name+'/native/pure188/intent.json';data=dict(self.data);row=json.loads(data[name])
+                                                                                                  ~~~~^^^^^^
+KeyError: 'capture/chitchat-package-20261030-r5/native/pure188/intent.json'
+
+----------------------------------------------------------------------
+Ran 12 tests in 1.977s
+
+FAILED (errors=1)

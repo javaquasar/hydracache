@@ -1,0 +1,12 @@
+{
+  "deleted_generated_files": [
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\hydracache_sandbox.pdb",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\xtask.pdb",
+    "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\debug\\libxtask.rlib"
+  ],
+  "logical_bytes": 869216454,
+  "free_before": 1350463488,
+  "free_after": 2190635008,
+  "xtask_sha256": "E49F4694C8DD18629D33CDEDA08D7F2A617CCAE14CC3BE41F10B52AD233471A9",
+  "source_and_evidence_preserved": true
+}

@@ -1,0 +1,43 @@
+"""Retain final offline proof separately, preserving the immutable primary."""
+import json,sys
+import gates as g
+p=g.p;m=g.m
+OUT=p.OUT.with_name(p.OUT.name+'-verification')
+
+def review(data,digest):
+    for mode in g.MODES:
+        get=lambda n:json.loads(data['final/'+mode+'/'+n])
+        result,owner,intent=(get(n) for n in ('result.json','execution.json','intent.json'))
+        m.need(result['complete'] and all(result[k] is False for k in ('root_adopted','release_admitted','product_execution')),'whole final offline scope')
+        m.need(owner['exit']==0 and owner['retired'] and owner['errors']==[] and owner['bound_seconds']==intent['bound']==1200,'whole original final owner')
+        m.need(owner['capacity_poll_seconds']==owner['cleanup_seconds']==5 and intent['floor']==4*1024**3 and intent['retry'] is False and intent['argv']==g.commands(digest)[mode],'same original final command and bounds')
+    m.need(b'Ran 12 tests' in data['final/controls/stderr.log'] and data['final/controls/stderr.log'].rstrip().endswith(b'OK'),'all12 evidence controls')
+    m.need(b'OK (local, non-promotable)' in data['final/performance-contract/stdout.log'],'no full qualification promotion')
+    return dict(complete=True,primary_sha256=digest,gates=list(g.MODES),evidence_controls=12,root_adopted=False,release_admitted=False,product_execution=False)
+
+def retain(digest):
+    p.verify(digest);data={}
+    for path in p.walk(m.BASE/'final'):data['final/'+path.relative_to(m.BASE/'final').as_posix()]=path.read_bytes()
+    for n in g.DOCS:data['docs/'+n]=(m.ROOT/n).read_bytes()
+    for n in p.DIRS:
+        for path in p.walk(m.ROOT/'tools'/n):data['source/current/'+path.relative_to(m.ROOT).as_posix()]=path.read_bytes()
+    result=review(data,digest);objects={m.sha(b):b for b in data.values()}
+    OUT.mkdir(exist_ok=False);(OUT/'objects').mkdir()
+    for h,b in objects.items():(OUT/'objects'/h).write_bytes(b)
+    index=dict(schema='hc074-chitchat-package-offline-v1',result=result,members={n:dict(sha256=m.sha(b),bytes=len(b)) for n,b in sorted(data.items())})
+    raw=m.encoded(index);(OUT/'index.json').write_bytes(raw)
+    (OUT/'.gitattributes').write_bytes(b'objects/* -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof\nindex.json -text\n')
+    print(json.dumps(dict(sha256=m.sha(raw),members=len(data),objects=len(objects),result=result)))
+
+def verify(digest):
+    raw=(OUT/'index.json').read_bytes();m.need(m.sha(raw)==digest,'external complete verification digest');index=json.loads(raw);data={}
+    m.need(index['schema']=='hc074-chitchat-package-offline-v1','exact verification schema')
+    for n,row in index['members'].items():
+        path=p.PurePosixPath(n);m.need(str(path)==n and not path.is_absolute() and '..' not in path.parts and ':' not in n and '\\' not in n,'contained final name')
+        m.need(p.re.fullmatch('[0-9a-f]{64}',row['sha256']) and type(row['bytes']) is int and row['bytes']>=0,'exact whole final descriptor')
+        b=(OUT/'objects'/row['sha256']).read_bytes();m.need(m.sha(b)==row['sha256'] and len(b)==row['bytes'],'whole exact final object');data[n]=b
+    m.need(review(data,index['result']['primary_sha256'])==index['result'],'independent offline reconciliation');print(json.dumps(index['result']))
+
+if __name__=='__main__':
+    if sys.argv[1]=='retain':retain(sys.argv[2])
+    else:m.need(sys.argv[1]=='verify' and len(sys.argv)==3,'fixed verify');verify(sys.argv[2])

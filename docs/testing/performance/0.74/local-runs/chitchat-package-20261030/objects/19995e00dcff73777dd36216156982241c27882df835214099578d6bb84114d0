@@ -1,0 +1,43 @@
+{
+  "parent_sha256": "e6dd71ebb6818b13587b4750360ade76db5484e5083021ca6505699c039373b3",
+  "registry_qualified": false,
+  "review": {
+    "algorithm_changes": 0,
+    "complete": true,
+    "registry_qualified": false,
+    "root_adopted": false,
+    "runtime_changes": 4,
+    "source_members": 25,
+    "style_sites": 8
+  },
+  "root_adopted": false,
+  "schema": "hc074-chitchat-package-source-v1",
+  "source": {
+    "BACKPORT074.json": "1bab354b78518f4a6d16b29048beadbc48a24fa4032b09163d288443c64a0f2e",
+    "Cargo.lock": "b5f7bc201c71e1310ec9cb6a17b439583f38f383520e7b5af39116f941a0cd7c",
+    "Cargo.toml": "7cffbadcd7fad55cfee22cd9101d76fbc4018b2a77cacd552341bc2eef5bfc97",
+    "LICENSE": "6755ef28efcf3e523c25a6339c018b6d77db59fc908f90b57441647aa4c51298",
+    "README.md": "fe5cb91708fb6c698a34fc883488a7fb34ac87045a73b9f3f94ed10d7449912c",
+    "src/configuration.rs": "8818c37d1046a656c2fb03740f78561edaee989a4dd86e57ed5312bada211e14",
+    "src/delta.rs": "3c430bc398ea2653dc4214f07d651458bf64ea7e3080c574c8aa42ae2e37c1b7",
+    "src/digest.rs": "3d66b262c2f69a1f2e769fc6cd2b23ec4a3bf29acc990bb1530c1007d7a7ce79",
+    "src/failure_detector.rs": "1230da150a8f023a81fdeef82e6bb186cdbf5818ab74b6f3baa4a30d2ccc889a",
+    "src/lib.rs": "dcda9077e5c00a16f4752c24fe1243cc5931bcb2c5f275497eaaa8a0b0618f5c",
+    "src/listener.rs": "aa96611d3041e2cf5b0abb94fbd40d4eaa60a96739df4845ea8b45a33429dd11",
+    "src/message.rs": "d3d0b88558034a0da601b03bd48fbab89e62562bd23554f8f6dcb208fd0d51cc",
+    "src/serialize.rs": "a2be164f2b9eac484fb34b03cda2cc9afffcb6b067bd0d19dc421b83a7b6718e",
+    "src/server.rs": "155569c72e05c82e2fb492c579078a6b9e1d74172df472378e29fd31263bd8ad",
+    "src/state.rs": "af2a4c14a01ba9e1354d7b103048a45a698c24e59e5a0d1e9bf3e6f4a6bbdf53",
+    "src/transport/channel.rs": "12f709a6a45bd25c0673c3235ee4aeb89d19c775472ccb5ad90a7e7608d99168",
+    "src/transport/mod.rs": "5f56d64b916df1e709e9c4f6e6a19fed83838ea24ce3a073c97c93fdf48ee850",
+    "src/transport/udp.rs": "62b4c9237240504e4329c8c6d54234e0ac90eb7b172a6b2bcd348a7889f89008",
+    "src/transport/utils.rs": "3538ecaea71dd0de9a1f339d564495710182b11a95ec38d23c4a6e70b6557c17",
+    "src/types.rs": "e2e5b4d0f66fdda1f684ae6a884273aa82868ca08e4fcdb09827c0f082b8cc80",
+    "tests/cluster_test.rs": "b5893f03ab872b16b3ee7f995f3948b3e05e3609aa4be26f091feb4218fcb64c",
+    "tests/perf_test.rs": "96fbd9c44d3a90293b58f6201f5363acd2a84469914120a59cc7bf15d9dec3e2",
+    "upstream/.cargo_vcs_info.json": "7469f985e1a4f7739fd960cdc6af5b80d441ecfc3f08b3d8385e43224cd6735a",
+    "upstream/Cargo.lock": "072b58738d6d4c1d8201d0e114403c89576bfcd7382531160d5de9770aa6c3c2",
+    "upstream/Cargo.toml.orig": "c38f3725b0518bdfda181047eb13576ab232eacb846c311879353ff4f2eccb2a"
+  },
+  "source_tar_sha256": "a34021da6b3885f69ad7e525a75dd71acdddada03068e322e86a6a985b3b89e8"
+}

@@ -1,0 +1,11 @@
+{
+  "complete": false,
+  "first_refusal": {
+    "reason": "first complete owned command: metadata",
+    "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-package-r2-074/run.py\", line 62, in session\n    folder=invoke('metadata',[str(tool/'cargo'),'metadata','--manifest-path',str(N/'source/Cargo.toml'),'--offline','--all-features','--format-version','1'],env,deadline,allow_mutation=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-package-r2-074/run.py\", line 19, in invoke\n    own=json.loads((folder/'execution.json').read_bytes());c.need(child.returncode==own['exit']==expect and own['retired'] and not own['errors'],'first complete owned command: '+name)\n                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-security-only-074/scope.py\", line 28, in need\n    if not ok:raise ValueError(why)\n              ^^^^^^^^^^^^^^^^^^^^^\nValueError: first complete owned command: metadata\n",
+    "type": "ValueError"
+  },
+  "registry_qualified": false,
+  "release_admitted": false,
+  "root_adopted": false
+}

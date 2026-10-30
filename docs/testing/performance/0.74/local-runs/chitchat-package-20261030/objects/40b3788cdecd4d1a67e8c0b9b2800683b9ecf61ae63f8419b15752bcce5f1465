@@ -1,0 +1,6 @@
+HC074_PACKAGE: interpreter entered command
+HC074_PACKAGE: common imports ready
+
+thread 'server::tests::test_panic_shutdown' (22661) panicked at src/lib.rs:185:17:
+panic message received
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

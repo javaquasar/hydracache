@@ -1,0 +1,8 @@
+
+running 1 test
+test tests::test_chitchat_no_need_to_reset_if_last_gc_version_is_higher ... [2m2026-10-30T12:28:29.930894Z[0m [33m WARN[0m [2mchitchat::state[0m[2m:[0m Node to reset node-10001:0:127.0.0.1:10001 last gc version: 20001 max version: 20000
+[2m2026-10-30T12:28:29.945322Z[0m [32m INFO[0m [2mchitchat::state[0m[2m:[0m resetting for node id node-10001:0:127.0.0.1:10001 last_gc_version 20001
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 99 filtered out; finished in 0.06s
+

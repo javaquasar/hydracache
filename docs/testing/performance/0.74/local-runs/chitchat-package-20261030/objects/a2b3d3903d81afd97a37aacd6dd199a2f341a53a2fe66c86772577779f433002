@@ -1,0 +1,20 @@
+test_alias_and_features_keep_upstream_public_surface (__main__.Controls.test_alias_and_features_keep_upstream_public_surface) ... ok
+test_canonical_archive_is_deterministic_and_reconstructs (__main__.Controls.test_canonical_archive_is_deterministic_and_reconstructs) ... ok
+test_changed_runtime_refuses_even_with_updated_receipt (__main__.Controls.test_changed_runtime_refuses_even_with_updated_receipt) ... ok
+test_lock_preserves_every_registry_package (__main__.Controls.test_lock_preserves_every_registry_package) ... ok
+test_missing_or_extra_source_member_refuses (__main__.Controls.test_missing_or_extra_source_member_refuses) ... ok
+test_normalized_complete_crate_reconciles (__main__.Controls.test_normalized_complete_crate_reconciles) ... ok
+test_normalized_crate_cannot_hide_an_added_runtime (__main__.Controls.test_normalized_crate_cannot_hide_an_added_runtime) ... ok
+test_normalized_crate_refuses_stale_manifest_or_lock (__main__.Controls.test_normalized_crate_refuses_stale_manifest_or_lock) ... ok
+test_normalized_crate_rejects_public_api_or_dependency_drift (__main__.Controls.test_normalized_crate_rejects_public_api_or_dependency_drift) ... ok
+test_original_U_is_not_an_owned_shipping_identity (__main__.Controls.test_original_U_is_not_an_owned_shipping_identity) ... ok
+test_original_source_map_tampering_refuses (__main__.Controls.test_original_source_map_tampering_refuses) ... ok
+test_registry_row_has_explicit_upstream_dependency_sources (__main__.Controls.test_registry_row_has_explicit_upstream_dependency_sources) ... ok
+test_root_and_registry_scope_promotion_refuse (__main__.Controls.test_root_and_registry_scope_promotion_refuse) ... ok
+test_runtime_and_test_bodies_are_byte_exact_U (__main__.Controls.test_runtime_and_test_bodies_are_byte_exact_U) ... ok
+test_stale_lock_and_vcs_only_survive_as_historical_data (__main__.Controls.test_stale_lock_and_vcs_only_survive_as_historical_data) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.105s
+
+OK

@@ -1,0 +1,38 @@
+name: Export to OSV format
+
+on:
+  push:
+    branches: main
+
+permissions: {}
+
+jobs:
+  publish-web:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # needed for pushing back to the repo
+    steps:
+      # Checkout main first so the local install-rustsec-admin action is
+      # available; the osv checkout below replaces the workspace.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install rustsec-admin
+        uses: ./.github/actions/install-rustsec-admin
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: osv
+          persist-credentials: true # persists the token for git push below
+
+      - run: |
+          mkdir -p crates
+          rustsec-admin osv crates
+          # FIXME: hack to avoid committing advisories without an ID
+          rm -f crates/RUSTSEC-0000-0000.json
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Update OSV exported data" || true
+          git push || true

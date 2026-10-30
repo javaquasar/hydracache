@@ -1,0 +1,24 @@
+{
+  "caches": [
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\security-patch-msrv188\\debug",
+      "logical_bytes": 346301221.0
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\xtask-verify-39960\\debug",
+      "logical_bytes": 1786530705.0
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\release\\deps",
+      "logical_bytes": 504485896.0
+    },
+    {
+      "path": "C:\\Workspace\\prj\\jq\\cashe\\hydracache-074\\target\\release\\build",
+      "logical_bytes": 83106467.0
+    }
+  ],
+  "free_before": 1812922368,
+  "free_after": 4262514688,
+  "source_and_evidence_preserved": true,
+  "native_cache_writers_preflight": "none"
+}

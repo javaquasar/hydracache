@@ -1,0 +1,13 @@
+# HydraCache security dependency backport (unpublished preparation)
+
+Draft hydra-chitchat 0.11.1-hydra.1 keeps library name chitchat. Based on exact
+Quickwit chitchat0.11.1, MIT licensed. Runtime algorithms and wire format remain
+original; exact Zstd0.14.3 and LRU0.18.2 replace the old dependency requirements.
+Eight reversible nested-if syntax fixes preserve the declared Rust1.88 floor
+and strict Clippy; all remaining runtime/test bytes reconstruct exact U.
+
+Upstream MTU bounds still have the recorded pre-existing defect. No MTU fix,
+allocation/CPU/RSS claim, Root/release admission or registry publication is made.
+See BACKPORT074.json for exact upstream/source/license/maintenance provenance.
+The upstream/ directory contains historical inputs, including a stale old lock;
+only the top-level Cargo.lock is the active preparation lock.

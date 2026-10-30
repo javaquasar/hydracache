@@ -1,0 +1,6 @@
+{
+  "type": "UnicodeDecodeError",
+  "reason": "PowerShell elevated Python default cp1252 while reviewing Unicode consumer source; no candidate/native command executed",
+  "repair": "explicit bytes/UTF-8 source handling",
+  "original_partial_export_retained": true
+}

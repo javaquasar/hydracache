@@ -1,0 +1,58 @@
+{
+  ".cargo_vcs_info.json": {
+    "after_sha256": null,
+    "before_sha256": "7469f985e1a4f7739fd960cdc6af5b80d441ecfc3f08b3d8385e43224cd6735a"
+  },
+  "BACKPORT074.json": {
+    "after_sha256": "1bab354b78518f4a6d16b29048beadbc48a24fa4032b09163d288443c64a0f2e",
+    "before_sha256": null
+  },
+  "Cargo.lock": {
+    "after_sha256": "b5f7bc201c71e1310ec9cb6a17b439583f38f383520e7b5af39116f941a0cd7c",
+    "before_sha256": "072b58738d6d4c1d8201d0e114403c89576bfcd7382531160d5de9770aa6c3c2"
+  },
+  "Cargo.toml": {
+    "after_sha256": "7cffbadcd7fad55cfee22cd9101d76fbc4018b2a77cacd552341bc2eef5bfc97",
+    "before_sha256": "adf4e5ae7e6223b51de2c08891b90d241acf9d81d1a02c124c14b6fb726f7a46"
+  },
+  "Cargo.toml.orig": {
+    "after_sha256": null,
+    "before_sha256": "c38f3725b0518bdfda181047eb13576ab232eacb846c311879353ff4f2eccb2a"
+  },
+  "LICENSE": {
+    "after_sha256": "6755ef28efcf3e523c25a6339c018b6d77db59fc908f90b57441647aa4c51298",
+    "before_sha256": null
+  },
+  "README.md": {
+    "after_sha256": "fe5cb91708fb6c698a34fc883488a7fb34ac87045a73b9f3f94ed10d7449912c",
+    "before_sha256": null
+  },
+  "src/lib.rs": {
+    "after_sha256": "dcda9077e5c00a16f4752c24fe1243cc5931bcb2c5f275497eaaa8a0b0618f5c",
+    "before_sha256": "4ee2ec8115287b1751a37bb17cab32b076d660d4a89623168b69f8fc40b31749"
+  },
+  "src/server.rs": {
+    "after_sha256": "155569c72e05c82e2fb492c579078a6b9e1d74172df472378e29fd31263bd8ad",
+    "before_sha256": "6684576168c4bdfafdc0706d7f1be40f4e37cbd4f001440d408b0789648e47f1"
+  },
+  "src/state.rs": {
+    "after_sha256": "af2a4c14a01ba9e1354d7b103048a45a698c24e59e5a0d1e9bf3e6f4a6bbdf53",
+    "before_sha256": "6f078fb9b049fae017848cbee7e84346c9479942a56d2b7f6505b929ff31c406"
+  },
+  "src/transport/channel.rs": {
+    "after_sha256": "12f709a6a45bd25c0673c3235ee4aeb89d19c775472ccb5ad90a7e7608d99168",
+    "before_sha256": "6cc9dc23a3b6a1f282c6ae1ab20195f74b4116a9f036e2236bd47526e0fb2944"
+  },
+  "upstream/.cargo_vcs_info.json": {
+    "after_sha256": "7469f985e1a4f7739fd960cdc6af5b80d441ecfc3f08b3d8385e43224cd6735a",
+    "before_sha256": null
+  },
+  "upstream/Cargo.lock": {
+    "after_sha256": "072b58738d6d4c1d8201d0e114403c89576bfcd7382531160d5de9770aa6c3c2",
+    "before_sha256": null
+  },
+  "upstream/Cargo.toml.orig": {
+    "after_sha256": "c38f3725b0518bdfda181047eb13576ab232eacb846c311879353ff4f2eccb2a",
+    "before_sha256": null
+  }
+}

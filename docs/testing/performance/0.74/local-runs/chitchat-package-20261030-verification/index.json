@@ -1,0 +1,474 @@
+{
+  "members": {
+    "docs/docs/articles/007-optimization-starts-with-measurement.md": {
+      "bytes": 1638406,
+      "sha256": "553b04ca75cf70efda719660fd27cc04c1a23a2b65af9fc8e4bf0631b6880f19"
+    },
+    "docs/docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md": {
+      "bytes": 92238,
+      "sha256": "9874838a578b4324eefaa3b2e82dd88b61df261de9e1061b606cde8eeab05f1e"
+    },
+    "docs/docs/testing/performance/0.74/README.md": {
+      "bytes": 526887,
+      "sha256": "adc05bfd0bbf3b03d577c6e1be9dd81cf539de6eaec6b3fda883a5b3b25c1d80"
+    },
+    "docs/docs/testing/performance/0.74/chitchat-security-package-plan-20261030.md": {
+      "bytes": 8506,
+      "sha256": "7e78bfbb0cbb2a54f7ee7976fc44bf6e0aef6bf64f8bd9740d63dd4be4177dbd"
+    },
+    "docs/docs/testing/performance/0.74/chitchat-security-package-result-20261030.md": {
+      "bytes": 8393,
+      "sha256": "c4a42e6a0cd595b9d849f8b92a5bec95e6dc8252c168bea34b9075f8d234c7b9"
+    },
+    "docs/docs/testing/performance/0.74/release-closure-execution-plan-20261026.md": {
+      "bytes": 60620,
+      "sha256": "906085142547762ea73330a89b059db0a7612881d512b2596d7a1f7f90089dbc"
+    },
+    "final/byte-verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/byte-verify/intent.json": {
+      "bytes": 306106,
+      "sha256": "5b1ee6e6908f94a5775cee26cc5d7dd933f58586698fdd220964451f2e27fa4a"
+    },
+    "final/byte-verify/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/byte-verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/byte-verify/stdout.log": {
+      "bytes": 991,
+      "sha256": "0774c3a460cb556d633e2a415d1e435eaf81c60328cb09b08d5279653e255ea7"
+    },
+    "final/controls/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/controls/intent.json": {
+      "bytes": 306025,
+      "sha256": "8f1ee152b14994f387c5e70992ad7a719e6badcfb7b69de80d13c2d587077f21"
+    },
+    "final/controls/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/controls/stderr.log": {
+      "bytes": 1564,
+      "sha256": "49a8ca645590dc37860dd8861a6ed7de322bea3c9dfb40515f3aedacf66f49d3"
+    },
+    "final/controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/doc-check/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/doc-check/intent.json": {
+      "bytes": 305973,
+      "sha256": "6ce718710d2142610b593ceddc49ade409d8e33c17af573635553733021204a8"
+    },
+    "final/doc-check/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/doc-check/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/doc-check/stdout.log": {
+      "bytes": 44,
+      "sha256": "5cbe8bd201ca708917922a0fe09ab09af5b6f29b966ee00106fb98118318e396"
+    },
+    "final/format/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/format/intent.json": {
+      "bytes": 306628,
+      "sha256": "b787edf3ac7cf4bc44f0f499c6bd9e7ebc13a02435f74fd5fbb772b9fa775bf8"
+    },
+    "final/format/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/format/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/format/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/performance-contract/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/performance-contract/intent.json": {
+      "bytes": 306019,
+      "sha256": "be2ac2fd33893d956b7b338005a4e9a5f69d0aa58ba9d8b6943aad5635f9fe2e"
+    },
+    "final/performance-contract/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/performance-contract/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/performance-contract/stdout.log": {
+      "bytes": 60,
+      "sha256": "262dfe34a7233349d18ece57348da32b27c90f4d41d198dc371b402962744151"
+    },
+    "final/restore-verify/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/restore-verify/intent.json": {
+      "bytes": 306218,
+      "sha256": "0e3c04950c3ae0c428ad813139d9c41e66f6d53854be7414d8bf03ccd4eae07c"
+    },
+    "final/restore-verify/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/restore-verify/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/restore-verify/stdout.log": {
+      "bytes": 1073,
+      "sha256": "995c80e62065704dee583ff0b5afb81cdcf8a9223e8329f5a0d384018563211b"
+    },
+    "final/syntax/execution.json": {
+      "bytes": 229,
+      "sha256": "67df289f1d13016b1c6ca96f5e11fc9389bb212193610c564893ab7c97c7fc9f"
+    },
+    "final/syntax/intent.json": {
+      "bytes": 306290,
+      "sha256": "ae2b1c988200e6652a191c84a250e77833e94134e1e27c5f430d13f50aae375b"
+    },
+    "final/syntax/result.json": {
+      "bytes": 107,
+      "sha256": "17d2b296676214bf1b71fbb11860649ac1e6a0f08ee03c6149e3ca30a2bca527"
+    },
+    "final/syntax/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final/syntax/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "first-final/controls/execution.json": {
+      "bytes": 234,
+      "sha256": "1c28ec8cc786b10ecf97de744d85ce49bf40c00ce6ceb0bce83c3a24a42231c1"
+    },
+    "first-final/controls/intent.json": {
+      "bytes": 306025,
+      "sha256": "39e2f77529d844a319dd79a56a79d7719b60382de0693797775563fc584dedae"
+    },
+    "first-final/controls/result.json": {
+      "bytes": 989,
+      "sha256": "53cf21c84d4a38cb425e6604a7bfc12b22bd26628390684f998af36f70ac3b99"
+    },
+    "first-final/controls/stderr.log": {
+      "bytes": 2184,
+      "sha256": "b011a341ee97226b065de164195564b53d97940c032a361680964d316b5e1ab9"
+    },
+    "first-final/controls/stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source/current/tools/chitchat-package-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-package-074/README.md": {
+      "bytes": 2059,
+      "sha256": "05e9e4821dadc6b3922dc2089ab6e0b649bd73913a902b5762503428f162e341"
+    },
+    "source/current/tools/chitchat-package-074/common.py": {
+      "bytes": 2897,
+      "sha256": "2367893ae77122bb92852f6803e25b26b9151a8a9d509ff5f3eaa6c4b8cad79e"
+    },
+    "source/current/tools/chitchat-package-074/consumer.rs": {
+      "bytes": 3448,
+      "sha256": "92e94f951266eeacd4c90c9ae3c45af13c20793ec136a28fab83811fa52f072b"
+    },
+    "source/current/tools/chitchat-package-074/inputs/LICENSE": {
+      "bytes": 1062,
+      "sha256": "6755ef28efcf3e523c25a6339c018b6d77db59fc908f90b57441647aa4c51298"
+    },
+    "source/current/tools/chitchat-package-074/model.py": {
+      "bytes": 10024,
+      "sha256": "1dde1fb2ee0baa7256b9874969a91f6fed0754356b161f1e067384d421ae795a"
+    },
+    "source/current/tools/chitchat-package-074/offline.py": {
+      "bytes": 2703,
+      "sha256": "3a9558a15ba16a240b55471443260275a22a8e1e4873213c0b3bad082a2b3380"
+    },
+    "source/current/tools/chitchat-package-074/run.py": {
+      "bytes": 20876,
+      "sha256": "e8f963d81c3d82ed7a15fc4ef533870441381115056cfdfaa4f512f900733c47"
+    },
+    "source/current/tools/chitchat-package-074/stage.py": {
+      "bytes": 2207,
+      "sha256": "6637c1d4a0a3515c4fe32d3add10513782e811559c5da4d95fd06a6f826a980f"
+    },
+    "source/current/tools/chitchat-package-074/test_model.py": {
+      "bytes": 5365,
+      "sha256": "35b95162f1894971d107330ec0f944277d481ea58e9aa8c4b349ef3ccb327043"
+    },
+    "source/current/tools/chitchat-package-policy-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-package-policy-074/README.md": {
+      "bytes": 761,
+      "sha256": "3cfd8d638087c54c83c7d1d955af0fd0ea7c461aaf8eabfc30f073d513729139"
+    },
+    "source/current/tools/chitchat-package-policy-074/policy.py": {
+      "bytes": 7631,
+      "sha256": "98ad18ee2a2833ff2e3836d36e9535473402736f89e0c5c7d9575c4af54e1aa1"
+    },
+    "source/current/tools/chitchat-package-policy-final-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-package-policy-final-074/README.md": {
+      "bytes": 1037,
+      "sha256": "c84f69842d71a24a51bcfede3bf3578a337afc7884252cc92567589c813f9f0d"
+    },
+    "source/current/tools/chitchat-package-policy-final-074/policy.py": {
+      "bytes": 7765,
+      "sha256": "af789d7b0ab4006cea6f8103897a3d71da26cf6fe7a2caa9c8c828851e4b6674"
+    },
+    "source/current/tools/chitchat-package-r2-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-package-r2-074/README.md": {
+      "bytes": 2446,
+      "sha256": "9008ea2f6e79d955c0a72f36e52d5da17f12d94f5564b5ee9cc725ac7fb69b64"
+    },
+    "source/current/tools/chitchat-package-r2-074/common.py": {
+      "bytes": 4416,
+      "sha256": "0e50bb2169f1511c22f373660a849ca26cf279292aa2cdf2406474ea18d78c4f"
+    },
+    "source/current/tools/chitchat-package-r2-074/consumer.rs": {
+      "bytes": 3448,
+      "sha256": "92e94f951266eeacd4c90c9ae3c45af13c20793ec136a28fab83811fa52f072b"
+    },
+    "source/current/tools/chitchat-package-r2-074/inputs/LICENSE": {
+      "bytes": 1062,
+      "sha256": "6755ef28efcf3e523c25a6339c018b6d77db59fc908f90b57441647aa4c51298"
+    },
+    "source/current/tools/chitchat-package-r2-074/model.py": {
+      "bytes": 10027,
+      "sha256": "7411e01d99697d0af88491a94e5e9e91c8eaf3ebbc9fa6b9eb5555a0f43379ed"
+    },
+    "source/current/tools/chitchat-package-r2-074/offline.py": {
+      "bytes": 2706,
+      "sha256": "fcd88e3aca87ed66b74f3ffb5950f61f79f13870efc2782b4f2685db35c48e1c"
+    },
+    "source/current/tools/chitchat-package-r2-074/run.py": {
+      "bytes": 21394,
+      "sha256": "8363f167a13c7892c6b1df4d2c05a73131d348e58c63e4d89907ec3603f9dc82"
+    },
+    "source/current/tools/chitchat-package-r2-074/stage.py": {
+      "bytes": 2207,
+      "sha256": "6637c1d4a0a3515c4fe32d3add10513782e811559c5da4d95fd06a6f826a980f"
+    },
+    "source/current/tools/chitchat-package-r2-074/test_model.py": {
+      "bytes": 5365,
+      "sha256": "35b95162f1894971d107330ec0f944277d481ea58e9aa8c4b349ef3ccb327043"
+    },
+    "source/current/tools/chitchat-package-r3-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-package-r3-074/README.md": {
+      "bytes": 2835,
+      "sha256": "bac351598d7dabfb1a82d8459c0827686f23f3609ed9b2c2a8708c7b42511ff1"
+    },
+    "source/current/tools/chitchat-package-r3-074/common.py": {
+      "bytes": 4416,
+      "sha256": "0deaa0c0268e6edc2fa1febff94db198858f4da5576a0ab24cb7c908391aa9ed"
+    },
+    "source/current/tools/chitchat-package-r3-074/consumer.rs": {
+      "bytes": 3448,
+      "sha256": "92e94f951266eeacd4c90c9ae3c45af13c20793ec136a28fab83811fa52f072b"
+    },
+    "source/current/tools/chitchat-package-r3-074/inputs/LICENSE": {
+      "bytes": 1062,
+      "sha256": "6755ef28efcf3e523c25a6339c018b6d77db59fc908f90b57441647aa4c51298"
+    },
+    "source/current/tools/chitchat-package-r3-074/model.py": {
+      "bytes": 10149,
+      "sha256": "8db99012612d33ba205ee78399e248e32b91d9f638a7ead97c5f6f8ea29ce2c2"
+    },
+    "source/current/tools/chitchat-package-r3-074/offline.py": {
+      "bytes": 2706,
+      "sha256": "17b3a3c8bd354cbca16ae34bbc23e2e5da0c206c4ab501c8c5fd67d2db300090"
+    },
+    "source/current/tools/chitchat-package-r3-074/run.py": {
+      "bytes": 21425,
+      "sha256": "ce252c4e4f9c8193f77d12cbfd92f2d59129fc0bea81a02c24490504acfd2d43"
+    },
+    "source/current/tools/chitchat-package-r3-074/stage.py": {
+      "bytes": 2207,
+      "sha256": "6637c1d4a0a3515c4fe32d3add10513782e811559c5da4d95fd06a6f826a980f"
+    },
+    "source/current/tools/chitchat-package-r3-074/test_model.py": {
+      "bytes": 5594,
+      "sha256": "72a2a585ff3a36b933b5628660b441f128f6f6c129a36de7c850ac3f95b4c931"
+    },
+    "source/current/tools/chitchat-package-r4-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-package-r4-074/README.md": {
+      "bytes": 3397,
+      "sha256": "1212754ba1add3d30e0ebe1cd8313dc01968ce08c8ddf553808abc17e50a6fed"
+    },
+    "source/current/tools/chitchat-package-r4-074/common.py": {
+      "bytes": 4416,
+      "sha256": "9bf2cd7d8447899b62e55afe1a34e1ca64246260d8a38cc3bc1b7cc279b3aa9c"
+    },
+    "source/current/tools/chitchat-package-r4-074/consumer.rs": {
+      "bytes": 3472,
+      "sha256": "c3bc078a01be88ad95b240633b6a6dfcb900773eca0acf31fb8f54d44711f3cb"
+    },
+    "source/current/tools/chitchat-package-r4-074/inputs/LICENSE": {
+      "bytes": 1062,
+      "sha256": "6755ef28efcf3e523c25a6339c018b6d77db59fc908f90b57441647aa4c51298"
+    },
+    "source/current/tools/chitchat-package-r4-074/model.py": {
+      "bytes": 10427,
+      "sha256": "46191540f759593ae502ba7e49fee06b7781afd3ff18edb5076e9fe9feb7b669"
+    },
+    "source/current/tools/chitchat-package-r4-074/offline.py": {
+      "bytes": 2706,
+      "sha256": "ee649c62a77e2db320f949eb9cf8c8e832964fec836395d53efc6ec22374ab8c"
+    },
+    "source/current/tools/chitchat-package-r4-074/owned_style.py": {
+      "bytes": 661,
+      "sha256": "02788ae3b3bc5c3e04aacb85b0739c55951e3ca9a65a5e95b1180d402cc421c5"
+    },
+    "source/current/tools/chitchat-package-r4-074/run.py": {
+      "bytes": 21651,
+      "sha256": "f886b0cd6ef4895d719ace2913a0f3f68681606d12209e0979e3a6647f5050d1"
+    },
+    "source/current/tools/chitchat-package-r4-074/stage.py": {
+      "bytes": 2239,
+      "sha256": "eca2994718af7af192178c2bc5e015ee8859457bcf8c82fc61aeef5d042e1564"
+    },
+    "source/current/tools/chitchat-package-r4-074/style-rules.json": {
+      "bytes": 7566,
+      "sha256": "b787ee6575a1d67afa72e4b2ff8f696666602330ba5dd807aeb3384d9281cad8"
+    },
+    "source/current/tools/chitchat-package-r4-074/test_model.py": {
+      "bytes": 7055,
+      "sha256": "d8882a332fbd536aed9f90ff0d530bf96bb3d0428538295c4f8358ad62e08eb4"
+    },
+    "source/current/tools/chitchat-package-r5-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-package-r5-074/README.md": {
+      "bytes": 3670,
+      "sha256": "070573776711c9560d1e04f148f8c7c541d521846b719f475d0f5803f1bca5c4"
+    },
+    "source/current/tools/chitchat-package-r5-074/common.py": {
+      "bytes": 4416,
+      "sha256": "baa9d2d846484871fe379be9636da15e071485db7d409473d5ebf3903ed8862c"
+    },
+    "source/current/tools/chitchat-package-r5-074/consumer.rs": {
+      "bytes": 3472,
+      "sha256": "c3bc078a01be88ad95b240633b6a6dfcb900773eca0acf31fb8f54d44711f3cb"
+    },
+    "source/current/tools/chitchat-package-r5-074/inputs/LICENSE": {
+      "bytes": 1062,
+      "sha256": "6755ef28efcf3e523c25a6339c018b6d77db59fc908f90b57441647aa4c51298"
+    },
+    "source/current/tools/chitchat-package-r5-074/model.py": {
+      "bytes": 10427,
+      "sha256": "3dbea53ddf022dbcaf015c8ecc80f4b0409c8e5da5170089a237ff2ac7b2ea27"
+    },
+    "source/current/tools/chitchat-package-r5-074/offline.py": {
+      "bytes": 2706,
+      "sha256": "c80d4ba5e9d81873a2f91ed33b4becb95ef646610a0a2c8f101a8df2ef196098"
+    },
+    "source/current/tools/chitchat-package-r5-074/owned_style.py": {
+      "bytes": 661,
+      "sha256": "02788ae3b3bc5c3e04aacb85b0739c55951e3ca9a65a5e95b1180d402cc421c5"
+    },
+    "source/current/tools/chitchat-package-r5-074/run.py": {
+      "bytes": 21651,
+      "sha256": "0210c2900581349ac9f1be339e0bc21e1fbd5bebb45650a461c4a122fc5dac3a"
+    },
+    "source/current/tools/chitchat-package-r5-074/stage.py": {
+      "bytes": 2239,
+      "sha256": "eca2994718af7af192178c2bc5e015ee8859457bcf8c82fc61aeef5d042e1564"
+    },
+    "source/current/tools/chitchat-package-r5-074/style-rules.json": {
+      "bytes": 7566,
+      "sha256": "b787ee6575a1d67afa72e4b2ff8f696666602330ba5dd807aeb3384d9281cad8"
+    },
+    "source/current/tools/chitchat-package-r5-074/test_model.py": {
+      "bytes": 7055,
+      "sha256": "d8882a332fbd536aed9f90ff0d530bf96bb3d0428538295c4f8358ad62e08eb4"
+    },
+    "source/current/tools/chitchat-package-result-074/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "source/current/tools/chitchat-package-result-074/README.md": {
+      "bytes": 1065,
+      "sha256": "c9c34ebedc65a7ab8d05e98feac7fedf9aa6590b01cae2d767e3ae906794f589"
+    },
+    "source/current/tools/chitchat-package-result-074/gates.py": {
+      "bytes": 4260,
+      "sha256": "7a2b58c5b90ca2098c239224aaff1296483e535a1e2e745c49d6a6c706f8557b"
+    },
+    "source/current/tools/chitchat-package-result-074/packet.py": {
+      "bytes": 7706,
+      "sha256": "4f77b848ab8829fd1376975a46355e5abe80fb4762aa91f33c40e7bfe570f616"
+    },
+    "source/current/tools/chitchat-package-result-074/review.py": {
+      "bytes": 8098,
+      "sha256": "477c7fd3ebaf87de390a37122cfb23a8b07232fc3ed0a5cdf487e2c4dc2032a0"
+    },
+    "source/current/tools/chitchat-package-result-074/test_result.py": {
+      "bytes": 3338,
+      "sha256": "edc0483db43eaa379cff614cdf52467a9a17fdc767c24d8550d1fbbc15b3e888"
+    },
+    "source/current/tools/chitchat-package-result-074/verification.py": {
+      "bytes": 3832,
+      "sha256": "a14db8c0be8acaf25b6cd132cdd769a6823cd7a0d84926dc00c74dff3c32f7f4"
+    }
+  },
+  "result": {
+    "complete": true,
+    "evidence_controls": 13,
+    "gates": [
+      "controls",
+      "syntax",
+      "format",
+      "byte-verify",
+      "restore-verify",
+      "doc-check",
+      "performance-contract"
+    ],
+    "primary_sha256": "6200fd3fe30ae00532e30a5622573851a3dee15cb243f08051f0cd2ee6b22b47",
+    "product_execution": false,
+    "release_admitted": false,
+    "root_adopted": false
+  },
+  "schema": "hc074-chitchat-package-offline-v1"
+}

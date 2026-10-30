@@ -1,0 +1,50 @@
+"""Coherently rehashed evidence must still refuse omitted work and scope promotion."""
+import contextlib,copy,io,json,unittest
+import packet as p
+m=p.m
+
+class EvidenceControls(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.data=p.collect()
+        cls.index=dict(schema='hc074-chitchat-package-v1',parent_sha256=m.PARENT_SHA,
+            result=p.r.reconcile(lambda n:cls.data['capture/'+m.BASE.name+'/'+n]))
+    def check(self,data):
+        index=dict(self.index,members={n:dict(sha256=m.sha(b),bytes=len(b)) for n,b in data.items()})
+        objects={m.sha(b):b for b in data.values()}
+        return p.validate(index,objects.__getitem__)
+    def mutate(self,name,key,value):
+        data=dict(self.data);row=json.loads(data[name]);row[key]=value;data[name]=m.encoded(row)
+        with self.assertRaises((ValueError,KeyError)):self.check(data)
+    def test_full_data_and_source_reconcile(self):self.assertEqual(self.check(self.data),self.data)
+    def test_stopped_phase_cannot_be_called_complete(self):
+        self.mutate('capture/'+m.BASE.name+'/native/package/result.json','complete',False)
+    def test_expanded_deadline_refuses(self):
+        self.mutate('capture/'+m.BASE.name+'/native/build188/build/execution.json','bound_seconds',1201)
+    def test_unretired_writer_refuses(self):
+        self.mutate('capture/'+m.BASE.name+'/native/consumer194/case-00/execution.json','retired',False)
+    def test_consumer_scope_promotion_refuses(self):
+        self.mutate('capture/'+m.BASE.name+'/native/consumer188/consumer-review.json','public_registry_qualified',True)
+    def test_catalog_omission_refuses(self):
+        name='capture/'+m.BASE.name+'/state/catalog-188.json';data=dict(self.data)
+        data[name]=m.encoded(json.loads(data[name])[:-1])
+        with self.assertRaises(ValueError):self.check(data)
+    def test_changed_full_root_map_refuses(self):
+        name='capture/'+m.BASE.name+'/native/pure188/intent.json';data=dict(self.data);row=json.loads(data[name])
+        row['source']['Cargo.lock']='0'*64;data[name]=m.encoded(row)
+        with self.assertRaises(ValueError):self.check(data)
+    def test_alias_cannot_hide_upstream_policy_refusal(self):
+        self.mutate('capture/'+m.BASE.name+'/policy/commands/upstream/result.json','policy_passed',False)
+    def test_first_capacity_refusal_is_immutable(self):
+        self.mutate('capture/chitchat-package-20261030-r4/native/stage/result.json','complete',True)
+    def test_coherently_hashed_database_change_refuses(self):
+        data=dict(self.data);name=next(n for n in data if n.startswith('reference/advisory-db/'));data[name]+=b'\n'
+        with self.assertRaises(ValueError):self.check(data)
+    def test_escaping_member_refuses(self):
+        data=dict(self.data);data['../outside']=b'outside'
+        with self.assertRaises(ValueError):self.check(data)
+    def test_wrong_complete_descriptor_refuses(self):
+        index=dict(self.index,members={'member':dict(sha256='0'*64,bytes=1)})
+        with self.assertRaises(ValueError):p.validate(index,lambda _:b'X')
+
+if __name__=='__main__':unittest.main(verbosity=2)

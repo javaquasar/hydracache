@@ -1,0 +1,104 @@
+[package]
+edition = "2024"
+rust-version = "1.88"
+name = "hydra-chitchat"
+version = "0.11.1-hydra.1"
+authors = ["Quickwit, Inc. <hello@quickwit.io>"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "Cluster membership library using gossip with Scuttlebutt reconciliation."
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/javaquasar/hydracache"
+resolver = "2"
+
+publish = ["crates-io"]
+include = ["src/**", "tests/**", "README.md", "LICENSE", "BACKPORT074.json", "upstream/**"]
+
+[features]
+testsuite = ["tracing-subscriber"]
+
+[lib]
+name = "chitchat"
+path = "src/lib.rs"
+
+[[test]]
+name = "cluster_test"
+path = "tests/cluster_test.rs"
+
+[[test]]
+name = "perf_test"
+path = "tests/perf_test.rs"
+
+[dependencies.anyhow]
+version = "1.0.51"
+
+[dependencies.async-trait]
+version = "0.1"
+
+[dependencies.bytes]
+version = "1"
+
+[dependencies.itertools]
+version = "0.14"
+
+[dependencies.lru]
+version = "=0.18.2"
+
+[dependencies.rand]
+version = "0.10"
+
+[dependencies.serde]
+version = "1"
+features = [
+    "derive",
+    "rc",
+]
+
+[dependencies.tokio]
+version = "1.28.0"
+features = [
+    "net",
+    "sync",
+    "rt-multi-thread",
+    "macros",
+    "time",
+]
+
+[dependencies.tokio-stream]
+version = "0.1"
+features = ["sync"]
+
+[dependencies.tracing]
+version = "0.1"
+
+[dependencies.tracing-subscriber]
+version = "0.3"
+optional = true
+
+[dependencies.zstd]
+version = "=0.14.3"
+
+[dev-dependencies.assert-json-diff]
+version = "2"
+
+[dev-dependencies.proptest]
+version = "1.4"
+
+[dev-dependencies.tokio]
+version = "1.28.0"
+features = [
+    "net",
+    "sync",
+    "rt-multi-thread",
+    "macros",
+    "test-util",
+    "time",
+]
+
+[workspace]
+resolver = "2"

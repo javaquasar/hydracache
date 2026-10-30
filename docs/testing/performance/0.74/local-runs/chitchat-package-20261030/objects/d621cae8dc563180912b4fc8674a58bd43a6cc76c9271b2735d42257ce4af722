@@ -1,0 +1,31 @@
+"""Exclusive local input export; never executes archived producers."""
+import difflib,json
+from pathlib import Path
+import model as m
+
+def main():
+    m.BASE.mkdir(exist_ok=False);upstream,u,lock=m.parent();final=m.project(u,lock);review=m.verify_source(final,u)
+    for label,files in [('source',final),('canonical-U',u)]:
+        for name,raw in files.items():
+            p=m.BASE/label/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(raw)
+    input=m.BASE/'input';input.mkdir()
+    (input/'U-fixture.lock').write_bytes(lock)
+    (input/'source.tar').write_bytes(m.codec().pack(final,m.PREFIX))
+    (input/'source-receipt.json').write_bytes(m.encoded(dict(schema='hc074-chitchat-package-source-v1',
+        parent_sha256=m.PARENT_SHA,source={n:m.sha(b) for n,b in final.items()},review=review,
+        source_tar_sha256=m.sha((input/'source.tar').read_bytes()),registry_qualified=False,root_adopted=False)))
+    differences={}
+    for name in sorted(set(u)|set(final)):
+        before=u.get(name,b'');after=final.get(name,b'')
+        if before==after:continue
+        differences[name]=dict(before_sha256=m.sha(before) if name in u else None,after_sha256=m.sha(after) if name in final else None)
+    (input/'source-changes.json').write_bytes(m.encoded(differences))
+    (input/'manifest.patch').write_text(''.join(difflib.unified_diff(u['Cargo.toml'].decode().splitlines(True),final['Cargo.toml'].decode().splitlines(True),fromfile='canonical-U/Cargo.toml',tofile='owned/Cargo.toml')),encoding='utf8',newline='\n')
+    # Retained source recipe and exact registry union supply already reviewed bytes.
+    index=json.loads((m.PARENT/'index.json').read_bytes())
+    for old,new in [('capture/r4/input/registry.json','registry.json'),('capture/r4/policy/snapshot.json','policy-snapshot.json')]:
+        row=index['members'][old];raw=(m.PARENT/'objects'/row['sha256']).read_bytes();m.need(m.sha(raw)==row['sha256'],'whole pinned input');(input/new).write_bytes(raw)
+    (input/'consumer.rs').write_bytes((m.HERE/'consumer.rs').read_bytes())
+    print(json.dumps(dict(**review,source_tar_sha256=m.sha((input/'source.tar').read_bytes()),changed_runtime_files=4,style_sites=8,algorithm_changes=0)))
+
+if __name__=='__main__':main()

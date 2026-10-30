@@ -1,0 +1,9 @@
+HC074_PACKAGE: interpreter entered command
+HC074_PACKAGE: common imports ready
+Traceback (most recent call last):
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-package-r3-074/run.py", line 221, in <module>
+    c.need(not (m.BASE/'STOP.json').exists(),'first refusal stops unchanged dispatch')
+  File "/mnt/c/Workspace/prj/jq/cashe/hydracache-074/tools/chitchat-security-only-074/scope.py", line 28, in need
+    if not ok:raise ValueError(why)
+              ^^^^^^^^^^^^^^^^^^^^^
+ValueError: first refusal stops unchanged dispatch

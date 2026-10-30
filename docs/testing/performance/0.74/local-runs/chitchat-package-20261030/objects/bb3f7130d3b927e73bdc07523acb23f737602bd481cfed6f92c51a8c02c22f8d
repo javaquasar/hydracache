@@ -1,0 +1,7 @@
+{
+  "type": "ValueError",
+  "reason": "data/source-only member allowlist omitted .lock suffix",
+  "member": "input/U-fixture.lock",
+  "package_executed": false,
+  "evidence_written": false
+}

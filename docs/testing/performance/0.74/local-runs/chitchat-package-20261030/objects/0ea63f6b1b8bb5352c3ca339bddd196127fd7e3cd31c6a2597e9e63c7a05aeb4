@@ -1,0 +1,42 @@
+{
+  ".cargo_vcs_info.json": {
+    "after_sha256": null,
+    "before_sha256": "7469f985e1a4f7739fd960cdc6af5b80d441ecfc3f08b3d8385e43224cd6735a"
+  },
+  "BACKPORT074.json": {
+    "after_sha256": "0ffa5156f12a09728e3fa55b54ed4335f9765c0fcf94953d108150c2d70f2812",
+    "before_sha256": null
+  },
+  "Cargo.lock": {
+    "after_sha256": "b5f7bc201c71e1310ec9cb6a17b439583f38f383520e7b5af39116f941a0cd7c",
+    "before_sha256": "072b58738d6d4c1d8201d0e114403c89576bfcd7382531160d5de9770aa6c3c2"
+  },
+  "Cargo.toml": {
+    "after_sha256": "baa99a791e2f273635b7a470cc90d9d9d3653ec914f3520d2f45a028208086b8",
+    "before_sha256": "adf4e5ae7e6223b51de2c08891b90d241acf9d81d1a02c124c14b6fb726f7a46"
+  },
+  "Cargo.toml.orig": {
+    "after_sha256": null,
+    "before_sha256": "c38f3725b0518bdfda181047eb13576ab232eacb846c311879353ff4f2eccb2a"
+  },
+  "LICENSE": {
+    "after_sha256": "6755ef28efcf3e523c25a6339c018b6d77db59fc908f90b57441647aa4c51298",
+    "before_sha256": null
+  },
+  "README.md": {
+    "after_sha256": "706296191be83b434b778c7f96aaa5cbe5b2afb4ad88692b08f40882660d8d2c",
+    "before_sha256": null
+  },
+  "upstream/.cargo_vcs_info.json": {
+    "after_sha256": "7469f985e1a4f7739fd960cdc6af5b80d441ecfc3f08b3d8385e43224cd6735a",
+    "before_sha256": null
+  },
+  "upstream/Cargo.lock": {
+    "after_sha256": "072b58738d6d4c1d8201d0e114403c89576bfcd7382531160d5de9770aa6c3c2",
+    "before_sha256": null
+  },
+  "upstream/Cargo.toml.orig": {
+    "after_sha256": "c38f3725b0518bdfda181047eb13576ab232eacb846c311879353ff4f2eccb2a",
+    "before_sha256": null
+  }
+}

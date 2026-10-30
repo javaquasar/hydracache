@@ -1,0 +1,130 @@
+{
+  "request_url": "https://api.github.com/repos/RustSec/advisory-db/commits/main",
+  "response": {
+    "sha": "2295466c4e9df26647fd67d8fa1c705ac2fc7f81",
+    "node_id": "C_kwDOBPTSmdoAKDIyOTU0NjZjNGU5ZGYyNjY0N2ZkNjdkOGZhMWM3MDVhYzJmYzdmODE",
+    "commit": {
+      "author": {
+        "name": "djc",
+        "email": "158471+djc@users.noreply.github.com",
+        "date": "2026-10-30T11:10:13Z"
+      },
+      "committer": {
+        "name": "Dirkjan Ochtman",
+        "email": "dirkjan@ochtman.nl",
+        "date": "2026-10-30T11:12:39Z"
+      },
+      "message": "Assigned RUSTSEC-2026-0427 to sn-releases, RUSTSEC-2026-0428 to orion",
+      "tree": {
+        "sha": "a95b9514c0f6e6af352c9c7845720fe73a964d1e",
+        "url": "https://api.github.com/repos/rustsec/advisory-db/git/trees/a95b9514c0f6e6af352c9c7845720fe73a964d1e"
+      },
+      "url": "https://api.github.com/repos/rustsec/advisory-db/git/commits/2295466c4e9df26647fd67d8fa1c705ac2fc7f81",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/rustsec/advisory-db/commits/2295466c4e9df26647fd67d8fa1c705ac2fc7f81",
+    "html_url": "https://github.com/rustsec/advisory-db/commit/2295466c4e9df26647fd67d8fa1c705ac2fc7f81",
+    "comments_url": "https://api.github.com/repos/rustsec/advisory-db/commits/2295466c4e9df26647fd67d8fa1c705ac2fc7f81/comments",
+    "author": {
+      "login": "djc",
+      "id": 158471,
+      "node_id": "MDQ6VXNlcjE1ODQ3MQ==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/158471?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/djc",
+      "html_url": "https://github.com/djc",
+      "followers_url": "https://api.github.com/users/djc/followers",
+      "following_url": "https://api.github.com/users/djc/following{/other_user}",
+      "gists_url": "https://api.github.com/users/djc/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/djc/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/djc/subscriptions",
+      "organizations_url": "https://api.github.com/users/djc/orgs",
+      "repos_url": "https://api.github.com/users/djc/repos",
+      "events_url": "https://api.github.com/users/djc/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/djc/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "djc",
+      "id": 158471,
+      "node_id": "MDQ6VXNlcjE1ODQ3MQ==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/158471?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/djc",
+      "html_url": "https://github.com/djc",
+      "followers_url": "https://api.github.com/users/djc/followers",
+      "following_url": "https://api.github.com/users/djc/following{/other_user}",
+      "gists_url": "https://api.github.com/users/djc/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/djc/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/djc/subscriptions",
+      "organizations_url": "https://api.github.com/users/djc/orgs",
+      "repos_url": "https://api.github.com/users/djc/repos",
+      "events_url": "https://api.github.com/users/djc/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/djc/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "323ff641e48047465d10d3d984d750a041463661",
+        "url": "https://api.github.com/repos/rustsec/advisory-db/commits/323ff641e48047465d10d3d984d750a041463661",
+        "html_url": "https://github.com/rustsec/advisory-db/commit/323ff641e48047465d10d3d984d750a041463661"
+      }
+    ],
+    "stats": {
+      "total": 8,
+      "additions": 4,
+      "deletions": 4
+    },
+    "files": [
+      {
+        "sha": "be8b1d1cb07db9658485920309a85eb1385a4e58",
+        "filename": ".duplicate-id-guard",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "changes": 2,
+        "blob_url": "https://github.com/rustsec/advisory-db/blob/2295466c4e9df26647fd67d8fa1c705ac2fc7f81/.duplicate-id-guard",
+        "raw_url": "https://github.com/rustsec/advisory-db/raw/2295466c4e9df26647fd67d8fa1c705ac2fc7f81/.duplicate-id-guard",
+        "contents_url": "https://api.github.com/repos/rustsec/advisory-db/contents/.duplicate-id-guard?ref=2295466c4e9df26647fd67d8fa1c705ac2fc7f81",
+        "patch": "@@ -1,3 +1,3 @@\n This file causes merge conflicts if two ID assignment jobs run concurrently.\n This prevents duplicate ID assignment due to a race between those jobs.\n-2ea5cf5272a88ac812bdc454fc73506a66e55810e1e2a878481dc6d4f8747bc2  -\n+6a031378fb2cae7066239e76d4f4c8bef562955682501e733a5cc881f7f4b101  -"
+      },
+      {
+        "sha": "9e4169d746722e0d5060cbb0abb334c87397d47d",
+        "filename": "crates/orion/RUSTSEC-2026-0428.md",
+        "status": "renamed",
+        "additions": 2,
+        "deletions": 2,
+        "changes": 4,
+        "blob_url": "https://github.com/rustsec/advisory-db/blob/2295466c4e9df26647fd67d8fa1c705ac2fc7f81/crates%2Forion%2FRUSTSEC-2026-0428.md",
+        "raw_url": "https://github.com/rustsec/advisory-db/raw/2295466c4e9df26647fd67d8fa1c705ac2fc7f81/crates%2Forion%2FRUSTSEC-2026-0428.md",
+        "contents_url": "https://api.github.com/repos/rustsec/advisory-db/contents/crates%2Forion%2FRUSTSEC-2026-0428.md?ref=2295466c4e9df26647fd67d8fa1c705ac2fc7f81",
+        "patch": "@@ -1,6 +1,6 @@\n ```toml\n [advisory]\n-id = \"RUSTSEC-0000-0000\"\n+id = \"RUSTSEC-2026-0428\"\n package = \"orion\"\n date = \"2026-10-30\" \n url = \"https://github.com/orion-rs/orion/pull/690\"\n@@ -26,4 +26,4 @@ Initialization `hazardous::mac::blake2b::Blake2b` with a key of some length `N`,\n \n ## Resolution\n \n-Upgrade to `v0.17.16` or `v0.18.1`.\n\\ No newline at end of file\n+Upgrade to `v0.17.16` or `v0.18.1`.",
+        "previous_filename": "crates/orion/RUSTSEC-0000-0000.md"
+      },
+      {
+        "sha": "287c61df23d320f3b8dc02031357ca892d1f2bc9",
+        "filename": "crates/sn-releases/RUSTSEC-2026-0427.md",
+        "status": "renamed",
+        "additions": 1,
+        "deletions": 1,
+        "changes": 2,
+        "blob_url": "https://github.com/rustsec/advisory-db/blob/2295466c4e9df26647fd67d8fa1c705ac2fc7f81/crates%2Fsn-releases%2FRUSTSEC-2026-0427.md",
+        "raw_url": "https://github.com/rustsec/advisory-db/raw/2295466c4e9df26647fd67d8fa1c705ac2fc7f81/crates%2Fsn-releases%2FRUSTSEC-2026-0427.md",
+        "contents_url": "https://api.github.com/repos/rustsec/advisory-db/contents/crates%2Fsn-releases%2FRUSTSEC-2026-0427.md?ref=2295466c4e9df26647fd67d8fa1c705ac2fc7f81",
+        "patch": "@@ -1,6 +1,6 @@\n ```toml\n [advisory]\n-id = \"RUSTSEC-0000-0000\"\n+id = \"RUSTSEC-2026-0427\"\n package = \"sn-releases\"\n date = \"2026-10-29\"\n url = \"https://github.com/maidsafe/sn-releases\"",
+        "previous_filename": "crates/sn-releases/RUSTSEC-0000-0000.md"
+      }
+    ]
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "schema": "hc074-package-reversible-style-v1",
+  "sites": [
+    {
+      "path": "src/server.rs",
+      "before": "        if let Some(random_dead_node) = random_dead_node_opt {\n            if let Err(error) = self.gossip(random_dead_node).await {\n                debug!(error=?error, node_address=%random_dead_node, \"Failed to gossip with dead node.\");\n            }\n        }",
+      "after": "        if let Some(random_dead_node) = random_dead_node_opt\n            && let Err(error) = self.gossip(random_dead_node).await\n        {\n            debug!(error=?error, node_address=%random_dead_node, \"Failed to gossip with dead node.\");\n        }",
+      "before_sha256": "bf7276dc2b8c7e31f04d76ec5f798b82dcdb4655d3eb8bc98b0da983d7014de4",
+      "after_sha256": "311b7a9c61da2a37bbbb55f0908e66a73e32befbd20104cc13ac0852d8f3a2eb"
+    },
+    {
+      "path": "src/server.rs",
+      "before": "        if let Some(random_seed_node) = random_seed_node_opt {\n            if let Err(error) = self.gossip(random_seed_node).await {\n                warn!(error=?error, node_address=%random_seed_node, \"Failed to gossip with seed node.\");\n            }\n        }",
+      "after": "        if let Some(random_seed_node) = random_seed_node_opt\n            && let Err(error) = self.gossip(random_seed_node).await\n        {\n            warn!(error=?error, node_address=%random_seed_node, \"Failed to gossip with seed node.\");\n        }",
+      "before_sha256": "e0d98f28cee94fc19fbea4d61b3c692ba3650225370e8537e6e6ec6533c964d4",
+      "after_sha256": "5dd0bd4fd6353951b377777182c06033d4f141cb907449aca9d229afe82ffe1c"
+    },
+    {
+      "path": "src/state.rs",
+      "before": "        if let Some(previous_versioned_value) = self.get_versioned(&key) {\n            if previous_versioned_value.value == value\n                && matches!(previous_versioned_value.status, DeletionStatus::Set)\n            {\n                // No need to change anything, the value is already set!\n                return;\n            }\n        }",
+      "after": "        if let Some(previous_versioned_value) = self.get_versioned(&key)\n            && previous_versioned_value.value == value\n            && matches!(previous_versioned_value.status, DeletionStatus::Set)\n        {\n            // No need to change anything, the value is already set!\n            return;\n        }",
+      "before_sha256": "544032cc8c520cf4cb08413d9b9e3b3b36a989a490e2847668373ee638cd31ed",
+      "after_sha256": "b763f52e5f2d1db624c302732d9e415547713b013b438d422ddcd6f8e55a073e"
+    },
+    {
+      "path": "src/state.rs",
+      "before": "        if let Some(previous_versioned_value) = self.get_versioned(&key) {\n            if previous_versioned_value.value == value\n                && matches!(\n                    previous_versioned_value.status,\n                    DeletionStatus::DeleteAfterTtl(_)\n                )\n            {\n                // No need to change anything, the value is already set!\n                return;\n            }\n        }",
+      "after": "        if let Some(previous_versioned_value) = self.get_versioned(&key)\n            && previous_versioned_value.value == value\n            && matches!(\n                previous_versioned_value.status,\n                DeletionStatus::DeleteAfterTtl(_)\n            )\n        {\n            // No need to change anything, the value is already set!\n            return;\n        }",
+      "before_sha256": "b752fe480aaf7386adc33e553c6dc79ac6aef5be903beff1b52fdbe7fda37cbf",
+      "after_sha256": "f8d11b4da53b867203f5b541d981b01178c2b2b8b119b9f0932c2b6c87254c46"
+    },
+    {
+      "path": "src/transport/channel.rs",
+      "before": "        if let Some(mtu) = self.mtu_opt {\n            if num_bytes > mtu {\n                bail!(\"Serialized message size exceeds MTU.\");\n            }\n        }",
+      "after": "        if let Some(mtu) = self.mtu_opt\n            && num_bytes > mtu\n        {\n            bail!(\"Serialized message size exceeds MTU.\");\n        }",
+      "before_sha256": "9418ae7b55861c19c37175ae4997229ec9c4e1b779e60e300277e21d453ba730",
+      "after_sha256": "5d89dd8b51f62aa1215806f446bbd74b0de733c1c58927f8a4551e3f8d770143"
+    },
+    {
+      "path": "src/transport/channel.rs",
+      "before": "        if let Some(to_addrs) = inner_lock.removed_links.get(&from_addr) {\n            if to_addrs.contains(&to_addr) {\n                return Ok(());\n            }\n        }",
+      "after": "        if let Some(to_addrs) = inner_lock.removed_links.get(&from_addr)\n            && to_addrs.contains(&to_addr)\n        {\n            return Ok(());\n        }",
+      "before_sha256": "f1ab8dc3e63687ccf64e17e4658479528936b8406b720cf246c58b96417da1c1",
+      "after_sha256": "5b12ee6c93bfa8f7190e04a61f8e4bda333b89e0261e470170d6e13672df75f8"
+    },
+    {
+      "path": "src/lib.rs",
+      "before": "        if was_reset_triggered {\n            if let Some(catchup_callback) = &self.config.catchup_callback {\n                info!(\"executing catch-up callback\");\n                catchup_callback();\n            }\n        }",
+      "after": "        if was_reset_triggered && let Some(catchup_callback) = &self.config.catchup_callback {\n            info!(\"executing catch-up callback\");\n            catchup_callback();\n        }",
+      "before_sha256": "a04c4f2fe6f10c35bc9a81fcc0143af63b384cfc8b7ed4b6c556b22a958636ab",
+      "after_sha256": "5cc1d2c5ed137ecc16f967fc878d41c9a99a096f6676a35d97fc3df121046567"
+    },
+    {
+      "path": "src/lib.rs",
+      "before": "                    if let Some(liveness_extra_predicate) = &self.config.extra_liveness_predicate {\n                        if !liveness_extra_predicate(node_state) {\n                            return None;\n                        }\n                    }",
+      "after": "                    if let Some(liveness_extra_predicate) = &self.config.extra_liveness_predicate\n                        && !liveness_extra_predicate(node_state)\n                    {\n                        return None;\n                    }",
+      "before_sha256": "ac5f18c87eef2e0c1fa8a3b686123293c4a2f5a592054065fe6369f5a5939e98",
+      "after_sha256": "981a75ca41ed17a44c23c7caa7360bce29058b21849bd5b2a5dfa7056eb232b8"
+    }
+  ],
+  "review": {
+    "short_circuit_order": "unchanged outer condition then inner condition, once each",
+    "conditional_effects": "gossip await/log, state early return, MTU bail, removed-link return, catchup callback, liveness predicate unchanged",
+    "drop_order": "outer bindings are Copy scalars or shared references; error object is dropped after the same log; no extra intervening statements",
+    "serialization": "src/serialize.rs stays byte-exact U",
+    "public_signatures": "unchanged",
+    "lint_allowances_added": false,
+    "msrv": "1.88"
+  }
+}

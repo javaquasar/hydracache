@@ -1,0 +1,4 @@
+HC074_PACKAGE: interpreter entered command
+HC074_PACKAGE: common imports ready
+    Checking hydra-chitchat v0.11.1-hydra.1 (/home/artur/.cache/hydracache-074-package/20261030-a5/extracted)
+    Finished `release` profile [optimized] target(s) in 2.85s

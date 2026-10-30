@@ -1,0 +1,6 @@
+{
+  "complete": false,
+  "reason": "existing upstream server.rs where-clause formatting",
+  "command": "rustfmt --edition 2024 --config skip_children=true --check four changed files",
+  "native_or_cargo_started": false
+}

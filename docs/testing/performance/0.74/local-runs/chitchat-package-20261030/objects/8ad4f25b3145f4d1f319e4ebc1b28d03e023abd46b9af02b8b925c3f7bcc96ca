@@ -1,0 +1,7 @@
+{
+  "complete": false,
+  "type": "TypeError",
+  "reason": "dict() got multiple values for keyword argument 'style_sites'",
+  "stage": "stdout summary after all source/receipt writes",
+  "native_or_cargo_started": false
+}

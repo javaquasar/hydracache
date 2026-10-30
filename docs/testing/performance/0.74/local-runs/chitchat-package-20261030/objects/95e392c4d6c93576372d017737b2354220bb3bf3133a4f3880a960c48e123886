@@ -1,0 +1,6 @@
+HC074_PACKAGE: interpreter entered command
+HC074_PACKAGE: common imports ready
+error: failed to parse manifest at `/home/artur/.cache/hydracache-074-package/20261030-a2/source/Cargo.toml`
+
+Caused by:
+  cannot specify `resolver` field in both `[workspace]` and `[package]`

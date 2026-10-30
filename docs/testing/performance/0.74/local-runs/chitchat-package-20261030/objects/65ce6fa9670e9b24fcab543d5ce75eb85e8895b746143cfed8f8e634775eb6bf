@@ -1,0 +1,167 @@
+HC074_PACKAGE: interpreter entered command
+HC074_PACKAGE: common imports ready
+    Checking hydra-chitchat v0.11.1-hydra.1 (/home/artur/.cache/hydracache-074-package/20261030-a3/extracted)
+error: this `if` statement can be collapsed
+   --> src/server.rs:329:9
+    |
+329 | /         if let Some(random_dead_node) = random_dead_node_opt {
+330 | |             if let Err(error) = self.gossip(random_dead_node).await {
+331 | |                 debug!(error=?error, node_address=%random_dead_node, "Failed to gossip with dead node.");
+332 | |             }
+333 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#collapsible_if
+    = note: `-D clippy::collapsible-if` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+    |
+329 ~         if let Some(random_dead_node) = random_dead_node_opt
+330 ~             && let Err(error) = self.gossip(random_dead_node).await {
+331 |                 debug!(error=?error, node_address=%random_dead_node, "Failed to gossip with dead node.");
+332 ~             }
+    |
+
+error: this `if` statement can be collapsed
+   --> src/server.rs:334:9
+    |
+334 | /         if let Some(random_seed_node) = random_seed_node_opt {
+335 | |             if let Err(error) = self.gossip(random_seed_node).await {
+336 | |                 warn!(error=?error, node_address=%random_seed_node, "Failed to gossip with seed node.");
+337 | |             }
+338 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+334 ~         if let Some(random_seed_node) = random_seed_node_opt
+335 ~             && let Err(error) = self.gossip(random_seed_node).await {
+336 |                 warn!(error=?error, node_address=%random_seed_node, "Failed to gossip with seed node.");
+337 ~             }
+    |
+
+error: this `if` statement can be collapsed
+   --> src/state.rs:286:9
+    |
+286 | /         if let Some(previous_versioned_value) = self.get_versioned(&key) {
+287 | |             if previous_versioned_value.value == value
+288 | |                 && matches!(previous_versioned_value.status, DeletionStatus::Set)
+...   |
+293 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+286 ~         if let Some(previous_versioned_value) = self.get_versioned(&key)
+287 ~             && previous_versioned_value.value == value
+288 |                 && matches!(previous_versioned_value.status, DeletionStatus::Set)
+...
+291 |                 return;
+292 ~             }
+    |
+
+error: this `if` statement can be collapsed
+   --> src/state.rs:303:9
+    |
+303 | /         if let Some(previous_versioned_value) = self.get_versioned(&key) {
+304 | |             if previous_versioned_value.value == value
+305 | |                 && matches!(
+306 | |                     previous_versioned_value.status,
+...   |
+313 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+303 ~         if let Some(previous_versioned_value) = self.get_versioned(&key)
+304 ~             && previous_versioned_value.value == value
+305 |                 && matches!(
+...
+311 |                 return;
+312 ~             }
+    |
+
+error: this `if` statement can be collapsed
+   --> src/transport/channel.rs:108:9
+    |
+108 | /         if let Some(mtu) = self.mtu_opt {
+109 | |             if num_bytes > mtu {
+110 | |                 bail!("Serialized message size exceeds MTU.");
+111 | |             }
+112 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+108 ~         if let Some(mtu) = self.mtu_opt
+109 ~             && num_bytes > mtu {
+110 |                 bail!("Serialized message size exceeds MTU.");
+111 ~             }
+    |
+
+error: this `if` statement can be collapsed
+   --> src/transport/channel.rs:115:9
+    |
+115 | /         if let Some(to_addrs) = inner_lock.removed_links.get(&from_addr) {
+116 | |             if to_addrs.contains(&to_addr) {
+117 | |                 return Ok(());
+118 | |             }
+119 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+115 ~         if let Some(to_addrs) = inner_lock.removed_links.get(&from_addr)
+116 ~             && to_addrs.contains(&to_addr) {
+117 |                 return Ok(());
+118 ~             }
+    |
+
+error: this `if` statement can be collapsed
+   --> src/lib.rs:129:9
+    |
+129 | /         if was_reset_triggered {
+130 | |             if let Some(catchup_callback) = &self.config.catchup_callback {
+131 | |                 info!("executing catch-up callback");
+132 | |                 catchup_callback();
+133 | |             }
+134 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+129 ~         if was_reset_triggered
+130 ~             && let Some(catchup_callback) = &self.config.catchup_callback {
+131 |                 info!("executing catch-up callback");
+132 |                 catchup_callback();
+133 ~             }
+    |
+
+error: this `if` statement can be collapsed
+   --> src/lib.rs:248:21
+    |
+248 | /                     if let Some(liveness_extra_predicate) = &self.config.extra_liveness_predicate {
+249 | |                         if !liveness_extra_predicate(node_state) {
+250 | |                             return None;
+251 | |                         }
+252 | |                     }
+    | |_____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+248 ~                     if let Some(liveness_extra_predicate) = &self.config.extra_liveness_predicate
+249 ~                         && !liveness_extra_predicate(node_state) {
+250 |                             return None;
+251 ~                         }
+    |
+
+error: could not compile `hydra-chitchat` (lib) due to 8 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `hydra-chitchat` (lib test) due to 8 previous errors
