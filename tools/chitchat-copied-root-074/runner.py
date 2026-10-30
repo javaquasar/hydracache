@@ -1,5 +1,5 @@
 """Focused actual package lanes in private copies, never the old full V6 gate."""
-import json,os,re,subprocess,sys,time,traceback
+import hashlib,json,os,re,shutil,subprocess,sys,time,traceback
 from pathlib import Path
 import root_context as s
 c=s.c;m=s.m;OUT=None
@@ -34,27 +34,43 @@ def git(v,label,args,env,deadline,mutate=False):
     argv=['/usr/bin/git','-c','core.hooksPath=/dev/null','-c','commit.gpgsign=false','-c','user.name=HydraCache Copied Root Diagnostic','-c','user.email=diagnostic@invalid','-C',str(s.N/'copies'/v),*args]
     return invoke(label,argv,env,deadline,mutate=mutate)
 
+def git_tree(raw,files):
+    """Compare actual committed blobs with all canonical source, not HEAD text."""
+    rows={}
+    for record in raw.split(b'\0'):
+        if not record:continue
+        head,name=record.split(b'\t',1);mode,kind,digest=head.split(b' ')
+        c.need(mode==b'100644' and kind==b'blob','regular canonical Git source mode')
+        name=name.decode();c.need(name not in rows,'no duplicate committed source');rows[name]=digest.decode()
+    expected={n:hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest() for n,b in files.items()}
+    c.need(rows==expected,'every actual committed source blob equals held canonical source')
+
 def stage(env,deadline):
     c.need(not s.N.exists(),'exclusive copied Root directory');s.N.mkdir(parents=True,mode=0o700)
     source=m.codec().unpack((s.INPUT/'source.tar').read_bytes(),'hc074-copied-root',True);expected=json.loads((s.INPUT/'source-map.json').read_bytes())
     c.need({n:c.sha(b) for n,b in source.items()}==expected,'whole canonical frozen Root source archive')
     proposal=json.loads((s.INPUT/'proposal.json').read_bytes())
     for v in ('B','O'):
+        before=s.source();head=c.snapshot();s.capacity()
         files=dict(source);files['Cargo.toml']=s.variant(source['Cargo.toml'],proposal,v)
-        root=s.N/'copies'/v
-        for name,body in files.items():
-            path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(body)
+        root=s.N/'copies'/v;donor=s.DONOR/'copies'/v
+        for base,dirs,names in os.walk(donor,followlinks=False):
+            for name in dirs+names:
+                p=Path(base)/name;c.need(not p.is_symlink(),'regular contained donor source/Git data')
+        actual=c.tree(donor);expected={n:c.sha(b) for n,b in files.items()}
+        c.need({n:h for n,h in actual.items() if not n.startswith('.git/')}==expected,'whole exact failed-context donor source, no product execution')
+        shutil.copytree(donor,root);c.need(c.tree(donor)==actual==c.tree(root),'whole read-only donor and exact exclusive copied bytes')
         c.write(s.BASE/'state','staged-'+v+'.json',{n:c.sha(b) for n,b in files.items()})
+        c.need(s.source()==before and c.snapshot()==head,'whole original source/ref frame around private copy effect');s.capacity()
     (s.N/'cargo-home').mkdir();reference=json.loads((s.INPUT/'registry-reference.json').read_bytes())
     config='[source.crates-io]\nreplace-with="copied-root-reviewed"\n[source.copied-root-reviewed]\ndirectory="'+s.VENDOR.as_posix()+'"\n[registries.hc074-draft]\nindex="'+reference['registry'].removeprefix('registry+')+'"\n'
     (s.N/'cargo-home/config.toml').write_text(config,encoding='utf8');c.write(s.BASE/'state','config.json',dict(sha256=c.sha(config.encode())))
     s.actual();mirror(deadline)
     for v in ('B','O'):
-        git(v,'init-'+v,['init','--template=','--initial-branch=main'],env,deadline)
-        git(v,'add-'+v,['add','--force','--','.'],env,deadline)
-        out=git(v,'commit-'+v,['commit','--quiet','-m','private copied Root source fixture, not product identity'],env,deadline)
-        out=git(v,'head-'+v,['rev-parse','HEAD'],env,deadline)
-        c.write(s.BASE/'state','git-staged-'+v+'.json',dict(synthetic_fixture_commit=(out/'stdout.log').read_bytes().decode().strip(),product_identity=False,
+        out=git(v,'committed-source-'+v,['ls-tree','-r','-z','HEAD'],env,deadline)
+        files=dict(source);files['Cargo.toml']=s.variant(source['Cargo.toml'],proposal,v);git_tree((out/'stdout.log').read_bytes(),files)
+        root=s.N/'copies'/v;c.need((root/'.git/HEAD').read_bytes()==b'ref: refs/heads/main\n','same independent synthetic branch')
+        c.write(s.BASE/'state','git-staged-'+v+'.json',dict(synthetic_fixture_commit=(root/'.git/refs/heads/main').read_bytes().decode().strip(),product_identity=False,
             config_sha256=c.sha((s.N/'copies'/v/'.git/config').read_bytes())))
 
 def metadata(tool,env,deadline):
@@ -108,7 +124,7 @@ def lane(action,v,compiler,short,tool,env,deadline):
     if action in ('check','lint'):
         argv+=['--all-targets','--all-features']
         if action=='lint':argv+=['--','-D','warnings']
-    else:argv+=['--lib','--tests','--all-features','--no-fail-fast','--message-format=json','--','--test-threads=4']
+    else:argv+=['--tests','--all-features','--no-fail-fast','--message-format=json','--','--test-threads=4']
     out=invoke('cargo-'+action,argv,env,deadline,cwd=root)
     if action=='test':
         result=test_outcome((out/'stdout.log').read_bytes());c.write(out,'test-review.json',result)

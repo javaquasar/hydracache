@@ -69,6 +69,19 @@ This does not reopen a1 or lower either disk floor. All remaining lanes retain
 their original commands, ordering, guards and deadlines. Sixteen pure controls
 cover the original thirteen cases, context separation and forged-mirror refusal.
 
+a2 subsequently also hit the physical floor after seven successful source-only
+Git fixture commands, before Cargo. Preserve its STOP and absent inner result.
+The read-only disk audit records concurrent large0.75 output; it is not changed.
+After further old0.74-cache retirement, distinct a3 borrows complete a2 source/
+Git data read-only, makes exact new copies under full source/ref effect frames,
+and checks every actual committed blob against all canonical inputs with bounded
+`ls-tree`. It does not replay completed init/add/commit effects or admit a failed
+stage. An additional corruption control covers wrong/missing/duplicate Git blobs
+and non-regular modes. Full Root caller success still requires a fresh completed
+a3 stage, metadata and the exact package lanes. Binary-only sandbox selects
+`--tests` (all library/binary unit and integration targets), without a nonexistent
+explicit `--lib` target. No Cargo test from an earlier attempt ran or is rewritten.
+
 Coherent copied-Root success is a local prerequisite, not public-registry, fresh
 whole-Root security/workspace/platform, MTU/resource/performance or production
 lifecycle/reconnect/trust/compatible-host qualification. Retain exact source,

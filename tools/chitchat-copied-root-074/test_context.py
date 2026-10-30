@@ -57,5 +57,11 @@ class Controls(unittest.TestCase):
     def test_mirror_changed_archive_refuses(self):
         raw=s.m.codec().pack({'src/lib.rs':b'original'},'example-1');values={'src/lib.rs':c.sha(b'original')}
         with self.assertRaises(ValueError):s.verify_mirror(raw,'example-1','0'*64,values,dict(files=values,package='0'*64))
+    def test_actual_committed_blobs_must_match_every_canonical_source(self):
+        import hashlib
+        r=self.runner();files={'src/lib.rs':b'original'};digest=hashlib.sha1(b'blob 8\0original').hexdigest().encode()
+        raw=b'100644 blob '+digest+b'\tsrc/lib.rs\0';r.git_tree(raw,files)
+        for bad in (raw.replace(digest,b'0'*40),raw+raw,raw.replace(b'100644',b'120000'),b''):
+            with self.assertRaises(ValueError):r.git_tree(bad,files)
 
 if __name__=='__main__':unittest.main(verbosity=2)

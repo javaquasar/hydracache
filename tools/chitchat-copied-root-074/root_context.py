@@ -5,9 +5,11 @@ ROOT=Path(__file__).resolve().parents[2];HERE=Path(__file__).resolve().parent
 sys.path.insert(0,str(ROOT/'tools/chitchat-public-identity-074'));import contract as abi
 c=abi.c;m=abi.m;prior=abi.prior
 FIRST=ROOT/'target/chitchat-copied-root-20261030'
-BASE=ROOT/'target/chitchat-copied-root-20261030-r2'
+SECOND=ROOT/'target/chitchat-copied-root-20261030-r2'
+BASE=ROOT/'target/chitchat-copied-root-20261030-r3'
 INPUT=FIRST/'input'
-N=Path('/home/artur/.cache/hydracache-074-copied-root/20261030-a2')
+N=Path('/home/artur/.cache/hydracache-074-copied-root/20261030-a3')
+DONOR=Path('/home/artur/.cache/hydracache-074-copied-root/20261030-a2')
 VENDOR=Path('/home/artur/.cache/hydracache-074-copied-root/20261030-a1/vendor')
 PACKET=ROOT/'docs/testing/performance/0.74/local-runs/chitchat-public-identity-20261030'
 PARENT_SHA='06ce2017ce7e2c0b9474914cc134025d95dcb2b2dd0ab8a6892ee87d7b4e8454'
@@ -121,6 +123,11 @@ def prepare():
     c.need(owner['classification']=='resource-floor' and owner['exit']==125 and owner['retired'],'retained first resource refusal')
     c.need((FIRST/'STOP.json').is_file() and not (FIRST/'native/stage/session-result.json').exists(),'no invented first inner result')
     c.need(not (FIRST/'native/stage/init-B').exists(),'first attempt did not invoke Git or Cargo')
+    owner2=json.loads((SECOND/'native/stage/execution.json').read_bytes())
+    c.need(owner2['classification']=='resource-floor' and owner2['exit']==125 and owner2['retired'] and (SECOND/'STOP.json').is_file(),'retained second capacity refusal')
+    for label in ('init-B','add-B','commit-B','head-B','init-O','add-O','commit-O'):
+        row=json.loads((SECOND/'native/stage'/label/'execution.json').read_bytes())
+        c.need(row['exit']==0 and row['retired'] and not row['errors'],'complete original source-only fixture command')
     BASE.mkdir(exist_ok=True);(BASE/'input').mkdir();(BASE/'state').mkdir()
     ledger=json.loads((INPUT/'registry.json').read_bytes())
     for name,digest in ledger.items():c.need(c.sha((INPUT/'archives'/(name+'.crate')).read_bytes())==digest,'whole held official Root input')
@@ -130,6 +137,7 @@ def prepare():
     c.need((ROOT/'Cargo.toml').read_bytes()==raw['Cargo.toml'] and (ROOT/'Cargo.lock').read_bytes()==raw['Cargo.lock'],'same unchanged actual Root')
     c.write(BASE/'input','reuse.json',dict(first_context=str(FIRST),first_owner_sha256=c.sha((FIRST/'native/stage/execution.json').read_bytes()),
         input={p.relative_to(INPUT).as_posix():c.sha(p.read_bytes()) for p in INPUT.rglob('*') if p.is_file()},
-        vendor=str(VENDOR),first_refusal_retained=True,retry_to_pass=False,root_adopted=False))
+        vendor=str(VENDOR),git_source_donor=str(DONOR),second_owner_sha256=c.sha((SECOND/'native/stage/execution.json').read_bytes()),
+        first_refusal_retained=True,retry_to_pass=False,root_adopted=False))
     print(json.dumps(dict(complete=True,read_only_archives=len(ledger),source_files=len(expected),native_context=str(N),root_adopted=False)))
     return
