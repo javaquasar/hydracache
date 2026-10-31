@@ -337,32 +337,11 @@ pub fn prepare_tools(
     use crate::imap_build_process_075::{BuildController, BuildStage};
     let mut builds = BuildController::new(root)?;
     let mut capture = crate::imap_sbom_capture_075::Capture::start(root, &mut builds)?;
-    // Cargo's integration-test build provides CARGO_BIN_EXE_hydracache-server for
-    // hc2_daemon_process; avoid a separate build with a different dev-feature union.
-    command(
-        &mut builds,
-        &mut capture,
-        root,
-        BuildStage::ServerTests,
-        "cargo",
-        &[
-            "test",
-            "-p",
-            "hydracache-server",
-            "--test",
-            "imap_dispatch_characterization_075",
-            "--test",
-            "hc2_daemon_process",
-            "--locked",
-        ],
-    )?;
-    reference_tool_builds(
-        root,
-        &mut ActualPreparation {
-            builds: &mut builds,
-            capture: &mut capture,
-        },
-    )?;
+    let mut rust = ActualPreparation {
+        builds: &mut builds,
+        capture: &mut capture,
+    };
+    prepare_rust_tools(root, &mut rust)?;
     let maven = if cfg!(windows) { "mvn.cmd" } else { "mvn" };
     command(
         &mut builds,
@@ -1136,6 +1115,31 @@ impl PreparationCommands for ActualPreparation<'_> {
     fn consumer(&mut self, root: &Path) -> Result<(), Box<dyn Error>> {
         rust_consumer(root, self.builds, self.capture)
     }
+}
+fn prepare_rust_tools(
+    root: &Path,
+    host: &mut impl PreparationCommands,
+) -> Result<(), Box<dyn Error>> {
+    use crate::imap_build_process_075::BuildStage;
+    // Cargo's integration-test build provides CARGO_BIN_EXE_hydracache-server for
+    // hc2_daemon_process; avoid a separate build with a different dev-feature union.
+    host.command(
+        root,
+        BuildStage::ServerTests,
+        "cargo",
+        &[
+            "test",
+            "-p",
+            "hydracache-server",
+            "--test",
+            "imap_dispatch_characterization_075",
+            "--test",
+            "hc2_daemon_process",
+            "--locked",
+        ],
+    )?;
+    reference_tool_builds(root, host)?;
+    Ok(())
 }
 fn reference_tool_builds(
     root: &Path,

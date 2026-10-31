@@ -196,3 +196,61 @@ fn independent_policy_replay_keeps_unknown_and_refuses_raw_or_state_substitution
     fs::write(&file, b"unit").unwrap();
     assert!(capture_policy(&file, root.path()).is_err());
 }
+
+#[test]
+fn independent_policy_replay_matches_failed_incomplete_and_complete_transport_outcomes() {
+    use crate::imap_build_process_075::{BuildError, BuildOutcome};
+    for mode in 0..7 {
+        let root = tempfile::tempdir().unwrap();
+        let stderr: &[u8] = if mode == 0 {
+            b"{\"fields\":{\"severity\":\"error\",\"code\":\"vulnerability\"}}\n"
+        } else {
+            b"{\"type\":\"summary\"}\n"
+        };
+        let mut report = policy_report(root.path(), stderr);
+        match mode {
+            0 => report.outcome = BuildOutcome::Failed,
+            1 => report.remaining_live_members = Some(1),
+            2 => report.remaining_live_members = None,
+            3 => report.root_reaped = false,
+            4 => report.logs_complete = false,
+            5 => report.outcome = BuildOutcome::TimedOut,
+            _ => {}
+        }
+        let outcome = if matches!(
+            report.outcome,
+            BuildOutcome::Failed | BuildOutcome::TimedOut
+        ) {
+            Err(BuildError {
+                report: Box::new(report),
+                detail: "unit policy transport; no scanner or child".into(),
+            })
+        } else {
+            Ok(report)
+        };
+        let policy = policy_from_outcome(root.path(), root.path(), outcome).unwrap();
+        assert_eq!(policy.java_state, PolicyState::Unknown);
+        assert_eq!(
+            policy.rust_state,
+            match mode {
+                0 => PolicyState::Failed,
+                6 => PolicyState::Passed,
+                _ => PolicyState::Unknown,
+            }
+        );
+        assert_eq!(
+            policy.state,
+            if mode == 0 {
+                PolicyState::Failed
+            } else {
+                PolicyState::Unknown
+            }
+        );
+        verify_policy(root.path(), &policy).unwrap();
+        let mut promoted = policy;
+        promoted.state = PolicyState::Passed;
+        assert!(verify_policy(root.path(), &promoted).is_err());
+        assert!(!root.path().join("provenance.json").exists());
+        assert!(!root.path().join("report.json").exists());
+    }
+}

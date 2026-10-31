@@ -1952,3 +1952,42 @@ fn missing_java_xml_execution_jar_or_build_material_never_publishes_a_session() 
         assert!(!directory.join("report.json").exists());
     }
 }
+
+#[test]
+fn public_help_lists_preparation_inventory_and_coverage_commands_without_running_workloads() {
+    use xtask::imap_proof_process_075::{execute, ProcessBounds};
+    for option in [None, Some("-h"), Some("--help")] {
+        let mut command = Command::new(env!("CARGO_BIN_EXE_xtask"));
+        if let Some(option) = option {
+            command.arg(option);
+        }
+        let result = execute(
+            command,
+            &[],
+            ProcessBounds {
+                timeout: std::time::Duration::from_secs(15),
+                stdout_bytes: 64 * 1024,
+                stderr_bytes: 8192,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert!(result.status.success());
+        assert!(result.direct_child_reaped);
+        assert_eq!(result.remaining_live_members, 0);
+        assert_eq!(result.io_threads, 0);
+        assert!(result.stderr.is_empty());
+        let text = String::from_utf8(result.stdout).unwrap();
+        for entry in [
+            "imap-pre074-tools --release 0.75",
+            "imap-pre074-evidence --release 0.75",
+            "imap-pre074-evidence-check --release 0.75",
+            "imap-sbom --release 0.75",
+            "imap-sbom-check --release 0.75",
+            "imap-coverage-capture --release 0.75",
+            "imap-coverage-check --release 0.75",
+        ] {
+            assert!(text.contains(entry), "missing help entry: {entry}");
+        }
+    }
+}

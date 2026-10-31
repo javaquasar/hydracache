@@ -25,7 +25,7 @@ impl PreparationCommands for Driver {
         assert_eq!(program, "cargo");
         assert!(matches!(
             stage,
-            BuildStage::HelperContractTests | BuildStage::SoakWorkerBuild
+            BuildStage::ServerTests | BuildStage::HelperContractTests | BuildStage::SoakWorkerBuild
         ));
         assert!(args.contains(&"--locked"));
         self.step()
@@ -123,4 +123,24 @@ fn retained_inventory_missing_inputs_and_conflicts_never_overwrite_existing_byte
         b"unit bytes; not provenance"
     );
     assert!(!root.path().join("receipt.json").exists());
+}
+
+#[test]
+fn rust_preparation_propagates_every_build_refusal_before_java_or_receipt_publication() {
+    for fail_at in 1..=4 {
+        let root = tempfile::tempdir().unwrap();
+        let mut host = Driver { calls: 0, fail_at };
+        let error = prepare_rust_tools(root.path(), &mut host).unwrap_err();
+        assert_eq!(error.to_string(), "unit preparation command refused");
+        assert_eq!(host.calls, fail_at);
+        assert_eq!(fs::read_dir(root.path()).unwrap().count(), 0);
+    }
+    let root = tempfile::tempdir().unwrap();
+    let mut host = Driver {
+        calls: 0,
+        fail_at: usize::MAX,
+    };
+    prepare_rust_tools(root.path(), &mut host).unwrap();
+    assert_eq!(host.calls, 4);
+    assert_eq!(fs::read_dir(root.path()).unwrap().count(), 0);
 }

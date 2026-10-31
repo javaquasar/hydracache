@@ -1616,7 +1616,7 @@ fn verify_policy(root: &Path, policy: &Policy) -> Result<()> {
     }
     let rust = policy_state(
         report.outcome == crate::imap_build_process_075::BuildOutcome::Completed,
-        report.logs_complete && report.root_reaped,
+        report.logs_complete && report.root_reaped && report.remaining_live_members == Some(0),
         stderr.as_bytes(),
     );
     if serde_json::to_value(&rust)? != raw["rust_state"]
