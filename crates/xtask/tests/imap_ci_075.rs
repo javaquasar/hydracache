@@ -5,6 +5,34 @@ use xtask::imap_ci_075::*;
 use xtask::imap_qualification_075::digest;
 const WORKFLOW: &str = include_str!("../../../.github/workflows/imap-075.yml");
 #[test]
+fn ci_bootstrap_uses_only_the_declared_hashing_overrides_and_preserves_the_lane_command() {
+    let workflow: serde_yaml::Value = serde_yaml::from_str(WORKFLOW).unwrap();
+    let steps = workflow["jobs"]["qualification"]["steps"]
+        .as_sequence()
+        .unwrap();
+    let run = steps
+        .iter()
+        .find(|step| step["name"].as_str() == Some("Run bounded local proofs"))
+        .unwrap()["run"]
+        .as_str()
+        .unwrap();
+    let command = run
+        .lines()
+        .find(|line| line.trim_start().starts_with("cargo "))
+        .unwrap()
+        .trim();
+    let prefix = "cargo --config 'profile.dev.package.\"sha2@0.11.0\".opt-level=3' --config 'profile.test.package.\"sha2@0.11.0\".opt-level=3' ";
+    assert!(command.starts_with(prefix));
+    assert_eq!(command.matches("--config").count(), 2);
+    assert!(command.strip_prefix(prefix).unwrap().starts_with("xtask imap-ci-run --release 0.75 --mode '${{ needs.plan.outputs.mode }}' --rust '${{ matrix.rust }}' --java '${{ matrix.java }}' --shard '${{ matrix.shard }}' --output "));
+    assert!(command.ends_with("2>&1 | tee target/imap-075/ci/lane.log"));
+    assert_eq!(
+        workflow["jobs"]["qualification"]["timeout-minutes"].as_u64(),
+        Some(45)
+    );
+    check_workflow(&root()).unwrap();
+}
+#[test]
 fn closed_075_registry_extension_refuses_foreign_metadata_and_missing_workflow() {
     use serde_json::json;
     let root = tempfile::tempdir().unwrap();

@@ -55,7 +55,10 @@ dispatch with unqualified measurements; publication retains the verdict verbatim
 and the real checker refuses those fixtures.
 The v2 policy/profile records also bind two code-chosen Cargo overrides: only
 `sha2@0.11.0` is optimized at level 3 in this isolated dev/test measurement build.
-Scoped implementation crates retain their unoptimized coverage maps. This avoids
+Scoped implementation crates retain their unoptimized coverage maps. The ordinary CI bootstrap
+also passes these same two package overrides, so its repeated inventory and raw-input
+hashing uses the declared measurement hashing profile. The 45-minute job, 43-minute
+harness deadline, scoped crate optimization levels and every workload remain unchanged. This avoids
 spending the analysis budget on debug-mode hashing of multi-gigabyte evidence;
 artifact contents, source checks and the zero-uncovered-line gate remain required.
 The first actual capture observed 33–50 MiB profiles for this large development

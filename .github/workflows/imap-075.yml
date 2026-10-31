@@ -64,7 +64,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p target/imap-075/ci
-          cargo xtask imap-ci-run --release 0.75 --mode '${{ needs.plan.outputs.mode }}' --rust '${{ matrix.rust }}' --java '${{ matrix.java }}' --shard '${{ matrix.shard }}' --output 'target/imap-075/ci/ci-receipt-${{ matrix.rust }}-${{ matrix.java }}-${{ matrix.shard }}.json' 2>&1 | tee target/imap-075/ci/lane.log
+          cargo --config 'profile.dev.package."sha2@0.11.0".opt-level=3' --config 'profile.test.package."sha2@0.11.0".opt-level=3' xtask imap-ci-run --release 0.75 --mode '${{ needs.plan.outputs.mode }}' --rust '${{ matrix.rust }}' --java '${{ matrix.java }}' --shard '${{ matrix.shard }}' --output 'target/imap-075/ci/ci-receipt-${{ matrix.rust }}-${{ matrix.java }}-${{ matrix.shard }}.json' 2>&1 | tee target/imap-075/ci/lane.log
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         if: always()
         with:

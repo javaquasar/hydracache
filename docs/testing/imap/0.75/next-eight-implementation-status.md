@@ -362,3 +362,26 @@ all-target checks and strict Clippy. The public CLI help test exercises no-arg,
 physical reap. The coverage suite passed 40 default/41 instrumented tests,
 all-target checks and strict Clippy. Fresh candidate qualification still requires
 the complete source-bound Windows capture and Linux matrix/collector after commit.
+At d810af56b304293f4989fdf8c11237c319c986a1 the full Windows capture and a
+separate public imap-coverage-check both passed: 8777/8777 added executable
+lines, zero uncovered, qualification=true. The final report binds 235 scoped
+sources and 169 raw profiles. Report SHA-256 is
+db8c3154f9ba277e7a1522e6a39adf4b9c85205132892bdc4ba424af9b4d55a9;
+reconstructed Rust LCOV SHA-256 is
+de12062094971092c5d318d1b21b7cfc4833b3e427e308cc376980e4731e24b7.
+All current qualified raw/object paths are retained intact. HC/2 passed.
+Linux Rust 1.94/Java 17 and Rust 1.88/Java 21 passed their full exact-source
+lanes. Rust 1.94/Java 21 completed coverage but refused an insufficient
+continuous-soak budget in late P7 replay; Rust 1.88/Java 17 was cancelled at
+the job limit during late P7 replay. The complete matrix/P8 was not qualified.
+
+The normal CI bootstrap had not used the two existing sha2@0.11.0 package
+optimization overrides already fixed by the coverage profile and Windows
+controller. It now supplies precisely those dev/test level-3 hashing overrides;
+all scoped crates remain unoptimized. No workload, source binding, test, output
+limit, 45-minute job or 43-minute harness deadline is removed or extended.
+The exact bootstrap invocation and lane arguments have a contract test. Both
+modes passed 13 CI contract, 12 reliability and 40/41 coverage tests, all-target
+checks and strict Clippy. The actual configured Cargo alias also ran --help
+successfully. Fresh source-bound Windows and complete CI qualification remain
+required after this workflow-only configuration correction.
