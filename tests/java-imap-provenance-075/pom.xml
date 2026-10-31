@@ -1,0 +1,16 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion><groupId>io.hydracache.test</groupId><artifactId>java-imap-provenance-075</artifactId><version>0.75.0-SNAPSHOT</version>
+  <properties><maven.compiler.release>17</maven.compiler.release><project.build.sourceEncoding>UTF-8</project.build.sourceEncoding><project.build.outputTimestamp>2026-10-29T00:00:00Z</project.build.outputTimestamp></properties>
+  <licenses><license><name>Apache License, Version 2.0</name><url>https://www.apache.org/licenses/LICENSE-2.0</url></license></licenses>
+  <dependencies>
+    <dependency><groupId>org.apache.maven</groupId><artifactId>maven-core</artifactId><version>3.9.11</version><scope>provided</scope></dependency>
+    <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>5.14.1</version><scope>test</scope></dependency>
+    <dependency><groupId>org.jacoco</groupId><artifactId>org.jacoco.cli</artifactId><version>0.8.13</version><classifier>nodeps</classifier><scope>test</scope></dependency>
+  </dependencies>
+  <build><plugins>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.14.1</version></plugin>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.4</version><configuration><argLine>@{argLine} -Xms16m -Xmx256m -XX:ActiveProcessorCount=2 -XX:ReservedCodeCacheSize=32m -XX:CompressedClassSpaceSize=64m -XX:ErrorFile=${project.build.directory}/jvm-%p.log</argLine><failIfNoTests>true</failIfNoTests></configuration></plugin>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId><version>3.4.1</version></plugin>
+    <plugin><groupId>org.jacoco</groupId><artifactId>jacoco-maven-plugin</artifactId><version>0.8.13</version><executions><execution><goals><goal>prepare-agent</goal></goals></execution><execution><id>report</id><phase>test</phase><goals><goal>report</goal></goals></execution><execution><id>provenance-class-coverage</id><phase>test</phase><goals><goal>check</goal></goals><configuration><rules><rule><element>CLASS</element><includes><include>io.hydracache.imap.provenance.*075*</include></includes><limits><limit><counter>LINE</counter><value>COVEREDRATIO</value><minimum>0.80</minimum></limit></limits></rule></rules></configuration></execution></executions></plugin>
+  </plugins></build>
+</project>

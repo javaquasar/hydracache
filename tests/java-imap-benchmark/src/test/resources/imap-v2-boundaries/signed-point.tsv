@@ -1,0 +1,10 @@
+imap-extended-semantic-v2	117	9
+61	advance	~	~	~	9223372036854775806	0
+62	put	6b:31:~:x2	63:1	~	0	0
+63	reserve_put	6b:31:~:x2	63:1	~	0	0
+64	query_outcomes	~	63:1	~	0	0
+65	put	6b:31:~:e	63:1	~	0	0
+66	capture_version	6b:~:76:x9223372036854775807	~	~	0	0
+67	advance	~	~	~	1	0
+68	put	6b:32:~:e	63:2	~	0	0
+69	put	6b:31:~:e	63:1	~	0	0

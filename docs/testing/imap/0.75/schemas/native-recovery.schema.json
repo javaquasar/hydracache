@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hydracache:imap:native-recovery:v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "profile",
+    "artifact_sha256",
+    "accepted_writes",
+    "callbacks_observed",
+    "correlated_writes",
+    "queue_capacity",
+    "gap_before",
+    "old_generation",
+    "new_generation",
+    "baseline_key",
+    "baseline_value",
+    "baseline_digest",
+    "post_event_generation",
+    "post_event_kind",
+    "post_event_key",
+    "post_event_old_value",
+    "post_event_value",
+    "state_after_recovery",
+    "state_after_close",
+    "removed_subscriptions",
+    "client_alive_after_close",
+    "map_value_after_close"
+  ],
+  "properties": {
+    "schema": {
+      "const": "imap075-native-recovery-v1"
+    },
+    "profile": {
+      "const": "controlled_unique_point_writers_queue_overflow"
+    },
+    "artifact_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "accepted_writes": {
+      "const": 8
+    },
+    "callbacks_observed": {
+      "const": 8
+    },
+    "correlated_writes": {
+      "const": 8
+    },
+    "queue_capacity": {
+      "const": 2
+    },
+    "gap_before": {
+      "const": "queue_overflow"
+    },
+    "old_generation": {
+      "const": 1
+    },
+    "new_generation": {
+      "const": 2
+    },
+    "baseline_key": {
+      "const": "61"
+    },
+    "baseline_value": {
+      "const": "07"
+    },
+    "baseline_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "post_event_generation": {
+      "const": 2
+    },
+    "post_event_kind": {
+      "const": "updated"
+    },
+    "post_event_key": {
+      "const": "61"
+    },
+    "post_event_old_value": {
+      "const": "07"
+    },
+    "post_event_value": {
+      "const": "08"
+    },
+    "state_after_recovery": {
+      "const": "healthy"
+    },
+    "state_after_close": {
+      "const": "closed"
+    },
+    "removed_subscriptions": {
+      "const": 2
+    },
+    "client_alive_after_close": {
+      "const": true
+    },
+    "map_value_after_close": {
+      "const": "08"
+    }
+  }
+}

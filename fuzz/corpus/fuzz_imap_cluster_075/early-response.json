@@ -1,0 +1,1 @@
+{"version":1,"steps":[{"kind":"invoke","id":1,"key":"00","operation":"get_and_put","value":"01"},{"kind":"advance","id":1,"phase":"Apply"},{"kind":"advance","id":1,"phase":"Respond"}]}

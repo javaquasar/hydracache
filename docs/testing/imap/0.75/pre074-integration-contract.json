@@ -1,0 +1,30 @@
+{
+  "release": "0.75",
+  "scope": "pre074_preparation",
+  "production_enabled": false,
+  "predecessor_required": "v0.74.0",
+  "profiles": ["current_daemon_local_characterization", "reference_backend_contract", "existing_durable_v1_characterization", "official_hazelcast_diagnostic"],
+  "production_observations_required": [
+    "authoritative_partition_epoch_and_owner",
+    "exact_required_replica_proof_before_public_ack",
+    "durable_value_expiry_tombstone_dedup_atomic_commit",
+    "listener_partition_watermark_gap_and_resync_cut",
+    "authenticated_member_tenant_generation_and_trust_epoch",
+    "readiness_from_actual_replica_and_repair_state",
+    "drain_and_namespace_reclamation_zero_old_owners",
+    "bounded_data_safety_repair_lanes_and_noisy_tenant_progress"
+  ],
+  "blocked_until_074": ["w0_closure", "production_backend_extraction_and_routing", "final_wire_and_durable_identities", "production_sdk_generation", "accepted_074_non_regression", "real_cluster_s2_and_release_admission"],
+  "tests": [
+    "crates/xtask/tests/imap_ci_075.rs",
+    "crates/xtask/tests/imap_proof_process_075.rs",
+    "crates/hydracache-server/tests/imap_dispatch_characterization_075.rs",
+    "crates/hydracache-cluster-testkit/tests/imap_backend_contract_075.rs",
+    "crates/xtask/tests/imap_storage_probe_075.rs",
+    "crates/xtask/tests/imap_daemon_probe_075.rs",
+    "tests/java-imap-benchmark/src/test/java/io/hydracache/imap/semantic/DevelopmentBackendPort075Test.java",
+    "crates/xtask/tests/imap_pre074_075.rs",
+    "tests/java-imap-hazelcast-075/src/test/java/io/hydracache/imap/hazelcast/HazelcastProductAdapter075Test.java",
+    "tests/rust-imap-contract-consumer-075/src/main.rs"
+  ]
+}

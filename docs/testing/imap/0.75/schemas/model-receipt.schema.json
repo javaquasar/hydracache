@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hydracache.imap.model-receipt.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "release", "status", "evidence_kind", "source_sha", "model_id", "model_source", "seed", "bounds", "explored_states", "explored_transitions", "max_depth_reached", "truncated", "invariant_ids", "result"],
+  "properties": {
+    "schema": {"const": "hydracache.imap.model-receipt.v1"},
+    "release": {"const": "0.75"},
+    "status": {"const": "provisional"},
+    "evidence_kind": {"const": "authority_model"},
+    "source_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "model_id": {"const": "hydracache.imap.value-plane.authority.v1"},
+    "model_source": {"$ref": "#/$defs/digest"},
+    "seed": {"type": "integer", "minimum": 0},
+    "bounds": {"type": "object", "additionalProperties": false, "required": ["max_depth", "max_states"], "properties": {"max_depth": {"type": "integer", "minimum": 1, "maximum": 64}, "max_states": {"type": "integer", "minimum": 1, "maximum": 1000000}}},
+    "explored_states": {"type": "integer", "minimum": 1},
+    "explored_transitions": {"type": "integer", "minimum": 0},
+    "max_depth_reached": {"type": "integer", "minimum": 0},
+    "truncated": {"const": false},
+    "invariant_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^HC-IMAP-INV-"}},
+    "result": {"const": "passed"}
+  },
+  "$defs": {"digest": {"type": "object", "additionalProperties": false, "required": ["path", "sha256"], "properties": {"path": {"type": "string", "minLength": 1}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}}}
+}

@@ -1,0 +1,50 @@
+{
+  "release": "0.75",
+  "fixture_version": 1,
+  "status": "provisional",
+  "mode": "api_only_cold_repopulation",
+  "production_import": false,
+  "limits": {
+    "max_entries": 8,
+    "max_total_bytes": 4096,
+    "max_chunk_entries": 2,
+    "max_chunk_bytes": 1024,
+    "max_key_bytes": 128,
+    "max_value_bytes": 256
+  },
+  "application_codec_vectors": [
+    {"id": "empty", "text": "", "encoded_hex": ""},
+    {"id": "utf8-composed", "text": "é", "encoded_hex": "c3a9"},
+    {"id": "utf8-decomposed", "text": "é", "encoded_hex": "65cc81"},
+    {"id": "utf8-supplementary", "text": "😀", "encoded_hex": "f09f9880"}
+  ],
+  "fixtures": [
+    {
+      "id": "binary-unicode-empty",
+      "codec_id": "binary_identity_v1",
+      "tenant": "tenant-ü",
+      "namespace": "cache-猫",
+      "generation": 7,
+      "source_snapshot": "offline-fixture-a",
+      "entries": [
+        {"key_hex": "", "value_hex": "", "ttl_remaining": null},
+        {"key_hex": "00ff", "value_hex": "000102ff", "ttl_remaining": 11},
+        {"key_hex": "c3a9", "value_hex": "e78cab", "ttl_remaining": 7},
+        {"key_hex": "65cc81", "value_hex": "f09f9880", "ttl_remaining": null}
+      ],
+      "expected_count": 4,
+      "expected_digest": "549c5f499215bda23f4f47cd1da100ac1be57c0ebfade39da61b6f8ca7d81d63"
+    },
+    {
+      "id": "empty-source",
+      "codec_id": "binary_identity_v1",
+      "tenant": "tenant-ü",
+      "namespace": "empty",
+      "generation": 8,
+      "source_snapshot": "offline-empty",
+      "entries": [],
+      "expected_count": 0,
+      "expected_digest": "2c54704a5a5fffe97161de43afdbeb2d6f4c173af8ba4da372dee63a2cb69caa"
+    }
+  ]
+}

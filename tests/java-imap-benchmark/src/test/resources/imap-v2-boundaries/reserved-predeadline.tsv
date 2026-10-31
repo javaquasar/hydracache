@@ -1,0 +1,10 @@
+imap-extended-semantic-v2	117	9
+61	reserve_put	6b:31:~:e	63:1	~	0	0
+62	put	62:32:~:x2	63:2	~	0	0
+63	advance	~	~	~	9223372036854775806	0
+64	dispatch_put	6b:32:~:x2	63:1	~	0	0
+65	dispatch_put	62:32:~:x2	63:2	~	0	0
+66	dispatch_put	6b:31:~:e	63:1	~	0	0
+67	dispatch_put	6b:32:~:x2	63:1	~	0	0
+68	query_outcomes	~	63:1,63:2	~	0	0
+69	dispatch_put	6b:31:~:e	63:1	~	0	0

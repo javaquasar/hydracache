@@ -923,6 +923,171 @@ authenticated original start. Existing versioned manager projections are unchang
 | Simulator snapshot JSON schema | `5` | `hydracache-sim` and `hydracache-sim-wasm` | Readers accept the current schema only and reject unknown future versions. Version `1` carried seed, step, logical time, nodes, links, sampled keys, real invariant verdict, and progress. Version `2` adds the 0.53 W1 election/formation fields: `formation_phase`, `election_source`, `election_disclosure`, and per-node `vote_state`, `voted_for`, `votes_received`. Version `3` adds typed `in_flight` network/election messages plus `over_budget.in_flight_summarized` for bounded rendering. Version `4` adds manual-mode `clients`, `subscribers`, and `sync_progress`. Version `5` adds topology/mode state: per-node `disabled`, top-level `rebalance`, `mode`, `active_scenario`, and `intervention_count`. | Strict readers reject unknown future schema versions before rendering or replaying a shared seed. The demo must not synthesize a green verdict outside `InvariantChecker`; `election_source = "sim-model"` must be presented as a teaching model, not a production consensus claim. In-flight render summaries and subscriber buffer drops must fail loud through over-budget/drop counters instead of silently dropping evidence. |
 | `ReplayScriptV1` simulator control artifact | `1` | `hydracache-sim`, `hydracache-sim-wasm`, sandbox `/sim/control`, and browser share/replay surfaces | Version `1` carries `seed`, `mode`, optional `scenario`, and ordered `ControlActionV1` actions (`step`, topology verbs, `push_event`, `subscribe`, `mode_change`) with logical `at_step`. Readers accept version `1` only and reject oversized scripts above `MAX_REPLAY_ACTIONS`. | Unknown future replay versions and over-budget action lists are rejected before execution. Topology actions not implemented by the current work item fail loud rather than being ignored or emulated. |
 
+## 0.75 development managed build diagnostics
+
+`imap_build_process_075::{BuildEvent,BuildReport}` are local development diagnostics,
+version 1, never production protocol or release admission evidence. Readers use the
+current producer's strict field set and reject unknown fields. Each controller owns
+a fresh bounded directory under `target/imap-075/builds`; reports distinguish complete
+logs from prefixes, cleanup failures, cancellation and deadline exhaustion. Absolute
+log paths are local diagnostics and cannot select commands or qualify another build.
+The CI deadline environment value bounds harness execution only, never map authority.
+
+## 0.75 development IMap differential inputs
+
+The isolated testkit/JVM tools exchange bounded development inputs headed by
+`imap-api-trace-v1` or `imap-api-schedule-v1`. Each reader accepts its own exact
+header and rejects unknown versions, malformed fields and oversized inputs before
+service execution. Seeded traces and schedules are local correctness fixtures;
+they allocate no HC/1, HC/2, production operation/error number or durable identity.
+Runtime checkpoint objects have no serialization or persisted format.
+
+Java semantic scenario fingerprints now use development identity `v2:<sha256>`.
+Version 2 hashes the `HCSF075\0` domain, version, seed, counts and length-prefixed
+UTF-8/byte fields, stable textual operation names, optional-value presence, TTL
+kind/ticks and logical advance. It rejects oversized inputs and malformed Unicode
+before hashing. Unprefixed v1 identities are read only by an explicit migration
+helper that also requires the original bounded scenario; they cannot identify new
+evidence. Rust and Java replay independent fixed vectors, including signed seed
+bit patterns. The bounded shrinker reports exhausted replay/work budgets and makes
+no unconditional minimality claim.
+
+The extended Java semantic grammar has runtime version 2 with bounded typed actions
+and explicit capabilities. It is a local reference fixture, not a new HC/1/HC/2
+decoder, SDK generation or persisted value format. Unknown versions fail before
+adapter execution. Version-token observations compare equality/freshness/instance
+scope rather than requiring identical language-local numeric IDs.
+
+The common Rust/Java extended corpus uses the separate development header
+`imap-extended-semantic-v2<TAB>signed-seed<TAB>step-count`. Its seven step fields
+are hex UTF-8 ID, textual operation, entries, requests, limits, ticks and loss flag.
+Entries use `keyhex:value-or-~:labelhex-or-~:p|e|xN`; requests use
+`clienthex:positive-sequence`. `~` denotes absence or an empty list, while an empty
+hex field denotes present empty bytes. Readers reject unknown versions, fields,
+noncanonical decimal/hex, invalid UTF-8, CR, unresolved token references and bounds
+before executing any owner. Limits are 256 steps, 2 MiB encoded input, 1 MiB per
+line and 512 KiB logical DTO payload. Observation transcripts use
+`imap-extended-observations-v2<TAB>actual|expected` and ID/closed JSON rows, bounded
+to 1 MiB per JSON row and 16 MiB total. These formats allocate no product IDs.
+The Rust and Java peers execute real local owners; expected observations come
+only from the separate Java model. Bounded shrinking preserves valid references,
+retains replayable source and does not claim an unconditional minimal result.
+
+Extended concurrency uses separate development headers `imap-extended-schedule-v1`,
+`imap-extended-history-v1` and `imap-extended-verdict-v1`. Schedules admit at most 32 rounds,
+two workers, five fixed helper/lifecycle families and three checkpoint orders; histories retain
+real invocation intervals. Readers refuse unknown families/versions, duplicate fields or IDs,
+impossible intervals and byte/work limits. A legal partial order is required; search exhaustion
+is a distinct failure, and overlapping executions need not choose identical winners.
+
+The local extended qualification receipt uses schema
+`hydracache.imap.extended-qualification.v1` and
+`docs/testing/imap/0.75/schemas/extended-qualification.schema.json`. It is limited to 256 KiB
+and explicit `local_actual_owner_qualification` scope with production disabled. It binds clean
+source, bounded corpus/transcripts, copied Rust executable and Java classpath artifacts, runtime
+fingerprints/Java launcher hash, eight process defects and deterministic shrink consumption.
+Retained owner executables are bounded to 512 MiB to include Linux ELF development debug data;
+their hashes, snapshots and verification stream in fixed chunks. The Java launcher stays bounded
+to 64 MiB; individual Java classes and transcript limits remain independently enforced.
+Verification binds retained snapshots to trusted current runners/classes and reexecutes only
+those trusted current peers and controls, never receipt-selected executables. Changed, aliased,
+missing or out-of-root artifacts fail. Windows process-count capability is explicit; the Linux inherited
+process-group scope records a null process-count limit and refuses a requested nonzero cap.
+Proof launch removes inherited Java/native-loader injection options; source/build writers must
+remain stable while pre/post artifact identities are checked. These are scoped local controls,
+not sealing against hostile transient replacement or a general sandbox. This is development
+evidence, not a product protocol, persistent service image or ship receipt.
+Typed entry views, helper futures, progress queries and scoped transfer controls remain runtime
+APIs; the 40 core operation IDs and production HC/1/HC/2 identities do not change.
+
+The development-only scoped coverage family uses strict v2 policy/profile,
+control/capture and finalized report records, with v1 Java session/projection
+records (bootstrap compiler stream and immutable Cargo object archives), documented in
+`docs/testing/imap/0.75/scoped-coverage.md`. Unknown fields/future versions, stale
+source/tool/cfg, incomplete execution, foreign paths, missing components and
+uncovered added executable lines refuse qualification. Reports bind raw LLVM and
+JaCoCo execution data to current compiler outputs and exact source bytes. Platform
+results are separate; these are unsigned local test evidence, not branch coverage,
+S2 qualification or release admission. The Linux executor owns the root session
+and cooperative nested groups, with per-process address-space bounds and no process
+count cap; a program deliberately creating another session remains outside this
+local containment scope.
+
+The closed v1 `docs/testing/imap/0.75/gated-test-registry.toml` extension registers
+the four prepared-artifact tests for discovery validation. It accepts only its
+0.75 release, fixed test identities, commands, budgets and actual CI wiring;
+unknown fields and substituted entries fail. Execution belongs to the bounded
+0.75 capture. The historical common registry and generic release-evidence
+registry identities retain their original format and meaning.
+
+The separate development preparation receipt uses `hydracache.imap.pre074-preparation.v6`
+and `docs/testing/imap/0.75/schemas/pre074-preparation.schema.json`. It retains unsigned
+resolved development provenance. Its v1 inventory/provenance,
+Maven-resolution journal and CycloneDX 1.6 profile are documented in
+`docs/testing/imap/0.75/development-sbom.md`; strict replay rejects old/future versions,
+missing closure/features, substituted tool/artifact bytes and promoted policy results.
+Its only scope is
+`pre074_preparation`, with production disabled and all six predecessor/integration blockers
+retained. It binds clean source, current tooling/runtime, eleven fixed input artifacts, raw
+current-daemon, existing-v1-storage, packaged Java/Hazelcast and external Rust observations,
+workspace dependency metadata and two clean-directory Java package reproduction hashes. The
+verifier reexecutes trusted current probes and package reproduction; it never
+executes a receipt-selected command, binary or classpath. This is not W0 closure, a production
+SDK/durable/wire identity, supply-chain attestation, distributed qualification or release evidence.
+Version 2 requires a fixed `native-extended.json` artifact with
+`imap075-native-observation-v1`; current readers reject v1, missing/unknown fields or
+future versions. Historical v1 receipts remain development archives for their original
+source/tooling and cannot qualify a v2 producer. The native profile requires the closed
+raw-return/final-digest/native-events field set. Native versions/TTL are retained in
+native units and never mapped to Hydra owner tokens, logical clocks or watermarks.
+Version 3 additionally requires `native-histories.json` with `imap075-native-histories-v1`:
+two bounded fixed-seed programs, actual raw invocation/return stamps, native result
+types, quiescent final entries/digest, separate callbacks and bounded-checker witness.
+The reader independently normalizes/checks raw histories and reexecutes the trusted
+current cohort, accepting legal nondeterministic interleavings only for the same
+program. Missing, duplicate, foreign, weakened or unknown fields/versions refuse.
+Search exhaustion is explicit failure. Current preparation readers reject v2.
+Version 4 requires `native-recovery.json`, schema `imap075-native-recovery-v1`.
+The recovery fixture admits only bounded, unique, eternal point-write tuples behind
+its own writer gate. Exact received callback correlation is required before replacing
+the listener and comparing a bounded baseline to owned state. Local registration
+generations never claim a native server watermark or production atomic cut. Duplicate,
+missing, foreign, cancelled, over-budget or unsupported profile observations refuse
+recovery. Native client calls have a five-second invocation timeout; managed probes
+have a separate forty-second process envelope. Current readers reject v3/future versions.
+Version 5 requires three continuous smoke report/transcript pairs for reference,
+native and current local-daemon cohorts. `imap075-soak-profile-v1`,
+`imap075-soak-frame-v1`, `imap075-soak-report-v1` and `imap075-soak-identity-v1`
+are bounded local development formats. They bind exact source, current producer,
+runtime, artifacts, seed, worker PID/platform birth/incarnation, logical progress,
+cohort-specific resource units and terminal cleanup. Unknown fields/versions fail.
+Unavailable resource samples remain null. Reference outcome bytes include the fixed
+28-byte retirement fence; temporary leases/queues must be released at each round.
+Native generations remain local listener identities. Daemon resource scope proves
+protocol quiescence only and does not invent unavailable IMap owner counters.
+Restart always creates a new segment; live prior workers cannot transfer ownership.
+An interrupted controller checkpoint can never become completed duration evidence.
+Short proof workers retain their 60-second cap; a closed separate soak policy allows
+at most 26 hours with explicit host eligibility and cleanup budget. Current preparation
+readers reject v4. Implemented hour/6-hour/24-hour profiles do not claim those runs occurred.
+
+The 0.75 migration corpus uses `fixture_version = 1` for bounded development
+staging/dry-run readers only. Runtime replica images preserve logical incarnation
+within the test cluster and have no persisted reader or production transport
+schema. CI receipts use `receipt_version = 3` with explicit `local_ci` scope and
+a required current-source scoped coverage report digest;
+comparison/release manifests use provisional `contract_version = 1` and reject
+unknown fields/versions. None is a production HC/1/HC/2 allocation or an import
+endpoint, and local receipts cannot authorize a release.
+
+The cluster schedule/fuzz corpus is a bounded development JSON fixture (`version = 1`,
+64 KiB, at most 256 steps). Text operation/stage names allocate no production wire
+numbers. Unknown versions/fields and unsupported transitions fail explicitly. CI
+receipt v2 requires actual-cluster history and semantic-audit execution in addition to
+the v1 proof inventory; old receipts cannot satisfy the new gate. Runtime authenticated
+envelopes, online-transfer manifests, chunks and sparse owner-decision deltas are in-process
+test types, with no production transport decoder or persisted reader compatibility.
+
 ## Upgrade Rules
 
 The 0.74 pinned diagnostic start material is a runtime-only, descriptor-owning

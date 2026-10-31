@@ -1,0 +1,7 @@
+release = "0.75"
+contract_version = 1
+predecessor_tag = "v0.74.0"
+required_evidence = ["compatibility", "real_cluster", "security", "sdk_interop", "non_regression_074", "long_run", "migration", "supply_chain"]
+maximum_receipts = 16
+maximum_nested_artifacts = 32
+require_zero_skips = true

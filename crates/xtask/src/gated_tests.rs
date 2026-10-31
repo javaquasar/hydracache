@@ -173,7 +173,10 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn check_registry(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
-    let registry = load_registry(root)?;
+    let mut registry = load_registry(root)?;
+    registry
+        .gate
+        .extend(crate::imap_gated_registry_075::load(root)?);
     let discovered = discover_gates(root)?;
     Ok(validate_registry(&registry, &discovered))
 }

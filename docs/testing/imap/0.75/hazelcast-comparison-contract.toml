@@ -1,0 +1,44 @@
+release = "0.75"
+contract_version = 1
+status = "provisional"
+production_enabled = false
+claims_enabled = false
+minimum_pairs = 5
+minimum_goodput_advantage_percent = 10
+maximum_p99_regression_percent = 5
+require_balanced_order = true
+retain_negative_results = true
+
+[[products]]
+id = "hydra"
+version = "0.75-candidate-unresolved"
+source_sha = "UNRESOLVED"
+artifact_sha256 = "UNRESOLVED"
+dependency_sha256 = "UNRESOLVED"
+
+[[products]]
+id = "hazelcast"
+version = "artifact-selection-unresolved"
+source_sha = "880efabcd8eabd0c2595749ee87f495c6a45895c"
+artifact_sha256 = "UNRESOLVED"
+dependency_sha256 = "UNRESOLVED"
+
+[[cells]]
+id = "s1-get-eternal"
+cohort = "S1"
+operation = "get"
+members = 1
+disposition = "comparable"
+reason = ""
+hydra = { backups = 0, persistence = "memory", acknowledgement = "owner", tls = true, key_codec = "canonical_bytes", ttl = "eternal", previous_value = true, retry = "same_retained_identity", listeners = false }
+hazelcast = { backups = 0, persistence = "memory", acknowledgement = "owner", tls = true, key_codec = "canonical_bytes", ttl = "eternal", previous_value = true, retry = "same_retained_identity", listeners = false }
+
+[[cells]]
+id = "s2-put-expiring"
+cohort = "S2"
+operation = "put"
+members = 3
+disposition = "comparable"
+reason = ""
+hydra = { backups = 1, persistence = "memory", acknowledgement = "owner_and_backup", tls = true, key_codec = "canonical_bytes", ttl = "expire_after", previous_value = true, retry = "same_retained_identity", listeners = false }
+hazelcast = { backups = 1, persistence = "memory", acknowledgement = "owner_and_backup", tls = true, key_codec = "canonical_bytes", ttl = "expire_after", previous_value = true, retry = "same_retained_identity", listeners = false }

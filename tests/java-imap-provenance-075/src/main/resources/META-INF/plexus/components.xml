@@ -1,0 +1,10 @@
+<component-set>
+  <components>
+    <component>
+      <role>org.apache.maven.eventspy.EventSpy</role>
+      <role-hint>imap075-provenance</role-hint>
+      <implementation>io.hydracache.imap.provenance.MavenResolutionSpy075</implementation>
+      <instantiation-strategy>singleton</instantiation-strategy>
+    </component>
+  </components>
+</component-set>
