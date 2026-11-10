@@ -11,7 +11,8 @@
 >   resumable optimize/rebuild jobs, bounded batch ingestion, scalar/SIMD distance kernels, capacity
 >   admission, provenance-gated writes, ambiguity-aware reuse decisions, continuous post-promotion
 >   quality circuits, bounded admission/eviction, deletion receipts, integrity scrubbing,
->   graph-specific observability and exact-candidate evidence are included.
+>   graph-specific observability and exact-candidate evidence are included. FLAT, HNSW and an
+>   external KiviDB benchmark compare reuse decisions, recall@k, p99 and memory.
 > - **Why:** exact-key caching misses paraphrases and near-duplicate tool requests, while a generic
 >   vector store does not by itself provide HydraCache's TTL, tags, single-flight, invalidation,
 >   bounded memory and explicit failure semantics. The useful product is a correctness-first
@@ -65,9 +66,9 @@ claim is intentionally narrower:
 
 > HydraCache 0.76 provides a bounded distributed semantic cache for application-approved LLM
 > responses and tool results. A hit requires an authenticated hard scope match, an admitted
-> similarity policy, a complete-enough ANN result under the requested availability policy and a
-> final authoritative version/TTL validation. The ANN index is disposable; ambiguity degrades to
-> a miss and never authorizes response reuse.
+> similarity policy, complete decision evidence under the requested availability policy and a
+> final authoritative version/TTL validation. The ANN index is disposable. A query with an
+> ambiguous or unproven winner or margin yields a miss.
 
 The release may report scenario-scoped latency, avoided-call and resource results. It may not say
 that HydraCache is a general vector database, that semantic similarity proves answer correctness,
@@ -93,6 +94,27 @@ reuse contract:
 This boundary also avoids inheriting current VectorCollection beta limitations such as unstable API
 or rolling-upgrade semantics, only-on-heap assumptions and score values whose exact representation
 may vary. HydraCache freezes its wire schema, canonical score/recheck path and upgrade behavior.
+
+### KiviDB design inputs for `SemanticIndex`
+
+Use KiviDB v1.2.0 as a design reference and a standalone comparison server. The tagged project
+declares `AGPL-3.0-only`. Implement HydraCache's index and harness independently from published
+algorithm descriptions, HydraCache contracts and original fixtures. Record implementation and
+dependency provenance. KiviDB code, SIMD kernels, benchmark scripts, fixtures, generated code
+and storage formats stay outside the implementation. The benchmark talks to a separate process
+over RESP. The Apache-2.0 HydraCache build, release packages and SBOM have no KiviDB dependency.
+[KiviDB license declaration](https://github.com/kividbio/kividb/blob/v1.2.0/Cargo.toml#L8-L16) ·
+[HNSW paper](https://arxiv.org/abs/1603.09320)
+
+| Idea to evaluate | HydraCache adaptation |
+| --- | --- |
+| Exact scan and bounded top-k selection | Compare a simple full sort with bounded top-k selection in `FlatReferenceIndex`. Both use canonical scores and stable `EntryId` ordering. Measure the eligible cardinality at which the faster path changes. |
+| HNSW with normalized cosine scoring and an exact path for small filtered sets | Reuse W2's normalized-DOT kernels behind `SemanticIndex`. Select the authorized tenant, namespace generation and embedding-profile shard before graph access. Choose FLAT for a small eligible set only when its full scan fits the admitted remaining budget. Any graph candidate still requires the 0.75 authoritative check. |
+| Rebuild after tombstone accumulation | Reserve a replacement generation and replay committed deltas from its snapshot frontier. Validate coverage, versions and watermark against the authority epoch before the atomic swap. Keep the active generation until then. |
+
+[KiviDB scoring and top-k design](https://github.com/kividbio/kividb/blob/v1.2.0/src/vector/mod.rs#L2404-L2569) ·
+[KiviDB filtered search](https://github.com/kividbio/kividb/blob/v1.2.0/src/commands/vector.rs#L1597-L1629) ·
+[KiviDB background rebuild](https://github.com/kividbio/kividb/blob/v1.2.0/src/vector/mod.rs#L3616-L3669)
 
 ## Inherited 0.75 boundary
 
@@ -157,7 +179,7 @@ research but cannot support the distributed `HydraSemanticMap` claim.
 | Maintenance isolation | Optimize/rebuild creates and validates a new generation while the old generation remains queryable; cancellation/restart cannot damage authority. | In-place maintenance blocks correctness, loses accepted deltas or exposes a half-built generation. |
 | Capacity under failure | Admission includes authority replicas, active index, rebuild double-buffer, journals, scratch space and one-member loss. | Steady state fits, but `N-1 + rebuild + foreground load` exceeds declared memory/CPU/disk bounds. |
 | Provenance before reuse | An authenticated, admitted writer class and immutable generation-pipeline digest are stored by authority and validated before reuse. | Any holder of ordinary read credentials can poison a reusable response or forge producer identity. |
-| Ambiguity-aware decision | Auto-reuse applies a server-owned immutable minimum score, top-two margin, age and validation-depth policy; clients may only make it stricter. | A client lowers the threshold/margin or a near-tie is reused without the admitted ambiguity rule. |
+| Ambiguity-aware decision | Auto-reuse applies immutable score, margin, age and validation-depth rules to a winner and margin verified over the eligible scope. Clients may only make the policy stricter. | A client lowers the threshold/margin or an ANN result omits a runner-up and authorizes reuse. |
 | Continuous safety | Active profiles retain bounded verification/feedback canaries and automatically demote on a frozen hard safety or quality circuit; promotion is never automatic. | Offline admission remains active indefinitely after measured drift or hard-boundary violation. |
 | Eviction coherence | Authority owns admission/eviction and emits the same versioned removal delta as explicit deletion; retained bytes include payload, all vector slots and derived charge. | Index-only state is presented as a live authority record, or eviction resurrects through rebuild. |
 | Deletion evidence | Logical non-reuse is immediate and physical reclamation across authority, live/old index generations, checkpoints and retained backups follows a declared SLO with receipts. | A deleted vector remains silently queryable/exported, or documentation promises instant physical erasure that backups cannot satisfy. |
@@ -368,10 +390,11 @@ importer, compromised read-only client or test pipeline from placing entries int
 auto-reuse cohort.
 
 `SemanticDecisionPolicy` belongs to an immutable admitted profile revision. Client-requested score
-or margin can only raise the effective requirement; omission selects the server values. Automatic
-reuse validates at least two final candidates when available and rejects a top-two near-tie below
-the admitted margin. Fewer candidates than the validation minimum reject auto-reuse unless the
-immutable corpus-admitted policy explicitly enables `allow_single_candidate`; its default is false.
+or margin can only raise the effective requirement. Omission selects the server values. Automatic
+reuse validates the exact eligible winner and runner-up under the bounded verification in the
+lookup sequence. Fewer candidates than the validation minimum reject auto-reuse. A verified
+singleton can be reused only if the immutable corpus-admitted `allow_single_candidate` policy
+enables it. Its default is false.
 `ScoreDisclosure` is permission-derived: normal cache helpers default to
 `Hidden` or a coarse bucket, while exact scores and diagnostic candidate lists require a separately
 rate-limited diagnostic permission. Feedback references an opaque, expiring hit proof and contains
@@ -503,16 +526,23 @@ headroom. The receipt states which component prevents admission and suggests onl
    authoritative owners when available and
    validate version, TTL, maximum candidate age, namespace generation, complete hard scope,
    authenticated writer class, generation-pipeline provenance and payload admission.
-8. Canonically rescore and order validated candidates. Return the winner only when it satisfies the
-   effective minimum score, validation-depth/single-candidate rule and top-two margin; otherwise
-   return explicit `BelowThreshold`, `InsufficientDecisionEvidence` or `AmbiguousNeighbourhood`
-   miss. Apply permission-derived score disclosure to the response/proof.
+8. Canonically rescore and order validated candidates. Before automatic reuse, verify the winner,
+   runner-up and required validation depth over the full eligible scope with bounded exact FLAT.
+   Bind verification to the query epoch, per-partition authority watermarks and a fixed TTL/age
+   evaluation instant. An exact FLAT query can supply this evidence when its completeness is proven
+   at that cut. Recheck the authoritative versions and validity used by the decision before reuse.
+   Return a hit only when the score, validation-depth/single-candidate rule and margin all pass.
+   Otherwise return the appropriate `BelowThreshold`, `InsufficientDecisionEvidence` or
+   `AmbiguousNeighbourhood` miss, or the typed availability outcome for an unavailable authority.
+   Apply permission-derived score disclosure to the response/proof.
 9. Record bounded decision/provenance/circuit reason counters without logging prompt, response,
    vector or tenant-controlled text.
 
-An ANN false positive is filtered by the score/hard scope; a stale candidate is filtered by the
-authoritative read. An ANN false negative is a cache miss and may cost an LLM call, but cannot serve
-the wrong entry. This asymmetry is the core safety contract.
+ANN can omit the best candidate or a close runner-up. Either omission can change the winner or
+inflate the margin even when every returned candidate passes authoritative validation. If a cap,
+deadline or changed authority cut prevents complete verification, auto-reuse abstains. An HNSW
+result without that evidence can support shadow or diagnostic search. Benchmark both raw candidate
+quality and final decisions, including the time and memory spent on exact verification.
 
 `operationally_complete` means that all required partitions answered under the admitted finite
 budget, correct epoch and lag limit. It does not claim exhaustive nearest-neighbour search: ANN
@@ -723,7 +753,7 @@ post-corruption hit and eventual receipt completion within the declared SLO.
 | --- | --- | --- |
 | `Miss::NoCandidate` | Complete admitted search found no valid score. | Application may generate. |
 | `Miss::BelowThreshold` | Canonically rescored winner is below the effective admitted score. | Generate; do not expose exact score without diagnostic permission. |
-| `Miss::InsufficientDecisionEvidence` | Fewer authoritative candidates than the admitted decision policy requires. | Generate; only an explicitly admitted single-candidate policy may relax this. |
+| `Miss::InsufficientDecisionEvidence` | Exact winner, runner-up or required validation depth could not be established within the admitted verification budget or authority cut. | Generate. The single-candidate policy applies only after a singleton is verified. |
 | `Miss::AmbiguousNeighbourhood` | Winner/runner-up margin is below the admitted ambiguity bound. | Generate or use explicit manual diagnostic flow; never auto-reuse. |
 | `Miss::CandidateInvalidated` | ANN candidate was expired/replaced/deleted before final read. | May retry once within the same deadline, then generate. |
 | `Miss::ShadowOnly` | Profile has no auto-reuse admission. | Generate; retain comparison receipt. |
@@ -833,13 +863,16 @@ the semantic owner, tests or release gate.
 
 **Changes.** Create the architecture decision, capability manifest, scenario matrix, quality
 contract, statistics plan, threat model and release-evidence registry before product mutation.
-Freeze the published 0.75 source/tag/artifacts and exact Redis, Hazelcast and no-cache comparison
-identities/configurations.
+Freeze the published 0.75 source/tag/artifacts and exact Redis, Hazelcast, KiviDB and no-cache
+comparison identities/configurations.
 Record Hazelcast 5.7 VectorCollection only as a cited design input: named spaces, staged candidate
 limits, ANN knobs, bulk ingestion, maintenance, backups/capacity and visited-node telemetry. There is
 no Hazelcast wire/API compatibility claim. Freeze an optional but first-class Hazelcast comparison
 identity, Enterprise license provenance and legal artifact-retention boundary; if the pinned runtime
 is unavailable, the cells are `not-run/not-comparable` and no Hazelcast advantage claim is allowed.
+For KiviDB, resolve the v1.2.0 tag to a commit and pin the binary checksum or image digest, license,
+runtime flags, RESP version and independently written harness/corpus digests. Record permitted
+artifact retention and keep the external server outside product build and test dependencies.
 
 **Implementation.** Record supported cosine-only profiles, maximum dimensions/top-k/members,
 local versus member modes, storage profile, payload limit, default `ShadowOnly`, availability
@@ -853,8 +886,10 @@ fragmentation triggers; capacity formula inputs; N−1 failure topology; every g
 name/unit/cardinality; writer/provenance policy; score/margin/age/validation-depth decision policy;
 score disclosure and diagnostic rate limit; authority admission/eviction weight; active verification
 and feedback circuit; emergency kill-switch propagation SLO; logical/physical deletion SLO and backup
-retention; scrub sampling/resource budget; and the distinction between operational completeness and
-ANN recall.
+retention; scrub sampling/resource budget; and the distinction between operational completeness,
+ANN recall and exact decision evidence. Preregister the W13 tuning and evaluation grids, scan and
+verification budgets, minimum decision/recall quality, p99 and memory limits, minimum practical gain
+over FLAT, load points, repeats, warmup and confidence method before collecting evaluation results.
 
 **Tests and evidence.** Add `cargo xtask semantic-contract-check --release 0.76`, release-scoped
 dynamic canaries and a coverage manifest. Negative fixtures must reject a changed embedding model,
@@ -862,7 +897,8 @@ dimension, metric, scope digest, corpus label, threshold, index/search/capacity 
 maintenance budget, SIMD kernel identity or comparison cell. Mutation canaries loosen each bound,
 promote a shadow profile early, omit rebuild double-buffer, hide a missing partition and replace a
 failed attempt; lower score/margin from the client, forge provenance/feedback, suppress quality
-demotion, underweight vectors, claim backup erasure or disable scrub; every canary must turn an
+demotion, underweight vectors, claim backup erasure, disable scrub, classify ANN completeness as
+exact decision evidence or add KiviDB code or dependencies to the build. Each canary must turn an
 independent gate red.
 
 **Exit.** No implementation starts until the contract distinguishes semantic response caching,
@@ -994,15 +1030,23 @@ Implement `FlatReferenceIndex` and the scalar normalized-DOT kernel first.
 Search computes cosine as scalar DOT over normalized vectors in a deterministic reference path,
 orders by score then `EntryId`, applies scope at index selection and enforces candidate budget,
 top-k/deadline/cancellation. Its stats include examined vectors and stage truncation. Small
-namespaces may permanently use flat mode below a frozen cardinality threshold. `Exact` refuses a
-query that cannot complete within admitted cardinality/CPU bounds instead of returning partial
-results labelled exact.
+namespaces may permanently use flat mode below a measured cardinality threshold frozen in the
+admitted profile. `Exact` refuses a query that cannot complete within admitted cardinality/CPU
+bounds instead of returning partial results labelled exact. For final-decision evidence, walk the
+eligible authority view at the query cut. A derived FLAT generation can serve that walk only when
+its coverage, versions and watermark are proven for the same cut. Reuse W2's canonical scoring and
+decision policy. The independent test oracle exhaustively enumerates eligible authoritative records
+at that cut and computes expected decisions without calling either production index or merge path.
+Apply the frozen canonical score representation at decision boundaries. Use the independent `f64`
+score as a separate numerical differential so rounding at the threshold is tested explicitly.
 
 **Tests.** Compare against an independent scalar `f64` oracle, including ties, near-threshold
 values, extreme finite components, cancellation and boundary cardinalities. Fuzz vector decoder and
 query/budget limits. Compare one large batch with the equivalent ordered single inserts. Miri covers
-unsafe-free storage code; no SIMD/unsafe is admitted in the oracle. Generation tests prove failed or
-cancelled builds cannot replace the active flat generation.
+unsafe-free storage code. The oracle uses safe scalar code. Compare full-sort and bounded-selection
+top-k on ties at the cutoff, near-threshold scores and empty scopes. Cover wrong-version winners,
+expiry/replacement during verification, deadline exhaustion and mismatched cuts. Generation tests
+prove failed or cancelled builds cannot replace the active flat generation.
 
 **Exit.** The flat index is correct, bounded and retained permanently as the ANN differential
 oracle, rebuild fallback and deterministic test implementation.
@@ -1016,6 +1060,14 @@ review. Keep it behind `SemanticIndex`; no third-party type reaches public or wi
 delete/tombstone policy, checkpoint schema and rebuild trigger per profile. The authoritative vector
 is never quantized in 0.76. HNSW background work uses bounded CPU, memory, tasks and queues and is
 cancellable during drain/rebuild/shutdown.
+
+Open only the graph for the authorized shard. Record distance evaluations, visited nodes, scratch
+bytes and budget exits. Evaluate routing small eligible scopes to FLAT versus graph traversal, and
+bounded in-scope FLAT fallback versus abstaining when search runs out of budget. Charge fallback and
+hit verification to the same request deadline, CPU and candidate budgets. For tombstone-triggered
+rebuilds, stage committed insert/replace/delete/expiry deltas in order against the replacement
+generation. Prove count/digest, versions, watermark and authority-epoch parity before activation.
+A delta gap, failed validation or cancellation prevents activation.
 
 Map backend knobs only from immutable `Latency/Balanced/Recall` revisions. Identical-vector
 deduplication is an optional internal proposal: records remain distinct, and a shared graph node must
@@ -1031,7 +1083,9 @@ canary rejects a backend that cannot report/account retained bytes or bound cons
 Run every named profile over identical corpora, scalar/SIMD modes and low/high duplicate ratios;
 verify the resolved config digest, visited nodes, candidate counts and retained bytes. Dedup tests
 cover more IDs sharing a vector than every stage limit, deletion of one/all aliases and deterministic
-expansion so a plausible candidate cannot disappear solely because its vector was shared.
+expansion so a plausible candidate cannot disappear solely because its vector was shared. Inject
+lost/duplicated deltas, owner epoch changes and delete/reinsert across cutover. A canary that swaps
+before catch-up must fail the generation test.
 
 **Exit.** Recall, build cost, memory/vector and query tail meet the W0-frozen profile limits without
 semantic/security divergence; otherwise flat mode ships alone and no scale claim is made.
@@ -1288,9 +1342,12 @@ near-tie ambiguity cases and a post-promotion drift/feedback campaign.
 privacy-safe candidate ID/score, expected class and comparison outcome. W0 freezes train/tune/test
 separation, minimum score, top-two margin, maximum age, validation depth, thresholds and estimator
 before active candidate results. A profile promotes only from an untouched evaluation split and
-binds corpus, embedding model, producer policy, decision policy and reuse scope digests. Auto-reuse
-validates enough final candidates to evaluate ambiguity; a high winner score is insufficient when
-the admitted top-two margin fails.
+binds corpus, embedding model, producer policy, decision policy and reuse scope digests. W4's
+exhaustive oracle supplies expected `HIT(entry_id, entry_version, vector_version)` or `MISS(reason)`
+at the same authority cut used by the candidate path. Compare the candidate-only decision in shadow
+and the verified decision separately. Report changes of winner, version and miss reason separately
+from labelled answer quality. Exact search agreement measures decision fidelity. The labelled corpus
+measures whether reusing that answer is acceptable for the request.
 
 For migration, shadow queries run beside active under identical request/scope and frozen search
 class. Receipts report authoritative coverage, eligible query coverage, recall@k, score/decision
@@ -1311,9 +1368,13 @@ its cluster propagation/fail-closed SLO.
 
 **Tests.** Require zero security/scope boundary reuse, publish confusion matrix and score
 distribution, and calculate false-reuse confidence bounds. ANN recall is compared with flat exact
-search separately from semantic answer quality. Threshold mutations and label leakage canaries must
-turn the gate red. Add canaries that count ANN nodes instead of authoritative coverage, promote a
-shadow with missing partitions, omit duplicate-vector aliases, lower candidate budgets after seeing
+search separately from semantic answer quality. Drop the winner, runner-up and tie-break winner at
+partition, member and coordinator stages. For a score of `0.95`, a runner-up of `0.94`, a third
+candidate at `0.80` and minimum margin `0.02`, omitting `0.94` must never turn the exact
+`AmbiguousNeighbourhood` miss into a hit. Test a fabricated completeness flag and a verification
+timeout. Threshold mutations and label leakage canaries must turn the gate red. Add canaries that
+count ANN nodes instead of authoritative coverage, promote a shadow with missing partitions,
+omit duplicate-vector aliases, lower candidate budgets after seeing
 results, lower score/margin from a client, admit a poisoned producer, count forged feedback, suppress
 demotion or retire previous before rollback rehearsal; all must fail.
 
@@ -1324,8 +1385,9 @@ cannot automatically re-enable itself.
 
 ## W13. Measure latency, avoided calls, quality and cost honestly
 
-**Changes.** Build a common benchmark with HydraCache flat/HNSW, exact-key HydraCache, pinned Redis
-semantic cache, pinned Hazelcast Enterprise VectorCollection and no semantic cache adapters.
+**Changes.** Build a common benchmark with HydraCache FLAT/HNSW, external KiviDB, exact-key
+HydraCache, pinned Redis semantic cache, pinned Hazelcast Enterprise VectorCollection and no semantic
+cache adapters.
 Precompute identical embeddings and separate index latency from optional end-to-end embedding
 latency. Add scalar/SIMD, named search class, single/batch ingestion, active-only/migration,
 maintenance and failure-capacity cohorts.
@@ -1348,6 +1410,60 @@ and rejects a cell as not comparable when equivalent semantics cannot be express
 HydraCache or Hazelcast backups/durability, hide Enterprise licensing, or infer universal superiority
 from one cardinality/topology.
 
+### FLAT, HNSW and KiviDB experiment matrix
+
+| Arm | Candidate search | Final reuse decision |
+| --- | --- | --- |
+| A · HydraCache FLAT | `FlatReferenceIndex` and canonical scalar scoring. Differential against the independent W4 oracle. | The verified HydraCache path. An exhaustive FLAT result at the same authority cut can supply the decision evidence. |
+| B · HydraCache HNSW | W5 named profiles. Compare scalar/SIMD and capture routing to FLAT and fallback separately. | The same policy and authority as A, including verification. Record candidate-only decisions separately in shadow. |
+| C · KiviDB HNSW | Standalone pinned KiviDB process over RESP. Run KiviDB FLAT on small fixture cells as a protocol/metric check. | `KiviDB + shared decision adapter`. The test harness provides the same policy, exact verification, authority reads, outcome mapping and loader as A/B. This is a harness result. |
+
+Run candidate retrieval and final reuse as separate cohorts. In candidate retrieval, all arms use
+the same precomputed normalized `f32` vectors, eligible scope, stable versioned IDs, insertion order,
+cosine metric and candidate depth. Use the W4 oracle to establish ground truth once per query/cut.
+In final reuse, use identical TTL/age, provenance, score/margin, exact-key treatment and deadline.
+Replay the same versioned mutations at controlled checkpoints. Run a separate concurrent-churn
+cohort that measures lag, verification abstentions and availability. Align the network boundary and
+count all processes needed by each arm for end-to-end claims. Report backend-call latency separately
+with its transport and instrumentation boundary. Keep optional embedding/loader cost in separate
+workflow timing so it cannot mask the cache decision tail.
+
+**KiviDB adapter parity.** Use binary-safe `HSET` with canonical little-endian `FLOAT32` vectors and
+`FT.CREATE`/`FT.SEARCH` with cosine KNN, explicit result depth and distance order. Pin effective
+`M`, `EF_CONSTRUCTION`, `EF_RUNTIME`, page/result limits and timeout configuration. Verify known
+vectors, ties, empty sets and a result depth above the default page size. Use immutable versioned
+document IDs so a mutable returned hash field cannot certify the indexed version. Build separate
+physical indexes for the same authorized scope, and test within-scope selectivity separately. Use
+canonical scores from authoritative vectors for final decisions. Record observable exact fallback
+or mark the internal route unknown. An external deadline and coverage checks classify late,
+partial or unverifiable responses as unavailable. Match topology, replica/ack mode and resource
+allocation before comparing distributed cells. Record `not-comparable` when equivalent guarantees
+or workload cannot be established and `not-run` when the pinned runtime is unavailable.
+[KiviDB vector command contract](https://github.com/kividbio/kividb/blob/v1.2.0/COMMANDS.md#L474-L492) ·
+[KiviDB KNN query options](https://github.com/kividbio/kividb/blob/v1.2.0/src/vector/filter.rs#L1119-L1174) ·
+[KiviDB returned fields](https://github.com/kividbio/kividb/blob/v1.2.0/src/commands/search.rs#L2294-L2317)
+
+| Metric | Definition and reporting |
+| --- | --- |
+| HIT/MISS | Report query counts, hit/miss rates and a decision confusion matrix against the exact oracle. Count `MISS → HIT` and a wrong winner or version as false reuse, and `HIT → MISS` as missed reuse. Break down reasons including ambiguity and insufficient evidence. Count overload, incomplete/unavailable, timeout and errors separately over all offered queries. Report labelled semantic false reuse with its own denominator and confidence bound. |
+| `recall@k` | Per query with eligible entries, divide the count of distinct current-version IDs shared by returned and exact top-k by `min(k, eligible_count)`. Use canonical scores and stable ID order at the same cut. Report the mean, coverage, empty-scope counts and tie-boundary cells. Report winner/runner-up capture on near ties. Show both completed-query recall and coverage-adjusted recall counting failed nonempty queries as zero. |
+| p99 | Under the same open-loop offered rate, measure scheduled submission to candidate result and separately to terminal reuse decision, including queueing, network, rescoring and verification at the applicable boundary. Publish overall and HIT/MISS p99 with sample counts, goodput and failure/timeout counts. When censoring prevents a comparable estimate, report the deadline and a bound instead of ranking that tail. |
+| Memory | Measure absolute process RSS and PSS where supported and the increment from an empty configured process group. Sum the backend, adapter and companion authority where required by the cohort. Report baseline, steady state and peak during build/churn/rebuild in bytes and bytes per live eligible vector. Include payloads, source and indexed vectors, scratch space, replicas and overlapping generations where applicable. Keep instrumented index bytes separate from process memory. |
+
+Preregister paired cells spanning eligible cardinalities below/near/above the FLAT crossover,
+supported dimensions, k values, selective scopes, duplicates, near ties, known misses and warm/cold
+states. Include static, mutation/TTL and rebuild-under-foreground-load runs. Randomize arm order and
+repeat with fixed seeds, pinned hardware/CPU allocation and identical offered schedules. Tune graph
+profiles and the FLAT crossover on the tuning split, then freeze them. Equal `ef` settings can
+represent different work across engines. Compare p99 and memory at the same offered rate and matched
+recall/decision-quality targets, with intervals across paired runs. Publish inconclusive cells and
+the cost of verification and fallback. Keep the exact FLAT baseline. Enable HNSW only for profiles
+that meet W0's quality, p99 and memory limits and demonstrate the preregistered practical gain over
+FLAT at the intended workload. External KiviDB results are comparative evidence and never replace
+HydraCache admission.
+
+### Evidence and publication
+
 Report per-stage query work: partitions/members contacted, visited graph nodes, candidates emitted
 at partition/member/coordinator, truncations, candidate bytes, authoritative rechecks and invalidated
 candidates. Ingestion reports entries/s, bytes/s, partial/ambiguous rate and client/server peak
@@ -1366,9 +1482,9 @@ inconclusive and not-comparable cells; no composite score. Long-run exact-candid
 resource/lag stability. Counterbalance maintenance/no-maintenance and scalar/SIMD order; freeze batch
 size and search budgets before timing. A benchmark adapter that uses a raw backend hint, different
 candidate budget, incomplete fan-out, weaker backup policy or asynchronous durability is rejected as
-not comparable. Hazelcast tests first run semantic/data parity, document every unavoidable mismatch
-and retain only artifacts permitted by the pinned license; unavailable licensed runtime yields an
-honest not-run receipt rather than substituting a mock.
+not comparable. Hazelcast and KiviDB tests first run semantic/data parity, document every unavoidable
+mismatch and retain only artifacts permitted by the pinned license. An unavailable runtime yields a
+`not-run` receipt.
 
 **Exit.** Any published advantage names exact profile, topology, corpus, workload, product/tooling
 SHA, host, estimator and uncertainty. A faster result with worse false reuse, recall, errors,
@@ -1422,9 +1538,11 @@ score-oracle rate limiting, quality demotion during rolling upgrade, kill-switch
 across retained backup expiry and live scrub corruption/repair.
 
 **Exit.** Exact-candidate release evidence binds product/tooling/SDK/proto/index/corpus/profile/
-comparison identities and every nested artifact hash. Release notes state admitted profiles and
-non-claims. Missing quality/security/distributed evidence blocks the feature rather than weakening
-the gate.
+comparison identities and every nested artifact hash. Archive W13 parity, outcomes, recall, p99,
+memory and unsupported-cell receipts. Bind the exact verification policy, implementation provenance
+and the external KiviDB pin. Check the product source, dependency graph, SBOM and packaged files
+against the W0 separation rule. Release notes state admitted profiles and non-claims. Missing
+quality/security/distributed evidence blocks the feature rather than weakening the gate.
 
 ## Required test matrix
 
@@ -1436,9 +1554,9 @@ the gate.
 | Cross-language | Rust/Java/Python canonical vectors, scope/provenance/fingerprint/config digests, decision/disclosure, named classes, completeness, feedback/deletion and batch/job HC/2 messages, error/retry mapping and live daemon interop. |
 | Real process | One/three/five members, non-owner ingress, per-stage candidate cutoffs, failover, partition, rebalance, rolling upgrade, restart, profile cutover/rollback, quality demotion, maintenance/scrub/purge resume and namespace reuse. |
 | Security | Tenant/backfill/profile-role/provenance/feedback forgery, poisoning and score-oracle abuse, diagnostic/maintenance authorization, internal-route auth/replay, batch amplification, malicious vectors, content-free telemetry, deletion/reclamation and evidence secret scan. |
-| Quality | Labelled untouched corpus, hard boundaries/negatives, score/margin ambiguity, producer trust, flat-vs-ANN recall, active-vs-shadow migration, duplicate vectors, scalar-vs-SIMD, named search classes, post-promotion verification/demotion, confidence and mutation canaries. |
+| Quality | Labelled untouched corpus, hard boundaries/negatives, score/margin ambiguity, omitted-winner/runner-up canaries, exact-decision differential, producer trust, FLAT-vs-ANN recall, active-vs-shadow migration, duplicate vectors, scalar-vs-SIMD, named search classes, post-promotion verification/demotion, confidence and mutation canaries. |
 | Resource | Entry/index/vector-slot/payload/top-k/partition/member/concurrency/queue/batch/maintenance/scrub/purge/feedback/diagnostic limits, weighted eviction, active+shadow+previous, noisy tenant, cleanup and predicted-vs-observed normal/N−1/rebuild/N−1+rebuild envelopes. |
-| Performance | Same-semantics open-loop exact/flat/HNSW/Redis/Hazelcast/no-cache controls, fixed embeddings, scalar/SIMD, single/batch ingest, named search classes, admission pollution, verification, deletion and foreground-under-maintenance long-run stability. |
+| Performance | Same-semantics open-loop FLAT/HNSW/KiviDB experiments with HIT/MISS, recall@k, p99 and memory, plus exact-key/Redis/Hazelcast/no-cache controls. Fixed embeddings, scalar/SIMD, single/batch ingest, named search classes, admission pollution, verification, deletion and foreground-under-maintenance long-run stability. |
 | Release | Compatibility, producer revocation, profile migration/rollback, quality/kill-switch demotion, resumable maintenance/scrub/purge, deletion SLO, capacity receipt, metrics cardinality, SBOM/license/advisory/MSRV, clean packages, backup/restore, downgrade and immutable evidence. |
 
 ## Fast, scheduled and protected gates
@@ -1455,7 +1573,7 @@ maintenance crash/resume/cancel, rolling upgrade, namespace deletion, batch retr
 N−1+rebuild resource matrix, poisoning/score-oracle, scrub/purge, active verification/circuit,
 quality corpus and dependency/SBOM audit.
 
-**Protected exact-candidate gates:** admitted host, pinned corpus/profile/index/Redis/Hazelcast
+**Protected exact-candidate gates:** admitted host, pinned corpus/profile/index/Redis/Hazelcast/KiviDB
 identities and license receipt, same-host comparison, long-run quality-circuit/resource/lag/scrub/
 deletion proof, full compatibility/package/backup/restore, independent artifact verification and
 immutable release archive. Retries are append-only and cannot replace failed quality/security/
@@ -1492,7 +1610,7 @@ cargo xtask release-evidence --release 0.76 --require-ship
 | Similar prompts collapse into one in-flight result | Exact canonical fingerprint only; model/loom tests with score-1.0 distinct prompts. |
 | One hot tenant consumes CPU/memory | Per-tenant/index quotas and separate query/build/rebuild lanes with cold-progress gate. |
 | New embedding model causes a flag-day rebuild or wrong-vector reuse | Bounded active/shadow/previous slots, expected-version backfill, coverage/quality gate, epoch-fenced cutover and rehearsed rollback. |
-| Candidate limits silently remove the true neighbour | Three explicit frozen stages, truncation proof/metrics, flat differential and profile-specific recall gate. |
+| Candidate limits silently remove the winner or close runner-up | Three explicit frozen stages, truncation proof/metrics, FLAT differential, omission canaries and bounded exact verification before reuse. |
 | Raw ANN tuning makes evidence irreproducible | Named immutable search-profile revisions; no public backend hints; configuration digest in every receipt. |
 | Interrupted optimization damages the index | Copy-on-write target generation, resumable phase checkpoints, active-until-validated cutover and cancellation proof. |
 | Duplicate-vector compaction hides valid records | Optional measured dedup only, bounded deterministic alias expansion and duplicate-heavy differential corpus. |
@@ -1506,6 +1624,7 @@ cargo xtask release-evidence --release 0.76 --require-ship
 | Deletion is logically safe but sensitive vectors remain untracked | Separate logical/physical/backup SLOs, purge receipts, retention-aware wording and disk/backup/checkpoint scans. |
 | Live index corruption survives until restart | Bounded digest/version scrub, immediate shard degradation and normal reserved rebuild with fault injection. |
 | Hazelcast comparison weakens one side or violates licensing | Two scoped cohorts, pinned legal/runtime/config identities, semantic parity precheck and honest not-comparable/not-run cells. |
+| KiviDB benchmark leaks AGPL implementation or credits candidate results as hits | Independent code and fixtures, external RESP-only runner, product source/SBOM/package audit and separate candidate and final-decision receipts. |
 | Vector dependency expands supply-chain risk | Trait isolation, pinned source/checksum, SBOM/license/MSRV/advisory review and clean rebuild. |
 | Product drifts into vector database/RAG scope | Capability manifest and release note non-goals; no document/query-language/reranker surface. |
 
@@ -1537,8 +1656,9 @@ Release 0.76 is eligible only when:
 - every returned hit passes authoritative version, TTL, age, generation, hard-scope and admitted
   producer/writer/pipeline provenance validation;
 - automatic reuse applies an immutable server-owned minimum score, top-two margin and validation
-  depth; client requests can only make the decision stricter and normal helpers do not expose an
-  exact score oracle;
+  depth backed by bounded exact evidence at a validated authority cut. An omitted winner/runner-up
+  canary must pass. Client requests can only make the decision stricter and normal helpers do not
+  expose an exact score oracle;
 - stale/corrupt/missing/rebuilding index state can cause only explicit unavailability or miss;
 - flat exact search remains a permanent oracle and all ANN recall/resource thresholds pass;
 - cosine is represented by canonical normalized vectors, every admitted SIMD kernel passes scalar
@@ -1574,9 +1694,10 @@ Release 0.76 is eligible only when:
   switch; frozen breaches demote to `ShadowOnly`, and no profile can automatically promote/re-enable;
 - shadow and active evidence publishes precision, false reuse, recall, misses, incompleteness,
   errors and resource trade-offs beside hit rate and latency;
-- Redis/Hazelcast/no-cache comparisons use pinned same-semantics/runtime/config/license identities,
-  separate lower-layer ANN from end-to-end semantic reuse and publish losses, not-run and
-  not-comparable cells without a composite score;
+- FLAT/HNSW/KiviDB comparisons publish HIT/MISS, recall@k, p99 and memory with candidate retrieval
+  and final reuse measured separately. The external KiviDB comparator stays out of the product.
+  Redis/Hazelcast/KiviDB/no-cache comparisons bind applicable runtime/config/license identities and
+  publish losses, not-run and not-comparable cells without a composite score;
 - logs, metrics, traces, profiles, crash reports and public artifacts contain no prompt, response,
   vector coordinates, credentials or tenant-controlled identifiers;
 - graph/search/decision/provenance/quality/eviction/deletion/scrub/profile/maintenance/capacity
