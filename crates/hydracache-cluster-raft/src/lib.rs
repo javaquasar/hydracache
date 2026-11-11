@@ -1734,8 +1734,7 @@ fn materialize_snapshot_command(
         let present = find_materialized(cluster, node_id, *role).is_some();
         if !present {
             return Err(CacheError::Backend(format!(
-                "node-left references absent {:?} '{}'",
-                role, node_id
+                "node-left references absent {role:?} '{node_id}'"
             )));
         }
     }
@@ -1749,8 +1748,7 @@ fn snapshot_apply_error(
     error: CacheError,
 ) -> CacheError {
     CacheError::Backend(format!(
-        "raft snapshot apply error: snapshot_index={}, tail_index={}, command_id={}: {}",
-        snapshot_index, tail_index, command_id, error
+        "raft snapshot apply error: snapshot_index={snapshot_index}, tail_index={tail_index}, command_id={command_id}: {error}"
     ))
 }
 

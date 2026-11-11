@@ -113,10 +113,88 @@ fn held_delivery_child_helper() {
         let _ = child.endpoint.receive(expected.creator).unwrap();
         return;
     }
+    if mode == "release" {
+        expected.nonce = [0; 32];
+        let challenge = child.answer_framed_once(&expected, || Ok(())).unwrap();
+        assert_eq!(unsafe { libc::poll(&mut p, 1, 2000) }, 1);
+        let mut frames = 0;
+        child
+            .accept_release_once(
+                &challenge,
+                || {
+                    frames += 1;
+                    Ok(())
+                },
+                |raw| {
+                    assert_eq!(raw, b"release fixture");
+                    Ok([42; 48])
+                },
+            )
+            .unwrap();
+        assert_eq!(frames, 3);
+        assert!(child
+            .accept_release_once(&challenge, || panic!(), |_| panic!())
+            .is_err());
+        std::thread::sleep(std::time::Duration::from_millis(300));
+        return;
+    }
     child.answer_once(&expected).unwrap();
     assert!(child.answer_once(&expected).is_err());
     // Remain live until the parent has checked its atomically delivered pidfd.
     std::thread::sleep(std::time::Duration::from_millis(300));
+}
+
+#[test]
+fn worker_release_transport_loss_preserves_one_shot() {
+    for outcome in ["accepted", "discarded", "wrong-peer"] {
+        let mut pair = Pair::create().unwrap();
+        let deadline = clock().unwrap() + 5_000_000_000;
+        let child = spawn(&pair, "release", deadline);
+        let challenge = c(child.0.id(), deadline);
+        let peer = [child.0.id(), unsafe { libc::getuid() }, unsafe {
+            libc::getgid()
+        }];
+        let mut input = libc::pollfd {
+            fd: pair.parent.fd.as_raw_fd(),
+            events: libc::POLLIN,
+            revents: 0,
+        };
+        assert!(pair
+            .send_release_once(b"release fixture", [42; 48])
+            .is_err());
+        assert!(pair.send_worker_run_once().is_err());
+        pair.begin(challenge).unwrap();
+        assert_eq!(unsafe { libc::poll(&mut input, 1, 2000) }, 1);
+        assert!(pair.try_ack(peer).unwrap());
+        pair.send_release_once(b"release fixture", [42; 48])
+            .unwrap();
+        assert_eq!(unsafe { libc::poll(&mut input, 1, 2000) }, 1);
+        match outcome {
+            "accepted" => {
+                assert!(pair.try_release_ack(peer).unwrap());
+                assert_eq!(pair.worker_run_permission().unwrap(), run_permission(&[42; 48]));
+                pair.send_worker_run_once().unwrap();
+                let creator = [std::process::id(), unsafe { libc::getuid() }, unsafe {
+                    libc::getgid()
+                }];
+                assert_eq!(pair.child.receive(creator).unwrap().unwrap(), run_permission(&[42; 48]));
+            }
+            "discarded" => {
+                assert_eq!(pair.parent.receive(peer).unwrap().unwrap(), [42; 48]);
+                assert!(!pair.try_release_ack(peer).unwrap());
+            }
+            _ => {
+                assert!(pair
+                    .try_release_ack([peer[0], peer[1] ^ 1, peer[2]])
+                    .is_err());
+                assert!(pair.try_release_ack(peer).is_err());
+            }
+        }
+        assert!(pair
+            .send_release_once(b"release fixture", [42; 48])
+            .is_err());
+        assert!(pair.send_worker_run_once().is_err());
+    }
 }
 #[test]
 fn held_delivery_child_real_credentials_pidfd_one_shot_and_lost_ack() {

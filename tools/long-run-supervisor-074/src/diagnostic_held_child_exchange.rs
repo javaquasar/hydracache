@@ -31,7 +31,7 @@ fn need(ok: bool) -> io::Result<()> {
 fn kernel<T>(r: Result<T, KernelError>) -> io::Result<T> {
     r.map_err(|_| denied())
 }
-pub(super) fn clock() -> io::Result<u64> {
+pub(crate) fn clock() -> io::Result<u64> {
     let mut t: libc::timespec = unsafe { std::mem::zeroed() };
     if unsafe { libc::clock_gettime(libc::CLOCK_BOOTTIME, &mut t) } != 0 {
         return Err(io::Error::last_os_error());
@@ -55,6 +55,13 @@ pub(crate) struct Challenge {
     pub(crate) invocation: [u8; 16],
 }
 impl Challenge {
+    pub(crate) fn release_binding(&self) -> io::Result<([u8; 32], [u8; 32])> {
+        let frame = self.encode()?;
+        let mut nonce = Sha256::new();
+        nonce.update(b"hydracache-held-worker-release-nonce-074-v1\0");
+        nonce.update(frame);
+        Ok((Sha256::digest(frame).into(), nonce.finalize().into()))
+    }
     fn encode(&self) -> io::Result<[u8; CHALLENGE]> {
         need(
             self.deadline > 0
@@ -142,15 +149,21 @@ enum Phase {
     Fresh,
     Uncertain,
     Ready,
+    ReleaseSent,
+    ReleaseAcknowledged,
     Refused,
 }
-struct Endpoint {
+pub(crate) struct Endpoint {
     fd: OwnedFd,
     id: [u64; 2],
 }
 impl Endpoint {
-    fn new(fd: OwnedFd) -> io::Result<Self> {
+    pub(crate) fn new(fd: OwnedFd) -> io::Result<Self> {
         kernel(ancillary::configure(&fd))?;
+        Self::from_inherited(fd)
+    }
+    pub(crate) fn from_inherited(fd: OwnedFd) -> io::Result<Self> {
+        kernel(ancillary::revalidate_socket(&fd))?;
         let m = File::from(fd.try_clone()?).metadata()?;
         Ok(Self {
             fd,
@@ -178,7 +191,7 @@ impl Endpoint {
         need(n as usize == raw.len())?;
         self.check()
     }
-    fn receive(&self, expected: [u32; 3]) -> io::Result<Option<Vec<u8>>> {
+    pub(crate) fn receive(&self, expected: [u32; 3]) -> io::Result<Option<Vec<u8>>> {
         self.check()?;
         let Some((raw, cred, pidfd)) = kernel(ancillary::receive(&self.fd))? else {
             return Ok(None);
@@ -186,13 +199,20 @@ impl Endpoint {
         need([cred.pid as u32, cred.uid, cred.gid] == expected)?;
         // This pidfd was delivered atomically with SCM_CREDENTIALS by recvmsg,
         // never opened by a packet-supplied PID or inferred from SO_PEERCRED.
+        require_live_peer(pidfd.as_raw_fd(), expected[0])?;
+        self.check()?;
+        Ok(Some(raw))
+    }
+}
+
+pub(crate) fn require_live_peer(fd: i32, pid: u32) -> io::Result<()> {
         let mut p = libc::pollfd {
-            fd: pidfd.as_raw_fd(),
+            fd,
             events: libc::POLLIN,
             revents: 0,
         };
         need(unsafe { libc::poll(&mut p, 1, 0) } == 0 && p.revents == 0)?;
-        let info = File::open(format!("/proc/thread-self/fdinfo/{}", pidfd.as_raw_fd()))?;
+        let info = File::open(format!("/proc/thread-self/fdinfo/{fd}"))?;
         let mut fs: libc::statfs = unsafe { std::mem::zeroed() };
         need(
             unsafe { libc::fstatfs(info.as_raw_fd(), &mut fs) } == 0
@@ -204,20 +224,31 @@ impl Endpoint {
         let text = std::str::from_utf8(&buf[..n]).map_err(|_| denied())?;
         let mut pids = text.lines().filter_map(|s| s.strip_prefix("Pid:"));
         need(
-            pids.next().and_then(|s| s.trim().parse::<u32>().ok()) == Some(expected[0])
+            pids.next().and_then(|s| s.trim().parse::<u32>().ok()) == Some(pid)
                 && pids.next().is_none(),
         )?;
         p.revents = 0;
-        need(unsafe { libc::poll(&mut p, 1, 0) } == 0 && p.revents == 0)?;
-        self.check()?;
-        Ok(Some(raw))
-    }
+        need(unsafe { libc::poll(&mut p, 1, 0) } == 0 && p.revents == 0)
+}
+
+pub(crate) const WORKER_RUN_ARG: &str = "--run-held-v1";
+
+pub(crate) fn run_permission(ack: &[u8; 48]) -> [u8; 40] {
+    let mut hash = Sha256::new();
+    hash.update(b"hydracache-held-worker-run-074-v1\0");
+    hash.update(ack);
+    let mut packet = [0; 40];
+    packet[..8].copy_from_slice(b"HCRW0741");
+    packet[8..].copy_from_slice(&hash.finalize());
+    packet
 }
 pub(crate) struct Pair {
     parent: Endpoint,
     child: Endpoint,
     phase: Phase,
     challenge: Option<Challenge>,
+    release_reply: Option<[u8; 48]>,
+    run_permission: Option<[u8; 40]>,
 }
 impl Pair {
     pub(crate) fn create() -> io::Result<Self> {
@@ -239,6 +270,8 @@ impl Pair {
             child: Endpoint::new(b)?,
             phase: Phase::Fresh,
             challenge: None,
+            release_reply: None,
+            run_permission: None,
         })
     }
     pub(crate) fn child_fd(&self) -> BorrowedFd<'_> {
@@ -286,8 +319,88 @@ impl Pair {
         }
         result
     }
+    #[cfg(test)]
+    pub(crate) fn discard_ready_ack_for_test(&self, peer: [u32; 3]) -> io::Result<bool> {
+        need(self.phase == Phase::Uncertain)?;
+        self.check()?;
+        let challenge = self.challenge.as_ref().ok_or_else(denied)?;
+        need(peer[0] == challenge.child && clock()? < challenge.deadline)?;
+        let Some(raw) = self.parent.receive(peer)? else {
+            return Ok(false);
+        };
+        // Verify the genuine child packet, then lose it at the test boundary.
+        // The production receive path and both state machines stay unchanged.
+        need(raw.as_slice() == challenge.ack()? && clock()? < challenge.deadline)?;
+        Ok(true)
+    }
+
     pub(crate) fn refuse(&mut self) {
         self.phase = Phase::Refused;
+    }
+
+    pub(crate) fn ready_challenge(&self) -> io::Result<&Challenge> {
+        need(self.phase == Phase::Ready)?;
+        self.challenge.as_ref().ok_or_else(denied)
+    }
+
+    pub(crate) fn send_release_once(&mut self, raw: &[u8], reply: [u8; 48]) -> io::Result<()> {
+        let deadline = self.ready_challenge()?.deadline;
+        self.phase = Phase::ReleaseSent;
+        self.release_reply = Some(reply);
+        self.run_permission = Some(run_permission(&reply));
+        self.check()?;
+        need(clock()? < deadline)?;
+        self.parent.send(raw)?;
+        need(clock()? < deadline)
+    }
+
+    pub(crate) fn worker_run_permission(&self) -> io::Result<[u8; 40]> {
+        need(self.phase == Phase::ReleaseAcknowledged)?;
+        self.run_permission.ok_or_else(denied)
+    }
+
+    pub(crate) fn send_worker_run_once(&mut self) -> io::Result<()> {
+        let packet = self.worker_run_permission()?;
+        self.run_permission = None;
+        let deadline = self.challenge.as_ref().ok_or_else(denied)?.deadline;
+        self.check()?;
+        need(clock()? < deadline)?;
+        self.parent.send(&packet)?;
+        need(clock()? < deadline)
+    }
+
+    pub(crate) fn try_release_ack(&mut self, peer: [u32; 3]) -> io::Result<bool> {
+        let result = (|| {
+            need(self.phase == Phase::ReleaseSent && self.release_reply.is_some())?;
+            self.check()?;
+            let challenge = self.challenge.as_ref().ok_or_else(denied)?;
+            need(peer[0] == challenge.child && clock()? < challenge.deadline)?;
+            let Some(raw) = self.parent.receive(peer)? else {
+                return Ok(false);
+            };
+            let expected = self.release_reply.take().ok_or_else(denied)?;
+            need(raw == expected && clock()? < challenge.deadline)?;
+            self.phase = Phase::ReleaseAcknowledged;
+            Ok(true)
+        })();
+        if result.is_err() {
+            // End this reply window without disabling observation of the
+            // original process generation or reopening the send window.
+            self.release_reply = None;
+        }
+        result
+    }
+
+    #[cfg(test)]
+    pub(crate) fn discard_release_ack_for_test(&self, peer: [u32; 3]) -> io::Result<bool> {
+        need(self.phase == Phase::ReleaseSent)?;
+        let challenge = self.challenge.as_ref().ok_or_else(denied)?;
+        need(peer[0] == challenge.child && clock()? < challenge.deadline)?;
+        let Some(raw) = self.parent.receive(peer)? else {
+            return Ok(false);
+        };
+        need(self.release_reply.as_ref().is_some_and(|ack| raw == *ack))?;
+        Ok(true)
     }
 }
 
@@ -306,7 +419,7 @@ impl Child {
         &mut self,
         expected: &Challenge,
         mut frame: impl FnMut() -> io::Result<()>,
-    ) -> io::Result<()> {
+    ) -> io::Result<Challenge> {
         let result = (|| {
             need(self.phase == Phase::Fresh)?;
             self.phase = Phase::Uncertain;
@@ -330,12 +443,36 @@ impl Child {
             frame()?;
             need(clock()? < expected.deadline)?;
             self.phase = Phase::Ready;
-            Ok(())
+            Ok(received)
         })();
         if result.is_err() {
             self.phase = Phase::Refused;
         }
         result
+    }
+
+    // Invoked only by the release-enabled bootstrap after the unchanged
+    // readiness exchange. Latch before receive, validation or acceptance.
+    pub(crate) fn accept_release_once(
+        &mut self,
+        challenge: &Challenge,
+        mut frame: impl FnMut() -> io::Result<()>,
+        authorize: impl FnOnce(&[u8]) -> io::Result<[u8; 48]>,
+    ) -> io::Result<()> {
+        let prior = std::mem::replace(&mut self.phase, Phase::Refused);
+        need(prior == Phase::Ready)?;
+        frame()?;
+        need(clock()? < challenge.deadline)?;
+        let raw = self
+            .endpoint
+            .receive(challenge.creator)?
+            .ok_or_else(denied)?;
+        let acknowledgement = authorize(&raw)?;
+        frame()?;
+        need(clock()? < challenge.deadline)?;
+        self.endpoint.send(&acknowledgement)?;
+        frame()?;
+        need(clock()? < challenge.deadline)
     }
     pub(crate) fn from_owned(fd: OwnedFd) -> io::Result<Self> {
         Ok(Self {

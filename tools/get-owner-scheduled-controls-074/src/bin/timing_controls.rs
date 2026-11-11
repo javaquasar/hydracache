@@ -5,6 +5,10 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::{io::Read, path::Path, process::ExitCode};
 
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+#[path = "timing_held/permit.rs"]
+mod permit;
+
 enum Arguments<'a> {
     Validate(&'a str),
     GenerateMaterial(&'a str),
@@ -71,6 +75,19 @@ fn binary_hash(path: &Path) -> Result<String, String> {
     }
     Ok(format!("{:x}", hash.finalize()))
 }
+
+fn running_binary_hash() -> Result<String, String> {
+    #[cfg(target_os = "linux")]
+    {
+        // A descriptor-based exec can run an image whose named path is not
+        // traversable by the worker. Open the actual process image directly.
+        binary_hash(Path::new("/proc/self/exe"))
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        binary_hash(&std::env::current_exe().map_err(|e| e.to_string())?)
+    }
+}
 #[derive(Serialize)]
 struct Envelope<'a> {
     source_commit_from_coordinator: &'a str,
@@ -83,7 +100,10 @@ struct Envelope<'a> {
     report: Option<timing::Report>,
     error: Option<String>,
 }
-fn execute(args: &[String]) -> Result<bool, String> {
+fn execute(
+    args: &[String],
+    allow_run: impl FnOnce() -> Result<(), String>,
+) -> Result<bool, String> {
     let args = arguments(args)?;
     let (config, binary, source, material) = match args {
         Arguments::GenerateMaterial(path) => {
@@ -120,7 +140,7 @@ fn execute(args: &[String]) -> Result<bool, String> {
     };
     execution_features_valid(cfg!(feature = "allocation-diagnostics"))?;
     let config = input(Path::new(config))?;
-    let hash = binary_hash(&std::env::current_exe().map_err(|e| e.to_string())?)?;
+    let hash = running_binary_hash()?;
     if hash != binary {
         return Err("timing binary seal mismatch before fixture".to_owned());
     }
@@ -130,6 +150,7 @@ fn execute(args: &[String]) -> Result<bool, String> {
     let fixed = material
         .map(|(path, pin)| MtlsFixture::read_pinned(Path::new(path), pin))
         .transpose()?;
+    allow_run()?;
     let mut envelope = Envelope {
         source_commit_from_coordinator: source,
         source_git_identity_verified_by_binary: false,
@@ -176,7 +197,34 @@ fn execute(args: &[String]) -> Result<bool, String> {
     Ok(ok)
 }
 fn main() -> ExitCode {
-    match execute(&std::env::args().skip(1).collect::<Vec<_>>()) {
+    let args = std::env::args_os().skip(1).collect::<Vec<_>>();
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+    if args.first().is_some_and(|mode| mode == permit::WORKER_RUN_ARG) {
+        // The held process must keep its inherited output pipes silent on every
+        // refusal before the original owner authorizes work.
+        let Some([_, config, binary, source, deadline, peer, ack]) =
+            args.iter().map(|arg| arg.to_str()).collect::<Option<Vec<_>>>()
+                .and_then(|args| <[_; 7]>::try_from(args).ok())
+        else {
+            return ExitCode::FAILURE;
+        };
+        if config != "/proc/self/fd/5" {
+            return ExitCode::FAILURE;
+        }
+        let run = ["--run", config, binary, source].map(str::to_owned);
+        let hold = permit::Hold { deadline, peer, ack };
+        return if execute(&run, || hold.wait().map_err(|e| e.to_string())) == Ok(true) {
+            ExitCode::SUCCESS
+        } else {
+            ExitCode::FAILURE
+        };
+    }
+    let args = args.into_iter().map(|arg| arg.into_string()).collect::<Result<Vec<_>, _>>();
+    let Ok(args) = args else {
+        eprintln!("invalid timing arguments");
+        return ExitCode::FAILURE;
+    };
+    match execute(&args, || Ok(())) {
         Ok(true) => ExitCode::SUCCESS,
         Ok(false) => ExitCode::FAILURE,
         Err(error) => {
@@ -263,5 +311,12 @@ mod tests {
         assert!(input(fixture.path()).is_err());
         std::fs::write(fixture.path(), vec![b' '; 65537]).unwrap();
         assert!(input(fixture.path()).unwrap_err().contains("64 KiB"));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn running_binary_seal_hashes_the_kernel_image() {
+        let named = std::env::current_exe().unwrap();
+        assert_eq!(running_binary_hash().unwrap(), binary_hash(&named).unwrap());
     }
 }
