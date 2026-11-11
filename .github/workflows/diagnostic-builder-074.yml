@@ -41,13 +41,15 @@ jobs:
         run: python3 tooling/scripts/perf/diagnostic_builder_074.py policy "$RUNNER_TEMP/build-policy.json"
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
-          ref: 62114be0f5da3218706e30d7424acfb5d0579d07
+          ref: a660dfea9357eee9d1a50a79ade0c7fd1f63bac5
           path: observer
           persist-credentials: false
       - name: Install exact reviewed compiler
         timeout-minutes: 10
         run: rustup toolchain install 1.94.0 --profile minimal
       - name: Build once and retain native observations; validation only
+        env:
+          HC074_FROZEN_OBSERVER_CHECKOUT: ${{ github.workspace }}/observer
         shell: bash
         run: |
           set -euo pipefail
@@ -99,7 +101,8 @@ jobs:
           test -z "$(git status --porcelain=v1)"
           rustup toolchain install 1.94.0 --profile minimal
           cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test diagnostic_artifacts --lib builder
-          cargo +1.94.0 build -p hydracache-long-run-supervisor-074 --locked --bin diagnostic_builder
+          RUSTFLAGS=--cfg=hc074_reviewed_observer_candidate cargo +1.94.0 test -p hydracache-long-run-supervisor-074 --locked --test diagnostic_artifacts builder
+          RUSTFLAGS=--cfg=hc074_reviewed_observer_candidate cargo +1.94.0 build -p hydracache-long-run-supervisor-074 --locked --bin diagnostic_builder
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: diagnostic-unsigned-build-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}

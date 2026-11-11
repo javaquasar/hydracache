@@ -17,11 +17,22 @@ pub mod linux;
 
 pub const SIGNATURE_DOMAIN: &[u8] = b"hydracache-diagnostic-build-074-v1";
 pub const INSTALL_ROOT: &str = "/opt/hydracache-performance/0.74/diagnostic-pilot";
+#[cfg(not(hc074_reviewed_observer_candidate))]
 pub const SOURCE_TREE: &str = "a9f059d752f5497c8dc5f07fbee4db6b22a366f4";
+#[cfg(hc074_reviewed_observer_candidate)]
+pub const SOURCE_TREE: &str = "5673f7c9684dbd903468f3b4767b0e125886c314";
+#[cfg(not(hc074_reviewed_observer_candidate))]
 pub const ROOT_LOCK_SHA256: &str =
     "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19";
+#[cfg(hc074_reviewed_observer_candidate)]
+pub const ROOT_LOCK_SHA256: &str =
+    "8ade63f6a4aae93f27f5161798bc87804542a48093b4203f35e25e29b680a4f5";
+#[cfg(not(hc074_reviewed_observer_candidate))]
 pub const OBSERVER_LOCK_SHA256: &str =
     "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d";
+#[cfg(hc074_reviewed_observer_candidate)]
+pub const OBSERVER_LOCK_SHA256: &str =
+    "46cafa57b559a84d1945b5df3948cf434b5305690b83e1d8b3b5225c694f3380";
 pub const MAX_BINARY_BYTES: u64 = 134_217_728;
 pub const MAX_RECEIPT_BYTES: u64 = 65_536;
 pub const MAX_CONFIG_BYTES: u64 = 65_536;

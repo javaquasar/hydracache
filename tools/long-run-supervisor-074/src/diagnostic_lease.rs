@@ -28,7 +28,10 @@ pub const TOTAL_SECONDS: u64 = 300;
 pub const CONTROLLER_LOSS_SECONDS: u64 = 10;
 pub const MAX_RECEIPT_BYTES: u64 = 16_777_216;
 const NS: u64 = 1_000_000_000;
+#[cfg(not(hc074_reviewed_observer_candidate))]
 pub const SOURCE_COMMIT: &str = "62114be0f5da3218706e30d7424acfb5d0579d07";
+#[cfg(hc074_reviewed_observer_candidate)]
+pub const SOURCE_COMMIT: &str = "a660dfea9357eee9d1a50a79ade0c7fd1f63bac5";
 pub const BINARY_PATH: &str =
     "/opt/hydracache-performance/0.74/diagnostic-pilot/timing-controls-074";
 pub(crate) const SURFACES: [&str; 4] = ["embedded", "direct", "resp2", "resp3"];

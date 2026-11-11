@@ -21,12 +21,22 @@ struct Synthetic {
 }
 // Exact worker-source bytes, independent of moving workspace dependencies.
 // This test-only fixture also works offline and in a shallow checkout.
+#[cfg(not(hc074_reviewed_observer_candidate))]
 fn frozen_root_lock() -> &'static [u8] {
     const ORIGINAL: &[u8] = include_bytes!("fixtures/diagnostic-pilot-root-Cargo.lock");
     assert_eq!(ArtifactDigest::of(ORIGINAL).sha256, ROOT_LOCK_SHA256);
     ORIGINAL
 }
+#[cfg(hc074_reviewed_observer_candidate)]
+fn frozen_root_lock() -> &'static [u8] {
+    const ROOT: &[u8] = include_bytes!("../../../Cargo.lock");
+    assert_eq!(ArtifactDigest::of(ROOT).sha256, ROOT_LOCK_SHA256);
+    ROOT
+}
+#[cfg(not(hc074_reviewed_observer_candidate))]
 const OBSERVER_LOCK: &[u8] = include_bytes!("../../get-owner-scheduled-controls-074/Cargo.lock");
+#[cfg(hc074_reviewed_observer_candidate)]
+const OBSERVER_LOCK: &[u8] = include_bytes!("fixtures/diagnostic-candidate-observer-Cargo.lock");
 
 #[path = "support/frozen_lock_fixture_tests.rs"]
 mod frozen_fixture_tests;

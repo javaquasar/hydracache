@@ -7,15 +7,15 @@ from pathlib import Path
 import shutil
 import subprocess
 
-SOURCE = "62114be0f5da3218706e30d7424acfb5d0579d07"
-TREE = "a9f059d752f5497c8dc5f07fbee4db6b22a366f4"
+SOURCE = "a660dfea9357eee9d1a50a79ade0c7fd1f63bac5"
+TREE = "5673f7c9684dbd903468f3b4767b0e125886c314"
 COMMAND = ["cargo", "+1.94.0", "build", "--manifest-path",
            "tools/get-owner-scheduled-controls-074/Cargo.toml", "--release", "--locked",
            "--no-default-features", "--bin", "timing-controls-074", "--target",
            "x86_64-unknown-linux-gnu", "--message-format=json"]
 HASHES = {
-    "Cargo.lock.root": "be46eaf8e97e507bda5e3f2b671d0d622e6a639ce1d4613769a4693723d62b19",
-    "Cargo.lock.observer": "e3be470f5a1bff4e917e841fc5bfbd257ff12559206bbc1481c3c4bca528eb1d",
+    "Cargo.lock.root": "8ade63f6a4aae93f27f5161798bc87804542a48093b4203f35e25e29b680a4f5",
+    "Cargo.lock.observer": "46cafa57b559a84d1945b5df3948cf434b5305690b83e1d8b3b5225c694f3380",
     "embedded.json": "5c219730c8a782ed47dfa0b291a29f44f753c3688f8548c136174a89cee55149",
     "direct.json": "5485b10f50906833006ad3f3a40b4909760ef01e3f2c86395e4366bf83cc6ef9",
     "resp2.json": "f0aba16dfe0354801d0b3c83ee9fc2d1b4751be5f50280634690ed4bcf3030ae",

@@ -41,3 +41,6 @@ version = "=6.1.0"
 path = "../../third_party/hc074-dbus/zbus"
 default-features = false
 features = ["hc074-unix-fixture"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hc074_reviewed_observer_candidate)'] }
