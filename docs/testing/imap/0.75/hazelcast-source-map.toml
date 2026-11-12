@@ -1,0 +1,109 @@
+release = "0.75"
+status = "provisional"
+upstream_url = "https://github.com/hazelcast/hazelcast"
+upstream_sha = "880efabcd8eabd0c2595749ee87f495c6a45895c"
+upstream_license = "Apache-2.0"
+
+[[sources]]
+path = "hazelcast/src/main/java/com/hazelcast/spi/properties/ClusterProperty.java"
+sha256 = "1cb9d9fc9f067d71381f113b814a8579959d2e54efd094e02711222ae6cf81fa"
+principle = "finite operation, backup, and invocation bounds are explicit configuration"
+hydracache_target = "docs/testing/imap/0.75/resource-bounds.json"
+adapted_test_ids = ["HC-IMAP-075-BOUND-ADMISSION"]
+non_adopted = "Hazelcast property names and runtime defaults are not copied as HydraCache compatibility promises"
+
+[[sources]]
+path = "hazelcast/src/main/java/com/hazelcast/internal/partition/impl/InternalPartitionServiceImpl.java"
+sha256 = "2e837840247f824d58185051466eb0887e199d5680ed6e3c6d225645117ef61f"
+principle = "partition ownership is separated from map record storage"
+hydracache_target = "crates/hydracache-cluster-testkit/src/provisional_backend_075.rs"
+adapted_test_ids = ["HC-IMAP-075-ROUTE-ORACLE"]
+non_adopted = "Hazelcast partition count, wire protocol, and ownership implementation are not adopted"
+
+[[sources]]
+path = "hazelcast/src/main/java/com/hazelcast/spi/impl/operationservice/impl/PartitionInvocation.java"
+sha256 = "8803d9910cb5760b91db40f4828f3431b82ea987ee91b322689ab932cf10a66a"
+principle = "partition invocations are epoch-aware and retry classification is explicit"
+hydracache_target = "docs/testing/imap/0.75/retry-idempotency.json"
+adapted_test_ids = ["HC-IMAP-075-STALE-EPOCH", "HC-IMAP-075-REDIRECT-BOUND"]
+non_adopted = "Hazelcast retry timing and exception taxonomy are not compatibility requirements"
+
+[[sources]]
+path = "hazelcast/src/main/java/com/hazelcast/spi/impl/operationservice/impl/OperationBackupHandler.java"
+sha256 = "2ac327046e9524543301f745187e4b6de64d73b3b22c511be0803075d0bbe5c6"
+principle = "backup dispatch and acknowledgement are distinct stages"
+hydracache_target = "crates/hydracache-cluster-testkit/src/value_plane_model_075.rs"
+adapted_test_ids = ["HC-IMAP-075-ACK-PROOF"]
+non_adopted = "Hazelcast backup execution mechanics and replica counts are not copied"
+
+[[sources]]
+path = "hazelcast/src/main/java/com/hazelcast/spi/impl/operationservice/impl/responses/BackupAckResponse.java"
+sha256 = "12e5592d3a247a1c556d41b385afefce567c90d520061be7632eafa919b38738"
+principle = "backup acknowledgement is explicit evidence rather than inferred delivery"
+hydracache_target = "docs/testing/imap/0.75/mutation-stages.json"
+adapted_test_ids = ["HC-IMAP-075-FALSE-BACKUP-ACK-CANARY"]
+non_adopted = "Hazelcast response encoding and member addressing are not adopted"
+
+[[sources]]
+path = "hazelcast/src/main/java/com/hazelcast/spi/impl/operationservice/impl/Invocation.java"
+sha256 = "962bb2678609478e5869152d87300976828eed1425760b14f50d4032b1cf37e5"
+principle = "ambiguous outcomes and retries require a bounded invocation identity"
+hydracache_target = "docs/testing/imap/0.75/retry-idempotency.json"
+adapted_test_ids = ["HC-IMAP-075-AMBIGUOUS-RETRY"]
+non_adopted = "Hazelcast invocation UUIDs, call timeouts, and exception surface are not adopted"
+
+[[sources]]
+path = "hazelcast/src/main/java/com/hazelcast/internal/partition/impl/PartitionReplicaManager.java"
+sha256 = "f90f030557861e0af11019b8caf85103be674d708c772d727981f4509c17dafc"
+principle = "replica synchronization gates safe promotion and repair"
+hydracache_target = "crates/hydracache-cluster-testkit/src/value_plane_model_075.rs"
+adapted_test_ids = ["HC-IMAP-075-PROMOTION-PROOF"]
+non_adopted = "Hazelcast replica version arrays and sync protocol are not adopted"
+
+[[sources]]
+path = "hazelcast/src/main/java/com/hazelcast/map/impl/recordstore/DefaultRecordStore.java"
+sha256 = "6aed1e1fb27303a66367517e39dee84c0e82b4023fc83ee4a0439349d1842bce"
+principle = "TTL and expiry are record semantics and must remain observable at mutation boundaries"
+hydracache_target = "tests/java-imap-benchmark/src/main/java/io/hydracache/imap/semantic/InMemorySemanticAdapter.java"
+adapted_test_ids = ["HC-IMAP-075-LOGICAL-TTL"]
+non_adopted = "Hazelcast eviction algorithms, clock behavior, and record layout are not adopted"
+
+[[sources]]
+path = "hazelcast/src/main/java/com/hazelcast/map/impl/MapServiceContextImpl.java"
+sha256 = "64314fa031a3923d7e2250959949af43a11b90aa27a841a48d5d9461b594b728"
+principle = "map namespace lifecycle is coordinated separately from individual records"
+hydracache_target = "crates/hydracache-cluster-testkit/src/value_plane_admission_075.rs"
+adapted_test_ids = ["HC-IMAP-075-NAMESPACE-GENERATION"]
+non_adopted = "Hazelcast map-container lifecycle and dynamic configuration APIs are not adopted"
+
+[[sources]]
+path = "hazelcast/src/main/java/com/hazelcast/map/impl/event/MapEventPublisherImpl.java"
+sha256 = "ae92badbe10ff55a92703a12f94ca57b6964190098fa6eab682f501f18b3baab"
+principle = "event publication needs an explicit gap and repair boundary"
+hydracache_target = "tests/java-imap-benchmark/src/main/java/io/hydracache/imap/semantic/ListenerRepairBoundary.java"
+adapted_test_ids = ["HC-IMAP-075-LISTENER-GAP-REPAIR"]
+non_adopted = "Hazelcast event payloads, ordering scope, and listener registration protocol are not adopted"
+
+[[sources]]
+path = "hazelcast/src/main/java/com/hazelcast/internal/partition/impl/MigrationManagerImpl.java"
+sha256 = "23bac5846bbde45e83aa77910495cca5c90c9e65ca77e5fe6e2d7c0c8ed6e70c"
+principle = "migration has bounded phases and blocks unsafe concurrent ownership changes"
+hydracache_target = "docs/testing/imap/0.75/failure-consistency-matrix.json"
+adapted_test_ids = ["HC-IMAP-075-REBALANCE-SAFETY"]
+non_adopted = "Hazelcast migration scheduling, partition table format, and cluster-state behavior are not adopted"
+
+[[sources]]
+path = "hazelcast/src/main/java/com/hazelcast/internal/partition/operation/MigrationCommitOperation.java"
+sha256 = "9efbfeac665a5369724349c1f08b09dfef652a705426b6a7f58163a999e110dc"
+principle = "ownership cutover is a committed epoch-fenced transition"
+hydracache_target = "crates/hydracache-cluster-testkit/src/value_plane_model_075.rs"
+adapted_test_ids = ["HC-IMAP-075-REBALANCE-COMMIT"]
+non_adopted = "Hazelcast migration commit wire operation is not adopted"
+
+[[sources]]
+path = "hazelcast/src/main/java/com/hazelcast/map/impl/MapService.java"
+sha256 = "d233d3b084c1c109dbf00b553ac2eafb7f1e97bc8a33a58486e48c8905890dc9"
+principle = "distributed map semantics are exposed through a backend-neutral service boundary"
+hydracache_target = "crates/hydracache-cluster-testkit/src/provisional_backend_075.rs"
+adapted_test_ids = ["HC-IMAP-075-BACKEND-SEAM"]
+non_adopted = "Hazelcast service registration, serialization IDs, and protocol compatibility are not adopted"

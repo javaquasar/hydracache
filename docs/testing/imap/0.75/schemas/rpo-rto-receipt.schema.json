@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hydracache.imap.rpo-rto-receipt.v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "release", "source_sha", "profile", "fault", "rpo_operations", "rto_logical_ticks", "bound_id", "result"],
+  "properties": {
+    "schema": {"const": "hydracache.imap.rpo-rto-receipt.v1"}, "release": {"const": "0.75"},
+    "source_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "profile": {"enum": ["in_memory", "durable"]},
+    "fault": {"enum": ["owner_loss", "owner_plus_backup_loss", "whole_cluster_restart"]},
+    "rpo_operations": {"type": "integer", "minimum": 0}, "rto_logical_ticks": {"type": "integer", "minimum": 0},
+    "bound_id": {"type": "string", "minLength": 1}, "result": {"const": "passed"}
+  }
+}

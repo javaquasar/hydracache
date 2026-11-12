@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hydracache:imap:native-histories:v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "scope",
+    "artifact_sha256",
+    "histories"
+  ],
+  "properties": {
+    "schema": {
+      "const": "imap075-native-histories-v1"
+    },
+    "scope": {
+      "const": "eternal_fixed_keys_two_clients_single_member"
+    },
+    "artifact_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "histories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "seed",
+          "attempts",
+          "member_uuid",
+          "clients",
+          "program",
+          "raw",
+          "raw_digest",
+          "final_entries",
+          "final_digest",
+          "overlap",
+          "verdict",
+          "work",
+          "witness",
+          "native_events"
+        ],
+        "properties": {
+          "seed": {
+            "enum": [
+              117,
+              118
+            ]
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8
+          },
+          "member_uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clients": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "uniqueItems": true
+          },
+          "program": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "worker",
+                "position",
+                "operation",
+                "key",
+                "value",
+                "expected"
+              ],
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 15
+                },
+                "worker": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "position": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 15
+                },
+                "operation": {
+                  "enum": [
+                    "get",
+                    "contains_key",
+                    "put",
+                    "put_if_absent",
+                    "replace_if_present",
+                    "get_and_put",
+                    "get_and_remove",
+                    "replace_if_value",
+                    "remove_if_value"
+                  ]
+                },
+                "key": {
+                  "type": "string",
+                  "pattern": "^(?:[0-9a-f]{2})*$",
+                  "maxLength": 128
+                },
+                "value": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^(?:[0-9a-f]{2})*$",
+                  "maxLength": 128
+                },
+                "expected": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^(?:[0-9a-f]{2})*$",
+                  "maxLength": 128
+                }
+              }
+            },
+            "minItems": 12,
+            "maxItems": 12
+          },
+          "raw": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "phase",
+                "stamp",
+                "call_id",
+                "worker",
+                "value",
+                "boolean"
+              ],
+              "properties": {
+                "phase": {
+                  "enum": [
+                    "invoke",
+                    "return"
+                  ]
+                },
+                "stamp": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 32
+                },
+                "call_id": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 15
+                },
+                "worker": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "value": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^(?:[0-9a-f]{2})*$",
+                  "maxLength": 128
+                },
+                "boolean": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "minItems": 24,
+            "maxItems": 24
+          },
+          "raw_digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "final_entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "key",
+                "value"
+              ],
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "pattern": "^(?:[0-9a-f]{2})*$",
+                  "maxLength": 128
+                },
+                "value": {
+                  "type": "string",
+                  "pattern": "^(?:[0-9a-f]{2})*$",
+                  "maxLength": 128
+                }
+              }
+            },
+            "minItems": 0,
+            "maxItems": 4
+          },
+          "final_digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "overlap": {
+            "const": true
+          },
+          "verdict": {
+            "const": "linearizable"
+          },
+          "work": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "witness": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 11
+            },
+            "minItems": 12,
+            "maxItems": 12,
+            "uniqueItems": true
+          },
+          "native_events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "key",
+                "old_value",
+                "value"
+              ],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "added",
+                    "updated",
+                    "removed"
+                  ]
+                },
+                "key": {
+                  "type": "string",
+                  "pattern": "^(?:[0-9a-f]{2})*$",
+                  "maxLength": 128
+                },
+                "old_value": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^(?:[0-9a-f]{2})*$",
+                  "maxLength": 128
+                },
+                "value": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^(?:[0-9a-f]{2})*$",
+                  "maxLength": 128
+                }
+              }
+            },
+            "minItems": 0,
+            "maxItems": 12
+          }
+        }
+      },
+      "minItems": 2,
+      "maxItems": 2
+    }
+  }
+}

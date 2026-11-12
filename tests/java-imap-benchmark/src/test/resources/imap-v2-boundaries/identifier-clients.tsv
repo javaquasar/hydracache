@@ -1,0 +1,6 @@
+imap-extended-semantic-v2	0	5
+61	put	61:31:~:e	c2a0:1	~	0	0
+62	put	61:32:~:e	c285:1	~	0	0
+63	put	61:33:~:e	e28087:1	~	0	0
+64	put	61:34:~:e	e280af:1	~	0	0
+65	query_outcomes	~	c2a0:1,c285:1,e28087:1,e280af:1	~	0	0

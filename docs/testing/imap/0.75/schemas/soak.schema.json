@@ -1,0 +1,492 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hydracache:imap:soak:v1",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/profile"
+    },
+    {
+      "$ref": "#/$defs/frame"
+    },
+    {
+      "$ref": "#/$defs/report"
+    },
+    {
+      "$ref": "#/$defs/identity_checkpoint"
+    }
+  ],
+  "$defs": {
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "active_ms",
+        "period_ms",
+        "maximum_rounds",
+        "warmup_rounds",
+        "startup_ms",
+        "drain_ms",
+        "hard_ms",
+        "host_remaining_ms"
+      ],
+      "properties": {
+        "active_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "period_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maximum_rounds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "warmup_rounds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "startup_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "drain_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hard_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "host_remaining_ms": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "source_sha",
+        "cohort",
+        "seed",
+        "bounds",
+        "runtime",
+        "artifacts"
+      ],
+      "properties": {
+        "schema": {
+          "const": "imap075-soak-profile-v1"
+        },
+        "source_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "cohort": {
+          "enum": [
+            "reference",
+            "native",
+            "daemon"
+          ]
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bounds": {
+          "$ref": "#/$defs/bounds"
+        },
+        "runtime": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "sha256"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "owners": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unit",
+        "values",
+        "outcomes",
+        "pending",
+        "listeners",
+        "streams",
+        "resync",
+        "queued",
+        "correlations"
+      ],
+      "properties": {
+        "unit": {
+          "enum": [
+            "reference_owner_bytes",
+            "native_fixture_counts",
+            "daemon_protocol_only"
+          ]
+        },
+        "values": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "outcomes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "pending": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "listeners": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "streams": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "resync": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "queued": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "correlations": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pid",
+        "platform_birth",
+        "incarnation"
+      ],
+      "properties": {
+        "pid": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "platform_birth": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "incarnation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "frame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "phase",
+        "pid",
+        "incarnation",
+        "cohort",
+        "seed",
+        "source_sha",
+        "round",
+        "active_elapsed_ms",
+        "digest",
+        "owners",
+        "heap_bytes",
+        "rss_bytes",
+        "gc_collections",
+        "cpu_ns",
+        "threads",
+        "reason"
+      ],
+      "properties": {
+        "schema": {
+          "const": "imap075-soak-frame-v1"
+        },
+        "phase": {
+          "enum": [
+            "ready",
+            "warmup",
+            "active",
+            "round",
+            "drained"
+          ]
+        },
+        "pid": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "incarnation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "cohort": {
+          "enum": [
+            "reference",
+            "native",
+            "daemon"
+          ]
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "round": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "active_elapsed_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "digest": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "owners": {
+          "$ref": "#/$defs/owners"
+        },
+        "heap_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "rss_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "gc_collections": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "cpu_ns": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "threads": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        }
+      }
+    },
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "scope",
+        "production_enabled",
+        "profile",
+        "segment",
+        "parent_segment",
+        "controller",
+        "worker",
+        "terminal",
+        "rounds",
+        "active_elapsed_ms",
+        "transcript_sha256",
+        "transcript_bytes",
+        "process_reaped",
+        "remaining_members",
+        "containment",
+        "detail"
+      ],
+      "properties": {
+        "schema": {
+          "const": "imap075-soak-report-v1"
+        },
+        "scope": {
+          "const": "continuous_local_development_segment"
+        },
+        "production_enabled": {
+          "const": false
+        },
+        "profile": {
+          "$ref": "#/$defs/profile"
+        },
+        "segment": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "parent_segment": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        },
+        "controller": {
+          "$ref": "#/$defs/identity"
+        },
+        "worker": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "terminal": {
+          "enum": [
+            "complete",
+            "cancelled",
+            "timed_out",
+            "failed"
+          ]
+        },
+        "rounds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "active_elapsed_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "transcript_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "transcript_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8388608
+        },
+        "process_reaped": {
+          "type": "boolean"
+        },
+        "remaining_members": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "containment": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "detail": {
+          "type": "string",
+          "maxLength": 4096
+        }
+      }
+    },
+    "identity_checkpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "segment",
+        "worker"
+      ],
+      "properties": {
+        "schema": {
+          "const": "imap075-soak-identity-v1"
+        },
+        "segment": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "worker": {
+          "$ref": "#/$defs/identity"
+        }
+      }
+    }
+  }
+}

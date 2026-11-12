@@ -50,6 +50,62 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         Some("fast-suite-check") => xtask::fast_suite::run(args.collect())?,
         Some("gated-test-check") => xtask::gated_tests::run(args.collect())?,
+        Some("imap-contract-check") => xtask::imap_contract::run(args.collect())?,
+        Some("imap-api-differential") => xtask::imap_api_differential::run(args.collect())?,
+        Some("imap-extended-differential") => {
+            xtask::imap_extended_differential_075::run(args.collect())?
+        }
+        Some("imap-capability-audit") => xtask::imap_capability_audit::run(args.collect())?,
+        Some("imap-extended-concurrent") => {
+            xtask::imap_extended_concurrent_075::run(args.collect())?
+        }
+        Some("imap-extended-evidence") => {
+            xtask::imap_extended_receipt_075::run(args.collect(), false)?
+        }
+        Some("imap-extended-evidence-check") => {
+            xtask::imap_extended_receipt_075::run(args.collect(), true)?
+        }
+        Some("imap-migration-dry-run") => xtask::imap_migration_dry_run::run(args.collect())?,
+        Some("imap-comparison-check") => {
+            xtask::imap_qualification_075::comparison_run(args.collect())?
+        }
+        Some("imap-release-admission") => {
+            xtask::imap_qualification_075::release_run(args.collect())?
+        }
+        Some("imap-ci-check") => xtask::imap_ci_075::run_check(args.collect())?,
+        Some("imap-ci-run") => xtask::imap_ci_075::run_lane(args.collect())?,
+        Some("imap-daemon-probe") => xtask::imap_daemon_probe_075::run(args.collect())?,
+        Some("imap-pre074-tools") => xtask::imap_pre074_075::run(args.collect(), "tools")?,
+        Some("imap-native-observation") => xtask::imap_native_probe_075::run(args.collect())?,
+        Some("imap-native-concurrent") => xtask::imap_native_concurrent_075::run(args.collect())?,
+        Some("imap-native-listener-recovery") => {
+            xtask::imap_native_recovery_075::run(args.collect())?
+        }
+        Some("imap-pre074-evidence") => xtask::imap_pre074_075::run(args.collect(), "produce")?,
+        Some("imap-soak") => xtask::imap_soak_075::run(args.collect())?,
+        Some("imap-soak-cancel") => xtask::imap_soak_075::run_cancel(args.collect())?,
+        Some("imap-sbom") => xtask::imap_sbom_075::run(args.collect(), false)?,
+        Some("imap-sbom-check") => xtask::imap_sbom_075::run(args.collect(), true)?,
+        Some("imap-coverage-capture") => xtask::imap_coverage_075::run(args.collect(), "capture")?,
+        Some("imap-coverage-run") => xtask::imap_coverage_075::run(args.collect(), "worker")?,
+        Some("imap-coverage-analyze") => xtask::imap_coverage_075::run(args.collect(), "analysis")?,
+        Some("imap-coverage-check") => xtask::imap_coverage_075::run(args.collect(), "check")?,
+        Some("imap-pre074-evidence-check") => {
+            xtask::imap_pre074_075::run(args.collect(), "verify")?
+        }
+        Some("imap-cluster-chaos") => xtask::imap_cluster_campaign_075::run(args.collect())?,
+        Some("imap-semantic-audit") => xtask::imap_semantic_audit075::run(args.collect())?,
+        Some("imap-distributed-correctness") => {
+            xtask::imap_distributed_correctness::run(args.collect())?
+        }
+        Some("imap-foundation-evidence-check") => {
+            xtask::imap_foundation_evidence::run(args.collect())?
+        }
+        Some("imap-foundation-evidence-generate") => {
+            xtask::imap_foundation_generate::run(args.collect())?
+        }
+        Some("imap-hazelcast-source-check") => xtask::imap_hazelcast_source::run(args.collect())?,
+        Some("imap-value-plane-model") => xtask::imap_value_plane_model::run(args.collect())?,
         Some("legacy-client-check") => xtask::migration_conformance::run_legacy(args.collect())?,
         Some("long-run-campaign-check") => xtask::long_run_campaign::run(args.collect())?,
         Some("miri-check") => xtask::miri_check::run(args.collect())?,
@@ -138,6 +194,33 @@ fn print_usage() {
          cargo xtask evidence-run --release 0.64 --gate <id>  # execute a registered gate and write a receipt\n  \
          cargo xtask fast-suite-check --release 0.64  # validate fast-suite budgets and receipts\n  \
          cargo xtask gated-test-check  # validate every ignored/cfg/env-gated test registration\n  \
+         cargo xtask imap-contract-check --release 0.75  # validate the provisional Extended IMap W0 contracts\n  \
+         cargo xtask imap-api-differential --release 0.75 [--seed <u64>] [--steps <n>]  # compare real Rust and Java local IMap execution traces\n  \
+         cargo xtask imap-extended-differential --release 0.75 [--seed <i64>] [--script <path>]  # compare actual Rust/Java v2 peers against independent model\n  \
+         cargo xtask imap-extended-concurrent --release 0.75 [--seed <i64>] [--rounds <n>]  # independently check real Rust/Java worker histories\n  \
+         cargo xtask imap-extended-evidence --release 0.75 --output <new-target-dir> [--seed <i64>]\n  \
+         cargo xtask imap-extended-evidence-check --release 0.75 --receipt <path>  # strict local exact-artifact replay\n  \
+         cargo xtask imap-capability-audit --release 0.75  # compare actual reference and existing SDK claims\n  \
+         cargo xtask imap-migration-dry-run --release 0.75 [--fixtures <path>] [--output <path>]\n  \
+         cargo xtask imap-comparison-check --release 0.75 [--require-ready]\n  \
+         cargo xtask imap-release-admission --release 0.75 [--manifest <path>] [--require-ship]\n  \
+         cargo xtask imap-ci-check --release 0.75 [--mode pr|nightly] [--receipts <dir>]\n  \
+         cargo xtask imap-ci-run --release 0.75 --rust <version> --java <major> --shard <index> --output <path>\n  \
+         cargo xtask imap-daemon-probe --release 0.75  # observe current local HC1/RESP daemon behavior\n  \
+         cargo xtask imap-pre074-tools --release 0.75  # build/test isolated integration preparation and external consumers\n  \
+         cargo xtask imap-pre074-evidence --release 0.75 --output <new-target-dir>  # execute preparation and strictly replay its local receipt\n  \
+         cargo xtask imap-pre074-evidence-check --release 0.75 --receipt <path>\n  \
+         cargo xtask imap-sbom --release 0.75  # capture actual resolved development build inputs and unsigned CycloneDX 1.6\n  \
+         cargo xtask imap-sbom-check --release 0.75 --receipt <provenance>\n  \
+         cargo xtask imap-coverage-capture --release 0.75 --output <fresh-owned-directory>\n  \
+         cargo xtask imap-coverage-check --release 0.75 --receipt <current-source-report>\n  \
+         cargo xtask imap-cluster-chaos --release 0.75 [--seed <u64>] [--rounds <1..6>|--schedule <path>]  # execute/replay bounded actual-service histories\n  \
+         cargo xtask imap-semantic-audit --release 0.75  # check provisional signatures, typed helpers and shared-owner semantic adapters\n  \
+         cargo xtask imap-distributed-correctness --release 0.75 [--evidence <new-dir>]  # run every locally available distributed simulator/security/key proof and optionally emit receipts\n  \
+         cargo xtask imap-value-plane-model --release 0.75 [--seed <u64>] [--max-depth <n>] [--max-states <n>] [--output <path>]  # explore the bounded authority model and emit an exact-source receipt\n  \
+         cargo xtask imap-foundation-evidence-check --release 0.75 [--receipt <path>|--receipts <dir>]  # validate schemas, one receipt, or a complete exact-source evidence set\n  \
+         cargo xtask imap-foundation-evidence-generate --release 0.75 --output <dir> [--seed <u64>]  # execute all local foundation probes and emit thirteen receipts\n  \
+         cargo xtask imap-hazelcast-source-check --release 0.75 [--upstream <path>]  # validate the pinned Hazelcast provenance map and optional checkout hashes\n  \
          cargo xtask legacy-client-check --matrix hc1  # build shipped HC/1 libraries into consumers and run them against the current server\n  \
          cargo xtask miri-check  # run pinned Miri-safe snapshot proofs (skip loud when unavailable)\n  \
          cargo xtask migration-conformance-check <--structural|--upstream>  # validate 0.69 manifests or resolve selectors at pinned upstream commits\n  \

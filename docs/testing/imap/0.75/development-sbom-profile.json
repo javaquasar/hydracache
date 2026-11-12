@@ -1,0 +1,14 @@
+{
+  "schema": "imap075-development-sbom-profile-v1",
+  "format": "CycloneDX",
+  "spec_version": "1.6",
+  "inventory_profile": "imap075-native-host-build-and-test-inputs-v1",
+  "production_enabled": false,
+  "signature": "unsigned",
+  "roots": ["hydracache-server", "imap-contract-consumer-075", "imap-soak-worker-075", "java-imap-benchmark", "java-imap-hazelcast-075"],
+  "cargo": "actual compiler-artifact instances plus locked full host-filtered metadata; normal/build/dev edges of the compiled package set; build/test feature union is not exact runtime instance linkage",
+  "maven": "actual EventSpy resolver inputs including plugin/test-provider artifacts; dependency-plugin 3.8.1 JSON transitive scope tree separately; no filtered dependency includes/excludes",
+  "licenses": "direct metadata declarations with origin; inherited or missing declarations unknown; not legal approval",
+  "policy": "passed/failed/unknown separately; Java advisory policy unavailable is unknown; SBOM validity never promotes it",
+  "excluded_host_scope": "OS, native dynamic loader, system DLLs and trusted-host attestation are outside this development profile"
+}

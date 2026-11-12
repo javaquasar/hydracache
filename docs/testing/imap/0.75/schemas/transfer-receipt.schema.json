@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hydracache.imap.transfer-receipt.v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "release", "source_sha", "kind", "seed", "steps", "proof_sha256", "result"],
+  "properties": {
+    "schema": {"const": "hydracache.imap.transfer-receipt.v1"}, "release": {"const": "0.75"},
+    "source_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "kind": {"const": "transfer"},
+    "seed": {"type": "integer", "minimum": 0}, "steps": {"const": 7},
+    "proof_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "result": {"const": "passed"}
+  }
+}

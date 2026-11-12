@@ -1,0 +1,9 @@
+{
+  "path": ".github/workflows/imap-soak-075.yml",
+  "purpose": "Manual continuous hour on an isolated eligible runner; reports remain local; no release activation",
+  "triggers": ["workflow_dispatch"],
+  "concurrency_markers": ["github.workflow", "github.ref"],
+  "classes": {"core": [], "release-only": [], "scheduled-diagnostic": [], "manual-protected": ["hour"], "publish": []},
+  "dependencies": {},
+  "artifact_budget": {"max_retention_days": 14, "max_uploads_per_job": 0, "max_bytes_per_artifact": 1073741824}
+}

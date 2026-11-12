@@ -1,0 +1,37 @@
+{
+  "release": "0.75",
+  "contract_version": 1,
+  "status": "provisional",
+  "codec_id": "hydracache.imap.reference-canonical-key.075.v1",
+  "production_wire_identity": "unassigned",
+  "production_partition_hash": "unassigned",
+  "vectors": [
+    {
+      "id": "ascii-empty-key",
+      "tenant": "tenant-a",
+      "namespace": "orders",
+      "namespace_generation": 1,
+      "key_hex": "",
+      "encoded_hex": "4843524b303735000000000874656e616e742d61000000066f7264657273000000000000000100000000",
+      "test_ids": ["HC-IMAP-075-KEY-RUST-ASCII", "HC-IMAP-075-KEY-JAVA-ASCII"]
+    },
+    {
+      "id": "unicode-composed",
+      "tenant": "é",
+      "namespace": "名字",
+      "namespace_generation": 42,
+      "key_hex": "6b",
+      "encoded_hex": "4843524b3037350000000002c3a900000006e5908de5ad97000000000000002a000000016b",
+      "test_ids": ["HC-IMAP-075-KEY-RUST-UTF8", "HC-IMAP-075-KEY-JAVA-UTF8"]
+    },
+    {
+      "id": "unicode-decomposed",
+      "tenant": "é",
+      "namespace": "名字",
+      "namespace_generation": 42,
+      "key_hex": "6b",
+      "encoded_hex": "4843524b303735000000000365cc8100000006e5908de5ad97000000000000002a000000016b",
+      "test_ids": ["HC-IMAP-075-KEY-NO-NORMALIZATION"]
+    }
+  ]
+}

@@ -6,14 +6,20 @@ rust-version.workspace = true
 license.workspace = true
 publish = false
 description = "HydraCache repository automation tasks."
+default-run = "xtask"
+
+[features]
+# Measurement only: requires the explicit LLVM instrumentation flags in the 0.75 test plan.
+imap-075-coverage = []
 
 [dependencies]
 flate2 = "1.1.2"
 hydracache = { workspace = true, features = ["durable-value-store"] }
 hydracache-client-plane-spike.workspace = true
+hydracache-cluster-testkit.workspace = true
 hydracache-loadgen.workspace = true
 jsonschema.workspace = true
-proc-macro2.workspace = true
+proc-macro2 = { workspace = true, features = ["span-locations"] }
 prost.workspace = true
 prost-types.workspace = true
 protoc-bin-vendored = "3.2.0"
@@ -25,6 +31,14 @@ syn = { version = "2.0", features = ["full", "visit"] }
 tar = "0.4.44"
 time = { version = "0.3.36", features = ["formatting", "parsing"] }
 toml.workspace = true
+tempfile = "3"
+
+# Keep 0.75 proof-worker additions separate from the shared 0.74 Windows row.
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_System_Pipes"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = "0.2"
 
 [lints]
 workspace = true

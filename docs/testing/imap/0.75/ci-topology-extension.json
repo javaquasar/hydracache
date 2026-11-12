@@ -1,0 +1,22 @@
+{
+  "path": ".github/workflows/imap-075.yml",
+  "purpose": "Bounded provisional local IMap qualification; no production or release activation",
+  "triggers": ["pull_request", "schedule", "workflow_dispatch"],
+  "concurrency_markers": ["github.workflow", "github.ref"],
+  "classes": {
+    "core": ["plan", "qualification", "complete"],
+    "release-only": [],
+    "scheduled-diagnostic": [],
+    "manual-protected": [],
+    "publish": []
+  },
+  "dependencies": {
+    "qualification": ["plan"],
+    "complete": ["plan", "qualification"]
+  },
+  "artifact_budget": {
+    "max_retention_days": 14,
+    "max_uploads_per_job": 2,
+    "max_bytes_per_artifact": 1073741824
+  }
+}

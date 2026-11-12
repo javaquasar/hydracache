@@ -1,0 +1,12 @@
+{
+  "release": "0.75",
+  "contract_version": 1,
+  "status": "provisional",
+  "dedup_bound_id": "dedup_entries_per_tenant",
+  "rules": [
+    {"id":"pre_admission_failure","idempotency_identity_required":false,"ambiguous_outcome":"no; the request is proven not applied","retry":"a new or existing identity may be used after correcting the admission failure","terminal_error":"original admission error","proof_id":"proof.imap075.pre_admission_no_mutation","test_id":"imap075::retry::pre_admission_failure"},
+    {"id":"ambiguous_with_retained_identity","idempotency_identity_required":true,"ambiguous_outcome":"yes until the retained outcome is found","retry":"query or retry the exact operation with the same tenant namespace operation and request identity","terminal_error":"outcome_unknown if certainty cannot be restored before the deadline","proof_id":"proof.imap075.retained_dedup_outcome","test_id":"imap075::retry::ambiguous_with_identity"},
+    {"id":"ambiguous_without_identity","idempotency_identity_required":false,"ambiguous_outcome":"yes and cannot be converted into success","retry":"automatic mutation retry is forbidden; reconcile with an authoritative read","terminal_error":"outcome_unknown","proof_id":"proof.imap075.no_identity_no_invented_success","test_id":"imap075::retry::ambiguous_without_identity"},
+    {"id":"dedup_evicted","idempotency_identity_required":true,"ambiguous_outcome":"yes because absence of a bounded dedup record is not proof of non-application","retry":"automatic mutation retry is forbidden; reconcile explicitly","terminal_error":"outcome_unknown_dedup_expired","proof_id":"proof.imap075.dedup_eviction_fence","test_id":"imap075::retry::dedup_evicted"}
+  ]
+}

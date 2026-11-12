@@ -1,0 +1,18 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"urn:hydracache:imap075:development-provenance:v1",
+  "type":"object","additionalProperties":false,
+  "required":["schema","source_sha","source_clean","production_enabled","signature","inventory_valid","capture","inputs","inventory","sbom","producer","dependency_policy"],
+  "properties":{
+    "schema":{"const":"imap075-development-provenance-v1"},
+    "source_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "source_clean":{"const":true},"production_enabled":{"const":false},"signature":{"const":"unsigned"},"inventory_valid":{"const":true},
+    "capture":{"$ref":"#/$defs/artifact"},"inventory":{"$ref":"#/$defs/artifact"},"sbom":{"$ref":"#/$defs/artifact"},"producer":{"$ref":"#/$defs/artifact"},
+    "inputs":{"type":"array","minItems":12,"maxItems":128,"uniqueItems":true,"items":{"$ref":"#/$defs/artifact"}},
+    "dependency_policy":{"type":"object","additionalProperties":false,"required":["state","rust_state","java_state","scope","report"],"properties":{"state":{"$ref":"#/$defs/state"},"rust_state":{"$ref":"#/$defs/state"},"java_state":{"$ref":"#/$defs/state"},"scope":{"type":"string","minLength":1,"maxLength":256},"report":{"$ref":"#/$defs/artifact"}}}
+  },
+  "$defs":{
+    "state":{"enum":["passed","failed","unknown"]},
+    "artifact":{"type":"object","additionalProperties":false,"required":["path","sha256","bytes"],"properties":{"path":{"type":"string","minLength":1,"maxLength":1024},"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"bytes":{"type":"integer","minimum":0,"maximum":536870912}}}
+  }
+}

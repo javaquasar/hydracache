@@ -113,6 +113,141 @@ fn checked_in_topology_is_closed_and_valid() {
     xtask::ci_topology::check(&repo_root(), "0.71").expect("checked-in topology must pass");
 }
 
+fn imap_inventory_fixture(label: &str) -> TempDir {
+    let temp = TempDir::new(label);
+    let root = repo_root();
+    fs::create_dir_all(temp.path().join(".github/workflows")).unwrap();
+    for entry in fs::read_dir(root.join(".github/workflows")).unwrap() {
+        let entry = entry.unwrap();
+        if matches!(
+            entry.path().extension().and_then(|value| value.to_str()),
+            Some("yml" | "yaml")
+        ) {
+            fs::copy(
+                entry.path(),
+                temp.path()
+                    .join(".github/workflows")
+                    .join(entry.file_name()),
+            )
+            .unwrap();
+        }
+    }
+    for relative in [
+        "docs/testing/memory/0.71/ci-topology.json",
+        "docs/testing/imap/0.75/ci-topology-extension.json",
+        "docs/testing/imap/0.75/soak-ci-topology-extension.json",
+    ] {
+        let destination = temp.path().join(relative);
+        fs::create_dir_all(destination.parent().unwrap()).unwrap();
+        fs::copy(root.join(relative), destination).unwrap();
+    }
+    if root.join("docs/testing/ci-topology.json").exists() {
+        fs::copy(
+            root.join("docs/testing/ci-topology.json"),
+            temp.path().join("docs/testing/ci-topology.json"),
+        )
+        .unwrap();
+    }
+    temp
+}
+
+#[test]
+fn live_imap_inventory_preserves_frozen_memory_input_and_closed_world() {
+    use sha2::{Digest, Sha256};
+    let temp = imap_inventory_fixture("imap-live-inventory");
+    let frozen_path = temp
+        .path()
+        .join("docs/testing/memory/0.71/ci-topology.json");
+    let original = fs::read(&frozen_path).unwrap();
+    let normalized = String::from_utf8(original.clone())
+        .unwrap()
+        .replace("\r\n", "\n");
+    let digest: String = Sha256::digest(normalized.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
+    assert_eq!(
+        digest,
+        "d77fbfc7d361a807db23e4706a192bcf10ee7a2f0dccd136ababe0b5280aeef0"
+    );
+    xtask::ci_topology::check(temp.path(), "0.71").unwrap();
+    let live = temp.path().join("docs/testing/ci-topology.json");
+    if !live.exists() {
+        fs::write(&live, &original).unwrap();
+    }
+    xtask::ci_topology::check(temp.path(), "0.71").unwrap();
+    assert_eq!(fs::read(&frozen_path).unwrap(), original);
+    let mut changed: Value = serde_json::from_slice(&fs::read(&live).unwrap()).unwrap();
+    changed["workflows"][0]["purpose"] = json!("");
+    fs::write(&live, serde_json::to_vec(&changed).unwrap()).unwrap();
+    assert!(
+        xtask::ci_topology::check(temp.path(), "0.71")
+            .unwrap_err()
+            .to_string()
+            .contains("empty purpose"),
+        "an existing live inventory must be validated rather than bypassed by the frozen fallback"
+    );
+}
+
+#[test]
+fn imap_inventory_canaries_refuse_unknown_workflows_and_weakened_registered_policy() {
+    for defect in [
+        "unknown",
+        "unregistered",
+        "foreign_registration",
+        "mutable_pin",
+        "different_pin",
+        "plan_timeout",
+        "matrix",
+        "artifact_identity",
+    ] {
+        let temp = imap_inventory_fixture(&format!("imap-{defect}"));
+        let registration = temp
+            .path()
+            .join("docs/testing/imap/0.75/ci-topology-extension.json");
+        let workflow = temp.path().join(".github/workflows/imap-075.yml");
+        match defect {
+            "unknown" => {
+                fs::write(
+                    temp.path().join(".github/workflows/unregistered.yml"),
+                    "name: unregistered\non: workflow_dispatch\njobs: {}\n",
+                )
+                .unwrap();
+            }
+            "unregistered" => {
+                fs::remove_file(&registration).unwrap();
+            }
+            "foreign_registration" => {
+                let text = fs::read_to_string(&registration)
+                    .unwrap()
+                    .replace("imap-075.yml", "unregistered.yml");
+                fs::write(&registration, text).unwrap();
+            }
+            _ => {
+                let text = fs::read_to_string(&workflow).unwrap();
+                let text = match defect {
+                    "mutable_pin" => text.replace("fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09", "v5"),
+                    "different_pin" => {
+                        text.replace("fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09", &"a".repeat(40))
+                    }
+                    "plan_timeout" => text.replace("timeout-minutes: 5", "timeout-minutes: 500"),
+                    "matrix" => text.replace("for j in [17, 21]", "for j in [17, 21, 25]"),
+                    "artifact_identity" => text.replace("-${{ github.run_attempt }}", ""),
+                    _ => unreachable!(),
+                };
+                fs::write(&workflow, text).unwrap();
+            }
+        }
+        let error = xtask::ci_topology::check(temp.path(), "0.71")
+            .unwrap_err()
+            .to_string();
+        assert!(!error.is_empty(), "{defect}");
+        if matches!(defect, "unknown" | "unregistered") {
+            assert!(error.contains("workflow inventory"), "{defect}: {error}");
+        }
+    }
+}
+
 #[test]
 fn diagnostic_builder_is_manual_protected_and_sha_bound() {
     let text = fs::read_to_string(repo_root().join(".github/workflows/diagnostic-builder-074.yml"))

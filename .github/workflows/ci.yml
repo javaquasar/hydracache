@@ -2768,6 +2768,11 @@ jobs:
       - name: Run 0.72 management cursor fuzz proof
         run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-cursor-072
 
+      - name: Run bounded 0.75 IMap cluster fuzz foundation
+        timeout-minutes: 10
+        working-directory: fuzz
+        run: cargo +nightly fuzz run fuzz_imap_cluster_075 -- -max_total_time=60 -max_len=65536 -rss_limit_mb=2048 -timeout=10
+
       - name: Upload 0.66 fuzz evidence
         if: always()
         uses: actions/upload-artifact@v6
@@ -2788,6 +2793,16 @@ jobs:
             fuzz/artifacts/fuzz_management_*/**
             fuzz/corpus/fuzz_management_*/**
             target/release-evidence/receipts/**
+          if-no-files-found: error
+
+      - name: Upload 0.75 IMap cluster fuzz artifacts
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: "imap-cluster-fuzz-075-${{ github.sha }}"
+          path: |
+            fuzz/artifacts/fuzz_imap_cluster_075/**
+            fuzz/corpus/fuzz_imap_cluster_075/**
           if-no-files-found: error
 
   raft-mutation-testing:

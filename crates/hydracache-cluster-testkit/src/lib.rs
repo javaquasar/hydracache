@@ -4,9 +4,49 @@
 //! dev-dependencies. It owns the fault-injection vocabulary so production crates
 //! do not grow test-only transport types.
 
+pub mod canonical_key_075;
 pub mod client_surface_conformance;
+pub mod distributed_value_plane_075;
+pub mod imap_backend_contract_075;
+pub mod imap_backend_helper_contract_075;
+// Development probes reuse the existing daemon codec without changing the product lock.
+pub use hydracache_client_protocol as current_daemon_wire_075;
 pub mod invariants;
+pub mod provisional_backend_075;
 pub mod reference_model;
+pub mod value_plane_ack_075;
+pub mod value_plane_admission_075;
+pub mod value_plane_async_075;
+pub mod value_plane_bulk_075;
+pub mod value_plane_bulk_control_075;
+pub mod value_plane_capability_075;
+pub mod value_plane_cluster_admission_075;
+pub mod value_plane_cluster_auth_075;
+pub mod value_plane_cluster_chaos_075;
+pub mod value_plane_cluster_health_075;
+pub mod value_plane_cluster_runtime_075;
+pub mod value_plane_collection_075;
+pub mod value_plane_concurrent_075;
+pub mod value_plane_dedup_075;
+pub mod value_plane_differential_075;
+pub mod value_plane_durable_075;
+pub mod value_plane_explorer_075;
+pub mod value_plane_extended_075;
+pub mod value_plane_extended_concurrent_075;
+pub mod value_plane_history_075;
+pub mod value_plane_listener_075;
+pub mod value_plane_loopback_075;
+pub mod value_plane_model_075;
+pub mod value_plane_resources_075;
+pub mod value_plane_security_075;
+pub mod value_plane_service_075;
+pub mod value_plane_service_async_075;
+pub mod value_plane_service_cluster_075;
+pub mod value_plane_service_registry_075;
+pub mod value_plane_stream_075;
+pub mod value_plane_subscriptions_075;
+pub mod value_plane_surface_075;
+pub mod value_plane_transfer_075;
 
 use std::collections::{BTreeMap, VecDeque};
 use std::net::SocketAddr;

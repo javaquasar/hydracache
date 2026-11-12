@@ -1,0 +1,58 @@
+name: IMap 0.75 manual continuous hour
+on:
+  workflow_dispatch:
+    inputs:
+      cohort:
+        description: Local development cohort
+        required: true
+        type: choice
+        options: [reference, native, daemon]
+        default: reference
+permissions:
+  contents: read
+concurrency:
+  group: imap075-soak-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  hour:
+    if: github.repository == 'javaquasar/hydracache' && github.ref == 'refs/heads/feat/0.75-distributed-imap-foundation' && github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, linux, x64, hydracache-imap075]
+    timeout-minutes: 120
+    env:
+      CARGO_BUILD_JOBS: 2
+    steps:
+      - name: Host eligibility budget
+        shell: bash
+        run: |
+          echo "IMAP075_HOST_DEADLINE=$(( $(date +%s) + 115 * 60 ))" >> "$GITHUB_ENV"
+          echo "HYDRACACHE_IMAP075_BUILD_DEADLINE_MS=$(( ($(date +%s) + 40 * 60) * 1000 ))" >> "$GITHUB_ENV"
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Install exact Rust toolchain
+        timeout-minutes: 10
+        run: |
+          rustup toolchain install 1.94.0 --profile minimal
+          rustup default 1.94.0
+      - name: Prepare bounded development artifacts
+        timeout-minutes: 43
+        run: cargo xtask imap-pre074-tools --release 0.75
+      - name: Continuous one-hour soak
+        timeout-minutes: 75
+        shell: bash
+        env:
+          COHORT: ${{ inputs.cohort }}
+        run: |
+          set -euo pipefail
+          case "$COHORT" in reference|native|daemon) ;; *) exit 2 ;; esac
+          remaining=$(( IMAP075_HOST_DEADLINE - $(date +%s) ))
+          cargo xtask imap-soak --release 0.75 --cohort "$COHORT" --profile hour --host-budget-seconds "$remaining" --output "target/imap-075/hour-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+      - name: Local archive location
+        if: always()
+        run: echo 'Reports remain in the owned target/imap-075/hour-* directory on this runner; no automatic artifact transfer is configured.'

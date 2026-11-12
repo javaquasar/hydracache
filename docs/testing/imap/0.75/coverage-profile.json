@@ -1,0 +1,27 @@
+{
+  "schema": "imap075-coverage-policy-v2",
+  "baseline": "98d7321b1cda568c386cbfdef1993c7e4dcebe38",
+  "production_enabled": false,
+  "rust": ["1.88.0", "1.94.0"],
+  "java": [17, 21],
+  "platforms": ["linux-x86_64", "windows-x86_64"],
+  "rust_flags": ["-C", "instrument-coverage", "-C", "debuginfo=0"],
+  "cargo_config": [
+    "profile.dev.opt-level=0",
+    "profile.test.opt-level=0",
+    "profile.dev.package.\"sha2@0.11.0\".opt-level=3",
+    "profile.test.package.\"sha2@0.11.0\".opt-level=3"
+  ],
+  "scopes": [
+    "crates/xtask/src/",
+    "crates/hydracache-cluster-testkit/src/",
+    "tests/java-imap-benchmark/src/main/java/",
+    "tests/java-imap-hazelcast-075/src/main/java/",
+    "tests/java-imap-provenance-075/src/main/java/",
+    "tests/rust-imap-contract-consumer-075/src/"
+  ],
+  "require_all_changed_executable_lines": true,
+  "claim_branch_coverage": false,
+  "claim_production_correctness": false,
+  "historical_global_ratchet": "unchanged"
+}
