@@ -175,6 +175,10 @@ pub enum MutationOperation {
     },
     GetAndRemove,
     Delete,
+    ExpireVersion {
+        version: u64,
+        deadline: LogicalTime,
+    },
 }
 
 impl MutationOperation {
@@ -188,7 +192,7 @@ impl MutationOperation {
                 expected, value, ..
             } => expected.len().saturating_add(value.len()),
             Self::RemoveIfValue { expected } => expected.len(),
-            Self::GetAndRemove | Self::Delete => 0,
+            Self::GetAndRemove | Self::Delete | Self::ExpireVersion { .. } => 0,
         }
     }
 }
@@ -353,6 +357,7 @@ pub struct ReferenceValuePlane {
     epoch: u64,
     owner: String,
     logical_time: LogicalTime,
+    explicit_expiry: bool,
     connection_generation: u64,
     entries: BTreeMap<CanonicalMapKey, EntryState>,
     mutations: BTreeMap<MutationIdentity, MutationRecord>,
@@ -366,6 +371,7 @@ impl ReferenceValuePlane {
             epoch,
             owner: "owner-a".to_owned(),
             logical_time: LogicalTime::default(),
+            explicit_expiry: false,
             connection_generation: 1,
             entries: BTreeMap::new(),
             mutations: BTreeMap::new(),
@@ -389,8 +395,25 @@ impl ReferenceValuePlane {
         self.logical_time = self.logical_time.saturating_add(delta);
     }
 
+    pub(crate) fn require_expiry_tombstones(&mut self) {
+        self.explicit_expiry = true;
+    }
+
     pub fn mutation(&self, identity: &MutationIdentity) -> Option<&MutationRecord> {
         self.mutations.get(identity)
+    }
+
+    pub(crate) fn has_applied_mutation(
+        &self,
+        partition: u32,
+        identity: &MutationIdentity,
+        digest: MutationDigest,
+    ) -> bool {
+        self.mutations.get(identity).is_some_and(|record| {
+            record.plan.key.partition == partition
+                && record.plan.digest == digest
+                && record.outcome.is_some()
+        })
     }
 
     pub fn history(&self) -> &[MutationHistoryEvent] {
@@ -401,8 +424,23 @@ impl ReferenceValuePlane {
         match self.entries.get(key) {
             Some(EntryState::Live {
                 value, expires_at, ..
-            }) if expires_at.is_none_or(|deadline| deadline > self.logical_time) => Some(value),
+            }) if self.explicit_expiry
+                || expires_at.is_none_or(|deadline| deadline > self.logical_time) =>
+            {
+                Some(value)
+            }
             Some(EntryState::Live { .. }) | Some(EntryState::Tombstone { .. }) | None => None,
+        }
+    }
+
+    pub(crate) fn expiry_candidate(&self, key: &CanonicalMapKey) -> Option<(u64, LogicalTime)> {
+        match self.entries.get(key)? {
+            EntryState::Live {
+                version,
+                expires_at: Some(deadline),
+                ..
+            } => Some((*version, *deadline)),
+            _ => None,
         }
     }
 
@@ -497,7 +535,10 @@ impl ReferenceValuePlane {
     ) -> Result<Option<MutationRecord>, ValuePlaneError> {
         self.validate_plan(&plan)?;
         if let Some(existing) = self.mutations.get(&plan.identity) {
-            if existing.plan.digest != plan.digest {
+            if existing.plan.digest != plan.digest
+                || existing.plan.key != plan.key
+                || existing.plan.operation != plan.operation
+            {
                 return Err(ValuePlaneError::MutationIdentityConflict);
             }
             return Ok(Some(existing.clone()));
@@ -545,6 +586,14 @@ impl ReferenceValuePlane {
         &mut self,
         identity: &MutationIdentity,
     ) -> Result<MutationOutcome, ValuePlaneError> {
+        self.apply_owner_at(identity, self.logical_time)
+    }
+
+    pub(crate) fn apply_owner_at(
+        &mut self,
+        identity: &MutationIdentity,
+        owner_time: LogicalTime,
+    ) -> Result<MutationOutcome, ValuePlaneError> {
         let record = self
             .mutations
             .get(identity)
@@ -563,7 +612,7 @@ impl ReferenceValuePlane {
         }
         self.reserve_history_event()?;
         let plan = record.plan.clone();
-        let outcome = self.apply_operation(&plan.key, &plan.operation);
+        let outcome = self.apply_operation(&plan.key, &plan.operation, owner_time);
         let record = self
             .mutations
             .get_mut(identity)
@@ -792,6 +841,7 @@ impl ReferenceValuePlane {
         &mut self,
         key: &CanonicalMapKey,
         operation: &MutationOperation,
+        owner_time: LogicalTime,
     ) -> MutationOutcome {
         let previous = self.live_value(key).map(<[u8]>::to_vec);
         let previous_expiry = match self.entries.get(key) {
@@ -827,6 +877,11 @@ impl ReferenceValuePlane {
             MutationOperation::GetAndRemove | MutationOperation::Delete => {
                 (previous.is_some(), None, None)
             }
+            MutationOperation::ExpireVersion { version, deadline } => (
+                self.expiry_candidate(key) == Some((*version, *deadline)),
+                None,
+                None,
+            ),
         };
 
         let version = if applied {
@@ -834,9 +889,7 @@ impl ReferenceValuePlane {
                 let expires_at = match ttl.expect("replacement operations carry ttl") {
                     TtlDirective::Preserve => previous_expiry,
                     TtlDirective::Eternal => None,
-                    TtlDirective::ExpireAfter(delta) => {
-                        Some(self.logical_time.saturating_add(delta))
-                    }
+                    TtlDirective::ExpireAfter(delta) => Some(owner_time.saturating_add(delta)),
                 };
                 self.entries.insert(
                     key.clone(),
@@ -974,7 +1027,7 @@ impl DeterministicFaultSchedule {
 }
 
 /// Stable identity of the bounded authority model used by receipts and gates.
-pub const AUTHORITY_MODEL_ID: &str = "hydracache.imap.value-plane.authority.v1";
+pub const AUTHORITY_MODEL_ID: &str = "hydracache.imap.value-plane.authority.v2";
 
 /// Invariants checked after every explored transition.
 pub const AUTHORITY_INVARIANT_IDS: &[&str] = &[
@@ -984,6 +1037,7 @@ pub const AUTHORITY_INVARIANT_IDS: &[&str] = &[
     "HC-IMAP-INV-PROMOTED-OWNER-COVERS-ACKNOWLEDGED-PREFIX",
     "HC-IMAP-INV-RESPONSE-REQUIRES-ACKNOWLEDGEMENT",
     "HC-IMAP-INV-TOMBSTONE-DOMINATES-OLDER-LIVE-VALUE",
+    "HC-IMAP-INV-READ-REQUIRES-CURRENT-OWNER-AND-PREFIX",
 ];
 
 /// Hard exploration bounds. Zero values are rejected rather than interpreted as unlimited.
@@ -1017,6 +1071,8 @@ pub struct AuthorityModelSnapshot {
     pub backup_alive: bool,
     pub serving_owner: bool,
     pub outcome_unknown: bool,
+    pub owner_isolated: bool,
+    pub read_barrier: Option<(u64, u64)>,
 }
 
 impl Default for AuthorityModelSnapshot {
@@ -1034,6 +1090,8 @@ impl Default for AuthorityModelSnapshot {
             backup_alive: true,
             serving_owner: true,
             outcome_unknown: false,
+            owner_isolated: false,
+            read_barrier: None,
         }
     }
 }
@@ -1052,6 +1110,11 @@ pub enum AuthorityModelAction {
     RestoreBackup,
     PromoteBackup,
     Rebalance,
+    IsolateOwner,
+    HealOwner,
+    AcquireReadBarrier,
+    CompleteRead,
+    RefuseRead,
 }
 
 /// One invariant violation with the shortest explored action prefix that exposed it.
@@ -1097,6 +1160,13 @@ impl AuthorityModelExplorer {
     }
 
     pub fn explore(&self) -> AuthorityModelReport {
+        self.explore_with_read_guard(read_is_authorized)
+    }
+
+    fn explore_with_read_guard(
+        &self,
+        allow_read: impl Fn(&AuthorityModelSnapshot) -> bool,
+    ) -> AuthorityModelReport {
         use std::collections::{BTreeSet, VecDeque};
 
         let initial = AuthorityModelSnapshot::default();
@@ -1120,10 +1190,20 @@ impl AuthorityModelExplorer {
                 continue;
             }
             for action in AuthorityModelAction::all() {
-                let Some(next) = apply_authority_action(&state, action) else {
+                let Some(next) = apply_authority_action(&state, action, &allow_read) else {
                     continue;
                 };
                 transitions = transitions.saturating_add(1);
+                if action == AuthorityModelAction::CompleteRead && !read_is_authorized(&state) {
+                    let mut failed_trace = trace.clone();
+                    failed_trace.push(action);
+                    violations.push(AuthorityModelViolation {
+                        invariant_id: AUTHORITY_INVARIANT_IDS[6],
+                        detail: "read completed without current ownership and applied prefix"
+                            .to_owned(),
+                        trace: failed_trace,
+                    });
+                }
                 if seen.contains(&next) {
                     continue;
                 }
@@ -1150,7 +1230,7 @@ impl AuthorityModelExplorer {
 }
 
 impl AuthorityModelAction {
-    fn all() -> [Self; 11] {
+    fn all() -> [Self; 16] {
         [
             Self::ApplyValue,
             Self::ApplyTombstone,
@@ -1163,6 +1243,11 @@ impl AuthorityModelAction {
             Self::RestoreBackup,
             Self::PromoteBackup,
             Self::Rebalance,
+            Self::IsolateOwner,
+            Self::HealOwner,
+            Self::AcquireReadBarrier,
+            Self::CompleteRead,
+            Self::RefuseRead,
         ]
     }
 }
@@ -1217,16 +1302,17 @@ pub fn authority_invariant_violations(
 fn apply_authority_action(
     state: &AuthorityModelSnapshot,
     action: AuthorityModelAction,
+    allow_read: impl Fn(&AuthorityModelSnapshot) -> bool,
 ) -> Option<AuthorityModelSnapshot> {
     let mut next = state.clone();
     match action {
-        AuthorityModelAction::ApplyValue if state.owner_alive && state.serving_owner => {
+        AuthorityModelAction::ApplyValue if state.serving_owner && !state.owner_isolated => {
             next.applied_version = state.applied_version.saturating_add(1);
             next.live_version = next.applied_version;
             next.served_version = next.applied_version;
             next.outcome_unknown = false;
         }
-        AuthorityModelAction::ApplyTombstone if state.owner_alive && state.serving_owner => {
+        AuthorityModelAction::ApplyTombstone if state.serving_owner && !state.owner_isolated => {
             next.applied_version = state.applied_version.saturating_add(1);
             next.tombstone_version = next.applied_version;
             next.live_version = 0;
@@ -1234,17 +1320,26 @@ fn apply_authority_action(
             next.outcome_unknown = false;
         }
         AuthorityModelAction::ProveReplica
-            if state.backup_alive && state.replica_proved_version < state.applied_version =>
+            if state.serving_owner
+                && !state.owner_isolated
+                && state.backup_alive
+                && state.replica_proved_version < state.applied_version =>
         {
             next.replica_proved_version = state.applied_version;
         }
         AuthorityModelAction::Acknowledge
-            if state.applied_version > state.acknowledged_version
+            if state.serving_owner
+                && !state.owner_isolated
+                && state.applied_version > state.acknowledged_version
                 && state.replica_proved_version >= state.applied_version =>
         {
             next.acknowledged_version = state.applied_version;
         }
-        AuthorityModelAction::Respond if state.acknowledged_version > state.responded_version => {
+        AuthorityModelAction::Respond
+            if state.serving_owner
+                && !state.owner_isolated
+                && state.acknowledged_version > state.responded_version =>
+        {
             next.responded_version = state.acknowledged_version;
             next.outcome_unknown = false;
         }
@@ -1254,6 +1349,7 @@ fn apply_authority_action(
         AuthorityModelAction::LoseOwner if state.owner_alive => {
             next.owner_alive = false;
             next.serving_owner = false;
+            next.owner_isolated = false;
         }
         AuthorityModelAction::LoseBackup if state.backup_alive => {
             next.backup_alive = false;
@@ -1262,7 +1358,7 @@ fn apply_authority_action(
             next.backup_alive = true;
         }
         AuthorityModelAction::PromoteBackup
-            if !state.owner_alive
+            if (!state.owner_alive || state.owner_isolated)
                 && state.backup_alive
                 && state.replica_proved_version == state.applied_version
                 && state.replica_proved_version >= state.acknowledged_version =>
@@ -1270,12 +1366,14 @@ fn apply_authority_action(
             next.epoch = state.epoch.saturating_add(1);
             next.owner_alive = true;
             next.serving_owner = true;
+            next.owner_isolated = false;
             next.applied_version = state.replica_proved_version;
             next.served_version = state.replica_proved_version;
             next.backup_alive = false;
         }
         AuthorityModelAction::Rebalance
-            if state.owner_alive
+            if state.serving_owner
+                && !state.owner_isolated
                 && state.backup_alive
                 && state.replica_proved_version == state.applied_version =>
         {
@@ -1283,7 +1381,72 @@ fn apply_authority_action(
             next.applied_version = state.replica_proved_version;
             next.served_version = state.replica_proved_version;
         }
+        AuthorityModelAction::IsolateOwner if state.owner_alive && !state.owner_isolated => {
+            next.owner_isolated = true;
+        }
+        AuthorityModelAction::HealOwner if state.owner_isolated => {
+            next.owner_isolated = false;
+        }
+        AuthorityModelAction::AcquireReadBarrier
+            if state.serving_owner && !state.owner_isolated && state.read_barrier.is_none() =>
+        {
+            next.read_barrier = Some((state.epoch, state.acknowledged_version));
+        }
+        AuthorityModelAction::CompleteRead if state.read_barrier.is_some() && allow_read(state) => {
+            next.read_barrier = None;
+        }
+        AuthorityModelAction::RefuseRead if state.read_barrier.is_some() && !allow_read(state) => {
+            next.read_barrier = None;
+        }
         _ => return None,
     }
     Some(next)
+}
+
+fn read_is_authorized(state: &AuthorityModelSnapshot) -> bool {
+    state.serving_owner
+        && !state.owner_isolated
+        && state.read_barrier.is_some_and(|(epoch, required)| {
+            epoch == state.epoch && state.served_version >= required.max(state.acknowledged_version)
+        })
+}
+
+#[cfg(test)]
+mod authority_read_tests {
+    use super::*;
+
+    #[test]
+    fn explorer_detects_a_stale_or_isolated_read_with_a_broken_guard() {
+        use AuthorityModelAction::*;
+        let explorer = AuthorityModelExplorer::new(AuthorityModelBounds {
+            max_depth: 4,
+            max_states: 20_000,
+        })
+        .unwrap();
+        let report = explorer.explore_with_read_guard(|_| true);
+        for trace in [
+            vec![AcquireReadBarrier, IsolateOwner, CompleteRead],
+            vec![AcquireReadBarrier, Rebalance, CompleteRead],
+        ] {
+            assert!(
+                report.violations.iter().any(|violation| {
+                    violation.invariant_id == AUTHORITY_INVARIANT_IDS[6] && violation.trace == trace
+                }),
+                "missing expected counterexample: {trace:?}"
+            );
+        }
+        let mut isolated = AuthorityModelSnapshot::default();
+        for action in [AcquireReadBarrier, IsolateOwner, PromoteBackup] {
+            isolated = apply_authority_action(&isolated, action, read_is_authorized).unwrap();
+        }
+        assert!(apply_authority_action(&isolated, CompleteRead, read_is_authorized).is_none());
+        assert!(apply_authority_action(&isolated, RefuseRead, read_is_authorized).is_some());
+        let mut state = AuthorityModelSnapshot {
+            read_barrier: Some((1, 1)),
+            ..AuthorityModelSnapshot::default()
+        };
+        assert!(!read_is_authorized(&state));
+        state.served_version = 1;
+        assert!(read_is_authorized(&state));
+    }
 }

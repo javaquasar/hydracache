@@ -95,6 +95,11 @@ fn setup() -> (tempfile::TempDir, SoakProfile) {
 fn worker() -> Command {
     Command::new(env!("CARGO_BIN_EXE_imap-soak-worker-075"))
 }
+fn cancellation_canary(fault: &str) -> Command {
+    let mut command = worker();
+    command.arg(format!("--canary={fault}"));
+    command
+}
 fn frame(p: &SoakProfile, phase: Phase, round: u64) -> Frame {
     let ready = phase == Phase::Ready;
     Frame {
@@ -534,7 +539,7 @@ fn cancellation_drains_and_artifact_mutation_without_source_change_ends_the_segm
     let report = execute_worker(
         root.path(),
         p,
-        worker(),
+        cancellation_canary("await-cancel"),
         &root.path().join("segment"),
         cancel,
         None,
@@ -551,16 +556,19 @@ fn cancellation_drains_and_artifact_mutation_without_source_change_ends_the_segm
     });
     let progress = root.path().join("segment/stdout.jsonl");
     let binding = root.path().join("binding");
+    let cancel = Cancellation::default();
+    let token = cancel.clone();
     let thread = std::thread::spawn(move || {
         wait_round(&progress);
         std::fs::write(binding, b"mutated").unwrap();
+        token.cancel();
     });
     let report = execute_worker(
         root.path(),
         p,
-        worker(),
+        cancellation_canary("await-cancel"),
         &root.path().join("segment"),
-        Cancellation::default(),
+        cancel,
         None,
     )
     .unwrap();
@@ -898,7 +906,7 @@ fn operator_marker_and_hung_drain_both_have_bounded_physical_cleanup() {
     let report = execute_worker(
         root.path(),
         p,
-        worker(),
+        cancellation_canary("await-cancel"),
         &control,
         Cancellation::default(),
         None,
@@ -915,12 +923,10 @@ fn operator_marker_and_hung_drain_both_have_bounded_physical_cleanup() {
         wait_round(&progress);
         token.cancel();
     });
-    let mut command = worker();
-    command.arg("--canary=hang");
     let report = execute_worker(
         root.path(),
         p,
-        command,
+        cancellation_canary("await-cancel-and-hang"),
         &root.path().join("hang"),
         cancel,
         None,

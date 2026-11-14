@@ -1,8 +1,7 @@
-# Java IMap benchmark scaffold
+# Java IMap benchmark
 
-This isolated Java 17 module is the test-first semantic foundation for HydraCache 0.75 W11b at the
-exact plan path `tests/java-imap-benchmark`. It intentionally contains no timed load generator yet.
-The semantic oracle must be green before any future performance cell may run.
+This Java 17 module provides the semantic harness and fixed-rate development load generator for
+HydraCache 0.75 W11b. The semantic oracle must pass before the generator starts a timed run.
 
 The module currently provides:
 
@@ -90,17 +89,148 @@ optional exact-key listener filters. The old Java exact-key constructor remains 
 `cargo xtask imap-semantic-audit --release 0.75` checks ledger/source evidence; it is a bounded
 shape guard, not a full ABI check, generated SDK or production qualification.
 
-## Blocked by 0.74
+## Fixed-rate development load
 
-Real HydraCache/Hazelcast adapters and every timed run are **blocked-by-0.74**. They must not be
-wired until published 0.74 artifacts freeze the accepted native/batch surface, compatibility
-receipts, key/value ownership, and performance baseline. The placeholders advertise zero
-capabilities and throw `AdapterUnavailableException`; they never silently emulate a product.
+`FixedRateIMapLoad.run(settings, workload, leftFactory, rightFactory, cancelled)` uses the
+existing `MapSemanticAdapter` contract. Factories create an empty, quiescent map for each call.
+Supply an `IMapLoadWorkload` with the semantic trace, its preload prefix, and a pool of timed
+requests drawn from that trace. Repeated requests in the pool set the operation mix. Step IDs
+label requests in the trace. Adapters assign their own invocation identities.
 
-After 0.74 publishes, a reviewed change may add only digest-pinned product dependencies, declare
-capabilities one operation at a time, and map packaged product results into the transport-neutral
-outcomes. That change must not alter protocol versions, production routing, or compatibility
-identities merely to satisfy this harness.
+The generator checks outcomes, events and final state on fresh adapters before opening a separate
+pair for preload, warm-up and measurement. It verifies the preloaded state on both sides. The
+same seed selects the same request for each offered slot on both sides, even when an earlier slot
+was missed. A full in-flight queue rejects the slot. An overdue slot is counted as late.
+
+Each phase reports completed requests, successful outcomes, classified errors, and p50/p95/p99/p99.9
+bucket upper bounds. End-to-end latency starts at the planned dispatch time. Queue and service time
+are reported separately. Latency samples describe completed requests. The scheduled, late and
+capacity-rejected counts show how much of the offered load reached the adapter. Cancellation or a
+drain timeout aborts the run and interrupts the owned workers.
+
+`FixedRateIMapLoadTest` covers scheduling with virtual time, semantic refusal, fresh adapter
+lifecycle, latency accounting and cancellation. The Maven gate requires full line, branch and
+instruction coverage of the benchmark package. The pinned Hazelcast module exercises the common
+entry point with a native GET using its existing diagnostic adapter.
+
+Product comparison requires the accepted 0.74 baseline and packaged 0.75 HC/2 facade. The
+Hazelcast smoke test exercises the shared harness over loopback. Its timing is diagnostic.
+
+## Campaigns and paired analysis
+
+Use `IMapLoadCampaign.plan` to expand the cross product of workload variants, offered rates
+and worker/in-flight limits. Each variant supplies its own key and value shapes, bulk requests
+and weighted request pool. The plan fixes 5–32 fresh pairs per cell, a seed for each pair and
+alternating side order. It records the workload fingerprint, caller-supplied SHA-256 digests for
+the artifacts and environment, and the analysis policy before execution.
+
+`campaign.execute(leftFactory, rightFactory, cancelled)` passes each planned run to the shared
+generator. The returned ledger includes failed pairs in order. Cancellation retains the
+interrupted attempt. Analyze a ledger with `IMapPairedAnalysis.analyze(campaign, attempts)`.
+The analysis checks settings, workload, order, semantic admission and phase accounting against
+the plan. Missing pairs, changed workloads, scheduler misses and operation errors prevent an
+advantage decision.
+
+For complete comparable cells, goodput divides successful requests by the larger of the offered
+window and elapsed time, including any drain. The report retains both sides' observations,
+medians and Hodges–Lehmann estimates of paired log ratios. Seeded bootstrap resamples whole
+pairs and returns relative-effect intervals for goodput, p99 and p99.9. The decision applies
+the preregistered latency limits and the W11g goodput and p99 regression guards. These results
+are development diagnostics.
+
+`IMapLoadCampaignTest` checks the matrix, actual trial order and failure retention.
+`IMapPairedAnalysisTest` checks known effects, seeded intervals, regression guards and malformed
+or incomplete ledgers. Both run under the same coverage gate as the load generator.
+
+## Phase resource measurements
+
+The four-argument `campaign.execute(leftFactory, rightFactory, cancelled, targets)` accepts a
+function that selects `IMapResourceMonitor.Targets` for each pair. Use shared probes for the load
+generator and side-specific probes for each server. Reports remain attached to the attempt,
+including attempts that fail after a phase starts.
+
+The monitor samples before and after preflight, preload, warm-up, measurement and worker cleanup.
+Warm-up and measurement include the drain of requests already submitted. Probe calls run outside
+the phase timer. Each endpoint has a monotonic sample timestamp so the observation window can be
+audited. The report keeps both endpoints and their difference. A missing reading, counter reset
+or change of source identity has its own status and no computed delta.
+
+`IMapResourceProbes.currentJvm` reads heap used and committed, collection count and milliseconds,
+and live JVM threads. On Linux, `linuxProcess` reads process CPU time, RSS and OS threads for a
+`ProcessHandle`, and `linuxInterface` reads byte and packet counters for a named interface.
+On Windows, `windowsProcess` reads CPU time, working set and OS threads by PID, and
+`windowsInterface` reads byte and packet counters by .NET interface ID. A Windows query has a
+three-second timeout and a bounded reply. Custom probes can supply equivalent readings for
+other owners. Interface counters include all traffic on that interface.
+
+`IMapPairedAnalysis.analyze` populates `CellReport.resources()` with per-phase series keyed by
+probe label, scope, metric and value type. Give equivalent roles the same stable label on both
+sides, for example `server` for two separate server processes. Pair-wide preflight readings,
+sample timestamps, endpoints and discontinuity reasons are available in `CellReport.attempts()`.
+
+Each series includes the observed pair numbers and available left and right values. Counters use
+the phase delta. Gauges include both the signed change and the end-of-phase reading. CPU time and
+directional network bytes and packets also report the phase delta per successful request in
+warm-up and measurement. A zero denominator leaves the normalized value absent.
+
+A complete, comparable cell with valid observations for both sides of every pair in a series gets
+side medians, the median of the paired right-minus-left differences, and a bootstrap interval in
+the series' units. The interval uses the preregistered seed, number of bootstrap iterations and
+confidence level. Incomplete series and failed cells retain observations for diagnosis. Resource
+summaries are diagnostic alongside the campaign's goodput and latency verdict.
+
+`IMapResourceMonitorTest` covers phase attribution, error retention, missing metrics and
+counter discontinuities. `IMapResourceProbesTest` exercises actual local process, JVM and
+loopback counters plus deterministic Linux and Windows inputs. `IMapResourceAnalysisTest` checks
+pair attribution, normalization, intervals and incomplete evidence. The coverage gate includes
+all resource collectors, analysis and campaign integration code.
+
+## Publication gate for paired campaigns
+
+`IMapLoadCampaign.executeCaptured` samples calibration before and after each measured phase
+and records actual monotonic bounds around that phase. Its capture source supplies observed
+artifact and host fingerprints, startup identity for the actual adapter and calibration readings.
+An empty calibration sample is retained and the publication gate refuses it. A bounded, optional
+post-idle phase provides a separate resource delta after measurement. Linux PSS uses
+`smaps_rollup`, context switches come from the task named by the PID, and the cgroup v2 probe
+reads `memory.current` for the selected cgroup, including its descendants.
+
+`FixedRateIMapLoad.Phase.histograms()` retains sparse nanosecond bucket bounds and counts for
+end-to-end, queue and service latency. The v2 publication manifest requires all raw histograms
+and binds them to the nested pair digest. The analyzer independently checks the bucket totals
+against completed operations and recalculates the reported quantiles.
+
+`IMapLoadControls.sameAdapter` runs A/A with fresh instances from the same factory.
+`saturation` reads a preregistered ascending fixed-rate ladder and identifies the last stable
+step before the first failure. Stability requires both sides of all pairs to stay within the
+tail SLO and complete all offered work without scheduler skips, capacity rejection or errors.
+
+Use `IMapCampaignPublication` before exporting public results. The verifier supplies a trusted
+`Registration` from the reviewed comparison contract frozen before measurement. It binds the
+contract SHA-256, campaign plan and analysis policy, adapter identities, dedicated host roster,
+calibration baseline and drift limit, and any required W11f observations. The checked-in 0.75
+contract is provisional. It yields `CONTRACT_NOT_ADMITTED` even with a complete set of captures.
+
+Retain every planned attempt in order. A measured attempt carries the independently observed
+product, tooling, harness, configuration and host bindings plus a capture for each trial. The
+captures identify distinct starts and record the measurement window and bandwidth and packet-rate
+calibration samples before and after it. Use one monotonic coordinator clock for the campaign.
+The verifier checks both samples against the baseline and against each other using the frozen
+limit in basis points. W11f deltas are checked against the recorded phase snapshots. Every
+required observation must be available. Optional observations can record an unavailable reading.
+
+`seal(registration, pairs)` produces the versioned manifest and its SHA-256. Retain the root
+digest separately from the evidence being submitted. `assess(registration, retainedRootSha256,
+manifest, pairs)` checks that digest, the registration and every ordered nested pair hash before
+recomputing the paired reports from the raw ledger. Artifact and host fingerprints come from the
+admitted collector. Hash verification binds those observations to the retained manifest.
+
+Use `assessment.requirePublishable()` to obtain the export payload. A blocked assessment contains
+reasons and has no payload. The verified payload retains all cells, including complete valid
+inconclusive results, and carries raw pair evidence, hashes and calibration drift. Use
+`IMapPairedAnalysis.analyze` for diagnostic reporting of failed or partial campaigns.
+`IMapCampaignPublicationTest` exercises the positive path and verifies refusal for incomplete,
+reordered, substituted and invalid evidence under the benchmark package's JaCoCo gate.
 
 ## Manifest format
 

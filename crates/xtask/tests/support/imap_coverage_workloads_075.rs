@@ -108,6 +108,18 @@ impl CoverageDriver for Driver {
             _ => BuildStage::CoverageExecution,
         };
         assert_eq!(stage, expected);
+        if stage == BuildStage::HelperContractTests {
+            let args = command.get_args().collect::<Vec<_>>();
+            assert!(args.contains(&std::ffi::OsStr::new("--lib")));
+            for suite in [
+                "distributed_value_plane_075",
+                "value_plane_model_075",
+                "value_plane_service_registry_075",
+                "value_plane_surface_075",
+            ] {
+                assert!(args.windows(2).any(|pair| pair == ["--test", suite]));
+            }
+        }
         if self.calls == self.fail_at {
             return Err("unit workload command refused".into());
         }

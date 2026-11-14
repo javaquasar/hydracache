@@ -129,6 +129,20 @@ evidence, not a product protocol, persistent service image or ship receipt.
 Typed entry views, helper futures, progress queries and scoped transfer controls remain runtime
 APIs; the 40 core operation IDs and production HC/1/HC/2 identities do not change.
 
+The 0.75 fixed-rate Java IMap publication manifest accepts version 2. The retained root SHA-256
+binds the registration digest and ordered nested pair digests. Canonical hash inputs use
+domain-separated Java `DataOutputStream` framing with modified UTF-8 strings, big-endian numbers,
+explicit optional presence, ordered lists and maps in enum declaration order. The registration
+binds the reviewed contract, run plan and evidence policy. Each pair binds its attempt and raw
+phase evidence, including ordered end-to-end, queue and service histogram buckets and counts.
+Version 1 lacks those buckets and cannot qualify a publication. Missing, substituted or reordered evidence, mismatched digests and unknown
+versions refuse public export. See `tests/java-imap-benchmark/README.md` for the verifier inputs.
+
+The provisional IMap authority receipt keeps its v1 envelope and requires model identity
+`hydracache.imap.value-plane.authority.v2` for current admission. The v2 transition graph adds
+read-barrier acquisition, completion and refusal, owner isolation and connectivity recovery.
+Earlier model receipts retain their historical identity and fail current-model validation.
+
 The development-only scoped coverage family uses strict v2 policy/profile,
 control/capture and finalized report records, with v1 Java session/projection
 records (bootstrap compiler stream and immutable Cargo object archives), documented in

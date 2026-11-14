@@ -366,6 +366,13 @@ claims and incompatible SDK interpretations.
   isolated old owner, quorum loss, promotion, repair, full member restart and whole-cluster loss.
   Every cell freezes read/write availability, certainty, consistency, retry and readiness rather
   than relying on prose such as "eventually recovers";
+- use a quorum-backed read barrier for the first authoritative member read path. The owner lane
+  checks the barrier's committed epoch, ownership and required applied watermark before looking up
+  the key. Isolation, quorum loss, an epoch change or an insufficient applied prefix cause an
+  availability error. Rejoining members install the committed view before accepting owner work;
+- use a `ClusterTimeAuthority` observation in a common time domain with an explicit uncertainty
+  bound. W0 records the admitted clock provider and maximum uncertainty for the target hosts. The
+  provisional model injects separate observations per node and uses logical fault schedules;
 - freeze null and codec behavior: null map names, keys and values are rejected before dispatch;
   empty binary keys/values remain distinct valid values where the existing protocol allows them;
   maximum encoded lengths, Unicode handling, Java byte-order/sign behavior and canonical
@@ -769,7 +776,7 @@ separator-like bytes and maximum lengths.
 
 `expires_not_before_ms` is a scheduling deadline, not an authority version. A bounded
 `ClusterTimeAuthority` observation supplies `(now, uncertainty)`; a member may propose the expiry
-tombstone only when the conservative lower time bound is past the deadline. The tombstone's
+tombstone only when the conservative lower time bound reaches the deadline. The tombstone's
 `PartitionVersion` establishes cluster truth. A member whose uncertainty exceeds the configured
 bound becomes unready for owner work instead of expiring early. This keeps epoch/version as the
 R-1 authority while permitting distributed TTL.
@@ -1111,8 +1118,11 @@ topology authority commits a newer epoch and chooses an eligible backup whose ap
 satisfies the frozen promotion rule.
 
 - fence the former owner by epoch on local, forwarded and replication messages;
-- freeze the write behavior when synchronous acknowledgement cannot be met: fail closed or use an
-  explicitly documented reduced-availability mode, never silently weaken guarantees;
+- fail closed when the required synchronous backup cannot prove the write. Reject before owner
+  apply when the missing proof is known at admission. If the decision may already have applied,
+  preserve the mutation identity and the retained outcome or report `outcome_unknown`. Resume
+  synchronous writes after the replacement backup proves the required prefix. Record affected
+  partition-seconds of write unavailability and the time to restore that proof;
 - recover the W9 dedup/outcome window on the promoted owner so `apply-before-response` retries do
   not double-apply;
 - redirect or proxy callers after convergence without exposing two simultaneous authorities;
@@ -1403,6 +1413,7 @@ not release evidence.
 | `different_digest_under_same_identity_is_terminal` | `hc2_value_failover.rs` | Dedup identity cannot alias another mutation. |
 | `acknowledged_write_survives_owner_kill` | `hc2_value_failover.rs` | Core failover guarantee. |
 | `isolated_old_owner_cannot_acknowledge` | `hc2_value_failover.rs` | No split authority. |
+| `isolated_old_owner_cannot_serve_reads` | `distributed_value_plane_075.rs` (testkit) | A live isolated owner and a stale barrier refuse reads. A rejoining node routes only after catch-up. |
 | `promotion_requires_committed_epoch_and_applied_watermark` | `hc2_value_failover.rs` | Discovery alone cannot promote. |
 | `rejoining_old_owner_is_catchup_only` | `hc2_value_failover.rs` | Stale durable state cannot serve. |
 | `expiry_deadline_is_not_recomputed_on_backup` | `distributed_expiry.rs` | TTL does not extend during replication. |
@@ -1601,6 +1612,8 @@ phase and node reachability. It enumerates bounded apply, replicate, ACK, respon
 partition, promotion, repair, cutover, expiry and namespace-delete transitions. It checks at least:
 
 - no two write-ready owners for one committed partition epoch;
+- only the owner in the quorum-confirmed epoch with the required applied prefix serves an
+  authoritative read. Exercise isolation before and after barrier acquisition and during promotion;
 - no public acknowledged outcome without the configured exact replica proof;
 - no acknowledged record loss after every admitted single-owner failure;
 - no stale value resurrection after expiry/delete/repair/restart;
@@ -1612,6 +1625,12 @@ partition, promotion, repair, cutover, expiry and namespace-delete transitions. 
 Every minimized counterexample becomes a fixed deterministic simulator seed and a named regression.
 The checked-in model hash, bounds, explored state/transition counts and tool version enter release
 evidence; reducing bounds after a failure requires a reviewed contract change, not a test-only edit.
+
+The provisional authority explorer v2 checks read-barrier use across isolation, healing and epoch
+changes. The testkit exercises owner-only expiry under independent clock observations and retention
+of a replicated mutation across a lost proof and same-identity replay. Run
+`cargo test -p hydracache-cluster-testkit --lib --test value_plane_model_075 --test distributed_value_plane_075 --locked`
+for these scenarios.
 
 The real-process chaos matrix complements rather than replaces the model. Add deterministic
 failpoints for clock step forward/backward and uncertainty overflow, slow/frozen required backup,
@@ -1645,8 +1664,8 @@ commit introducing wire/durable bytes also updates compatibility fixtures in tha
 | Slice | Product change | Required green gate before the next slice |
 | --- | --- | --- |
 | D1 | Mechanical extraction of `LocalClientDataBackend`; async dispatcher; no semantic change | Complete current client-surface, mutation-event, quota, retention and protocol suites; local byte goldens unchanged |
-| D2 | Canonical binary key and hash/partition goldens; pure topology/route model | Rust/Java/reference golden equality, property distribution checks, future/hash-version rejection |
-| D3 | Partition executor and atomic in-memory partition store with v2 domain record but no network | Pure mutation differential, per-partition concurrency, version/watermark/dedup crash model |
+| D2 | Canonical binary key and hash/partition goldens; topology, read barrier and per-node clock models | Rust/Java/reference golden equality, property distribution checks, future/hash-version rejection, isolated-owner read refusal and bounded expiry eligibility |
+| D3 | Partition executor and atomic in-memory partition store with v2 domain record; owner-lane barrier and expiry checks | Pure mutation differential, per-partition concurrency, version/watermark/dedup crash model, stale read barrier and expiry uncertainty canaries |
 | D4 | Authenticated one-hop owner invocation over real cluster transport | Three-daemon write/read through every endpoint; stale owner, wrong target/generation, loop and deadline canaries |
 | D5 | Synchronous replica apply and ack tracker | Ack failpoints, missing/duplicate/wrong ack tests, no response before required proof, bounded owner cleanup |
 | D6 | Durable v1→v2 store, expiry/tombstone scheduler and restart recovery | Fixture migration, future rejection, crash at atomic apply phases, expiry/delete non-resurrection |

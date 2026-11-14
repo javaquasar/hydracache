@@ -179,6 +179,9 @@ impl CrossSurfaceReferenceMap {
                 identity,
                 operation,
             } => {
+                if matches!(operation, MutationOperation::ExpireVersion { .. }) {
+                    return Err(SurfaceError::Unsupported);
+                }
                 let digest = operation_digest(&key, &operation);
                 let plan =
                     MutationPlan::new(identity.clone(), digest, key.clone(), operation, self.epoch);

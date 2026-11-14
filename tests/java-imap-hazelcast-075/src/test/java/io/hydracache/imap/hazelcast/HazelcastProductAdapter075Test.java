@@ -123,6 +123,21 @@ final class HazelcastProductAdapter075Test {
     assertThrows(IllegalArgumentException.class,()->HazelcastProbeMain075.main(new String[]{"--skip"}));
     HazelcastProbeMain075.main(new String[0]);
   }
+
+  @Test void commonLoadGeneratorRunsAdmittedNativeGet() throws Exception {
+    var request = ScenarioStep.get("native-get", KEY);
+    var workload = new io.hydracache.imap.benchmark.IMapLoadWorkload(
+        new ScenarioManifest(117, List.of(request)), List.of(), List.of(request));
+    var settings = new io.hydracache.imap.benchmark.FixedRateIMapLoad.Settings(
+        117, 2, 1, 1, 1, 1, 5000);
+    var result = new io.hydracache.imap.benchmark.FixedRateIMapLoad().run(settings, workload,
+        () -> InMemorySemanticAdapter.strict("reference"),
+        () -> new HazelcastProductAdapter075(client, name()), () -> false);
+    assertTrue(result.admission().equivalent());
+    assertEquals("hazelcast", result.right().adapter().product());
+    assertEquals(1, result.right().measured().successful());
+    assertTrue(result.right().measured().endToEnd().isPresent());
+  }
   @Test void failedClientStartupReleasesTheOwnedMember() {
     int members=Hazelcast.getAllHazelcastInstances().size();
     int clients=HazelcastClient.getAllHazelcastClients().size();

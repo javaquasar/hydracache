@@ -1106,6 +1106,7 @@ impl UnifiedServiceRegistry {
                 MutationOperation::GetAndPut { .. } => "get_and_put",
                 MutationOperation::GetAndRemove => "get_and_remove",
                 MutationOperation::Delete => "delete",
+                MutationOperation::ExpireVersion { .. } => return Err(MapServiceError::InvalidArgument.into()),
             }
             .into();
             match operation {
@@ -1128,7 +1129,7 @@ impl UnifiedServiceRegistry {
                 MutationOperation::RemoveIfValue { expected } => {
                     command.expected = Some(expected.clone())
                 }
-                MutationOperation::GetAndRemove | MutationOperation::Delete => {}
+                MutationOperation::GetAndRemove | MutationOperation::Delete | MutationOperation::ExpireVersion { .. } => {}
             }
         }
         self.enqueue(handle, authenticated, verified.surface, command)

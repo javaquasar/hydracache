@@ -68,6 +68,8 @@ impl WorkerConfig {
             "replacement",
             "replacement-child",
             "hang",
+            "await-cancel",
+            "await-cancel-and-hang",
             "exit",
             "malformed",
             "flood",
@@ -274,7 +276,16 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         frame.active_elapsed_ms = active.elapsed().as_millis() as u64;
         frame.owners = owners(&service);
         emit(&frame)?;
-        let until = Instant::now() + Duration::from_millis(profile.bounds.period_ms);
+        let until = if frame.round == 1
+            && matches!(
+                config.fault.as_str(),
+                "await-cancel" | "await-cancel-and-hang"
+            ) {
+            // Let the controller observe the first round before ending this canary.
+            active + Duration::from_millis(profile.bounds.hard_ms)
+        } else {
+            Instant::now() + Duration::from_millis(profile.bounds.period_ms)
+        };
         while Instant::now() < until && !marker(&config.control, "cancel")? {
             std::thread::sleep(
                 Duration::from_millis(10).min(until.saturating_duration_since(Instant::now())),
@@ -285,7 +296,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     frame.active_elapsed_ms = active.elapsed().as_millis() as u64;
     frame.owners = owners(&service);
     emit(&frame)?;
-    if config.fault == "hang" {
+    if matches!(config.fault.as_str(), "hang" | "await-cancel-and-hang") {
         let mut checkpointed = false;
         loop {
             std::thread::sleep(Duration::from_millis(50));

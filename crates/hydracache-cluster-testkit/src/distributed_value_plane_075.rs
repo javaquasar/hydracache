@@ -8,8 +8,9 @@ use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
 
 use crate::value_plane_model_075::{
-    CanonicalMapKey, MutationIdentity, MutationOutcome, MutationPlan, MutationStage,
-    OutcomeCertainty, ReferenceValuePlane, ValuePlaneBounds, ValuePlaneError,
+    CanonicalMapKey, LogicalTime, MutationDigest, MutationIdentity, MutationOperation,
+    MutationOutcome, MutationPlan, MutationStage, OutcomeCertainty, ReferenceValuePlane,
+    ValuePlaneBounds, ValuePlaneError,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -36,6 +37,12 @@ pub enum SimulatorError {
     InvalidBound(&'static str),
     UnknownNode(String),
     NodeUnavailable(String),
+    NodeIsolated(String),
+    AuthorityQuorumUnavailable { reachable: usize, required: usize },
+    OwnerPrefixUnavailable { partition: u32, owner: String },
+    ClockUncertaintyExceeded { limit: u64, actual: u64 },
+    ExpiryRequiresOwnerCheck,
+    ReplicaProofPending(u32),
     UnknownPartition(u32),
     StaleEpoch { expected: u64, actual: u64 },
     StaleOwner { expected: String, actual: String },
@@ -70,9 +77,26 @@ pub struct PartitionAssignment {
     pub backup_proved: bool,
 }
 
+/// A read admitted by the simulated quorum for one key and ownership epoch.
+#[derive(Debug)]
+pub struct ReadBarrier {
+    entry: String,
+    owner: String,
+    epoch: u64,
+    key: CanonicalMapKey,
+}
+
+/// Test observation in a common time domain. An error bound is in the same units as `now`.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ClusterTimeObservation {
+    pub now: u64,
+    pub uncertainty: u64,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ExecutionFault {
     None,
+    LoseReplicaAcknowledgement,
     LoseResponseAfterAcknowledgement,
 }
 
@@ -147,6 +171,8 @@ impl ChaosCampaignReport {
 #[derive(Debug, Clone)]
 struct SimNode {
     live: bool,
+    isolated: bool,
+    clock: ClusterTimeObservation,
     plane: ReferenceValuePlane,
 }
 
@@ -157,6 +183,10 @@ pub struct DistributedValuePlaneSimulator {
     epoch: u64,
     nodes: BTreeMap<String, SimNode>,
     assignments: BTreeMap<u32, PartitionAssignment>,
+    acknowledged: BTreeMap<u32, (MutationIdentity, MutationDigest)>,
+    pending: BTreeMap<u32, (MutationIdentity, MutationDigest)>,
+    unavailable_partition_seconds: u128,
+    explicit_expiry: bool,
     events: VecDeque<SimEvent>,
     next_event_sequence: u64,
     dropped_event_count: u64,
@@ -197,6 +227,8 @@ impl DistributedValuePlaneSimulator {
                 node_id.clone(),
                 SimNode {
                     live: true,
+                    isolated: false,
+                    clock: ClusterTimeObservation::default(),
                     plane: ReferenceValuePlane::new(model_bounds, 1)?,
                 },
             );
@@ -221,6 +253,10 @@ impl DistributedValuePlaneSimulator {
             epoch: 1,
             nodes,
             assignments,
+            acknowledged: BTreeMap::new(),
+            pending: BTreeMap::new(),
+            unavailable_partition_seconds: 0,
+            explicit_expiry: false,
             events: VecDeque::new(),
             next_event_sequence: 1,
             dropped_event_count: 0,
@@ -250,7 +286,20 @@ impl DistributedValuePlaneSimulator {
         proxy_hops: u8,
         fault: ExecutionFault,
     ) -> Result<SimMutationResult, SimulatorError> {
-        self.require_live(entry_node)?;
+        if matches!(plan.operation, MutationOperation::ExpireVersion { .. }) {
+            return Err(SimulatorError::ExpiryRequiresOwnerCheck);
+        }
+        self.execute_checked(entry_node, plan, proxy_hops, fault)
+    }
+
+    fn execute_checked(
+        &mut self,
+        entry_node: &str,
+        plan: MutationPlan,
+        proxy_hops: u8,
+        fault: ExecutionFault,
+    ) -> Result<SimMutationResult, SimulatorError> {
+        self.require_current(entry_node)?;
         let assignment = self.assignment_for_key(&plan.key)?.clone();
         if plan.expected_epoch != assignment.epoch {
             return Err(SimulatorError::StaleEpoch {
@@ -265,9 +314,22 @@ impl DistributedValuePlaneSimulator {
                 actual: proxy_hops,
             });
         }
-        self.require_live(&assignment.owner)?;
-        if !assignment.backup_proved || !self.node_live(&assignment.backup) {
+        self.require_current(&assignment.owner)?;
+        if !assignment.backup_proved || !self.node_reachable(&assignment.backup) {
             return Err(SimulatorError::RequiredBackupUnavailable(assignment.backup));
+        }
+        self.require_current(&assignment.backup)?;
+        self.require_quorum()?;
+        let pending = self.pending.get(&assignment.partition);
+        if pending.is_some_and(|(identity, _)| identity != &plan.identity) {
+            return Err(SimulatorError::ReplicaProofPending(assignment.partition));
+        }
+        let resuming = pending.is_some();
+        if let Some((identity, digest)) = pending {
+            let owner = self.require_current(&assignment.owner)?;
+            if !owner.plane.has_applied_mutation(assignment.partition, identity, *digest) {
+                return Err(ValuePlaneError::ReplicaProofMismatch.into());
+            }
         }
 
         let owner_id = assignment.owner.clone();
@@ -282,13 +344,35 @@ impl DistributedValuePlaneSimulator {
             .ok_or_else(|| SimulatorError::UnknownNode(backup_id.clone()))?;
 
         let identity = plan.identity.clone();
+        let digest = plan.digest;
         let execution = (|| {
             if let Some(retained) = owner.plane.receive(plan.clone())? {
                 let outcome = retained.outcome.ok_or(ValuePlaneError::UnknownMutation)?;
+                if resuming && fault != ExecutionFault::LoseReplicaAcknowledgement {
+                    if !backup
+                        .plane
+                        .has_applied_mutation(assignment.partition, &identity, digest)
+                    {
+                        return Err(ValuePlaneError::ReplicaProofMismatch.into());
+                    }
+                    owner.plane.prove_replica(&identity, backup_id.clone())?;
+                    owner.plane.acknowledge(&identity)?;
+                    let outcome = finish_response(&mut owner.plane, &identity, fault)?;
+                    return Ok((outcome, true));
+                }
+                if resuming {
+                    return Ok((unknown(outcome), true));
+                }
                 return Ok((outcome, true));
             }
             advance_to_decision(&mut owner.plane, &identity)?;
-            let owner_outcome = owner.plane.apply_owner(&identity)?;
+            let owner_time =
+                LogicalTime::new(owner.clock.now.saturating_add(owner.clock.uncertainty));
+            let owner_outcome = if self.explicit_expiry {
+                owner.plane.apply_owner_at(&identity, owner_time)?
+            } else {
+                owner.plane.apply_owner(&identity)?
+            };
             owner.plane.mark_visible_owner(&identity)?;
 
             if backup.plane.receive(plan)?.is_some() {
@@ -297,27 +381,39 @@ impl DistributedValuePlaneSimulator {
                 ));
             }
             advance_to_decision(&mut backup.plane, &identity)?;
-            let backup_outcome = backup.plane.apply_owner(&identity)?;
+            let backup_outcome = if self.explicit_expiry {
+                backup.plane.apply_owner_at(&identity, owner_time)?
+            } else {
+                backup.plane.apply_owner(&identity)?
+            };
             backup.plane.mark_visible_owner(&identity)?;
             if owner_outcome != backup_outcome {
                 return Err(SimulatorError::Model(ValuePlaneError::ReplicaProofMismatch));
             }
 
+            if fault == ExecutionFault::LoseReplicaAcknowledgement {
+                return Ok((unknown(owner_outcome), false));
+            }
+
             owner.plane.prove_replica(&identity, backup_id.clone())?;
             owner.plane.acknowledge(&identity)?;
-            let outcome = match fault {
-                ExecutionFault::None => owner.plane.respond(&identity)?,
-                ExecutionFault::LoseResponseAfterAcknowledgement => {
-                    owner.plane.lose_response(&identity)?
-                }
-            };
+            let outcome = finish_response(&mut owner.plane, &identity, fault)?;
             Ok((outcome, false))
         })();
         self.nodes.insert(owner_id.clone(), owner);
         self.nodes.insert(backup_id, backup);
 
         let (outcome, replayed) = execution?;
-        if outcome.applied && !replayed {
+        if fault == ExecutionFault::LoseReplicaAcknowledgement {
+            if !replayed {
+                self.pending.insert(assignment.partition, (identity.clone(), digest));
+            }
+        } else if resuming || !replayed {
+            self.pending.remove(&assignment.partition);
+            self.acknowledged
+                .insert(assignment.partition, (identity.clone(), digest));
+        }
+        if !replayed && outcome.applied {
             self.publish(SimEventKind::Mutation, assignment.partition, Some(identity));
         }
         Ok(SimMutationResult {
@@ -361,7 +457,17 @@ impl DistributedValuePlaneSimulator {
         key: &CanonicalMapKey,
         proxy_hops: u8,
     ) -> Result<Option<Vec<u8>>, SimulatorError> {
-        self.require_live(entry_node)?;
+        self.finish_read(self.begin_read(entry_node, key, proxy_hops)?)
+    }
+
+    pub fn begin_read(
+        &self,
+        entry_node: &str,
+        key: &CanonicalMapKey,
+        proxy_hops: u8,
+    ) -> Result<ReadBarrier, SimulatorError> {
+        self.require_current(entry_node)?;
+        self.require_quorum()?;
         let assignment = self.assignment_for_key(key)?;
         if entry_node != assignment.owner && proxy_hops >= self.bounds.max_proxy_hops {
             return Err(SimulatorError::ProxyHopLimit {
@@ -369,12 +475,63 @@ impl DistributedValuePlaneSimulator {
                 actual: proxy_hops,
             });
         }
-        self.require_live(&assignment.owner)?;
-        Ok(self
-            .nodes
-            .get(&assignment.owner)
-            .and_then(|node| node.plane.live_value(key))
-            .map(<[u8]>::to_vec))
+        self.require_current(&assignment.owner)?;
+        Ok(ReadBarrier {
+            entry: entry_node.to_owned(),
+            owner: assignment.owner.clone(),
+            epoch: assignment.epoch,
+            key: key.clone(),
+        })
+    }
+
+    pub fn finish_read(&self, barrier: ReadBarrier) -> Result<Option<Vec<u8>>, SimulatorError> {
+        self.require_current(&barrier.entry)?;
+        self.require_quorum()?;
+        let assignment = self.assignment_for_key(&barrier.key)?;
+        if barrier.epoch != assignment.epoch {
+            return Err(SimulatorError::StaleEpoch {
+                expected: barrier.epoch,
+                actual: assignment.epoch,
+            });
+        }
+        if barrier.owner != assignment.owner {
+            return Err(SimulatorError::StaleOwner {
+                expected: assignment.owner.clone(),
+                actual: barrier.owner,
+            });
+        }
+        let owner = self.require_current(&assignment.owner)?;
+        self.require_applied_prefix(assignment.partition, &assignment.owner, owner)?;
+        Ok(owner.plane.live_value(&barrier.key).map(<[u8]>::to_vec))
+    }
+
+    pub fn isolate_node(&mut self, node_id: &str) -> Result<(), SimulatorError> {
+        self.live_node(node_id)?;
+        self.nodes
+            .get_mut(node_id)
+            .expect("node checked above")
+            .isolated = true;
+        Ok(())
+    }
+
+    /// Restores connectivity. A member with a stale epoch must still install the committed view.
+    pub fn heal_node(&mut self, node_id: &str) -> Result<(), SimulatorError> {
+        self.live_node(node_id)?;
+        self.nodes
+            .get_mut(node_id)
+            .expect("node checked above")
+            .isolated = false;
+        Ok(())
+    }
+
+    pub fn catch_up_node(&mut self, node_id: &str) -> Result<(), SimulatorError> {
+        self.require_reachable(node_id)?;
+        self.require_quorum()?;
+        let node = self.nodes.get_mut(node_id).expect("node checked above");
+        if node.plane.epoch() != self.epoch {
+            node.plane.promote(self.epoch, node_id)?;
+        }
+        Ok(())
     }
 
     pub fn fail_node(&mut self, node_id: &str) -> Result<(), SimulatorError> {
@@ -391,7 +548,7 @@ impl DistributedValuePlaneSimulator {
             .nodes
             .get_mut(node_id)
             .ok_or_else(|| SimulatorError::UnknownNode(node_id.to_owned()))?;
-        if node.plane.epoch() < self.epoch {
+        if !node.isolated && node.plane.epoch() < self.epoch {
             node.plane.promote(self.epoch, node_id.to_owned())?;
         }
         node.live = true;
@@ -401,7 +558,120 @@ impl DistributedValuePlaneSimulator {
     pub fn advance_logical_time(&mut self, delta: u64) {
         for node in self.nodes.values_mut() {
             node.plane.advance_logical_time(delta);
+            node.clock.now = node.clock.now.saturating_add(delta);
         }
+    }
+
+    /// Account for an explicitly measured fault interval using the current topology.
+    pub fn record_write_availability(&mut self, seconds: u64) {
+        let unready = if self.require_quorum().is_err() {
+            self.assignments.len()
+        } else {
+            self.assignments
+                .values()
+                .filter(|assignment| {
+                    !assignment.backup_proved
+                        || self.pending.contains_key(&assignment.partition)
+                        || self.require_current(&assignment.owner).is_err()
+                        || self.require_current(&assignment.backup).is_err()
+                })
+                .count()
+        };
+        self.unavailable_partition_seconds = self
+            .unavailable_partition_seconds
+            .saturating_add(unready as u128 * u128::from(seconds));
+    }
+
+    pub const fn unavailable_partition_seconds(&self) -> u128 {
+        self.unavailable_partition_seconds
+    }
+
+    pub fn with_expiry_tombstones(mut self) -> Self {
+        self.explicit_expiry = true;
+        for node in self.nodes.values_mut() {
+            node.plane.require_expiry_tombstones();
+        }
+        self
+    }
+
+    /// Propose expiry of the current finite version under the owner's time observation.
+    pub fn expire(
+        &mut self,
+        owner: &str,
+        key: &CanonicalMapKey,
+        identity: MutationIdentity,
+        max_uncertainty: u64,
+    ) -> Result<Option<SimMutationResult>, SimulatorError> {
+        if !self.explicit_expiry {
+            return Err(SimulatorError::ExpiryRequiresOwnerCheck);
+        }
+        let assignment = self.assignment_for_key(key)?;
+        let node = self.require_current(owner)?;
+        if owner != assignment.owner {
+            return Err(SimulatorError::StaleOwner {
+                expected: assignment.owner.clone(),
+                actual: owner.to_owned(),
+            });
+        }
+        let Some((version, deadline)) = node.plane.expiry_candidate(key) else {
+            return Ok(None);
+        };
+        if !self.expiry_due(owner, key.partition, deadline.value(), max_uncertainty)? {
+            return Ok(None);
+        }
+        let digest = MutationDigest::new(version ^ deadline.value().rotate_left(17));
+        let plan = MutationPlan::new(
+            identity,
+            digest,
+            key.clone(),
+            MutationOperation::ExpireVersion { version, deadline },
+            assignment.epoch,
+        );
+        self.execute_checked(owner, plan, 0, ExecutionFault::None)
+            .map(Some)
+    }
+
+    pub fn observe_node_time(
+        &mut self,
+        node_id: &str,
+        observation: ClusterTimeObservation,
+    ) -> Result<(), SimulatorError> {
+        self.live_node(node_id)?;
+        self.nodes
+            .get_mut(node_id)
+            .expect("node checked above")
+            .clock = observation;
+        Ok(())
+    }
+
+    /// Checks eligibility to propose expiry. The proposal still needs an epoch-fenced mutation.
+    pub fn expiry_due(
+        &self,
+        node_id: &str,
+        partition: u32,
+        deadline: u64,
+        max_uncertainty: u64,
+    ) -> Result<bool, SimulatorError> {
+        let node = self.require_current(node_id)?;
+        self.require_quorum()?;
+        let assignment = self
+            .assignment(partition)
+            .ok_or(SimulatorError::UnknownPartition(partition))?;
+        if assignment.owner != node_id {
+            return Err(SimulatorError::StaleOwner {
+                expected: assignment.owner.clone(),
+                actual: node_id.to_owned(),
+            });
+        }
+        self.require_applied_prefix(partition, node_id, node)?;
+        let clock = node.clock;
+        if clock.uncertainty > max_uncertainty {
+            return Err(SimulatorError::ClockUncertaintyExceeded {
+                limit: max_uncertainty,
+                actual: clock.uncertainty,
+            });
+        }
+        Ok(clock.now.saturating_sub(clock.uncertainty) >= deadline)
     }
 
     pub fn promote_backup(
@@ -420,14 +690,26 @@ impl DistributedValuePlaneSimulator {
             .get(&partition)
             .cloned()
             .ok_or(SimulatorError::UnknownPartition(partition))?;
-        if !self.node_live(&current.backup) {
+        self.require_quorum()?;
+        if !current.backup_proved || !self.node_reachable(&current.backup) {
+            return Err(SimulatorError::NoPromotionCandidate);
+        }
+        let backup = self.require_current(&current.backup)?;
+        self.require_applied_prefix(partition, &current.backup, backup)?;
+        if self.pending.get(&partition).is_some_and(|(identity, digest)| {
+            !backup.plane.has_applied_mutation(partition, identity, *digest)
+        }) {
             return Err(SimulatorError::NoPromotionCandidate);
         }
         let next_backup = self
             .nodes
             .iter()
             .find_map(|(node_id, node)| {
-                (node.live && node_id != &current.backup && node_id != &current.owner)
+                (node.live
+                    && !node.isolated
+                    && node.plane.epoch() == self.epoch
+                    && node_id != &current.backup
+                    && node_id != &current.owner)
                     .then_some(node_id.clone())
             })
             .unwrap_or(current.owner.clone());
@@ -445,25 +727,22 @@ impl DistributedValuePlaneSimulator {
     }
 
     pub fn repair_backup(&mut self, partition: u32, target: &str) -> Result<(), SimulatorError> {
-        self.require_live(target)?;
+        self.require_current(target)?;
+        self.require_quorum()?;
         let assignment = self
             .assignments
             .get(&partition)
             .cloned()
             .ok_or(SimulatorError::UnknownPartition(partition))?;
-        self.require_live(&assignment.owner)?;
+        let owner = self.require_current(&assignment.owner)?;
+        self.require_applied_prefix(partition, &assignment.owner, owner)?;
         if target == assignment.owner {
             return Err(SimulatorError::StaleOwner {
                 expected: assignment.owner.clone(),
                 actual: target.to_owned(),
             });
         }
-        let source = self
-            .nodes
-            .get(&assignment.owner)
-            .expect("owner checked above")
-            .plane
-            .partition_snapshot(partition);
+        let source = owner.plane.partition_snapshot(partition);
         self.nodes
             .get_mut(target)
             .expect("target checked above")
@@ -485,7 +764,8 @@ impl DistributedValuePlaneSimulator {
         target: &str,
         new_epoch: u64,
     ) -> Result<PartitionAssignment, SimulatorError> {
-        self.require_live(target)?;
+        self.require_current(target)?;
+        self.require_quorum()?;
         if new_epoch <= self.epoch {
             return Err(SimulatorError::UnsafeEpoch {
                 current: self.epoch,
@@ -497,7 +777,7 @@ impl DistributedValuePlaneSimulator {
             .get(&partition)
             .cloned()
             .ok_or(SimulatorError::UnknownPartition(partition))?;
-        self.require_live(&current.owner)?;
+        self.require_current(&current.owner)?;
         if target == current.owner {
             return Err(SimulatorError::StaleOwner {
                 expected: current.owner,
@@ -562,11 +842,11 @@ impl DistributedValuePlaneSimulator {
         if assignment.owner == assignment.backup {
             violations.push(format!("partition {partition} owner equals backup"));
         }
-        if !self.node_live(&assignment.owner) {
+        if !self.node_reachable(&assignment.owner) {
             violations.push(format!("partition {partition} owner is unavailable"));
         }
         if assignment.backup_proved {
-            if !self.node_live(&assignment.backup) {
+            if !self.node_reachable(&assignment.backup) {
                 violations.push(format!(
                     "partition {partition} proved backup is unavailable"
                 ));
@@ -595,21 +875,79 @@ impl DistributedValuePlaneSimulator {
             .ok_or(SimulatorError::UnknownPartition(key.partition))
     }
 
-    fn require_live(&self, node_id: &str) -> Result<(), SimulatorError> {
+    fn live_node(&self, node_id: &str) -> Result<&SimNode, SimulatorError> {
         match self.nodes.get(node_id) {
-            Some(node) if node.live => Ok(()),
+            Some(node) if node.live => Ok(node),
             Some(_) => Err(SimulatorError::NodeUnavailable(node_id.to_owned())),
             None => Err(SimulatorError::UnknownNode(node_id.to_owned())),
         }
     }
 
-    fn node_live(&self, node_id: &str) -> bool {
-        self.nodes.get(node_id).is_some_and(|node| node.live)
+    fn require_reachable(&self, node_id: &str) -> Result<&SimNode, SimulatorError> {
+        let node = self.live_node(node_id)?;
+        if node.isolated {
+            return Err(SimulatorError::NodeIsolated(node_id.to_owned()));
+        }
+        Ok(node)
+    }
+
+    fn require_current(&self, node_id: &str) -> Result<&SimNode, SimulatorError> {
+        let node = self.require_reachable(node_id)?;
+        if node.plane.epoch() != self.epoch {
+            return Err(SimulatorError::StaleEpoch {
+                expected: node.plane.epoch(),
+                actual: self.epoch,
+            });
+        }
+        Ok(node)
+    }
+
+    fn node_reachable(&self, node_id: &str) -> bool {
+        self.require_reachable(node_id).is_ok()
+    }
+
+    fn require_quorum(&self) -> Result<(), SimulatorError> {
+        let required = self.nodes.len() / 2 + 1;
+        let reachable = self
+            .nodes
+            .values()
+            .filter(|node| node.live && !node.isolated)
+            .count();
+        if reachable < required {
+            return Err(SimulatorError::AuthorityQuorumUnavailable {
+                reachable,
+                required,
+            });
+        }
+        Ok(())
+    }
+
+    fn require_applied_prefix(
+        &self,
+        partition: u32,
+        owner: &str,
+        node: &SimNode,
+    ) -> Result<(), SimulatorError> {
+        if self
+            .acknowledged
+            .get(&partition)
+            .is_some_and(|(identity, digest)| {
+                !node
+                    .plane
+                    .has_applied_mutation(partition, identity, *digest)
+            })
+        {
+            return Err(SimulatorError::OwnerPrefixUnavailable {
+                partition,
+                owner: owner.to_owned(),
+            });
+        }
+        Ok(())
     }
 
     fn advance_cluster_epoch(&mut self, new_epoch: u64) -> Result<(), SimulatorError> {
         for (node_id, node) in &mut self.nodes {
-            if node.live {
+            if node.live && !node.isolated && node.plane.epoch() == self.epoch {
                 node.plane.promote(new_epoch, node_id.clone())?;
             }
         }
@@ -934,9 +1272,109 @@ fn advance_to_decision(
     Ok(())
 }
 
+fn unknown(mut outcome: MutationOutcome) -> MutationOutcome {
+    outcome.certainty = OutcomeCertainty::OutcomeUnknown;
+    outcome
+}
+
+fn finish_response(
+    plane: &mut ReferenceValuePlane,
+    identity: &MutationIdentity,
+    fault: ExecutionFault,
+) -> Result<MutationOutcome, ValuePlaneError> {
+    if fault == ExecutionFault::LoseResponseAfterAcknowledgement {
+        plane.lose_response(identity)
+    } else {
+        plane.respond(identity)
+    }
+}
+
 pub fn certainty_label(certainty: OutcomeCertainty) -> &'static str {
     match certainty {
         OutcomeCertainty::Certain => "certain",
         OutcomeCertainty::OutcomeUnknown => "outcome_unknown",
+    }
+}
+
+#[cfg(test)]
+mod read_fence_tests {
+    use super::*;
+
+    #[test]
+    fn owner_lane_rejects_misdirected_barrier_and_missing_applied_prefix() {
+        let mut sim = DistributedValuePlaneSimulator::new(
+            ["a", "b", "c"],
+            SimulatorBounds::default(),
+            ValuePlaneBounds::default(),
+        )
+        .unwrap();
+        let key = CanonicalMapKey::new("tenant", "map", 1, b"key".to_vec(), 0);
+        let plan = campaign_put(1, key.clone(), b"value".to_vec(), 1);
+        sim.execute("a", plan.clone()).unwrap();
+
+        let mut wrong_owner = sim.begin_read("c", &key, 0).unwrap();
+        wrong_owner.owner = "b".into();
+        assert_eq!(
+            sim.finish_read(wrong_owner),
+            Err(SimulatorError::StaleOwner {
+                expected: "a".into(),
+                actual: "b".into(),
+            })
+        );
+
+        let pending = sim.begin_read("c", &key, 0).unwrap();
+        sim.nodes.get_mut("a").unwrap().plane =
+            ReferenceValuePlane::new(ValuePlaneBounds::default(), 1).unwrap();
+        let missing = SimulatorError::OwnerPrefixUnavailable {
+            partition: 0,
+            owner: "a".into(),
+        };
+        assert_eq!(sim.finish_read(pending), Err(missing.clone()));
+        sim.nodes
+            .get_mut("a")
+            .unwrap()
+            .plane
+            .receive(plan.clone())
+            .unwrap();
+        assert_eq!(sim.read("a", &key, 0), Err(missing.clone()));
+
+        let mut wrong_partition = plan.clone();
+        wrong_partition.key.partition = 1;
+        let mut wrong_digest = plan;
+        wrong_digest.digest = MutationDigest::new(0);
+        for substitute in [wrong_partition, wrong_digest] {
+            let mut plane = ReferenceValuePlane::new(ValuePlaneBounds::default(), 1).unwrap();
+            let identity = substitute.identity.clone();
+            plane.receive(substitute).unwrap();
+            advance_to_decision(&mut plane, &identity).unwrap();
+            plane.apply_owner(&identity).unwrap();
+            sim.nodes.get_mut("a").unwrap().plane = plane;
+            assert_eq!(sim.read("a", &key, 0), Err(missing.clone()));
+        }
+    }
+
+    #[test]
+    fn pending_replica_proof_does_not_allow_reapplying_on_a_corrupt_copy() {
+        let mut sim = DistributedValuePlaneSimulator::new(
+            ["a", "b", "c"], SimulatorBounds::default(), ValuePlaneBounds::default(),
+        ).unwrap();
+        let key = CanonicalMapKey::new("tenant", "map", 1, b"key".to_vec(), 0);
+        let plan = campaign_put(1, key, b"value".to_vec(), 1);
+        sim.execute_with_fault("a", plan.clone(), 0, ExecutionFault::LoseReplicaAcknowledgement).unwrap();
+        let good_owner = sim.nodes.get("a").unwrap().plane.clone();
+        let good_backup = sim.nodes.get("b").unwrap().plane.clone();
+        for node in ["a", "b"] {
+            sim.nodes.get_mut(node).unwrap().plane = ReferenceValuePlane::new(ValuePlaneBounds::default(), 1).unwrap();
+            assert_eq!(sim.execute("a", plan.clone()), Err(SimulatorError::Model(ValuePlaneError::ReplicaProofMismatch)));
+            if node == "a" {
+                sim.nodes.get_mut(node).unwrap().plane = good_owner.clone();
+            } else {
+                assert_eq!(sim.promote_backup(0, 2), Err(SimulatorError::NoPromotionCandidate));
+                sim.nodes.get_mut(node).unwrap().plane = good_backup.clone();
+            }
+        }
+        let response_lost = sim.execute_with_fault("a", plan, 0, ExecutionFault::LoseResponseAfterAcknowledgement).unwrap();
+        assert!(response_lost.replayed);
+        assert_eq!(response_lost.outcome.certainty, OutcomeCertainty::OutcomeUnknown);
     }
 }

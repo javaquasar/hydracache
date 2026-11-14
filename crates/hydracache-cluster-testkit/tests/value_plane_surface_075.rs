@@ -1,5 +1,5 @@
 use hydracache_cluster_testkit::value_plane_model_075::{
-    MutationIdentity, MutationOperation, TtlDirective, ValuePlaneBounds,
+    MutationIdentity, MutationOperation, TtlDirective, ValuePlaneBounds, ValuePlaneError,
 };
 use hydracache_cluster_testkit::value_plane_surface_075::{
     CrossSurfaceReferenceMap, IngressPrincipal, SurfaceCapability, SurfaceError, SurfaceId,
@@ -84,6 +84,13 @@ fn unsupported_surface_fails_before_shared_state_mutation() {
         SurfaceOutcome::Read(None)
     );
     assert_eq!(map.event_count(), 0);
+    assert_eq!(map.execute(command(SurfaceId::Hc2Rust, SurfaceOperation::Mutation {
+        identity: MutationIdentity::new("client", 2),
+        operation: MutationOperation::ExpireVersion {
+            version: 1,
+            deadline: hydracache_cluster_testkit::value_plane_model_075::LogicalTime::new(10),
+        },
+    })), Err(SurfaceError::Unsupported));
 }
 
 #[test]
@@ -99,6 +106,35 @@ fn ingress_principal_prevents_cross_tenant_projection() {
             SurfaceOperation::Read,
         ),
         Err(SurfaceError::TenantSubstitution)
+    );
+}
+
+#[test]
+fn ingress_and_map_creation_reject_invalid_identities_and_bounds() {
+    let failure = VerifiedMapCommand::new(
+        SurfaceId::Hc2Java,
+        &principal(),
+        "tenant-a",
+        "orders",
+        0,
+        b"key".to_vec(),
+        SurfaceOperation::Read,
+    )
+    .unwrap_err();
+    assert_eq!(failure, SurfaceError::InvalidCommand("identity"));
+    assert_eq!(failure.to_string(), "InvalidCommand(\"identity\")");
+
+    assert_eq!(
+        CrossSurfaceReferenceMap::new(0, ValuePlaneBounds::default()).unwrap_err(),
+        SurfaceError::InvalidCommand("partitions")
+    );
+    let bounds = ValuePlaneBounds {
+        max_dedup_entries: 0,
+        ..ValuePlaneBounds::default()
+    };
+    assert_eq!(
+        CrossSurfaceReferenceMap::new(3, bounds).unwrap_err(),
+        SurfaceError::Model(ValuePlaneError::InvalidBound("dedup_entries"))
     );
 }
 

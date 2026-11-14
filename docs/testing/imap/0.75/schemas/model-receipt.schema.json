@@ -10,7 +10,7 @@
     "status": {"const": "provisional"},
     "evidence_kind": {"const": "authority_model"},
     "source_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-    "model_id": {"const": "hydracache.imap.value-plane.authority.v1"},
+    "model_id": {"const": "hydracache.imap.value-plane.authority.v2"},
     "model_source": {"$ref": "#/$defs/digest"},
     "seed": {"type": "integer", "minimum": 0},
     "bounds": {"type": "object", "additionalProperties": false, "required": ["max_depth", "max_states"], "properties": {"max_depth": {"type": "integer", "minimum": 1, "maximum": 64}, "max_states": {"type": "integer", "minimum": 1, "maximum": 1000000}}},
