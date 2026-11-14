@@ -1428,12 +1428,10 @@ mod authority_read_tests {
             vec![AcquireReadBarrier, IsolateOwner, CompleteRead],
             vec![AcquireReadBarrier, Rebalance, CompleteRead],
         ] {
-            assert!(
-                report.violations.iter().any(|violation| {
-                    violation.invariant_id == AUTHORITY_INVARIANT_IDS[6] && violation.trace == trace
-                }),
-                "missing expected counterexample: {trace:?}"
-            );
+            let found = report.violations.iter().any(|violation| {
+                violation.invariant_id == AUTHORITY_INVARIANT_IDS[6] && violation.trace == trace
+            });
+            assert!(found, "missing expected counterexample: {trace:?}");
         }
         let mut isolated = AuthorityModelSnapshot::default();
         for action in [AcquireReadBarrier, IsolateOwner, PromoteBackup] {
