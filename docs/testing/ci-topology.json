@@ -4,6 +4,25 @@
   "publication_producer": ".github/workflows/publish-crates.yml#publish",
   "workflows": [
     {
+      "path": ".github/workflows/performance-product-build-074.yml",
+      "purpose": "Build pinned product role binaries and attest their provenance in a separate protected job",
+      "triggers": ["workflow_dispatch"],
+      "concurrency_markers": ["performance-product-build-074"],
+      "classes": {
+        "core": ["protection"],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["build", "sign"],
+        "publish": []
+      },
+      "dependencies": {"build": ["protection"], "sign": ["build"]},
+      "artifact_budget": {
+        "max_retention_days": 30,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 536870912
+      }
+    },
+    {
       "path": ".github/workflows/diagnostic-builder-074.yml",
       "purpose": "Manual protected frozen observer build and separate signing; no host execution or product workload",
       "triggers": ["workflow_dispatch"],

@@ -20,7 +20,6 @@ hydracache-redis-compat.workspace = true
 hydracache-server.workspace = true
 libfuzzer-sys = "0.4"
 prost.workspace = true
-protobuf.workspace = true
 raft.workspace = true
 serde.workspace = true
 serde_json.workspace = true

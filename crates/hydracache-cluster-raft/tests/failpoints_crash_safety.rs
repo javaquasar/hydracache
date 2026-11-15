@@ -206,7 +206,7 @@ fn disk_full_on_append_fails_loud_not_silent() {
     let entry = Entry {
         index: 1,
         term: 1,
-        data: b"member-a".to_vec().into(),
+        data: b"member-a".to_vec(),
         ..Entry::default()
     };
 

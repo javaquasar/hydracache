@@ -94,7 +94,7 @@ fn snapshot_wire(data: Vec<u8>, snapshot_index: u64) -> RaftWireMessage {
     snapshot.mut_metadata().index = snapshot_index;
     snapshot.mut_metadata().term = 1;
     snapshot.mut_metadata().mut_conf_state().voters = vec![1, 2, 3];
-    snapshot.data = data.into();
+    snapshot.data = data;
     let mut message = Message {
         from: 1,
         to: 3,

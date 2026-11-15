@@ -3,8 +3,8 @@ use std::path::Path;
 use std::process::Command;
 
 use hydracache_cluster_raft::{RaftMetadataCommandEnvelope, RaftWireMessage};
-use protobuf::Message as _;
 use raft::eraftpb::{ConfState, MessageType, Snapshot};
+use raft::protocompat::PbMessage;
 
 fn vector(name: &str) -> Vec<u8> {
     fs::read(
@@ -28,8 +28,8 @@ fn previous_release_raft_wire_and_snapshot_fixtures_decode_to_frozen_semantics()
     assert_eq!(wire.get_msg_type(), MessageType::MsgAppend);
     assert_eq!((wire.from, wire.to, wire.term), (1, 2, 3));
 
-    let conf = ConfState::parse_from_bytes(&vector("conf_state.bin")).unwrap();
-    let snapshot = Snapshot::parse_from_bytes(&vector("snapshot_conf_state.bin")).unwrap();
+    let conf = ConfState::decode(vector("conf_state.bin").as_slice()).unwrap();
+    let snapshot = Snapshot::decode(vector("snapshot_conf_state.bin").as_slice()).unwrap();
     assert_eq!(conf.voters, vec![1, 2, 3]);
     assert_eq!(snapshot.get_metadata().index, 7);
     assert_eq!(snapshot.get_metadata().term, 4);
