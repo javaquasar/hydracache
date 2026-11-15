@@ -1012,9 +1012,12 @@ impl RedisRespServer {
                     .fetch_max(buffer.len() as u64, Ordering::Relaxed);
             }
 
-            while !buffer.is_empty() {
+            // One socket-read turn owns the backing buffer. Advance the
+            // unread view without moving the suffix after every command.
+            let mut unread = buffer.as_slice();
+            while !unread.is_empty() {
                 let decoded = decode_resp_command_with_limits(
-                    &buffer,
+                    unread,
                     connection.dialect,
                     self.config.decode_limits,
                 );
@@ -1034,14 +1037,8 @@ impl RedisRespServer {
                     self.pipeline_instrumentation
                         .parser_consumed_bytes
                         .fetch_add(consumed as u64, Ordering::Relaxed);
-                    self.pipeline_instrumentation
-                        .input_compactions
-                        .fetch_add(1, Ordering::Relaxed);
-                    self.pipeline_instrumentation
-                        .input_compaction_moved_bytes
-                        .fetch_add((buffer.len() - consumed) as u64, Ordering::Relaxed);
                 }
-                buffer.drain(..consumed);
+                unread = &unread[consumed..];
 
                 let should_close = matches!(command, RedisCommand::Quit);
                 if self
@@ -1084,6 +1081,22 @@ impl RedisRespServer {
                 if should_close {
                     return Ok(());
                 }
+            }
+
+            let remaining = unread.len();
+            let consumed = buffer.len() - remaining;
+            if remaining == 0 {
+                buffer.clear();
+            } else if consumed != 0 {
+                if self.pipeline_instrumentation.enabled() {
+                    self.pipeline_instrumentation
+                        .input_compactions
+                        .fetch_add(1, Ordering::Relaxed);
+                    self.pipeline_instrumentation
+                        .input_compaction_moved_bytes
+                        .fetch_add(remaining as u64, Ordering::Relaxed);
+                }
+                buffer.drain(..consumed);
             }
         }
     }

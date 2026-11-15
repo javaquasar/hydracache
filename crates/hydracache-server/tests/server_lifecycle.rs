@@ -98,6 +98,7 @@ const CONFIG_ENV_VARS: &[&str] = &[
     "HYDRACACHE_REDIS_AUTH_USERNAME",
     "HYDRACACHE_REDIS_AUTH_TOKEN_FILE",
     "HYDRACACHE_REDIS_REDISS_ENABLED",
+    "HYDRACACHE_REDIS_MTLS_CLIENT_CA_PATH",
     "HYDRACACHE_REDIS_KEYSPACE_EVENTS_ENABLED",
     "HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTIONS_PER_CONNECTION",
     "HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTION_BYTES_PER_CONNECTION",
@@ -766,6 +767,78 @@ fn redis_api_rediss_env_reuses_server_tls_material() {
     assert!(config.redis_api.rediss_enabled);
     let runtime = ServerRuntime::new(config).unwrap().start();
     assert!(runtime.redis_tls_acceptor().unwrap().is_some());
+}
+
+#[test]
+fn redis_mtls_env_is_explicit_and_old_env_remains_server_auth_tls() {
+    let material = write_test_tls_material("mtls-env-074");
+    let token = test_token_file("mtls-env-074-auth", "mtls-env-token\n");
+    let values = vec![
+        ("HYDRACACHE_REDIS_API_ENABLED", OsString::from("true")),
+        ("HYDRACACHE_REDIS_REDISS_ENABLED", OsString::from("true")),
+        ("HYDRACACHE_REDIS_AUTH_REQUIRED", OsString::from("true")),
+        ("HYDRACACHE_REDIS_AUTH_TOKEN_FILE", token.into_os_string()),
+        ("HYDRACACHE_TLS_ENABLED", OsString::from("true")),
+        (
+            "HYDRACACHE_TLS_CERT_PATH",
+            material.cert_path.into_os_string(),
+        ),
+        (
+            "HYDRACACHE_TLS_KEY_PATH",
+            material.key_path.into_os_string(),
+        ),
+        (
+            "HYDRACACHE_TLS_CA_PATH",
+            material.ca_path.clone().into_os_string(),
+        ),
+    ];
+    {
+        let _guard = ConfigEnvGuard::new_owned(values.clone());
+        assert!(ServerConfig::from_env()
+            .unwrap()
+            .redis_api
+            .mtls_client_ca_path
+            .is_none());
+    }
+    let mut mtls = values.clone();
+    mtls.push((
+        "HYDRACACHE_REDIS_MTLS_CLIENT_CA_PATH",
+        material.ca_path.clone().into_os_string(),
+    ));
+    {
+        let _guard = ConfigEnvGuard::new_owned(mtls);
+        assert_eq!(
+            ServerConfig::from_env()
+                .unwrap()
+                .redis_api
+                .mtls_client_ca_path,
+            Some(material.ca_path)
+        );
+    }
+    {
+        let mut empty = values.clone();
+        empty.push(("HYDRACACHE_REDIS_MTLS_CLIENT_CA_PATH", OsString::new()));
+        let _guard = ConfigEnvGuard::new_owned(empty);
+        assert!(matches!(
+            ServerConfig::from_env(),
+            Err(ServerConfigError::RedisMtlsRequiresTlsAndAuth)
+        ));
+    }
+    #[cfg(windows)]
+    {
+        use std::os::windows::ffi::OsStringExt;
+        let path = OsString::from_wide(&[0xd800]);
+        let mut non_unicode = values;
+        non_unicode.push(("HYDRACACHE_REDIS_MTLS_CLIENT_CA_PATH", path.clone()));
+        let _guard = ConfigEnvGuard::new_owned(non_unicode);
+        assert_eq!(
+            ServerConfig::from_env()
+                .unwrap()
+                .redis_api
+                .mtls_client_ca_path,
+            Some(PathBuf::from(path))
+        );
+    }
 }
 
 #[tokio::test]

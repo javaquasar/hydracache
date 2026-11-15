@@ -22,7 +22,7 @@ async fn exchange(server: &Arc<RedisRespServer>, request: &[u8]) -> Vec<u8> {
 }
 
 #[tokio::test]
-async fn pipeline_counters_reconcile_current_per_command_compaction_and_flush() {
+async fn pipeline_counters_reconcile_complete_read_and_per_command_flush() {
     let server = listener();
     server.set_pipeline_instrumentation_enabled(true);
     let set = b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n";
@@ -39,11 +39,8 @@ async fn pipeline_counters_reconcile_current_per_command_compaction_and_flush() 
     assert_eq!(metrics.input_buffer_high_water_bytes, request.len() as u64);
     assert_eq!(metrics.decoded_commands, 3);
     assert_eq!(metrics.parser_consumed_bytes, request.len() as u64);
-    assert_eq!(metrics.input_compactions, 3);
-    assert_eq!(
-        metrics.input_compaction_moved_bytes,
-        (get.len() + quit.len() + quit.len()) as u64
-    );
+    assert_eq!(metrics.input_compactions, 0);
+    assert_eq!(metrics.input_compaction_moved_bytes, 0);
     assert_eq!(metrics.translation_contexts, 3);
     assert!(metrics.request_id_bytes > 0);
     assert_eq!(metrics.script_cache_entries_cloned, 0);
@@ -68,4 +65,33 @@ async fn pipeline_counters_are_off_by_default_and_reset_only_when_requested() {
     server.set_pipeline_instrumentation_enabled(false);
     server.reset_pipeline_metrics();
     assert_eq!(server.pipeline_metrics(), RedisPipelineMetrics::default());
+}
+
+#[tokio::test]
+async fn incomplete_suffix_is_moved_once_and_completes_on_the_next_read() {
+    let server = listener();
+    server.set_pipeline_instrumentation_enabled(true);
+    let (mut client, server_io) = tokio::io::duplex(16 * 1024);
+    let owned = Arc::clone(&server);
+    let serve = tokio::spawn(async move { owned.serve_connection(server_io).await.unwrap() });
+    let partial = b"*2\r\n$3\r\nGET\r\n$1\r\n";
+    let request = [b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n".as_slice(), partial].concat();
+    client.write_all(&request).await.unwrap();
+    let mut reply = [0; 5];
+    client.read_exact(&mut reply).await.unwrap();
+    assert_eq!(&reply, b"+OK\r\n");
+    client.write_all(b"k\r\n").await.unwrap();
+    client.shutdown().await.unwrap();
+    let mut output = Vec::new();
+    client.read_to_end(&mut output).await.unwrap();
+    serve.await.unwrap();
+    assert_eq!(output, b"$1\r\nv\r\n");
+    let metrics = server.pipeline_metrics();
+    assert_eq!(metrics.read_calls, 2);
+    assert_eq!(metrics.decoded_commands, 2);
+    assert_eq!(metrics.parser_consumed_bytes, (request.len() + 3) as u64);
+    assert_eq!(metrics.input_compactions, 1);
+    assert_eq!(metrics.input_compaction_moved_bytes, partial.len() as u64);
+    assert_eq!(metrics.write_calls, 2);
+    assert_eq!(metrics.flush_calls, 2);
 }
