@@ -75,7 +75,7 @@ jobs:
           python3 tooling/scripts/perf/product_build_receipt_074.py receipt "$ROLE" source "$RUNNER_TEMP/product"
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: product-unsigned-074-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: product-unsigned-074-${{ matrix.role }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/product/
           if-no-files-found: error
           retention-days: 7
@@ -113,7 +113,7 @@ jobs:
             "$RUNNER_TEMP/branch.json" "$RUNNER_TEMP/environment.json" "$RUNNER_TEMP/policies.json"
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
-          name: product-unsigned-074-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: product-unsigned-074-${{ matrix.role }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/product
       - name: Verify exact role and artifact bytes before signing
         env:
@@ -132,7 +132,7 @@ jobs:
         run: cp -- "$BUNDLE" "$RUNNER_TEMP/product/build-receipt.sigstore.json"
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: product-signed-074-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: product-signed-074-${{ matrix.role }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/product/
           if-no-files-found: error
           retention-days: 30
