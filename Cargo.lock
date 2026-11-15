@@ -4326,6 +4326,7 @@ dependencies = [
  "lazy_static",
  "prost 0.11.9",
  "protobuf-build",
+ "protoc-bin-vendored",
 ]
 
 [[package]]

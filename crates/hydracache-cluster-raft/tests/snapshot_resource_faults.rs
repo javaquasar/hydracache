@@ -37,7 +37,7 @@ fn metadata_snapshot_message() -> RaftWireMessage {
     data.extend(serde_json::to_vec(&payload).unwrap());
 
     let mut snapshot = snapshot(50, 1, vec![1, 2, 3]);
-    snapshot.data = data.into();
+    snapshot.data = data;
     let mut message = Message {
         from: 1,
         to: 3,

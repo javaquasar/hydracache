@@ -51,10 +51,15 @@ optional = true
 version = "=0.15.1"
 default-features = false
 
+[build-dependencies.protoc-bin-vendored]
+version = "3.2.0"
+optional = true
+
 [features]
 default = ["protobuf-codec"]
 prost-codec = [
     "protobuf-build/prost-codec",
+    "dep:protoc-bin-vendored",
     "prost",
     "lazy_static",
 ]
