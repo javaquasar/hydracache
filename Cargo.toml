@@ -62,7 +62,7 @@ bytes = "1.11.1"
 chitchat = "0.11.0"
 criterion = { version = "0.8", features = ["async_tokio"] }
 crossbeam-queue = "=0.3.12"
-diesel = { version = "2.3.10", default-features = false }
+diesel = { version = "2.4.0", default-features = false }
 ed25519-dalek = "2.2.0"
 futures-util = "0.3.32"
 fs2 = "0.4.3"
@@ -119,7 +119,7 @@ redis = { version = "1.3.0", default-features = false, features = ["tokio-comp",
 # HydraCache 0.63 still exposes an RESP2-only contract through hydracache-redis-compat.
 redis-protocol = { version = "6.0.0", default-features = false, features = ["std", "resp2", "resp3", "bytes"] }
 reqwest = { version = "0.13", default-features = false, features = ["json", "query", "rustls", "stream"] }
-rustls = "0.23.41"
+rustls = "0.23.46"
 sea-orm = { version = "1.1.17", default-features = false }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1"
@@ -134,7 +134,7 @@ subtle = "2.6.1"
 syn = { version = "2", features = ["full"] }
 testcontainers-modules = { version = "0.15.0", features = ["postgres", "redis", "nats"] }
 thiserror = "2.0.18"
-tokio = { version = "1.52.3", features = ["io-util", "macros", "net", "rt-multi-thread", "sync", "time"] }
+tokio = { version = "1.53.3", features = ["io-util", "macros", "net", "rt-multi-thread", "sync", "time"] }
 tokio-rustls = "0.26.4"
 tokio-stream = { version = "0.1", features = ["net"] }
 tonic = { version = "0.14.6", features = ["tls-ring"] }
@@ -145,6 +145,10 @@ tower = { version = "0.5", features = ["util"] }
 trybuild = "1"
 proptest = "1"
 utoipa = "5"
-utoipa-swagger-ui = { version = "9", features = ["axum"] }
+utoipa-swagger-ui = { version = "10.0.2", default-features = false, features = ["axum", "vendored"] }
 wasm-bindgen = "0.2.122"
 wasm-bindgen-test = "0.3"
+
+[patch.crates-io]
+sqlx-sqlite = { path = "vendor/sqlx-sqlite" }
+testcontainers = { path = "vendor/testcontainers" }
