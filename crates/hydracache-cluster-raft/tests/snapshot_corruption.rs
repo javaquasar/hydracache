@@ -10,8 +10,8 @@ use hydracache_cluster_raft::{
     InMemoryRaftMetadataStore, RaftLogStore, RaftMetadataRuntime, RaftMetadataRuntimeConfig,
     SledRaftLogStore,
 };
-use protobuf::Message as ProtobufMessage;
 use raft::eraftpb::Snapshot;
+use raft::protocompat::PbMessageExt;
 use raft::storage::Storage;
 
 const SLED_SNAPSHOT_KEY: &[u8] = b"meta:snapshot";
@@ -47,7 +47,7 @@ fn raft_snapshot(index: u64, term: u64, voters: Vec<u64>, data: &[u8]) -> Snapsh
     snapshot.mut_metadata().index = index;
     snapshot.mut_metadata().term = term;
     snapshot.mut_metadata().mut_conf_state().voters = voters;
-    snapshot.data = data.to_vec().into();
+    snapshot.data = data.to_vec();
     snapshot
 }
 
