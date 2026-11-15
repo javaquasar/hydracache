@@ -1941,6 +1941,21 @@ logical owners. A new method is not accepted merely because it beats client-side
 
 ## W12. Release evidence, documentation, and rollback
 
+The bounded Linux PR matrix passed at `2faa5a8572400a594ad67e90e204288c0bc1f7a9` for Rust
+1.88.0 and 1.94.0, each with JDK 17 and 21. The local evidence index at
+`target/imap-075/w12-linux-2faa5a857/run1/evidence-index.json` binds the source bundle, workflow,
+four receipts and four scoped coverage reports. The bundle uses
+`3a23ae2e87f362a6c3745f99e5bd84059c9533ae`, the upstream base, as its prerequisite.
+Run `sha256sum -c SHA256SUMS` from the evidence directory to verify the retained files and run
+`cargo xtask imap-ci-check --release 0.75 --mode pr --receipts <workspace-relative-receipt-dir>`
+from a clean Linux checkout at the tested commit to verify the receipt matrix.
+
+Additional local checks cover A/A and the load ladder with an injected adapter delay,
+TTL expiry and retained conditional decisions during ACK loss and online owner movement, and
+admission for a cold tenant during hot bulk reads and delayed backup repair. The migration
+rehearsal checks shadow reads and rollback digests at a fixed logical tick with an explicit
+policy for destination-only writes.
+
 Add release-scoped support to:
 
 - `cargo xtask imap-contract-check --release 0.75`;

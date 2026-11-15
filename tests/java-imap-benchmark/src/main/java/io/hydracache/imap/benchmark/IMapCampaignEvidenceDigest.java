@@ -6,6 +6,8 @@ import io.hydracache.imap.semantic.StateSnapshot;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -21,53 +23,63 @@ final class IMapCampaignEvidenceDigest {
   private IMapCampaignEvidenceDigest() {}
 
   static String registration(IMapCampaignPublication.Registration registration) {
-    return digest("imap-campaign-registration-v1", out -> {
-      out.writeUTF(registration.contractSha256());
-      out.writeUTF(registration.admission().name());
-      list(out, registration.campaign().runs(), IMapCampaignEvidenceDigest::run);
-      hosts(out, registration.hosts());
-      adapter(out, registration.leftAdapter());
-      adapter(out, registration.rightAdapter());
-      calibration(out, registration.calibration().baseline());
-      out.writeInt(registration.calibration().maxDriftBasisPoints());
-      list(out, registration.requiredResources(), (stream, requirement) -> {
-        stream.writeUTF(requirement.side().name());
-        stream.writeUTF(requirement.phase().name());
-        stream.writeUTF(requirement.label());
-        stream.writeUTF(requirement.scope().name());
-        stream.writeUTF(requirement.metric().name());
-      });
+    return digest(out -> writeRegistration(out, registration));
+  }
+
+  static void writeRegistration(DataOutputStream out, IMapCampaignPublication.Registration registration)
+      throws IOException {
+    out.writeUTF("imap-campaign-registration-v1");
+    out.writeUTF(registration.contractSha256());
+    out.writeUTF(registration.admission().name());
+    list(out, registration.campaign().runs(), IMapCampaignEvidenceDigest::run);
+    hosts(out, registration.hosts());
+    adapter(out, registration.leftAdapter());
+    adapter(out, registration.rightAdapter());
+    calibration(out, registration.calibration().baseline());
+    out.writeInt(registration.calibration().maxDriftBasisPoints());
+    list(out, registration.requiredResources(), (stream, requirement) -> {
+      stream.writeUTF(requirement.side().name());
+      stream.writeUTF(requirement.phase().name());
+      stream.writeUTF(requirement.label());
+      stream.writeUTF(requirement.scope().name());
+      stream.writeUTF(requirement.metric().name());
     });
   }
 
   static String manifest(IMapCampaignPublication.Manifest manifest) {
-    return digest("imap-campaign-manifest", out -> {
-      out.writeInt(manifest.version());
-      out.writeUTF(manifest.registrationSha256());
-      list(out, manifest.pairSha256(), DataOutputStream::writeUTF);
-    });
+    return digest(out -> writeManifest(out, manifest));
+  }
+
+  static void writeManifest(DataOutputStream out, IMapCampaignPublication.Manifest manifest) throws IOException {
+    out.writeUTF("imap-campaign-manifest");
+    out.writeInt(manifest.version());
+    out.writeUTF(manifest.registrationSha256());
+    list(out, manifest.pairSha256(), DataOutputStream::writeUTF);
   }
 
   static String pair(IMapCampaignPublication.PairEvidence pair) {
-    return digest("imap-campaign-pair-v2", out -> {
-      var attempt = pair.attempt();
-      run(out, attempt.run());
-      if (attempt instanceof IMapLoadCampaign.Measured measured) {
-        out.writeBoolean(true);
-        result(out, measured.result());
-      } else {
-        out.writeBoolean(false);
-        var failed = (IMapLoadCampaign.Failed) attempt;
-        out.writeUTF(failed.failure().name());
-        out.writeUTF(failed.detail());
-      }
-      list(out, attempt.resources(), IMapCampaignEvidenceDigest::resourceReport);
-      optional(out, pair.capture(), (stream, capture) -> {
-        bindings(stream, capture.observedBindings());
-        hosts(stream, capture.hosts());
-        trialCapture(stream, capture.left());
-        trialCapture(stream, capture.right());
-      });
+    return digest(out -> writePair(out, pair));
+  }
+
+  static void writePair(DataOutputStream out, IMapCampaignPublication.PairEvidence pair) throws IOException {
+    out.writeUTF("imap-campaign-pair-v2");
+    var attempt = pair.attempt();
+    run(out, attempt.run());
+    if (attempt instanceof IMapLoadCampaign.Measured measured) {
+      out.writeBoolean(true);
+      result(out, measured.result());
+    } else {
+      out.writeBoolean(false);
+      var failed = (IMapLoadCampaign.Failed) attempt;
+      out.writeUTF(failed.failure().name());
+      out.writeUTF(failed.detail());
+    }
+    list(out, attempt.resources(), IMapCampaignEvidenceDigest::resourceReport);
+    optional(out, pair.capture(), (stream, capture) -> {
+      bindings(stream, capture.observedBindings());
+      hosts(stream, capture.hosts());
+      trialCapture(stream, capture.left());
+      trialCapture(stream, capture.right());
     });
   }
 
@@ -259,10 +271,40 @@ final class IMapCampaignEvidenceDigest {
   }
 
   private static String digest(String domain, Encoder encoder) {
+    return digest(out -> {
+      out.writeUTF(domain);
+      encoder.write(out);
+    });
+  }
+
+  static String text(String domain, String value) {
+    return digest(domain, out -> out.writeUTF(value));
+  }
+
+  static String file(Path path) throws IOException {
+    try (var input = Files.newInputStream(path)) {
+      return digest(input::transferTo);
+    }
+  }
+
+  static String code(Path path) throws IOException {
+    if (!Files.isDirectory(path)) return file(path);
+    try (var paths = Files.walk(path)) {
+      var members = paths.filter(Files::isRegularFile).sorted().toList();
+      return digest("imap-local-classpath-v1", out -> {
+        out.writeInt(members.size());
+        for (var member : members) {
+          out.writeUTF(path.relativize(member).toString().replace('\\', '/'));
+          out.writeUTF(file(member));
+        }
+      });
+    }
+  }
+
+  private static String digest(Encoder encoder) {
     try {
       var sha = MessageDigest.getInstance("SHA-256");
       var out = new DataOutputStream(new DigestOutputStream(OutputStream.nullOutputStream(), sha));
-      out.writeUTF(domain);
       encoder.write(out);
       return HexFormat.of().formatHex(sha.digest());
     } catch (IOException | NoSuchAlgorithmException invalid) {

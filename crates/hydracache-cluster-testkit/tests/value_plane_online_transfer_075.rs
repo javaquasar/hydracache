@@ -1,4 +1,5 @@
 use hydracache_cluster_testkit::value_plane_collection_075::CollectionBounds;
+use hydracache_cluster_testkit::value_plane_loopback_075::LoopbackFault;
 use hydracache_cluster_testkit::value_plane_model_075::MutationIdentity;
 use hydracache_cluster_testkit::value_plane_service_075::*;
 use hydracache_cluster_testkit::value_plane_service_cluster_075::*;
@@ -720,6 +721,77 @@ fn pending_roots_and_topology_changes_fence_online_readiness() {
     assert!(cluster.commit_online_transfer(id).is_err());
     cluster.abort_online_transfer(id).unwrap();
     cluster.cleanup_online_transfer(id).unwrap();
+}
+
+#[test]
+fn expired_value_and_retained_conditional_decision_survive_ack_loss_and_owner_move() {
+    let mut cluster = cluster();
+    let mut original = command(b"expiring", 1);
+    original.ttl = ServiceTtl::ExpireAfter(5);
+    assert!(run(&mut cluster, original).backup_proved);
+    let source = cluster.assignment(0).unwrap();
+    let transfer = cluster
+        .begin_online_transfer(0, "c", OnlineTransferOptions::default())
+        .unwrap();
+    snapshot(&mut cluster, transfer);
+    cluster.ready_online_transfer(transfer).unwrap();
+
+    let mut conditional = command(b"expiring", 2);
+    conditional.operation = "put_if_absent".into();
+    conditional.now = 4;
+    let mut lost_ack = ServiceClusterCall::default();
+    lost_ack.faults.data.ack = LoopbackFault::Drop;
+    let unknown = cluster.execute("c", conditional.clone(), lost_ack).unwrap();
+    assert_eq!(unknown.result.kind, "outcome_unknown");
+    assert!(!unknown.backup_proved);
+
+    let mut read = ServiceCommand::point("get", b"expiring");
+    read.now = 5;
+    let expired = run(&mut cluster, read.clone());
+    assert_eq!(expired.result.kind, "absent");
+    assert!(expired.backup_proved);
+    assert_eq!(
+        cluster.commit_online_transfer(transfer).unwrap_err(),
+        ServiceClusterError::TransferState
+    );
+    deltas(&mut cluster, transfer);
+    assert!(cluster.ready_online_transfer(transfer).is_err());
+    assert_eq!(cluster.assignment(0).unwrap(), source);
+
+    conditional.now = 5;
+    let recovered = run(&mut cluster, conditional.clone());
+    assert!(recovered.backup_proved);
+    assert_eq!(recovered.result.kind, "present");
+    assert_eq!(recovered.result.value, Some(vec![1]));
+    assert_eq!(run(&mut cluster, read.clone()).result.kind, "absent");
+    deltas(&mut cluster, transfer);
+    cluster.ready_online_transfer(transfer).unwrap();
+    let moved = cluster.commit_online_transfer(transfer).unwrap();
+    assert_eq!(moved.owner, "c");
+    assert_eq!(moved.epoch, source.epoch + 1);
+    assert_eq!(
+        cluster
+            .execute(
+                "c",
+                read.clone(),
+                ServiceClusterCall {
+                    expected_epoch: Some(source.epoch),
+                    ..ServiceClusterCall::default()
+                }
+            )
+            .unwrap_err(),
+        ServiceClusterError::StaleEpoch
+    );
+    let replay = run(&mut cluster, conditional);
+    assert!(replay.replayed && replay.backup_proved);
+    assert_eq!(replay.result, recovered.result);
+    assert_eq!(run(&mut cluster, read).result.kind, "absent");
+    assert!(cluster
+        .diagnostic_node_snapshot("c", 0, 5)
+        .unwrap()
+        .is_empty());
+    assert!(cluster.cleanup_online_transfer(transfer).unwrap());
+    assert_eq!(cluster.aggregate_namespace_owners().resync_leases, 0);
 }
 
 #[test]

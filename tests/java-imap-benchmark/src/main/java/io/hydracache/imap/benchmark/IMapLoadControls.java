@@ -24,7 +24,10 @@ public final class IMapLoadControls {
 
   /** All offered rates must be preregistered for the same workload and concurrency level. */
   public static Saturation saturation(IMapLoadCampaign campaign, List<IMapLoadCampaign.Attempt> attempts) {
-    var reports = IMapPairedAnalysis.analyze(campaign, attempts);
+    return saturationFromReports(campaign, IMapPairedAnalysis.analyze(campaign, attempts));
+  }
+
+  static Saturation saturationFromReports(IMapLoadCampaign campaign, List<IMapPairedAnalysis.CellReport> reports) {
     var steps = new ArrayList<Step>();
     var first = campaign.runs().get(0);
     int previous = 0;

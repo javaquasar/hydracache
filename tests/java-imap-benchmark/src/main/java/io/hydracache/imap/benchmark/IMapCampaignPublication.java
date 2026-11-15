@@ -174,9 +174,6 @@ public final class IMapCampaignPublication {
       List<PairEvidence> pairs) {
     pairs = List.copyOf(pairs);
     var blockers = new ArrayList<Blocker>();
-    if (registration.admission() != Admission.ADMITTED) {
-      blockers.add(new Blocker(Refusal.CONTRACT_NOT_ADMITTED, "campaign", "comparison contract is provisional"));
-    }
     var runs = registration.campaign().runs();
     if (pairs.size() != runs.size()) {
       blockers.add(new Blocker(Refusal.INCOMPLETE_CAMPAIGN, "campaign",
@@ -185,12 +182,15 @@ public final class IMapCampaignPublication {
     if (!verifyManifest(registration, retainedRootSha256, manifest, pairs)) {
       blockers.add(new Blocker(Refusal.MANIFEST, "campaign", "version, retained root or nested SHA-256 mismatch"));
     }
-    if (!blockers.isEmpty()) return refused(blockers);
-
-    var startups = new HashSet<String>();
-    long previousEnd = Long.MIN_VALUE;
-    for (int i = 0; i < runs.size(); i++) {
-      previousEnd = verifyPair(registration, runs.get(i), pairs.get(i), previousEnd, startups, blockers);
+    if (blockers.isEmpty()) {
+      var startups = new HashSet<String>();
+      long previousEnd = Long.MIN_VALUE;
+      for (int i = 0; i < runs.size(); i++) {
+        previousEnd = verifyPair(registration, runs.get(i), pairs.get(i), previousEnd, startups, blockers);
+      }
+    }
+    if (registration.admission() != Admission.ADMITTED) {
+      blockers.add(new Blocker(Refusal.CONTRACT_NOT_ADMITTED, "campaign", "comparison contract is provisional"));
     }
     if (!blockers.isEmpty()) return refused(blockers);
 
@@ -240,9 +240,11 @@ public final class IMapCampaignPublication {
       return previousEnd;
     }
     var capture = pair.capture().orElseThrow();
-    if (!run.bindings().equals(capture.observedBindings()) || !registration.hosts().equals(capture.hosts())
-        || !capture.hosts().dedicated() || capture.hosts().servers().contains(capture.hosts().generator())) {
-      blockers.add(new Blocker(Refusal.ENVIRONMENT, subject, "bindings or dedicated host placement differs"));
+    if (!run.bindings().equals(capture.observedBindings()) || !registration.hosts().equals(capture.hosts())) {
+      blockers.add(new Blocker(Refusal.ENVIRONMENT, subject, "observed campaign bindings differ"));
+    }
+    if (!capture.hosts().dedicated() || capture.hosts().servers().contains(capture.hosts().generator())) {
+      blockers.add(new Blocker(Refusal.ENVIRONMENT, subject, "dedicated host placement required"));
     }
     var result = ((IMapLoadCampaign.Measured) pair.attempt()).result();
     if (java.util.stream.Stream.of(result.left(), result.right())

@@ -49,6 +49,25 @@ accepted chunks, cardinality, logical bytes and whether the live owner stayed un
 qualify the local fixture mechanism; they do not satisfy packaged-client, production daemon,
 Hazelcast comparison or release admission gates.
 
+## Local cutover and rollback rehearsal
+
+```powershell
+cargo xtask imap-migration-dry-run --release 0.75 --rehearse-at 7 --post-cutover discard_writes --output target/imap-075/rollback-rehearsal.json
+```
+
+The rehearsal reads every fixture key from the local destination at the selected logical tick
+and checks the value, remaining TTL and visible cardinality against the offline source.
+It also checks absence at the expiry boundary. On successful checks it rehearses switching
+traffic with a separately populated source owner available for rollback. The policy is mandatory.
+
+- `read_only` restores reads to the frozen source at the selected tick.
+- `refuse_writes` applies a synthetic destination-only write and records rollback as unavailable.
+- `discard_writes` applies the same write, discards the local destination and checks the source
+  digest after rollback against the pre-cutover digest at the same tick.
+
+The receipt records the policy, whether the synthetic write took effect, the fixed tick and the
+pre-cutover and rollback digests. A null rollback digest records that the policy refused rollback.
+
 ## Candidate cutover checklist
 
 1. Select the authoritative offline source and freeze application codecs and namespace mapping.
@@ -60,7 +79,8 @@ Hazelcast comparison or release admission gates.
 6. Keep old clients fenced from the new generation. Record exactly which source remains writable.
 7. Rehearse rollback to the frozen pre-cutover source. Post-cutover Hydra-only writes must be
    reconciled from an external source of truth, deliberately discarded under an accepted policy,
-   or make rollback unavailable. This tool does not perform rollback.
+   or make rollback unavailable. Use the local rehearsal to validate the selected policy against
+   fixtures before qualifying the procedure on a candidate cluster.
 
 The final sample application must run against packaged 0.75 artifacts and the real backend before
 this procedure can become a release claim. Until then, the local corpus and negative tests prepare

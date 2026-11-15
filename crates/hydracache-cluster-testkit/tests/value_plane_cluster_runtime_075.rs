@@ -9,6 +9,7 @@ use hydracache_cluster_testkit::value_plane_cluster_auth_075::*;
 use hydracache_cluster_testkit::value_plane_cluster_health_075::*;
 use hydracache_cluster_testkit::value_plane_cluster_runtime_075::*;
 use hydracache_cluster_testkit::value_plane_collection_075::CollectionBounds;
+use hydracache_cluster_testkit::value_plane_loopback_075::LoopbackFault;
 use hydracache_cluster_testkit::value_plane_model_075::MutationIdentity;
 use hydracache_cluster_testkit::value_plane_security_075::{
     GrantKeys, GrantRights, NamespaceGrant, ReplayDisposition, ReplayWindow, RouteClaims,
@@ -453,6 +454,209 @@ fn cancelled_cluster_queue_credits_release_once_without_dispatching() {
     assert_eq!(observations.cancelled, 1);
     assert_eq!(observations.owned_bytes, [0; 3]);
     assert_eq!(registry.usage().queued_requests, 0);
+}
+
+#[test]
+fn hot_bulk_and_delayed_repair_leave_room_for_cold_tenant_and_release_credits() {
+    use hydracache_cluster_testkit::value_plane_collection_075::ReplacementEntry;
+
+    let mut config = config();
+    config.admission.max_hot_key_waiters = 2;
+    config.admission.max_jobs = 4;
+    let delayed_ack = LoopbackFault::Delay(config.bounds.max_transport_ticks as u64 + 1);
+    let registry = registry(config);
+    let (hot, hot_handle) = open(&registry, "tenant-a", "map");
+    let (cold, cold_handle) = open(&registry, "tenant-b", "map");
+    let hot_key = b"hot";
+    let read = |key: &[u8]| ServiceCommand::point("get", key);
+    let route = run(&registry, &hot_handle, &hot, read(hot_key))
+        .unwrap()
+        .routes[0]
+        .clone();
+    let second_key = (0..32)
+        .map(|n| [n])
+        .find(|key| {
+            run(&registry, &hot_handle, &hot, read(key)).unwrap().routes[0].partition
+                == route.partition
+        })
+        .unwrap();
+    let cold_key = (0..32)
+        .map(|n| [n])
+        .find(|key| {
+            run(&registry, &cold_handle, &cold, read(key))
+                .unwrap()
+                .routes[0]
+                .partition
+                != route.partition
+        })
+        .unwrap();
+    let mut seed = ServiceCommand::point("put", &cold_key);
+    seed.identity = Some(MutationIdentity::new("cold", 1));
+    seed.value = Some(b"cold-value".to_vec());
+    assert!(
+        run(&registry, &cold_handle, &cold, seed)
+            .unwrap()
+            .backup_proved
+    );
+
+    let mut bulk = ServiceCommand::point("put_all_detailed", &[]);
+    bulk.identity = Some(MutationIdentity::new("hot-bulk", 1));
+    bulk.entries = [hot_key.as_slice(), second_key.as_slice()]
+        .into_iter()
+        .map(|key| ReplacementEntry {
+            key: key.to_vec(),
+            value: b"bulk".to_vec(),
+        })
+        .collect();
+    assert!(
+        run(&registry, &hot_handle, &hot, bulk)
+            .unwrap()
+            .backup_proved
+    );
+    let mut bulk_read = ServiceCommand::point("get_all", &[]);
+    bulk_read.keys = vec![hot_key.to_vec(), second_key.to_vec()];
+    let enqueue_hot = |request| registry.enqueue(&hot_handle, &hot, SurfaceId::Hc2Rust, request);
+    let hot_batch = enqueue_hot(bulk_read).unwrap();
+    let cancelled = enqueue_hot(read(hot_key)).unwrap();
+    let before_refusal = registry.usage();
+    assert!(matches!(
+        enqueue_hot(read(hot_key)),
+        Err(RegistryError::ClusterAdmission(
+            ClusterAdmissionError::Exhausted("hot_key_waiters")
+        ))
+    ));
+    assert_eq!(registry.usage(), before_refusal);
+    let hot_tail = enqueue_hot(read(&second_key)).unwrap();
+    let cold_read = registry
+        .enqueue(&cold_handle, &cold, SurfaceId::Hc2Rust, read(&cold_key))
+        .unwrap();
+
+    let spare = ["a", "b", "c"]
+        .into_iter()
+        .find(|node| *node != route.owner && *node != route.backup)
+        .unwrap();
+    let repair = registry
+        .enqueue_maintenance(
+            &hot_handle,
+            &hot,
+            RuntimeMaintenance::RepairStep {
+                partition: route.partition,
+                backup: spare.into(),
+                faults: ServiceLinkFaults {
+                    ack: delayed_ack,
+                    ..ServiceLinkFaults::default()
+                },
+                maximum_work: 1,
+            },
+        )
+        .unwrap();
+    let safety = registry
+        .enqueue_maintenance(
+            &hot_handle,
+            &hot,
+            RuntimeMaintenance::SetNodeLive {
+                node: spare.into(),
+                live: true,
+            },
+        )
+        .unwrap();
+    let queued = registry.cluster_admission_observations().unwrap();
+    assert_eq!(queued.queued.iter().sum::<usize>(), 6);
+    assert!(queued.queued.iter().all(|count| *count > 0));
+    assert!(registry
+        .cancel_cluster_queued(&hot_handle, &hot, cancelled)
+        .unwrap());
+
+    let mut order = Vec::new();
+    let mut transfer = None;
+    for _ in 0..5 {
+        let record = registry.run_next().unwrap().unwrap();
+        order.push(record.ticket);
+        match record
+            .result
+            .unwrap_or_else(|error| panic!("dispatch {:?} failed: {error:?}", record.ticket))
+        {
+            RegistryResult::ClusterCommand(execution) => {
+                assert!(execution.backup_proved);
+                if record.ticket == cold_read {
+                    assert_eq!(
+                        execution.result.value.as_deref(),
+                        Some(b"cold-value".as_slice())
+                    );
+                } else if record.ticket == hot_batch {
+                    assert_eq!(execution.result.items.len(), 2);
+                    assert!(execution
+                        .result
+                        .items
+                        .iter()
+                        .all(|item| item.value.as_deref() == Some(b"bulk".as_slice())));
+                } else {
+                    assert_eq!(record.ticket, hot_tail);
+                    assert_eq!(execution.result.value.as_deref(), Some(b"bulk".as_slice()));
+                }
+            }
+            RegistryResult::Maintenance(MaintenanceResult::Online(step)) => {
+                assert_eq!(record.ticket, repair);
+                assert_eq!(step.work, 1);
+                assert_eq!(step.phase, OnlineTransferPhase::Snapshot);
+                transfer = step.transfer;
+                assert!(!step.complete);
+            }
+            RegistryResult::Maintenance(MaintenanceResult::Completed) => {
+                assert_eq!(record.ticket, safety)
+            }
+            other => panic!("unexpected result {other:?}"),
+        }
+    }
+    let position = |ticket| order.iter().position(|entry| *entry == ticket).unwrap();
+    assert!(position(repair) < position(cold_read));
+    assert!(position(cold_read) < position(hot_tail));
+    assert!(order.contains(&safety));
+    assert!(registry
+        .cluster_health(&hot_handle, &hot)
+        .unwrap()
+        .reasons
+        .contains(&ReadinessReason::TransferPending));
+    assert!(registry.run_next().unwrap().is_none());
+    let after = registry.cluster_admission_observations().unwrap();
+    assert_eq!(after.queued, [0; 3]);
+    assert_eq!(after.inflight, [0; 3]);
+    assert_eq!(after.owned_bytes, [0; 3]);
+    assert_eq!(after.replica_bytes, 0);
+    assert_eq!(after.cancelled, queued.cancelled + 1);
+    assert_eq!(after.released, queued.released + 6);
+    assert!(after.maximum_wait <= 2 * 6 + 1);
+    assert_eq!(registry.usage().queued_bytes, 0);
+    assert_eq!(registry.usage().reserved_growth, 0);
+
+    let scope = TransferScope {
+        transfer: transfer.unwrap(),
+        partition: route.partition,
+        source_epoch: route.epoch,
+    };
+    for operation in [
+        RuntimeMaintenance::AbortTransfer { scope },
+        RuntimeMaintenance::CleanupTransfer { scope },
+    ] {
+        let ticket = registry
+            .enqueue_maintenance(&hot_handle, &hot, operation)
+            .unwrap();
+        let record = registry.run_next().unwrap().unwrap();
+        assert_eq!(record.ticket, ticket);
+        assert!(matches!(
+            record.result.unwrap(),
+            RegistryResult::Maintenance(MaintenanceResult::Transfer(_))
+        ));
+    }
+    assert_eq!(
+        registry
+            .diagnostics(&hot_handle, &hot)
+            .unwrap()
+            .owners
+            .resync_leases,
+        0
+    );
+    assert_eq!(registry.usage().reserved_growth, 0);
 }
 
 #[test]

@@ -86,6 +86,25 @@ pub struct ChunkReceipt {
     pub next_index: usize,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PostCutover {
+    ReadOnly,
+    RefuseWrites,
+    DiscardWrites,
+}
+
+#[derive(Debug, PartialEq, Eq, Serialize)]
+pub struct RehearsalReceipt {
+    pub fixed_tick: u64,
+    pub shadow_reads: usize,
+    pub visible_entries: usize,
+    pub pre_cutover_digest: String,
+    pub post_cutover: PostCutover,
+    pub destination_write_applied: bool,
+    pub rollback_digest: Option<String>,
+}
+
 pub fn load_corpus(source: &[u8]) -> Result<Corpus> {
     if source.len() > MAX_FILE_BYTES {
         return Err("migration fixture file exceeds bound".into());
@@ -339,6 +358,97 @@ impl DryRun {
             json!({"fixture":self.fixture.id,"mode":MODE,"dry_run":true,"production_import":false,"entries":entries.len(),"chunks":self.completed.len(),"owned_bytes":self.staging.resource_usage().values,"source_digest":self.fixture.expected_digest,"staging_digest":actual_digest,"live_unchanged":self.before == self.live.diagnostic_snapshot(0)?}),
         )
     }
+    /// Compare application reads, including expired entries, with the frozen offline fixture.
+    pub fn shadow_reads(&self, now: u64) -> Result<(usize, String)> {
+        if self.closed || self.accepted != self.fixture.expected_count || now == u64::MAX {
+            return Err(
+                "migration shadow reads require a complete, open fixture and bounded time".into(),
+            );
+        }
+        let mut projected = Vec::new();
+        for entry in &self.fixture.entries {
+            let mut query =
+                ServiceCommand::point("get", &physical(&self.fixture, entry, &self.limits)?);
+            query.now = now;
+            let actual = self.staging.execute(query)?;
+            let mut expected = entry.clone();
+            if let Some(ttl) = entry.ttl_remaining {
+                if ttl <= now {
+                    if actual.kind != "absent" || actual.value.is_some() {
+                        return Err("migration shadow read exposed an expired key".into());
+                    }
+                    continue;
+                }
+                expected.ttl_remaining = Some(ttl - now);
+            }
+            let value = hex(&entry.value_hex, self.limits.max_value_bytes)?;
+            if actual.kind != "present"
+                || actual.value.as_deref() != Some(value.as_slice())
+                || actual.remaining_ttl != expected.ttl_remaining
+            {
+                return Err("migration shadow read value/TTL mismatch".into());
+            }
+            projected.push(expected);
+        }
+        if self.staging.diagnostic_snapshot(now)?.len() != projected.len() {
+            return Err("migration shadow read cardinality mismatch".into());
+        }
+        Ok((projected.len(), digest(&self.fixture, &projected, None)?))
+    }
+
+    /// Rehearse switching a local reader back to the frozen source at the same logical instant.
+    pub fn rehearse(&mut self, now: u64, policy: PostCutover) -> Result<RehearsalReceipt> {
+        let (count, before) = self.shadow_reads(now)?;
+        let mut source =
+            stage_fixture(self.fixture.clone(), self.limits.clone(), self.live.clone())?;
+        source.shadow_reads(now)?;
+        let wrote = policy != PostCutover::ReadOnly;
+        if wrote {
+            self.apply_rehearsal_write(now)?;
+        }
+        let rollback_digest = if policy == PostCutover::RefuseWrites {
+            None
+        } else {
+            self.close()?;
+            Some(source.shadow_reads(now)?.1)
+        };
+        source.close()?;
+        Ok(RehearsalReceipt {
+            fixed_tick: now,
+            shadow_reads: self.fixture.expected_count,
+            visible_entries: count,
+            pre_cutover_digest: before,
+            post_cutover: policy,
+            destination_write_applied: wrote,
+            rollback_digest,
+        })
+    }
+
+    fn apply_rehearsal_write(&self, now: u64) -> Result<()> {
+        let snapshot = self.staging.diagnostic_snapshot(now)?;
+        let mut write = if let Some(entry) = snapshot.first() {
+            ServiceCommand::point("delete", &entry.key)
+        } else {
+            let empty = Entry {
+                key_hex: String::new(),
+                value_hex: String::new(),
+                ttl_remaining: None,
+            };
+            let entry = self.fixture.entries.first().unwrap_or(&empty);
+            let mut insert =
+                ServiceCommand::point("set", &physical(&self.fixture, entry, &self.limits)?);
+            insert.value = Some(Vec::new());
+            insert
+        };
+        write.identity = Some(MutationIdentity::new("migration-rehearsal", 1));
+        write.now = now;
+        self.staging.execute(write)?;
+        if self.staging.diagnostic_snapshot(now)?.len() == snapshot.len() {
+            return Err("migration rehearsal write did not change the destination".into());
+        }
+        Ok(())
+    }
+
     pub fn staging(&self) -> &UnifiedIMapService {
         &self.staging
     }
@@ -346,6 +456,7 @@ impl DryRun {
         if !self.closed {
             let mut command = ServiceCommand::point("destroy", &[]);
             command.identity = Some(MutationIdentity::new("migration-close", 1));
+            command.now = self.staging.logical_time();
             self.staging.execute(command)?;
             self.completed.clear();
             self.closed = true;
@@ -436,7 +547,24 @@ pub fn check_at_root(root: &Path, release: &str) -> Result<Value> {
     }
     check_file(&root.join("docs/testing/imap/0.75/migration-fixtures.json"))
 }
+
+fn stage_fixture(fixture: Fixture, limits: Limits, live: UnifiedIMapService) -> Result<DryRun> {
+    let mut dry_run = DryRun::new(fixture.clone(), limits.clone(), live)?;
+    if fixture.entries.is_empty() {
+        dry_run.accept(&chunk(&fixture, 0, vec![])?)?;
+    } else {
+        for (index, entries) in fixture.entries.chunks(limits.max_chunk_entries).enumerate() {
+            dry_run.accept(&chunk(&fixture, index, entries.to_vec())?)?;
+        }
+    }
+    Ok(dry_run)
+}
+
 pub fn check_file(path: &Path) -> Result<Value> {
+    check_file_with_rehearsal(path, None)
+}
+
+fn check_file_with_rehearsal(path: &Path, rehearsal: Option<(u64, PostCutover)>) -> Result<Value> {
     let mut source = Vec::new();
     File::open(path)?
         .take((MAX_FILE_BYTES + 1) as u64)
@@ -445,19 +573,12 @@ pub fn check_file(path: &Path) -> Result<Value> {
     let mut receipts = Vec::new();
     for fixture in corpus.fixtures {
         let live = UnifiedIMapService::new(CollectionBounds::default(), fixture.generation)?;
-        let mut dry_run = DryRun::new(fixture.clone(), corpus.limits.clone(), live)?;
-        if fixture.entries.is_empty() {
-            dry_run.accept(&chunk(&fixture, 0, vec![])?)?;
-        } else {
-            for (index, entries) in fixture
-                .entries
-                .chunks(corpus.limits.max_chunk_entries)
-                .enumerate()
-            {
-                dry_run.accept(&chunk(&fixture, index, entries.to_vec())?)?;
-            }
+        let mut dry_run = stage_fixture(fixture, corpus.limits.clone(), live)?;
+        let mut receipt = dry_run.finish()?;
+        if let Some((tick, policy)) = rehearsal {
+            receipt["rehearsal"] = serde_json::to_value(dry_run.rehearse(tick, policy)?)?;
         }
-        receipts.push(dry_run.finish()?);
+        receipts.push(receipt);
         dry_run.close()?;
     }
     Ok(
@@ -468,6 +589,8 @@ pub fn run(args: Vec<String>) -> Result<()> {
     let mut release = None;
     let mut fixture = None;
     let mut output = None;
+    let mut tick = None;
+    let mut policy = None;
     let mut seen = BTreeSet::new();
     for pair in args.chunks(2) {
         if pair.len() != 2 || !seen.insert(&pair[0]) {
@@ -477,16 +600,32 @@ pub fn run(args: Vec<String>) -> Result<()> {
             "--release" => release = Some(pair[1].clone()),
             "--fixtures" => fixture = Some(PathBuf::from(&pair[1])),
             "--output" => output = Some(PathBuf::from(&pair[1])),
+            "--rehearse-at" => tick = Some(pair[1].parse::<u64>()?),
+            "--post-cutover" => {
+                policy = Some(match pair[1].as_str() {
+                    "read_only" => PostCutover::ReadOnly,
+                    "refuse_writes" => PostCutover::RefuseWrites,
+                    "discard_writes" => PostCutover::DiscardWrites,
+                    _ => return Err("unsupported migration rehearsal post-cutover policy".into()),
+                })
+            }
             _ => return Err("unknown migration dry-run argument".into()),
         }
     }
     if release.as_deref() != Some("0.75") {
         return Err("migration dry-run requires --release 0.75".into());
     }
-    let result = match fixture {
-        Some(path) => check_file(&path)?,
-        None => check_at_root(&crate::doc_check::find_repo_root()?, "0.75")?,
+    let rehearsal = match (tick, policy) {
+        (None, None) => None,
+        (Some(tick), Some(policy)) => Some((tick, policy)),
+        _ => return Err("migration rehearsal needs --rehearse-at and --post-cutover".into()),
     };
+    let path = match fixture {
+        Some(path) => path,
+        None => crate::doc_check::find_repo_root()?
+            .join("docs/testing/imap/0.75/migration-fixtures.json"),
+    };
+    let result = check_file_with_rehearsal(&path, rehearsal)?;
     let encoded = serde_json::to_vec_pretty(&result)?;
     if let Some(path) = output {
         if let Some(parent) = path.parent() {

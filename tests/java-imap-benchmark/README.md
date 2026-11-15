@@ -232,6 +232,41 @@ inconclusive results, and carries raw pair evidence, hashes and calibration drif
 `IMapCampaignPublicationTest` exercises the positive path and verifies refusal for incomplete,
 reordered, substituted and invalid evidence under the benchmark package's JaCoCo gate.
 
+### Local diagnostic campaign
+
+Build the benchmark JAR, then run the command from the repository root. The output directory
+must be new and its parent must exist.
+
+```powershell
+mvn -B -f tests/java-imap-benchmark/pom.xml verify
+java -cp tests/java-imap-benchmark/target/java-imap-benchmark-0.75.0-SNAPSHOT.jar io.hydracache.imap.benchmark.IMapLocalCampaign docs/testing/imap/0.75/hazelcast-comparison-contract.toml tests/java-imap-benchmark/target/local-campaign 117 100 20 100 5 1 8 25
+```
+
+The numeric arguments are seed, offered requests per second, warm-up requests, measured requests,
+pairs, workers, maximum in-flight requests and post-idle milliseconds. The workload uses hits
+and misses on fresh instances of the unified reference owner and the in-memory semantic adapter.
+All measurements are scoped to one shared host and JVM. Loopback calibration uses a bounded
+local UDP transfer. Linux captures process CPU, RSS, PSS, threads and `lo` counters.
+On Windows the command captures process CPU, RSS and threads, and reports unavailable interface
+observations. Both platforms capture JVM heap, GC and threads.
+
+`manifest.properties` indexes the SHA-256 of the canonical manifest, registration and ordered
+pair files. The pair files retain the raw counters, calibration samples, phase observations and
+histograms. `histograms.tsv` presents the buckets for inspection and `report.txt` records paired
+analysis, resource summaries and publication blockers. The command always registers the local
+campaign under the provisional contract. Artifact changes, missing calibration and unavailable
+required observations appear alongside the contract blocker when the attempt ledger is complete.
+
+Append two arguments to run the W11c/e controls in the same command. For example, append
+`50,100,200 15` and select a fresh output directory. The first argument preregisters two to eight
+strictly ascending offered rates for repeated A/A pairs on the unified reference owner. The second
+sets a bounded per-operation delay on the right-hand reference adapter in a separate control at
+the base rate. This injects the slowdown within the local JVM.
+
+Each control retains its own captures under `aa` or `slowdown`. The combined `controls.txt`
+reports p99/p999 dispersion, the last stable prefix of the ladder and the limiting condition for
+each step. A/A reports `INCONCLUSIVE` when the paired measurements do not establish equivalence.
+
 ## Manifest format
 
 The dependency-free provisional format is line-oriented and hex-encodes keys/values:

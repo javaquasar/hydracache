@@ -3,7 +3,7 @@ use hydracache_cluster_testkit::value_plane_model_075::MutationIdentity;
 use hydracache_cluster_testkit::value_plane_service_075::{ServiceCommand, UnifiedIMapService};
 use serde_json::{json, Value};
 use std::path::Path;
-use xtask::imap_migration_dry_run::{chunk, digest, load_corpus, DryRun};
+use xtask::imap_migration_dry_run::{chunk, digest, load_corpus, DryRun, PostCutover};
 
 const CORPUS: &[u8] = include_bytes!("../../../docs/testing/imap/0.75/migration-fixtures.json");
 fn live(generation: u64) -> UnifiedIMapService {
@@ -186,5 +186,205 @@ fn migration_cli_refuses_bad_arguments_and_never_overwrites_a_receipt() {
         ],
     ] {
         assert!(xtask::imap_migration_dry_run::run(args).is_err());
+    }
+}
+
+fn ready_fixture() -> DryRun {
+    let corpus = load_corpus(CORPUS).unwrap();
+    let fixture = corpus.fixtures[0].clone();
+    let mut dry = DryRun::new(fixture.clone(), corpus.limits, live(fixture.generation)).unwrap();
+    assert!(dry.shadow_reads(7).is_err());
+    for (index, entries) in fixture.entries.chunks(2).enumerate() {
+        dry.accept(&chunk(&fixture, index, entries.to_vec()).unwrap())
+            .unwrap();
+    }
+    dry
+}
+
+#[test]
+fn rehearsal_compares_shadow_reads_at_exact_expiry_and_preserves_the_frozen_source() {
+    let mut before = ready_fixture();
+    let (before_expiry, digest_before) = before.shadow_reads(6).unwrap();
+    assert_eq!(before_expiry, 4);
+    let (after_expiry, digest_after) = before.shadow_reads(7).unwrap();
+    assert_eq!(after_expiry, 3);
+    assert_ne!(digest_before, digest_after);
+    let read_only = before.rehearse(7, PostCutover::ReadOnly).unwrap();
+    assert_eq!(read_only.shadow_reads, 4);
+    assert_eq!(read_only.visible_entries, 3);
+    assert_eq!(read_only.rollback_digest, Some(digest_after.clone()));
+    assert!(!read_only.destination_write_applied);
+    assert!(before.shadow_reads(7).is_err());
+    assert_eq!(before.staging().resource_usage().values, 0);
+
+    let mut discard = ready_fixture();
+    let receipt = discard.rehearse(7, PostCutover::DiscardWrites).unwrap();
+    assert!(receipt.destination_write_applied);
+    assert_eq!(receipt.pre_cutover_digest, digest_after);
+    assert_eq!(receipt.rollback_digest, Some(receipt.pre_cutover_digest));
+    assert_eq!(discard.staging().resource_usage().outcomes, 0);
+
+    let mut refuse = ready_fixture();
+    let receipt = refuse.rehearse(7, PostCutover::RefuseWrites).unwrap();
+    assert!(receipt.destination_write_applied);
+    assert_eq!(receipt.rollback_digest, None);
+    assert_eq!(refuse.staging().diagnostic_snapshot(7).unwrap().len(), 2);
+    refuse.close().unwrap();
+    assert!(ready_fixture().shadow_reads(u64::MAX).is_err());
+}
+
+#[test]
+fn shadow_read_rejects_value_ttl_expired_key_and_cardinality_divergence() {
+    use hydracache_cluster_testkit::canonical_key_075::{
+        ReferenceCanonicalKey, ReferenceKeyBounds,
+    };
+    use hydracache_cluster_testkit::value_plane_service_075::ServiceTtl;
+
+    for defect in [
+        "different_value",
+        "different_ttl",
+        "expired_key",
+        "extra_key",
+    ] {
+        let mut dry = ready_fixture();
+        let fixture = load_corpus(CORPUS).unwrap().fixtures.remove(0);
+        let item = match defect {
+            "expired_key" => fixture
+                .entries
+                .iter()
+                .find(|entry| entry.ttl_remaining == Some(7))
+                .unwrap(),
+            _ => fixture
+                .entries
+                .iter()
+                .find(|entry| entry.ttl_remaining.is_none())
+                .unwrap(),
+        };
+        let bytes = if defect == "extra_key" {
+            vec![100, 200]
+        } else {
+            item.key_hex
+                .as_bytes()
+                .chunks_exact(2)
+                .map(|digits| u8::from_str_radix(std::str::from_utf8(digits).unwrap(), 16).unwrap())
+                .collect()
+        };
+        let key = ReferenceCanonicalKey::new(
+            &fixture.tenant,
+            &fixture.namespace,
+            fixture.generation,
+            bytes,
+        )
+        .encode(ReferenceKeyBounds::default())
+        .unwrap();
+        let mut write = ServiceCommand::point("set", &key);
+        write.identity = Some(MutationIdentity::new("rehearsal-fault", 1));
+        write.value = Some(if defect == "different_ttl" {
+            item.value_hex
+                .as_bytes()
+                .chunks_exact(2)
+                .map(|digits| u8::from_str_radix(std::str::from_utf8(digits).unwrap(), 16).unwrap())
+                .collect()
+        } else {
+            vec![100, 200]
+        });
+        if defect == "different_ttl" {
+            write.ttl = ServiceTtl::ExpireAfter(100);
+        }
+        dry.staging().execute(write).unwrap();
+        let error = dry
+            .rehearse(7, PostCutover::DiscardWrites)
+            .unwrap_err()
+            .to_string();
+        let expected = match defect {
+            "expired_key" => "expired key",
+            "extra_key" => "cardinality mismatch",
+            _ => "value/TTL mismatch",
+        };
+        assert!(error.contains(expected), "{defect}: {error}");
+    }
+}
+
+#[test]
+fn rehearsal_requires_the_destination_write_to_change_state() {
+    use hydracache_cluster_testkit::value_plane_service_075::ServiceTtl;
+
+    let mut dry = ready_fixture();
+    dry.shadow_reads(7).unwrap();
+    let entry = dry.staging().diagnostic_snapshot(7).unwrap().remove(0);
+    let mut delete = ServiceCommand::point("delete", &entry.key);
+    delete.now = 7;
+    delete.identity = Some(MutationIdentity::new("migration-rehearsal", 1));
+    dry.staging().execute(delete).unwrap();
+    let mut restore = ServiceCommand::point("set", &entry.key);
+    restore.now = 7;
+    restore.identity = Some(MutationIdentity::new("restore-fixture", 1));
+    restore.value = Some(entry.value);
+    restore.ttl = entry
+        .remaining_ttl
+        .map_or(ServiceTtl::Eternal, ServiceTtl::ExpireAfter);
+    dry.staging().execute(restore).unwrap();
+    assert!(dry
+        .rehearse(7, PostCutover::DiscardWrites)
+        .unwrap_err()
+        .to_string()
+        .contains("did not change the destination"));
+}
+
+#[test]
+fn rehearsal_cli_requires_explicit_policy_and_retains_each_fixture_receipt() {
+    let temp = tempfile::tempdir().unwrap();
+    let fixtures = temp.path().join("fixtures.json");
+    std::fs::write(&fixtures, CORPUS).unwrap();
+    let output = temp.path().join("rehearsal.json");
+    let run = |extra: &[&str]| {
+        let mut args = vec![
+            "--release".into(),
+            "0.75".into(),
+            "--fixtures".into(),
+            fixtures.display().to_string(),
+            "--output".into(),
+            output.display().to_string(),
+        ];
+        args.extend(extra.iter().map(|value| value.to_string()));
+        xtask::imap_migration_dry_run::run(args)
+    };
+    for invalid in [
+        vec!["--rehearse-at", "7"],
+        vec!["--post-cutover", "read_only"],
+        vec!["--rehearse-at", "x", "--post-cutover", "read_only"],
+        vec!["--rehearse-at", "7", "--post-cutover", "drop_everything"],
+    ] {
+        assert!(run(&invalid).is_err());
+        assert!(!output.exists());
+    }
+    run(&["--rehearse-at", "7", "--post-cutover", "discard_writes"]).unwrap();
+    let receipt: Value = serde_json::from_slice(&std::fs::read(output).unwrap()).unwrap();
+    assert_eq!(receipt["production_import"], false);
+    for fixture in receipt["fixtures"].as_array().unwrap() {
+        let rehearsal = &fixture["rehearsal"];
+        assert_eq!(rehearsal["fixed_tick"], 7);
+        assert_eq!(rehearsal["post_cutover"], "discard_writes");
+        assert_eq!(rehearsal["destination_write_applied"], true);
+        assert_eq!(
+            rehearsal["rollback_digest"],
+            rehearsal["pre_cutover_digest"]
+        );
+    }
+    for policy in ["read_only", "refuse_writes"] {
+        let output = temp.path().join(format!("{policy}.json"));
+        xtask::imap_migration_dry_run::run(vec![
+            "--release".into(),
+            "0.75".into(),
+            "--rehearse-at".into(),
+            "7".into(),
+            "--post-cutover".into(),
+            policy.into(),
+            "--output".into(),
+            output.display().to_string(),
+        ])
+        .unwrap();
+        let receipt: Value = serde_json::from_slice(&std::fs::read(output).unwrap()).unwrap();
+        assert_eq!(receipt["fixtures"][0]["rehearsal"]["post_cutover"], policy);
     }
 }
