@@ -5,8 +5,8 @@ use hydracache::{
     ClusterEpoch, ClusterGeneration, ClusterNodeId, ClusterRole, RaftMetadataCommand,
 };
 use hydracache_cluster_raft::{RaftMetadataCommandEnvelope, RaftWireMessage};
-use protobuf::Message as _;
 use raft::eraftpb::{ConfState, Message, MessageType, Snapshot};
+use raft::protocompat::{PbMessage, PbMessageExt};
 
 fn vector_path(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -97,10 +97,13 @@ fn golden_wire_messages_decode_to_expected() {
 #[test]
 fn golden_snapshot_conf_state_decodes_to_expected() {
     let conf_state =
-        ConfState::parse_from_bytes(&fs::read(vector_path("conf_state.bin")).unwrap()).unwrap();
-    let snapshot =
-        Snapshot::parse_from_bytes(&fs::read(vector_path("snapshot_conf_state.bin")).unwrap())
-            .unwrap();
+        ConfState::decode(fs::read(vector_path("conf_state.bin")).unwrap().as_slice()).unwrap();
+    let snapshot = Snapshot::decode(
+        fs::read(vector_path("snapshot_conf_state.bin"))
+            .unwrap()
+            .as_slice(),
+    )
+    .unwrap();
 
     assert_eq!(conf_state.voters, vec![1, 2, 3]);
     assert_eq!(snapshot.get_metadata().index, 7);

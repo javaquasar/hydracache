@@ -13,7 +13,7 @@ fn entry(index: u64, data: &[u8]) -> Entry {
     Entry {
         index,
         term: 1,
-        data: data.to_vec().into(),
+        data: data.to_vec(),
         ..Entry::default()
     }
 }

@@ -52,7 +52,7 @@ fn snapshot(index: u64, term: u64, data: &[u8]) -> Snapshot {
     snapshot.mut_metadata().index = index;
     snapshot.mut_metadata().term = term;
     snapshot.mut_metadata().mut_conf_state().voters = vec![1, 2, 3];
-    snapshot.data = data.to_vec().into();
+    snapshot.data = data.to_vec();
     snapshot
 }
 
@@ -185,7 +185,7 @@ fn interrupted_recovery_never_activates_partial_or_misdirected_state() {
                 let tail = Entry {
                     index: 5,
                     term: 3,
-                    data: b"newer-tail".to_vec().into(),
+                    data: b"newer-tail".to_vec(),
                     ..Default::default()
                 };
                 store.append(&[tail]).unwrap();
