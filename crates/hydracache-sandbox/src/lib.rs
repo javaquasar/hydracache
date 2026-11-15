@@ -725,8 +725,12 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .with_state(state);
     let router = Router::new()
         .merge(sandbox_routes)
+        // Keep the existing utoipa 5 document and its public Swagger endpoint.
+        // The UI's transitive utoipa 6 types must not regenerate our API schema.
+        .route("/swagger-ui/openapi.json", get(openapi))
         .merge(
-            SwaggerUi::new("/swagger-ui").url("/swagger-ui/openapi.json", SandboxApiDoc::openapi()),
+            SwaggerUi::new("/swagger-ui")
+                .config(utoipa_swagger_ui::Config::from("/swagger-ui/openapi.json")),
         )
         .nest(
             "/actuator/hydracache",
