@@ -1,4 +1,5 @@
 use std::fs;
+use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -10,10 +11,16 @@ use rustls::pki_types::{
 use thiserror::Error;
 use tokio::net::TcpListener;
 use tokio::sync::watch;
+use tokio::task::JoinSet;
 use tokio_rustls::TlsAcceptor;
 
 use crate::admin_http::SharedServerRuntime;
 use crate::config::TlsConfig;
+
+const MAX_CLIENT_CA_BYTES: u64 = 256 * 1024;
+const MAX_CLIENT_CA_CERTIFICATES: usize = 16;
+const MAX_MTLS_CONNECTIONS: usize = 128;
+const MTLS_HANDSHAKE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
 
 /// TCP accept-loop failures for the optional Redis RESP listener.
 #[derive(Debug, Error)]
@@ -21,15 +28,88 @@ pub enum RedisTcpError {
     /// Accepting a TCP connection failed.
     #[error("redis tcp accept error: {0}")]
     Accept(#[from] std::io::Error),
+    /// An owned mTLS connection task panicked; the remaining owners are joined.
+    #[error("redis mTLS connection task failed")]
+    MtlsTaskFailed,
 }
 
 /// Redis RESP TLS acceptor backed by the server TLS certificate/key material.
 #[derive(Clone)]
 pub struct RedisTlsAcceptor {
     inner: TlsAcceptor,
+    mtls: bool,
 }
 
 impl RedisTlsAcceptor {
+    /// Build opt-in required client-certificate TLS with separate inbound trust.
+    /// This transport gate does not replace Redis AUTH or select a tenant.
+    pub fn from_tls_config_with_client_ca(
+        config: &TlsConfig,
+        client_ca_path: &Path,
+    ) -> Result<Self, RedisTlsError> {
+        let cert = config
+            .cert_path
+            .as_deref()
+            .ok_or(RedisTlsError::MissingCertPath)?;
+        let key = config
+            .key_path
+            .as_deref()
+            .ok_or(RedisTlsError::MissingKeyPath)?;
+        Self::from_pem_files_with_client_ca(cert, key, client_ca_path)
+    }
+
+    /// Build required mTLS from certificate/key and a bounded client CA bundle.
+    pub fn from_pem_files_with_client_ca(
+        cert_path: &Path,
+        key_path: &Path,
+        client_ca_path: &Path,
+    ) -> Result<Self, RedisTlsError> {
+        install_default_rustls_provider();
+        let invalid = |reason| RedisTlsError::ClientCa {
+            path: client_ca_path.to_path_buf(),
+            reason,
+        };
+        let file = fs::File::open(client_ca_path).map_err(|_| invalid("unreadable client CA"))?;
+        let mut pem = Vec::new();
+        file.take(MAX_CLIENT_CA_BYTES + 1)
+            .read_to_end(&mut pem)
+            .map_err(|_| invalid("unreadable client CA"))?;
+        if pem.len() as u64 > MAX_CLIENT_CA_BYTES {
+            return Err(invalid("client CA byte budget exceeded"));
+        }
+        let mut roots = rustls::RootCertStore::empty();
+        let mut count = 0;
+        for cert in CertificateDer::pem_slice_iter(&pem) {
+            count += 1;
+            if count > MAX_CLIENT_CA_CERTIFICATES {
+                return Err(invalid("client CA certificate budget exceeded"));
+            }
+            roots
+                .add(cert.map_err(|_| invalid("malformed client CA PEM"))?)
+                .map_err(|_| invalid("invalid client CA certificate"))?;
+        }
+        let verifier = rustls::server::WebPkiClientVerifier::builder(Arc::new(roots))
+            .build()
+            .map_err(|_| invalid("empty or invalid client CA trust"))?;
+        let config = rustls::ServerConfig::builder()
+            .with_client_cert_verifier(verifier)
+            .with_single_cert(read_certs(cert_path)?, read_private_key(key_path)?)
+            .map_err(|source| RedisTlsError::InvalidTlsConfig {
+                cert_path: cert_path.to_path_buf(),
+                key_path: key_path.to_path_buf(),
+                source: Box::new(source),
+            })?;
+        Ok(Self {
+            inner: TlsAcceptor::from(Arc::new(config)),
+            mtls: true,
+        })
+    }
+
+    /// Whether this acceptor requires a verified client certificate.
+    pub fn requires_client_certificate(&self) -> bool {
+        self.mtls
+    }
+
     /// Build a Redis TLS acceptor from the shared server TLS config.
     pub fn from_tls_config(config: &TlsConfig) -> Result<Self, RedisTlsError> {
         let cert_path = config
@@ -58,6 +138,7 @@ impl RedisTlsAcceptor {
             })?;
         Ok(Self {
             inner: TlsAcceptor::from(Arc::new(config)),
+            mtls: false,
         })
     }
 
@@ -65,13 +146,25 @@ impl RedisTlsAcceptor {
         &self,
         stream: tokio::net::TcpStream,
     ) -> Result<tokio_rustls::server::TlsStream<tokio::net::TcpStream>, std::io::Error> {
-        self.inner.accept(stream).await
+        if self.mtls {
+            bounded_mtls_handshake(self.inner.accept(stream)).await
+        } else {
+            self.inner.accept(stream).await
+        }
     }
 }
 
 /// Redis TLS startup failures.
 #[derive(Debug, Error)]
 pub enum RedisTlsError {
+    /// Bounded inbound client trust material is missing, malformed or over budget.
+    #[error("redis mTLS client trust {path}: {reason}")]
+    ClientCa {
+        /// Inbound client CA bundle path (never certificate contents).
+        path: PathBuf,
+        /// Fixed failure reason without credentials or raw certificate data.
+        reason: &'static str,
+    },
     /// TLS is enabled without a certificate path.
     #[error("redis rediss requires tls.cert_path")]
     MissingCertPath,
@@ -136,6 +229,10 @@ pub async fn serve_redis_listener(
     tls: Option<RedisTlsAcceptor>,
     mut shutdown: watch::Receiver<bool>,
 ) -> Result<(), RedisTcpError> {
+    if let Some(acceptor) = tls.as_ref().filter(|tls| tls.requires_client_certificate()) {
+        return serve_redis_mtls_listener(listener, server, runtime, acceptor.clone(), shutdown)
+            .await;
+    }
     loop {
         if *shutdown.borrow() {
             return Ok(());
@@ -177,8 +274,89 @@ pub async fn serve_redis_listener(
     }
 }
 
+// Legacy plaintext/server-auth TLS scheduling is deliberately unchanged.
+async fn serve_redis_mtls_listener(
+    listener: TcpListener,
+    server: Arc<RedisRespServer>,
+    runtime: SharedServerRuntime,
+    tls: RedisTlsAcceptor,
+    mut shutdown: watch::Receiver<bool>,
+) -> Result<(), RedisTcpError> {
+    let mut connections = JoinSet::new();
+    let result = async {
+        loop {
+            if *shutdown.borrow() {
+                return Ok(());
+            }
+            tokio::select! {
+                changed = shutdown.changed() => {
+                    if changed.is_err() || *shutdown.borrow() {
+                        return Ok(());
+                    }
+                }
+                completed = connections.join_next(), if !connections.is_empty() => {
+                    if let Some(completed) = completed {
+                        inspect_mtls_completion(completed)?;
+                    }
+                }
+                accepted = listener.accept() => {
+                    let (stream, _) = accepted?;
+                    // Reap before checking capacity: completed owners are not live slots.
+                    while let Some(completed) = connections.try_join_next() {
+                        inspect_mtls_completion(completed)?;
+                    }
+                    if connections.len() >= MAX_MTLS_CONNECTIONS {
+                        continue;
+                    }
+                    configure_redis_stream(&stream)?;
+                    if !runtime.lock().expect("server runtime mutex").begin_redis_connection() {
+                        continue;
+                    }
+                    let guard = RedisConnectionGuard::new(Arc::clone(&runtime));
+                    let server = Arc::clone(&server);
+                    let tls = tls.clone();
+                    connections.spawn(async move {
+                        let _guard = guard;
+                        if let Ok(stream) = tls.accept(stream).await {
+                            let _ = server.serve_connection(stream).await;
+                        }
+                    });
+                }
+            }
+        }
+    }
+    .await;
+    // Accept errors/connection-task panics and incomplete handshakes release every owner.
+    finish_mtls_owners(&mut connections).await;
+    result
+}
+
+fn inspect_mtls_completion(
+    result: Result<(), tokio::task::JoinError>,
+) -> Result<(), RedisTcpError> {
+    result.map_err(|_| RedisTcpError::MtlsTaskFailed)
+}
+
+async fn finish_mtls_owners(connections: &mut JoinSet<()>) {
+    connections.abort_all();
+    while connections.join_next().await.is_some() {}
+}
+
 fn configure_redis_stream(stream: &tokio::net::TcpStream) -> std::io::Result<()> {
     stream.set_nodelay(true)
+}
+
+async fn bounded_mtls_handshake<T>(
+    handshake: impl std::future::Future<Output = std::io::Result<T>>,
+) -> std::io::Result<T> {
+    tokio::time::timeout(MTLS_HANDSHAKE_TIMEOUT, handshake)
+        .await
+        .map_err(|_| {
+            std::io::Error::new(
+                std::io::ErrorKind::TimedOut,
+                "redis mTLS handshake timed out",
+            )
+        })?
 }
 
 fn read_certs(path: &Path) -> Result<Vec<CertificateDer<'static>>, RedisTlsError> {
@@ -245,6 +423,49 @@ impl Drop for RedisConnectionGuard {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn mtls_task_failure_is_explicit_and_remaining_owners_are_joined() {
+        assert!(inspect_mtls_completion(Ok(())).is_ok());
+        let panic = tokio::spawn(async { panic!("synthetic owner failure") }).await;
+        assert!(matches!(
+            inspect_mtls_completion(panic),
+            Err(RedisTcpError::MtlsTaskFailed)
+        ));
+        let mut owners = JoinSet::new();
+        let (signal, mut receiver) = tokio::sync::mpsc::channel(1);
+        struct Guard(tokio::sync::mpsc::Sender<()>);
+        impl Drop for Guard {
+            fn drop(&mut self) {
+                self.0.try_send(()).unwrap();
+            }
+        }
+        let guard = Guard(signal);
+        owners.spawn(async move {
+            let _guard = guard;
+            std::future::pending::<()>().await;
+        });
+        finish_mtls_owners(&mut owners).await;
+        assert!(owners.is_empty());
+        assert_eq!(receiver.try_recv(), Ok(()));
+        finish_mtls_owners(&mut owners).await;
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn mtls_handshake_deadline_is_bounded_with_virtual_time() {
+        let started = tokio::time::Instant::now();
+        let error = bounded_mtls_handshake(std::future::pending::<std::io::Result<()>>())
+            .await
+            .unwrap_err();
+        assert_eq!(error.kind(), std::io::ErrorKind::TimedOut);
+        assert_eq!(started.elapsed(), MTLS_HANDSHAKE_TIMEOUT);
+        assert_eq!(
+            bounded_mtls_handshake(async { Ok::<_, std::io::Error>(7) })
+                .await
+                .unwrap(),
+            7
+        );
+    }
 
     #[tokio::test]
     async fn accepted_redis_socket_disables_nagle_before_serving() {
