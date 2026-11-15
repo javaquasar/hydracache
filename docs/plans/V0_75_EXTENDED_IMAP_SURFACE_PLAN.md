@@ -1354,9 +1354,9 @@ Mandatory layers:
     order checker for bulk/listener contracts;
 12. fuzz targets for new public/internal protocol, TTL, replicated record, transfer manifest, bulk
     result and listener filter decoders;
-13. six-hour qualification and 24-hour confirmation with owner rotations, periodic mutations,
-    expiry, listener reconnects and bounded rebalance, proving stable digest and no retained-owner
-    or memory trend.
+13. six-hour qualification and 24-hour confirmation with [failover and rebalance under load](#under-load-failover-and-rebalance-qualification),
+    client-side acknowledgement reconciliation, expiry, listener reconnects, stable replica
+    digests and no retained-owner or memory trend.
 
 Create one canary for every release-blocking guard. The meta-gate proves each canary fails its
 target guard. At minimum, canaries bypass owner routing, acknowledge before the backup, accept a
@@ -1383,13 +1383,56 @@ replica acknowledgement policy and nested checksums.
 | Model/history | seeded sequential differential, concurrent single-key history, bulk partial-order checker, bounded authority state exploration, same-seed replay and shrink | `cargo xtask imap-distributed-correctness --release 0.75` and `cargo xtask imap-value-plane-model --release 0.75` |
 | Fuzz/hostile | public HC/2, internal owner/replica frames, record v1/v2, transfer manifest/chunks, listener envelopes | bounded PR corpus plus scheduled `cargo fuzz` receipts |
 | Resource/chaos | clock, slow backup, disk/FD/memory/runtime, simultaneous replica loss and full-cluster restart with frozen expected outcome/RPO/RTO | platform-supported deterministic fault campaign on protected hosts |
-| Qualification | six-hour mixed workload with periodic owner kill/restart/rebalance/expiry/listener reconnect | `cargo xtask imap-distributed-qualification --release 0.75 --duration 6h` on protected hosts |
-| Confirmation | exact-candidate 24-hour repetition with frozen seed schedule and no threshold/identity change | `cargo xtask imap-distributed-confirmation --release 0.75 --duration 24h` |
+| Qualification | six-hour mixed workload with owner kill/promotion/rejoin, live partition moves and client acknowledgement reconciliation | `cargo xtask imap-distributed-qualification --release 0.75 --duration 6h` on protected hosts |
+| Confirmation | exact-candidate 24-hour repetition of the same correctness and recovery gates on a frozen schedule | `cargo xtask imap-distributed-confirmation --release 0.75 --duration 24h` |
 
 Every real-process test records cluster/member binary SHA, config hash, route/wire/durable versions,
 partition map before/after, injected seed/schedule, responses with certainty, final per-replica
 digests, resource owners and nested SHA-256. A passed assertion without this receipt is diagnostic,
 not release evidence.
+
+#### Under-load failover and rebalance qualification
+
+KiviDB's cluster soak pairs continuous mixed load with planned failovers, process kills, slot
+moves and client readback of acknowledged inserts and overwrites. Implement the same observation
+pattern with HydraCache's production daemons, packaged clients and test harness.
+[KiviDB 1.2.0 RC10 soak](https://github.com/kividbio/kividb/blob/v1.2.0/benchmarks/1.2.0/soak/rc10/README.md#acknowledged-writes-and-data)
+
+- **Topology and traffic.** Use the admitted three-member profile with its configured synchronous
+  backup. Freeze the artifact, partition map, fault order, seed, offered-rate mix, steady and
+  fault-window budgets, minimum successful operations per affected partition and recovery window
+  before each campaign. Use packaged HC/2 SDKs through multiple endpoints while reads, inserts,
+  overwrites, deletes, TTL, partial bulk and listener reconnects continue through each injection.
+  Exercise a hot partition and a cold control. The one-hour local daemon soak remains a diagnostic
+  tier. [Local soak](../testing/imap/0.75/continuous-soak.md)
+- **Fault schedule.** Kill an active partition owner with writes in flight and prove backup
+  promotion, old-epoch fencing, resumed client progress and safe catch-up on rejoin. Drain an owner
+  and move a populated, actively written partition with the admitted W10f transfer. Exercise one
+  interrupted pre-cutover transfer and its safe abort or resume. Prove from the observed owner map,
+  epochs and replica watermarks that promotion and cutover occurred. Restore the required replica
+  floor before the next owner failure. Use the same fault coverage in both duration tiers and keep
+  the offered load running through recovery and audit windows.
+- **Client ledger.** Append submitted mutation identities and client-observed outcomes to sealed,
+  checksummed segments on a separate load host. Bind each record to the run, endpoint, namespace
+  generation, partition, key, request fingerprint, expected value digest, send/receive times, and
+  observed response or item status. Track received success, definite rejection, timeout and other
+  unknown outcomes separately. Record the original outcome through retries and reuse the identity
+  within the admitted dedup window. Reconcile segment ranges and counts against the offered/submitted
+  counters and match each successful mutation to its exact owner epoch and required replica apply
+  proof. Retain a bounded cohort of unique, non-expiring keys across every fault and until final
+  readback. Size the cohort and archive the mixed mutation ledger with the registered resource budget.
+- **Reconciliation and gate.** After each promotion, each transfer and the final drain, audit through
+  the public API and compare replica digests at the same applied watermark. Verify every retained
+  acknowledged key and digest. Reconcile confirmed overwrites, deletes, expiry, partial bulk and
+  retries with the bounded reference history, checking the live version, deadline or expected absence
+  at each checkpoint. Anchor concurrent audit reads to recorded version frontiers. A later uncertain
+  mutation may explain a value only if the history permits that specific submitted operation.
+  Measure recovery from the observed injection to sustained
+  correct reads and fresh successful writes. Report goodput, p99/p99.9, rejection, timeout and
+  unknown counts for healthy, degraded, transfer and recovered windows. Require zero lost or wrong
+  acknowledged mutations, duplicate effects, stale-owner acknowledgements and resurrected records,
+  with every fault reached and the frozen progress and recovery budgets met. Expected-red canaries
+  remove a ledger segment, drop one acknowledged key, corrupt a digest or omit a required cutover.
 
 **Minimum named regression cases:**
 
@@ -1880,6 +1923,8 @@ weaker availability result is not presented as a latency advantage.
 
 Long-run qualification also proves expiry cleanup, dedup cleanup, listener release, reconnect
 stability, fixed logical owners and no positive retained-memory trend under the frozen estimator.
+Use the W10i client ledger and per-fault windows for HydraCache. Match the acknowledgement policy
+and supported faults before reusing the protocol in a Hazelcast comparison cell.
 
 ### W11f. Attribute CPU, memory, GC, network, and economic efficiency
 
@@ -2035,7 +2080,8 @@ Publish:
   epochs, owner/proxy routing, acknowledgement levels, read consistency, fencing, failover,
   rebalance, repair, degraded modes and readiness;
 - exact candidate partition/replica configuration, ownership snapshots, failover/rebalance traces,
-  cluster state digests and proof of zero lost acknowledged writes;
+  cluster state digests, sealed client ledger and per-fault reconciliation, including the verdicts
+  and retained attempts for the six-hour and 24-hour campaigns;
 - generated schema and capability identities;
 - Rust and Java examples;
 - retry/idempotency/partial-bulk decision tables;
@@ -2161,6 +2207,8 @@ Release 0.75 is eligible only when:
   never fall back to the per-daemon node-local store;
 - acknowledged owner mutations meet the frozen synchronous-backup policy, retain safe idempotency
   outcomes, and survive admitted owner failure without lost acknowledged writes;
+- six-hour qualification and exact-candidate 24-hour confirmation pass the W10i under-load
+  failover, rebalance and acknowledgement reconciliation gates;
 - visibility, replica proof, acknowledgement, response and ambiguous-outcome states remain
   distinct and every failure returns the exact W0-frozen certainty/retry advice;
 - the failure/consistency and profile-specific RPO/RTO matrices pass for owner, owner-plus-backup

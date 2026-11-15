@@ -29,6 +29,7 @@ R-2 applies to multi-key operations. A local sharded store must preserve its exi
 | W3 batched replies. | Loopback TCP pipeline-10 goodput improved about 81% for GET and 83% for SET. Pipeline-1 guards failed. The adaptive attempt executed a second `SET` behind a blocked reply and failed before timing. [W3 TCP pairs](../testing/performance/0.74/w1-local-attribution.md#w3-real-tcp-attribution-and-bounded-batch-retry) · [Adaptive result](../testing/performance/0.74/w3-adaptive-baseline.md#candidate-disposition) | Keep the delivery order. Disk batching will combine work from independent connections at the storage boundary. |
 | KiviDB uses independently locked in-memory shards. | Each shard has its own lock. HydraCache's historical c8 live GET profile recorded about 14.8 μs of store lock wait and 1.0 μs of hold per operation. The single global `RwLock` candidate regressed c8 GET goodput by 3.74% and raised CPU/op. [KiviDB shard code](https://raw.githubusercontent.com/kividbio/kividb/master/src/store/mod.rs) · [W6 attribution and rejection](../testing/performance/0.74/w1-local-attribution.md#w6a-live-read-and-expiry-attribution) | Re-measure wait by owner. Independent shard locks are a separate hypothesis. The historical result concerns one shared lock. |
 | KiviDB amortizes writes to its AOF. | Multiple waiting connections share a write. In `1.2.0` the acknowledgement path normally waits for file write and the AOF syncs periodically. An AOF backlog can outlast its reply wait limit. [KiviDB 1.2.0 acknowledgement contract](https://github.com/kividbio/kividb/blob/v1.2.0/docs/PERSISTENCE.md#when-a-write-is-acknowledged) | Adopt amortization with a stronger barrier. A queued write, page-cache write, or expired wait budget cannot authorize durable success. [Raft persistence and commitment](https://raft.github.io/raft.pdf) |
+| KiviDB audits acknowledged inserts and overwrites while exercising failover and slot moves. | Independent clients recorded successful replies and verified the keyspace after mixed load and topology changes. [KiviDB 1.2.0 RC10 soak](https://github.com/kividbio/kividb/blob/v1.2.0/benchmarks/1.2.0/soak/rc10/README.md#acknowledged-writes-and-data) | Reuse the observation pattern from [0.75 W10i](V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#under-load-failover-and-rebalance-qualification). Bind each success to the durable proof and verify recovery after a voter and its volume are lost. |
 
 The KiviDB sources provide design references. Implement the selected mechanisms in HydraCache and record dependency and license provenance with the release evidence. [KiviDB license](https://github.com/kividbio/kividb/blob/v1.2.0/LICENSE) · [HydraCache license](../../LICENSE)
 
@@ -226,15 +227,50 @@ Qualify one grouped cap in fresh paired runs against count-one. Advance the smal
 | Replica append before sync, sync before proof, duplicate proof and stale-epoch proof | Only authenticated proof for the exact record, group and current commit path advances acknowledgement. A delivery receipt or partial prefix cannot cover a later mutation. |
 | Exactly two durable copies, with consensus commitment still unproved | No success at this barrier. After a leadership change the new authority resolves the entry through the protocol. A same-identity retry follows the resolved outcome and retains uncertainty until it is proved. Include a previous-term entry and a stale flush proof after truncation/index reuse. |
 | Kill after consensus commit, before apply, or after apply before the client receives a reply | The promoted authority recovers the committed prefix. Same-identity retries return the committed result within the replay contract without reapplying the mutation. |
-| With exactly two durable copies, client receives `OK` and one member and its volume are lost | Run separate cases for the leader, the voter in the confirming majority and the lagging voter. Rotate the members through the roles. With both remaining members healthy, the elected authority serves each confirmed live value, version and deadline, preserves deletes and whole batches, and resumes durable writes. |
+| With exactly two durable copies, client receives `OK` and one member and its volume are lost | Use independent disposable volumes in the registered Linux fault environment. Gate on the observed reply and verify the two synced copies at the cut. Run isolated cases for the leader, the other voter in the confirming majority and the lagging voter. Rotate member identities through the roles. Destroy or permanently detach the victim volume for the remainder of the case and verify it is inaccessible to the two healthy survivors. The survivor quorum elects an authority on its original volumes, serves each confirmed live value, version and deadline, preserves deletes and whole batches, and resumes durable writes. |
 | Isolate the old leader, then lose the required quorum | Without commit proof, a new mutation cannot receive durable success. Track pre-isolation committed operations separately from requests that reach the isolated leader later. Rejoining nodes prove catch-up before serving authority. An admitted single failure recovers within the profile's separately frozen RTO gate. |
 | Slow sync, ENOSPC, EIO, short write or cancellation during flush | Pending work remains bounded. Each outcome has the correct certainty. The remaining available profile follows its admission rules. |
 | Kill during snapshot, compaction or member rejoin. Restore the remaining volumes | The validated snapshot and log reconstruct all required confirmed state. Corrupted, mismatched or unsupported retained data produces a visible refusal. An unverified snapshot cannot advance compaction. |
 | Controlled storage fault discards unflushed data | Persisted proof survives reconstruction from synced data only. Use this to test the storage barrier separately from `SIGKILL`, which leaves the OS page cache intact. The release failure contract remains single-member loss. |
 
+#### Durable soak with failover and concurrent rebalance
+
+- **Continuous workload.** Run a six-hour correctness campaign for each durable commit mode
+  proposed for activation on the exact candidate. Freeze the three-voter placement, volume
+  identities, seed, offered-rate mix, fault schedule, minimum successful operations and RTO window
+  before the run. Keep public reads and writes flowing through leader kill, promotion, old-leader
+  fencing and same-roster catch-up. Verify that the rejoined voter catches up before again serving
+  authority. While durable traffic continues, drive a live rebalance of populated partitions in a
+  separate namespace on the same daemon set with the admitted predecessor ownership path. Prove
+  transfer cutover, progress on moved keys and isolation between the two namespaces. The durable
+  namespace uses its fixed voter set throughout.
+- **Permanent-loss finish.** After restoring all three voters from the recoverable faults, end the
+  long campaign with an above-matrix node-and-volume loss while clients continue submitting writes.
+  Hold the third voter's sync for the witness record until the cut. Record the two matching sync
+  receipts, commit, apply and observed `OK` before the cut. Release that barrier after injection
+  so a surviving lagging voter can catch up. Retain the victim process and volume identities,
+  detachment evidence and the survivors' original volume
+  identities before and after election. Exercise the other victim roles in separate groups with
+  the same candidate, commit mode, load and proof barriers. Each case advances to a sustained
+  window of correct public reads and new durable acknowledgements from the survivor quorum while
+  the victim and its disk remain unavailable. Recovery uses the original roster and surviving
+  volumes. Volume replacement or membership changes require a separate qualification.
+- **Reconciliation.** Use the [0.75 W10i client ledger](V0_75_EXTENDED_IMAP_SURFACE_PLAN.md#under-load-failover-and-rebalance-qualification)
+  on a separate load host. Match each complete successful response to the exact record or atomic
+  batch, term/index, deduplicated sync quorum, consensus commit and apply. Retain the ordered
+  response for each RESP pipeline command. After each failover, rebalance and volume loss, verify
+  all retained acknowledged keys through the elected authority via public reads. Check whole
+  `MSET` batches, live overwrite versions and deadlines, absence for deletes and expired entries,
+  and same-identity retries where supported. Compare the survivor state at a common committed and
+  applied index. Report lost, wrong and duplicate confirmed effects, rejected and ambiguous
+  outcomes, and the observed progress and RTO for each fault. Reject missing or inconsistent
+  ledger segments, missed cuts, inaccessible survivor data, torn batches and stale proof. Require
+  zero lost, wrong or duplicate confirmed effects and a sustained recovery window within the
+  frozen RTO in every admitted single-loss case.
+
 **Tests.** Add `crates/hydracache-server/tests/durable_group_commit_e2e_077.rs` with `confirmed_values_survive_each_member_and_volume_loss`, `persisted_old_term_entry_without_commit_cannot_return_ok`, `minority_has_no_success`, `reply_loss_retries_committed_identity`, `fsync_failure_cannot_return_ok`, `mset_is_whole_after_promotion` and `interrupted_snapshot_replays_committed_tail`. Run `cargo test -p hydracache-server --test durable_group_commit_e2e_077 --locked` in the fast harness tier and `cargo test -p hydracache-server --test durable_group_commit_e2e_077 --locked -- --ignored --nocapture` with the registered Linux process and storage fault environment. Inject deterministic fault cuts before running scheduled process chaos. Preserve the seed, fault barrier, process identities and first outcome. Canary runs must fail when a replica counts before sync, when a completion releases before commit or apply, when a stale proof is accepted and when recovery skips a committed suffix.
 
-**Exit.** Confirmed mutations survive all admitted single-member losses, and the admission proof detects early ACK and incomplete recovery. Report the observed recovery time and stated failure model together.
+**Exit.** Confirmed mutations survive each admitted single-member loss in the fault matrix and the permanent-loss cut in the six-hour campaign. The admission proof detects early ACK, incomplete recovery, a missing client-ledger segment, a skipped cut, and a storage test that reuses the victim volume. Report the observed recovery time and stated failure model together.
 
 ### W9. Measure isolated candidates and the exact composition
 
@@ -269,14 +305,19 @@ Measure embedded raw/typed, direct backend, HC/1, HC/2 and RESP separately. Matc
 | State | Admission and release consequence |
 | --- | --- |
 | `disabled` | The default. A requested durable namespace fails activation when there is no qualified backend. The decoder and store can qualify independently. |
-| `batch-one` | `DURABLE_BATCH_ONE_READY` requires W6, the W8 matrix for count-one, prolonged resource/failure proof and compatibility. It may ship on its own when grouping has no eligible result. |
-| `grouped` | Requires `DURABLE_BATCH_ONE_READY` plus `GROUP_COMMIT_READY`. The latter requires W7/W8 for the exact cap, W9 confirmation and grouped resource and rollback proof. |
+| `batch-one` | `DURABLE_BATCH_ONE_READY` requires W6, the W8 fault matrix and six-hour campaign for count-one, prolonged resource/failure proof and compatibility. It may ship on its own when grouping has no eligible result. |
+| `grouped` | Requires `DURABLE_BATCH_ONE_READY` plus `GROUP_COMMIT_READY`. The latter requires W7, the W8 fault matrix and six-hour campaign for the exact group cap, W9 confirmation and grouped resource and rollback proof. |
 
 Activate the durable profile only for a newly registered empty namespace. Test interruptions before registration, after registration before readiness and while recovering activation. Repeated activation retains the original identity. At startup, reject unsupported versions and mismatched group, generation, placement, storage or capacity. Verify that an old or incompatible binary cannot serve the namespace through a different backend. Migration of populated namespaces remains a separate operation with its own proof.
 
 Compare live `grouped → batch-one` against a count-one control using the same log and corpus. Fence new admission, drain or resolve outstanding waiters and prove the exact committed and applied frontier before reconfiguring. Exercise pending flush, cancellation, lost replies and a restart during the transition. After rollback, replay committed state and resume from the verified frontier. A storage-incompatible downgrade requires a registered recovery or migration procedure. Document how operators see quorum, backlog, timeouts, rejection, sync errors and recovery progress. Use bounded metric labels and expose per-group detail through existing access controls.
 
 Bind every W item to exact source, binary, dependency/SBOM, topology, harness, compatibility fixtures, canary and test outcomes. Register 0.77 validators, workload manifests, ship-required gates and CI routing using the existing release-evidence framework. The fast tier runs deterministic tests and the bounded corpus. The scheduled tier runs fuzzing, crash and recovery cohorts. The protected tier runs dedicated timing, resource and exact-candidate ship admission. Add an operator table showing which profiles are available and the data/format consequences of rollback.
+
+Register the W8 correctness receipt per mode with the sealed client ledger, proof reconciliation,
+actual failover and rebalance transitions, node and volume identities at each destructive cut,
+survivor digests, per-fault recovery windows and canary verdicts. W9 timing claims also require
+their registered statistical and long-run evidence.
 
 **Tests.** Extend `performance_contract_077.rs` with `rejects_rollback_to_volatile_profile`, `rejects_unsupported_log_version_before_serving`, `rejects_grouped_with_batch_one_proof_only`, `admits_qualified_batch_one_with_negative_grouping_result`, `rejects_missing_fault_or_statistical_receipt` and `rejects_relabelled_historical_results`. Add real-process activation/rollback tests that compare state with the control after restart and include one failed drain. Test rolling compatibility with the admitted predecessor for the default path, supported downgrade to count-one and incompatible-format refusal. Run `cargo test -p xtask --test performance_contract_077 --test performance_composition_077 --locked`, `cargo xtask doc-check`, `cargo xtask verify` and the registered `cargo xtask release-evidence --release 0.77 --receipts-dir target/release-evidence/receipts --require-ship` after wiring it for this release.
 
@@ -290,6 +331,6 @@ Response coalescing that changes mutation eligibility needs a separate contract 
 
 - [ ] The published predecessor and admitted backend identities are pinned.
 - [ ] Each included performance change passes its own semantic, resource and statistical gates and the exact composition passes the full regression matrix.
-- [ ] Durable activation requires `DURABLE_BATCH_ONE_READY` with zero confirmed-write loss in the admitted single-member failure model. Grouped activation additionally requires `GROUP_COMMIT_READY` under the same acknowledgement contract. The release records the selected state and any negative experiment.
+- [ ] Durable activation requires `DURABLE_BATCH_ONE_READY` with zero confirmed-write loss in the W8 matrix and under-load soak, including permanent loss of one node and its disk. Grouped activation additionally requires `GROUP_COMMIT_READY` with the same proof for its exact mode. The release records the selected state and any negative experiment.
 - [ ] Restart, migration, rollback, monitoring, compatibility and expected-red canaries are verified against the exact artifact.
 - [ ] Release notes limit every claim to the measured profile, workload and fault model. An unqualified workstream is excluded from the claim, and an unproved durability profile is unavailable.
