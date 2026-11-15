@@ -1,0 +1,139 @@
+name: Protected product build receipts 0.74
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-product-build-074
+  cancel-in-progress: false
+
+jobs:
+  protection:
+    if: github.repository_id == '1217101761' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Require a preconfigured signing environment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="repos/$GITHUB_REPOSITORY"
+          gh api "$api/branches/main" > "$RUNNER_TEMP/branch.json"
+          gh api "$api/environments/performance-product-build-074" > "$RUNNER_TEMP/environment.json"
+          gh api "$api/environments/performance-product-build-074/deployment-branch-policies" > "$RUNNER_TEMP/policies.json"
+          python3 scripts/perf/product_build_receipt_074.py protection \
+            "$RUNNER_TEMP/branch.json" "$RUNNER_TEMP/environment.json" "$RUNNER_TEMP/policies.json"
+
+  build:
+    needs: protection
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - role: I74
+            source: 2e2d488082a0e2d7778f22143c99e3beede628e7
+          - role: C74
+            source: 891bc4e89b62c2eba7449fcc3a7dac638175c438
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+          path: tooling
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ matrix.source }}
+          persist-credentials: false
+          path: source
+      - name: Build the reviewed role from its pinned commit
+        shell: bash
+        env:
+          ROLE: ${{ matrix.role }}
+        run: |
+          set -euo pipefail
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/product-target"
+          rustup toolchain install 1.94.0 --profile minimal
+          python3 tooling/scripts/perf/product_build_receipt_074.py source "$ROLE" source
+          mkdir "$RUNNER_TEMP/product"
+          (
+            cd source
+            cargo +1.94.0 build --locked --release --target x86_64-unknown-linux-gnu -p hydracache-server
+          )
+          cp -- "$CARGO_TARGET_DIR/x86_64-unknown-linux-gnu/release/hydracache-server" "$RUNNER_TEMP/product/$ROLE-server"
+          python3 tooling/scripts/perf/product_build_receipt_074.py receipt "$ROLE" source "$RUNNER_TEMP/product"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: product-unsigned-074-${{ matrix.role }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/product/
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: false
+
+  sign:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment: performance-product-build-074
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+    strategy:
+      fail-fast: false
+      matrix:
+        role: [I74, C74]
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Recheck signing protection after approval
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="repos/$GITHUB_REPOSITORY"
+          gh api "$api/branches/main" > "$RUNNER_TEMP/branch.json"
+          gh api "$api/environments/performance-product-build-074" > "$RUNNER_TEMP/environment.json"
+          gh api "$api/environments/performance-product-build-074/deployment-branch-policies" > "$RUNNER_TEMP/policies.json"
+          python3 scripts/perf/product_build_receipt_074.py protection \
+            "$RUNNER_TEMP/branch.json" "$RUNNER_TEMP/environment.json" "$RUNNER_TEMP/policies.json"
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: product-unsigned-074-${{ matrix.role }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/product
+      - name: Verify exact role and artifact bytes before signing
+        env:
+          ROLE: ${{ matrix.role }}
+        run: python3 scripts/perf/product_build_receipt_074.py verify "$ROLE" "$RUNNER_TEMP/product"
+      - name: Attest the binary and its recorded build identity
+        id: attest
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        with:
+          subject-path: ${{ runner.temp }}/product/${{ matrix.role }}-server
+          predicate-type: https://github.com/javaquasar/hydracache/attestations/product-build-074/v1
+          predicate-path: ${{ runner.temp }}/product/build-receipt.json
+      - name: Retain the signed attestation
+        env:
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+        run: cp -- "$BUNDLE" "$RUNNER_TEMP/product/build-receipt.sigstore.json"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: product-signed-074-${{ matrix.role }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/product/
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: false
