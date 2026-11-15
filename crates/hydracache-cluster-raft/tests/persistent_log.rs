@@ -32,7 +32,7 @@ fn entry(index: u64, term: u64, data: &'static [u8]) -> Entry {
     Entry {
         index,
         term,
-        data: data.to_vec().into(),
+        data: data.to_vec(),
         ..Entry::default()
     }
 }
@@ -229,13 +229,13 @@ fn sled_runtime_replay_matches_live_apply_for_stale_committed_generation() {
         Entry {
             index: 1,
             term: 1,
-            data: envelope(2).encode().into(),
+            data: envelope(2).encode(),
             ..Entry::default()
         },
         Entry {
             index: 2,
             term: 1,
-            data: envelope(1).encode().into(),
+            data: envelope(1).encode(),
             ..Entry::default()
         },
     ];
@@ -244,7 +244,6 @@ fn sled_runtime_replay_matches_live_apply_for_stale_committed_generation() {
         term: 1,
         vote: 1,
         commit: 2,
-        ..Default::default()
     };
     store.save_hard_state(&hard_state).unwrap();
     drop(store);

@@ -9,9 +9,9 @@ use std::sync::{Condvar, Mutex};
 #[cfg(feature = "test-failpoints")]
 use std::time::{Duration, Instant};
 
-#[cfg(feature = "sled-log-store")]
-use protobuf::Message as ProtobufMessage;
 use raft::eraftpb::{ConfState, Entry, HardState, Snapshot};
+#[cfg(feature = "sled-log-store")]
+use raft::protocompat::{PbMessage, PbMessageExt};
 use raft::storage::{GetEntriesContext, RaftState, Storage};
 use raft::{Error as RaftError, Result as RaftResult, StorageError};
 
@@ -1035,7 +1035,7 @@ impl DurableControlPlaneCluster {
         let entry = Entry {
             index,
             term: 1,
-            data: payload.clone().into(),
+            data: payload.clone(),
             ..Entry::default()
         };
         let hard_state = HardState {
@@ -1566,43 +1566,43 @@ fn decode_u32(bytes: &[u8]) -> RaftStoreResult<u32> {
 
 #[cfg(feature = "sled-log-store")]
 fn encode_entry(entry: &Entry) -> RaftStoreResult<Vec<u8>> {
-    protobuf::Message::write_to_bytes(entry)
+    PbMessageExt::write_to_bytes(entry)
         .map_err(|error| RaftStoreError::new(format!("failed to encode raft entry: {error}")))
 }
 
 #[cfg(feature = "sled-log-store")]
 fn decode_entry(bytes: &[u8]) -> RaftStoreResult<Entry> {
-    Entry::parse_from_bytes(bytes)
+    Entry::decode(bytes)
         .map_err(|error| RaftStoreError::new(format!("failed to decode raft entry: {error}")))
 }
 
 #[cfg(feature = "sled-log-store")]
 fn encode_hard_state(hard_state: &HardState) -> RaftStoreResult<Vec<u8>> {
-    protobuf::Message::write_to_bytes(hard_state)
+    PbMessageExt::write_to_bytes(hard_state)
         .map_err(|error| RaftStoreError::new(format!("failed to encode hard state: {error}")))
 }
 
 #[cfg(feature = "sled-log-store")]
 fn decode_hard_state(bytes: &[u8]) -> RaftStoreResult<HardState> {
-    HardState::parse_from_bytes(bytes)
+    HardState::decode(bytes)
         .map_err(|error| RaftStoreError::new(format!("failed to decode hard state: {error}")))
 }
 
 #[cfg(feature = "sled-log-store")]
 fn encode_conf_state(conf_state: &ConfState) -> RaftStoreResult<Vec<u8>> {
-    protobuf::Message::write_to_bytes(conf_state)
+    PbMessageExt::write_to_bytes(conf_state)
         .map_err(|error| RaftStoreError::new(format!("failed to encode conf state: {error}")))
 }
 
 #[cfg(feature = "sled-log-store")]
 fn decode_conf_state(bytes: &[u8]) -> RaftStoreResult<ConfState> {
-    ConfState::parse_from_bytes(bytes)
+    ConfState::decode(bytes)
         .map_err(|error| RaftStoreError::new(format!("failed to decode conf state: {error}")))
 }
 
 #[cfg(feature = "sled-log-store")]
 fn encode_snapshot(snapshot: &Snapshot) -> RaftStoreResult<Vec<u8>> {
-    let payload = protobuf::Message::write_to_bytes(snapshot)
+    let payload = PbMessageExt::write_to_bytes(snapshot)
         .map_err(|error| RaftStoreError::new(format!("failed to encode raft snapshot: {error}")))?;
     let mut encoded = Vec::with_capacity(SLED_SNAPSHOT_ENVELOPE_HEADER_LEN + payload.len());
     encoded.extend_from_slice(SLED_SNAPSHOT_ENVELOPE_MAGIC);
@@ -1618,7 +1618,7 @@ fn decode_snapshot(bytes: &[u8]) -> RaftStoreResult<Snapshot> {
     if bytes.starts_with(SLED_SNAPSHOT_ENVELOPE_MAGIC) {
         return decode_snapshot_envelope(bytes);
     }
-    Snapshot::parse_from_bytes(bytes)
+    Snapshot::decode(bytes)
         .map_err(|error| RaftStoreError::new(format!("failed to decode raft snapshot: {error}")))
 }
 
@@ -1655,7 +1655,7 @@ fn decode_snapshot_envelope(bytes: &[u8]) -> RaftStoreResult<Snapshot> {
             "raft snapshot checksum mismatch: expected {expected_checksum:#x}, actual {actual_checksum:#x}"
         )));
     }
-    Snapshot::parse_from_bytes(payload)
+    Snapshot::decode(payload)
         .map_err(|error| RaftStoreError::new(format!("failed to decode raft snapshot: {error}")))
 }
 
@@ -1717,7 +1717,7 @@ mod tests {
         Entry {
             index,
             term,
-            data: data.to_vec().into(),
+            data: data.to_vec(),
             ..Entry::default()
         }
     }

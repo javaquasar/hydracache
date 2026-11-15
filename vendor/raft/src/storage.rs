@@ -523,7 +523,7 @@ impl Storage for MemStorage {
 mod test {
     use std::panic::{self, AssertUnwindSafe};
 
-    use protobuf::Message as PbMessage;
+    use raft_proto::protocompat::*;
 
     use crate::eraftpb::{ConfState, Entry, Snapshot};
     use crate::errors::{Error as RaftError, StorageError};

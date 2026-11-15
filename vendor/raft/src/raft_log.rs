@@ -672,7 +672,7 @@ mod test {
     use crate::errors::{Error, StorageError};
     use crate::raft_log::{self, RaftLog};
     use crate::storage::{GetEntriesContext, MemStorage};
-    use protobuf::Message as PbMessage;
+    use raft_proto::protocompat::*;
 
     fn new_entry(index: u64, term: u64) -> eraftpb::Entry {
         let mut e = eraftpb::Entry::default();

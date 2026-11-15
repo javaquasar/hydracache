@@ -114,11 +114,11 @@ pub use log_store::{
     RaftStorageFaultOperation,
 };
 
-use protobuf::Message as ProtobufMessage;
 use raft::eraftpb::{
     ConfChange, ConfChangeType, ConfChangeV2, Entry, EntryType, Message as RaftMessage,
     MessageType, Snapshot,
 };
+use raft::protocompat::{PbMessage, PbMessageExt};
 use raft::storage::Storage;
 use raft::{Config, RawNode, SnapshotStatus, StateRole};
 use serde::{Deserialize, Serialize};
@@ -442,7 +442,7 @@ impl RaftWireMessage {
 
     /// Decode the protobuf payload and verify its duplicated transport header.
     pub fn decode(&self) -> CacheResult<RaftMessage> {
-        let message = RaftMessage::parse_from_bytes(&self.payload).map_err(|error| {
+        let message = RaftMessage::decode(self.payload.as_slice()).map_err(|error| {
             CacheError::Decode(format!("failed to decode raft message: {error}"))
         })?;
         validate_wire_header("from", self.from, message.from)?;
@@ -1734,8 +1734,7 @@ fn materialize_snapshot_command(
         let present = find_materialized(cluster, node_id, *role).is_some();
         if !present {
             return Err(CacheError::Backend(format!(
-                "node-left references absent {:?} '{}'",
-                role, node_id
+                "node-left references absent {role:?} '{node_id}'"
             )));
         }
     }
@@ -1749,8 +1748,7 @@ fn snapshot_apply_error(
     error: CacheError,
 ) -> CacheError {
     CacheError::Backend(format!(
-        "raft snapshot apply error: snapshot_index={}, tail_index={}, command_id={}: {}",
-        snapshot_index, tail_index, command_id, error
+        "raft snapshot apply error: snapshot_index={snapshot_index}, tail_index={tail_index}, command_id={command_id}: {error}"
     ))
 }
 
@@ -1944,7 +1942,7 @@ where
         snapshot.mut_metadata().index = self.applied_index;
         snapshot.mut_metadata().term = term;
         snapshot.mut_metadata().set_conf_state(conf_state);
-        snapshot.data = encode_metadata_snapshot_payload(&export)?.into();
+        snapshot.data = encode_metadata_snapshot_payload(&export)?;
         Ok(snapshot)
     }
 
@@ -2082,12 +2080,9 @@ where
                     }
                 }
                 EntryType::EntryConfChange => {
-                    let change =
-                        ConfChange::parse_from_bytes(entry.data.as_ref()).map_err(|error| {
-                            CacheError::Decode(format!(
-                                "failed to decode raft conf change: {error}"
-                            ))
-                        })?;
+                    let change = ConfChange::decode(entry.data.as_ref()).map_err(|error| {
+                        CacheError::Decode(format!("failed to decode raft conf change: {error}"))
+                    })?;
                     let conf_state = self
                         .raw_node
                         .apply_conf_change(&change)
@@ -2108,12 +2103,9 @@ where
                         .map_err(to_cache_error)?;
                 }
                 EntryType::EntryConfChangeV2 => {
-                    let change =
-                        ConfChangeV2::parse_from_bytes(entry.data.as_ref()).map_err(|error| {
-                            CacheError::Decode(format!(
-                                "failed to decode raft conf change v2: {error}"
-                            ))
-                        })?;
+                    let change = ConfChangeV2::decode(entry.data.as_ref()).map_err(|error| {
+                        CacheError::Decode(format!("failed to decode raft conf change v2: {error}"))
+                    })?;
                     let conf_state = self
                         .raw_node
                         .apply_conf_change(&change)
@@ -2475,7 +2467,7 @@ mod tests {
     fn protobuf_snapshot_from_export(export: &RaftMetadataRuntimeExport) -> Snapshot {
         let mut snapshot = Snapshot::default();
         snapshot.mut_metadata().index = export.applied_index;
-        snapshot.data = encode_metadata_snapshot_payload(export).unwrap().into();
+        snapshot.data = encode_metadata_snapshot_payload(export).unwrap();
         snapshot
     }
 
@@ -2626,7 +2618,7 @@ mod tests {
         let mut unapplied_entry = Entry {
             index: 2,
             term: 1,
-            data: encode_envelope(&envelope).into(),
+            data: encode_envelope(&envelope),
             ..Entry::default()
         };
         unapplied_entry.set_entry_type(EntryType::EntryNormal);

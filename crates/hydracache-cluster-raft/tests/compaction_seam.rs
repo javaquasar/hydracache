@@ -255,8 +255,8 @@ async fn compaction_seam_sled_restart_applies_newer_retained_tail_after_snapshot
 #[tokio::test]
 async fn compaction_seam_recovery_applies_committed_confchange_past_persisted_applied() {
     use hydracache_cluster_raft::SledRaftLogStore;
-    use protobuf::Message as ProtobufMessage;
     use raft::eraftpb::{ConfChange, ConfChangeType, Entry, EntryType};
+    use raft::protocompat::PbMessageExt;
     use raft::Storage;
 
     let unique = std::time::SystemTime::now()
@@ -290,7 +290,7 @@ async fn compaction_seam_recovery_applies_committed_confchange_past_persisted_ap
     let mut entry = Entry {
         index: tail_index,
         term: store.term(snapshot_index).unwrap(),
-        data: change.write_to_bytes().unwrap().into(),
+        data: change.write_to_bytes().unwrap(),
         ..Entry::default()
     };
     entry.set_entry_type(EntryType::EntryConfChange);
