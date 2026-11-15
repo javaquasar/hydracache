@@ -9,11 +9,11 @@ import stat
 import subprocess
 
 ROLES = {
-    "I74": ("4ad117983409ae955e5336269d812f82a8d9aef8", "7c129fa78b88d238f9941e37112d27b8e2d63250"),
-    "C74": ("a548692f3f1779a23a3e876556d8c1a2a9e72b62", "44f41a6fb0af587e421931af2f595a491476f3eb"),
+    "I74": ("080d9b7897f2de1be51fd21f78eb525b4628366a", "a4e2d5f2b63ce01d1a9f517f800678156ba64a88"),
+    "C74": ("572bbcb2f110548a5f668a9f7ce2aa10c9371964", "e76179a97551cdebae04f92e18e33f1498f3ebc1"),
 }
 ENVIRONMENT = "performance-product-build-074"
-LOCK = "bb46bc8f95eefb045776c68b0bed2f9c8815d72435426f0a03741d9d3ae70a77"
+LOCK = "5cc6a2096fe9a505d619a0efb6a2a36ec59dd20175cdb936b62344fd9aaeabb0"
 REPOSITORY = "javaquasar/hydracache"
 REPOSITORY_ID = "1217101761"
 WORKFLOW = f"{REPOSITORY}/.github/workflows/performance-product-build-074.yml@refs/heads/main"
