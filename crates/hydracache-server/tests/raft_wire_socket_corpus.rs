@@ -207,7 +207,7 @@ fn forged_raft_frames(term: u64) -> Vec<(&'static str, Vec<u8>)> {
     malformed_snapshot.mut_metadata().index = 50;
     malformed_snapshot.mut_metadata().term = term;
     malformed_snapshot.mut_metadata().mut_conf_state().voters = vec![local_raft_id];
-    malformed_snapshot.data = b"not-hydracache-metadata".to_vec().into();
+    malformed_snapshot.data = b"not-hydracache-metadata".to_vec();
     let mut snapshot_message = heartbeat(local_raft_id, local_raft_id, term);
     snapshot_message.set_msg_type(MessageType::MsgSnapshot);
     snapshot_message.set_snapshot(malformed_snapshot);

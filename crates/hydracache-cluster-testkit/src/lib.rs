@@ -1166,7 +1166,7 @@ impl RuntimeRaftCluster {
         snapshot.mut_metadata().index = export.applied_index;
         snapshot.mut_metadata().term = term;
         snapshot.mut_metadata().set_conf_state(conf_state);
-        snapshot.data = data.into();
+        snapshot.data = data;
         store
             .save_snapshot(&snapshot, usize::MAX)
             .map_err(|error| CacheError::Backend(error.to_string()))?;
