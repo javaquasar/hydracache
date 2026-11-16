@@ -199,6 +199,34 @@ convenience adapters while production admission remains deferred. A reference op
 planned projection; it is not evidence of a production endpoint or release capability. Collection
 production work still requires the separate threat/cost model and W0 decision described above.
 
+## Open owner decisions and delivery control
+
+The following decisions belong to the release owner. Each decision is recorded in the W0 contract
+and, where marked, in an accepted ADR before the dependent work starts. Until then, the dependent
+work stays blocked; it is not started on an assumed answer.
+
+| ID | Decision | Current state | Blocks |
+| --- | --- | --- | --- |
+| OD-1 | How an isolated former owner stops serving authoritative reads | **Selected in W0:** a quorum-backed read barrier on the owner lane (committed epoch, ownership and applied watermark are checked before key lookup). Lease-based local reads are not used in 0.75; adopting them later requires OD-2 bounds and a new ADR. Record the choice and its per-read cost in an ADR. | Final W10b/W10c/W10e message formats; D2/D3 gates |
+| OD-2 | Time source for `ClusterTimeAuthority`: provider, how uncertainty is measured, the admitted maximum uncertainty, and behavior on clock step or uncertainty overflow | **Open.** W0 already requires the provider and bound to be recorded; the concrete choice is not made. Record it in an ADR. | W10d expiry, D2 clock model, D3 expiry checks |
+| OD-3 | Write availability after one member loss in the RF=2, three-member profile | **Fail-closed is selected** by the frozen profile and W10e. With uniform placement, losing one of three members leaves about two thirds of partitions without a required backup (those it owned plus those it backed up), and their writes are rejected until re-replication proves the prefix. **Open:** numeric targets for maximum write-unavailable partition-seconds and maximum re-replication time at the frozen cardinality and payload. Record in an ADR. | W10e gate, W10m RPO/RTO matrix, W11e reporting |
+| OD-4 | Publication date of 0.74 and the minimum definition of "0.74 published" that 0.75 depends on | **Open.** | Every production slice D1 and later |
+| OD-5 | Fallback scope if the distributed value plane is late | **Open.** Proposed default: a decision point after D7. If D7 is not green by the date frozen in OD-10, ship the extended surface on the local backend, keep the distributed mode behind a non-default capability with `not-comparable: distributed-value-plane-absent`, and move the distributed claim to 0.75.x. | Release scope after D7 |
+| OD-6 | Foundation items beyond the 0.75 public surface: `clear`/`destroy`, `size`, contains-value scans, cursors and iterators, Flow publishers, checkpoint/restore, statistics | **Open.** Each `implemented` item in `status.json` is labeled `w0_mandatory` or `beyond_075_scope`. Items beyond scope stay reference-only or move to a later plan. | W0 closure |
+| OD-7 | Latency budget of the distributed path, written as `member-mode p99 ≤ k × local p99 + n × measured inter-member RTT` per operation family (read, write, conditional, bulk group) | **Open:** values of `k` and `n`. | Skeleton checkpoint, W11 internal cells |
+| OD-8 | Hazelcast client routing mode in S2 | **Proposed:** unisocket (`smart-routing=false`) is the comparable cohort, because HydraCache 0.75 uses server-side proxy routing; smart routing is a separately labeled cohort. | W11a contract, W11d |
+| OD-9 | Per-entry max-idle (time-to-idle) | **Open.** Hazelcast exposes max-idle on map mutations; this plan does not. Either record it as `unsupported` with a loud failure in the W0 ledger and capability manifest, or support it with owner-side access tracking whose replication to the backup is debounced to at most one access-time update per entry per frozen interval. | W0 ledger, W4 |
+| OD-10 | The frozen release deadline referenced in W12, and an estimate for each D-slice | **Open.** | OD-5 decision point, W12 |
+
+Work that must not start before its decisions are frozen:
+
+- W10d production expiry and the D3 expiry checks wait for OD-2;
+- no S1/S2 comparison cell runs before D1-D3 are green and the OD-7 budget is frozen;
+- no new foundation items are added before D1 (see the foundation freeze above).
+
+The decisions recorded as ADRs (OD-1, OD-2, OD-3) take the next free ADR numbers in
+`docs/adr/` at the time they are accepted.
+
 ## Work-item sequence
 
 ```text
@@ -220,125 +248,23 @@ evidence.
 
 ### Provisional safe-foundation progress
 
-The pre-0.74 preparation tranche repairs retained-history CI checkout and qualifies the existing
-proof worker on actual Linux lanes. A closed development backend boundary covers all 40 commands
-without becoming a production dependency. Current daemon HC1/RESP and HC2 process characterization,
-actual durable-v1 reopen/corruption/budget probes, external Rust/packaged Java consumers and a
-checksum-pinned official Hazelcast diagnostic adapter prepare integration independently of W0.
-The explicit Hazelcast profile is exclusive, sequential, eternal, BINARY, without TLS/backups or
-retained-identity retries; it cannot admit S2 or a numerical comparison. The machine-readable
-`pre074-integration-contract.json` retains production listener/security/readiness/drain/resource
-observations as required future adapter evidence. A separate preparation producer and verifier
-bind clean source, runtime, exact inputs and raw observations, and reexecute trusted current
-probes. See `docs/testing/imap/0.75/pre074-implementation.md` for work packages, concrete tests,
-commands and the remaining production boundary. These preparation results do not close W0.
+Foundation work that does not depend on the unfinished 0.74 production shape exists on the 0.75
+branch: a provisional W0 registry, a bounded reference mutation model and certainty-aware
+linearizability oracle, a three-node logical value-plane simulator and seeded chaos campaign, a
+common Java semantic harness, local API extensions and actual-service test-cluster integrations.
+It is local/reference evidence only. It does not close W0, activate the production backend or
+qualify process, network, durable, SDK, performance or release behavior. The production
+distributed backend remains disabled and fail-closed.
 
-The bounded invocation/evidence tranche adds eight local slices: ordered batch entry views with
-usable incarnation-scoped tokens; clustered typed-helper futures; capacity-aware read/helper
-retry; read-only root/child helper progress; authenticated transfer abort/cleanup/restart;
-independent extended concurrent histories; managed proof-process lifecycle; and exact-artifact
-extended receipts. `api_extensions.bounded_evolution` freezes these eight properties and maps
-them to named Rust/Java tests. Parked retries release physical permits while retaining charged
-request/receipt owners. A later cancellation cannot report NotApplied after an earlier reservation
-attempt. Progress observations use bounded Safety-lane credits and cannot advance time, refresh
-proofs or reapply a conditional. Transfer controls retain namespace/partition/epoch fences.
-
-Concurrent qualification accepts legal partial orders, including per-item bulk interleaving,
-rather than requiring the same overlapping winner. Proof workers share execution/pipe deadlines,
-bounded output and owned descendant cleanup. Windows enforces Job process/memory limits; Linux
-uses an inherited process group and per-process address-space limit, explicitly refusing a
-requested process-count cap. Linux runtime execution is not available in this workspace; its
-implementation is not reported as a locally passed lane. Retained receipts include runner/class
-snapshots, bind them to trusted current peers, and reexecute only those current peers, defect
-controls and bounded shrinking against exact clean source and runtime bindings. These are local owner/process diagnostics, not production daemon,
-network, SDK, durable, performance or release qualification. W0 remains open.
-
-The clustered API evolution tranche adds read futures without mutation reservations, typed
-version-bulk/query/retirement/expiry dispatch through actual owners, bounded opt-in retries,
-namespace-specific revocation, stepped online Repair/Drain, delta credits before mutation and
-redacted paginated invocation diagnostics. A common bounded v2 corpus runs actual Rust and Java
-peers against the independent Java model, with process defects, signed-clock/Unicode boundary
-fixtures and bounded valid-reference shrink/replay. Its eight local contracts have distinct
-executable anchors in `api_extensions.cluster_evolution`; production routing stays disabled.
-
-The next request-evolution tranche adds framed semantic fingerprints and bounded shrinking,
-immutable Java requests, invocation-bound permits, scoped operation policy, fenced replay-window
-retirement, typed local/cluster async lifecycles, sparse decision deltas and an independent
-extended Java semantic oracle. Actual owner and journal state remain authoritative; all new
-proofs are local/reference scope. The operation contract maps these eight properties to eleven
-distinct Java/Rust test anchors; none closes W0 or activates the production backend.
-
-The next integration tranche joins authenticated registry/admission to the actual test cluster,
-adds member-envelope guards, per-partition subscriptions and online snapshot/decision-image
-transfer, separates data/safety/repair resource lanes, and derives runtime readiness/drain from
-real owners. Actual-cluster staged histories, counterexample shrinking and a hostile/fuzz corpus
-extend the independent proofs. Rust/Java prefix/exact filters, typed preconditions and the common
-Java semantic SPI now use the actual unified owner. These remain local/runtime foundations;
-none closes the production D4-D16 gates or supplies process/network/durable qualification.
-
-As of 2026-10-29, branch `feat/0.75-distributed-imap-foundation` contains only work that is
-independent of the unfinished 0.74 production shape:
-
-- a provisional, machine-checked W0 registry for operations, results, errors, TTL, bounds, surface
-  projections, mutation stages, retry/idempotency, failure consistency and RPO/RTO;
-- a test-only bounded reference mutation model, certainty-aware linearizability oracle and seeded
-  fault vocabulary for owner/backup loss, promotion, rebalance, reconnect and response loss;
-- an isolated common Java semantic harness with bounded manifests, an equivalence oracle and
-  fail-closed HydraCache/Hazelcast adapter placeholders, conditional remove, TTL expiry,
-  partition-grouped pending-only bulk retry and generation-aware listener repair;
-- an executable three-node logical value-plane simulator covering bounded proxy routing,
-  synchronous backup proof, response-loss replay, promotion, repair, rebalance, partial bulk and
-  listener gap behavior without making the simulator reachable from production crates;
-- a reproducible seeded stateful chaos campaign with continuous owner/backup/epoch invariants,
-  partition-scoped transfer regression coverage and a trace fingerprint retained in fault evidence;
-- executable tenant/replay/replica-proof/redirect/generation/trust/audit/decode security guards and
-  an exact-source generator/validator for thirteen model, fault, history, RPO, transfer, listener,
-  bulk, lifecycle, ACK, security, surface, explorer and Java receipts, including same-seed replay
-  and tamper rejection;
-- bounded ACK accounting, resumable checksum-fenced transfer, listener watermark, stable partial
-  bulk and complete namespace drain/reclamation models, each with executable negative paths;
-- a composite transfer/expiry/failover/lifecycle explorer with deterministic schedule shrinking and
-  a test-only RESP/HC1/HC2 Rust/HC2 Java projection into one dedup/event/accounting owner;
-- an abstract durable-recovery and dedup lifecycle, multi-subscriber filtering, bounded bulk
-  deadline/cancellation, transfer crash recovery, exact resource cleanup and test-only loopback
-  fault transport, plus an executable contract-to-test registry and Java coverage ratchet;
-- a bounded collection/lifecycle API model for size/empty checks, resumable contains-value scans,
-  clear/destroy/eviction and revision-fenced paged key/value/entry views, mirrored by a covered Java
-  reference without allocating production cursor or protocol identity;
-- twelve local API extensions: read defaults, entry equality, void set, bounded entry views,
-  identity-aware deadline put/remove, explicit bounded replacements, listener removal, Rust and
-  Java asynchronous facades, lazy cursor iterators and programmatic capability descriptors;
-- a unified local command service over one collection/outcome owner, instance/generation-scoped
-  version conditionals, read-only pending/completed/unknown outcome queries, demand-bounded Rust
-  streams and Java Flow publishers, richer listener payload/lifecycle handling, typed domain
-  errors, local statistics and actual Rust-versus-Java execution differential with shrinking;
-- local lifecycle helpers for safe client/generation-scoped outcome retirement, aggregate owned
-  payload budgets, atomic listener snapshot/watermark repair, ordered version-conditional bulk,
-  bounded batch outcome lookup, incremental expiry and quiescent in-memory checkpoint/restore;
-- real concurrent Rust/Java histories checked against legal serial orders and real-time edges,
-  including cancellation, response-loss replay, expiry and listeners with bounded failure shrinking;
-- an actual-service test cluster with bounded logical transport faults, owner-decision replica
-  images, ordered bulk/coordinator receipts, fenced promotion and runtime state rebalance;
-- authenticated service registry integration for tenant isolation, fair admission, quota ownership
-  and generation-fenced namespace drain/reclamation;
-- separate actual reference/SDK capability audit, migration staging fixtures and cold-repopulation
-  dry-runs, a bounded PR/nightly Java/Rust CI matrix, comparison policy validation and a provisional
-  release-admission checker that remains blocked without qualified production verifier adapters;
-- a bounded Rust/Java reference canonical-key codec and checked-in UTF-8/empty-key golden vectors;
-  the production wire identity and partition hash deliberately remain unassigned.
-
-This is foundation evidence, not W0 closure or a 0.75 capability claim. The production distributed
-backend remains disabled and fail-closed. Backend extraction, partition ownership/routing,
-wire/durable identities, SDK generation, production surface routing, performance qualification and
-release-candidate work remain blocked on the published 0.74 artifact and its accepted native/batch
-baseline. Machine-readable status is maintained in `docs/testing/imap/0.75/status.json` and the
-provisional gate is `cargo xtask imap-contract-check --release 0.75`. The observed 0.74 branch at
-`355c6fe226a17e63d60ac6c831eb081afd648d82` has no accepted performance candidate and is preparing
-the test-process control plane. Its closure scope permits no numerical improvement claim while
-retaining package, compatibility, dependency-policy and server-qualification gates. The supervisor
-manifest now inherits the workspace license; the earlier missing-license observation is not a
-claim about this newer source. Release 0.75 needs the published, qualified baseline and exact-source
-receipts, rather than a positive throughput gain. Local development does not freeze or admit 0.74.
+- Detailed history (moved verbatim): [`foundation-progress.md`](../testing/imap/0.75/foundation-progress.md).
+- Work packages, tests and the remaining production boundary:
+  [`pre074-implementation.md`](../testing/imap/0.75/pre074-implementation.md).
+- Current machine-readable status: [`status.json`](../testing/imap/0.75/status.json); provisional
+  gate: `cargo xtask imap-contract-check --release 0.75`.
+- Foundation freeze: no new foundation items are added before D1 starts. Every `implemented` item
+  in `status.json` carries a scope label, `w0_mandatory` or `beyond_075_scope`, decided by OD-6.
+  Items labeled `beyond_075_scope` stay reference-only and are not projected into the release
+  claim.
 
 ## W0. Freeze the compatibility and divergence ledger
 
@@ -388,6 +314,14 @@ claims and incompatible SDK interpretations.
   identity, member/local backend selection, owner/proxy routing, topology fencing, replication
   factor, synchronous acknowledgement count, read consistency, durability acknowledgement,
   promotion watermark, degraded behavior, rebalance cutover and listener ordering/gap semantics;
+- freeze the OD-3 write-availability targets in the failure/consistency matrix: for the
+  three-member RF=2 profile, the expected share of partitions that reject writes after one member
+  loss, the maximum write-unavailable partition-seconds and the maximum re-replication time at the
+  frozen cardinality and payload. W10e and W11e report observed values against these targets;
+- add a ledger row for per-entry max-idle (OD-9). Until OD-9 selects support, the row is
+  `unsupported` and every surface that could express max-idle fails loudly;
+- write the OD-7 latency budget into the machine-readable contract per operation family, with the
+  inter-member RTT measurement method, so that the skeleton checkpoint and W11 can evaluate it;
 - freeze old/new SDK and daemon combinations before the schema changes;
 - add doc-check validation that every facade method and capability-manifest token has a ledger row.
 
@@ -715,6 +649,7 @@ current monolithic `ClientSurfaceState`.
 | `crates/hydracache-server/src/value_plane_transport.rs` (new) | Encode/decode internal frames, resolve `ClusterNodeId` to authenticated endpoints, perform one-hop owner RPC, fan out replica RPCs, validate response sender/epoch/partition/version and expose deterministic fault checkpoints. |
 | `crates/hydracache-server/src/grid_host.rs` | Replace the `Replicate` no-op in `RaftClusterMessageHandler` with a composed route dispatcher. Keep Raft handling isolated; pass value-plane routes to the new service. Extend `NetworkedMemberStack`/`NetworkedGridHandle` or add a separate `GridValuePlaneHandle`; do not overload `GridControlPlaneHandle` with value storage. |
 | `crates/hydracache-server/src/bootstrap.rs` and `main.rs` | Assemble `LocalClientDataBackend` only for local mode and `DistributedMapBackend` for member mode; inject one dispatcher into HC/1, HC/2 and RESP. Startup/readiness fails if a member advertises distributed map capability without a valid value-plane handle/store/topology. |
+| `crates/hydracache/src/grid/time_authority.rs` (new) | Define `ClusterTimeAuthority` and `TimeObservation { now, uncertainty }` with the OD-2 provider behind a trait, a deterministic test provider with per-node observations, and the fail-safe rule: a clock step or an uncertainty above the configured bound makes the member unready for owner expiry work instead of expiring early. W10d expiry, the D2 clock model and the D3 expiry checks consume only this type. Tests in `crates/hydracache/tests/time_authority.rs`: `uncertainty_overflow_makes_owner_unready`, `backward_step_never_expires_early`, `per_node_observations_are_independent`. |
 | `crates/hydracache-server/src/config.rs` | Add a versioned `ValuePlaneConfig`: enabled mode, partition count, replication factor, sync/async backups, read/write acknowledgement level, max replicated entry bytes, per-partition queue bound, max proxy hops fixed to one, replica/transfer in-flight byte bounds, transfer concurrency, tombstone/dedup retention, expiry-clock uncertainty bound, storage mode and readiness floor. Validate cross-field/member-count contradictions. |
 | `crates/hydracache-server/src/hc2.rs` | Await the shared async dispatcher and map stable domain errors to HC/2 responses. It must contain no partition hash, direct store access, replica loop or retry policy. |
 | `crates/hydracache-server/tests/support/daemon_cluster.rs` | Add HC/2 addresses/config to `DaemonNodeSpec`, typed helpers for starting a replicated value-plane cluster, killing/suspending/restarting an owner, blocking owner/replica routes, waiting on partition epoch/health, obtaining partition digests and retaining replay evidence. |
@@ -768,6 +703,16 @@ struct ReplicaApplyAck {
     checksum: [u8; 32],
 }
 ```
+
+**Per-entry overhead budget.** `mutation_id`, the 32-byte `request_digest`, `recoverable_outcome`
+and the 32-byte checksum are needed on the wire and for bounded replay, but they are a large share
+of a small entry and RF=2 doubles them. The at-rest value record keeps only what serving and repair
+need (version, expiry state and integrity coverage). The replay identity, digest and recoverable
+outcome live in a separate partition-local dedup store that is retained only for the admitted
+dedup window; it is still updated atomically with the record and the partition watermark (W10c
+step 3). W0 freezes a fixed per-entry overhead budget in bytes for the value record, and W11f
+reports measured overhead bytes per live logical entry, primary and backup separately, against
+that budget.
 
 `CanonicalMapKey` is a length-delimited binary encoding of tenant, namespace and structured key;
 it is not the current ambiguous string concatenation. The same bytes feed partition hashing,
@@ -879,7 +824,7 @@ partition batch, TTL inspection/update, subscription registration and health/own
    `execute(VerifiedMapCommand)` only if the compiler still enforces exhaustive operation handling.
    The trait returns domain outcomes; it does not construct HTTP/HC2/RESP frames.
 3. Make `ClientSurfaceDispatcher` own limits, tenant isolation, audit and backend. Convert
-   `dispatch_verified_request` at the current line-979 seam to async and move the existing
+   `ClientSurfaceState::dispatch_verified_request` to async and move the existing
    `handle_put`, `with_admitted_store`, conditional handlers and event projection behind backend
    calls. Admission that depends on the committed size delta uses a backend prepare/apply contract;
    it must not charge optimistically and leak quota after failure.
@@ -1024,8 +969,10 @@ bounded counts for each state but must not provide a control that edits them.
 
 1. Add a per-partition executor registry in `value_plane.rs`. Each executor serializes mutation
    decisions and version allocation for its partition; different partitions remain concurrent.
-   Bound mailbox count and retained bytes. Reads may bypass the mutation queue only after proving
-   an immutable record snapshot and current ownership epoch.
+   Bound mailbox count and retained bytes. Reads may bypass the mutation queue only after the W0
+   quorum-backed read barrier (OD-1) proves the committed epoch, current ownership and the required
+   applied watermark, and the read uses an immutable record snapshot at or after that watermark. A
+   cached barrier result is never reused across an epoch change.
 2. Replace process-global `next_version` assumptions with a persisted per-partition high-watermark.
    On open, set the next sequence from the durable watermark, never by scanning only live values
    because tombstones may contain the maximum version.
@@ -1163,7 +1110,8 @@ satisfies the frozen promotion rule.
 - run each schedule with fixed seeds, then replay its emitted schedule and require the same logical
   history/digest;
 - add a split-direction case where the old owner sees clients but not quorum and a new owner sees
-  quorum; assert the old side cannot acknowledge;
+  quorum; assert the old side cannot acknowledge and cannot serve an authoritative read, while the
+  new owner accepts writes (`isolated_old_owner_cannot_serve_reads_real_process`);
 - run `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test
   hc2_value_failover --locked -- --nocapture`;
 - run the history through the existing/reused linearizability checker and retain the minimized
@@ -1457,6 +1405,7 @@ pattern with HydraCache's production daemons, packaged clients and test harness.
 | `acknowledged_write_survives_owner_kill` | `hc2_value_failover.rs` | Core failover guarantee. |
 | `isolated_old_owner_cannot_acknowledge` | `hc2_value_failover.rs` | No split authority. |
 | `isolated_old_owner_cannot_serve_reads` | `distributed_value_plane_075.rs` (testkit) | A live isolated owner and a stale barrier refuse reads. A rejoining node routes only after catch-up. |
+| `isolated_old_owner_cannot_serve_reads_real_process` | `hc2_value_failover.rs` | The read-barrier rule holds with real daemons and real network isolation, not only in the testkit. |
 | `promotion_requires_committed_epoch_and_applied_watermark` | `hc2_value_failover.rs` | Discovery alone cannot promote. |
 | `rejoining_old_owner_is_catchup_only` | `hc2_value_failover.rs` | Stale durable state cannot serve. |
 | `expiry_deadline_is_not_recomputed_on_backup` | `distributed_expiry.rs` | TTL does not extend during replication. |
@@ -1505,7 +1454,10 @@ pattern with HydraCache's production daemons, packaged clients and test harness.
 15. internal forwarding cannot change authenticated tenant/namespace or fabricate owner/backup proof;
 16. one hot key/partition/tenant cannot exceed bounds or starve admitted cold and safety work;
 17. namespace reuse cannot observe any previous generation and reclamation never precedes safe watermarks;
-18. observed recovery and data survival match the exact profile-specific failure/RPO/RTO matrix.
+18. observed recovery and data survival match the exact profile-specific failure/RPO/RTO matrix;
+19. an authoritative read is served only by the owner that passed the quorum-backed read barrier for
+    the current committed epoch with the required applied watermark; an isolated or superseded
+    owner returns `unavailable` or `stale_owner` advice, never a value.
 
 ### W10j. Prove one canonical map across RESP, HC/1, HC/2 Rust and HC/2 Java
 
@@ -1706,8 +1658,8 @@ commit introducing wire/durable bytes also updates compatibility fixtures in tha
 
 | Slice | Product change | Required green gate before the next slice |
 | --- | --- | --- |
-| D1 | Mechanical extraction of `LocalClientDataBackend`; async dispatcher; no semantic change | Complete current client-surface, mutation-event, quota, retention and protocol suites; local byte goldens unchanged |
-| D2 | Canonical binary key and hash/partition goldens; topology, read barrier and per-node clock models | Rust/Java/reference golden equality, property distribution checks, future/hash-version rejection, isolated-owner read refusal and bounded expiry eligibility |
+| D1 | Mechanical extraction of `LocalClientDataBackend`; async dispatcher; no semantic change | Complete current client-surface, mutation-event, quota, retention and protocol suites; local byte goldens unchanged; `imap_backend_contract_075` runs against the production `LocalClientDataBackend`; paired performance gate against B74 for local, direct-native and RESP GET/SET (see below) |
+| D2 | Canonical binary key and hash/partition goldens; topology, read barrier and per-node clock models; `ClusterTimeAuthority` with the OD-2 provider | Rust/Java/reference golden equality, property distribution checks, future/hash-version rejection, isolated-owner read refusal and bounded expiry eligibility |
 | D3 | Partition executor and atomic in-memory partition store with v2 domain record; owner-lane barrier and expiry checks | Pure mutation differential, per-partition concurrency, version/watermark/dedup crash model, stale read barrier and expiry uncertainty canaries |
 | D4 | Authenticated one-hop owner invocation over real cluster transport | Three-daemon write/read through every endpoint; stale owner, wrong target/generation, loop and deadline canaries |
 | D5 | Synchronous replica apply and ack tracker | Ack failpoints, missing/duplicate/wrong ack tests, no response before required proof, bounded owner cleanup |
@@ -1722,6 +1674,29 @@ commit introducing wire/durable bytes also updates compatibility fixtures in tha
 | D14 | Executable authority model and expanded chaos/RPO-RTO matrix | Bounded state exploration, minimized-seed regressions, clock/disk/FD/stall/full-cluster fault receipts and profile-specific recovery proof |
 | D15 | SDK/facade/package integration, migration boundary and full W10 evidence | External consumers, Java 17/21, cold-cutover/API-only migration docs, SBOM/provenance, fuzz and six-hour qualification; freeze exact candidate |
 | D16 | Exact-candidate 24-hour confirmation and admitted Hazelcast S2 comparison | All manifests/checksums/guards independently verified before final release decision |
+
+**D1 performance gate.** D1 puts an async dispatcher behind `Arc<dyn ClientDataBackend>`. A boxed
+future plus an indirect call per operation can cost tens of nanoseconds, which is comparable to a 2%
+threshold on a per-operation cost of about 2.3 µs. D1 therefore compares, under the 0.74 paired
+method, B74 against at most two dispatch variants: the trait object with a boxed future, and
+static dispatch through an enum or a generic backend parameter. Cells are local embedded, direct
+native and RESP GET/SET at pipeline 1 and the registered pipelined depth. A variant that fails the
+B74 non-regression bounds cannot become the D1 baseline. If both pass, prefer the simpler variant
+unless the other clears a preregistered additional CPU/op advantage.
+
+**Skeleton checkpoint (after D5).** D3-D5 first land for `get`, `put` and `delete` only. Before the
+W2-W5 operation families are wired to the distributed backend, a skeleton receipt must show three
+real daemons, RF=2 synchronous backup, requests through every endpoint, and measured member-mode
+latency evaluated against the OD-7 budget. A budget miss is investigated and either fixed or
+recorded as an accepted OD-7 revision before widening, so design problems surface before the full
+operation set depends on them.
+
+**Decision point (after D7).** By the date frozen in OD-10, D7 is either green or the OD-5 fallback
+scope is applied. The decision and its evidence are recorded in the release ledger; the fallback
+cannot be chosen silently later by relabeling red gates.
+
+**Linux lane.** Linux process-group and address-space enforcement for proof workers stays a
+required PR lane from D4 onward, so real-process gates never rely on Windows-only enforcement.
 
 Each slice runs formatting plus package-local `cargo check`/`clippy -D warnings` per `CLAUDE.md`.
 D4 onward additionally retains real-process logs and fault receipts. No D1-D3 in-process shared
@@ -1755,7 +1730,35 @@ mirror. Freeze before measurement:
 - replication, persistence, TLS, authentication, listener, Near Cache, expiry, eviction, and
   admission settings for both products;
 - estimator, confidence method, practical-effect thresholds, repeat count, alternating order,
-  exclusion rules, and artifact-retention policy.
+  exclusion rules, and artifact-retention policy;
+- per cell: the client routing mode (`proxy` for HydraCache 0.75, `unisocket` or `smart` for
+  Hazelcast, per OD-8), the async-runtime worker count of the server and of the load generator, and
+  their CPU pinning. In 0.74, two Tokio workers on one core added about 48% to the per-operation
+  cost, so an unrecorded runtime shape invalidates the cell;
+- one Hazelcast release. The contract's `artifact-selection-unresolved` state blocks every
+  measurement. Once a release is pinned, documentation links in this plan point to that release;
+  they currently mix 5.6 and 5.7.
+
+**Harness hygiene carried over from 0.74.** The performance harness, not only the proof workers,
+must:
+
+- record scheduler telemetry for every attempt: park counts, run-queue wait, context switches, and
+  cycles/instructions where the host permits;
+- kill the whole process group on timeout and check before every block that no process from an
+  earlier attempt is alive (an orphaned process after the 780-second limit overlapped two 0.74
+  blocks);
+- flag attempts with more than 5 ms of unexplained off-CPU time;
+- run A/A in both orders and change the order seed between blocks (0.74 showed position effects in
+  pairs);
+- record latency histograms with nanosecond resolution (a single 19→20 µs bucket step already moves
+  p99 by 5.26%).
+
+B74 is remeasured on the corrected harness before it is used as the internal non-regression
+baseline; the earlier B74 numbers are not reused.
+
+The protected-host schedule is frozen with the contract: the six-hour and 24-hour runs, the S1
+grid and the chaos campaign each get reserved windows on the protected hosts, and a run that
+overlaps another workload on the same host is `invalid-infrastructure`.
 
 The primary comparison uses raw binary keys/values and Hazelcast `BINARY` in-memory format so Java
 object serialization is not charged to only one side. Hazelcast documents `BINARY` as its default
@@ -1782,7 +1785,8 @@ Three cohorts are distinct and never pooled:
 
 Hazelcast Enterprise `NATIVE`/High-Density Memory is outside the primary open-source comparison.
 If a valid license and review authorize it, it is a separately labelled cohort and never replaces
-the open-source `BINARY` result. Hazelcast map defaults and named configuration are retained in the
+the open-source `BINARY` result. The review also confirms that the license terms permit publishing
+benchmark results; without that confirmation the cohort stays internal. Hazelcast map defaults and named configuration are retained in the
 artifact because the defaults include one synchronous backup and binary storage:
 <https://docs.hazelcast.com/hazelcast/5.7/data-structures/map-config>.
 
@@ -1879,7 +1883,9 @@ If and only if S2 admission passes, compare one- and three-member layouts using 
 hardware and a separate load-generator host. Freeze:
 
 - acknowledged synchronous replica count and placement/failure domains;
-- smart/owner routing or proxy routing behavior visible to each client;
+- smart/owner routing or proxy routing behavior visible to each client, with the OD-8 cohort rule:
+  Hazelcast unisocket is compared with HydraCache proxy routing, and Hazelcast smart routing is a
+  separately labeled cohort;
 - persistence and fsync/group-commit acknowledgement;
 - partition/member count and completed rebalance before measurement;
 - client count, connections per client and topology refresh behavior;
@@ -1950,9 +1956,19 @@ prices.
 
 ### W11g. Apply paired statistics and a fail-closed publication policy
 
-Run at least five independently started pairs per claim cell on the same dedicated hosts. Alternate
-product order by a preregistered balanced sequence, keep failed attempts, and never rerun only the
-losing side. Bind every pair to product/tooling/harness/config/host/workload hashes and nested
+Run at least ten independently started pairs per claim cell, in two blocks of five, on the same
+dedicated hosts; raise `minimum_pairs` in `hazelcast-comparison-contract.toml` from 5 to 10
+accordingly. Alternate product order by a preregistered balanced sequence, keep failed attempts,
+and never rerun only the losing side. In 0.74, one outlying pair out of ten moved the upper CPU/op
+bound from about 3% to 6%; two blocks expose that kind of instability.
+
+The dimension grid in W11c yields thousands of combinations per operation family before offered
+load levels, so most cells cannot carry claims. Before the first measurement the contract names a
+short list of **primary claim cells**. Only primary cells can produce `hydra-advantage` or
+`hazelcast-advantage`. Every other cell is exploratory and reports its estimate and interval with
+a Holm (or Benjamini-Hochberg, chosen in the contract) adjustment across the exploratory family;
+an exploratory cell can motivate a later preregistered primary cell but cannot support a public
+claim by itself. Bind every pair to product/tooling/harness/config/host/workload hashes and nested
 SHA-256 manifests.
 
 Use a paired Hodges-Lehmann relative-effect estimate and preregistered bootstrap confidence
@@ -2100,8 +2116,23 @@ Publish:
   distributed semantics.
 
 The release decision names each operation family independently. If one family fails, either repair
-it before the frozen deadline or remove its code, capability, docs, and claim together. A red
-listener or bulk gate cannot be relabeled optional after implementation.
+it before the frozen deadline (OD-10) or remove its code, capability, docs, and claim together. A
+red listener or bulk gate cannot be relabeled optional after implementation.
+
+### SQLite dependency follow-up
+
+Carry the deferred SQLx and Diesel dependency upgrade from the 0.74 SQLite advisory record,
+`docs/testing/performance/0.74/release-closure-execution-plan-20261026.md#sqlite-advisory-and-dependency-upgrade-deferral`
+on the 0.74 branch (not present on the 0.75 branch). Select published releases of both drivers and
+a compatible SeaORM release. The workspace and an independent consumer of the packaged crates must
+resolve a single `libsqlite3-sys` with the fix for `RUSTSEC-2026-0459`. The tested target is
+`libsqlite3-sys 0.39.1` with bundled SQLite 3.54.1. Confirm the selected versions support Rust 1.88
+or record a separate MSRV decision before adoption.
+
+The W12 evidence includes the resolved dependency and feature graph for both builds, SQLite version
+and shared WAL commit/rollback checks across the three drivers, and a passing `cargo xtask verify`
+on the exact candidate under the existing dependency policy. The consumer must resolve its graph
+with its ordinary manifest and no local dependency overrides.
 
 ## Concrete file map
 
@@ -2148,7 +2179,10 @@ Expected primary changes include:
 - `docs/testing/imap/0.75/surface-equivalence.json`, `failure-consistency-matrix.json`,
   `rpo-rto-contract.json`, `security-contract.json`, `resource-bounds.json` and model/chaos receipts;
 - `docs/architecture/HC2_DISTRIBUTED_VALUE_PLANE.md` and an accepted ADR freezing local versus
-  member backend, routing, replication, failure and consistency decisions;
+  member backend, routing, replication, failure and consistency decisions, plus the OD-1, OD-2 and
+  OD-3 ADRs;
+- `crates/hydracache/src/grid/time_authority.rs` for `ClusterTimeAuthority` (OD-2);
+- `docs/testing/imap/0.75/foundation-progress.md` for the moved foundation history;
 - `docs/security/IMAP_VALUE_PLANE_075.md` plus the member trust/certificate-rotation runbook;
 - `docs/integrations/hazelcast-to-hydracache-0.75.md` for the admitted migration boundary,
   cutover, digest validation and rollback;
@@ -2242,6 +2276,12 @@ Release 0.75 is eligible only when:
 - exact Rust/Java dependency graphs, `hydra-moka` upstream base/delta, generated schemas, SBOM,
   clean-workspace reproduction and package checksums pass the supply-chain gate;
 - unsupported Hazelcast methods still fail loudly and the public claim matches the capability
-  manifest exactly.
+  manifest exactly;
+- every open owner decision OD-1 to OD-10 is recorded, OD-1 to OD-3 as accepted ADRs, and the
+  observed single-member-loss write unavailability and re-replication time meet the OD-3 targets;
+- the D1 dispatch variant passed its paired B74 gate, the skeleton checkpoint met or formally
+  revised the OD-7 latency budget, and the D7 decision point is recorded;
+- public comparison claims come only from preregistered primary cells with at least ten pairs in
+  two blocks; exploratory cells are published with their adjusted intervals and no claim.
 
 Anything less ships without the affected operation family or does not ship as 0.75.
