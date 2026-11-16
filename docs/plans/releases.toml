@@ -381,3 +381,12 @@ networked_control_plane = true
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10"]
 theme = "RESP Decoding, Store Sharding, and Durable Group Commit - pin published 0.76 and measure current owners. Isolate full unread-suffix copying from compaction and preserve exact RESP2/RESP3 transcripts and slow-reader dispatch order. Shard the measured client-store owner while preserving atomic local batches, tenant quota, TTL, events and shared authority. Qualify an opt-in single-region durable profile with a three-member data group, sync-before-quorum-proof and apply-before-success, then amortize sync with bounded group commit against the identical batch-of-one control. Require deterministic and real-process owner/volume-loss proof, compatibility and rollback, same-host paired isolated measurements, and exact-composition release evidence. Admit performance claims only on qualified profiles and workloads."
 depends_on = ["0.76.0"]
+
+[[release]]
+version = "0.78.0"
+file = "docs/plans/V0_78_DB_FRESHNESS_AND_POSTGRES_LOGICAL_INVALIDATION_PLAN.md"
+status = "planned"
+networked_control_plane = true
+work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11"]
+theme = "Database Freshness and PostgreSQL Logical-Message Invalidation - repair the hook-generated outbox identity that can drop an invalidation after a row was already published, bound published-row retention, add typed PostgreSQL LSN positions and a clearance contract, emit invalidation intent as transactional logical-decoding messages with PostgreSQL transaction companions and generated hooks, implement the hydracache-cdc-postgres consumer with peek-apply-advance at-least-once delivery, idle watermark progress and loud slot-loss flush, optionally signal schema changes through event triggers, bypass the cache for a session's own pending writes without blocking unrelated reads, observe each load and attribute outcomes to bounded query families, add an opt-in wasted-fill cooldown, add volatility/session/row-security SQL lint findings backed by a generated catalog snapshot, and prove freshness with concurrent oracles and red canaries on PostgreSQL 16 and 18. Prior art is used as design input only under an explicit provenance gate. No proxy, SQL rewriting, row-image decoding, distributed transaction or default-behavior change except the defect fix."
+depends_on = ["0.77.0"]
