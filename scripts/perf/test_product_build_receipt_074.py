@@ -14,7 +14,11 @@ class ProtectionTests(unittest.TestCase):
         self.environment = {
             "name": build.ENVIRONMENT,
             "deployment_branch_policy": {"protected_branches": False, "custom_branch_policies": True},
-            "protection_rules": [{"type": "required_reviewers", "prevent_self_review": True, "reviewers": [{"id": 1}]}],
+            "protection_rules": [{
+                "type": "required_reviewers",
+                "prevent_self_review": False,
+                "reviewers": [{"type": "User", "reviewer": {"id": build.SIGNING_REVIEWER_ID}}],
+            }],
             "can_admins_bypass": False,
         }
         self.policies = {"total_count": 1, "branch_policies": [{"name": "main", "type": "branch"}]}
@@ -32,10 +36,25 @@ class ProtectionTests(unittest.TestCase):
         permissive = {"total_count": 1, "branch_policies": [{"name": "*", "type": "branch"}]}
         with self.assertRaises(ValueError):
             build.protection(self.branch, self.environment, permissive)
-        self_approval = copy.deepcopy(self.environment)
-        self_approval["protection_rules"][0]["prevent_self_review"] = False
+        independent = copy.deepcopy(self.environment)
+        independent["protection_rules"][0]["prevent_self_review"] = True
+        build.protection(self.branch, independent, self.policies)
+        unknown_review_mode = copy.deepcopy(self.environment)
+        del unknown_review_mode["protection_rules"][0]["prevent_self_review"]
         with self.assertRaises(ValueError):
-            build.protection(self.branch, self_approval, self.policies)
+            build.protection(self.branch, unknown_review_mode, self.policies)
+
+    def test_only_the_registered_maintainer_can_review(self):
+        rule = self.environment["protection_rules"][0]
+        for reviewers in (
+            [],
+            [{"type": "User", "reviewer": {"id": 1}}],
+            [{"type": "Team", "reviewer": {"id": build.SIGNING_REVIEWER_ID}}],
+            [*rule["reviewers"], {"type": "User", "reviewer": {"id": 1}}],
+        ):
+            with self.subTest(reviewers=reviewers), self.assertRaises(ValueError):
+                environment = {**self.environment, "protection_rules": [{**rule, "reviewers": reviewers}]}
+                build.protection(self.branch, environment, self.policies)
 
 
 class ArtifactTests(unittest.TestCase):

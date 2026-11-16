@@ -16,6 +16,7 @@ ENVIRONMENT = "performance-product-build-074"
 LOCK = "a03837132e90e3035e56149602227ce09367efb232ab3bf96d462f5282218271"
 REPOSITORY = "javaquasar/hydracache"
 REPOSITORY_ID = "1217101761"
+SIGNING_REVIEWER_ID = 22050429
 WORKFLOW = f"{REPOSITORY}/.github/workflows/performance-product-build-074.yml@refs/heads/main"
 PREDICATE = f"https://github.com/{REPOSITORY}/attestations/product-build-074/v1"
 
@@ -43,8 +44,13 @@ def protection(branch, environment, policies):
         "protected_branches": False, "custom_branch_policies": True,
     }, "signing environment must restrict deployments to main")
     rules = [rule for rule in environment["protection_rules"] if rule.get("type") == "required_reviewers"]
-    require(len(rules) == 1 and rules[0].get("prevent_self_review") is True and rules[0].get("reviewers"),
-            "signing requires an independent deployment reviewer")
+    require(len(rules) == 1, "0.74 signing requires a deployment review rule")
+    rule = rules[0]
+    require(isinstance(rule.get("prevent_self_review"), bool), "missing self-review setting")
+    reviewers = rule.get("reviewers", [])
+    require(len(reviewers) == 1 and reviewers[0].get("type") == "User"
+            and reviewers[0].get("reviewer", {}).get("id") == SIGNING_REVIEWER_ID,
+            "0.74 signing requires javaquasar as the sole deployment reviewer")
     require(environment.get("can_admins_bypass") is False, "administrator bypass must be disabled")
     entries = policies["branch_policies"]
     require(policies["total_count"] == len(entries) == 1 and
