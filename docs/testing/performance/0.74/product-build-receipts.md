@@ -8,12 +8,13 @@ identities before creating GitHub artifact attestations. Each attestation
 binds its ELF and build receipt to the protected workflow.
 
 The build commits and reviewed workflow must be available to GitHub.
-The workflow runs manually from protected `main`. It requires the
-`performance-product-build-074` environment, an independent deployment
-reviewer, prevention of self-review and a deployment policy permitting
-only the `main` branch. Configure the environment with administrator
-bypass disabled. The workflow checks the protection exposed by the API
-before building and again after approval.
+The workflow runs manually from protected `main`. The
+`performance-product-build-074` environment requires explicit deployment
+approval from the sole reviewer `javaquasar` (GitHub user ID `22050429`).
+For 0.74, the environment may allow that maintainer to dispatch the workflow
+and approve the signing jobs from the same account. The deployment policy
+permits only `main` and disables administrator bypass. The workflow checks
+these protections before building and again after approval.
 
 Download each signed artifact from the exact approved run. Check the
 binary, signed predicate and signer against the reviewed workflow commit
