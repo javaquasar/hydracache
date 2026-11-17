@@ -24,7 +24,8 @@ def validate_manifest(manifest: dict[str, Any]) -> list[str]:
         "baseline_tag": "v0.70.0",
         "baseline_commit": "75719b0bf5de2250cf4eb16a30073dd7429538e3",
         "tool": "cargo-semver-checks",
-        "tool_version": "0.49.0",
+        "tool_version": "0.50.0",
+        "toolchain": "rustc-1.94.0",
     }
     for field, value in expected.items():
         if manifest.get(field) != value:
@@ -154,6 +155,7 @@ def execute(root: pathlib.Path, manifest: dict[str, Any], output: pathlib.Path) 
         "baseline_commit": manifest["baseline_commit"],
         "tool": manifest["tool"],
         "tool_version": manifest["tool_version"],
+        "toolchain": manifest["toolchain"],
         "candidate_sha": git(root, "rev-parse", "HEAD"),
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "result": "success" if all(row["returncode"] == 0 for row in rows) else "failure",
