@@ -87,7 +87,8 @@ fn public_api_gate_covers_every_publishable_package_and_blocks_release() {
     .expect("public API JSON");
     assert_eq!(manifest["baseline_tag"], "v0.70.0");
     assert_eq!(manifest["tool"], "cargo-semver-checks");
-    assert_eq!(manifest["tool_version"], "0.49.0");
+    assert_eq!(manifest["tool_version"], "0.50.0");
+    assert_eq!(manifest["toolchain"], "rustc-1.94.0");
     assert_eq!(
         manifest["profiles"],
         serde_json::json!(["default", "all-features"])
@@ -111,11 +112,45 @@ fn public_api_gate_covers_every_publishable_package_and_blocks_release() {
 
     let workflow =
         fs::read_to_string(root().join(".github/workflows/ci.yml")).expect("CI workflow");
+    let memory_job = workflow
+        .split("\n  memory-contracts-071:\n")
+        .nth(1)
+        .expect("memory-contracts-071 job")
+        .split("\n  release-071-ci-admission:\n")
+        .next()
+        .expect("memory-contracts-071 job body");
     for marker in [
-        "cargo install cargo-semver-checks --version 0.49.0 --locked",
+        "name: Install pinned Rust 1.94.0",
+        "uses: dtolnay/rust-toolchain@1.94.0",
+        "cargo install cargo-semver-checks --version 0.50.0 --locked",
         "python3 scripts/ci/public_api_compat_071.py --manifest docs/testing/compat/v0.70.0.json --output target/public-api-compat-071/receipt.json",
         "target/public-api-compat-071/**",
     ] {
-        assert!(workflow.contains(marker), "CI workflow omits {marker}");
+        assert!(memory_job.contains(marker), "memory job omits {marker}");
     }
+}
+
+#[test]
+fn primary_rust_gate_uses_the_reviewed_release_toolchain() {
+    let workflow =
+        fs::read_to_string(root().join(".github/workflows/ci.yml")).expect("CI workflow");
+    let rust_job = workflow
+        .split("\n  rust:\n")
+        .nth(1)
+        .expect("rust job")
+        .split("\n  migration-conformance-fast-evidence-069:\n")
+        .next()
+        .expect("rust job body");
+    for marker in [
+        "name: Install pinned Rust 1.94.0",
+        "uses: dtolnay/rust-toolchain@1.94.0",
+        "components: rustfmt, clippy",
+        "cargo clippy --workspace --all-targets --all-features --exclude hydracache --locked -- -D warnings",
+    ] {
+        assert!(rust_job.contains(marker), "Rust job omits {marker}");
+    }
+    assert!(
+        !rust_job.contains("rust-toolchain@stable"),
+        "release-critical Rust gate must not drift with the stable channel"
+    );
 }

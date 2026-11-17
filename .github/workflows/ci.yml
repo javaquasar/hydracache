@@ -186,8 +186,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Generate and close the ownership inventory
         timeout-minutes: 15
@@ -260,7 +260,14 @@ jobs:
 
       - name: Install reviewed cargo-semver-checks
         timeout-minutes: 30
-        run: cargo install cargo-semver-checks --version 0.49.0 --locked
+        run: cargo install cargo-semver-checks --version 0.50.0 --locked
+
+      - name: Install protoc for registry Raft analysis
+        timeout-minutes: 5
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes protobuf-compiler
+          protoc --version
 
       - name: Validate every publishable package against v0.70.0
         timeout-minutes: 180
@@ -660,7 +667,7 @@ jobs:
   rust:
     name: Rust
     if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 120
     env:
       CARGO_BUILD_JOBS: 4
@@ -671,8 +678,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
         with:
           components: rustfmt, clippy
 
