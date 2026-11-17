@@ -670,7 +670,7 @@ jobs:
   rust:
     name: Rust
     if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 120
     env:
       CARGO_BUILD_JOBS: 4
