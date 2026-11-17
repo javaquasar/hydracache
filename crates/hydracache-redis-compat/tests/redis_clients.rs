@@ -27,6 +27,7 @@ const PYTHON_CLIENT_DOCKER_PACKAGE: &str = "redis==5.2.1";
 const NODE_CLIENT_DOCKER_IMAGE: &str = "node:24.6.0-bookworm-slim";
 const NODE_CLIENT_DOCKER_PACKAGE: &str = "redis@4.7.0 redlock@5.0.0-beta.2";
 const JVM_CLIENT_DOCKER_IMAGE: &str = "maven:3.9.11-eclipse-temurin-17";
+const JVM_CLIENT_MAVEN_GOAL: &str = "org.codehaus.mojo:exec-maven-plugin:3.5.0:java";
 const LOCK_RELEASE_SCRIPT: &str =
     "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
 const LOCK_EXTEND_SCRIPT: &str =
@@ -1583,7 +1584,7 @@ fn run_jvm_client(redis_url: &str) -> ClientRun {
     };
     let mut command = maven_command();
     command
-        .args(["-q", "-f", "pom.xml", "compile", "exec:java"])
+        .args(["-q", "-f", "pom.xml", "compile", JVM_CLIENT_MAVEN_GOAL])
         .env("REDIS_URL", redis_url)
         .current_dir(&dir);
     let result = run_optional_command("mvn", &mut command);
@@ -1603,7 +1604,14 @@ fn run_jvm_client_docker(redis_url: &str) -> ClientRun {
         .arg("-w")
         .arg("/workspace")
         .arg(JVM_CLIENT_DOCKER_IMAGE)
-        .args(["mvn", "-q", "-f", "pom.xml", "compile", "exec:java"]);
+        .args([
+            "mvn",
+            "-q",
+            "-f",
+            "pom.xml",
+            "compile",
+            JVM_CLIENT_MAVEN_GOAL,
+        ]);
     let result = run_optional_command("docker jedis", &mut command);
     let _ = fs::remove_dir_all(dir);
     result
