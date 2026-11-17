@@ -7,6 +7,7 @@ repository notes, GitHub release source, search index and public site on the sam
 ## Published releases
 
 - [HydraCache 0.71.0](0.71.0.md) — memory accounting, retained-byte evidence and active expiry.
+- [HydraCache 0.73.0](0.73.0.md)
 - [HydraCache 0.72.0](0.72.0.md) — Management Center 2.0, bounded operational visibility and
   exact-candidate long-run evidence.
 

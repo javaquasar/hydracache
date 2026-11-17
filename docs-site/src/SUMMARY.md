@@ -44,6 +44,7 @@
 - [Release Archive](releases/index.md)
   - [HydraCache 0.71.0](releases/0.71.0.md)
   - [HydraCache 0.72.0](releases/0.72.0.md)
+  - [HydraCache 0.73.0](releases/0.73.0.md)
 
 # Reference
 
