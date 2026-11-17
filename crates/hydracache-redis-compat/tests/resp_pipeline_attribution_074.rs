@@ -75,7 +75,11 @@ async fn incomplete_suffix_is_moved_once_and_completes_on_the_next_read() {
     let owned = Arc::clone(&server);
     let serve = tokio::spawn(async move { owned.serve_connection(server_io).await.unwrap() });
     let partial = b"*2\r\n$3\r\nGET\r\n$1\r\n";
-    let request = [b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n".as_slice(), partial].concat();
+    let request = [
+        b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n".as_slice(),
+        partial,
+    ]
+    .concat();
     client.write_all(&request).await.unwrap();
     let mut reply = [0; 5];
     client.read_exact(&mut reply).await.unwrap();
