@@ -4,6 +4,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use serde::Deserialize;
+
 const RUST_CRATE: &str = "hydracache-client-hc2";
 const JAVA_POM: &str = "sdks/java/hydracache-client-hc2/pom.xml";
 
@@ -18,8 +20,9 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
     let generation_root = root.join("target").join("hc2-generation-check");
     recreate_owned_directory(root, &generation_root)?;
 
-    let rust_a = generate_rust(root, &generation_root.join("rust-a"))?;
-    let rust_b = generate_rust(root, &generation_root.join("rust-b"))?;
+    let package_id = rust_package_id(root)?;
+    let rust_a = generate_rust(root, &generation_root.join("rust-a"), &package_id)?;
+    let rust_b = generate_rust(root, &generation_root.join("rust-b"), &package_id)?;
     compare("Rust", &rust_a, &rust_b)?;
 
     let java_a = generate_java(root)?;
@@ -37,34 +40,81 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
 fn generate_rust(
     root: &Path,
     target_dir: &Path,
+    package_id: &str,
 ) -> Result<BTreeMap<String, Vec<u8>>, Box<dyn Error>> {
-    let target = target_dir.to_string_lossy().into_owned();
-    run_checked(
-        root,
-        "cargo",
-        &[
-            "check",
-            "--locked",
-            "-p",
-            RUST_CRATE,
-            "--target-dir",
-            &target,
-        ],
-        "clean Rust HC/2 generation",
-    )?;
-    let build_root = target_dir.join("debug").join("build");
+    let output = Command::new("cargo")
+        .args(["check", "--locked", "-p", RUST_CRATE, "--target-dir"])
+        .arg(target_dir)
+        .arg("--message-format=json-render-diagnostics")
+        .current_dir(root)
+        .stderr(std::process::Stdio::inherit())
+        .output()?;
+    if !output.status.success() {
+        return Err(format!("clean Rust HC/2 generation failed with {}", output.status).into());
+    }
+
+    let out = rust_output_dir(std::str::from_utf8(&output.stdout)?, package_id)?.canonicalize()?;
+    let target_dir = target_dir.canonicalize()?;
+    if out == target_dir || !out.starts_with(&target_dir) {
+        return Err(format!(
+            "Rust generation output is outside its target: {}",
+            out.display()
+        )
+        .into());
+    }
     let mut generated = BTreeMap::new();
-    for entry in fs::read_dir(&build_root)? {
-        let entry = entry?;
-        if !entry.file_name().to_string_lossy().starts_with(RUST_CRATE) {
+    collect_files(&out, &out, &mut generated)?;
+    require_non_empty("Rust", generated)
+}
+
+fn rust_package_id(root: &Path) -> Result<String, Box<dyn Error>> {
+    #[derive(Deserialize)]
+    struct Metadata {
+        packages: Vec<Package>,
+    }
+
+    #[derive(Deserialize)]
+    struct Package {
+        name: String,
+        id: String,
+    }
+
+    let output = Command::new("cargo")
+        .args(["metadata", "--locked", "--no-deps", "--format-version=1"])
+        .current_dir(root)
+        .stderr(std::process::Stdio::inherit())
+        .output()?;
+    if !output.status.success() {
+        return Err(format!("Rust HC/2 package metadata failed with {}", output.status).into());
+    }
+    let metadata: Metadata = serde_json::from_slice(&output.stdout)?;
+    let mut packages = metadata
+        .packages
+        .into_iter()
+        .filter(|package| package.name == RUST_CRATE);
+    match (packages.next(), packages.next()) {
+        (Some(package), None) => Ok(package.id),
+        _ => Err(format!("expected exactly one workspace package named {RUST_CRATE}").into()),
+    }
+}
+
+fn rust_output_dir(messages: &str, package_id: &str) -> Result<PathBuf, Box<dyn Error>> {
+    let mut out = None;
+    for line in messages.lines() {
+        let message: serde_json::Value = serde_json::from_str(line)?;
+        if message["reason"] != "build-script-executed" || message["package_id"] != package_id {
             continue;
         }
-        let out = entry.path().join("out");
-        if out.is_dir() {
-            collect_files(&out, &out, &mut generated)?;
+        if out.is_some() {
+            return Err(format!("multiple Cargo build-script outputs for {package_id}").into());
         }
+        out = Some(PathBuf::from(
+            message["out_dir"]
+                .as_str()
+                .ok_or("Cargo build-script output is missing out_dir")?,
+        ));
     }
-    require_non_empty("Rust", generated)
+    out.ok_or_else(|| format!("missing Cargo build-script output for {package_id}").into())
 }
 
 fn generate_java(root: &Path) -> Result<BTreeMap<String, Vec<u8>>, Box<dyn Error>> {
@@ -228,5 +278,19 @@ mod tests {
             .join(RUST_CRATE)
             .join("build.rs")
             .is_file());
+    }
+
+    #[test]
+    fn rust_output_uses_only_the_exact_package_build_script() {
+        let unrelated =
+            r#"{"reason":"build-script-executed","package_id":"other","out_dir":"dependency/out"}"#;
+        let artifact = r#"{"reason":"compiler-artifact","package_id":"sdk"}"#;
+        let expected = r#"{"reason":"build-script-executed","package_id":"sdk","out_dir":"sdk/build/hash/out"}"#;
+        assert_eq!(
+            rust_output_dir(&format!("{unrelated}\n{artifact}\n{expected}"), "sdk").unwrap(),
+            PathBuf::from("sdk/build/hash/out"),
+        );
+        assert!(rust_output_dir(&format!("{unrelated}\n{artifact}"), "sdk").is_err());
+        assert!(rust_output_dir(&format!("{expected}\n{expected}"), "sdk").is_err());
     }
 }
