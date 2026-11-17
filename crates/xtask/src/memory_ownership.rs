@@ -8,7 +8,7 @@ use std::process::Command;
 use syn::visit::Visit;
 use syn::{Attribute, ItemMacro, ItemMod, ItemStatic, ItemStruct, ItemType, Type};
 
-const REGISTRY_PATH: &str = "docs/testing/memory/0.71/ownership-registry.toml";
+const REGISTRY_PATH: &str = "docs/testing/memory/ownership-registry-live.toml";
 const INVENTORY_PATH: &str = "target/memory-evidence/0.71/ownership-inventory.json";
 const OWNING_TYPES: [&str; 18] = [
     "Arc",
