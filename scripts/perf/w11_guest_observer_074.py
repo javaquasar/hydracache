@@ -85,10 +85,9 @@ def host_guard(directory):
     require(os.getuid() != 0 and {0, 1, 2} <= os.sched_getaffinity(0),
             "an unprivileged observer with CPUs 0, 1 and 2 is required")
     free = probe.disk_guard(directory)
-    units = subprocess.check_output(
-        ["/usr/bin/systemctl", "list-units", "--all", "--full", "--type=service", "--no-legend",
-         "--no-pager", "hydracache-performance-074-*.service"], text=True, timeout=5,
-    )
+    from . import w11_observer_status_074 as host_status
+
+    units = host_status.list_units()
     require(all(line.split()[1:4] == ["loaded", "active", "exited"] for line in units.splitlines() if line.strip()),
             "an AX42 qualification unit is active or changed")
     return free

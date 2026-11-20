@@ -17,6 +17,7 @@ from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile
 
 from . import w11_guest_artifact_transfer_074 as transfer
 from . import w11_guest_observer_074 as driver
+from . import w11_observer_status_074 as host_status
 
 
 build, receipt, workflow = transfer.build, transfer.receipt, transfer.workflow
@@ -208,6 +209,7 @@ def installed_policy():
             "observer process can acquire additional privileges")
     require(not os.access(SOCKET, os.W_OK), "observer account can access the supervisor socket")
     require(os.environ.get("SSH_ORIGINAL_COMMAND") == COMMAND, "unexpected SSH command")
+    host_status.protected_socket()
     for path in (PERMIT, workflow.APPROVAL, RUNTIME, WORK.parent, STATE_DIRECTORY.parent):
         root_owned(path)
     require(os.environ.get("STATE_DIRECTORY") == str(STATE_DIRECTORY) and STATE_DIRECTORY.is_symlink()
