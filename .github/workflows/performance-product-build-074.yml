@@ -2,6 +2,13 @@ name: Protected product build receipts 0.74
 
 on:
   workflow_dispatch:
+    inputs:
+      receipt:
+        description: Product receipt version or observer preflight
+        type: choice
+        options: [v1, v2, observer-preflight]
+        default: v1
+        required: false
 
 permissions:
   contents: read
@@ -25,6 +32,7 @@ jobs:
       - name: Require a preconfigured signing environment
         env:
           GH_TOKEN: ${{ github.token }}
+          RECEIPT_MODE: ${{ inputs.receipt }}
         shell: bash
         run: |
           set -euo pipefail
@@ -34,9 +42,19 @@ jobs:
           gh api "$api/environments/performance-product-build-074/deployment-branch-policies" > "$RUNNER_TEMP/policies.json"
           python3 scripts/perf/product_build_receipt_074.py protection \
             "$RUNNER_TEMP/branch.json" "$RUNNER_TEMP/environment.json" "$RUNNER_TEMP/policies.json"
+          case "$RECEIPT_MODE" in
+            v2|observer-preflight)
+              observer=performance-product-observe-074
+              gh api "$api/environments/$observer" > "$RUNNER_TEMP/observer-environment.json"
+              gh api "$api/environments/$observer/deployment-branch-policies" > "$RUNNER_TEMP/observer-policies.json"
+              python3 scripts/perf/product_build_receipt_074.py protection --environment-name "$observer" \
+                "$RUNNER_TEMP/branch.json" "$RUNNER_TEMP/observer-environment.json" "$RUNNER_TEMP/observer-policies.json"
+              ;;
+          esac
 
   build:
     needs: protection
+    if: inputs.receipt == 'v1' || inputs.receipt == ''
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
@@ -83,6 +101,7 @@ jobs:
 
   sign:
     needs: build
+    if: inputs.receipt == 'v1' || inputs.receipt == ''
     runs-on: ubuntu-24.04
     environment: performance-product-build-074
     timeout-minutes: 10
@@ -134,6 +153,330 @@ jobs:
         with:
           name: product-signed-074-${{ matrix.role }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/product/
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: false
+
+  w11_observer_preflight:
+    needs: protection
+    if: inputs.receipt == 'observer-preflight'
+    runs-on: ubuntu-24.04
+    environment: performance-product-observe-074
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Recheck observer protection after approval
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="repos/$GITHUB_REPOSITORY"
+          observer=performance-product-observe-074
+          gh api "$api/branches/main" > "$RUNNER_TEMP/observer-branch.json"
+          gh api "$api/environments/$observer" > "$RUNNER_TEMP/observer-environment.json"
+          gh api "$api/environments/$observer/deployment-branch-policies" > "$RUNNER_TEMP/observer-policies.json"
+          python3 scripts/perf/product_build_receipt_074.py protection --environment-name "$observer" \
+            "$RUNNER_TEMP/observer-branch.json" "$RUNNER_TEMP/observer-environment.json" "$RUNNER_TEMP/observer-policies.json"
+      - name: Verify the fixed observer entry point against the draft plan
+        shell: bash
+        env:
+          W11_OBSERVER_SSH_HOST: ${{ vars.W11_OBSERVER_SSH_HOST }}
+          OBSERVER_KEY: ${{ secrets.W11_OBSERVER_SSH_KEY }}
+          OBSERVER_KNOWN_HOSTS: ${{ secrets.W11_OBSERVER_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          keys="$(mktemp -d "$RUNNER_TEMP/w11-ssh.XXXXXXXX")"
+          trap 'rm -f -- "$keys/key" "$keys/known_hosts"; rmdir -- "$keys"' EXIT
+          printf '%s\n' "${OBSERVER_KEY:?}" > "$keys/key"
+          printf '%s\n' "${OBSERVER_KNOWN_HOSTS:?}" > "$keys/known_hosts"
+          unset OBSERVER_KEY OBSERVER_KNOWN_HOSTS
+          python3 -B - "$keys" <<'PY'
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+
+          from scripts.perf import w11_ssh_observer_074 as observer
+
+          keys = Path(sys.argv[1])
+          command = observer.ssh_command(os.environ["W11_OBSERVER_SSH_HOST"], keys / "key", keys / "known_hosts")
+          result = subprocess.run(command, stdin=subprocess.DEVNULL, capture_output=True,
+                                  timeout=20, env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"})
+          expected = b"ValueError: protected main must record approval of both exact W11 roles and the profile"
+          if result.returncode != 1 or result.stdout or not result.stderr.rstrip().endswith(expected):
+              raise SystemExit(f"unexpected observer preflight result (exit {result.returncode})")
+          print("The AX42 observer reached the protected draft plan check")
+          PY
+
+  w11_plan:
+    needs: protection
+    if: inputs.receipt == 'v2'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - id: plan
+        name: Require the exact role, profile and observer approvals
+        run: python3 -B -m scripts.perf.w11_build_workflow_074 matrix >> "$GITHUB_OUTPUT"
+
+  w11_build:
+    needs: w11_plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.w11_plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+          path: tooling
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ matrix.commit }}
+          persist-credentials: false
+          path: source
+      - name: Build the exact role in its own target
+        shell: bash
+        env:
+          ROLE: ${{ matrix.role }}
+        run: |
+          set -euo pipefail
+          umask 077
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/w11-target-$ROLE"
+          mkdir -- "$CARGO_TARGET_DIR" "$RUNNER_TEMP/w11-build"
+          rustup toolchain install 1.94.0 --profile minimal
+          cd tooling
+          python3 -B -m scripts.perf.w11_build_workflow_074 source "$ROLE" ../source
+          (
+            cd ../source
+            cargo +1.94.0 build --locked --release --target x86_64-unknown-linux-gnu -p hydracache-server
+          )
+          cp -- "$CARGO_TARGET_DIR/x86_64-unknown-linux-gnu/release/hydracache-server" "$RUNNER_TEMP/w11-build/$ROLE-server"
+          python3 -B -m scripts.perf.w11_build_workflow_074 built "$ROLE" ../source "$RUNNER_TEMP/w11-build"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: product-w11-build-074-${{ matrix.role }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/w11-build/
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: false
+
+  w11_observe:
+    needs: [w11_plan, w11_build]
+    runs-on: ubuntu-24.04
+    environment: performance-product-observe-074
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.w11_plan.outputs.matrix) }}
+      max-parallel: 1
+    steps:
+      - name: Start the five-minute observer job clock
+        shell: bash
+        run: |
+          umask 077
+          python3 -B -c 'from pathlib import Path; import sys, time; p = Path(sys.argv[1]); f = p.open("x"); print(time.monotonic_ns(), file=f); f.close()' "$RUNNER_TEMP/w11-observer-clock"
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - id: artifact
+        name: Select the immutable build from this run and attempt
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ROLE: ${{ matrix.role }}
+        run: |
+          set -euo pipefail
+          umask 077
+          proof="$RUNNER_TEMP/w11-proof"
+          mkdir -- "$proof"
+          name="product-w11-build-074-$ROLE-$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          gh api -X GET "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
+            -f "name=$name" > "$proof/artifact.json"
+          python3 -B -m scripts.perf.w11_ssh_observer_074 artifact "$ROLE" "$proof/artifact.json" >> "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          artifact-ids: ${{ steps.artifact.outputs.id }}
+          path: ${{ runner.temp }}/w11-proof/build
+          merge-multiple: true
+          skip-decompress: true
+          digest-mismatch: error
+      - name: Recheck observer protection after approval
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="repos/$GITHUB_REPOSITORY"
+          observer=performance-product-observe-074
+          gh api "$api/branches/main" > "$RUNNER_TEMP/observer-branch.json"
+          gh api "$api/environments/$observer" > "$RUNNER_TEMP/observer-environment.json"
+          gh api "$api/environments/$observer/deployment-branch-policies" > "$RUNNER_TEMP/observer-policies.json"
+          python3 scripts/perf/product_build_receipt_074.py protection --environment-name "$observer" \
+            "$RUNNER_TEMP/observer-branch.json" "$RUNNER_TEMP/observer-environment.json" "$RUNNER_TEMP/observer-policies.json"
+      - name: Observe both profiles through the fixed SSH command
+        shell: bash
+        env:
+          ROLE: ${{ matrix.role }}
+          W11_OBSERVER_SSH_HOST: ${{ vars.W11_OBSERVER_SSH_HOST }}
+          OBSERVER_KEY: ${{ secrets.W11_OBSERVER_SSH_KEY }}
+          OBSERVER_KNOWN_HOSTS: ${{ secrets.W11_OBSERVER_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          proof="$RUNNER_TEMP/w11-proof"
+          keys="$(mktemp -d "$RUNNER_TEMP/w11-ssh.XXXXXXXX")"
+          trap 'rm -f -- "$keys/key" "$keys/known_hosts"; rmdir -- "$keys"' EXIT
+          printf '%s\n' "${OBSERVER_KEY:?}" > "$keys/key"
+          printf '%s\n' "${OBSERVER_KNOWN_HOSTS:?}" > "$keys/known_hosts"
+          unset OBSERVER_KEY OBSERVER_KNOWN_HOSTS
+          python3 -B -m scripts.perf.w11_ssh_observer_074 submit "$ROLE" \
+            "$RUNNER_TEMP/w11-observer-clock" "$proof/artifact.json" "$proof/build" "$proof/observations" \
+            "$keys/key" "$keys/known_hosts"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: product-w11-observations-074-${{ matrix.role }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/w11-proof/observations/
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: false
+
+  w11_verify:
+    needs: w11_observe
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      packet_id: ${{ steps.packet.outputs.artifact-id }}
+      i74_proof: ${{ steps.verify.outputs.I74_proof_sha256 }}
+      i74_archives: ${{ steps.verify.outputs.I74_archives_sha256 }}
+      c74_proof: ${{ steps.verify.outputs.C74_proof_sha256 }}
+      c74_archives: ${{ steps.verify.outputs.C74_archives_sha256 }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          pattern: product-w11-*-074-*-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/w11-verify/incoming
+          merge-multiple: false
+          digest-mismatch: error
+      - id: verify
+        name: Recompute the case oracles and verify both exact build subjects
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          incoming="$RUNNER_TEMP/w11-verify/incoming"
+          packet="$RUNNER_TEMP/w11-verify/packet"
+          suffix="$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mkdir -- "$packet"
+          for role in I74 C74; do
+            build="$incoming/product-w11-build-074-$role-$suffix"
+            observations="$incoming/product-w11-observations-074-$role-$suffix"
+            result="$(python3 -B -m scripts.perf.w11_build_workflow_074 finalize "$role" \
+              "$build" "$observations" "$packet/$role")"
+            printf '%s\n' "$result" | sed "s/^/${role}_/" >> "$GITHUB_OUTPUT"
+            cp -R -- "$observations/archives" "$packet/archives-$role"
+          done
+      - id: packet
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: product-w11-verified-074-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/w11-verify/packet/
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: false
+
+  w11_sign:
+    needs: w11_verify
+    runs-on: ubuntu-24.04
+    environment: performance-product-build-074
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - role: I74
+            proof: ${{ needs.w11_verify.outputs.i74_proof }}
+            archives: ${{ needs.w11_verify.outputs.i74_archives }}
+          - role: C74
+            proof: ${{ needs.w11_verify.outputs.c74_proof }}
+            archives: ${{ needs.w11_verify.outputs.c74_archives }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Recheck signing protection after approval
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="repos/$GITHUB_REPOSITORY"
+          gh api "$api/branches/main" > "$RUNNER_TEMP/branch.json"
+          gh api "$api/environments/performance-product-build-074" > "$RUNNER_TEMP/environment.json"
+          gh api "$api/environments/performance-product-build-074/deployment-branch-policies" > "$RUNNER_TEMP/policies.json"
+          python3 scripts/perf/product_build_receipt_074.py protection \
+            "$RUNNER_TEMP/branch.json" "$RUNNER_TEMP/environment.json" "$RUNNER_TEMP/policies.json"
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          artifact-ids: ${{ needs.w11_verify.outputs.packet_id }}
+          path: ${{ runner.temp }}/w11-signer
+          digest-mismatch: error
+      - name: Recheck exact bytes against the verifier outputs
+        shell: bash
+        env:
+          ROLE: ${{ matrix.role }}
+          PROOF: ${{ matrix.proof }}
+          ARCHIVES: ${{ matrix.archives }}
+        run: |
+          set -euo pipefail
+          python3 -B -m scripts.perf.w11_build_workflow_074 verify "$ROLE" \
+            "$RUNNER_TEMP/w11-signer/$ROLE" "$RUNNER_TEMP/w11-signer/archives-$ROLE" "$PROOF" "$ARCHIVES"
+      - name: Attest the independently verified W11 build
+        id: attest
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        with:
+          subject-path: ${{ runner.temp }}/w11-signer/${{ matrix.role }}/${{ matrix.role }}-server
+          predicate-type: https://github.com/javaquasar/hydracache/attestations/product-build-074/v2
+          predicate-path: ${{ runner.temp }}/w11-signer/${{ matrix.role }}/build-receipt.json
+      - name: Retain the signed attestation
+        env:
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+          ROLE: ${{ matrix.role }}
+        run: cp -- "$BUNDLE" "$RUNNER_TEMP/w11-signer/$ROLE/build-receipt.sigstore.json"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: product-signed-074-v2-${{ matrix.role }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/w11-signer/${{ matrix.role }}/
           if-no-files-found: error
           retention-days: 30
           overwrite: false

@@ -26,20 +26,24 @@ def require(condition, reason):
         raise ValueError(reason)
 
 
-def load(path):
+def decode_json(data):
     def unique(pairs):
         result = dict(pairs)
         require(len(result) == len(pairs), "duplicate JSON property")
         return result
 
+    return json.loads(data, object_pairs_hook=unique)
+
+
+def load(path):
     require(path.stat().st_size <= 256 * 1024, "JSON input exceeds 256 KiB")
-    return json.loads(path.read_bytes(), object_pairs_hook=unique)
+    return decode_json(path.read_bytes())
 
 
-def protection(branch, environment, policies):
+def protection(branch, environment, policies, environment_name=ENVIRONMENT):
     require(branch.get("name") == "main" and branch.get("protected") is True,
             "protected main is required")
-    require(environment.get("name") == ENVIRONMENT, "unexpected signing environment")
+    require(environment.get("name") == environment_name, "unexpected signing environment")
     require(environment.get("deployment_branch_policy") == {
         "protected_branches": False, "custom_branch_policies": True,
     }, "signing environment must restrict deployments to main")
@@ -78,17 +82,25 @@ def sha256(path):
 
 
 def verify_source(role, root):
+    verify_source_identity(root, ROLES[role], LOCK)
+
+
+def verify_source_identity(root, git_identity, lock_sha256):
     def git(*args):
         return subprocess.check_output(["git", "-C", str(root), *args], text=True).strip()
 
-    require((git("rev-parse", "HEAD"), git("rev-parse", "HEAD^{tree}")) == ROLES[role],
+    require((git("rev-parse", "HEAD"), git("rev-parse", "HEAD^{tree}")) == git_identity,
             "unexpected source commit or tree")
     require(not git("status", "--porcelain=v1", "--untracked-files=all"),
             "dirty role checkout")
-    require(sha256(root / "Cargo.lock") == LOCK, "unexpected Cargo.lock")
+    require(sha256(root / "Cargo.lock") == lock_sha256, "unexpected Cargo.lock")
 
 
 def receipt(role, directory, binding=None):
+    return receipt_for_source(role, directory, ROLES[role], LOCK, binding)
+
+
+def receipt_for_source(role, directory, git_identity, lock_sha256, binding=None):
     binary = directory / f"{role}-server"
     info = binary.lstat()
     require(stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and 64 <= info.st_size < 512 * 1024**2,
@@ -97,9 +109,9 @@ def receipt(role, directory, binding=None):
         header = stream.read(64)
     require(header[:7] == b"\x7fELF\x02\x01\x01" and header[18:20] == b"\x3e\x00"
             and header[16:18] in (b"\x02\x00", b"\x03\x00"), "expected a Linux x86-64 executable ELF")
-    commit, tree = ROLES[role]
+    commit, tree = git_identity
     return {"schema": "hydracache-product-build-074-v1", "repository_id": REPOSITORY_ID,
-            "role": role, "source_commit": commit, "source_tree": tree, "cargo_lock_sha256": LOCK,
+            "role": role, "source_commit": commit, "source_tree": tree, "cargo_lock_sha256": lock_sha256,
             "package": "hydracache-server", "profile": "release", "rust_toolchain": "1.94.0",
             "target": "x86_64-unknown-linux-gnu", **(workflow_binding() if binding is None else binding),
             "binary": {"name": binary.name, "sha256": sha256(binary), "bytes": info.st_size}}
@@ -121,23 +133,33 @@ def verify_artifact(role, directory):
     require(load(document) == receipt(role, directory), "build receipt or binary does not match this run")
 
 
-def verify_signed_artifact(role, directory, commit, run_id, attempt):
+def approved_workflow_run(commit, run_id, attempt):
     require(re.fullmatch("[0-9a-f]{40}", commit) and
             all(re.fullmatch("[1-9][0-9]*", value) for value in (run_id, attempt)),
             "expected the approved workflow commit and exact run")
-    bundle = directory / "build-receipt.sigstore.json"
+    return {"workflow_commit": commit, "run_id": run_id, "run_attempt": attempt}
+
+
+def verify_signed_artifact(role, directory, commit, run_id, attempt):
+    binding = approved_workflow_run(commit, run_id, attempt)
     document = directory / "build-receipt.json"
-    expected = receipt(role, directory, {"workflow_commit": commit, "run_id": run_id, "run_attempt": attempt})
+    expected = receipt(role, directory, binding)
     require(load(document) == expected, "receipt or image differs from the expected role and run")
+    verify_attestation(role, directory, commit, expected, PREDICATE)
+
+
+def verify_attestation(role, directory, commit, expected, predicate_type):
+    bundle = directory / "build-receipt.sigstore.json"
     output = subprocess.check_output(
         ["gh", "attestation", "verify", str(directory / f"{role}-server"), "--bundle", str(bundle),
          "--repo", REPOSITORY, "--signer-workflow", WORKFLOW.rsplit("@", 1)[0], "--signer-digest", commit,
          "--source-ref", "refs/heads/main", "--source-digest", commit, "--deny-self-hosted-runners",
-         "--predicate-type", PREDICATE, "--format", "json"],
+         "--predicate-type", predicate_type, "--format", "json"],
         timeout=60,
     )
-    require(any(record["verificationResult"]["statement"]["predicate"] == expected
-                for record in json.loads(output)), "signed predicate differs from the reviewed build receipt")
+    encoded = json.dumps(expected, sort_keys=True)
+    require(any(json.dumps(record["verificationResult"]["statement"]["predicate"], sort_keys=True) == encoded
+                for record in decode_json(output)), "signed predicate differs from the reviewed build receipt")
 
 
 def main():
@@ -146,6 +168,8 @@ def main():
     policies = modes.add_parser("protection")
     for name in ("branch", "environment", "policies"):
         policies.add_argument(name, type=Path)
+    policies.add_argument("--environment-name", default=ENVIRONMENT,
+                          choices=(ENVIRONMENT, "performance-product-observe-074"))
     for name in ("source", "receipt", "verify"):
         mode = modes.add_parser(name)
         mode.add_argument("role", choices=ROLES)
@@ -160,7 +184,7 @@ def main():
         signed.add_argument(name)
     args = parser.parse_args()
     if args.mode == "protection":
-        protection(load(args.branch), load(args.environment), load(args.policies))
+        protection(load(args.branch), load(args.environment), load(args.policies), args.environment_name)
     elif args.mode == "source":
         verify_source(args.role, args.source)
     elif args.mode == "receipt":
