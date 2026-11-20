@@ -155,16 +155,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
             }
         }));
     }
-    println!(
-        "{}",
-        serde_json_like_health(
-            shared_runtime
-                .lock()
-                .expect("server runtime mutex")
-                .health()
-                .status
-        )
-    );
+    let health = {
+        let runtime = shared_runtime.lock().expect("server runtime mutex");
+        #[cfg(target_os = "linux")]
+        runtime.publish_w11_effective_config()?;
+        runtime.health()
+    };
+    println!("{}", serde_json_like_health(health.status));
     let admin = async move {
         if let Some(listener) = admin_listener {
             axum::serve(listener, admin_surface.routes()).await?;

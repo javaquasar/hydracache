@@ -585,6 +585,34 @@ impl ServerRuntime {
         }
     }
 
+    /// Send the effective decoder and dispatch limits to the isolated W11 observer.
+    #[cfg(target_os = "linux")]
+    #[doc(hidden)]
+    pub fn publish_w11_effective_config(&self) -> std::io::Result<()> {
+        use crate::w11_effective_config::{publish, requested, Limits};
+
+        let Some(profile) = requested()? else {
+            return Ok(());
+        };
+        let listener = self.redis_listener_config.as_ref().ok_or_else(|| {
+            std::io::Error::other("W11 config readback requires the active RESP listener")
+        })?;
+        let dispatch = self.client_dispatch_state.as_ref().ok_or_else(|| {
+            std::io::Error::other("W11 config readback requires the active dispatch state")
+        })?;
+        let limits = dispatch.limits();
+        publish(
+            profile,
+            Limits {
+                resp_array_items: listener.decode_limits.max_array_elements,
+                resp_frame_bytes: listener.decode_limits.max_frame_bytes,
+                shared_batch_entries: limits.max_batch_entries,
+                shared_batch_payload_bytes: limits.max_batch_bytes,
+                shared_value_bytes: limits.max_value_bytes,
+            },
+        )
+    }
+
     /// Return the shared verified-dispatch state used by HC/1, RESP, and HC/2.
     pub fn client_dispatch_state(
         &self,

@@ -440,6 +440,10 @@ impl ServerConfig {
         if env::var("HYDRACACHE_CLIENT_API_ENABLED").as_deref() == Ok("true") {
             config.client_api.enabled = true;
         }
+        apply_client_batch_profile(
+            &mut config.client_api.limits,
+            env::var_os("HYDRACACHE_CLIENT_BATCH_PROFILE").as_deref(),
+        )?;
         if env::var("HYDRACACHE_HC2_ENABLED").as_deref() == Ok("true") {
             config.hc2_client_plane.enabled = true;
         }
@@ -896,6 +900,22 @@ pub enum ServerConfigError {
         /// Conflicting surface.
         surface: &'static str,
     },
+}
+
+fn apply_client_batch_profile(
+    limits: &mut ClientSurfaceLimits,
+    value: Option<&std::ffi::OsStr>,
+) -> Result<(), ServerConfigError> {
+    match value {
+        None => Ok(()),
+        Some(value) if value == std::ffi::OsStr::new("w11-256") => {
+            limits.max_batch_entries = 256;
+            Ok(())
+        }
+        Some(_) => Err(ServerConfigError::InvalidClientApi(
+            "HYDRACACHE_CLIENT_BATCH_PROFILE must be w11-256 when set".to_owned(),
+        )),
+    }
 }
 
 fn parse_role(value: &str) -> Result<ServerRole, ServerConfigError> {
