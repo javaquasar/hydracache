@@ -22,10 +22,12 @@ from . import w11_guest_observer_074 as driver
 build, receipt, workflow = transfer.build, transfer.receipt, transfer.workflow
 require = build.require
 COMMAND = "observe-v2"
+SSH_LOGIN = "hydracache-admin"
 ACCOUNT = "hydracache-w11-observer"
 PERMIT = Path("/etc/hydracache-w11-observer/permit.json")
 RUNTIME = Path("/opt/hydracache-w11-observer/runtime")
-WORK = Path("/var/lib/hydracache-w11-observer")
+STATE_DIRECTORY = Path("/var/lib/hydracache-w11-observer")
+WORK = Path("/var/lib/private/hydracache-w11-observer")
 SOCKET = Path("/run/hydracache-perf/supervisor-v1.sock")
 SCHEMA = "hydracache-w11-ssh-observer-074-v1"
 PERMIT_SCHEMA = "hydracache-w11-ssh-permit-074-v1"
@@ -196,15 +198,25 @@ def installed_policy():
     import pwd
 
     user = pwd.getpwnam(ACCOUNT)
-    require(os.getuid() == user.pw_uid != 0 and os.getgid() == user.pw_gid
+    require(61184 <= user.pw_uid <= 65519 and 61184 <= user.pw_gid <= 65519
+            and os.getuid() == os.geteuid() == user.pw_uid and os.getgid() == os.getegid() == user.pw_gid
             and set(os.getgroups()) <= {user.pw_gid}, "unexpected observer account or groups")
+    require(all(line.partition(":")[0] != ACCOUNT for line in Path("/etc/passwd").read_text().splitlines()),
+            "observer identity must be transient")
+    status = dict(line.split(":", 1) for line in Path("/proc/self/status").read_text().splitlines())
+    require(status["NoNewPrivs"].strip() == "1" and int(status["CapEff"], 16) == 0,
+            "observer process can acquire additional privileges")
     require(not os.access(SOCKET, os.W_OK), "observer account can access the supervisor socket")
     require(os.environ.get("SSH_ORIGINAL_COMMAND") == COMMAND, "unexpected SSH command")
-    for path in (PERMIT, workflow.APPROVAL, RUNTIME, WORK.parent):
+    for path in (PERMIT, workflow.APPROVAL, RUNTIME, WORK.parent, STATE_DIRECTORY.parent):
         root_owned(path)
+    require(os.environ.get("STATE_DIRECTORY") == str(STATE_DIRECTORY) and STATE_DIRECTORY.is_symlink()
+            and STATE_DIRECTORY.lstat().st_uid == 0 and STATE_DIRECTORY.resolve(strict=True) == WORK,
+            "unexpected systemd state directory")
     workflow.require_directory(WORK)
     info = WORK.stat()
-    require(info.st_uid == user.pw_uid and stat.S_IMODE(info.st_mode) == 0o700, "observer workspace is not private")
+    require(info.st_uid == user.pw_uid and info.st_gid == user.pw_gid
+            and stat.S_IMODE(info.st_mode) == 0o700, "observer workspace is not private")
     roles, pin = workflow.approved_plan()
     driver.check_runtime(RUNTIME, pin)
     require(driver.host_guard(WORK) >= driver.probe.DISK_FLOOR + driver.MIN_STAGING,
@@ -257,7 +269,7 @@ def ssh_command(host, identity, known_hosts):
     return ["/usr/bin/ssh", "-F", "/dev/null", "-T", "-o", "BatchMode=yes", "-o", "IdentitiesOnly=yes",
             "-o", "StrictHostKeyChecking=yes", "-o", "GlobalKnownHostsFile=/dev/null",
             "-o", f"UserKnownHostsFile={known_hosts}", "-o", "ClearAllForwardings=yes",
-            "-o", "ConnectTimeout=8", "-i", str(identity), f"{ACCOUNT}@{host}", COMMAND]
+            "-o", "ConnectTimeout=8", "-i", str(identity), f"{SSH_LOGIN}@{host}", COMMAND]
 
 
 def submit(args):

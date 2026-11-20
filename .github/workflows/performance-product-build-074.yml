@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       receipt:
-        description: Product receipt version
+        description: Product receipt version or observer preflight
         type: choice
-        options: [v1, v2]
+        options: [v1, v2, observer-preflight]
         default: v1
         required: false
 
@@ -32,6 +32,7 @@ jobs:
       - name: Require a preconfigured signing environment
         env:
           GH_TOKEN: ${{ github.token }}
+          RECEIPT_MODE: ${{ inputs.receipt }}
         shell: bash
         run: |
           set -euo pipefail
@@ -41,6 +42,15 @@ jobs:
           gh api "$api/environments/performance-product-build-074/deployment-branch-policies" > "$RUNNER_TEMP/policies.json"
           python3 scripts/perf/product_build_receipt_074.py protection \
             "$RUNNER_TEMP/branch.json" "$RUNNER_TEMP/environment.json" "$RUNNER_TEMP/policies.json"
+          case "$RECEIPT_MODE" in
+            v2|observer-preflight)
+              observer=performance-product-observe-074
+              gh api "$api/environments/$observer" > "$RUNNER_TEMP/observer-environment.json"
+              gh api "$api/environments/$observer/deployment-branch-policies" > "$RUNNER_TEMP/observer-policies.json"
+              python3 scripts/perf/product_build_receipt_074.py protection --environment-name "$observer" \
+                "$RUNNER_TEMP/branch.json" "$RUNNER_TEMP/observer-environment.json" "$RUNNER_TEMP/observer-policies.json"
+              ;;
+          esac
 
   build:
     needs: protection
@@ -147,6 +157,64 @@ jobs:
           retention-days: 30
           overwrite: false
 
+  w11_observer_preflight:
+    needs: protection
+    if: inputs.receipt == 'observer-preflight'
+    runs-on: ubuntu-24.04
+    environment: performance-product-observe-074
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Recheck observer protection after approval
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="repos/$GITHUB_REPOSITORY"
+          observer=performance-product-observe-074
+          gh api "$api/branches/main" > "$RUNNER_TEMP/observer-branch.json"
+          gh api "$api/environments/$observer" > "$RUNNER_TEMP/observer-environment.json"
+          gh api "$api/environments/$observer/deployment-branch-policies" > "$RUNNER_TEMP/observer-policies.json"
+          python3 scripts/perf/product_build_receipt_074.py protection --environment-name "$observer" \
+            "$RUNNER_TEMP/observer-branch.json" "$RUNNER_TEMP/observer-environment.json" "$RUNNER_TEMP/observer-policies.json"
+      - name: Verify the fixed observer entry point against the draft plan
+        shell: bash
+        env:
+          W11_OBSERVER_SSH_HOST: ${{ vars.W11_OBSERVER_SSH_HOST }}
+          OBSERVER_KEY: ${{ secrets.W11_OBSERVER_SSH_KEY }}
+          OBSERVER_KNOWN_HOSTS: ${{ secrets.W11_OBSERVER_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          keys="$(mktemp -d "$RUNNER_TEMP/w11-ssh.XXXXXXXX")"
+          trap 'rm -f -- "$keys/key" "$keys/known_hosts"; rmdir -- "$keys"' EXIT
+          printf '%s\n' "${OBSERVER_KEY:?}" > "$keys/key"
+          printf '%s\n' "${OBSERVER_KNOWN_HOSTS:?}" > "$keys/known_hosts"
+          unset OBSERVER_KEY OBSERVER_KNOWN_HOSTS
+          python3 -B - "$keys" <<'PY'
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+
+          from scripts.perf import w11_ssh_observer_074 as observer
+
+          keys = Path(sys.argv[1])
+          command = observer.ssh_command(os.environ["W11_OBSERVER_SSH_HOST"], keys / "key", keys / "known_hosts")
+          result = subprocess.run(command, stdin=subprocess.DEVNULL, capture_output=True,
+                                  timeout=20, env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"})
+          expected = b"ValueError: protected main must record approval of both exact W11 roles and the profile"
+          if result.returncode != 1 or result.stdout or not result.stderr.rstrip().endswith(expected):
+              raise SystemExit(f"unexpected observer preflight result (exit {result.returncode})")
+          print("The AX42 observer reached the protected draft plan check")
+          PY
+
   w11_plan:
     needs: protection
     if: inputs.receipt == 'v2'
@@ -252,6 +320,19 @@ jobs:
           merge-multiple: true
           skip-decompress: true
           digest-mismatch: error
+      - name: Recheck observer protection after approval
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="repos/$GITHUB_REPOSITORY"
+          observer=performance-product-observe-074
+          gh api "$api/branches/main" > "$RUNNER_TEMP/observer-branch.json"
+          gh api "$api/environments/$observer" > "$RUNNER_TEMP/observer-environment.json"
+          gh api "$api/environments/$observer/deployment-branch-policies" > "$RUNNER_TEMP/observer-policies.json"
+          python3 scripts/perf/product_build_receipt_074.py protection --environment-name "$observer" \
+            "$RUNNER_TEMP/observer-branch.json" "$RUNNER_TEMP/observer-environment.json" "$RUNNER_TEMP/observer-policies.json"
       - name: Observe both profiles through the fixed SSH command
         shell: bash
         env:

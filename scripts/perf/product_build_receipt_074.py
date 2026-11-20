@@ -40,10 +40,10 @@ def load(path):
     return decode_json(path.read_bytes())
 
 
-def protection(branch, environment, policies):
+def protection(branch, environment, policies, environment_name=ENVIRONMENT):
     require(branch.get("name") == "main" and branch.get("protected") is True,
             "protected main is required")
-    require(environment.get("name") == ENVIRONMENT, "unexpected signing environment")
+    require(environment.get("name") == environment_name, "unexpected signing environment")
     require(environment.get("deployment_branch_policy") == {
         "protected_branches": False, "custom_branch_policies": True,
     }, "signing environment must restrict deployments to main")
@@ -168,6 +168,8 @@ def main():
     policies = modes.add_parser("protection")
     for name in ("branch", "environment", "policies"):
         policies.add_argument(name, type=Path)
+    policies.add_argument("--environment-name", default=ENVIRONMENT,
+                          choices=(ENVIRONMENT, "performance-product-observe-074"))
     for name in ("source", "receipt", "verify"):
         mode = modes.add_parser(name)
         mode.add_argument("role", choices=ROLES)
@@ -182,7 +184,7 @@ def main():
         signed.add_argument(name)
     args = parser.parse_args()
     if args.mode == "protection":
-        protection(load(args.branch), load(args.environment), load(args.policies))
+        protection(load(args.branch), load(args.environment), load(args.policies), args.environment_name)
     elif args.mode == "source":
         verify_source(args.role, args.source)
     elif args.mode == "receipt":

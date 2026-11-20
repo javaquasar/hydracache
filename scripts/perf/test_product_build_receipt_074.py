@@ -56,6 +56,15 @@ class ProtectionTests(unittest.TestCase):
                 environment = {**self.environment, "protection_rules": [{**rule, "reviewers": reviewers}]}
                 build.protection(self.branch, environment, self.policies)
 
+    def test_observer_environment_is_explicit_and_keeps_the_same_protections(self):
+        name = "performance-product-observe-074"
+        observer = {**self.environment, "name": name}
+        build.protection(self.branch, observer, self.policies, name)
+        with self.assertRaises(ValueError):
+            build.protection(self.branch, observer, self.policies)
+        with self.assertRaises(ValueError):
+            build.protection(self.branch, {**observer, "can_admins_bypass": True}, self.policies, name)
+
 
 class ArtifactTests(unittest.TestCase):
     def test_role_image_and_workflow_attempt_are_bound(self):

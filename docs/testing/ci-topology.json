@@ -15,6 +15,7 @@
         "manual-protected": [
           "build",
           "sign",
+          "w11_observer_preflight",
           "w11_plan",
           "w11_build",
           "w11_observe",
@@ -26,6 +27,7 @@
       "dependencies": {
         "build": ["protection"],
         "sign": ["build"],
+        "w11_observer_preflight": ["protection"],
         "w11_plan": ["protection"],
         "w11_build": ["w11_plan"],
         "w11_observe": ["w11_plan", "w11_build"],
