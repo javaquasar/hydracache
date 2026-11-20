@@ -1,6 +1,6 @@
 {
   "observer_transport": "ssh",
-  "observer_runtime_sha256": null,
+  "observer_runtime_sha256": "554774804040d65bcabae5289f6ee2c41eb419340aac2fc06daf57ed72ea8a8f",
   "profile_sha256": "204b0eb3a41fc762cb1a58cecce87119f6779870495710fbf596cad3ca5214aa",
   "roles": {
     "C74": {
@@ -15,5 +15,5 @@
     }
   },
   "schema": "hydracache-w11-approval-074-v1",
-  "status": "review"
+  "status": "approved"
 }
