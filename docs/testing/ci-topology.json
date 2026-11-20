@@ -12,10 +12,26 @@
         "core": ["protection"],
         "release-only": [],
         "scheduled-diagnostic": [],
-        "manual-protected": ["build", "sign"],
+        "manual-protected": [
+          "build",
+          "sign",
+          "w11_plan",
+          "w11_build",
+          "w11_observe",
+          "w11_verify",
+          "w11_sign"
+        ],
         "publish": []
       },
-      "dependencies": {"build": ["protection"], "sign": ["build"]},
+      "dependencies": {
+        "build": ["protection"],
+        "sign": ["build"],
+        "w11_plan": ["protection"],
+        "w11_build": ["w11_plan"],
+        "w11_observe": ["w11_plan", "w11_build"],
+        "w11_verify": ["w11_observe"],
+        "w11_sign": ["w11_verify"]
+      },
       "artifact_budget": {
         "max_retention_days": 30,
         "max_uploads_per_job": 1,
