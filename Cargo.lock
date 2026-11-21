@@ -635,25 +635,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "chitchat"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e1cfd5d16c6fc43487006ab5b5c910f295cc53cf07d90491fb36c8dc479c754"
-dependencies = [
- "anyhow",
- "async-trait",
- "bytes",
- "itertools 0.14.0",
- "lru",
- "rand 0.10.2",
- "serde",
- "tokio",
- "tokio-stream",
- "tracing",
- "zstd",
-]
-
-[[package]]
 name = "choice"
 version = "0.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -759,15 +740,6 @@ dependencies = [
  "pin-project-lite",
  "tokio",
  "tokio-util",
-]
-
-[[package]]
-name = "concurrent-queue"
-version = "2.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ca0197aee26d1ae37445ee532fefce43251d24cc7c166799f4d46817f1d3973"
-dependencies = [
- "crossbeam-utils",
 ]
 
 [[package]]
@@ -1441,11 +1413,10 @@ dependencies = [
 
 [[package]]
 name = "event-listener"
-version = "5.4.1"
+version = "5.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e13b66accf52311f30a0db42147dadea9850cb48cd070028831ae5f5d4b856ab"
+checksum = "5a23add41df1562121a9393cb065eab5146a1242410f23a644851e90cfd669d2"
 dependencies = [
- "concurrent-queue",
  "parking",
  "pin-project-lite",
 ]
@@ -2038,6 +2009,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydra-chitchat"
+version = "0.11.1-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0296600cf25af830741ee575df5da4e050d48e7bc561ffbdcda63ebab12877c2"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytes",
+ "itertools 0.14.0",
+ "lru",
+ "rand 0.10.2",
+ "serde",
+ "tokio",
+ "tokio-stream",
+ "tracing",
+ "zstd",
+]
+
+[[package]]
 name = "hydra-moka"
 version = "0.12.15-hydra.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2220,7 +2210,7 @@ name = "hydracache-cluster-chitchat"
 version = "0.74.0-rc.1"
 dependencies = [
  "async-trait",
- "chitchat",
+ "hydra-chitchat",
  "hydracache",
  "tokio",
  "tokio-stream",
@@ -2232,8 +2222,8 @@ version = "0.74.0-rc.1"
 dependencies = [
  "async-trait",
  "axum",
- "chitchat",
  "fail",
+ "hydra-chitchat",
  "hydracache",
  "hydracache-cluster-chitchat",
  "hydracache-cluster-testkit",
@@ -2256,7 +2246,7 @@ version = "0.74.0-rc.1"
 dependencies = [
  "anyhow",
  "async-trait",
- "chitchat",
+ "hydra-chitchat",
  "hydracache",
  "hydracache-client-protocol",
  "hydracache-cluster-raft",
@@ -2465,7 +2455,7 @@ name = "hydracache-sandbox"
 version = "0.74.0-rc.1"
 dependencies = [
  "axum",
- "chitchat",
+ "hydra-chitchat",
  "hydracache",
  "hydracache-actuator-axum",
  "hydracache-cluster-chitchat",
@@ -3338,9 +3328,9 @@ dependencies = [
 
 [[package]]
 name = "lru"
-version = "0.17.0"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e0b564323a0fb6d54b864f625ae139de9612e27edb944dda37c109f05aac531"
+checksum = "5d2f2f9b4ba7e6b24d95e7e899329d35be83bcded72c8540cdd5368932d1d90a"
 dependencies = [
  "hashbrown 0.17.1",
 ]
@@ -4263,9 +4253,9 @@ dependencies = [
 
 [[package]]
 name = "quinn-proto"
-version = "0.11.16"
+version = "0.11.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f4bfc015262b9df63c8845072ce59068853ff5872180c2ce2f13038b970e560"
+checksum = "0e750cca55fe4f0439a15d0bb529da9651e79993e8e72c61a899a36d462befbe"
 dependencies = [
  "aws-lc-rs",
  "bytes",
@@ -4286,9 +4276,9 @@ dependencies = [
 
 [[package]]
 name = "quinn-udp"
-version = "0.5.15"
+version = "0.5.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35a133f956daabe89a61a685c2649f13d82d5aa4bd5d12d1277e1072a21c0694"
+checksum = "af66907df18639dcf4db56ca65490cabc4b27a97dbadd96f2926cca73298f016"
 dependencies = [
  "cfg_aliases",
  "libc",
@@ -4709,7 +4699,7 @@ dependencies = [
  "libc",
  "portable-atomic",
  "rustc-hash 2.1.3",
- "rustix 1.1.4",
+ "rustix 1.1.6",
  "tokio",
  "tokio-stream",
  "xattr",
@@ -4740,9 +4730,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "1.1.4"
+version = "1.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6fe4565b9518b83ef4f91bb47ce29620ca828bd32cb7e408f0062e9930ba190"
+checksum = "e5e76742e5294153d4dde1207dbec5bdd81eef6fabdc0d2118babadabfd858aa"
 dependencies = [
  "bitflags 2.13.0",
  "errno",
@@ -5686,7 +5676,7 @@ dependencies = [
  "fastrand",
  "getrandom 0.4.3",
  "once_cell",
- "rustix 1.1.4",
+ "rustix 1.1.6",
  "windows-sys 0.61.2",
 ]
 
@@ -6978,7 +6968,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32e45ad4206f6d2479085147f02bc2ef834ac85886624a23575ae137c8aa8156"
 dependencies = [
  "libc",
- "rustix 1.1.4",
+ "rustix 1.1.6",
 ]
 
 [[package]]
@@ -7183,27 +7173,27 @@ dependencies = [
 
 [[package]]
 name = "zstd"
-version = "0.13.5"
+version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50adf04cf3ec914b0b9905c9dde90c80fe74bfd701e331fc80a39c512c525278"
+checksum = "db3ae9bf90af6e40197bef767eeefc46ad6397420fe873830bd85e5fbbfb3c70"
 dependencies = [
  "zstd-safe",
 ]
 
 [[package]]
 name = "zstd-safe"
-version = "7.4.1"
+version = "8.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "498d94ad68720c89b4fbe41b9090850651e68cb2dd9210ce7ffbff3a94653819"
+checksum = "5a9ea9cc2576c2fcc104e9cec04f46e3ede564f4fbc206831e4ef7e859a4140d"
 dependencies = [
  "zstd-sys",
 ]
 
 [[package]]
 name = "zstd-sys"
-version = "2.1.2+zstd.1.5.7"
+version = "2.1.3+zstd.1.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "481ada9c543b2323cbb7bbdbb5249177fbf0188ed959ed2c15e4b22421c84ed3"
+checksum = "f729a06d0257428fd9d997ac8db7e1407bd0262ab016b085b36bc52957c0052d"
 dependencies = [
  "cc",
  "pkg-config",
