@@ -1,3 +1,4 @@
+use crate::atomic_update::AtomicCompareUpdate;
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
@@ -84,7 +85,7 @@ struct InFlightEntry {
 
 fn try_add_waiter(waiters: &AtomicUsize) -> bool {
     waiters
-        .fetch_update(Ordering::AcqRel, Ordering::Acquire, |count| {
+        .compare_update(Ordering::AcqRel, Ordering::Acquire, |count| {
             if count == 0 || count == usize::MAX {
                 None
             } else {

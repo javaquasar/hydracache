@@ -499,14 +499,25 @@ fn validate_wire_header(field: &str, envelope: u64, protobuf: u64) -> CacheResul
 }
 
 fn validate_wire_structure(message: &RaftMessage) -> CacheResult<()> {
+    let message_type = MessageType::from_i32(message.msg_type)
+        .ok_or_else(|| CacheError::Decode("invalid raft wire message type".to_owned()))?;
+    if message
+        .entries
+        .iter()
+        .any(|entry| EntryType::from_i32(entry.entry_type).is_none())
+    {
+        return Err(CacheError::Decode(
+            "invalid raft wire entry type".to_owned(),
+        ));
+    }
     if matches!(
-        message.get_msg_type(),
+        message_type,
         MessageType::MsgReadIndex | MessageType::MsgReadIndexResp
     ) && message.entries.len() != 1
     {
         return Err(CacheError::Decode(format!(
             "raft {:?} must carry exactly one request-context entry, got {}",
-            message.get_msg_type(),
+            message_type,
             message.entries.len()
         )));
     }
