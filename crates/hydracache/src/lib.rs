@@ -505,6 +505,7 @@ extern crate self as hydracache;
 
 #[cfg(not(target_arch = "wasm32"))]
 mod admission;
+mod atomic_update;
 #[cfg(not(target_arch = "wasm32"))]
 mod backup;
 #[cfg(not(target_arch = "wasm32"))]

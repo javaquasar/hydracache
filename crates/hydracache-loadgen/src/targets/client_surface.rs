@@ -356,7 +356,7 @@ impl ClientSurfaceTarget {
         let response = router
             .oneshot(request)
             .await
-            .map_err(|error| TargetError::Measurement(error.to_string()))?;
+            .unwrap_or_else(|never| match never {});
         drop(active_request);
         let status = response.status();
         if status == StatusCode::PAYLOAD_TOO_LARGE {

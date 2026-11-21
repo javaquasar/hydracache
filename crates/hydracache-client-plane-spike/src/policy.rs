@@ -18,13 +18,22 @@ const MAX_NODE_ENDPOINTS: usize = TransportCandidate::ALL.len();
 static NEXT_ATTEMPT_ID: AtomicU64 = AtomicU64::new(1);
 
 fn allocate_attempt_id() -> Result<NonZeroU64, TransportPolicyError> {
-    NEXT_ATTEMPT_ID
-        .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
-            current.checked_add(1).filter(|next| *next != 0)
-        })
-        .ok()
-        .and_then(NonZeroU64::new)
-        .ok_or(TransportPolicyError::AttemptSequenceExhausted)
+    let mut current = NEXT_ATTEMPT_ID.load(Ordering::Relaxed);
+    while let Some(next) = current.checked_add(1) {
+        match NEXT_ATTEMPT_ID.compare_exchange_weak(
+            current,
+            next,
+            Ordering::Relaxed,
+            Ordering::Relaxed,
+        ) {
+            Ok(previous) => {
+                return NonZeroU64::new(previous)
+                    .ok_or(TransportPolicyError::AttemptSequenceExhausted);
+            }
+            Err(observed) => current = observed,
+        }
+    }
+    Err(TransportPolicyError::AttemptSequenceExhausted)
 }
 
 /// Evidence maturity of one independently gated transport adapter.

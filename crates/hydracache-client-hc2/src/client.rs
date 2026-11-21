@@ -1,3 +1,4 @@
+use crate::atomic_update::AtomicCompareUpdate;
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, RwLock, Weak};
@@ -1694,7 +1695,7 @@ fn map_retry(value: i32) -> Result<RetryAdvice, ClientError> {
 
 fn next_nonzero(sequence: &AtomicU64) -> Result<u64, ClientError> {
     sequence
-        .fetch_update(Ordering::AcqRel, Ordering::Acquire, |value| {
+        .compare_update(Ordering::AcqRel, Ordering::Acquire, |value| {
             value.checked_add(1)
         })
         .map(|value| value + 1)

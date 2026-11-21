@@ -1,3 +1,4 @@
+use crate::atomic_update::AtomicCompareUpdate;
 use std::fmt;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
@@ -467,7 +468,7 @@ impl MemoryFootprintCounters {
         if self.mode != MemoryInstrumentationMode::Off
             && self
                 .active_mutations
-                .fetch_update(Ordering::AcqRel, Ordering::Acquire, |value| {
+                .compare_update(Ordering::AcqRel, Ordering::Acquire, |value| {
                     value.checked_add(1)
                 })
                 .is_err()
@@ -551,7 +552,7 @@ impl MemoryFootprintCounters {
         }
         let epoch = self
             .epoch
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |value| {
+            .compare_update(Ordering::AcqRel, Ordering::Acquire, |value| {
                 value.checked_add(1)
             })
             .map_err(|_| MemoryFootprintError::CounterFault)?
@@ -754,7 +755,7 @@ impl Drop for MemoryMutationGuard<'_> {
         if self
             .counters
             .active_mutations
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |value| {
+            .compare_update(Ordering::AcqRel, Ordering::Acquire, |value| {
                 value.checked_sub(1)
             })
             .is_err()
@@ -764,7 +765,7 @@ impl Drop for MemoryMutationGuard<'_> {
         if self
             .counters
             .version
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |value| {
+            .compare_update(Ordering::AcqRel, Ordering::Acquire, |value| {
                 value.checked_add(1)
             })
             .is_err()

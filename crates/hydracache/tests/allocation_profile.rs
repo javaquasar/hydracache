@@ -1,3 +1,7 @@
+#[path = "../src/atomic_update.rs"]
+mod atomic_update;
+
+use crate::atomic_update::AtomicCompareUpdate;
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::cell::Cell;
 use std::hint::spin_loop;
@@ -211,18 +215,18 @@ fn untrack_allocation(pointer: *mut u8) -> Option<(u64, usize)> {
 
 fn add_live_bytes(bytes: usize) {
     let previous = LIVE_BYTES
-        .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
+        .compare_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
             Some(current.saturating_add(bytes))
         })
         .unwrap_or_else(|current| current);
     let live = previous.saturating_add(bytes);
-    let _ = PEAK_LIVE_BYTES.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |peak| {
+    let _ = PEAK_LIVE_BYTES.compare_update(Ordering::Relaxed, Ordering::Relaxed, |peak| {
         (live > peak).then_some(live)
     });
 }
 
 fn subtract_live_bytes(bytes: usize) {
-    let _ = LIVE_BYTES.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
+    let _ = LIVE_BYTES.compare_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
         Some(current.saturating_sub(bytes))
     });
 }
