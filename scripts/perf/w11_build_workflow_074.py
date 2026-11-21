@@ -16,6 +16,7 @@ from . import w11_product_build_receipt_074 as receipt
 
 APPROVAL = Path(__file__).with_name("w11-product-build-approval-074.json")
 SUBJECT = "build-subject.json"
+W11_LOCK_SHA256 = "46571cd5c8e2a7aa5b659575d7828f935e7538e64d33cf148391b2fe43204a19"
 ROLE_VERSION = b"0.74.0-rc.1"
 CLIENT_CPU = 1
 DAEMON_CPU = 2
@@ -56,10 +57,10 @@ def approved_plan(path=APPROVAL):
                       "invalid role source pin")
         record = SourceRole(role, pin["commit"], pin["tree"], pin["lock"])
         build.require(receipt.is_hex(record.commit, 40) and receipt.is_hex(record.tree, 40)
-                      and record.lock == build.LOCK
+                      and record.lock == W11_LOCK_SHA256
                       and all(record.commit != old_commit and record.tree != old_tree
                               for old_commit, old_tree in build.ROLES.values()),
-                      "an approved successor source with the original dependency lock is required")
+                      "an approved successor source with the reviewed W11 dependency lock is required")
         result[role] = record
     build.require(result["I74"].commit != result["C74"].commit
                   and result["I74"].tree != result["C74"].tree, "the two role pins must be distinct")

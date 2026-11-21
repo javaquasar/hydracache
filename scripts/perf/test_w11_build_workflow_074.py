@@ -123,6 +123,8 @@ class WorkflowArtifactTests(unittest.TestCase):
 
     def test_draft_and_legacy_roles_cannot_enable_the_workflow(self):
         draft = json.loads(workflow.APPROVAL.read_bytes())
+        draft["status"] = "draft"
+        draft["observer_runtime_sha256"] = None
         path = self.root / "approval.json"
         path.write_bytes(workflow.receipt.canonical(draft))
         with self.assertRaisesRegex(ValueError, "protected main must record approval"):
@@ -141,6 +143,14 @@ class WorkflowArtifactTests(unittest.TestCase):
         roles, runtime_sha256 = workflow.approved_plan(path)
         self.assertEqual(set(roles), {"I74", "C74"})
         self.assertEqual(runtime_sha256, draft["observer_runtime_sha256"])
+        for role in ("I74", "C74"):
+            with self.subTest(role=role):
+                original = draft["roles"][role]["lock"]
+                draft["roles"][role]["lock"] = workflow.build.LOCK
+                path.write_bytes(workflow.receipt.canonical(draft))
+                with self.assertRaisesRegex(ValueError, "reviewed W11 dependency lock"):
+                    workflow.approved_plan(path)
+                draft["roles"][role]["lock"] = original
         draft["roles"]["I74"]["commit"] = workflow.build.ROLES["I74"][0]
         path.write_bytes(workflow.receipt.canonical(draft))
         with self.assertRaisesRegex(ValueError, "approved successor source"):
