@@ -279,7 +279,7 @@ jobs:
           path: tooling
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
-          ref: 1e0eee4675ad17d142c45df59d2bcc05aaf26a7f
+          ref: f3953ff4094757651ca6c9de0332a1f2cfabf618
           persist-credentials: false
           path: source
       - name: Build the pinned I74 maintenance candidate

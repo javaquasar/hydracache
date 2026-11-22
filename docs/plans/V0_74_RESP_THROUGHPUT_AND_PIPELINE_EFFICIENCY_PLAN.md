@@ -5,9 +5,9 @@
 
 The owner authorized preparation of stable 0.74.0 as a maintenance binary
 release after publication and verification of 0.74.0-rc.1. The stable source
-is 1e0eee4675ad17d142c45df59d2bcc05aaf26a7f. Its runtime source matches
-RC source 2efd4dce. Workspace versions, the examples lockfile and CI setup
-differ.
+is f3953ff4094757651ca6c9de0332a1f2cfabf618. It derives from RC source 2efd4dce and adds rejection of empty Raft wire
+proposals, the saved regression seed, workspace version updates, the examples
+lockfile update and CI setup diagnostics.
 
 The previous decoder is retained, the C74 cursor change is deferred, and
 full GET/SET profiling remains for diagnosis. The original performance
@@ -45,8 +45,8 @@ Registry publication retains its Rust 1.88 clean-consumer and security checks.
 > - **Status:** planned. Historical measurements locate the opportunity; no 0.74 baseline,
 >   threshold activation, candidate, or numerical improvement is claimed yet.
 
-Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) · gates:
-[`../GATES.md`](../GATES.md) · predecessor:
+Roadmap: [`INDEX.md`](INDEX.md) Â· rules: [`../RULES.md`](../RULES.md) Â· gates:
+[`../GATES.md`](../GATES.md) Â· predecessor:
 [`V0_73_EVIDENCE_DRIVEN_PERFORMANCE_EFFICIENCY_PLAN.md`](V0_73_EVIDENCE_DRIVEN_PERFORMANCE_EFFICIENCY_PLAN.md).
 
 Read `CLAUDE.md`, `docs/RULES.md`, `docs/GATES.md`, `docs/COMPAT.md`, the final 0.73 release
