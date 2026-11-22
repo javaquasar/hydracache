@@ -20,6 +20,11 @@ on:
         required: false
         default: false
         type: boolean
+      run_raft_fuzz_066:
+        description: "Run the original fuzz release proof with standard CI"
+        required: false
+        default: false
+        type: boolean
       run_nightly:
         description: "Run scheduled/nightly proof lanes during manual dispatch"
         required: false
@@ -2675,7 +2680,7 @@ jobs:
     name: Fuzz Nightly
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && (inputs.run_nightly || inputs.run_raft_fuzz_066))
 
     steps:
       - name: Checkout

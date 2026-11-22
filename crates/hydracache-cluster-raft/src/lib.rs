@@ -510,6 +510,11 @@ fn validate_wire_structure(message: &RaftMessage) -> CacheResult<()> {
             "invalid raft wire entry type".to_owned(),
         ));
     }
+    if message_type == MessageType::MsgPropose && message.entries.is_empty() {
+        return Err(CacheError::Decode(
+            "raft proposal must carry at least one entry".to_owned(),
+        ));
+    }
     if matches!(
         message_type,
         MessageType::MsgReadIndex | MessageType::MsgReadIndexResp
@@ -2503,6 +2508,43 @@ mod tests {
             payload: vec![0xff],
         };
         assert!(malformed.is_snapshot().is_err());
+    }
+
+    #[test]
+    fn wire_decode_rejects_empty_proposal_before_runtime_step() {
+        let runtime = RaftMetadataRuntime::single_node("empty-wire-proposal", 1).unwrap();
+        let before = runtime.snapshot();
+        let mut message = RaftMessage {
+            from: 1,
+            to: 1,
+            term: 1,
+            ..RaftMessage::default()
+        };
+        message.set_msg_type(MessageType::MsgPropose);
+        let wire = RaftWireMessage::encode(&message).unwrap();
+
+        let error = wire.decode().unwrap_err();
+        assert!(error.to_string().contains("at least one entry"));
+        assert!(runtime.step(wire).is_err());
+        assert_eq!(runtime.snapshot(), before);
+    }
+
+    #[test]
+    fn wire_decode_preserves_nonempty_proposal() {
+        let mut message = RaftMessage {
+            from: 1,
+            to: 2,
+            term: 1,
+            entries: vec![Entry {
+                data: b"proposal".to_vec(),
+                ..Entry::default()
+            }],
+            ..RaftMessage::default()
+        };
+        message.set_msg_type(MessageType::MsgPropose);
+        let wire = RaftWireMessage::encode(&message).unwrap();
+
+        assert_eq!(wire.decode().unwrap(), message);
     }
 
     #[test]

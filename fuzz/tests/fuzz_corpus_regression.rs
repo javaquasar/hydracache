@@ -184,6 +184,7 @@ fn raft_wire_frame_corpus_never_panics_or_mutates_on_reject() {
         "snapshot-source-mismatch.json",
         "snapshot-index-mismatch.json",
         "read-index-without-context.json",
+        "empty-proposal.json",
     ];
     let missing = required
         .into_iter()
