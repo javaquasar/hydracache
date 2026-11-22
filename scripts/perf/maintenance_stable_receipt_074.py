@@ -8,7 +8,7 @@ import stat
 from . import product_build_receipt_074 as build
 
 
-SOURCE = ("f3953ff4094757651ca6c9de0332a1f2cfabf618", "9c726d5c5da984956122dc13368bc00e0e005bf9")
+SOURCE = ("bcba511f0c1f4b3e965c9e17f81b248deb0ea331", "93d3f20b1c358af093ad068989185ded83896894")
 LOCK = "2486fa57b67eb2fbe7eaa87f333e1945d9acde6c593bf447bffef62145d74eb5"
 SCHEMA = "hydracache-product-maintenance-074-v1"
 PREDICATE = f"https://github.com/{build.REPOSITORY}/attestations/product-maintenance-074/v1"

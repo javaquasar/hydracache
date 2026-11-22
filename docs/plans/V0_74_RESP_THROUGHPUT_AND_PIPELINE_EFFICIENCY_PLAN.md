@@ -5,7 +5,7 @@
 
 The owner authorized preparation of stable 0.74.0 as a maintenance binary
 release after publication and verification of 0.74.0-rc.1. The stable source
-is f3953ff4094757651ca6c9de0332a1f2cfabf618. It derives from RC source 2efd4dce and adds rejection of empty Raft wire
+is bcba511f0c1f4b3e965c9e17f81b248deb0ea331. It derives from RC source 2efd4dce and adds rejection of empty Raft wire
 proposals, the saved regression seed, workspace version updates, the examples
 lockfile update and CI setup diagnostics.
 
