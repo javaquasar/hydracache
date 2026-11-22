@@ -9,7 +9,7 @@ from . import product_build_receipt_074 as build
 
 
 SOURCE = ("bcba511f0c1f4b3e965c9e17f81b248deb0ea331", "93d3f20b1c358af093ad068989185ded83896894")
-LOCK = "2486fa57b67eb2fbe7eaa87f333e1945d9acde6c593bf447bffef62145d74eb5"
+LOCK = "7cd4d3f6688c33b9e680d0af7390d8909ef0e0c4c053f66584c1f9b3128427c3"
 SCHEMA = "hydracache-product-maintenance-074-v1"
 PREDICATE = f"https://github.com/{build.REPOSITORY}/attestations/product-maintenance-074/v1"
 RECEIPT = "build-receipt.json"
