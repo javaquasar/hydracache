@@ -15,6 +15,11 @@ on:
   pull_request:
   workflow_dispatch:
     inputs:
+      run_operator_kind_066:
+        description: "Run the original operator kind release proof with standard CI"
+        required: false
+        default: false
+        type: boolean
       run_nightly:
         description: "Run scheduled/nightly proof lanes during manual dispatch"
         required: false
@@ -1686,7 +1691,7 @@ jobs:
     name: 0.66 Operator Kind Release Proof
     runs-on: ubuntu-latest
     timeout-minutes: 130
-    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && (inputs.run_nightly || inputs.run_operator_kind_066))
 
     steps:
       - name: Checkout
@@ -1723,6 +1728,7 @@ jobs:
       - name: Create kind cluster with enforcing CNI
         shell: bash
         run: |
+          mkdir -p target/test-evidence/0.66
           go install sigs.k8s.io/kind@v0.26.0
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
           "$(go env GOPATH)/bin/kind" create cluster \
@@ -1733,6 +1739,7 @@ jobs:
           apiVersion: kind.x-k8s.io/v1alpha4
           networking:
             disableDefaultCNI: true
+            podSubnet: 192.168.0.0/16
           nodes:
             - role: control-plane
             - role: worker
@@ -1831,6 +1838,12 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
+          mkdir -p target/test-evidence/0.66
+          kubectl get nodes -o wide > target/test-evidence/0.66/operator-kind-nodes-post.txt 2>&1 || true
+          kubectl describe nodes > target/test-evidence/0.66/operator-kind-node-details-post.txt 2>&1 || true
+          kubectl get pods -n kube-system -o wide > target/test-evidence/0.66/operator-kind-cni-pods-post.txt 2>&1 || true
+          kubectl describe pods -n kube-system > target/test-evidence/0.66/operator-kind-cni-details-post.txt 2>&1 || true
+          kubectl logs -n kube-system --selector k8s-app=calico-node --all-containers=true --prefix=true --tail=200 > target/test-evidence/0.66/operator-kind-cni-logs-post.txt 2>&1 || true
           kubectl get pods,statefulsets,services,hydracacheclusters -A -o wide > target/test-evidence/0.66/operator-kind-resources-post.txt || true
           kubectl get events -A --sort-by=.lastTimestamp > target/test-evidence/0.66/operator-kind-events-post.txt || true
           kubectl logs -n default \

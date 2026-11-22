@@ -6,7 +6,7 @@ on:
       receipt:
         description: Product receipt version or observer preflight
         type: choice
-        options: [v1, v2, observer-preflight, maintenance-i74]
+        options: [v1, v2, observer-preflight, maintenance-i74, maintenance-stable]
         default: v1
         required: false
 
@@ -260,6 +260,113 @@ jobs:
         with:
           name: product-signed-074-maintenance-I74-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/maintenance-product/
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: false
+
+  maintenance_stable_build:
+    if: inputs.receipt == 'maintenance-stable'
+    needs: protection
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    outputs:
+      artifact_id: ${{ steps.upload.outputs.artifact-id }}
+      binary_sha256: ${{ steps.build.outputs.binary_sha256 }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+          path: tooling
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: 1e0eee4675ad17d142c45df59d2bcc05aaf26a7f
+          persist-credentials: false
+          path: source
+      - name: Build the pinned I74 maintenance candidate
+        id: build
+        shell: bash
+        working-directory: tooling
+        run: |
+          set -euo pipefail
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/maintenance-target"
+          product="$RUNNER_TEMP/maintenance-stable-product"
+          python3 -B -m scripts.perf.maintenance_stable_receipt_074 source ../source
+          rustup toolchain install 1.94.0 --profile minimal
+          (cd ../source && cargo +1.94.0 build --locked --release --target x86_64-unknown-linux-gnu -p hydracache-server)
+          mkdir "$product"
+          cp -- "$CARGO_TARGET_DIR/x86_64-unknown-linux-gnu/release/hydracache-server" "$product/I74-server"
+          digest=$(python3 -B -m scripts.perf.maintenance_stable_receipt_074 receipt ../source "$product")
+          printf 'binary_sha256=%s\n' "$digest" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        id: upload
+        with:
+          name: product-unsigned-074-maintenance-stable-I74-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/maintenance-stable-product/
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: false
+
+  maintenance_stable_sign:
+    if: inputs.receipt == 'maintenance-stable'
+    needs: maintenance_stable_build
+    runs-on: ubuntu-24.04
+    environment: performance-product-build-074
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      attestations: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Recheck the protected signing environment and build outputs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ needs.maintenance_stable_build.outputs.artifact_id }}
+          BUILT_SHA256: ${{ needs.maintenance_stable_build.outputs.binary_sha256 }}
+        run: |
+          set -euo pipefail
+          [[ "$ARTIFACT_ID" =~ ^[1-9][0-9]*$ && "$BUILT_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          api="repos/$GITHUB_REPOSITORY"
+          gh api "$api/branches/main" > "$RUNNER_TEMP/branch.json"
+          gh api "$api/environments/performance-product-build-074" > "$RUNNER_TEMP/environment.json"
+          gh api "$api/environments/performance-product-build-074/deployment-branch-policies" > "$RUNNER_TEMP/policies.json"
+          python3 scripts/perf/product_build_receipt_074.py protection \
+            "$RUNNER_TEMP/branch.json" "$RUNNER_TEMP/environment.json" "$RUNNER_TEMP/policies.json"
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          artifact-ids: ${{ needs.maintenance_stable_build.outputs.artifact_id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/maintenance-stable-product
+          digest-mismatch: error
+      - name: Verify the maintenance source, workflow run and binary digest
+        env:
+          BUILT_SHA256: ${{ needs.maintenance_stable_build.outputs.binary_sha256 }}
+        run: python3 -B -m scripts.perf.maintenance_stable_receipt_074 verify "$RUNNER_TEMP/maintenance-stable-product" "$BUILT_SHA256"
+      - name: Attest the I74 maintenance build
+        id: attest
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        with:
+          subject-path: ${{ runner.temp }}/maintenance-stable-product/I74-server
+          predicate-type: https://github.com/javaquasar/hydracache/attestations/product-maintenance-074/v1
+          predicate-path: ${{ runner.temp }}/maintenance-stable-product/build-receipt.json
+      - name: Verify and retain the signed maintenance artifact
+        env:
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          product="$RUNNER_TEMP/maintenance-stable-product"
+          cp -- "$BUNDLE" "$product/build-receipt.sigstore.json"
+          python3 -B -m scripts.perf.maintenance_stable_receipt_074 verify-signed "$product" \
+            "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: product-signed-074-maintenance-stable-I74-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/maintenance-stable-product/
           if-no-files-found: error
           retention-days: 30
           overwrite: false
