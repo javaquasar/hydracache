@@ -52,10 +52,10 @@ test("manual_push_shows_diverge_converge_and_listener_receipt", async ({ page })
 
 test("node_controls_show_reelection_resync_and_scale_out", async ({ page }) => {
   await openReady(page);
-  await page.getByText("Isolate").first().click();
+  await page.getByTestId("nodes-panel").getByText("Isolate").first().click();
   await page.getByTestId("step").click();
   await expect(page.getByTestId("engine-banner")).toContainText("Formation");
-  await page.getByText("Rejoin").first().click();
+  await page.getByTestId("nodes-panel").getByText("Rejoin").first().click();
   await page.getByTestId("add-node-button").click();
   await expect(page.getByTestId("nodes-panel")).toContainText("node-3");
 });
@@ -65,8 +65,8 @@ test("modes_switch_and_topology_is_clickable_in_each", async ({ page }) => {
   for (const mode of ["manual", "scripted", "mixed"]) {
     await page.getByTestId("mode-select").selectOption(mode);
     await expect(page.getByTestId("intervention-status")).toContainText(mode);
-    await page.getByText("Isolate").first().click();
-    await page.getByText("Rejoin").first().click();
+    await page.getByTestId("nodes-panel").getByText("Isolate").first().click();
+    await page.getByTestId("nodes-panel").getByText("Rejoin").first().click();
   }
 });
 
@@ -534,3 +534,134 @@ async function expandPanel(page, testId) {
     }
   });
 }
+
+test("first_visit_intro_dismisses_and_reopens", async ({ page }) => {
+  await openReady(page);
+  const intro = page.getByTestId("intro");
+  await expect(intro).toBeVisible();
+  await intro.getByRole("button", { name: "Show me" }).nth(2).click();
+  await expect(page.getByTestId("verdict")).toHaveClass(/spotlight/);
+  await page.getByTestId("intro-dismiss").click();
+  await expect(intro).toBeHidden();
+  await page.reload();
+  await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
+  await expect(intro).toBeHidden();
+  await page.getByTestId("show-intro").click();
+  await expect(intro).toBeVisible();
+});
+
+test("step_changes_are_listed_and_flash", async ({ page }) => {
+  await openReady(page);
+  await page.getByTestId("until-leader").click();
+  await expect(page.getByTestId("step-changes")).toContainText("leader");
+  await expect(page.locator(".vertex.node.changed").first()).toBeAttached();
+  await expandPanel(page, "nodes-panel");
+  await expect(page.locator("#nodes-panel .node-row.changed").first()).toBeAttached();
+
+  await selectFirstLink(page);
+  await page.getByTestId("partition-link").click();
+  await expect(page.getByTestId("step-changes")).toContainText("up → partitioned");
+});
+
+test("node_popover_shows_details_and_runs_node_actions", async ({ page }) => {
+  await openReady(page);
+  await page.getByTestId("until-leader").click();
+  const node = page.locator(".vertex.node").first();
+  await node.focus();
+  await page.keyboard.press("Enter");
+  const popover = page.getByTestId("node-popover");
+  await expect(popover).toBeVisible();
+  await expect(popover).toContainText("commit index");
+  await expect(popover).toContainText("term");
+  await expect(page.getByTestId("node-popover-crash")).toBeFocused();
+
+  await page.getByTestId("node-popover-crash").click();
+  await expect(popover.locator(".popover-status")).toHaveText("crashed");
+  await expect(page.getByTestId("node-popover-crash")).toHaveText("Restart");
+  await expandPanel(page, "nodes-panel");
+  await expect(page.getByTestId("nodes-panel")).toContainText("crashed");
+
+  await page.keyboard.press("Escape");
+  await expect(popover).toBeHidden();
+});
+
+// The real checker does not violate on ordinary seeds, so this drives the UI
+// through the server-engine path against a stubbed /sim API whose snapshots
+// are real WASM snapshots with a violated verdict spliced in.
+test("violation_pauses_jumps_to_first_step_and_explains", async ({ page }) => {
+  await page.goto(demoUrl);
+  const real = await page.evaluate(async () => {
+    const wasm = await import(new URL("./pkg/hydracache_sim_wasm.js", window.location.href).href);
+    if (typeof wasm.default === "function") {
+      await wasm.default();
+    }
+    const handle = new wasm.SimHandle(80n);
+    handle.run(8n);
+    return { snapshot: JSON.parse(handle.snapshot_json()), script: JSON.parse(handle.replay_script_json()) };
+  });
+  const holding = { ...real.snapshot, step: 0, first_violation_step: null, verdict: { status: "holding" } };
+  const ids = real.snapshot.nodes.map((node) => node.id);
+  const violated = (step) => ({
+    ...real.snapshot,
+    step,
+    first_violation_step: 9,
+    verdict: {
+      status: "violated",
+      invariant: "election_safety",
+      detail: `two leaders in term 1: ${ids[0]} and ${ids[2]}`,
+    },
+  });
+  const controlTargets = [];
+  let current = holding;
+  const api = "http://127.0.0.1:3999";
+  await page.route(`${api}/**`, async (route) => {
+    const request = route.request();
+    const headers = {
+      "access-control-allow-origin": "*",
+      "access-control-allow-headers": "content-type",
+      "access-control-allow-methods": "GET, POST, OPTIONS",
+    };
+    if (request.method() === "OPTIONS") {
+      await route.fulfill({ status: 204, headers });
+      return;
+    }
+    const path = new URL(request.url()).pathname;
+    if (path === "/sim/step") {
+      current = violated(12);
+    } else if (path === "/sim/control") {
+      const body = request.postDataJSON();
+      controlTargets.push(body.target_step);
+      current = body.target_step >= 9 ? violated(body.target_step) : { ...holding, step: body.target_step };
+    } else if (path === "/sim/new") {
+      current = holding;
+    }
+    const body = path === "/sim/replay" ? { ...real.script, actions: [] } : current;
+    await route.fulfill({ status: 200, headers: { ...headers, "content-type": "application/json" }, json: body });
+  });
+
+  await page.goto(`${demoUrl}?engine=server&api=${encodeURIComponent(api)}`);
+  await expect(page.getByTestId("verdict")).toContainText("invariants hold");
+  await expect(page.getByTestId("violation-card")).toBeHidden();
+
+  await setFastestSpeed(page);
+  await page.getByTestId("play").click();
+  const card = page.getByTestId("violation-card");
+  await expect(card).toBeVisible();
+  await expect(card).toContainText("Invariant violated: election_safety");
+  await expect(page.getByTestId("violation-detail")).toContainText(`${ids[0]} and ${ids[2]}`);
+  // Paused, and rewound to the first violating step reported by the engine.
+  await expect(page.getByTestId("play")).toHaveText("Play");
+  await expect.poll(() => controlTargets.at(-1)).toBe(9);
+  await expect(page.getByTestId("timeline-label")).toHaveText("step 9 of 12");
+  await expect(page.getByTestId("violation-meta")).toContainText("First reported at step 9; this is that step.");
+  await expect(page.getByTestId("violation-meta")).toContainText(`Highlighted on the graph: ${ids[0]}, ${ids[2]}`);
+  await expect(page.locator(".vertex.node.implicated")).toHaveCount(2);
+  await expect(page.getByTestId("violation-go-first")).toBeDisabled();
+  await expect(page.getByTestId("timeline-marks").locator(".timeline-mark.verdict")).toHaveCount(1);
+
+  await page.getByTestId("violation-copy").click();
+  await expect(page.getByTestId("copy-status")).not.toBeEmpty();
+
+  await page.getByTestId("violation-close").click();
+  await expect(card).toBeHidden();
+});

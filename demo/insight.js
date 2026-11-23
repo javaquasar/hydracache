@@ -253,3 +253,145 @@ export function timelineMarks(events, base, max) {
       text: `step ${mark.step}: ${mark.texts.join("; ")}`,
     }));
 }
+
+// What changed between two snapshots of the same run: per-node election and
+// log fields, link states, per-node key checksums, the leader, and committed
+// entries. Only engine fields are compared; the step counter itself is not a
+// "change". Returns null when there is nothing to compare against.
+const NODE_FIELDS = [
+  ["status", (node) => nodeStatus(node)],
+  ["term", (node) => node.term],
+  ["commit", (node) => node.commit_index],
+  ["applied", (node) => node.applied_index],
+];
+
+export function stepChanges(previous, next) {
+  if (!previous || !next || previous.seed !== next.seed) {
+    return null;
+  }
+  const before = new Map((previous.nodes || []).map((node) => [node.id, node]));
+  const nodes = new Map();
+  for (const node of next.nodes || []) {
+    const old = before.get(node.id);
+    if (!old) {
+      nodes.set(node.id, [{ field: "added", from: null, to: nodeStatus(node) }]);
+      continue;
+    }
+    const fields = [];
+    for (const [field, read] of NODE_FIELDS) {
+      const from = read(old);
+      const to = read(node);
+      if (from !== to && from !== undefined && to !== undefined) {
+        fields.push({ field, from, to });
+      }
+    }
+    if (fields.length) {
+      nodes.set(node.id, fields);
+    }
+  }
+  const oldLinks = new Map((previous.links || []).map((link) => [`${link.from}>${link.to}`, link.state]));
+  const links = (next.links || [])
+    .filter((link) => oldLinks.has(`${link.from}>${link.to}`) && oldLinks.get(`${link.from}>${link.to}`) !== link.state)
+    .map((link) => ({ from: link.from, to: link.to, before: oldLinks.get(`${link.from}>${link.to}`), after: link.state }));
+  const versions = (snapshot) => {
+    const map = new Map();
+    for (const key of snapshot.keys || []) {
+      for (const replica of key.replicas || []) {
+        map.set(`${key.key}|${replica.node_id}`, replica.version ?? null);
+      }
+    }
+    return map;
+  };
+  const oldVersions = versions(previous);
+  const keys = [];
+  for (const [id, version] of versions(next)) {
+    const old = oldVersions.has(id) ? oldVersions.get(id) : null;
+    if (String(old) !== String(version)) {
+      const [key, node] = id.split("|");
+      keys.push({ key, node, before: old, after: version });
+    }
+  }
+  const leaderBefore = leaderOf(previous);
+  const leaderAfter = leaderOf(next);
+  const leader = leaderBefore !== leaderAfter ? { from: leaderBefore, to: leaderAfter } : null;
+  const committedBefore = previous.progress?.committed_entries;
+  const committedAfter = next.progress?.committed_entries;
+  const committed =
+    committedBefore !== committedAfter && committedAfter !== undefined
+      ? { from: committedBefore ?? 0, to: committedAfter }
+      : null;
+
+  const summary = [];
+  if (leader) {
+    summary.push(leader.to ? `leader ${leader.from ?? "none"} → ${leader.to}` : `leader ${leader.from} lost`);
+  }
+  for (const [id, fields] of nodes) {
+    summary.push(
+      `${id}: ${fields
+        .map((change) => (change.field === "added" ? "added" : `${change.field} ${change.from} → ${change.to}`))
+        .join(", ")}`,
+    );
+  }
+  for (const link of links) {
+    summary.push(`link ${link.from} → ${link.to} ${link.before} → ${link.after}`);
+  }
+  if (committed) {
+    summary.push(`committed ${committed.from} → ${committed.to}`);
+  }
+  if (keys.length) {
+    summary.push(`${keys.length} key replica checksum(s) changed`);
+  }
+  return { nodes, links, keys, leader, committed, summary };
+}
+
+// What the violation card shows: the engine's own invariant name and detail,
+// where it was first reported, and which node ids the detail text names (the
+// engine does not attach node ids to a violation, so nothing else is implied).
+export function violationFocus(snapshot) {
+  if (!snapshot || snapshot.verdict?.status === "holding" || !snapshot.verdict) {
+    return null;
+  }
+  const detail = String(snapshot.verdict.detail ?? "");
+  const named = (snapshot.nodes || [])
+    .map((node) => node.id)
+    .filter((id) => new RegExp(`(^|[^A-Za-z0-9_-])${escapeRegExp(id)}($|[^A-Za-z0-9_-])`).test(detail));
+  const first = snapshot.first_violation_step;
+  return {
+    invariant: String(snapshot.verdict.invariant ?? "invariant"),
+    detail,
+    step: snapshot.step,
+    firstStep: first === null || first === undefined ? snapshot.step : first,
+    nodes: named,
+  };
+}
+
+function escapeRegExp(text) {
+  return String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Rows for the node popover: engine fields only, plus how far its commit index
+// trails the current leader's (when there is one).
+export function nodeDetails(snapshot, id) {
+  const node = (snapshot?.nodes || []).find((candidate) => candidate.id === id);
+  if (!node) {
+    return null;
+  }
+  const leaderId = leaderOf(snapshot);
+  const leader = (snapshot.nodes || []).find((candidate) => candidate.id === leaderId);
+  const rows = [
+    ["status", nodeStatus(node)],
+    ["term", node.term],
+    ["voted for", node.voted_for ?? "—"],
+    ["votes received", node.votes_received],
+    ["commit index", node.commit_index],
+    ["applied index", node.applied_index],
+  ];
+  if (leader && leader.id !== node.id) {
+    const lag = Number(leader.commit_index) - Number(node.commit_index);
+    rows.push(["behind leader", lag > 0 ? `${lag} entr${lag === 1 ? "y" : "ies"}` : "caught up"]);
+  }
+  if (node.region || node.zone) {
+    rows.push(["placement", [node.region, node.zone].filter(Boolean).join(" / ")]);
+  }
+  return { id: node.id, status: nodeStatus(node), crashed: Boolean(node.crashed), disabled: Boolean(node.disabled), rows };
+}

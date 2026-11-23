@@ -39,6 +39,17 @@
               unknown
             </div>
             <button
+              id="show-intro"
+              class="ghost icon-button"
+              type="button"
+              data-testid="show-intro"
+              aria-label="Show the introduction"
+              title="Show the introduction"
+              aria-controls="intro"
+            >
+              <span aria-hidden="true">?</span>
+            </button>
+            <button
               id="theme-toggle"
               class="ghost icon-button"
               type="button"
@@ -143,6 +154,39 @@
         <p id="script-status" class="copy-status" data-testid="script-status"></p>
       </section>
 
+      <section id="intro" class="intro-card glass-panel" aria-labelledby="intro-title" data-testid="intro" hidden>
+        <div class="intro-head">
+          <h2 id="intro-title">New here? Three things to know</h2>
+          <button id="intro-dismiss" class="ghost" type="button" data-testid="intro-dismiss">Got it</button>
+        </div>
+        <ol class="intro-steps">
+          <li>
+            <strong>The circles are cluster nodes.</strong>
+            ★ marks the leader. Click a node for its details and actions; click a line to pick a link.
+            <button class="link-button" type="button" data-spotlight="#cluster-graph">Show me</button>
+          </li>
+          <li>
+            <strong>Step advances one deterministic step; Play keeps going.</strong>
+            Values that changed on the last step flash, and are listed under the graph.
+            <button class="link-button" type="button" data-spotlight="#group-run">Show me</button>
+          </li>
+          <li>
+            <strong>The verdict is the live invariant checker.</strong>
+            If it turns red, the run pauses on the first violating step and shows how to reproduce it.
+            <button class="link-button" type="button" data-spotlight="#verdict">Show me</button>
+          </li>
+        </ol>
+      </section>
+
+      <section
+        id="violation-card"
+        class="violation-card glass-panel"
+        role="alert"
+        aria-labelledby="violation-title"
+        data-testid="violation-card"
+        hidden
+      ></section>
+
       <section class="workspace">
         <section class="graph-panel glass-panel" aria-label="cluster graph">
           <div class="graph-stage">
@@ -182,8 +226,19 @@
                 <span><i class="legend-line delayed"></i>delayed</span>
               </div>
             </div>
-            <p id="graph-hint" class="graph-hint">Drag to pan · Ctrl + wheel to zoom · click a line to pick a link</p>
+            <p id="graph-hint" class="graph-hint">
+              Drag to pan · Ctrl + wheel to zoom · click a node or a line for details
+            </p>
+            <div
+              id="node-popover"
+              class="node-popover"
+              role="dialog"
+              aria-labelledby="node-popover-title"
+              data-testid="node-popover"
+              hidden
+            ></div>
           </div>
+          <p id="step-changes" class="step-changes" data-testid="step-changes"></p>
           <p id="graph-summary" class="visually-hidden" data-testid="graph-summary"></p>
           <section class="timeline" aria-label="timeline">
             <label class="timeline-scrub">

@@ -172,6 +172,21 @@ shared link cannot make the page render another server's verdict.
   topology; the simulator does not execute per-level reads or writes.
 - **Keys panel.** Per-node stored checksums for each sampled key; live replicas
   that differ from the majority are highlighted, down nodes are struck through.
+- **What changed.** After every step or action the line under the graph lists
+  the engine fields that changed since the previous view (node status, term,
+  commit/applied index, link states, leader, committed entries, key checksums),
+  and the matching nodes, rows, and key cells flash briefly.
+- **Node details.** Click a node (or focus it and press Enter) for its engine
+  fields — term, vote, commit and applied index, how far it trails the leader —
+  and the same Crash / Isolate / Rejoin / Disable actions as the Nodes panel.
+  Escape closes it.
+- **When a violation appears.** The run pauses, the view rewinds to the first
+  violating step the engine reported (`first_violation_step`), and a card shows
+  the invariant, the checker's detail, and the reproducer buttons. Nodes are
+  highlighted only when the detail text names them; the engine attaches no other
+  node attribution to a violation.
+- **First visit.** A short three-point introduction is shown once; the `?`
+  button in the header brings it back.
 
 ## Sharing and reproducing a run
 

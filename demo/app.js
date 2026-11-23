@@ -8,19 +8,30 @@ import {
 } from "./share.js";
 import { SCENARIOS } from "./scenarios.js";
 import { ServerSimSession, WasmSimSession } from "./engine.js";
-import { fitGraph, initGraph, playDataFlowPulse, resetGraph, syncGraph, zoomGraph } from "./graph.js";
+import {
+  fitGraph,
+  initGraph,
+  playDataFlowPulse,
+  resetGraph,
+  syncGraph,
+  vertexClientPoint,
+  zoomGraph,
+} from "./graph.js";
 import {
   graphSummary,
   keyAgreement,
   leaderOf,
+  nodeDetails,
   nodeStatus,
   scriptAtStep,
   scriptFileName,
   shortVersion,
   speedLabel,
+  stepChanges,
   timelineEvents,
   timelineMarks,
   verdictView,
+  violationFocus,
   voprScriptCommand,
 } from "./insight.js";
 
@@ -60,6 +71,18 @@ const state = {
   // Per-step observations made by this page (leader, verdict) for the event list.
   observations: new Map(),
   tour: { scenario: "default", index: 0, crashed: null },
+  // What changed since the previously rendered snapshot of the same run
+  // (insight.stepChanges); null right after a new run is created.
+  changes: null,
+  freshRun: true,
+  // Graph highlights derived from `changes` and the violation detail.
+  marks: { changed: new Set(), implicated: new Set() },
+  // Violation card: the violation the user closed (so it stays closed).
+  violationDismissed: null,
+  violationSignature: "",
+  // Node whose details popover is open.
+  popoverNode: null,
+  popover: null,
 };
 
 const el = {
@@ -120,6 +143,13 @@ const el = {
   consistency: document.querySelector("#consistency-panel"),
   keys: document.querySelector("#keys-panel"),
   linkActions: Array.from(document.querySelectorAll("[data-action]")),
+  stepChanges: document.querySelector("#step-changes"),
+  violationCard: document.querySelector("#violation-card"),
+  nodePopover: document.querySelector("#node-popover"),
+  graphStage: document.querySelector(".graph-stage"),
+  intro: document.querySelector("#intro"),
+  introDismiss: document.querySelector("#intro-dismiss"),
+  showIntro: document.querySelector("#show-intro"),
 };
 
 async function boot() {
@@ -131,9 +161,14 @@ async function boot() {
       render();
     },
     onClientPress: (client) => void runAction(() => pushEventFor(client.id, client.namespace)),
+    onNodePress: (id) => openNodePopover(id),
+    getNodeMarks: () => state.marks,
+    onPaint: () => positionNodePopover(),
   });
   bindPreferenceState();
   bindTheme();
+  bindIntro();
+  buildNodePopover();
   collapseSecondaryPanelsOnSmallScreens();
   setBusy(true);
   const initial = readInitialState(window.location.search, window.location.origin);
@@ -347,8 +382,16 @@ async function refresh() {
   if (!state.sim) {
     return;
   }
+  const previous = state.freshRun ? null : state.snapshot;
+  state.freshRun = false;
   state.snapshot = JSON.parse(await state.sim.snapshot_json());
+  state.changes = stepChanges(previous, state.snapshot);
+  const focus = violationFocus(state.snapshot);
+  const wasHolding = !previous || previous.verdict?.status === "holding";
   render();
+  if (focus && wasHolding && !state.timeline.rewound) {
+    onViolationDetected(focus);
+  }
   if (state.playing) {
     scheduleUrlWrite();
   } else {
@@ -409,7 +452,14 @@ function render() {
       : `${snapshot.mode || "manual"} · no interventions`;
   el.workload.checked = Boolean(snapshot.workload_enabled);
   recordObservation(snapshot);
+  const focus = violationFocus(snapshot);
+  state.marks = {
+    changed: new Set(state.changes?.nodes.keys() ?? []),
+    implicated: new Set(focus?.nodes ?? []),
+  };
   renderVerdict(snapshot);
+  renderViolationCard(focus);
+  renderChanges();
   renderVerdictPanel(snapshot);
   renderTimeline(snapshot);
   renderGuide();
@@ -422,6 +472,7 @@ function render() {
   renderClients(snapshot);
   renderConsistency(snapshot);
   renderKeys(snapshot);
+  renderNodePopover();
 }
 
 // Short, scannable run facts under the title; the election disclosure is the
@@ -544,7 +595,7 @@ function renderProgress(snapshot) {
     term("Logical time", snapshot.logical_time_millis),
     desc(`${snapshot.logical_time_millis} ms`),
     term("Committed", progress.committed_entries),
-    desc(progress.committed_entries),
+    desc(progress.committed_entries, state.changes?.committed ? "changed" : ""),
     term("Formation", snapshot.formation_phase || "unknown"),
     desc(snapshot.formation_phase || "unknown"),
     term("Election", snapshot.election_source || "unknown"),
@@ -580,8 +631,13 @@ function renderNodes(snapshot) {
     }
     const status = nodeStatus(node);
     view.row.className = `metric node-row role-${status}`;
+    if (state.marks.changed.has(node.id)) {
+      // Restart the flash when the row also changed on the previous step.
+      void view.row.offsetWidth;
+      view.row.classList.add("changed");
+    }
     view.label.textContent = `${node.id} ${status}`;
-    view.meta.textContent = `term ${node.term}; votes ${node.votes_received}`;
+    view.meta.textContent = `term ${node.term}; votes ${node.votes_received}; commit ${node.commit_index}`;
     view.crash.textContent = node.crashed ? "Restart" : "Crash";
     view.disable.textContent = node.disabled ? "Enable" : "Disable";
     if (list.children[index] !== view.row) {
@@ -603,35 +659,34 @@ function createNodeRow(id) {
   const meta = document.createElement("span");
   const buttons = document.createElement("div");
   buttons.className = "button-row";
-  const nodeAction = (handler) => () =>
-    void runAction(async () => {
-      const node = (state.snapshot?.nodes || []).find((candidate) => candidate.id === id);
-      if (!node) {
-        throw new Error(`node ${id} is no longer in the cluster`);
-      }
-      await handler(node);
-      await settleAfterIntervention();
-      await refresh();
-    });
-  const crash = nodeButton("Crash", nodeAction(async (node) => {
-    if (node.crashed) {
-      await state.sim.restart_node(node.id);
-    } else {
-      await state.sim.crash_node(node.id);
-    }
-  }));
-  const isolate = nodeButton("Isolate", nodeAction((node) => state.sim.isolate_node(node.id)));
-  const rejoin = nodeButton("Rejoin", nodeAction((node) => state.sim.rejoin_node(node.id)));
-  const disable = nodeButton("Disable", nodeAction(async (node) => {
-    if (node.disabled) {
-      await state.sim.enable_node(node.id);
-    } else {
-      await state.sim.disable_node(node.id);
-    }
-  }));
+  const crash = nodeButton("Crash", () => void runNodeAction(id, "crash"));
+  const isolate = nodeButton("Isolate", () => void runNodeAction(id, "isolate"));
+  const rejoin = nodeButton("Rejoin", () => void runNodeAction(id, "rejoin"));
+  const disable = nodeButton("Disable", () => void runNodeAction(id, "disable"));
   buttons.append(crash, isolate, rejoin, disable);
   row.append(label, meta, buttons);
   return { row, label, meta, crash, isolate, rejoin, disable };
+}
+
+// Node interventions shared by the Nodes panel and the node popover. Handlers
+// read the node's state at click time, not at render time.
+const NODE_ACTIONS = {
+  crash: (node) => (node.crashed ? state.sim.restart_node(node.id) : state.sim.crash_node(node.id)),
+  isolate: (node) => state.sim.isolate_node(node.id),
+  rejoin: (node) => state.sim.rejoin_node(node.id),
+  disable: (node) => (node.disabled ? state.sim.enable_node(node.id) : state.sim.disable_node(node.id)),
+};
+
+function runNodeAction(id, kind) {
+  return runAction(async () => {
+    const node = (state.snapshot?.nodes || []).find((candidate) => candidate.id === id);
+    if (!node) {
+      throw new Error(`node ${id} is no longer in the cluster`);
+    }
+    await NODE_ACTIONS[kind](node);
+    await settleAfterIntervention();
+    await refresh();
+  });
 }
 
 function nodeButton(label, handler) {
@@ -773,6 +828,7 @@ function renderKeys(snapshot) {
   list.className = "key-list";
   const agreement = keyAgreement(snapshot);
   const keys = agreement.keys.slice(0, 8);
+  const changedKeys = new Set((state.changes?.keys ?? []).map((change) => `${change.key}|${change.node}`));
   if (keys.length === 0) {
     const empty = document.createElement("p");
     empty.textContent = "no sampled keys";
@@ -792,7 +848,8 @@ function renderKeys(snapshot) {
     cells.className = "replica-cells";
     for (const cell of key.cells) {
       const chip = document.createElement("span");
-      chip.className = ["replica", cell.diverged ? "diverged" : "", cell.live ? "" : "down"]
+      const changed = changedKeys.has(`${key.key}|${cell.node}`);
+      chip.className = ["replica", cell.diverged ? "diverged" : "", cell.live ? "" : "down", changed ? "changed" : ""]
         .filter(Boolean)
         .join(" ");
       chip.textContent = `${cell.node} ${shortVersion(cell.version)}`;
@@ -884,7 +941,12 @@ function renderTimeline(snapshot) {
   el.timelineInput.value = String(snapshot.step);
   el.timelineInput.disabled = max <= base;
   el.timelineLabel.textContent = `step ${snapshot.step} of ${max}`;
-  renderTimelineMarks(timelineEvents(script, state.observations), base, max);
+  const markEvents = timelineEvents(script, state.observations);
+  const first = snapshot.first_violation_step;
+  if (first !== null && first !== undefined) {
+    markEvents.push({ step: first, kind: "verdict", text: "first violation reported by the checker" });
+  }
+  renderTimelineMarks(markEvents, base, max);
   el.timelineHelp.textContent = rewound
     ? `Rewound to step ${snapshot.step} of a recording that reaches step ${max}. Drag forward to replay it; Step, Play or any action continues from here and drops the later recording.`
     : "Drag to rebuild any earlier step of this run from its seed and recorded actions.";
@@ -1238,9 +1300,12 @@ function term(text) {
   return node;
 }
 
-function desc(text) {
+function desc(text, className = "") {
   const node = document.createElement("dd");
   node.textContent = String(text);
+  if (className) {
+    node.className = className;
+  }
   return node;
 }
 
@@ -1385,6 +1450,10 @@ function bindMediaFlag(name, query) {
 
 async function createSimulation(seed) {
   resetGraph();
+  state.freshRun = true;
+  state.changes = null;
+  state.violationDismissed = null;
+  closeNodePopover({ restoreFocus: false });
   state.nodeRows.clear();
   el.nodes.replaceChildren();
   if (state.engine === "server") {
@@ -1405,6 +1474,319 @@ function showEngineError(error) {
   for (const button of [el.step, el.play, el.copy, el.loadScenario, el.downloadScript, el.guideDo, ...el.untilButtons, ...el.linkActions]) {
     button.disabled = true;
   }
+}
+
+// ---------------------------------------------------------------------------
+// What changed since the previous view (engine fields only).
+// ---------------------------------------------------------------------------
+const MAX_CHANGE_ITEMS = 6;
+
+function renderChanges() {
+  const changes = state.changes;
+  if (!changes) {
+    el.stepChanges.textContent = "";
+    el.stepChanges.hidden = true;
+    return;
+  }
+  el.stepChanges.hidden = false;
+  if (changes.summary.length === 0) {
+    el.stepChanges.textContent = "No engine state changed since the previous view.";
+    el.stepChanges.classList.add("quiet");
+    return;
+  }
+  el.stepChanges.classList.remove("quiet");
+  const shown = changes.summary.slice(0, MAX_CHANGE_ITEMS);
+  const more = changes.summary.length - shown.length;
+  const label = document.createElement("strong");
+  label.textContent = "Changed: ";
+  el.stepChanges.replaceChildren(label, `${shown.join(" · ")}${more > 0 ? ` · +${more} more` : ""}`);
+}
+
+// ---------------------------------------------------------------------------
+// Violation: pause on the transition, jump to the first violating step, and
+// say what broke and how to reproduce it. Everything shown comes from the
+// engine's verdict; highlighted nodes are the ids its detail text names.
+// ---------------------------------------------------------------------------
+function onViolationDetected(focus) {
+  stopPlay();
+  state.violationDismissed = null;
+  renderViolationCard(focus);
+  const { base } = state.timeline;
+  if (focus.firstStep < focus.step && focus.firstStep >= base) {
+    void enqueue(async () => {
+      try {
+        await rewindTo(focus.firstStep);
+      } catch (error) {
+        showNotice(`Could not show the first violating step: ${errorMessage(error)}`, "warn");
+      }
+    });
+  }
+}
+
+function violationKey(focus) {
+  return `${focus.invariant}@${focus.firstStep}`;
+}
+
+function renderViolationCard(focus) {
+  if (!focus || state.violationDismissed === violationKey(focus)) {
+    el.violationCard.hidden = true;
+    el.violationCard.replaceChildren();
+    state.violationSignature = "";
+    return;
+  }
+  const signature = `${violationKey(focus)}|${focus.step}|${focus.detail}|${state.timeline.furthest}`;
+  el.violationCard.hidden = false;
+  if (state.violationSignature === signature) {
+    return;
+  }
+  state.violationSignature = signature;
+
+  const head = document.createElement("div");
+  head.className = "violation-head";
+  const title = document.createElement("h2");
+  title.id = "violation-title";
+  title.textContent = `Invariant violated: ${focus.invariant}`;
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "ghost icon-button";
+  close.dataset.testid = "violation-close";
+  close.setAttribute("aria-label", "Close the violation summary");
+  close.title = "Close";
+  close.textContent = "✕";
+  close.addEventListener("click", () => {
+    state.violationDismissed = violationKey(focus);
+    renderViolationCard(focus);
+  });
+  head.append(title, close);
+
+  const detail = document.createElement("p");
+  detail.className = "violation-detail";
+  detail.dataset.testid = "violation-detail";
+  detail.textContent = focus.detail || "(the checker gave no detail)";
+
+  const where = document.createElement("p");
+  where.className = "violation-meta";
+  where.dataset.testid = "violation-meta";
+  const at =
+    focus.firstStep === focus.step
+      ? `First reported at step ${focus.firstStep}; this is that step.`
+      : `First reported at step ${focus.firstStep}; showing step ${focus.step}.`;
+  const nodes = focus.nodes.length
+    ? ` Highlighted on the graph: ${focus.nodes.join(", ")} (named in the detail).`
+    : " The detail names no specific node.";
+  where.textContent = `${at}${nodes} Run is paused.`;
+
+  const actions = document.createElement("div");
+  actions.className = "button-row";
+  const goFirst = document.createElement("button");
+  goFirst.type = "button";
+  goFirst.dataset.testid = "violation-go-first";
+  goFirst.textContent = `Go to step ${focus.firstStep}`;
+  goFirst.disabled = focus.firstStep === focus.step || focus.firstStep < state.timeline.base;
+  goFirst.addEventListener("click", () =>
+    void runAction(() => rewindTo(focus.firstStep), { keepTimeline: true }),
+  );
+  const copy = document.createElement("button");
+  copy.type = "button";
+  copy.className = "primary";
+  copy.dataset.testid = "violation-copy";
+  copy.textContent = "Copy reproducer";
+  copy.addEventListener("click", () => void runAction(copyReproducer, { keepTimeline: true }));
+  const download = document.createElement("button");
+  download.type = "button";
+  download.dataset.testid = "violation-download";
+  download.textContent = "Download script";
+  download.addEventListener("click", () => void runAction(downloadScript, { keepTimeline: true }));
+  actions.append(copy, download, goFirst);
+
+  const note = document.createElement("p");
+  note.className = "model-note";
+  note.textContent =
+    "Reported by the actual invariant checker for this seeded run. The reproducer rebuilds exactly this run; Download script replays it with vopr.";
+  el.violationCard.replaceChildren(head, detail, where, actions, note);
+}
+
+// ---------------------------------------------------------------------------
+// Node popover: the node's engine fields and its actions, next to the node.
+// ---------------------------------------------------------------------------
+function buildNodePopover() {
+  const head = document.createElement("div");
+  head.className = "popover-head";
+  const title = document.createElement("h3");
+  title.id = "node-popover-title";
+  const status = document.createElement("span");
+  status.className = "popover-status";
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "ghost icon-button";
+  close.dataset.testid = "node-popover-close";
+  close.setAttribute("aria-label", "Close node details");
+  close.title = "Close";
+  close.textContent = "✕";
+  close.addEventListener("click", () => closeNodePopover());
+  head.append(title, status, close);
+  const rows = document.createElement("dl");
+  rows.className = "popover-rows";
+  const actions = document.createElement("div");
+  actions.className = "button-row";
+  const buttons = {};
+  for (const [kind, label] of [
+    ["crash", "Crash"],
+    ["isolate", "Isolate"],
+    ["rejoin", "Rejoin"],
+    ["disable", "Disable"],
+  ]) {
+    const button = nodeButton(label, () => {
+      if (state.popoverNode) {
+        void runNodeAction(state.popoverNode, kind);
+      }
+    });
+    button.dataset.testid = `node-popover-${kind}`;
+    buttons[kind] = button;
+    actions.append(button);
+  }
+  el.nodePopover.append(head, rows, actions);
+  el.nodePopover.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      closeNodePopover();
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && state.popoverNode) {
+      closeNodePopover();
+    }
+  });
+  // Pressing the empty canvas (a pan) closes it; pressing a node re-targets it.
+  el.graph.addEventListener("pointerdown", (event) => {
+    if (state.popoverNode && !event.target.closest(".vertex.node")) {
+      closeNodePopover({ restoreFocus: false });
+    }
+  });
+  state.popover = { title, status, rows, buttons };
+}
+
+function openNodePopover(id) {
+  state.popoverNode = id;
+  renderNodePopover();
+  state.popover.buttons.crash.focus({ preventScroll: true });
+}
+
+function closeNodePopover({ restoreFocus = true } = {}) {
+  const id = state.popoverNode;
+  state.popoverNode = null;
+  if (!el.nodePopover) {
+    return;
+  }
+  el.nodePopover.hidden = true;
+  if (restoreFocus && id) {
+    const vertex = [...el.graph.querySelectorAll(".vertex.node")].find(
+      (group) => group.querySelector(".v-id")?.textContent === id,
+    );
+    vertex?.focus({ preventScroll: true });
+  }
+}
+
+function renderNodePopover() {
+  if (!state.popoverNode || !state.popover) {
+    return;
+  }
+  const details = nodeDetails(state.snapshot, state.popoverNode);
+  if (!details) {
+    closeNodePopover({ restoreFocus: false });
+    return;
+  }
+  const { title, status, rows, buttons } = state.popover;
+  title.textContent = details.id;
+  status.textContent = details.status;
+  status.className = `popover-status role-${details.status}`;
+  const items = [];
+  for (const [label, value] of details.rows) {
+    const term = document.createElement("dt");
+    term.textContent = label;
+    const desc = document.createElement("dd");
+    desc.textContent = String(value);
+    items.push(term, desc);
+  }
+  rows.replaceChildren(...items);
+  buttons.crash.textContent = details.crashed ? "Restart" : "Crash";
+  buttons.disable.textContent = details.disabled ? "Enable" : "Disable";
+  el.nodePopover.hidden = false;
+  positionNodePopover();
+}
+
+const POPOVER_GAP = 12;
+
+function positionNodePopover() {
+  if (!state.popoverNode || el.nodePopover.hidden) {
+    return;
+  }
+  const point = vertexClientPoint(state.popoverNode);
+  if (!point) {
+    return;
+  }
+  const stage = el.graphStage.getBoundingClientRect();
+  const width = el.nodePopover.offsetWidth;
+  const height = el.nodePopover.offsetHeight;
+  const x = point.x - stage.left;
+  const y = point.y - stage.top;
+  let left = x + point.radius + POPOVER_GAP;
+  if (left + width > stage.width - 8) {
+    left = x - point.radius - POPOVER_GAP - width;
+  }
+  left = Math.max(8, Math.min(left, stage.width - width - 8));
+  const top = Math.max(8, Math.min(y - height / 2, Math.max(8, stage.height - height - 8)));
+  el.nodePopover.style.left = `${Math.round(left)}px`;
+  el.nodePopover.style.top = `${Math.round(top)}px`;
+}
+
+// ---------------------------------------------------------------------------
+// First-visit introduction: three pointers, dismissed once, reopened with "?".
+// ---------------------------------------------------------------------------
+const INTRO_KEY = "hydracache-demo-intro-seen";
+
+function bindIntro() {
+  let seen = false;
+  try {
+    seen = window.localStorage.getItem(INTRO_KEY) === "1";
+  } catch (_error) {
+    seen = false;
+  }
+  el.intro.hidden = seen;
+  el.showIntro.setAttribute("aria-expanded", seen ? "false" : "true");
+  el.introDismiss.addEventListener("click", () => {
+    el.intro.hidden = true;
+    el.showIntro.setAttribute("aria-expanded", "false");
+    try {
+      window.localStorage.setItem(INTRO_KEY, "1");
+    } catch (_error) {
+      // Storage can be unavailable; the intro still closes for this visit.
+    }
+    el.showIntro.focus({ preventScroll: true });
+  });
+  el.showIntro.addEventListener("click", () => {
+    el.intro.hidden = !el.intro.hidden;
+    el.showIntro.setAttribute("aria-expanded", el.intro.hidden ? "false" : "true");
+    if (!el.intro.hidden) {
+      el.intro.scrollIntoView({ block: "nearest" });
+    }
+  });
+  for (const button of el.intro.querySelectorAll("[data-spotlight]")) {
+    button.addEventListener("click", () => spotlight(document.querySelector(button.dataset.spotlight)));
+  }
+}
+
+function spotlight(target) {
+  if (!target) {
+    return;
+  }
+  const reduced = document.documentElement.dataset.reducedMotion === "true";
+  const box = target.closest(".control-group") ?? target;
+  box.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
+  box.classList.remove("spotlight");
+  void box.offsetWidth;
+  box.classList.add("spotlight");
+  window.setTimeout(() => box.classList.remove("spotlight"), 2000);
 }
 
 boot();

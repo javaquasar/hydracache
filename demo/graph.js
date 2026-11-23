@@ -5,7 +5,8 @@ import { nodeStatus } from "./insight.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-// host: { svg, getSnapshot(), getSelectedLink(), onSelectLink(link), onClientPress(client) }
+// host: { svg, getSnapshot(), getSelectedLink(), onSelectLink(link), onClientPress(client),
+//         onNodePress(id), getNodeMarks() -> { changed: Set, implicated: Set }, onPaint() }
 let host = null;
 let seenNodes = new Set();
 
@@ -291,7 +292,11 @@ function buildGraphDom(snapshot) {
       }
     }
     if (vertex.kind === "node") {
-      group.setAttribute("role", "img");
+      // A press (not a drag) or Enter opens the node's details and actions.
+      group.setAttribute("tabindex", "0");
+      group.setAttribute("role", "button");
+      group.setAttribute("aria-haspopup", "dialog");
+      onActivateKey(group, () => host.onNodePress?.(vertex.id));
     }
     bindVertexDrag(group, vertex);
     vertexLayer.append(group);
@@ -302,6 +307,7 @@ function buildGraphDom(snapshot) {
 }
 
 function updateGraphVisuals(snapshot) {
+  const marks = host.getNodeMarks?.() ?? { changed: new Set(), implicated: new Set() };
   const nodeById = new Map((snapshot.nodes || []).map((n) => [n.id, n]));
   for (const [, item] of graphSim.dom.vertices) {
     const v = item.vertex;
@@ -313,8 +319,23 @@ function updateGraphVisuals(snapshot) {
       seenNodes.add(node.id);
       item.group.setAttribute(
         "class",
-        ["vertex", "node", `role-${status}`, node.crashed ? "crashed" : "", node.disabled ? "disabled" : "", isNew ? "joining" : ""].filter(Boolean).join(" "),
+        [
+          "vertex",
+          "node",
+          `role-${status}`,
+          node.crashed ? "crashed" : "",
+          node.disabled ? "disabled" : "",
+          isNew ? "joining" : "",
+          marks.implicated.has(node.id) ? "implicated" : "",
+        ]
+          .filter(Boolean)
+          .join(" "),
       );
+      if (marks.changed.has(node.id)) {
+        // Restart the flash even when the node also changed on the last step.
+        void item.group.getBoundingClientRect();
+        item.group.classList.add("changed");
+      }
       item.group.querySelector(".v-id").textContent = node.id;
       item.group.querySelector(".v-sub").textContent = status;
       item.group.querySelector(".v-badge text").textContent = ROLE_BADGES[status] ?? "";
@@ -518,6 +539,23 @@ function paintGraph(now) {
     packet.trail.setAttribute("y2", y);
   }
   updatePulses(now);
+  host.onPaint?.();
+}
+
+/** Where a vertex is drawn, in client (viewport) pixels; null when unknown. */
+export function vertexClientPoint(id) {
+  const p = graphSim.pos.get(id);
+  const ctm = host?.svg.getScreenCTM();
+  if (!p || !ctm) {
+    return null;
+  }
+  const gx = p.x * graphSim.view.scale + graphSim.view.tx;
+  const gy = p.y * graphSim.view.scale + graphSim.view.ty;
+  return {
+    x: ctm.a * gx + ctm.c * gy + ctm.e,
+    y: ctm.b * gx + ctm.d * gy + ctm.f,
+    radius: GRAPH.nodeRadius * graphSim.view.scale * ctm.a,
+  };
 }
 
 // Transient, choreographed "data flow" triggered by a client push: request travels
@@ -676,6 +714,9 @@ function bindVertexDrag(group, vertex) {
       group.removeEventListener("lostpointercapture", cancel);
       if (completed && !graphSim.movedDuringPress && vertex.kind === "client") {
         host.onClientPress(vertex.ref);
+      }
+      if (completed && !graphSim.movedDuringPress && vertex.kind === "node") {
+        host.onNodePress?.(vertex.id);
       }
       startGraphSim();
     };

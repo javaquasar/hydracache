@@ -7,13 +7,16 @@ import {
   graphSummary,
   keyAgreement,
   leaderOf,
+  nodeDetails,
   nodeStatus,
   scriptAtStep,
   shortVersion,
   speedLabel,
+  stepChanges,
   timelineEvents,
   timelineMarks,
   verdictView,
+  violationFocus,
 } from "../insight.js";
 
 const baseSnapshot = {
@@ -193,5 +196,107 @@ describe("timelineMarks", () => {
   test("returns no marks for an empty range", () => {
     assert.deepEqual(timelineMarks(events, 4, 4), []);
     assert.deepEqual(timelineMarks(null, 0, 10), []);
+  });
+});
+
+describe("stepChanges", () => {
+  const before = {
+    seed: 7,
+    step: 10,
+    progress: { committed_entries: 4 },
+    nodes: [
+      { id: "node-0", vote_state: "leader", term: 2, commit_index: 4, applied_index: 4 },
+      { id: "node-1", vote_state: "follower", term: 2, commit_index: 3, applied_index: 3 },
+    ],
+    links: [{ from: "node-0", to: "node-1", state: "up" }],
+    keys: [{ key: "k", replicas: [{ node_id: "node-0", version: 1 }, { node_id: "node-1", version: 1 }] }],
+  };
+
+  test("returns null without a comparable previous snapshot", () => {
+    assert.equal(stepChanges(null, before), null);
+    assert.equal(stepChanges({ ...before, seed: 8 }, before), null);
+  });
+
+  test("an unchanged snapshot reports nothing, even when the step advanced", () => {
+    const changes = stepChanges(before, { ...before, step: 11 });
+    assert.deepEqual(changes.summary, []);
+    assert.equal(changes.nodes.size, 0);
+  });
+
+  test("reports node fields, links, keys, leader and commits that changed", () => {
+    const after = {
+      ...before,
+      step: 11,
+      progress: { committed_entries: 5 },
+      nodes: [
+        { id: "node-0", crashed: true, vote_state: "follower", term: 2, commit_index: 4, applied_index: 4 },
+        { id: "node-1", vote_state: "leader", term: 3, commit_index: 4, applied_index: 3 },
+        { id: "node-2", vote_state: "joining", term: 0, commit_index: 0, applied_index: 0 },
+      ],
+      links: [{ from: "node-0", to: "node-1", state: "partitioned" }],
+      keys: [{ key: "k", replicas: [{ node_id: "node-0", version: 1 }, { node_id: "node-1", version: 2 }] }],
+    };
+    const changes = stepChanges(before, after);
+    assert.deepEqual(changes.leader, { from: "node-0", to: "node-1" });
+    assert.deepEqual(changes.nodes.get("node-0"), [{ field: "status", from: "leader", to: "crashed" }]);
+    assert.deepEqual(
+      changes.nodes.get("node-1").map((change) => change.field),
+      ["status", "term", "commit"],
+    );
+    assert.equal(changes.nodes.get("node-2")[0].field, "added");
+    assert.deepEqual(changes.links, [{ from: "node-0", to: "node-1", before: "up", after: "partitioned" }]);
+    assert.deepEqual(changes.keys, [{ key: "k", node: "node-1", before: 1, after: 2 }]);
+    assert.deepEqual(changes.committed, { from: 4, to: 5 });
+    assert.ok(changes.summary.includes("leader node-0 → node-1"));
+    assert.ok(changes.summary.includes("link node-0 → node-1 up → partitioned"));
+    assert.ok(changes.summary.includes("1 key replica checksum(s) changed"));
+  });
+});
+
+describe("violationFocus", () => {
+  test("is null while the verdict holds", () => {
+    assert.equal(violationFocus({ ...baseSnapshot, verdict: { status: "holding" } }), null);
+  });
+
+  test("names only node ids that appear as whole tokens in the detail", () => {
+    const focus = violationFocus({
+      ...baseSnapshot,
+      nodes: [{ id: "node-1" }, { id: "node-10" }, { id: "node-2" }],
+      verdict: { status: "violated", invariant: "election_safety", detail: "leaders node-10 and node-2 in term 3" },
+    });
+    assert.deepEqual(focus.nodes, ["node-10", "node-2"]);
+    assert.equal(focus.invariant, "election_safety");
+    assert.equal(focus.firstStep, 31);
+    assert.equal(focus.step, 40);
+  });
+
+  test("falls back to the current step when no first step is reported", () => {
+    const focus = violationFocus({ ...baseSnapshot, first_violation_step: null });
+    assert.equal(focus.firstStep, 40);
+    assert.deepEqual(focus.nodes, []);
+  });
+});
+
+describe("nodeDetails", () => {
+  const snapshot = {
+    nodes: [
+      { id: "node-0", vote_state: "leader", term: 3, commit_index: 9, applied_index: 9, votes_received: 2 },
+      { id: "node-1", vote_state: "follower", term: 3, commit_index: 7, applied_index: 6, voted_for: "node-0" },
+    ],
+  };
+
+  test("lists engine fields and the commit lag behind the leader", () => {
+    const details = nodeDetails(snapshot, "node-1");
+    const rows = Object.fromEntries(details.rows);
+    assert.equal(rows.status, "follower");
+    assert.equal(rows["voted for"], "node-0");
+    assert.equal(rows["commit index"], 7);
+    assert.equal(rows["behind leader"], "2 entries");
+  });
+
+  test("the leader has no lag row and unknown nodes return null", () => {
+    const rows = Object.fromEntries(nodeDetails(snapshot, "node-0").rows);
+    assert.equal(rows["behind leader"], undefined);
+    assert.equal(nodeDetails(snapshot, "node-9"), null);
   });
 });

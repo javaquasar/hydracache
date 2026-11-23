@@ -1609,3 +1609,292 @@ html[data-reduced-transparency="true"] select {
     display: none;
   }
 }
+
+/* -------------------------------------------------------------------------
+   Step changes, violation story, node popover, first-visit intro.
+   ------------------------------------------------------------------------- */
+@keyframes hc-flash {
+  from {
+    background-color: color-mix(in srgb, var(--accent-alt) 30%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-alt) 55%, transparent);
+  }
+  to {
+    background-color: transparent;
+    box-shadow: 0 0 0 2px transparent;
+  }
+}
+
+@keyframes hc-node-flash {
+  from {
+    filter: drop-shadow(0 0 12px var(--accent-alt));
+  }
+  to {
+    filter: drop-shadow(0 0 0 transparent);
+  }
+}
+
+@keyframes hc-implicated {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px var(--danger));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px var(--danger));
+  }
+}
+
+@keyframes hc-spotlight {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  30%,
+  70% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-alt) 70%, transparent);
+  }
+}
+
+.node-row.changed,
+dd.changed,
+.replica.changed {
+  animation: hc-flash 1.4s ease-out;
+  border-radius: 6px;
+}
+
+.vertex.node.changed {
+  animation: hc-node-flash 1.4s ease-out;
+}
+
+.vertex.node.implicated .v-body {
+  stroke: var(--danger);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+.vertex.node.implicated {
+  animation: hc-implicated 1.6s ease-in-out infinite;
+}
+
+.vertex.node {
+  cursor: pointer;
+}
+
+.vertex.node:focus-visible {
+  outline: none;
+}
+
+.vertex.node:focus-visible .v-body {
+  stroke: var(--accent-alt);
+  stroke-width: 5;
+}
+
+.spotlight {
+  animation: hc-spotlight 1.8s ease-in-out;
+  border-radius: 8px;
+}
+
+.step-changes {
+  margin: 10px 2px 0;
+  font-size: var(--font-small);
+  line-height: 1.45;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.step-changes strong {
+  color: var(--accent-alt);
+}
+
+.step-changes.quiet {
+  color: var(--muted);
+}
+
+/* Violation card: the strongest moment of the lab, shown above the workspace. */
+.violation-card {
+  margin-bottom: 14px;
+  padding: 16px 18px;
+  border-radius: 8px;
+  border-left: 6px solid var(--danger);
+  background: color-mix(in srgb, var(--danger-bg) 88%, transparent);
+}
+
+.violation-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.violation-head h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--danger);
+}
+
+.violation-head h2::before {
+  content: "✕ ";
+}
+
+.violation-detail {
+  margin: 8px 0 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.violation-meta {
+  margin: 0 0 10px;
+  font-size: var(--font-small);
+  color: var(--ink);
+}
+
+.violation-card .button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Node popover, positioned next to its node inside the graph stage. */
+.node-popover {
+  position: absolute;
+  z-index: 5;
+  width: min(280px, calc(100% - 16px));
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--glass-solid);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+}
+
+.popover-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.popover-head h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.popover-head .icon-button {
+  margin-left: auto;
+}
+
+.popover-status {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: var(--font-xsmall);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent-strong);
+}
+
+.popover-status.role-leader {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.popover-status.role-crashed,
+.popover-status.role-disabled {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.popover-rows {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 12px;
+  margin: 10px 0;
+  font-size: var(--font-small);
+}
+
+.popover-rows dt {
+  color: var(--muted);
+}
+
+.popover-rows dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.node-popover .button-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+/* First-visit intro. */
+.intro-card {
+  margin-bottom: 14px;
+  padding: 14px 18px;
+  border-radius: 8px;
+}
+
+.intro-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.intro-head h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.intro-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 10px 0 0;
+  padding-left: 20px;
+  font-size: var(--font-small);
+  line-height: 1.45;
+}
+
+.intro-steps strong {
+  display: block;
+}
+
+.link-button {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--accent-strong);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+html[data-reduced-motion="true"] .node-row.changed,
+html[data-reduced-motion="true"] dd.changed,
+html[data-reduced-motion="true"] .replica.changed {
+  animation: none;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent-alt) 60%, transparent);
+}
+
+html[data-reduced-motion="true"] .vertex.node.changed,
+html[data-reduced-motion="true"] .vertex.node.implicated,
+html[data-reduced-motion="true"] .spotlight {
+  animation: none;
+}
+
+html[data-reduced-motion="true"] .spotlight {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-alt) 70%, transparent);
+}
+
+@media (max-width: 900px) {
+  .intro-steps {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .violation-card .button-row button {
+    flex: 1 1 auto;
+  }
+}
