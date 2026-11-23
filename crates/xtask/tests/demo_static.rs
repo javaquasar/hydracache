@@ -13,7 +13,20 @@ fn repo_root() -> PathBuf {
 fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     let root = repo_root();
     let html = fs::read_to_string(root.join("demo/index.html")).expect("demo html exists");
-    let js = fs::read_to_string(root.join("demo/app.js")).expect("demo app exists");
+    let app = fs::read_to_string(root.join("demo/app.js")).expect("demo app exists");
+    // The page is split into ES modules; check the wiring markers across all of them.
+    let js = ["app.js", "engine.js", "graph.js", "insight.js"]
+        .iter()
+        .map(|module| {
+            fs::read_to_string(root.join("demo").join(module))
+                .unwrap_or_else(|_| panic!("demo module {module} exists"))
+        })
+        .collect::<Vec<_>>()
+        .join("
+");
+    assert!(app.contains("from \"./engine.js\""));
+    assert!(app.contains("from \"./graph.js\""));
+    assert!(app.contains("from \"./insight.js\""));
     let share = fs::read_to_string(root.join("demo/share.js")).expect("demo share helper exists");
     let scenarios =
         fs::read_to_string(root.join("demo/scenarios.js")).expect("demo scenarios helper exists");

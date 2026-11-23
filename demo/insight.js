@@ -174,3 +174,14 @@ export function scriptAtStep(script, step) {
     target_step: step,
   };
 }
+
+// Display status of a node: crash/disable override the election state.
+export function nodeStatus(node) {
+  if (node.crashed) {
+    return "crashed";
+  }
+  if (node.disabled) {
+    return "disabled";
+  }
+  return String(node.vote_state || node.role || "unknown");
+}
