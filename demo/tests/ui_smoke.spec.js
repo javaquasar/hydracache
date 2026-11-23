@@ -149,7 +149,7 @@ test("consistency_panel_states_levels_are_not_modeled", async ({ page }) => {
   await openReady(page);
   const panel = page.getByTestId("consistency-panel");
   await expect(panel).toContainText("not simulated");
-  await expect(panel).toContainText("replica convergence");
+  await expect(panel).toContainText("live replicas agree on sampled keys");
   await expect(panel).not.toContainText("LOCAL_QUORUM");
 });
 
@@ -243,6 +243,56 @@ test("cancelled_pointer_on_client_does_not_push", async ({ page }) => {
   await client.dispatchEvent("pointerdown", init);
   await client.dispatchEvent("pointerup", init);
   await expect(page.getByTestId("intervention-status")).toContainText("2 replay action");
+});
+
+test("verdict_panel_lists_exactly_what_is_checked", async ({ page }) => {
+  await openReady(page);
+  const panel = page.getByTestId("verdict-panel");
+  await expect(panel).toContainText("election_safety");
+  await expect(panel).toContainText("read-your-writes");
+  await expect(panel).toContainText("resource_bounded_growth");
+  await expect(panel).toContainText("not in this live verdict");
+});
+
+test("keys_panel_shows_per_node_checksums", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=16&scenario=default`);
+  await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
+  const keys = page.getByTestId("keys-panel");
+  await expect(keys.locator(".replica").first()).toBeVisible();
+  await expect(keys).toContainText("node-0");
+  await expect(keys).toContainText("node-2");
+  await expect(keys).toContainText(/agree|replicas differ/);
+});
+
+test("run_to_leader_elects_and_run_to_violation_fails_loud", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=90&steps=0&scenario=default`);
+  await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
+
+  await page.getByTestId("until-leader").click();
+  await expect(page.getByTestId("nodes-panel")).toContainText("leader");
+  await expect(page.getByTestId("action-notice")).toBeHidden();
+
+  await page.getByTestId("until-violation").click();
+  await expect(page.getByTestId("action-notice")).toContainText("no violation within 500 steps", {
+    timeout: 30_000,
+  });
+});
+
+test("guide_runs_the_default_tour", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=91&steps=0&scenario=default`);
+  await expect(page.getByTestId("guide-title")).toContainText("1/6");
+  await page.getByTestId("guide-do").click();
+  await expect(page.getByTestId("nodes-panel")).toContainText("leader");
+  await expect(page.getByTestId("guide-title")).toContainText("2/6");
+  await page.getByTestId("guide-back").click();
+  await expect(page.getByTestId("guide-title")).toContainText("1/6");
+});
+
+test("workload_checkbox_follows_the_engine", async ({ page }) => {
+  await page.goto(`${demoUrl}?scenario=each_quorum_region_loss_fails_loud`);
+  await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
+  await expect(page.getByTestId("workload-toggle")).not.toBeChecked();
+  await expect(page.getByTestId("guide-text")).toContainText("not a quorum");
 });
 
 async function contrastRatio(locator) {

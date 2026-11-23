@@ -140,12 +140,46 @@ http://127.0.0.1:5173/demo/?engine=server&api=http://127.0.0.1:3000
 `127.0.0.1`, `[::1]`); any other host is refused and the lab stays disabled, so a
 shared link cannot make the page render another server's verdict.
 
+## Using the lab
+
+- **Guide.** Every scenario (and the default run) has a short guided tour.
+  `Do it` runs the step's actions through the same engine calls as the buttons;
+  the text describes what to look at and never claims an outcome the engine did
+  not produce.
+- **Timeline.** The slider under the graph rebuilds any earlier step of the
+  current run by replaying its script prefix (interventions up to that step,
+  resumed exactly there), so a rewound view is the real engine state at that
+  step. Events list recorded interventions plus the leader changes and verdict
+  transitions this page observed. Step, Play, or any other action while rewound
+  continues from the visible step and drops the later recording.
+- **Run to leader / replica agreement / violation.** Steps the engine until the
+  condition holds, and stops loudly after 500 steps if it never does.
+- **Verdict panel.** Lists the snapshot's `checked_invariants` (the exact set
+  behind the verdict), the violation detail, and the first violating step.
+- **Keys panel.** Per-node stored checksums for each sampled key; live replicas
+  that differ from the majority are highlighted, down nodes are struck through.
+
+## Sharing and reproducing a run
+
 The page URL carries `seed`, `steps`, and `scenario`. Once the run has
 interventions (node, link, workload, client actions, a mode change, or a loaded
 scenario), it also carries `script=`: a `ReplayScriptV1` with every recorded
 action and the step to resume at, which rebuilds the identical snapshot. The
 copy-reproducer button emits that replay link, or the matching `hydracache-sim`
 CLI command (`vopr --seed … --steps …`) for a plain seeded run.
+
+`Download script` saves the same replay script as JSON. Replay it outside the
+browser, including every intervention and the curated scenario it started from:
+
+```powershell
+cargo run -p hydracache-sim --bin vopr -- --script hydracache-replay-seed-80-step-42.json
+```
+
+`vopr --script` prints the run summary, `first_violation_step`, and the verdict,
+and exits `2` on a violation, so a violation found in the browser can become a
+regression test. A violation shown in the header always names the reproducer
+for that run: the plain `--seed/--steps` command only when no intervention or
+scenario shaped it.
 
 ## CI and publishing
 

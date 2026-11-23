@@ -7,6 +7,21 @@ import {
   writeUrlState,
 } from "./share.js";
 import { SCENARIOS } from "./scenarios.js";
+import {
+  keyAgreement,
+  leaderOf,
+  scriptAtStep,
+  scriptFileName,
+  shortVersion,
+  timelineEvents,
+  verdictView,
+  voprScriptCommand,
+} from "./insight.js";
+
+// Upper bound for the "run to ..." buttons, so a condition that never holds
+// (for example, no quorum) stops loudly instead of spinning.
+const RUN_UNTIL_LIMIT = 500;
+const MAX_TIMELINE_EVENTS = 40;
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 // Browsers rate-limit history.replaceState (Safari: ~100 calls / 30 s), so the
@@ -34,6 +49,13 @@ const state = {
   urlTimer: null,
   lastUrlWrite: Number.NEGATIVE_INFINITY,
   nodeRows: new Map(),
+  // Timeline of the current run: the furthest recorded script, the step the
+  // run starts at (a preset's own setup cannot be rewound), and whether the
+  // view is currently rewound inside that recording.
+  timeline: { script: null, base: 0, furthest: 0, rewound: false },
+  // Per-step observations made by this page (leader, verdict) for the event list.
+  observations: new Map(),
+  tour: { scenario: "default", index: 0, crashed: null },
 };
 
 const el = {
@@ -41,6 +63,19 @@ const el = {
   verdict: document.querySelector("#verdict"),
   notice: document.querySelector("#action-notice"),
   seedError: document.querySelector("#seed-error"),
+  downloadScript: document.querySelector("#download-script"),
+  scriptStatus: document.querySelector("#script-status"),
+  untilButtons: Array.from(document.querySelectorAll("[data-until]")),
+  timelineInput: document.querySelector("#timeline-input"),
+  timelineLabel: document.querySelector("#timeline-label"),
+  timelineHelp: document.querySelector("#timeline-help"),
+  events: document.querySelector("#events-panel"),
+  verdictPanel: document.querySelector("#verdict-panel"),
+  guideTitle: document.querySelector("#guide-title"),
+  guideText: document.querySelector("#guide-text"),
+  guideBack: document.querySelector("#guide-back"),
+  guideDo: document.querySelector("#guide-do"),
+  guideNext: document.querySelector("#guide-next"),
   electionSourceChip: document.querySelector("#election-source-chip"),
   seedInput: document.querySelector("#seed-input"),
   scenario: document.querySelector("#scenario-select"),
@@ -142,7 +177,17 @@ function bindEvents() {
     }),
   );
   el.play.addEventListener("click", togglePlay);
-  el.copy.addEventListener("click", () => void runAction(copyReproducer));
+  el.copy.addEventListener("click", () => void runAction(copyReproducer, { keepTimeline: true }));
+  el.downloadScript.addEventListener("click", () => void runAction(downloadScript, { keepTimeline: true }));
+  for (const button of el.untilButtons) {
+    button.addEventListener("click", () => void runAction(() => runUntil(button.dataset.until)));
+  }
+  el.timelineInput.addEventListener("change", () =>
+    void runAction(() => rewindTo(Number(el.timelineInput.value)), { keepTimeline: true }),
+  );
+  el.guideBack.addEventListener("click", () => moveTour(-1));
+  el.guideNext.addEventListener("click", () => moveTour(1));
+  el.guideDo.addEventListener("click", () => void runAction(runTourStep));
   el.seedInput.addEventListener("input", () => validateSeedInput());
   el.subscribe.addEventListener("click", () =>
     void runAction(async () => {
@@ -191,6 +236,7 @@ async function resetSimulation(steps = 0) {
   el.scenario.value = state.scenario;
   state.selectedLink = null;
   state.sim = await createSimulation(seed);
+  startTimeline("default", 0);
   await state.sim.set_workload_enabled(el.workload.checked);
   if (steps > 0) {
     await state.sim.run(steps);
@@ -212,6 +258,7 @@ async function loadScenario(name, targetSteps = null) {
   }
   state.sim = await createSimulation(0);
   await state.sim.apply_scenario(state.scenario);
+  startTimeline(state.scenario, scenarioBaseStep(state.scenario));
   if (Number.isInteger(targetSteps)) {
     const snapshot = JSON.parse(await state.sim.snapshot_json());
     if (targetSteps > snapshot.step) {
@@ -260,6 +307,9 @@ async function writeShareUrl() {
   state.lastUrlWrite = performance.now();
   try {
     const replayScriptJson = (await state.sim.replay_script_json?.()) ?? "";
+    if (syncTimelineScript(replayScriptJson)) {
+      renderTimeline(state.snapshot);
+    }
     writeUrlState(
       window.history,
       state.snapshot,
@@ -283,7 +333,12 @@ function render() {
     snapshot.intervention_count > 0
       ? `${snapshot.mode} · ${snapshot.intervention_count} replay action(s)`
       : `${snapshot.mode || "manual"} · no interventions`;
+  el.workload.checked = Boolean(snapshot.workload_enabled);
+  recordObservation(snapshot);
   renderVerdict(snapshot);
+  renderVerdictPanel(snapshot);
+  renderTimeline(snapshot);
+  renderGuide();
   syncGraph(snapshot);
   renderSelectedLink();
   renderProgress(snapshot);
@@ -307,18 +362,44 @@ function renderElectionSource(snapshot) {
   el.electionSourceChip.setAttribute("aria-label", `Election source: ${source}`);
 }
 
+// The header verdict always names a reproducer for *this* run: the plain
+// seed command only when no intervention or scenario shaped it.
 function renderVerdict(snapshot) {
-  el.verdict.className = "verdict";
-  if (snapshot.verdict.status === "holding") {
-    el.verdict.classList.add("ok");
-    el.verdict.textContent = `invariants hold @ seed ${snapshot.seed}`;
+  const view = verdictView(snapshot);
+  el.verdict.className = `verdict ${view.kind}`;
+  el.verdict.textContent = view.text;
+}
+
+// What the verdict is made of: the engine's own list of checked invariants,
+// the violation detail, and what is deliberately not part of the live check.
+function renderVerdictPanel(snapshot) {
+  const violated = snapshot.verdict.status === "holding" ? null : snapshot.verdict.invariant;
+  const summary = document.createElement("p");
+  summary.className = "model-note";
+  if (violated) {
+    summary.textContent = `${violated} violated at step ${snapshot.step}: ${snapshot.verdict.detail}`;
+  } else if (snapshot.first_violation_step !== null && snapshot.first_violation_step !== undefined) {
+    summary.textContent = `Holding now. A violation was first reported at step ${snapshot.first_violation_step}.`;
   } else {
-    el.verdict.classList.add("bad");
-    el.verdict.textContent = `violation: ${snapshot.verdict.invariant} @ seed ${snapshot.seed}; ${reproducerCommand(
-      snapshot.seed,
-      snapshot.step,
-    )}`;
+    summary.textContent = `No invariant has been violated in this run (through step ${snapshot.step}).`;
   }
+  const list = document.createElement("div");
+  list.className = "metric-list";
+  for (const name of snapshot.checked_invariants || []) {
+    const row = document.createElement("div");
+    row.className = `metric invariant-row${name === violated ? " violated" : ""}`;
+    const label = document.createElement("strong");
+    label.textContent = name;
+    const status = document.createElement("span");
+    status.textContent = name === violated ? "violated" : "holding";
+    row.append(label, status);
+    list.append(row);
+  }
+  const scope = document.createElement("p");
+  scope.className = "model-note";
+  scope.textContent =
+    "Replica-snapshot invariants (consensus-prefix, durability, tombstone-resurrection, convergence) run in the DST test suites, not in this live verdict.";
+  el.verdictPanel.replaceChildren(summary, list, scope);
 }
 
 // ---------------------------------------------------------------------------
@@ -909,8 +990,8 @@ function renderProgress(snapshot) {
     desc(snapshot.formation_phase || "unknown"),
     term("Election", snapshot.election_source || "unknown"),
     desc(snapshot.election_source || "unknown"),
-    term("Convergence", progress.convergence),
-    desc(progress.convergence),
+    term("Replicas agree", keyAgreement(snapshot).agree ? "yes" : "no"),
+    desc(keyAgreement(snapshot).agree ? "yes" : "no"),
     term("Rebalance", snapshot.rebalance?.phase || "idle"),
     desc(snapshot.rebalance ? `${snapshot.rebalance.moved_partitions}/${snapshot.rebalance.total_partitions}` : "idle"),
     term("Mode", snapshot.mode || "manual"),
@@ -1089,8 +1170,10 @@ function renderConsistency(snapshot) {
     "Per-request consistency levels (ONE, QUORUM, ALL...) are not simulated: every committed value is replicated to every node.";
   const list = document.createElement("div");
   list.className = "metric-list";
+  const agreement = keyAgreement(snapshot);
+  const differing = agreement.keys.filter((key) => !key.agree).length;
   for (const [label, value] of [
-    ["replica convergence", snapshot.progress.convergence],
+    ["live replicas agree on sampled keys", agreement.agree ? "yes" : `no (${differing} key(s) differ)`],
     ["committed entries", snapshot.progress.committed_entries],
   ]) {
     const row = document.createElement("div");
@@ -1105,10 +1188,13 @@ function renderConsistency(snapshot) {
   el.consistency.replaceChildren(note, list);
 }
 
+// Per-node stored checksum for each sampled key (snapshot.keys), with the
+// live replicas that differ from the majority highlighted.
 function renderKeys(snapshot) {
   const list = document.createElement("div");
   list.className = "key-list";
-  const keys = snapshot.keys.slice(0, 8);
+  const agreement = keyAgreement(snapshot);
+  const keys = agreement.keys.slice(0, 8);
   if (keys.length === 0) {
     const empty = document.createElement("p");
     empty.textContent = "no sampled keys";
@@ -1116,15 +1202,282 @@ function renderKeys(snapshot) {
   }
   for (const key of keys) {
     const row = document.createElement("div");
-    row.className = "key-row";
+    row.className = `key-row${key.agree ? "" : " diverged"}`;
+    const head = document.createElement("div");
+    head.className = "key-head";
     const label = document.createElement("strong");
     label.textContent = key.key;
-    const value = document.createElement("span");
-    value.textContent = `${key.replicas.length} replicas`;
-    row.append(label, value);
+    const status = document.createElement("span");
+    status.textContent = key.agree ? "agree" : "replicas differ";
+    head.append(label, status);
+    const cells = document.createElement("div");
+    cells.className = "replica-cells";
+    for (const cell of key.cells) {
+      const chip = document.createElement("span");
+      chip.className = ["replica", cell.diverged ? "diverged" : "", cell.live ? "" : "down"]
+        .filter(Boolean)
+        .join(" ");
+      chip.textContent = `${cell.node} ${shortVersion(cell.version)}`;
+      chip.title = cell.version === null ? `${cell.node}: no replica` : `${cell.node}: checksum ${cell.version}`;
+      cells.append(chip);
+    }
+    row.append(head, cells);
     list.append(row);
   }
   el.keys.replaceChildren(list);
+}
+
+// ---------------------------------------------------------------------------
+// Timeline: every earlier step of the run is rebuilt by replaying its script
+// prefix (interventions up to that step, resumed exactly there).
+// ---------------------------------------------------------------------------
+function startTimeline(scenario, base) {
+  state.timeline = { script: null, base, furthest: base, rewound: false };
+  state.observations = new Map();
+  state.tour = { scenario, index: 0, crashed: null };
+}
+
+function scenarioBaseStep(name) {
+  return SCENARIOS.find((scenario) => scenario.name === name)?.baseStep ?? 0;
+}
+
+// Returns true when the recorded script changed, so the event list re-renders.
+function syncTimelineScript(replayScriptJson) {
+  if (state.timeline.rewound || !replayScriptJson) {
+    return false;
+  }
+  const changed = JSON.stringify(state.timeline.script) !== replayScriptJson;
+  state.timeline.script = JSON.parse(replayScriptJson);
+  state.timeline.furthest = state.snapshot.step;
+  return changed;
+}
+
+// Any action other than scrubbing continues from the visible step: a rewound
+// recording is forked there and its later observations are dropped.
+function forkTimeline() {
+  if (!state.timeline.rewound || !state.snapshot) {
+    return;
+  }
+  for (const step of [...state.observations.keys()]) {
+    if (step > state.snapshot.step) {
+      state.observations.delete(step);
+    }
+  }
+  state.timeline.rewound = false;
+  state.timeline.furthest = state.snapshot.step;
+}
+
+function recordObservation(snapshot) {
+  state.observations.set(snapshot.step, {
+    leader: leaderOf(snapshot),
+    verdict: snapshot.verdict.status,
+    invariant: snapshot.verdict.invariant ?? null,
+  });
+  if (!state.timeline.rewound) {
+    state.timeline.furthest = Math.max(state.timeline.base, snapshot.step);
+  }
+}
+
+async function rewindTo(step) {
+  if (!state.sim || !state.snapshot) {
+    return;
+  }
+  stopPlay();
+  if (!state.timeline.rewound) {
+    state.timeline.script = JSON.parse(await state.sim.replay_script_json());
+    state.timeline.furthest = state.snapshot.step;
+  }
+  const { base, furthest, script } = state.timeline;
+  const target = Math.min(Math.max(step, base), furthest);
+  if (target === state.snapshot.step) {
+    await refresh();
+    return;
+  }
+  await state.sim.apply_control_script_json(JSON.stringify(scriptAtStep(script, target)));
+  state.timeline.rewound = target < furthest;
+  await refresh();
+}
+
+function renderTimeline(snapshot) {
+  const { base, furthest, rewound, script } = state.timeline;
+  const max = Math.max(furthest, snapshot.step);
+  el.timelineInput.min = String(base);
+  el.timelineInput.max = String(max);
+  el.timelineInput.value = String(snapshot.step);
+  el.timelineInput.disabled = max <= base;
+  el.timelineLabel.textContent = `step ${snapshot.step} of ${max}`;
+  el.timelineHelp.textContent = rewound
+    ? `Rewound to step ${snapshot.step} of a recording that reaches step ${max}. Drag forward to replay it; Step, Play or any action continues from here and drops the later recording.`
+    : "Drag to rebuild any earlier step of this run from its seed and recorded actions.";
+  const events = timelineEvents(script, state.observations)
+    .filter((event) => event.step >= base && event.step <= max)
+    .slice(-MAX_TIMELINE_EVENTS);
+  const items = events.map((event) => {
+    const item = document.createElement("li");
+    item.className = `event ${event.kind}${event.step > snapshot.step ? " future" : ""}`;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = `step ${event.step} · ${event.text}`;
+    button.addEventListener("click", () =>
+      void runAction(() => rewindTo(event.step), { keepTimeline: true }),
+    );
+    item.append(button);
+    return item;
+  });
+  if (items.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "event empty";
+    empty.textContent = "no events yet";
+    items.push(empty);
+  }
+  el.events.replaceChildren(...items);
+}
+
+// ---------------------------------------------------------------------------
+// Run until a condition holds, with a hard step limit that fails loud.
+// ---------------------------------------------------------------------------
+const UNTIL_CONDITIONS = {
+  leader: { label: "leader", test: (snapshot) => leaderOf(snapshot) !== null },
+  agree: { label: "replica agreement", test: (snapshot) => keyAgreement(snapshot).agree },
+  violation: { label: "violation", test: (snapshot) => snapshot.verdict.status !== "holding" },
+};
+
+async function runUntil(name) {
+  const condition = UNTIL_CONDITIONS[name];
+  if (!condition || !state.sim) {
+    throw new Error(`unknown run condition '${name}'`);
+  }
+  stopPlay();
+  let snapshot = JSON.parse(await state.sim.snapshot_json());
+  let steps = 0;
+  while (!condition.test(snapshot) && steps < RUN_UNTIL_LIMIT) {
+    await state.sim.step();
+    steps += 1;
+    snapshot = JSON.parse(await state.sim.snapshot_json());
+  }
+  await refresh();
+  if (!condition.test(snapshot)) {
+    throw new Error(
+      `no ${condition.label} within ${RUN_UNTIL_LIMIT} steps (stopped at step ${snapshot.step})`,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Download the replay script and say how to run it in a terminal.
+// ---------------------------------------------------------------------------
+async function downloadScript() {
+  if (!state.sim || !state.snapshot) {
+    return;
+  }
+  const script = JSON.parse(await state.sim.replay_script_json());
+  script.target_step = state.snapshot.step;
+  const fileName = scriptFileName(state.snapshot);
+  const blob = new Blob([`${JSON.stringify(script, null, 2)}\n`], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  // Revoking immediately can cancel a download the browser has not started yet.
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  el.scriptStatus.textContent = `Saved ${fileName}. Replay it in a terminal: ${voprScriptCommand(fileName)}`;
+}
+
+// ---------------------------------------------------------------------------
+// Guided tours (scenarios.js): narration plus optional engine actions.
+// ---------------------------------------------------------------------------
+function currentTour() {
+  return SCENARIOS.find((scenario) => scenario.name === state.tour.scenario)?.tour ?? [];
+}
+
+function renderGuide() {
+  const tour = currentTour();
+  const scenario = SCENARIOS.find((candidate) => candidate.name === state.tour.scenario);
+  const index = Math.min(state.tour.index, Math.max(tour.length - 1, 0));
+  const step = tour[index];
+  el.guideTitle.textContent = tour.length
+    ? `Guide · ${scenario.title} · ${index + 1}/${tour.length}`
+    : "Guide";
+  el.guideText.textContent = step?.text ?? "No guide for this run.";
+  el.guideBack.disabled = index === 0;
+  el.guideNext.disabled = index >= tour.length - 1;
+  el.guideDo.disabled = !step?.actions?.length;
+}
+
+function moveTour(delta) {
+  const tour = currentTour();
+  state.tour.index = Math.min(Math.max(state.tour.index + delta, 0), Math.max(tour.length - 1, 0));
+  renderGuide();
+}
+
+function tourNode(node) {
+  if (node === "$leader") {
+    const leader = leaderOf(state.snapshot);
+    if (!leader) {
+      throw new Error("there is no leader right now; run until one is elected first");
+    }
+    return leader;
+  }
+  if (node === "$crashed") {
+    if (!state.tour.crashed) {
+      throw new Error("this guide has not crashed a node yet");
+    }
+    return state.tour.crashed;
+  }
+  return node;
+}
+
+async function runTourStep() {
+  const tour = currentTour();
+  const step = tour[state.tour.index];
+  for (const action of step?.actions ?? []) {
+    switch (action.type) {
+      case "until":
+        await runUntil(action.condition);
+        break;
+      case "run":
+        await state.sim.run(action.steps);
+        break;
+      case "crash": {
+        const node = tourNode(action.node);
+        await state.sim.crash_node(node);
+        state.tour.crashed = node;
+        await settleAfterIntervention();
+        break;
+      }
+      case "restart":
+        await state.sim.restart_node(tourNode(action.node));
+        await settleAfterIntervention();
+        break;
+      case "partition":
+      case "heal":
+        await state.sim.inject(action.type, action.from, action.to, BigInt(0));
+        await settleAfterIntervention();
+        break;
+      case "workload":
+        await state.sim.set_workload_enabled(action.enabled);
+        break;
+      case "subscribe":
+        await state.sim.subscribe(action.client, action.ns);
+        await settleAfterIntervention();
+        break;
+      case "push":
+        playDataFlowPulse(action.client, action.ns);
+        await state.sim.push_event(action.client, action.ns, action.key, action.value);
+        await settleAfterIntervention();
+        break;
+      default:
+        throw new Error(`unknown guide action '${action.type}'`);
+    }
+    await refresh();
+  }
+  if (state.tour.index < tour.length - 1) {
+    state.tour.index += 1;
+  }
+  renderGuide();
 }
 
 async function applyLinkAction(action) {
@@ -1223,23 +1576,17 @@ async function loadReplayScript(script) {
   state.scenario = script.scenario || "default";
   el.scenario.value = state.scenario;
   state.sim = await createSimulation(script.seed);
+  startTimeline(state.scenario, scenarioBaseStep(state.scenario));
   await state.sim.apply_control_script_json(JSON.stringify(script));
-  el.workload.checked = replayedWorkloadEnabled(script);
   await refresh();
   el.seedInput.value = String(state.snapshot.seed);
-}
-
-// The workload toggle is a recorded intervention, so after a replay the checkbox
-// must reflect the last recorded toggle (the engine default is enabled).
-function replayedWorkloadEnabled(script) {
-  const toggles = (script.actions || []).filter((action) => action?.type === "workload");
-  return toggles.length > 0 ? Boolean(toggles[toggles.length - 1].enabled) : true;
 }
 
 function startPlay() {
   if (!state.sim || state.playing) {
     return;
   }
+  forkTimeline();
   state.playing = true;
   el.play.textContent = "Pause";
   state.timer = window.setInterval(() => {
@@ -1389,9 +1736,12 @@ function enqueue(task) {
 // Run a user action: clear the previous notice, then surface any engine
 // rejection (unknown node, healing a healthy link, invalid seed, server error)
 // and resync the view with the engine's actual state.
-function runAction(task) {
+function runAction(task, { keepTimeline = false } = {}) {
   return enqueue(async () => {
     hideNotice();
+    if (!keepTimeline) {
+      forkTimeline();
+    }
     try {
       await task();
     } catch (error) {
@@ -1689,7 +2039,7 @@ function showEngineError(error) {
     state.engine === "server" ? "server simulator unavailable" : "wasm package unavailable";
   el.banner.textContent = errorMessage(error);
   showNotice(errorMessage(error));
-  for (const button of [el.step, el.play, el.copy, el.loadScenario, ...el.linkActions]) {
+  for (const button of [el.step, el.play, el.copy, el.loadScenario, el.downloadScript, el.guideDo, ...el.untilButtons, ...el.linkActions]) {
     button.disabled = true;
   }
 }

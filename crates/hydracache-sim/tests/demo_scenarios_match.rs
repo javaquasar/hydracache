@@ -73,3 +73,36 @@ fn extract_scenario_names(source: &str) -> BTreeSet<String> {
     assert!(!names.is_empty(), "demo scenarios list is empty");
     names
 }
+
+// The demo timeline cannot rewind before a preset's own setup, so each UI
+// scenario's `baseStep` must equal the engine preset's final step.
+#[test]
+fn demo_preset_base_steps_match_engine_steps() {
+    let scenarios_js = fs::read_to_string(repo_root().join("demo/scenarios.js"))
+        .expect("demo scenarios helper exists");
+    let mut base_steps = std::collections::BTreeMap::new();
+    let mut current = None;
+    for line in scenarios_js.lines() {
+        let trimmed = line.trim();
+        if let Some(rest) = trimmed.strip_prefix("name: \"") {
+            current = rest.split('"').next().map(str::to_owned);
+        } else if let Some(rest) = trimmed.strip_prefix("baseStep: ") {
+            let value = rest
+                .trim_end_matches(',')
+                .parse::<u64>()
+                .expect("numeric baseStep");
+            let name = current.take().expect("baseStep follows its scenario name");
+            base_steps.insert(name, value);
+        }
+    }
+
+    assert_eq!(base_steps.get("default"), Some(&0));
+    for preset in scenario_presets() {
+        assert_eq!(
+            base_steps.get(preset.name),
+            Some(&preset.steps),
+            "demo baseStep for {} must match the engine preset steps",
+            preset.name
+        );
+    }
+}

@@ -60,7 +60,6 @@
             <option value="mixed">Mixed</option>
           </select>
         </label>
-        <p id="intervention-status" class="copy-status" data-testid="intervention-status"></p>
         <button id="load-scenario" type="button" data-testid="load-scenario">Load</button>
         <button id="reset-button" type="button" data-testid="reset">Reset</button>
         <button id="step-button" type="button" data-testid="step">Step</button>
@@ -68,7 +67,20 @@
         <button id="copy-reproducer" type="button" data-testid="copy-reproducer">
           Copy reproducer
         </button>
-        <p id="copy-status" class="copy-status" data-testid="copy-status"></p>
+        <button id="download-script" type="button" data-testid="download-script">
+          Download script
+        </button>
+        <div class="button-row run-until" role="group" aria-label="run until">
+          <button id="until-leader" type="button" data-until="leader" data-testid="until-leader">
+            Run to leader
+          </button>
+          <button id="until-agree" type="button" data-until="agree" data-testid="until-agree">
+            Run to replica agreement
+          </button>
+          <button id="until-violation" type="button" data-until="violation" data-testid="until-violation">
+            Run to violation
+          </button>
+        </div>
         <label class="toggle">
           <input id="workload-toggle" type="checkbox" checked data-testid="workload-toggle" />
           Workload
@@ -77,11 +89,33 @@
           Speed
           <input id="speed-input" type="range" min="80" max="1200" step="40" value="1200" />
         </label>
+        <p id="intervention-status" class="copy-status" data-testid="intervention-status"></p>
+        <p id="copy-status" class="copy-status" data-testid="copy-status"></p>
+        <p id="script-status" class="copy-status" data-testid="script-status"></p>
       </section>
 
       <section class="workspace">
         <section class="graph-panel glass-panel" aria-label="cluster graph">
           <svg id="cluster-graph" viewBox="0 0 800 520" role="img" aria-label="cluster graph"></svg>
+          <section class="timeline" aria-label="timeline">
+            <label class="timeline-scrub">
+              <span id="timeline-label" data-testid="timeline-label">step 0</span>
+              <input
+                id="timeline-input"
+                data-testid="timeline-input"
+                type="range"
+                min="0"
+                max="0"
+                step="1"
+                value="0"
+                aria-describedby="timeline-help"
+              />
+            </label>
+            <p id="timeline-help" class="timeline-help" data-testid="timeline-help">
+              Drag to rebuild any earlier step of this run from its seed and recorded actions.
+            </p>
+            <ol id="events-panel" class="events" data-testid="events-panel"></ol>
+          </section>
           <div class="graph-legend" data-testid="graph-legend" aria-label="signal legend">
             <span><i class="legend-dot vote"></i>vote</span>
             <span><i class="legend-dot heartbeat"></i>heartbeat</span>
@@ -91,6 +125,21 @@
         </section>
 
         <aside class="side-panel glass-panel">
+          <section class="glass-panel guide" aria-label="guide">
+            <h2 id="guide-title" data-testid="guide-title">Guide</h2>
+            <p id="guide-text" data-testid="guide-text"></p>
+            <div class="button-row">
+              <button id="guide-back" type="button" data-testid="guide-back">Back</button>
+              <button id="guide-do" type="button" data-testid="guide-do">Do it</button>
+              <button id="guide-next" type="button" data-testid="guide-next">Next</button>
+            </div>
+          </section>
+
+          <section class="glass-panel">
+            <h2>Verdict</h2>
+            <div id="verdict-panel" data-testid="verdict-panel"></div>
+          </section>
+
           <section class="glass-panel">
             <h2>Link</h2>
             <p id="selected-link" data-testid="selected-link">none</p>

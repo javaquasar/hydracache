@@ -3,6 +3,12 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { isInsideRoot, resolveRequestPath, startServer } from "./serve-static.mjs";
+import {
+  keyAgreement,
+  scriptAtStep,
+  timelineEvents,
+  verdictView,
+} from "../insight.js";
 
 const demoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const repoRoot = resolve(demoRoot, "..");
@@ -162,6 +168,74 @@ try {
   server.closeAllConnections();
   await new Promise((resolveClose) => server.close(resolveClose));
 }
+
+// 6. View-model helpers: the verdict names a reproducer for *this* run, replica
+//    agreement is computed over live nodes, and rewinding keeps only the
+//    interventions at or before the target step.
+const baseSnapshot = {
+  seed: 7,
+  step: 40,
+  intervention_count: 0,
+  active_scenario: null,
+  first_violation_step: 31,
+  verdict: { status: "violated", invariant: "election_safety", detail: "two leaders" },
+  nodes: [
+    { id: "node-0", crashed: false, disabled: false, vote_state: "leader" },
+    { id: "node-1", crashed: false, disabled: false, vote_state: "follower" },
+    { id: "node-2", crashed: true, disabled: false, vote_state: "crashed" },
+  ],
+  keys: [],
+};
+const plain = verdictView(baseSnapshot);
+check(plain.kind === "bad", "violated verdict must render as bad");
+check(
+  plain.text.includes("vopr -- --seed 7 --steps 40") && plain.text.includes("first at step 31"),
+  `plain-seed violation must give the seed command and first step: ${plain.text}`,
+);
+const intervened = verdictView({ ...baseSnapshot, intervention_count: 2 });
+check(
+  intervened.text.includes("--script hydracache-replay-seed-7-step-40.json") &&
+    !intervened.text.includes("--seed 7"),
+  `intervened violation must not offer the plain seed command: ${intervened.text}`,
+);
+const scenarioRun = verdictView({ ...baseSnapshot, active_scenario: "minority_partition_cannot_commit" });
+check(scenarioRun.text.includes("--script"), "scenario violation must point at the replay script");
+const recovered = verdictView({ ...baseSnapshot, verdict: { status: "holding" } });
+check(
+  recovered.kind === "warn" && recovered.text.includes("first reported at step 31"),
+  `a recovered run must keep its first violation visible: ${recovered.text}`,
+);
+const agreement = keyAgreement({
+  ...baseSnapshot,
+  keys: [
+    { key: "a", replicas: [{ node_id: "node-0", version: 5 }, { node_id: "node-1", version: 5 }] },
+    { key: "b", replicas: [{ node_id: "node-0", version: 5 }, { node_id: "node-1", version: 6 }] },
+    { key: "c", replicas: [{ node_id: "node-0", version: 5 }] },
+  ],
+});
+check(agreement.keys[0].agree, "matching live replicas agree even if a crashed node lacks the key");
+check(!agreement.keys[1].agree, "different live checksums must not agree");
+check(!agreement.keys[2].agree, "a live node missing the key must not agree");
+check(!agreement.agree, "overall agreement requires every key to agree");
+const rewound = scriptAtStep(
+  { version: 1, seed: 7, actions: [{ type: "crash", at_step: 3 }, { type: "restart", at_step: 9 }] },
+  5,
+);
+check(
+  rewound.target_step === 5 && rewound.actions.length === 1 && rewound.actions[0].type === "crash",
+  "rewinding keeps interventions at or before the target step only",
+);
+const events = timelineEvents(
+  { actions: [{ type: "crash", node: "node-0", at_step: 4 }] },
+  new Map([
+    [3, { leader: "node-0", verdict: "holding" }],
+    [6, { leader: "node-1", verdict: "holding" }],
+  ]),
+);
+check(
+  events.map((event) => `${event.step}:${event.kind}`).join(",") === "4:action,6:leader",
+  `timeline events must merge recorded actions and observed leader changes: ${JSON.stringify(events)}`,
+);
 
 if (failures.length > 0) {
   for (const failure of failures) {

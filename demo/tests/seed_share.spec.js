@@ -120,3 +120,69 @@ test("foreign_simulator_api_is_refused", async ({ page }) => {
   expect(foreign).toEqual([]);
 });
 
+test("timeline_rewind_rebuilds_identical_snapshots", async ({ page, browser }) => {
+  await page.goto(`${demoUrl}?seed=600&steps=0&scenario=default`);
+  await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
+  await page.getByTestId("until-leader").click();
+  await expect(page.getByTestId("nodes-panel")).toContainText("leader");
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).first().click();
+  await expect(page.getByTestId("nodes-panel")).toContainText("crashed");
+  for (let index = 0; index < 3; index += 1) {
+    await page.getByTestId("step").click();
+  }
+  await expect(page.getByTestId("events-panel")).toContainText("crash node-0");
+  const endLabel = await page.getByTestId("timeline-label").textContent();
+  const endStep = Number(endLabel?.match(/step (\d+)/)?.[1]);
+  await expect(page.getByTestId("timeline-label")).toHaveText(`step ${endStep} of ${endStep}`);
+  const endHash = await page.getByTestId("snapshot-hash").textContent();
+
+  await scrubTo(page, 2);
+  await expect(page.getByTestId("timeline-label")).toHaveText(`step 2 of ${endStep}`);
+  await expect(page.getByTestId("timeline-help")).toContainText("Rewound to step 2");
+  const earlyHash = await page.getByTestId("snapshot-hash").textContent();
+  expect(earlyHash).not.toEqual(endHash);
+
+  await page.getByTestId("copy-reproducer").click();
+  await expect(page.getByTestId("copy-status")).toContainText(/script=|vopr/);
+  const shared = await browser.newPage();
+  await shared.goto(page.url());
+  await expect(shared.getByTestId("snapshot-hash")).toHaveText(earlyHash ?? "");
+  await shared.close();
+
+  await scrubTo(page, endStep);
+  await expect(page.getByTestId("snapshot-hash")).toHaveText(endHash ?? "");
+  await expect(page.getByTestId("timeline-help")).not.toContainText("Rewound");
+});
+
+test("download_script_offers_the_vopr_command", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=601&steps=6&scenario=default`);
+  await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).first().click();
+  await expect(page.getByTestId("nodes-panel")).toContainText("crashed");
+  const step = Number(
+    (await page.getByTestId("timeline-label").textContent())?.match(/step (\d+)/)?.[1],
+  );
+
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByTestId("download-script").click(),
+  ]);
+  expect(download.suggestedFilename()).toBe(`hydracache-replay-seed-601-step-${step}.json`);
+  const path = await download.path();
+  const { readFile } = await import("node:fs/promises");
+  const script = JSON.parse(await readFile(path, "utf8"));
+  expect(script.seed).toBe(601);
+  expect(script.target_step).toBe(step);
+  expect(script.actions.map((action) => action.type)).toContain("crash");
+  await expect(page.getByTestId("script-status")).toContainText(
+    `cargo run -p hydracache-sim --bin vopr -- --script hydracache-replay-seed-601-step-${step}.json`,
+  );
+});
+
+async function scrubTo(page, step) {
+  await page.getByTestId("timeline-input").evaluate((input, value) => {
+    input.value = String(value);
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }, step);
+}
+

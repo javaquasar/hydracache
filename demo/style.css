@@ -267,6 +267,7 @@ input[aria-invalid="true"] {
 
 .controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: end;
   gap: 10px;
   min-height: 68px;
@@ -302,6 +303,10 @@ input[aria-invalid="true"] {
 #mode-select {
   width: 132px;
   padding: 0 10px;
+}
+
+.copy-status:empty {
+  display: none;
 }
 
 .copy-status {
@@ -583,6 +588,118 @@ dd {
 }
 
 .metric strong,
+.key-row {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.key-row.diverged {
+  border-color: color-mix(in srgb, var(--warn) 60%, white);
+}
+
+.key-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.replica-cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.replica {
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+}
+
+.replica.diverged {
+  border-color: var(--warn);
+  background: color-mix(in srgb, var(--warn-bg) 88%, white);
+  color: var(--warn);
+  font-weight: 700;
+}
+
+.replica.down {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+.invariant-row.violated {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.timeline {
+  margin-top: 10px;
+}
+
+.timeline-scrub {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+
+.timeline-scrub input {
+  flex: 1;
+}
+
+.timeline-help {
+  margin: 4px 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.events {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-height: 120px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.event button {
+  padding: 2px 8px;
+  font-size: 0.75rem;
+}
+
+.event.leader button {
+  border-color: color-mix(in srgb, var(--ok) 50%, white);
+}
+
+.event.verdict button {
+  border-color: var(--danger);
+}
+
+.event.future {
+  opacity: 0.55;
+}
+
+.event.empty {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.controls .run-until {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.guide p {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+}
+
 .key-row strong {
   overflow-wrap: anywhere;
 }
