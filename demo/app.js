@@ -1,4 +1,6 @@
 import {
+  MAX_SEED,
+  parseSeed,
   readInitialState,
   reproducerCommand,
   snapshotHash,
@@ -7,7 +9,9 @@ import {
 import { SCENARIOS } from "./scenarios.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
-const CONSISTENCY_LEVELS = ["ONE", "LOCAL_QUORUM", "QUORUM", "EACH_QUORUM", "ALL"];
+// Browsers rate-limit history.replaceState (Safari: ~100 calls / 30 s), so the
+// share URL is rewritten at most this often while auto-playing.
+const URL_WRITE_INTERVAL_MS = 1000;
 
 const state = {
   SimHandle: null,
@@ -24,11 +28,19 @@ const state = {
   packets: [],
   animationFrame: null,
   packetStart: 0,
+  // Every engine call (play ticks and user actions) runs through this chain so
+  // calls never interleave and every failure is surfaced.
+  queue: Promise.resolve(),
+  urlTimer: null,
+  lastUrlWrite: Number.NEGATIVE_INFINITY,
+  nodeRows: new Map(),
 };
 
 const el = {
   banner: document.querySelector("#engine-banner"),
   verdict: document.querySelector("#verdict"),
+  notice: document.querySelector("#action-notice"),
+  seedError: document.querySelector("#seed-error"),
   electionSourceChip: document.querySelector("#election-source-chip"),
   seedInput: document.querySelector("#seed-input"),
   scenario: document.querySelector("#scenario-select"),
@@ -64,63 +76,97 @@ const el = {
 
 async function boot() {
   bindPreferenceState();
-  const initial = readInitialState(window.location.search);
+  const initial = readInitialState(window.location.search, window.location.origin);
   state.engine = initial.engine;
   state.apiBase = initial.apiBase;
   state.scenario = initial.scenario;
   el.seedInput.value = String(initial.seed);
   populateScenarios(initial.scenario);
   bindEvents();
-  try {
-    if (state.engine === "wasm") {
-      const wasm = await import("./pkg/hydracache_sim_wasm.js");
-      if (typeof wasm.default === "function") {
-        await wasm.default();
-      }
-      state.SimHandle = wasm.SimHandle;
-    }
-    if (initial.script) {
-      await loadReplayScript(initial.script);
-    } else if (initial.scenario === "default") {
-      await resetSimulation(initial.steps);
-    } else {
-      await loadScenario(initial.scenario, initial.steps);
-    }
-  } catch (error) {
-    showEngineError(error);
+  if (initial.warnings.length > 0) {
+    showNotice(initial.warnings.join(" "), "warn");
   }
+  if (state.engine === "server" && initial.apiError) {
+    showEngineError(new Error(initial.apiError));
+    return;
+  }
+  await enqueue(async () => {
+    try {
+      if (state.engine === "wasm") {
+        const wasm = await import("./pkg/hydracache_sim_wasm.js");
+        if (typeof wasm.default === "function") {
+          await wasm.default();
+        }
+        state.SimHandle = wasm.SimHandle;
+      }
+    } catch (error) {
+      showEngineError(error);
+      return;
+    }
+    try {
+      if (initial.script) {
+        await loadReplayScript(initial.script);
+      } else if (initial.scenario === "default") {
+        await resetSimulation(initial.steps);
+      } else {
+        await loadScenario(initial.scenario, initial.steps);
+      }
+    } catch (error) {
+      if (state.engine === "server" && !state.sim) {
+        showEngineError(error);
+        return;
+      }
+      // The engine works but the shared run could not be rebuilt: say so and
+      // keep the controls usable (Reset starts a fresh seeded run).
+      showNotice(`Shared run could not be loaded: ${errorMessage(error)}`);
+    }
+  });
 }
 
 function bindEvents() {
-  el.reset.addEventListener("click", () => void resetSimulation());
-  el.loadScenario.addEventListener("click", () => void loadScenario(el.scenario.value));
-  el.mode.addEventListener("change", async () => {
-    await state.sim?.set_mode(el.mode.value);
-    await refresh();
-  });
-  el.step.addEventListener("click", async () => {
-    await state.sim?.step();
-    await refresh();
-  });
+  el.reset.addEventListener("click", () => void runAction(() => resetSimulation()));
+  el.loadScenario.addEventListener(
+    "click",
+    () => void runAction(() => loadScenario(el.scenario.value)),
+  );
+  el.mode.addEventListener("change", () =>
+    void runAction(async () => {
+      await state.sim?.set_mode(el.mode.value);
+      await refresh();
+    }),
+  );
+  el.step.addEventListener("click", () =>
+    void runAction(async () => {
+      await state.sim?.step();
+      await refresh();
+    }),
+  );
   el.play.addEventListener("click", togglePlay);
-  el.copy.addEventListener("click", copyReproducer);
-  el.subscribe.addEventListener("click", async () => {
-    await state.sim?.subscribe(manualClientId(), el.manualNs.value);
-    await settleAfterIntervention();
-    await refresh();
-  });
-  el.pushEvent.addEventListener("click", async () => {
-    await pushEventFor(manualClientId(), el.manualNs.value);
-  });
-  el.addNode.addEventListener("click", async () => {
-    await state.sim?.add_node();
-    await settleAfterIntervention();
-    await refresh();
-  });
-  el.workload.addEventListener("change", async () => {
-    await state.sim?.set_workload_enabled(el.workload.checked);
-    await refresh();
-  });
+  el.copy.addEventListener("click", () => void runAction(copyReproducer));
+  el.seedInput.addEventListener("input", () => validateSeedInput());
+  el.subscribe.addEventListener("click", () =>
+    void runAction(async () => {
+      await state.sim?.subscribe(manualClientId(), el.manualNs.value);
+      await settleAfterIntervention();
+      await refresh();
+    }),
+  );
+  el.pushEvent.addEventListener("click", () =>
+    void runAction(() => pushEventFor(manualClientId(), el.manualNs.value)),
+  );
+  el.addNode.addEventListener("click", () =>
+    void runAction(async () => {
+      await state.sim?.add_node();
+      await settleAfterIntervention();
+      await refresh();
+    }),
+  );
+  el.workload.addEventListener("change", () =>
+    void runAction(async () => {
+      await state.sim?.set_workload_enabled(el.workload.checked);
+      await refresh();
+    }),
+  );
   el.speed.addEventListener("input", () => {
     if (state.playing) {
       stopPlay();
@@ -128,7 +174,10 @@ function bindEvents() {
     }
   });
   for (const button of el.linkActions) {
-    button.addEventListener("click", () => void applyLinkAction(button.dataset.action));
+    button.addEventListener(
+      "click",
+      () => void runAction(() => applyLinkAction(button.dataset.action)),
+    );
   }
 }
 
@@ -136,11 +185,12 @@ async function resetSimulation(steps = 0) {
   if (state.engine === "wasm" && !state.SimHandle) {
     return;
   }
+  const seed = readSeed();
   stopPlay();
   state.scenario = "default";
   el.scenario.value = state.scenario;
   state.selectedLink = null;
-  state.sim = await createSimulation(readSeed());
+  state.sim = await createSimulation(seed);
   await state.sim.set_workload_enabled(el.workload.checked);
   if (steps > 0) {
     await state.sim.run(steps);
@@ -177,21 +227,50 @@ async function refresh() {
     return;
   }
   state.snapshot = JSON.parse(await state.sim.snapshot_json());
-  let replayScriptJson = "";
-  try {
-    replayScriptJson = (await state.sim.replay_script_json?.()) ?? "";
-  } catch (_error) {
-    replayScriptJson = "";
-  }
-  writeUrlState(
-    window.history,
-    state.snapshot,
-    state.scenario,
-    state.engine,
-    state.apiBase,
-    replayScriptJson,
-  );
   render();
+  if (state.playing) {
+    scheduleUrlWrite();
+  } else {
+    await writeShareUrl();
+  }
+}
+
+// While playing, coalesce URL rewrites to one per URL_WRITE_INTERVAL_MS; the
+// trailing write goes through the engine queue so it never interleaves with a
+// step. Rendering never waits on (or is skipped by) a URL write.
+function scheduleUrlWrite() {
+  if (state.urlTimer !== null) {
+    return;
+  }
+  const wait = Math.max(0, state.lastUrlWrite + URL_WRITE_INTERVAL_MS - performance.now());
+  state.urlTimer = window.setTimeout(() => {
+    state.urlTimer = null;
+    void enqueue(writeShareUrl);
+  }, wait);
+}
+
+async function writeShareUrl() {
+  if (state.urlTimer !== null) {
+    window.clearTimeout(state.urlTimer);
+    state.urlTimer = null;
+  }
+  if (!state.sim || !state.snapshot) {
+    return;
+  }
+  state.lastUrlWrite = performance.now();
+  try {
+    const replayScriptJson = (await state.sim.replay_script_json?.()) ?? "";
+    writeUrlState(
+      window.history,
+      state.snapshot,
+      state.scenario,
+      state.engine,
+      state.apiBase,
+      replayScriptJson,
+    );
+  } catch (error) {
+    showNotice(`Share URL was not updated: ${errorMessage(error)}`, "warn");
+  }
 }
 
 function render() {
@@ -709,7 +788,7 @@ function bindVertexDrag(group, vertex) {
     p.fixed = true;
     graphSim.drag = { id: vertex.id };
     startGraphSim();
-    group.setPointerCapture?.(event.pointerId);
+    capturePointer(group, event.pointerId);
 
     const move = (ev) => {
       if (Math.hypot(ev.clientX - start.x, ev.clientY - start.y) > 4) graphSim.movedDuringPress = true;
@@ -720,20 +799,41 @@ function bindVertexDrag(group, vertex) {
       p.vy = 0;
       startGraphSim();
     };
-    const up = (ev) => {
+    // pointerup ends a press (a still press on a client pushes); pointercancel
+    // and lost capture (e.g. a touch turned into a scroll) only release the drag.
+    let finished = false;
+    const finish = (ev, completed) => {
+      if (finished) return;
+      finished = true;
       p.fixed = false;
       graphSim.drag = null;
-      group.releasePointerCapture?.(ev.pointerId);
+      if (group.hasPointerCapture?.(ev.pointerId)) group.releasePointerCapture(ev.pointerId);
       group.removeEventListener("pointermove", move);
       group.removeEventListener("pointerup", up);
-      if (!graphSim.movedDuringPress && vertex.kind === "client") {
-        void pushEventFor(vertex.ref.id, vertex.ref.namespace);
+      group.removeEventListener("pointercancel", cancel);
+      group.removeEventListener("lostpointercapture", cancel);
+      if (completed && !graphSim.movedDuringPress && vertex.kind === "client") {
+        void runAction(() => pushEventFor(vertex.ref.id, vertex.ref.namespace));
       }
       startGraphSim();
     };
+    const up = (ev) => finish(ev, true);
+    const cancel = (ev) => finish(ev, false);
     group.addEventListener("pointermove", move);
     group.addEventListener("pointerup", up);
+    group.addEventListener("pointercancel", cancel);
+    group.addEventListener("lostpointercapture", cancel);
   });
+}
+
+// Capture can fail for a pointer the browser no longer tracks; dragging still
+// works through the element's own listeners, so this is not an error.
+function capturePointer(target, pointerId) {
+  try {
+    target.setPointerCapture?.(pointerId);
+  } catch (_error) {
+    // Pointer already released.
+  }
 }
 
 function bindGraphInteractions() {
@@ -747,20 +847,27 @@ function bindGraphInteractions() {
     const sy = ctm && ctm.d ? ctm.d : 1;
     const start = { x: event.clientX, y: event.clientY, tx: graphSim.view.tx, ty: graphSim.view.ty };
     graphSim.drag = { pan: true };
-    el.graph.setPointerCapture?.(event.pointerId);
+    capturePointer(el.graph, event.pointerId);
     const move = (ev) => {
       graphSim.view.tx = start.tx + (ev.clientX - start.x) / sx;
       graphSim.view.ty = start.ty + (ev.clientY - start.y) / sy;
       paintGraph(performance.now());
     };
+    let finished = false;
     const up = (ev) => {
+      if (finished) return;
+      finished = true;
       graphSim.drag = null;
-      el.graph.releasePointerCapture?.(ev.pointerId);
+      if (el.graph.hasPointerCapture?.(ev.pointerId)) el.graph.releasePointerCapture(ev.pointerId);
       el.graph.removeEventListener("pointermove", move);
       el.graph.removeEventListener("pointerup", up);
+      el.graph.removeEventListener("pointercancel", up);
+      el.graph.removeEventListener("lostpointercapture", up);
     };
     el.graph.addEventListener("pointermove", move);
     el.graph.addEventListener("pointerup", up);
+    el.graph.addEventListener("pointercancel", up);
+    el.graph.addEventListener("lostpointercapture", up);
   });
   // Wheel zoom around the cursor.
   el.graph.addEventListener(
@@ -812,52 +919,79 @@ function renderProgress(snapshot) {
   el.hash.textContent = `snapshot ${snapshotHash(snapshot)}`;
 }
 
+// Node rows are keyed by id and updated in place, so a button the user is
+// pressing is never replaced by a re-render (auto-play re-renders every tick).
+// Handlers read the node's state at click time, not at render time.
 function renderNodes(snapshot) {
-  const list = document.createElement("div");
-  list.className = "metric-list";
-  for (const node of snapshot.nodes) {
-    const status = nodeStatus(node);
-    const row = document.createElement("div");
-    row.className = `metric node-row role-${status}`;
-    const label = document.createElement("strong");
-    label.textContent = `${node.id} ${status}`;
-    const meta = document.createElement("span");
-    meta.textContent = `term ${node.term}; votes ${node.votes_received}`;
-    const buttons = document.createElement("div");
-    buttons.className = "button-row";
-    const crash = nodeButton(node.crashed ? "Restart" : "Crash", async () => {
-      if (node.crashed) {
-        await state.sim.restart_node(node.id);
-      } else {
-        await state.sim.crash_node(node.id);
-      }
-      await settleAfterIntervention();
-      await refresh();
-    });
-    const isolate = nodeButton("Isolate", async () => {
-      await state.sim.isolate_node(node.id);
-      await settleAfterIntervention();
-      await refresh();
-    });
-    const rejoin = nodeButton("Rejoin", async () => {
-      await state.sim.rejoin_node(node.id);
-      await settleAfterIntervention();
-      await refresh();
-    });
-    const disable = nodeButton(node.disabled ? "Enable" : "Disable", async () => {
-      if (node.disabled) {
-        await state.sim.enable_node(node.id);
-      } else {
-        await state.sim.disable_node(node.id);
-      }
-      await settleAfterIntervention();
-      await refresh();
-    });
-    buttons.append(crash, isolate, rejoin, disable);
-    row.append(label, meta, buttons);
-    list.append(row);
+  let list = el.nodes.querySelector(":scope > .metric-list");
+  if (!list) {
+    list = document.createElement("div");
+    list.className = "metric-list";
+    el.nodes.replaceChildren(list);
+    state.nodeRows.clear();
   }
-  el.nodes.replaceChildren(list);
+  const live = new Set();
+  snapshot.nodes.forEach((node, index) => {
+    live.add(node.id);
+    let view = state.nodeRows.get(node.id);
+    if (!view) {
+      view = createNodeRow(node.id);
+      state.nodeRows.set(node.id, view);
+    }
+    const status = nodeStatus(node);
+    view.row.className = `metric node-row role-${status}`;
+    view.label.textContent = `${node.id} ${status}`;
+    view.meta.textContent = `term ${node.term}; votes ${node.votes_received}`;
+    view.crash.textContent = node.crashed ? "Restart" : "Crash";
+    view.disable.textContent = node.disabled ? "Enable" : "Disable";
+    if (list.children[index] !== view.row) {
+      list.insertBefore(view.row, list.children[index] ?? null);
+    }
+  });
+  for (const [id, view] of state.nodeRows) {
+    if (!live.has(id)) {
+      view.row.remove();
+      state.nodeRows.delete(id);
+    }
+  }
+}
+
+function createNodeRow(id) {
+  const row = document.createElement("div");
+  row.dataset.node = id;
+  const label = document.createElement("strong");
+  const meta = document.createElement("span");
+  const buttons = document.createElement("div");
+  buttons.className = "button-row";
+  const nodeAction = (handler) => () =>
+    void runAction(async () => {
+      const node = (state.snapshot?.nodes || []).find((candidate) => candidate.id === id);
+      if (!node) {
+        throw new Error(`node ${id} is no longer in the cluster`);
+      }
+      await handler(node);
+      await settleAfterIntervention();
+      await refresh();
+    });
+  const crash = nodeButton("Crash", nodeAction(async (node) => {
+    if (node.crashed) {
+      await state.sim.restart_node(node.id);
+    } else {
+      await state.sim.crash_node(node.id);
+    }
+  }));
+  const isolate = nodeButton("Isolate", nodeAction((node) => state.sim.isolate_node(node.id)));
+  const rejoin = nodeButton("Rejoin", nodeAction((node) => state.sim.rejoin_node(node.id)));
+  const disable = nodeButton("Disable", nodeAction(async (node) => {
+    if (node.disabled) {
+      await state.sim.enable_node(node.id);
+    } else {
+      await state.sim.disable_node(node.id);
+    }
+  }));
+  buttons.append(crash, isolate, rejoin, disable);
+  row.append(label, meta, buttons);
+  return { row, label, meta, crash, isolate, rejoin, disable };
 }
 
 function nodeButton(label, handler) {
@@ -945,21 +1079,30 @@ function renderClients(snapshot) {
   el.subscribers.replaceChildren(subscribers);
 }
 
+// The simulator is one fully replicated Raft group: per-request consistency
+// levels (ONE ... ALL) are not modeled, so none are shown. Only engine-backed
+// values appear here.
 function renderConsistency(snapshot) {
+  const note = document.createElement("p");
+  note.className = "model-note";
+  note.textContent =
+    "Per-request consistency levels (ONE, QUORUM, ALL...) are not simulated: every committed value is replicated to every node.";
   const list = document.createElement("div");
   list.className = "metric-list";
-  const value = snapshot.verdict.status === "holding" ? snapshot.progress.convergence : "blocked";
-  for (const level of CONSISTENCY_LEVELS) {
+  for (const [label, value] of [
+    ["replica convergence", snapshot.progress.convergence],
+    ["committed entries", snapshot.progress.committed_entries],
+  ]) {
     const row = document.createElement("div");
     row.className = "metric";
-    const label = document.createElement("strong");
-    label.textContent = level;
+    const term = document.createElement("strong");
+    term.textContent = label;
     const status = document.createElement("span");
-    status.textContent = value;
-    row.append(label, status);
+    status.textContent = String(value);
+    row.append(term, status);
     list.append(row);
   }
-  el.consistency.replaceChildren(list);
+  el.consistency.replaceChildren(note, list);
 }
 
 function renderKeys(snapshot) {
@@ -1099,17 +1242,25 @@ function startPlay() {
   }
   state.playing = true;
   el.play.textContent = "Pause";
-  state.timer = window.setInterval(async () => {
+  state.timer = window.setInterval(() => {
     if (state.tickPending) {
       return;
     }
     state.tickPending = true;
-    try {
-      await state.sim.step();
-      await refresh();
-    } finally {
-      state.tickPending = false;
-    }
+    void enqueue(async () => {
+      try {
+        if (!state.playing) {
+          return;
+        }
+        await state.sim.step();
+        await refresh();
+      } catch (error) {
+        stopPlay();
+        showNotice(`Auto-play stopped: ${errorMessage(error)}`);
+      } finally {
+        state.tickPending = false;
+      }
+    });
   }, Number(el.speed.value));
 }
 
@@ -1119,6 +1270,12 @@ function stopPlay() {
   if (state.timer) {
     window.clearInterval(state.timer);
     state.timer = null;
+  }
+  // Flush a throttled URL write so the paused page links to what it shows.
+  if (state.urlTimer !== null) {
+    window.clearTimeout(state.urlTimer);
+    state.urlTimer = null;
+    void enqueue(writeShareUrl);
   }
 }
 
@@ -1202,9 +1359,68 @@ function desc(text) {
   return node;
 }
 
+// An invalid seed fails loud instead of silently running a different seed.
 function readSeed() {
-  const parsed = Number.parseInt(el.seedInput.value, 10);
-  return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : 80;
+  const seed = validateSeedInput();
+  if (seed === null) {
+    throw new Error(el.seedError.textContent);
+  }
+  return seed;
+}
+
+function validateSeedInput() {
+  const seed = parseSeed(el.seedInput.value);
+  const invalid = seed === null;
+  el.seedInput.setAttribute("aria-invalid", invalid ? "true" : "false");
+  el.seedError.hidden = !invalid;
+  el.seedError.textContent = invalid ? `Seed must be a whole number from 0 to ${MAX_SEED}.` : "";
+  return seed;
+}
+
+// ---------------------------------------------------------------------------
+// Engine call queue and user-visible failures.
+// ---------------------------------------------------------------------------
+function enqueue(task) {
+  const run = state.queue.then(task);
+  state.queue = run.catch(() => {});
+  return run;
+}
+
+// Run a user action: clear the previous notice, then surface any engine
+// rejection (unknown node, healing a healthy link, invalid seed, server error)
+// and resync the view with the engine's actual state.
+function runAction(task) {
+  return enqueue(async () => {
+    hideNotice();
+    try {
+      await task();
+    } catch (error) {
+      showNotice(`Action rejected: ${errorMessage(error)}`);
+      try {
+        await refresh();
+      } catch (_refreshError) {
+        // The notice already reports the failure; keep the last good view.
+      }
+    }
+  });
+}
+
+function errorMessage(error) {
+  if (typeof error === "string") {
+    return error;
+  }
+  return String(error?.message || error || "unknown error");
+}
+
+function showNotice(message, kind = "error") {
+  el.notice.className = kind === "warn" ? "action-notice warn" : "action-notice";
+  el.notice.textContent = message;
+  el.notice.hidden = false;
+}
+
+function hideNotice() {
+  el.notice.hidden = true;
+  el.notice.textContent = "";
 }
 
 function populateScenarios(selected) {
@@ -1244,6 +1460,8 @@ function bindMediaFlag(name, query) {
 async function createSimulation(seed) {
   resetGraph();
   state.seenNodes = new Set();
+  state.nodeRows.clear();
+  el.nodes.replaceChildren();
   if (state.engine === "server") {
     const sim = new ServerSimSession(state.apiBase);
     await sim.reset(seed);
@@ -1469,7 +1687,8 @@ function showEngineError(error) {
   el.verdict.className = "verdict warn";
   el.verdict.textContent =
     state.engine === "server" ? "server simulator unavailable" : "wasm package unavailable";
-  el.banner.textContent = String(error?.message || error);
+  el.banner.textContent = errorMessage(error);
+  showNotice(errorMessage(error));
   for (const button of [el.step, el.play, el.copy, el.loadScenario, ...el.linkActions]) {
     button.disabled = true;
   }

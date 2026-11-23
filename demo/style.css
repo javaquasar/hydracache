@@ -188,6 +188,56 @@ p {
   color: var(--warn);
 }
 
+.action-notice {
+  margin: 8px 0 0;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, white);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--danger-bg) 88%, white);
+  color: var(--danger);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.action-notice.warn {
+  border-color: color-mix(in srgb, var(--warn) 40%, white);
+  background: color-mix(in srgb, var(--warn-bg) 88%, white);
+  color: var(--warn);
+}
+
+.field-error {
+  display: block;
+  max-width: 220px;
+  color: var(--danger);
+  font-size: 0.75rem;
+}
+
+input[aria-invalid="true"] {
+  border-color: var(--danger);
+  outline-color: var(--danger);
+}
+
+.action-notice[hidden],
+.field-error[hidden] {
+  display: none;
+}
+
+.model-tag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border: 1px solid color-mix(in srgb, var(--warn) 42%, white);
+  border-radius: 999px;
+  color: var(--warn);
+  font-size: 0.7rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.model-note {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+}
+
 .source-chip {
   width: fit-content;
   max-width: 100%;

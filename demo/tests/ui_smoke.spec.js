@@ -145,6 +145,106 @@ test("reduced_motion_and_transparency_fallbacks_apply", async ({ page }) => {
   expect(glassFallback.backdrop).toBe("none");
 });
 
+test("consistency_panel_states_levels_are_not_modeled", async ({ page }) => {
+  await openReady(page);
+  const panel = page.getByTestId("consistency-panel");
+  await expect(panel).toContainText("not simulated");
+  await expect(panel).toContainText("replica convergence");
+  await expect(panel).not.toContainText("LOCAL_QUORUM");
+});
+
+test("engine_rejection_is_shown_to_the_user", async ({ page }) => {
+  await openReady(page);
+  await selectFirstLink(page);
+  await page.getByTestId("heal-link").click();
+
+  const notice = page.getByTestId("action-notice");
+  await expect(notice).toBeVisible();
+  await expect(notice).toContainText("not partitioned");
+
+  await page.getByTestId("partition-link").click();
+  await expect(page.getByTestId("selected-link")).toContainText("partitioned");
+  await expect(notice).toBeHidden();
+});
+
+test("invalid_seed_fails_loud_without_resetting", async ({ page }) => {
+  await openReady(page);
+  const hash = await page.getByTestId("snapshot-hash").textContent();
+
+  await page.getByTestId("seed-input").fill("12abc");
+  await expect(page.getByTestId("seed-error")).toBeVisible();
+  await expect(page.getByTestId("seed-input")).toHaveAttribute("aria-invalid", "true");
+  await page.getByTestId("reset").click();
+
+  await expect(page.getByTestId("action-notice")).toContainText("Seed must be a whole number");
+  await expect(page.getByTestId("snapshot-hash")).toHaveText(hash ?? "");
+
+  await page.getByTestId("seed-input").fill("81");
+  await expect(page.getByTestId("seed-error")).toBeHidden();
+});
+
+test("node_controls_stay_clickable_while_playing", async ({ page }) => {
+  await openReady(page);
+  await setFastestSpeed(page);
+  const crash = page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).first();
+  const handle = await crash.elementHandle();
+
+  await page.getByTestId("play").click();
+  await expect(page.getByTestId("progress-panel")).not.toContainText(/^Step0/);
+  await page.waitForTimeout(400);
+  expect(await handle?.evaluate((node) => node.isConnected)).toBe(true);
+  await crash.click();
+  await expect(page.getByTestId("nodes-panel")).toContainText("crashed");
+  await page.getByTestId("play").click();
+  await expect(page.getByTestId("play")).toHaveText("Play");
+});
+
+test("playing_throttles_share_url_writes", async ({ page }) => {
+  await page.addInitScript(() => {
+    const original = window.history.replaceState.bind(window.history);
+    window.__urlWrites = 0;
+    window.history.replaceState = (...args) => {
+      window.__urlWrites += 1;
+      return original(...args);
+    };
+  });
+  await openReady(page);
+  await setFastestSpeed(page);
+  const before = await page.evaluate(() => window.__urlWrites);
+
+  await page.getByTestId("play").click();
+  await page.waitForTimeout(2500);
+  await page.getByTestId("play").click();
+  await expect(page.getByTestId("play")).toHaveText("Play");
+
+  const step = await page.evaluate(() => Number(new URL(window.location.href).searchParams.get("steps")));
+  expect(step).toBeGreaterThan(10);
+  const writes = (await page.evaluate(() => window.__urlWrites)) - before;
+  expect(writes).toBeLessThanOrEqual(6);
+  await expect
+    .poll(() => page.evaluate(() => new URL(window.location.href).searchParams.get("steps")))
+    .toBe(
+      (await page.getByTestId("progress-panel").locator("dd").first().textContent())?.trim(),
+    );
+});
+
+test("cancelled_pointer_on_client_does_not_push", async ({ page }) => {
+  await openReady(page);
+  await page.getByTestId("subscribe-button").click();
+  await expect(page.getByTestId("intervention-status")).toContainText("1 replay action");
+  const client = page.locator(".vertex.client").first();
+  const init = { pointerId: 7, isPrimary: true, bubbles: true, clientX: 0, clientY: 0 };
+
+  await client.dispatchEvent("pointerdown", init);
+  await client.dispatchEvent("pointercancel", init);
+  await page.waitForTimeout(300);
+  await expect(page.getByTestId("intervention-status")).toContainText("1 replay action");
+
+  await client.dispatchEvent("pointerdown", init);
+  await client.dispatchEvent("pointerup", init);
+  await expect(page.getByTestId("intervention-status")).toContainText("2 replay action");
+});
+
 async function contrastRatio(locator) {
   return locator.evaluate((node) => {
     const style = getComputedStyle(node);
@@ -200,4 +300,11 @@ async function openReady(page) {
 async function selectFirstLink(page) {
   await page.locator(".link-hit").first().dispatchEvent("click");
   await expect(page.getByTestId("selected-link")).toContainText(/node-/);
+}
+
+async function setFastestSpeed(page) {
+  await page.locator("#speed-input").evaluate((input) => {
+    input.value = input.min;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
 }

@@ -94,3 +94,29 @@ test("scenario_with_intervention_replays_from_curated_preset", async ({ page, br
   );
   await replayed.close();
 });
+
+test("invalid_url_seed_is_reported_not_silently_replaced", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=abc&steps=2&scenario=default`);
+  await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
+
+  const notice = page.getByTestId("action-notice");
+  await expect(notice).toBeVisible();
+  await expect(notice).toContainText('URL seed "abc"');
+  await expect(notice).toContainText("using 80");
+});
+
+test("foreign_simulator_api_is_refused", async ({ page }) => {
+  const foreign = [];
+  page.on("request", (request) => {
+    if (new URL(request.url()).hostname === "evil.example") {
+      foreign.push(request.url());
+    }
+  });
+  await page.goto(`${demoUrl}?engine=server&api=https://evil.example`);
+
+  await expect(page.getByTestId("verdict")).toContainText("server simulator unavailable");
+  await expect(page.getByTestId("action-notice")).toContainText("was refused");
+  await expect(page.getByTestId("step")).toBeDisabled();
+  expect(foreign).toEqual([]);
+});
+

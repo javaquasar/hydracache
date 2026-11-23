@@ -14,6 +14,14 @@
           <p id="engine-banner" data-testid="engine-banner">
             This runs the real hydracache-sim engine. Verdicts are produced by the actual invariant checker.
           </p>
+          <p
+            id="action-notice"
+            class="action-notice"
+            role="alert"
+            aria-live="assertive"
+            data-testid="action-notice"
+            hidden
+          ></p>
         </div>
         <div class="status-cluster" aria-label="simulation status">
           <div id="verdict" class="verdict" data-testid="verdict">loading</div>
@@ -31,7 +39,14 @@
       <section class="controls glass-panel" aria-label="simulation controls">
         <label>
           Seed
-          <input id="seed-input" data-testid="seed-input" inputmode="numeric" value="80" />
+          <input
+            id="seed-input"
+            data-testid="seed-input"
+            inputmode="numeric"
+            value="80"
+            aria-describedby="seed-error"
+          />
+          <span id="seed-error" class="field-error" data-testid="seed-error" hidden></span>
         </label>
         <label>
           Scenario
@@ -147,7 +162,7 @@
           </section>
 
           <section class="glass-panel">
-            <h2>Consistency</h2>
+            <h2>Consistency <span class="model-tag">not modeled</span></h2>
             <div id="consistency-panel" data-testid="consistency-panel"></div>
           </section>
 
