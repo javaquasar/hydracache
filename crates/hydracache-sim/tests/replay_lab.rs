@@ -156,6 +156,7 @@ fn mixed_lab_script() -> ReplayScriptV1 {
             },
             ControlActionV1::Step { at_step: 12, n: 3 },
         ],
+        target_step: None,
     }
 }
 

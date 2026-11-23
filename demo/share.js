@@ -8,9 +8,14 @@ const FNV_MASK = 0xffffffffffffffffn;
 export function readInitialState(search) {
   const params = new URLSearchParams(search);
   const script = readReplayScript(params.get("script"));
+  const steps = readPositiveInt(params.get("steps"), 0);
+  // Links shared before replay scripts carried a target step kept it in `steps`.
+  if (script && script.target_step === null && params.has("steps")) {
+    script.target_step = steps;
+  }
   return {
     seed: script?.seed ?? readPositiveInt(params.get("seed"), DEFAULT_SEED),
-    steps: readPositiveInt(params.get("steps"), 0),
+    steps,
     scenario: script?.scenario ?? readScenario(params.get("scenario")),
     mode: script?.mode ?? "manual",
     engine: readEngine(params.get("engine")),
@@ -43,6 +48,7 @@ export function writeUrlState(
   }
   const replayScript = readReplayScriptJson(replayScriptJson);
   if (shouldShareReplayScript(replayScript)) {
+    replayScript.target_step = snapshot.step;
     params.set("script", encodeReplayScript(replayScript));
   }
   history.replaceState(null, "", `?${params.toString()}`);
@@ -51,6 +57,7 @@ export function writeUrlState(
 export function reproducerCommand(seed, steps, replayScriptJson = "", currentUrl = "") {
   const replayScript = readReplayScriptJson(replayScriptJson);
   if (shouldShareReplayScript(replayScript) && currentUrl) {
+    replayScript.target_step = readPositiveInt(String(steps), replayScript.target_step ?? 0);
     const url = new URL(currentUrl);
     url.search = "";
     url.searchParams.set("script", encodeReplayScript(replayScript));
@@ -128,12 +135,19 @@ function normalizeReplayScript(value) {
   if (actions.length > 256) {
     return null;
   }
+  const targetStep = value.target_step === null || value.target_step === undefined
+    ? null
+    : Number(value.target_step);
+  if (targetStep !== null && (!Number.isSafeInteger(targetStep) || targetStep < 0)) {
+    return null;
+  }
   return {
     version: 1,
     seed,
     mode,
     scenario,
     actions,
+    target_step: targetStep,
   };
 }
 

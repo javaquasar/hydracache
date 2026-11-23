@@ -40,10 +40,16 @@ pub struct ReplayScriptV1 {
     pub seed: u64,
     /// Mode visible to the lab UI.
     pub mode: SimMode,
-    /// Optional curated scenario name.
+    /// Optional scenario name. When it names a curated preset (see
+    /// [`crate::scenario_presets`]), replay starts from that preset's world;
+    /// otherwise it is a label only.
     pub scenario: Option<String>,
     /// Ordered replay-visible control actions.
     pub actions: Vec<ControlActionV1>,
+    /// Optional logical step the replay advances to after the last action, so a
+    /// shared run resumes where it was captured rather than at its last action.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub target_step: Option<u64>,
 }
 
 impl ReplayScriptV1 {
@@ -55,6 +61,7 @@ impl ReplayScriptV1 {
             mode,
             scenario: None,
             actions,
+            target_step: None,
         }
     }
 
@@ -133,6 +140,37 @@ pub enum ControlActionV1 {
     },
     /// Change the UI/lab mode.
     ModeChange { at_step: u64, mode: SimMode },
+    /// Crash a node.
+    Crash { at_step: u64, node: String },
+    /// Restart a crashed node.
+    Restart { at_step: u64, node: String },
+    /// Partition one directed link.
+    Partition {
+        at_step: u64,
+        from: String,
+        to: String,
+    },
+    /// Heal one partitioned directed link.
+    Heal {
+        at_step: u64,
+        from: String,
+        to: String,
+    },
+    /// Drop the next packet on one directed link.
+    DropNext {
+        at_step: u64,
+        from: String,
+        to: String,
+    },
+    /// Delay the next packet on one directed link by `millis` logical milliseconds.
+    DelayNext {
+        at_step: u64,
+        from: String,
+        to: String,
+        millis: u64,
+    },
+    /// Enable or disable the built-in workload generator.
+    Workload { at_step: u64, enabled: bool },
 }
 
 impl ControlActionV1 {
@@ -147,7 +185,14 @@ impl ControlActionV1 {
             | Self::AddNode { at_step }
             | Self::PushEvent { at_step, .. }
             | Self::Subscribe { at_step, .. }
-            | Self::ModeChange { at_step, .. } => *at_step,
+            | Self::ModeChange { at_step, .. }
+            | Self::Crash { at_step, .. }
+            | Self::Restart { at_step, .. }
+            | Self::Partition { at_step, .. }
+            | Self::Heal { at_step, .. }
+            | Self::DropNext { at_step, .. }
+            | Self::DelayNext { at_step, .. }
+            | Self::Workload { at_step, .. } => *at_step,
         }
     }
 }

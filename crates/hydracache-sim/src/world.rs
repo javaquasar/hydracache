@@ -316,6 +316,13 @@ impl SimWorld {
         &mut self,
         action: ControlActionV1,
     ) -> Result<(), ControlApplyError> {
+        // A workload toggle that does not change state is not an intervention;
+        // keeping it out of the log keeps default runs shareable as plain seeds.
+        if let ControlActionV1::Workload { enabled, .. } = &action {
+            if *enabled == self.workload_enabled {
+                return Ok(());
+            }
+        }
         let result = match action.clone() {
             ControlActionV1::Step { n, .. } => {
                 self.run(n);
@@ -364,6 +371,50 @@ impl SimWorld {
                 self.add_node();
                 Ok(())
             }
+            ControlActionV1::Crash { node, .. } => {
+                self.crash_node(node).then_some(()).ok_or_else(|| {
+                    ControlApplyError::InvalidAction("crash references an unknown node".to_owned())
+                })
+            }
+            ControlActionV1::Restart { node, .. } => {
+                self.restart_node(node).then_some(()).ok_or_else(|| {
+                    ControlApplyError::InvalidAction(
+                        "restart references a node that is not crashed".to_owned(),
+                    )
+                })
+            }
+            ControlActionV1::Partition { from, to, .. } => {
+                self.partition_link(from, to).then_some(()).ok_or_else(|| {
+                    ControlApplyError::InvalidAction(
+                        "partition references an unknown link".to_owned(),
+                    )
+                })
+            }
+            ControlActionV1::Heal { from, to, .. } => {
+                self.heal_link(from, to).then_some(()).ok_or_else(|| {
+                    ControlApplyError::InvalidAction(
+                        "heal references a link that is not partitioned".to_owned(),
+                    )
+                })
+            }
+            ControlActionV1::DropNext { from, to, .. } => self
+                .drop_next_on_link(from, to)
+                .then_some(())
+                .ok_or_else(|| {
+                    ControlApplyError::InvalidAction("drop references an unknown link".to_owned())
+                }),
+            ControlActionV1::DelayNext {
+                from, to, millis, ..
+            } => self
+                .delay_next_on_link_millis(from, to, millis)
+                .then_some(())
+                .ok_or_else(|| {
+                    ControlApplyError::InvalidAction("delay references an unknown link".to_owned())
+                }),
+            ControlActionV1::Workload { enabled, .. } => {
+                self.set_workload_enabled(enabled);
+                Ok(())
+            }
         };
         if result.is_ok() {
             self.action_log.push(action);
@@ -385,7 +436,21 @@ impl SimWorld {
             }
             self.apply_control_action(action)?;
         }
+        if let Some(target_step) = script.target_step {
+            if target_step < self.steps {
+                return Err(ControlApplyError::InvalidAction(format!(
+                    "replay target_step {target_step} is before step {} reached by its actions",
+                    self.steps
+                )));
+            }
+            self.run(target_step - self.steps);
+        }
         Ok(())
+    }
+
+    /// Record the curated scenario this world was built from.
+    pub(crate) fn set_active_scenario(&mut self, scenario: Option<String>) {
+        self.active_scenario = scenario;
     }
 
     /// Return the replay-visible action log accumulated by the shared control surface.
@@ -401,6 +466,7 @@ impl SimWorld {
             mode: self.mode,
             scenario: self.active_scenario.clone(),
             actions: self.action_log.clone(),
+            target_step: Some(self.steps),
         }
     }
 

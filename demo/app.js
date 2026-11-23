@@ -1081,8 +1081,16 @@ async function loadReplayScript(script) {
   el.scenario.value = state.scenario;
   state.sim = await createSimulation(script.seed);
   await state.sim.apply_control_script_json(JSON.stringify(script));
+  el.workload.checked = replayedWorkloadEnabled(script);
   await refresh();
   el.seedInput.value = String(state.snapshot.seed);
+}
+
+// The workload toggle is a recorded intervention, so after a replay the checkbox
+// must reflect the last recorded toggle (the engine default is enabled).
+function replayedWorkloadEnabled(script) {
+  const toggles = (script.actions || []).filter((action) => action?.type === "workload");
+  return toggles.length > 0 ? Boolean(toggles[toggles.length - 1].enabled) : true;
 }
 
 function startPlay() {
@@ -1378,13 +1386,7 @@ class ServerSimSession {
   }
 
   async replay_script_json() {
-    return JSON.stringify({
-      version: 1,
-      seed: this.snapshot?.seed ?? 0,
-      mode: this.snapshot?.mode ?? "manual",
-      scenario: this.snapshot?.active_scenario ?? null,
-      actions: [],
-    });
+    return JSON.stringify(await this.get("/sim/replay"));
   }
 
   async restart_node(node) {

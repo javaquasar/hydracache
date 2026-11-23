@@ -47,7 +47,10 @@ function resolvePath(pathname) {
   const decoded = decodeURIComponent(pathname);
   const normalizedPath = normalize(decoded === "/" ? "/demo/" : decoded);
   const relative = normalizedPath.replace(/^[/\\]+/, "");
-  const target = normalizedPath.endsWith("/")
+  // `normalize` uses the platform separator, so test the directory form on the
+  // request path itself; otherwise `/demo/` 404s on Windows.
+  const isDirectory = decoded === "/" || decoded.endsWith("/");
+  const target = isDirectory
     ? join(demoRoot, relative, "index.html")
     : join(demoRoot, relative);
   const resolved = resolve(target);

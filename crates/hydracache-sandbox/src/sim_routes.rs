@@ -4,8 +4,8 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::options;
 use axum::{Json, Router};
 use hydracache_sim::{
-    run_scenario, ControlActionV1, ControlApplyError, ReplayScriptV1, ScenarioError, SimConfig,
-    SimMode, SimSnapshot, SimWorld, SIM_SNAPSHOT_SCHEMA_VERSION,
+    replay_world, run_scenario, ControlActionV1, ControlApplyError, ReplayScriptV1, ScenarioError,
+    SimConfig, SimMode, SimSnapshot, SimWorld, SIM_SNAPSHOT_SCHEMA_VERSION,
 };
 use serde::{Deserialize, Serialize};
 
@@ -97,6 +97,7 @@ pub(super) fn router() -> Router<SandboxState> {
         .route("/sim/inject", options(sim_options).post(sim_inject))
         .route("/sim/control", options(sim_options).post(sim_control))
         .route("/sim/snapshot", options(sim_options).get(sim_snapshot))
+        .route("/sim/replay", options(sim_options).get(sim_replay))
 }
 
 async fn sim_new(
@@ -152,19 +153,9 @@ async fn sim_control(
     State(state): State<SandboxState>,
     Json(script): Json<ReplayScriptV1>,
 ) -> SimRouteResult {
-    script
-        .validate()
-        .map_err(ControlApplyError::from)
-        .map_err(SimRouteRejection::from)?;
-    let mut world = SimWorld::with_raft_election(script.seed, SimConfig::default());
-    if let Some(scenario) = script.scenario.as_deref() {
-        if scenario != "default" {
-            world = run_scenario(scenario)
-                .map_err(SimRouteRejection::from)?
-                .world;
-        }
-    }
-    world.apply_replay_script(&script)?;
+    let world = replay_world(&script, |seed| {
+        SimWorld::with_raft_election(seed, SimConfig::default())
+    })?;
     let snapshot = world.snapshot();
     assert_current_snapshot_schema(&snapshot);
     *state.sim_world.write().await = world;
@@ -180,6 +171,17 @@ async fn sim_snapshot(
     )
 }
 
+/// Return the replay script for the current world, so a server-backed lab run
+/// can be shared and replayed with every recorded intervention.
+async fn sim_replay(
+    State(state): State<SandboxState>,
+) -> ([(&'static str, &'static str); 3], Json<ReplayScriptV1>) {
+    (
+        cors_headers(),
+        Json(state.sim_world.read().await.replay_script()),
+    )
+}
+
 async fn sim_options() -> impl IntoResponse {
     (StatusCode::NO_CONTENT, cors_headers())
 }
@@ -188,100 +190,49 @@ fn apply_injection(
     world: &mut SimWorld,
     request: SimInjectRequest,
 ) -> Result<(), SimRouteRejection> {
-    let applied = match request {
-        SimInjectRequest::Workload { enabled } => {
-            world.set_workload_enabled(enabled);
-            true
+    let at_step = world.outcome().steps;
+    let action = match request {
+        SimInjectRequest::Workload { enabled } => ControlActionV1::Workload { at_step, enabled },
+        SimInjectRequest::Crash { node } => ControlActionV1::Crash { at_step, node },
+        SimInjectRequest::Restart { node } => ControlActionV1::Restart { at_step, node },
+        SimInjectRequest::Partition { from, to } => {
+            ControlActionV1::Partition { at_step, from, to }
         }
-        SimInjectRequest::Crash { node } => world.crash_node(node),
-        SimInjectRequest::Restart { node } => world.restart_node(node),
-        SimInjectRequest::Partition { from, to } => world.partition_link(from, to),
-        SimInjectRequest::Heal { from, to } => world.heal_link(from, to),
-        SimInjectRequest::Isolate { node } => {
-            return world
-                .apply_control_action(ControlActionV1::Isolate {
-                    at_step: world.outcome().steps,
-                    node,
-                })
-                .map_err(SimRouteRejection::from);
-        }
-        SimInjectRequest::Rejoin { node } => {
-            return world
-                .apply_control_action(ControlActionV1::Rejoin {
-                    at_step: world.outcome().steps,
-                    node,
-                })
-                .map_err(SimRouteRejection::from);
-        }
-        SimInjectRequest::Disable { node } => {
-            return world
-                .apply_control_action(ControlActionV1::Disable {
-                    at_step: world.outcome().steps,
-                    node,
-                })
-                .map_err(SimRouteRejection::from);
-        }
-        SimInjectRequest::Enable { node } => {
-            return world
-                .apply_control_action(ControlActionV1::Enable {
-                    at_step: world.outcome().steps,
-                    node,
-                })
-                .map_err(SimRouteRejection::from);
-        }
-        SimInjectRequest::AddNode => {
-            return world
-                .apply_control_action(ControlActionV1::AddNode {
-                    at_step: world.outcome().steps,
-                })
-                .map_err(SimRouteRejection::from);
-        }
-        SimInjectRequest::ModeChange { mode } => {
-            return world
-                .apply_control_action(ControlActionV1::ModeChange {
-                    at_step: world.outcome().steps,
-                    mode,
-                })
-                .map_err(SimRouteRejection::from);
-        }
-        SimInjectRequest::Drop { from, to } => world.drop_next_on_link(from, to),
-        SimInjectRequest::Delay { from, to, millis } => {
-            world.delay_next_on_link_millis(from, to, millis)
-        }
+        SimInjectRequest::Heal { from, to } => ControlActionV1::Heal { at_step, from, to },
+        SimInjectRequest::Isolate { node } => ControlActionV1::Isolate { at_step, node },
+        SimInjectRequest::Rejoin { node } => ControlActionV1::Rejoin { at_step, node },
+        SimInjectRequest::Disable { node } => ControlActionV1::Disable { at_step, node },
+        SimInjectRequest::Enable { node } => ControlActionV1::Enable { at_step, node },
+        SimInjectRequest::AddNode => ControlActionV1::AddNode { at_step },
+        SimInjectRequest::ModeChange { mode } => ControlActionV1::ModeChange { at_step, mode },
+        SimInjectRequest::Drop { from, to } => ControlActionV1::DropNext { at_step, from, to },
+        SimInjectRequest::Delay { from, to, millis } => ControlActionV1::DelayNext {
+            at_step,
+            from,
+            to,
+            millis,
+        },
         SimInjectRequest::PushEvent {
             client,
             ns,
             key,
             value,
-        } => {
-            return world
-                .apply_control_action(ControlActionV1::PushEvent {
-                    at_step: world.outcome().steps,
-                    client,
-                    ns,
-                    key,
-                    value,
-                })
-                .map_err(SimRouteRejection::from);
-        }
-        SimInjectRequest::Subscribe { client, ns } => {
-            return world
-                .apply_control_action(ControlActionV1::Subscribe {
-                    at_step: world.outcome().steps,
-                    client,
-                    ns,
-                })
-                .map_err(SimRouteRejection::from);
-        }
+        } => ControlActionV1::PushEvent {
+            at_step,
+            client,
+            ns,
+            key,
+            value,
+        },
+        SimInjectRequest::Subscribe { client, ns } => ControlActionV1::Subscribe {
+            at_step,
+            client,
+            ns,
+        },
     };
-    if applied {
-        Ok(())
-    } else {
-        Err(SimRouteRejection::bad_request(
-            "invalid_sim_action",
-            "sim injection references an unknown node or link",
-        ))
-    }
+    world
+        .apply_control_action(action)
+        .map_err(SimRouteRejection::from)
 }
 
 fn assert_current_snapshot_schema(snapshot: &SimSnapshot) {

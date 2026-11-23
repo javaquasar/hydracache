@@ -1,6 +1,6 @@
 //! Browser bindings for the real deterministic HydraCache simulator.
 
-use hydracache_sim::{SimConfig, SimWorld};
+use hydracache_sim::{ControlActionV1, SimConfig, SimWorld};
 use wasm_bindgen::prelude::*;
 
 /// wasm-bindgen handle around a real [`SimWorld`].
@@ -34,9 +34,10 @@ impl SimHandle {
         self.world.outcome().seed
     }
 
-    /// Enable or disable the built-in workload generator.
-    pub fn set_workload_enabled(&mut self, enabled: bool) {
-        self.world.set_workload_enabled(enabled);
+    /// Enable or disable the built-in workload generator (replay-recorded).
+    pub fn set_workload_enabled(&mut self, enabled: bool) -> Result<(), JsValue> {
+        let at_step = self.world.outcome().steps;
+        self.control(ControlActionV1::Workload { at_step, enabled })
     }
 
     /// Set the visible lab mode.
@@ -50,27 +51,25 @@ impl SimHandle {
             .map_err(|error| JsValue::from_str(&error.to_string()))
     }
 
-    /// Crash a simulator node.
+    /// Crash a simulator node (replay-recorded).
     pub fn crash_node(&mut self, node_id: String) -> Result<(), JsValue> {
-        if self.world.crash_node(node_id.clone()) {
-            Ok(())
-        } else {
-            Err(JsValue::from_str(&format!("unknown node '{node_id}'")))
-        }
+        let at_step = self.world.outcome().steps;
+        self.control(ControlActionV1::Crash {
+            at_step,
+            node: node_id,
+        })
     }
 
-    /// Restart a simulator node.
+    /// Restart a crashed simulator node (replay-recorded).
     pub fn restart_node(&mut self, node_id: String) -> Result<(), JsValue> {
-        if self.world.restart_node(node_id.clone()) {
-            Ok(())
-        } else {
-            Err(JsValue::from_str(&format!(
-                "node '{node_id}' is not crashed"
-            )))
-        }
+        let at_step = self.world.outcome().steps;
+        self.control(ControlActionV1::Restart {
+            at_step,
+            node: node_id,
+        })
     }
 
-    /// Apply an interactive link action.
+    /// Apply an interactive link action (replay-recorded).
     pub fn inject(
         &mut self,
         action: String,
@@ -78,22 +77,20 @@ impl SimHandle {
         to: String,
         delay_millis: u64,
     ) -> Result<(), JsValue> {
-        let applied = match action.as_str() {
-            "partition" => self.world.partition_link(from.clone(), to.clone()),
-            "heal" => self.world.heal_link(from.clone(), to.clone()),
-            "drop" => self.world.drop_next_on_link(from.clone(), to.clone()),
-            "delay" => self
-                .world
-                .delay_next_on_link_millis(from.clone(), to.clone(), delay_millis),
+        let at_step = self.world.outcome().steps;
+        let action = match action.as_str() {
+            "partition" => ControlActionV1::Partition { at_step, from, to },
+            "heal" => ControlActionV1::Heal { at_step, from, to },
+            "drop" => ControlActionV1::DropNext { at_step, from, to },
+            "delay" => ControlActionV1::DelayNext {
+                at_step,
+                from,
+                to,
+                millis: delay_millis,
+            },
             other => return Err(JsValue::from_str(&format!("unknown link action '{other}'"))),
         };
-        if applied {
-            Ok(())
-        } else {
-            Err(JsValue::from_str(&format!(
-                "could not apply '{action}' to link {from}->{to}"
-            )))
-        }
+        self.control(action)
     }
 
     /// Isolate one simulator node from all peers.
@@ -180,13 +177,18 @@ impl SimHandle {
             .map_err(|error| JsValue::from_str(&error.to_string()))
     }
 
-    /// Apply a versioned replay script through the shared control surface.
+    /// Replace the current world with a replay of a versioned control script.
+    ///
+    /// A script naming a curated scenario starts from that preset's world; the
+    /// script's actions and `target_step` are then replayed. The current world
+    /// is only replaced when the whole replay succeeds.
     pub fn apply_control_script_json(&mut self, script_json: String) -> Result<(), JsValue> {
         let script = hydracache_sim::ReplayScriptV1::from_json(&script_json)
             .map_err(|error| JsValue::from_str(&error.to_string()))?;
-        self.world
-            .apply_replay_script(&script)
-            .map_err(|error| JsValue::from_str(&error.to_string()))
+        self.world =
+            hydracache_sim::replay_world(&script, |seed| SimWorld::new(seed, SimConfig::default()))
+                .map_err(|error| JsValue::from_str(&error.to_string()))?;
+        Ok(())
     }
 
     /// Replace the current world with a curated simulator scenario.
@@ -210,6 +212,15 @@ impl SimHandle {
     /// Serialize the latest canonical invariant verdict as JSON.
     pub fn verdict_json(&self) -> String {
         self.world.verdict_json()
+    }
+}
+
+impl SimHandle {
+    /// Apply one action through the shared, replay-recorded control surface.
+    fn control(&mut self, action: ControlActionV1) -> Result<(), JsValue> {
+        self.world
+            .apply_control_action(action)
+            .map_err(|error| JsValue::from_str(&error.to_string()))
     }
 }
 
@@ -321,7 +332,9 @@ mod tests {
     #[test]
     fn wasm_control_actions_match_native() {
         let mut handle = SimHandle::new(0x5333);
-        handle.set_workload_enabled(false);
+        handle
+            .set_workload_enabled(false)
+            .expect("workload toggle applies");
         handle.run(8);
         handle
             .subscribe("client-a".to_owned(), "profiles".to_owned())
@@ -352,7 +365,9 @@ mod tests {
     #[test]
     fn wasm_topology_controls_match_native() {
         let mut handle = SimHandle::new(0x5340);
-        handle.set_workload_enabled(false);
+        handle
+            .set_workload_enabled(false)
+            .expect("workload toggle applies");
         handle.run(8);
         handle
             .isolate_node("node-0".to_owned())
@@ -377,5 +392,78 @@ mod tests {
 
         assert_eq!(snapshot.mode, "mixed");
         assert_eq!(snapshot.intervention_count, 1);
+    }
+
+    #[test]
+    fn wasm_faults_are_recorded_and_replay_identically() {
+        let mut handle = SimHandle::new(0x5400);
+        handle.run(6);
+        handle
+            .set_workload_enabled(false)
+            .expect("workload toggle applies");
+        handle
+            .crash_node("node-1".to_owned())
+            .expect("crash applies");
+        handle.run(3);
+        handle
+            .inject(
+                "partition".to_owned(),
+                "node-0".to_owned(),
+                "node-2".to_owned(),
+                0,
+            )
+            .expect("partition applies");
+        handle
+            .inject(
+                "delay".to_owned(),
+                "node-2".to_owned(),
+                "node-0".to_owned(),
+                250,
+            )
+            .expect("delay applies");
+        handle.run(2);
+        handle
+            .restart_node("node-1".to_owned())
+            .expect("restart applies");
+        handle.run(4);
+
+        let script_json = handle.replay_script_json();
+        let script =
+            hydracache_sim::ReplayScriptV1::from_json(&script_json).expect("script decodes");
+        assert_eq!(script.actions.len(), 5);
+        assert_eq!(script.target_step, Some(15));
+
+        let mut replayed = SimHandle::new(0);
+        replayed
+            .apply_control_script_json(script_json)
+            .expect("replay applies");
+        assert_eq!(replayed.snapshot_json(), handle.snapshot_json());
+    }
+
+    #[test]
+    fn wasm_scenario_with_interventions_replays_from_preset() {
+        let mut handle = SimHandle::new(0);
+        handle
+            .apply_scenario("minority_partition_cannot_commit".to_owned())
+            .expect("scenario applies");
+        handle.run(2);
+        handle
+            .crash_node("node-0".to_owned())
+            .expect("crash applies");
+        handle.run(3);
+
+        let script_json = handle.replay_script_json();
+        let script =
+            hydracache_sim::ReplayScriptV1::from_json(&script_json).expect("script decodes");
+        assert_eq!(
+            script.scenario.as_deref(),
+            Some("minority_partition_cannot_commit")
+        );
+
+        let mut replayed = SimHandle::new(0);
+        replayed
+            .apply_control_script_json(script_json)
+            .expect("replay applies");
+        assert_eq!(replayed.snapshot_json(), handle.snapshot_json());
     }
 }

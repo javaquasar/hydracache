@@ -55,6 +55,7 @@ fn mode_and_scenario_are_in_snapshot() {
             },
             ControlActionV1::Step { at_step: 0, n: 2 },
         ],
+        target_step: None,
     };
 
     let world = run_script(&script);

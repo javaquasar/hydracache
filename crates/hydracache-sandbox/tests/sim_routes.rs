@@ -216,6 +216,73 @@ async fn sim_routes_accept_mode_change_control_action() {
     assert_eq!(snapshot["intervention_count"], 1);
 }
 
+#[tokio::test]
+async fn sim_replay_records_faults_and_replays_identically() {
+    let app = build_sandbox(SandboxConfig::default())
+        .await
+        .unwrap()
+        .router;
+    post_json(
+        app.clone(),
+        "/sim/new",
+        json!({"seed": 0x5410, "steps": 6}).to_string(),
+    )
+    .await;
+    for body in [
+        json!({"action": "workload", "enabled": false}),
+        json!({"action": "crash", "node": "node-1"}),
+        json!({"action": "partition", "from": "node-0", "to": "node-2"}),
+        json!({"action": "delay", "from": "node-2", "to": "node-0", "millis": 250}),
+    ] {
+        post_json(app.clone(), "/sim/inject", body.to_string()).await;
+    }
+    post_json(app.clone(), "/sim/step", json!({"steps": 3}).to_string()).await;
+    post_json(
+        app.clone(),
+        "/sim/inject",
+        json!({"action": "restart", "node": "node-1"}).to_string(),
+    )
+    .await;
+    let live = post_json(app.clone(), "/sim/step", json!({"steps": 2}).to_string()).await;
+
+    let script = get_json(app.clone(), "/sim/replay").await;
+    let kinds = script["actions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|action| action["type"].as_str().unwrap().to_owned())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        kinds,
+        ["workload", "crash", "partition", "delay_next", "restart"]
+    );
+    assert_eq!(script["target_step"], 11);
+
+    post_json(app.clone(), "/sim/new", json!({"seed": 1}).to_string()).await;
+    let replayed = post_json(app, "/sim/control", script.to_string()).await;
+    assert_eq!(replayed, live);
+}
+
+#[tokio::test]
+async fn sim_inject_rejects_invalid_fault_loudly() {
+    let app = build_sandbox(SandboxConfig::default())
+        .await
+        .unwrap()
+        .router;
+
+    let response = app
+        .oneshot(post(
+            "/sim/inject",
+            json!({"action": "restart", "node": "node-0"}).to_string(),
+        ))
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body = body_json(response).await;
+    assert_eq!(body["code"], "sim_control_rejected");
+}
+
 async fn post_json(app: Router, uri: &str, body: String) -> Value {
     let response = app.oneshot(post(uri, body)).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);

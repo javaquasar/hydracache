@@ -48,3 +48,49 @@ test("copy_reproducer_roundtrips_mode_and_actions", async ({ page, browser }) =>
   await expect(replayed.getByTestId("subscribers-panel")).toContainText("client-a@profiles");
   await replayed.close();
 });
+
+test("copy_reproducer_replays_faults_to_identical_snapshot", async ({ page, browser }) => {
+  await page.goto(`${demoUrl}?seed=503&steps=4&scenario=default`);
+  await expect(page.getByTestId("snapshot-hash")).toContainText(/^snapshot /);
+
+  await page.getByTestId("workload-toggle").uncheck();
+  await expect(page.getByTestId("intervention-status")).toContainText("1 replay action");
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).first().click();
+  await expect(page.getByTestId("nodes-panel")).toContainText("crashed");
+  await page.locator(".link-hit").first().dispatchEvent("click");
+  await page.getByTestId("partition-link").click();
+  await expect(page.getByTestId("selected-link")).toContainText("partitioned");
+  await expect(page.getByTestId("intervention-status")).toContainText("3 replay action");
+
+  await page.getByTestId("copy-reproducer").click();
+  await expect(page.getByTestId("copy-status")).toContainText("script=");
+  const replayUrl = await page.getByTestId("copy-status").textContent();
+  const liveHash = await page.getByTestId("snapshot-hash").textContent();
+
+  const replayed = await browser.newPage();
+  await replayed.goto(replayUrl ?? "");
+  await expect(replayed.getByTestId("snapshot-hash")).toHaveText(liveHash ?? "");
+  await expect(replayed.getByTestId("intervention-status")).toContainText("3 replay action");
+  await expect(replayed.getByTestId("workload-toggle")).not.toBeChecked();
+  await replayed.close();
+});
+
+test("scenario_with_intervention_replays_from_curated_preset", async ({ page, browser }) => {
+  await page.goto(`${demoUrl}?scenario=minority_partition_cannot_commit`);
+  await expect(page.getByTestId("snapshot-hash")).toContainText(/^snapshot /);
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Isolate" }).first().click();
+  await expect(page.getByTestId("intervention-status")).toContainText("1 replay action");
+
+  await page.getByTestId("copy-reproducer").click();
+  await expect(page.getByTestId("copy-status")).toContainText("script=");
+  const replayUrl = await page.getByTestId("copy-status").textContent();
+  const liveHash = await page.getByTestId("snapshot-hash").textContent();
+
+  const replayed = await browser.newPage();
+  await replayed.goto(replayUrl ?? "");
+  await expect(replayed.getByTestId("snapshot-hash")).toHaveText(liveHash ?? "");
+  await expect(replayed.getByTestId("scenario-select")).toHaveValue(
+    "minority_partition_cannot_commit",
+  );
+  await replayed.close();
+});
