@@ -1,7 +1,7 @@
 # HydraCache 0.74.0 RESP and Native Throughput Efficiency Plan
 
 
-## November 22 maintenance binary disposition
+## November 23 maintenance binary release
 
 The owner authorized preparation of stable 0.74.0 as a maintenance binary
 release after publication and verification of 0.74.0-rc.1. The stable source
@@ -18,7 +18,12 @@ Stable binary admission requires CI and HC/2 on the new source, a protected
 signature binding that source and ELF, exact-binary compatibility, and
 six hours with the same workload, CPU placement, timerfd and disk reserve.
 Registry publication retains its Rust 1.88 clean-consumer and security checks.
+The stable binary passed those binary admission checks and was published on
+23 November. The signed artifact and its independently checked 5,400,000-pair
+stability run are available from the release page. W11's paired qualification
+remains open.
 [Release scope](../releases/0.74.0.md)
+[Published stable binary](https://github.com/javaquasar/hydracache/releases/tag/v0.74.0)
 [Published RC](https://github.com/javaquasar/hydracache/releases/tag/v0.74.0-rc.1)
 
 

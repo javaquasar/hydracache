@@ -21,6 +21,8 @@ pub mod management_topology;
 pub mod redis_tcp;
 pub mod services;
 pub mod upgrade;
+#[cfg(target_os = "linux")]
+mod w11_effective_config;
 
 pub use admin_http::{
     AdminDiagnosticResetReply, AdminHttpError, AdminHttpSurface, ADMIN_ACTUATOR_PATH,

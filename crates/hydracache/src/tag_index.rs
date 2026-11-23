@@ -1,3 +1,4 @@
+use crate::atomic_update::AtomicCompareUpdate;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -201,7 +202,7 @@ impl TagIndex {
         self.key_generation_records
             .store(state.key_generations.len() as u64, Ordering::Release);
         self.version
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |value| {
+            .compare_update(Ordering::AcqRel, Ordering::Acquire, |value| {
                 value.checked_add(1)
             })
             .expect("tag-index memory sequence overflow");

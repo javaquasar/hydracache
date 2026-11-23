@@ -74,15 +74,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "atomic-polyfill"
-version = "1.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8cf2bce30dfe09ef0bfaef228b9d414faaf7e563035494d7fe092dba54b300f4"
-dependencies = [
- "critical-section",
-]
-
-[[package]]
 name = "atomic-waker"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -293,12 +284,6 @@ name = "crc16"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "338089f42c427b86394a5ee60ff321da23a5c89c9d89514c829687b26359fcff"
-
-[[package]]
-name = "critical-section"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "790eea4361631c5e7d22598ecd5723ff611904e3344ce8720784c93e3d83d40b"
 
 [[package]]
 name = "crossbeam-channel"
@@ -718,15 +703,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hash32"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0c35f58762feb77d74ebe43bdbc3210f09be9fe6742234d573bacc26ed92b67"
-dependencies = [
- "byteorder",
-]
-
-[[package]]
 name = "hashbrown"
 version = "0.15.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -750,20 +726,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7382cf6263419f2d8df38c55d7da83da5c18aef87fc7a7fc1fb1e344edfe14c1"
 dependencies = [
  "hashbrown 0.15.5",
-]
-
-[[package]]
-name = "heapless"
-version = "0.7.17"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cdc6457c0eb62c71aac4bc17216026d8410337c4126773b9c5daba343f17964f"
-dependencies = [
- "atomic-polyfill",
- "hash32",
- "rustc_version",
- "serde",
- "spin",
- "stable_deref_trait",
 ]
 
 [[package]]
@@ -887,7 +849,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache"
-version = "0.73.0"
+version = "0.74.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -903,7 +865,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-protocol"
-version = "0.73.0"
+version = "0.74.0"
 dependencies = [
  "bytes",
  "postcard",
@@ -913,7 +875,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-transport-axum"
-version = "0.73.0"
+version = "0.74.0"
 dependencies = [
  "axum",
  "bytes",
@@ -927,7 +889,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-core"
-version = "0.73.0"
+version = "0.74.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -938,7 +900,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-db"
-version = "0.73.0"
+version = "0.74.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -953,7 +915,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-diesel"
-version = "0.73.0"
+version = "0.74.0"
 dependencies = [
  "async-trait",
  "diesel",
@@ -985,7 +947,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-macros"
-version = "0.73.0"
+version = "0.74.0"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -995,7 +957,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-observability"
-version = "0.73.0"
+version = "0.74.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -1005,7 +967,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-redis-compat"
-version = "0.73.0"
+version = "0.74.0"
 dependencies = [
  "bytes",
  "hydracache",
@@ -1019,7 +981,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-seaorm"
-version = "0.73.0"
+version = "0.74.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -1032,7 +994,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sqlx"
-version = "0.73.0"
+version = "0.74.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -1245,9 +1207,9 @@ dependencies = [
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.30.1"
+version = "0.39.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e99fb7a497b1e3339bc746195567ed8d3e24945ecd636e3619d20b9de9e9149"
+checksum = "14a5f01b87b92705d07b433c06f96cbc764637d81a0bffb5734ce17cf0f9a2b3"
 dependencies = [
  "cc",
  "pkg-config",
@@ -1446,7 +1408,6 @@ dependencies = [
  "cobs",
  "embedded-io 0.4.0",
  "embedded-io 0.6.1",
- "heapless",
  "serde",
 ]
 
@@ -1624,9 +1585,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.45"
+version = "0.23.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d41d731c7d2f962d1ccc364cec258de3c0e93b38c2fb3ba97ac74513048d634"
+checksum = "48e13bd8c0e9365c43cfa5c9e8f9ad49d3c8444926c9aac819e0e4dc503c8fdf"
 dependencies = [
  "once_cell",
  "ring",
@@ -1647,9 +1608,9 @@ dependencies = [
 
 [[package]]
 name = "rustls-webpki"
-version = "0.103.15"
+version = "0.103.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3c3cf1d8b1e7d4927e2d154c3fcb02979afb9939629c62cd9048d4f07b60ac2"
+checksum = "4443b1b6d39d7c663139942cc4558262562d2c84123bb6282ef177009ca8b281"
 dependencies = [
  "ring",
  "rustls-pki-types",
@@ -1983,8 +1944,6 @@ dependencies = [
 [[package]]
 name = "sqlx-sqlite"
 version = "0.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2d12fe70b2c1b4401038055f90f151b78208de1f9f89a7dbfd41587a10c3eea"
 dependencies = [
  "atoi",
  "flume",
@@ -2424,14 +2383,14 @@ version = "0.26.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "521bc38abb08001b01866da9f51eb7c5d647a19260e00054a8c7fd5f9e57f7a9"
 dependencies = [
- "webpki-roots 1.0.9",
+ "webpki-roots 1.0.10",
 ]
 
 [[package]]
 name = "webpki-roots"
-version = "1.0.9"
+version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dcd9d09a39985f5344844e66b0c530a33843579125f23e21e9f0f220850f22a"
+checksum = "1c1c8e20c8a38fc7d65abfe74eb7280e4aa667e8eec8bc84996d2874810748d9"
 dependencies = [
  "rustls-pki-types",
 ]
