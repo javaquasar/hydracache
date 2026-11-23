@@ -282,6 +282,13 @@ jobs:
         timeout-minutes: 30
         run: cargo install cargo-semver-checks --version 0.50.0 --locked
 
+      - name: Install protoc for registry Raft analysis
+        timeout-minutes: 5
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes protobuf-compiler
+          protoc --version
+
       - name: Validate every publishable package against v0.70.0
         timeout-minutes: 180
         run: |

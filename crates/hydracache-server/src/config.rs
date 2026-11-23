@@ -194,6 +194,10 @@ pub struct RedisApiConfig {
     pub auth_token_file: Option<PathBuf>,
     /// Whether to request native rediss:// on this listener.
     pub rediss_enabled: bool,
+    /// Opt-in inbound client trust bundle; requires rediss and Redis AUTH.
+    /// None preserves server-auth-only TLS. Never inherits tls.ca_path.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mtls_client_ca_path: Option<PathBuf>,
     /// Whether Redis keyspace notification subscriptions are enabled.
     pub keyspace_events_enabled: bool,
     /// Maximum exact plus pattern subscriptions retained per RESP connection.
@@ -213,6 +217,7 @@ impl Default for RedisApiConfig {
             auth_username: None,
             auth_token_file: None,
             rediss_enabled: false,
+            mtls_client_ca_path: None,
             keyspace_events_enabled: false,
             max_event_subscriptions_per_connection:
                 DEFAULT_REDIS_EVENT_SUBSCRIPTIONS_PER_CONNECTION,
@@ -435,6 +440,10 @@ impl ServerConfig {
         if env::var("HYDRACACHE_CLIENT_API_ENABLED").as_deref() == Ok("true") {
             config.client_api.enabled = true;
         }
+        apply_client_batch_profile(
+            &mut config.client_api.limits,
+            env::var_os("HYDRACACHE_CLIENT_BATCH_PROFILE").as_deref(),
+        )?;
         if env::var("HYDRACACHE_HC2_ENABLED").as_deref() == Ok("true") {
             config.hc2_client_plane.enabled = true;
         }
@@ -476,6 +485,9 @@ impl ServerConfig {
         }
         if env::var("HYDRACACHE_REDIS_REDISS_ENABLED").as_deref() == Ok("true") {
             config.redis_api.rediss_enabled = true;
+        }
+        if let Some(path) = env::var_os("HYDRACACHE_REDIS_MTLS_CLIENT_CA_PATH") {
+            config.redis_api.mtls_client_ca_path = Some(PathBuf::from(path));
         }
         if env::var("HYDRACACHE_REDIS_KEYSPACE_EVENTS_ENABLED").as_deref() == Ok("true") {
             config.redis_api.keyspace_events_enabled = true;
@@ -592,6 +604,16 @@ impl ServerConfig {
                 || !is_loopback(self.admin_api.listen_addr.ip()))
         {
             return Err(ServerConfigError::UnsafeDiagnosticReset);
+        }
+        if let Some(path) = &self.redis_api.mtls_client_ca_path {
+            if path.as_os_str().is_empty()
+                || !self.redis_api.enabled
+                || !self.redis_api.rediss_enabled
+                || !self.tls.enabled
+                || !self.redis_api.auth_required
+            {
+                return Err(ServerConfigError::RedisMtlsRequiresTlsAndAuth);
+            }
         }
         if self.redis_api.enabled {
             if self.redis_api.max_event_subscriptions_per_connection == 0 {
@@ -857,6 +879,9 @@ pub enum ServerConfigError {
     /// Native rediss:// requires server TLS material.
     #[error("redis_api.rediss_enabled requires tls.enabled with certificate/key material")]
     RedisRedissRequiresTls,
+    /// Opt-in mTLS cannot be dormant, plaintext, or used to bypass Redis AUTH.
+    #[error("redis mTLS requires enabled Redis/rediss/TLS, required AUTH and a non-empty client CA path")]
+    RedisMtlsRequiresTlsAndAuth,
     /// Redis event listeners require a non-zero per-connection subscription bound.
     #[error("redis_api.max_event_subscriptions_per_connection must be greater than zero")]
     InvalidRedisEventSubscriptionLimit,
@@ -875,6 +900,22 @@ pub enum ServerConfigError {
         /// Conflicting surface.
         surface: &'static str,
     },
+}
+
+fn apply_client_batch_profile(
+    limits: &mut ClientSurfaceLimits,
+    value: Option<&std::ffi::OsStr>,
+) -> Result<(), ServerConfigError> {
+    match value {
+        None => Ok(()),
+        Some(value) if value == std::ffi::OsStr::new("w11-256") => {
+            limits.max_batch_entries = 256;
+            Ok(())
+        }
+        Some(_) => Err(ServerConfigError::InvalidClientApi(
+            "HYDRACACHE_CLIENT_BATCH_PROFILE must be w11-256 when set".to_owned(),
+        )),
+    }
 }
 
 fn parse_role(value: &str) -> Result<ServerRole, ServerConfigError> {

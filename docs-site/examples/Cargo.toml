@@ -3,6 +3,7 @@ name = "hydracache-docs-examples"
 version = "0.0.0"
 edition = "2021"
 publish = false
+license = "Apache-2.0"
 
 [workspace]
 
@@ -19,3 +20,6 @@ hydracache-redis-compat = { path = "../../crates/hydracache-redis-compat" }
 redis = { version = "1.3.0", default-features = false, features = ["tokio-comp"] }
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["macros", "net", "rt-multi-thread", "sync", "time"] }
+
+[patch.crates-io]
+sqlx-sqlite = { path = "../../vendor/sqlx-sqlite" }

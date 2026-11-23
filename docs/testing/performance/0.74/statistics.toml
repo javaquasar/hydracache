@@ -1,0 +1,64 @@
+schema_version = 1
+release = "0.74"
+contract_id = "performance-statistics-074-v1"
+state = "preregistered-local"
+candidate_may_amend = false
+minimum_claim_pairs = 5
+confidence_level = 0.95
+pairing = "counterbalanced-independent-processes"
+paired_estimator = "hodges-lehmann-v1"
+interval = "paired-bootstrap-95-v1"
+silent_retry_allowed = false
+best_sample_selection_allowed = false
+
+required_metrics = [
+  "goodput_operations_per_second",
+  "latency_p50_microseconds",
+  "latency_p95_microseconds",
+  "latency_p99_microseconds",
+  "cpu_seconds_per_operation",
+  "gross_allocated_bytes_per_operation",
+  "copied_bytes_per_operation",
+  "write_calls",
+  "flush_calls",
+  "store_lock_wait_nanoseconds",
+  "store_lock_hold_nanoseconds",
+  "rss_bytes",
+  "peak_rss_bytes",
+  "retained_bytes",
+]
+
+[outcome_accounting]
+goodput_denominator_includes = ["errors", "timeouts", "rejections", "late", "incomplete"]
+unexpected_allowed = 0
+missing_final_sample = "reject"
+nonfinite_metric = "reject"
+
+[native_non_regression]
+minimum_goodput_ratio = 0.98
+maximum_cpu_per_operation_ratio = 1.03
+maximum_p99_ratio = 1.03
+maximum_allocation_ratio = 1.05
+surfaces_must_remain_separate = true
+
+[direct_native_vs_resp]
+minimum_goodput_ratio_lower_95 = 1.0
+maximum_cpu_ratio_upper_95 = 1.0
+maximum_p99_ratio_upper_95 = 1.0
+native_allocation_must_not_exceed_resp = true
+native_copied_bytes_must_not_exceed_resp = true
+
+[unaffected_cells]
+maximum_goodput_regression = 0.02
+maximum_cpu_per_operation_regression = 0.03
+maximum_p99_regression = 0.03
+
+[proposal_floors]
+w2_minimum_compaction_bytes_reduction = 0.80
+w3_minimum_write_flush_per_reply_reduction = 0.80
+w3_minimum_pipeline10_goodput_improvement = 0.20
+w3_maximum_pipeline1_regression = 0.02
+w4_w7_w8_minimum_allocation_or_cpu_reduction = 0.20
+w5_w6_minimum_concurrency_or_multikey_improvement = 0.20
+w9_minimum_persistence_goodput_improvement = 0.20
+

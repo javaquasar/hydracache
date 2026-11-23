@@ -1,0 +1,111 @@
+schema_version = 1
+release = "0.74"
+registry_id = "proposal-registry-074-v1"
+state = "w0-w1-in-progress"
+product_mutation_allowed = false
+
+[[work_items]]
+id = "W0"
+title = "comparative baseline"
+decision = "in-progress"
+primary_metric = "baseline-readiness"
+blocker = "v0.73.0 publication and confirmation are not complete"
+
+[[work_items]]
+id = "W1"
+title = "stage attribution"
+decision = "in-progress"
+primary_metric = "owner-reconciliation"
+blocker = "fresh local attribution receipts not yet attached"
+
+[[work_items]]
+id = "W2"
+title = "cursor input parsing"
+decision = "not-authorized"
+primary_metric = "compaction-bytes-per-command"
+rollback = "remove only the RespReadBuffer candidate"
+
+[[work_items]]
+id = "W3"
+title = "bounded output coalescing"
+decision = "not-authorized"
+primary_metric = "write-and-flush-calls-per-reply"
+rollback = "remove only the connection-local response batch"
+
+[[work_items]]
+id = "W4"
+title = "translation ownership"
+decision = "not-authorized"
+primary_metric = "gross-allocated-bytes-per-operation"
+
+[[work_items]]
+id = "W5"
+title = "key representation"
+decision = "not-authorized"
+primary_metric = "copied-and-retained-key-bytes"
+
+[[work_items]]
+id = "W6"
+title = "read split and store sharding"
+decision = "not-authorized"
+primary_metric = "store-lock-wait-nanoseconds"
+
+[[work_items]]
+id = "W7"
+title = "vectorized multi-key"
+decision = "not-authorized"
+primary_metric = "dispatches-and-locks-per-logical-operation"
+
+[[work_items]]
+id = "W8"
+title = "verified session and value ownership"
+decision = "not-authorized"
+primary_metric = "native-cpu-and-copied-bytes-per-operation"
+
+[[work_items]]
+id = "W9"
+title = "runtime syscall buffer and durability follow-ups"
+decision = "not-authorized"
+primary_metric = "proposal-specific"
+
+[[native_investigations]]
+id = "N1"
+owner = "audit-metadata"
+decision = "unmeasured"
+[[native_investigations]]
+id = "N2"
+owner = "clock-and-expiry"
+decision = "unmeasured"
+[[native_investigations]]
+id = "N3"
+owner = "global-store-lock"
+decision = "unmeasured"
+[[native_investigations]]
+id = "N4"
+owner = "structured-key-ownership"
+decision = "unmeasured"
+[[native_investigations]]
+id = "N5"
+owner = "identity-validation"
+decision = "unmeasured"
+[[native_investigations]]
+id = "N6"
+owner = "value-ownership"
+decision = "unmeasured"
+[[native_investigations]]
+id = "N7"
+owner = "multi-key-dispatch"
+decision = "unmeasured"
+[[native_investigations]]
+id = "N8"
+owner = "diagnostic-atomics"
+decision = "unmeasured"
+[[native_investigations]]
+id = "N9"
+owner = "expired-entry-cleanup"
+decision = "unmeasured"
+[[native_investigations]]
+id = "N10"
+owner = "embedded-cache-stages"
+decision = "unmeasured"
+

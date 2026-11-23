@@ -3,6 +3,7 @@
 //! HC/1 remains the separate `hydracache-client` crate. This crate never
 //! decodes, probes, or falls back to an HC/1 endpoint.
 
+mod atomic_update;
 mod client;
 mod grpc;
 mod reconnect;

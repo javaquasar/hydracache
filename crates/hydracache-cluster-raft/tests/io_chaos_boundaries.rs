@@ -97,7 +97,7 @@ fn metadata_snapshot_message(index: u64, receiver: u64) -> RaftWireMessage {
     snapshot.mut_metadata().index = index;
     snapshot.mut_metadata().term = 1;
     snapshot.mut_metadata().mut_conf_state().voters = vec![1, 2, 3];
-    snapshot.data = data.into();
+    snapshot.data = data;
     let mut message = Message {
         from: 1,
         to: receiver,

@@ -3,8 +3,8 @@ use std::fmt;
 
 use hydracache::ClusterNodeId;
 use hydracache_cluster_raft::{InMemoryRaftLogStore, RaftLogStore, RaftWireMessage};
-use protobuf::Message as ProtobufMessage;
 use raft::eraftpb::{ConfChange, ConfChangeType, ConfChangeV2, Entry, EntryType, Message};
+use raft::protocompat::PbMessageExt;
 use raft::{Config, Error as RaftError, RawNode, StateRole};
 use slog::{o, Discard, Logger};
 
@@ -60,8 +60,8 @@ impl From<hydracache::CacheError> for SimRaftError {
     }
 }
 
-impl From<protobuf::ProtobufError> for SimRaftError {
-    fn from(error: protobuf::ProtobufError) -> Self {
+impl From<raft::protocompat::PbError> for SimRaftError {
+    fn from(error: raft::protocompat::PbError) -> Self {
         Self::new(format!("protobuf error: {error}"))
     }
 }

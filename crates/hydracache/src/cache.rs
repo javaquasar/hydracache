@@ -1,3 +1,4 @@
+use crate::atomic_update::AtomicCompareUpdate;
 use std::error::Error;
 use std::future::Future;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -2046,7 +2047,7 @@ where
     fn next_entry_version(&self) -> Result<u64> {
         self.inner
             .next_entry_version
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |version| {
+            .compare_update(Ordering::AcqRel, Ordering::Acquire, |version| {
                 version.checked_add(1)
             })
             .map_err(|_| CacheError::Backend("cache entry version overflow".to_owned()))

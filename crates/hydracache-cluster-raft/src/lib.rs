@@ -114,11 +114,11 @@ pub use log_store::{
     RaftStorageFaultOperation,
 };
 
-use protobuf::Message as ProtobufMessage;
 use raft::eraftpb::{
     ConfChange, ConfChangeType, ConfChangeV2, Entry, EntryType, Message as RaftMessage,
     MessageType, Snapshot,
 };
+use raft::protocompat::{PbMessage, PbMessageExt};
 use raft::storage::Storage;
 use raft::{Config, RawNode, SnapshotStatus, StateRole};
 use serde::{Deserialize, Serialize};
@@ -442,7 +442,7 @@ impl RaftWireMessage {
 
     /// Decode the protobuf payload and verify its duplicated transport header.
     pub fn decode(&self) -> CacheResult<RaftMessage> {
-        let message = RaftMessage::parse_from_bytes(&self.payload).map_err(|error| {
+        let message = RaftMessage::decode(self.payload.as_slice()).map_err(|error| {
             CacheError::Decode(format!("failed to decode raft message: {error}"))
         })?;
         validate_wire_header("from", self.from, message.from)?;
@@ -499,14 +499,30 @@ fn validate_wire_header(field: &str, envelope: u64, protobuf: u64) -> CacheResul
 }
 
 fn validate_wire_structure(message: &RaftMessage) -> CacheResult<()> {
+    let message_type = MessageType::from_i32(message.msg_type)
+        .ok_or_else(|| CacheError::Decode("invalid raft wire message type".to_owned()))?;
+    if message
+        .entries
+        .iter()
+        .any(|entry| EntryType::from_i32(entry.entry_type).is_none())
+    {
+        return Err(CacheError::Decode(
+            "invalid raft wire entry type".to_owned(),
+        ));
+    }
+    if message_type == MessageType::MsgPropose && message.entries.is_empty() {
+        return Err(CacheError::Decode(
+            "raft proposal must carry at least one entry".to_owned(),
+        ));
+    }
     if matches!(
-        message.get_msg_type(),
+        message_type,
         MessageType::MsgReadIndex | MessageType::MsgReadIndexResp
     ) && message.entries.len() != 1
     {
         return Err(CacheError::Decode(format!(
             "raft {:?} must carry exactly one request-context entry, got {}",
-            message.get_msg_type(),
+            message_type,
             message.entries.len()
         )));
     }
@@ -1734,8 +1750,7 @@ fn materialize_snapshot_command(
         let present = find_materialized(cluster, node_id, *role).is_some();
         if !present {
             return Err(CacheError::Backend(format!(
-                "node-left references absent {:?} '{}'",
-                role, node_id
+                "node-left references absent {role:?} '{node_id}'"
             )));
         }
     }
@@ -1749,8 +1764,7 @@ fn snapshot_apply_error(
     error: CacheError,
 ) -> CacheError {
     CacheError::Backend(format!(
-        "raft snapshot apply error: snapshot_index={}, tail_index={}, command_id={}: {}",
-        snapshot_index, tail_index, command_id, error
+        "raft snapshot apply error: snapshot_index={snapshot_index}, tail_index={tail_index}, command_id={command_id}: {error}"
     ))
 }
 
@@ -1944,7 +1958,7 @@ where
         snapshot.mut_metadata().index = self.applied_index;
         snapshot.mut_metadata().term = term;
         snapshot.mut_metadata().set_conf_state(conf_state);
-        snapshot.data = encode_metadata_snapshot_payload(&export)?.into();
+        snapshot.data = encode_metadata_snapshot_payload(&export)?;
         Ok(snapshot)
     }
 
@@ -2082,12 +2096,9 @@ where
                     }
                 }
                 EntryType::EntryConfChange => {
-                    let change =
-                        ConfChange::parse_from_bytes(entry.data.as_ref()).map_err(|error| {
-                            CacheError::Decode(format!(
-                                "failed to decode raft conf change: {error}"
-                            ))
-                        })?;
+                    let change = ConfChange::decode(entry.data.as_ref()).map_err(|error| {
+                        CacheError::Decode(format!("failed to decode raft conf change: {error}"))
+                    })?;
                     let conf_state = self
                         .raw_node
                         .apply_conf_change(&change)
@@ -2108,12 +2119,9 @@ where
                         .map_err(to_cache_error)?;
                 }
                 EntryType::EntryConfChangeV2 => {
-                    let change =
-                        ConfChangeV2::parse_from_bytes(entry.data.as_ref()).map_err(|error| {
-                            CacheError::Decode(format!(
-                                "failed to decode raft conf change v2: {error}"
-                            ))
-                        })?;
+                    let change = ConfChangeV2::decode(entry.data.as_ref()).map_err(|error| {
+                        CacheError::Decode(format!("failed to decode raft conf change v2: {error}"))
+                    })?;
                     let conf_state = self
                         .raw_node
                         .apply_conf_change(&change)
@@ -2475,7 +2483,7 @@ mod tests {
     fn protobuf_snapshot_from_export(export: &RaftMetadataRuntimeExport) -> Snapshot {
         let mut snapshot = Snapshot::default();
         snapshot.mut_metadata().index = export.applied_index;
-        snapshot.data = encode_metadata_snapshot_payload(export).unwrap().into();
+        snapshot.data = encode_metadata_snapshot_payload(export).unwrap();
         snapshot
     }
 
@@ -2500,6 +2508,43 @@ mod tests {
             payload: vec![0xff],
         };
         assert!(malformed.is_snapshot().is_err());
+    }
+
+    #[test]
+    fn wire_decode_rejects_empty_proposal_before_runtime_step() {
+        let runtime = RaftMetadataRuntime::single_node("empty-wire-proposal", 1).unwrap();
+        let before = runtime.snapshot();
+        let mut message = RaftMessage {
+            from: 1,
+            to: 1,
+            term: 1,
+            ..RaftMessage::default()
+        };
+        message.set_msg_type(MessageType::MsgPropose);
+        let wire = RaftWireMessage::encode(&message).unwrap();
+
+        let error = wire.decode().unwrap_err();
+        assert!(error.to_string().contains("at least one entry"));
+        assert!(runtime.step(wire).is_err());
+        assert_eq!(runtime.snapshot(), before);
+    }
+
+    #[test]
+    fn wire_decode_preserves_nonempty_proposal() {
+        let mut message = RaftMessage {
+            from: 1,
+            to: 2,
+            term: 1,
+            entries: vec![Entry {
+                data: b"proposal".to_vec(),
+                ..Entry::default()
+            }],
+            ..RaftMessage::default()
+        };
+        message.set_msg_type(MessageType::MsgPropose);
+        let wire = RaftWireMessage::encode(&message).unwrap();
+
+        assert_eq!(wire.decode().unwrap(), message);
     }
 
     #[test]
@@ -2626,7 +2671,7 @@ mod tests {
         let mut unapplied_entry = Entry {
             index: 2,
             term: 1,
-            data: encode_envelope(&envelope).into(),
+            data: encode_envelope(&envelope),
             ..Entry::default()
         };
         unapplied_entry.set_entry_type(EntryType::EntryNormal);

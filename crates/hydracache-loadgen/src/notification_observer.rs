@@ -4,6 +4,7 @@
 //! ordering, saturation, reconciliation, and exact-snapshot rules executable before a Moka API
 //! patch or product proposal can be authorized.
 
+use crate::atomic_update::AtomicCompareUpdate;
 use std::collections::{HashMap, VecDeque};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -186,7 +187,7 @@ impl RemovalObserver {
         self.memberships.lock().unwrap().register(entry);
         if self
             .retained_bytes
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+            .compare_update(Ordering::AcqRel, Ordering::Acquire, |current| {
                 current.checked_add(entry.retained_bytes)
             })
             .is_err()
@@ -206,7 +207,7 @@ impl RemovalObserver {
         }
         if self
             .retained_bytes
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+            .compare_update(Ordering::AcqRel, Ordering::Acquire, |current| {
                 current.checked_sub(entry.retained_bytes)
             })
             .is_err()
