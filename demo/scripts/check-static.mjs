@@ -30,6 +30,7 @@ const required = [
   "pkg/hydracache_sim_wasm_bg.wasm",
   "tests/ui_smoke.spec.js",
   "tests/seed_share.spec.js",
+  "tests/server_engine.spec.js",
   "unit/share.test.mjs",
   "unit/insight.test.mjs",
   "scripts/serve-static.mjs",

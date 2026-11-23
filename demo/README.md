@@ -199,6 +199,21 @@ Two workflows cover the demo; neither is part of the fast PR gate.
   builds the WASM package and runs the UI and seed-share Playwright specs against
   `demo/` directly. It does not deploy Pages.
 
+Tests: `npm --prefix demo test` runs the `node:test` unit suite (`demo/unit`,
+URL/share and view-model helpers) and then Playwright on desktop and mobile
+viewports. `demo/tests/server_engine.spec.js` drives the same UI through the
+sandbox (`engine=server`, raft election); it is skipped unless
+`HYDRACACHE_SANDBOX_URL` is set, and `demo.yml` runs it against a freshly built
+sandbox:
+
+```powershell
+cargo run -p hydracache-sandbox -- --backend memory
+```
+
+```powershell
+$env:HYDRACACHE_SANDBOX_URL = "http://127.0.0.1:3000"; npx --prefix demo playwright test server_engine --workers=1
+```
+
 `npm --prefix demo run build` (`scripts/check-static.mjs`) fails when a file the
 page needs is missing (including `pkg/`, so build WASM first), when a module the
 page loads is not in the `docs-site.yml` bundle list, when

@@ -127,9 +127,16 @@ test("timeline_rewind_rebuilds_identical_snapshots", async ({ page, browser }) =
   await expect(page.getByTestId("nodes-panel")).toContainText("leader");
   await page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).first().click();
   await expect(page.getByTestId("nodes-panel")).toContainText("crashed");
+  const startStep = Number(
+    (await page.getByTestId("timeline-label").textContent())?.match(/step (\d+)/)?.[1],
+  );
   for (let index = 0; index < 3; index += 1) {
     await page.getByTestId("step").click();
   }
+  // Steps are queued engine calls; wait for the last one before reading.
+  await expect(page.getByTestId("timeline-label")).toHaveText(
+    `step ${startStep + 3} of ${startStep + 3}`,
+  );
   await expect(page.getByTestId("events-panel")).toContainText("crash node-0");
   const endLabel = await page.getByTestId("timeline-label").textContent();
   const endStep = Number(endLabel?.match(/step (\d+)/)?.[1]);

@@ -178,6 +178,19 @@ describe("reproducerCommand", () => {
     assert.deepEqual([...url.searchParams.keys()], ["script"]);
     assert.equal(decodeReplayScript(url.searchParams.get("script")).target_step, 17);
   });
+
+  test("a server-engine replay link keeps the engine and API", () => {
+    const link = reproducerCommand(
+      5,
+      17,
+      JSON.stringify({ version: 1, seed: 5, mode: "manual", scenario: null, actions: [{ type: "crash", at_step: 2, node: "node-0" }] }),
+      "http://127.0.0.1:5173/demo/?seed=5&engine=server&api=http%3A%2F%2F127.0.0.1%3A3000%2F",
+    );
+    const url = new URL(link);
+    assert.equal(url.searchParams.get("engine"), "server");
+    assert.equal(url.searchParams.get("api"), "http://127.0.0.1:3000");
+    assert.ok(url.searchParams.get("script"));
+  });
 });
 
 describe("replay script encoding", () => {

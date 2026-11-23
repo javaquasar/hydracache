@@ -115,7 +115,17 @@ export function reproducerCommand(seed, steps, replayScriptJson = "", currentUrl
   if (shouldShareReplayScript(replayScript) && currentUrl) {
     replayScript.target_step = readPositiveInt(String(steps), replayScript.target_step ?? 0);
     const url = new URL(currentUrl);
+    // Keep the engine selection: a server (raft) run replayed by the in-browser
+    // engine would be a different run.
+    const engine = url.searchParams.get("engine");
+    const api = url.searchParams.get("api");
     url.search = "";
+    if (readEngine(engine) === "server") {
+      url.searchParams.set("engine", "server");
+      if (api) {
+        url.searchParams.set("api", normalizeApiBase(api));
+      }
+    }
     url.searchParams.set("script", encodeReplayScript(replayScript));
     return url.toString();
   }
