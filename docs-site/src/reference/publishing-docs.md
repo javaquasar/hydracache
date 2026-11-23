@@ -92,4 +92,9 @@ Use the `*-256.png` asset in pages and README content. Keep the original PNG as 
 
 The intended production target is GitHub Pages, optionally behind a custom domain later. The `book.toml` `site-url` is set to `/hydracache/`, which matches the repository GitHub Pages path.
 
-The `Documentation Site` workflow builds `docs-site/book`, runs checks, and uploads that directory as the GitHub Pages artifact on `main` pushes that touch docs content. Treat `docs-site` as the production Pages source; other browser demos should be linked from the docs or published under their own path without replacing the docs artifact.
+The `Documentation Site` workflow runs on every push to `main`. It builds
+`docs-site/book` and copies the browser simulator and its WASM into `demo/`
+inside that same Pages artifact. Before uploading, the workflow runs the demo's
+desktop and mobile Playwright suite against the packaged `/hydracache/demo/`
+route. After deployment, it checks each public demo asset against the tested
+bundle's SHA-256. Open the [published cluster simulator](https://javaquasar.github.io/hydracache/demo/).

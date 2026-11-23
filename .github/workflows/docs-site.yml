@@ -4,13 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "README.md"
-      - "docs-site/**"
-      - "docs/releases/**"
-      - "docs/performance/memory-*.md"
-      - "scripts/docs-*.mjs"
-      - ".github/workflows/docs-site.yml"
   pull_request:
     paths:
       - "README.md"
@@ -18,6 +11,13 @@ on:
       - "docs/releases/**"
       - "docs/performance/memory-*.md"
       - "scripts/docs-*.mjs"
+      - "demo/**"
+      - "crates/hydracache/**"
+      - "crates/hydracache-core/**"
+      - "crates/hydracache-sim/**"
+      - "crates/hydracache-sim-wasm/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
       - ".github/workflows/docs-site.yml"
   workflow_dispatch:
 
@@ -32,9 +32,11 @@ concurrency:
 
 jobs:
   build:
-    name: Build and verify docs
+    name: Build and verify docs and simulator
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    outputs:
+      demo_hashes: ${{ steps.bundle.outputs.demo_hashes }}
 
     steps:
       - name: Checkout
@@ -44,13 +46,16 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
+          targets: wasm32-unknown-unknown
 
       - name: Install Node
         uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: console/package-lock.json
+          cache-dependency-path: |
+            console/package-lock.json
+            demo/package-lock.json
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -72,6 +77,26 @@ jobs:
       - name: Build docs site
         run: mdbook build docs-site
 
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@wasm-pack
+
+      - name: Build simulator WASM
+        timeout-minutes: 10
+        run: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked
+
+      - name: Bundle public simulator files
+        id: bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          destination=docs-site/book/demo
+          install -d "$destination/pkg"
+          install -m 0644 demo/{index.html,style.css,app.js,scenarios.js,share.js} "$destination/"
+          install -m 0644 demo/pkg/{hydracache_sim_wasm.js,hydracache_sim_wasm_bg.wasm} "$destination/pkg/"
+          cd "$destination"
+          hashes=$(sha256sum --binary index.html style.css app.js scenarios.js share.js pkg/hydracache_sim_wasm.js pkg/hydracache_sim_wasm_bg.wasm)
+          printf 'demo_hashes=%s\n' "$(printf '%s\n' "$hashes" | base64 -w0)" >> "$GITHUB_OUTPUT"
+
       - name: Check documentation links
         run: node scripts/docs-link-check.mjs
 
@@ -84,12 +109,30 @@ jobs:
         timeout-minutes: 10
         run: |
           npm --prefix console ci
+          npm --prefix demo ci
           npx --prefix console playwright install --with-deps chromium
 
       - name: Run visual smoke
         run: |
           python3 -m http.server 3000 --directory docs-site/book &
           node scripts/docs-visual-smoke.mjs
+
+      - name: Test the packaged simulator at the GitHub Pages path
+        timeout-minutes: 5
+        shell: bash
+        env:
+          HYDRACACHE_DEMO_URL: http://127.0.0.1:3001/hydracache/demo/
+        run: |
+          set -euo pipefail
+          preview="$RUNNER_TEMP/pages-preview"
+          mkdir -p "$preview"
+          ln -s "$(realpath docs-site/book)" "$preview/hydracache"
+          python3 -m http.server 3001 --bind 127.0.0.1 --directory "$preview" &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          curl --fail --silent --show-error --output /dev/null --retry 15 --retry-connrefused --retry-delay 1 --max-time 5 "$HYDRACACHE_DEMO_URL"
+          npm --prefix demo run build
+          npm --prefix demo test
 
       - name: Configure Pages
         if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
@@ -102,7 +145,7 @@ jobs:
           path: docs-site/book
 
   deploy:
-    name: Publish docs
+    name: Publish docs and simulator
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     needs: build
     runs-on: ubuntu-latest
@@ -115,3 +158,38 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+      - name: Verify published simulator assets
+        timeout-minutes: 5
+        shell: bash
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          DEMO_HASHES: ${{ needs.build.outputs.demo_hashes }}
+        run: |
+          set -euo pipefail
+          : "${PAGE_URL:?Missing Pages URL}"
+          : "${DEMO_HASHES:?Missing simulator checksums}"
+          receipt=$(mktemp)
+          payload=$(mktemp)
+          trap 'rm -f "$receipt" "$payload"' EXIT
+          printf '%s' "$DEMO_HASHES" | base64 --decode > "$receipt"
+          while read -r expected path; do
+            path=${path#\*}
+            url="${PAGE_URL%/}/demo/$path"
+            if [[ "$path" == index.html ]]; then url="${PAGE_URL%/}/demo/"; fi
+            matched=false
+            for attempt in 1 2 3 4 5 6; do
+              if curl --fail --silent --show-error --connect-timeout 5 --max-time 10 \
+                  --output "$payload" "$url?v=$expected" && \
+                  printf '%s *%s\n' "$expected" "$payload" | sha256sum --check --status; then
+                matched=true
+                break
+              fi
+              sleep 3
+            done
+            if [[ "$matched" != true ]]; then
+              echo "Published simulator asset differs from the tested bundle: $url" >&2
+              exit 1
+            fi
+            echo "Verified $url"
+          done < "$receipt"
