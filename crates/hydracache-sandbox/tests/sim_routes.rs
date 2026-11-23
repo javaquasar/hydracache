@@ -283,6 +283,38 @@ async fn sim_inject_rejects_invalid_fault_loudly() {
     assert_eq!(body["code"], "sim_control_rejected");
 }
 
+#[tokio::test]
+async fn sim_scenarios_use_raft_election_like_default_server_runs() {
+    let app = build_sandbox(SandboxConfig::default())
+        .await
+        .unwrap()
+        .router;
+
+    let scenario = post_json(
+        app.clone(),
+        "/sim/new",
+        json!({"scenario": "leader_crash_failover_no_committed_loss"}).to_string(),
+    )
+    .await;
+    assert_eq!(scenario["election_source"], "raft");
+    assert_eq!(
+        scenario["active_scenario"],
+        "leader_crash_failover_no_committed_loss"
+    );
+
+    post_json(
+        app.clone(),
+        "/sim/inject",
+        json!({"action": "crash", "node": "node-0"}).to_string(),
+    )
+    .await;
+    let live = post_json(app.clone(), "/sim/step", json!({"steps": 3}).to_string()).await;
+    let script = get_json(app.clone(), "/sim/replay").await;
+    let replayed = post_json(app, "/sim/control", script.to_string()).await;
+    assert_eq!(replayed, live);
+    assert_eq!(replayed["election_source"], "raft");
+}
+
 async fn post_json(app: Router, uri: &str, body: String) -> Value {
     let response = app.oneshot(post(uri, body)).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);

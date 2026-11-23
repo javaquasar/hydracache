@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Current stable simulator snapshot JSON schema version.
-pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 6;
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 7;
 
 /// Maximum number of in-flight messages rendered in one snapshot.
 pub const MAX_IN_FLIGHT_RENDERED: usize = 64;
@@ -59,6 +59,12 @@ pub struct SimSnapshot {
     pub active_scenario: Option<String>,
     /// Number of replay-visible interventions recorded by the control surface.
     pub intervention_count: u64,
+    /// Whether the built-in smoke workload is currently issuing operations.
+    pub workload_enabled: bool,
+    /// Names of the invariants the verdict below is computed from.
+    pub checked_invariants: Vec<String>,
+    /// First scheduler step at which the verdict reported a violation, if ever.
+    pub first_violation_step: Option<u64>,
     /// Invariant verdict for the current state.
     pub verdict: VerdictView,
     /// Progress summary for dashboard panels.
@@ -90,6 +96,12 @@ impl SimSnapshot {
             mode: "manual".to_owned(),
             active_scenario: None,
             intervention_count: 0,
+            workload_enabled: false,
+            checked_invariants: InvariantChecker::HISTORY_INVARIANTS
+                .iter()
+                .map(|name| (*name).to_owned())
+                .collect(),
+            first_violation_step: (!report.violations.is_empty()).then_some(step),
             verdict: VerdictView::from_report(&report),
             progress: ProgressView {
                 committed_entries: history.completed().count() as u64,

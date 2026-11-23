@@ -18,11 +18,17 @@ guarantee.
 
 ### Faithful — real engine code and real checkers
 
-- **Invariant verdicts are real.** The verdict panel is produced by the actual
-  invariant checker (consensus prefix, durability, no-tombstone-resurrection,
-  convergence, read-your-writes) — the same checkers the `0.44` deterministic
-  simulation testing (DST) gates use. A reported violation is a real violation of
-  real state.
+- **Invariant verdicts are real, and exactly as broad as listed.** The verdict
+  panel is produced by the actual invariant checker. The live world checks the
+  workload-history invariants (`read-your-writes`, `invalidate-read`), the
+  election/topology invariants (`election_safety`, `leader_requires_quorum`,
+  `no_stale_leader_writes`, `index_monotonicity`, `catchup_no_skip`,
+  `event_after_commit`) and `resource_bounded_growth`; the page lists them from
+  the snapshot's `checked_invariants`. The replica-snapshot invariants
+  (`consensus-prefix`, `durability`, `tombstone-resurrection`, `convergence`)
+  run in the DST suites but are **not** part of the live verdict. A reported
+  violation is a real violation of real state, and its first violating step is
+  kept.
 - **Deterministic and replayable.** Execution is driven by a seeded `SimRng` /
   `SimClock`; the same `seed` reproduces the same run. The shared URL and the
   copy-reproducer button reproduce the exact run.

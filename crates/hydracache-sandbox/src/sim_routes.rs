@@ -4,8 +4,8 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::options;
 use axum::{Json, Router};
 use hydracache_sim::{
-    replay_world, run_scenario, ControlActionV1, ControlApplyError, ReplayScriptV1, ScenarioError,
-    SimConfig, SimMode, SimSnapshot, SimWorld, SIM_SNAPSHOT_SCHEMA_VERSION,
+    replay_world, run_scenario_with, ControlActionV1, ControlApplyError, ReplayScriptV1,
+    ScenarioError, SimConfig, SimMode, SimSnapshot, SimWorld, SIM_SNAPSHOT_SCHEMA_VERSION,
 };
 use serde::{Deserialize, Serialize};
 
@@ -108,9 +108,13 @@ async fn sim_new(
         if scenario == "default" {
             SimWorld::with_raft_election(request.seed.unwrap_or(50), SimConfig::default())
         } else {
-            run_scenario(scenario)
-                .map_err(SimRouteRejection::from)?
-                .world
+            // Same election backend as a default server run, so a curated
+            // scenario does not silently fall back to the simulator model.
+            run_scenario_with(scenario, |seed| {
+                SimWorld::with_raft_election(seed, SimConfig::default())
+            })
+            .map_err(SimRouteRejection::from)?
+            .world
         }
     } else {
         SimWorld::with_raft_election(request.seed.unwrap_or(50), SimConfig::default())

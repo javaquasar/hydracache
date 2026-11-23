@@ -255,15 +255,24 @@ pub fn scripted_lab_catalog() -> Vec<ReplayScriptV1> {
     ]
 }
 
-/// Run a named scenario.
+/// Run a named scenario on the default (simulator-model election) world.
 pub fn run_scenario(name: &str) -> Result<ScenarioRun, ScenarioError> {
+    run_scenario_with(name, |seed| SimWorld::new(seed, SimConfig::default()))
+}
+
+/// Run a named scenario on a world built by `base_world(preset_seed)`, e.g. a
+/// raft-election world for the sandbox server engine.
+pub fn run_scenario_with(
+    name: &str,
+    base_world: impl FnOnce(u64) -> SimWorld,
+) -> Result<ScenarioRun, ScenarioError> {
     let preset = scenario_presets()
         .into_iter()
         .find(|preset| preset.name == name)
         .ok_or_else(|| ScenarioError::UnknownScenario {
             name: name.to_owned(),
         })?;
-    let mut world = SimWorld::new(preset.seed, SimConfig::default());
+    let mut world = base_world(preset.seed);
     for action in &preset.actions {
         apply_action(&mut world, preset.name, action)?;
     }
@@ -281,7 +290,8 @@ pub fn run_scenario(name: &str) -> Result<ScenarioRun, ScenarioError> {
 /// When `script.scenario` names a curated preset, replay starts from that
 /// preset's world (its own faults and steps included) and the script seed must
 /// match the preset seed; any other scenario value is a label and replay starts
-/// from `default_world(script.seed)`. Actions and `target_step` are then applied
+/// from `default_world(script.seed)`. Presets are also built on `default_world`,
+/// so a caller's election backend is kept for scenario replays. Actions and `target_step` are then applied
 /// through [`SimWorld::apply_replay_script`].
 pub fn replay_world(
     script: &ReplayScriptV1,
@@ -301,7 +311,7 @@ pub fn replay_world(
                     script.seed, preset.name, preset.seed
                 )));
             }
-            run_scenario(preset.name)
+            run_scenario_with(preset.name, default_world)
                 .map_err(|error| ControlApplyError::InvalidAction(error.to_string()))?
                 .world
         }

@@ -132,6 +132,7 @@ pub struct SimWorld {
     invariant_checker: InvariantChecker,
     resource_growth_checker: BoundedGrowthChecker,
     invariant_report: InvariantReport,
+    first_violation_step: Option<u64>,
     nodes: BTreeMap<ClusterNodeId, SimNode>,
     clients: BTreeMap<String, SimClientActor>,
     subscribers: BTreeMap<String, SimSubscriber>,
@@ -197,6 +198,7 @@ impl SimWorld {
             invariant_checker: InvariantChecker,
             resource_growth_checker: BoundedGrowthChecker::default(),
             invariant_report: InvariantReport::default(),
+            first_violation_step: None,
             nodes,
             clients: BTreeMap::new(),
             subscribers: BTreeMap::new(),
@@ -852,6 +854,9 @@ impl SimWorld {
             mode: self.mode.as_str().to_owned(),
             active_scenario: self.active_scenario.clone(),
             intervention_count: self.action_log.len() as u64,
+            workload_enabled: self.workload_enabled,
+            checked_invariants: Self::checked_invariants(),
+            first_violation_step: self.first_violation_step,
             verdict: crate::snapshot::VerdictView::from_report(&self.invariant_report),
             progress: crate::snapshot::progress_from_report(
                 committed_entries,
@@ -975,6 +980,21 @@ impl SimWorld {
         let sample = self.resource_sample();
         self.resource_growth_checker
             .observe(sample, &mut self.invariant_report);
+        if self.first_violation_step.is_none() && !self.invariant_report.violations.is_empty() {
+            self.first_violation_step = Some(self.steps);
+        }
+    }
+
+    /// Invariant names the live verdict is computed from: workload history,
+    /// election/topology, and bounded resource growth. Replica-snapshot
+    /// invariants ([`InvariantChecker::REPLICA_INVARIANTS`]) are not part of it.
+    pub fn checked_invariants() -> Vec<String> {
+        InvariantChecker::HISTORY_INVARIANTS
+            .iter()
+            .chain(InvariantChecker::ELECTION_INVARIANTS)
+            .chain(["resource_bounded_growth"].iter())
+            .map(|name| (*name).to_owned())
+            .collect()
     }
 
     fn resource_sample(&self) -> ResourceSample {
