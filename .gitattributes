@@ -25,3 +25,10 @@ docs/testing/perf-artifacts/0.73/**/README.md text eol=lf
 docs/testing/perf-artifacts/0.73/**/manifest.json text eol=lf
 docs/testing/perf-artifacts/0.73/**/SHA256SUMS text eol=lf
 docs/testing/perf-artifacts/0.73/**/verify.ps1 text eol=lf
+# Simulator demo sources are served and hash-verified as published bytes.
+demo/**/*.js text eol=lf
+demo/**/*.mjs text eol=lf
+demo/**/*.css text eol=lf
+demo/**/*.html text eol=lf
+demo/**/*.json text eol=lf
+demo/**/*.md text eol=lf

@@ -59,6 +59,9 @@ jobs:
       - name: Check static demo package
         run: npm --prefix demo run build
 
+      - name: Run demo unit tests
+        run: npm --prefix demo run test:unit
+
       - name: Install Playwright browsers
         timeout-minutes: 10
         run: |
