@@ -185,3 +185,24 @@ export function nodeStatus(node) {
   }
   return String(node.vote_state || node.role || "unknown");
 }
+
+// Text alternative for the cluster graph (screen readers, tests): the same
+// engine facts the picture encodes.
+export function graphSummary(snapshot) {
+  const nodes = (snapshot.nodes || []).map((node) => `${node.id} ${nodeStatus(node)}`);
+  const states = new Map();
+  for (const link of snapshot.links || []) {
+    if (link.state !== "up") {
+      states.set(link.state, (states.get(link.state) ?? 0) + 1);
+    }
+  }
+  const links = states.size
+    ? [...states].map(([state, count]) => `${count} ${state}`).join(", ")
+    : "all up";
+  const clients = (snapshot.clients || []).length;
+  const subscribers = (snapshot.subscribers || []).length;
+  return (
+    `${nodes.length} nodes: ${nodes.join(", ")}. Directed links: ${links}. ` +
+    `${clients} client(s), ${subscribers} subscriber(s), ${(snapshot.in_flight || []).length} message(s) in flight.`
+  );
+}

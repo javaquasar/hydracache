@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <main class="shell" data-testid="demo-shell">
+    <main class="shell" data-testid="demo-shell" aria-busy="true">
       <header class="topbar glass-panel">
         <div>
           <h1>HydraCache Cluster Simulator</h1>
@@ -24,7 +24,9 @@
           ></p>
         </div>
         <div class="status-cluster" aria-label="simulation status">
-          <div id="verdict" class="verdict" data-testid="verdict">loading</div>
+          <div id="verdict" class="verdict warn" data-testid="verdict" role="status" aria-live="polite">
+            loading the simulator engine…
+          </div>
           <div
             id="election-source-chip"
             class="source-chip"
@@ -96,7 +98,14 @@
 
       <section class="workspace">
         <section class="graph-panel glass-panel" aria-label="cluster graph">
-          <svg id="cluster-graph" viewBox="0 0 800 520" role="img" aria-label="cluster graph"></svg>
+          <svg
+            id="cluster-graph"
+            viewBox="0 0 800 520"
+            role="group"
+            aria-label="cluster graph"
+            aria-describedby="graph-summary"
+          ></svg>
+          <p id="graph-summary" class="visually-hidden" data-testid="graph-summary"></p>
           <section class="timeline" aria-label="timeline">
             <label class="timeline-scrub">
               <span id="timeline-label" data-testid="timeline-label">step 0</span>
@@ -136,88 +145,110 @@
           </section>
 
           <section class="glass-panel">
-            <h2>Verdict</h2>
-            <div id="verdict-panel" data-testid="verdict-panel"></div>
+            <details class="panel" open data-collapse-mobile>
+              <summary><h2>Verdict</h2></summary>
+              <div id="verdict-panel" data-testid="verdict-panel"></div>
+            </details>
           </section>
 
           <section class="glass-panel">
-            <h2>Link</h2>
-            <p id="selected-link" data-testid="selected-link">none</p>
-            <div class="button-row">
-              <button id="partition-link" type="button" data-action="partition" data-testid="partition-link">
-                Partition
-              </button>
-              <button id="delay-link" type="button" data-action="delay" data-testid="delay-link">
-                Delay
-              </button>
-              <button id="drop-link" type="button" data-action="drop" data-testid="drop-link">
-                Drop
-              </button>
-              <button id="heal-link" type="button" data-action="heal" data-testid="heal-link">
-                Heal
-              </button>
-            </div>
-          </section>
-
-          <section class="glass-panel">
-            <h2>Progress</h2>
-            <dl id="progress-panel" data-testid="progress-panel"></dl>
-            <p id="snapshot-hash" class="hash" data-testid="snapshot-hash"></p>
-          </section>
-
-          <section class="glass-panel">
-            <h2>Nodes</h2>
-            <button id="add-node-button" type="button" data-testid="add-node-button">
-              Add node
-            </button>
-            <div id="nodes-panel" data-testid="nodes-panel"></div>
-          </section>
-
-          <section class="glass-panel">
-            <h2>Signals</h2>
-            <div id="signals-panel" data-testid="signals-panel"></div>
-          </section>
-
-          <section class="glass-panel">
-            <h2>Client</h2>
-            <div class="manual-controls">
-              <label>
-                Client
-                <input id="manual-client" value="client-a" data-testid="manual-client" />
+            <details class="panel" open>
+              <summary><h2>Link</h2></summary>
+              <label class="link-picker">
+                Link
+                <select id="link-select" data-testid="link-select">
+                  <option value="">Choose a link</option>
+                </select>
               </label>
-              <label>
-                Namespace
-                <input id="manual-ns" value="profiles" data-testid="manual-ns" />
-              </label>
-              <label>
-                Key
-                <input id="manual-key" value="profile-42" data-testid="manual-key" />
-              </label>
-              <label>
-                Value
-                <input id="manual-value" value="fresh" data-testid="manual-value" />
-              </label>
+              <p id="selected-link" data-testid="selected-link" aria-live="polite">none</p>
               <div class="button-row">
-                <button id="subscribe-button" type="button" data-testid="subscribe-button">
-                  Subscribe
+                <button id="partition-link" type="button" data-action="partition" data-testid="partition-link">
+                  Partition
                 </button>
-                <button id="push-event-button" type="button" data-testid="push-event-button">
-                  Push
+                <button id="delay-link" type="button" data-action="delay" data-testid="delay-link">
+                  Delay
+                </button>
+                <button id="drop-link" type="button" data-action="drop" data-testid="drop-link">
+                  Drop
+                </button>
+                <button id="heal-link" type="button" data-action="heal" data-testid="heal-link">
+                  Heal
                 </button>
               </div>
-            </div>
-            <div id="clients-panel" data-testid="clients-panel"></div>
-            <div id="subscribers-panel" data-testid="subscribers-panel"></div>
+            </details>
           </section>
 
           <section class="glass-panel">
-            <h2>Consistency <span class="model-tag">not modeled</span></h2>
-            <div id="consistency-panel" data-testid="consistency-panel"></div>
+            <details class="panel" open data-collapse-mobile>
+              <summary><h2>Progress</h2></summary>
+              <dl id="progress-panel" data-testid="progress-panel"></dl>
+              <p id="snapshot-hash" class="hash" data-testid="snapshot-hash"></p>
+            </details>
           </section>
 
           <section class="glass-panel">
-            <h2>Keys</h2>
-            <div id="keys-panel" data-testid="keys-panel"></div>
+            <details class="panel" open>
+              <summary><h2>Nodes</h2></summary>
+              <button id="add-node-button" type="button" data-testid="add-node-button">
+                Add node
+              </button>
+              <div id="nodes-panel" data-testid="nodes-panel"></div>
+            </details>
+          </section>
+
+          <section class="glass-panel">
+            <details class="panel" open data-collapse-mobile>
+              <summary><h2>Signals</h2></summary>
+              <div id="signals-panel" data-testid="signals-panel"></div>
+            </details>
+          </section>
+
+          <section class="glass-panel">
+            <details class="panel" open>
+              <summary><h2>Client</h2></summary>
+              <div class="manual-controls">
+                <label>
+                  Client
+                  <input id="manual-client" value="client-a" data-testid="manual-client" />
+                </label>
+                <label>
+                  Namespace
+                  <input id="manual-ns" value="profiles" data-testid="manual-ns" />
+                </label>
+                <label>
+                  Key
+                  <input id="manual-key" value="profile-42" data-testid="manual-key" />
+                </label>
+                <label>
+                  Value
+                  <input id="manual-value" value="fresh" data-testid="manual-value" />
+                </label>
+                <div class="button-row">
+                  <button id="subscribe-button" type="button" data-testid="subscribe-button">
+                    Subscribe
+                  </button>
+                  <button id="push-event-button" type="button" data-testid="push-event-button">
+                    Push
+                  </button>
+                </div>
+              </div>
+              <div id="clients-panel" data-testid="clients-panel"></div>
+              <div id="subscribers-panel" data-testid="subscribers-panel"></div>
+            </details>
+          </section>
+
+          <section class="glass-panel">
+            <details class="panel" open data-collapse-mobile>
+              <summary><h2>Consistency <span class="model-tag">not modeled</span></h2></summary>
+              <div id="consistency-panel" data-testid="consistency-panel"></div>
+            </details>
+          </section>
+
+          <section class="glass-panel">
+            <details class="panel" open data-collapse-mobile>
+              <summary><h2>Keys</h2></summary>
+              <div id="keys-panel" data-testid="keys-panel"></div>
+            </details>
           </section>
         </aside>
       </section>

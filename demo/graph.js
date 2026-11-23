@@ -146,11 +146,13 @@ function buildGraphDom(snapshot) {
   for (const edge of graphSim.edges) {
     if (edge.kind === "node") {
       const visual = svg("line", { class: "link" });
-      const hit = svg("line", { class: "link-hit" });
+      // The wide invisible hit line is also the keyboard target for the link.
+      const hit = svg("line", { class: "link-hit", tabindex: 0, role: "button" });
       hit.addEventListener("click", (event) => {
         event.stopPropagation();
         host.onSelectLink({ from: edge.from, to: edge.to });
       });
+      onActivateKey(hit, () => host.onSelectLink({ from: edge.from, to: edge.to }));
       edgeLayer.append(visual, hit);
       dom.edges.push({ edge, visual, hit });
     } else {
@@ -170,7 +172,17 @@ function buildGraphDom(snapshot) {
         svg("text", { class: "entity-id", y: 4 }),
         svg("text", { class: "entity-sub", y: 36 }),
       );
-      if (vertex.kind === "client") group.append(svg("title", {}, "Click to push (drag to move)"));
+      if (vertex.kind === "client") {
+        group.append(svg("title", {}, "Click or press Enter to push (drag to move)"));
+        group.setAttribute("tabindex", "0");
+        group.setAttribute("role", "button");
+        onActivateKey(group, () => host.onClientPress(vertex.ref));
+      } else {
+        group.setAttribute("role", "img");
+      }
+    }
+    if (vertex.kind === "node") {
+      group.setAttribute("role", "img");
     }
     bindVertexDrag(group, vertex);
     vertexLayer.append(group);
@@ -196,22 +208,50 @@ function updateGraphVisuals(snapshot) {
       );
       item.group.querySelector(".v-id").textContent = node.id;
       item.group.querySelector(".v-sub").textContent = status;
+      item.group.setAttribute("aria-label", `${node.id}, ${status}, term ${node.term}`);
     } else {
-      const ref = v.ref;
+      // Vertices are rebuilt only on topology change, so read the live entity.
+      const ref =
+        (v.kind === "client" ? snapshot.clients : snapshot.subscribers)?.find((entity) => entity.id === v.ref.id) ??
+        v.ref;
+      v.ref = ref;
       const active = v.kind === "client" ? Boolean(ref.last_op) : Boolean(ref.last_event);
       item.group.setAttribute("class", ["vertex", "entity", v.kind, active ? "active" : "", v.kind === "client" ? "clickable" : ""].filter(Boolean).join(" "));
       item.group.querySelector(".entity-id").textContent = v.kind === "client" ? ref.id : ref.client_id || ref.id;
       item.group.querySelector(".entity-sub").textContent = ref.namespace || "";
+      item.group.setAttribute(
+        "aria-label",
+        v.kind === "client"
+          ? `client ${ref.id} on ${ref.namespace}; press Enter to push`
+          : `subscriber ${ref.client_id || ref.id} on ${ref.namespace}`,
+      );
     }
   }
-  for (const { edge, visual } of graphSim.dom.edges) {
-    const current = host.getSelectedLink();
+  // The DOM keeps the edge objects from when it was built (topology change
+  // only); take state from the current edges so partitions and delays show.
+  const liveEdges = new Map(graphSim.edges.map((edge) => [`${edge.a}>${edge.b}`, edge]));
+  const current = host.getSelectedLink();
+  for (const { edge: built, visual, hit } of graphSim.dom.edges) {
+    const edge = liveEdges.get(`${built.a}>${built.b}`) ?? built;
     const selected = current && current.from === edge.from && current.to === edge.to;
     visual.setAttribute("class", ["link", edge.state, selected ? "selected" : ""].filter(Boolean).join(" "));
+    hit.setAttribute("aria-label", `link ${edge.from} to ${edge.to}, ${edge.state}${selected ? ", selected" : ""}`);
+    hit.setAttribute("aria-pressed", selected ? "true" : "false");
   }
-  for (const { edge, line } of graphSim.dom.entityEdges) {
+  for (const { edge: built, line } of graphSim.dom.entityEdges) {
+    const edge = liveEdges.get(`${built.a}>${built.b}`) ?? built;
     line.setAttribute("class", ["entity-link", edge.kind === "entity" && edge.b.startsWith("sub:") ? "subscriber" : "client", edge.active ? "active" : ""].filter(Boolean).join(" "));
   }
+}
+
+function onActivateKey(target, activate) {
+  target.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      event.stopPropagation();
+      activate();
+    }
+  });
 }
 
 function rebuildPackets(snapshot) {

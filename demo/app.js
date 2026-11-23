@@ -10,6 +10,7 @@ import { SCENARIOS } from "./scenarios.js";
 import { ServerSimSession, WasmSimSession } from "./engine.js";
 import { initGraph, playDataFlowPulse, resetGraph, syncGraph } from "./graph.js";
 import {
+  graphSummary,
   keyAgreement,
   leaderOf,
   nodeStatus,
@@ -61,6 +62,9 @@ const state = {
 
 const el = {
   banner: document.querySelector("#engine-banner"),
+  shell: document.querySelector("[data-testid='demo-shell']"),
+  linkSelect: document.querySelector("#link-select"),
+  graphSummary: document.querySelector("#graph-summary"),
   verdict: document.querySelector("#verdict"),
   notice: document.querySelector("#action-notice"),
   seedError: document.querySelector("#seed-error"),
@@ -121,6 +125,8 @@ async function boot() {
     onClientPress: (client) => void runAction(() => pushEventFor(client.id, client.namespace)),
   });
   bindPreferenceState();
+  collapseSecondaryPanelsOnSmallScreens();
+  setBusy(true);
   const initial = readInitialState(window.location.search, window.location.origin);
   state.engine = initial.engine;
   state.apiBase = initial.apiBase;
@@ -165,7 +171,46 @@ async function boot() {
       // keep the controls usable (Reset starts a fresh seeded run).
       showNotice(`Shared run could not be loaded: ${errorMessage(error)}`);
     }
+    setBusy(false);
   });
+}
+
+// Controls that need a loaded engine stay disabled (and the page aria-busy)
+// until the WASM package or the server session is ready. Per-state controls
+// (link actions, guide, timeline) are then managed by render().
+function engineControls() {
+  return [
+    el.step,
+    el.play,
+    el.copy,
+    el.downloadScript,
+    el.loadScenario,
+    el.reset,
+    el.addNode,
+    el.subscribe,
+    el.pushEvent,
+    el.mode,
+    el.workload,
+    ...el.untilButtons,
+  ];
+}
+
+function setBusy(busy) {
+  el.shell.setAttribute("aria-busy", busy ? "true" : "false");
+  for (const control of engineControls()) {
+    control.disabled = busy;
+  }
+}
+
+// On narrow screens the side panel stacks under the graph; start with the
+// read-only panels collapsed so the controls a user acts on stay close.
+function collapseSecondaryPanelsOnSmallScreens() {
+  if (typeof window.matchMedia !== "function" || !window.matchMedia("(max-width: 900px)").matches) {
+    return;
+  }
+  for (const panel of document.querySelectorAll("details[data-collapse-mobile]")) {
+    panel.removeAttribute("open");
+  }
 }
 
 function bindEvents() {
@@ -195,6 +240,11 @@ function bindEvents() {
   el.timelineInput.addEventListener("change", () =>
     void runAction(() => rewindTo(Number(el.timelineInput.value)), { keepTimeline: true }),
   );
+  el.linkSelect.addEventListener("change", () => {
+    const [from, to] = el.linkSelect.value.split(">");
+    state.selectedLink = from && to ? { from, to } : null;
+    render();
+  });
   el.guideBack.addEventListener("click", () => moveTour(-1));
   el.guideNext.addEventListener("click", () => moveTour(1));
   el.guideDo.addEventListener("click", () => void runAction(runTourStep));
@@ -350,6 +400,7 @@ function render() {
   renderTimeline(snapshot);
   renderGuide();
   syncGraph(snapshot);
+  el.graphSummary.textContent = graphSummary(snapshot);
   renderSelectedLink();
   renderProgress(snapshot);
   renderNodes(snapshot);
@@ -413,12 +464,38 @@ function renderVerdictPanel(snapshot) {
 }
 
 function renderSelectedLink() {
+  renderLinkOptions();
   const link = selectedLinkView();
   el.selectedLink.textContent = link
     ? `${link.from} -> ${link.to} (${link.state})`
     : "none";
   for (const button of el.linkActions) {
     button.disabled = !link;
+  }
+}
+
+// Keyboard/screen-reader route to the same link selection as clicking a graph
+// edge. Options are only rebuilt when the set of links or their states change,
+// so an open dropdown is not reset by auto-play.
+function renderLinkOptions() {
+  const links = state.snapshot?.links || [];
+  const signature = links.map((link) => `${link.from}>${link.to}:${link.state}`).join(",");
+  if (el.linkSelect.dataset.signature !== signature) {
+    el.linkSelect.dataset.signature = signature;
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Choose a link";
+    const options = links.map((link) => {
+      const option = document.createElement("option");
+      option.value = `${link.from}>${link.to}`;
+      option.textContent = `${link.from} -> ${link.to} (${link.state})`;
+      return option;
+    });
+    el.linkSelect.replaceChildren(placeholder, ...options);
+  }
+  const selected = state.selectedLink ? `${state.selectedLink.from}>${state.selectedLink.to}` : "";
+  if (el.linkSelect.value !== selected) {
+    el.linkSelect.value = selected;
   }
 }
 
@@ -1216,6 +1293,7 @@ function showEngineError(error) {
     state.engine === "server" ? "server simulator unavailable" : "wasm package unavailable";
   el.banner.textContent = errorMessage(error);
   showNotice(errorMessage(error));
+  el.shell.setAttribute("aria-busy", "false");
   for (const button of [el.step, el.play, el.copy, el.loadScenario, el.downloadScript, el.guideDo, ...el.untilButtons, ...el.linkActions]) {
     button.disabled = true;
   }

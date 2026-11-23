@@ -5,6 +5,7 @@ const demoUrl = process.env.HYDRACACHE_DEMO_URL ?? "http://127.0.0.1:5173/demo/"
 test("loads_steps_and_renders_verdict", async ({ page }) => {
   await openReady(page);
   await expect(page.getByTestId("engine-banner")).toContainText("election sim-model");
+  await expandPanel(page, "signals-panel");
   await expect(page.getByTestId("signals-panel")).toBeVisible();
 
   const before = await page.getByTestId("progress-panel").textContent();
@@ -258,6 +259,7 @@ test("keys_panel_shows_per_node_checksums", async ({ page }) => {
   await page.goto(`${demoUrl}?seed=80&steps=16&scenario=default`);
   await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
   const keys = page.getByTestId("keys-panel");
+  await expandPanel(page, "keys-panel");
   await expect(keys.locator(".replica").first()).toBeVisible();
   await expect(keys).toContainText("node-0");
   await expect(keys).toContainText("node-2");
@@ -293,6 +295,81 @@ test("workload_checkbox_follows_the_engine", async ({ page }) => {
   await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
   await expect(page.getByTestId("workload-toggle")).not.toBeChecked();
   await expect(page.getByTestId("guide-text")).toContainText("not a quorum");
+});
+
+test("keyboard_selects_and_partitions_a_link", async ({ page }) => {
+  await openReady(page);
+  const firstHit = page.locator(".link-hit").first();
+  await firstHit.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("selected-link")).toContainText(/node-\d -> node-\d/);
+
+  await page.getByTestId("link-select").selectOption("node-1>node-2");
+  await expect(page.getByTestId("selected-link")).toContainText("node-1 -> node-2 (up)");
+  await page.getByTestId("partition-link").focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("selected-link")).toContainText("partitioned");
+  // The drawn edge follows the engine state (it used to keep the state from
+  // when the graph DOM was built).
+  await expect(page.locator(".link.partitioned")).toHaveCount(1);
+  await expect(page.locator(".link-hit[aria-label*='partitioned']")).toHaveCount(1);
+});
+
+test("keyboard_pushes_from_a_client_vertex", async ({ page }) => {
+  await openReady(page);
+  await page.getByTestId("subscribe-button").click();
+  await expect(page.getByTestId("intervention-status")).toContainText("1 replay action");
+  const client = page.locator(".vertex.client").first();
+  await expect(client).toHaveAttribute("role", "button");
+  await client.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("intervention-status")).toContainText("2 replay action");
+});
+
+test("graph_has_a_text_alternative", async ({ page }) => {
+  await openReady(page);
+  await expect(page.locator("#cluster-graph")).toHaveAttribute("aria-describedby", "graph-summary");
+  const summary = page.getByTestId("graph-summary");
+  await expect(summary).toContainText("3 nodes: node-0");
+  await expect(summary).toContainText("Directed links: all up");
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).first().click();
+  await expect(summary).toContainText("node-0 crashed");
+});
+
+test("controls_wait_for_the_engine_to_load", async ({ page }) => {
+  let release;
+  const gate = new Promise((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/pkg/hydracache_sim_wasm_bg.wasm", async (route) => {
+    await gate;
+    await route.continue();
+  });
+  await page.goto(demoUrl);
+  await expect(page.getByTestId("demo-shell")).toHaveAttribute("aria-busy", "true");
+  await expect(page.getByTestId("verdict")).toContainText("loading the simulator engine");
+  await expect(page.getByTestId("step")).toBeDisabled();
+  await expect(page.getByTestId("until-leader")).toBeDisabled();
+
+  release();
+  await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
+  await expect(page.getByTestId("demo-shell")).toHaveAttribute("aria-busy", "false");
+  await expect(page.getByTestId("step")).toBeEnabled();
+});
+
+test("secondary_panels_collapse_on_small_screens", async ({ page }, testInfo) => {
+  await openReady(page);
+  const mobile = testInfo.project.name.startsWith("mobile");
+  const keysPanel = page.locator("details:has([data-testid='keys-panel'])");
+  const nodesPanel = page.locator("details:has([data-testid='nodes-panel'])");
+  await expect(nodesPanel).toHaveAttribute("open", "");
+  if (mobile) {
+    await expect(keysPanel).not.toHaveAttribute("open", "");
+    await keysPanel.locator("summary").click();
+    await expect(keysPanel).toHaveAttribute("open", "");
+  } else {
+    await expect(keysPanel).toHaveAttribute("open", "");
+  }
 });
 
 async function contrastRatio(locator) {
@@ -356,5 +433,14 @@ async function setFastestSpeed(page) {
   await page.locator("#speed-input").evaluate((input) => {
     input.value = input.min;
     input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+}
+
+async function expandPanel(page, testId) {
+  await page.getByTestId(testId).evaluate((node) => {
+    const panel = node.closest("details");
+    if (panel) {
+      panel.open = true;
+    }
   });
 }

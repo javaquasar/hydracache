@@ -238,6 +238,71 @@ input[aria-invalid="true"] {
   font-size: 0.8rem;
 }
 
+details.panel > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  list-style: none;
+}
+
+details.panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.panel > summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin: 0 0 10px auto;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(45deg);
+  transition: transform 120ms ease;
+}
+
+details.panel:not([open]) > summary::after {
+  margin-bottom: 0;
+  transform: rotate(-45deg);
+}
+
+details.panel:not([open]) > summary h2 {
+  margin-bottom: 0;
+}
+
+details.panel > summary:focus-visible,
+.link-hit:focus-visible,
+.vertex.clickable:focus-visible {
+  outline: 3px solid var(--ok);
+  outline-offset: 2px;
+}
+
+.link-hit:focus-visible {
+  stroke: color-mix(in srgb, var(--ok) 45%, transparent);
+}
+
+.link-picker {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+main[aria-busy="true"] .controls button,
+main[aria-busy="true"] .side-panel button {
+  cursor: progress;
+}
+
 .source-chip {
   width: fit-content;
   max-width: 100%;
