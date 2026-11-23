@@ -10,7 +10,9 @@ import {
   nodeStatus,
   scriptAtStep,
   shortVersion,
+  speedLabel,
   timelineEvents,
+  timelineMarks,
   verdictView,
 } from "../insight.js";
 
@@ -147,5 +149,49 @@ describe("node and graph text", () => {
     assert.equal(shortVersion(null), "—");
     assert.equal(shortVersion(255), "0000ff");
     assert.equal(shortVersion(-1), "ffffff");
+  });
+});
+
+describe("speedLabel", () => {
+  test("shows seconds at or above one second and milliseconds below", () => {
+    assert.equal(speedLabel(1200), "1.2 s/step");
+    assert.equal(speedLabel(1000), "1.0 s/step");
+    assert.equal(speedLabel(80), "80 ms/step");
+  });
+
+  test("rejects non-positive or non-numeric intervals", () => {
+    assert.equal(speedLabel(0), "—");
+    assert.equal(speedLabel("fast"), "—");
+  });
+});
+
+describe("timelineMarks", () => {
+  const events = [
+    { step: 2, kind: "action", text: "crash node-1" },
+    { step: 2, kind: "leader", text: "leader is node-0" },
+    { step: 5, kind: "verdict", text: "violation: read-your-writes" },
+    { step: 12, kind: "action", text: "heal" },
+  ];
+
+  test("places events proportionally over the scrubber range", () => {
+    const marks = timelineMarks(events, 0, 10);
+    assert.deepEqual(
+      marks.map((mark) => [mark.step, mark.percent]),
+      [
+        [2, 20],
+        [5, 50],
+      ],
+    );
+  });
+
+  test("merges events on one step and keeps the most important kind", () => {
+    const [first] = timelineMarks(events, 0, 10);
+    assert.equal(first.kind, "leader");
+    assert.equal(first.text, "step 2: crash node-1; leader is node-0");
+  });
+
+  test("returns no marks for an empty range", () => {
+    assert.deepEqual(timelineMarks(events, 4, 4), []);
+    assert.deepEqual(timelineMarks(null, 0, 10), []);
   });
 });

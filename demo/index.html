@@ -3,17 +3,19 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <title>HydraCache Cluster Simulator</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
     <main class="shell" data-testid="demo-shell" aria-busy="true">
       <header class="topbar glass-panel">
-        <div>
+        <div class="title-block">
           <h1>HydraCache Cluster Simulator</h1>
-          <p id="engine-banner" data-testid="engine-banner">
-            This runs the real hydracache-sim engine. Verdicts are produced by the actual invariant checker.
+          <p class="tagline">
+            Runs the real hydracache-sim engine in your browser. Verdicts are produced by the actual invariant checker.
           </p>
+          <p id="engine-banner" class="run-facts" data-testid="engine-banner">loading the engine…</p>
           <p
             id="action-notice"
             class="action-notice"
@@ -27,70 +29,115 @@
           <div id="verdict" class="verdict warn" data-testid="verdict" role="status" aria-live="polite">
             loading the simulator engine…
           </div>
-          <div
-            id="election-source-chip"
-            class="source-chip"
-            data-testid="election-source-chip"
-            aria-label="Election source"
-          >
-            unknown
+          <div class="status-row">
+            <div
+              id="election-source-chip"
+              class="source-chip"
+              data-testid="election-source-chip"
+              aria-label="Election source"
+            >
+              unknown
+            </div>
+            <button
+              id="theme-toggle"
+              class="ghost icon-button"
+              type="button"
+              data-testid="theme-toggle"
+              aria-label="Use dark theme"
+              title="Use dark theme"
+            >
+              <span aria-hidden="true">◐</span>
+            </button>
           </div>
         </div>
       </header>
 
       <section class="controls glass-panel" aria-label="simulation controls">
-        <label>
-          Seed
-          <input
-            id="seed-input"
-            data-testid="seed-input"
-            inputmode="numeric"
-            value="80"
-            aria-describedby="seed-error"
-          />
-          <span id="seed-error" class="field-error" data-testid="seed-error" hidden></span>
-        </label>
-        <label>
-          Scenario
-          <select id="scenario-select" data-testid="scenario-select"></select>
-        </label>
-        <label>
-          Mode
-          <select id="mode-select" data-testid="mode-select">
-            <option value="manual">Manual</option>
-            <option value="scripted">Scripted</option>
-            <option value="mixed">Mixed</option>
-          </select>
-        </label>
-        <button id="load-scenario" type="button" data-testid="load-scenario">Load</button>
-        <button id="reset-button" type="button" data-testid="reset">Reset</button>
-        <button id="step-button" type="button" data-testid="step">Step</button>
-        <button id="play-button" type="button" data-testid="play">Play</button>
-        <button id="copy-reproducer" type="button" data-testid="copy-reproducer">
-          Copy reproducer
-        </button>
-        <button id="download-script" type="button" data-testid="download-script">
-          Download script
-        </button>
-        <div class="button-row run-until" role="group" aria-label="run until">
-          <button id="until-leader" type="button" data-until="leader" data-testid="until-leader">
-            Run to leader
-          </button>
-          <button id="until-agree" type="button" data-until="agree" data-testid="until-agree">
-            Run to replica agreement
-          </button>
-          <button id="until-violation" type="button" data-until="violation" data-testid="until-violation">
-            Run to violation
-          </button>
+        <div class="control-group" role="group" aria-labelledby="group-run">
+          <span id="group-run" class="group-title">Run</span>
+          <div class="group-body">
+            <button id="play-button" class="primary" type="button" data-testid="play">Play</button>
+            <button id="step-button" type="button" data-testid="step">Step</button>
+            <label class="range">
+              Speed
+              <span class="range-row">
+                <input
+                  id="speed-input"
+                  type="range"
+                  min="80"
+                  max="1200"
+                  step="40"
+                  value="1200"
+                  aria-describedby="speed-value"
+                />
+                <output id="speed-value" for="speed-input" data-testid="speed-value">1.2 s/step</output>
+              </span>
+            </label>
+            <label class="toggle">
+              <input id="workload-toggle" type="checkbox" checked data-testid="workload-toggle" />
+              Workload
+            </label>
+          </div>
         </div>
-        <label class="toggle">
-          <input id="workload-toggle" type="checkbox" checked data-testid="workload-toggle" />
-          Workload
-        </label>
-        <label class="range">
-          Speed
-          <input id="speed-input" type="range" min="80" max="1200" step="40" value="1200" />
-        </label>
+
+        <div class="control-group" role="group" aria-labelledby="group-scenario">
+          <span id="group-scenario" class="group-title">Scenario</span>
+          <div class="group-body">
+            <label>
+              Seed
+              <input
+                id="seed-input"
+                data-testid="seed-input"
+                inputmode="numeric"
+                value="80"
+                aria-describedby="seed-error"
+              />
+              <span id="seed-error" class="field-error" data-testid="seed-error" hidden></span>
+            </label>
+            <label>
+              Scenario
+              <select id="scenario-select" data-testid="scenario-select"></select>
+            </label>
+            <label>
+              Mode
+              <select id="mode-select" data-testid="mode-select">
+                <option value="manual">Manual</option>
+                <option value="scripted">Scripted</option>
+                <option value="mixed">Mixed</option>
+              </select>
+            </label>
+            <button id="load-scenario" type="button" data-testid="load-scenario">Load</button>
+            <button id="reset-button" class="ghost" type="button" data-testid="reset">Reset</button>
+          </div>
+        </div>
+
+        <div class="control-group run-until" role="group" aria-labelledby="group-until">
+          <span id="group-until" class="group-title">Run until</span>
+          <div class="group-body">
+            <button id="until-leader" type="button" data-until="leader" data-testid="until-leader">
+              Run to leader
+            </button>
+            <button id="until-agree" type="button" data-until="agree" data-testid="until-agree">
+              Run to replica agreement
+            </button>
+            <button id="until-violation" type="button" data-until="violation" data-testid="until-violation">
+              Run to violation
+            </button>
+          </div>
+        </div>
+
+        <div class="control-group" role="group" aria-labelledby="group-share">
+          <span id="group-share" class="group-title">Share</span>
+          <div class="group-body">
+            <button id="copy-reproducer" class="ghost" type="button" data-testid="copy-reproducer">
+              Copy reproducer
+            </button>
+            <button id="download-script" class="ghost" type="button" data-testid="download-script">
+              Download script
+            </button>
+          </div>
+        </div>
+
         <p id="intervention-status" class="copy-status" data-testid="intervention-status"></p>
         <p id="copy-status" class="copy-status" data-testid="copy-status"></p>
         <p id="script-status" class="copy-status" data-testid="script-status"></p>
@@ -98,48 +145,77 @@
 
       <section class="workspace">
         <section class="graph-panel glass-panel" aria-label="cluster graph">
-          <svg
-            id="cluster-graph"
-            viewBox="0 0 800 520"
-            role="group"
-            aria-label="cluster graph"
-            aria-describedby="graph-summary"
-          ></svg>
+          <div class="graph-stage">
+            <svg
+              id="cluster-graph"
+              viewBox="0 0 800 520"
+              role="group"
+              aria-label="cluster graph"
+              aria-describedby="graph-summary"
+            ></svg>
+            <div class="graph-tools" role="group" aria-label="graph view">
+              <button id="zoom-in" class="icon-button" type="button" data-testid="zoom-in" aria-label="Zoom in" title="Zoom in">
+                <span aria-hidden="true">+</span>
+              </button>
+              <button id="zoom-out" class="icon-button" type="button" data-testid="zoom-out" aria-label="Zoom out" title="Zoom out">
+                <span aria-hidden="true">−</span>
+              </button>
+              <button id="zoom-fit" class="icon-button" type="button" data-testid="zoom-fit" aria-label="Fit the cluster" title="Fit the cluster">
+                <span aria-hidden="true">⤢</span>
+              </button>
+            </div>
+            <div class="graph-legend" data-testid="graph-legend" aria-label="graph legend">
+              <div class="legend-group">
+                <span><i class="legend-node leader"></i>leader</span>
+                <span><i class="legend-node follower"></i>follower</span>
+                <span><i class="legend-node candidate"></i>candidate</span>
+                <span><i class="legend-node crashed"></i>crashed</span>
+              </div>
+              <div class="legend-group">
+                <span><i class="legend-dot vote"></i>vote</span>
+                <span><i class="legend-dot heartbeat"></i>heartbeat</span>
+                <span><i class="legend-dot data"></i>data</span>
+                <span><i class="legend-dot event"></i>event</span>
+              </div>
+              <div class="legend-group">
+                <span><i class="legend-line partitioned"></i>partitioned</span>
+                <span><i class="legend-line delayed"></i>delayed</span>
+              </div>
+            </div>
+            <p id="graph-hint" class="graph-hint">Drag to pan · Ctrl + wheel to zoom · click a line to pick a link</p>
+          </div>
           <p id="graph-summary" class="visually-hidden" data-testid="graph-summary"></p>
           <section class="timeline" aria-label="timeline">
             <label class="timeline-scrub">
-              <span id="timeline-label" data-testid="timeline-label">step 0</span>
-              <input
-                id="timeline-input"
-                data-testid="timeline-input"
-                type="range"
-                min="0"
-                max="0"
-                step="1"
-                value="0"
-                aria-describedby="timeline-help"
-              />
+              <span id="timeline-label" class="timeline-label" data-testid="timeline-label">step 0</span>
+              <span class="timeline-track">
+                <span id="timeline-marks" class="timeline-marks" data-testid="timeline-marks" aria-hidden="true"></span>
+                <input
+                  id="timeline-input"
+                  data-testid="timeline-input"
+                  type="range"
+                  min="0"
+                  max="0"
+                  step="1"
+                  value="0"
+                  aria-describedby="timeline-help"
+                />
+              </span>
             </label>
             <p id="timeline-help" class="timeline-help" data-testid="timeline-help">
               Drag to rebuild any earlier step of this run from its seed and recorded actions.
             </p>
             <ol id="events-panel" class="events" data-testid="events-panel"></ol>
           </section>
-          <div class="graph-legend" data-testid="graph-legend" aria-label="signal legend">
-            <span><i class="legend-dot vote"></i>vote</span>
-            <span><i class="legend-dot heartbeat"></i>heartbeat</span>
-            <span><i class="legend-dot data"></i>data</span>
-            <span><i class="legend-dot event"></i>event</span>
-          </div>
         </section>
 
-        <aside class="side-panel glass-panel">
+        <aside class="side-panel">
           <section class="glass-panel guide" aria-label="guide">
             <h2 id="guide-title" data-testid="guide-title">Guide</h2>
             <p id="guide-text" data-testid="guide-text"></p>
             <div class="button-row">
-              <button id="guide-back" type="button" data-testid="guide-back">Back</button>
-              <button id="guide-do" type="button" data-testid="guide-do">Do it</button>
+              <button id="guide-back" class="ghost" type="button" data-testid="guide-back">Back</button>
+              <button id="guide-do" class="primary" type="button" data-testid="guide-do">Do it</button>
               <button id="guide-next" type="button" data-testid="guide-next">Next</button>
             </div>
           </section>
@@ -160,7 +236,7 @@
                   <option value="">Choose a link</option>
                 </select>
               </label>
-              <p id="selected-link" data-testid="selected-link" aria-live="polite">none</p>
+              <p id="selected-link" class="empty-state" data-testid="selected-link" aria-live="polite">none selected</p>
               <div class="button-row">
                 <button id="partition-link" type="button" data-action="partition" data-testid="partition-link">
                   Partition

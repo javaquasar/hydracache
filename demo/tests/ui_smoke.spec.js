@@ -442,6 +442,78 @@ async function openReady(page) {
   await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
 }
 
+test("visual_controls_theme_zoom_and_timeline_marks", async ({ page }) => {
+  await openReady(page);
+  const html = page.locator("html");
+
+  // Theme toggle flips data-theme and survives a reload.
+  const initial = await html.getAttribute("data-theme");
+  expect(initial).toMatch(/light|dark/);
+  await page.getByTestId("theme-toggle").click();
+  const toggled = initial === "dark" ? "light" : "dark";
+  await expect(html).toHaveAttribute("data-theme", toggled);
+  await page.reload();
+  await expect(html).toHaveAttribute("data-theme", toggled);
+  await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
+
+  // Speed shows a readable value.
+  await expect(page.getByTestId("speed-value")).toHaveText("1.2 s/step");
+  await setFastestSpeed(page);
+  await expect(page.getByTestId("speed-value")).toHaveText("80 ms/step");
+
+  // Zoom buttons change the view; Fit eases back to the automatic view.
+  const viewport = page.locator(".graph-viewport");
+  const scaleOf = async () =>
+    Number((await viewport.getAttribute("transform"))?.match(/scale\(([\d.]+)\)/)?.[1]);
+  await expect.poll(scaleOf).toBeGreaterThan(0);
+  await page.waitForTimeout(400);
+  const fitted = await scaleOf();
+  // The fitted view follows the layout as it settles, so compare loosely.
+  await page.getByTestId("zoom-in").click();
+  const zoomed = await scaleOf();
+  expect(zoomed).toBeGreaterThan(fitted * 1.1);
+  await page.getByTestId("zoom-fit").click();
+  await expect.poll(scaleOf).toBeLessThan(zoomed * 0.92);
+
+  // A recorded action becomes a tick over the scrubber; a partitioned link is labelled.
+  await selectFirstLink(page);
+  await page.getByTestId("partition-link").click();
+  await page.getByTestId("step").click();
+  await expect(page.getByTestId("timeline-marks").locator(".timeline-mark.action")).toHaveCount(1);
+  await expect(page.locator(".link-label.partitioned")).toHaveText("partitioned");
+  await expect(page.locator(".node.role-leader .v-badge, .node .v-badge").first()).toBeAttached();
+
+  // No horizontal scrolling at any viewport size.
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+});
+
+test("plain_wheel_over_graph_scrolls_the_page", async ({ page }) => {
+  await openReady(page);
+  const prevented = await page.locator("#cluster-graph").evaluate((graph) => {
+    const event = new WheelEvent("wheel", { deltaY: 120, bubbles: true, cancelable: true });
+    graph.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
+  expect(prevented).toBe(false);
+  const zoomPrevented = await page.locator("#cluster-graph").evaluate((graph) => {
+    const box = graph.getBoundingClientRect();
+    const event = new WheelEvent("wheel", {
+      deltaY: -120,
+      ctrlKey: true,
+      clientX: box.left + box.width / 2,
+      clientY: box.top + box.height / 2,
+      bubbles: true,
+      cancelable: true,
+    });
+    graph.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
+  expect(zoomPrevented).toBe(true);
+});
+
 async function selectFirstLink(page) {
   await page.locator(".link-hit").first().dispatchEvent("click");
   await expect(page.getByTestId("selected-link")).toContainText(/node-/);

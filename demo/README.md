@@ -63,7 +63,14 @@ guarantee.
 ### Visualization only — no engine meaning
 
 - **The force-directed graph layout and physics** (drag, pan, zoom, spacing) are
-  purely presentational; positions carry no engine meaning.
+  purely presentational; positions carry no engine meaning. The view fits the
+  whole cluster automatically until you pan or zoom (Ctrl/Cmd + wheel, pinch,
+  or the +/− buttons); the ⤢ button returns to the fitted view. A plain wheel
+  scrolls the page.
+- **Node badges, link labels, the legend, timeline ticks, and the light/dark
+  theme** restate engine state (role, link state, recorded actions, leader and
+  verdict changes) for readability; they add no information of their own. The
+  theme follows the OS setting until you pick one with the ◐ button.
 - **Packet and data-flow animations.** `in_flight` messages are real, but their
   on-screen travel timing is cosmetic. The client → node → replication →
   subscriber **pulse** fired on a push is a choreographed overlay; its "fan out to

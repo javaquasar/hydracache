@@ -8,7 +8,7 @@ import {
 } from "./share.js";
 import { SCENARIOS } from "./scenarios.js";
 import { ServerSimSession, WasmSimSession } from "./engine.js";
-import { initGraph, playDataFlowPulse, resetGraph, syncGraph } from "./graph.js";
+import { fitGraph, initGraph, playDataFlowPulse, resetGraph, syncGraph, zoomGraph } from "./graph.js";
 import {
   graphSummary,
   keyAgreement,
@@ -17,7 +17,9 @@ import {
   scriptAtStep,
   scriptFileName,
   shortVersion,
+  speedLabel,
   timelineEvents,
+  timelineMarks,
   verdictView,
   voprScriptCommand,
 } from "./insight.js";
@@ -74,6 +76,12 @@ const el = {
   timelineInput: document.querySelector("#timeline-input"),
   timelineLabel: document.querySelector("#timeline-label"),
   timelineHelp: document.querySelector("#timeline-help"),
+  timelineMarks: document.querySelector("#timeline-marks"),
+  speedValue: document.querySelector("#speed-value"),
+  themeToggle: document.querySelector("#theme-toggle"),
+  zoomIn: document.querySelector("#zoom-in"),
+  zoomOut: document.querySelector("#zoom-out"),
+  zoomFit: document.querySelector("#zoom-fit"),
   events: document.querySelector("#events-panel"),
   verdictPanel: document.querySelector("#verdict-panel"),
   guideTitle: document.querySelector("#guide-title"),
@@ -125,6 +133,7 @@ async function boot() {
     onClientPress: (client) => void runAction(() => pushEventFor(client.id, client.namespace)),
   });
   bindPreferenceState();
+  bindTheme();
   collapseSecondaryPanelsOnSmallScreens();
   setBusy(true);
   const initial = readInitialState(window.location.search, window.location.origin);
@@ -272,7 +281,12 @@ function bindEvents() {
       await refresh();
     }),
   );
+  el.zoomIn.addEventListener("click", () => zoomGraph(1.25));
+  el.zoomOut.addEventListener("click", () => zoomGraph(1 / 1.25));
+  el.zoomFit.addEventListener("click", () => fitGraph());
+  renderSpeed();
   el.speed.addEventListener("input", () => {
+    renderSpeed();
     if (state.playing) {
       stopPlay();
       startPlay();
@@ -385,7 +399,7 @@ async function writeShareUrl() {
 
 function render() {
   const snapshot = state.snapshot;
-  el.banner.textContent = `This runs the real hydracache-sim engine, seed ${snapshot.seed}, step ${snapshot.step}. Formation ${snapshot.formation_phase}; election ${snapshot.election_source}. ${snapshot.election_disclosure || "Verdicts are produced by the actual invariant checker."}`;
+  renderRunFacts(snapshot);
   renderElectionSource(snapshot);
   el.scenario.value = state.scenario;
   el.mode.value = snapshot.mode || "manual";
@@ -408,6 +422,28 @@ function render() {
   renderClients(snapshot);
   renderConsistency(snapshot);
   renderKeys(snapshot);
+}
+
+// Short, scannable run facts under the title; the election disclosure is the
+// tooltip (and the source chip's title) instead of a paragraph of prose.
+function renderRunFacts(snapshot) {
+  const facts = [
+    `seed ${snapshot.seed}`,
+    `step ${snapshot.step}`,
+    `Formation ${snapshot.formation_phase}`,
+    `election ${snapshot.election_source}`,
+  ].map((text) => {
+    const fact = document.createElement("span");
+    fact.className = "fact";
+    fact.textContent = text;
+    return fact;
+  });
+  el.banner.replaceChildren(...facts);
+  el.banner.title = snapshot.election_disclosure || "Verdicts are produced by the actual invariant checker.";
+}
+
+function renderSpeed() {
+  el.speedValue.textContent = speedLabel(Number(el.speed.value));
 }
 
 function renderElectionSource(snapshot) {
@@ -468,7 +504,8 @@ function renderSelectedLink() {
   const link = selectedLinkView();
   el.selectedLink.textContent = link
     ? `${link.from} -> ${link.to} (${link.state})`
-    : "none";
+    : "none selected — click a line on the graph or choose one above";
+  el.selectedLink.classList.toggle("empty-state", !link);
   for (const button of el.linkActions) {
     button.disabled = !link;
   }
@@ -847,6 +884,7 @@ function renderTimeline(snapshot) {
   el.timelineInput.value = String(snapshot.step);
   el.timelineInput.disabled = max <= base;
   el.timelineLabel.textContent = `step ${snapshot.step} of ${max}`;
+  renderTimelineMarks(timelineEvents(script, state.observations), base, max);
   el.timelineHelp.textContent = rewound
     ? `Rewound to step ${snapshot.step} of a recording that reaches step ${max}. Drag forward to replay it; Step, Play or any action continues from here and drops the later recording.`
     : "Drag to rebuild any earlier step of this run from its seed and recorded actions.";
@@ -872,6 +910,19 @@ function renderTimeline(snapshot) {
     items.push(empty);
   }
   el.events.replaceChildren(...items);
+}
+
+// Event ticks over the scrubber: where the leader changed, the verdict flipped,
+// or a recorded action happened.
+function renderTimelineMarks(events, base, max) {
+  const marks = timelineMarks(events, base, max).map((mark) => {
+    const tick = document.createElement("span");
+    tick.className = `timeline-mark ${mark.kind}`;
+    tick.style.left = `${mark.percent}%`;
+    tick.title = mark.text;
+    return tick;
+  });
+  el.timelineMarks.replaceChildren(...marks);
 }
 
 // ---------------------------------------------------------------------------
@@ -1270,6 +1321,44 @@ function populateScenarios(selected) {
     option.selected = scenario.name === selected;
     el.scenario.append(option);
   }
+}
+
+// Theme: an explicit choice (stored) wins; otherwise follow the OS setting.
+const THEME_KEY = "hydracache-demo-theme";
+let chosenTheme = null;
+
+function storedTheme() {
+  try {
+    const value = window.localStorage.getItem(THEME_KEY);
+    return value === "dark" || value === "light" ? value : null;
+  } catch (_error) {
+    return null;
+  }
+}
+
+function bindTheme() {
+  const media =
+    typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  const apply = () => {
+    const theme = chosenTheme ?? storedTheme() ?? (media?.matches ? "dark" : "light");
+    document.documentElement.dataset.theme = theme;
+    const next = theme === "dark" ? "light" : "dark";
+    el.themeToggle.setAttribute("aria-label", `Use ${next} theme`);
+    el.themeToggle.title = `Use ${next} theme`;
+    el.themeToggle.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
+  };
+  apply();
+  media?.addEventListener?.("change", apply);
+  el.themeToggle.addEventListener("click", () => {
+    const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    chosenTheme = next;
+    try {
+      window.localStorage.setItem(THEME_KEY, next);
+    } catch (_error) {
+      // Storage can be unavailable (private mode); the choice still applies now.
+    }
+    apply();
+  });
 }
 
 function bindPreferenceState() {

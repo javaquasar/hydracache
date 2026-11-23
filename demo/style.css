@@ -24,8 +24,71 @@
   --ok-bg: #eef8f1;
   --warn: #8f6200;
   --warn-bg: #fff5cf;
+  /* Surfaces that used to be hard-coded white, so the dark theme can swap them. */
+  --surface: #ffffff;
+  --on-accent: #ffffff;
+  --panel-grad: linear-gradient(155deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.36));
+  --panel-inner-grad: linear-gradient(155deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.48));
+  --shell-wash:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.12));
+  --inset-hi: rgba(255, 255, 255, 0.8);
+  --canvas: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(242, 249, 247, 0.78)), var(--glass-solid);
+  --link: #6d7c78;
+  --node-fill: rgba(255, 255, 255, 0.94);
+  --leader-fill: #d7f1ec;
+  --joining-fill: #eef0ff;
+  --idle-fill: #eef1f3;
+  --idle-stroke: #93a3a0;
+  --disabled-fill: #ededed;
+  --blob-opacity: 0.6;
+  --font-small: 13px;
+  --font-xsmall: 12px;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Dark theme: app.js sets data-theme from the stored choice or the OS setting. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-start: #0a1716;
+  --bg-mid: #121530;
+  --bg-end: #23170f;
+  --ink: #e3eeeb;
+  --muted: #a3b8b3;
+  --line: rgba(196, 228, 221, 0.18);
+  --glass: rgba(18, 31, 30, 0.55);
+  --glass-strong: rgba(26, 41, 39, 0.9);
+  --glass-solid: #16221f;
+  --glass-edge: rgba(255, 255, 255, 0.09);
+  --shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+  --shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.35);
+  --accent: #3cc2b9;
+  --accent-strong: #67d9d0;
+  --accent-alt: #97a2ff;
+  --data: #e98af8;
+  --event: #f0a861;
+  --danger: #ff8f80;
+  --danger-bg: #3b1a16;
+  --ok: #72d9a1;
+  --ok-bg: #11301f;
+  --warn: #f3c552;
+  --warn-bg: #33290c;
+  --surface: #101917;
+  --on-accent: #06201e;
+  --panel-grad: linear-gradient(155deg, rgba(30, 46, 44, 0.78), rgba(18, 29, 28, 0.62));
+  --panel-inner-grad: linear-gradient(155deg, rgba(36, 54, 51, 0.82), rgba(22, 35, 33, 0.7));
+  --shell-wash: linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.28));
+  --inset-hi: rgba(255, 255, 255, 0.06);
+  --canvas: linear-gradient(180deg, rgba(20, 33, 31, 0.92), rgba(14, 24, 23, 0.92)), var(--glass-solid);
+  --link: #7f938e;
+  --node-fill: #1b2a28;
+  --leader-fill: #15403b;
+  --joining-fill: #232848;
+  --idle-fill: #222c2b;
+  --idle-stroke: #71817e;
+  --disabled-fill: #262626;
+  --blob-opacity: 0.32;
 }
 
 * {
@@ -53,6 +116,7 @@ body::before {
     radial-gradient(46% 44% at 78% 84%, rgba(176, 92, 24, 0.34), transparent 72%),
     radial-gradient(42% 40% at 22% 86%, rgba(23, 108, 67, 0.4), transparent 72%);
   filter: blur(8px);
+  opacity: var(--blob-opacity);
 }
 
 button,
@@ -69,17 +133,54 @@ select {
   border-radius: 8px;
   background: var(--glass-strong);
   color: var(--ink);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 1px 0 var(--inset-hi);
 }
 
 button {
   padding: 0 12px;
   cursor: pointer;
+  font-weight: 600;
 }
 
 button:hover {
   border-color: var(--accent);
   color: var(--accent-strong);
+}
+
+/* Primary action: one per group at most (Play, guide "Do it"). */
+button.primary {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: var(--on-accent);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent-strong) 30%, transparent);
+}
+
+button.primary:hover {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* Secondary actions read as text buttons until hovered. */
+button.ghost {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+}
+
+button.ghost:hover {
+  border-color: var(--line);
+  background: var(--glass-strong);
+  color: var(--accent-strong);
+}
+
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
 }
 
 button:focus-visible,
@@ -89,15 +190,21 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-button:disabled {
+button:disabled,
+button.primary:disabled {
   cursor: not-allowed;
-  opacity: 0.45;
+  border-style: dashed;
+  border-color: var(--line);
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  opacity: 0.7;
 }
 
 .glass-panel {
   border: 1px solid var(--glass-edge);
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.3));
-  box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  background: var(--panel-grad);
+  box-shadow: var(--shadow), inset 0 1px 0 var(--inset-hi);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
 }
@@ -105,16 +212,14 @@ button:disabled {
 /* Inner panels sit on top of the glass aside; keep them a touch more opaque so
    stacked glass stays legible. */
 .side-panel > section {
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.42));
+  background: var(--panel-inner-grad);
 }
 
 .shell {
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto auto 1fr;
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.12));
+  background: var(--shell-wash);
 }
 
 .topbar {
@@ -148,10 +253,36 @@ p {
   margin: 0;
 }
 
-#engine-banner {
+.tagline {
   margin-top: 6px;
+  max-width: 62ch;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
+}
+
+.run-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  cursor: help;
+}
+
+.run-facts .fact {
+  padding: 2px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--glass-strong);
+  color: var(--ink);
+  font-size: var(--font-xsmall);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .status-cluster {
@@ -162,46 +293,80 @@ p {
 }
 
 .verdict {
-  min-width: 220px;
-  max-width: 420px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 240px;
+  max-width: 460px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-weight: 700;
+  border-left-width: 6px;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 18px;
+  font-weight: 800;
   line-height: 1.25;
   overflow-wrap: anywhere;
   box-shadow: var(--shadow-soft);
 }
 
+.verdict::before {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--on-accent);
+  font-size: 16px;
+}
+
 .verdict.ok {
-  background: color-mix(in srgb, var(--ok-bg) 88%, white);
+  border-color: color-mix(in srgb, var(--ok) 45%, var(--surface));
+  background: color-mix(in srgb, var(--ok-bg) 88%, var(--surface));
   color: var(--ok);
 }
 
+.verdict.ok::before {
+  content: "✓";
+  background: var(--ok);
+}
+
 .verdict.bad {
-  background: color-mix(in srgb, var(--danger-bg) 88%, white);
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--surface));
+  background: color-mix(in srgb, var(--danger-bg) 88%, var(--surface));
   color: var(--danger);
 }
 
+.verdict.bad::before {
+  content: "✕";
+  background: var(--danger);
+}
+
 .verdict.warn {
-  background: color-mix(in srgb, var(--warn-bg) 88%, white);
+  border-color: color-mix(in srgb, var(--warn) 45%, var(--surface));
+  background: color-mix(in srgb, var(--warn-bg) 88%, var(--surface));
   color: var(--warn);
+}
+
+.verdict.warn::before {
+  content: "…";
+  background: var(--warn);
 }
 
 .action-notice {
   margin: 8px 0 0;
   padding: 6px 10px;
-  border: 1px solid color-mix(in srgb, var(--danger) 40%, white);
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--surface));
   border-radius: 10px;
-  background: color-mix(in srgb, var(--danger-bg) 88%, white);
+  background: color-mix(in srgb, var(--danger-bg) 88%, var(--surface));
   color: var(--danger);
   font-size: 0.85rem;
   overflow-wrap: anywhere;
 }
 
 .action-notice.warn {
-  border-color: color-mix(in srgb, var(--warn) 40%, white);
-  background: color-mix(in srgb, var(--warn-bg) 88%, white);
+  border-color: color-mix(in srgb, var(--warn) 40%, var(--surface));
+  background: color-mix(in srgb, var(--warn-bg) 88%, var(--surface));
   color: var(--warn);
 }
 
@@ -225,17 +390,17 @@ input[aria-invalid="true"] {
 .model-tag {
   margin-left: 6px;
   padding: 1px 6px;
-  border: 1px solid color-mix(in srgb, var(--warn) 42%, white);
+  border: 1px solid color-mix(in srgb, var(--warn) 42%, var(--surface));
   border-radius: 999px;
   color: var(--warn);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   vertical-align: middle;
 }
 
 .model-note {
   margin: 0 0 8px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 
 details.panel > summary {
@@ -286,7 +451,7 @@ details.panel > summary:focus-visible,
   gap: 4px;
   margin-bottom: 6px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-small);
 }
 
 .visually-hidden {
@@ -309,9 +474,9 @@ main[aria-busy="true"] .side-panel button {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 5px 10px;
-  background: rgba(255, 255, 255, 0.64);
+  background: var(--glass-strong);
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-xsmall);
   font-weight: 800;
   line-height: 1.1;
   overflow-wrap: anywhere;
@@ -319,35 +484,81 @@ main[aria-busy="true"] .side-panel button {
 }
 
 .source-chip.source-raft {
-  border-color: color-mix(in srgb, var(--ok) 42%, white);
-  background: color-mix(in srgb, var(--ok-bg) 84%, white);
+  border-color: color-mix(in srgb, var(--ok) 42%, var(--surface));
+  background: color-mix(in srgb, var(--ok-bg) 84%, var(--surface));
   color: var(--ok);
 }
 
 .source-chip.source-sim-model {
-  border-color: color-mix(in srgb, var(--accent-alt) 38%, white);
-  background: color-mix(in srgb, var(--bg-mid) 76%, white);
+  border-color: color-mix(in srgb, var(--accent-alt) 38%, var(--surface));
+  background: color-mix(in srgb, var(--bg-mid) 76%, var(--surface));
   color: var(--accent-alt);
 }
 
 .controls {
   display: flex;
   flex-wrap: wrap;
-  align-items: end;
-  gap: 10px;
+  align-items: stretch;
+  gap: 10px 0;
   min-height: 68px;
   margin: 10px 16px 0;
-  padding: 12px;
+  padding: 10px 12px;
   border-radius: 8px;
-  overflow-x: auto;
+}
+
+/* Labelled groups separated by a hairline: run, scenario, run-until, share. */
+.control-group {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 0 14px;
+  border-left: 1px solid var(--line);
+}
+
+.control-group:first-child {
+  padding-left: 2px;
+  border-left: 0;
+}
+
+.group-title {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.group-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
 }
 
 .controls label {
   display: grid;
   gap: 5px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-small);
   white-space: nowrap;
+}
+
+#play-button {
+  min-width: 84px;
+}
+
+.range-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+
+#speed-value {
+  min-width: 78px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
 }
 
 .controls input[type="text"],
@@ -378,8 +589,9 @@ main[aria-busy="true"] .side-panel button {
   flex-basis: 100%;
   min-height: 1rem;
   margin: 0;
+  padding: 0 2px;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--font-small);
   overflow-wrap: anywhere;
 }
 
@@ -391,7 +603,7 @@ main[aria-busy="true"] .side-panel button {
 }
 
 .range input {
-  width: 160px;
+  width: 140px;
 }
 
 .workspace {
@@ -402,41 +614,120 @@ main[aria-busy="true"] .side-panel button {
   padding: 14px 16px 16px;
 }
 
+/* The graph stays in view while the side panels scroll with the page, so the
+   page has a single scrollbar instead of a second one inside the aside. */
 .graph-panel {
-  min-height: 560px;
+  position: sticky;
+  top: 14px;
+  align-self: start;
   padding: 14px;
   border-radius: 8px;
+}
+
+.graph-stage {
+  position: relative;
 }
 
 #cluster-graph {
   display: block;
   width: 100%;
-  height: min(68vh, 680px);
-  min-height: 460px;
+  height: min(60vh, 640px);
+  min-height: 420px;
   touch-action: none;
   cursor: grab;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(242, 249, 247, 0.72)),
-    var(--glass-solid);
+  background: var(--canvas);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 1px 0 var(--inset-hi);
+}
+
+.graph-tools {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  gap: 6px;
+}
+
+.graph-tools .icon-button {
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-soft);
+}
+
+.graph-hint {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  color: var(--muted);
+  font-size: var(--font-xsmall);
+  pointer-events: none;
 }
 
 .graph-legend {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: grid;
+  gap: 4px;
+  max-width: calc(100% - 20px);
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-soft);
+  color: var(--muted);
+  font-size: var(--font-xsmall);
+  pointer-events: none;
+}
+
+.legend-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 14px;
-  margin-top: 10px;
-  color: var(--muted);
-  font-size: 12px;
+  gap: 4px 12px;
 }
 
 .graph-legend span {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 20px;
+  min-height: 18px;
+}
+
+.legend-node {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--node-fill);
+}
+
+.legend-node.leader {
+  border-width: 3px;
+  border-color: var(--accent-strong);
+  background: var(--leader-fill);
+}
+
+.legend-node.candidate {
+  border-color: var(--warn);
+  background: var(--warn-bg);
+}
+
+.legend-node.crashed {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.legend-line {
+  display: inline-block;
+  width: 22px;
+  height: 0;
+  border-top: 3px dashed var(--danger);
+}
+
+.legend-line.delayed {
+  border-top-style: dotted;
+  border-top-color: var(--warn);
 }
 
 .legend-dot {
@@ -445,6 +736,11 @@ main[aria-busy="true"] .side-panel button {
   height: 10px;
   border-radius: 50%;
   background: var(--accent);
+}
+
+.empty-state {
+  color: var(--muted);
+  font-style: italic;
 }
 
 .legend-dot.vote {
@@ -467,10 +763,7 @@ main[aria-busy="true"] .side-panel button {
   display: grid;
   align-content: start;
   gap: 12px;
-  max-height: calc(100vh - 206px);
-  padding: 12px;
-  border-radius: 8px;
-  overflow: auto;
+  min-width: 0;
 }
 
 .side-panel > section {
@@ -511,7 +804,7 @@ main[aria-busy="true"] .side-panel button {
 #nodes-panel .metric button {
   min-width: 0;
   padding: 0 8px;
-  font-size: 13px;
+  font-size: var(--font-small);
 }
 
 /* Colour the node rows by role, matching the graph circles: a thick left bar
@@ -525,39 +818,39 @@ main[aria-busy="true"] .side-panel button {
 
 .node-row.role-leader {
   border-left-color: var(--accent-strong);
-  background: color-mix(in srgb, var(--accent-strong) 16%, white);
+  background: color-mix(in srgb, var(--accent-strong) 16%, var(--surface));
 }
 
 .node-row.role-follower {
   border-left-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, white);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
 }
 
 .node-row.role-candidate {
   border-left-color: var(--warn);
-  background: color-mix(in srgb, var(--warn) 16%, white);
+  background: color-mix(in srgb, var(--warn) 16%, var(--surface));
 }
 
 .node-row.role-joining,
 .node-row.role-catching_up {
   border-left-color: var(--accent-alt);
-  background: color-mix(in srgb, var(--accent-alt) 14%, white);
+  background: color-mix(in srgb, var(--accent-alt) 14%, var(--surface));
 }
 
 .node-row.role-unknown,
 .node-row.role-disconnected {
   border-left-color: #8c9b98;
-  background: color-mix(in srgb, #8c9b98 14%, white);
+  background: color-mix(in srgb, #8c9b98 14%, var(--surface));
 }
 
 .node-row.role-disabled {
   border-left-color: #8c9b98;
-  background: color-mix(in srgb, #8c9b98 12%, white);
+  background: color-mix(in srgb, #8c9b98 12%, var(--surface));
 }
 
 .node-row.role-crashed {
   border-left-color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 12%, white);
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
 }
 
 /* Signals list keeps a stable height so new in-flight rows do not shove the
@@ -602,7 +895,7 @@ main[aria-busy="true"] .side-panel button {
   margin-top: 10px;
   color: var(--muted);
   font-family: ui-monospace, "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
-  font-size: 12px;
+  font-size: var(--font-xsmall);
   overflow-wrap: anywhere;
 }
 
@@ -659,7 +952,7 @@ dd {
 }
 
 .key-row.diverged {
-  border-color: color-mix(in srgb, var(--warn) 60%, white);
+  border-color: color-mix(in srgb, var(--warn) 60%, var(--surface));
 }
 
 .key-head {
@@ -680,12 +973,12 @@ dd {
   border: 1px solid var(--line);
   border-radius: 6px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
 }
 
 .replica.diverged {
   border-color: var(--warn);
-  background: color-mix(in srgb, var(--warn-bg) 88%, white);
+  background: color-mix(in srgb, var(--warn-bg) 88%, var(--surface));
   color: var(--warn);
   font-weight: 700;
 }
@@ -704,7 +997,7 @@ dd {
 }
 
 .consistency-row.bad {
-  border-color: color-mix(in srgb, var(--danger) 45%, white);
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--surface));
 }
 
 .consistency-row.bad strong {
@@ -714,7 +1007,7 @@ dd {
 .consistency-reason {
   flex-basis: 100%;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.8rem;
 }
 
 .invariant-row.violated {
@@ -729,18 +1022,63 @@ dd {
 .timeline-scrub {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.85rem;
+  gap: 12px;
 }
 
-.timeline-scrub input {
+.timeline-label {
+  min-width: 112px;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.timeline-track {
+  position: relative;
   flex: 1;
+  display: block;
+  padding-top: 12px;
+}
+
+.timeline-track input {
+  width: 100%;
+  margin: 0;
+}
+
+/* Event ticks above the scrubber; positions come from insight.timelineMarks.
+   The 8px inset matches the range thumb so a tick sits over its step. */
+.timeline-marks {
+  position: absolute;
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 12px;
+  pointer-events: none;
+}
+
+.timeline-mark {
+  position: absolute;
+  top: 1px;
+  width: 4px;
+  height: 10px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--accent-alt);
+}
+
+.timeline-mark.leader {
+  background: var(--ok);
+}
+
+.timeline-mark.verdict {
+  width: 6px;
+  margin-left: -3px;
+  background: var(--danger);
 }
 
 .timeline-help {
-  margin: 4px 0;
+  margin: 6px 0;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--font-small);
 }
 
 .events {
@@ -755,12 +1093,14 @@ dd {
 }
 
 .event button {
-  padding: 2px 8px;
-  font-size: 0.75rem;
+  min-height: 30px;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .event.leader button {
-  border-color: color-mix(in srgb, var(--ok) 50%, white);
+  border-color: color-mix(in srgb, var(--ok) 50%, var(--surface));
 }
 
 .event.verdict button {
@@ -773,18 +1113,17 @@ dd {
 
 .event.empty {
   color: var(--muted);
-  font-size: 0.78rem;
-}
-
-.controls .run-until {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  font-size: var(--font-small);
 }
 
 .guide p {
-  margin: 0 0 8px;
-  font-size: 0.85rem;
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.guide .button-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .key-row strong {
@@ -807,8 +1146,8 @@ dd {
   cursor: grab;
 }
 
-.node circle {
-  fill: rgba(255, 255, 255, 0.9);
+.node .v-body {
+  fill: var(--node-fill);
   stroke: var(--accent);
   stroke-width: 3;
   filter: drop-shadow(0 8px 10px rgba(7, 95, 91, 0.14));
@@ -820,46 +1159,96 @@ dd {
 
 /* Role-driven node colour so a node visibly changes as it joins, leads, or
    comes back after a crash/restart (engine reports vote_state). */
-.node.role-leader circle {
-  fill: #d7f1ec;
+.node.role-leader .v-body {
+  fill: var(--leader-fill);
   stroke: var(--accent-strong);
   stroke-width: 5;
 }
 
-.node.role-follower circle {
-  fill: rgba(255, 255, 255, 0.92);
+.node.role-follower .v-body {
+  fill: var(--node-fill);
   stroke: var(--accent);
 }
 
-.node.role-candidate circle {
+.node.role-candidate .v-body {
   fill: var(--warn-bg);
   stroke: var(--warn);
   stroke-width: 4;
 }
 
-.node.role-joining circle,
-.node.role-catching_up circle {
-  fill: #eef0ff;
+.node.role-joining .v-body,
+.node.role-catching_up .v-body {
+  fill: var(--joining-fill);
   stroke: var(--accent-alt);
   stroke-dasharray: 6 5;
 }
 
-.node.role-unknown circle,
-.node.role-disconnected circle {
-  fill: #eef1f3;
-  stroke: #93a3a0;
+.node.role-unknown .v-body,
+.node.role-disconnected .v-body {
+  fill: var(--idle-fill);
+  stroke: var(--idle-stroke);
+  stroke-dasharray: 4 6;
 }
 
-.node.disabled circle {
-  fill: #ededed;
+.node.disabled .v-body {
+  fill: var(--disabled-fill);
   stroke: #9aa0a0;
   stroke-dasharray: 2 5;
 }
 
-.node.crashed circle {
+.node.crashed .v-body {
   fill: var(--danger-bg);
   stroke: var(--danger);
   stroke-dasharray: none;
+}
+
+.node.crashed text {
+  opacity: 0.75;
+}
+
+/* Corner badge: a glyph per role (see ROLE_BADGES in graph.js). */
+.v-badge {
+  display: none;
+  pointer-events: none;
+}
+
+.node.role-leader .v-badge,
+.node.role-candidate .v-badge,
+.node.role-crashed .v-badge,
+.node.role-disabled .v-badge,
+.node.role-joining .v-badge,
+.node.role-catching_up .v-badge {
+  display: inline;
+}
+
+.v-badge circle {
+  fill: var(--accent-strong);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.v-badge text {
+  fill: var(--on-accent);
+  font-size: 14px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+.node.role-candidate .v-badge circle {
+  fill: var(--warn);
+}
+
+.node.role-crashed .v-badge circle {
+  fill: var(--danger);
+}
+
+.node.role-disabled .v-badge circle {
+  fill: var(--idle-stroke);
+}
+
+.node.role-joining .v-badge circle,
+.node.role-catching_up .v-badge circle {
+  fill: var(--accent-alt);
 }
 
 .node.joining {
@@ -878,7 +1267,7 @@ dd {
 
 .node text {
   fill: var(--ink);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   text-anchor: middle;
 }
@@ -889,8 +1278,27 @@ dd {
 
 .link {
   cursor: pointer;
-  stroke: #6d7c78;
+  stroke: var(--link);
   stroke-width: 3;
+}
+
+.link-label {
+  font-size: 13px;
+  font-weight: 800;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.link-label.partitioned {
+  fill: var(--danger);
+}
+
+.link-label.delayed {
+  fill: var(--warn);
 }
 
 .link.partitioned {
@@ -906,6 +1314,15 @@ dd {
 .link.selected {
   stroke: var(--accent-strong);
   stroke-width: 5;
+}
+
+/* A selected link keeps its fault colour; selection shows as a wider stroke. */
+.link.selected.partitioned {
+  stroke: var(--danger);
+}
+
+.link.selected.delayed {
+  stroke: var(--warn);
 }
 
 .link-hit {
@@ -928,8 +1345,8 @@ dd {
 
 .packet {
   fill: var(--accent-alt);
-  stroke: rgba(255, 255, 255, 0.92);
-  stroke-width: 2;
+  stroke: var(--surface);
+  stroke-width: 2.5;
   filter: drop-shadow(0 5px 8px rgba(76, 91, 213, 0.3));
   animation: packet-pulse 1.6s ease-in-out infinite;
 }
@@ -1008,7 +1425,7 @@ dd {
 /* Choreographed data-flow pulse fired on a client push (bigger/brighter than the
    ambient signal packets so the sent data reads clearly). */
 .pulse {
-  stroke: rgba(255, 255, 255, 0.95);
+  stroke: var(--surface);
   stroke-width: 2;
 }
 
@@ -1027,7 +1444,7 @@ html[data-reduced-motion="true"] .pulse-layer {
 }
 
 .entity circle {
-  fill: rgba(255, 255, 255, 0.96);
+  fill: var(--node-fill);
   stroke: var(--accent-alt);
   stroke-width: 2.5;
   filter: drop-shadow(0 4px 6px rgba(76, 91, 213, 0.18));
@@ -1043,14 +1460,14 @@ html[data-reduced-motion="true"] .pulse-layer {
 
 .entity .entity-id {
   fill: var(--ink);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-anchor: middle;
 }
 
 .entity .entity-sub {
   fill: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   text-anchor: middle;
 }
@@ -1060,11 +1477,11 @@ html[data-reduced-motion="true"] .pulse-layer {
 }
 
 .entity.clickable:hover circle {
-  fill: color-mix(in srgb, var(--accent-alt) 16%, white);
+  fill: color-mix(in srgb, var(--accent-alt) 16%, var(--surface));
 }
 
 .entity.subscriber.clickable:hover circle {
-  fill: color-mix(in srgb, var(--event) 16%, white);
+  fill: color-mix(in srgb, var(--event) 16%, var(--surface));
 }
 
 html[data-reduced-motion="true"] .entity-link.active {
@@ -1090,7 +1507,7 @@ html[data-reduced-motion="true"] .entity-link.active {
 html[data-reduced-motion="true"] .packet,
 html[data-reduced-motion="true"] .packet-trail,
 html[data-reduced-motion="true"] .node.joining,
-html[data-reduced-motion="true"] .node circle {
+html[data-reduced-motion="true"] .node .v-body {
   animation: none;
   transition: none;
 }
@@ -1139,19 +1556,56 @@ html[data-reduced-transparency="true"] select {
   }
 
   .controls {
-    align-items: stretch;
-    flex-wrap: wrap;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 12px;
+  }
+
+  /* In a column, a 100% flex-basis is a height and would wrap the status
+     lines into a second column off-screen. */
+  .copy-status {
+    flex-basis: auto;
+  }
+
+  .control-group,
+  .control-group:first-child {
+    padding: 0;
+    border-left: 0;
+  }
+
+  .control-group + .control-group {
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
   }
 
   .workspace {
     grid-template-columns: 1fr;
   }
 
-  .side-panel {
-    max-height: none;
+  .graph-panel {
+    position: static;
   }
 
+  /* Match the viewBox aspect so a narrow screen does not letterbox the
+     cluster into a thin band of a tall canvas. */
   #cluster-graph {
-    height: 520px;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 800 / 520;
+  }
+
+  .run-until .group-body button {
+    flex: 1 1 auto;
+  }
+
+  /* On a phone the legend would cover the cluster: show it under the graph. */
+  .graph-legend {
+    position: static;
+    margin-top: 8px;
+    box-shadow: none;
+  }
+
+  .graph-hint {
+    display: none;
   }
 }

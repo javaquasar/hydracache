@@ -40,6 +40,9 @@ const graphSim = {
   dom: null,
   topoKey: "",
   view: { tx: 0, ty: 0, scale: 1 },
+  // While true the view eases toward a transform that fits the whole cluster;
+  // a manual pan or zoom turns it off until "Fit" is pressed.
+  autoFit: true,
   drag: null,
   raf: null,
   packets: [],
@@ -56,8 +59,100 @@ export function resetGraph() {
   graphSim.pos.clear();
   graphSim.topoKey = "";
   graphSim.view = { tx: 0, ty: 0, scale: 1 };
+  graphSim.autoFit = true;
   graphSim.drag = null;
   graphSim.packets = [];
+}
+
+const VIEW_BOX = { width: 800, height: 520 };
+const ZOOM_LIMITS = { min: 0.45, max: 2.4 };
+const FIT_LIMITS = { min: 0.6, max: 1.35, maxCompact: 1.8 };
+// Room kept free for the overlays: the hint on top, the legend at the bottom,
+// the zoom buttons on the right. Narrow layouts move the legend below the
+// canvas, so they only keep a small margin (and may zoom in further).
+const FIT_INSETS = { top: 40, right: 56, bottom: 96, left: 28 };
+const FIT_INSETS_COMPACT = { top: 20, right: 56, bottom: 20, left: 20 };
+
+function overlaysOnCanvas() {
+  const legend = host?.svg.parentElement?.querySelector(".graph-legend");
+  return !legend || getComputedStyle(legend).position === "absolute";
+}
+
+/** Zoom around the canvas centre (graph view buttons). */
+export function zoomGraph(factor) {
+  graphSim.autoFit = false;
+  zoomAround({ x: VIEW_BOX.width / 2, y: VIEW_BOX.height / 2 }, factor);
+}
+
+/** Return to the automatic "fit the whole cluster" view. */
+export function fitGraph() {
+  graphSim.autoFit = true;
+  startGraphSim();
+}
+
+// Zoom keeping the point under `anchor` (viewBox coordinates) still.
+function zoomAround(anchor, factor) {
+  const view = graphSim.view;
+  const before = { x: (anchor.x - view.tx) / view.scale, y: (anchor.y - view.ty) / view.scale };
+  view.scale = Math.max(ZOOM_LIMITS.min, Math.min(ZOOM_LIMITS.max, view.scale * factor));
+  view.tx = anchor.x - before.x * view.scale;
+  view.ty = anchor.y - before.y * view.scale;
+  paintGraph(performance.now());
+}
+
+// The transform that fits every vertex (plus its radius and labels) into the
+// viewBox with a margin, clamped so a small cluster is not blown up.
+function fitTarget() {
+  if (graphSim.pos.size === 0) {
+    return null;
+  }
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const p of graphSim.pos.values()) {
+    const r = p.kind === "node" ? GRAPH.nodeRadius + 14 : GRAPH.entityRadius + 26;
+    minX = Math.min(minX, p.x - r);
+    minY = Math.min(minY, p.y - r);
+    maxX = Math.max(maxX, p.x + r);
+    maxY = Math.max(maxY, p.y + r);
+  }
+  const overlays = overlaysOnCanvas();
+  const insets = overlays ? FIT_INSETS : FIT_INSETS_COMPACT;
+  const maxScale = overlays ? FIT_LIMITS.max : FIT_LIMITS.maxCompact;
+  const box = {
+    x: insets.left,
+    y: insets.top,
+    width: VIEW_BOX.width - insets.left - insets.right,
+    height: VIEW_BOX.height - insets.top - insets.bottom,
+  };
+  const width = Math.max(maxX - minX, 1);
+  const height = Math.max(maxY - minY, 1);
+  const scale = Math.max(FIT_LIMITS.min, Math.min(maxScale, box.width / width, box.height / height));
+  return {
+    scale,
+    tx: box.x + box.width / 2 - ((minX + maxX) / 2) * scale,
+    ty: box.y + box.height / 2 - ((minY + maxY) / 2) * scale,
+  };
+}
+
+// Ease the view one frame toward the fit target; returns the remaining error
+// so the animation loop keeps running until the view has settled.
+function easeTowardFit() {
+  if (!graphSim.autoFit || graphSim.drag) {
+    return 0;
+  }
+  const target = fitTarget();
+  if (!target) {
+    return 0;
+  }
+  const view = graphSim.view;
+  const reduced = document.documentElement.dataset.reducedMotion === "true";
+  const k = reduced ? 1 : 0.18;
+  view.scale += (target.scale - view.scale) * k;
+  view.tx += (target.tx - view.tx) * k;
+  view.ty += (target.ty - view.ty) * k;
+  return Math.abs(target.scale - view.scale) * 100 + Math.abs(target.tx - view.tx) + Math.abs(target.ty - view.ty);
 }
 
 export function syncGraph(snapshot) {
@@ -137,8 +232,9 @@ function buildGraphDom(snapshot) {
   const entityLinkLayer = svg("g", { class: "entity-links", "aria-hidden": "true" });
   const packetLayer = svg("g", { class: "packet-layer", "aria-hidden": "true" });
   const pulseLayer = svg("g", { class: "pulse-layer", "aria-hidden": "true" });
+  const labelLayer = svg("g", { class: "link-labels", "aria-hidden": "true" });
   const vertexLayer = svg("g", { class: "vertices" });
-  viewport.append(edgeLayer, entityLinkLayer, packetLayer, pulseLayer, vertexLayer);
+  viewport.append(edgeLayer, entityLinkLayer, packetLayer, pulseLayer, labelLayer, vertexLayer);
   host.svg.append(viewport);
 
   const dom = { viewport, packetLayer, pulseLayer, edges: [], entityEdges: [], vertices: new Map() };
@@ -146,6 +242,7 @@ function buildGraphDom(snapshot) {
   for (const edge of graphSim.edges) {
     if (edge.kind === "node") {
       const visual = svg("line", { class: "link" });
+      const label = svg("text", { class: "link-label" });
       // The wide invisible hit line is also the keyboard target for the link.
       const hit = svg("line", { class: "link-hit", tabindex: 0, role: "button" });
       hit.addEventListener("click", (event) => {
@@ -154,7 +251,8 @@ function buildGraphDom(snapshot) {
       });
       onActivateKey(hit, () => host.onSelectLink({ from: edge.from, to: edge.to }));
       edgeLayer.append(visual, hit);
-      dom.edges.push({ edge, visual, hit });
+      labelLayer.append(label);
+      dom.edges.push({ edge, visual, hit, label });
     } else {
       const line = svg("line", { class: "entity-link" });
       entityLinkLayer.append(line);
@@ -165,7 +263,18 @@ function buildGraphDom(snapshot) {
   for (const vertex of graphSim.vertices) {
     const group = svg("g", { class: "vertex" });
     if (vertex.kind === "node") {
-      group.append(svg("circle", { r: GRAPH.nodeRadius }), svg("text", { class: "v-id", y: -5 }), svg("text", { class: "v-sub", y: 17 }));
+      const badge = svg("g", {
+        class: "v-badge",
+        transform: `translate(${GRAPH.nodeRadius * 0.72} ${-GRAPH.nodeRadius * 0.72})`,
+        "aria-hidden": "true",
+      });
+      badge.append(svg("circle", { r: 13 }), svg("text", { y: 5 }));
+      group.append(
+        svg("circle", { class: "v-body", r: GRAPH.nodeRadius }),
+        svg("text", { class: "v-id", y: -5 }),
+        svg("text", { class: "v-sub", y: 17 }),
+        badge,
+      );
     } else {
       group.append(
         svg("circle", { r: GRAPH.entityRadius }),
@@ -208,6 +317,7 @@ function updateGraphVisuals(snapshot) {
       );
       item.group.querySelector(".v-id").textContent = node.id;
       item.group.querySelector(".v-sub").textContent = status;
+      item.group.querySelector(".v-badge text").textContent = ROLE_BADGES[status] ?? "";
       item.group.setAttribute("aria-label", `${node.id}, ${status}, term ${node.term}`);
     } else {
       // Vertices are rebuilt only on topology change, so read the live entity.
@@ -231,10 +341,12 @@ function updateGraphVisuals(snapshot) {
   // only); take state from the current edges so partitions and delays show.
   const liveEdges = new Map(graphSim.edges.map((edge) => [`${edge.a}>${edge.b}`, edge]));
   const current = host.getSelectedLink();
-  for (const { edge: built, visual, hit } of graphSim.dom.edges) {
+  for (const { edge: built, visual, hit, label } of graphSim.dom.edges) {
     const edge = liveEdges.get(`${built.a}>${built.b}`) ?? built;
     const selected = current && current.from === edge.from && current.to === edge.to;
     visual.setAttribute("class", ["link", edge.state, selected ? "selected" : ""].filter(Boolean).join(" "));
+    label.setAttribute("class", `link-label ${edge.state}`);
+    label.textContent = edge.state === "up" ? "" : edge.state;
     hit.setAttribute("aria-label", `link ${edge.from} to ${edge.to}, ${edge.state}${selected ? ", selected" : ""}`);
     hit.setAttribute("aria-pressed", selected ? "true" : "false");
   }
@@ -263,7 +375,7 @@ function rebuildPackets(snapshot) {
     if (!graphSim.pos.has(message.from) || !graphSim.pos.has(message.to)) return;
     const kind = packetKind(message.kind);
     const trail = svg("line", { class: `packet-trail ${kind}` });
-    const dot = svg("circle", { class: `packet ${kind}`, r: 7 });
+    const dot = svg("circle", { class: `packet ${kind}`, r: 9 });
     graphSim.dom.packetLayer.append(trail, dot);
     graphSim.packets.push({ dot, trail, from: message.from, to: message.to, offset: index / Math.max(messages.length, 1) });
   });
@@ -370,9 +482,21 @@ function paintGraph(now) {
       line.setAttribute("x2", pb.x);
       line.setAttribute("y2", pb.y);
     };
-    for (const { edge, visual, hit } of graphSim.dom.edges) {
+    for (const { edge, visual, hit, label } of graphSim.dom.edges) {
       setLine(visual, edge.a, edge.b);
       setLine(hit, edge.a, edge.b);
+      const pa = P.get(edge.a);
+      const pb = P.get(edge.b);
+      if (pa && pb) {
+        // Sit the state label beside the line (not on it) so packets and the
+        // dashed stroke do not cover it.
+        const length = Math.hypot(pb.x - pa.x, pb.y - pa.y) || 1;
+        const nx = -(pb.y - pa.y) / length;
+        const ny = (pb.x - pa.x) / length;
+        const side = ny > 0 ? -1 : 1;
+        label.setAttribute("x", (pa.x + pb.x) / 2 + nx * 18 * side);
+        label.setAttribute("y", (pa.y + pb.y) / 2 + ny * 18 * side + 4);
+      }
     }
     for (const { edge, line } of graphSim.dom.entityEdges) setLine(line, edge.a, edge.b);
   }
@@ -490,9 +614,14 @@ function startGraphSim() {
   if (graphSim.raf !== null) return;
   const tick = (now) => {
     const energy = applyGraphForces();
+    const fitError = easeTowardFit();
     paintGraph(now);
     const busy =
-      graphSim.drag || graphSim.packets.length > 0 || graphSim.pulses.length > 0 || energy > 0.05;
+      graphSim.drag ||
+      graphSim.packets.length > 0 ||
+      graphSim.pulses.length > 0 ||
+      energy > 0.05 ||
+      fitError > 0.5;
     graphSim.raf = busy ? requestAnimationFrame(tick) : null;
     if (!busy) paintGraph(now); // final settle paint
   };
@@ -580,6 +709,7 @@ function bindGraphInteractions() {
     const sy = ctm && ctm.d ? ctm.d : 1;
     const start = { x: event.clientX, y: event.clientY, tx: graphSim.view.tx, ty: graphSim.view.ty };
     graphSim.drag = { pan: true };
+    graphSim.autoFit = false;
     capturePointer(host.svg, event.pointerId);
     const move = (ev) => {
       graphSim.view.tx = start.tx + (ev.clientX - start.x) / sx;
@@ -602,22 +732,38 @@ function bindGraphInteractions() {
     host.svg.addEventListener("pointercancel", up);
     host.svg.addEventListener("lostpointercapture", up);
   });
-  // Wheel zoom around the cursor.
+  // Ctrl/Cmd + wheel (and trackpad pinch, which browsers report the same way)
+  // zooms around the cursor. A plain wheel scrolls the page as usual.
   host.svg.addEventListener(
     "wheel",
     (event) => {
+      if (!event.ctrlKey && !event.metaKey) {
+        return;
+      }
       event.preventDefault();
-      const before = pointerToGraph(event);
-      const factor = event.deltaY < 0 ? 1.1 : 1 / 1.1;
-      graphSim.view.scale = Math.max(0.45, Math.min(2.4, graphSim.view.scale * factor));
-      const after = pointerToGraph(event);
-      graphSim.view.tx += (after.x - before.x) * graphSim.view.scale;
-      graphSim.view.ty += (after.y - before.y) * graphSim.view.scale;
-      paintGraph(performance.now());
+      graphSim.autoFit = false;
+      const ctm = host.svg.getScreenCTM();
+      if (!ctm) return;
+      const inv = ctm.inverse();
+      const anchor = {
+        x: inv.a * event.clientX + inv.c * event.clientY + inv.e,
+        y: inv.b * event.clientX + inv.d * event.clientY + inv.f,
+      };
+      zoomAround(anchor, event.deltaY < 0 ? 1.1 : 1 / 1.1);
     },
     { passive: false },
   );
 }
+
+// Glyph drawn in the corner badge of a node, so the role reads without colour.
+const ROLE_BADGES = {
+  leader: "★",
+  candidate: "?",
+  crashed: "✕",
+  disabled: "‖",
+  joining: "+",
+  catching_up: "↻",
+};
 
 // When collapsing the two directed links of a pair into one drawn line, show the
 // most degraded state so a partition/delay is never hidden by a healthy reverse.

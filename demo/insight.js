@@ -206,3 +206,50 @@ export function graphSummary(snapshot) {
     `${clients} client(s), ${subscribers} subscriber(s), ${(snapshot.in_flight || []).length} message(s) in flight.`
   );
 }
+
+// Human label for the auto-play interval (milliseconds per step).
+export function speedLabel(intervalMs) {
+  const ms = Number(intervalMs);
+  if (!Number.isFinite(ms) || ms <= 0) {
+    return "—";
+  }
+  if (ms >= 1000) {
+    return `${(ms / 1000).toFixed(1)} s/step`;
+  }
+  return `${Math.round(ms)} ms/step`;
+}
+
+// Positions (0–100 %) of timeline events over a scrubber that spans
+// [base, max]. Events outside the range are dropped; several events on one
+// step collapse to one mark whose kind follows the most important event
+// (verdict > leader > action) and whose text lists them all.
+export function timelineMarks(events, base, max) {
+  const span = max - base;
+  if (!(span > 0)) {
+    return [];
+  }
+  const rank = { verdict: 3, leader: 2, action: 1 };
+  const byStep = new Map();
+  for (const event of events || []) {
+    if (event.step < base || event.step > max) {
+      continue;
+    }
+    const mark = byStep.get(event.step);
+    if (!mark) {
+      byStep.set(event.step, { step: event.step, kind: event.kind, texts: [event.text] });
+      continue;
+    }
+    mark.texts.push(event.text);
+    if ((rank[event.kind] ?? 0) > (rank[mark.kind] ?? 0)) {
+      mark.kind = event.kind;
+    }
+  }
+  return [...byStep.values()]
+    .sort((a, b) => a.step - b.step)
+    .map((mark) => ({
+      step: mark.step,
+      kind: mark.kind,
+      percent: ((mark.step - base) / span) * 100,
+      text: `step ${mark.step}: ${mark.texts.join("; ")}`,
+    }));
+}
