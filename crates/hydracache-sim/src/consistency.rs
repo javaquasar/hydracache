@@ -8,6 +8,9 @@
 //! `tests/consistency_parity.rs` checks the mirror against
 //! `hydracache::ConsistencyLevel::{required_acks, validate}` for every cluster
 //! size and live set it can reach, including the reason text.
+//!
+//! This mirror is tracked debt: docs/technical-debt/TD-0014 describes moving
+//! the product rules out of `grid` so both builds can call them directly.
 
 use crate::snapshot::{ConsistencyLevelView, SIM_REGION};
 
