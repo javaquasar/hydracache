@@ -7,17 +7,12 @@ repository notes, GitHub release source, search index and public site on the sam
 ## Published releases
 
 - [HydraCache 0.71.0](0.71.0.md) — memory accounting, retained-byte evidence and active expiry.
-- [HydraCache 0.73.0](0.73.0.md)
 - [HydraCache 0.72.0](0.72.0.md) — Management Center 2.0, bounded operational visibility and
   exact-candidate long-run evidence.
-
-## Release candidates
-
+- [HydraCache 0.73.0](0.73.0.md) — evidence-driven allocation and copy reductions, bounded HC/2
+  backpressure and archived long-run measurements.
 - [HydraCache 0.74.0](0.74.0.md) — signed Linux maintenance binary, Raft
   proposal validation and a verified six-hour stability test.
-- [HydraCache 0.73.0](0.73.0.md) — evidence-driven allocation/copy reductions, bounded HC/2
-  backpressure and immutable six-/24-hour measurement archives. Publication remains conditional on
-  green corrected exact-SHA gates.
 
 ## Verification records
 
