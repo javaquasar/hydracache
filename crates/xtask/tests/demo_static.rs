@@ -22,8 +22,7 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
                 .unwrap_or_else(|_| panic!("demo module {module} exists"))
         })
         .collect::<Vec<_>>()
-        .join("
-");
+        .join("\n");
     assert!(app.contains("from \"./engine.js\""));
     assert!(app.contains("from \"./graph.js\""));
     assert!(app.contains("from \"./insight.js\""));
