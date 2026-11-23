@@ -12,6 +12,9 @@ repository notes, GitHub release source, search index and public site on the sam
 
 ## Release candidates
 
+- [HydraCache 0.74.0](0.74.0.md) — maintenance binary preparation, protected
+  provenance and exact-candidate validation. The published 0.74.0-rc.1
+  passed its documented six-hour stability test.
 - [HydraCache 0.73.0](0.73.0.md) — evidence-driven allocation/copy reductions, bounded HC/2
   backpressure and immutable six-/24-hour measurement archives. Publication remains conditional on
   green corrected exact-SHA gates.

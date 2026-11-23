@@ -1,5 +1,27 @@
 # HydraCache 0.74.0 RESP and Native Throughput Efficiency Plan
 
+
+## November 22 maintenance binary disposition
+
+The owner authorized preparation of stable 0.74.0 as a maintenance binary
+release after publication and verification of 0.74.0-rc.1. The stable source
+is bcba511f0c1f4b3e965c9e17f81b248deb0ea331. It derives from RC source 2efd4dce and adds rejection of empty Raft wire
+proposals, the saved regression seed, workspace version updates, the examples
+lockfile update and CI setup diagnostics.
+
+The previous decoder is retained, the C74 cursor change is deferred, and
+full GET/SET profiling remains for diagnosis. The original performance
+programme below retains its evidence and thresholds. Comparative passes
+require the original registered evidence.
+
+Stable binary admission requires CI and HC/2 on the new source, a protected
+signature binding that source and ELF, exact-binary compatibility, and
+six hours with the same workload, CPU placement, timerfd and disk reserve.
+Registry publication retains its Rust 1.88 clean-consumer and security checks.
+[Release scope](../releases/0.74.0.md)
+[Published RC](https://github.com/javaquasar/hydracache/releases/tag/v0.74.0-rc.1)
+
+
 > **At a glance**
 >
 > - **What:** remove measured RESP pipeline bottlenecks and shared native-path costs in parsing,
@@ -23,8 +45,8 @@
 > - **Status:** planned. Historical measurements locate the opportunity; no 0.74 baseline,
 >   threshold activation, candidate, or numerical improvement is claimed yet.
 
-Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) · gates:
-[`../GATES.md`](../GATES.md) · predecessor:
+Roadmap: [`INDEX.md`](INDEX.md) Â· rules: [`../RULES.md`](../RULES.md) Â· gates:
+[`../GATES.md`](../GATES.md) Â· predecessor:
 [`V0_73_EVIDENCE_DRIVEN_PERFORMANCE_EFFICIENCY_PLAN.md`](V0_73_EVIDENCE_DRIVEN_PERFORMANCE_EFFICIENCY_PLAN.md).
 
 Read `CLAUDE.md`, `docs/RULES.md`, `docs/GATES.md`, `docs/COMPAT.md`, the final 0.73 release
