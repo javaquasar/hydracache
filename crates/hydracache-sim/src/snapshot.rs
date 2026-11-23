@@ -10,7 +10,10 @@ use crate::{
 };
 
 /// Current stable simulator snapshot JSON schema version.
-pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 7;
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 8;
+
+/// Region every simulator node reports; the simulator models one region.
+pub(crate) const SIM_REGION: &str = "local";
 
 /// Maximum number of in-flight messages rendered in one snapshot.
 pub const MAX_IN_FLIGHT_RENDERED: usize = 64;
@@ -65,6 +68,8 @@ pub struct SimSnapshot {
     pub checked_invariants: Vec<String>,
     /// First scheduler step at which the verdict reported a violation, if ever.
     pub first_violation_step: Option<u64>,
+    /// Whether each product consistency level could be satisfied right now.
+    pub consistency: Vec<ConsistencyLevelView>,
     /// Invariant verdict for the current state.
     pub verdict: VerdictView,
     /// Progress summary for dashboard panels.
@@ -102,6 +107,7 @@ impl SimSnapshot {
                 .map(|name| (*name).to_owned())
                 .collect(),
             first_violation_step: (!report.violations.is_empty()).then_some(step),
+            consistency: Vec::new(),
             verdict: VerdictView::from_report(&report),
             progress: ProgressView {
                 committed_entries: history.completed().count() as u64,
@@ -238,6 +244,29 @@ pub struct KeyView {
     pub key: String,
     /// Per-replica observations.
     pub replicas: Vec<KeyReplicaView>,
+}
+
+/// Satisfiability of one product consistency level on the simulator topology.
+///
+/// Computed with the product `hydracache::ConsistencyLevel` rules (see
+/// `crate::consistency` for the parity-tested mirror) with every simulator
+/// node as a replica (the simulator fully replicates) and the live nodes as the
+/// ones that can acknowledge. It says whether an operation at this level could
+/// be acknowledged now; the simulator does not run per-level reads or writes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ConsistencyLevelView {
+    /// Level name: `one`, `local_quorum`, `quorum`, `each_quorum`, or `all`.
+    pub level: String,
+    /// Effective replicas for the level (every simulator node).
+    pub total_replicas: u64,
+    /// Acknowledgements the level requires.
+    pub required_acks: u64,
+    /// Replicas currently able to acknowledge (not crashed, disabled, or isolated).
+    pub live_replicas: u64,
+    /// Whether the requirement can be met by the live replicas.
+    pub satisfiable: bool,
+    /// Product explanation when the level is unsatisfiable.
+    pub reason: Option<String>,
 }
 
 /// Per-replica key observation.
@@ -424,7 +453,7 @@ pub(crate) fn node_view(
         .unwrap_or_else(|| ("member".to_owned(), 0, "unknown".to_owned(), None, 0));
     NodeView {
         id,
-        region: "local".to_owned(),
+        region: SIM_REGION.to_owned(),
         zone: "default".to_owned(),
         role,
         term,

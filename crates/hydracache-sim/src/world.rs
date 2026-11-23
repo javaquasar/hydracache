@@ -857,12 +857,27 @@ impl SimWorld {
             workload_enabled: self.workload_enabled,
             checked_invariants: Self::checked_invariants(),
             first_violation_step: self.first_violation_step,
+            consistency: self.consistency_views(),
             verdict: crate::snapshot::VerdictView::from_report(&self.invariant_report),
             progress: crate::snapshot::progress_from_report(
                 committed_entries,
                 &self.invariant_report,
             ),
         }
+    }
+
+    /// Per-level satisfiability on this world's topology: every node is a
+    /// replica in one region, and only live (not crashed, disabled, or
+    /// isolated) nodes can acknowledge. Partitioned individual links are not
+    /// considered. See `crate::consistency` for the product-parity contract.
+    fn consistency_views(&self) -> Vec<crate::snapshot::ConsistencyLevelView> {
+        let total = self.nodes.len();
+        let live = self
+            .live_node_ids()
+            .iter()
+            .filter(|node_id| self.nodes.contains_key(*node_id))
+            .count();
+        crate::consistency::consistency_level_views(total, live)
     }
 
     /// Serialize the canonical UI snapshot as JSON.

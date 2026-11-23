@@ -689,7 +689,26 @@ function renderConsistency(snapshot) {
   const note = document.createElement("p");
   note.className = "model-note";
   note.textContent =
-    "Per-request consistency levels (ONE, QUORUM, ALL...) are not simulated: every committed value is replicated to every node.";
+    "Could an operation at each level be acknowledged right now? Computed with the product consistency rules: every node is a replica in one region and only live nodes acknowledge (isolated counts as down; single partitioned links are not considered). The simulator does not run per-level reads or writes.";
+  const levels = document.createElement("div");
+  levels.className = "metric-list";
+  for (const view of snapshot.consistency || []) {
+    const row = document.createElement("div");
+    row.className = `metric consistency-row ${view.satisfiable ? "ok" : "bad"}`;
+    row.dataset.level = view.level;
+    const label = document.createElement("strong");
+    label.textContent = view.level.toUpperCase();
+    const status = document.createElement("span");
+    status.textContent = `${view.satisfiable ? "can ack" : "cannot ack"} · needs ${view.required_acks} of ${view.total_replicas}, ${view.live_replicas} live`;
+    row.append(label, status);
+    if (view.reason) {
+      const reason = document.createElement("small");
+      reason.className = "consistency-reason";
+      reason.textContent = view.reason;
+      row.append(reason);
+    }
+    levels.append(row);
+  }
   const list = document.createElement("div");
   list.className = "metric-list";
   const agreement = keyAgreement(snapshot);
@@ -707,7 +726,7 @@ function renderConsistency(snapshot) {
     row.append(term, status);
     list.append(row);
   }
-  el.consistency.replaceChildren(note, list);
+  el.consistency.replaceChildren(note, levels, list);
 }
 
 // Per-node stored checksum for each sampled key (snapshot.keys), with the

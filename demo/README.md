@@ -77,8 +77,8 @@ guarantee.
 
 Real networked Raft transport, the `hydracache-server` daemon, the durable
 storage engine and recovery (`0.51`), mTLS / encryption-at-rest (`0.48`),
-persistence, configurable consistency levels, and the real external client wire
-protocol. `hydracache-sim` is a **sans-IO seam over the core logic**, not the
+persistence, per-level consistency reads and writes, and the real external
+client wire protocol. `hydracache-sim` is a **sans-IO seam over the core logic**, not the
 production runtime.
 
 This layer is also where the currently open deployment debt lives, so a perfect
@@ -156,6 +156,13 @@ shared link cannot make the page render another server's verdict.
   condition holds, and stops loudly after 500 steps if it never does.
 - **Verdict panel.** Lists the snapshot's `checked_invariants` (the exact set
   behind the verdict), the violation detail, and the first violating step.
+- **Consistency panel.** For each product level (`one`, `local_quorum`,
+  `quorum`, `each_quorum`, `all`) it shows whether an operation could be
+  acknowledged right now, how many acknowledgements it needs, and the product's
+  reason when it cannot (snapshot `consistency`). The rules are the product's
+  `ConsistencyLevel` rules, mirrored in the simulator for the browser build and
+  parity-tested against the product. It reports availability on the current
+  topology; the simulator does not execute per-level reads or writes.
 - **Keys panel.** Per-node stored checksums for each sampled key; live replicas
   that differ from the majority are highlighted, down nodes are struck through.
 

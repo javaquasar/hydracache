@@ -146,12 +146,30 @@ test("reduced_motion_and_transparency_fallbacks_apply", async ({ page }) => {
   expect(glassFallback.backdrop).toBe("none");
 });
 
-test("consistency_panel_states_levels_are_not_modeled", async ({ page }) => {
+test("consistency_panel_shows_product_level_availability", async ({ page }) => {
   await openReady(page);
   const panel = page.getByTestId("consistency-panel");
-  await expect(panel).toContainText("not simulated");
+  await expect(panel).toContainText("does not run per-level reads or writes");
   await expect(panel).toContainText("live replicas agree on sampled keys");
-  await expect(panel).not.toContainText("LOCAL_QUORUM");
+  for (const level of ["one", "local_quorum", "quorum", "each_quorum", "all"]) {
+    await expect(panel.locator(`[data-level='${level}']`)).toHaveClass(/ok/);
+  }
+  await expect(panel.locator("[data-level='quorum']")).toContainText("needs 2 of 3, 3 live");
+
+  const crash = page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" });
+  await crash.nth(2).click();
+  await expect(panel.locator("[data-level='all']")).toHaveClass(/bad/);
+  await expect(panel.locator("[data-level='all']")).toContainText(
+    "requires 3 live acknowledgements from 3 replicas, only 2 are live",
+  );
+  await expect(panel.locator("[data-level='quorum']")).toHaveClass(/ok/);
+
+  await crash.nth(1).click();
+  await expect(panel.locator("[data-level='quorum']")).toHaveClass(/bad/);
+  await expect(panel.locator("[data-level='local_quorum']")).toContainText(
+    "regional quorum unsatisfied: local needs 2, has 1",
+  );
+  await expect(panel.locator("[data-level='one']")).toHaveClass(/ok/);
 });
 
 test("engine_rejection_is_shown_to_the_user", async ({ page }) => {

@@ -695,6 +695,28 @@ dd {
   text-decoration: line-through;
 }
 
+.consistency-row {
+  flex-wrap: wrap;
+}
+
+.consistency-row.ok strong {
+  color: var(--ok);
+}
+
+.consistency-row.bad {
+  border-color: color-mix(in srgb, var(--danger) 45%, white);
+}
+
+.consistency-row.bad strong {
+  color: var(--danger);
+}
+
+.consistency-reason {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
 .invariant-row.violated {
   border-color: var(--danger);
   color: var(--danger);
