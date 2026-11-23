@@ -114,6 +114,10 @@ Then open:
 http://127.0.0.1:5173/demo/
 ```
 
+The dev server serves only `demo/`. It also mounts the same files at
+`http://127.0.0.1:5173/hydracache/demo/`, the path GitHub Pages uses, so relative
+asset URLs can be checked locally exactly as they are published.
+
 The default engine is the local WASM package. To drive the same UI through the
 sandbox HTTP API instead, run the sandbox and add `engine=server` plus the API
 base:
@@ -126,15 +130,41 @@ cargo run -p hydracache-sandbox -- --backend memory
 http://127.0.0.1:5173/demo/?engine=server&api=http://127.0.0.1:3000
 ```
 
-The page URL carries `seed`, `steps`, and `scenario`, so a shared URL can be
-replayed locally. The copy-reproducer button emits the matching `hydracache-sim`
-CLI command.
+`?api=` accepts only a same-origin path or a loopback API (`localhost`,
+`127.0.0.1`, `[::1]`); any other host is refused and the lab stays disabled, so a
+shared link cannot make the page render another server's verdict.
 
-## DevRel CI
+The page URL carries `seed`, `steps`, and `scenario`. Once the run has
+interventions (node, link, workload, client actions, a mode change, or a loaded
+scenario), it also carries `script=`: a `ReplayScriptV1` with every recorded
+action and the step to resume at, which rebuilds the identical snapshot. The
+copy-reproducer button emits that replay link, or the matching `hydracache-sim`
+CLI command (`vopr --seed … --steps …`) for a plain seeded run.
 
-`.github/workflows/demo.yml` runs outside the fast PR gate. It builds the WASM
-package, runs the headless UI and seed-share smoke tests, and publishes the
-static `demo/` artifact to GitHub Pages on nightly/manual/tag runs.
+## CI and publishing
+
+Two workflows cover the demo; neither is part of the fast PR gate.
+
+- `.github/workflows/docs-site.yml` owns publishing. It runs on pull requests
+  that touch `demo/`, the simulator crates, or the docs, on pushes to `main`, and
+  on manual dispatch. It builds the WASM package, copies the page modules
+  (`index.html`, `style.css`, `app.js`, `scenarios.js`, `share.js`) and the
+  `pkg/` output into `docs-site/book/demo/`, and runs `npm --prefix demo run build`
+  and the full Playwright suite against that bundle served at
+  `/hydracache/demo/`. On `main` pushes and manual runs it deploys the docs site
+  and simulator to GitHub Pages
+  (`https://javaquasar.github.io/hydracache/demo/`) and then verifies that every
+  published simulator file matches the SHA-256 of the tested bundle.
+- `.github/workflows/demo.yml` is a nightly, `main`-push, and manual smoke. It
+  builds the WASM package and runs the UI and seed-share Playwright specs against
+  `demo/` directly. It does not deploy Pages.
+
+`npm --prefix demo run build` (`scripts/check-static.mjs`) fails when a file the
+page needs is missing (including `pkg/`, so build WASM first), when a module the
+page loads is not in the `docs-site.yml` bundle list, when
+`demo/package.json` does not carry the workspace version from `Cargo.toml`, or
+when the dev server would serve a file outside `demo/`. Bump
+`demo/package.json` (and its lockfile) together with the workspace version.
 
 The local C7 smoke gate uses the same tooling:
 
