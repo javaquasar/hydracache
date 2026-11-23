@@ -211,7 +211,7 @@ button.primary:disabled {
 
 /* Inner panels sit on top of the glass aside; keep them a touch more opaque so
    stacked glass stays legible. */
-.side-panel > section {
+.side-panel section.glass-panel {
   background: var(--panel-inner-grad);
 }
 
@@ -766,7 +766,7 @@ main[aria-busy="true"] .side-panel button {
   min-width: 0;
 }
 
-.side-panel > section {
+.side-panel section.glass-panel {
   padding: 12px;
   border-radius: 8px;
 }
@@ -1897,4 +1897,320 @@ html[data-reduced-motion="true"] .spotlight {
   .violation-card .button-row button {
     flex: 1 1 auto;
   }
+}
+
+/* -------------------------------------------------------------------------
+   Side-panel tabs, keys heatmap, grouped events, mobile run dock, shortcuts.
+   ------------------------------------------------------------------------- */
+.tab-panel {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.tab-panel[hidden],
+.run-dock[hidden] {
+  display: none;
+}
+
+.panel-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--glass-strong);
+}
+
+.panel-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.panel-tab[aria-selected="true"] {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-soft);
+}
+
+.panel-tab:focus-visible,
+.link-button:focus-visible {
+  outline: 3px solid rgba(76, 91, 213, 0.45);
+  outline-offset: 2px;
+}
+
+.tab-badge {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: var(--font-xsmall);
+  line-height: 18px;
+  text-align: center;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent-strong);
+}
+
+.tab-badge[hidden] {
+  display: none;
+}
+
+.tab-badge.ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.tab-badge.bad {
+  background: var(--danger);
+  color: var(--on-accent);
+}
+
+.tab-badge.warn {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+
+/* Keys heatmap. */
+.key-grid-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.key-grid {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-size: var(--font-xsmall);
+}
+
+.key-grid th {
+  padding: 2px 4px;
+  color: var(--muted);
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.key-grid tbody th {
+  max-width: 120px;
+  overflow: hidden;
+  color: var(--ink);
+  text-align: left;
+  text-overflow: ellipsis;
+}
+
+.key-grid td {
+  padding: 0;
+  text-align: center;
+}
+
+.key-grid .replica {
+  display: block;
+  min-width: 44px;
+  padding: 5px 4px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: hsl(var(--hue, 0) 70% 86%);
+  color: #13201f;
+  font-size: var(--font-xsmall);
+  font-weight: 600;
+}
+
+:root[data-theme="dark"] .key-grid .replica {
+  background: hsl(var(--hue, 0) 42% 34%);
+  color: #eef6f4;
+}
+
+.key-grid .replica.missing {
+  background: transparent;
+  color: var(--muted);
+}
+
+.key-grid .replica.diverged {
+  border: 2px solid var(--danger);
+  color: inherit;
+}
+
+.key-grid .replica.down {
+  text-decoration: none;
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 5px,
+    color-mix(in srgb, var(--ink) 22%, transparent) 5px 7px
+  );
+}
+
+.key-grid .key-state {
+  padding-left: 4px;
+  color: var(--muted);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.key-grid .key-line.diverged .key-state {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* Timeline events grouped by step. */
+.event-group button {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 3px 10px;
+  text-align: left;
+}
+
+.event-group.current button {
+  border-color: var(--accent-alt);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-alt) 30%, transparent);
+}
+
+.event-step {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.event-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 500;
+}
+
+.event-icon {
+  font-weight: 700;
+}
+
+.event-item.action .event-icon {
+  color: var(--accent-alt);
+}
+
+.event-item.leader .event-icon {
+  color: var(--ok);
+}
+
+.event-item.verdict .event-icon {
+  color: var(--danger);
+}
+
+.events {
+  max-height: 160px;
+}
+
+/* Mobile run dock. */
+.run-dock {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--glass-solid);
+  box-shadow: var(--shadow);
+}
+
+.dock-verdict {
+  font-size: var(--font-small);
+  font-weight: 700;
+}
+
+.dock-verdict.ok {
+  color: var(--ok);
+}
+
+.dock-verdict.bad {
+  color: var(--danger);
+}
+
+.dock-verdict.warn {
+  color: var(--warn);
+}
+
+.dock-step-label {
+  margin-right: auto;
+  font-size: var(--font-small);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+html.dock-open {
+  scroll-padding-bottom: 84px;
+}
+
+html.dock-open body {
+  padding-bottom: 76px;
+}
+
+/* Shortcuts dialog. */
+.shortcuts-dialog {
+  width: min(420px, calc(100vw - 32px));
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--glass-solid);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.shortcuts-dialog::backdrop {
+  background: rgba(10, 20, 20, 0.35);
+}
+
+.dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dialog-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.shortcut-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  margin: 14px 0;
+  font-size: var(--font-small);
+}
+
+.shortcut-list dt {
+  white-space: nowrap;
+}
+
+.shortcut-list dd {
+  margin: 0;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 22px;
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--surface);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--font-xsmall);
+  text-align: center;
 }

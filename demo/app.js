@@ -19,6 +19,7 @@ import {
 } from "./graph.js";
 import {
   graphSummary,
+  groupEvents,
   keyAgreement,
   leaderOf,
   nodeDetails,
@@ -26,11 +27,13 @@ import {
   scriptAtStep,
   scriptFileName,
   shortVersion,
+  shortcutFor,
   speedLabel,
   stepChanges,
   timelineEvents,
   timelineMarks,
   verdictView,
+  versionHue,
   violationFocus,
   voprScriptCommand,
 } from "./insight.js";
@@ -150,6 +153,18 @@ const el = {
   intro: document.querySelector("#intro"),
   introDismiss: document.querySelector("#intro-dismiss"),
   showIntro: document.querySelector("#show-intro"),
+  controls: document.querySelector(".controls"),
+  tabs: Array.from(document.querySelectorAll("[role='tab'][data-tab]")),
+  tabPanels: Array.from(document.querySelectorAll("[data-tabpanel]")),
+  dock: document.querySelector("#run-dock"),
+  dockPlay: document.querySelector("#dock-play"),
+  dockStep: document.querySelector("#dock-step"),
+  dockStepLabel: document.querySelector("#dock-step-label"),
+  dockVerdict: document.querySelector("#dock-verdict"),
+  shortcuts: document.querySelector("#shortcuts"),
+  shortcutsClose: document.querySelector("#shortcuts-close"),
+  showShortcuts: document.querySelector("#show-shortcuts"),
+  announcer: document.querySelector("#announcer"),
 };
 
 async function boot() {
@@ -169,6 +184,9 @@ async function boot() {
   bindTheme();
   bindIntro();
   buildNodePopover();
+  bindTabs();
+  bindDock();
+  bindShortcuts();
   collapseSecondaryPanelsOnSmallScreens();
   setBusy(true);
   const initial = readInitialState(window.location.search, window.location.origin);
@@ -244,6 +262,7 @@ function setBusy(busy) {
   for (const control of engineControls()) {
     control.disabled = busy;
   }
+  syncDock();
 }
 
 // On narrow screens the side panel stacks under the graph; start with the
@@ -392,6 +411,10 @@ async function refresh() {
   if (focus && wasHolding && !state.timeline.rewound) {
     onViolationDetected(focus);
   }
+  if (state.changes?.leader) {
+    const { to } = state.changes.leader;
+    announce(to ? `Leader is now ${to} at step ${state.snapshot.step}.` : `No leader at step ${state.snapshot.step}.`);
+  }
   if (state.playing) {
     scheduleUrlWrite();
   } else {
@@ -473,6 +496,8 @@ function render() {
   renderConsistency(snapshot);
   renderKeys(snapshot);
   renderNodePopover();
+  renderTabBadges(snapshot);
+  syncDock();
 }
 
 // Short, scannable run facts under the title; the election disclosure is the
@@ -821,45 +846,99 @@ function renderConsistency(snapshot) {
   el.consistency.replaceChildren(note, levels, list);
 }
 
-// Per-node stored checksum for each sampled key (snapshot.keys), with the
-// live replicas that differ from the majority highlighted.
+// Keys heatmap: one row per sampled key, one column per node. A cell's colour
+// is derived from the stored checksum (equal checksums share a colour); live
+// replicas that differ from the majority are outlined, down nodes striped.
+const MAX_KEY_ROWS = 8;
+
 function renderKeys(snapshot) {
-  const list = document.createElement("div");
-  list.className = "key-list";
   const agreement = keyAgreement(snapshot);
-  const keys = agreement.keys.slice(0, 8);
-  const changedKeys = new Set((state.changes?.keys ?? []).map((change) => `${change.key}|${change.node}`));
+  const keys = agreement.keys.slice(0, MAX_KEY_ROWS);
   if (keys.length === 0) {
     const empty = document.createElement("p");
-    empty.textContent = "no sampled keys";
-    list.append(empty);
+    empty.className = "empty-state";
+    empty.textContent = "no sampled keys yet — they appear once the workload or a push writes";
+    el.keys.replaceChildren(empty);
+    return;
   }
+  const changedKeys = new Set((state.changes?.keys ?? []).map((change) => `${change.key}|${change.node}`));
+  const nodes = (snapshot.nodes || []).map((node) => node.id);
+  const table = document.createElement("table");
+  table.className = "key-grid";
+  const caption = document.createElement("caption");
+  caption.className = "visually-hidden";
+  caption.textContent = "Stored checksum of each sampled key on each node";
+  const head = document.createElement("tr");
+  const corner = document.createElement("th");
+  corner.scope = "col";
+  corner.textContent = "key";
+  head.append(corner);
+  for (const id of nodes) {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = id;
+    th.title = id;
+    head.append(th);
+  }
+  const statusHead = document.createElement("th");
+  statusHead.scope = "col";
+  statusHead.textContent = "state";
+  head.append(statusHead);
+  const thead = document.createElement("thead");
+  thead.append(head);
+  const tbody = document.createElement("tbody");
   for (const key of keys) {
-    const row = document.createElement("div");
-    row.className = `key-row${key.agree ? "" : " diverged"}`;
-    const head = document.createElement("div");
-    head.className = "key-head";
-    const label = document.createElement("strong");
-    label.textContent = key.key;
-    const status = document.createElement("span");
-    status.textContent = key.agree ? "agree" : "replicas differ";
-    head.append(label, status);
-    const cells = document.createElement("div");
-    cells.className = "replica-cells";
+    const row = document.createElement("tr");
+    row.className = `key-line${key.agree ? "" : " diverged"}`;
+    const name = document.createElement("th");
+    name.scope = "row";
+    name.textContent = key.key;
+    name.title = key.key;
+    row.append(name);
     for (const cell of key.cells) {
+      const td = document.createElement("td");
       const chip = document.createElement("span");
       const changed = changedKeys.has(`${key.key}|${cell.node}`);
-      chip.className = ["replica", cell.diverged ? "diverged" : "", cell.live ? "" : "down", changed ? "changed" : ""]
+      chip.className = [
+        "replica",
+        cell.version === null ? "missing" : "",
+        cell.diverged ? "diverged" : "",
+        cell.live ? "" : "down",
+        changed ? "changed" : "",
+      ]
         .filter(Boolean)
         .join(" ");
-      chip.textContent = `${cell.node} ${shortVersion(cell.version)}`;
-      chip.title = cell.version === null ? `${cell.node}: no replica` : `${cell.node}: checksum ${cell.version}`;
-      cells.append(chip);
+      const hue = versionHue(cell.version);
+      if (hue !== null) {
+        chip.style.setProperty("--hue", String(hue));
+      }
+      chip.textContent = shortVersion(cell.version).slice(-4);
+      const downNote = cell.live ? "" : " (down)";
+      chip.title =
+        cell.version === null
+          ? `${cell.node}: no replica${downNote}`
+          : `${cell.node}: checksum ${cell.version}${cell.diverged ? ", differs from the majority" : ""}${downNote}`;
+      chip.setAttribute("aria-label", chip.title);
+      td.append(chip);
+      row.append(td);
     }
-    row.append(head, cells);
-    list.append(row);
+    const status = document.createElement("td");
+    status.className = "key-state";
+    status.textContent = key.agree ? "agree" : "replicas differ";
+    row.append(status);
+    tbody.append(row);
   }
-  el.keys.replaceChildren(list);
+  table.append(caption, thead, tbody);
+  const wrap = document.createElement("div");
+  wrap.className = "key-grid-wrap";
+  wrap.append(table);
+  const legend = document.createElement("p");
+  legend.className = "model-note";
+  const more = agreement.keys.length - keys.length;
+  legend.textContent =
+    `Same colour = same stored checksum (last 4 hex digits shown). Outlined = differs from the live majority; striped = node down; — = no replica.` +
+    (more > 0 ? ` ${more} more key(s) not shown.` : "");
+  el.keys.replaceChildren(wrap, legend);
 }
 
 // ---------------------------------------------------------------------------
@@ -950,17 +1029,37 @@ function renderTimeline(snapshot) {
   el.timelineHelp.textContent = rewound
     ? `Rewound to step ${snapshot.step} of a recording that reaches step ${max}. Drag forward to replay it; Step, Play or any action continues from here and drops the later recording.`
     : "Drag to rebuild any earlier step of this run from its seed and recorded actions.";
-  const events = timelineEvents(script, state.observations)
-    .filter((event) => event.step >= base && event.step <= max)
-    .slice(-MAX_TIMELINE_EVENTS);
-  const items = events.map((event) => {
+  const events = timelineEvents(script, state.observations).filter(
+    (event) => event.step >= base && event.step <= max,
+  );
+  const groups = groupEvents(events, snapshot.step).slice(-MAX_TIMELINE_EVENTS);
+  const items = groups.map((group) => {
     const item = document.createElement("li");
-    item.className = `event ${event.kind}${event.step > snapshot.step ? " future" : ""}`;
+    item.className = ["event", "event-group", group.current ? "current" : "", group.future ? "future" : ""]
+      .filter(Boolean)
+      .join(" ");
     const button = document.createElement("button");
     button.type = "button";
-    button.textContent = `step ${event.step} · ${event.text}`;
+    button.title = `Show step ${group.step}`;
+    if (group.current) {
+      button.setAttribute("aria-current", "step");
+    }
+    const stepChip = document.createElement("span");
+    stepChip.className = "event-step";
+    stepChip.textContent = `step ${group.step}`;
+    button.append(stepChip);
+    for (const entry of group.items) {
+      const tag = document.createElement("span");
+      tag.className = `event-item ${entry.kind}`;
+      const icon = document.createElement("span");
+      icon.className = "event-icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = entry.icon;
+      tag.append(icon, entry.text);
+      button.append(tag);
+    }
     button.addEventListener("click", () =>
-      void runAction(() => rewindTo(event.step), { keepTimeline: true }),
+      void runAction(() => rewindTo(group.step), { keepTimeline: true }),
     );
     item.append(button);
     return item;
@@ -968,7 +1067,7 @@ function renderTimeline(snapshot) {
   if (items.length === 0) {
     const empty = document.createElement("li");
     empty.className = "event empty";
-    empty.textContent = "no events yet";
+    empty.textContent = "no events yet — interventions, leader changes, and verdict changes appear here";
     items.push(empty);
   }
   el.events.replaceChildren(...items);
@@ -1243,6 +1342,7 @@ function startPlay() {
   forkTimeline();
   state.playing = true;
   el.play.textContent = "Pause";
+  syncDock();
   state.timer = window.setInterval(() => {
     if (state.tickPending) {
       return;
@@ -1268,6 +1368,7 @@ function startPlay() {
 function stopPlay() {
   state.playing = false;
   el.play.textContent = "Play";
+  syncDock();
   if (state.timer) {
     window.clearInterval(state.timer);
     state.timer = null;
@@ -1787,6 +1888,196 @@ function spotlight(target) {
   void box.offsetWidth;
   box.classList.add("spotlight");
   window.setTimeout(() => box.classList.remove("spotlight"), 2000);
+}
+
+// ---------------------------------------------------------------------------
+// Side-panel tabs (WAI-ARIA tabs: arrows / Home / End move between them).
+// ---------------------------------------------------------------------------
+function bindTabs() {
+  for (const tab of el.tabs) {
+    tab.addEventListener("click", () => selectTab(tab.dataset.tab));
+    tab.addEventListener("keydown", (event) => {
+      const index = el.tabs.indexOf(tab);
+      const moves = {
+        ArrowRight: index + 1,
+        ArrowLeft: index - 1,
+        Home: 0,
+        End: el.tabs.length - 1,
+      };
+      if (!(event.key in moves)) {
+        return;
+      }
+      event.preventDefault();
+      const next = el.tabs[(moves[event.key] + el.tabs.length) % el.tabs.length];
+      selectTab(next.dataset.tab);
+      next.focus();
+    });
+  }
+}
+
+function selectTab(name) {
+  for (const tab of el.tabs) {
+    const selected = tab.dataset.tab === name;
+    tab.setAttribute("aria-selected", selected ? "true" : "false");
+    tab.tabIndex = selected ? 0 : -1;
+  }
+  for (const panel of el.tabPanels) {
+    panel.hidden = panel.dataset.tabpanel !== name;
+  }
+}
+
+// Small state markers on the tabs, so a problem in a hidden tab is still seen.
+function renderTabBadges(snapshot) {
+  const badge = (name, text, kind, title) => {
+    const tab = el.tabs.find((candidate) => candidate.dataset.tab === name);
+    const node = tab?.querySelector(".tab-badge");
+    if (!node) {
+      return;
+    }
+    node.textContent = text;
+    node.className = `tab-badge${kind ? ` ${kind}` : ""}`;
+    node.hidden = !text;
+    tab.title = title;
+  };
+  const violated = snapshot.verdict.status !== "holding";
+  badge("verdict", violated ? "✕" : "✓", violated ? "bad" : "ok", violated ? "Verdict: violated" : "Verdict: holding");
+  const agree = keyAgreement(snapshot).agree;
+  badge("data", agree ? "" : "≠", agree ? "" : "warn", agree ? "Keys and consistency" : "Replicas differ on a sampled key");
+  const people = (snapshot.clients || []).length + (snapshot.subscribers || []).length;
+  badge("clients", people ? String(people) : "", "", "Clients and subscribers");
+  const down = (snapshot.nodes || []).filter((node) => node.crashed || node.disabled).length;
+  badge("cluster", down ? `${down}↓` : "", down ? "warn" : "", down ? `${down} node(s) down` : "Links, nodes, progress, signals");
+}
+
+// ---------------------------------------------------------------------------
+// Mobile run dock: Play / Step and the current step stay reachable once the
+// controls have scrolled away. It mirrors the main buttons; it adds no state.
+// ---------------------------------------------------------------------------
+let controlsInView = true;
+
+function bindDock() {
+  el.dockPlay.addEventListener("click", () => el.play.click());
+  el.dockStep.addEventListener("click", () => el.step.click());
+  if (typeof IntersectionObserver === "function") {
+    new IntersectionObserver((entries) => {
+      controlsInView = entries.some((entry) => entry.isIntersecting);
+      syncDock();
+    }).observe(el.controls);
+  }
+  window.matchMedia?.("(max-width: 900px)").addEventListener?.("change", syncDock);
+}
+
+function syncDock() {
+  if (!el.dock) {
+    return;
+  }
+  const narrow = typeof window.matchMedia === "function" && window.matchMedia("(max-width: 900px)").matches;
+  el.dock.hidden = !narrow || controlsInView;
+  document.documentElement.classList.toggle("dock-open", !el.dock.hidden);
+  el.dockPlay.textContent = el.play.textContent;
+  el.dockPlay.disabled = el.play.disabled;
+  el.dockStep.disabled = el.step.disabled;
+  const snapshot = state.snapshot;
+  el.dockStepLabel.textContent = snapshot ? `step ${snapshot.step}` : "loading";
+  const violated = snapshot && snapshot.verdict.status !== "holding";
+  el.dockVerdict.className = `dock-verdict ${snapshot ? (violated ? "bad" : "ok") : "warn"}`;
+  el.dockVerdict.textContent = snapshot ? (violated ? "✕ violated" : "✓ holds") : "…";
+}
+
+// ---------------------------------------------------------------------------
+// Keyboard shortcuts (insight.shortcutFor decides; this only dispatches).
+// ---------------------------------------------------------------------------
+function shortcutTarget(target) {
+  if (!(target instanceof Element)) {
+    return "page";
+  }
+  if (target.closest("dialog[open]")) {
+    return "field";
+  }
+  if (target.isContentEditable || target.matches("textarea, select, input:not([type=range]):not([type=checkbox])")) {
+    return "field";
+  }
+  if (target.closest("button, summary, a[href], input, [role=tab], [role=button], [tabindex]")) {
+    return "control";
+  }
+  return "page";
+}
+
+function bindShortcuts() {
+  el.showShortcuts.addEventListener("click", openShortcuts);
+  el.shortcutsClose.addEventListener("click", () => el.shortcuts.close());
+  el.shortcuts.addEventListener("click", (event) => {
+    if (event.target === el.shortcuts) {
+      el.shortcuts.close();
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.defaultPrevented) {
+      return;
+    }
+    const command = shortcutFor(event, shortcutTarget(event.target));
+    if (!command) {
+      return;
+    }
+    event.preventDefault();
+    runShortcut(command);
+  });
+}
+
+function openShortcuts() {
+  if (!el.shortcuts.open) {
+    el.shortcuts.showModal();
+  }
+}
+
+function runShortcut(command) {
+  const step = state.snapshot?.step ?? 0;
+  const scrub = (delta) => {
+    if (el.timelineInput.disabled) {
+      return;
+    }
+    void runAction(() => rewindTo(step + delta), { keepTimeline: true });
+  };
+  switch (command) {
+    case "help":
+      openShortcuts();
+      break;
+    case "toggle-play":
+      if (!el.play.disabled) {
+        togglePlay();
+      }
+      break;
+    case "step":
+      if (!el.step.disabled) {
+        el.step.click();
+      }
+      break;
+    case "fit":
+      fitGraph();
+      break;
+    case "back":
+      scrub(-1);
+      break;
+    case "forward":
+      scrub(1);
+      break;
+    case "back-10":
+      scrub(-10);
+      break;
+    case "forward-10":
+      scrub(10);
+      break;
+    default:
+      break;
+  }
+}
+
+// Polite announcements for changes that are otherwise only visual.
+function announce(text) {
+  el.announcer.textContent = "";
+  window.requestAnimationFrame(() => {
+    el.announcer.textContent = text;
+  });
 }
 
 boot();

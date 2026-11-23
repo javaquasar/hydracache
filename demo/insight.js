@@ -395,3 +395,78 @@ export function nodeDetails(snapshot, id) {
   }
   return { id: node.id, status: nodeStatus(node), crashed: Boolean(node.crashed), disabled: Boolean(node.disabled), rows };
 }
+
+// Hue (0–359) for a stored checksum, so equal checksums share a colour in the
+// keys heatmap. Missing replicas have no hue.
+export function versionHue(version) {
+  if (version === null || version === undefined) {
+    return null;
+  }
+  const hex = shortVersion(version);
+  let hash = 0;
+  for (const char of hex) {
+    hash = (hash * 31 + char.charCodeAt(0)) % 3600;
+  }
+  return Math.round(hash / 10) % 360;
+}
+
+const EVENT_ICONS = { action: "▸", leader: "★", verdict: "✕" };
+
+export function eventIcon(event) {
+  if (event.kind === "verdict" && /holds again/.test(event.text)) {
+    return "✓";
+  }
+  return EVENT_ICONS[event.kind] ?? "•";
+}
+
+// Timeline events grouped by step (ascending), each item with its icon; a
+// group is `current` at the visible step and `future` past it (rewound view).
+export function groupEvents(events, currentStep) {
+  const groups = new Map();
+  for (const event of events || []) {
+    if (!groups.has(event.step)) {
+      groups.set(event.step, []);
+    }
+    groups.get(event.step).push({ kind: event.kind, text: event.text, icon: eventIcon(event) });
+  }
+  return [...groups.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([step, items]) => ({
+      step,
+      items,
+      current: step === currentStep,
+      future: step > currentStep,
+    }));
+}
+
+// Keyboard shortcut for a keydown, or null. `target` is "field" (typing),
+// "control" (a focused button, tab, slider, or checkbox, which owns Space and
+// the arrow keys), or "page".
+export function shortcutFor(event, target = "page") {
+  if (!event || event.ctrlKey || event.metaKey || event.altKey || target === "field") {
+    return null;
+  }
+  const key = event.key;
+  if (key === "?") {
+    return "help";
+  }
+  if (key === ".") {
+    return "step";
+  }
+  if (key === "f" || key === "F") {
+    return "fit";
+  }
+  if (target === "control") {
+    return null;
+  }
+  if (key === " " || key === "Spacebar") {
+    return "toggle-play";
+  }
+  if (key === "ArrowLeft") {
+    return event.shiftKey ? "back-10" : "back";
+  }
+  if (key === "ArrowRight") {
+    return event.shiftKey ? "forward-10" : "forward";
+  }
+  return null;
+}

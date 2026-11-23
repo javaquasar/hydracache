@@ -41,6 +41,7 @@ test("loading_scenario_uses_curated_engine_preset", async ({ page }) => {
 
 test("manual_push_shows_diverge_converge_and_listener_receipt", async ({ page }) => {
   await openReady(page);
+  await page.getByTestId("tab-clients").click();
   await page.getByTestId("subscribe-button").click();
   await page.getByTestId("push-event-button").click();
 
@@ -249,6 +250,7 @@ test("playing_throttles_share_url_writes", async ({ page }) => {
 
 test("cancelled_pointer_on_client_does_not_push", async ({ page }) => {
   await openReady(page);
+  await page.getByTestId("tab-clients").click();
   await page.getByTestId("subscribe-button").click();
   await expect(page.getByTestId("intervention-status")).toContainText("1 replay action");
   const client = page.locator(".vertex.client").first();
@@ -335,6 +337,7 @@ test("keyboard_selects_and_partitions_a_link", async ({ page }) => {
 
 test("keyboard_pushes_from_a_client_vertex", async ({ page }) => {
   await openReady(page);
+  await page.getByTestId("tab-clients").click();
   await page.getByTestId("subscribe-button").click();
   await expect(page.getByTestId("intervention-status")).toContainText("1 replay action");
   const client = page.locator(".vertex.client").first();
@@ -378,7 +381,8 @@ test("controls_wait_for_the_engine_to_load", async ({ page }) => {
 test("secondary_panels_collapse_on_small_screens", async ({ page }, testInfo) => {
   await openReady(page);
   const mobile = testInfo.project.name.startsWith("mobile");
-  const keysPanel = page.locator("details:has([data-testid='keys-panel'])");
+  // Read-only panels in the default Cluster tab start collapsed on phones.
+  const keysPanel = page.locator("details:has([data-testid='progress-panel'])");
   const nodesPanel = page.locator("details:has([data-testid='nodes-panel'])");
   await expect(nodesPanel).toHaveAttribute("open", "");
   if (mobile) {
@@ -528,6 +532,11 @@ async function setFastestSpeed(page) {
 
 async function expandPanel(page, testId) {
   await page.getByTestId(testId).evaluate((node) => {
+    // Panels live in side-panel tabs; show the tab first.
+    const tabpanel = node.closest("[role='tabpanel']");
+    if (tabpanel?.hidden) {
+      document.getElementById(tabpanel.getAttribute("aria-labelledby"))?.click();
+    }
     const panel = node.closest("details");
     if (panel) {
       panel.open = true;
@@ -664,4 +673,131 @@ test("violation_pauses_jumps_to_first_step_and_explains", async ({ page }) => {
 
   await page.getByTestId("violation-close").click();
   await expect(card).toBeHidden();
+});
+
+test("side_panel_tabs_switch_by_mouse_and_keyboard_and_show_badges", async ({ page }) => {
+  await openReady(page);
+  await expect(page.getByTestId("tab-cluster")).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByTestId("nodes-panel")).toBeVisible();
+  await expect(page.getByTestId("keys-panel")).toBeHidden();
+  await expect(page.getByTestId("tab-verdict").locator(".tab-badge")).toHaveText("✓");
+
+  await page.getByTestId("tab-data").click();
+  await expect(page.getByTestId("tab-data")).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByTestId("consistency-panel")).toBeVisible();
+  await expect(page.getByTestId("nodes-panel")).toBeHidden();
+
+  await page.keyboard.press("ArrowRight");
+  await expect(page.getByTestId("tab-verdict")).toBeFocused();
+  await expect(page.getByTestId("verdict-panel")).toBeVisible();
+  await page.keyboard.press("Home");
+  await expect(page.getByTestId("tab-cluster")).toBeFocused();
+  await expect(page.getByTestId("nodes-panel")).toBeVisible();
+
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).first().click();
+  await expect(page.getByTestId("tab-cluster").locator(".tab-badge")).toHaveText("1↓");
+});
+
+test("keys_heatmap_colours_checksums_and_marks_down_nodes", async ({ page }) => {
+  await page.goto(`${demoUrl}?seed=80&steps=16&scenario=default`);
+  await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
+  await page.getByTestId("tab-data").click();
+  const grid = page.getByTestId("keys-panel").locator(".key-grid");
+  await expect(grid.locator("thead")).toContainText("node-0");
+  const cells = grid.locator("tbody .replica:not(.missing)");
+  await expect(cells.first()).toBeVisible();
+  // Equal checksum text => equal colour.
+  const pairs = await cells.evaluateAll((nodes) =>
+    nodes.map((node) => [node.textContent, getComputedStyle(node).backgroundColor]),
+  );
+  const colourOf = new Map();
+  for (const [text, colour] of pairs) {
+    if (colourOf.has(text)) {
+      expect(colourOf.get(text)).toBe(colour);
+    }
+    colourOf.set(text, colour);
+  }
+
+  await page.getByTestId("tab-cluster").click();
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).nth(2).click();
+  await page.getByTestId("tab-data").click();
+  await expect(grid.locator(".replica.down").first()).toBeVisible();
+});
+
+test("events_are_grouped_by_step_with_icons_and_jump", async ({ page }) => {
+  await openReady(page);
+  await page.getByTestId("until-leader").click();
+  await page.getByTestId("nodes-panel").getByRole("button", { name: "Crash" }).first().click();
+  const events = page.getByTestId("events-panel");
+  const crash = events.locator(".event-group", { hasText: "crash node-0" });
+  await expect(crash).toHaveCount(1);
+  await expect(crash.locator(".event-item.action .event-icon")).toHaveText("▸");
+  await expect(events.locator(".event-item.leader .event-icon").first()).toHaveText("★");
+
+  const first = events.locator(".event-group").first();
+  await first.locator("button").click();
+  await expect(first).toHaveClass(/current/);
+  await expect(page.getByTestId("timeline-help")).toContainText("Rewound");
+});
+
+test("keyboard_shortcuts_step_scrub_play_and_help", async ({ page }) => {
+  await openReady(page);
+  await page.evaluate(() => document.activeElement?.blur());
+  const label = page.getByTestId("timeline-label");
+  await page.keyboard.press(".");
+  await expect(label).toHaveText("step 1 of 1");
+  await page.keyboard.press(".");
+  await page.keyboard.press(".");
+  await expect(label).toHaveText("step 3 of 3");
+  await page.keyboard.press("ArrowLeft");
+  await expect(label).toHaveText("step 2 of 3");
+  await page.keyboard.press("Shift+ArrowLeft");
+  await expect(label).toHaveText("step 0 of 3");
+  await page.keyboard.press("ArrowRight");
+  await expect(label).toHaveText("step 1 of 3");
+
+  await page.keyboard.press(" ");
+  await expect(page.getByTestId("play")).toHaveText("Pause");
+  await page.keyboard.press(" ");
+  await expect(page.getByTestId("play")).toHaveText("Play");
+
+  // Typing in a field never triggers a shortcut.
+  const stepNow = await label.textContent();
+  await page.getByTestId("tab-clients").click();
+  await page.getByTestId("manual-key").press(".");
+  await expect(label).toHaveText(stepNow ?? "");
+
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.keyboard.press("?");
+  await expect(page.getByTestId("shortcuts-dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("shortcuts-dialog")).toBeHidden();
+});
+
+test("leader_changes_are_announced_politely", async ({ page }) => {
+  await openReady(page);
+  await page.getByTestId("until-leader").click();
+  await expect(page.getByTestId("announcer")).toContainText(/Leader is now node-\d at step \d+/);
+  await expect(page.getByTestId("announcer")).toHaveAttribute("aria-live", "polite");
+});
+
+test("mobile_run_dock_follows_when_controls_scroll_away", async ({ page }, testInfo) => {
+  await openReady(page);
+  const dock = page.getByTestId("run-dock");
+  await expect(dock).toBeHidden();
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  if (!testInfo.project.name.startsWith("mobile")) {
+    await expect(dock).toBeHidden();
+    return;
+  }
+  await expect(dock).toBeVisible();
+  await expect(page.getByTestId("dock-verdict")).toContainText("holds");
+  await page.getByTestId("dock-step").click();
+  await expect(page.getByTestId("dock-step-label")).toHaveText("step 1");
+  await page.getByTestId("dock-play").click();
+  await expect(page.getByTestId("dock-play")).toHaveText("Pause");
+  await page.getByTestId("dock-play").click();
+  await expect(page.getByTestId("dock-play")).toHaveText("Play");
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(dock).toBeHidden();
 });

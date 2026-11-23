@@ -32,6 +32,7 @@ test("copy_reproducer_roundtrips_mode_and_actions", async ({ page, browser }) =>
   await expect(page.getByTestId("snapshot-hash")).toContainText(/^snapshot /);
   await page.getByTestId("mode-select").selectOption("mixed");
   await expect(page.getByTestId("intervention-status")).toContainText("mixed");
+  await page.getByTestId("tab-clients").click();
   await page.getByTestId("subscribe-button").click();
   await page.getByTestId("push-event-button").click();
   await expect(page.getByTestId("subscribers-panel")).toContainText("client-a@profiles");

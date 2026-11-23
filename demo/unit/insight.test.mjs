@@ -4,18 +4,22 @@ import { describe, test } from "node:test";
 
 import {
   describeAction,
+  eventIcon,
   graphSummary,
+  groupEvents,
   keyAgreement,
   leaderOf,
   nodeDetails,
   nodeStatus,
   scriptAtStep,
   shortVersion,
+  shortcutFor,
   speedLabel,
   stepChanges,
   timelineEvents,
   timelineMarks,
   verdictView,
+  versionHue,
   violationFocus,
 } from "../insight.js";
 
@@ -298,5 +302,57 @@ describe("nodeDetails", () => {
     const rows = Object.fromEntries(nodeDetails(snapshot, "node-0").rows);
     assert.equal(rows["behind leader"], undefined);
     assert.equal(nodeDetails(snapshot, "node-9"), null);
+  });
+});
+
+describe("versionHue", () => {
+  test("equal checksums share a hue and missing replicas have none", () => {
+    assert.equal(versionHue(null), null);
+    assert.equal(versionHue(undefined), null);
+    assert.equal(versionHue(123456789), versionHue("123456789"));
+    const hue = versionHue(42);
+    assert.ok(hue >= 0 && hue < 360);
+  });
+});
+
+describe("groupEvents", () => {
+  test("groups by step, keeps order, and marks current and future steps", () => {
+    const groups = groupEvents(
+      [
+        { step: 5, kind: "action", text: "crash node-0" },
+        { step: 3, kind: "leader", text: "leader is node-1" },
+        { step: 5, kind: "verdict", text: "violation: election_safety" },
+        { step: 7, kind: "verdict", text: "verdict holds again" },
+      ],
+      5,
+    );
+    assert.deepEqual(groups.map((group) => group.step), [3, 5, 7]);
+    assert.deepEqual(groups[1].items.map((item) => item.icon), ["▸", "✕"]);
+    assert.equal(groups[1].current, true);
+    assert.equal(groups[2].future, true);
+    assert.equal(groups[0].future, false);
+    assert.equal(eventIcon({ kind: "verdict", text: "verdict holds again" }), "✓");
+    assert.equal(eventIcon({ kind: "leader", text: "leader is node-2" }), "★");
+  });
+});
+
+describe("shortcutFor", () => {
+  test("maps keys to commands on the page", () => {
+    assert.equal(shortcutFor({ key: " " }), "toggle-play");
+    assert.equal(shortcutFor({ key: "." }), "step");
+    assert.equal(shortcutFor({ key: "ArrowLeft" }), "back");
+    assert.equal(shortcutFor({ key: "ArrowRight", shiftKey: true }), "forward-10");
+    assert.equal(shortcutFor({ key: "F" }), "fit");
+    assert.equal(shortcutFor({ key: "?" }), "help");
+    assert.equal(shortcutFor({ key: "x" }), null);
+  });
+
+  test("never fires while typing, with modifiers, or for keys a control owns", () => {
+    assert.equal(shortcutFor({ key: "." }, "field"), null);
+    assert.equal(shortcutFor({ key: " ", ctrlKey: true }), null);
+    assert.equal(shortcutFor({ key: "ArrowLeft", metaKey: true }), null);
+    assert.equal(shortcutFor({ key: " " }, "control"), null);
+    assert.equal(shortcutFor({ key: "ArrowRight" }, "control"), null);
+    assert.equal(shortcutFor({ key: "." }, "control"), "step");
   });
 });

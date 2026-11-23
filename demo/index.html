@@ -50,6 +50,17 @@
               <span aria-hidden="true">?</span>
             </button>
             <button
+              id="show-shortcuts"
+              class="ghost icon-button"
+              type="button"
+              data-testid="show-shortcuts"
+              aria-label="Keyboard shortcuts"
+              title="Keyboard shortcuts (?)"
+              aria-haspopup="dialog"
+            >
+              <span aria-hidden="true">⌨</span>
+            </button>
+            <button
               id="theme-toggle"
               class="ghost icon-button"
               type="button"
@@ -275,115 +286,165 @@
             </div>
           </section>
 
-          <section class="glass-panel">
-            <details class="panel" open data-collapse-mobile>
-              <summary><h2>Verdict</h2></summary>
-              <div id="verdict-panel" data-testid="verdict-panel"></div>
-            </details>
-          </section>
-
-          <section class="glass-panel">
-            <details class="panel" open>
-              <summary><h2>Link</h2></summary>
-              <label class="link-picker">
-                Link
-                <select id="link-select" data-testid="link-select">
-                  <option value="">Choose a link</option>
-                </select>
-              </label>
-              <p id="selected-link" class="empty-state" data-testid="selected-link" aria-live="polite">none selected</p>
-              <div class="button-row">
-                <button id="partition-link" type="button" data-action="partition" data-testid="partition-link">
-                  Partition
-                </button>
-                <button id="delay-link" type="button" data-action="delay" data-testid="delay-link">
-                  Delay
-                </button>
-                <button id="drop-link" type="button" data-action="drop" data-testid="drop-link">
-                  Drop
-                </button>
-                <button id="heal-link" type="button" data-action="heal" data-testid="heal-link">
-                  Heal
-                </button>
-              </div>
-            </details>
-          </section>
-
-          <section class="glass-panel">
-            <details class="panel" open data-collapse-mobile>
-              <summary><h2>Progress</h2></summary>
-              <dl id="progress-panel" data-testid="progress-panel"></dl>
-              <p id="snapshot-hash" class="hash" data-testid="snapshot-hash"></p>
-            </details>
-          </section>
-
-          <section class="glass-panel">
-            <details class="panel" open>
-              <summary><h2>Nodes</h2></summary>
-              <button id="add-node-button" type="button" data-testid="add-node-button">
-                Add node
-              </button>
-              <div id="nodes-panel" data-testid="nodes-panel"></div>
-            </details>
-          </section>
-
-          <section class="glass-panel">
-            <details class="panel" open data-collapse-mobile>
-              <summary><h2>Signals</h2></summary>
-              <div id="signals-panel" data-testid="signals-panel"></div>
-            </details>
-          </section>
-
-          <section class="glass-panel">
-            <details class="panel" open>
-              <summary><h2>Client</h2></summary>
-              <div class="manual-controls">
-                <label>
-                  Client
-                  <input id="manual-client" value="client-a" data-testid="manual-client" />
+          <div class="panel-tabs" role="tablist" aria-label="Lab panels" data-testid="panel-tabs">
+            <button id="tab-cluster" class="panel-tab" type="button" role="tab" aria-selected="true" aria-controls="tabpanel-cluster" tabindex="0" data-tab="cluster" data-testid="tab-cluster">
+              Cluster<span class="tab-badge" aria-hidden="true"></span>
+            </button>
+            <button id="tab-clients" class="panel-tab" type="button" role="tab" aria-selected="false" aria-controls="tabpanel-clients" tabindex="-1" data-tab="clients" data-testid="tab-clients">
+              Clients<span class="tab-badge" aria-hidden="true"></span>
+            </button>
+            <button id="tab-data" class="panel-tab" type="button" role="tab" aria-selected="false" aria-controls="tabpanel-data" tabindex="-1" data-tab="data" data-testid="tab-data">
+              Data<span class="tab-badge" aria-hidden="true"></span>
+            </button>
+            <button id="tab-verdict" class="panel-tab" type="button" role="tab" aria-selected="false" aria-controls="tabpanel-verdict" tabindex="-1" data-tab="verdict" data-testid="tab-verdict">
+              Verdict<span class="tab-badge" aria-hidden="true"></span>
+            </button>
+          </div>
+          <div id="tabpanel-cluster" class="tab-panel" role="tabpanel" aria-labelledby="tab-cluster" data-tabpanel="cluster">
+            <section class="glass-panel">
+              <details class="panel" open>
+                <summary><h2>Link</h2></summary>
+                <label class="link-picker">
+                  Link
+                  <select id="link-select" data-testid="link-select">
+                    <option value="">Choose a link</option>
+                  </select>
                 </label>
-                <label>
-                  Namespace
-                  <input id="manual-ns" value="profiles" data-testid="manual-ns" />
-                </label>
-                <label>
-                  Key
-                  <input id="manual-key" value="profile-42" data-testid="manual-key" />
-                </label>
-                <label>
-                  Value
-                  <input id="manual-value" value="fresh" data-testid="manual-value" />
-                </label>
+                <p id="selected-link" class="empty-state" data-testid="selected-link" aria-live="polite">none selected</p>
                 <div class="button-row">
-                  <button id="subscribe-button" type="button" data-testid="subscribe-button">
-                    Subscribe
+                  <button id="partition-link" type="button" data-action="partition" data-testid="partition-link">
+                    Partition
                   </button>
-                  <button id="push-event-button" type="button" data-testid="push-event-button">
-                    Push
+                  <button id="delay-link" type="button" data-action="delay" data-testid="delay-link">
+                    Delay
+                  </button>
+                  <button id="drop-link" type="button" data-action="drop" data-testid="drop-link">
+                    Drop
+                  </button>
+                  <button id="heal-link" type="button" data-action="heal" data-testid="heal-link">
+                    Heal
                   </button>
                 </div>
-              </div>
-              <div id="clients-panel" data-testid="clients-panel"></div>
-              <div id="subscribers-panel" data-testid="subscribers-panel"></div>
-            </details>
-          </section>
+              </details>
+            </section>
+            <section class="glass-panel">
+              <details class="panel" open>
+                <summary><h2>Nodes</h2></summary>
+                <button id="add-node-button" type="button" data-testid="add-node-button">
+                  Add node
+                </button>
+                <div id="nodes-panel" data-testid="nodes-panel"></div>
+              </details>
+            </section>
+            <section class="glass-panel">
+              <details class="panel" open data-collapse-mobile>
+                <summary><h2>Progress</h2></summary>
+                <dl id="progress-panel" data-testid="progress-panel"></dl>
+                <p id="snapshot-hash" class="hash" data-testid="snapshot-hash"></p>
+              </details>
+            </section>
+            <section class="glass-panel">
+              <details class="panel" open data-collapse-mobile>
+                <summary><h2>Signals</h2></summary>
+                <div id="signals-panel" data-testid="signals-panel"></div>
+              </details>
+            </section>
+          </div>
+          <div id="tabpanel-clients" class="tab-panel" role="tabpanel" aria-labelledby="tab-clients" data-tabpanel="clients" hidden>
+            <section class="glass-panel">
+              <details class="panel" open>
+                <summary><h2>Client</h2></summary>
+                <div class="manual-controls">
+                  <label>
+                    Client
+                    <input id="manual-client" value="client-a" data-testid="manual-client" />
+                  </label>
+                  <label>
+                    Namespace
+                    <input id="manual-ns" value="profiles" data-testid="manual-ns" />
+                  </label>
+                  <label>
+                    Key
+                    <input id="manual-key" value="profile-42" data-testid="manual-key" />
+                  </label>
+                  <label>
+                    Value
+                    <input id="manual-value" value="fresh" data-testid="manual-value" />
+                  </label>
+                  <div class="button-row">
+                    <button id="subscribe-button" type="button" data-testid="subscribe-button">
+                      Subscribe
+                    </button>
+                    <button id="push-event-button" type="button" data-testid="push-event-button">
+                      Push
+                    </button>
+                  </div>
+                </div>
+                <div id="clients-panel" data-testid="clients-panel"></div>
+                <div id="subscribers-panel" data-testid="subscribers-panel"></div>
+              </details>
+            </section>
+          </div>
+          <div id="tabpanel-data" class="tab-panel" role="tabpanel" aria-labelledby="tab-data" data-tabpanel="data" hidden>
+            <section class="glass-panel">
+              <details class="panel" open>
+                <summary><h2>Keys</h2></summary>
+                <div id="keys-panel" data-testid="keys-panel"></div>
+              </details>
+            </section>
+            <section class="glass-panel">
+              <details class="panel" open>
+                <summary><h2>Consistency <span class="model-tag">availability now</span></h2></summary>
+                <div id="consistency-panel" data-testid="consistency-panel"></div>
+              </details>
+            </section>
+          </div>
+          <div id="tabpanel-verdict" class="tab-panel" role="tabpanel" aria-labelledby="tab-verdict" data-tabpanel="verdict" hidden>
+            <section class="glass-panel">
+              <details class="panel" open>
+                <summary><h2>Verdict</h2></summary>
+                <div id="verdict-panel" data-testid="verdict-panel"></div>
+              </details>
+            </section>
+          </div>
 
-          <section class="glass-panel">
-            <details class="panel" open data-collapse-mobile>
-              <summary><h2>Consistency <span class="model-tag">availability now</span></h2></summary>
-              <div id="consistency-panel" data-testid="consistency-panel"></div>
-            </details>
-          </section>
-
-          <section class="glass-panel">
-            <details class="panel" open data-collapse-mobile>
-              <summary><h2>Keys</h2></summary>
-              <div id="keys-panel" data-testid="keys-panel"></div>
-            </details>
-          </section>
         </aside>
       </section>
+      <nav id="run-dock" class="run-dock" aria-label="run controls" data-testid="run-dock" hidden>
+        <span id="dock-verdict" class="dock-verdict" data-testid="dock-verdict"></span>
+        <span id="dock-step-label" class="dock-step-label" data-testid="dock-step-label">step 0</span>
+        <button id="dock-step" type="button" data-testid="dock-step">Step</button>
+        <button id="dock-play" class="primary" type="button" data-testid="dock-play">Play</button>
+      </nav>
+
+      <p id="announcer" class="visually-hidden" aria-live="polite" data-testid="announcer"></p>
     </main>
+
+    <dialog id="shortcuts" class="shortcuts-dialog" aria-labelledby="shortcuts-title" data-testid="shortcuts-dialog">
+      <div class="dialog-head">
+        <h2 id="shortcuts-title">Keyboard shortcuts</h2>
+        <button id="shortcuts-close" class="ghost icon-button" type="button" aria-label="Close" data-testid="shortcuts-close">
+          <span aria-hidden="true">✕</span>
+        </button>
+      </div>
+      <dl class="shortcut-list">
+        <dt><kbd>Space</kbd></dt>
+        <dd>Play / pause</dd>
+        <dt><kbd>.</kbd></dt>
+        <dd>Step once</dd>
+        <dt><kbd>←</kbd> <kbd>→</kbd></dt>
+        <dd>Previous / next step on the timeline</dd>
+        <dt><kbd>Shift</kbd> + <kbd>←</kbd> <kbd>→</kbd></dt>
+        <dd>Ten steps back / forward</dd>
+        <dt><kbd>F</kbd></dt>
+        <dd>Fit the cluster in view</dd>
+        <dt><kbd>?</kbd></dt>
+        <dd>Show this list</dd>
+        <dt><kbd>Esc</kbd></dt>
+        <dd>Close a popover or dialog</dd>
+      </dl>
+      <p class="model-note">Shortcuts are ignored while typing in a field or when a button, tab, or slider has focus.</p>
+    </dialog>
 
     <script type="module" src="./app.js"></script>
   </body>

@@ -159,6 +159,14 @@ shared link cannot make the page render another server's verdict.
   step. Events list recorded interventions plus the leader changes and verdict
   transitions this page observed. Step, Play, or any other action while rewound
   continues from the visible step and drops the later recording.
+  Events are grouped by step with an icon per kind (▸ action, ★ leader,
+  ✕ / ✓ verdict); clicking a group shows that step.
+- **Keyboard.** `Space` plays or pauses, `.` steps, `←` / `→` move one step on
+  the timeline (`Shift` for ten), `F` fits the graph, `?` lists the shortcuts.
+  They are ignored while typing in a field or when a focused control owns the
+  key. Leader changes are also announced to screen readers.
+- **Phones.** Once the controls scroll away, a dock at the bottom keeps Play,
+  Step, the current step, and the verdict in reach.
 - **Run to leader / replica agreement / violation.** Steps the engine until the
   condition holds, and stops loudly after 500 steps if it never does.
 - **Verdict panel.** Lists the snapshot's `checked_invariants` (the exact set
@@ -170,8 +178,14 @@ shared link cannot make the page render another server's verdict.
   `ConsistencyLevel` rules, mirrored in the simulator for the browser build and
   parity-tested against the product. It reports availability on the current
   topology; the simulator does not execute per-level reads or writes.
-- **Keys panel.** Per-node stored checksums for each sampled key; live replicas
-  that differ from the majority are highlighted, down nodes are struck through.
+- **Panel tabs.** The side panels are grouped into Cluster (link, nodes,
+  progress, signals), Clients, Data (keys, consistency), and Verdict. Tab badges
+  restate what a hidden tab would show: nodes down, client count, replicas
+  differing, and the verdict.
+- **Keys heatmap.** One row per sampled key, one column per node. A cell's
+  colour is derived from its stored checksum, so equal checksums share a colour;
+  live replicas that differ from the majority are outlined, down nodes are
+  striped, and `—` means no replica.
 - **What changed.** After every step or action the line under the graph lists
   the engine fields that changed since the previous view (node status, term,
   commit/applied index, link states, leader, committed entries, key checksums),
