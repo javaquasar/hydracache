@@ -854,3 +854,49 @@ test("packets_follow_link_state_and_delivery_schedule", async ({ page }) => {
   expect(toCrashed.length).toBeGreaterThan(0);
   expect(toCrashed.every((packet) => packet.doomed), "messages to a crashed node are drawn as lost").toBe(true);
 });
+
+// A plain click on the empty canvas is not a pan: the view keeps following the
+// cluster (it used to freeze the view, so the cluster drifted off-centre as it
+// grew). A real drag releases the Fit button, and Fit brings the view back.
+test("canvas_click_keeps_the_view_fitted_and_drag_releases_fit", async ({ page }) => {
+  await openReady(page);
+  const fit = page.getByTestId("zoom-fit");
+  await expect(fit).toHaveAttribute("aria-pressed", "true");
+  const svg = page.locator("#cluster-graph");
+  const box = await svg.boundingBox();
+  const empty = { x: box.x + 12, y: box.y + box.height / 2 };
+
+  await page.mouse.click(empty.x, empty.y);
+  await expect(fit).toHaveAttribute("aria-pressed", "true");
+  for (let index = 0; index < 3; index += 1) {
+    await page.getByTestId("add-node-button").click();
+  }
+  await expect(page.locator(".vertex.node")).toHaveCount(6);
+  const offCentre = () =>
+    svg.evaluate((element) => {
+      const frame = element.getBoundingClientRect();
+      const bodies = [...element.querySelectorAll(".vertex.node .v-body")].map((body) => body.getBoundingClientRect());
+      const left = Math.min(...bodies.map((rect) => rect.left));
+      const right = Math.max(...bodies.map((rect) => rect.right));
+      const top = Math.min(...bodies.map((rect) => rect.top));
+      const bottom = Math.max(...bodies.map((rect) => rect.bottom));
+      return Math.max(
+        Math.abs((left + right) / 2 - (frame.left + frame.width / 2)) / frame.width,
+        Math.abs((top + bottom) / 2 - (frame.top + frame.height / 2)) / frame.height,
+      );
+    });
+  // Within 12% of the frame: centred up to the overlay insets.
+  await expect.poll(offCentre, { timeout: 5000 }).toBeLessThan(0.12);
+
+  // Adding nodes may have scrolled the page: measure the canvas again.
+  await svg.scrollIntoViewIfNeeded();
+  const now = await svg.boundingBox();
+  const from = { x: now.x + 12, y: now.y + now.height / 2 };
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(from.x + 60, from.y + 20, { steps: 4 });
+  await page.mouse.up();
+  await expect(fit).toHaveAttribute("aria-pressed", "false");
+  await fit.click();
+  await expect(fit).toHaveAttribute("aria-pressed", "true");
+});

@@ -654,6 +654,14 @@ main[aria-busy="true"] .side-panel button {
   box-shadow: var(--shadow-soft);
 }
 
+/* The view was panned or zoomed and no longer follows the cluster: make the
+   Fit button the obvious way back. */
+.graph-tools .icon-button[aria-pressed="false"] {
+  border-color: var(--accent);
+  color: var(--accent-strong, var(--accent));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent), var(--shadow-soft);
+}
+
 .graph-hint {
   position: absolute;
   top: 12px;

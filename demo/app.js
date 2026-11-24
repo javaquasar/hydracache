@@ -184,6 +184,7 @@ async function boot() {
     onPaint: () => positionNodePopover(),
     // Packets cover one step of their flight per play interval.
     getStepMillis: () => Number(el.speed.value),
+    onAutoFitChange: (on) => renderFitState(on),
   });
   bindPreferenceState();
   bindTheme();
@@ -1923,6 +1924,13 @@ function bindTabs() {
       next.focus();
     });
   }
+}
+
+// The Fit button shows whether the view follows the cluster. After a pan or a
+// zoom it is released, telling the user why the graph no longer re-centres.
+function renderFitState(on) {
+  el.zoomFit.setAttribute("aria-pressed", on ? "true" : "false");
+  el.zoomFit.title = on ? "Fit the cluster (following)" : "Fit the cluster: the view was moved; press to re-centre";
 }
 
 function selectTab(name) {

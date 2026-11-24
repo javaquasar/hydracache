@@ -63,7 +63,7 @@ export function resetGraph() {
   graphSim.pos.clear();
   graphSim.topoKey = "";
   graphSim.view = { tx: 0, ty: 0, scale: 1 };
-  graphSim.autoFit = true;
+  setAutoFit(true);
   graphSim.drag = null;
   graphSim.packets = [];
   graphSim.flightTotals = new Map();
@@ -83,15 +83,23 @@ function overlaysOnCanvas() {
   return !legend || getComputedStyle(legend).position === "absolute";
 }
 
+// Every change of the fit mode goes through here so the app can show it (the
+// Fit button reads "pressed" while the view follows the cluster).
+function setAutoFit(value) {
+  if (graphSim.autoFit === value) return;
+  graphSim.autoFit = value;
+  host?.onAutoFitChange?.(value);
+}
+
 /** Zoom around the canvas centre (graph view buttons). */
 export function zoomGraph(factor) {
-  graphSim.autoFit = false;
+  setAutoFit(false);
   zoomAround({ x: VIEW_BOX.width / 2, y: VIEW_BOX.height / 2 }, factor);
 }
 
 /** Return to the automatic "fit the whole cluster" view. */
 export function fitGraph() {
-  graphSim.autoFit = true;
+  setAutoFit(true);
   startGraphSim();
 }
 
@@ -809,9 +817,22 @@ function bindGraphInteractions() {
     const sy = ctm && ctm.d ? ctm.d : 1;
     const start = { x: event.clientX, y: event.clientY, tx: graphSim.view.tx, ty: graphSim.view.ty };
     graphSim.drag = { pan: true };
-    graphSim.autoFit = false;
     capturePointer(host.svg, event.pointerId);
+    // A plain click (e.g. to dismiss a popover) is not a pan: the view stays
+    // fitted until the pointer really moves, so the cluster keeps re-centring
+    // as it grows or settles.
+    let panning = false;
     const move = (ev) => {
+      if (!panning) {
+        if (Math.hypot(ev.clientX - start.x, ev.clientY - start.y) <= 4) return;
+        panning = true;
+        setAutoFit(false);
+        // Pan from wherever the fitted view eased to, not from the press.
+        start.tx = graphSim.view.tx;
+        start.ty = graphSim.view.ty;
+        start.x = ev.clientX;
+        start.y = ev.clientY;
+      }
       graphSim.view.tx = start.tx + (ev.clientX - start.x) / sx;
       graphSim.view.ty = start.ty + (ev.clientY - start.y) / sy;
       paintGraph(performance.now());
@@ -841,7 +862,7 @@ function bindGraphInteractions() {
         return;
       }
       event.preventDefault();
-      graphSim.autoFit = false;
+      setAutoFit(false);
       const ctm = host.svg.getScreenCTM();
       if (!ctm) return;
       const inv = ctm.inverse();
